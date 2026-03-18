@@ -44,3 +44,23 @@ def summarize(distances: np.ndarray) -> dict:
         "min": float(np.min(distances)),
         "std": float(np.std(distances)),
     }
+
+
+def threshold_stats(distances: np.ndarray, threshold: float) -> dict:
+    """Compute how many points exceed a distance threshold.
+
+    Args:
+        distances: Array of distances.
+        threshold: Distance threshold.
+
+    Returns:
+        Dict with threshold, exceed_count, exceed_ratio, total.
+    """
+    total = len(distances)
+    exceed = int(np.sum(distances > threshold))
+    return {
+        "threshold": threshold,
+        "total": total,
+        "exceed_count": exceed,
+        "exceed_ratio": exceed / total if total > 0 else 0.0,
+    }

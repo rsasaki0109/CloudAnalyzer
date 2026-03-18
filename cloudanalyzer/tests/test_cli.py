@@ -57,6 +57,35 @@ class TestCLI:
         result = runner.invoke(app, ["diff", "/no/a.pcd", "/no/b.pcd"])
         assert result.exit_code == 1
 
+    def test_compare_with_threshold(self, source_and_target_files):
+        src, tgt = source_and_target_files
+        result = runner.invoke(app, ["compare", src, tgt, "--register", "none", "--threshold", "0.05"])
+        assert result.exit_code == 0
+        assert "Threshold" in result.output
+
+    def test_diff_with_threshold(self, source_and_target_files):
+        src, tgt = source_and_target_files
+        result = runner.invoke(app, ["diff", src, tgt, "--threshold", "0.05"])
+        assert result.exit_code == 0
+        assert "Exceed:" in result.output
+
+    def test_downsample(self, sample_pcd_file, tmp_path):
+        output = str(tmp_path / "down.pcd")
+        result = runner.invoke(app, ["downsample", sample_pcd_file, "-o", output, "-v", "0.3"])
+        assert result.exit_code == 0
+        assert "Reduction:" in result.output
+
+    def test_downsample_missing_output(self, sample_pcd_file):
+        result = runner.invoke(app, ["downsample", sample_pcd_file])
+        assert result.exit_code != 0
+
+    def test_merge(self, source_and_target_files, tmp_path):
+        src, tgt = source_and_target_files
+        output = str(tmp_path / "merged.pcd")
+        result = runner.invoke(app, ["merge", src, tgt, "-o", output])
+        assert result.exit_code == 0
+        assert "Total:" in result.output
+
     def test_help(self):
         result = runner.invoke(app, ["--help"])
         assert result.exit_code == 0

@@ -4,7 +4,7 @@ import numpy as np
 
 from ca.io import load_point_cloud
 from ca.registration import register
-from ca.metrics import compute_nn_distance, summarize
+from ca.metrics import compute_nn_distance, summarize, threshold_stats
 from ca.visualization import colorize, save_snapshot
 from ca.report import make_json, save_json, make_markdown
 
@@ -16,6 +16,7 @@ def run_compare(
     json_path: str | None = None,
     report_path: str | None = None,
     snapshot_path: str | None = None,
+    threshold: float | None = None,
 ) -> dict:
     """Run the full compare pipeline.
 
@@ -54,6 +55,12 @@ def run_compare(
     stats = summarize(distances)
     print(f"  -> Mean: {stats['mean']:.4f}, Max: {stats['max']:.4f}")
 
+    # 3.5 Threshold check (optional)
+    thresh_result = None
+    if threshold is not None:
+        thresh_result = threshold_stats(distances, threshold)
+        print(f"  -> Threshold {threshold}: {thresh_result['exceed_count']}/{thresh_result['total']} ({thresh_result['exceed_ratio']:.1%}) exceed")
+
     # 4. Colorize
     colorize(source, distances)
 
@@ -65,6 +72,8 @@ def run_compare(
         rmse=rmse,
         distance_stats=stats,
     )
+    if thresh_result:
+        data["threshold"] = thresh_result
 
     if json_path:
         save_json(data, json_path)

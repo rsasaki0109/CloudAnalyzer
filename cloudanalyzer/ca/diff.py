@@ -1,10 +1,10 @@
 """Quick diff between two point clouds (no reports, just stats)."""
 
 from ca.io import load_point_cloud
-from ca.metrics import compute_nn_distance, summarize
+from ca.metrics import compute_nn_distance, summarize, threshold_stats
 
 
-def run_diff(source_path: str, target_path: str) -> dict:
+def run_diff(source_path: str, target_path: str, threshold: float | None = None) -> dict:
     """Compute distance stats between two point clouds without registration.
 
     Args:
@@ -20,8 +20,11 @@ def run_diff(source_path: str, target_path: str) -> dict:
     distances = compute_nn_distance(source, target)
     stats = summarize(distances)
 
-    return {
+    result = {
         "source_points": len(source.points),
         "target_points": len(target.points),
         "distance_stats": stats,
     }
+    if threshold is not None:
+        result["threshold"] = threshold_stats(distances, threshold)
+    return result

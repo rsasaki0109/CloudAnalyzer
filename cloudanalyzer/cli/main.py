@@ -1,12 +1,15 @@
 """CloudAnalyzer CLI entry point."""
 
-from typing import Optional
+from typing import List, Optional
 
 import typer
 
 from ca.compare import run_compare
 from ca.info import get_info
 from ca.diff import run_diff
+from ca.view import view
+from ca.downsample import downsample
+from ca.merge import merge
 
 app = typer.Typer(
     name="ca",
@@ -38,6 +41,11 @@ def compare_cmd(
         "--snapshot",
         help="Output path for snapshot image (png)",
     ),
+    threshold: Optional[float] = typer.Option(
+        None,
+        "--threshold",
+        help="Distance threshold; report how many points exceed it",
+    ),
 ) -> None:
     """Compare two point clouds with optional registration."""
     reg_method = method if method and method.lower() != "none" else None
@@ -50,6 +58,7 @@ def compare_cmd(
             json_path=json_out,
             report_path=report,
             snapshot_path=snapshot,
+            threshold=threshold,
         )
     except (FileNotFoundError, ValueError) as e:
         typer.echo(f"Error: {e}", err=True)
@@ -81,10 +90,15 @@ def info_cmd(
 def diff_cmd(
     source: str = typer.Argument(..., help="Path to source point cloud"),
     target: str = typer.Argument(..., help="Path to target point cloud"),
+    threshold: Optional[float] = typer.Option(
+        None,
+        "--threshold",
+        help="Distance threshold; report how many points exceed it",
+    ),
 ) -> None:
     """Quick distance stats between two point clouds (no registration)."""
     try:
-        result = run_diff(source, target)
+        result = run_diff(source, target, threshold=threshold)
     except (FileNotFoundError, ValueError) as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=1)
@@ -96,6 +110,59 @@ def diff_cmd(
     typer.echo(f"Max:    {stats['max']:.4f}")
     typer.echo(f"Min:    {stats['min']:.4f}")
     typer.echo(f"Std:    {stats['std']:.4f}")
+    if "threshold" in result:
+        t = result["threshold"]
+        typer.echo(f"Exceed: {t['exceed_count']}/{t['total']} ({t['exceed_ratio']:.1%}) > {t['threshold']}")
+
+
+@app.command("view")
+def view_cmd(
+    paths: List[str] = typer.Argument(..., help="Point cloud file(s) to view"),
+) -> None:
+    """Open interactive 3D viewer for point cloud(s)."""
+    try:
+        view(paths)
+    except (FileNotFoundError, ValueError) as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+
+
+@app.command("downsample")
+def downsample_cmd(
+    path: str = typer.Argument(..., help="Input point cloud file"),
+    output: str = typer.Option(..., "--output", "-o", help="Output file path"),
+    voxel_size: float = typer.Option(0.05, "--voxel-size", "-v", help="Voxel size"),
+) -> None:
+    """Downsample a point cloud using voxel grid filtering."""
+    try:
+        result = downsample(path, voxel_size, output)
+    except (FileNotFoundError, ValueError) as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+
+    typer.echo(f"Original:     {result['original_points']} pts")
+    typer.echo(f"Downsampled:  {result['downsampled_points']} pts")
+    typer.echo(f"Reduction:    {result['reduction_ratio']:.1%}")
+    typer.echo(f"Voxel size:   {result['voxel_size']}")
+    typer.echo(f"Saved:        {result['output']}")
+
+
+@app.command("merge")
+def merge_cmd(
+    paths: List[str] = typer.Argument(..., help="Input point cloud files to merge"),
+    output: str = typer.Option(..., "--output", "-o", help="Output file path"),
+) -> None:
+    """Merge multiple point clouds into one file."""
+    try:
+        result = merge(paths, output)
+    except (FileNotFoundError, ValueError) as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=1)
+
+    for inp in result["inputs"]:
+        typer.echo(f"  {inp['path']}: {inp['points']} pts")
+    typer.echo(f"Total:  {result['total_points']} pts")
+    typer.echo(f"Saved:  {result['output']}")
 
 
 @app.command("version")

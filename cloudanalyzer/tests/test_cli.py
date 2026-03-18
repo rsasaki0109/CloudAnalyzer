@@ -86,6 +86,35 @@ class TestCLI:
         assert result.exit_code == 0
         assert "Total:" in result.output
 
+    def test_convert(self, sample_pcd_file, tmp_path):
+        output = str(tmp_path / "out.ply")
+        result = runner.invoke(app, ["convert", sample_pcd_file, output])
+        assert result.exit_code == 0
+        assert ".pcd" in result.output
+        assert ".ply" in result.output
+
+    def test_crop(self, sample_pcd_file, tmp_path):
+        output = str(tmp_path / "cropped.pcd")
+        result = runner.invoke(app, [
+            "crop", sample_pcd_file, "-o", output,
+            "--x-min", "0", "--y-min", "0", "--z-min", "0",
+            "--x-max", "0.5", "--y-max", "0.5", "--z-max", "0.5",
+        ])
+        assert result.exit_code == 0
+        assert "Cropped:" in result.output
+
+    def test_stats(self, sample_pcd_file):
+        result = runner.invoke(app, ["stats", sample_pcd_file])
+        assert result.exit_code == 0
+        assert "Density:" in result.output
+        assert "Spacing mean:" in result.output
+
+    def test_normals(self, sample_pcd_file, tmp_path):
+        output = str(tmp_path / "normals.ply")
+        result = runner.invoke(app, ["normals", sample_pcd_file, "-o", output])
+        assert result.exit_code == 0
+        assert "Saved:" in result.output
+
     def test_help(self):
         result = runner.invoke(app, ["--help"])
         assert result.exit_code == 0

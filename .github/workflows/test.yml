@@ -29,7 +29,10 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install -e .
-          pip install pytest
+          pip install pytest mypy
+
+      - name: Type check
+        run: python -m mypy ca/ cli/
 
       - name: Run tests
         run: xvfb-run python -m pytest tests/ -v

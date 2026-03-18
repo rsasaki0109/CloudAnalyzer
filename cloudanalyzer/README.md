@@ -10,105 +10,113 @@ pip install -e .
 
 ## Commands
 
-### `ca compare` — Compare two point clouds
+### Analysis
+
+| Command | Description |
+|---|---|
+| `ca compare` | Compare two point clouds with ICP/GICP registration |
+| `ca diff` | Quick distance stats (no registration) |
+| `ca info` | Point cloud metadata (points, BBox, centroid) |
+| `ca stats` | Detailed statistics (density, spacing distribution) |
+| `ca batch` | Run info on all files in a directory |
+| `ca density-map` | 2D density heatmap image |
+
+### Processing
+
+| Command | Description |
+|---|---|
+| `ca downsample` | Voxel grid downsampling |
+| `ca sample` | Random point sampling |
+| `ca filter` | Statistical outlier removal |
+| `ca merge` | Merge multiple point clouds |
+| `ca align` | Sequential registration + merge |
+| `ca convert` | Format conversion (pcd/ply/las) |
+| `ca normals` | Normal estimation |
+| `ca crop` | Bounding box crop |
+
+### Visualization
+
+| Command | Description |
+|---|---|
+| `ca view` | Interactive 3D viewer |
+
+## Usage Examples
 
 ```bash
+# Compare with GICP, full output
 ca compare source.pcd target.pcd \
-  --register gicp \
-  --json result.json \
-  --report report.md \
-  --snapshot diff.png \
-  --threshold 0.1 \
-  --output-json full_result.json
-```
+  --register gicp --json result.json --report report.md \
+  --snapshot diff.png --threshold 0.1
 
-Options: `--register` (icp/gicp/none), `--json`, `--report`, `--snapshot`, `--threshold`, `--output-json`
+# Quick diff with threshold
+ca diff a.pcd b.pcd --threshold 0.05
 
-### `ca diff` — Quick distance stats (no registration)
+# Batch info on a directory
+ca batch /path/to/pcds/ -r
 
-```bash
-ca diff source.pcd target.pcd --threshold 0.05
-```
+# Density heatmap
+ca density-map cloud.pcd -o density.png -r 1.0 -a z
 
-### `ca info` — Point cloud metadata
+# Processing pipeline
+ca filter raw.pcd -o clean.pcd -n 20 -s 2.0
+ca downsample clean.pcd -o down.pcd -v 0.05
+ca normals down.pcd -o with_normals.ply
 
-```bash
-ca info cloud.pcd
-# Points, BBox, extent, centroid, colors/normals
-```
-
-### `ca stats` — Detailed statistics
-
-```bash
-ca stats cloud.pcd
-# Density, volume, spacing distribution
-```
-
-### `ca view` — Interactive 3D viewer
-
-```bash
-ca view cloud1.pcd cloud2.ply
-```
-
-### `ca downsample` — Voxel downsampling
-
-```bash
-ca downsample cloud.pcd -o down.pcd -v 0.05
-```
-
-### `ca sample` — Random point sampling
-
-```bash
-ca sample cloud.pcd -o sampled.pcd -n 10000
-```
-
-### `ca filter` — Statistical outlier removal
-
-```bash
-ca filter cloud.pcd -o filtered.pcd -n 20 -s 2.0
-```
-
-### `ca merge` — Merge multiple point clouds
-
-```bash
-ca merge a.pcd b.pcd c.pcd -o merged.pcd
-```
-
-### `ca align` — Sequential registration + merge
-
-```bash
+# Align multiple scans
 ca align scan1.pcd scan2.pcd scan3.pcd -o aligned.pcd -m gicp
-```
 
-### `ca convert` — Format conversion
-
-```bash
+# Format conversion
 ca convert input.pcd output.ply
-```
 
-### `ca normals` — Normal estimation
+# Random sampling
+ca sample cloud.pcd -o sampled.pcd -n 10000
 
-```bash
-ca normals cloud.pcd -o with_normals.ply -r 0.5
-```
-
-### `ca crop` — Bounding box crop
-
-```bash
+# Crop by bounding box
 ca crop cloud.pcd -o cropped.pcd \
   --x-min 0 --y-min 0 --z-min 0 \
   --x-max 10 --y-max 10 --z-max 5
 ```
 
-### `ca version`
+## Global Options
 
 ```bash
-ca version
+ca --verbose ...    # Debug output (stderr)
+ca --quiet ...      # Suppress non-error output
 ```
 
-## Common Options
+## Output Options
 
-All commands (except `view` and `version`) support `--output-json <path>` to dump the result as a JSON file.
+- `--output-json <path>` — Dump result as JSON file (all commands except view/version)
+- `--format-json` — Print JSON to stdout for piping (info, diff, stats, batch)
+
+```bash
+# Pipe JSON to jq
+ca info cloud.pcd --format-json | jq '.num_points'
+
+# Save result for automation
+ca diff a.pcd b.pcd --output-json result.json
+```
+
+## Python API
+
+```python
+from ca.info import get_info
+from ca.diff import run_diff
+from ca.compare import run_compare
+from ca.stats import compute_stats
+from ca.downsample import downsample
+from ca.filter import filter_outliers
+from ca.merge import merge
+from ca.align import align
+from ca.density_map import density_map
+
+# Each function returns a dict
+info = get_info("cloud.pcd")
+print(info["num_points"])
+
+result = run_diff("a.pcd", "b.pcd", threshold=0.1)
+print(result["distance_stats"]["mean"])
+```
 
 ## Supported Formats
 

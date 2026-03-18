@@ -134,6 +134,27 @@ class TestCLI:
         assert result.exit_code == 0
         assert "Total:" in result.output
 
+    def test_batch(self, tmp_path, simple_pcd):
+        import open3d as o3d
+        o3d.io.write_point_cloud(str(tmp_path / "a.pcd"), simple_pcd)
+        o3d.io.write_point_cloud(str(tmp_path / "b.pcd"), simple_pcd)
+        result = runner.invoke(app, ["batch", str(tmp_path)])
+        assert result.exit_code == 0
+        assert "Total files: 2" in result.output
+
+    def test_density_map(self, sample_pcd_file, tmp_path):
+        output = str(tmp_path / "density.png")
+        result = runner.invoke(app, ["density-map", sample_pcd_file, "-o", output])
+        assert result.exit_code == 0
+        assert "Max density:" in result.output
+
+    def test_info_format_json(self, sample_pcd_file):
+        result = runner.invoke(app, ["info", sample_pcd_file, "--format-json"])
+        assert result.exit_code == 0
+        import json
+        data = json.loads(result.output)
+        assert data["num_points"] == 100
+
     def test_help(self):
         result = runner.invoke(app, ["--help"])
         assert result.exit_code == 0

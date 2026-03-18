@@ -11,7 +11,7 @@ def view(paths: list[str]) -> None:
     Args:
         paths: List of point cloud file paths to display.
     """
-    pcds = []
+    pcds: list[o3d.geometry.PointCloud] = []
     for path in paths:
         pcd = load_point_cloud(path)
         if not pcd.has_colors():

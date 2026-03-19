@@ -1,50 +1,117 @@
 # CloudAnalyzer
 
-CloudAnalyzer is an AI-friendly CLI tool for analyzing and comparing point clouds.
+AI-friendly CLI tool for point cloud analysis.
 
 ## Install
 
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
-## Usage
+## Commands
+
+### `ca compare` — Compare two point clouds
 
 ```bash
-# Compare two point clouds with GICP registration and full output
 ca compare source.pcd target.pcd \
   --register gicp \
   --json result.json \
   --report report.md \
-  --snapshot diff.png
-
-# Compare without registration
-ca compare a.pcd b.pcd --register none --report report.md
-
-# ICP registration, JSON output only
-ca compare a.ply b.ply --register icp --json result.json
+  --snapshot diff.png \
+  --threshold 0.1 \
+  --output-json full_result.json
 ```
 
-## CLI Reference
+Options: `--register` (icp/gicp/none), `--json`, `--report`, `--snapshot`, `--threshold`, `--output-json`
 
-```
-ca compare SOURCE TARGET [OPTIONS]
+### `ca diff` — Quick distance stats (no registration)
 
-Arguments:
-  SOURCE  Path to source point cloud (pcd/ply/las)
-  TARGET  Path to target point cloud (pcd/ply/las)
-
-Options:
-  --register TEXT   Registration method: icp, gicp, or 'none' to skip [default: gicp]
-  --json TEXT       Output path for JSON report
-  --report TEXT     Output path for Markdown report
-  --snapshot TEXT   Output path for snapshot image (png)
+```bash
+ca diff source.pcd target.pcd --threshold 0.05
 ```
 
-## How It Works
+### `ca info` — Point cloud metadata
 
-1. Load source and target point clouds
-2. (Optional) Align source to target via ICP/GICP registration
-3. Compute nearest neighbor distances from source to target
-4. Colorize source by distance (blue=close, red=far)
-5. Output JSON metrics, Markdown report, and/or snapshot image
+```bash
+ca info cloud.pcd
+# Points, BBox, extent, centroid, colors/normals
+```
+
+### `ca stats` — Detailed statistics
+
+```bash
+ca stats cloud.pcd
+# Density, volume, spacing distribution
+```
+
+### `ca view` — Interactive 3D viewer
+
+```bash
+ca view cloud1.pcd cloud2.ply
+```
+
+### `ca downsample` — Voxel downsampling
+
+```bash
+ca downsample cloud.pcd -o down.pcd -v 0.05
+```
+
+### `ca sample` — Random point sampling
+
+```bash
+ca sample cloud.pcd -o sampled.pcd -n 10000
+```
+
+### `ca filter` — Statistical outlier removal
+
+```bash
+ca filter cloud.pcd -o filtered.pcd -n 20 -s 2.0
+```
+
+### `ca merge` — Merge multiple point clouds
+
+```bash
+ca merge a.pcd b.pcd c.pcd -o merged.pcd
+```
+
+### `ca align` — Sequential registration + merge
+
+```bash
+ca align scan1.pcd scan2.pcd scan3.pcd -o aligned.pcd -m gicp
+```
+
+### `ca convert` — Format conversion
+
+```bash
+ca convert input.pcd output.ply
+```
+
+### `ca normals` — Normal estimation
+
+```bash
+ca normals cloud.pcd -o with_normals.ply -r 0.5
+```
+
+### `ca crop` — Bounding box crop
+
+```bash
+ca crop cloud.pcd -o cropped.pcd \
+  --x-min 0 --y-min 0 --z-min 0 \
+  --x-max 10 --y-max 10 --z-max 5
+```
+
+### `ca version`
+
+```bash
+ca version
+```
+
+## Common Options
+
+All commands (except `view` and `version`) support `--output-json <path>` to dump the result as a JSON file.
+
+## Supported Formats
+
+- `.pcd` (Point Cloud Data)
+- `.ply` (Polygon File Format)
+- `.las` (LiDAR)

@@ -115,6 +115,25 @@ class TestCLI:
         assert result.exit_code == 0
         assert "Saved:" in result.output
 
+    def test_filter(self, sample_pcd_file, tmp_path):
+        output = str(tmp_path / "filtered.pcd")
+        result = runner.invoke(app, ["filter", sample_pcd_file, "-o", output])
+        assert result.exit_code == 0
+        assert "Filtered:" in result.output
+
+    def test_sample(self, sample_pcd_file, tmp_path):
+        output = str(tmp_path / "sampled.pcd")
+        result = runner.invoke(app, ["sample", sample_pcd_file, "-o", output, "-n", "50"])
+        assert result.exit_code == 0
+        assert "Sampled:" in result.output
+
+    def test_align(self, source_and_target_files, tmp_path):
+        src, tgt = source_and_target_files
+        output = str(tmp_path / "aligned.pcd")
+        result = runner.invoke(app, ["align", src, tgt, "-o", output])
+        assert result.exit_code == 0
+        assert "Total:" in result.output
+
     def test_help(self):
         result = runner.invoke(app, ["--help"])
         assert result.exit_code == 0

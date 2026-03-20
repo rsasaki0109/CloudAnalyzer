@@ -22,7 +22,9 @@ from ca.sample import random_sample
 from ca.align import align
 from ca.batch import batch_info
 from ca.density_map import density_map
-from ca.evaluate import evaluate
+from ca.evaluate import evaluate, plot_f1_curve
+from ca.split import split
+from ca.pipeline import run_pipeline
 from ca.io import SUPPORTED_EXTENSIONS
 from ca.log import setup_logging
 
@@ -420,6 +422,7 @@ def evaluate_cmd(
         None, "--thresholds", "-t",
         help="Comma-separated distance thresholds (default: 0.05,0.1,0.2,0.3,0.5,1.0)",
     ),
+    plot: Optional[str] = typer.Option(None, "--plot", help="Output path for F1 curve plot (png)"),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -453,6 +456,72 @@ def evaluate_cmd(
         ds = result["distance_stats"]
         typer.echo(f"S->T  mean={ds['source_to_target']['mean']:.4f}  median={ds['source_to_target']['median']:.4f}  max={ds['source_to_target']['max']:.4f}")
         typer.echo(f"T->S  mean={ds['target_to_source']['mean']:.4f}  median={ds['target_to_source']['median']:.4f}  max={ds['target_to_source']['max']:.4f}")
+    if plot:
+        plot_f1_curve(result, plot)
+        typer.echo(f"Plot: {plot}")
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("split")
+def split_cmd(
+    input_path: str = typer.Argument(..., help="Input point cloud file"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Output directory for tiles"),
+    grid_size: float = typer.Option(..., "--grid-size", "-g", help="Grid cell size"),
+    axis: str = typer.Option("xy", "--axis", "-a", help="Split axes: xy, xz, or yz"),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+) -> None:
+    """Split a point cloud into grid tiles."""
+    try:
+        result = split(input_path, output_dir, grid_size, axis)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    typer.echo(f"Original: {result['total_points']} pts")
+    typer.echo(f"Tiles:    {result['num_tiles']}")
+    typer.echo(f"Grid:     {result['grid_size']}m ({result['axis']})")
+    typer.echo(f"Dir:      {result['output_dir']}")
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("pipeline")
+def pipeline_cmd(
+    input_path: str = typer.Argument(..., help="Input point cloud to process"),
+    reference: str = typer.Argument(..., help="Reference point cloud for evaluation"),
+    output: str = typer.Option(..., "--output", "-o", help="Output file path"),
+    voxel_size: float = typer.Option(0.1, "--voxel-size", "-v", help="Voxel size for downsampling"),
+    nb_neighbors: int = typer.Option(20, "--neighbors", "-n", help="Neighbors for outlier filter"),
+    std_ratio: float = typer.Option(2.0, "--std-ratio", "-s", help="Std ratio for outlier filter"),
+    thresholds: Optional[str] = typer.Option(
+        None, "--thresholds", "-t",
+        help="Comma-separated distance thresholds for evaluation",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+) -> None:
+    """Run filter -> downsample -> evaluate pipeline."""
+    thresh_list = None
+    if thresholds:
+        try:
+            thresh_list = [float(x.strip()) for x in thresholds.split(",")]
+        except ValueError:
+            typer.echo("Error: --thresholds must be comma-separated numbers", err=True)
+            raise typer.Exit(code=1)
+
+    try:
+        result = run_pipeline(
+            input_path, reference, output,
+            voxel_size=voxel_size, nb_neighbors=nb_neighbors,
+            std_ratio=std_ratio, thresholds=thresh_list,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    typer.echo(f"Filter:     {result['filter']['original']} -> {result['filter']['filtered']} pts (removed {result['filter']['removed']})")
+    typer.echo(f"Downsample: {result['downsample']['input']} -> {result['downsample']['output']} pts ({result['downsample']['reduction']:.1%})")
+    typer.echo(f"Chamfer:    {result['evaluation']['chamfer']:.4f}")
+    typer.echo(f"AUC (F1):   {result['evaluation']['auc']:.4f}")
+    typer.echo(f"Saved:      {result['output']}")
     if output_json:
         _dump_json(result, output_json)
 

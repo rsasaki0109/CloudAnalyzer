@@ -10,6 +10,8 @@ def compute_nn_distance(
 ) -> np.ndarray:
     """Compute nearest neighbor distances from source to target.
 
+    Uses Open3D's vectorized compute_point_cloud_distance for performance.
+
     Args:
         source: Source point cloud.
         target: Target point cloud.
@@ -17,14 +19,7 @@ def compute_nn_distance(
     Returns:
         Numpy array of nearest neighbor distances for each source point.
     """
-    target_tree = o3d.geometry.KDTreeFlann(target)
-    source_points = np.asarray(source.points)
-    distances = np.zeros(len(source_points))
-
-    for i, point in enumerate(source_points):
-        _, _, dist_sq = target_tree.search_knn_vector_3d(point, 1)
-        distances[i] = np.sqrt(dist_sq[0])
-
+    distances = np.asarray(source.compute_point_cloud_distance(target))
     return distances
 
 

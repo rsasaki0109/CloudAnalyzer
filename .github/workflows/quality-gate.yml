@@ -1,0 +1,74 @@
+name: Point Cloud Quality Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Source point cloud path"
+        required: true
+      reference:
+        description: "Reference point cloud path"
+        required: true
+      auc_threshold:
+        description: "Minimum AUC (F1) score to pass"
+        required: false
+        default: "0.9"
+      chamfer_threshold:
+        description: "Maximum Chamfer Distance to pass"
+        required: false
+        default: "0.1"
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: cloudanalyzer
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+
+      - name: Install CloudAnalyzer
+        run: pip install -e .
+
+      - name: Run evaluation
+        run: |
+          xvfb-run ca evaluate "${{ inputs.source }}" "${{ inputs.reference }}" \
+            --format-json --output-json /tmp/eval_result.json
+
+      - name: Check quality gate
+        run: |
+          python3 -c "
+          import json, sys
+          with open('/tmp/eval_result.json') as f:
+              r = json.load(f)
+          auc = r['auc']
+          chamfer = r['chamfer_distance']
+          auc_min = float('${{ inputs.auc_threshold }}')
+          chamfer_max = float('${{ inputs.chamfer_threshold }}')
+          print(f'AUC:     {auc:.4f} (min: {auc_min})')
+          print(f'Chamfer: {chamfer:.4f} (max: {chamfer_max})')
+          if auc < auc_min:
+              print(f'FAIL: AUC {auc:.4f} < {auc_min}')
+              sys.exit(1)
+          if chamfer > chamfer_max:
+              print(f'FAIL: Chamfer {chamfer:.4f} > {chamfer_max}')
+              sys.exit(1)
+          print('PASS: Quality gate passed')
+          "
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-result
+          path: /tmp/eval_result.json

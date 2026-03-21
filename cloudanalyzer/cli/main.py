@@ -25,6 +25,7 @@ from ca.density_map import density_map
 from ca.evaluate import evaluate, plot_f1_curve
 from ca.split import split
 from ca.pipeline import run_pipeline
+from ca.plot import heatmap3d
 from ca.io import SUPPORTED_EXTENSIONS
 from ca.log import setup_logging
 
@@ -522,6 +523,27 @@ def pipeline_cmd(
     typer.echo(f"Chamfer:    {result['evaluation']['chamfer']:.4f}")
     typer.echo(f"AUC (F1):   {result['evaluation']['auc']:.4f}")
     typer.echo(f"Saved:      {result['output']}")
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("heatmap3d")
+def heatmap3d_cmd(
+    source: str = typer.Argument(..., help="Source point cloud"),
+    target: str = typer.Argument(..., help="Target (reference) point cloud"),
+    output: str = typer.Option(..., "--output", "-o", help="Output snapshot image (png)"),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+) -> None:
+    """Render source colored by distance to target as 3D snapshot."""
+    try:
+        result = heatmap3d(source, target, output)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    typer.echo(f"Points:        {result['num_points']}")
+    typer.echo(f"Mean distance: {result['mean_distance']:.4f}")
+    typer.echo(f"Max distance:  {result['max_distance']:.4f}")
+    typer.echo(f"Saved:         {result['output']}")
     if output_json:
         _dump_json(result, output_json)
 

@@ -94,3 +94,38 @@ def evaluate(
         "auc": auc,
         "distance_stats": dist_stats,
     }
+
+
+def plot_f1_curve(result: dict, output_path: str) -> None:
+    """Plot F1/Precision/Recall curves over thresholds.
+
+    Args:
+        result: Result dict from evaluate().
+        output_path: Output image path (png).
+    """
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    scores = result["f1_scores"]
+    thresholds = [s["threshold"] for s in scores]
+    f1s = [s["f1"] for s in scores]
+    precs = [s["precision"] for s in scores]
+    recs = [s["recall"] for s in scores]
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(thresholds, f1s, "o-", label=f"F1 (AUC={result['auc']:.4f})", linewidth=2)
+    ax.plot(thresholds, precs, "s--", label="Precision", linewidth=1.5)
+    ax.plot(thresholds, recs, "^--", label="Recall", linewidth=1.5)
+
+    ax.set_xlabel("Distance Threshold")
+    ax.set_ylabel("Score")
+    ax.set_title(f"Evaluation: Chamfer={result['chamfer_distance']:.4f}, Hausdorff={result['hausdorff_distance']:.4f}")
+    ax.set_ylim(-0.05, 1.05)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+
+    from pathlib import Path
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(output_path, bbox_inches="tight", dpi=100)
+    plt.close(fig)

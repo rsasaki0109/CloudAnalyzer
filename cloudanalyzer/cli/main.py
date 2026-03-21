@@ -22,6 +22,7 @@ from ca.sample import random_sample
 from ca.align import align
 from ca.batch import batch_info
 from ca.density_map import density_map
+from ca.evaluate import evaluate
 from ca.io import SUPPORTED_EXTENSIONS
 from ca.log import setup_logging
 
@@ -407,6 +408,51 @@ def density_map_cmd(
     typer.echo(f"Max density:  {result['max_density']}")
     typer.echo(f"Mean density: {result['mean_density']:.1f}")
     typer.echo(f"Saved:        {result['output']}")
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("evaluate")
+def evaluate_cmd(
+    source: str = typer.Argument(..., help="Source (estimated) point cloud"),
+    target: str = typer.Argument(..., help="Target (reference) point cloud"),
+    thresholds: Optional[str] = typer.Option(
+        None, "--thresholds", "-t",
+        help="Comma-separated distance thresholds (default: 0.05,0.1,0.2,0.3,0.5,1.0)",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Evaluate point cloud similarity (F1, Chamfer, Hausdorff, AUC)."""
+    thresh_list = None
+    if thresholds:
+        try:
+            thresh_list = [float(x.strip()) for x in thresholds.split(",")]
+        except ValueError:
+            typer.echo("Error: --thresholds must be comma-separated numbers", err=True)
+            raise typer.Exit(code=1)
+
+    try:
+        result = evaluate(source, target, thresholds=thresh_list)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        typer.echo(f"Source: {result['source_points']} pts | Target: {result['target_points']} pts")
+        typer.echo("")
+        typer.echo(f"Chamfer Distance:  {result['chamfer_distance']:.4f}")
+        typer.echo(f"Hausdorff Distance: {result['hausdorff_distance']:.4f}")
+        typer.echo(f"AUC (F1):          {result['auc']:.4f}")
+        typer.echo("")
+        typer.echo("F1 Scores:")
+        for s in result["f1_scores"]:
+            typer.echo(f"  d={s['threshold']:.2f}  P={s['precision']:.4f}  R={s['recall']:.4f}  F1={s['f1']:.4f}")
+        typer.echo("")
+        ds = result["distance_stats"]
+        typer.echo(f"S->T  mean={ds['source_to_target']['mean']:.4f}  median={ds['source_to_target']['median']:.4f}  max={ds['source_to_target']['max']:.4f}")
+        typer.echo(f"T->S  mean={ds['target_to_source']['mean']:.4f}  median={ds['target_to_source']['median']:.4f}  max={ds['target_to_source']['max']:.4f}")
     if output_json:
         _dump_json(result, output_json)
 

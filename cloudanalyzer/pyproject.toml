@@ -1,5 +1,32 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "cloudanalyzer"
+version = "0.1.0"
+description = "AI-friendly CLI tool for point cloud analysis"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+dependencies = [
+    "open3d>=0.17.0",
+    "numpy>=1.24.0",
+    "typer>=0.9.0",
+    "matplotlib>=3.7.0",
+]
+
+[project.scripts]
+ca = "cli.main:main"
+
+[project.optional-dependencies]
+dev = ["pytest", "mypy"]
+
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

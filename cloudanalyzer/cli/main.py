@@ -551,7 +551,8 @@ def heatmap3d_cmd(
 @app.command("version")
 def version_cmd() -> None:
     """Show CloudAnalyzer version."""
-    typer.echo("CloudAnalyzer v0.1.0")
+    from ca import __version__
+    typer.echo(f"CloudAnalyzer v{__version__}")
 
 
 def main():

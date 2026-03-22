@@ -13,6 +13,30 @@ AI-friendly CLI tool for point cloud analysis and evaluation.
 - CI quality gate workflow
 - 153 tests, mypy, GitHub Actions CI
 
+## Gallery
+
+### Density Map
+
+`ca density-map` — Point density heatmap projected onto a 2D plane
+
+| UTsukuba 2022 (14.6M pts) | Istanbul Route3 (18.7M pts) |
+|---|---|
+| ![UTsukuba density](docs/images/density_utsukuba.png) | ![Istanbul density](docs/images/density_istanbul.png) |
+
+### F1 Evaluation Curve
+
+`ca evaluate --plot` — Precision / Recall / F1 over distance thresholds
+
+| Voxel 0.1m (AUC=0.998) | Voxel 0.5m (AUC=0.886) |
+|---|---|
+| ![F1 voxel 0.1](docs/images/f1_voxel01.png) | ![F1 voxel 0.5](docs/images/f1_voxel05.png) |
+
+### Feature Comparison
+
+`ca evaluate` — Corner vs Surface feature comparison (Istanbul tunnel)
+
+![F1 curve](docs/images/f1_curve.png)
+
 ## Install
 
 ```bash

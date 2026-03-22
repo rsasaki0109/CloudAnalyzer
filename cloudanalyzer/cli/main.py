@@ -26,6 +26,7 @@ from ca.evaluate import evaluate, plot_f1_curve
 from ca.split import split
 from ca.pipeline import run_pipeline
 from ca.plot import heatmap3d
+from ca.web import serve as web_serve
 from ca.io import SUPPORTED_EXTENSIONS
 from ca.log import setup_logging
 
@@ -546,6 +547,20 @@ def heatmap3d_cmd(
     typer.echo(f"Saved:         {result['output']}")
     if output_json:
         _dump_json(result, output_json)
+
+
+@app.command("web")
+def web_cmd(
+    paths: List[str] = typer.Argument(..., help="Point cloud file(s) to view"),
+    port: int = typer.Option(8080, "--port", "-p", help="HTTP port"),
+    max_points: int = typer.Option(2_000_000, "--max-points", help="Max points for display"),
+    no_browser: bool = typer.Option(False, "--no-browser", help="Don't auto-open browser"),
+) -> None:
+    """Open point cloud in web browser (Three.js viewer)."""
+    try:
+        web_serve(paths, port=port, max_points=max_points, open_browser=not no_browser)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
 
 
 @app.command("version")

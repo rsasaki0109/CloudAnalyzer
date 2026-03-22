@@ -1,3 +1,4 @@
+"""Setup shim — metadata is in pyproject.toml."""
 from setuptools import setup, find_packages
 
 setup(

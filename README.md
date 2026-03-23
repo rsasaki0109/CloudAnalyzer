@@ -4,147 +4,167 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**1コマンドで点群の品質がわかる。**
+**点群を加工したら、品質がどう変わったか数値で出す。**
 
 ```bash
-$ ca evaluate map_v02.pcd reference.pcd --plot f1.png
+$ ca downsample map.pcd -o down.pcd -v 0.2 --evaluate
 
-Chamfer Distance:  0.0083
-Hausdorff Distance: 0.1809
-AUC (F1):          0.9852
-
-F1 Scores:
-  d=0.05  P=0.9471  R=0.8833  F1=0.9141
-  d=0.10  P=0.9971  R=0.9899  F1=0.9935
-  d=0.20  P=1.0000  R=1.0000  F1=1.0000
+Original:     1784475 pts
+Downsampled:  1597449 pts
+Reduction:    10.5%
+Saved:        down.pcd
+  Chamfer=0.0083  AUC=0.9852
+  Best F1=1.0000 @ d=0.20
 ```
 
-| Density Map (14.6M pts) | F1 Evaluation Curve |
+`--evaluate` 1つ付けるだけで、加工前後の品質変化が即座にわかる。
+
+| Density Map | F1 Evaluation Curve |
 |---|---|
 | ![density](docs/images/density_utsukuba.png) | ![f1](docs/images/f1_curve.png) |
 
-## Why CloudAnalyzer?
+## 他ツールとの違い
 
-|  | 従来のワークフロー | CloudAnalyzer |
-|---|---|---|
-| 点群の中身を確認 | GUIツールを起動して目視 | `ca info map.pcd` |
-| ダウンサンプリングの品質確認 | 「見た目で大丈夫そう」 | `ca evaluate down.pcd orig.pcd` → AUC=0.985 |
-| 地図の密度分布 | スクリプトを書く | `ca density-map map.pcd -o density.png` |
-| フィルタ→間引き→評価 | 3つのスクリプト | `ca pipeline noisy.pcd ref.pcd -o clean.pcd` |
-| CIで品質チェック | なし | `quality-gate.yml` で AUC < 0.9 なら fail |
-| ブラウザで共有 | Potreeセットアップ | `ca web map.pcd` |
+|  | CloudCompare | PCL | Open3D (Python) | **CloudAnalyzer** |
+|---|---|---|---|---|
+| 品質評価 (F1/AUC) | - | - | スクリプト必要 | **`--evaluate` で即時** |
+| CLI | 限定的 | なし | なし | **23コマンド** |
+| CI/自動化 | 不可 | C++で実装 | スクリプト必要 | **JSON出力 + 品質ゲート** |
+| 加工 + 評価 | 別操作 | 別プログラム | 別スクリプト | **1コマンド** |
+| ブラウザ表示 | 不可 | 不可 | 不可 | **`ca web`** |
 
 ## Install
 
 ```bash
-cd cloudanalyzer
-pip install -e .
+cd cloudanalyzer && pip install -e .
 ```
 
-## 30秒デモ
+## Core: 加工したら即評価
+
+CloudAnalyzerの核心。**すべての加工コマンドに `--evaluate` を付けられる。**
 
 ```bash
-# 点群の基本情報
-ca info cloud.pcd
-# -> Points: 14656120, BBox, Centroid...
+# ダウンサンプリング → 品質を即確認
+ca downsample map.pcd -o down.pcd -v 0.2 --evaluate --plot quality.png
 
-# ダウンサンプリングして品質評価
-ca downsample cloud.pcd -o down.pcd -v 0.2
-ca evaluate down.pcd cloud.pcd --plot quality.png
-# -> AUC(F1): 0.9852
+# フィルタ → 品質を即確認
+ca filter noisy.pcd -o clean.pcd --evaluate
 
-# ノイズ除去 → 間引き → 評価を1コマンドで
-ca pipeline noisy.pcd reference.pcd -o clean.pcd -v 0.2
-# -> Filter: removed 42418 → Downsample: 11.0% → AUC: 0.9819
+# サンプリング → 品質を即確認
+ca sample map.pcd -o sampled.pcd -n 100000 --evaluate
 
-# ブラウザで3D表示
-ca web cloud.pcd
+# パイプライン: フィルタ → 間引き → 評価 を1コマンドで
+ca pipeline noisy.pcd reference.pcd -o production.pcd -v 0.2
 ```
 
-## 全23コマンド
+## 評価指標
 
-### 評価・分析
-
-| Command | What it does |
+| 指標 | 意味 |
 |---|---|
-| `ca evaluate` | **F1 / Chamfer / Hausdorff / AUC** — 点群品質を定量評価 |
-| `ca compare` | ICP/GICP レジストレーション付き比較 |
-| `ca diff` | レジストレーションなしの距離統計 |
-| `ca info` | 点数・BBox・重心 |
-| `ca stats` | 密度・点間距離分布 |
-| `ca batch` | ディレクトリ内の全ファイルを一括info |
-| `ca pipeline` | filter → downsample → evaluate を1コマンドで |
+| **Precision** | 加工後の点が元データのどれだけ近くにあるか |
+| **Recall** | 元データの点が加工後にどれだけカバーされているか |
+| **F1 Score** | Precision と Recall の調和平均 |
+| **Chamfer Distance** | 双方向の平均最近傍距離 |
+| **Hausdorff Distance** | 最悪ケースの距離 |
+| **AUC** | 複数閾値でのF1カーブの面積（総合スコア） |
 
-### 加工
+### 品質判定の目安
 
-| Command | What it does |
-|---|---|
-| `ca downsample` | ボクセルダウンサンプリング |
-| `ca filter` | 外れ値除去 (Statistical Outlier Removal) |
-| `ca sample` | ランダムサンプリング |
-| `ca split` | グリッドタイル分割 |
-| `ca merge` | 複数点群を結合 |
-| `ca align` | 連続レジストレーション + 結合 |
-| `ca crop` | バウンディングボックスで切り出し |
-| `ca normals` | 法線推定 |
-| `ca convert` | フォーマット変換 (pcd/ply/las) |
+| AUC (F1) | 判定 | 用途 |
+|---|---|---|
+| > 0.99 | 優秀 | 高精度ローカリゼーション用 |
+| 0.95 - 0.99 | 良好 | ナビゲーション用 |
+| 0.90 - 0.95 | 許容 | 粗い経路計画用 |
+| < 0.90 | 要確認 | 品質劣化の可能性 |
 
-### 可視化
+### ボクセルサイズ別の品質比較
 
-| Command | What it does |
-|---|---|
-| `ca web` | **ブラウザで3D表示** (Three.js) |
-| `ca view` | デスクトップ3Dビューア |
-| `ca density-map` | 2D密度ヒートマップ |
-| `ca heatmap3d` | 3D距離ヒートマップ画像 |
-
-## ダウンサンプリング品質の定量評価
-
-「0.2mボクセルでどれだけ品質が落ちるか？」を数値で答えられる:
-
-| Voxel | Points | Chamfer | AUC (F1) | 判定 |
+| Voxel | Points | Chamfer | AUC | 判定 |
 |---|---|---|---|---|
-| 0.1m | 1.74M (97%) | 0.0011 | 0.998 | ほぼ劣化なし |
-| 0.2m | 1.60M (90%) | 0.0083 | 0.985 | 実用上問題なし |
-| 0.5m | 1.13M (63%) | 0.0544 | 0.886 | Recall低下あり |
+| 0.1m | 97% | 0.0011 | 0.998 | 優秀 |
+| 0.2m | 90% | 0.0083 | 0.985 | 良好 |
+| 0.5m | 63% | 0.0544 | 0.886 | 要確認 |
 
 | Voxel 0.1m (AUC=0.998) | Voxel 0.5m (AUC=0.886) |
 |---|---|
 | ![v01](docs/images/f1_voxel01.png) | ![v05](docs/images/f1_voxel05.png) |
 
-## 自動化・CI対応
-
-全コマンドが `--output-json` / `--format-json` に対応:
+## CI/自動化
 
 ```bash
-# jq でパイプ処理
-ca evaluate a.pcd b.pcd --format-json | jq '.auc'
-
-# CIで品質ゲート
+# AUC を取得してスクリプトで判定
 AUC=$(ca evaluate new.pcd ref.pcd --format-json | jq -r '.auc')
-[ $(echo "$AUC < 0.9" | bc -l) -eq 1 ] && exit 1
+[ $(echo "$AUC < 0.9" | bc -l) -eq 1 ] && echo "FAIL" && exit 1
+
+# GitHub Actions で品質ゲート
+gh workflow run quality-gate.yml \
+  -f source=new.pcd -f reference=ref.pcd -f auc_threshold=0.9
 ```
 
-GitHub Actions の `quality-gate.yml` でAUC/Chamfer閾値チェックも可能。
+## 全コマンド一覧
+
+### 評価
+
+```bash
+ca evaluate src.pcd ref.pcd --plot f1.png   # F1/Chamfer/Hausdorff/AUC
+ca compare src.pcd tgt.pcd --register gicp  # レジストレーション付き比較
+ca diff a.pcd b.pcd --threshold 0.1         # クイック距離統計
+ca pipeline in.pcd ref.pcd -o out.pcd       # filter→downsample→evaluate
+```
+
+### 加工 (すべて `--evaluate` 対応)
+
+```bash
+ca downsample cloud.pcd -o d.pcd -v 0.2 -e  # ボクセルダウンサンプリング
+ca filter cloud.pcd -o f.pcd -e              # 外れ値除去
+ca sample cloud.pcd -o s.pcd -n 10000 -e     # ランダムサンプリング
+ca merge a.pcd b.pcd -o m.pcd                # 結合
+ca align s1.pcd s2.pcd -o a.pcd              # レジストレーション+結合
+ca split map.pcd -o tiles/ -g 100            # グリッド分割
+ca crop cloud.pcd -o c.pcd --x-min 0 ...     # BBox切り出し
+ca convert in.pcd out.ply                     # フォーマット変換
+ca normals cloud.pcd -o n.ply                 # 法線推定
+```
+
+### 分析
+
+```bash
+ca info cloud.pcd                   # 基本情報
+ca stats cloud.pcd                  # 密度・点間距離統計
+ca batch /path/to/dir/ -r           # ディレクトリ一括
+```
+
+### 可視化
+
+```bash
+ca web cloud.pcd                    # ブラウザ3D表示
+ca view cloud.pcd                   # デスクトップ3D表示
+ca density-map cloud.pcd -o d.png   # 密度ヒートマップ
+ca heatmap3d src.pcd ref.pcd -o h.png  # 3D距離ヒートマップ
+```
 
 ## Python API
 
 ```python
 from ca.evaluate import evaluate, plot_f1_curve
 from ca.pipeline import run_pipeline
+from ca.plot import plot_multi_f1
 
 # 評価
-result = evaluate("estimated.pcd", "reference.pcd")
-print(f"AUC: {result['auc']:.4f}")
-plot_f1_curve(result, "f1_curve.png")
+result = evaluate("down.pcd", "original.pcd")
+print(f"AUC: {result['auc']:.4f}")  # -> 0.9852
 
-# パイプライン
-result = run_pipeline("noisy.pcd", "ref.pcd", "clean.pcd", voxel_size=0.2)
+# 複数条件の比較プロット
+results = [evaluate(f"v{v}.pcd", "ref.pcd") for v in [0.1, 0.2, 0.5]]
+plot_multi_f1(results, ["0.1m", "0.2m", "0.5m"], "comparison.png")
 ```
 
-## 対応フォーマット
+## Docs
 
-`.pcd` / `.ply` / `.las`
+- [Map Quality Gate Tutorial](docs/tutorial-map-quality-gate.md)
+- [Command Reference](docs/commands/)
+- [Architecture](docs/architecture.md)
+- [CI / Quality Gate](docs/ci.md)
 
 ## License
 

@@ -44,6 +44,24 @@ def _dump_json(data, path: str) -> None:
     typer.echo(f"JSON: {path}")
 
 
+def _run_evaluate(source: str, target: str, result: dict, plot_path: Optional[str] = None) -> dict:
+    """Run evaluate and print summary inline. Returns updated result dict."""
+    eval_result = evaluate(source, target)
+    typer.echo(f"  Chamfer={eval_result['chamfer_distance']:.4f}  AUC={eval_result['auc']:.4f}")
+    best_f1 = max(eval_result["f1_scores"], key=lambda s: s["f1"])
+    typer.echo(f"  Best F1={best_f1['f1']:.4f} @ d={best_f1['threshold']:.2f}")
+    if plot_path:
+        plot_f1_curve(eval_result, plot_path)
+        typer.echo(f"  Plot: {plot_path}")
+    result["evaluation"] = {
+        "chamfer": eval_result["chamfer_distance"],
+        "hausdorff": eval_result["hausdorff_distance"],
+        "auc": eval_result["auc"],
+        "f1_scores": eval_result["f1_scores"],
+    }
+    return result
+
+
 def _handle_error(e: Exception) -> None:
     """Print error with hints and exit."""
     msg = str(e)
@@ -202,6 +220,8 @@ def downsample_cmd(
     path: str = typer.Argument(..., help="Input point cloud file"),
     output: str = typer.Option(..., "--output", "-o", help="Output file path"),
     voxel_size: float = typer.Option(0.05, "--voxel-size", "-v", help="Voxel size"),
+    eval_quality: bool = typer.Option(False, "--evaluate", "-e", help="Evaluate quality against original"),
+    plot: Optional[str] = typer.Option(None, "--plot", help="F1 curve plot (requires --evaluate)"),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
 ) -> None:
     """Downsample a point cloud using voxel grid filtering."""
@@ -213,8 +233,9 @@ def downsample_cmd(
     typer.echo(f"Original:     {result['original_points']} pts")
     typer.echo(f"Downsampled:  {result['downsampled_points']} pts")
     typer.echo(f"Reduction:    {result['reduction_ratio']:.1%}")
-    typer.echo(f"Voxel size:   {result['voxel_size']}")
     typer.echo(f"Saved:        {result['output']}")
+    if eval_quality or plot:
+        result = _run_evaluate(output, path, result, plot)
     if output_json:
         _dump_json(result, output_json)
 
@@ -311,6 +332,8 @@ def filter_cmd(
     output: str = typer.Option(..., "--output", "-o", help="Output file path"),
     nb_neighbors: int = typer.Option(20, "--neighbors", "-n", help="Number of neighbors"),
     std_ratio: float = typer.Option(2.0, "--std-ratio", "-s", help="Std deviation ratio threshold"),
+    eval_quality: bool = typer.Option(False, "--evaluate", "-e", help="Evaluate quality against original"),
+    plot: Optional[str] = typer.Option(None, "--plot", help="F1 curve plot (requires --evaluate)"),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
 ) -> None:
     """Remove statistical outliers from a point cloud."""
@@ -323,6 +346,8 @@ def filter_cmd(
     typer.echo(f"Filtered: {result['filtered_points']} pts")
     typer.echo(f"Removed:  {result['removed_points']} pts")
     typer.echo(f"Saved:    {result['output']}")
+    if eval_quality or plot:
+        result = _run_evaluate(output, input_path, result, plot)
     if output_json:
         _dump_json(result, output_json)
 
@@ -332,6 +357,8 @@ def sample_cmd(
     input_path: str = typer.Argument(..., help="Input point cloud file"),
     output: str = typer.Option(..., "--output", "-o", help="Output file path"),
     num_points: int = typer.Option(..., "--num", "-n", help="Number of points to keep"),
+    eval_quality: bool = typer.Option(False, "--evaluate", "-e", help="Evaluate quality against original"),
+    plot: Optional[str] = typer.Option(None, "--plot", help="F1 curve plot (requires --evaluate)"),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
 ) -> None:
     """Randomly sample a fixed number of points."""
@@ -343,6 +370,8 @@ def sample_cmd(
     typer.echo(f"Original: {result['original_points']} pts")
     typer.echo(f"Sampled:  {result['sampled_points']} pts")
     typer.echo(f"Saved:    {result['output']}")
+    if eval_quality or plot:
+        result = _run_evaluate(output, input_path, result, plot)
     if output_json:
         _dump_json(result, output_json)
 

@@ -175,7 +175,7 @@ def stats_cmd(
         typer.echo(f"File:      {result['path']}")
         typer.echo(f"Points:    {result['num_points']}")
         typer.echo(f"Volume:    {result['volume']:.4f}")
-        typer.echo(f"Density:   {result['density']:.2f} pts/unit³")
+        typer.echo(f"Density:   {result['density']:.4g} pts/unit³")
         s = result["spacing"]
         typer.echo(f"Spacing mean:   {s['mean']:.4f}")
         typer.echo(f"Spacing median: {s['median']:.4f}")
@@ -377,6 +377,9 @@ def batch_cmd(
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
     """Run info on all point cloud files in a directory."""
+    if format_json:
+        import logging
+        logging.getLogger("ca").setLevel(logging.ERROR)
     try:
         results = batch_info(directory, recursive=recursive)
     except FileNotFoundError as e:

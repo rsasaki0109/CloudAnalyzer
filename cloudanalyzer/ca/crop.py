@@ -37,7 +37,11 @@ def crop(
     cropped = pcd.crop(bbox)
     cropped_count = len(cropped.points)
 
-    o3d.io.write_point_cloud(output_path, cropped)
+    if cropped_count > 0:
+        o3d.io.write_point_cloud(output_path, cropped)
+    else:
+        from ca.log import logger
+        logger.warning("Crop resulted in 0 points — no output file written")
 
     return {
         "input": input_path,

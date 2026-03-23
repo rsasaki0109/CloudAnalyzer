@@ -16,6 +16,9 @@ def downsample(path: str, voxel_size: float, output: str) -> dict:
     Returns:
         Dict with original and downsampled point counts.
     """
+    if voxel_size <= 0:
+        raise ValueError(f"Voxel size must be positive, got {voxel_size}")
+
     pcd = load_point_cloud(path)
     original_count = len(pcd.points)
 

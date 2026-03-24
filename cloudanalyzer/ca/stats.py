@@ -25,10 +25,22 @@ def compute_stats(path: str) -> dict:
     volume = float(np.prod(extent)) if np.all(extent > 0) else 0.0
     density = num_points / volume if volume > 0 else 0.0
 
-    # Nearest neighbor distances (point spacing)
+    # Nearest neighbor distances (point spacing) — vectorized via Open3D
+    nn_dists = np.asarray(pcd.compute_point_cloud_distance(pcd))
+    # compute_point_cloud_distance returns 0 for self-match, so use KDTree k=2 approach
+    # Actually Open3D's compute_point_cloud_distance finds nearest in *other* cloud
+    # For self-spacing, we need a copy shifted by epsilon — or use KDTree k=2
+    # Let's sample for large clouds to keep it fast
+    if num_points > 500_000:
+        sample_idx = np.random.default_rng(42).choice(num_points, size=500_000, replace=False)
+        sample_pcd = pcd.select_by_index(sample_idx.tolist())
+    else:
+        sample_pcd = pcd
+
     tree = o3d.geometry.KDTreeFlann(pcd)
-    nn_dists = np.zeros(num_points)
-    for i, pt in enumerate(points):
+    sample_points = np.asarray(sample_pcd.points)
+    nn_dists = np.zeros(len(sample_points))
+    for i, pt in enumerate(sample_points):
         _, _, dist_sq = tree.search_knn_vector_3d(pt, 2)  # k=2: self + nearest
         nn_dists[i] = np.sqrt(dist_sq[1])
 

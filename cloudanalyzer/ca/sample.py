@@ -20,6 +20,9 @@ def random_sample(input_path: str, output_path: str, num_points: int) -> dict:
     Raises:
         ValueError: If num_points exceeds the original point count.
     """
+    if num_points <= 0:
+        raise ValueError(f"Number of points must be positive, got {num_points}")
+
     pcd = load_point_cloud(input_path)
     original_count = len(pcd.points)
 

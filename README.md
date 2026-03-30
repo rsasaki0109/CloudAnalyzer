@@ -6,6 +6,9 @@
 
 **点群を加工したら、品質がどう変わったか数値で出す。**
 
+CloudAnalyzer は、点群処理ライブラリやビューアを置き換えること自体が目的ではない。
+それらの上に乗って、**加工・評価・比較・可視化・回帰検知を一気通貫で回せる 3Dデータ QA / Benchmark / Operations レイヤ**を目指す。
+
 ```bash
 $ ca downsample map.pcd -o down.pcd -v 0.2 --evaluate
 
@@ -32,6 +35,20 @@ Saved:        down.pcd
 | CI/自動化 | 不可 | C++で実装 | スクリプト必要 | **JSON出力 + 品質ゲート** |
 | 加工 + 評価 | 別操作 | 別プログラム | 別スクリプト | **1コマンド** |
 | ブラウザ表示 | 不可 | 不可 | 不可 | **`ca web`** |
+
+## 目指す位置づけ
+
+CloudAnalyzer が狙うのは、低レベルAPIの数で勝つことではなく、**3D処理の実務を一段上のレイヤで完結させること**。
+
+| ツール群 | 主な役割 | CloudAnalyzer が足す価値 |
+|---|---|---|
+| PCL / Open3D | 点群処理アルゴリズム、I/O、レジストレーション | **評価・比較・回帰検知・CI** |
+| CloudCompare / Potree | GUI可視化、目視確認、共有 | **CLI自動化・定量評価・レポート** |
+| PyTorch 系 | 学習・推論・研究実験 | **幾何品質ベンチマーク、手法横断比較** |
+| Gaussian Splatting 系 | 3D表現・新規ビュー合成 | **表現横断の比較・誤差可視化** |
+| Continuous-time LIO 系 | 軌跡推定、地図生成 | **時系列つき品質評価、ドリフト比較** |
+
+つまり CloudAnalyzer は、`PCL/Open3D` の代替ライブラリというより、`PCL/Open3D/CloudCompare/Potree/PyTorch/LIO` の上で動く **統合 QA 基盤** を目指している。
 
 ## Install
 
@@ -96,6 +113,65 @@ ca pipeline noisy.pcd reference.pcd -o production.pcd -v 0.2
 AUC=$(ca evaluate new.pcd ref.pcd --format-json | jq -r '.auc')
 [ $(echo "$AUC < 0.9" | bc -l) -eq 1 ] && echo "FAIL" && exit 1
 
+# ディレクトリ内の全ファイルを一括評価
+ca batch results/ --evaluate reference.pcd --format-json | jq '.[] | {path, auc, chamfer_distance}'
+
+# 共有用の Markdown / HTML レポートを出力
+ca batch results/ --evaluate reference.pcd --report batch_report.md
+ca batch results/ --evaluate reference.pcd --report batch_report.html
+# レポートには inspection command を含み、HTML 版は Copy ボタンと count badge 付き summary rows / quick actions / failed-first / recommended-first を含む sort / pass / failed / pareto / recommended controls 付き
+
+# Cloudini などの圧縮 artifact と一緒に品質 vs サイズを評価
+ca batch decoded/ --evaluate reference.pcd \
+  --compressed-dir compressed/ --baseline-dir original/ \
+  --report cloudini_report.html
+# report は Quality vs Size scatter plot / Pareto candidates / Recommended point / clickable summary rows / quick actions / failed-first / recommended-first sort preset / HTML filters を出力する
+
+# trajectory quality gate
+ca traj-evaluate estimated.csv reference.csv \
+  --max-time-delta 0.05 --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report trajectory_report.html
+# CSV(timestamp,x,y,z) と TUM(timestamp x y z qx qy qz qw) をサポート
+# report は trajectory overlay / error timeline PNG を sibling 出力する
+
+# 初期位置オフセットを吸収して軌跡形状だけ評価
+ca traj-evaluate estimated.csv reference.csv --align-origin
+
+# 回転 + 平行移動を剛体合わせして評価
+ca traj-evaluate estimated.csv reference.csv --align-rigid
+
+# trajectory batch benchmark
+ca traj-batch runs/ --reference-dir gt/ \
+  --max-time-delta 0.05 --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report traj_batch.html
+# HTML report は pass / failed / low coverage filter と ATE/RPE/coverage sort を持つ
+# low coverage の基準は --min-coverage を指定するとその値に追従する
+
+# map + trajectory を 1 run 単位で統合評価
+ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv \
+  --min-auc 0.95 --max-chamfer 0.02 \
+  --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report run_report.html
+# map F1 curve と trajectory overlay/error timeline をまとめて出す
+# inspection command には `ca web ... --trajectory ... --trajectory-reference ...` の run viewer も含む
+
+# map + trajectory の複数 run を一括 benchmark
+ca run-batch maps/ \
+  --map-reference-dir map_refs/ \
+  --trajectory-dir trajs/ \
+  --trajectory-reference-dir traj_refs/ \
+  --min-auc 0.95 --max-chamfer 0.02 \
+  --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report run_batch.html
+# relative path / stem で map と trajectory を対応付ける
+# HTML report は pass / failed / map issue / trajectory issue filter と
+# map AUC / Chamfer / trajectory ATE / drift / coverage sort を持つ
+# report と JSON の inspection command には per-run の `ca web ...` run viewer と `ca run-evaluate ...` drill-down の両方を含む
+# quality gate summary は overall fail だけでなく map fail / trajectory fail 件数も分けて出す
+
+# Quality gate: 1件でも fail すると exit code 1
+ca batch results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
+
 # GitHub Actions で品質ゲート
 gh workflow run quality-gate.yml \
   -f source=new.pcd -f reference=ref.pcd -f auc_threshold=0.9
@@ -110,6 +186,12 @@ ca evaluate src.pcd ref.pcd --plot f1.png   # F1/Chamfer/Hausdorff/AUC
 ca compare src.pcd tgt.pcd --register gicp  # レジストレーション付き比較
 ca diff a.pcd b.pcd --threshold 0.1         # クイック距離統計
 ca pipeline in.pcd ref.pcd -o out.pcd       # filter→downsample→evaluate
+ca traj-evaluate est.csv gt.csv --max-ate 0.5 --max-drift 1.0 --min-coverage 0.9  # ATE/RPE/drift + coverage gate
+ca traj-evaluate est.csv gt.csv --align-origin  # 初期平行移動を吸収
+ca traj-evaluate est.csv gt.csv --align-rigid  # 剛体合わせ
+ca traj-batch runs/ --reference-dir gt/ --max-drift 1.0 --min-coverage 0.9  # trajectory benchmark
+ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # map + trajectory integrated QA
+ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch QA
 ```
 
 ### 加工 (すべて `--evaluate` 対応)
@@ -132,12 +214,25 @@ ca normals cloud.pcd -o n.ply                 # 法線推定
 ca info cloud.pcd                   # 基本情報
 ca stats cloud.pcd                  # 密度・点間距離統計
 ca batch /path/to/dir/ -r           # ディレクトリ一括
+ca batch results/ --evaluate ref.pcd  # 全ファイルをリファレンスと比較
+ca batch results/ --evaluate ref.pcd --report batch.html  # 共有用レポート
+ca batch results/ --evaluate ref.pcd --min-auc 0.95 --max-chamfer 0.02  # quality gate
+ca traj-evaluate est.csv gt.csv --report traj.html  # trajectory quality report
+ca traj-batch runs/ --reference-dir gt/ --report traj_batch.html  # trajectory batch report
+ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # combined run report
+ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch report
 ```
 
 ### 可視化
 
 ```bash
 ca web cloud.pcd                    # ブラウザ3D表示
+ca web src.pcd ref.pcd --heatmap    # 距離ヒートマップ + overlay + しきい値フィルタ
+ca web map.pcd map_ref.pcd --heatmap --trajectory traj.csv --trajectory-reference traj_ref.csv  # map + trajectory run viewer
+# paired trajectory があると worst ATE pose と worst RPE segment もブラウザで追える
+# marker / segment をクリックすると timestamp と error summary をその場で見られる
+# click 時は camera もその箇所へ寄り、Reset View で全景に戻せる
+# trajectory error timeline も同じ viewer 内に出て、point click で 3D selection と同期する
 ca view cloud.pcd                   # デスクトップ3D表示
 ca density-map cloud.pcd -o d.png   # 密度ヒートマップ
 ca heatmap3d src.pcd ref.pcd -o h.png  # 3D距離ヒートマップ
@@ -161,6 +256,8 @@ plot_multi_f1(results, ["0.1m", "0.2m", "0.5m"], "comparison.png")
 
 ## Docs
 
+- [Vision](VISION.md)
+- [Cloudini Benchmark Tutorial](docs/tutorial-cloudini-benchmark.md)
 - [Map Quality Gate Tutorial](docs/tutorial-map-quality-gate.md)
 - [Command Reference](docs/commands/)
 - [Architecture](docs/architecture.md)

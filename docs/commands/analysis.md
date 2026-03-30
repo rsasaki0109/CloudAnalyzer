@@ -51,8 +51,196 @@ ca batch /path/to/pcds/ -r
 
 # JSON output
 ca batch /path/to/pcds/ --format-json | jq '.[].num_points'
+
+# Evaluate every file against one reference
+ca batch /path/to/results/ --evaluate reference.pcd
+
+# Custom thresholds for batch evaluation
+ca batch /path/to/results/ --evaluate reference.pcd -t 0.05,0.1,0.2
+
+# Markdown / HTML report
+ca batch /path/to/results/ --evaluate reference.pcd --report batch_report.md
+ca batch /path/to/results/ --evaluate reference.pcd --report batch_report.html
+# reports include inspection commands; HTML adds Copy buttons plus count-badged summary rows, quick actions, failed-first / recommended-first sort presets, and pass/failed/pareto/recommended controls
+
+# Quality gate (exit code 1 if any file fails)
+ca batch /path/to/results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
+
+# Compression benchmark workflow
+ca batch decoded/ --evaluate reference.pcd \
+  --compressed-dir compressed/ --baseline-dir original/
+# report adds a quality-vs-size plot, Pareto candidates, a recommended point, clickable summary rows, quick actions, failed-first / recommended-first sort presets, and HTML filters
 ```
 
 | Option | Default | Description |
 |---|---|---|
 | `-r`, `--recursive` | `false` | Scan subdirectories |
+| `--evaluate` | `None` | Evaluate each file against the given reference point cloud |
+| `--report` | `None` | Write batch evaluation report (`.md`, `.markdown`, `.html`) |
+| `--min-auc` | `None` | Minimum AUC required to pass; exits with code 1 if any file fails |
+| `--max-chamfer` | `None` | Maximum Chamfer distance allowed; exits with code 1 if any file fails |
+| `--compressed-dir` | `None` | Directory containing compressed artifacts; matched by relative path or stem |
+| `--baseline-dir` | `None` | Directory containing original uncompressed files for size ratio baseline |
+| `-t`, `--thresholds` | default evaluate thresholds | Comma-separated distance thresholds for `--evaluate` |
+
+## ca traj-evaluate
+
+Evaluate an estimated trajectory against a reference trajectory.
+
+```bash
+# CSV(timestamp,x,y,z) or TUM(timestamp x y z qx qy qz qw)
+ca traj-evaluate est.csv gt.csv
+
+# Report + quality gate
+ca traj-evaluate est.csv gt.csv \
+  --max-time-delta 0.05 --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report trajectory_report.html
+
+# Ignore constant initial translation offset
+ca traj-evaluate est.csv gt.csv --align-origin
+
+# Fit a rigid transform (rotation + translation) before scoring
+ca traj-evaluate est.csv gt.csv --align-rigid
+```
+
+Output: matched pose coverage, ATE RMSE/mean/max, translational RPE RMSE/mean/max, endpoint drift, duration coverage. Reports also emit sibling trajectory overlay and error timeline PNGs.
+
+| Option | Default | Description |
+|---|---|---|
+| `--max-time-delta` | `0.05` | Max timestamp gap allowed for matching/interpolation in seconds |
+| `--align-origin` | `false` | Translate the estimated trajectory so the first matched pose aligns to the reference |
+| `--align-rigid` | `false` | Fit a rigid transform (rotation + translation) from estimated to reference positions |
+| `--max-ate` | `None` | Maximum ATE RMSE allowed; exits with code 1 if exceeded |
+| `--max-rpe` | `None` | Maximum translational RPE RMSE allowed; exits with code 1 if exceeded |
+| `--max-drift` | `None` | Maximum endpoint drift allowed; exits with code 1 if exceeded |
+| `--min-coverage` | `None` | Minimum matched-pose coverage ratio required (0-1); exits with code 1 if not met |
+| `--report` | `None` | Write Markdown/HTML trajectory report |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON file |
+
+## ca traj-batch
+
+Evaluate all trajectory files in a directory against matched references in another directory.
+
+```bash
+# Match by relative path or stem
+ca traj-batch runs/ --reference-dir gt/
+
+# Quality gate + report
+ca traj-batch runs/ --reference-dir gt/ \
+  --max-time-delta 0.05 --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report traj_batch.html
+
+# Apply origin alignment to every run before scoring
+ca traj-batch runs/ --reference-dir gt/ --align-origin
+
+# Apply rigid alignment to every run before scoring
+ca traj-batch runs/ --reference-dir gt/ --align-rigid
+```
+
+Output: one row per trajectory with matched pose count, coverage, ATE RMSE, translational RPE RMSE, endpoint drift, alignment mode, optional pass/fail, plus inspection commands that jump into per-run `traj-evaluate`. HTML reports add pass/failed/low-coverage filters and ATE/RPE/coverage sorting. When `--min-coverage` is set, the low-coverage threshold in the report follows that value.
+
+| Option | Default | Description |
+|---|---|---|
+| `--reference-dir` | required | Directory containing reference trajectories matched by relative path or stem |
+| `-r`, `--recursive` | `false` | Scan subdirectories |
+| `--max-time-delta` | `0.05` | Max timestamp gap allowed for matching/interpolation in seconds |
+| `--align-origin` | `false` | Translate each estimated trajectory so the first matched pose aligns to the reference |
+| `--align-rigid` | `false` | Fit a rigid transform (rotation + translation) from each estimated trajectory to its reference |
+| `--max-ate` | `None` | Maximum ATE RMSE allowed; exits with code 1 if any file fails |
+| `--max-rpe` | `None` | Maximum translational RPE RMSE allowed; exits with code 1 if any file fails |
+| `--max-drift` | `None` | Maximum endpoint drift allowed; exits with code 1 if any file fails |
+| `--min-coverage` | `None` | Minimum matched-pose coverage ratio required (0-1); exits with code 1 if any file fails |
+| `--report` | `None` | Write Markdown/HTML trajectory batch report |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump results as JSON file |
+
+## ca run-evaluate
+
+Evaluate one map output and one trajectory output together.
+
+```bash
+# Map + trajectory integrated QA
+ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv
+
+# Combined quality gate + report
+ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv \
+  --min-auc 0.95 --max-chamfer 0.02 \
+  --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report run_report.html
+
+# Apply origin alignment to the trajectory before scoring
+ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --align-origin
+
+# Apply rigid alignment to the trajectory before scoring
+ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --align-rigid
+```
+
+Output: map Chamfer/Hausdorff/AUC/Best F1, trajectory matched coverage/ATE/RPE/drift/alignment, optional overall pass/fail, plus inspection commands for combined `ca web ... --trajectory ... --trajectory-reference ...`, `ca web --heatmap`, `ca heatmap3d`, and per-run `ca traj-evaluate`. Reports emit a map F1 curve together with trajectory overlay and error timeline PNGs.
+
+| Option | Default | Description |
+|---|---|---|
+| `-t`, `--thresholds` | default evaluate thresholds | Comma-separated distance thresholds for map F1/AUC evaluation |
+| `--max-time-delta` | `0.05` | Max timestamp gap allowed for trajectory matching/interpolation in seconds |
+| `--align-origin` | `false` | Translate the estimated trajectory so the first matched pose aligns to the reference |
+| `--align-rigid` | `false` | Fit a rigid transform (rotation + translation) from estimated to reference positions |
+| `--min-auc` | `None` | Minimum map AUC required; contributes to the overall quality gate |
+| `--max-chamfer` | `None` | Maximum map Chamfer distance allowed; contributes to the overall quality gate |
+| `--max-ate` | `None` | Maximum trajectory ATE RMSE allowed; contributes to the overall quality gate |
+| `--max-rpe` | `None` | Maximum trajectory translational RPE RMSE allowed; contributes to the overall quality gate |
+| `--max-drift` | `None` | Maximum trajectory endpoint drift allowed; contributes to the overall quality gate |
+| `--min-coverage` | `None` | Minimum trajectory matched-pose coverage ratio required; contributes to the overall quality gate |
+| `--report` | `None` | Write Markdown/HTML combined run report |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON file |
+
+## ca run-batch
+
+Evaluate multiple map + trajectory runs together.
+
+```bash
+# Match map / trajectory / references by relative path or stem
+ca run-batch maps/ \
+  --map-reference-dir map_refs/ \
+  --trajectory-dir trajs/ \
+  --trajectory-reference-dir traj_refs/
+
+# Combined quality gate + report
+ca run-batch maps/ \
+  --map-reference-dir map_refs/ \
+  --trajectory-dir trajs/ \
+  --trajectory-reference-dir traj_refs/ \
+  --min-auc 0.95 --max-chamfer 0.02 \
+  --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report run_batch.html
+
+# Apply origin alignment to every trajectory before scoring
+ca run-batch maps/ \
+  --map-reference-dir map_refs/ \
+  --trajectory-dir trajs/ \
+  --trajectory-reference-dir traj_refs/ \
+  --align-origin
+```
+
+Output: one row per run with map AUC/Chamfer and trajectory ATE/RPE/drift/coverage, optional overall pass/fail, plus inspection commands for a combined `ca web` run viewer, map heatmaps, and per-run `traj-evaluate`. Reports summarize mean map and trajectory quality across runs. HTML reports add pass/failed/map-issue/trajectory-issue filters and map/trajectory sorting.
+When a quality gate is active, CLI/report summaries also break failures into map failures vs trajectory failures, and inspection commands include both a per-run `ca web ... --trajectory ... --trajectory-reference ...` viewer and `ca run-evaluate ...` drill-down command.
+
+| Option | Default | Description |
+|---|---|---|
+| `--map-reference-dir` | required | Directory containing reference maps matched by relative path or stem |
+| `--trajectory-dir` | required | Directory containing estimated trajectories matched to the map outputs |
+| `--trajectory-reference-dir` | required | Directory containing reference trajectories matched by relative path or stem |
+| `-r`, `--recursive` | `false` | Scan subdirectories |
+| `-t`, `--thresholds` | default evaluate thresholds | Comma-separated distance thresholds for map F1/AUC evaluation |
+| `--max-time-delta` | `0.05` | Max timestamp gap allowed for trajectory matching/interpolation in seconds |
+| `--align-origin` | `false` | Translate each estimated trajectory so the first matched pose aligns to the reference |
+| `--align-rigid` | `false` | Fit a rigid transform (rotation + translation) from each estimated trajectory to its reference |
+| `--min-auc` | `None` | Minimum map AUC required; contributes to the overall quality gate |
+| `--max-chamfer` | `None` | Maximum map Chamfer distance allowed; contributes to the overall quality gate |
+| `--max-ate` | `None` | Maximum trajectory ATE RMSE allowed; contributes to the overall quality gate |
+| `--max-rpe` | `None` | Maximum trajectory translational RPE RMSE allowed; contributes to the overall quality gate |
+| `--max-drift` | `None` | Maximum trajectory endpoint drift allowed; contributes to the overall quality gate |
+| `--min-coverage` | `None` | Minimum trajectory matched-pose coverage ratio required; contributes to the overall quality gate |
+| `--report` | `None` | Write Markdown/HTML combined run-batch report |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump results as JSON file |

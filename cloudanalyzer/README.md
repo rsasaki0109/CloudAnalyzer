@@ -21,6 +21,10 @@ docker run ca info cloud.pcd
 | `ca compare` | Compare two point clouds with ICP/GICP registration |
 | `ca diff` | Quick distance stats (no registration) |
 | `ca evaluate` | F1, Chamfer, Hausdorff, AUC evaluation |
+| `ca traj-evaluate` | ATE, translational RPE, drift evaluation for trajectories |
+| `ca traj-batch` | Batch trajectory benchmark with coverage, gate, and reports |
+| `ca run-evaluate` | Combined map + trajectory QA for one run |
+| `ca run-batch` | Combined map + trajectory benchmark across multiple runs |
 | `ca info` | Point cloud metadata (points, BBox, centroid) |
 | `ca stats` | Detailed statistics (density, spacing distribution) |
 | `ca batch` | Run info on all files in a directory |
@@ -44,6 +48,7 @@ docker run ca info cloud.pcd
 
 | Command | Description |
 |---|---|
+| `ca web` | Browser 3D viewer, with optional heatmap, reference overlay, and trajectory run overlay |
 | `ca view` | Interactive 3D viewer |
 | `ca density-map` | 2D density heatmap image |
 | `ca heatmap3d` | 3D distance heatmap snapshot |
@@ -56,11 +61,60 @@ docker run ca info cloud.pcd
 ca evaluate source.pcd reference.pcd \
   -t 0.05,0.1,0.2,0.5,1.0 --plot f1_curve.png
 
+# Trajectory evaluation with quality gate
+ca traj-evaluate estimated.csv reference.csv \
+  --max-time-delta 0.05 --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report trajectory_report.html
+# report also writes sibling trajectory overlay and error timeline PNGs
+
+# Ignore constant initial translation offset
+ca traj-evaluate estimated.csv reference.csv --align-origin
+
+# Fit a rigid transform before scoring
+ca traj-evaluate estimated.csv reference.csv --align-rigid
+
+# Batch trajectory benchmark
+ca traj-batch runs/ --reference-dir gt/ \
+  --max-time-delta 0.05 --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report traj_batch.html
+# HTML report adds copyable inspection commands plus pass/failed/low-coverage filters and ATE/RPE/coverage sorting
+# low-coverage threshold follows --min-coverage when provided
+
+# Combined run QA: map + trajectory in one report
+ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv \
+  --min-auc 0.95 --max-chamfer 0.02 \
+  --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report run_report.html
+# inspection commands include a `ca web ... --trajectory ... --trajectory-reference ...` run viewer
+
+# Combined run batch QA
+ca run-batch maps/ \
+  --map-reference-dir map_refs/ \
+  --trajectory-dir trajs/ \
+  --trajectory-reference-dir traj_refs/ \
+  --min-auc 0.95 --max-chamfer 0.02 \
+  --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --report run_batch.html
+# HTML report adds pass/failed/map-issue/trajectory-issue filters and map/trajectory sorting
+# summary and CLI output also split map failures vs trajectory failures
+# inspection commands include both a per-run `ca web ...` run viewer and `ca run-evaluate ...` drill-down command
+
 # Full pipeline: filter → downsample → evaluate
 ca pipeline noisy.pcd reference.pcd -o clean.pcd -v 0.2
 
 # 3D distance heatmap
 ca heatmap3d estimated.pcd reference.pcd -o heatmap.png
+
+# Browser heatmap viewer with reference overlay and threshold filter
+ca web estimated.pcd reference.pcd --heatmap
+
+# Browser run viewer: map heatmap + trajectory overlay
+ca web map.pcd map_ref.pcd --heatmap \
+  --trajectory traj.csv --trajectory-reference traj_ref.csv
+# paired trajectory があると worst ATE pose と worst RPE segment を viewer 上で強調する
+# marker / segment をクリックすると timestamp と error summary を inspection panel に表示する
+# click 時は camera も選択箇所へ寄り、Reset View で全景に戻せる
+# trajectory error timeline も viewer 内に出て、point click で 3D selection と同期する
 
 # === Compare ===
 ca compare source.pcd target.pcd \
@@ -86,6 +140,14 @@ ca align scan1.pcd scan2.pcd scan3.pcd -o aligned.pcd -m gicp
 # Batch info
 ca batch /path/to/pcds/ -r
 
+# Batch evaluation
+ca batch /path/to/results/ --evaluate reference.pcd --format-json | jq '.[].auc'
+ca batch /path/to/results/ --evaluate reference.pcd --report batch_report.html
+# report includes inspection commands; HTML adds Copy buttons plus count-badged summary rows, quick actions, failed-first / recommended-first sort presets, and pass/failed/pareto/recommended controls
+ca batch decoded/ --evaluate reference.pcd --compressed-dir compressed/ --baseline-dir original/
+# report also emits a quality-vs-size scatter plot, Pareto candidates, a recommended point, failed-first / recommended-first sort presets, and HTML filters
+ca batch /path/to/results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
+
 # Density heatmap
 ca density-map cloud.pcd -o density.png -r 1.0 -a z
 ```
@@ -102,6 +164,7 @@ ca --quiet ...      # Suppress non-error output
 - `--output-json <path>` — Dump result as JSON file
 - `--format-json` — Print JSON to stdout for piping
 - `--plot <path>` — F1 curve plot (evaluate only)
+- `--report <path>` — Markdown/HTML report (`batch`, `traj-evaluate`, `traj-batch`, `run-evaluate`, `run-batch`)
 
 ```bash
 # Pipe JSON to jq

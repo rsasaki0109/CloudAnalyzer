@@ -64,4 +64,7 @@ if (( $(echo "$AUC < 0.9" | bc -l) )); then
   echo "FAIL: AUC $AUC < 0.9"
   exit 1
 fi
+
+# Batch quality gate over multiple outputs
+ca batch outputs/ --evaluate reference_map.pcd --min-auc 0.95 --max-chamfer 0.02
 ```

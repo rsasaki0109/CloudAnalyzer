@@ -12,6 +12,12 @@ from ca.experiments.web_sampling.evaluate import (
     render_interface_section as render_web_sampling_interface_section,
     run_web_sampling_experiment,
 )
+from ca.experiments.check_scaffolding.evaluate import (
+    render_decision_section as render_check_scaffolding_decision_section,
+    render_experiment_section as render_check_scaffolding_experiment_section,
+    render_interface_section as render_check_scaffolding_interface_section,
+    run_check_scaffolding_experiment,
+)
 from ca.experiments.web_progressive_loading.evaluate import (
     render_decision_section as render_web_progressive_decision_section,
     render_experiment_section as render_web_progressive_experiment_section,
@@ -33,6 +39,7 @@ def build_experiment_reports(repetitions: int = 3) -> list[dict]:
         run_web_sampling_experiment(repetitions=repetitions),
         run_web_trajectory_sampling_experiment(repetitions=repetitions),
         run_web_progressive_loading_experiment(repetitions=repetitions),
+        run_check_scaffolding_experiment(repetitions=repetitions),
     ]
 
 
@@ -43,6 +50,7 @@ def render_experiments_markdown(reports: list[dict]) -> str:
         render_web_sampling_experiment_section(reports[0]),
         render_web_trajectory_experiment_section(reports[1]),
         render_web_progressive_experiment_section(reports[2]),
+        render_check_scaffolding_experiment_section(reports[3]),
     ]
     return (
         "# Experiments\n\n"
@@ -59,6 +67,7 @@ def render_decisions_markdown(reports: list[dict]) -> str:
         render_web_sampling_decision_section(reports[0]),
         render_web_trajectory_decision_section(reports[1]),
         render_web_progressive_decision_section(reports[2]),
+        render_check_scaffolding_decision_section(reports[3]),
     ]
     return "# Decisions\n\n" + "\n\n".join(sections) + "\n"
 
@@ -70,6 +79,7 @@ def render_interfaces_markdown(reports: list[dict]) -> str:
         render_web_sampling_interface_section(reports[0]),
         render_web_trajectory_interface_section(reports[1]),
         render_web_progressive_interface_section(reports[2]),
+        render_check_scaffolding_interface_section(reports[3]),
     ]
     return (
         "# Interfaces\n\n"

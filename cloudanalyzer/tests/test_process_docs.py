@@ -19,6 +19,7 @@ class TestProcessDocs:
             "web_point_cloud_reduction",
             "web_trajectory_sampling",
             "web_progressive_loading",
+            "check_scaffolding",
         ]
 
     def test_renderers_include_all_experiment_sections(self):
@@ -31,10 +32,12 @@ class TestProcessDocs:
         assert "web_point_cloud_reduction" in experiments_md
         assert "web_trajectory_sampling" in experiments_md
         assert "web_progressive_loading" in experiments_md
+        assert "check_scaffolding" in experiments_md
         assert "Trigger To Re-run" in decisions_md
         assert "cloudanalyzer/ca/core/web_sampling.py" in interfaces_md
         assert "cloudanalyzer/ca/core/web_trajectory_sampling.py" in interfaces_md
         assert "cloudanalyzer/ca/core/web_progressive_loading.py" in interfaces_md
+        assert "cloudanalyzer/ca/core/check_scaffolding.py" in interfaces_md
 
     def test_write_process_docs_writes_consolidated_files(self, tmp_path: Path):
         reports = build_experiment_reports(repetitions=1)
@@ -50,5 +53,6 @@ class TestProcessDocs:
         assert interfaces_path.exists()
         assert "web_trajectory_sampling" in experiments_path.read_text(encoding="utf-8")
         assert "web_progressive_loading" in experiments_path.read_text(encoding="utf-8")
+        assert "check_scaffolding" in experiments_path.read_text(encoding="utf-8")
         assert "web_point_cloud_reduction" in decisions_path.read_text(encoding="utf-8")
         assert "Stable interfaces keep only" in interfaces_path.read_text(encoding="utf-8")

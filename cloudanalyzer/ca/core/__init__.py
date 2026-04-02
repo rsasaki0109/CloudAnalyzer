@@ -7,6 +7,14 @@ from ca.core.checks import (
     load_check_suite,
     run_check_suite,
 )
+from ca.core.check_scaffolding import (
+    SUPPORTED_CHECK_SCAFFOLD_PROFILES,
+    CheckScaffoldRequest,
+    CheckScaffoldResult,
+    CheckScaffoldingStrategy,
+    StaticProfileCheckScaffoldingStrategy,
+    render_check_scaffold,
+)
 from ca.core.web_sampling import (
     RandomBudgetWebSamplingStrategy,
     WebSampleRequest,
@@ -32,10 +40,15 @@ from ca.core.web_trajectory_sampling import (
 
 __all__ = [
     "CheckOutputs",
+    "CheckScaffoldRequest",
+    "CheckScaffoldResult",
+    "CheckScaffoldingStrategy",
     "CheckSpec",
     "CheckSuite",
     "DistanceShellsWebProgressiveLoadingStrategy",
     "RandomBudgetWebSamplingStrategy",
+    "SUPPORTED_CHECK_SCAFFOLD_PROFILES",
+    "StaticProfileCheckScaffoldingStrategy",
     "TurnAwareWebTrajectorySamplingStrategy",
     "WebProgressiveLoadingChunk",
     "WebProgressiveLoadingRequest",
@@ -51,5 +64,6 @@ __all__ = [
     "plan_progressive_loading_for_web",
     "reduce_point_cloud_for_web",
     "reduce_trajectory_for_web",
+    "render_check_scaffold",
     "run_check_suite",
 ]

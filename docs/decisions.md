@@ -56,3 +56,22 @@ Reason: Best initial spatial coverage with acceptable planning cost and no extra
 - Initial browser payload budget changes materially.
 - `ca web` adds camera-aware or view-dependent loading.
 - A new chunk planning strategy is proposed.
+
+## check_scaffolding
+
+### Adopted
+
+`static_profiles` is adopted directly as the current core strategy.
+
+Reason: Literal profiles preserve full fidelity while keeping runtime and source complexity low for the current onboarding scope.
+
+### Not Adopted
+
+- `object_sections` remains experimental. Quality rank=2, runtime rank=2, compactness rank=3, readability rank=3, extensibility rank=2.
+- `pipeline_overlays` remains experimental. Quality rank=3, runtime rank=3, compactness rank=1, readability rank=2, extensibility rank=1.
+
+### Trigger To Re-run
+
+- `ca init-check` gains user-supplied placeholders or path inference.
+- New starter profiles are added beyond mapping, localization, perception, and integrated.
+- Config generation needs structured customization beyond static scaffolds.

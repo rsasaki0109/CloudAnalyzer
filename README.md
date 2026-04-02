@@ -45,7 +45,7 @@ Saved:        down.pcd
 |---|---|---|---|---|
 | 品質評価 (F1/AUC) | - | - | スクリプト必要 | **`--evaluate` で即時** |
 | Trajectory QA (ATE/RPE/drift) | 限定的 | - | スクリプト必要 | **CLI + report で一括** |
-| CLI | 限定的 | なし | なし | **24コマンド** |
+| CLI | 限定的 | なし | なし | **25コマンド** |
 | CI/自動化 | 不可 | C++で実装 | スクリプト必要 | **JSON出力 + 品質ゲート** |
 | 加工 + 評価 | 別操作 | 別プログラム | 別スクリプト | **1コマンド** |
 | ブラウザ inspection | 不可 | 不可 | 不可 | **`ca web` / `ca web-export`** |
@@ -85,6 +85,16 @@ python scripts/build_public_demo.py --output docs/demo/stanford-bunny
 ```
 
 The repository also includes `docs/index.html` plus a Pages workflow that rebuilds a public demo from the Stanford Bunny source data on each deploy. The demo source mesh is public Stanford data, while the reference cloud and trajectories are generated only to exercise CloudAnalyzer's browser inspection UI.
+
+The repository can also generate a public benchmark pack for `ca check`:
+
+```bash
+python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
+ca check benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
+ca check benchmarks/public/stanford-bunny-mini/configs/suite-regression.cloudanalyzer.yaml
+```
+
+`Public Benchmark Pack` workflow では、この pack を public Stanford Bunny から再生成し、`suite-pass` が pass、`suite-regression` が fail することを CI で固定している。
 
 ## Core: 加工したら即評価
 
@@ -140,6 +150,12 @@ ca pipeline noisy.pcd reference.pcd -o production.pcd -v 0.2
 
 `cloudanalyzer.yaml` を置くと、mapping / localization / perception の QA を 1 コマンドにまとめられる。
 
+まず雛形を出すなら:
+
+```bash
+ca init-check --profile integrated
+```
+
 ```yaml
 version: 1
 defaults:
@@ -170,6 +186,19 @@ ca check cloudanalyzer.yaml
 ```
 
 完全な例は [docs/examples/cloudanalyzer.yaml](docs/examples/cloudanalyzer.yaml)。
+
+他 repo の GitHub Actions から再利用する場合は、CloudAnalyzer の reusable workflow をそのまま呼べる:
+
+```yaml
+jobs:
+  qa:
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
+    with:
+      config_path: cloudanalyzer.yaml
+      artifact_name: cloudanalyzer-check-results
+```
+
+外部利用では `@main` ではなく tag か commit SHA に pin するのを推奨。
 
 ```bash
 # AUC を取得してスクリプトで判定
@@ -330,6 +359,7 @@ plot_multi_f1(results, ["0.1m", "0.2m", "0.5m"], "comparison.png")
 - [Cloudini Benchmark Tutorial](docs/tutorial-cloudini-benchmark.md)
 - [Map Quality Gate Tutorial](docs/tutorial-map-quality-gate.md)
 - [Unified Run Quality Gate Tutorial](docs/tutorial-run-quality-gate.md)
+- [Public Benchmark Packs](benchmarks/public/README.md)
 - [Command Reference](docs/commands/)
 - [Architecture](docs/architecture.md)
 - [CI / Quality Gate](docs/ci.md)

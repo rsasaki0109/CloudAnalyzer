@@ -133,6 +133,29 @@ checks:
 | `--format-json` | `false` | Print aggregated check results to stdout as JSON |
 | `--output-json` | `None` | Dump aggregated check summary as JSON |
 
+## ca init-check
+
+Write a starter `cloudanalyzer.yaml` so a repo can adopt config-driven QA without hand-writing the contract first.
+
+```bash
+# integrated mapping / localization / perception starter
+ca init-check
+
+# mapping-only starter
+ca init-check configs/mapping.cloudanalyzer.yaml --profile mapping
+
+# overwrite an existing template
+ca init-check --profile perception --force
+```
+
+`--profile` supports `mapping`, `localization`, `perception`, and `integrated`. The generated config is immediately runnable with `ca check ...`.
+
+| Option | Default | Description |
+|---|---|---|
+| `OUTPUT` | `cloudanalyzer.yaml` | Destination path for the starter config |
+| `--profile` | `integrated` | Template slice to scaffold |
+| `--force` | `false` | Overwrite an existing file |
+
 ## ca traj-evaluate
 
 Evaluate an estimated trajectory against a reference trajectory.

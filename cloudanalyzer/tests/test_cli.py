@@ -7,6 +7,7 @@ from textwrap import dedent
 import pytest
 from typer.testing import CliRunner
 
+from ca.core import load_check_suite
 from cli.main import app
 
 runner = CliRunner()
@@ -1238,6 +1239,49 @@ class TestCLI:
 
         assert result.exit_code == 1
         assert "[FAIL] failing-artifact (artifact)" in result.output
+
+    def test_init_check_writes_integrated_template(self, tmp_path):
+        config_path = tmp_path / "cloudanalyzer.yaml"
+
+        result = runner.invoke(app, ["init-check", str(config_path)])
+
+        assert result.exit_code == 0
+        assert config_path.exists()
+        assert "Profile: integrated" in result.output
+
+        suite = load_check_suite(str(config_path))
+        assert suite.project == "localization-mapping-perception"
+        assert [check.kind for check in suite.checks] == [
+            "artifact",
+            "trajectory",
+            "artifact",
+            "run",
+        ]
+
+    def test_init_check_writes_profile_template(self, tmp_path):
+        config_path = tmp_path / "mapping.yaml"
+
+        result = runner.invoke(
+            app,
+            ["init-check", str(config_path), "--profile", "mapping"],
+        )
+
+        assert result.exit_code == 0
+        suite = load_check_suite(str(config_path))
+        assert suite.project == "mapping-qa"
+        assert len(suite.checks) == 1
+        assert suite.checks[0].kind == "artifact"
+        assert suite.checks[0].check_id == "mapping-postprocess"
+
+    def test_init_check_refuses_to_overwrite_without_force(self, tmp_path):
+        config_path = tmp_path / "cloudanalyzer.yaml"
+        config_path.write_text("existing\n", encoding="utf-8")
+
+        result = runner.invoke(app, ["init-check", str(config_path)])
+
+        assert result.exit_code == 1
+        assert "Refusing to overwrite existing file" in result.output
+        assert config_path.read_text(encoding="utf-8") == "existing\n"
 
     def test_help(self):
         result = runner.invoke(app, ["--help"])

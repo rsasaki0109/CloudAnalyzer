@@ -115,3 +115,35 @@ class WebProgressiveLoadingResult:
 - Experimental space: `cloudanalyzer/ca/experiments/web_progressive_loading/`
 - Current stabilized lineage: `distance_shells` adopted directly in core
 
+
+## check_scaffolding
+
+### Current Minimal Interface
+
+The stable interface keeps only the contract needed by `ca init-check`: profile in, YAML text out.
+
+```python
+class CheckScaffoldingStrategy(Protocol):
+    name: str
+    design: str
+    def render(self, request: CheckScaffoldRequest) -> CheckScaffoldResult: ...
+
+@dataclass(slots=True)
+class CheckScaffoldRequest:
+    profile: str = "integrated"
+
+@dataclass(slots=True)
+class CheckScaffoldResult:
+    profile: str
+    yaml_text: str
+    strategy: str
+    design: str
+    metadata: dict[str, Any]
+```
+
+### Stable Boundary
+
+- Stable core: `cloudanalyzer/ca/core/check_scaffolding.py`
+- Experimental space: `cloudanalyzer/ca/experiments/check_scaffolding/`
+- Current stabilized lineage: `static_profiles` adopted directly in core
+

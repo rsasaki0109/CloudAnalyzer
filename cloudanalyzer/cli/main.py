@@ -8,7 +8,7 @@ from typing import List, Optional
 
 import typer
 
-from ca.core import load_check_suite, run_check_suite
+from ca.core import load_check_suite, render_check_scaffold, run_check_suite
 from ca.compare import run_compare
 from ca.info import get_info
 from ca.diff import run_diff
@@ -182,7 +182,6 @@ def _print_check_suite_result(result: dict) -> None:
         f"fail={summary['failed_checks']}  "
         f"info={summary['unchecked_checks']}"
     )
-
 
 @app.callback()
 def common_options(
@@ -1299,6 +1298,44 @@ def check_cmd(
 
     if result["summary"]["failed_checks"] > 0:
         raise typer.Exit(code=1)
+
+
+@app.command("init-check")
+def init_check_cmd(
+    output_path: str = typer.Argument(
+        "cloudanalyzer.yaml",
+        help="Path to write the starter cloudanalyzer.yaml",
+    ),
+    profile: str = typer.Option(
+        "integrated",
+        "--profile",
+        help="Starter template profile: mapping, localization, perception, integrated",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Overwrite an existing config file",
+    ),
+) -> None:
+    """Write a starter cloudanalyzer.yaml for a common QA workflow."""
+    destination = Path(output_path).resolve()
+    if destination.exists() and not force:
+        _handle_error(
+            ValueError(f"Refusing to overwrite existing file: {destination} (use --force)")
+        )
+        return
+
+    try:
+        template = render_check_scaffold(profile=profile).yaml_text
+    except ValueError as e:
+        _handle_error(e)
+        return
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(template, encoding="utf-8")
+    typer.echo(f"Created: {destination}")
+    typer.echo(f"Profile: {profile.strip().lower()}")
+    typer.echo(f"Next:    ca check {destination}")
 
 
 @app.command("split")

@@ -138,6 +138,39 @@ ca pipeline noisy.pcd reference.pcd -o production.pcd -v 0.2
 
 ## CI/自動化
 
+`cloudanalyzer.yaml` を置くと、mapping / localization / perception の QA を 1 コマンドにまとめられる。
+
+```yaml
+version: 1
+defaults:
+  report_dir: qa/reports
+  json_dir: qa/results
+checks:
+  - id: mapping-postprocess
+    kind: artifact
+    source: outputs/map.pcd
+    reference: baselines/map_ref.pcd
+    gate:
+      min_auc: 0.95
+      max_chamfer: 0.02
+  - id: localization-run
+    kind: trajectory
+    estimated: outputs/traj.csv
+    reference: baselines/traj_ref.csv
+    alignment: rigid
+    gate:
+      max_ate: 0.5
+      max_rpe: 0.2
+      max_drift: 1.0
+      min_coverage: 0.9
+```
+
+```bash
+ca check cloudanalyzer.yaml
+```
+
+完全な例は [docs/examples/cloudanalyzer.yaml](docs/examples/cloudanalyzer.yaml)。
+
 ```bash
 # AUC を取得してスクリプトで判定
 AUC=$(ca evaluate new.pcd ref.pcd --format-json | jq -r '.auc')
@@ -202,6 +235,9 @@ ca run-batch maps/ \
 # Quality gate: 1件でも fail すると exit code 1
 ca batch results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
 
+# config-driven quality gate
+ca check cloudanalyzer.yaml
+
 # GitHub Actions で品質ゲート
 gh workflow run quality-gate.yml \
   -f source=new.pcd -f reference=ref.pcd -f auc_threshold=0.9
@@ -216,6 +252,7 @@ ca evaluate src.pcd ref.pcd --plot f1.png   # F1/Chamfer/Hausdorff/AUC
 ca compare src.pcd tgt.pcd --register gicp  # レジストレーション付き比較
 ca diff a.pcd b.pcd --threshold 0.1         # クイック距離統計
 ca pipeline in.pcd ref.pcd -o out.pcd       # filter→downsample→evaluate
+ca check cloudanalyzer.yaml                 # config-driven unified QA
 ca traj-evaluate est.csv gt.csv --max-ate 0.5 --max-drift 1.0 --min-coverage 0.9  # ATE/RPE/drift + coverage gate
 ca traj-evaluate est.csv gt.csv --align-origin  # 初期平行移動を吸収
 ca traj-evaluate est.csv gt.csv --align-rigid  # 剛体合わせ

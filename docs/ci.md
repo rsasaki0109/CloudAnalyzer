@@ -68,3 +68,41 @@ fi
 # Batch quality gate over multiple outputs
 ca batch outputs/ --evaluate reference_map.pcd --min-auc 0.95 --max-chamfer 0.02
 ```
+
+## Config-Driven QA
+
+When one pipeline produces multiple artifacts, keep the gate in `cloudanalyzer.yaml` and run it with one command:
+
+```bash
+ca check cloudanalyzer.yaml
+```
+
+Example config:
+
+```yaml
+version: 1
+summary_output_json: qa/summary.json
+defaults:
+  report_dir: qa/reports
+  json_dir: qa/results
+checks:
+  - id: mapping-postprocess
+    kind: artifact
+    source: outputs/map.pcd
+    reference: baselines/map_ref.pcd
+    gate:
+      min_auc: 0.95
+      max_chamfer: 0.02
+  - id: localization-run
+    kind: trajectory
+    estimated: outputs/traj.csv
+    reference: baselines/traj_ref.csv
+    alignment: rigid
+    gate:
+      max_ate: 0.5
+      max_rpe: 0.2
+      max_drift: 1.0
+      min_coverage: 0.9
+```
+
+`ca check` writes per-check reports / JSON when `report_dir` and `json_dir` are configured, and it exits with code `1` when any gated check fails.

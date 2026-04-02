@@ -2,11 +2,13 @@
 
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import List, Optional
 
 import typer
 
+from ca.core import load_check_suite, run_check_suite
 from ca.compare import run_compare
 from ca.info import get_info
 from ca.diff import run_diff
@@ -103,6 +105,83 @@ def _parse_thresholds(thresholds: Optional[str]) -> Optional[list[float]]:
     except ValueError:
         typer.echo("Error: --thresholds must be comma-separated numbers", err=True)
         raise typer.Exit(code=1)
+
+
+def _check_status_label(passed: bool | None) -> str:
+    """Render a compact status label for config-driven checks."""
+    if passed is True:
+        return "PASS"
+    if passed is False:
+        return "FAIL"
+    return "INFO"
+
+
+def _print_check_suite_result(result: dict) -> None:
+    """Print a concise human summary for `ca check`."""
+    if result.get("project"):
+        typer.echo(f"Project: {result['project']}")
+    typer.echo(f"Config:   {result['config_path']}")
+    for item in result["checks"]:
+        summary = item["summary"]
+        status = _check_status_label(item["passed"])
+        if item["kind"] == "artifact":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"auc={summary['auc']:.4f}  "
+                f"chamfer={summary['chamfer_distance']:.4f}"
+            )
+        elif item["kind"] == "artifact_batch":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"files={summary['total_files']}  "
+                f"mean_auc={summary['mean_auc']:.4f}  "
+                f"mean_chamfer={summary['mean_chamfer_distance']:.4f}"
+            )
+        elif item["kind"] == "trajectory":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"matched={summary['matched_poses']}  "
+                f"coverage={summary['coverage_ratio']:.1%}  "
+                f"ate={summary['ate_rmse']:.4f}  "
+                f"rpe={summary['rpe_rmse']:.4f}"
+            )
+        elif item["kind"] == "trajectory_batch":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"files={summary['total_files']}  "
+                f"mean_ate={summary['mean_ate_rmse']:.4f}  "
+                f"mean_rpe={summary['mean_rpe_rmse']:.4f}  "
+                f"mean_coverage={summary['mean_coverage_ratio']:.1%}"
+            )
+        elif item["kind"] == "run":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"map_auc={summary['map_auc']:.4f}  "
+                f"traj_ate={summary['trajectory_ate_rmse']:.4f}  "
+                f"coverage={summary['coverage_ratio']:.1%}"
+            )
+        else:
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"runs={summary['total_runs']}  "
+                f"mean_map_auc={summary['mean_map_auc']:.4f}  "
+                f"mean_traj_ate={summary['mean_traj_ate_rmse']:.4f}  "
+                f"mean_coverage={summary['mean_traj_coverage']:.1%}"
+            )
+        if item.get("report_path"):
+            typer.echo(f"  Report: {item['report_path']}")
+        if item.get("json_path"):
+            typer.echo(f"  JSON:   {item['json_path']}")
+
+    summary = result["summary"]
+    typer.echo("")
+    typer.echo(
+        f"Checks: total={summary['total_checks']}  "
+        f"gated={summary['gated_checks']}  "
+        f"pass={summary['passed_checks']}  "
+        f"fail={summary['failed_checks']}  "
+        f"info={summary['unchecked_checks']}"
+    )
 
 
 @app.callback()
@@ -1180,6 +1259,45 @@ def run_batch_cmd(
     if output_json:
         _dump_json(results, output_json)
     if should_fail:
+        raise typer.Exit(code=1)
+
+
+@app.command("check")
+def check_cmd(
+    config_path: str = typer.Argument(
+        "cloudanalyzer.yaml",
+        help="Path to cloudanalyzer.yaml (or JSON) config file",
+    ),
+    output_json: Optional[str] = typer.Option(
+        None,
+        "--output-json",
+        help="Dump aggregated check summary as JSON",
+    ),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Run config-driven artifact / trajectory / run QA checks."""
+    if format_json:
+        import logging
+
+        logging.getLogger("ca").setLevel(logging.ERROR)
+
+    try:
+        suite = load_check_suite(config_path)
+        if output_json is not None:
+            suite = replace(suite, summary_output_json=str(Path(output_json).resolve()))
+        result = run_check_suite(suite)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        _print_check_suite_result(result)
+        if suite.summary_output_json:
+            typer.echo(f"Summary JSON: {suite.summary_output_json}")
+
+    if result["summary"]["failed_checks"] > 0:
         raise typer.Exit(code=1)
 
 

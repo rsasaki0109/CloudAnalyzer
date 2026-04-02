@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 from typer.testing import CliRunner
@@ -16,6 +17,12 @@ def _write_csv_trajectory(path: Path, rows: list[tuple[float, float, float, floa
     lines.extend(f"{timestamp},{x},{y},{z}" for timestamp, x, y, z in rows)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n")
+    return str(path)
+
+
+def _write_config(path: Path, text: str) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(dedent(text).strip() + "\n", encoding="utf-8")
     return str(path)
 
 
@@ -1140,6 +1147,97 @@ class TestCLI:
         import json
         data = json.loads(result.output)
         assert data["num_points"] == 100
+
+    def test_check_uses_default_cloudanalyzer_yaml(self, tmp_path, identical_pcd, monkeypatch):
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        map_reference = tmp_path / "map_ref.pcd"
+        o3d.io.write_point_cloud(str(map_path), identical_pcd)
+        o3d.io.write_point_cloud(str(map_reference), identical_pcd)
+        _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: default-artifact
+                kind: artifact
+                source: {map_path.name}
+                reference: {map_reference.name}
+                gate:
+                  min_auc: 0.95
+                  max_chamfer: 0.01
+            """,
+        )
+
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(app, ["check"])
+
+        assert result.exit_code == 0
+        assert "[PASS] default-artifact (artifact)" in result.output
+        assert "Summary JSON:" not in result.output
+        assert (tmp_path / "qa" / "reports" / "default-artifact.html").exists()
+        assert (tmp_path / "qa" / "results" / "default-artifact.json").exists()
+
+    def test_check_format_json_and_output_json(self, tmp_path, identical_pcd):
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        map_reference = tmp_path / "map_ref.pcd"
+        o3d.io.write_point_cloud(str(map_path), identical_pcd)
+        o3d.io.write_point_cloud(str(map_reference), identical_pcd)
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: perception-output
+                kind: artifact
+                source: {map_path.name}
+                reference: {map_reference.name}
+                gate:
+                  min_auc: 0.95
+            """,
+        )
+        summary_json = tmp_path / "summary.json"
+
+        result = runner.invoke(
+            app,
+            ["check", config, "--format-json", "--output-json", str(summary_json)],
+        )
+
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["summary"]["passed"] is True
+        assert data["checks"][0]["id"] == "perception-output"
+        assert summary_json.exists()
+
+    def test_check_returns_exit_code_one_for_failed_gate(self, tmp_path, identical_pcd, shifted_pcd):
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        map_reference = tmp_path / "map_ref.pcd"
+        o3d.io.write_point_cloud(str(map_path), shifted_pcd)
+        o3d.io.write_point_cloud(str(map_reference), identical_pcd)
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: failing-artifact
+                kind: artifact
+                source: {map_path.name}
+                reference: {map_reference.name}
+                gate:
+                  min_auc: 0.99
+                  max_chamfer: 0.01
+            """,
+        )
+
+        result = runner.invoke(app, ["check", config])
+
+        assert result.exit_code == 1
+        assert "[FAIL] failing-artifact (artifact)" in result.output
 
     def test_help(self):
         result = runner.invoke(app, ["--help"])

@@ -1,5 +1,12 @@
 """Stable core interfaces extracted from experiments."""
 
+from ca.core.checks import (
+    CheckOutputs,
+    CheckSpec,
+    CheckSuite,
+    load_check_suite,
+    run_check_suite,
+)
 from ca.core.web_sampling import (
     RandomBudgetWebSamplingStrategy,
     WebSampleRequest,
@@ -24,6 +31,9 @@ from ca.core.web_trajectory_sampling import (
 )
 
 __all__ = [
+    "CheckOutputs",
+    "CheckSpec",
+    "CheckSuite",
     "DistanceShellsWebProgressiveLoadingStrategy",
     "RandomBudgetWebSamplingStrategy",
     "TurnAwareWebTrajectorySamplingStrategy",
@@ -37,7 +47,9 @@ __all__ = [
     "WebTrajectorySamplingRequest",
     "WebTrajectorySamplingResult",
     "WebTrajectorySamplingStrategy",
+    "load_check_suite",
     "plan_progressive_loading_for_web",
     "reduce_point_cloud_for_web",
     "reduce_trajectory_for_web",
+    "run_check_suite",
 ]

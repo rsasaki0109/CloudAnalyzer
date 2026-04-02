@@ -83,6 +83,56 @@ ca batch decoded/ --evaluate reference.pcd \
 | `--baseline-dir` | `None` | Directory containing original uncompressed files for size ratio baseline |
 | `-t`, `--thresholds` | default evaluate thresholds | Comma-separated distance thresholds for `--evaluate` |
 
+## ca check
+
+Run config-driven QA across artifact, trajectory, and integrated run checks.
+
+```bash
+# default config path
+ca check
+
+# explicit config path
+ca check cloudanalyzer.yaml
+
+# JSON summary for CI
+ca check cloudanalyzer.yaml --format-json --output-json qa/summary.json
+```
+
+Minimal config:
+
+```yaml
+version: 1
+defaults:
+  report_dir: qa/reports
+  json_dir: qa/results
+checks:
+  - id: mapping-postprocess
+    kind: artifact
+    source: outputs/map.pcd
+    reference: baselines/map_ref.pcd
+    gate:
+      min_auc: 0.95
+      max_chamfer: 0.02
+  - id: localization-run
+    kind: trajectory
+    estimated: outputs/traj.csv
+    reference: baselines/traj_ref.csv
+    alignment: rigid
+    gate:
+      max_ate: 0.5
+      max_rpe: 0.2
+      max_drift: 1.0
+      min_coverage: 0.9
+```
+
+`kind` supports `artifact`, `artifact_batch`, `trajectory`, `trajectory_batch`, `run`, and `run_batch`. `map` and `map_batch` are supported as aliases when you want mapping-oriented wording. Relative paths resolve from the config file location.
+
+| Option | Default | Description |
+|---|---|---|
+| `CONFIG` | `cloudanalyzer.yaml` | YAML/JSON config file for unified QA |
+| `--format-json` | `false` | Print aggregated check results to stdout as JSON |
+| `--output-json` | `None` | Dump aggregated check summary as JSON |
+
 ## ca traj-evaluate
 
 Evaluate an estimated trajectory against a reference trajectory.

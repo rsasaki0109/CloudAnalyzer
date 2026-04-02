@@ -4,10 +4,11 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**点群を加工したら、品質がどう変わったか数値で出す。**
+**Localization / Mapping / Perception の後処理で、点群や軌跡を壊していないか数値で出す。**
 
-CloudAnalyzer は、点群処理ライブラリやビューアを置き換えること自体が目的ではない。
-それらの上に乗って、**加工・評価・比較・可視化・回帰検知を一気通貫で回せる 3Dデータ QA / Benchmark / Operations レイヤ**を目指す。
+CloudAnalyzer は、点群処理ライブラリやビューアそのものを置き換えるツールではない。
+狙っているのは、**map の後処理、trajectory の評価、perception 系 3D 出力の回帰検知**を、
+CLI と browser viewer で一気通貫に回せる **3Dデータ QA / Benchmark / Operations レイヤ** になること。
 
 ```bash
 $ ca downsample map.pcd -o down.pcd -v 0.2 --evaluate
@@ -22,6 +23,18 @@ Saved:        down.pcd
 
 `--evaluate` 1つ付けるだけで、加工前後の品質変化が即座にわかる。
 
+## まず何に使うか
+
+- **Mapping の後処理 QA**
+  ボクセルダウンサンプリング、外れ値除去、分割、圧縮復元後の map を baseline と比較し、`AUC / Chamfer / Hausdorff / heatmap` で壊れ方を見る。
+- **Localization / SLAM の run evaluation**
+  推定 trajectory と GT trajectory を `ATE / RPE / drift / coverage` で評価し、`ca web` 上で map heatmap と trajectory timeline をまとめて inspect する。
+- **Perception / 3D生成パイプラインの regression check**
+  再構成点群、深度由来点群、学習モデル出力、Gaussian Splatting 系の幾何結果を、artifact 単位・run 単位で benchmark する。
+
+要するに CloudAnalyzer は、**3Dデータを作るツール**というより、
+**3Dデータを作ったあとに品質を確かめるツール**です。
+
 | Density Map | F1 Evaluation Curve |
 |---|---|
 | ![density](docs/images/density_utsukuba.png) | ![f1](docs/images/f1_curve.png) |
@@ -31,24 +44,27 @@ Saved:        down.pcd
 |  | CloudCompare | PCL | Open3D (Python) | **CloudAnalyzer** |
 |---|---|---|---|---|
 | 品質評価 (F1/AUC) | - | - | スクリプト必要 | **`--evaluate` で即時** |
+| Trajectory QA (ATE/RPE/drift) | 限定的 | - | スクリプト必要 | **CLI + report で一括** |
 | CLI | 限定的 | なし | なし | **24コマンド** |
 | CI/自動化 | 不可 | C++で実装 | スクリプト必要 | **JSON出力 + 品質ゲート** |
 | 加工 + 評価 | 別操作 | 別プログラム | 別スクリプト | **1コマンド** |
-| ブラウザ表示 | 不可 | 不可 | 不可 | **`ca web`** |
+| ブラウザ inspection | 不可 | 不可 | 不可 | **`ca web` / `ca web-export`** |
 
 ## 目指す位置づけ
 
-CloudAnalyzer が狙うのは、低レベルAPIの数で勝つことではなく、**3D処理の実務を一段上のレイヤで完結させること**。
+CloudAnalyzer が狙うのは、低レベルAPIの数で勝つことではなく、
+**Localization / Mapping / Perception の実務で「出力をどう検証するか」を一段上のレイヤで標準化すること**。
 
 | ツール群 | 主な役割 | CloudAnalyzer が足す価値 |
 |---|---|---|
-| PCL / Open3D | 点群処理アルゴリズム、I/O、レジストレーション | **評価・比較・回帰検知・CI** |
-| CloudCompare / Potree | GUI可視化、目視確認、共有 | **CLI自動化・定量評価・レポート** |
-| PyTorch 系 | 学習・推論・研究実験 | **幾何品質ベンチマーク、手法横断比較** |
-| Gaussian Splatting 系 | 3D表現・新規ビュー合成 | **表現横断の比較・誤差可視化** |
-| Continuous-time LIO 系 | 軌跡推定、地図生成 | **時系列つき品質評価、ドリフト比較** |
+| PCL / Open3D | 点群処理アルゴリズム、I/O、レジストレーション | **map 後処理の QA、比較、回帰検知** |
+| CloudCompare / Potree | GUI可視化、目視確認、共有 | **CLI自動化、定量評価、browser inspection** |
+| SLAM / LIO 系 | 軌跡推定、地図生成 | **trajectory QA、run 単位評価、drift 比較** |
+| Perception / PyTorch 系 | 学習・推論・研究実験 | **3D出力の geometry benchmark、artifact 比較** |
+| Gaussian Splatting / 3D再構成系 | 3D表現、再構成、新規ビュー合成 | **表現横断の誤差比較、品質可視化** |
 
-つまり CloudAnalyzer は、`PCL/Open3D` の代替ライブラリというより、`PCL/Open3D/CloudCompare/Potree/PyTorch/LIO` の上で動く **統合 QA 基盤** を目指している。
+つまり CloudAnalyzer は、`PCL/Open3D` の代替ライブラリというより、
+`mapping stack / localization stack / perception stack` の上で動く **出力検証基盤** を目指している。
 
 ## Install
 

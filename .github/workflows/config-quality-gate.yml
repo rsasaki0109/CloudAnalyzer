@@ -1,0 +1,93 @@
+name: Config Quality Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      config_path:
+        description: "Path to cloudanalyzer.yaml relative to the repository root"
+        required: false
+        default: "cloudanalyzer.yaml"
+      artifact_name:
+        description: "Uploaded artifact name for reports and JSON outputs"
+        required: false
+        default: "cloudanalyzer-check-results"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+
+      - name: Install CloudAnalyzer
+        run: pip install -e ./cloudanalyzer
+
+      - name: Run config-driven QA
+        id: run_check
+        continue-on-error: true
+        run: |
+          xvfb-run ca check "${{ inputs.config_path }}" --output-json /tmp/cloudanalyzer-check-summary.json
+
+      - name: Stage reports and JSON outputs
+        if: always()
+        env:
+          CONFIG_PATH: ${{ inputs.config_path }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import shutil
+          from pathlib import Path
+
+          from ca.core import load_check_suite
+
+          stage_dir = Path("/tmp/cloudanalyzer-check-artifacts")
+          stage_dir.mkdir(parents=True, exist_ok=True)
+
+          summary_path = Path("/tmp/cloudanalyzer-check-summary.json")
+          if summary_path.exists():
+              shutil.copy2(summary_path, stage_dir / "summary.json")
+
+          config_path = Path.cwd() / Path(os.environ["CONFIG_PATH"])
+          try:
+              suite = load_check_suite(config_path)
+          except Exception as exc:
+              print(f"Skipping per-check artifact collection: {exc}")
+              raise SystemExit(0)
+
+          for check in suite.checks:
+              check_dir = stage_dir / check.check_id
+              copied_any = False
+              for candidate in (check.outputs.report_path, check.outputs.json_path):
+                  if candidate is None:
+                      continue
+                  source = Path(candidate)
+                  if source.exists():
+                      check_dir.mkdir(parents=True, exist_ok=True)
+                      shutil.copy2(source, check_dir / source.name)
+                      copied_any = True
+              if not copied_any and check_dir.exists():
+                  check_dir.rmdir()
+          PY
+
+      - name: Upload check outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: /tmp/cloudanalyzer-check-artifacts
+          if-no-files-found: warn
+
+      - name: Fail when a gated check failed
+        if: steps.run_check.outcome == 'failure'
+        run: |
+          echo "Config-driven quality gate failed"
+          exit 1

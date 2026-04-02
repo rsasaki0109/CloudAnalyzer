@@ -106,3 +106,15 @@ checks:
 ```
 
 `ca check` writes per-check reports / JSON when `report_dir` and `json_dir` are configured, and it exits with code `1` when any gated check fails.
+
+### GitHub Actions
+
+Use `.github/workflows/config-quality-gate.yml` when the repository already contains `cloudanalyzer.yaml`.
+
+```bash
+gh workflow run config-quality-gate.yml \
+  -f config_path=cloudanalyzer.yaml \
+  -f artifact_name=cloudanalyzer-check-results
+```
+
+The workflow runs `ca check`, uploads `summary.json`, and also uploads each generated report / JSON file declared by the config.

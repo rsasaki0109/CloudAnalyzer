@@ -31,7 +31,7 @@ Saved:        down.pcd
 |  | CloudCompare | PCL | Open3D (Python) | **CloudAnalyzer** |
 |---|---|---|---|---|
 | 品質評価 (F1/AUC) | - | - | スクリプト必要 | **`--evaluate` で即時** |
-| CLI | 限定的 | なし | なし | **23コマンド** |
+| CLI | 限定的 | なし | なし | **24コマンド** |
 | CI/自動化 | 不可 | C++で実装 | スクリプト必要 | **JSON出力 + 品質ゲート** |
 | 加工 + 評価 | 別操作 | 別プログラム | 別スクリプト | **1コマンド** |
 | ブラウザ表示 | 不可 | 不可 | 不可 | **`ca web`** |
@@ -55,6 +55,20 @@ CloudAnalyzer が狙うのは、低レベルAPIの数で勝つことではなく
 ```bash
 cd cloudanalyzer && pip install -e .
 ```
+
+## Public Demo
+
+CloudAnalyzer can now export the `ca web` viewer as a static bundle for GitHub Pages.
+
+```bash
+# export a static viewer
+ca web-export map.pcd map_ref.pcd --heatmap -o docs/demo/local
+
+# rebuild the public Stanford Bunny demo bundle used by Pages
+python scripts/build_public_demo.py --output docs/demo/stanford-bunny
+```
+
+The repository also includes `docs/index.html` plus a Pages workflow that rebuilds a public demo from the Stanford Bunny source data on each deploy. The demo source mesh is public Stanford data, while the reference cloud and trajectories are generated only to exercise CloudAnalyzer's browser inspection UI.
 
 ## Core: 加工したら即評価
 
@@ -257,11 +271,31 @@ plot_multi_f1(results, ["0.1m", "0.2m", "0.5m"], "comparison.png")
 ## Docs
 
 - [Vision](VISION.md)
+- [Experiments](docs/experiments.md)
+- [Decisions](docs/decisions.md)
+- [Interfaces](docs/interfaces.md)
 - [Cloudini Benchmark Tutorial](docs/tutorial-cloudini-benchmark.md)
 - [Map Quality Gate Tutorial](docs/tutorial-map-quality-gate.md)
 - [Command Reference](docs/commands/)
 - [Architecture](docs/architecture.md)
 - [CI / Quality Gate](docs/ci.md)
+
+## Experimental Development
+
+CloudAnalyzer は、先に完全な抽象を固定するのではなく、比較可能な具体実装を複数並べてから最小 interface だけを core に残す。
+
+```bash
+cd cloudanalyzer
+python3 -m ca.experiments.process_docs --write-docs
+```
+
+現在は `ca web` の 3 slice をこの流れで管理している。
+
+- display 用点群縮約: stable 側は `ca.core.web_sampling`、discardable な実装群は `ca.experiments.web_sampling`
+- trajectory overlay 縮約: stable 側は `ca.core.web_trajectory_sampling`、discardable な実装群は `ca.experiments.web_trajectory_sampling`
+- progressive loading: stable 側は `ca.core.web_progressive_loading`、discardable な実装群は `ca.experiments.web_progressive_loading`
+
+`docs/experiments.md` / `docs/decisions.md` / `docs/interfaces.md` は `ca.experiments.process_docs` からまとめて再生成する。
 
 ## License
 

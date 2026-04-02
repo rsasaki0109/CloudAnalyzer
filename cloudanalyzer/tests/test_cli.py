@@ -1049,6 +1049,85 @@ class TestCLI:
         assert called["trajectory_align_origin"] is False
         assert called["trajectory_align_rigid"] is True
 
+    def test_web_export_flags(self, tmp_path, identical_pcd, monkeypatch):
+        import cli.main as cli_main
+        import open3d as o3d
+
+        source = tmp_path / "source.pcd"
+        target = tmp_path / "target.pcd"
+        output_dir = tmp_path / "site"
+        trajectory = _write_csv_trajectory(
+            tmp_path / "traj.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+        trajectory_reference = _write_csv_trajectory(
+            tmp_path / "traj_ref.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+        o3d.io.write_point_cloud(str(source), identical_pcd)
+        o3d.io.write_point_cloud(str(target), identical_pcd)
+
+        called = {}
+
+        def fake_web_export_static_bundle(
+            paths,
+            output_dir,
+            max_points,
+            heatmap,
+            trajectory_path=None,
+            trajectory_reference_path=None,
+            trajectory_max_time_delta=0.05,
+            trajectory_align_origin=False,
+            trajectory_align_rigid=False,
+        ):
+            called["paths"] = paths
+            called["output_dir"] = output_dir
+            called["max_points"] = max_points
+            called["heatmap"] = heatmap
+            called["trajectory_path"] = trajectory_path
+            called["trajectory_reference_path"] = trajectory_reference_path
+            called["trajectory_max_time_delta"] = trajectory_max_time_delta
+            called["trajectory_align_origin"] = trajectory_align_origin
+            called["trajectory_align_rigid"] = trajectory_align_rigid
+            output_root = Path(output_dir)
+            return {
+                "output_dir": output_dir,
+                "viewer_mode": "heatmap",
+                "data_json": str(output_root / "data.json"),
+                "chunk_count": 2,
+                "display_points": 1234,
+            }
+
+        monkeypatch.setattr(cli_main, "web_export_static_bundle", fake_web_export_static_bundle)
+
+        result = runner.invoke(
+            app,
+            [
+                "web-export",
+                str(source),
+                str(target),
+                "--output-dir",
+                str(output_dir),
+                "--heatmap",
+                "--trajectory",
+                trajectory,
+                "--trajectory-reference",
+                trajectory_reference,
+                "--trajectory-align-origin",
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert called["paths"] == [str(source), str(target)]
+        assert called["output_dir"] == str(output_dir)
+        assert called["heatmap"] is True
+        assert called["trajectory_path"] == trajectory
+        assert called["trajectory_reference_path"] == trajectory_reference
+        assert called["trajectory_align_origin"] is True
+        assert called["trajectory_align_rigid"] is False
+        assert "Exported:" in result.output
+        assert "Viewer mode:  heatmap" in result.output
+
     def test_density_map(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "density.png")
         result = runner.invoke(app, ["density-map", sample_pcd_file, "-o", output])

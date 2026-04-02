@@ -38,6 +38,7 @@ from ca.report import (
 )
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.trajectory import evaluate_trajectory
+from ca.web import export_static_bundle as web_export_static_bundle
 from ca.web import serve as web_serve
 from ca.io import SUPPORTED_EXTENSIONS
 from ca.log import setup_logging
@@ -1307,6 +1308,60 @@ def web_cmd(
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
+
+
+@app.command("web-export")
+def web_export_cmd(
+    paths: List[str] = typer.Argument(..., help="Point cloud file(s) to export"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Static bundle output directory"),
+    max_points: int = typer.Option(2_000_000, "--max-points", help="Max points for display"),
+    heatmap: bool = typer.Option(
+        False, "--heatmap",
+        help="With 2 files, color the first by distance to the second",
+    ),
+    trajectory: Optional[str] = typer.Option(
+        None, "--trajectory",
+        help="Estimated trajectory to overlay on top of the point cloud view",
+    ),
+    trajectory_reference: Optional[str] = typer.Option(
+        None, "--trajectory-reference",
+        help="Reference trajectory to overlay alongside --trajectory",
+    ),
+    trajectory_max_time_delta: float = typer.Option(
+        0.05, "--trajectory-max-time-delta",
+        help="Max timestamp gap allowed when matching --trajectory to --trajectory-reference",
+    ),
+    trajectory_align_origin: bool = typer.Option(
+        False, "--trajectory-align-origin",
+        help="Translate --trajectory so its first matched pose aligns to --trajectory-reference",
+    ),
+    trajectory_align_rigid: bool = typer.Option(
+        False, "--trajectory-align-rigid",
+        help="Fit a rigid transform from --trajectory to --trajectory-reference before display",
+    ),
+) -> None:
+    """Export a static web viewer bundle for GitHub Pages or any static host."""
+    try:
+        result = web_export_static_bundle(
+            paths,
+            output_dir=output_dir,
+            max_points=max_points,
+            heatmap=heatmap,
+            trajectory_path=trajectory,
+            trajectory_reference_path=trajectory_reference,
+            trajectory_max_time_delta=trajectory_max_time_delta,
+            trajectory_align_origin=trajectory_align_origin,
+            trajectory_align_rigid=trajectory_align_rigid,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    typer.echo(f"Exported:     {result['output_dir']}")
+    typer.echo(f"Viewer mode:  {result['viewer_mode']}")
+    typer.echo(f"Data:         {result['data_json']}")
+    typer.echo(f"Chunks:       {result['chunk_count']}")
+    typer.echo(f"Display pts:  {result['display_points']}")
 
 
 @app.command("version")

@@ -63,7 +63,8 @@ def evaluate(
     # AUC (trapezoidal integration of F1 over thresholds)
     f1_values = [s["f1"] for s in f1_scores]
     if len(thresholds) >= 2:
-        auc = float(np.trapezoid(f1_values, thresholds)) / (thresholds[-1] - thresholds[0])
+        _trapz = getattr(np, "trapezoid", None) or np.trapz
+        auc = float(_trapz(f1_values, thresholds)) / (thresholds[-1] - thresholds[0])
     else:
         auc = f1_values[0] if f1_values else 0.0
 

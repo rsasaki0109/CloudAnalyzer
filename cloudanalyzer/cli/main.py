@@ -14,6 +14,7 @@ from ca.core import (
     run_check_suite,
     summarize_baseline_evolution,
 )
+from ca.baseline_history import discover_history, list_baselines, rotate_history, save_baseline
 from ca.ground_evaluate import evaluate_ground_segmentation
 from ca.compare import run_compare
 from ca.info import get_info
@@ -1423,6 +1424,11 @@ def baseline_decision_cmd(
         "--history",
         help="Historical summary JSON files in oldest-to-newest order",
     ),
+    history_dir: Optional[str] = typer.Option(
+        None,
+        "--history-dir",
+        help="Auto-discover history JSONs from a directory (alternative to --history)",
+    ),
     output_json: Optional[str] = typer.Option(
         None,
         "--output-json",
@@ -1434,7 +1440,11 @@ def baseline_decision_cmd(
 
     try:
         candidate_result = _load_json_mapping(candidate_json)
-        history_results = [_load_json_mapping(path) for path in (history_json or [])]
+        if history_dir and not history_json:
+            history_paths = discover_history(history_dir)
+        else:
+            history_paths = list(history_json or [])
+        history_results = [_load_json_mapping(path) for path in history_paths]
         result = summarize_baseline_evolution(candidate_result, history_results)
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -1454,6 +1464,55 @@ def baseline_decision_cmd(
             _dump_json(result, output_json)
     if result["decision"] == "reject":
         raise typer.Exit(code=1)
+
+
+@app.command("baseline-save")
+def baseline_save_cmd(
+    summary_json: str = typer.Argument(
+        ..., help="QA summary JSON to save (from `ca check --output-json`)",
+    ),
+    history_dir: str = typer.Option(
+        "qa/history", "--history-dir", help="Directory to store baseline history",
+    ),
+    label: Optional[str] = typer.Option(
+        None, "--label", help="Custom label instead of auto-generated timestamp",
+    ),
+    keep: Optional[int] = typer.Option(
+        None, "--keep", help="Rotate history to keep only this many baselines",
+    ),
+) -> None:
+    """Save a QA summary as a baseline in the history directory."""
+    try:
+        dest = save_baseline(summary_json, history_dir, label=label)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+    typer.echo(f"Saved: {dest}")
+    if keep is not None:
+        removed = rotate_history(history_dir, keep=keep)
+        if removed:
+            typer.echo(f"Rotated: removed {len(removed)} old baseline(s)")
+
+
+@app.command("baseline-list")
+def baseline_list_cmd(
+    history_dir: str = typer.Option(
+        "qa/history", "--history-dir", help="Directory containing baseline history",
+    ),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """List saved baselines in the history directory."""
+    entries = list_baselines(history_dir)
+    if format_json:
+        typer.echo(json.dumps(entries, indent=2))
+    else:
+        if not entries:
+            typer.echo(f"No baselines found in {history_dir}")
+            return
+        typer.echo(f"Baselines: {len(entries)} in {history_dir}")
+        for entry in entries:
+            status = "PASS" if entry["passed"] else "FAIL" if entry["passed"] is False else "?"
+            typer.echo(f"  [{status}] {entry['name']}")
 
 
 @app.command("ground-evaluate")

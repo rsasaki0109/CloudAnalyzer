@@ -1,7 +1,10 @@
 """Split point cloud into grid tiles."""
 
+from typing import cast
+
 import numpy as np
 import open3d as o3d
+import yaml  # type: ignore[import-untyped]
 from pathlib import Path
 
 from ca.io import load_point_cloud
@@ -35,7 +38,7 @@ def split(
     ax0, ax1 = axis_map[axis]
 
     # Compute grid indices
-    origin = points[:, [ax0, ax1]].min(axis=0)
+    origin: np.ndarray = points[:, [ax0, ax1]].min(axis=0)
     indices = ((points[:, [ax0, ax1]] - origin) / grid_size).astype(int)
 
     # Group by tile
@@ -63,6 +66,30 @@ def split(
         })
         logger.debug("  %s: %d pts", filename, len(point_indices))
 
+    # Write metadata.yaml
+    metadata = {
+        "grid_size": grid_size,
+        "axis": axis,
+        "tiles": [
+            {
+                "file": info["file"],
+                "grid": info["grid"],
+                "origin": [
+                    float(origin[0] + cast(list[int], info["grid"])[0] * grid_size),
+                    float(origin[1] + cast(list[int], info["grid"])[1] * grid_size),
+                ],
+                "points": info["points"],
+            }
+            for info in tile_info
+        ],
+    }
+    metadata_path = out / "metadata.yaml"
+    metadata_path.write_text(
+        yaml.dump(metadata, default_flow_style=False, sort_keys=False),
+        encoding="utf-8",
+    )
+    logger.debug("metadata: %s", metadata_path)
+
     return {
         "input": input_path,
         "output_dir": output_dir,
@@ -71,4 +98,5 @@ def split(
         "axis": axis,
         "num_tiles": len(tile_info),
         "tiles": tile_info,
+        "metadata_path": str(metadata_path),
     }

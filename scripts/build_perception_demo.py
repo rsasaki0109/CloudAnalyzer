@@ -169,6 +169,10 @@ def _write_dashboard(output_dir: Path, result: dict, scene: dict) -> None:
       <div class="metric-label">IoU</div>
     </div>
     <div class="metric-card">
+      <div class="metric-value">{result['accuracy']:.3f}</div>
+      <div class="metric-label">Accuracy</div>
+    </div>
+    <div class="metric-card">
       <div class="metric-value" style="color: {gate_color}">{gate_status}</div>
       <div class="metric-label">Quality Gate</div>
     </div>

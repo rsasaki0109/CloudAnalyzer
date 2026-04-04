@@ -1,0 +1,131 @@
+name: Baseline Gate
+
+on:
+  workflow_call:
+    inputs:
+      config_path:
+        description: "Path to cloudanalyzer.yaml"
+        required: false
+        type: string
+        default: "cloudanalyzer.yaml"
+      history_dir:
+        description: "Directory containing baseline history JSONs"
+        required: false
+        type: string
+        default: "qa/history"
+      keep:
+        description: "Number of baselines to retain after rotation (0 = no rotation)"
+        required: false
+        type: number
+        default: 10
+      cloudanalyzer_repository:
+        description: "Repository for CloudAnalyzer install"
+        required: false
+        type: string
+        default: "rsasaki0109/CloudAnalyzer"
+      cloudanalyzer_ref:
+        description: "Git ref for CloudAnalyzer install"
+        required: false
+        type: string
+        default: "main"
+  workflow_dispatch:
+    inputs:
+      config_path:
+        description: "Path to cloudanalyzer.yaml"
+        required: false
+        default: "cloudanalyzer.yaml"
+      history_dir:
+        description: "Directory containing baseline history JSONs"
+        required: false
+        default: "qa/history"
+      keep:
+        description: "Number of baselines to retain"
+        required: false
+        default: "10"
+
+permissions:
+  contents: read
+
+jobs:
+  baseline-gate:
+    runs-on: ubuntu-latest
+    env:
+      CALLER_ROOT: ${{ github.workspace }}/workspace
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: workspace
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+
+      - name: Install CloudAnalyzer
+        env:
+          CLOUDANALYZER_REPOSITORY: ${{ inputs.cloudanalyzer_repository }}
+          CLOUDANALYZER_REF: ${{ inputs.cloudanalyzer_ref }}
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f "${CALLER_ROOT}/cloudanalyzer/pyproject.toml" ] && [ -d "${CALLER_ROOT}/cloudanalyzer/ca" ]; then
+            pip install -e "${CALLER_ROOT}/cloudanalyzer"
+          else
+            pip install "git+https://github.com/${CLOUDANALYZER_REPOSITORY}.git@${CLOUDANALYZER_REF}#subdirectory=cloudanalyzer"
+          fi
+
+      - name: Run config-driven QA
+        id: run_check
+        continue-on-error: true
+        run: |
+          xvfb-run ca check "${CALLER_ROOT}/${{ inputs.config_path }}" \
+            --output-json /tmp/qa-summary.json
+
+      - name: Save baseline to history
+        if: steps.run_check.outcome == 'success'
+        run: |
+          ca baseline-save /tmp/qa-summary.json \
+            --history-dir "${CALLER_ROOT}/${{ inputs.history_dir }}" \
+            --keep ${{ inputs.keep }}
+
+      - name: Decide baseline evolution
+        id: baseline_decision
+        continue-on-error: true
+        run: |
+          ca baseline-decision /tmp/qa-summary.json \
+            --history-dir "${CALLER_ROOT}/${{ inputs.history_dir }}" \
+            --format-json --output-json /tmp/baseline-decision.json
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-gate-results
+          path: |
+            /tmp/qa-summary.json
+            /tmp/baseline-decision.json
+          if-no-files-found: warn
+
+      - name: Report decision
+        if: always()
+        run: |
+          if [ -f /tmp/baseline-decision.json ]; then
+            echo "## Baseline Decision" >> "$GITHUB_STEP_SUMMARY"
+            python3 -c "
+          import json
+          d = json.load(open('/tmp/baseline-decision.json'))
+          print(f\"Decision: **{d['decision']}** (confidence={d['confidence']:.2f})\")
+          print(f\"Strategy: {d['strategy']}\")
+          print(f\"Reasons: {', '.join(d['reasons'])}\")
+          " >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Fail on rejected baseline
+        if: steps.run_check.outcome == 'failure'
+        run: |
+          echo "Quality gate failed"
+          exit 1

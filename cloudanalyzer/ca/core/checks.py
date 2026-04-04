@@ -34,6 +34,7 @@ CheckKind = Literal[
     "trajectory_batch",
     "run",
     "run_batch",
+    "ground",
 ]
 AlignmentMode = Literal["none", "origin", "rigid"]
 
@@ -46,6 +47,8 @@ _KIND_ALIASES: dict[str, CheckKind] = {
     "trajectory_batch": "trajectory_batch",
     "run": "run",
     "run_batch": "run_batch",
+    "ground": "ground",
+    "ground_segmentation": "ground",
 }
 
 _VALID_GATE_KEYS = {
@@ -55,6 +58,10 @@ _VALID_GATE_KEYS = {
     "max_rpe",
     "max_drift",
     "min_coverage",
+    "min_precision",
+    "min_recall",
+    "min_f1",
+    "min_iou",
 }
 
 _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
@@ -82,6 +89,7 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_lateral",
         "max_longitudinal",
     },
+    "ground": {"min_precision", "min_recall", "min_f1", "min_iou"},
 }
 
 
@@ -357,6 +365,28 @@ def _normalize_run_batch_inputs(raw_check: dict[str, Any], config_dir: Path) -> 
     }
 
 
+def _normalize_ground_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
+    """Normalize inputs for a ground segmentation check."""
+    return {
+        "estimated_ground": _resolve_path(
+            config_dir,
+            _require_string(raw_check.get("estimated_ground"), "check.estimated_ground"),
+        ),
+        "estimated_nonground": _resolve_path(
+            config_dir,
+            _require_string(raw_check.get("estimated_nonground"), "check.estimated_nonground"),
+        ),
+        "reference_ground": _resolve_path(
+            config_dir,
+            _require_string(raw_check.get("reference_ground"), "check.reference_ground"),
+        ),
+        "reference_nonground": _resolve_path(
+            config_dir,
+            _require_string(raw_check.get("reference_nonground"), "check.reference_nonground"),
+        ),
+    }
+
+
 def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
     """Normalize kind-specific input paths."""
     if kind == "artifact":
@@ -369,6 +399,8 @@ def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Pa
         return _normalize_trajectory_batch_inputs(raw_check, config_dir)
     if kind == "run":
         return _normalize_run_inputs(raw_check, config_dir)
+    if kind == "ground":
+        return _normalize_ground_inputs(raw_check, config_dir)
     return _normalize_run_batch_inputs(raw_check, config_dir)
 
 
@@ -821,6 +853,43 @@ def _run_run_batch_check(spec: CheckSpec) -> dict[str, Any]:
     }
 
 
+def _run_ground_check(spec: CheckSpec) -> dict[str, Any]:
+    """Run a single ground segmentation QA check."""
+    from ca.ground_evaluate import evaluate_ground_segmentation  # lazy to avoid circular import
+
+    voxel_size = float(spec.gate.get("voxel_size", 0.2))  # type: ignore[arg-type]
+    result = evaluate_ground_segmentation(
+        spec.inputs["estimated_ground"],
+        spec.inputs["estimated_nonground"],
+        spec.inputs["reference_ground"],
+        spec.inputs["reference_nonground"],
+        voxel_size=voxel_size,
+        min_precision=cast(float | None, spec.gate.get("min_precision")),
+        min_recall=cast(float | None, spec.gate.get("min_recall")),
+        min_f1=cast(float | None, spec.gate.get("min_f1")),
+        min_iou=cast(float | None, spec.gate.get("min_iou")),
+    )
+    if spec.outputs.json_path:
+        _write_json(spec.outputs.json_path, result)
+    gate = cast(dict[str, Any] | None, result.get("quality_gate"))
+    return {
+        "id": spec.check_id,
+        "kind": spec.kind,
+        "passed": None if gate is None else gate["passed"],
+        "report_path": spec.outputs.report_path,
+        "json_path": spec.outputs.json_path,
+        "summary": {
+            "precision": result["precision"],
+            "recall": result["recall"],
+            "f1": result["f1"],
+            "iou": result["iou"],
+            "accuracy": result["accuracy"],
+            "passed": None if gate is None else gate["passed"],
+        },
+        "result": result,
+    }
+
+
 def _run_check(spec: CheckSpec) -> dict[str, Any]:
     """Dispatch one normalized check spec."""
     if spec.kind == "artifact":
@@ -833,6 +902,8 @@ def _run_check(spec: CheckSpec) -> dict[str, Any]:
         return _run_trajectory_batch_check(spec)
     if spec.kind == "run":
         return _run_run_check(spec)
+    if spec.kind == "ground":
+        return _run_ground_check(spec)
     return _run_run_batch_check(spec)
 
 

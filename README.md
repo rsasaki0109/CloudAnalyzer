@@ -4,10 +4,11 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**点群を加工したら、品質がどう変わったか数値で出す。**
+**Localization / Mapping / Perception の後処理で、点群や軌跡を壊していないか数値で出す。**
 
-CloudAnalyzer は、点群処理ライブラリやビューアを置き換えること自体が目的ではない。
-それらの上に乗って、**加工・評価・比較・可視化・回帰検知を一気通貫で回せる 3Dデータ QA / Benchmark / Operations レイヤ**を目指す。
+CloudAnalyzer は、点群処理ライブラリやビューアそのものを置き換えるツールではない。
+狙っているのは、**map の後処理、trajectory の評価、perception 系 3D 出力の回帰検知**を、
+CLI と browser viewer で一気通貫に回せる **3Dデータ QA / Benchmark / Operations レイヤ** になること。
 
 ```bash
 $ ca downsample map.pcd -o down.pcd -v 0.2 --evaluate
@@ -22,6 +23,18 @@ Saved:        down.pcd
 
 `--evaluate` 1つ付けるだけで、加工前後の品質変化が即座にわかる。
 
+## まず何に使うか
+
+- **Mapping の後処理 QA**
+  ボクセルダウンサンプリング、外れ値除去、分割、圧縮復元後の map を baseline と比較し、`AUC / Chamfer / Hausdorff / heatmap` で壊れ方を見る。
+- **Localization / SLAM の run evaluation**
+  推定 trajectory と GT trajectory を `ATE / RPE / drift / coverage` で評価し、`ca web` 上で map heatmap と trajectory timeline をまとめて inspect する。
+- **Perception / 3D生成パイプラインの regression check**
+  再構成点群、深度由来点群、学習モデル出力、Gaussian Splatting 系の幾何結果を、artifact 単位・run 単位で benchmark する。
+
+要するに CloudAnalyzer は、**3Dデータを作るツール**というより、
+**3Dデータを作ったあとに品質を確かめるツール**です。
+
 | Density Map | F1 Evaluation Curve |
 |---|---|
 | ![density](docs/images/density_utsukuba.png) | ![f1](docs/images/f1_curve.png) |
@@ -31,30 +44,57 @@ Saved:        down.pcd
 |  | CloudCompare | PCL | Open3D (Python) | **CloudAnalyzer** |
 |---|---|---|---|---|
 | 品質評価 (F1/AUC) | - | - | スクリプト必要 | **`--evaluate` で即時** |
-| CLI | 限定的 | なし | なし | **23コマンド** |
+| Trajectory QA (ATE/RPE/drift) | 限定的 | - | スクリプト必要 | **CLI + report で一括** |
+| CLI | 限定的 | なし | なし | **32コマンド** |
 | CI/自動化 | 不可 | C++で実装 | スクリプト必要 | **JSON出力 + 品質ゲート** |
 | 加工 + 評価 | 別操作 | 別プログラム | 別スクリプト | **1コマンド** |
-| ブラウザ表示 | 不可 | 不可 | 不可 | **`ca web`** |
+| ブラウザ inspection | 不可 | 不可 | 不可 | **`ca web` / `ca web-export`** |
 
 ## 目指す位置づけ
 
-CloudAnalyzer が狙うのは、低レベルAPIの数で勝つことではなく、**3D処理の実務を一段上のレイヤで完結させること**。
+CloudAnalyzer が狙うのは、低レベルAPIの数で勝つことではなく、
+**Localization / Mapping / Perception の実務で「出力をどう検証するか」を一段上のレイヤで標準化すること**。
 
 | ツール群 | 主な役割 | CloudAnalyzer が足す価値 |
 |---|---|---|
-| PCL / Open3D | 点群処理アルゴリズム、I/O、レジストレーション | **評価・比較・回帰検知・CI** |
-| CloudCompare / Potree | GUI可視化、目視確認、共有 | **CLI自動化・定量評価・レポート** |
-| PyTorch 系 | 学習・推論・研究実験 | **幾何品質ベンチマーク、手法横断比較** |
-| Gaussian Splatting 系 | 3D表現・新規ビュー合成 | **表現横断の比較・誤差可視化** |
-| Continuous-time LIO 系 | 軌跡推定、地図生成 | **時系列つき品質評価、ドリフト比較** |
+| PCL / Open3D | 点群処理アルゴリズム、I/O、レジストレーション | **map 後処理の QA、比較、回帰検知** |
+| CloudCompare / Potree | GUI可視化、目視確認、共有 | **CLI自動化、定量評価、browser inspection** |
+| SLAM / LIO 系 | 軌跡推定、地図生成 | **trajectory QA、run 単位評価、drift 比較** |
+| Perception / PyTorch 系 | 学習・推論・研究実験 | **3D出力の geometry benchmark、artifact 比較** |
+| Gaussian Splatting / 3D再構成系 | 3D表現、再構成、新規ビュー合成 | **表現横断の誤差比較、品質可視化** |
 
-つまり CloudAnalyzer は、`PCL/Open3D` の代替ライブラリというより、`PCL/Open3D/CloudCompare/Potree/PyTorch/LIO` の上で動く **統合 QA 基盤** を目指している。
+つまり CloudAnalyzer は、`PCL/Open3D` の代替ライブラリというより、
+`mapping stack / localization stack / perception stack` の上で動く **出力検証基盤** を目指している。
 
 ## Install
 
 ```bash
 cd cloudanalyzer && pip install -e .
 ```
+
+## Public Demo
+
+CloudAnalyzer can now export the `ca web` viewer as a static bundle for GitHub Pages.
+
+```bash
+# export a static viewer
+ca web-export map.pcd map_ref.pcd --heatmap -o docs/demo/local
+
+# rebuild the public Stanford Bunny demo bundle used by Pages
+python scripts/build_public_demo.py --output docs/demo/stanford-bunny
+```
+
+The repository also includes `docs/index.html` plus a Pages workflow that rebuilds a public demo from the Stanford Bunny source data on each deploy. The demo source mesh is public Stanford data, while the reference cloud and trajectories are generated only to exercise CloudAnalyzer's browser inspection UI.
+
+The repository can also generate a public benchmark pack for `ca check`:
+
+```bash
+python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
+ca check benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
+ca check benchmarks/public/stanford-bunny-mini/configs/suite-regression.cloudanalyzer.yaml
+```
+
+`Public Benchmark Pack` workflow では、この pack を public Stanford Bunny から再生成し、`suite-pass` が pass、`suite-regression` が fail することを CI で固定している。
 
 ## Core: 加工したら即評価
 
@@ -107,6 +147,66 @@ ca pipeline noisy.pcd reference.pcd -o production.pcd -v 0.2
 | ![v01](docs/images/f1_voxel01.png) | ![v05](docs/images/f1_voxel05.png) |
 
 ## CI/自動化
+
+`cloudanalyzer.yaml` を置くと、mapping / localization / perception の QA を 1 コマンドにまとめられる。
+
+まず雛形を出すなら:
+
+```bash
+ca init-check --profile integrated
+```
+
+```yaml
+version: 1
+defaults:
+  report_dir: qa/reports
+  json_dir: qa/results
+checks:
+  - id: mapping-postprocess
+    kind: artifact
+    source: outputs/map.pcd
+    reference: baselines/map_ref.pcd
+    gate:
+      min_auc: 0.95
+      max_chamfer: 0.02
+  - id: localization-run
+    kind: trajectory
+    estimated: outputs/traj.csv
+    reference: baselines/traj_ref.csv
+    alignment: rigid
+    gate:
+      max_ate: 0.5
+      max_rpe: 0.2
+      max_drift: 1.0
+      min_coverage: 0.9
+```
+
+```bash
+ca check cloudanalyzer.yaml
+```
+
+完全な例は [docs/examples/cloudanalyzer.yaml](docs/examples/cloudanalyzer.yaml)。
+複数の gated check が fail したときは、`ca check` が inspection 優先順の triage も出す。
+baseline を更新するか迷うときは、保存済み summary JSON を比較して `promote / keep / reject` を出せる。
+
+```bash
+ca baseline-decision qa/current-summary.json \
+  --history qa/baseline-2026-03-20.json \
+  --history qa/baseline-2026-03-27.json
+```
+
+他 repo の GitHub Actions から再利用する場合は、CloudAnalyzer の reusable workflow をそのまま呼べる:
+
+```yaml
+jobs:
+  qa:
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
+    with:
+      config_path: cloudanalyzer.yaml
+      artifact_name: cloudanalyzer-check-results
+```
+
+外部利用では `@main` ではなく tag か commit SHA に pin するのを推奨。
 
 ```bash
 # AUC を取得してスクリプトで判定
@@ -172,6 +272,12 @@ ca run-batch maps/ \
 # Quality gate: 1件でも fail すると exit code 1
 ca batch results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
 
+# config-driven quality gate
+ca check cloudanalyzer.yaml
+
+# baseline promotion decision from QA summaries
+ca baseline-decision qa/current-summary.json --history qa/baseline-summary.json
+
 # GitHub Actions で品質ゲート
 gh workflow run quality-gate.yml \
   -f source=new.pcd -f reference=ref.pcd -f auc_threshold=0.9
@@ -186,12 +292,17 @@ ca evaluate src.pcd ref.pcd --plot f1.png   # F1/Chamfer/Hausdorff/AUC
 ca compare src.pcd tgt.pcd --register gicp  # レジストレーション付き比較
 ca diff a.pcd b.pcd --threshold 0.1         # クイック距離統計
 ca pipeline in.pcd ref.pcd -o out.pcd       # filter→downsample→evaluate
+ca check cloudanalyzer.yaml                 # config-driven unified QA
+ca baseline-decision qa/current.json --history-dir qa/history/  # baseline promote / keep / reject
+ca baseline-save qa/summary.json --history-dir qa/history/  # save baseline to history
+ca baseline-list --history-dir qa/history/                   # list saved baselines
 ca traj-evaluate est.csv gt.csv --max-ate 0.5 --max-drift 1.0 --min-coverage 0.9  # ATE/RPE/drift + coverage gate
 ca traj-evaluate est.csv gt.csv --align-origin  # 初期平行移動を吸収
 ca traj-evaluate est.csv gt.csv --align-rigid  # 剛体合わせ
 ca traj-batch runs/ --reference-dir gt/ --max-drift 1.0 --min-coverage 0.9  # trajectory benchmark
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # map + trajectory integrated QA
 ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch QA
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd --min-f1 0.9  # ground segmentation QA
 ```
 
 ### 加工 (すべて `--evaluate` 対応)
@@ -257,11 +368,33 @@ plot_multi_f1(results, ["0.1m", "0.2m", "0.5m"], "comparison.png")
 ## Docs
 
 - [Vision](VISION.md)
+- [Experiments](docs/experiments.md)
+- [Decisions](docs/decisions.md)
+- [Interfaces](docs/interfaces.md)
 - [Cloudini Benchmark Tutorial](docs/tutorial-cloudini-benchmark.md)
 - [Map Quality Gate Tutorial](docs/tutorial-map-quality-gate.md)
+- [Unified Run Quality Gate Tutorial](docs/tutorial-run-quality-gate.md)
+- [Public Benchmark Packs](benchmarks/public/README.md)
 - [Command Reference](docs/commands/)
 - [Architecture](docs/architecture.md)
 - [CI / Quality Gate](docs/ci.md)
+
+## Experimental Development
+
+CloudAnalyzer は、先に完全な抽象を固定するのではなく、比較可能な具体実装を複数並べてから最小 interface だけを core に残す。
+
+```bash
+cd cloudanalyzer
+python3 -m ca.experiments.process_docs --write-docs
+```
+
+現在は `ca web` の 3 slice をこの流れで管理している。
+
+- display 用点群縮約: stable 側は `ca.core.web_sampling`、discardable な実装群は `ca.experiments.web_sampling`
+- trajectory overlay 縮約: stable 側は `ca.core.web_trajectory_sampling`、discardable な実装群は `ca.experiments.web_trajectory_sampling`
+- progressive loading: stable 側は `ca.core.web_progressive_loading`、discardable な実装群は `ca.experiments.web_progressive_loading`
+
+`docs/experiments.md` / `docs/decisions.md` / `docs/interfaces.md` は `ca.experiments.process_docs` からまとめて再生成する。
 
 ## License
 

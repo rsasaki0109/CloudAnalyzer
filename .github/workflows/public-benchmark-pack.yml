@@ -1,0 +1,120 @@
+name: Public Benchmark Pack
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/public-benchmark-pack.yml"
+      - ".github/workflows/config-quality-gate.yml"
+      - "README.md"
+      - "benchmarks/public/**"
+      - "cloudanalyzer/ca/core/checks.py"
+      - "cloudanalyzer/cli/main.py"
+      - "cloudanalyzer/tests/test_check_suite.py"
+      - "cloudanalyzer/tests/test_cli.py"
+      - "cloudanalyzer/tests/test_public_benchmark_pack.py"
+      - "scripts/build_public_benchmark_pack.py"
+      - "scripts/build_public_demo.py"
+      - "scripts/public_benchmark_assets.py"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/public-benchmark-pack.yml"
+      - ".github/workflows/config-quality-gate.yml"
+      - "README.md"
+      - "benchmarks/public/**"
+      - "cloudanalyzer/ca/core/checks.py"
+      - "cloudanalyzer/cli/main.py"
+      - "cloudanalyzer/tests/test_check_suite.py"
+      - "cloudanalyzer/tests/test_cli.py"
+      - "cloudanalyzer/tests/test_public_benchmark_pack.py"
+      - "scripts/build_public_benchmark_pack.py"
+      - "scripts/build_public_demo.py"
+      - "scripts/public_benchmark_assets.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+
+      - name: Install CloudAnalyzer
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ./cloudanalyzer
+
+      - name: Offline benchmark-pack unit test
+        run: xvfb-run python -m pytest cloudanalyzer/tests/test_public_benchmark_pack.py -q
+
+      - name: Build public benchmark pack
+        run: python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
+
+      - name: Validate suite-pass
+        run: |
+          xvfb-run python -m cli.main check \
+            benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml \
+            --output-json /tmp/suite-pass.json
+
+      - name: Validate suite-regression
+        run: |
+          set +e
+          xvfb-run python -m cli.main check \
+            benchmarks/public/stanford-bunny-mini/configs/suite-regression.cloudanalyzer.yaml \
+            --output-json /tmp/suite-regression.json
+          status=$?
+          set -e
+          if [ "$status" -ne 1 ]; then
+            echo "Expected suite-regression to fail with exit code 1, got $status"
+            exit 1
+          fi
+
+      - name: Match manifest expectations
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          pack_root = Path("benchmarks/public/stanford-bunny-mini")
+          manifest = json.loads((pack_root / "manifest.json").read_text(encoding="utf-8"))
+          actual = {
+              "suite-pass": json.loads(Path("/tmp/suite-pass.json").read_text(encoding="utf-8")),
+              "suite-regression": json.loads(Path("/tmp/suite-regression.json").read_text(encoding="utf-8")),
+          }
+          expected_ids = {"suite-pass", "suite-regression"}
+          manifest_ids = {item["id"] for item in manifest["configs"]}
+          if manifest_ids != expected_ids:
+              raise SystemExit(f"unexpected manifest ids: {sorted(manifest_ids)}")
+          for item in manifest["configs"]:
+              result = actual[item["id"]]
+              if result["summary"]["passed"] is not item["expected_pass"]:
+                  raise SystemExit(
+                      f"{item['id']} pass mismatch: expected {item['expected_pass']} got {result['summary']['passed']}"
+                  )
+              if result["summary"]["failed_check_ids"] != item["failed_check_ids"]:
+                  raise SystemExit(
+                      f"{item['id']} failed checks mismatch: "
+                      f"expected {item['failed_check_ids']} got {result['summary']['failed_check_ids']}"
+                  )
+          PY
+
+      - name: Upload generated pack
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-benchmark-pack
+          path: benchmarks/public/stanford-bunny-mini
+          if-no-files-found: error

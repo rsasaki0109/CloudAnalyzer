@@ -293,9 +293,19 @@
       </article>
 
       <article class="detail-card">
+        <h2>Perception QA Demo</h2>
+        <p>
+          Ground segmentation evaluation using the Stanford Bunny on a synthetic ground plane.
+          Demonstrates <span class="accent">ca ground-evaluate</span> with precision, recall, F1, and IoU metrics.
+        </p>
+        <a class="button button-primary" href="./demo/perception/index.html">View Perception Demo</a>
+      </article>
+
+      <article class="detail-card">
         <h2>Build It Locally</h2>
-        <p>After installing the package, rebuild the public demo bundle with:</p>
-        <div class="code">python scripts/build_public_demo.py --output docs/demo/stanford-bunny</div>
+        <p>After installing the package, rebuild the public demo bundles with:</p>
+        <div class="code">python scripts/build_public_demo.py --output docs/demo/stanford-bunny
+python scripts/build_perception_demo.py --output docs/demo/perception</div>
       </article>
 
       <article class="detail-card">

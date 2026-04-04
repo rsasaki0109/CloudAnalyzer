@@ -35,9 +35,10 @@ jobs:
           pip install --upgrade pip
           pip install -e ./cloudanalyzer
 
-      - name: Build public demo
+      - name: Build public demos
         run: |
           python scripts/build_public_demo.py --output docs/demo/stanford-bunny
+          python scripts/build_perception_demo.py --output docs/demo/perception
           touch docs/.nojekyll
 
       - uses: actions/configure-pages@v5

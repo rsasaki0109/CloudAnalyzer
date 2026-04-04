@@ -60,8 +60,8 @@ _VALID_GATE_KEYS = {
 _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
     "artifact": {"min_auc", "max_chamfer"},
     "artifact_batch": {"min_auc", "max_chamfer"},
-    "trajectory": {"max_ate", "max_rpe", "max_drift", "min_coverage"},
-    "trajectory_batch": {"max_ate", "max_rpe", "max_drift", "min_coverage"},
+    "trajectory": {"max_ate", "max_rpe", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
+    "trajectory_batch": {"max_ate", "max_rpe", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
     "run": {
         "min_auc",
         "max_chamfer",
@@ -69,6 +69,8 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_rpe",
         "max_drift",
         "min_coverage",
+        "max_lateral",
+        "max_longitudinal",
     },
     "run_batch": {
         "min_auc",
@@ -77,6 +79,8 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_rpe",
         "max_drift",
         "min_coverage",
+        "max_lateral",
+        "max_longitudinal",
     },
 }
 
@@ -625,6 +629,8 @@ def _run_trajectory_check(spec: CheckSpec) -> dict[str, Any]:
         max_rpe=cast(float | None, spec.gate.get("max_rpe")),
         max_drift=cast(float | None, spec.gate.get("max_drift")),
         min_coverage=cast(float | None, spec.gate.get("min_coverage")),
+        max_lateral=cast(float | None, spec.gate.get("max_lateral")),
+        max_longitudinal=cast(float | None, spec.gate.get("max_longitudinal")),
     )
     if spec.outputs.report_path:
         save_trajectory_report(result, spec.outputs.report_path)
@@ -643,6 +649,8 @@ def _run_trajectory_check(spec: CheckSpec) -> dict[str, Any]:
             "ate_rmse": result["ate"]["rmse"],
             "rpe_rmse": result["rpe_translation"]["rmse"],
             "drift_endpoint": result["drift"]["endpoint"],
+            "lateral_rmse": result["lateral"]["rmse"],
+            "longitudinal_rmse": result["longitudinal"]["rmse"],
             "alignment_mode": result["alignment"]["mode"],
             "passed": None if gate is None else gate["passed"],
         },

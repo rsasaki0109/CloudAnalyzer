@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloudAnalyzer Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6efe3;
+      --ink: #16110f;
+      --muted: #6a5b52;
+      --panel: rgba(255, 251, 245, 0.82);
+      --line: rgba(22, 17, 15, 0.12);
+      --accent: #c24f2d;
+      --accent-2: #1f5f72;
+      --shadow: 0 24px 80px rgba(27, 17, 11, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(194, 79, 45, 0.14), transparent 34%),
+        radial-gradient(circle at top right, rgba(31, 95, 114, 0.16), transparent 28%),
+        linear-gradient(180deg, #f8f2e8 0%, var(--bg) 52%, #efe7d8 100%);
+    }
+
+    a { color: inherit; }
+
+    .shell {
+      width: min(1120px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 32px 0 56px;
+    }
+
+    .hero {
+      display: grid;
+      gap: 22px;
+      grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.9fr);
+      align-items: stretch;
+    }
+
+    .hero-copy,
+    .hero-card,
+    .detail-card {
+      background: var(--panel);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      padding: 34px 34px 30px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 48px;
+      height: 1px;
+      background: currentColor;
+      opacity: 0.45;
+    }
+
+    h1 {
+      margin: 20px 0 14px;
+      font-family: "Newsreader", serif;
+      font-size: clamp(2.6rem, 4vw, 4.6rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      max-width: 9ch;
+    }
+
+    .lede {
+      margin: 0;
+      max-width: 56ch;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.75;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button-primary {
+      background: var(--ink);
+      color: #fff9f2;
+      box-shadow: 0 12px 30px rgba(22, 17, 15, 0.18);
+    }
+
+    .button-secondary {
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .hero-card {
+      padding: 26px 26px 24px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -38px -42px auto;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(194, 79, 45, 0.2), transparent 68%);
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      padding: 16px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.55);
+      border: 1px solid rgba(22, 17, 15, 0.08);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .stat-value {
+      margin-top: 10px;
+      font-size: 1.55rem;
+      font-weight: 700;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 22px;
+    }
+
+    .detail-card {
+      padding: 24px;
+    }
+
+    .detail-card h2 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .detail-card p,
+    .detail-card li {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .detail-card ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .code {
+      margin-top: 12px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      border-radius: 18px;
+      background: #1c1917;
+      color: #fef7ed;
+      font-size: 0.9rem;
+    }
+
+    .accent {
+      color: var(--accent);
+    }
+
+    @media (max-width: 960px) {
+      .hero,
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        width: min(100vw - 20px, 1120px);
+        padding-top: 18px;
+      }
+
+      .hero-copy,
+      .hero-card,
+      .detail-card {
+        border-radius: 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <article class="hero-copy">
+        <div class="eyebrow">CloudAnalyzer / Public Demo</div>
+        <h1>Stanford Bunny, browser-side inspection, no custom backend.</h1>
+        <p class="lede">
+          This Pages build publishes a static <span class="accent">ca web</span> bundle generated from
+          the public Stanford Bunny mesh. The demo keeps progressive loading, point picking, heatmap
+          thresholding, and trajectory inspection active while serving only HTML and JSON.
+        </p>
+        <div class="actions">
+          <a class="button button-primary" href="./demo/stanford-bunny/index.html">Open Live Demo</a>
+          <a class="button button-secondary" href="https://github.com/rsasaki0109/CloudAnalyzer">Open Repository</a>
+        </div>
+      </article>
+
+      <aside class="hero-card">
+        <div class="stat-grid">
+          <div class="stat">
+            <div class="stat-label">Dataset</div>
+            <div class="stat-value">Stanford Bunny</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Viewer</div>
+            <div class="stat-value">Static ca web</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Modes</div>
+            <div class="stat-value">Heatmap + Traj</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Host</div>
+            <div class="stat-value">GitHub Pages</div>
+          </div>
+        </div>
+        <p class="lede">
+          The source point cloud is derived from the public bunny mesh. The reference cloud and trajectories
+          are generated during the Pages build to demonstrate CloudAnalyzer inspection flows on a small,
+          reproducible asset.
+        </p>
+      </aside>
+    </section>
+
+    <section class="detail-grid">
+      <article class="detail-card">
+        <h2>What This Shows</h2>
+        <ul>
+          <li>Progressive chunk loading on a static host.</li>
+          <li>Heatmap thresholding without a Python server.</li>
+          <li>Point picking with XYZ and nearest-reference distance.</li>
+          <li>Trajectory overlay and linked error timeline inspection.</li>
+        </ul>
+      </article>
+
+      <article class="detail-card">
+        <h2>Build It Locally</h2>
+        <p>After installing the package, rebuild the public demo bundle with:</p>
+        <div class="code">python scripts/build_public_demo.py --output docs/demo/stanford-bunny</div>
+      </article>
+
+      <article class="detail-card">
+        <h2>Data Note</h2>
+        <p>
+          The Pages bundle ships with a data attribution file generated next to the demo.
+          The Stanford repository allows research use and free redistribution with credit, and
+          keeps its own non-commercial restriction on the source assets.
+        </p>
+      </article>
+    </section>
+  </main>
+</body>
+</html>

@@ -37,7 +37,32 @@ ca web map.pcd map_ref.pcd --heatmap \
 | `--trajectory-align-rigid` | `false` | Fit a rigid transform from `--trajectory` to `--trajectory-reference` before display |
 | `--no-browser` | `false` | Don't auto-open the browser |
 
-When paired trajectories are provided, the viewer shows estimated/reference trajectory overlays, marks the worst ATE pose, highlights the worst RPE segment, renders a linked ATE/RPE error timeline, lets you click either the 3D overlays or timeline points to inspect timestamps and error summaries, and auto-focuses the camera on the selected pose/segment. Use `Reset View` to return to the full-scene view.
+When trajectories are provided, long overlays are simplified for browser display through `ca.core.web_trajectory_sampling`, and the viewer reports displayed/original pose counts plus the active sampling strategy.
+
+Large point clouds are also progressively loaded through `ca.core.web_progressive_loading`: the viewer opens with an initial subset, then appends deferred chunks in the background while keeping point picking and heatmap thresholding active.
+
+When paired trajectories are provided, the viewer shows estimated/reference trajectory overlays, preserves inspection-critical anchors while simplifying, marks the worst ATE pose, highlights the worst RPE segment, renders a linked ATE/RPE error timeline, lets you click either the 3D overlays or timeline points to inspect timestamps and error summaries, and auto-focuses the camera on the selected pose/segment. Use `Reset View` to return to the full-scene view.
+
+The viewer also supports point picking. Click a source point to inspect its XYZ coordinates, and in `--heatmap` mode the distance-to-reference value is shown as well. When a reference overlay is visible, the nearest displayed reference point is highlighted and its offset is shown too. Reference points can also be clicked directly.
+
+## ca web-export
+
+Write the same Three.js viewer as a static bundle for GitHub Pages or any other static host.
+
+```bash
+# Export a static heatmap bundle
+ca web-export estimated.pcd reference.pcd \
+  --heatmap \
+  --output-dir docs/demo/local
+
+# Export with trajectory overlays
+ca web-export map.pcd map_ref.pcd \
+  --heatmap \
+  --trajectory traj.csv --trajectory-reference traj_ref.csv \
+  --output-dir docs/demo/run-viewer
+```
+
+`ca web-export` shares the same visualization options as `ca web`, but writes `index.html`, `data.json`, and progressive chunk payloads into the target directory instead of starting a local server. The generated bundle uses relative asset paths, so it can be served from a repository subpath such as `https://<user>.github.io/<repo>/demo/...`.
 
 ## ca view
 

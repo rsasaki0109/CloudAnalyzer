@@ -2,11 +2,20 @@
 
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 from typing import List, Optional
 
 import typer
 
+from ca.core import (
+    load_check_suite,
+    render_check_scaffold,
+    run_check_suite,
+    summarize_baseline_evolution,
+)
+from ca.baseline_history import discover_history, list_baselines, rotate_history, save_baseline
+from ca.ground_evaluate import evaluate_ground_segmentation
 from ca.compare import run_compare
 from ca.info import get_info
 from ca.diff import run_diff
@@ -38,6 +47,7 @@ from ca.report import (
 )
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.trajectory import evaluate_trajectory
+from ca.web import export_static_bundle as web_export_static_bundle
 from ca.web import serve as web_serve
 from ca.io import SUPPORTED_EXTENSIONS
 from ca.log import setup_logging
@@ -54,6 +64,21 @@ def _dump_json(data, path: str) -> None:
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
     typer.echo(f"JSON: {path}")
+
+
+def _load_json_mapping(path: str) -> dict:
+    """Load a JSON object from disk."""
+
+    resolved = Path(path).resolve()
+    try:
+        data = json.loads(resolved.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON file: {resolved}: {exc.msg}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected top-level JSON object in: {resolved}")
+    return data
 
 
 def _run_evaluate(source: str, target: str, result: dict, plot_path: Optional[str] = None) -> dict:
@@ -103,6 +128,115 @@ def _parse_thresholds(thresholds: Optional[str]) -> Optional[list[float]]:
         typer.echo("Error: --thresholds must be comma-separated numbers", err=True)
         raise typer.Exit(code=1)
 
+
+def _check_status_label(passed: bool | None) -> str:
+    """Render a compact status label for config-driven checks."""
+    if passed is True:
+        return "PASS"
+    if passed is False:
+        return "FAIL"
+    return "INFO"
+
+
+def _print_check_suite_result(result: dict) -> None:
+    """Print a concise human summary for `ca check`."""
+    if result.get("project"):
+        typer.echo(f"Project: {result['project']}")
+    typer.echo(f"Config:   {result['config_path']}")
+    for item in result["checks"]:
+        summary = item["summary"]
+        status = _check_status_label(item["passed"])
+        if item["kind"] == "artifact":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"auc={summary['auc']:.4f}  "
+                f"chamfer={summary['chamfer_distance']:.4f}"
+            )
+        elif item["kind"] == "artifact_batch":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"files={summary['total_files']}  "
+                f"mean_auc={summary['mean_auc']:.4f}  "
+                f"mean_chamfer={summary['mean_chamfer_distance']:.4f}"
+            )
+        elif item["kind"] == "trajectory":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"matched={summary['matched_poses']}  "
+                f"coverage={summary['coverage_ratio']:.1%}  "
+                f"ate={summary['ate_rmse']:.4f}  "
+                f"rpe={summary['rpe_rmse']:.4f}"
+            )
+        elif item["kind"] == "trajectory_batch":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"files={summary['total_files']}  "
+                f"mean_ate={summary['mean_ate_rmse']:.4f}  "
+                f"mean_rpe={summary['mean_rpe_rmse']:.4f}  "
+                f"mean_coverage={summary['mean_coverage_ratio']:.1%}"
+            )
+        elif item["kind"] == "run":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"map_auc={summary['map_auc']:.4f}  "
+                f"traj_ate={summary['trajectory_ate_rmse']:.4f}  "
+                f"coverage={summary['coverage_ratio']:.1%}"
+            )
+        else:
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"runs={summary['total_runs']}  "
+                f"mean_map_auc={summary['mean_map_auc']:.4f}  "
+                f"mean_traj_ate={summary['mean_traj_ate_rmse']:.4f}  "
+                f"mean_coverage={summary['mean_traj_coverage']:.1%}"
+            )
+        if item.get("report_path"):
+            typer.echo(f"  Report: {item['report_path']}")
+        if item.get("json_path"):
+            typer.echo(f"  JSON:   {item['json_path']}")
+
+    summary = result["summary"]
+    typer.echo("")
+    typer.echo(
+        f"Checks: total={summary['total_checks']}  "
+        f"gated={summary['gated_checks']}  "
+        f"pass={summary['passed_checks']}  "
+        f"fail={summary['failed_checks']}  "
+        f"info={summary['unchecked_checks']}"
+    )
+    triage = summary.get("triage")
+    if isinstance(triage, dict) and triage.get("items"):
+        typer.echo("")
+        typer.echo(
+            f"Triage: {triage['strategy']}  failed={triage['failed_count']}"
+        )
+        for item in triage["items"][:3]:
+            failed_dims = ", ".join(item["failed_dimensions"]) or "unknown"
+            typer.echo(
+                f"  {item['rank']}. {item['check_id']} ({item['kind']}): "
+                f"score={item['severity_score']:.4f}  dims={failed_dims}"
+            )
+            if item.get("report_path"):
+                typer.echo(f"     Report: {item['report_path']}")
+
+
+def _print_baseline_evolution_result(result: dict) -> None:
+    """Print a concise human summary for baseline promotion decisions."""
+
+    typer.echo(f"Candidate: {result['candidate_label']}")
+    typer.echo(f"History:   {len(result['history_labels'])} summaries")
+    typer.echo(
+        f"Decision:  {result['decision']} ({result['strategy']}, confidence={result['confidence']:.2f})"
+    )
+    typer.echo(f"Reasons:   {', '.join(result['reasons'])}")
+    if result["history_labels"]:
+        typer.echo(f"Labels:    {', '.join(result['history_labels'])}")
+    metadata = result.get("metadata")
+    if isinstance(metadata, dict):
+        if "margin_gain" in metadata:
+            typer.echo(f"Margin:    gain={metadata['margin_gain']}")
+        if "consecutive_passes" in metadata:
+            typer.echo(f"Window:    consecutive_passes={metadata['consecutive_passes']}")
 
 @app.callback()
 def common_options(
@@ -680,6 +814,14 @@ def traj_evaluate_cmd(
         None, "--min-coverage",
         help="Minimum matched-pose coverage ratio required (0-1); exits with code 1 if not met",
     ),
+    max_lateral: Optional[float] = typer.Option(
+        None, "--max-lateral",
+        help="Maximum lateral RMSE allowed; exits with code 1 if exceeded",
+    ),
+    max_longitudinal: Optional[float] = typer.Option(
+        None, "--max-longitudinal",
+        help="Maximum longitudinal RMSE allowed; exits with code 1 if exceeded",
+    ),
     report: Optional[str] = typer.Option(
         None, "--report",
         help="Write trajectory report (.md or .html)",
@@ -699,6 +841,8 @@ def traj_evaluate_cmd(
             max_rpe=max_rpe,
             max_drift=max_drift,
             min_coverage=min_coverage,
+            max_lateral=max_lateral,
+            max_longitudinal=max_longitudinal,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -740,6 +884,16 @@ def traj_evaluate_cmd(
         typer.echo(
             f"RPE RMSE:  {rpe['rmse']:.4f}  "
             f"Mean={rpe['mean']:.4f}  Max={rpe['max']:.4f}"
+        )
+        lateral = result["lateral"]
+        longitudinal = result["longitudinal"]
+        typer.echo(
+            f"Lateral:   {lateral['rmse']:.4f}  "
+            f"Mean={lateral['mean']:.4f}  Max={lateral['max']:.4f}"
+        )
+        typer.echo(
+            f"Longitudinal: {longitudinal['rmse']:.4f}  "
+            f"Mean={longitudinal['mean']:.4f}  Max={longitudinal['max']:.4f}"
         )
         typer.echo(
             f"Drift:     {drift['endpoint']:.4f}  "
@@ -1182,6 +1336,251 @@ def run_batch_cmd(
         raise typer.Exit(code=1)
 
 
+@app.command("check")
+def check_cmd(
+    config_path: str = typer.Argument(
+        "cloudanalyzer.yaml",
+        help="Path to cloudanalyzer.yaml (or JSON) config file",
+    ),
+    output_json: Optional[str] = typer.Option(
+        None,
+        "--output-json",
+        help="Dump aggregated check summary as JSON",
+    ),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Run config-driven artifact / trajectory / run QA checks."""
+    if format_json:
+        import logging
+
+        logging.getLogger("ca").setLevel(logging.ERROR)
+
+    try:
+        suite = load_check_suite(config_path)
+        if output_json is not None:
+            suite = replace(suite, summary_output_json=str(Path(output_json).resolve()))
+        result = run_check_suite(suite)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        _print_check_suite_result(result)
+        if suite.summary_output_json:
+            typer.echo(f"Summary JSON: {suite.summary_output_json}")
+
+    if result["summary"]["failed_checks"] > 0:
+        raise typer.Exit(code=1)
+
+
+@app.command("init-check")
+def init_check_cmd(
+    output_path: str = typer.Argument(
+        "cloudanalyzer.yaml",
+        help="Path to write the starter cloudanalyzer.yaml",
+    ),
+    profile: str = typer.Option(
+        "integrated",
+        "--profile",
+        help="Starter template profile: mapping, localization, perception, integrated",
+    ),
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Overwrite an existing config file",
+    ),
+) -> None:
+    """Write a starter cloudanalyzer.yaml for a common QA workflow."""
+    destination = Path(output_path).resolve()
+    if destination.exists() and not force:
+        _handle_error(
+            ValueError(f"Refusing to overwrite existing file: {destination} (use --force)")
+        )
+        return
+
+    try:
+        template = render_check_scaffold(profile=profile).yaml_text
+    except ValueError as e:
+        _handle_error(e)
+        return
+
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(template, encoding="utf-8")
+    typer.echo(f"Created: {destination}")
+    typer.echo(f"Profile: {profile.strip().lower()}")
+    typer.echo(f"Next:    ca check {destination}")
+
+
+@app.command("baseline-decision")
+def baseline_decision_cmd(
+    candidate_json: str = typer.Argument(
+        ...,
+        help="Candidate summary JSON emitted by `ca check --output-json`",
+    ),
+    history_json: Optional[List[str]] = typer.Option(
+        None,
+        "--history",
+        help="Historical summary JSON files in oldest-to-newest order",
+    ),
+    history_dir: Optional[str] = typer.Option(
+        None,
+        "--history-dir",
+        help="Auto-discover history JSONs from a directory (alternative to --history)",
+    ),
+    output_json: Optional[str] = typer.Option(
+        None,
+        "--output-json",
+        help="Dump baseline decision summary as JSON",
+    ),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Decide whether a candidate QA result should promote, keep, or reject a baseline."""
+
+    try:
+        candidate_result = _load_json_mapping(candidate_json)
+        if history_dir and not history_json:
+            history_paths = discover_history(history_dir)
+        else:
+            history_paths = list(history_json or [])
+        history_results = [_load_json_mapping(path) for path in history_paths]
+        result = summarize_baseline_evolution(candidate_result, history_results)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        _print_baseline_evolution_result(result)
+
+    if output_json:
+        if format_json:
+            destination = Path(output_json)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        else:
+            _dump_json(result, output_json)
+    if result["decision"] == "reject":
+        raise typer.Exit(code=1)
+
+
+@app.command("baseline-save")
+def baseline_save_cmd(
+    summary_json: str = typer.Argument(
+        ..., help="QA summary JSON to save (from `ca check --output-json`)",
+    ),
+    history_dir: str = typer.Option(
+        "qa/history", "--history-dir", help="Directory to store baseline history",
+    ),
+    label: Optional[str] = typer.Option(
+        None, "--label", help="Custom label instead of auto-generated timestamp",
+    ),
+    keep: Optional[int] = typer.Option(
+        None, "--keep", help="Rotate history to keep only this many baselines",
+    ),
+) -> None:
+    """Save a QA summary as a baseline in the history directory."""
+    try:
+        dest = save_baseline(summary_json, history_dir, label=label)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+    typer.echo(f"Saved: {dest}")
+    if keep is not None:
+        removed = rotate_history(history_dir, keep=keep)
+        if removed:
+            typer.echo(f"Rotated: removed {len(removed)} old baseline(s)")
+
+
+@app.command("baseline-list")
+def baseline_list_cmd(
+    history_dir: str = typer.Option(
+        "qa/history", "--history-dir", help="Directory containing baseline history",
+    ),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """List saved baselines in the history directory."""
+    entries = list_baselines(history_dir)
+    if format_json:
+        typer.echo(json.dumps(entries, indent=2))
+    else:
+        if not entries:
+            typer.echo(f"No baselines found in {history_dir}")
+            return
+        typer.echo(f"Baselines: {len(entries)} in {history_dir}")
+        for entry in entries:
+            status = "PASS" if entry["passed"] else "FAIL" if entry["passed"] is False else "?"
+            typer.echo(f"  [{status}] {entry['name']}")
+
+
+@app.command("ground-evaluate")
+def ground_evaluate_cmd(
+    estimated_ground: str = typer.Argument(..., help="Estimated ground points (pcd/ply/las)"),
+    estimated_nonground: str = typer.Argument(..., help="Estimated non-ground points (pcd/ply/las)"),
+    reference_ground: str = typer.Argument(..., help="Reference ground points (pcd/ply/las)"),
+    reference_nonground: str = typer.Argument(..., help="Reference non-ground points (pcd/ply/las)"),
+    voxel_size: float = typer.Option(0.2, "--voxel-size", help="Voxel grid resolution for comparison (meters)"),
+    min_precision: Optional[float] = typer.Option(None, "--min-precision", help="Minimum precision required"),
+    min_recall: Optional[float] = typer.Option(None, "--min-recall", help="Minimum recall required"),
+    min_f1: Optional[float] = typer.Option(None, "--min-f1", help="Minimum F1 score required"),
+    min_iou: Optional[float] = typer.Option(None, "--min-iou", help="Minimum IoU required"),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Evaluate ground segmentation quality against reference labels."""
+    try:
+        result = evaluate_ground_segmentation(
+            estimated_ground,
+            estimated_nonground,
+            reference_ground,
+            reference_nonground,
+            voxel_size=voxel_size,
+            min_precision=min_precision,
+            min_recall=min_recall,
+            min_f1=min_f1,
+            min_iou=min_iou,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        counts = result["counts"]
+        cm = result["confusion_matrix"]
+        typer.echo(
+            f"Estimated: ground={counts['estimated_ground_points']}  "
+            f"nonground={counts['estimated_nonground_points']}"
+        )
+        typer.echo(
+            f"Reference: ground={counts['reference_ground_points']}  "
+            f"nonground={counts['reference_nonground_points']}"
+        )
+        typer.echo(f"Voxel:     {result['voxel_size']}m")
+        typer.echo("")
+        typer.echo(f"TP={cm['tp']}  FP={cm['fp']}  FN={cm['fn']}  TN={cm['tn']}")
+        typer.echo(
+            f"Precision: {result['precision']:.4f}  "
+            f"Recall: {result['recall']:.4f}  "
+            f"F1: {result['f1']:.4f}"
+        )
+        typer.echo(f"IoU:       {result['iou']:.4f}  Accuracy: {result['accuracy']:.4f}")
+        gate = result["quality_gate"]
+        if gate is not None:
+            typer.echo("")
+            typer.echo(f"Quality Gate: {'PASS' if gate['passed'] else 'FAIL'}")
+            for reason in gate["reasons"]:
+                typer.echo(f"  - {reason}")
+
+    if output_json:
+        _dump_json(result, output_json)
+    if result["quality_gate"] is not None and not result["quality_gate"]["passed"]:
+        raise typer.Exit(code=1)
+
+
 @app.command("split")
 def split_cmd(
     input_path: str = typer.Argument(..., help="Input point cloud file"),
@@ -1307,6 +1706,60 @@ def web_cmd(
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
+
+
+@app.command("web-export")
+def web_export_cmd(
+    paths: List[str] = typer.Argument(..., help="Point cloud file(s) to export"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Static bundle output directory"),
+    max_points: int = typer.Option(2_000_000, "--max-points", help="Max points for display"),
+    heatmap: bool = typer.Option(
+        False, "--heatmap",
+        help="With 2 files, color the first by distance to the second",
+    ),
+    trajectory: Optional[str] = typer.Option(
+        None, "--trajectory",
+        help="Estimated trajectory to overlay on top of the point cloud view",
+    ),
+    trajectory_reference: Optional[str] = typer.Option(
+        None, "--trajectory-reference",
+        help="Reference trajectory to overlay alongside --trajectory",
+    ),
+    trajectory_max_time_delta: float = typer.Option(
+        0.05, "--trajectory-max-time-delta",
+        help="Max timestamp gap allowed when matching --trajectory to --trajectory-reference",
+    ),
+    trajectory_align_origin: bool = typer.Option(
+        False, "--trajectory-align-origin",
+        help="Translate --trajectory so its first matched pose aligns to --trajectory-reference",
+    ),
+    trajectory_align_rigid: bool = typer.Option(
+        False, "--trajectory-align-rigid",
+        help="Fit a rigid transform from --trajectory to --trajectory-reference before display",
+    ),
+) -> None:
+    """Export a static web viewer bundle for GitHub Pages or any static host."""
+    try:
+        result = web_export_static_bundle(
+            paths,
+            output_dir=output_dir,
+            max_points=max_points,
+            heatmap=heatmap,
+            trajectory_path=trajectory,
+            trajectory_reference_path=trajectory_reference,
+            trajectory_max_time_delta=trajectory_max_time_delta,
+            trajectory_align_origin=trajectory_align_origin,
+            trajectory_align_rigid=trajectory_align_rigid,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    typer.echo(f"Exported:     {result['output_dir']}")
+    typer.echo(f"Viewer mode:  {result['viewer_mode']}")
+    typer.echo(f"Data:         {result['data_json']}")
+    typer.echo(f"Chunks:       {result['chunk_count']}")
+    typer.echo(f"Display pts:  {result['display_points']}")
 
 
 @app.command("version")

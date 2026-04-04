@@ -10,6 +10,7 @@ setup(
         "numpy>=1.24.0",
         "typer>=0.9.0",
         "matplotlib>=3.7.0",
+        "PyYAML>=6.0",
     ],
     entry_points={
         "console_scripts": [

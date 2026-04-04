@@ -5,6 +5,16 @@
 ```
 cloudanalyzer/
 ├── ca/                     # Core library
+│   ├── core/               # Stable minimal interfaces extracted after comparison
+│   │   ├── __init__.py
+│   │   ├── web_progressive_loading.py # Stable contract for browser progressive loading
+│   │   ├── web_sampling.py # Stable contract for browser point-cloud reduction
+│   │   └── web_trajectory_sampling.py # Stable contract for browser trajectory reduction
+│   ├── experiments/        # Discardable concrete implementations
+│   │   ├── process_docs.py # Consolidated docs writer for active experiment slices
+│   │   ├── web_progressive_loading/ # Alternative progressive-loading planners + evaluator
+│   │   ├── web_sampling/   # Alternative point-cloud reducers + evaluator
+│   │   └── web_trajectory_sampling/ # Alternative trajectory reducers + evaluator
 │   ├── __init__.py         # __version__
 │   ├── io.py               # Point cloud I/O (pcd/ply/las)
 │   ├── registration.py     # ICP / GICP registration
@@ -33,17 +43,18 @@ cloudanalyzer/
 ├── cli/
 │   ├── __init__.py
 │   └── main.py             # Typer CLI (22 commands)
-├── tests/                  # 153 tests
+├── tests/                  # Core, CLI, process, and integration tests
 ├── pyproject.toml          # Package config, mypy, pytest
 └── setup.py                # Editable install shim
 ```
 
 ## Design Principles
 
-1. **Each module returns a dict** — Every function returns a JSON-serializable dict, making it easy to compose, test, and output
-2. **CLI is thin** — CLI commands only parse args, call the core function, and format output
-3. **Logging on stderr** — Progress info goes to stderr via `logging`, keeping stdout clean for `--format-json` piping
-4. **No global state** — Each function is stateless and takes explicit arguments
+1. **Compare concrete implementations first** — New problem areas start in `ca.experiments.*` with multiple interchangeable implementations
+2. **Stabilize only the minimum** — `ca.core.*` keeps the shared request/result contract and the currently adopted implementation
+3. **CLI is thin** — CLI commands only parse args, call the core function, and format output
+4. **Logging on stderr** — Progress info goes to stderr via `logging`, keeping stdout clean for `--format-json` piping
+5. **No global state** — Each function is stateless and takes explicit arguments unless an experiment explicitly tests a stateful design
 
 ## Dependencies
 
@@ -69,6 +80,13 @@ Input PCD/PLY/LAS
     ├─── ca.metrics                → distance array
     │       ├─── ca.evaluate       → F1/Chamfer/AUC dict
     │       └─── ca.visualization  → colorized PCD → snapshot
+    ├─── ca.core.web_progressive_loading → stable browser progressive-loading interface
+    ├─── ca.core.web_sampling      → stable browser reduction interface
+    ├─── ca.core.web_trajectory_sampling → stable browser trajectory reduction interface
+    ├─── ca.experiments.web_progressive_loading → alternative progressive planners + evaluator
+    ├─── ca.experiments.web_sampling → alternative point-cloud reducers + evaluator
+    ├─── ca.experiments.web_trajectory_sampling → alternative trajectory reducers + evaluator
+    ├─── ca.experiments.process_docs → consolidated experiment docs
     ├─── ca.split                  → tile PCDs
     └─── ca.pipeline              → filter → downsample → evaluate
 ```

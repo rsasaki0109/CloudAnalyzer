@@ -2,10 +2,12 @@
 
 import json
 from pathlib import Path
+from textwrap import dedent
 
 import pytest
 from typer.testing import CliRunner
 
+from ca.core import load_check_suite
 from cli.main import app
 
 runner = CliRunner()
@@ -16,6 +18,18 @@ def _write_csv_trajectory(path: Path, rows: list[tuple[float, float, float, floa
     lines.extend(f"{timestamp},{x},{y},{z}" for timestamp, x, y, z in rows)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n")
+    return str(path)
+
+
+def _write_config(path: Path, text: str) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(dedent(text).strip() + "\n", encoding="utf-8")
+    return str(path)
+
+
+def _write_json(path: Path, data: dict) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return str(path)
 
 
@@ -1049,6 +1063,85 @@ class TestCLI:
         assert called["trajectory_align_origin"] is False
         assert called["trajectory_align_rigid"] is True
 
+    def test_web_export_flags(self, tmp_path, identical_pcd, monkeypatch):
+        import cli.main as cli_main
+        import open3d as o3d
+
+        source = tmp_path / "source.pcd"
+        target = tmp_path / "target.pcd"
+        output_dir = tmp_path / "site"
+        trajectory = _write_csv_trajectory(
+            tmp_path / "traj.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+        trajectory_reference = _write_csv_trajectory(
+            tmp_path / "traj_ref.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+        o3d.io.write_point_cloud(str(source), identical_pcd)
+        o3d.io.write_point_cloud(str(target), identical_pcd)
+
+        called = {}
+
+        def fake_web_export_static_bundle(
+            paths,
+            output_dir,
+            max_points,
+            heatmap,
+            trajectory_path=None,
+            trajectory_reference_path=None,
+            trajectory_max_time_delta=0.05,
+            trajectory_align_origin=False,
+            trajectory_align_rigid=False,
+        ):
+            called["paths"] = paths
+            called["output_dir"] = output_dir
+            called["max_points"] = max_points
+            called["heatmap"] = heatmap
+            called["trajectory_path"] = trajectory_path
+            called["trajectory_reference_path"] = trajectory_reference_path
+            called["trajectory_max_time_delta"] = trajectory_max_time_delta
+            called["trajectory_align_origin"] = trajectory_align_origin
+            called["trajectory_align_rigid"] = trajectory_align_rigid
+            output_root = Path(output_dir)
+            return {
+                "output_dir": output_dir,
+                "viewer_mode": "heatmap",
+                "data_json": str(output_root / "data.json"),
+                "chunk_count": 2,
+                "display_points": 1234,
+            }
+
+        monkeypatch.setattr(cli_main, "web_export_static_bundle", fake_web_export_static_bundle)
+
+        result = runner.invoke(
+            app,
+            [
+                "web-export",
+                str(source),
+                str(target),
+                "--output-dir",
+                str(output_dir),
+                "--heatmap",
+                "--trajectory",
+                trajectory,
+                "--trajectory-reference",
+                trajectory_reference,
+                "--trajectory-align-origin",
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert called["paths"] == [str(source), str(target)]
+        assert called["output_dir"] == str(output_dir)
+        assert called["heatmap"] is True
+        assert called["trajectory_path"] == trajectory
+        assert called["trajectory_reference_path"] == trajectory_reference
+        assert called["trajectory_align_origin"] is True
+        assert called["trajectory_align_rigid"] is False
+        assert "Exported:" in result.output
+        assert "Viewer mode:  heatmap" in result.output
+
     def test_density_map(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "density.png")
         result = runner.invoke(app, ["density-map", sample_pcd_file, "-o", output])
@@ -1061,6 +1154,233 @@ class TestCLI:
         import json
         data = json.loads(result.output)
         assert data["num_points"] == 100
+
+    def test_check_uses_default_cloudanalyzer_yaml(self, tmp_path, identical_pcd, monkeypatch):
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        map_reference = tmp_path / "map_ref.pcd"
+        o3d.io.write_point_cloud(str(map_path), identical_pcd)
+        o3d.io.write_point_cloud(str(map_reference), identical_pcd)
+        _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: default-artifact
+                kind: artifact
+                source: {map_path.name}
+                reference: {map_reference.name}
+                gate:
+                  min_auc: 0.95
+                  max_chamfer: 0.01
+            """,
+        )
+
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(app, ["check"])
+
+        assert result.exit_code == 0
+        assert "[PASS] default-artifact (artifact)" in result.output
+        assert "Summary JSON:" not in result.output
+        assert (tmp_path / "qa" / "reports" / "default-artifact.html").exists()
+        assert (tmp_path / "qa" / "results" / "default-artifact.json").exists()
+
+    def test_check_format_json_and_output_json(self, tmp_path, identical_pcd):
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        map_reference = tmp_path / "map_ref.pcd"
+        o3d.io.write_point_cloud(str(map_path), identical_pcd)
+        o3d.io.write_point_cloud(str(map_reference), identical_pcd)
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: perception-output
+                kind: artifact
+                source: {map_path.name}
+                reference: {map_reference.name}
+                gate:
+                  min_auc: 0.95
+            """,
+        )
+        summary_json = tmp_path / "summary.json"
+
+        result = runner.invoke(
+            app,
+            ["check", config, "--format-json", "--output-json", str(summary_json)],
+        )
+
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["summary"]["passed"] is True
+        assert data["checks"][0]["id"] == "perception-output"
+        assert summary_json.exists()
+
+    def test_check_returns_exit_code_one_for_failed_gate(self, tmp_path, identical_pcd, shifted_pcd):
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        map_reference = tmp_path / "map_ref.pcd"
+        o3d.io.write_point_cloud(str(map_path), shifted_pcd)
+        o3d.io.write_point_cloud(str(map_reference), identical_pcd)
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: failing-artifact
+                kind: artifact
+                source: {map_path.name}
+                reference: {map_reference.name}
+                gate:
+                  min_auc: 0.99
+                  max_chamfer: 0.01
+            """,
+        )
+
+        result = runner.invoke(app, ["check", config])
+
+        assert result.exit_code == 1
+        assert "[FAIL] failing-artifact (artifact)" in result.output
+        assert "Triage: severity_weighted" in result.output
+        assert "1. failing-artifact (artifact)" in result.output
+
+    def test_init_check_writes_integrated_template(self, tmp_path):
+        config_path = tmp_path / "cloudanalyzer.yaml"
+
+        result = runner.invoke(app, ["init-check", str(config_path)])
+
+        assert result.exit_code == 0
+        assert config_path.exists()
+        assert "Profile: integrated" in result.output
+
+        suite = load_check_suite(str(config_path))
+        assert suite.project == "localization-mapping-perception"
+        assert [check.kind for check in suite.checks] == [
+            "artifact",
+            "trajectory",
+            "artifact",
+            "run",
+        ]
+
+    def test_init_check_writes_profile_template(self, tmp_path):
+        config_path = tmp_path / "mapping.yaml"
+
+        result = runner.invoke(
+            app,
+            ["init-check", str(config_path), "--profile", "mapping"],
+        )
+
+        assert result.exit_code == 0
+        suite = load_check_suite(str(config_path))
+        assert suite.project == "mapping-qa"
+        assert len(suite.checks) == 1
+        assert suite.checks[0].kind == "artifact"
+        assert suite.checks[0].check_id == "mapping-postprocess"
+
+    def test_init_check_refuses_to_overwrite_without_force(self, tmp_path):
+        config_path = tmp_path / "cloudanalyzer.yaml"
+        config_path.write_text("existing\n", encoding="utf-8")
+
+        result = runner.invoke(app, ["init-check", str(config_path)])
+
+        assert result.exit_code == 1
+        assert "Refusing to overwrite existing file" in result.output
+        assert config_path.read_text(encoding="utf-8") == "existing\n"
+
+    def test_baseline_decision_outputs_json_summary(self, tmp_path):
+        history_json = _write_json(
+            tmp_path / "history.json",
+            {
+                "config_path": str(tmp_path / "history.json"),
+                "project": "qa-test",
+                "summary": {"passed": True, "failed_check_ids": []},
+                "checks": [
+                    {
+                        "id": "mapping-postprocess",
+                        "kind": "artifact",
+                        "passed": True,
+                        "summary": {"auc": 0.958, "chamfer_distance": 0.018},
+                        "result": {"quality_gate": {"min_auc": 0.95, "max_chamfer": 0.02}},
+                    }
+                ],
+            },
+        )
+        candidate_json = _write_json(
+            tmp_path / "candidate.json",
+            {
+                "config_path": str(tmp_path / "candidate.json"),
+                "project": "qa-test",
+                "summary": {"passed": True, "failed_check_ids": [], "triage": {"items": []}},
+                "checks": [
+                    {
+                        "id": "mapping-postprocess",
+                        "kind": "artifact",
+                        "passed": True,
+                        "summary": {"auc": 0.975, "chamfer_distance": 0.014},
+                        "result": {"quality_gate": {"min_auc": 0.95, "max_chamfer": 0.02}},
+                    }
+                ],
+            },
+        )
+        output_json = tmp_path / "decision.json"
+
+        result = runner.invoke(
+            app,
+            [
+                "baseline-decision",
+                candidate_json,
+                "--history",
+                history_json,
+                "--format-json",
+                "--output-json",
+                str(output_json),
+            ],
+        )
+
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["decision"] == "keep"
+        assert data["strategy"] == "stability_window"
+        assert output_json.exists()
+
+    def test_baseline_decision_returns_exit_code_one_for_reject(self, tmp_path):
+        candidate_json = _write_json(
+            tmp_path / "candidate-reject.json",
+            {
+                "config_path": str(tmp_path / "candidate-reject.json"),
+                "project": "qa-test",
+                "summary": {
+                    "passed": False,
+                    "failed_check_ids": ["mapping-postprocess"],
+                    "triage": {
+                        "items": [
+                            {
+                                "check_id": "mapping-postprocess",
+                                "rank": 1,
+                            }
+                        ]
+                    },
+                },
+                "checks": [
+                    {
+                        "id": "mapping-postprocess",
+                        "kind": "artifact",
+                        "passed": False,
+                        "summary": {"auc": 0.91, "chamfer_distance": 0.03},
+                        "result": {"quality_gate": {"min_auc": 0.95, "max_chamfer": 0.02}},
+                    }
+                ],
+            },
+        )
+
+        result = runner.invoke(app, ["baseline-decision", candidate_json])
+
+        assert result.exit_code == 1
+        assert "Decision:  reject" in result.output
 
     def test_help(self):
         result = runner.invoke(app, ["--help"])

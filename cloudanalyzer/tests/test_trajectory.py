@@ -77,6 +77,43 @@ class TestEvaluateTrajectory:
         assert len(result["matched_trajectory"]["timestamps"]) == 4
         assert len(result["error_series"]["rpe_translation"]) == 3
         assert result["quality_gate"] is None
+        # Constant +X offset along an X-axis trajectory is purely longitudinal
+        assert result["lateral"]["rmse"] == pytest.approx(0.0, abs=1e-8)
+        assert result["longitudinal"]["rmse"] == pytest.approx(0.1, abs=1e-4)
+
+    def test_lateral_offset_along_x_trajectory(self, tmp_path):
+        # Reference moves along X axis; estimated is offset in Y (purely lateral)
+        reference = _write_csv_trajectory(
+            tmp_path / "ref.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0), (2.0, 2.0, 0.0, 0.0), (3.0, 3.0, 0.0, 0.0)],
+        )
+        estimated = _write_csv_trajectory(
+            tmp_path / "est.csv",
+            [(0.0, 0.0, 0.2, 0.0), (1.0, 1.0, 0.2, 0.0), (2.0, 2.0, 0.2, 0.0), (3.0, 3.0, 0.2, 0.0)],
+        )
+
+        result = evaluate_trajectory(estimated, reference, max_time_delta=0.05)
+
+        assert result["lateral"]["rmse"] == pytest.approx(0.2, abs=1e-4)
+        assert result["longitudinal"]["rmse"] == pytest.approx(0.0, abs=1e-4)
+        assert "lateral_errors" in result["matched_trajectory"]
+        assert "longitudinal_errors" in result["matched_trajectory"]
+
+    def test_lateral_quality_gate(self, tmp_path):
+        reference = _write_csv_trajectory(
+            tmp_path / "ref.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0), (2.0, 2.0, 0.0, 0.0)],
+        )
+        estimated = _write_csv_trajectory(
+            tmp_path / "est.csv",
+            [(0.0, 0.0, 0.3, 0.0), (1.0, 1.0, 0.3, 0.0), (2.0, 2.0, 0.3, 0.0)],
+        )
+
+        result = evaluate_trajectory(estimated, reference, max_time_delta=0.05, max_lateral=0.2)
+
+        assert result["quality_gate"] is not None
+        assert result["quality_gate"]["passed"] is False
+        assert any("Lateral" in r for r in result["quality_gate"]["reasons"])
 
     def test_interpolates_estimated_positions(self, tmp_path):
         reference = _write_csv_trajectory(

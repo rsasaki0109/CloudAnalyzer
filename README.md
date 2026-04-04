@@ -45,7 +45,7 @@ Saved:        down.pcd
 |---|---|---|---|---|
 | 品質評価 (F1/AUC) | - | - | スクリプト必要 | **`--evaluate` で即時** |
 | Trajectory QA (ATE/RPE/drift) | 限定的 | - | スクリプト必要 | **CLI + report で一括** |
-| CLI | 限定的 | なし | なし | **29コマンド** |
+| CLI | 限定的 | なし | なし | **30コマンド** |
 | CI/自動化 | 不可 | C++で実装 | スクリプト必要 | **JSON出力 + 品質ゲート** |
 | 加工 + 評価 | 別操作 | 別プログラム | 別スクリプト | **1コマンド** |
 | ブラウザ inspection | 不可 | 不可 | 不可 | **`ca web` / `ca web-export`** |
@@ -300,6 +300,7 @@ ca traj-evaluate est.csv gt.csv --align-rigid  # 剛体合わせ
 ca traj-batch runs/ --reference-dir gt/ --max-drift 1.0 --min-coverage 0.9  # trajectory benchmark
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # map + trajectory integrated QA
 ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch QA
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd --min-f1 0.9  # ground segmentation QA
 ```
 
 ### 加工 (すべて `--evaluate` 対応)

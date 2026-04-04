@@ -48,8 +48,8 @@ Reason: Best initial spatial coverage with acceptable planning cost and no extra
 
 ### Not Adopted
 
-- `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=2, readability rank=3, extensibility rank=3.
-- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=3, readability rank=1, extensibility rank=1.
+- `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=3, readability rank=3, extensibility rank=3.
+- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=2, readability rank=1, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -106,10 +106,29 @@ Reason: Best composite rank by avoiding premature promotions while preserving pe
 ### Not Adopted
 
 - `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=3, readability rank=1, extensibility rank=3.
-- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=2, readability rank=3, extensibility rank=1.
+- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=1, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
 
 - Baseline promotion starts using historical cost, latency, or artifact size in addition to QA metrics.
 - `ca check` emits richer per-check confidence or uncertainty metadata.
 - A new promote / keep / reject strategy is proposed.
+
+## ground_segmentation_evaluate
+
+### Adopted
+
+`voxel_confusion` is the stabilized core form of `nearest_neighbor`.
+
+Reason: Best composite rank with the fastest runtime and robust voxel-level matching that avoids per-point distance computation.
+
+### Not Adopted
+
+- `voxel_confusion` remains experimental. Quality rank=2, stability rank=2, runtime rank=1, readability rank=1, extensibility rank=3.
+- `height_band` remains experimental. Quality rank=3, stability rank=3, runtime rank=2, readability rank=3, extensibility rank=1.
+
+### Trigger To Re-run
+
+- Ground segmentation evaluation needs per-point rather than per-voxel resolution.
+- Height-band diagnostics become a first-class output for slope analysis.
+- A new matching or scoring strategy is proposed.

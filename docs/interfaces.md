@@ -211,3 +211,31 @@ class BaselineEvolutionSnapshot:
 - Experimental space: `cloudanalyzer/ca/experiments/check_baseline_evolution/`
 - Current stabilized lineage: `stability_window` adopted directly in core
 
+
+## ground_segmentation_evaluate
+
+### Current Minimal Interface
+
+The stable interface keeps only the ground/non-ground contract needed for `ca ground-evaluate`.
+
+```python
+class GroundEvaluateStrategy(Protocol):
+    name: str
+    design: str
+    def evaluate(self, request: GroundEvaluateRequest) -> GroundEvaluateResult: ...
+
+@dataclass(slots=True)
+class GroundEvaluateRequest:
+    estimated_ground: np.ndarray
+    estimated_nonground: np.ndarray
+    reference_ground: np.ndarray
+    reference_nonground: np.ndarray
+    voxel_size: float = 0.2
+```
+
+### Stable Boundary
+
+- Stable core: `cloudanalyzer/ca/core/ground_evaluate.py`
+- Experimental space: `cloudanalyzer/ca/experiments/ground_evaluate/`
+- Current stabilized lineage: `nearest_neighbor` -> `voxel_confusion`
+

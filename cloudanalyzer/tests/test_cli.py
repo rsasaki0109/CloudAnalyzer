@@ -1239,6 +1239,8 @@ class TestCLI:
 
         assert result.exit_code == 1
         assert "[FAIL] failing-artifact (artifact)" in result.output
+        assert "Triage: severity_weighted" in result.output
+        assert "1. failing-artifact (artifact)" in result.output
 
     def test_init_check_writes_integrated_template(self, tmp_path):
         config_path = tmp_path / "cloudanalyzer.yaml"

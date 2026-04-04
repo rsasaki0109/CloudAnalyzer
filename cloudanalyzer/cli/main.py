@@ -182,6 +182,20 @@ def _print_check_suite_result(result: dict) -> None:
         f"fail={summary['failed_checks']}  "
         f"info={summary['unchecked_checks']}"
     )
+    triage = summary.get("triage")
+    if isinstance(triage, dict) and triage.get("items"):
+        typer.echo("")
+        typer.echo(
+            f"Triage: {triage['strategy']}  failed={triage['failed_count']}"
+        )
+        for item in triage["items"][:3]:
+            failed_dims = ", ".join(item["failed_dimensions"]) or "unknown"
+            typer.echo(
+                f"  {item['rank']}. {item['check_id']} ({item['kind']}): "
+                f"score={item['severity_score']:.4f}  dims={failed_dims}"
+            )
+            if item.get("report_path"):
+                typer.echo(f"     Report: {item['report_path']}")
 
 @app.callback()
 def common_options(

@@ -7,6 +7,19 @@ from ca.core.checks import (
     load_check_suite,
     run_check_suite,
 )
+from ca.core.check_triage import (
+    CheckTriageItem,
+    CheckTriageRequest,
+    CheckTriageResult,
+    CheckTriageStrategy,
+    RankedCheckTriageItem,
+    SeverityWeightedCheckTriageStrategy,
+    build_check_triage_request,
+    failed_dimensions,
+    normalized_dimension_gaps,
+    rank_failed_checks,
+    summarize_failed_checks,
+)
 from ca.core.check_scaffolding import (
     SUPPORTED_CHECK_SCAFFOLD_PROFILES,
     CheckScaffoldRequest,
@@ -40,6 +53,10 @@ from ca.core.web_trajectory_sampling import (
 
 __all__ = [
     "CheckOutputs",
+    "CheckTriageItem",
+    "CheckTriageRequest",
+    "CheckTriageResult",
+    "CheckTriageStrategy",
     "CheckScaffoldRequest",
     "CheckScaffoldResult",
     "CheckScaffoldingStrategy",
@@ -47,7 +64,9 @@ __all__ = [
     "CheckSuite",
     "DistanceShellsWebProgressiveLoadingStrategy",
     "RandomBudgetWebSamplingStrategy",
+    "RankedCheckTriageItem",
     "SUPPORTED_CHECK_SCAFFOLD_PROFILES",
+    "SeverityWeightedCheckTriageStrategy",
     "StaticProfileCheckScaffoldingStrategy",
     "TurnAwareWebTrajectorySamplingStrategy",
     "WebProgressiveLoadingChunk",
@@ -60,10 +79,15 @@ __all__ = [
     "WebTrajectorySamplingRequest",
     "WebTrajectorySamplingResult",
     "WebTrajectorySamplingStrategy",
+    "build_check_triage_request",
+    "failed_dimensions",
     "load_check_suite",
+    "normalized_dimension_gaps",
     "plan_progressive_loading_for_web",
+    "rank_failed_checks",
     "reduce_point_cloud_for_web",
     "reduce_trajectory_for_web",
     "render_check_scaffold",
     "run_check_suite",
+    "summarize_failed_checks",
 ]

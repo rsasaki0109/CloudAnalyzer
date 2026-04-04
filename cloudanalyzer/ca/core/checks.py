@@ -10,6 +10,7 @@ from typing import Any, Literal, cast
 
 import yaml  # type: ignore[import-untyped]
 
+from ca.core.check_triage import summarize_failed_checks
 from ca.batch import batch_evaluate, trajectory_batch_evaluate
 from ca.evaluate import evaluate
 from ca.report import (
@@ -833,6 +834,7 @@ def run_check_suite(suite: CheckSuite) -> dict[str, Any]:
     gated_checks = [item for item in executed_checks if item["passed"] is not None]
     failed_checks = [item for item in gated_checks if item["passed"] is False]
     passed_checks = [item for item in gated_checks if item["passed"] is True]
+    triage = summarize_failed_checks(executed_checks, project=suite.project)
     summary = {
         "total_checks": len(executed_checks),
         "gated_checks": len(gated_checks),
@@ -841,6 +843,7 @@ def run_check_suite(suite: CheckSuite) -> dict[str, Any]:
         "unchecked_checks": len(executed_checks) - len(gated_checks),
         "failed_check_ids": [item["id"] for item in failed_checks],
         "passed": len(failed_checks) == 0,
+        "triage": triage,
     }
     result = {
         "config_path": suite.config_path,

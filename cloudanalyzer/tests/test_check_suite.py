@@ -324,3 +324,9 @@ class TestRunCheckSuite:
         assert result["summary"]["passed"] is False
         assert result["summary"]["failed_checks"] == 2
         assert result["summary"]["failed_check_ids"] == ["bad-artifact", "bad-trajectory"]
+        assert result["summary"]["triage"]["strategy"] == "severity_weighted"
+        assert result["summary"]["triage"]["failed_count"] == 2
+        assert set(result["summary"]["triage"]["ranked_ids"]) == {
+            "bad-artifact",
+            "bad-trajectory",
+        }

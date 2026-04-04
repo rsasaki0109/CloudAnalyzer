@@ -126,6 +126,7 @@ checks:
 ```
 
 `kind` supports `artifact`, `artifact_batch`, `trajectory`, `trajectory_batch`, `run`, and `run_batch`. `map` and `map_batch` are supported as aliases when you want mapping-oriented wording. Relative paths resolve from the config file location.
+When one or more gated checks fail, `ca check` also prints a severity-first triage order. The JSON summary stores the same ranking under `summary.triage`.
 
 | Option | Default | Description |
 |---|---|---|
@@ -155,6 +156,31 @@ ca init-check --profile perception --force
 | `OUTPUT` | `cloudanalyzer.yaml` | Destination path for the starter config |
 | `--profile` | `integrated` | Template slice to scaffold |
 | `--force` | `false` | Overwrite an existing file |
+
+## ca baseline-decision
+
+Decide whether a candidate `ca check` summary should promote, keep, or reject a baseline revision.
+
+```bash
+# compare a current candidate against prior baseline summaries
+ca baseline-decision qa/current-summary.json \
+  --history qa/baseline-2026-03-20.json \
+  --history qa/baseline-2026-03-27.json
+
+# machine-readable output
+ca baseline-decision qa/current-summary.json \
+  --history qa/baseline-summary.json \
+  --format-json --output-json qa/baseline-decision.json
+```
+
+Input files are the JSON summaries emitted by `ca check --output-json ...`. The current stable strategy is `stability_window`: failed candidates are rejected immediately, strong candidates without enough history stay `keep`, and only stable improving windows become `promote`.
+
+| Option | Default | Description |
+|---|---|---|
+| `CANDIDATE_JSON` | required | Candidate `ca check` summary JSON |
+| `--history` | `[]` | Historical summary JSON files, oldest to newest |
+| `--format-json` | `false` | Print the decision summary to stdout as JSON |
+| `--output-json` | `None` | Dump the decision summary as JSON |
 
 ## ca traj-evaluate
 

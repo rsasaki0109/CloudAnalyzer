@@ -20,9 +20,9 @@ Stable code lives in `cloudanalyzer/ca/core/web_sampling.py`. Discardable varian
 
 | Strategy | Design | Avg runtime ms | Avg chamfer | Avg coverage p95 | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| random_budget | oop | 0.3548 | 0.123013 | 0.278898 | 81.70 | 50.00 | 1.300 |
-| hybrid_pipeline | pipeline | 0.8648 | 0.204581 | 0.262417 | 69.70 | 60.12 | 1.850 |
-| functional_voxel | functional | 12.1023 | 0.214913 | 0.240124 | 54.25 | 55.75 | 2.850 |
+| random_budget | oop | 0.3813 | 0.123013 | 0.278898 | 81.70 | 50.00 | 1.300 |
+| hybrid_pipeline | pipeline | 0.8053 | 0.204581 | 0.262417 | 69.70 | 60.12 | 1.850 |
+| functional_voxel | functional | 12.0428 | 0.214913 | 0.240124 | 54.25 | 55.75 | 2.850 |
 
 ### Notes
 
@@ -49,9 +49,9 @@ Stable code lives in `cloudanalyzer/ca/core/web_trajectory_sampling.py`. Discard
 
 | Strategy | Design | Avg runtime ms | Avg mean error | Avg p95 error | Preserve ratio | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| turn_aware | oop | 0.6766 | 0.000000 | 0.000000 | 1.0000 | 44.00 | 38.70 | 1.900 |
-| uniform_stride | functional | 0.1636 | 0.000549 | 0.000000 | 1.0000 | 95.85 | 59.40 | 2.000 |
-| distance_accumulator | pipeline | 4.1397 | 0.000543 | 0.000000 | 1.0000 | 51.35 | 58.70 | 2.100 |
+| turn_aware | oop | 0.6608 | 0.000000 | 0.000000 | 1.0000 | 44.00 | 38.70 | 1.900 |
+| uniform_stride | functional | 0.1563 | 0.000549 | 0.000000 | 1.0000 | 95.85 | 59.40 | 2.000 |
+| distance_accumulator | pipeline | 4.1958 | 0.000543 | 0.000000 | 1.0000 | 51.35 | 58.70 | 2.100 |
 
 ### Notes
 
@@ -78,9 +78,9 @@ Stable code lives in `cloudanalyzer/ca/core/web_progressive_loading.py`. Discard
 
 | Strategy | Design | Avg runtime ms | Initial coverage p95 | Progressive coverage AUC | Chunk std | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| distance_shells | radial | 0.7776 | 0.881581 | 0.400205 | 38.165523 | 62.10 | 38.60 | 1.500 |
-| grid_tiles | grid | 1.0763 | 1.596086 | 0.661457 | 38.165523 | 60.50 | 34.50 | 2.200 |
-| spatial_shuffle | functional | 0.9923 | 1.596086 | 0.661457 | 38.165523 | 68.50 | 55.60 | 2.300 |
+| distance_shells | radial | 0.7572 | 0.881581 | 0.400205 | 38.165523 | 62.10 | 38.60 | 1.500 |
+| grid_tiles | grid | 1.0737 | 1.596086 | 0.661457 | 38.165523 | 60.50 | 34.50 | 2.050 |
+| spatial_shuffle | functional | 1.2664 | 1.596086 | 0.661457 | 38.165523 | 68.50 | 55.60 | 2.450 |
 
 ### Notes
 
@@ -108,13 +108,73 @@ Stable code lives in `cloudanalyzer/ca/core/check_scaffolding.py`. Discardable v
 
 | Strategy | Design | Avg runtime ms | Fidelity | Avg yaml lines | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| static_profiles | functional | 0.0042 | 1.0000 | 26.50 | 67.70 | 43.03 | 1.350 |
-| object_sections | oop | 0.0265 | 1.0000 | 26.50 | 25.10 | 81.40 | 2.200 |
-| pipeline_overlays | pipeline | 0.8375 | 1.0000 | 26.00 | 48.76 | 89.90 | 2.450 |
+| static_profiles | functional | 0.0036 | 1.0000 | 26.50 | 67.70 | 43.03 | 1.350 |
+| object_sections | oop | 0.0188 | 1.0000 | 26.50 | 25.10 | 81.40 | 2.200 |
+| pipeline_overlays | pipeline | 0.7827 | 1.0000 | 26.00 | 48.76 | 89.90 | 2.450 |
 
 ### Notes
 
 - Fidelity is measured by parsing rendered YAML through `load_check_suite` and checking expected ids, kinds, and output paths.
 - Runtime covers template rendering only, not file writing.
 - Readability and extensibility scores are heuristic and generated from AST/source-shape metrics.
+
+
+## check_regression_triage
+
+Rank failed mapping, localization, and perception checks so `ca check` surfaces the most informative regression first.
+
+Stable code lives in `cloudanalyzer/ca/core/check_triage.py`. Discardable variants live in `cloudanalyzer/ca/experiments/check_triage`.
+
+### Shared Inputs
+
+| Dataset | Failed checks | Expected top order | Purpose |
+|---|---:|---|---|
+| integrated_cascade | 3 | integrated-run, localization-run, mapping-postprocess | Integrated run failure should outrank milder single-artifact and trajectory regressions. |
+| batch_tradeoff | 3 | run-batch, trajectory-batch, artifact-batch | Run-batch with several moderate failures should outrank a single-dimension collapse. |
+| duplicate_geometry_regressions | 3 | mapping-postprocess, perception-output, localization-run | Near-duplicate geometry failures should stay below the single most severe one. |
+
+### Strategy Comparison
+
+| Strategy | Design | Avg runtime ms | Avg NDCG | Top1 hit | Stability | Diversity | Readability | Extensibility | Composite rank |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| severity_weighted | functional | 0.0280 | 0.9872 | 1.0000 | 1.0000 | 0.8889 | 77.50 | 38.42 | 1.100 |
+| signature_cluster | pipeline | 0.0285 | 0.9744 | 1.0000 | 1.0000 | 0.8889 | 63.30 | 34.10 | 2.250 |
+| pareto_frontier | oop | 0.0404 | 0.8846 | 0.6667 | 1.0000 | 0.8889 | 53.02 | 55.45 | 2.650 |
+
+### Notes
+
+- Quality is scored against expected failure orderings using a small NDCG variant plus top-1 hit rate.
+- Stability checks whether the top-ranked failure stays stable under small metric perturbations.
+- Diversity is tracked but not weighted heavily in the final ranking because current CLI use favors severity-first triage.
+
+
+## check_baseline_evolution
+
+Decide whether a candidate QA summary should promote, keep, or reject a baseline revision.
+
+Stable code lives in `cloudanalyzer/ca/core/check_baseline_evolution.py`. Discardable variants live in `cloudanalyzer/ca/experiments/check_baseline_evolution`.
+
+### Shared Inputs
+
+| Dataset | Expected decision | History size | Purpose |
+|---|---|---:|---|
+| stable_improvement_window | promote | 2 | Candidate should be promoted after a stable passing window with stronger margins. |
+| candidate_failure_reject | reject | 1 | Candidate that fails the quality gate should be rejected immediately. |
+| insufficient_history_keep | keep | 1 | A strong candidate without enough history should stay in keep mode. |
+| recent_failure_keep | keep | 2 | A recovering candidate should not be promoted immediately after a recent failure. |
+| mixed_tradeoff_keep | keep | 2 | Candidate with a stronger mean margin but worse weakest margin should stay keep. |
+
+### Strategy Comparison
+
+| Strategy | Design | Avg runtime ms | Decision match | Critical match | Stability | False promote | False reject | Readability | Extensibility | Composite rank |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| stability_window | pipeline | 0.0183 | 1.0000 | 1.0000 | 1.0000 | 0.0000 | 0.0000 | 46.11 | 39.54 | 1.500 |
+| threshold_guard | functional | 0.0193 | 0.6000 | 0.6000 | 1.0000 | 0.4000 | 0.0000 | 64.98 | 36.22 | 2.000 |
+| pareto_promote | oop | 0.0189 | 0.6000 | 0.6000 | 1.0000 | 0.4000 | 0.0000 | 45.85 | 48.79 | 2.500 |
+
+### Notes
+
+- Decision quality compares each strategy against shared promote / keep / reject expectations.
+- Stability checks whether small metric perturbations preserve the same decision.
+- False promote is weighted more heavily than raw confidence because baseline drift is more damaging than delayed promotion.
 

@@ -27,6 +27,12 @@ def _write_config(path: Path, text: str) -> str:
     return str(path)
 
 
+def _write_json(path: Path, data: dict) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    return str(path)
+
+
 class TestCLI:
     def test_version(self):
         result = runner.invoke(app, ["version"])
@@ -1284,6 +1290,97 @@ class TestCLI:
         assert result.exit_code == 1
         assert "Refusing to overwrite existing file" in result.output
         assert config_path.read_text(encoding="utf-8") == "existing\n"
+
+    def test_baseline_decision_outputs_json_summary(self, tmp_path):
+        history_json = _write_json(
+            tmp_path / "history.json",
+            {
+                "config_path": str(tmp_path / "history.json"),
+                "project": "qa-test",
+                "summary": {"passed": True, "failed_check_ids": []},
+                "checks": [
+                    {
+                        "id": "mapping-postprocess",
+                        "kind": "artifact",
+                        "passed": True,
+                        "summary": {"auc": 0.958, "chamfer_distance": 0.018},
+                        "result": {"quality_gate": {"min_auc": 0.95, "max_chamfer": 0.02}},
+                    }
+                ],
+            },
+        )
+        candidate_json = _write_json(
+            tmp_path / "candidate.json",
+            {
+                "config_path": str(tmp_path / "candidate.json"),
+                "project": "qa-test",
+                "summary": {"passed": True, "failed_check_ids": [], "triage": {"items": []}},
+                "checks": [
+                    {
+                        "id": "mapping-postprocess",
+                        "kind": "artifact",
+                        "passed": True,
+                        "summary": {"auc": 0.975, "chamfer_distance": 0.014},
+                        "result": {"quality_gate": {"min_auc": 0.95, "max_chamfer": 0.02}},
+                    }
+                ],
+            },
+        )
+        output_json = tmp_path / "decision.json"
+
+        result = runner.invoke(
+            app,
+            [
+                "baseline-decision",
+                candidate_json,
+                "--history",
+                history_json,
+                "--format-json",
+                "--output-json",
+                str(output_json),
+            ],
+        )
+
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["decision"] == "keep"
+        assert data["strategy"] == "stability_window"
+        assert output_json.exists()
+
+    def test_baseline_decision_returns_exit_code_one_for_reject(self, tmp_path):
+        candidate_json = _write_json(
+            tmp_path / "candidate-reject.json",
+            {
+                "config_path": str(tmp_path / "candidate-reject.json"),
+                "project": "qa-test",
+                "summary": {
+                    "passed": False,
+                    "failed_check_ids": ["mapping-postprocess"],
+                    "triage": {
+                        "items": [
+                            {
+                                "check_id": "mapping-postprocess",
+                                "rank": 1,
+                            }
+                        ]
+                    },
+                },
+                "checks": [
+                    {
+                        "id": "mapping-postprocess",
+                        "kind": "artifact",
+                        "passed": False,
+                        "summary": {"auc": 0.91, "chamfer_distance": 0.03},
+                        "result": {"quality_gate": {"min_auc": 0.95, "max_chamfer": 0.02}},
+                    }
+                ],
+            },
+        )
+
+        result = runner.invoke(app, ["baseline-decision", candidate_json])
+
+        assert result.exit_code == 1
+        assert "Decision:  reject" in result.output
 
     def test_help(self):
         result = runner.invoke(app, ["--help"])

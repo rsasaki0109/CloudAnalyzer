@@ -18,6 +18,18 @@ from ca.experiments.check_scaffolding.evaluate import (
     render_interface_section as render_check_scaffolding_interface_section,
     run_check_scaffolding_experiment,
 )
+from ca.experiments.check_baseline_evolution.evaluate import (
+    render_decision_section as render_check_baseline_evolution_decision_section,
+    render_experiment_section as render_check_baseline_evolution_experiment_section,
+    render_interface_section as render_check_baseline_evolution_interface_section,
+    run_check_baseline_evolution_experiment,
+)
+from ca.experiments.check_triage.evaluate import (
+    render_decision_section as render_check_triage_decision_section,
+    render_experiment_section as render_check_triage_experiment_section,
+    render_interface_section as render_check_triage_interface_section,
+    run_check_triage_experiment,
+)
 from ca.experiments.web_progressive_loading.evaluate import (
     render_decision_section as render_web_progressive_decision_section,
     render_experiment_section as render_web_progressive_experiment_section,
@@ -40,6 +52,8 @@ def build_experiment_reports(repetitions: int = 3) -> list[dict]:
         run_web_trajectory_sampling_experiment(repetitions=repetitions),
         run_web_progressive_loading_experiment(repetitions=repetitions),
         run_check_scaffolding_experiment(repetitions=repetitions),
+        run_check_triage_experiment(repetitions=repetitions),
+        run_check_baseline_evolution_experiment(repetitions=repetitions),
     ]
 
 
@@ -51,6 +65,8 @@ def render_experiments_markdown(reports: list[dict]) -> str:
         render_web_trajectory_experiment_section(reports[1]),
         render_web_progressive_experiment_section(reports[2]),
         render_check_scaffolding_experiment_section(reports[3]),
+        render_check_triage_experiment_section(reports[4]),
+        render_check_baseline_evolution_experiment_section(reports[5]),
     ]
     return (
         "# Experiments\n\n"
@@ -68,6 +84,8 @@ def render_decisions_markdown(reports: list[dict]) -> str:
         render_web_trajectory_decision_section(reports[1]),
         render_web_progressive_decision_section(reports[2]),
         render_check_scaffolding_decision_section(reports[3]),
+        render_check_triage_decision_section(reports[4]),
+        render_check_baseline_evolution_decision_section(reports[5]),
     ]
     return "# Decisions\n\n" + "\n\n".join(sections) + "\n"
 
@@ -80,6 +98,8 @@ def render_interfaces_markdown(reports: list[dict]) -> str:
         render_web_trajectory_interface_section(reports[1]),
         render_web_progressive_interface_section(reports[2]),
         render_check_scaffolding_interface_section(reports[3]),
+        render_check_triage_interface_section(reports[4]),
+        render_check_baseline_evolution_interface_section(reports[5]),
     ]
     return (
         "# Interfaces\n\n"

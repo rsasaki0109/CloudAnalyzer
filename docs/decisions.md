@@ -48,8 +48,8 @@ Reason: Best initial spatial coverage with acceptable planning cost and no extra
 
 ### Not Adopted
 
-- `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=3, readability rank=3, extensibility rank=3.
-- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=2, readability rank=1, extensibility rank=1.
+- `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=2, readability rank=3, extensibility rank=3.
+- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=3, readability rank=1, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -75,3 +75,41 @@ Reason: Literal profiles preserve full fidelity while keeping runtime and source
 - `ca init-check` gains user-supplied placeholders or path inference.
 - New starter profiles are added beyond mapping, localization, perception, and integrated.
 - Config generation needs structured customization beyond static scaffolds.
+
+## check_regression_triage
+
+### Adopted
+
+`severity_weighted` is adopted directly as the current core strategy.
+
+Reason: Best composite rank while preserving direct threshold-based ordering and the lowest runtime for CLI use.
+
+### Not Adopted
+
+- `signature_cluster` remains experimental. Quality rank=2, stability rank=3, runtime rank=2, readability rank=2, extensibility rank=3.
+- `pareto_frontier` remains experimental. Quality rank=3, stability rank=2, runtime rank=3, readability rank=3, extensibility rank=1.
+
+### Trigger To Re-run
+
+- `ca check` starts triaging root-cause groups instead of individual failures.
+- Batch checks expose richer aggregate metrics or per-item drill-down metadata.
+- A new failure-ranking strategy is proposed.
+
+## check_baseline_evolution
+
+### Adopted
+
+`stability_window` is adopted directly as the current core strategy.
+
+Reason: Best composite rank by avoiding premature promotions while preserving perfect reject/promote accuracy on the shared scenarios.
+
+### Not Adopted
+
+- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=3, readability rank=1, extensibility rank=3.
+- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=2, readability rank=3, extensibility rank=1.
+
+### Trigger To Re-run
+
+- Baseline promotion starts using historical cost, latency, or artifact size in addition to QA metrics.
+- `ca check` emits richer per-check confidence or uncertainty metadata.
+- A new promote / keep / reject strategy is proposed.

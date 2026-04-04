@@ -84,11 +84,36 @@ Config:   /path/to/cloudanalyzer.yaml
   JSON:   /path/to/qa/results/integrated-run.json
 
 Checks: total=3  gated=3  pass=2  fail=1  info=0
+
+Triage: severity_weighted  failed=1
+  1. integrated-run (run): score=0.7420  dims=trajectory_ate, coverage
 ```
 
 fail したら exit code は `1` になる。
 
-## Step 3: report と browser inspection を使う
+## Step 3: baseline を更新してよいか決める
+
+`summary_output_json` を出しておくと、current candidate を history と比較して `promote / keep / reject` を決められる。
+
+```bash
+ca baseline-decision qa/summary.json \
+  --history qa/baseline-2026-03-20.json \
+  --history qa/baseline-2026-03-27.json
+```
+
+出力例:
+
+```text
+Candidate: summary
+History:   2 summaries
+Decision:  keep (stability_window, confidence=0.76)
+Reasons:   candidate_not_yet_stable_enough
+Labels:    baseline-2026-03-20, baseline-2026-03-27
+```
+
+failed candidate は即 `reject` になり、stable に改善した window だけ `promote` になる。
+
+## Step 4: report と browser inspection を使う
 
 `report_dir` と `json_dir` を入れておくと、各 check ごとに HTML report / JSON が出る。
 
@@ -105,7 +130,7 @@ ca web outputs/map.pcd baselines/map_ref.pcd --heatmap \
   --trajectory-align-rigid
 ```
 
-## Step 4: GitHub Actions で回す
+## Step 5: GitHub Actions で回す
 
 新しい workflow は `.github/workflows/config-quality-gate.yml`。
 
@@ -132,7 +157,7 @@ jobs:
       config_path: cloudanalyzer.yaml
 ```
 
-## Step 5: どの領域にどう使うか
+## Step 6: どの領域にどう使うか
 
 - Mapping: `artifact` で map の後処理 QA、`run` で trajectory と合わせた deploy gate
 - Localization: `trajectory` / `trajectory_batch` で run benchmark、`run_batch` で map 付き比較

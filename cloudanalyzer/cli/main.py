@@ -8,7 +8,12 @@ from typing import List, Optional
 
 import typer
 
-from ca.core import load_check_suite, render_check_scaffold, run_check_suite
+from ca.core import (
+    load_check_suite,
+    render_check_scaffold,
+    run_check_suite,
+    summarize_baseline_evolution,
+)
 from ca.compare import run_compare
 from ca.info import get_info
 from ca.diff import run_diff
@@ -57,6 +62,21 @@ def _dump_json(data, path: str) -> None:
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
     typer.echo(f"JSON: {path}")
+
+
+def _load_json_mapping(path: str) -> dict:
+    """Load a JSON object from disk."""
+
+    resolved = Path(path).resolve()
+    try:
+        data = json.loads(resolved.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        raise
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid JSON file: {resolved}: {exc.msg}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(f"Expected top-level JSON object in: {resolved}")
+    return data
 
 
 def _run_evaluate(source: str, target: str, result: dict, plot_path: Optional[str] = None) -> dict:
@@ -196,6 +216,25 @@ def _print_check_suite_result(result: dict) -> None:
             )
             if item.get("report_path"):
                 typer.echo(f"     Report: {item['report_path']}")
+
+
+def _print_baseline_evolution_result(result: dict) -> None:
+    """Print a concise human summary for baseline promotion decisions."""
+
+    typer.echo(f"Candidate: {result['candidate_label']}")
+    typer.echo(f"History:   {len(result['history_labels'])} summaries")
+    typer.echo(
+        f"Decision:  {result['decision']} ({result['strategy']}, confidence={result['confidence']:.2f})"
+    )
+    typer.echo(f"Reasons:   {', '.join(result['reasons'])}")
+    if result["history_labels"]:
+        typer.echo(f"Labels:    {', '.join(result['history_labels'])}")
+    metadata = result.get("metadata")
+    if isinstance(metadata, dict):
+        if "margin_gain" in metadata:
+            typer.echo(f"Margin:    gain={metadata['margin_gain']}")
+        if "consecutive_passes" in metadata:
+            typer.echo(f"Window:    consecutive_passes={metadata['consecutive_passes']}")
 
 @app.callback()
 def common_options(
@@ -1350,6 +1389,50 @@ def init_check_cmd(
     typer.echo(f"Created: {destination}")
     typer.echo(f"Profile: {profile.strip().lower()}")
     typer.echo(f"Next:    ca check {destination}")
+
+
+@app.command("baseline-decision")
+def baseline_decision_cmd(
+    candidate_json: str = typer.Argument(
+        ...,
+        help="Candidate summary JSON emitted by `ca check --output-json`",
+    ),
+    history_json: Optional[List[str]] = typer.Option(
+        None,
+        "--history",
+        help="Historical summary JSON files in oldest-to-newest order",
+    ),
+    output_json: Optional[str] = typer.Option(
+        None,
+        "--output-json",
+        help="Dump baseline decision summary as JSON",
+    ),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Decide whether a candidate QA result should promote, keep, or reject a baseline."""
+
+    try:
+        candidate_result = _load_json_mapping(candidate_json)
+        history_results = [_load_json_mapping(path) for path in (history_json or [])]
+        result = summarize_baseline_evolution(candidate_result, history_results)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        _print_baseline_evolution_result(result)
+
+    if output_json:
+        if format_json:
+            destination = Path(output_json)
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_text(json.dumps(result, indent=2), encoding="utf-8")
+        else:
+            _dump_json(result, output_json)
+    if result["decision"] == "reject":
+        raise typer.Exit(code=1)
 
 
 @app.command("split")

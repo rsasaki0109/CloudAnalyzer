@@ -147,3 +147,67 @@ class CheckScaffoldResult:
 - Experimental space: `cloudanalyzer/ca/experiments/check_scaffolding/`
 - Current stabilized lineage: `static_profiles` adopted directly in core
 
+
+## check_regression_triage
+
+### Current Minimal Interface
+
+The stable interface keeps only the failed-check contract needed to rank regressions for `ca check`.
+
+```python
+class CheckTriageStrategy(Protocol):
+    name: str
+    design: str
+    def rank(self, request: CheckTriageRequest) -> CheckTriageResult: ...
+
+@dataclass(slots=True)
+class CheckTriageRequest:
+    failed_items: tuple[CheckTriageItem, ...]
+    project: str | None = None
+
+@dataclass(slots=True)
+class CheckTriageItem:
+    check_id: str
+    kind: str
+    metrics: dict[str, float]
+    gate: dict[str, float]
+    reasons: tuple[str, ...] = ()
+```
+
+### Stable Boundary
+
+- Stable core: `cloudanalyzer/ca/core/check_triage.py`
+- Experimental space: `cloudanalyzer/ca/experiments/check_triage/`
+- Current stabilized lineage: `severity_weighted` adopted directly in core
+
+
+## check_baseline_evolution
+
+### Current Minimal Interface
+
+The stable interface keeps only the candidate/history contract needed to decide baseline promotion.
+
+```python
+class BaselineEvolutionStrategy(Protocol):
+    name: str
+    design: str
+    def decide(self, request: BaselineEvolutionRequest) -> BaselineEvolutionResult: ...
+
+@dataclass(slots=True)
+class BaselineEvolutionRequest:
+    candidate: BaselineEvolutionSnapshot
+    history: tuple[BaselineEvolutionSnapshot, ...] = ()
+
+@dataclass(slots=True)
+class BaselineEvolutionSnapshot:
+    label: str
+    checks: tuple[BaselineCheckSnapshot, ...]
+    passed: bool
+```
+
+### Stable Boundary
+
+- Stable core: `cloudanalyzer/ca/core/check_baseline_evolution.py`
+- Experimental space: `cloudanalyzer/ca/experiments/check_baseline_evolution/`
+- Current stabilized lineage: `stability_window` adopted directly in core
+

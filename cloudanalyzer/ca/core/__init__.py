@@ -7,6 +7,19 @@ from ca.core.checks import (
     load_check_suite,
     run_check_suite,
 )
+from ca.core.check_baseline_evolution import (
+    BaselineCheckSnapshot,
+    BaselineEvolutionRequest,
+    BaselineEvolutionResult,
+    BaselineEvolutionSnapshot,
+    BaselineEvolutionStrategy,
+    StabilityWindowBaselineEvolutionStrategy,
+    build_baseline_evolution_request,
+    decide_baseline_evolution,
+    snapshot_from_check_result,
+    snapshot_margin_stats,
+    summarize_baseline_evolution,
+)
 from ca.core.check_triage import (
     CheckTriageItem,
     CheckTriageRequest,
@@ -52,6 +65,11 @@ from ca.core.web_trajectory_sampling import (
 )
 
 __all__ = [
+    "BaselineCheckSnapshot",
+    "BaselineEvolutionRequest",
+    "BaselineEvolutionResult",
+    "BaselineEvolutionSnapshot",
+    "BaselineEvolutionStrategy",
     "CheckOutputs",
     "CheckTriageItem",
     "CheckTriageRequest",
@@ -67,6 +85,7 @@ __all__ = [
     "RankedCheckTriageItem",
     "SUPPORTED_CHECK_SCAFFOLD_PROFILES",
     "SeverityWeightedCheckTriageStrategy",
+    "StabilityWindowBaselineEvolutionStrategy",
     "StaticProfileCheckScaffoldingStrategy",
     "TurnAwareWebTrajectorySamplingStrategy",
     "WebProgressiveLoadingChunk",
@@ -79,7 +98,9 @@ __all__ = [
     "WebTrajectorySamplingRequest",
     "WebTrajectorySamplingResult",
     "WebTrajectorySamplingStrategy",
+    "build_baseline_evolution_request",
     "build_check_triage_request",
+    "decide_baseline_evolution",
     "failed_dimensions",
     "load_check_suite",
     "normalized_dimension_gaps",
@@ -89,5 +110,8 @@ __all__ = [
     "reduce_trajectory_for_web",
     "render_check_scaffold",
     "run_check_suite",
+    "snapshot_from_check_result",
+    "snapshot_margin_stats",
+    "summarize_baseline_evolution",
     "summarize_failed_checks",
 ]

@@ -22,6 +22,7 @@ class TestProcessDocs:
             "check_scaffolding",
             "check_regression_triage",
             "check_baseline_evolution",
+            "ground_segmentation_evaluate",
         ]
 
     def test_renderers_include_all_experiment_sections(self):
@@ -37,6 +38,7 @@ class TestProcessDocs:
         assert "check_scaffolding" in experiments_md
         assert "check_regression_triage" in experiments_md
         assert "check_baseline_evolution" in experiments_md
+        assert "ground_segmentation_evaluate" in experiments_md
         assert "Trigger To Re-run" in decisions_md
         assert "cloudanalyzer/ca/core/web_sampling.py" in interfaces_md
         assert "cloudanalyzer/ca/core/web_trajectory_sampling.py" in interfaces_md
@@ -44,6 +46,7 @@ class TestProcessDocs:
         assert "cloudanalyzer/ca/core/check_scaffolding.py" in interfaces_md
         assert "cloudanalyzer/ca/core/check_triage.py" in interfaces_md
         assert "cloudanalyzer/ca/core/check_baseline_evolution.py" in interfaces_md
+        assert "cloudanalyzer/ca/core/ground_evaluate.py" in interfaces_md
 
     def test_write_process_docs_writes_consolidated_files(self, tmp_path: Path):
         reports = build_experiment_reports(repetitions=1)
@@ -62,5 +65,6 @@ class TestProcessDocs:
         assert "check_scaffolding" in experiments_path.read_text(encoding="utf-8")
         assert "check_regression_triage" in experiments_path.read_text(encoding="utf-8")
         assert "check_baseline_evolution" in experiments_path.read_text(encoding="utf-8")
+        assert "ground_segmentation_evaluate" in experiments_path.read_text(encoding="utf-8")
         assert "web_point_cloud_reduction" in decisions_path.read_text(encoding="utf-8")
         assert "Stable interfaces keep only" in interfaces_path.read_text(encoding="utf-8")

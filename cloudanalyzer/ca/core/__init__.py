@@ -33,6 +33,13 @@ from ca.core.check_triage import (
     rank_failed_checks,
     summarize_failed_checks,
 )
+from ca.core.ground_evaluate import (
+    GroundEvaluateRequest,
+    GroundEvaluateResult,
+    GroundEvaluateStrategy,
+    VoxelConfusionGroundEvaluateStrategy,
+    evaluate_ground,
+)
 from ca.core.check_scaffolding import (
     SUPPORTED_CHECK_SCAFFOLD_PROFILES,
     CheckScaffoldRequest,
@@ -80,6 +87,9 @@ __all__ = [
     "CheckScaffoldingStrategy",
     "CheckSpec",
     "CheckSuite",
+    "GroundEvaluateRequest",
+    "GroundEvaluateResult",
+    "GroundEvaluateStrategy",
     "DistanceShellsWebProgressiveLoadingStrategy",
     "RandomBudgetWebSamplingStrategy",
     "RankedCheckTriageItem",
@@ -87,6 +97,7 @@ __all__ = [
     "SeverityWeightedCheckTriageStrategy",
     "StabilityWindowBaselineEvolutionStrategy",
     "StaticProfileCheckScaffoldingStrategy",
+    "VoxelConfusionGroundEvaluateStrategy",
     "TurnAwareWebTrajectorySamplingStrategy",
     "WebProgressiveLoadingChunk",
     "WebProgressiveLoadingRequest",
@@ -101,6 +112,7 @@ __all__ = [
     "build_baseline_evolution_request",
     "build_check_triage_request",
     "decide_baseline_evolution",
+    "evaluate_ground",
     "failed_dimensions",
     "load_check_suite",
     "normalized_dimension_gaps",

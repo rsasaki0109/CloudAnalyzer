@@ -14,6 +14,7 @@ from ca.core import (
     run_check_suite,
     summarize_baseline_evolution,
 )
+from ca.ground_evaluate import evaluate_ground_segmentation
 from ca.compare import run_compare
 from ca.info import get_info
 from ca.diff import run_diff
@@ -812,6 +813,14 @@ def traj_evaluate_cmd(
         None, "--min-coverage",
         help="Minimum matched-pose coverage ratio required (0-1); exits with code 1 if not met",
     ),
+    max_lateral: Optional[float] = typer.Option(
+        None, "--max-lateral",
+        help="Maximum lateral RMSE allowed; exits with code 1 if exceeded",
+    ),
+    max_longitudinal: Optional[float] = typer.Option(
+        None, "--max-longitudinal",
+        help="Maximum longitudinal RMSE allowed; exits with code 1 if exceeded",
+    ),
     report: Optional[str] = typer.Option(
         None, "--report",
         help="Write trajectory report (.md or .html)",
@@ -831,6 +840,8 @@ def traj_evaluate_cmd(
             max_rpe=max_rpe,
             max_drift=max_drift,
             min_coverage=min_coverage,
+            max_lateral=max_lateral,
+            max_longitudinal=max_longitudinal,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -872,6 +883,16 @@ def traj_evaluate_cmd(
         typer.echo(
             f"RPE RMSE:  {rpe['rmse']:.4f}  "
             f"Mean={rpe['mean']:.4f}  Max={rpe['max']:.4f}"
+        )
+        lateral = result["lateral"]
+        longitudinal = result["longitudinal"]
+        typer.echo(
+            f"Lateral:   {lateral['rmse']:.4f}  "
+            f"Mean={lateral['mean']:.4f}  Max={lateral['max']:.4f}"
+        )
+        typer.echo(
+            f"Longitudinal: {longitudinal['rmse']:.4f}  "
+            f"Mean={longitudinal['mean']:.4f}  Max={longitudinal['max']:.4f}"
         )
         typer.echo(
             f"Drift:     {drift['endpoint']:.4f}  "
@@ -1432,6 +1453,72 @@ def baseline_decision_cmd(
         else:
             _dump_json(result, output_json)
     if result["decision"] == "reject":
+        raise typer.Exit(code=1)
+
+
+@app.command("ground-evaluate")
+def ground_evaluate_cmd(
+    estimated_ground: str = typer.Argument(..., help="Estimated ground points (pcd/ply/las)"),
+    estimated_nonground: str = typer.Argument(..., help="Estimated non-ground points (pcd/ply/las)"),
+    reference_ground: str = typer.Argument(..., help="Reference ground points (pcd/ply/las)"),
+    reference_nonground: str = typer.Argument(..., help="Reference non-ground points (pcd/ply/las)"),
+    voxel_size: float = typer.Option(0.2, "--voxel-size", help="Voxel grid resolution for comparison (meters)"),
+    min_precision: Optional[float] = typer.Option(None, "--min-precision", help="Minimum precision required"),
+    min_recall: Optional[float] = typer.Option(None, "--min-recall", help="Minimum recall required"),
+    min_f1: Optional[float] = typer.Option(None, "--min-f1", help="Minimum F1 score required"),
+    min_iou: Optional[float] = typer.Option(None, "--min-iou", help="Minimum IoU required"),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Evaluate ground segmentation quality against reference labels."""
+    try:
+        result = evaluate_ground_segmentation(
+            estimated_ground,
+            estimated_nonground,
+            reference_ground,
+            reference_nonground,
+            voxel_size=voxel_size,
+            min_precision=min_precision,
+            min_recall=min_recall,
+            min_f1=min_f1,
+            min_iou=min_iou,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        counts = result["counts"]
+        cm = result["confusion_matrix"]
+        typer.echo(
+            f"Estimated: ground={counts['estimated_ground_points']}  "
+            f"nonground={counts['estimated_nonground_points']}"
+        )
+        typer.echo(
+            f"Reference: ground={counts['reference_ground_points']}  "
+            f"nonground={counts['reference_nonground_points']}"
+        )
+        typer.echo(f"Voxel:     {result['voxel_size']}m")
+        typer.echo("")
+        typer.echo(f"TP={cm['tp']}  FP={cm['fp']}  FN={cm['fn']}  TN={cm['tn']}")
+        typer.echo(
+            f"Precision: {result['precision']:.4f}  "
+            f"Recall: {result['recall']:.4f}  "
+            f"F1: {result['f1']:.4f}"
+        )
+        typer.echo(f"IoU:       {result['iou']:.4f}  Accuracy: {result['accuracy']:.4f}")
+        gate = result["quality_gate"]
+        if gate is not None:
+            typer.echo("")
+            typer.echo(f"Quality Gate: {'PASS' if gate['passed'] else 'FAIL'}")
+            for reason in gate["reasons"]:
+                typer.echo(f"  - {reason}")
+
+    if output_json:
+        _dump_json(result, output_json)
+    if result["quality_gate"] is not None and not result["quality_gate"]["passed"]:
         raise typer.Exit(code=1)
 
 

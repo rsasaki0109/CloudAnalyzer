@@ -68,3 +68,121 @@ fi
 # Batch quality gate over multiple outputs
 ca batch outputs/ --evaluate reference_map.pcd --min-auc 0.95 --max-chamfer 0.02
 ```
+
+## Config-Driven QA
+
+When one pipeline produces multiple artifacts, keep the gate in `cloudanalyzer.yaml` and run it with one command:
+
+```bash
+ca init-check --profile integrated
+ca check cloudanalyzer.yaml
+```
+
+Example config:
+
+```yaml
+version: 1
+summary_output_json: qa/summary.json
+defaults:
+  report_dir: qa/reports
+  json_dir: qa/results
+checks:
+  - id: mapping-postprocess
+    kind: artifact
+    source: outputs/map.pcd
+    reference: baselines/map_ref.pcd
+    gate:
+      min_auc: 0.95
+      max_chamfer: 0.02
+  - id: localization-run
+    kind: trajectory
+    estimated: outputs/traj.csv
+    reference: baselines/traj_ref.csv
+    alignment: rigid
+    gate:
+      max_ate: 0.5
+      max_rpe: 0.2
+      max_drift: 1.0
+      min_coverage: 0.9
+```
+
+`ca check` writes per-check reports / JSON when `report_dir` and `json_dir` are configured, and it exits with code `1` when any gated check fails.
+
+### GitHub Actions
+
+Use `.github/workflows/config-quality-gate.yml` when the repository already contains `cloudanalyzer.yaml`.
+
+```bash
+gh workflow run config-quality-gate.yml \
+  -f config_path=cloudanalyzer.yaml \
+  -f artifact_name=cloudanalyzer-check-results
+```
+
+The workflow runs `ca check`, uploads `summary.json`, and also uploads each generated report / JSON file declared by the config.
+
+### Reusable Workflow From Another Repository
+
+CloudAnalyzer can also be consumed as a reusable workflow:
+
+```yaml
+name: CloudAnalyzer QA
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  qa:
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
+    with:
+      config_path: cloudanalyzer.yaml
+      artifact_name: cloudanalyzer-check-results
+```
+
+この workflow は caller repository を checkout して、その中の `cloudanalyzer.yaml` を評価する。caller repo 自体に CloudAnalyzer source が無い場合は、`cloudanalyzer_repository` と `cloudanalyzer_ref` から install する。
+
+外部利用時は `@main` ではなく tag か commit SHA への pin を推奨。
+
+### Caller Repo Examples
+
+Mapping repo:
+
+```yaml
+checks:
+  - id: mapping-postprocess
+    kind: artifact
+    source: outputs/map.pcd
+    reference: baselines/map_ref.pcd
+    gate:
+      min_auc: 0.95
+      max_chamfer: 0.02
+```
+
+Localization repo:
+
+```yaml
+checks:
+  - id: localization-run
+    kind: trajectory
+    estimated: outputs/trajectory.csv
+    reference: baselines/trajectory_ref.csv
+    alignment: rigid
+    gate:
+      max_ate: 0.5
+      max_rpe: 0.2
+      max_drift: 1.0
+      min_coverage: 0.9
+```
+
+Perception repo:
+
+```yaml
+checks:
+  - id: perception-output
+    kind: artifact
+    source: outputs/reconstruction.pcd
+    reference: baselines/reconstruction_ref.pcd
+    gate:
+      min_auc: 0.95
+      max_chamfer: 0.02
+```

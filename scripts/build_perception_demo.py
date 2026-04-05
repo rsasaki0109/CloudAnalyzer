@@ -93,6 +93,170 @@ def _make_ground_scene(mesh: o3d.geometry.TriangleMesh, rng: np.random.Generator
     }
 
 
+def _write_dashboard(output_dir: Path, result: dict, scene: dict) -> None:
+    """Write a single-page HTML dashboard for the ground evaluation result."""
+    cm = result["confusion_matrix"]
+    counts = result["counts"]
+    gate = result.get("quality_gate") or {}
+    gate_status = "PASS" if gate.get("passed", True) else "FAIL"
+    gate_color = "#16a34a" if gate.get("passed", True) else "#dc2626"
+    gate_reasons = gate.get("reasons", [])
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CloudAnalyzer — Ground Segmentation QA</title>
+<style>
+  :root {{ --bg: #0f172a; --card: #1e293b; --text: #e2e8f0; --accent: #38bdf8;
+           --green: #4ade80; --red: #f87171; --dim: #94a3b8; }}
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem; }}
+  .container {{ max-width: 900px; margin: 0 auto; }}
+  h1 {{ font-size: 1.8rem; margin-bottom: 0.5rem; }}
+  .subtitle {{ color: var(--dim); margin-bottom: 2rem; font-size: 0.95rem; }}
+  .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }}
+  .metric-card {{ background: var(--card); border-radius: 12px; padding: 1.5rem; text-align: center; }}
+  .metric-value {{ font-size: 2.2rem; font-weight: 700; color: var(--accent); }}
+  .metric-label {{ color: var(--dim); font-size: 0.85rem; margin-top: 0.25rem; }}
+  .gate-badge {{ display: inline-block; padding: 0.4rem 1.2rem; border-radius: 8px;
+                  font-weight: 700; font-size: 1.1rem; }}
+  .section {{ background: var(--card); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }}
+  .section h2 {{ font-size: 1.1rem; margin-bottom: 1rem; color: var(--accent); }}
+  table {{ width: 100%; border-collapse: collapse; }}
+  th, td {{ padding: 0.6rem 1rem; text-align: right; border-bottom: 1px solid #334155; }}
+  th {{ color: var(--dim); font-weight: 500; font-size: 0.85rem; text-transform: uppercase; }}
+  td:first-child, th:first-child {{ text-align: left; }}
+  .cm-grid {{ display: grid; grid-template-columns: auto 1fr 1fr; gap: 0; width: fit-content; margin: 0 auto; }}
+  .cm-cell {{ width: 100px; height: 60px; display: flex; align-items: center; justify-content: center;
+              font-weight: 700; font-size: 1.2rem; border: 1px solid #334155; }}
+  .cm-header {{ display: flex; align-items: center; justify-content: center;
+                color: var(--dim); font-size: 0.8rem; font-weight: 500; }}
+  .cm-tp {{ background: rgba(74, 222, 128, 0.15); color: var(--green); }}
+  .cm-tn {{ background: rgba(74, 222, 128, 0.08); color: var(--green); }}
+  .cm-fp {{ background: rgba(248, 113, 113, 0.15); color: var(--red); }}
+  .cm-fn {{ background: rgba(248, 113, 113, 0.08); color: var(--red); }}
+  .reasons {{ margin-top: 0.5rem; }}
+  .reasons li {{ color: var(--dim); font-size: 0.9rem; margin-left: 1.2rem; }}
+  footer {{ text-align: center; color: var(--dim); font-size: 0.8rem; margin-top: 2rem; }}
+  footer a {{ color: var(--accent); text-decoration: none; }}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Ground Segmentation QA</h1>
+  <p class="subtitle">
+    Stanford Bunny on synthetic ground plane &middot; CloudAnalyzer <code>ca ground-evaluate</code>
+  </p>
+
+  <div class="grid">
+    <div class="metric-card">
+      <div class="metric-value">{result['precision']:.3f}</div>
+      <div class="metric-label">Precision</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{result['recall']:.3f}</div>
+      <div class="metric-label">Recall</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{result['f1']:.3f}</div>
+      <div class="metric-label">F1 Score</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">{result['iou']:.3f}</div>
+      <div class="metric-label">IoU</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value" style="color: {gate_color}">{gate_status}</div>
+      <div class="metric-label">Quality Gate</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Confusion Matrix (voxel-level)</h2>
+    <div class="cm-grid">
+      <div class="cm-header"></div>
+      <div class="cm-header">Ref: Ground</div>
+      <div class="cm-header">Ref: Non-ground</div>
+      <div class="cm-header">Est: Ground</div>
+      <div class="cm-cell cm-tp">{cm['tp']}</div>
+      <div class="cm-cell cm-fp">{cm['fp']}</div>
+      <div class="cm-header">Est: Non-ground</div>
+      <div class="cm-cell cm-fn">{cm['fn']}</div>
+      <div class="cm-cell cm-tn">{cm['tn']}</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Point Counts</h2>
+    <table>
+      <tr><th></th><th>Ground</th><th>Non-ground</th><th>Total</th></tr>
+      <tr>
+        <td>Reference</td>
+        <td>{counts['reference_ground_points']:,}</td>
+        <td>{counts['reference_nonground_points']:,}</td>
+        <td>{counts['reference_ground_points'] + counts['reference_nonground_points']:,}</td>
+      </tr>
+      <tr>
+        <td>Estimated</td>
+        <td>{counts['estimated_ground_points']:,}</td>
+        <td>{counts['estimated_nonground_points']:,}</td>
+        <td>{counts['estimated_ground_points'] + counts['estimated_nonground_points']:,}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Scene</h2>
+    <table>
+      <tr><td>Dataset</td><td>Stanford Bunny + synthetic ground plane</td></tr>
+      <tr><td>Ground plane</td><td>3,000 points, z &in; [-0.3, 0.3]</td></tr>
+      <tr><td>Non-ground (bunny)</td><td>5,000 points, lifted z+2.0</td></tr>
+      <tr><td>Simulated errors</td><td>5% ground leak, 3% non-ground leak</td></tr>
+      <tr><td>Voxel size</td><td>{result['voxel_size']}m</td></tr>
+    </table>
+  </div>
+
+  <div class="section">
+    <h2>Quality Gate</h2>
+    <table>
+      <tr><td>min_precision</td><td>{gate.get('min_precision', '—')}</td></tr>
+      <tr><td>min_recall</td><td>{gate.get('min_recall', '—')}</td></tr>
+      <tr><td>min_f1</td><td>{gate.get('min_f1', '—')}</td></tr>
+      <tr><td>min_iou</td><td>{gate.get('min_iou', '—')}</td></tr>
+    </table>
+    {"<ul class='reasons'>" + "".join(f"<li>{r}</li>" for r in gate_reasons) + "</ul>" if gate_reasons else ""}
+  </div>
+
+  <div class="section">
+    <h2>Reproduce</h2>
+    <div style="background: #0f172a; padding: 1rem; border-radius: 8px; font-family: monospace; font-size: 0.85rem; overflow-x: auto;">
+      <div style="color: var(--dim);"># generate demo data + evaluate</div>
+      <div>python3 scripts/build_perception_demo.py</div>
+      <br>
+      <div style="color: var(--dim);"># or run directly</div>
+      <div>ca ground-evaluate \\</div>
+      <div>&nbsp;&nbsp;estimated_ground.pcd estimated_nonground.pcd \\</div>
+      <div>&nbsp;&nbsp;reference_ground.pcd reference_nonground.pcd \\</div>
+      <div>&nbsp;&nbsp;--min-f1 0.9 --voxel-size 0.5</div>
+    </div>
+  </div>
+
+  <footer>
+    <p>
+      Built with <a href="https://github.com/rsasaki0109/CloudAnalyzer">CloudAnalyzer</a> &middot;
+      Data: <a href="https://graphics.stanford.edu/data/3Dscanrep/">Stanford 3D Scanning Repository</a>
+    </p>
+  </footer>
+</div>
+</body>
+</html>"""
+
+    (output_dir / "index.html").write_text(html, encoding="utf-8")
+
+
 def _write_pcd(path: Path, points: np.ndarray) -> None:
     pcd = o3d.geometry.PointCloud()
     pcd.points = o3d.utility.Vector3dVector(points)
@@ -151,6 +315,9 @@ def main() -> None:
     gate = result.get("quality_gate")
     if gate:
         print(f"  Gate:      {'PASS' if gate['passed'] else 'FAIL'}")
+
+    # Write HTML dashboard
+    _write_dashboard(output_dir, result, scene)
 
     # Write a README for the demo
     readme = output_dir / "README.md"

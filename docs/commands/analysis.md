@@ -182,6 +182,39 @@ Input files are the JSON summaries emitted by `ca check --output-json ...`. The 
 | `--format-json` | `false` | Print the decision summary to stdout as JSON |
 | `--output-json` | `None` | Dump the decision summary as JSON |
 
+## ca ground-evaluate
+
+Evaluate ground segmentation quality by comparing estimated ground/non-ground point clouds against reference labels.
+
+```bash
+# basic evaluation
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd
+
+# with quality gate
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd \
+  --min-f1 0.9 --min-iou 0.8 --voxel-size 0.5
+
+# JSON output
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd \
+  --format-json --output-json qa/ground_result.json
+```
+
+Both estimation and reference are provided as separate ground and non-ground point cloud files. Evaluation uses voxel-based confusion matrix comparison. The `kind: ground` check type is also available in `cloudanalyzer.yaml`.
+
+| Option | Default | Description |
+|---|---|---|
+| `ESTIMATED_GROUND` | required | Estimated ground points (pcd/ply/las) |
+| `ESTIMATED_NONGROUND` | required | Estimated non-ground points |
+| `REFERENCE_GROUND` | required | Reference ground points |
+| `REFERENCE_NONGROUND` | required | Reference non-ground points |
+| `--voxel-size` | `0.2` | Voxel grid resolution (meters) |
+| `--min-precision` | `None` | Minimum precision gate |
+| `--min-recall` | `None` | Minimum recall gate |
+| `--min-f1` | `None` | Minimum F1 gate |
+| `--min-iou` | `None` | Minimum IoU gate |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
+
 ## ca traj-evaluate
 
 Evaluate an estimated trajectory against a reference trajectory.

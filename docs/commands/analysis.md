@@ -83,6 +83,105 @@ ca batch decoded/ --evaluate reference.pcd \
 | `--baseline-dir` | `None` | Directory containing original uncompressed files for size ratio baseline |
 | `-t`, `--thresholds` | default evaluate thresholds | Comma-separated distance thresholds for `--evaluate` |
 
+## ca check
+
+Run config-driven QA across artifact, trajectory, and integrated run checks.
+
+```bash
+# default config path
+ca check
+
+# explicit config path
+ca check cloudanalyzer.yaml
+
+# JSON summary for CI
+ca check cloudanalyzer.yaml --format-json --output-json qa/summary.json
+```
+
+Minimal config:
+
+```yaml
+version: 1
+defaults:
+  report_dir: qa/reports
+  json_dir: qa/results
+checks:
+  - id: mapping-postprocess
+    kind: artifact
+    source: outputs/map.pcd
+    reference: baselines/map_ref.pcd
+    gate:
+      min_auc: 0.95
+      max_chamfer: 0.02
+  - id: localization-run
+    kind: trajectory
+    estimated: outputs/traj.csv
+    reference: baselines/traj_ref.csv
+    alignment: rigid
+    gate:
+      max_ate: 0.5
+      max_rpe: 0.2
+      max_drift: 1.0
+      min_coverage: 0.9
+```
+
+`kind` supports `artifact`, `artifact_batch`, `trajectory`, `trajectory_batch`, `run`, and `run_batch`. `map` and `map_batch` are supported as aliases when you want mapping-oriented wording. Relative paths resolve from the config file location.
+When one or more gated checks fail, `ca check` also prints a severity-first triage order. The JSON summary stores the same ranking under `summary.triage`.
+
+| Option | Default | Description |
+|---|---|---|
+| `CONFIG` | `cloudanalyzer.yaml` | YAML/JSON config file for unified QA |
+| `--format-json` | `false` | Print aggregated check results to stdout as JSON |
+| `--output-json` | `None` | Dump aggregated check summary as JSON |
+
+## ca init-check
+
+Write a starter `cloudanalyzer.yaml` so a repo can adopt config-driven QA without hand-writing the contract first.
+
+```bash
+# integrated mapping / localization / perception starter
+ca init-check
+
+# mapping-only starter
+ca init-check configs/mapping.cloudanalyzer.yaml --profile mapping
+
+# overwrite an existing template
+ca init-check --profile perception --force
+```
+
+`--profile` supports `mapping`, `localization`, `perception`, and `integrated`. The generated config is immediately runnable with `ca check ...`.
+
+| Option | Default | Description |
+|---|---|---|
+| `OUTPUT` | `cloudanalyzer.yaml` | Destination path for the starter config |
+| `--profile` | `integrated` | Template slice to scaffold |
+| `--force` | `false` | Overwrite an existing file |
+
+## ca baseline-decision
+
+Decide whether a candidate `ca check` summary should promote, keep, or reject a baseline revision.
+
+```bash
+# compare a current candidate against prior baseline summaries
+ca baseline-decision qa/current-summary.json \
+  --history qa/baseline-2026-03-20.json \
+  --history qa/baseline-2026-03-27.json
+
+# machine-readable output
+ca baseline-decision qa/current-summary.json \
+  --history qa/baseline-summary.json \
+  --format-json --output-json qa/baseline-decision.json
+```
+
+Input files are the JSON summaries emitted by `ca check --output-json ...`. The current stable strategy is `stability_window`: failed candidates are rejected immediately, strong candidates without enough history stay `keep`, and only stable improving windows become `promote`.
+
+| Option | Default | Description |
+|---|---|---|
+| `CANDIDATE_JSON` | required | Candidate `ca check` summary JSON |
+| `--history` | `[]` | Historical summary JSON files, oldest to newest |
+| `--format-json` | `false` | Print the decision summary to stdout as JSON |
+| `--output-json` | `None` | Dump the decision summary as JSON |
+
 ## ca traj-evaluate
 
 Evaluate an estimated trajectory against a reference trajectory.

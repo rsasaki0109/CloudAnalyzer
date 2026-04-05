@@ -188,18 +188,55 @@ def _interpolate_matches(
     )
 
 
+def _decompose_lateral_longitudinal(
+    estimated_positions: np.ndarray,
+    reference_positions: np.ndarray,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Decompose position errors into lateral and longitudinal components.
+
+    The reference trajectory tangent defines the longitudinal axis at each pose.
+    Lateral error is the component perpendicular to the tangent.
+    """
+    error_vectors = estimated_positions - reference_positions
+    n = reference_positions.shape[0]
+
+    # Central-difference tangent; forward/backward at endpoints
+    tangents = np.empty_like(reference_positions)
+    if n >= 3:
+        tangents[1:-1] = reference_positions[2:] - reference_positions[:-2]
+    tangents[0] = reference_positions[min(1, n - 1)] - reference_positions[0]
+    tangents[-1] = reference_positions[-1] - reference_positions[max(-2, -n)]
+
+    norms = np.linalg.norm(tangents, axis=1, keepdims=True)
+    norms = np.where(norms < 1e-12, 1.0, norms)
+    tangents = tangents / norms
+
+    longitudinal = np.einsum("ij,ij->i", error_vectors, tangents)
+    lateral = np.sqrt(
+        np.maximum(np.sum(error_vectors ** 2, axis=1) - longitudinal ** 2, 0.0)
+    )
+    return lateral, longitudinal
+
+
 def _quality_gate(
     ate_rmse: float,
     rpe_rmse: float,
     endpoint_drift: float,
     coverage_ratio: float,
+    lateral_rmse: float = 0.0,
+    longitudinal_rmse: float = 0.0,
     max_ate: float | None = None,
     max_rpe: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
+    max_lateral: float | None = None,
+    max_longitudinal: float | None = None,
 ) -> dict | None:
     """Build optional trajectory quality gate metadata."""
-    if max_ate is None and max_rpe is None and max_drift is None and min_coverage is None:
+    if all(
+        v is None
+        for v in (max_ate, max_rpe, max_drift, min_coverage, max_lateral, max_longitudinal)
+    ):
         return None
 
     reasons = []
@@ -213,12 +250,18 @@ def _quality_gate(
         reasons.append(
             f"Coverage {coverage_ratio:.1%} < min_coverage {min_coverage:.1%}"
         )
+    if max_lateral is not None and lateral_rmse > max_lateral:
+        reasons.append(f"Lateral RMSE {lateral_rmse:.4f} > max_lateral {max_lateral:.4f}")
+    if max_longitudinal is not None and longitudinal_rmse > max_longitudinal:
+        reasons.append(f"Longitudinal RMSE {longitudinal_rmse:.4f} > max_longitudinal {max_longitudinal:.4f}")
     return {
         "passed": not reasons,
         "max_ate": max_ate,
         "max_rpe": max_rpe,
         "max_drift": max_drift,
         "min_coverage": min_coverage,
+        "max_lateral": max_lateral,
+        "max_longitudinal": max_longitudinal,
         "reasons": reasons,
     }
 
@@ -293,6 +336,8 @@ def evaluate_trajectory(
     max_rpe: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
+    max_lateral: float | None = None,
+    max_longitudinal: float | None = None,
 ) -> dict:
     """Evaluate a trajectory against a reference trajectory."""
     if max_time_delta <= 0:
@@ -322,6 +367,12 @@ def evaluate_trajectory(
     )
 
     ate_errors = np.linalg.norm(aligned_estimated_positions - matched_reference_positions, axis=1)
+
+    # Lateral / longitudinal decomposition along reference tangent
+    lateral_errors, longitudinal_errors = _decompose_lateral_longitudinal(
+        aligned_estimated_positions, matched_reference_positions
+    )
+
     estimated_steps = np.diff(aligned_estimated_positions, axis=0)
     reference_steps = np.diff(matched_reference_positions, axis=0)
     rpe_errors = np.linalg.norm(estimated_steps - reference_steps, axis=1)
@@ -362,6 +413,8 @@ def evaluate_trajectory(
 
     ate_stats = _summary_stats(ate_errors)
     rpe_stats = _summary_stats(rpe_errors)
+    lateral_stats = _summary_stats(lateral_errors)
+    longitudinal_stats = _summary_stats(np.abs(longitudinal_errors))
 
     return {
         "estimated_path": estimated_path,
@@ -374,6 +427,8 @@ def evaluate_trajectory(
         "matching": matching,
         "ate": ate_stats,
         "rpe_translation": rpe_stats,
+        "lateral": lateral_stats,
+        "longitudinal": longitudinal_stats,
         "drift": {
             "endpoint": endpoint_drift,
             "ratio_to_reference_path_length": drift_ratio,
@@ -406,6 +461,8 @@ def evaluate_trajectory(
             "estimated_positions": aligned_estimated_positions.tolist(),
             "reference_positions": matched_reference_positions.tolist(),
             "ate_errors": ate_errors.tolist(),
+            "lateral_errors": lateral_errors.tolist(),
+            "longitudinal_errors": longitudinal_errors.tolist(),
         },
         "error_series": {
             "rpe_timestamps": (
@@ -420,10 +477,14 @@ def evaluate_trajectory(
             rpe_stats["rmse"],
             endpoint_drift,
             matching["coverage_ratio"],
+            lateral_rmse=lateral_stats["rmse"],
+            longitudinal_rmse=longitudinal_stats["rmse"],
             max_ate=max_ate,
             max_rpe=max_rpe,
             max_drift=max_drift,
             min_coverage=min_coverage,
+            max_lateral=max_lateral,
+            max_longitudinal=max_longitudinal,
         ),
     }
 

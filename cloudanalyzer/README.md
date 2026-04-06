@@ -2,7 +2,11 @@
 
 AI-friendly CLI tool for point cloud analysis and evaluation.
 
+For the full product overview (Japanese), demos, and tutorials, see the [repository root README](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/README.md).
+
 ## Install
+
+From this directory (the Python package root):
 
 ```bash
 pip install -e .
@@ -14,6 +18,8 @@ docker run ca info cloud.pcd
 
 ## Commands
 
+There are **31** CLI subcommands (see `ca --help`). Summary:
+
 ### Analysis & Evaluation
 
 | Command | Description |
@@ -21,6 +27,9 @@ docker run ca info cloud.pcd
 | `ca compare` | Compare two point clouds with ICP/GICP registration |
 | `ca diff` | Quick distance stats (no registration) |
 | `ca evaluate` | F1, Chamfer, Hausdorff, AUC evaluation |
+| `ca check` | Config-driven unified QA (`cloudanalyzer.yaml`) |
+| `ca init-check` | Emit a starter `cloudanalyzer.yaml` profile |
+| `ca ground-evaluate` | Ground segmentation QA (precision/recall/F1/IoU, optional gates) |
 | `ca traj-evaluate` | ATE, translational RPE, drift evaluation for trajectories |
 | `ca traj-batch` | Batch trajectory benchmark with coverage, gate, and reports |
 | `ca run-evaluate` | Combined map + trajectory QA for one run |
@@ -49,9 +58,24 @@ docker run ca info cloud.pcd
 | Command | Description |
 |---|---|
 | `ca web` | Browser 3D viewer, with optional heatmap, reference overlay, and trajectory run overlay |
+| `ca web-export` | Write a static browser viewer bundle (for demos and sharing) |
 | `ca view` | Interactive 3D viewer |
 | `ca density-map` | 2D density heatmap image |
 | `ca heatmap3d` | 3D distance heatmap snapshot |
+
+### Baseline history
+
+| Command | Description |
+|---|---|
+| `ca baseline-save` | Save a QA summary JSON into a rotating history directory |
+| `ca baseline-list` | List baselines saved in a history directory |
+| `ca baseline-decision` | Promote / keep / reject a candidate baseline vs history |
+
+### Utility
+
+| Command | Description |
+|---|---|
+| `ca version` | Print CLI version |
 
 ## Usage Examples
 
@@ -172,14 +196,27 @@ ca info cloud.pcd --format-json | jq '.num_points'
 ca evaluate a.pcd b.pcd --format-json | jq '.auc'
 ```
 
-## CI Quality Gate
+## CI quality gate
 
-Use the `quality-gate.yml` workflow to fail CI if point cloud quality drops:
+Point cloud / trajectory / perception QA is usually driven by `ca check` and a `cloudanalyzer.yaml` config (see [docs/ci.md](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/ci.md) and the [map quality gate tutorial](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/tutorial-map-quality-gate.md)).
+
+In **this** GitHub repo, reusable workflows run the same gates in CI. Pin to a **tag or SHA** when calling them from another repository (not floating `@main`).
 
 ```yaml
-# Triggers manually with source/reference paths and thresholds
-# Fails if AUC < threshold or Chamfer > threshold
+jobs:
+  qa:
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
+    with:
+      config_path: cloudanalyzer.yaml
+
+  baseline:
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/baseline-gate.yml@main
+    with:
+      config_path: cloudanalyzer.yaml
+      history_dir: qa/history
 ```
+
+The repo also ships a [manual quality-gate workflow](https://github.com/rsasaki0109/CloudAnalyzer/actions) that accepts source/reference paths and thresholds for ad-hoc runs.
 
 ## Python API
 

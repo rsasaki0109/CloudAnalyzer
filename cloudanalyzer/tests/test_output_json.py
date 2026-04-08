@@ -6,7 +6,7 @@ import open3d as o3d
 import pytest
 from typer.testing import CliRunner
 
-from cli.main import app
+from cloudanalyzer_cli.main import app
 
 runner = CliRunner()
 

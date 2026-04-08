@@ -2,7 +2,7 @@
 
 from typer.testing import CliRunner
 
-from cli.main import app
+from cloudanalyzer_cli.main import app
 
 runner = CliRunner()
 

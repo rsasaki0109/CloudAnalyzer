@@ -8,7 +8,7 @@ import pytest
 from typer.testing import CliRunner
 
 from ca.core import load_check_suite
-from cli.main import app
+from cloudanalyzer_cli.main import app
 
 runner = CliRunner()
 
@@ -945,7 +945,7 @@ class TestCLI:
         assert data[0]["inspect"]["run_evaluate"].startswith("ca run-evaluate ")
 
     def test_web_heatmap_flag(self, tmp_path, identical_pcd, monkeypatch):
-        import cli.main as cli_main
+        import cloudanalyzer_cli.main as cli_main
         import open3d as o3d
 
         source = tmp_path / "source.pcd"
@@ -993,7 +993,7 @@ class TestCLI:
         assert called["trajectory_path"] is None
 
     def test_web_trajectory_overlay_flags(self, tmp_path, identical_pcd, monkeypatch):
-        import cli.main as cli_main
+        import cloudanalyzer_cli.main as cli_main
         import open3d as o3d
 
         source = tmp_path / "source.pcd"
@@ -1064,7 +1064,7 @@ class TestCLI:
         assert called["trajectory_align_rigid"] is True
 
     def test_web_export_flags(self, tmp_path, identical_pcd, monkeypatch):
-        import cli.main as cli_main
+        import cloudanalyzer_cli.main as cli_main
         import open3d as o3d
 
         source = tmp_path / "source.pcd"

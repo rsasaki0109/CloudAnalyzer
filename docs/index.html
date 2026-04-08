@@ -297,9 +297,9 @@
       <article class="detail-card">
         <h2>Perception Batch Demo</h2>
         <p>
-          Batch comparison of a non-deep candidate and a deep candidate on the same public RELLIS-3D
-          LiDAR frame. Demonstrates <span class="accent">ca batch --evaluate</span> with AUC, Chamfer,
-          inspection commands, and quality-gate status.
+          Batch comparison of a geometry-first non-deep baseline and a higher-fidelity deep baseline
+          on the same public RELLIS-3D LiDAR frame. Demonstrates <span class="accent">ca batch --evaluate</span>
+          with AUC, Chamfer, inspection commands, and quality-gate status.
         </p>
         <a class="button button-primary" href="./demo/perception/index.html">View Perception Report</a>
       </article>
@@ -316,7 +316,8 @@ python scripts/build_perception_demo.py --output docs/demo/perception</div>
         <p>
           Each demo ships with an attribution file generated next to the bundle. The map viewer uses the
           BSD-2-Clause `hdl_localization` sample map, while the checked-in perception report is derived from
-          the public RELLIS-3D example bundle and carries its CC BY-NC-SA 3.0 attribution note.
+          the public RELLIS-3D example bundle and carries its CC BY-NC-SA 3.0 attribution note. The perception
+          candidates are deterministic demo baselines generated from the same public frame.
         </p>
       </article>
     </section>

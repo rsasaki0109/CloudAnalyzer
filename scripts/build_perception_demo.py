@@ -64,6 +64,7 @@ DEFAULT_FRAME = "000001"
 DEFAULT_THRESHOLDS = [0.02, 0.05, 0.1, 0.2, 0.3]
 MIN_AUC = 0.90
 MAX_CHAMFER = 0.05
+REPORT_TITLE = "CloudAnalyzer Perception Artifact Comparison"
 
 
 def _read_rellis_scan(example_root: Path, frame: str) -> tuple[np.ndarray, np.ndarray]:
@@ -135,10 +136,17 @@ def _result_rows(results: list[dict]) -> list[str]:
     rows = []
     for item in results:
         gate = item.get("quality_gate") or {}
+        retained_ratio = (
+            100.0 * item["num_points"] / item["reference_points"]
+            if item.get("reference_points")
+            else 0.0
+        )
         rows.append(
-            "| `%s` | %.4f | %.4f | %.4f | %s |"
+            "| `%s` | %d | %.1f%% | %.4f | %.4f | %.4f | %s |"
             % (
                 Path(item["path"]).name,
+                item["num_points"],
+                retained_ratio,
                 item["auc"],
                 item["chamfer_distance"],
                 item["best_f1"]["f1"],
@@ -207,6 +215,17 @@ def main() -> None:
         max_chamfer=MAX_CHAMFER,
     )
     results, normalized_reference_path = _normalize_result_paths(results, reference_path, output_dir)
+    report_notes = [
+        (
+            "This static report compares a geometry-first non-deep baseline and a "
+            "higher-fidelity deep baseline on the same public RELLIS-3D frame."
+        ),
+        (
+            "Both candidates are deterministic demo artifacts derived from the "
+            "reference scene for documentation purposes; they are not archived "
+            "model outputs."
+        ),
+    ]
     summary = make_batch_summary(
         results,
         normalized_reference_path,
@@ -220,6 +239,8 @@ def main() -> None:
         str(output_dir / "index.html"),
         min_auc=MIN_AUC,
         max_chamfer=MAX_CHAMFER,
+        report_title=REPORT_TITLE,
+        report_notes=report_notes,
     )
     save_batch_report(
         results,
@@ -227,9 +248,41 @@ def main() -> None:
         str(output_dir / "report.md"),
         min_auc=MIN_AUC,
         max_chamfer=MAX_CHAMFER,
+        report_title=REPORT_TITLE,
+        report_notes=report_notes,
     )
     (output_dir / "results.json").write_text(
-        json.dumps({"results": results, "summary": summary}, indent=2),
+        json.dumps(
+            {
+                "metadata": {
+                    "title": REPORT_TITLE,
+                    "frame": args.frame,
+                    "reference_path": normalized_reference_path,
+                    "notes": report_notes,
+                    "candidates": [
+                        {
+                            "path": "candidates/nondeep_baseline.pcd",
+                            "kind": "non-deep",
+                            "description": (
+                                "Geometry-first baseline with coarse voxelization, "
+                                "long-range thinning, and a larger rigid bias."
+                            ),
+                        },
+                        {
+                            "path": "candidates/deep_baseline.pcd",
+                            "kind": "deep",
+                            "description": (
+                                "Higher-fidelity baseline with denser sampling and "
+                                "a smaller rigid bias."
+                            ),
+                        },
+                    ],
+                },
+                "results": results,
+                "summary": summary,
+            },
+            indent=2,
+        ),
         encoding="utf-8",
     )
 
@@ -245,24 +298,25 @@ def main() -> None:
         "- Ignored labels: `%s`" % ", ".join(str(label_id) for label_id in IGNORED_LABEL_IDS),
         "",
         "The generated artifacts in this directory are derived from the public example bundle above.",
+        "The `deep_baseline` and `nondeep_baseline` files are deterministic demo baselines, not archived model outputs.",
         "Keep the upstream attribution and non-commercial / share-alike terms with these files.",
     ]
     (output_dir / "ATTRIBUTION.md").write_text("\n".join(attribution_lines) + "\n", encoding="utf-8")
 
     readme_lines = [
-        "# Perception Batch QA Demo",
+        "# Perception Artifact Comparison Demo",
         "",
         "This demo compares two candidate perception artifacts against the same public reference frame.",
         "It uses the RELLIS-3D Ouster LiDAR example and evaluates both candidates with `ca batch`.",
         "",
         "## What The Candidates Mean",
         "",
-        "- `nondeep_baseline.pcd`: deterministic geometry-only proxy with coarse voxelization, long-range thinning, and a small rigid bias.",
-        "- `deep_baseline.pcd`: higher-fidelity proxy with denser sampling and a smaller rigid bias.",
+        "- `nondeep_baseline.pcd`: geometry-first non-deep baseline with coarse voxelization, long-range thinning, and a larger rigid bias.",
+        "- `deep_baseline.pcd`: higher-fidelity deep baseline with denser sampling and a smaller rigid bias.",
         "- `reference_scene.pcd`: non-void labeled points from the official public RELLIS-3D example frame.",
         "",
-        "These are demo proxies, not archived model outputs. The point is to show how CloudAnalyzer",
-        "compares a non-deep candidate and a deep candidate against the same public reference artifact.",
+        "These are deterministic demo artifacts, not archived model outputs. The point is to show how",
+        "CloudAnalyzer compares a non-deep baseline and a deep baseline against the same public reference artifact.",
         "",
         "## Source Data",
         "",
@@ -277,22 +331,26 @@ def main() -> None:
         "",
         "## Batch Metrics",
         "",
-        "| Candidate | AUC | Chamfer | Best F1 | Gate |",
-        "|---|---:|---:|---:|---|",
+        "| Candidate | Points | Retained vs Ref | AUC | Chamfer | Best F1 | Gate |",
+        "|---|---:|---:|---:|---:|---:|---|",
         *_result_rows(results),
         "",
         "Gate settings: `min_auc=%.2f`, `max_chamfer=%.2f`" % (MIN_AUC, MAX_CHAMFER),
+        "",
+        "Interpretation:",
+        "The non-deep baseline intentionally drops long-range geometry and fails the gate.",
+        "The deep baseline keeps denser geometry and passes the same gate on the same frame.",
         "",
         "## Files",
         "",
         "| File | Description |",
         "|---|---|",
         "| `reference_scene.pcd` | Public reference artifact derived from the official labels |",
-        "| `candidates/nondeep_baseline.pcd` | Geometry-only non-deep proxy candidate |",
-        "| `candidates/deep_baseline.pcd` | Higher-fidelity deep proxy candidate |",
+        "| `candidates/nondeep_baseline.pcd` | Geometry-first non-deep baseline artifact |",
+        "| `candidates/deep_baseline.pcd` | Higher-fidelity deep baseline artifact |",
         "| `index.html` | HTML batch report for GitHub Pages |",
         "| `report.md` | Markdown version of the same batch report |",
-        "| `results.json` | Raw batch results plus summary |",
+        "| `results.json` | Raw batch results, summary, and demo metadata |",
         "| `ATTRIBUTION.md` | Dataset provenance and license note |",
         "",
         "## Reproduce",

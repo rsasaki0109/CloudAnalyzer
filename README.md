@@ -105,24 +105,22 @@ cd cloudanalyzer && pip install -e .
 
 | Demo | Description |
 |---|---|
-| [Stanford Bunny Viewer](https://rsasaki0109.github.io/CloudAnalyzer/demo/stanford-bunny/index.html) | Static 3D viewer exported by `ca web-export`, with heatmap / trajectory / point picking support |
-| [Perception QA Dashboard](https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/index.html) | Dashboard for `ca ground-evaluate` results, including confusion matrix and quality gate summary |
+| [hdl_localization Map Viewer](https://rsasaki0109.github.io/CloudAnalyzer/demo/hdl-localization-map/index.html) | Static 3D viewer exported by `ca web-export`, using the public AISL / Toyohashi `hdl_localization` sample map with heatmap, trajectory, and point inspection support |
+| [Perception QA Dashboard](https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/index.html) | Dashboard for `ca ground-evaluate`, built from the public RELLIS-3D LiDAR example and its official semantic labels |
 
 ```bash
 # export a static viewer
 ca web-export map.pcd map_ref.pcd --heatmap -o docs/demo/local
 
 # rebuild demos locally
-python scripts/build_public_demo.py --output docs/demo/stanford-bunny
+python scripts/build_public_demo.py --output docs/demo/hdl-localization-map
 python scripts/build_perception_demo.py --output docs/demo/perception
 ```
 
-Use the public benchmark pack to fix `ca check` pass/fail behavior in CI:
-
-```bash
-python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
-ca check benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
-```
+The map viewer is generated from the public `hdl_localization` sample map published by
+AISL at Toyohashi University of Technology. The perception dashboard is generated from the
+public RELLIS-3D "Ouster LiDAR with Annotation Examples" bundle and treats `dirt`, `grass`,
+`asphalt`, `concrete`, `puddle`, and `mud` as ground classes while ignoring `void`.
 
 ## Referenced OSS
 
@@ -133,6 +131,7 @@ CloudAnalyzer builds on, interoperates with, or is positioned alongside the foll
 - [CloudCompare](https://www.cloudcompare.org/) as the baseline for manual inspection and map-to-map comparison workflows.
 - [koide3/hdl_localization](https://github.com/koide3/hdl_localization) as a representative LiDAR map localization stack; its Toyohashi University of Technology AISL sample global map is used for the README figures above.
 - [koide3/ndt_omp](https://github.com/koide3/ndt_omp) and [SMRT-AIST/fast_gicp](https://github.com/SMRT-AIST/fast_gicp) as fast registration packages commonly used with `hdl_localization`.
+- [unmannedlab/RELLIS-3D](https://github.com/unmannedlab/RELLIS-3D) for public off-road LiDAR perception data and the label ontology used by the perception demo.
 - [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) for agent-facing CLI integration.
 
 ## Core Idea: Process, Then Evaluate Immediately

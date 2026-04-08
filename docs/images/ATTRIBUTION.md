@@ -7,11 +7,13 @@ The README figures in this repository are generated from documented public asset
 - Source repository: [`koide3/hdl_localization`](https://github.com/koide3/hdl_localization)
 - Source file: [`data/map.pcd`](https://github.com/koide3/hdl_localization/blob/master/data/map.pcd)
 - License: [BSD-2-Clause](https://github.com/koide3/hdl_localization/blob/master/LICENSE)
+- Publisher: AISL, Toyohashi University of Technology
 - Related public demo bag from the same README:
   [`hdl_400.bag.tar.gz`](http://www.aisl.cs.tut.ac.jp/databases/hdl_graph_slam/hdl_400.bag.tar.gz)
 
 The repository README describes that bag as an example recorded in an outdoor environment,
 and the repository ships `data/map.pcd` as the sample global map used by the localization demo.
+This sample map and bag are published by AISL at Toyohashi University of Technology.
 
 ## Generated Files
 

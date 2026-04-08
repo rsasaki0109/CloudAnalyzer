@@ -52,11 +52,11 @@ jobs:
       CALLER_ROOT: ${{ github.workspace }}/workspace
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: workspace
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.10"
 
@@ -126,7 +126,7 @@ jobs:
 
       - name: Upload check outputs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ inputs.artifact_name }}
           path: /tmp/cloudanalyzer-check-artifacts

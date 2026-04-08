@@ -1,14 +1,39 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=77.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "cloudanalyzer"
-version = "0.1.0"
-description = "AI-friendly CLI tool for point cloud analysis"
-readme = "README.md"
+dynamic = ["version"]
+description = "CLI-first QA toolkit for point cloud, trajectory, and 3D perception outputs"
+readme = {file = "README.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
-license = {text = "MIT"}
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+    {name = "rsasaki0109"},
+]
+keywords = [
+    "point-cloud",
+    "slam",
+    "lidar",
+    "trajectory",
+    "benchmark",
+    "qa",
+    "open3d",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
 dependencies = [
     "open3d>=0.17.0",
     "numpy>=1.24.0",
@@ -18,10 +43,32 @@ dependencies = [
 ]
 
 [project.scripts]
-ca = "cli.main:main"
+ca = "cloudanalyzer_cli.main:main"
+
+[project.urls]
+Homepage = "https://github.com/rsasaki0109/CloudAnalyzer"
+Repository = "https://github.com/rsasaki0109/CloudAnalyzer"
+Issues = "https://github.com/rsasaki0109/CloudAnalyzer/issues"
+Documentation = "https://github.com/rsasaki0109/CloudAnalyzer#readme"
 
 [project.optional-dependencies]
-dev = ["pytest", "mypy"]
+dev = [
+    "build>=1.2.2",
+    "mypy",
+    "pkginfo>=1.12.0",
+    "pytest",
+    "twine>=6.0.0",
+]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.dynamic]
+version = {attr = "ca.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["ca*", "cloudanalyzer_cli*"]
+exclude = ["tests*"]
 
 [tool.mypy]
 python_version = "3.10"

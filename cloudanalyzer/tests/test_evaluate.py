@@ -68,7 +68,7 @@ class TestEvaluate:
 class TestEvaluateCLI:
     def test_basic(self, source_and_target_files):
         from typer.testing import CliRunner
-        from cli.main import app
+        from cloudanalyzer_cli.main import app
         runner = CliRunner()
         src, tgt = source_and_target_files
         result = runner.invoke(app, ["evaluate", src, tgt])
@@ -80,7 +80,7 @@ class TestEvaluateCLI:
 
     def test_custom_thresholds(self, source_and_target_files):
         from typer.testing import CliRunner
-        from cli.main import app
+        from cloudanalyzer_cli.main import app
         runner = CliRunner()
         src, tgt = source_and_target_files
         result = runner.invoke(app, ["evaluate", src, tgt, "-t", "0.01,0.1,1.0"])
@@ -91,7 +91,7 @@ class TestEvaluateCLI:
 
     def test_format_json(self, source_and_target_files):
         from typer.testing import CliRunner
-        from cli.main import app
+        from cloudanalyzer_cli.main import app
         import json
         runner = CliRunner()
         src, tgt = source_and_target_files

@@ -113,6 +113,13 @@ SAMPLE_GROUND_RESULT = {
         "min_iou": 0.8,
         "reasons": [],
     },
+    "report_metadata": [
+        {"label": "Dataset", "value": "RELLIS-3D"},
+        {"label": "Frame", "value": "000001"},
+    ],
+    "report_notes": [
+        "Reference labels come from the official semantic annotations.",
+    ],
 }
 
 
@@ -392,8 +399,12 @@ class TestGroundReports:
         assert "## Metrics" in content
         assert "Precision: 0.9474" in content
         assert "| Ground | 90 | 5 |" in content
+        assert "## Metadata" in content
+        assert "Dataset: RELLIS-3D" in content
         assert "## Quality Gate" in content
         assert "Status: PASS" in content
+        assert "## Notes" in content
+        assert "Reference labels come from the official semantic annotations." in content
 
     def test_ground_html(self, tmp_path):
         path = tmp_path / "ground.html"
@@ -402,8 +413,11 @@ class TestGroundReports:
         assert "<title>CloudAnalyzer Ground Segmentation Report</title>" in content
         assert "<h2>Confusion Matrix</h2>" in content
         assert "<td>90</td><td>5</td>" in content
+        assert "<h2>Metadata</h2>" in content
+        assert "RELLIS-3D" in content
         assert "Quality Gate" in content
         assert "PASS" in content
+        assert "<h2>Notes</h2>" in content
 
     def test_ground_report_dispatch(self, tmp_path):
         path = tmp_path / "ground.html"

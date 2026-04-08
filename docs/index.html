@@ -242,14 +242,15 @@
     <section class="hero">
       <article class="hero-copy">
         <div class="eyebrow">CloudAnalyzer / Public Demo</div>
-        <h1>Stanford Bunny, browser-side inspection, no custom backend.</h1>
+        <h1>Public LiDAR map inspection, browser-side, no custom backend.</h1>
         <p class="lede">
           This Pages build publishes a static <span class="accent">ca web</span> bundle generated from
-          the public Stanford Bunny mesh. The demo keeps progressive loading, point picking, heatmap
-          thresholding, and trajectory inspection active while serving only HTML and JSON.
+          the public <span class="accent">hdl_localization</span> sample map. The demo keeps progressive
+          loading, point picking, heatmap thresholding, and trajectory inspection active while serving
+          only HTML and JSON.
         </p>
         <div class="actions">
-          <a class="button button-primary" href="./demo/stanford-bunny/index.html">Open Live Demo</a>
+          <a class="button button-primary" href="./demo/hdl-localization-map/index.html">Open Live Demo</a>
           <a class="button button-secondary" href="https://github.com/rsasaki0109/CloudAnalyzer">Open Repository</a>
         </div>
       </article>
@@ -258,7 +259,7 @@
         <div class="stat-grid">
           <div class="stat">
             <div class="stat-label">Dataset</div>
-            <div class="stat-value">Stanford Bunny</div>
+            <div class="stat-value">AISL Sample Map</div>
           </div>
           <div class="stat">
             <div class="stat-label">Viewer</div>
@@ -274,9 +275,10 @@
           </div>
         </div>
         <p class="lede">
-          The source point cloud is derived from the public bunny mesh. The reference cloud and trajectories
-          are generated during the Pages build to demonstrate CloudAnalyzer inspection flows on a small,
-          reproducible asset.
+          The reference cloud is the public sample global map bundled in
+          <span class="accent">koide3/hdl_localization</span>. The source cloud is a downsampled,
+          slightly offset derivative generated during the Pages build so the heatmap and overlay remain
+          meaningful on a fully static host.
         </p>
       </aside>
     </section>
@@ -295,8 +297,9 @@
       <article class="detail-card">
         <h2>Perception QA Demo</h2>
         <p>
-          Ground segmentation evaluation using the Stanford Bunny on a synthetic ground plane.
-          Demonstrates <span class="accent">ca ground-evaluate</span> with precision, recall, F1, and IoU metrics.
+          Ground segmentation evaluation from the public RELLIS-3D LiDAR example and its official semantic
+          labels. Demonstrates <span class="accent">ca ground-evaluate</span> with precision, recall, F1,
+          and IoU metrics on a real perception frame.
         </p>
         <a class="button button-primary" href="./demo/perception/index.html">View Perception Demo</a>
       </article>
@@ -304,16 +307,16 @@
       <article class="detail-card">
         <h2>Build It Locally</h2>
         <p>After installing the package, rebuild the public demo bundles with:</p>
-        <div class="code">python scripts/build_public_demo.py --output docs/demo/stanford-bunny
+        <div class="code">python scripts/build_public_demo.py --output docs/demo/hdl-localization-map
 python scripts/build_perception_demo.py --output docs/demo/perception</div>
       </article>
 
       <article class="detail-card">
         <h2>Data Note</h2>
         <p>
-          The Pages bundle ships with a data attribution file generated next to the demo.
-          The Stanford repository allows research use and free redistribution with credit, and
-          keeps its own non-commercial restriction on the source assets.
+          Each demo ships with an attribution file generated next to the bundle. The map viewer uses the
+          BSD-2-Clause `hdl_localization` sample map, while the perception demo uses the public RELLIS-3D
+          example bundle and cites its CC BY-NC-SA 3.0 dataset license in the generated attribution file.
         </p>
       </article>
     </section>

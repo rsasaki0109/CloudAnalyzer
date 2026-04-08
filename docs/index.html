@@ -295,13 +295,13 @@
       </article>
 
       <article class="detail-card">
-        <h2>Perception QA Demo</h2>
+        <h2>Perception Batch Demo</h2>
         <p>
-          Ground segmentation evaluation from the public RELLIS-3D LiDAR example and its official semantic
-          labels. Demonstrates <span class="accent">ca ground-evaluate</span> with precision, recall, F1,
-          and IoU metrics on a real perception frame.
+          Batch comparison of a non-deep candidate and a deep candidate on the same public RELLIS-3D
+          LiDAR frame. Demonstrates <span class="accent">ca batch --evaluate</span> with AUC, Chamfer,
+          inspection commands, and quality-gate status.
         </p>
-        <a class="button button-primary" href="./demo/perception/index.html">View Perception Demo</a>
+        <a class="button button-primary" href="./demo/perception/index.html">View Perception Report</a>
       </article>
 
       <article class="detail-card">
@@ -315,8 +315,8 @@ python scripts/build_perception_demo.py --output docs/demo/perception</div>
         <h2>Data Note</h2>
         <p>
           Each demo ships with an attribution file generated next to the bundle. The map viewer uses the
-          BSD-2-Clause `hdl_localization` sample map, while the perception demo uses the public RELLIS-3D
-          example bundle and cites its CC BY-NC-SA 3.0 dataset license in the generated attribution file.
+          BSD-2-Clause `hdl_localization` sample map, while the checked-in perception report is derived from
+          the public RELLIS-3D example bundle and carries its CC BY-NC-SA 3.0 attribution note.
         </p>
       </article>
     </section>

@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Build a public perception QA demo from the RELLIS-3D LiDAR example.
+"""Build a public perception artifact-comparison demo from the RELLIS-3D example.
 
-The demo derives reference ground/non-ground splits from public semantic labels
-and then injects deterministic label noise to emulate a model prediction.
+The demo compares two deterministic candidate outputs on the same public LiDAR
+frame:
 
-Usage:
-    python3 scripts/build_perception_demo.py --output docs/demo/perception
+- `nondeep_baseline`: coarse geometry-only proxy
+- `deep_baseline`: higher-fidelity learned-style proxy
+
+Both are evaluated against a public reference artifact with `ca batch`.
 """
 
 from __future__ import annotations
@@ -32,8 +34,8 @@ from public_benchmark_assets import (
     RELLIS_REPO_URL,
     download_rellis_lidar_example,
 )
-from ca.ground_evaluate import evaluate_ground_segmentation
-from ca.report import save_ground_report
+from ca.batch import batch_evaluate
+from ca.report import make_batch_summary, save_batch_report
 
 RELLIS_LABEL_NAMES = {
     0: "void",
@@ -57,14 +59,15 @@ RELLIS_LABEL_NAMES = {
     33: "mud",
     34: "rubble",
 }
-GROUND_LABEL_IDS = (1, 3, 10, 23, 31, 33)
 IGNORED_LABEL_IDS = (0,)
 DEFAULT_FRAME = "000001"
-RNG_SEED = 42
+DEFAULT_THRESHOLDS = [0.02, 0.05, 0.1, 0.2, 0.3]
+MIN_AUC = 0.90
+MAX_CHAMFER = 0.05
 
 
 def _read_rellis_scan(example_root: Path, frame: str) -> tuple[np.ndarray, np.ndarray]:
-    """Load one RELLIS-3D example scan in SemanticKITTI-style format."""
+    """Load one RELLIS-3D example LiDAR frame and its semantic labels."""
     bin_path = example_root / "os1_cloud_node_kitti_bin" / f"{frame}.bin"
     label_path = example_root / "os1_cloud_node_semantickitti_label_id" / f"{frame}.label"
     if not bin_path.exists():
@@ -79,59 +82,91 @@ def _read_rellis_scan(example_root: Path, frame: str) -> tuple[np.ndarray, np.nd
     return np.asarray(points, dtype=np.float64), labels
 
 
-def _split_reference(points: np.ndarray, labels: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Return labeled points and the reference ground mask."""
-    ignore_mask = np.isin(labels, IGNORED_LABEL_IDS)
-    labeled_points = points[~ignore_mask]
-    labeled_labels = labels[~ignore_mask]
-    ground_mask = np.isin(labeled_labels, GROUND_LABEL_IDS)
-    return labeled_points, labeled_labels, ground_mask
-
-
-def _make_estimated_ground_mask(points: np.ndarray, reference_ground_mask: np.ndarray) -> np.ndarray:
-    """Create a deterministic noisy estimate from the reference ground split."""
-    rng = np.random.default_rng(RNG_SEED)
-    estimated_ground_mask = reference_ground_mask.copy()
-
-    ground_indices = np.flatnonzero(reference_ground_mask)
-    nonground_indices = np.flatnonzero(~reference_ground_mask)
-
-    ground_error_count = max(10, ground_indices.size // 800)
-    nonground_error_count = max(10, nonground_indices.size // 900)
-
-    ground_candidates = rng.choice(ground_indices, size=ground_error_count, replace=False)
-    estimated_ground_mask[ground_candidates] = False
-
-    nonground_order = np.argsort(points[nonground_indices, 2])
-    low_nonground_candidates = nonground_indices[nonground_order[: max(nonground_error_count * 3, nonground_error_count)]]
-    nonground_candidates = rng.choice(
-        low_nonground_candidates,
-        size=nonground_error_count,
-        replace=False,
-    )
-    estimated_ground_mask[nonground_candidates] = True
-
-    return estimated_ground_mask
-
-
 def _write_pcd(path: Path, points: np.ndarray) -> None:
-    """Write Nx3 points to a PCD file."""
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points)
+    """Write Nx3 points to a point cloud file."""
+    cloud = o3d.geometry.PointCloud()
+    cloud.points = o3d.utility.Vector3dVector(points)
     path.parent.mkdir(parents=True, exist_ok=True)
-    o3d.io.write_point_cloud(str(path), pcd)
+    o3d.io.write_point_cloud(str(path), cloud)
 
 
-def _label_names(ids: tuple[int, ...]) -> str:
-    return ", ".join(f"{RELLIS_LABEL_NAMES[label_id]} ({label_id})" for label_id in ids)
+def _nonvoid_reference(points: np.ndarray, labels: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    """Keep only the non-void labeled points for the reference artifact."""
+    keep_mask = ~np.isin(labels, IGNORED_LABEL_IDS)
+    return points[keep_mask], labels[keep_mask]
 
 
-def _counts_by_label(labels: np.ndarray) -> list[str]:
+def _voxel_downsample(points: np.ndarray, voxel_size: float) -> np.ndarray:
+    """Return voxel-downsampled points as an ndarray."""
+    cloud = o3d.geometry.PointCloud()
+    cloud.points = o3d.utility.Vector3dVector(points)
+    return np.asarray(cloud.voxel_down_sample(voxel_size).points, dtype=np.float64)
+
+
+def _build_nondeep_candidate(reference_points: np.ndarray) -> np.ndarray:
+    """Build a coarse geometry-only proxy for a non-deep baseline."""
+    points = _voxel_downsample(reference_points, voxel_size=0.20)
+    planar_distance = np.linalg.norm(points[:, :2], axis=1)
+    near_points = points[planar_distance <= 20.0]
+    far_points = points[planar_distance > 20.0][::3]
+    candidate = np.vstack([near_points, far_points])
+    candidate += np.array([0.10, -0.05, 0.04], dtype=np.float64)
+    return candidate
+
+
+def _build_deep_candidate(reference_points: np.ndarray) -> np.ndarray:
+    """Build a higher-fidelity proxy for a learning-based baseline."""
+    candidate = _voxel_downsample(reference_points, voxel_size=0.10)
+    candidate += np.array([0.02, -0.01, 0.008], dtype=np.float64)
+    return candidate
+
+
+def _label_count_lines(labels: np.ndarray) -> list[str]:
+    """Format labeled point counts for README output."""
     unique, counts = np.unique(labels, return_counts=True)
+    return [
+        f"- `{int(label_id)}` {RELLIS_LABEL_NAMES.get(int(label_id), 'unknown')}: {int(count):,} points"
+        for label_id, count in zip(unique, counts)
+    ]
+
+
+def _result_rows(results: list[dict]) -> list[str]:
+    """Render metric rows for the demo README."""
     rows = []
-    for label_id, count in zip(unique, counts):
-        rows.append(f"- `{int(label_id)}` {RELLIS_LABEL_NAMES.get(int(label_id), 'unknown')}: {int(count):,} points")
+    for item in results:
+        gate = item.get("quality_gate") or {}
+        rows.append(
+            "| `%s` | %.4f | %.4f | %.4f | %s |"
+            % (
+                Path(item["path"]).name,
+                item["auc"],
+                item["chamfer_distance"],
+                item["best_f1"]["f1"],
+                "PASS" if gate.get("passed") else "FAIL",
+            )
+        )
     return rows
+
+
+def _normalize_result_paths(results: list[dict], reference_path: Path, output_dir: Path) -> tuple[list[dict], str]:
+    """Render summary/report paths relative to the demo root when possible."""
+    normalized_results: list[dict] = []
+    for item in results:
+        normalized = dict(item)
+        try:
+            normalized["path"] = str(Path(item["path"]).relative_to(output_dir))
+        except ValueError:
+            normalized["path"] = item["path"]
+        try:
+            normalized["reference_path"] = str(Path(item["reference_path"]).relative_to(output_dir))
+        except ValueError:
+            normalized["reference_path"] = item["reference_path"]
+        normalized_results.append(normalized)
+    try:
+        normalized_reference = str(reference_path.relative_to(output_dir))
+    except ValueError:
+        normalized_reference = str(reference_path)
+    return normalized_results, normalized_reference
 
 
 def main() -> None:
@@ -153,67 +188,81 @@ def main() -> None:
         example_root = download_rellis_lidar_example(Path(tmp_dir))
         points, labels = _read_rellis_scan(example_root, args.frame)
 
-    labeled_points, labeled_labels, reference_ground_mask = _split_reference(points, labels)
-    estimated_ground_mask = _make_estimated_ground_mask(labeled_points, reference_ground_mask)
+    reference_points, reference_labels = _nonvoid_reference(points, labels)
 
-    reference_ground = labeled_points[reference_ground_mask]
-    reference_nonground = labeled_points[~reference_ground_mask]
-    estimated_ground = labeled_points[estimated_ground_mask]
-    estimated_nonground = labeled_points[~estimated_ground_mask]
+    reference_path = output_dir / "reference_scene.pcd"
+    candidates_dir = output_dir / "candidates"
+    nondeep_path = candidates_dir / "nondeep_baseline.pcd"
+    deep_path = candidates_dir / "deep_baseline.pcd"
 
-    _write_pcd(output_dir / "reference_ground.pcd", reference_ground)
-    _write_pcd(output_dir / "reference_nonground.pcd", reference_nonground)
-    _write_pcd(output_dir / "estimated_ground.pcd", estimated_ground)
-    _write_pcd(output_dir / "estimated_nonground.pcd", estimated_nonground)
+    _write_pcd(reference_path, reference_points)
+    _write_pcd(nondeep_path, _build_nondeep_candidate(reference_points))
+    _write_pcd(deep_path, _build_deep_candidate(reference_points))
 
-    result = evaluate_ground_segmentation(
-        str(output_dir / "estimated_ground.pcd"),
-        str(output_dir / "estimated_nonground.pcd"),
-        str(output_dir / "reference_ground.pcd"),
-        str(output_dir / "reference_nonground.pcd"),
-        voxel_size=0.2,
-        min_precision=0.97,
-        min_recall=0.97,
-        min_f1=0.97,
+    results = batch_evaluate(
+        str(candidates_dir),
+        str(reference_path),
+        thresholds=DEFAULT_THRESHOLDS,
+        min_auc=MIN_AUC,
+        max_chamfer=MAX_CHAMFER,
     )
-    result["report_metadata"] = [
-        {"label": "Dataset", "value": "RELLIS-3D Ouster LiDAR with Annotation Examples"},
-        {"label": "Frame", "value": args.frame},
-        {"label": "Ignored labels", "value": _label_names(IGNORED_LABEL_IDS)},
-        {"label": "Ground labels", "value": _label_names(GROUND_LABEL_IDS)},
-        {"label": "Source repository", "value": RELLIS_REPO_URL},
-    ]
-    result["report_notes"] = [
-        "Reference ground/non-ground splits come from the official semantic labels.",
-        "The estimated split is a deterministic perturbation of the reference labels to emulate boundary leakage and low-obstacle confusion.",
-        "This demo uses only non-void labeled points from the public example bundle.",
-    ]
+    results, normalized_reference_path = _normalize_result_paths(results, reference_path, output_dir)
+    summary = make_batch_summary(
+        results,
+        normalized_reference_path,
+        min_auc=MIN_AUC,
+        max_chamfer=MAX_CHAMFER,
+    )
 
-    result_path = output_dir / "ground_evaluate_result.json"
-    result_path.write_text(json.dumps(result, indent=2), encoding="utf-8")
-    save_ground_report(result, str(output_dir / "index.html"))
-    save_ground_report(result, str(output_dir / "report.md"))
+    save_batch_report(
+        results,
+        normalized_reference_path,
+        str(output_dir / "index.html"),
+        min_auc=MIN_AUC,
+        max_chamfer=MAX_CHAMFER,
+    )
+    save_batch_report(
+        results,
+        normalized_reference_path,
+        str(output_dir / "report.md"),
+        min_auc=MIN_AUC,
+        max_chamfer=MAX_CHAMFER,
+    )
+    (output_dir / "results.json").write_text(
+        json.dumps({"results": results, "summary": summary}, indent=2),
+        encoding="utf-8",
+    )
 
     attribution_lines = [
         "# Perception Demo Attribution",
         "",
         "- Dataset: [RELLIS-3D](%s)" % RELLIS_REPO_URL,
-        "- Dataset README: [%s](%s)" % ("RELLIS-3D README", RELLIS_README_URL),
+        "- Dataset README: [RELLIS-3D README](%s)" % RELLIS_README_URL,
         "- Example bundle: [Ouster LiDAR with Annotation Examples](%s)" % RELLIS_LIDAR_EXAMPLE_URL,
         "- Label ontology: [rellis.yaml](%s)" % RELLIS_LABEL_CONFIG_URL,
         "- License: CC BY-NC-SA 3.0 (see the dataset README)",
         "- Frame used: `%s`" % args.frame,
-        "- Ignored labels: %s" % _label_names(IGNORED_LABEL_IDS),
-        "- Ground labels: %s" % _label_names(GROUND_LABEL_IDS),
+        "- Ignored labels: `%s`" % ", ".join(str(label_id) for label_id in IGNORED_LABEL_IDS),
+        "",
+        "The generated artifacts in this directory are derived from the public example bundle above.",
+        "Keep the upstream attribution and non-commercial / share-alike terms with these files.",
     ]
     (output_dir / "ATTRIBUTION.md").write_text("\n".join(attribution_lines) + "\n", encoding="utf-8")
 
     readme_lines = [
-        "# Perception QA Demo",
+        "# Perception Batch QA Demo",
         "",
-        "This demo evaluates ground segmentation on the public RELLIS-3D LiDAR example.",
-        "Reference splits come from the official semantic labels, and the estimated splits",
-        "are a deterministic perturbation used to emulate perception errors in a reproducible way.",
+        "This demo compares two candidate perception artifacts against the same public reference frame.",
+        "It uses the RELLIS-3D Ouster LiDAR example and evaluates both candidates with `ca batch`.",
+        "",
+        "## What The Candidates Mean",
+        "",
+        "- `nondeep_baseline.pcd`: deterministic geometry-only proxy with coarse voxelization, long-range thinning, and a small rigid bias.",
+        "- `deep_baseline.pcd`: higher-fidelity proxy with denser sampling and a smaller rigid bias.",
+        "- `reference_scene.pcd`: non-void labeled points from the official public RELLIS-3D example frame.",
+        "",
+        "These are demo proxies, not archived model outputs. The point is to show how CloudAnalyzer",
+        "compares a non-deep candidate and a deep candidate against the same public reference artifact.",
         "",
         "## Source Data",
         "",
@@ -222,66 +271,56 @@ def main() -> None:
         "- Label ontology: [rellis.yaml](%s)" % RELLIS_LABEL_CONFIG_URL,
         "- Frame: `%s`" % args.frame,
         "",
-        "## Label Policy",
+        "## Label Counts In The Reference Frame",
         "",
-        "- Ignored labels: %s" % _label_names(IGNORED_LABEL_IDS),
-        "- Ground labels: %s" % _label_names(GROUND_LABEL_IDS),
-        "- Non-ground labels are every remaining labeled class in the frame.",
+        *_label_count_lines(reference_labels),
         "",
-        "## Labeled Points In This Frame",
+        "## Batch Metrics",
         "",
-        *_counts_by_label(labeled_labels),
+        "| Candidate | AUC | Chamfer | Best F1 | Gate |",
+        "|---|---:|---:|---:|---|",
+        *_result_rows(results),
+        "",
+        "Gate settings: `min_auc=%.2f`, `max_chamfer=%.2f`" % (MIN_AUC, MAX_CHAMFER),
         "",
         "## Files",
         "",
         "| File | Description |",
         "|---|---|",
-        "| `reference_ground.pcd` | Reference terrain points from the official labels |",
-        "| `reference_nonground.pcd` | Reference non-ground points from the official labels |",
-        "| `estimated_ground.pcd` | Deterministic noisy estimate used as a demo prediction |",
-        "| `estimated_nonground.pcd` | Complementary deterministic noisy estimate |",
-        "| `ground_evaluate_result.json` | Raw evaluation result |",
-        "| `index.html` | Ground segmentation report for GitHub Pages |",
-        "| `report.md` | Markdown version of the same report |",
+        "| `reference_scene.pcd` | Public reference artifact derived from the official labels |",
+        "| `candidates/nondeep_baseline.pcd` | Geometry-only non-deep proxy candidate |",
+        "| `candidates/deep_baseline.pcd` | Higher-fidelity deep proxy candidate |",
+        "| `index.html` | HTML batch report for GitHub Pages |",
+        "| `report.md` | Markdown version of the same batch report |",
+        "| `results.json` | Raw batch results plus summary |",
         "| `ATTRIBUTION.md` | Dataset provenance and license note |",
-        "",
-        "## Metrics",
-        "",
-        "| Metric | Value |",
-        "|---|---:|",
-        "| Precision | %.4f |" % result["precision"],
-        "| Recall | %.4f |" % result["recall"],
-        "| F1 | %.4f |" % result["f1"],
-        "| IoU | %.4f |" % result["iou"],
-        "| Accuracy | %.4f |" % result["accuracy"],
         "",
         "## Reproduce",
         "",
         "```bash",
         "python3 scripts/build_perception_demo.py --output docs/demo/perception --frame %s" % args.frame,
         "",
-        "ca ground-evaluate \\",
-        "  docs/demo/perception/estimated_ground.pcd \\",
-        "  docs/demo/perception/estimated_nonground.pcd \\",
-        "  docs/demo/perception/reference_ground.pcd \\",
-        "  docs/demo/perception/reference_nonground.pcd \\",
-        "  --min-precision 0.97 --min-recall 0.97 --min-f1 0.97 --voxel-size 0.2 \\",
+        "ca batch docs/demo/perception/candidates \\",
+        "  --evaluate docs/demo/perception/reference_scene.pcd \\",
+        "  --thresholds 0.02,0.05,0.1,0.2,0.3 \\",
+        "  --min-auc 0.90 --max-chamfer 0.05 \\",
         "  --report docs/demo/perception/index.html",
         "```",
     ]
     (output_dir / "README.md").write_text("\n".join(readme_lines) + "\n", encoding="utf-8")
 
-    print(f"Frame:        {args.frame}")
-    print(f"Labels kept:  {int(labeled_points.shape[0])}")
-    print(f"Ref ground:   {int(reference_ground.shape[0])}")
-    print(f"Ref non-grnd: {int(reference_nonground.shape[0])}")
-    print(f"Est ground:   {int(estimated_ground.shape[0])}")
-    print(f"Est non-grnd: {int(estimated_nonground.shape[0])}")
-    print(f"Precision:    {result['precision']:.4f}")
-    print(f"Recall:       {result['recall']:.4f}")
-    print(f"F1:           {result['f1']:.4f}")
-    print(f"IoU:          {result['iou']:.4f}")
-    print(f"Report:       {output_dir / 'index.html'}")
+    print(f"Frame:         {args.frame}")
+    print(f"Reference pts: {int(reference_points.shape[0])}")
+    for item in results:
+        gate = item.get("quality_gate") or {}
+        print(
+            f"{Path(item['path']).name}: "
+            f"AUC={item['auc']:.4f} "
+            f"Chamfer={item['chamfer_distance']:.4f} "
+            f"BestF1={item['best_f1']['f1']:.4f} "
+            f"Gate={'PASS' if gate.get('passed') else 'FAIL'}"
+        )
+    print(f"Report:        {output_dir / 'index.html'}")
 
 
 if __name__ == "__main__":

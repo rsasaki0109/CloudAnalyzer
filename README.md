@@ -106,7 +106,7 @@ cd cloudanalyzer && pip install -e .
 | Demo | Description |
 |---|---|
 | [hdl_localization Map Viewer](https://rsasaki0109.github.io/CloudAnalyzer/demo/hdl-localization-map/index.html) | Static 3D viewer exported by `ca web-export`, using the public AISL / Toyohashi `hdl_localization` sample map with heatmap, trajectory, and point inspection support |
-| [Perception QA Dashboard](https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/index.html) | Dashboard for `ca ground-evaluate`, built from the public RELLIS-3D LiDAR example and its official semantic labels |
+| [Perception Batch Report](https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/index.html) | Static `ca batch` report comparing non-deep and deep candidate artifacts on the same public RELLIS-3D LiDAR frame |
 
 ```bash
 # export a static viewer
@@ -118,9 +118,11 @@ python scripts/build_perception_demo.py --output docs/demo/perception
 ```
 
 The map viewer is generated from the public `hdl_localization` sample map published by
-AISL at Toyohashi University of Technology. The perception dashboard is generated from the
-public RELLIS-3D "Ouster LiDAR with Annotation Examples" bundle and treats `dirt`, `grass`,
-`asphalt`, `concrete`, `puddle`, and `mud` as ground classes while ignoring `void`.
+AISL at Toyohashi University of Technology. The perception report is generated from the
+public RELLIS-3D "Ouster LiDAR with Annotation Examples" bundle and compares a deterministic
+non-deep proxy artifact with a higher-fidelity deep proxy artifact against the same reference
+frame. The generated report is checked into `docs/demo/perception` so GitHub Pages does not
+depend on third-party Google Drive downloads at publish time.
 
 ## Referenced OSS
 

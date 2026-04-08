@@ -197,9 +197,13 @@ ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground
 # JSON output
 ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd \
   --format-json --output-json qa/ground_result.json
+
+# HTML / Markdown report
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd \
+  --min-f1 0.9 --min-iou 0.8 --report qa/ground_report.html
 ```
 
-Both estimation and reference are provided as separate ground and non-ground point cloud files. Evaluation uses voxel-based confusion matrix comparison. The `kind: ground` check type is also available in `cloudanalyzer.yaml`.
+Both estimation and reference are provided as separate ground and non-ground point cloud files. Evaluation uses voxel-based confusion matrix comparison. The `kind: ground` check type is also available in `cloudanalyzer.yaml`, and ground checks can emit HTML/Markdown reports the same way as other QA checks.
 
 | Option | Default | Description |
 |---|---|---|
@@ -212,6 +216,7 @@ Both estimation and reference are provided as separate ground and non-ground poi
 | `--min-recall` | `None` | Minimum recall gate |
 | `--min-f1` | `None` | Minimum F1 gate |
 | `--min-iou` | `None` | Minimum IoU gate |
+| `--report` | `None` | Write Markdown/HTML ground segmentation report |
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON |
 

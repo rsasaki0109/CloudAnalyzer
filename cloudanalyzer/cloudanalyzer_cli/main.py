@@ -40,6 +40,7 @@ from ca.report import (
     make_run_batch_summary,
     make_trajectory_batch_summary,
     save_batch_report,
+    save_ground_report,
     save_run_batch_report,
     save_run_report,
     save_trajectory_batch_report,
@@ -1526,6 +1527,10 @@ def ground_evaluate_cmd(
     min_recall: Optional[float] = typer.Option(None, "--min-recall", help="Minimum recall required"),
     min_f1: Optional[float] = typer.Option(None, "--min-f1", help="Minimum F1 score required"),
     min_iou: Optional[float] = typer.Option(None, "--min-iou", help="Minimum IoU required"),
+    report: Optional[str] = typer.Option(
+        None, "--report",
+        help="Write ground segmentation report (.md or .html)",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -1545,6 +1550,13 @@ def ground_evaluate_cmd(
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
         return
+
+    if report:
+        try:
+            save_ground_report(result, report)
+        except ValueError as e:
+            _handle_error(e)
+            return
 
     if format_json:
         typer.echo(json.dumps(result, indent=2))
@@ -1574,6 +1586,8 @@ def ground_evaluate_cmd(
             typer.echo(f"Quality Gate: {'PASS' if gate['passed'] else 'FAIL'}")
             for reason in gate["reasons"]:
                 typer.echo(f"  - {reason}")
+        if report:
+            typer.echo(f"Report: {report}")
 
     if output_json:
         _dump_json(result, output_json)

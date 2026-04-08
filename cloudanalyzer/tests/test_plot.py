@@ -52,7 +52,7 @@ class TestPlotQualityVsSize:
 class TestHeatmap3dCLI:
     def test_basic(self, source_and_target_files, tmp_path):
         from typer.testing import CliRunner
-        from cli.main import app
+        from cloudanalyzer_cli.main import app
         runner = CliRunner()
         src, tgt = source_and_target_files
         output = str(tmp_path / "heatmap.png")

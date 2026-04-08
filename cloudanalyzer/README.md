@@ -9,11 +9,24 @@ For the full product overview (Japanese), demos, and tutorials, see the [reposit
 From this directory (the Python package root):
 
 ```bash
+pip install cloudanalyzer
+
+# latest from source
+git clone https://github.com/rsasaki0109/CloudAnalyzer.git
+cd CloudAnalyzer/cloudanalyzer
 pip install -e .
 
 # or with Docker
 docker build -t ca .
 docker run ca info cloud.pcd
+```
+
+## Release Sanity Check
+
+```bash
+python3 -m pip install -e .[dev]
+python3 -m build
+python3 -m twine check dist/*
 ```
 
 ## Commands

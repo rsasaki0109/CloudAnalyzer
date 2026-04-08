@@ -71,6 +71,9 @@ CloudAnalyzer が狙うのは、低レベルAPIの数で勝つことではなく
 ## Install
 
 ```bash
+pip install cloudanalyzer
+
+# or install the current checkout
 cd cloudanalyzer && pip install -e .
 ```
 

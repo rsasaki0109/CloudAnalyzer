@@ -65,6 +65,7 @@ DEFAULT_THRESHOLDS = [0.02, 0.05, 0.1, 0.2, 0.3]
 MIN_AUC = 0.90
 MAX_CHAMFER = 0.05
 REPORT_TITLE = "CloudAnalyzer Perception Artifact Comparison"
+LOCAL_RELLIS_FRAME_ROOT = REPO_ROOT / "demo_assets" / "public" / "rellis3d-frame-000001"
 
 
 def _read_rellis_scan(example_root: Path, frame: str) -> tuple[np.ndarray, np.ndarray]:
@@ -185,6 +186,15 @@ def main() -> None:
         default=DEFAULT_FRAME,
         help="RELLIS-3D example frame stem to use (default: %(default)s)",
     )
+    parser.add_argument(
+        "--example-root",
+        type=Path,
+        default=None,
+        help=(
+            "Path to a local RELLIS example root containing "
+            "os1_cloud_node_kitti_bin/ and os1_cloud_node_semantickitti_label_id/"
+        ),
+    )
     args = parser.parse_args()
 
     output_dir = args.output
@@ -192,9 +202,16 @@ def main() -> None:
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        example_root = download_rellis_lidar_example(Path(tmp_dir))
+    if args.example_root is not None:
+        example_root = args.example_root
         points, labels = _read_rellis_scan(example_root, args.frame)
+    elif LOCAL_RELLIS_FRAME_ROOT.exists():
+        example_root = LOCAL_RELLIS_FRAME_ROOT
+        points, labels = _read_rellis_scan(example_root, args.frame)
+    else:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            example_root = download_rellis_lidar_example(Path(tmp_dir))
+            points, labels = _read_rellis_scan(example_root, args.frame)
 
     reference_points, reference_labels = _nonvoid_reference(points, labels)
 
@@ -295,6 +312,7 @@ def main() -> None:
         "- Label ontology: [rellis.yaml](%s)" % RELLIS_LABEL_CONFIG_URL,
         "- License: CC BY-NC-SA 3.0 (see the dataset README)",
         "- Frame used: `%s`" % args.frame,
+        "- Local reproducibility seed: `%s`" % LOCAL_RELLIS_FRAME_ROOT.relative_to(REPO_ROOT),
         "- Ignored labels: `%s`" % ", ".join(str(label_id) for label_id in IGNORED_LABEL_IDS),
         "",
         "The generated artifacts in this directory are derived from the public example bundle above.",
@@ -324,6 +342,7 @@ def main() -> None:
         "- Example bundle: [Ouster LiDAR with Annotation Examples](%s)" % RELLIS_LIDAR_EXAMPLE_URL,
         "- Label ontology: [rellis.yaml](%s)" % RELLIS_LABEL_CONFIG_URL,
         "- Frame: `%s`" % args.frame,
+        "- Local reproducibility seed: `%s`" % LOCAL_RELLIS_FRAME_ROOT.relative_to(REPO_ROOT),
         "",
         "## Label Counts In The Reference Frame",
         "",
@@ -357,6 +376,11 @@ def main() -> None:
         "",
         "```bash",
         "python3 scripts/build_perception_demo.py --output docs/demo/perception --frame %s" % args.frame,
+        "# or point at an explicit local seed root",
+        (
+            "python3 scripts/build_perception_demo.py --output docs/demo/perception "
+            "--frame %s --example-root %s"
+        ) % (args.frame, LOCAL_RELLIS_FRAME_ROOT.relative_to(REPO_ROOT)),
         "",
         "ca batch docs/demo/perception/candidates \\",
         "  --evaluate docs/demo/perception/reference_scene.pcd \\",

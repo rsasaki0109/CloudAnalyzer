@@ -6,6 +6,7 @@
 - Label ontology: [rellis.yaml](https://github.com/unmannedlab/RELLIS-3D/blob/main/benchmarks/SalsaNext/train/tasks/semantic/config/labels/rellis.yaml)
 - License: CC BY-NC-SA 3.0 (see the dataset README)
 - Frame used: `000001`
+- Local reproducibility seed: `demo_assets/public/rellis3d-frame-000001`
 - Ignored labels: `0`
 
 The generated artifacts in this directory are derived from the public example bundle above.

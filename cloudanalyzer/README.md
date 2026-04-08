@@ -2,7 +2,7 @@
 
 AI-friendly CLI tool for point cloud analysis and evaluation.
 
-For the full product overview (Japanese), demos, and tutorials, see the [repository root README](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/README.md).
+For the full product overview, demos, and tutorials, see the [repository root README](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/README.md).
 
 ## Install
 
@@ -148,10 +148,10 @@ ca web estimated.pcd reference.pcd --heatmap
 # Browser run viewer: map heatmap + trajectory overlay
 ca web map.pcd map_ref.pcd --heatmap \
   --trajectory traj.csv --trajectory-reference traj_ref.csv
-# paired trajectory があると worst ATE pose と worst RPE segment を viewer 上で強調する
-# marker / segment をクリックすると timestamp と error summary を inspection panel に表示する
-# click 時は camera も選択箇所へ寄り、Reset View で全景に戻せる
-# trajectory error timeline も viewer 内に出て、point click で 3D selection と同期する
+# With paired trajectories, the viewer also highlights the worst ATE pose and worst RPE segment.
+# Clicking a marker or segment shows the timestamp and error summary in the inspection panel.
+# The camera also moves toward the selected location, and Reset View returns to the full scene.
+# The trajectory error timeline is shown in the same viewer and stays synced with 3D point selections.
 
 # === Compare ===
 ca compare source.pcd target.pcd \

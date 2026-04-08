@@ -1,4 +1,8 @@
-# CloudAnalyzer Batch Evaluation Report
+# CloudAnalyzer Perception Artifact Comparison
+
+This static report compares a geometry-first non-deep baseline and a higher-fidelity deep baseline on the same public RELLIS-3D frame.
+
+Both candidates are deterministic demo artifacts derived from the reference scene for documentation purposes; they are not archived model outputs.
 
 ## Summary
 - Reference: reference_scene.pcd

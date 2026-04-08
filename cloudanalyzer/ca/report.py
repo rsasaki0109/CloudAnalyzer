@@ -308,6 +308,8 @@ def make_batch_markdown(
     output_path: str,
     min_auc: float | None = None,
     max_chamfer: float | None = None,
+    report_title: str = "CloudAnalyzer Batch Evaluation Report",
+    report_notes: list[str] | None = None,
 ) -> None:
     """Generate a Markdown report for batch evaluation results."""
     summary = make_batch_summary(
@@ -317,9 +319,12 @@ def make_batch_markdown(
         max_chamfer=max_chamfer,
     )
 
-    lines = [
-        "# CloudAnalyzer Batch Evaluation Report",
-        "",
+    lines = [f"# {report_title}", ""]
+    notes = [note.strip() for note in (report_notes or []) if note.strip()]
+    for note in notes:
+        lines += [note, ""]
+
+    lines += [
         "## Summary",
         f"- Reference: {summary['reference_path']}",
         f"- Files: {summary['total_files']}",
@@ -472,6 +477,8 @@ def make_batch_html(
     output_path: str,
     min_auc: float | None = None,
     max_chamfer: float | None = None,
+    report_title: str = "CloudAnalyzer Batch Evaluation Report",
+    report_notes: list[str] | None = None,
 ) -> None:
     """Generate an HTML report for batch evaluation results."""
     summary = make_batch_summary(
@@ -711,15 +718,22 @@ def make_batch_html(
             "</tr>"
         )
     inspection_rows_html = "\n".join(inspection_row_parts)
+    notes = [note.strip() for note in (report_notes or []) if note.strip()]
+    notes_html = "\n".join(
+        f'<p class="report-note">{escape(note)}</p>'
+        for note in notes
+    )
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>CloudAnalyzer Batch Evaluation Report</title>
+  <title>{escape(report_title)}</title>
   <style>
     body {{ font-family: Arial, sans-serif; margin: 2rem; color: #111827; }}
     h1, h2 {{ margin-bottom: 0.5rem; }}
+    .report-notes {{ margin: 0 0 1.5rem 0; max-width: 72rem; color: #374151; line-height: 1.6; }}
+    .report-note {{ margin: 0.35rem 0; }}
     table {{ border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }}
     th, td {{ border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: left; }}
     th {{ background: #f3f4f6; }}
@@ -786,7 +800,8 @@ def make_batch_html(
   </style>
 </head>
 <body>
-  <h1>CloudAnalyzer Batch Evaluation Report</h1>
+  <h1>{escape(report_title)}</h1>
+  {f'<div class="report-notes">{notes_html}</div>' if notes_html else ""}
   <h2>Summary</h2>
   <table class="summary-table">
     <tbody>
@@ -1154,6 +1169,8 @@ def save_batch_report(
     output_path: str,
     min_auc: float | None = None,
     max_chamfer: float | None = None,
+    report_title: str = "CloudAnalyzer Batch Evaluation Report",
+    report_notes: list[str] | None = None,
 ) -> None:
     """Write a batch evaluation report based on the file extension."""
     ext = Path(output_path).suffix.lower()
@@ -1164,6 +1181,8 @@ def save_batch_report(
             output_path,
             min_auc=min_auc,
             max_chamfer=max_chamfer,
+            report_title=report_title,
+            report_notes=report_notes,
         )
         return
     if ext == ".html":
@@ -1173,6 +1192,8 @@ def save_batch_report(
             output_path,
             min_auc=min_auc,
             max_chamfer=max_chamfer,
+            report_title=report_title,
+            report_notes=report_notes,
         )
         return
     raise ValueError("Unsupported report format. Use .md, .markdown, or .html")

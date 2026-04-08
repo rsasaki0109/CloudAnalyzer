@@ -211,6 +211,23 @@ class TestBatchReports:
         assert "Snapshot: `ca heatmap3d a.pcd ref.pcd -o a_vs_ref_heatmap.png`" in content
         assert plot_path.exists()
 
+    def test_batch_markdown_with_custom_title_and_notes(self, tmp_path):
+        path = tmp_path / "batch.md"
+        make_batch_markdown(
+            SAMPLE_BATCH_RESULTS,
+            "ref.pcd",
+            str(path),
+            report_title="Perception Artifact Comparison",
+            report_notes=[
+                "Compare a non-deep baseline and a deep baseline on the same frame.",
+                "These are demo artifacts, not archived model outputs.",
+            ],
+        )
+        content = path.read_text()
+        assert "# Perception Artifact Comparison" in content
+        assert "Compare a non-deep baseline and a deep baseline on the same frame." in content
+        assert "These are demo artifacts, not archived model outputs." in content
+
     def test_batch_markdown_with_quality_gate(self, tmp_path):
         path = tmp_path / "batch.md"
         make_batch_markdown(
@@ -309,6 +326,25 @@ class TestBatchReports:
         assert "copyCommand(" in content
         assert ">Copy</button>" in content
         assert plot_path.exists()
+
+    def test_batch_html_with_custom_title_and_notes(self, tmp_path):
+        path = tmp_path / "batch.html"
+        make_batch_html(
+            SAMPLE_BATCH_RESULTS,
+            "ref.pcd",
+            str(path),
+            report_title="Perception Artifact Comparison",
+            report_notes=[
+                "Compare a non-deep baseline and a deep baseline on the same frame.",
+                "These are demo artifacts, not archived model outputs.",
+            ],
+        )
+        content = path.read_text()
+        assert "<title>Perception Artifact Comparison</title>" in content
+        assert "<h1>Perception Artifact Comparison</h1>" in content
+        assert 'class="report-notes"' in content
+        assert "Compare a non-deep baseline and a deep baseline on the same frame." in content
+        assert "These are demo artifacts, not archived model outputs." in content
 
     def test_batch_html_with_quality_gate(self, tmp_path):
         path = tmp_path / "batch.html"

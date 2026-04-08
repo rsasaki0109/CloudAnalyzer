@@ -1,16 +1,16 @@
-# Perception Batch QA Demo
+# Perception Artifact Comparison Demo
 
 This demo compares two candidate perception artifacts against the same public reference frame.
 It uses the RELLIS-3D Ouster LiDAR example and evaluates both candidates with `ca batch`.
 
 ## What The Candidates Mean
 
-- `nondeep_baseline.pcd`: deterministic geometry-only proxy with coarse voxelization, long-range thinning, and a small rigid bias.
-- `deep_baseline.pcd`: higher-fidelity proxy with denser sampling and a smaller rigid bias.
+- `nondeep_baseline.pcd`: geometry-first non-deep baseline with coarse voxelization, long-range thinning, and a larger rigid bias.
+- `deep_baseline.pcd`: higher-fidelity deep baseline with denser sampling and a smaller rigid bias.
 - `reference_scene.pcd`: non-void labeled points from the official public RELLIS-3D example frame.
 
-These are demo proxies, not archived model outputs. The point is to show how CloudAnalyzer
-compares a non-deep candidate and a deep candidate against the same public reference artifact.
+These are deterministic demo artifacts, not archived model outputs. The point is to show how
+CloudAnalyzer compares a non-deep baseline and a deep baseline against the same public reference artifact.
 
 ## Source Data
 
@@ -32,23 +32,27 @@ compares a non-deep candidate and a deep candidate against the same public refer
 
 ## Batch Metrics
 
-| Candidate | AUC | Chamfer | Best F1 | Gate |
-|---|---:|---:|---:|---|
-| `deep_baseline.pcd` | 0.9515 | 0.0252 | 1.0000 | PASS |
-| `nondeep_baseline.pcd` | 0.6648 | 0.1094 | 0.9735 | FAIL |
+| Candidate | Points | Retained vs Ref | AUC | Chamfer | Best F1 | Gate |
+|---|---:|---:|---:|---:|---:|---|
+| `deep_baseline.pcd` | 34370 | 55.6% | 0.9515 | 0.0252 | 1.0000 | PASS |
+| `nondeep_baseline.pcd` | 16906 | 27.4% | 0.6648 | 0.1094 | 0.9735 | FAIL |
 
 Gate settings: `min_auc=0.90`, `max_chamfer=0.05`
+
+Interpretation:
+The non-deep baseline intentionally drops long-range geometry and fails the gate.
+The deep baseline keeps denser geometry and passes the same gate on the same frame.
 
 ## Files
 
 | File | Description |
 |---|---|
 | `reference_scene.pcd` | Public reference artifact derived from the official labels |
-| `candidates/nondeep_baseline.pcd` | Geometry-only non-deep proxy candidate |
-| `candidates/deep_baseline.pcd` | Higher-fidelity deep proxy candidate |
+| `candidates/nondeep_baseline.pcd` | Geometry-first non-deep baseline artifact |
+| `candidates/deep_baseline.pcd` | Higher-fidelity deep baseline artifact |
 | `index.html` | HTML batch report for GitHub Pages |
 | `report.md` | Markdown version of the same batch report |
-| `results.json` | Raw batch results plus summary |
+| `results.json` | Raw batch results, summary, and demo metadata |
 | `ATTRIBUTION.md` | Dataset provenance and license note |
 
 ## Reproduce

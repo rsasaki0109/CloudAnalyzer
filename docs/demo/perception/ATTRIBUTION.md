@@ -9,4 +9,5 @@
 - Ignored labels: `0`
 
 The generated artifacts in this directory are derived from the public example bundle above.
+The `deep_baseline` and `nondeep_baseline` files are deterministic demo baselines, not archived model outputs.
 Keep the upstream attribution and non-commercial / share-alike terms with these files.

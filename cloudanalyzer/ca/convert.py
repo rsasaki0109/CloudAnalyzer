@@ -2,7 +2,7 @@
 
 import open3d as o3d
 
-from ca.io import load_point_cloud, SUPPORTED_EXTENSIONS
+from ca.io import load_point_cloud, save_point_cloud, SUPPORTED_EXTENSIONS
 
 
 def convert(input_path: str, output_path: str) -> dict:
@@ -29,8 +29,7 @@ def convert(input_path: str, output_path: str) -> dict:
     pcd = load_point_cloud(input_path)
     num_points = len(pcd.points)
 
-    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-    o3d.io.write_point_cloud(output_path, pcd)
+    save_point_cloud(output_path, pcd)
 
     return {
         "input": input_path,

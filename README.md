@@ -30,8 +30,8 @@ Adding just one flag, `--evaluate`, tells you immediately how much quality chang
   Compare voxel downsampling, outlier removal, splitting, or compressed-and-restored maps against a baseline with `AUC / Chamfer / Hausdorff / heatmap`.
 - **Localization / SLAM run evaluation**
   Evaluate estimated trajectories against ground truth with `ATE / RPE / drift / lateral / longitudinal / coverage`, then inspect map heatmaps and trajectory timelines together in `ca web`.
-- **Perception / ground segmentation QA**
-  Evaluate ground segmentation with voxel-based precision / recall / F1 / IoU and wire the result into config-driven CI gates.
+- **Perception QA**
+  Evaluate ground segmentation, 3D object detection, and 3D multi-object tracking with task-specific metrics and wire the result into config-driven CI gates.
 - **Regression checks for 3D generation pipelines**
   Benchmark reconstructed point clouds, depth-derived clouds, model outputs, and geometry from Gaussian Splatting-style pipelines per artifact or per run.
 
@@ -52,7 +52,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **31 subcommands** |
+| CLI | Limited | None | None | **34 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -353,6 +353,14 @@ ca run-batch maps/ \
 # Quality gate: exit with code 1 if any file fails
 ca batch results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
 
+# 3D detection QA from JSON box sequences
+ca detection-evaluate estimated_detection.json reference_detection.json \
+  --iou-thresholds 0.25,0.5 --min-map 0.9 --report detection_report.html
+
+# 3D tracking QA from JSON box sequences
+ca tracking-evaluate estimated_tracking.json reference_tracking.json \
+  --iou-threshold 0.5 --min-mota 0.8 --max-id-switches 2 --report tracking_report.html
+
 # Config-driven quality gate
 ca check cloudanalyzer.yaml
 
@@ -363,6 +371,11 @@ ca baseline-decision qa/current-summary.json --history qa/baseline-summary.json
 gh workflow run quality-gate.yml \
   -f source=new.pcd -f reference=ref.pcd -f auc_threshold=0.9
 ```
+
+Checked-in public JSON examples for detection / tracking live in
+`demo_assets/public/rellis3d-frame-000001/object_eval/`. The detection examples are
+derived from the public RELLIS-3D seed frame, and the tracking examples are
+deterministic synthetic 3-frame sequences seeded from that same public frame.
 
 ## Command Overview
 
@@ -378,6 +391,8 @@ ca init-check --profile integrated          # Generate a starter config
 ca baseline-decision qa/current.json --history-dir qa/history/  # promote / keep / reject
 ca baseline-save qa/summary.json --history-dir qa/history/      # save a baseline into history
 ca baseline-list --history-dir qa/history/                      # list saved baselines
+ca detection-evaluate est_det.json gt_det.json --iou-thresholds 0.25,0.5 --min-map 0.9  # 3D detection QA
+ca tracking-evaluate est_track.json gt_track.json --min-mota 0.8 --max-id-switches 2  # 3D MOT QA
 ca traj-evaluate est.csv gt.csv --max-ate 0.5 --max-drift 1.0 --min-coverage 0.9  # ATE / RPE / drift + coverage gate
 ca traj-evaluate est.csv gt.csv --align-origin  # absorb initial translation offset
 ca traj-evaluate est.csv gt.csv --align-rigid   # rigid alignment before scoring
@@ -410,6 +425,8 @@ ca batch /path/to/dir/ -r           # run over a directory
 ca batch results/ --evaluate ref.pcd  # compare all files to a reference
 ca batch results/ --evaluate ref.pcd --report batch.html  # report for sharing
 ca batch results/ --evaluate ref.pcd --min-auc 0.95 --max-chamfer 0.02  # quality gate
+ca detection-evaluate est_det.json gt_det.json --report detection.html  # detection report
+ca tracking-evaluate est_track.json gt_track.json --report tracking.html  # tracking report
 ca traj-evaluate est.csv gt.csv --report traj.html  # trajectory quality report
 ca traj-batch runs/ --reference-dir gt/ --report traj_batch.html  # trajectory batch report
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # combined run report

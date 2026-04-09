@@ -43,6 +43,96 @@ def _write_pcd(path: Path, points: list[list[float]]) -> str:
     return str(path)
 
 
+def _detection_reference_sequence() -> dict:
+    return {
+        "frames": [
+            {
+                "frame_id": "0001",
+                "boxes": [
+                    {"label": "car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                    {"label": "pedestrian", "center": [5.0, 0.0, 0.0], "size": [1.0, 1.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0002",
+                "boxes": [
+                    {"label": "car", "center": [10.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+        ]
+    }
+
+
+def _detection_estimated_sequence() -> dict:
+    return {
+        "frames": [
+            {
+                "frame_id": "0001",
+                "boxes": [
+                    {"label": "car", "center": [0.1, 0.0, 0.0], "size": [2.0, 2.0, 2.0], "score": 0.95},
+                    {"label": "pedestrian", "center": [5.0, 0.1, 0.0], "size": [1.0, 1.0, 2.0], "score": 0.90},
+                ],
+            },
+            {
+                "frame_id": "0002",
+                "boxes": [
+                    {"label": "car", "center": [10.0, 0.0, 0.1], "size": [2.0, 2.0, 2.0], "score": 0.92},
+                ],
+            },
+        ]
+    }
+
+
+def _tracking_reference_sequence() -> dict:
+    return {
+        "frames": [
+            {
+                "frame_id": "0001",
+                "boxes": [
+                    {"label": "car", "track_id": "gt-car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0002",
+                "boxes": [
+                    {"label": "car", "track_id": "gt-car", "center": [1.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0003",
+                "boxes": [
+                    {"label": "car", "track_id": "gt-car", "center": [2.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+        ]
+    }
+
+
+def _tracking_estimated_sequence() -> dict:
+    return {
+        "frames": [
+            {
+                "frame_id": "0001",
+                "boxes": [
+                    {"label": "car", "track_id": "pred-a", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0002",
+                "boxes": [
+                    {"label": "car", "track_id": "pred-a", "center": [1.0, 0.1, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0003",
+                "boxes": [
+                    {"label": "car", "track_id": "pred-a", "center": [2.0, 0.0, 0.1], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+        ]
+    }
+
+
 class TestCLI:
     def test_version(self):
         result = runner.invoke(app, ["version"])
@@ -1011,6 +1101,74 @@ class TestCLI:
         assert data["quality_gate"]["passed"] is False
         assert any("IoU" in reason for reason in data["quality_gate"]["reasons"])
 
+    def test_detection_evaluate_report_and_quality_gate(self, tmp_path):
+        estimated = _write_json(tmp_path / "estimated.json", _detection_estimated_sequence())
+        reference = _write_json(tmp_path / "reference.json", _detection_reference_sequence())
+        report = tmp_path / "detection_report.html"
+
+        result = runner.invoke(
+            app,
+            [
+                "detection-evaluate",
+                estimated,
+                reference,
+                "--iou-thresholds",
+                "0.25,0.5",
+                "--min-map",
+                "0.9",
+                "--report",
+                str(report),
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert "mAP:" in result.output
+        assert "Quality Gate: PASS" in result.output
+        assert report.exists()
+        assert "CloudAnalyzer Detection Report" in report.read_text()
+
+    def test_tracking_evaluate_format_json_and_failed_gate(self, tmp_path):
+        estimated = _write_json(
+            tmp_path / "estimated.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "track_id": "pred-a", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                    {"frame_id": "0002", "boxes": []},
+                    {
+                        "frame_id": "0003",
+                        "boxes": [
+                            {"label": "car", "track_id": "pred-b", "center": [2.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        reference = _write_json(tmp_path / "reference.json", _tracking_reference_sequence())
+
+        result = runner.invoke(
+            app,
+            [
+                "tracking-evaluate",
+                estimated,
+                reference,
+                "--min-mota",
+                "0.8",
+                "--max-id-switches",
+                "0",
+                "--format-json",
+            ],
+        )
+
+        assert result.exit_code == 1
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is False
+        assert data["tracking"]["id_switches"] == 1
+
     def test_web_heatmap_flag(self, tmp_path, identical_pcd, monkeypatch):
         import cloudanalyzer_cli.main as cli_main
 
@@ -1329,6 +1487,8 @@ class TestCLI:
             "artifact",
             "trajectory",
             "artifact",
+            "detection",
+            "tracking",
             "run",
         ]
 
@@ -1346,6 +1506,23 @@ class TestCLI:
         assert len(suite.checks) == 1
         assert suite.checks[0].kind == "artifact"
         assert suite.checks[0].check_id == "mapping-postprocess"
+
+    def test_init_check_writes_perception_template(self, tmp_path):
+        config_path = tmp_path / "perception.yaml"
+
+        result = runner.invoke(
+            app,
+            ["init-check", str(config_path), "--profile", "perception"],
+        )
+
+        assert result.exit_code == 0
+        suite = load_check_suite(str(config_path))
+        assert suite.project == "perception-qa"
+        assert [check.kind for check in suite.checks] == [
+            "artifact",
+            "detection",
+            "tracking",
+        ]
 
     def test_init_check_refuses_to_overwrite_without_force(self, tmp_path):
         config_path = tmp_path / "cloudanalyzer.yaml"

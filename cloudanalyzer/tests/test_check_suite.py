@@ -374,3 +374,38 @@ class TestRunCheckSuite:
         assert ground_check["passed"] is True
         assert ground_check["summary"]["f1"] == pytest.approx(1.0)
         assert ground_check["summary"]["iou"] == pytest.approx(1.0)
+
+    def test_runs_ground_check_with_report_output_and_voxel_size(self, tmp_path: Path):
+        ground = [[0, 0, 0], [1, 0, 0], [2, 0, 0]]
+        nonground = [[0, 0, 2], [1, 0, 2], [2, 0, 2]]
+        est_ground = _write_pcd(tmp_path / "est_g.pcd", ground)
+        est_nonground = _write_pcd(tmp_path / "est_ng.pcd", nonground)
+        ref_ground = _write_pcd(tmp_path / "ref_g.pcd", ground)
+        ref_nonground = _write_pcd(tmp_path / "ref_ng.pcd", nonground)
+
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+            checks:
+              - id: ground-seg
+                kind: ground
+                estimated_ground: {Path(est_ground).relative_to(tmp_path)}
+                estimated_nonground: {Path(est_nonground).relative_to(tmp_path)}
+                reference_ground: {Path(ref_ground).relative_to(tmp_path)}
+                reference_nonground: {Path(ref_nonground).relative_to(tmp_path)}
+                gate:
+                  voxel_size: 0.5
+                  min_f1: 0.9
+            """,
+        )
+
+        result = run_check_suite(load_check_suite(str(config)))
+
+        ground_check = result["checks"][0]
+        assert ground_check["passed"] is True
+        assert ground_check["report_path"] == str(
+            (tmp_path / "qa" / "reports" / "ground-seg.html").resolve()
+        )
+        assert (tmp_path / "qa" / "reports" / "ground-seg.html").exists()

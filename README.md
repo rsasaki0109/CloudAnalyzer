@@ -376,7 +376,7 @@ ca traj-evaluate est.csv gt.csv --align-rigid   # rigid alignment before scoring
 ca traj-batch runs/ --reference-dir gt/ --max-drift 1.0 --min-coverage 0.9  # trajectory benchmark
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # integrated map + trajectory QA
 ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch QA
-ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd --min-f1 0.9  # ground segmentation QA
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd --min-f1 0.9 --report ground.html  # ground segmentation QA
 ```
 
 ### Processing (all support `--evaluate`)

@@ -104,6 +104,11 @@ ca traj-evaluate estimated.csv reference.csv \
   --report trajectory_report.html
 # report also writes sibling trajectory overlay and error timeline PNGs
 
+# Ground segmentation evaluation with report output
+ca ground-evaluate estimated_ground.pcd estimated_nonground.pcd \
+  reference_ground.pcd reference_nonground.pcd \
+  --min-f1 0.9 --min-iou 0.8 --report ground_report.html
+
 # Ignore constant initial translation offset
 ca traj-evaluate estimated.csv reference.csv --align-origin
 

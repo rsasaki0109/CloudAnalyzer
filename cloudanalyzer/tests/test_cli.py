@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from textwrap import dedent
 
+import numpy as np
+import open3d as o3d
 import pytest
 from typer.testing import CliRunner
 
@@ -30,6 +32,14 @@ def _write_config(path: Path, text: str) -> str:
 def _write_json(path: Path, data: dict) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    return str(path)
+
+
+def _write_pcd(path: Path, points: list[list[float]]) -> str:
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(np.array(points, dtype=np.float64))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    o3d.io.write_point_cloud(str(path), pcd)
     return str(path)
 
 
@@ -944,9 +954,65 @@ class TestCLI:
         assert any("Trajectory:" in reason for reason in data[0]["overall_quality_gate"]["reasons"])
         assert data[0]["inspect"]["run_evaluate"].startswith("ca run-evaluate ")
 
+    def test_ground_evaluate_report_and_quality_gate(self, tmp_path):
+        ground = [[0, 0, 0], [1, 0, 0], [2, 0, 0]]
+        nonground = [[0, 0, 2], [1, 0, 2], [2, 0, 2]]
+        est_ground = _write_pcd(tmp_path / "est_ground.pcd", ground)
+        est_nonground = _write_pcd(tmp_path / "est_nonground.pcd", nonground)
+        ref_ground = _write_pcd(tmp_path / "ref_ground.pcd", ground)
+        ref_nonground = _write_pcd(tmp_path / "ref_nonground.pcd", nonground)
+        report = tmp_path / "ground_report.html"
+
+        result = runner.invoke(
+            app,
+            [
+                "ground-evaluate",
+                est_ground,
+                est_nonground,
+                ref_ground,
+                ref_nonground,
+                "--min-f1",
+                "0.9",
+                "--report",
+                str(report),
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert "Quality Gate: PASS" in result.output
+        assert "Report:" in result.output
+        assert report.exists()
+        assert "CloudAnalyzer Ground Segmentation Report" in report.read_text()
+
+    def test_ground_evaluate_format_json_and_failed_gate(self, tmp_path):
+        ground = [[0, 0, 0], [1, 0, 0]]
+        nonground = [[0, 0, 2], [1, 0, 2]]
+        est_ground = _write_pcd(tmp_path / "est_ground.pcd", nonground)
+        est_nonground = _write_pcd(tmp_path / "est_nonground.pcd", ground)
+        ref_ground = _write_pcd(tmp_path / "ref_ground.pcd", ground)
+        ref_nonground = _write_pcd(tmp_path / "ref_nonground.pcd", nonground)
+
+        result = runner.invoke(
+            app,
+            [
+                "ground-evaluate",
+                est_ground,
+                est_nonground,
+                ref_ground,
+                ref_nonground,
+                "--min-iou",
+                "0.8",
+                "--format-json",
+            ],
+        )
+
+        assert result.exit_code == 1
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is False
+        assert any("IoU" in reason for reason in data["quality_gate"]["reasons"])
+
     def test_web_heatmap_flag(self, tmp_path, identical_pcd, monkeypatch):
         import cloudanalyzer_cli.main as cli_main
-        import open3d as o3d
 
         source = tmp_path / "source.pcd"
         target = tmp_path / "target.pcd"

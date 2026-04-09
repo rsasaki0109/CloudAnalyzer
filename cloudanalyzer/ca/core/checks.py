@@ -18,6 +18,7 @@ from ca.report import (
     make_run_batch_summary,
     make_trajectory_batch_summary,
     save_batch_report,
+    save_ground_report,
     save_run_batch_report,
     save_run_report,
     save_trajectory_batch_report,
@@ -62,6 +63,7 @@ _VALID_GATE_KEYS = {
     "min_recall",
     "min_f1",
     "min_iou",
+    "voxel_size",
 }
 
 _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
@@ -89,7 +91,7 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_lateral",
         "max_longitudinal",
     },
-    "ground": {"min_precision", "min_recall", "min_f1", "min_iou"},
+    "ground": {"min_precision", "min_recall", "min_f1", "min_iou", "voxel_size"},
 }
 
 
@@ -869,6 +871,8 @@ def _run_ground_check(spec: CheckSpec) -> dict[str, Any]:
         min_f1=cast(float | None, spec.gate.get("min_f1")),
         min_iou=cast(float | None, spec.gate.get("min_iou")),
     )
+    if spec.outputs.report_path:
+        save_ground_report(result, spec.outputs.report_path)
     if spec.outputs.json_path:
         _write_json(spec.outputs.json_path, result)
     gate = cast(dict[str, Any] | None, result.get("quality_gate"))

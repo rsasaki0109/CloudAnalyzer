@@ -10,6 +10,7 @@ from typing import Any, Protocol
 _DIMENSION_GATE_KEYS = {
     "auc": "min_auc",
     "map_auc": "min_auc",
+    "map": "min_map",
     "chamfer": "max_chamfer",
     "map_chamfer": "max_chamfer",
     "ate": "max_ate",
@@ -19,11 +20,17 @@ _DIMENSION_GATE_KEYS = {
     "drift": "max_drift",
     "trajectory_drift": "max_drift",
     "coverage": "min_coverage",
+    "precision": "min_precision",
+    "recall": "min_recall",
+    "f1": "min_f1",
+    "mota": "min_mota",
+    "id_switches": "max_id_switches",
 }
 
 _DIMENSION_LABELS = {
     "auc": "auc",
     "map_auc": "map_auc",
+    "map": "map",
     "chamfer": "chamfer",
     "map_chamfer": "map_chamfer",
     "ate": "ate",
@@ -33,6 +40,11 @@ _DIMENSION_LABELS = {
     "drift": "drift",
     "trajectory_drift": "trajectory_drift",
     "coverage": "coverage",
+    "precision": "precision",
+    "recall": "recall",
+    "f1": "f1",
+    "mota": "mota",
+    "id_switches": "id_switches",
 }
 
 
@@ -129,6 +141,7 @@ class SeverityWeightedCheckTriageStrategy:
     _WEIGHTS = {
         "auc": 1.35,
         "map_auc": 1.35,
+        "map": 1.35,
         "chamfer": 1.15,
         "map_chamfer": 1.15,
         "ate": 1.3,
@@ -138,6 +151,11 @@ class SeverityWeightedCheckTriageStrategy:
         "drift": 1.0,
         "trajectory_drift": 1.0,
         "coverage": 1.4,
+        "precision": 1.1,
+        "recall": 1.25,
+        "f1": 1.2,
+        "mota": 1.35,
+        "id_switches": 1.15,
     }
 
     def rank(self, request: CheckTriageRequest) -> CheckTriageResult:
@@ -267,6 +285,19 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
         }
     if kind == "trajectory_batch":
         return _trajectory_batch_metrics(result if isinstance(result, list) else [])
+    if kind == "detection":
+        return {
+            "map": float(summary["map"]),
+            "precision": float(summary["precision"]),
+            "recall": float(summary["recall"]),
+            "f1": float(summary["f1"]),
+        }
+    if kind == "tracking":
+        return {
+            "mota": float(summary["mota"]),
+            "recall": float(summary["recall"]),
+            "id_switches": float(summary["id_switches"]),
+        }
     if kind == "run":
         return {
             "map_auc": float(summary["map_auc"]),

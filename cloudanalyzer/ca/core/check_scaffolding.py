@@ -115,13 +115,32 @@ class StaticProfileCheckScaffoldingStrategy:
               json_dir: qa/results
 
             checks:
-              - id: perception-output
+              - id: perception-geometry
                 kind: artifact
                 source: outputs/reconstruction.pcd
                 reference: baselines/reconstruction_ref.pcd
                 gate:
                   min_auc: 0.95
                   max_chamfer: 0.02
+
+              - id: perception-detection
+                kind: detection
+                estimated: outputs/detections.json
+                reference: baselines/detections_ref.json
+                thresholds: [0.25, 0.5]
+                gate:
+                  min_map: 0.9
+                  min_recall: 0.8
+
+              - id: perception-tracking
+                kind: tracking
+                estimated: outputs/tracks.json
+                reference: baselines/tracks_ref.json
+                thresholds: [0.5]
+                gate:
+                  min_mota: 0.8
+                  min_recall: 0.8
+                  max_id_switches: 2
             """
         ).strip(),
         "integrated": dedent(
@@ -163,6 +182,25 @@ class StaticProfileCheckScaffoldingStrategy:
                 gate:
                   min_auc: 0.95
                   max_chamfer: 0.02
+
+              - id: perception-detection
+                kind: detection
+                estimated: outputs/detections.json
+                reference: baselines/detections_ref.json
+                thresholds: [0.25, 0.5]
+                gate:
+                  min_map: 0.9
+                  min_recall: 0.8
+
+              - id: perception-tracking
+                kind: tracking
+                estimated: outputs/tracks.json
+                reference: baselines/tracks_ref.json
+                thresholds: [0.5]
+                gate:
+                  min_mota: 0.8
+                  min_recall: 0.8
+                  max_id_switches: 2
 
               - id: integrated-run
                 kind: run

@@ -31,7 +31,7 @@ python3 -m twine check dist/*
 
 ## Commands
 
-There are **31** CLI subcommands (see `ca --help`). Summary:
+There are **34** CLI subcommands (see `ca --help`). Summary:
 
 ### Analysis & Evaluation
 
@@ -42,7 +42,9 @@ There are **31** CLI subcommands (see `ca --help`). Summary:
 | `ca evaluate` | F1, Chamfer, Hausdorff, AUC evaluation |
 | `ca check` | Config-driven unified QA (`cloudanalyzer.yaml`) |
 | `ca init-check` | Emit a starter `cloudanalyzer.yaml` profile |
+| `ca detection-evaluate` | 3D object detection QA for axis-aligned boxes (mAP, precision/recall/F1, reports) |
 | `ca ground-evaluate` | Ground segmentation QA (precision/recall/F1/IoU, optional gates) |
+| `ca tracking-evaluate` | 3D multi-object tracking QA (MOTA, ID switches, precision/recall/F1, reports) |
 | `ca traj-evaluate` | ATE, translational RPE, drift evaluation for trajectories |
 | `ca traj-batch` | Batch trajectory benchmark with coverage, gate, and reports |
 | `ca run-evaluate` | Combined map + trajectory QA for one run |
@@ -108,6 +110,15 @@ ca traj-evaluate estimated.csv reference.csv \
 ca ground-evaluate estimated_ground.pcd estimated_nonground.pcd \
   reference_ground.pcd reference_nonground.pcd \
   --min-f1 0.9 --min-iou 0.8 --report ground_report.html
+
+# 3D object detection evaluation from JSON box sequences
+ca detection-evaluate estimated_detection.json reference_detection.json \
+  --iou-thresholds 0.25,0.5 --min-map 0.9 --report detection_report.html
+
+# 3D multi-object tracking evaluation from JSON box sequences
+ca tracking-evaluate estimated_tracking.json reference_tracking.json \
+  --iou-threshold 0.5 --min-mota 0.8 --max-id-switches 2 \
+  --report tracking_report.html
 
 # Ignore constant initial translation offset
 ca traj-evaluate estimated.csv reference.csv --align-origin
@@ -206,7 +217,7 @@ ca --quiet ...      # Suppress non-error output
 - `--output-json <path>` — Dump result as JSON file
 - `--format-json` — Print JSON to stdout for piping
 - `--plot <path>` — F1 curve plot (evaluate only)
-- `--report <path>` — Markdown/HTML report (`batch`, `traj-evaluate`, `traj-batch`, `run-evaluate`, `run-batch`)
+- `--report <path>` — Markdown/HTML report (`batch`, `detection-evaluate`, `ground-evaluate`, `tracking-evaluate`, `traj-evaluate`, `traj-batch`, `run-evaluate`, `run-batch`)
 
 ```bash
 # Pipe JSON to jq
@@ -217,6 +228,40 @@ ca evaluate a.pcd b.pcd --format-json | jq '.auc'
 ## CI quality gate
 
 Point cloud / trajectory / perception QA is usually driven by `ca check` and a `cloudanalyzer.yaml` config (see [docs/ci.md](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/ci.md) and the [map quality gate tutorial](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/tutorial-map-quality-gate.md)).
+
+For object detection / tracking, the current stable contract is a JSON sequence:
+
+```json
+{
+  "frames": [
+    {
+      "frame_id": "000001",
+      "boxes": [
+        {
+          "label": "car",
+          "center": [0.0, 0.0, 0.0],
+          "size": [4.0, 1.8, 1.6],
+          "score": 0.97,
+          "track_id": "pred-17"
+        }
+      ]
+    }
+  ]
+}
+```
+
+`ca detection-evaluate` uses `label`, `center`, `size`, and optional `score`; `ca tracking-evaluate` also requires `track_id`. Geometry is currently evaluated as **axis-aligned 3D boxes** and ignores yaw if present in the source JSON.
+
+Checked-in public sample JSONs live under `demo_assets/public/rellis3d-frame-000001/object_eval/`:
+
+- `detection_reference.json`
+- `detection_estimated_good.json`
+- `detection_estimated_regressed.json`
+- `tracking_reference.json`
+- `tracking_estimated_good.json`
+- `tracking_estimated_regressed.json`
+
+Those examples are generated from the public RELLIS-3D seed frame; the tracking files are deterministic synthetic 3-frame sequences seeded from that public frame so the contract can be demonstrated without bundling a full public MOT dataset.
 
 In **this** GitHub repo, reusable workflows run the same gates in CI. Pin to a **tag or SHA** when calling them from another repository (not floating `@main`).
 

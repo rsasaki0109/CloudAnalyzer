@@ -41,7 +41,8 @@ In short, CloudAnalyzer is less a tool for **creating** 3D data and more a tool 
 |---|---|
 | ![density](docs/images/density_hdl_localization_map.png) | ![f1](docs/images/f1_hdl_localization_v0_2.png) |
 
-The figures above are generated from the public sample global map bundled in
+The figures above are generated from the public sample global map published by
+AISL at Toyohashi University of Technology and bundled in
 [`koide3/hdl_localization`](https://github.com/koide3/hdl_localization); see
 [Public Data Used In This README](#public-data-used-in-this-readme) for the exact source and links.
 
@@ -88,11 +89,11 @@ cd cloudanalyzer && pip install -e .
   `docs/images/f1_hdl_localization_v0_1.png`, and
   `docs/images/f1_hdl_localization_v0_5.png` are generated from the sample global
   map [`data/map.pcd`](https://github.com/koide3/hdl_localization/blob/master/data/map.pcd)
-  bundled in the public repository
+  published by AISL at Toyohashi University of Technology and bundled in the public repository
   [`koide3/hdl_localization`](https://github.com/koide3/hdl_localization).
 - That repository is distributed under the
   [BSD-2-Clause license](https://github.com/koide3/hdl_localization/blob/master/LICENSE).
-- The same README also links a public example outdoor rosbag,
+- The same README also links a public example outdoor rosbag from AISL at Toyohashi University of Technology,
   [`hdl_400.bag.tar.gz`](http://www.aisl.cs.tut.ac.jp/databases/hdl_graph_slam/hdl_400.bag.tar.gz),
   used with the localization demo.
 - Exact regeneration commands and file-level attribution are documented in
@@ -130,7 +131,7 @@ CloudAnalyzer builds on, interoperates with, or is positioned alongside the foll
 - [Open3D](https://www.open3d.org/) for point cloud I/O, geometry operations, and visualization primitives.
 - [PCL](https://pointclouds.org/) as the classic C++ point cloud processing ecosystem CloudAnalyzer complements.
 - [CloudCompare](https://www.cloudcompare.org/) as the baseline for manual inspection and map-to-map comparison workflows.
-- [koide3/hdl_localization](https://github.com/koide3/hdl_localization) as a representative LiDAR map localization stack; its sample global map is used for the README figures above.
+- [koide3/hdl_localization](https://github.com/koide3/hdl_localization) as a representative LiDAR map localization stack; its Toyohashi University of Technology AISL sample global map is used for the README figures above.
 - [koide3/ndt_omp](https://github.com/koide3/ndt_omp) and [SMRT-AIST/fast_gicp](https://github.com/SMRT-AIST/fast_gicp) as fast registration packages commonly used with `hdl_localization`.
 - [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) for agent-facing CLI integration.
 

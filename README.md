@@ -39,7 +39,11 @@ In short, CloudAnalyzer is less a tool for **creating** 3D data and more a tool 
 
 | Density Map | F1 Evaluation Curve |
 |---|---|
-| ![density](docs/images/density_utsukuba.png) | ![f1](docs/images/f1_curve.png) |
+| ![density](docs/images/density_hdl_localization_map.png) | ![f1](docs/images/f1_hdl_localization_v0_2.png) |
+
+The figures above are generated from the public sample global map bundled in
+[`koide3/hdl_localization`](https://github.com/koide3/hdl_localization); see
+[Public Data Used In This README](#public-data-used-in-this-readme) for the exact source and links.
 
 ## How It Differs From Other Tools
 
@@ -77,6 +81,23 @@ pip install cloudanalyzer
 cd cloudanalyzer && pip install -e .
 ```
 
+## Public Data Used In This README
+
+- `docs/images/density_hdl_localization_map.png`,
+  `docs/images/f1_hdl_localization_v0_2.png`,
+  `docs/images/f1_hdl_localization_v0_1.png`, and
+  `docs/images/f1_hdl_localization_v0_5.png` are generated from the sample global
+  map [`data/map.pcd`](https://github.com/koide3/hdl_localization/blob/master/data/map.pcd)
+  bundled in the public repository
+  [`koide3/hdl_localization`](https://github.com/koide3/hdl_localization).
+- That repository is distributed under the
+  [BSD-2-Clause license](https://github.com/koide3/hdl_localization/blob/master/LICENSE).
+- The same README also links a public example outdoor rosbag,
+  [`hdl_400.bag.tar.gz`](http://www.aisl.cs.tut.ac.jp/databases/hdl_graph_slam/hdl_400.bag.tar.gz),
+  used with the localization demo.
+- Exact regeneration commands and file-level attribution are documented in
+  [docs/images/ATTRIBUTION.md](docs/images/ATTRIBUTION.md).
+
 ## Public Demo
 
 **Live**: https://rsasaki0109.github.io/CloudAnalyzer/
@@ -101,6 +122,17 @@ Use the public benchmark pack to fix `ca check` pass/fail behavior in CI:
 python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
 ca check benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
 ```
+
+## Referenced OSS
+
+CloudAnalyzer builds on, interoperates with, or is positioned alongside the following OSS:
+
+- [Open3D](https://www.open3d.org/) for point cloud I/O, geometry operations, and visualization primitives.
+- [PCL](https://pointclouds.org/) as the classic C++ point cloud processing ecosystem CloudAnalyzer complements.
+- [CloudCompare](https://www.cloudcompare.org/) as the baseline for manual inspection and map-to-map comparison workflows.
+- [koide3/hdl_localization](https://github.com/koide3/hdl_localization) as a representative LiDAR map localization stack; its sample global map is used for the README figures above.
+- [koide3/ndt_omp](https://github.com/koide3/ndt_omp) and [SMRT-AIST/fast_gicp](https://github.com/SMRT-AIST/fast_gicp) as fast registration packages commonly used with `hdl_localization`.
+- [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) for agent-facing CLI integration.
 
 ## Core Idea: Process, Then Evaluate Immediately
 
@@ -142,15 +174,15 @@ ca pipeline noisy.pcd reference.pcd -o production.pcd -v 0.2
 
 ### Example Quality by Voxel Size
 
-| Voxel | Points | Chamfer | AUC | Interpretation |
+| Voxel | Kept points | Chamfer | AUC | Interpretation |
 |---|---|---|---|---|
-| 0.1m | 97% | 0.0011 | 0.998 | Excellent |
-| 0.2m | 90% | 0.0083 | 0.985 | Good |
-| 0.5m | 63% | 0.0544 | 0.886 | Needs review |
+| 0.1m | 67.5% (1,382,329) | 0.0147 | 0.9984 | Excellent |
+| 0.2m | 31.2% (638,902) | 0.0460 | 0.9770 | Good |
+| 0.5m | 7.2% (147,397) | 0.1266 | 0.8775 | Needs review |
 
-| Voxel 0.1m (AUC=0.998) | Voxel 0.5m (AUC=0.886) |
+| Voxel 0.1m (AUC=0.9984) | Voxel 0.5m (AUC=0.8775) |
 |---|---|
-| ![v01](docs/images/f1_voxel01.png) | ![v05](docs/images/f1_voxel05.png) |
+| ![v01](docs/images/f1_hdl_localization_v0_1.png) | ![v05](docs/images/f1_hdl_localization_v0_5.png) |
 
 ## CI / Automation
 

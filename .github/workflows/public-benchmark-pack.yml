@@ -9,7 +9,7 @@ on:
       - "README.md"
       - "benchmarks/public/**"
       - "cloudanalyzer/ca/core/checks.py"
-      - "cloudanalyzer/cli/main.py"
+      - "cloudanalyzer/cloudanalyzer_cli/main.py"
       - "cloudanalyzer/tests/test_check_suite.py"
       - "cloudanalyzer/tests/test_cli.py"
       - "cloudanalyzer/tests/test_public_benchmark_pack.py"
@@ -24,7 +24,7 @@ on:
       - "README.md"
       - "benchmarks/public/**"
       - "cloudanalyzer/ca/core/checks.py"
-      - "cloudanalyzer/cli/main.py"
+      - "cloudanalyzer/cloudanalyzer_cli/main.py"
       - "cloudanalyzer/tests/test_check_suite.py"
       - "cloudanalyzer/tests/test_cli.py"
       - "cloudanalyzer/tests/test_public_benchmark_pack.py"
@@ -55,7 +55,7 @@ jobs:
       - name: Install CloudAnalyzer
         run: |
           python -m pip install --upgrade pip
-          pip install -e ./cloudanalyzer
+          pip install -e './cloudanalyzer[dev]'
 
       - name: Offline benchmark-pack unit test
         run: xvfb-run python -m pytest cloudanalyzer/tests/test_public_benchmark_pack.py -q
@@ -65,14 +65,14 @@ jobs:
 
       - name: Validate suite-pass
         run: |
-          xvfb-run python -m cli.main check \
+          xvfb-run ca check \
             benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml \
             --output-json /tmp/suite-pass.json
 
       - name: Validate suite-regression
         run: |
           set +e
-          xvfb-run python -m cli.main check \
+          xvfb-run ca check \
             benchmarks/public/stanford-bunny-mini/configs/suite-regression.cloudanalyzer.yaml \
             --output-json /tmp/suite-regression.json
           status=$?

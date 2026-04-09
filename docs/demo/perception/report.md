@@ -29,7 +29,7 @@ Both candidates are deterministic demo artifacts derived from the reference scen
 
 ## Inspection Commands
 
-- candidates/deep_baseline.pcd: `ca web docs/demo/perception/candidates/deep_baseline.pcd docs/demo/perception/reference_scene.pcd --heatmap`
-  - Snapshot: `ca heatmap3d docs/demo/perception/candidates/deep_baseline.pcd docs/demo/perception/reference_scene.pcd -o deep_baseline_vs_reference_scene_heatmap.png`
-- candidates/nondeep_baseline.pcd: `ca web docs/demo/perception/candidates/nondeep_baseline.pcd docs/demo/perception/reference_scene.pcd --heatmap`
-  - Snapshot: `ca heatmap3d docs/demo/perception/candidates/nondeep_baseline.pcd docs/demo/perception/reference_scene.pcd -o nondeep_baseline_vs_reference_scene_heatmap.png`
+- candidates/deep_baseline.pcd: `ca web candidates/deep_baseline.pcd reference_scene.pcd --heatmap`
+  - Snapshot: `ca heatmap3d candidates/deep_baseline.pcd reference_scene.pcd -o deep_baseline_vs_reference_scene_heatmap.png`
+- candidates/nondeep_baseline.pcd: `ca web candidates/nondeep_baseline.pcd reference_scene.pcd --heatmap`
+  - Snapshot: `ca heatmap3d candidates/nondeep_baseline.pcd reference_scene.pcd -o nondeep_baseline_vs_reference_scene_heatmap.png`

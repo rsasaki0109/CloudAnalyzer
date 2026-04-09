@@ -161,15 +161,27 @@ def _normalize_result_paths(results: list[dict], reference_path: Path, output_di
     """Render summary/report paths relative to the demo root when possible."""
     normalized_results: list[dict] = []
     for item in results:
+        original_path = item["path"]
+        original_reference_path = item["reference_path"]
         normalized = dict(item)
         try:
-            normalized["path"] = str(Path(item["path"]).relative_to(output_dir))
+            normalized["path"] = str(Path(original_path).relative_to(output_dir))
         except ValueError:
-            normalized["path"] = item["path"]
+            normalized["path"] = original_path
         try:
-            normalized["reference_path"] = str(Path(item["reference_path"]).relative_to(output_dir))
+            normalized["reference_path"] = str(Path(original_reference_path).relative_to(output_dir))
         except ValueError:
-            normalized["reference_path"] = item["reference_path"]
+            normalized["reference_path"] = original_reference_path
+        inspect = item.get("inspect")
+        if isinstance(inspect, dict):
+            normalized["inspect"] = {
+                key: (
+                    str(value)
+                    .replace(original_path, normalized["path"])
+                    .replace(original_reference_path, normalized["reference_path"])
+                )
+                for key, value in inspect.items()
+            }
         normalized_results.append(normalized)
     try:
         normalized_reference = str(reference_path.relative_to(output_dir))

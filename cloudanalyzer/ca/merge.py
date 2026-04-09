@@ -2,7 +2,7 @@
 
 import open3d as o3d
 
-from ca.io import load_point_cloud
+from ca.io import load_point_cloud, save_point_cloud
 
 
 def merge(paths: list[str], output: str) -> dict:
@@ -24,7 +24,7 @@ def merge(paths: list[str], output: str) -> dict:
         counts.append({"path": path, "points": count})
         merged += pcd
 
-    o3d.io.write_point_cloud(output, merged)
+    save_point_cloud(output, merged)
 
     return {
         "inputs": counts,

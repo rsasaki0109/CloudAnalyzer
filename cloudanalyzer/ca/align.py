@@ -2,7 +2,7 @@
 
 import open3d as o3d
 
-from ca.io import load_point_cloud
+from ca.io import load_point_cloud, save_point_cloud
 from ca.registration import register
 
 
@@ -49,7 +49,7 @@ def align(
         })
         accumulated += transformed
 
-    o3d.io.write_point_cloud(output_path, accumulated)
+    save_point_cloud(output_path, accumulated)
 
     return {
         "output": output_path,

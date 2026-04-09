@@ -2,7 +2,7 @@
 
 import open3d as o3d
 
-from ca.io import load_point_cloud
+from ca.io import load_point_cloud, save_point_cloud
 
 
 def downsample(path: str, voxel_size: float, output: str) -> dict:
@@ -25,7 +25,7 @@ def downsample(path: str, voxel_size: float, output: str) -> dict:
     down = pcd.voxel_down_sample(voxel_size)
     down_count = len(down.points)
 
-    o3d.io.write_point_cloud(output, down)
+    save_point_cloud(output, down)
 
     return {
         "original_points": original_count,

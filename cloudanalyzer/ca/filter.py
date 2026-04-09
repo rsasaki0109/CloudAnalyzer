@@ -2,7 +2,7 @@
 
 import open3d as o3d
 
-from ca.io import load_point_cloud
+from ca.io import load_point_cloud, save_point_cloud
 
 
 def filter_outliers(
@@ -31,7 +31,7 @@ def filter_outliers(
     filtered_count = len(filtered.points)
     removed_count = original_count - filtered_count
 
-    o3d.io.write_point_cloud(output_path, filtered)
+    save_point_cloud(output_path, filtered)
 
     return {
         "input": input_path,

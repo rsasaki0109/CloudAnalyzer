@@ -1183,8 +1183,6 @@ def make_ground_markdown(result: dict, output_path: str) -> None:
     counts = result["counts"]
     cm = result["confusion_matrix"]
     gate = cast(dict[str, Any] | None, result.get("quality_gate"))
-    metadata = cast(list[dict[str, Any]], result.get("report_metadata") or [])
-    notes = cast(list[str], result.get("report_notes") or [])
 
     lines = [
         "# CloudAnalyzer Ground Segmentation Report",
@@ -1226,17 +1224,6 @@ def make_ground_markdown(result: dict, output_path: str) -> None:
         ),
     ]
 
-    if metadata:
-        lines += [
-            "",
-            "## Metadata",
-        ]
-        lines.extend(
-            f"- {item['label']}: {item['value']}"
-            for item in metadata
-            if item.get("label") and item.get("value")
-        )
-
     if gate is not None:
         lines += [
             "",
@@ -1251,13 +1238,6 @@ def make_ground_markdown(result: dict, output_path: str) -> None:
             lines.append("- Reasons:")
             lines.extend(f"  - {reason}" for reason in gate["reasons"])
 
-    if notes:
-        lines += [
-            "",
-            "## Notes",
-        ]
-        lines.extend(f"- {note}" for note in notes)
-
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
         f.write("\n".join(lines) + "\n")
@@ -1268,8 +1248,6 @@ def make_ground_html(result: dict, output_path: str) -> None:
     counts = result["counts"]
     cm = result["confusion_matrix"]
     gate = cast(dict[str, Any] | None, result.get("quality_gate"))
-    metadata = cast(list[dict[str, Any]], result.get("report_metadata") or [])
-    notes = cast(list[str], result.get("report_notes") or [])
 
     summary_rows = [
         ("Estimated ground", result["estimated_ground_path"]),
@@ -1320,15 +1298,6 @@ def make_ground_html(result: dict, output_path: str) -> None:
         for label, ground, nonground, total in counts_rows
     )
 
-    metadata_html = ""
-    if metadata:
-        metadata_rows_html = "\n".join(
-            f"<tr><th>{escape(str(item['label']))}</th><td>{escape(str(item['value']))}</td></tr>"
-            for item in metadata
-            if item.get("label") and item.get("value")
-        )
-        metadata_html = f"<h2>Metadata</h2><table><tbody>{metadata_rows_html}</tbody></table>"
-
     gate_html = ""
     if gate is not None:
         gate_rows = [
@@ -1353,14 +1322,6 @@ def make_ground_html(result: dict, output_path: str) -> None:
             "<h2>Quality Gate</h2>"
             f"<table><tbody>{gate_rows_html}</tbody></table>"
             f"{reasons_html}"
-        )
-
-    notes_html = ""
-    if notes:
-        notes_html = (
-            "<h2>Notes</h2><ul>"
-            + "".join(f"<li>{escape(note)}</li>" for note in notes)
-            + "</ul>"
         )
 
     html = f"""<!DOCTYPE html>
@@ -1407,9 +1368,7 @@ def make_ground_html(result: dict, output_path: str) -> None:
     <tbody>{counts_html}</tbody>
   </table>
 
-  {metadata_html}
   {gate_html}
-  {notes_html}
 </body>
 </html>
 """

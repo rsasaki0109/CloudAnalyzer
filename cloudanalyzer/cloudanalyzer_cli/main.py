@@ -15,6 +15,7 @@ from ca.core import (
     summarize_baseline_evolution,
 )
 from ca.baseline_history import discover_history, list_baselines, rotate_history, save_baseline
+from ca.detection import evaluate_detection
 from ca.ground_evaluate import evaluate_ground_segmentation
 from ca.compare import run_compare
 from ca.info import get_info
@@ -37,16 +38,19 @@ from ca.pipeline import run_pipeline
 from ca.plot import heatmap3d
 from ca.report import (
     make_batch_summary,
+    save_detection_report,
     make_run_batch_summary,
     make_trajectory_batch_summary,
     save_batch_report,
     save_ground_report,
     save_run_batch_report,
     save_run_report,
+    save_tracking_report,
     save_trajectory_batch_report,
     save_trajectory_report,
 )
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
+from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
 from ca.web import export_static_bundle as web_export_static_bundle
 from ca.web import serve as web_serve
@@ -167,6 +171,22 @@ def _print_check_suite_result(result: dict) -> None:
                 f"coverage={summary['coverage_ratio']:.1%}  "
                 f"ate={summary['ate_rmse']:.4f}  "
                 f"rpe={summary['rpe_rmse']:.4f}"
+            )
+        elif item["kind"] == "detection":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"mAP={summary['map']:.4f}  "
+                f"precision={summary['precision']:.4f}  "
+                f"recall={summary['recall']:.4f}  "
+                f"f1={summary['f1']:.4f}"
+            )
+        elif item["kind"] == "tracking":
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"mota={summary['mota']:.4f}  "
+                f"recall={summary['recall']:.4f}  "
+                f"id_switches={summary['id_switches']}  "
+                f"mean_iou={summary['mean_iou']:.4f}"
             )
         elif item["kind"] == "trajectory_batch":
             typer.echo(
@@ -1580,6 +1600,186 @@ def ground_evaluate_cmd(
             f"F1: {result['f1']:.4f}"
         )
         typer.echo(f"IoU:       {result['iou']:.4f}  Accuracy: {result['accuracy']:.4f}")
+        gate = result["quality_gate"]
+        if gate is not None:
+            typer.echo("")
+            typer.echo(f"Quality Gate: {'PASS' if gate['passed'] else 'FAIL'}")
+            for reason in gate["reasons"]:
+                typer.echo(f"  - {reason}")
+        if report:
+            typer.echo(f"Report: {report}")
+
+    if output_json:
+        _dump_json(result, output_json)
+    if result["quality_gate"] is not None and not result["quality_gate"]["passed"]:
+        raise typer.Exit(code=1)
+
+
+@app.command("detection-evaluate")
+def detection_evaluate_cmd(
+    estimated: str = typer.Argument(..., help="Estimated detection sequence (.json)"),
+    reference: str = typer.Argument(..., help="Reference detection sequence (.json)"),
+    iou_thresholds: Optional[str] = typer.Option(
+        None,
+        "--iou-thresholds",
+        help="Comma-separated IoU thresholds (default: 0.25,0.50)",
+    ),
+    primary_iou_threshold: Optional[float] = typer.Option(
+        None,
+        "--primary-iou-threshold",
+        help="Threshold from --iou-thresholds used for precision/recall/F1 gating",
+    ),
+    min_map: Optional[float] = typer.Option(None, "--min-map", help="Minimum mAP required"),
+    min_precision: Optional[float] = typer.Option(
+        None, "--min-precision", help="Minimum precision at the primary IoU threshold required"
+    ),
+    min_recall: Optional[float] = typer.Option(
+        None, "--min-recall", help="Minimum recall at the primary IoU threshold required"
+    ),
+    min_f1: Optional[float] = typer.Option(
+        None, "--min-f1", help="Minimum F1 at the primary IoU threshold required"
+    ),
+    report: Optional[str] = typer.Option(
+        None, "--report", help="Write detection report (.md or .html)"
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Evaluate 3D object detections against reference boxes."""
+    threshold_list = _parse_thresholds(iou_thresholds)
+    try:
+        result = evaluate_detection(
+            estimated,
+            reference,
+            iou_thresholds=threshold_list,
+            primary_iou_threshold=primary_iou_threshold,
+            min_map=min_map,
+            min_precision=min_precision,
+            min_recall=min_recall,
+            min_f1=min_f1,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    if report:
+        try:
+            save_detection_report(result, report)
+        except ValueError as e:
+            _handle_error(e)
+            return
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        counts = result["counts"]
+        primary = result["primary_threshold_result"]
+        typer.echo(
+            f"Estimated: {counts['estimated_frames']} frames / {counts['estimated_boxes']} boxes | "
+            f"Reference: {counts['reference_frames']} frames / {counts['reference_boxes']} boxes"
+        )
+        typer.echo(f"Shared frames: {counts['shared_frames']}")
+        typer.echo("")
+        typer.echo(f"mAP:         {result['mAP']:.4f}")
+        typer.echo(
+            f"Primary IoU: {primary['iou_threshold']:.2f}  "
+            f"Precision={primary['precision']:.4f}  "
+            f"Recall={primary['recall']:.4f}  "
+            f"F1={primary['f1']:.4f}"
+        )
+        typer.echo(
+            f"Mean IoU:    {primary['mean_iou']:.4f}  "
+            f"Mean center distance={primary['mean_center_distance']:.4f}"
+        )
+        typer.echo("Per-class AP:")
+        for label, summary in sorted(result["per_class"].items()):
+            typer.echo(
+                f"  {label}: mean_ap={summary['mean_ap']:.4f}"
+                if summary["mean_ap"] is not None
+                else f"  {label}: mean_ap=n/a"
+            )
+        gate = result["quality_gate"]
+        if gate is not None:
+            typer.echo("")
+            typer.echo(f"Quality Gate: {'PASS' if gate['passed'] else 'FAIL'}")
+            for reason in gate["reasons"]:
+                typer.echo(f"  - {reason}")
+        if report:
+            typer.echo(f"Report: {report}")
+
+    if output_json:
+        _dump_json(result, output_json)
+    if result["quality_gate"] is not None and not result["quality_gate"]["passed"]:
+        raise typer.Exit(code=1)
+
+
+@app.command("tracking-evaluate")
+def tracking_evaluate_cmd(
+    estimated: str = typer.Argument(..., help="Estimated tracking sequence (.json)"),
+    reference: str = typer.Argument(..., help="Reference tracking sequence (.json)"),
+    iou_threshold: float = typer.Option(0.5, "--iou-threshold", help="IoU threshold for frame-wise box matching"),
+    min_mota: Optional[float] = typer.Option(None, "--min-mota", help="Minimum MOTA required"),
+    min_recall: Optional[float] = typer.Option(None, "--min-recall", help="Minimum recall required"),
+    max_id_switches: Optional[int] = typer.Option(
+        None, "--max-id-switches", help="Maximum ID switches allowed"
+    ),
+    report: Optional[str] = typer.Option(
+        None, "--report", help="Write tracking report (.md or .html)"
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Evaluate 3D multi-object tracking against reference tracks."""
+    try:
+        result = evaluate_tracking(
+            estimated,
+            reference,
+            iou_threshold=iou_threshold,
+            min_mota=min_mota,
+            min_recall=min_recall,
+            max_id_switches=max_id_switches,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    if report:
+        try:
+            save_tracking_report(result, report)
+        except ValueError as e:
+            _handle_error(e)
+            return
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        counts = result["counts"]
+        detection = result["detection"]
+        tracking = result["tracking"]
+        typer.echo(
+            f"Estimated: {counts['estimated_frames']} frames / {counts['estimated_detections']} detections / "
+            f"{counts['estimated_tracks']} tracks"
+        )
+        typer.echo(
+            f"Reference: {counts['reference_frames']} frames / {counts['reference_detections']} detections / "
+            f"{counts['reference_tracks']} tracks"
+        )
+        typer.echo(f"Shared frames: {counts['shared_frames']}")
+        typer.echo("")
+        typer.echo(
+            f"Precision: {detection['precision']:.4f}  "
+            f"Recall: {detection['recall']:.4f}  "
+            f"F1: {detection['f1']:.4f}"
+        )
+        typer.echo(
+            f"MOTA:      {tracking['mota']:.4f}  "
+            f"ID switches={tracking['id_switches']}  "
+            f"Fragments={tracking['track_fragmentations']}"
+        )
+        typer.echo(
+            f"Mean IoU:  {tracking['mean_iou']:.4f}  "
+            f"Mean center distance={tracking['mean_center_distance']:.4f}"
+        )
         gate = result["quality_gate"]
         if gate is not None:
             typer.echo("")

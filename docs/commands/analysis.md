@@ -85,7 +85,7 @@ ca batch decoded/ --evaluate reference.pcd \
 
 ## ca check
 
-Run config-driven QA across artifact, trajectory, and integrated run checks.
+Run config-driven QA across artifact, detection, tracking, trajectory, ground, and integrated run checks.
 
 ```bash
 # default config path
@@ -151,6 +151,9 @@ ca init-check --profile perception --force
 
 `--profile` supports `mapping`, `localization`, `perception`, and `integrated`. The generated config is immediately runnable with `ca check ...`.
 
+- `perception`: geometry artifact QA plus starter slices for 3D detection and 3D tracking JSON outputs
+- `integrated`: mapping + localization + perception slices, plus one combined run gate
+
 | Option | Default | Description |
 |---|---|---|
 | `OUTPUT` | `cloudanalyzer.yaml` | Destination path for the starter config |
@@ -181,6 +184,62 @@ Input files are the JSON summaries emitted by `ca check --output-json ...`. The 
 | `--history` | `[]` | Historical summary JSON files, oldest to newest |
 | `--format-json` | `false` | Print the decision summary to stdout as JSON |
 | `--output-json` | `None` | Dump the decision summary as JSON |
+
+## ca detection-evaluate
+
+Evaluate 3D object detections against reference annotations using class-aware, axis-aligned 3D box matching.
+
+```bash
+# basic evaluation
+ca detection-evaluate est_det.json gt_det.json
+
+# sweep IoU thresholds and enforce mAP / recall gates
+ca detection-evaluate est_det.json gt_det.json \
+  --iou-thresholds 0.25,0.5 --min-map 0.9 --min-recall 0.8 \
+  --report qa/detection_report.html
+
+# JSON output
+ca detection-evaluate est_det.json gt_det.json \
+  --format-json --output-json qa/detection_result.json
+```
+
+Input format:
+
+```json
+{
+  "frames": [
+    {
+      "frame_id": "000001",
+      "boxes": [
+        {
+          "label": "car",
+          "center": [0.0, 0.0, 0.0],
+          "size": [4.0, 1.8, 1.6],
+          "score": 0.97
+        }
+      ]
+    }
+  ]
+}
+```
+
+The stable contract keeps only the fields needed for evaluation: `label`, `center`, `size`, and optional `score`. Boxes are currently treated as **axis-aligned 3D boxes** and any yaw value in the source JSON is ignored. The `kind: detection` check type is also available in `cloudanalyzer.yaml`.
+
+Checked-in public example files are available under `demo_assets/public/rellis3d-frame-000001/object_eval/`.
+
+| Option | Default | Description |
+|---|---|---|
+| `ESTIMATED` | required | Estimated detection sequence JSON |
+| `REFERENCE` | required | Reference detection sequence JSON |
+| `--iou-thresholds` | `0.25,0.5` | Comma-separated IoU thresholds used for AP / mAP |
+| `--primary-iou-threshold` | `0.5` when available | Threshold used for precision / recall / F1 gate evaluation |
+| `--min-map` | `None` | Minimum mean AP gate |
+| `--min-precision` | `None` | Minimum precision gate at the primary IoU threshold |
+| `--min-recall` | `None` | Minimum recall gate at the primary IoU threshold |
+| `--min-f1` | `None` | Minimum F1 gate at the primary IoU threshold |
+| `--report` | `None` | Write Markdown/HTML detection report |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
 
 ## ca ground-evaluate
 
@@ -217,6 +276,60 @@ Both estimation and reference are provided as separate ground and non-ground poi
 | `--min-f1` | `None` | Minimum F1 gate |
 | `--min-iou` | `None` | Minimum IoU gate |
 | `--report` | `None` | Write Markdown/HTML ground segmentation report |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
+
+## ca tracking-evaluate
+
+Evaluate 3D multi-object tracking against reference tracks using class-aware frame-wise box matching plus ID-switch accounting.
+
+```bash
+# basic evaluation
+ca tracking-evaluate est_track.json gt_track.json
+
+# enforce recall / MOTA / ID-switch gates
+ca tracking-evaluate est_track.json gt_track.json \
+  --iou-threshold 0.5 --min-mota 0.8 --min-recall 0.9 --max-id-switches 2 \
+  --report qa/tracking_report.html
+
+# JSON output
+ca tracking-evaluate est_track.json gt_track.json \
+  --format-json --output-json qa/tracking_result.json
+```
+
+Input format:
+
+```json
+{
+  "frames": [
+    {
+      "frame_id": "000001",
+      "boxes": [
+        {
+          "label": "car",
+          "track_id": "pred-17",
+          "center": [0.0, 0.0, 0.0],
+          "size": [4.0, 1.8, 1.6]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`ca tracking-evaluate` uses the same axis-aligned 3D box contract as detection, but requires `track_id` on every box. The current stable output emphasizes `precision / recall / F1`, `MOTA`, `ID switches`, `track fragmentations`, and mean matched IoU. The `kind: tracking` check type is also available in `cloudanalyzer.yaml`.
+
+Checked-in public example files are available under `demo_assets/public/rellis3d-frame-000001/object_eval/`. The tracking examples are deterministic synthetic sequences seeded from the public RELLIS-3D frame used by the detection examples.
+
+| Option | Default | Description |
+|---|---|---|
+| `ESTIMATED` | required | Estimated tracking sequence JSON |
+| `REFERENCE` | required | Reference tracking sequence JSON |
+| `--iou-threshold` | `0.5` | IoU threshold used for frame-wise box matching |
+| `--min-mota` | `None` | Minimum MOTA gate |
+| `--min-recall` | `None` | Minimum recall gate |
+| `--max-id-switches` | `None` | Maximum ID switches allowed |
+| `--report` | `None` | Write Markdown/HTML tracking report |
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON |
 

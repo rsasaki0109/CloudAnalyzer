@@ -12,19 +12,23 @@ import yaml  # type: ignore[import-untyped]
 
 from ca.core.check_triage import summarize_failed_checks
 from ca.batch import batch_evaluate, trajectory_batch_evaluate
+from ca.detection import evaluate_detection
 from ca.evaluate import evaluate
 from ca.report import (
     make_batch_summary,
     make_run_batch_summary,
     make_trajectory_batch_summary,
     save_batch_report,
+    save_detection_report,
     save_ground_report,
     save_run_batch_report,
     save_run_report,
+    save_tracking_report,
     save_trajectory_batch_report,
     save_trajectory_report,
 )
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
+from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
 
 
@@ -33,6 +37,8 @@ CheckKind = Literal[
     "artifact_batch",
     "trajectory",
     "trajectory_batch",
+    "detection",
+    "tracking",
     "run",
     "run_batch",
     "ground",
@@ -46,6 +52,10 @@ _KIND_ALIASES: dict[str, CheckKind] = {
     "map_batch": "artifact_batch",
     "trajectory": "trajectory",
     "trajectory_batch": "trajectory_batch",
+    "detection": "detection",
+    "object_detection": "detection",
+    "tracking": "tracking",
+    "object_tracking": "tracking",
     "run": "run",
     "run_batch": "run_batch",
     "ground": "ground",
@@ -62,7 +72,10 @@ _VALID_GATE_KEYS = {
     "min_precision",
     "min_recall",
     "min_f1",
+    "min_map",
+    "min_mota",
     "min_iou",
+    "max_id_switches",
     "voxel_size",
 }
 
@@ -71,6 +84,8 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
     "artifact_batch": {"min_auc", "max_chamfer"},
     "trajectory": {"max_ate", "max_rpe", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
     "trajectory_batch": {"max_ate", "max_rpe", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
+    "detection": {"min_map", "min_precision", "min_recall", "min_f1"},
+    "tracking": {"min_mota", "min_recall", "max_id_switches"},
     "run": {
         "min_auc",
         "max_chamfer",
@@ -342,6 +357,26 @@ def _normalize_run_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[s
     }
 
 
+def _normalize_detection_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
+    """Normalize inputs for a single detection check."""
+    source = raw_check.get("estimated", raw_check.get("source"))
+    reference = raw_check.get("reference")
+    return {
+        "source": _resolve_path(config_dir, _require_string(source, "check.estimated")),
+        "reference": _resolve_path(config_dir, _require_string(reference, "check.reference")),
+    }
+
+
+def _normalize_tracking_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
+    """Normalize inputs for a single tracking check."""
+    source = raw_check.get("estimated", raw_check.get("source"))
+    reference = raw_check.get("reference")
+    return {
+        "source": _resolve_path(config_dir, _require_string(source, "check.estimated")),
+        "reference": _resolve_path(config_dir, _require_string(reference, "check.reference")),
+    }
+
+
 def _normalize_run_batch_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
     """Normalize inputs for a run batch check."""
     return {
@@ -399,6 +434,10 @@ def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Pa
         return _normalize_trajectory_inputs(raw_check, config_dir)
     if kind == "trajectory_batch":
         return _normalize_trajectory_batch_inputs(raw_check, config_dir)
+    if kind == "detection":
+        return _normalize_detection_inputs(raw_check, config_dir)
+    if kind == "tracking":
+        return _normalize_tracking_inputs(raw_check, config_dir)
     if kind == "run":
         return _normalize_run_inputs(raw_check, config_dir)
     if kind == "ground":
@@ -746,6 +785,78 @@ def _run_trajectory_batch_check(spec: CheckSpec) -> dict[str, Any]:
     }
 
 
+def _run_detection_check(spec: CheckSpec) -> dict[str, Any]:
+    """Run a single detection QA check."""
+    result = evaluate_detection(
+        spec.inputs["source"],
+        spec.inputs["reference"],
+        iou_thresholds=list(spec.thresholds) if spec.thresholds else None,
+        min_map=cast(float | None, spec.gate.get("min_map")),
+        min_precision=cast(float | None, spec.gate.get("min_precision")),
+        min_recall=cast(float | None, spec.gate.get("min_recall")),
+        min_f1=cast(float | None, spec.gate.get("min_f1")),
+    )
+    if spec.outputs.report_path:
+        save_detection_report(result, spec.outputs.report_path)
+    if spec.outputs.json_path:
+        _write_json(spec.outputs.json_path, result)
+    gate = cast(dict[str, Any] | None, result.get("quality_gate"))
+    primary = result["primary_threshold_result"]
+    return {
+        "id": spec.check_id,
+        "kind": spec.kind,
+        "passed": None if gate is None else gate["passed"],
+        "report_path": spec.outputs.report_path,
+        "json_path": spec.outputs.json_path,
+        "summary": {
+            "map": result["mAP"],
+            "precision": primary["precision"],
+            "recall": primary["recall"],
+            "f1": primary["f1"],
+            "mean_iou": primary["mean_iou"],
+            "passed": None if gate is None else gate["passed"],
+        },
+        "result": result,
+    }
+
+
+def _run_tracking_check(spec: CheckSpec) -> dict[str, Any]:
+    """Run a single tracking QA check."""
+    iou_threshold = float(spec.thresholds[0]) if spec.thresholds else 0.5
+    result = evaluate_tracking(
+        spec.inputs["source"],
+        spec.inputs["reference"],
+        iou_threshold=iou_threshold,
+        min_mota=cast(float | None, spec.gate.get("min_mota")),
+        min_recall=cast(float | None, spec.gate.get("min_recall")),
+        max_id_switches=(
+            int(spec.gate["max_id_switches"])
+            if "max_id_switches" in spec.gate
+            else None
+        ),
+    )
+    if spec.outputs.report_path:
+        save_tracking_report(result, spec.outputs.report_path)
+    if spec.outputs.json_path:
+        _write_json(spec.outputs.json_path, result)
+    gate = cast(dict[str, Any] | None, result.get("quality_gate"))
+    return {
+        "id": spec.check_id,
+        "kind": spec.kind,
+        "passed": None if gate is None else gate["passed"],
+        "report_path": spec.outputs.report_path,
+        "json_path": spec.outputs.json_path,
+        "summary": {
+            "mota": result["tracking"]["mota"],
+            "recall": result["detection"]["recall"],
+            "id_switches": result["tracking"]["id_switches"],
+            "mean_iou": result["tracking"]["mean_iou"],
+            "passed": None if gate is None else gate["passed"],
+        },
+        "result": result,
+    }
+
+
 def _run_run_check(spec: CheckSpec) -> dict[str, Any]:
     """Run a single integrated map + trajectory QA check."""
     align_origin, align_rigid = _alignment_flags(spec.alignment)
@@ -904,6 +1015,10 @@ def _run_check(spec: CheckSpec) -> dict[str, Any]:
         return _run_trajectory_check(spec)
     if spec.kind == "trajectory_batch":
         return _run_trajectory_batch_check(spec)
+    if spec.kind == "detection":
+        return _run_detection_check(spec)
+    if spec.kind == "tracking":
+        return _run_tracking_check(spec)
     if spec.kind == "run":
         return _run_run_check(spec)
     if spec.kind == "ground":

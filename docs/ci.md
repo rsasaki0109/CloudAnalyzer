@@ -185,4 +185,21 @@ checks:
     gate:
       min_auc: 0.95
       max_chamfer: 0.02
+  - id: detector-regression
+    kind: detection
+    estimated: outputs/detections.json
+    reference: baselines/detections_ref.json
+    thresholds: [0.25, 0.5]
+    gate:
+      min_map: 0.9
+      min_recall: 0.8
+  - id: tracker-regression
+    kind: tracking
+    estimated: outputs/tracks.json
+    reference: baselines/tracks_ref.json
+    thresholds: [0.5]
+    gate:
+      min_mota: 0.8
+      min_recall: 0.8
+      max_id_switches: 2
 ```

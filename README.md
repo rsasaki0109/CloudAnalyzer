@@ -105,7 +105,7 @@ cd cloudanalyzer && pip install -e .
 
 | Demo | Description |
 |---|---|
-| [hdl_localization Map Viewer](https://rsasaki0109.github.io/CloudAnalyzer/demo/hdl-localization-map/index.html) | Static 3D viewer exported by `ca web-export`, using the public AISL / Toyohashi `hdl_localization` sample map with heatmap, trajectory, and point inspection support |
+| [hdl_localization Map Viewer](https://rsasaki0109.github.io/CloudAnalyzer/demo/hdl-localization-map/index.html) | Static 3D viewer exported by `ca web-export`, using the public AISL / Toyohashi `hdl_localization` sample map with heatmap, synthetic demo trajectories, and point inspection support |
 | [Perception Batch Report](https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/index.html) | Static `ca batch` report comparing a geometry-first non-deep baseline and a higher-fidelity deep baseline on the same public RELLIS-3D LiDAR frame |
 
 ```bash
@@ -123,7 +123,13 @@ public RELLIS-3D "Ouster LiDAR with Annotation Examples" bundle and compares a g
 non-deep baseline artifact with a higher-fidelity deep baseline artifact against the same
 reference frame. Those two artifacts are deterministic demo baselines, not archived model
 outputs. The generated report is checked into `docs/demo/perception` so GitHub Pages does not
-depend on third-party Google Drive downloads at publish time.
+depend on third-party Google Drive downloads at publish time. A minimal public reproducibility
+seed is checked into `demo_assets/public/rellis3d-frame-000001`, and CI verifies that the
+checked-in report stays in sync with `scripts/build_perception_demo.py`.
+
+License note: the Python package remains MIT, but the checked-in RELLIS-derived demo assets under
+`docs/demo/perception` and `demo_assets/public/rellis3d-frame-000001` continue to follow the
+upstream CC BY-NC-SA 3.0 terms documented in their attribution files.
 
 ## Referenced OSS
 

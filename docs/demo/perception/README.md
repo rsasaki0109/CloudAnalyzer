@@ -18,6 +18,7 @@ CloudAnalyzer compares a non-deep baseline and a deep baseline against the same 
 - Example bundle: [Ouster LiDAR with Annotation Examples](https://drive.google.com/uc?export=download&id=1QikPnpmxneyCuwefr6m50fBOSB2ny4LC)
 - Label ontology: [rellis.yaml](https://github.com/unmannedlab/RELLIS-3D/blob/main/benchmarks/SalsaNext/train/tasks/semantic/config/labels/rellis.yaml)
 - Frame: `000001`
+- Local reproducibility seed: `demo_assets/public/rellis3d-frame-000001`
 
 ## Label Counts In The Reference Frame
 
@@ -59,6 +60,8 @@ The deep baseline keeps denser geometry and passes the same gate on the same fra
 
 ```bash
 python3 scripts/build_perception_demo.py --output docs/demo/perception --frame 000001
+# or point at an explicit local seed root
+python3 scripts/build_perception_demo.py --output docs/demo/perception --frame 000001 --example-root demo_assets/public/rellis3d-frame-000001
 
 ca batch docs/demo/perception/candidates \
   --evaluate docs/demo/perception/reference_scene.pcd \

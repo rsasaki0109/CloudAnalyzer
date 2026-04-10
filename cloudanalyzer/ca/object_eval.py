@@ -57,7 +57,9 @@ def _vector3(value: object, context: str) -> np.ndarray:
 
 
 def _box_label(raw_box: dict[str, Any]) -> str:
-    label = raw_box.get("label", raw_box.get("class", raw_box.get("category", "object")))
+    label = raw_box.get("label", raw_box.get("class", raw_box.get("category")))
+    if label is None:
+        raise ValueError("box must have a 'label', 'class', or 'category' field")
     if not isinstance(label, str) or not label.strip():
         raise ValueError("box.label must be a non-empty string")
     return label.strip()

@@ -9,6 +9,7 @@ import open3d as o3d
 import pytest
 
 from ca.core import load_check_suite, run_check_suite
+from ca.core.check_triage import build_check_triage_request
 
 
 def _write_csv_trajectory(path: Path, rows: list[tuple[float, float, float, float]]) -> str:
@@ -532,3 +533,103 @@ class TestRunCheckSuite:
         assert result["checks"][1]["summary"]["mota"] == pytest.approx(1.0)
         assert (tmp_path / "qa" / "reports" / "detection-out.html").exists()
         assert (tmp_path / "qa" / "reports" / "tracking-out.html").exists()
+
+    def test_detection_triage_propagates_gate(self, tmp_path: Path):
+        """Failed detection check should propagate gate data to triage."""
+        detection_reference = _write_json(
+            tmp_path / "refs" / "det_ref.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        detection_estimated = _write_json(
+            tmp_path / "outputs" / "det_est.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [5.0, 5.0, 5.0], "size": [2.0, 2.0, 2.0], "score": 0.9},
+                        ],
+                    },
+                ]
+            },
+        )
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: det-fail
+                kind: detection
+                estimated: {Path(detection_estimated).relative_to(tmp_path)}
+                reference: {Path(detection_reference).relative_to(tmp_path)}
+                thresholds: [0.5]
+                gate:
+                  min_map: 0.9
+                  min_recall: 0.9
+            """,
+        )
+        result = run_check_suite(load_check_suite(str(config)))
+        assert result["summary"]["passed"] is False
+        triage_req = build_check_triage_request(result["checks"])
+        assert len(triage_req.failed_items) == 1
+        item = triage_req.failed_items[0]
+        assert item.gate  # gate dict should not be empty
+        assert item.reasons  # reasons should be populated
+
+    def test_tracking_rejects_multiple_thresholds(self, tmp_path: Path):
+        """Tracking check should reject configs with multiple thresholds."""
+        tracking_reference = _write_json(
+            tmp_path / "refs" / "trk_ref.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "track_id": "gt-1", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        tracking_estimated = _write_json(
+            tmp_path / "outputs" / "trk_est.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "track_id": "p-1", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: trk-multi
+                kind: tracking
+                estimated: {Path(tracking_estimated).relative_to(tmp_path)}
+                reference: {Path(tracking_reference).relative_to(tmp_path)}
+                thresholds: [0.25, 0.5]
+                gate:
+                  min_mota: 0.5
+            """,
+        )
+        with pytest.raises(ValueError, match="exactly one threshold"):
+            run_check_suite(load_check_suite(str(config)))

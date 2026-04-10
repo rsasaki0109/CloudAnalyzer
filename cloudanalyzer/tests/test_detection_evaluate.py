@@ -159,3 +159,34 @@ class TestDetectionEvaluate:
                 iou_thresholds=[0.25, 0.5],
                 primary_iou_threshold=0.75,
             )
+
+    def test_rejects_box_without_label(self, tmp_path: Path):
+        reference = _write_json(
+            tmp_path / "reference.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        estimated = _write_json(
+            tmp_path / "estimated.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0], "score": 0.9},
+                        ],
+                    },
+                ]
+            },
+        )
+
+        with pytest.raises(ValueError, match="label.*class.*category"):
+            evaluate_detection(estimated, reference, iou_thresholds=[0.5])

@@ -28,7 +28,7 @@ def compute_mme(
         Dict with mme, k_neighbors, num_points, num_points_used, sampled, path.
 
     Raises:
-        ValueError: If k_neighbors < 4.
+        ValueError: If k_neighbors < 4 or num_points_used <= k_neighbors.
         FileNotFoundError: If file does not exist.
     """
     if k_neighbors < 4:
@@ -48,6 +48,12 @@ def compute_mme(
         sampled = False
 
     num_points_used = len(points_used)
+
+    if num_points_used <= k_neighbors:
+        raise ValueError(
+            f"Not enough points for k_neighbors={k_neighbors}: "
+            f"got {num_points_used} point(s). Use --neighbors < {num_points_used}."
+        )
 
     # Build KDTree and batch query all points (k+1 to include self)
     tree = KDTree(points_used)

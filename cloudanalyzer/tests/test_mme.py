@@ -102,3 +102,12 @@ def test_mme_invalid_k(tmp_path):
 
     with pytest.raises(ValueError, match="k_neighbors"):
         compute_mme(path, k_neighbors=3)
+
+
+def test_mme_too_few_points(tmp_path):
+    """Cloud with fewer points than k_neighbors raises ValueError."""
+    pts = np.random.default_rng(0).random((10, 3))
+    path = _make_pcd_file(tmp_path, pts)
+
+    with pytest.raises(ValueError, match="Not enough points"):
+        compute_mme(path, k_neighbors=20)

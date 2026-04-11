@@ -822,6 +822,11 @@ def _run_detection_check(spec: CheckSpec) -> dict[str, Any]:
 
 def _run_tracking_check(spec: CheckSpec) -> dict[str, Any]:
     """Run a single tracking QA check."""
+    if len(spec.thresholds) > 1:
+        raise ValueError(
+            f"tracking check '{spec.check_id}' accepts exactly one threshold, "
+            f"got {len(spec.thresholds)}: {spec.thresholds}"
+        )
     iou_threshold = float(spec.thresholds[0]) if spec.thresholds else 0.5
     result = evaluate_tracking(
         spec.inputs["source"],

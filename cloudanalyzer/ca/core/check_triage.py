@@ -255,7 +255,7 @@ def _extract_gate_payload(check: dict[str, Any]) -> tuple[dict[str, float], tupl
     result = check.get("result")
     summary = check.get("summary", {})
     gate = None
-    if check["kind"] in {"artifact", "trajectory"} and isinstance(result, dict):
+    if check["kind"] in {"artifact", "trajectory", "detection", "tracking"} and isinstance(result, dict):
         gate = result.get("quality_gate")
     elif check["kind"] == "run" and isinstance(result, dict):
         gate = result.get("overall_quality_gate")

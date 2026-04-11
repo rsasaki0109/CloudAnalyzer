@@ -1,0 +1,109 @@
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloudAnalyzer Detection &amp; Tracking Demo</title>
+  <style>
+    :root {
+      --bg: #fafaf9; --fg: #1c1917; --accent: #2563eb;
+      --card-bg: #fff; --border: #e7e5e4; --muted: #78716c;
+      --pass: #059669; --fail: #dc2626;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Space Grotesk', system-ui, sans-serif; background: var(--bg); color: var(--fg); line-height: 1.6; padding: 2rem; max-width: 1100px; margin: 0 auto; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    h2 { font-size: 1.3rem; margin: 2rem 0 0.8rem; color: var(--fg); }
+    .subtitle { color: var(--muted); margin-bottom: 2rem; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
+    th, td { padding: 0.6rem 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { background: #f5f5f4; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { font-size: 0.95rem; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .meta { font-size: 0.85rem; color: var(--muted); }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .reports { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+    .reports a { display: block; padding: 0.8rem 1.2rem; background: var(--accent); color: white; border-radius: 6px; text-align: center; font-weight: 500; }
+    .reports a:hover { opacity: 0.9; text-decoration: none; }
+  </style>
+  </head>
+  <body>
+
+  <h1>Detection &amp; Tracking Demo</h1>
+  <p class="subtitle">3D object detection (mAP/AP) and multi-object tracking (MOTA) evaluation on public RELLIS-3D-derived examples.</p>
+
+  <h2>Detection Evaluation</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>Candidate</th><th>mAP</th><th>Precision</th><th>Recall</th><th>F1</th><th>Gate</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Good</td>
+          <td>1.0000</td>
+          <td>1.0000</td>
+          <td>1.0000</td>
+          <td>1.0000</td>
+          <td><span style="color:#059669;font-weight:600">PASS</span></td>
+        </tr>
+        <tr>
+          <td>Regressed</td>
+          <td>0.1667</td>
+          <td>0.0000</td>
+          <td>0.0000</td>
+          <td>0.0000</td>
+          <td><span style="color:#dc2626;font-weight:600">FAIL</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">Geometry: axis_aligned_3d_boxes &middot; IoU thresholds: [0.25, 0.5] &middot; Yaw ignored: True</p>
+  </div>
+
+  <h2>Tracking Evaluation</h2>
+  <div class="card">
+    <table>
+      <thead><tr><th>Candidate</th><th>MOTA</th><th>Recall</th><th>ID Switches</th><th>Mostly Tracked</th><th>Gate</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Good</td>
+          <td>1.0000</td>
+          <td>1.0000</td>
+          <td>0</td>
+          <td>1.0000</td>
+          <td><span style="color:#059669;font-weight:600">PASS</span></td>
+        </tr>
+        <tr>
+          <td>Regressed</td>
+          <td>0.5556</td>
+          <td>0.7778</td>
+          <td>1</td>
+          <td>0.6667</td>
+          <td><span style="color:#059669;font-weight:600">PASS</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="meta">Geometry: axis_aligned_3d_boxes &middot; IoU threshold: 0.5 &middot; Yaw ignored: True</p>
+  </div>
+
+  <h2>Detailed Reports</h2>
+  <div class="reports">
+    <a href="detection_good.html">Detection &mdash; Good</a>
+    <a href="detection_regressed.html">Detection &mdash; Regressed</a>
+    <a href="tracking_good.html">Tracking &mdash; Good</a>
+    <a href="tracking_regressed.html">Tracking &mdash; Regressed</a>
+  </div>
+
+  <h2>Build Locally</h2>
+  <div class="card">
+    <pre style="font-size:0.85rem;overflow-x:auto"><code>python scripts/build_detection_tracking_demo.py \
+--output docs/demo/detection-tracking</code></pre>
+  </div>
+
+  <p class="meta" style="margin-top:2rem">
+    Data derived from <a href="https://github.com/unmannedlab/RELLIS-3D">RELLIS-3D</a> (CC&nbsp;BY-NC-SA&nbsp;3.0).
+    Tracking examples are deterministic synthetic sequences.
+    Built with <a href="https://github.com/rsasaki0109/CloudAnalyzer">CloudAnalyzer</a>.
+  </p>
+
+  </body>
+  </html>

@@ -12,12 +12,13 @@ import numpy as np
 
 @dataclass(frozen=True, slots=True)
 class Box3D:
-    """Axis-aligned 3D bounding box used by detection/tracking evaluation."""
+    """3D bounding box with optional yaw rotation for detection/tracking evaluation."""
 
     frame_id: str
     label: str
     center: np.ndarray
     size: np.ndarray
+    yaw: float
     score: float
     track_id: str | None
     index: int
@@ -125,6 +126,11 @@ def load_box_sequence(path: str, *, require_track_ids: bool = False) -> BoxSeque
                 score = float(score_value)
             except (TypeError, ValueError) as exc:
                 raise ValueError("box.score must be numeric") from exc
+            yaw_value = box.get("yaw", box.get("rotation_y", 0.0))
+            try:
+                yaw = float(yaw_value)
+            except (TypeError, ValueError) as exc:
+                raise ValueError("box.yaw must be numeric") from exc
             track_id: str | None = None
             if "track_id" in box and box["track_id"] is not None:
                 track_id = str(box["track_id"])
@@ -136,6 +142,7 @@ def load_box_sequence(path: str, *, require_track_ids: bool = False) -> BoxSeque
                     label=_box_label(box),
                     center=center,
                     size=size,
+                    yaw=yaw,
                     score=score,
                     track_id=track_id,
                     index=box_index,
@@ -187,9 +194,65 @@ def ordered_frame_ids(reference: BoxSequence, estimated: BoxSequence) -> list[st
     return ordered
 
 
-def box_iou_3d(left: Box3D, right: Box3D) -> float:
-    """Compute axis-aligned 3D IoU from center/size boxes."""
+def _rotated_corners_2d(center_xy: np.ndarray, size_xy: np.ndarray, yaw: float) -> np.ndarray:
+    """Return 4x2 BEV corner vertices for a box rotated by yaw around Z."""
+    cos_yaw = np.cos(yaw)
+    sin_yaw = np.sin(yaw)
+    half = size_xy / 2.0
+    dx, dy = half[0], half[1]
+    corners_local = np.array([
+        [-dx, -dy],
+        [dx, -dy],
+        [dx, dy],
+        [-dx, dy],
+    ])
+    rotation = np.array([[cos_yaw, -sin_yaw], [sin_yaw, cos_yaw]])
+    return (corners_local @ rotation.T) + center_xy
 
+
+def _sutherland_hodgman_clip(subject: np.ndarray, clip: np.ndarray) -> np.ndarray:
+    """Clip a convex polygon (subject) against another convex polygon (clip)."""
+    output = subject.copy()
+    num_clip = len(clip)
+    for i in range(num_clip):
+        if len(output) == 0:
+            return output
+        edge_start = clip[i]
+        edge_end = clip[(i + 1) % num_clip]
+        edge_vec = edge_end - edge_start
+        new_output: list[np.ndarray] = []
+        for j in range(len(output)):
+            current = output[j]
+            previous = output[j - 1]
+            cross_current = float(np.cross(edge_vec, current - edge_start))
+            cross_previous = float(np.cross(edge_vec, previous - edge_start))
+            if cross_current >= 0.0:
+                if cross_previous < 0.0:
+                    denom = cross_current - cross_previous
+                    if abs(denom) > 1e-12:
+                        t = cross_current / denom
+                        new_output.append(current + t * (previous - current))
+                new_output.append(current)
+            elif cross_previous >= 0.0:
+                denom = cross_previous - cross_current
+                if abs(denom) > 1e-12:
+                    t = cross_previous / denom
+                    new_output.append(previous + t * (current - previous))
+        output = np.array(new_output) if new_output else np.empty((0, 2))
+    return output
+
+
+def _polygon_area(vertices: np.ndarray) -> float:
+    """Compute area of a convex polygon using the shoelace formula."""
+    if len(vertices) < 3:
+        return 0.0
+    x = vertices[:, 0]
+    y = vertices[:, 1]
+    return 0.5 * abs(float(np.dot(x, np.roll(y, -1)) - np.dot(y, np.roll(x, -1))))
+
+
+def _aabb_iou_3d(left: Box3D, right: Box3D) -> float:
+    """Compute axis-aligned 3D IoU (fast path for yaw=0)."""
     left_min = left.center - left.size / 2.0
     left_max = left.center + left.size / 2.0
     right_min = right.center - right.size / 2.0
@@ -200,6 +263,37 @@ def box_iou_3d(left: Box3D, right: Box3D) -> float:
     intersection_volume = float(np.prod(overlap))
     if intersection_volume <= 0.0:
         return 0.0
+    left_volume = float(np.prod(left.size))
+    right_volume = float(np.prod(right.size))
+    union_volume = left_volume + right_volume - intersection_volume
+    if union_volume <= 0.0:
+        return 0.0
+    return float(intersection_volume / union_volume)
+
+
+def box_iou_3d(left: Box3D, right: Box3D) -> float:
+    """Compute 3D IoU supporting oriented boxes via BEV polygon intersection."""
+    if left.yaw == 0.0 and right.yaw == 0.0:
+        return _aabb_iou_3d(left, right)
+
+    # BEV polygon intersection for XY plane
+    left_corners = _rotated_corners_2d(left.center[:2], left.size[:2], left.yaw)
+    right_corners = _rotated_corners_2d(right.center[:2], right.size[:2], right.yaw)
+    intersection_poly = _sutherland_hodgman_clip(left_corners, right_corners)
+    intersection_area = _polygon_area(intersection_poly)
+    if intersection_area <= 0.0:
+        return 0.0
+
+    # Height overlap along Z axis
+    left_z_min = left.center[2] - left.size[2] / 2.0
+    left_z_max = left.center[2] + left.size[2] / 2.0
+    right_z_min = right.center[2] - right.size[2] / 2.0
+    right_z_max = right.center[2] + right.size[2] / 2.0
+    z_overlap = max(0.0, min(left_z_max, right_z_max) - max(left_z_min, right_z_min))
+    if z_overlap <= 0.0:
+        return 0.0
+
+    intersection_volume = intersection_area * z_overlap
     left_volume = float(np.prod(left.size))
     right_volume = float(np.prod(right.size))
     union_volume = left_volume + right_volume - intersection_volume

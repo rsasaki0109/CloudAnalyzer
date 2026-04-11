@@ -1,4 +1,4 @@
-"""3D object detection evaluation (axis-aligned boxes, AP/mAP)."""
+"""3D object detection evaluation (supports axis-aligned and oriented boxes, AP/mAP)."""
 
 from __future__ import annotations
 
@@ -8,13 +8,17 @@ from typing import Any
 import numpy as np
 
 from ca.object_eval import (
-    Box3D,
+    BoxSequence,
     frame_map,
     greedy_match_boxes,
     load_box_sequence,
     ordered_frame_ids,
     sequence_counts,
 )
+
+
+def _has_yaw(sequence: BoxSequence) -> bool:
+    return any(box.yaw != 0.0 for frame in sequence.frames for box in frame.boxes)
 
 
 def _normalize_iou_thresholds(iou_thresholds: list[float] | tuple[float, ...] | None) -> tuple[float, ...]:
@@ -313,9 +317,9 @@ def evaluate_detection(
         "estimated_path": estimated_path,
         "reference_path": reference_path,
         "matching_policy": {
-            "geometry": "axis_aligned_3d_boxes",
+            "geometry": "oriented_3d_boxes" if _has_yaw(estimated) or _has_yaw(reference) else "axis_aligned_3d_boxes",
             "class_aware": True,
-            "yaw_ignored": True,
+            "yaw_ignored": not (_has_yaw(estimated) or _has_yaw(reference)),
             "iou_thresholds": list(thresholds),
             "primary_iou_threshold": float(primary_threshold),
         },

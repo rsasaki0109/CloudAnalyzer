@@ -633,3 +633,53 @@ class TestRunCheckSuite:
         )
         with pytest.raises(ValueError, match="exactly one threshold"):
             run_check_suite(load_check_suite(str(config)))
+
+    def test_detection_ignores_defaults_thresholds(self, tmp_path: Path):
+        """Detection should not inherit artifact distance thresholds from defaults."""
+        detection_reference = _write_json(
+            tmp_path / "refs" / "det_ref.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        detection_estimated = _write_json(
+            tmp_path / "outputs" / "det_est.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.1, 0.0], "size": [2.0, 2.0, 2.0], "score": 0.9},
+                        ],
+                    },
+                ]
+            },
+        )
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              thresholds: [0.02, 0.05, 0.1]
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: det-defaults
+                kind: detection
+                estimated: {Path(detection_estimated).relative_to(tmp_path)}
+                reference: {Path(detection_reference).relative_to(tmp_path)}
+                gate:
+                  min_map: 0.9
+            """,
+        )
+        result = run_check_suite(load_check_suite(str(config)))
+        det = result["checks"][0]
+        assert det["kind"] == "detection"
+        # Should use detection defaults (0.5), not artifact thresholds (0.02, 0.05, 0.1)
+        assert det["summary"]["passed"] is True

@@ -460,8 +460,14 @@ def _normalize_check(
         if raw_id is not None
         else f"{kind}-{index}"
     )
+    # detection/tracking thresholds are IoU values (0–1), not distance thresholds
+    # used by artifact checks — do not inherit from defaults for these kinds.
+    if kind in {"detection", "tracking"}:
+        raw_thresholds = check.get("thresholds")
+    else:
+        raw_thresholds = check.get("thresholds", defaults.get("thresholds"))
     thresholds = _normalize_thresholds(
-        check.get("thresholds", defaults.get("thresholds")),
+        raw_thresholds,
         f"checks[{index - 1}].thresholds",
     )
     max_time_delta = float(check.get("max_time_delta", defaults.get("max_time_delta", 0.05)))

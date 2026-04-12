@@ -41,6 +41,11 @@ class BoxSequence:
     frames: tuple[FrameBoxes, ...]
 
 
+def has_yaw(sequence: BoxSequence) -> bool:
+    """Return True if any box in the sequence has a non-zero yaw."""
+    return any(box.yaw != 0.0 for frame in sequence.frames for box in frame.boxes)
+
+
 def _require_mapping(value: object, context: str) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{context} must be a JSON object")

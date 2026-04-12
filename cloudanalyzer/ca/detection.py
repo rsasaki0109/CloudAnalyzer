@@ -12,14 +12,11 @@ from ca.object_eval import (
     BoxSequence,
     frame_map,
     greedy_match_boxes,
+    has_yaw,
     load_box_sequence,
     ordered_frame_ids,
     sequence_counts,
 )
-
-
-def _has_yaw(sequence: BoxSequence) -> bool:
-    return any(box.yaw != 0.0 for frame in sequence.frames for box in frame.boxes)
 
 
 def _normalize_iou_thresholds(iou_thresholds: list[float] | tuple[float, ...] | None) -> tuple[float, ...]:
@@ -318,9 +315,9 @@ def evaluate_detection(
         "estimated_path": estimated_path,
         "reference_path": reference_path,
         "matching_policy": {
-            "geometry": "oriented_3d_boxes" if _has_yaw(estimated) or _has_yaw(reference) else "axis_aligned_3d_boxes",
+            "geometry": "oriented_3d_boxes" if has_yaw(estimated) or has_yaw(reference) else "axis_aligned_3d_boxes",
             "class_aware": True,
-            "yaw_ignored": not (_has_yaw(estimated) or _has_yaw(reference)),
+            "yaw_ignored": not (has_yaw(estimated) or has_yaw(reference)),
             "iou_thresholds": list(thresholds),
             "primary_iou_threshold": float(primary_threshold),
         },

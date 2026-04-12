@@ -92,7 +92,7 @@ def load_box_sequence(path: str, *, require_track_ids: bool = False) -> BoxSeque
         raise ValueError(f"Invalid JSON file: {sequence_path}: {exc.msg}") from exc
 
     if isinstance(raw, list):
-        raw_frames = raw
+        raw_frames: Any = raw
     else:
         root = _require_mapping(raw, "root")
         raw_frames = root.get("frames")
@@ -207,7 +207,7 @@ def _rotated_corners_2d(center_xy: np.ndarray, size_xy: np.ndarray, yaw: float) 
         [-dx, dy],
     ])
     rotation = np.array([[cos_yaw, -sin_yaw], [sin_yaw, cos_yaw]])
-    return (corners_local @ rotation.T) + center_xy
+    return np.asarray((corners_local @ rotation.T) + center_xy)
 
 
 def _sutherland_hodgman_clip(subject: np.ndarray, clip: np.ndarray) -> np.ndarray:

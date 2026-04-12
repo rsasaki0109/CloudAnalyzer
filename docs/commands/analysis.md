@@ -187,7 +187,7 @@ Input files are the JSON summaries emitted by `ca check --output-json ...`. The 
 
 ## ca detection-evaluate
 
-Evaluate 3D object detections against reference annotations using class-aware, axis-aligned 3D box matching.
+Evaluate 3D object detections against reference annotations using class-aware 3D box matching. Supports both axis-aligned and oriented (yaw-rotated) boxes.
 
 ```bash
 # basic evaluation
@@ -215,6 +215,7 @@ Input format:
           "label": "car",
           "center": [0.0, 0.0, 0.0],
           "size": [4.0, 1.8, 1.6],
+          "yaw": 0.0,
           "score": 0.97
         }
       ]
@@ -223,7 +224,7 @@ Input format:
 }
 ```
 
-The stable contract keeps only the fields needed for evaluation: `label`, `center`, `size`, and optional `score`. Boxes are currently treated as **axis-aligned 3D boxes** and any yaw value in the source JSON is ignored. The `kind: detection` check type is also available in `cloudanalyzer.yaml`.
+The stable contract keeps only the fields needed for evaluation: `label`, `center`, `size`, optional `yaw` (radians, Z-axis rotation, default 0.0), and optional `score`. When any box has a non-zero `yaw`, oriented 3D box IoU (BEV polygon intersection) is used automatically; otherwise axis-aligned IoU is used. The field alias `rotation_y` is also accepted for KITTI compatibility. The `kind: detection` check type is also available in `cloudanalyzer.yaml`.
 
 Checked-in public example files are available under `demo_assets/public/rellis3d-frame-000001/object_eval/`.
 
@@ -317,7 +318,7 @@ Input format:
 }
 ```
 
-`ca tracking-evaluate` uses the same axis-aligned 3D box contract as detection, but requires `track_id` on every box. The current stable output emphasizes `precision / recall / F1`, `MOTA`, `ID switches`, `track fragmentations`, and mean matched IoU. The `kind: tracking` check type is also available in `cloudanalyzer.yaml`.
+`ca tracking-evaluate` uses the same 3D box contract as detection (including optional `yaw`), but requires `track_id` on every box. When oriented boxes are present, oriented IoU is used for matching. The current stable output emphasizes `precision / recall / F1`, `MOTA`, `ID switches`, `track fragmentations`, and mean matched IoU. The `kind: tracking` check type is also available in `cloudanalyzer.yaml`.
 
 Checked-in public example files are available under `demo_assets/public/rellis3d-frame-000001/object_eval/`. The tracking examples are deterministic synthetic sequences seeded from the public RELLIS-3D frame used by the detection examples.
 
@@ -332,6 +333,27 @@ Checked-in public example files are available under `demo_assets/public/rellis3d
 | `--report` | `None` | Write Markdown/HTML tracking report |
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON |
+
+## ca convert-labels
+
+Convert external label formats to CloudAnalyzer JSON box sequences.
+
+```bash
+# Convert a directory of KITTI label files
+ca convert-labels --format kitti --input /path/to/kitti/label_2/ --output boxes.json
+
+# Skip camera-to-lidar coordinate transform
+ca convert-labels --format kitti --input labels/ --output boxes.json --no-camera-to-lidar
+```
+
+Currently supports KITTI 3D object detection label format. The converter reads `.txt` files from the input directory, parses 3D bounding box fields (dimensions, location, rotation_y), and writes a CloudAnalyzer-compatible JSON file with `yaw` populated from KITTI's `rotation_y`.
+
+| Option | Default | Description |
+|---|---|---|
+| `--format` | required | Label format (`kitti`) |
+| `--input` | required | Input label directory |
+| `--output` | required | Output JSON path |
+| `--no-camera-to-lidar` | `false` | Skip KITTI camera-to-lidar coordinate transform |
 
 ## ca traj-evaluate
 

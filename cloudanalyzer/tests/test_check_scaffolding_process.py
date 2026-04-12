@@ -16,6 +16,8 @@ def test_stable_core_renders_supported_profile():
 
     assert result.strategy == "static_profiles"
     assert "integrated-run" in result.yaml_text
+    assert "perception-detection" in result.yaml_text
+    assert "perception-tracking" in result.yaml_text
     assert "summary_output_json" in result.yaml_text
 
 

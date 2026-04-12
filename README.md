@@ -30,8 +30,8 @@ Adding just one flag, `--evaluate`, tells you immediately how much quality chang
   Compare voxel downsampling, outlier removal, splitting, or compressed-and-restored maps against a baseline with `AUC / Chamfer / Hausdorff / heatmap`.
 - **Localization / SLAM run evaluation**
   Evaluate estimated trajectories against ground truth with `ATE / RPE / drift / lateral / longitudinal / coverage`, then inspect map heatmaps and trajectory timelines together in `ca web`.
-- **Perception / ground segmentation QA**
-  Evaluate ground segmentation with voxel-based precision / recall / F1 / IoU and wire the result into config-driven CI gates.
+- **Perception QA**
+  Evaluate ground segmentation, 3D object detection, and 3D multi-object tracking with task-specific metrics and wire the result into config-driven CI gates.
 - **Regression checks for 3D generation pipelines**
   Benchmark reconstructed point clouds, depth-derived clouds, model outputs, and geometry from Gaussian Splatting-style pipelines per artifact or per run.
 
@@ -52,7 +52,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **31 subcommands** |
+| CLI | Limited | None | None | **34 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -105,24 +105,31 @@ cd cloudanalyzer && pip install -e .
 
 | Demo | Description |
 |---|---|
-| [Stanford Bunny Viewer](https://rsasaki0109.github.io/CloudAnalyzer/demo/stanford-bunny/index.html) | Static 3D viewer exported by `ca web-export`, with heatmap / trajectory / point picking support |
-| [Perception QA Dashboard](https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/index.html) | Dashboard for `ca ground-evaluate` results, including confusion matrix and quality gate summary |
+| [hdl_localization Map Viewer](https://rsasaki0109.github.io/CloudAnalyzer/demo/hdl-localization-map/index.html) | Static 3D viewer exported by `ca web-export`, using the public AISL / Toyohashi `hdl_localization` sample map with heatmap, synthetic demo trajectories, and point inspection support |
+| [Perception Batch Report](https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/index.html) | Static `ca batch` report comparing a geometry-first non-deep baseline and a higher-fidelity deep baseline on the same public RELLIS-3D LiDAR frame |
 
 ```bash
 # export a static viewer
 ca web-export map.pcd map_ref.pcd --heatmap -o docs/demo/local
 
 # rebuild demos locally
-python scripts/build_public_demo.py --output docs/demo/stanford-bunny
+python scripts/build_public_demo.py --output docs/demo/hdl-localization-map
 python scripts/build_perception_demo.py --output docs/demo/perception
 ```
 
-Use the public benchmark pack to fix `ca check` pass/fail behavior in CI:
+The map viewer is generated from the public `hdl_localization` sample map published by
+AISL at Toyohashi University of Technology. The perception report is generated from the
+public RELLIS-3D "Ouster LiDAR with Annotation Examples" bundle and compares a geometry-first
+non-deep baseline artifact with a higher-fidelity deep baseline artifact against the same
+reference frame. Those two artifacts are deterministic demo baselines, not archived model
+outputs. The generated report is checked into `docs/demo/perception` so GitHub Pages does not
+depend on third-party Google Drive downloads at publish time. A minimal public reproducibility
+seed is checked into `demo_assets/public/rellis3d-frame-000001`, and CI verifies that the
+checked-in report stays in sync with `scripts/build_perception_demo.py`.
 
-```bash
-python scripts/build_public_benchmark_pack.py --output benchmarks/public/stanford-bunny-mini
-ca check benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
-```
+License note: the Python package remains MIT, but the checked-in RELLIS-derived demo assets under
+`docs/demo/perception` and `demo_assets/public/rellis3d-frame-000001` continue to follow the
+upstream CC BY-NC-SA 3.0 terms documented in their attribution files.
 
 ## Referenced OSS
 
@@ -133,6 +140,7 @@ CloudAnalyzer builds on, interoperates with, or is positioned alongside the foll
 - [CloudCompare](https://www.cloudcompare.org/) as the baseline for manual inspection and map-to-map comparison workflows.
 - [koide3/hdl_localization](https://github.com/koide3/hdl_localization) as a representative LiDAR map localization stack; its Toyohashi University of Technology AISL sample global map is used for the README figures above.
 - [koide3/ndt_omp](https://github.com/koide3/ndt_omp) and [SMRT-AIST/fast_gicp](https://github.com/SMRT-AIST/fast_gicp) as fast registration packages commonly used with `hdl_localization`.
+- [unmannedlab/RELLIS-3D](https://github.com/unmannedlab/RELLIS-3D) for public off-road LiDAR perception data and the label ontology used by the perception demo.
 - [HKUDS/CLI-Anything](https://github.com/HKUDS/CLI-Anything) for agent-facing CLI integration.
 
 ## Core Idea: Process, Then Evaluate Immediately
@@ -345,6 +353,14 @@ ca run-batch maps/ \
 # Quality gate: exit with code 1 if any file fails
 ca batch results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
 
+# 3D detection QA from JSON box sequences
+ca detection-evaluate estimated_detection.json reference_detection.json \
+  --iou-thresholds 0.25,0.5 --min-map 0.9 --report detection_report.html
+
+# 3D tracking QA from JSON box sequences
+ca tracking-evaluate estimated_tracking.json reference_tracking.json \
+  --iou-threshold 0.5 --min-mota 0.8 --max-id-switches 2 --report tracking_report.html
+
 # Config-driven quality gate
 ca check cloudanalyzer.yaml
 
@@ -355,6 +371,11 @@ ca baseline-decision qa/current-summary.json --history qa/baseline-summary.json
 gh workflow run quality-gate.yml \
   -f source=new.pcd -f reference=ref.pcd -f auc_threshold=0.9
 ```
+
+Checked-in public JSON examples for detection / tracking live in
+`demo_assets/public/rellis3d-frame-000001/object_eval/`. The detection examples are
+derived from the public RELLIS-3D seed frame, and the tracking examples are
+deterministic synthetic 3-frame sequences seeded from that same public frame.
 
 ## Command Overview
 
@@ -370,13 +391,15 @@ ca init-check --profile integrated          # Generate a starter config
 ca baseline-decision qa/current.json --history-dir qa/history/  # promote / keep / reject
 ca baseline-save qa/summary.json --history-dir qa/history/      # save a baseline into history
 ca baseline-list --history-dir qa/history/                      # list saved baselines
+ca detection-evaluate est_det.json gt_det.json --iou-thresholds 0.25,0.5 --min-map 0.9  # 3D detection QA
+ca tracking-evaluate est_track.json gt_track.json --min-mota 0.8 --max-id-switches 2  # 3D MOT QA
 ca traj-evaluate est.csv gt.csv --max-ate 0.5 --max-drift 1.0 --min-coverage 0.9  # ATE / RPE / drift + coverage gate
 ca traj-evaluate est.csv gt.csv --align-origin  # absorb initial translation offset
 ca traj-evaluate est.csv gt.csv --align-rigid   # rigid alignment before scoring
 ca traj-batch runs/ --reference-dir gt/ --max-drift 1.0 --min-coverage 0.9  # trajectory benchmark
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # integrated map + trajectory QA
 ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch QA
-ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd --min-f1 0.9  # ground segmentation QA
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd --min-f1 0.9 --report ground.html  # ground segmentation QA
 ```
 
 ### Processing (all support `--evaluate`)
@@ -402,6 +425,8 @@ ca batch /path/to/dir/ -r           # run over a directory
 ca batch results/ --evaluate ref.pcd  # compare all files to a reference
 ca batch results/ --evaluate ref.pcd --report batch.html  # report for sharing
 ca batch results/ --evaluate ref.pcd --min-auc 0.95 --max-chamfer 0.02  # quality gate
+ca detection-evaluate est_det.json gt_det.json --report detection.html  # detection report
+ca tracking-evaluate est_track.json gt_track.json --report tracking.html  # tracking report
 ca traj-evaluate est.csv gt.csv --report traj.html  # trajectory quality report
 ca traj-batch runs/ --reference-dir gt/ --report traj_batch.html  # trajectory batch report
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # combined run report

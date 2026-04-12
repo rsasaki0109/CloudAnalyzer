@@ -1,5 +1,6 @@
 """Tests for config-driven QA check suites."""
 
+import json
 from pathlib import Path
 from textwrap import dedent
 
@@ -8,6 +9,7 @@ import open3d as o3d
 import pytest
 
 from ca.core import load_check_suite, run_check_suite
+from ca.core.check_triage import build_check_triage_request
 
 
 def _write_csv_trajectory(path: Path, rows: list[tuple[float, float, float, float]]) -> str:
@@ -29,6 +31,12 @@ def _write_pcd(path: Path, points: list[list[float]]) -> str:
     pcd.points = o3d.utility.Vector3dVector(np.array(points, dtype=np.float64))
     path.parent.mkdir(parents=True, exist_ok=True)
     o3d.io.write_point_cloud(str(path), pcd)
+    return str(path)
+
+
+def _write_json(path: Path, data: dict) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return str(path)
 
 
@@ -374,3 +382,304 @@ class TestRunCheckSuite:
         assert ground_check["passed"] is True
         assert ground_check["summary"]["f1"] == pytest.approx(1.0)
         assert ground_check["summary"]["iou"] == pytest.approx(1.0)
+
+    def test_runs_ground_check_with_report_output_and_voxel_size(self, tmp_path: Path):
+        ground = [[0, 0, 0], [1, 0, 0], [2, 0, 0]]
+        nonground = [[0, 0, 2], [1, 0, 2], [2, 0, 2]]
+        est_ground = _write_pcd(tmp_path / "est_g.pcd", ground)
+        est_nonground = _write_pcd(tmp_path / "est_ng.pcd", nonground)
+        ref_ground = _write_pcd(tmp_path / "ref_g.pcd", ground)
+        ref_nonground = _write_pcd(tmp_path / "ref_ng.pcd", nonground)
+
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+            checks:
+              - id: ground-seg
+                kind: ground
+                estimated_ground: {Path(est_ground).relative_to(tmp_path)}
+                estimated_nonground: {Path(est_nonground).relative_to(tmp_path)}
+                reference_ground: {Path(ref_ground).relative_to(tmp_path)}
+                reference_nonground: {Path(ref_nonground).relative_to(tmp_path)}
+                gate:
+                  voxel_size: 0.5
+                  min_f1: 0.9
+            """,
+        )
+
+        result = run_check_suite(load_check_suite(str(config)))
+
+        ground_check = result["checks"][0]
+        assert ground_check["passed"] is True
+        assert ground_check["report_path"] == str(
+            (tmp_path / "qa" / "reports" / "ground-seg.html").resolve()
+        )
+        assert (tmp_path / "qa" / "reports" / "ground-seg.html").exists()
+
+    def test_runs_detection_and_tracking_checks(self, tmp_path: Path):
+        detection_reference = _write_json(
+            tmp_path / "refs" / "detection_ref.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                    {
+                        "frame_id": "0002",
+                        "boxes": [
+                            {"label": "car", "center": [1.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        detection_estimated = _write_json(
+            tmp_path / "outputs" / "detection_est.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.1, 0.0], "size": [2.0, 2.0, 2.0], "score": 0.9},
+                        ],
+                    },
+                    {
+                        "frame_id": "0002",
+                        "boxes": [
+                            {"label": "car", "center": [1.0, 0.0, 0.1], "size": [2.0, 2.0, 2.0], "score": 0.8},
+                        ],
+                    },
+                ]
+            },
+        )
+        tracking_reference = _write_json(
+            tmp_path / "refs" / "tracking_ref.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "track_id": "gt-car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                    {
+                        "frame_id": "0002",
+                        "boxes": [
+                            {"label": "car", "track_id": "gt-car", "center": [1.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        tracking_estimated = _write_json(
+            tmp_path / "outputs" / "tracking_est.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "track_id": "pred-a", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                    {
+                        "frame_id": "0002",
+                        "boxes": [
+                            {"label": "car", "track_id": "pred-a", "center": [1.0, 0.0, 0.1], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: detection-out
+                kind: detection
+                estimated: {Path(detection_estimated).relative_to(tmp_path)}
+                reference: {Path(detection_reference).relative_to(tmp_path)}
+                thresholds: [0.25, 0.5]
+                gate:
+                  min_map: 0.9
+                  min_recall: 0.9
+              - id: tracking-out
+                kind: tracking
+                estimated: {Path(tracking_estimated).relative_to(tmp_path)}
+                reference: {Path(tracking_reference).relative_to(tmp_path)}
+                thresholds: [0.5]
+                gate:
+                  min_mota: 0.9
+                  min_recall: 0.9
+                  max_id_switches: 0
+            """,
+        )
+
+        result = run_check_suite(load_check_suite(str(config)))
+
+        assert result["summary"]["passed"] is True
+        assert result["summary"]["passed_checks"] == 2
+        assert result["checks"][0]["kind"] == "detection"
+        assert result["checks"][0]["summary"]["map"] == pytest.approx(1.0)
+        assert result["checks"][1]["kind"] == "tracking"
+        assert result["checks"][1]["summary"]["mota"] == pytest.approx(1.0)
+        assert (tmp_path / "qa" / "reports" / "detection-out.html").exists()
+        assert (tmp_path / "qa" / "reports" / "tracking-out.html").exists()
+
+    def test_detection_triage_propagates_gate(self, tmp_path: Path):
+        """Failed detection check should propagate gate data to triage."""
+        detection_reference = _write_json(
+            tmp_path / "refs" / "det_ref.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        detection_estimated = _write_json(
+            tmp_path / "outputs" / "det_est.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [5.0, 5.0, 5.0], "size": [2.0, 2.0, 2.0], "score": 0.9},
+                        ],
+                    },
+                ]
+            },
+        )
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: det-fail
+                kind: detection
+                estimated: {Path(detection_estimated).relative_to(tmp_path)}
+                reference: {Path(detection_reference).relative_to(tmp_path)}
+                thresholds: [0.5]
+                gate:
+                  min_map: 0.9
+                  min_recall: 0.9
+            """,
+        )
+        result = run_check_suite(load_check_suite(str(config)))
+        assert result["summary"]["passed"] is False
+        triage_req = build_check_triage_request(result["checks"])
+        assert len(triage_req.failed_items) == 1
+        item = triage_req.failed_items[0]
+        assert item.gate  # gate dict should not be empty
+        assert item.reasons  # reasons should be populated
+
+    def test_tracking_rejects_multiple_thresholds(self, tmp_path: Path):
+        """Tracking check should reject configs with multiple thresholds."""
+        tracking_reference = _write_json(
+            tmp_path / "refs" / "trk_ref.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "track_id": "gt-1", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        tracking_estimated = _write_json(
+            tmp_path / "outputs" / "trk_est.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "track_id": "p-1", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: trk-multi
+                kind: tracking
+                estimated: {Path(tracking_estimated).relative_to(tmp_path)}
+                reference: {Path(tracking_reference).relative_to(tmp_path)}
+                thresholds: [0.25, 0.5]
+                gate:
+                  min_mota: 0.5
+            """,
+        )
+        with pytest.raises(ValueError, match="exactly one threshold"):
+            run_check_suite(load_check_suite(str(config)))
+
+    def test_detection_ignores_defaults_thresholds(self, tmp_path: Path):
+        """Detection should not inherit artifact distance thresholds from defaults."""
+        detection_reference = _write_json(
+            tmp_path / "refs" / "det_ref.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        detection_estimated = _write_json(
+            tmp_path / "outputs" / "det_est.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "center": [0.0, 0.1, 0.0], "size": [2.0, 2.0, 2.0], "score": 0.9},
+                        ],
+                    },
+                ]
+            },
+        )
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              thresholds: [0.02, 0.05, 0.1]
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: det-defaults
+                kind: detection
+                estimated: {Path(detection_estimated).relative_to(tmp_path)}
+                reference: {Path(detection_reference).relative_to(tmp_path)}
+                gate:
+                  min_map: 0.9
+            """,
+        )
+        result = run_check_suite(load_check_suite(str(config)))
+        det = result["checks"][0]
+        assert det["kind"] == "detection"
+        # Should use detection defaults (0.5), not artifact thresholds (0.02, 0.05, 0.1)
+        assert det["summary"]["passed"] is True

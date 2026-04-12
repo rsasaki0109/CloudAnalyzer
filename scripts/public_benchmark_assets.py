@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import math
+import shutil
 import tarfile
 import tempfile
+import zipfile
 import urllib.request
 from pathlib import Path
 
@@ -13,6 +15,23 @@ import open3d as o3d
 
 BUNNY_ARCHIVE_URL = "https://graphics.stanford.edu/pub/3Dscanrep/bunny.tar.gz"
 BUNNY_SOURCE_PAGE = "https://graphics.stanford.edu/data/3Dscanrep/"
+HDL_LOCALIZATION_MAP_URL = (
+    "https://raw.githubusercontent.com/koide3/hdl_localization/master/data/map.pcd"
+)
+HDL_LOCALIZATION_REPO_URL = "https://github.com/koide3/hdl_localization"
+HDL_LOCALIZATION_MAP_PAGE = (
+    "https://github.com/koide3/hdl_localization/blob/master/data/map.pcd"
+)
+RELLIS_LIDAR_EXAMPLE_URL = (
+    "https://drive.google.com/uc?export=download&id=1QikPnpmxneyCuwefr6m50fBOSB2ny4LC"
+)
+RELLIS_REPO_URL = "https://github.com/unmannedlab/RELLIS-3D"
+RELLIS_README_URL = "https://github.com/unmannedlab/RELLIS-3D/blob/main/README.md"
+RELLIS_LABEL_CONFIG_URL = (
+    "https://github.com/unmannedlab/RELLIS-3D/blob/main/benchmarks/SalsaNext/"
+    "train/tasks/semantic/config/labels/rellis.yaml"
+)
+RELLIS_EXAMPLE_ARCHIVE_NAME = "rellis_lidar_example.zip"
 
 
 def download_bunny_mesh() -> o3d.geometry.TriangleMesh:
@@ -28,6 +47,39 @@ def download_bunny_mesh() -> o3d.geometry.TriangleMesh:
         if len(mesh.vertices) == 0:
             raise RuntimeError("failed to load Stanford Bunny mesh")
         return mesh
+
+
+def download_hdl_localization_map(download_dir: Path) -> Path:
+    """Download the public hdl_localization sample map and return its path."""
+    download_dir.mkdir(parents=True, exist_ok=True)
+    map_path = download_dir / "hdl_localization_map.pcd"
+    if not map_path.exists():
+        urllib.request.urlretrieve(HDL_LOCALIZATION_MAP_URL, map_path)
+    return map_path
+
+
+def download_rellis_lidar_example(download_dir: Path) -> Path:
+    """Download and extract the public RELLIS-3D LiDAR example bundle."""
+    download_dir.mkdir(parents=True, exist_ok=True)
+    archive_path = download_dir / RELLIS_EXAMPLE_ARCHIVE_NAME
+    extract_root = download_dir / "rellis_lidar_example"
+    example_root = extract_root / "Rellis_3D_lidar_example"
+
+    if example_root.exists():
+        return example_root
+
+    if not archive_path.exists():
+        urllib.request.urlretrieve(RELLIS_LIDAR_EXAMPLE_URL, archive_path)
+
+    if extract_root.exists():
+        shutil.rmtree(extract_root)
+    extract_root.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(archive_path, "r") as archive:
+        archive.extractall(extract_root)
+
+    if not example_root.exists():
+        raise RuntimeError("failed to extract RELLIS-3D LiDAR example")
+    return example_root
 
 
 def rotation_matrix(z_degrees: float, x_degrees: float) -> np.ndarray:

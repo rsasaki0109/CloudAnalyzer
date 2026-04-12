@@ -1,0 +1,833 @@
+{
+  "detection_good": {
+    "estimated_path": "/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/detection_estimated_good.json",
+    "reference_path": "/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/detection_reference.json",
+    "matching_policy": {
+      "geometry": "axis_aligned_3d_boxes",
+      "class_aware": true,
+      "yaw_ignored": true,
+      "iou_thresholds": [
+        0.25,
+        0.5
+      ],
+      "primary_iou_threshold": 0.5
+    },
+    "counts": {
+      "estimated_frames": 1,
+      "reference_frames": 1,
+      "shared_frames": 1,
+      "estimated_boxes": 3,
+      "reference_boxes": 3
+    },
+    "mAP": 1.0,
+    "best_threshold": {
+      "iou_threshold": 0.25,
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0
+    },
+    "primary_threshold_result": {
+      "iou_threshold": 0.5,
+      "true_positives": 3,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "mean_iou": 0.887681591217025,
+      "mean_center_distance": 0.14064763960582363,
+      "matched_detections": 3,
+      "per_class": {
+        "bush": {
+          "reference_boxes": 1,
+          "estimated_boxes": 1,
+          "true_positives": 1,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "ap": 1.0
+        },
+        "person": {
+          "reference_boxes": 1,
+          "estimated_boxes": 1,
+          "true_positives": 1,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "ap": 1.0
+        },
+        "puddle": {
+          "reference_boxes": 1,
+          "estimated_boxes": 1,
+          "true_positives": 1,
+          "false_positives": 0,
+          "false_negatives": 0,
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "ap": 1.0
+        }
+      },
+      "per_class_ap": {
+        "bush": 1.0,
+        "person": 1.0,
+        "puddle": 1.0
+      },
+      "map": 1.0
+    },
+    "threshold_results": [
+      {
+        "iou_threshold": 0.25,
+        "true_positives": 3,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "mean_iou": 0.887681591217025,
+        "mean_center_distance": 0.14064763960582363,
+        "matched_detections": 3,
+        "per_class": {
+          "bush": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 1,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "ap": 1.0
+          },
+          "person": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 1,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "ap": 1.0
+          },
+          "puddle": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 1,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "ap": 1.0
+          }
+        },
+        "per_class_ap": {
+          "bush": 1.0,
+          "person": 1.0,
+          "puddle": 1.0
+        },
+        "map": 1.0
+      },
+      {
+        "iou_threshold": 0.5,
+        "true_positives": 3,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "mean_iou": 0.887681591217025,
+        "mean_center_distance": 0.14064763960582363,
+        "matched_detections": 3,
+        "per_class": {
+          "bush": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 1,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "ap": 1.0
+          },
+          "person": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 1,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "ap": 1.0
+          },
+          "puddle": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 1,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "ap": 1.0
+          }
+        },
+        "per_class_ap": {
+          "bush": 1.0,
+          "person": 1.0,
+          "puddle": 1.0
+        },
+        "map": 1.0
+      }
+    ],
+    "per_class": {
+      "bush": {
+        "reference_boxes": 1,
+        "estimated_boxes": 1,
+        "true_positives": 1,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "ap": 1.0,
+        "ap_by_threshold": {
+          "0.25": 1.0,
+          "0.50": 1.0
+        },
+        "mean_ap": 1.0
+      },
+      "person": {
+        "reference_boxes": 1,
+        "estimated_boxes": 1,
+        "true_positives": 1,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "ap": 1.0,
+        "ap_by_threshold": {
+          "0.25": 1.0,
+          "0.50": 1.0
+        },
+        "mean_ap": 1.0
+      },
+      "puddle": {
+        "reference_boxes": 1,
+        "estimated_boxes": 1,
+        "true_positives": 1,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "ap": 1.0,
+        "ap_by_threshold": {
+          "0.25": 1.0,
+          "0.50": 1.0
+        },
+        "mean_ap": 1.0
+      }
+    },
+    "quality_gate": {
+      "passed": true,
+      "min_map": 0.8,
+      "min_precision": null,
+      "min_recall": 0.7,
+      "min_f1": null,
+      "reasons": []
+    }
+  },
+  "detection_regressed": {
+    "estimated_path": "/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/detection_estimated_regressed.json",
+    "reference_path": "/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/detection_reference.json",
+    "matching_policy": {
+      "geometry": "axis_aligned_3d_boxes",
+      "class_aware": true,
+      "yaw_ignored": true,
+      "iou_thresholds": [
+        0.25,
+        0.5
+      ],
+      "primary_iou_threshold": 0.5
+    },
+    "counts": {
+      "estimated_frames": 1,
+      "reference_frames": 1,
+      "shared_frames": 1,
+      "estimated_boxes": 3,
+      "reference_boxes": 3
+    },
+    "mAP": 0.16666666666666666,
+    "best_threshold": {
+      "iou_threshold": 0.25,
+      "f1": 0.3333333333333333,
+      "precision": 0.3333333333333333,
+      "recall": 0.3333333333333333
+    },
+    "primary_threshold_result": {
+      "iou_threshold": 0.5,
+      "true_positives": 0,
+      "false_positives": 3,
+      "false_negatives": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "mean_iou": 0.0,
+      "mean_center_distance": 0.0,
+      "matched_detections": 0,
+      "per_class": {
+        "barrier": {
+          "reference_boxes": 0,
+          "estimated_boxes": 1,
+          "true_positives": 0,
+          "false_positives": 1,
+          "false_negatives": 0,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "ap": null
+        },
+        "bush": {
+          "reference_boxes": 1,
+          "estimated_boxes": 1,
+          "true_positives": 0,
+          "false_positives": 1,
+          "false_negatives": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "ap": 0.0
+        },
+        "person": {
+          "reference_boxes": 1,
+          "estimated_boxes": 1,
+          "true_positives": 0,
+          "false_positives": 1,
+          "false_negatives": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "ap": 0.0
+        },
+        "puddle": {
+          "reference_boxes": 1,
+          "estimated_boxes": 0,
+          "true_positives": 0,
+          "false_positives": 0,
+          "false_negatives": 1,
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "ap": 0.0
+        }
+      },
+      "per_class_ap": {
+        "barrier": null,
+        "bush": 0.0,
+        "person": 0.0,
+        "puddle": 0.0
+      },
+      "map": 0.0
+    },
+    "threshold_results": [
+      {
+        "iou_threshold": 0.25,
+        "true_positives": 1,
+        "false_positives": 2,
+        "false_negatives": 2,
+        "precision": 0.3333333333333333,
+        "recall": 0.3333333333333333,
+        "f1": 0.3333333333333333,
+        "mean_iou": 0.3387803910731127,
+        "mean_center_distance": 3.534119409414459,
+        "matched_detections": 1,
+        "per_class": {
+          "barrier": {
+            "reference_boxes": 0,
+            "estimated_boxes": 1,
+            "true_positives": 0,
+            "false_positives": 1,
+            "false_negatives": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "ap": null
+          },
+          "bush": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 1,
+            "false_positives": 0,
+            "false_negatives": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "f1": 1.0,
+            "ap": 1.0
+          },
+          "person": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 0,
+            "false_positives": 1,
+            "false_negatives": 1,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "ap": 0.0
+          },
+          "puddle": {
+            "reference_boxes": 1,
+            "estimated_boxes": 0,
+            "true_positives": 0,
+            "false_positives": 0,
+            "false_negatives": 1,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "ap": 0.0
+          }
+        },
+        "per_class_ap": {
+          "barrier": null,
+          "bush": 1.0,
+          "person": 0.0,
+          "puddle": 0.0
+        },
+        "map": 0.3333333333333333
+      },
+      {
+        "iou_threshold": 0.5,
+        "true_positives": 0,
+        "false_positives": 3,
+        "false_negatives": 3,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "mean_iou": 0.0,
+        "mean_center_distance": 0.0,
+        "matched_detections": 0,
+        "per_class": {
+          "barrier": {
+            "reference_boxes": 0,
+            "estimated_boxes": 1,
+            "true_positives": 0,
+            "false_positives": 1,
+            "false_negatives": 0,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "ap": null
+          },
+          "bush": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 0,
+            "false_positives": 1,
+            "false_negatives": 1,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "ap": 0.0
+          },
+          "person": {
+            "reference_boxes": 1,
+            "estimated_boxes": 1,
+            "true_positives": 0,
+            "false_positives": 1,
+            "false_negatives": 1,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "ap": 0.0
+          },
+          "puddle": {
+            "reference_boxes": 1,
+            "estimated_boxes": 0,
+            "true_positives": 0,
+            "false_positives": 0,
+            "false_negatives": 1,
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "ap": 0.0
+          }
+        },
+        "per_class_ap": {
+          "barrier": null,
+          "bush": 0.0,
+          "person": 0.0,
+          "puddle": 0.0
+        },
+        "map": 0.0
+      }
+    ],
+    "per_class": {
+      "barrier": {
+        "reference_boxes": 0,
+        "estimated_boxes": 1,
+        "true_positives": 0,
+        "false_positives": 1,
+        "false_negatives": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "ap": null,
+        "ap_by_threshold": {
+          "0.25": null,
+          "0.50": null
+        },
+        "mean_ap": null
+      },
+      "bush": {
+        "reference_boxes": 1,
+        "estimated_boxes": 1,
+        "true_positives": 0,
+        "false_positives": 1,
+        "false_negatives": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "ap": 0.0,
+        "ap_by_threshold": {
+          "0.25": 1.0,
+          "0.50": 0.0
+        },
+        "mean_ap": 0.5
+      },
+      "person": {
+        "reference_boxes": 1,
+        "estimated_boxes": 1,
+        "true_positives": 0,
+        "false_positives": 1,
+        "false_negatives": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "ap": 0.0,
+        "ap_by_threshold": {
+          "0.25": 0.0,
+          "0.50": 0.0
+        },
+        "mean_ap": 0.0
+      },
+      "puddle": {
+        "reference_boxes": 1,
+        "estimated_boxes": 0,
+        "true_positives": 0,
+        "false_positives": 0,
+        "false_negatives": 1,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "ap": 0.0,
+        "ap_by_threshold": {
+          "0.25": 0.0,
+          "0.50": 0.0
+        },
+        "mean_ap": 0.0
+      }
+    },
+    "quality_gate": {
+      "passed": false,
+      "min_map": 0.8,
+      "min_precision": null,
+      "min_recall": 0.7,
+      "min_f1": null,
+      "reasons": [
+        "mAP 0.1667 < min_map 0.8000",
+        "Recall 0.0000 < min_recall 0.7000"
+      ]
+    }
+  },
+  "tracking_good": {
+    "estimated_path": "/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_estimated_good.json",
+    "reference_path": "/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_reference.json",
+    "matching_policy": {
+      "geometry": "axis_aligned_3d_boxes",
+      "class_aware": true,
+      "yaw_ignored": true,
+      "iou_threshold": 0.5
+    },
+    "counts": {
+      "estimated_frames": 3,
+      "reference_frames": 3,
+      "shared_frames": 3,
+      "estimated_detections": 9,
+      "reference_detections": 9,
+      "estimated_tracks": 3,
+      "reference_tracks": 3,
+      "matched_detections": 9
+    },
+    "detection": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "tracking": {
+      "mota": 1.0,
+      "id_switches": 0,
+      "track_fragmentations": 0,
+      "mostly_tracked_ratio": 1.0,
+      "mean_iou": 0.9641092533881316,
+      "mean_center_distance": 0.02595820265056033
+    },
+    "per_class": {
+      "bush": {
+        "reference_detections": 3,
+        "estimated_detections": 3,
+        "matched_detections": 3,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "id_switches": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "person": {
+        "reference_detections": 3,
+        "estimated_detections": 3,
+        "matched_detections": 3,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "id_switches": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "puddle": {
+        "reference_detections": 3,
+        "estimated_detections": 3,
+        "matched_detections": 3,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "id_switches": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "matched_samples": [
+      {
+        "frame_id": "000001",
+        "label": "bush",
+        "reference_track_id": "gt-bush",
+        "estimated_track_id": "pred-bush",
+        "iou": 0.9895200014217275,
+        "center_distance": 0.03605551275463912
+      },
+      {
+        "frame_id": "000001",
+        "label": "puddle",
+        "reference_track_id": "gt-puddle",
+        "estimated_track_id": "pred-puddle",
+        "iou": 0.984533000930081,
+        "center_distance": 0.02236067977499747
+      },
+      {
+        "frame_id": "000001",
+        "label": "person",
+        "reference_track_id": "gt-person",
+        "estimated_track_id": "pred-person",
+        "iou": 0.9331317116549509,
+        "center_distance": 0.014142135623730963
+      },
+      {
+        "frame_id": "000002",
+        "label": "bush",
+        "reference_track_id": "gt-bush",
+        "estimated_track_id": "pred-bush",
+        "iou": 0.9919554281423649,
+        "center_distance": 0.03162277660168424
+      },
+      {
+        "frame_id": "000002",
+        "label": "puddle",
+        "reference_track_id": "gt-puddle",
+        "estimated_track_id": "pred-puddle",
+        "iou": 0.9909475862983563,
+        "center_distance": 0.020000000000000462
+      },
+      {
+        "frame_id": "000002",
+        "label": "person",
+        "reference_track_id": "gt-person",
+        "estimated_track_id": "pred-person",
+        "iou": 0.9194573033097001,
+        "center_distance": 0.019999999999999574
+      },
+      {
+        "frame_id": "000003",
+        "label": "bush",
+        "reference_track_id": "gt-bush",
+        "estimated_track_id": "pred-bush",
+        "iou": 0.9876728915848041,
+        "center_distance": 0.04472135954999603
+      },
+      {
+        "frame_id": "000003",
+        "label": "puddle",
+        "reference_track_id": "gt-puddle",
+        "estimated_track_id": "pred-puddle",
+        "iou": 0.9845330009300802,
+        "center_distance": 0.02236067977499752
+      },
+      {
+        "frame_id": "000003",
+        "label": "person",
+        "reference_track_id": "gt-person",
+        "estimated_track_id": "pred-person",
+        "iou": 0.8952323562211195,
+        "center_distance": 0.02236067977499762
+      }
+    ],
+    "quality_gate": {
+      "passed": true,
+      "min_mota": 0.5,
+      "min_recall": 0.5,
+      "max_id_switches": 5,
+      "reasons": []
+    }
+  },
+  "tracking_regressed": {
+    "estimated_path": "/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_estimated_regressed.json",
+    "reference_path": "/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_reference.json",
+    "matching_policy": {
+      "geometry": "axis_aligned_3d_boxes",
+      "class_aware": true,
+      "yaw_ignored": true,
+      "iou_threshold": 0.5
+    },
+    "counts": {
+      "estimated_frames": 3,
+      "reference_frames": 3,
+      "shared_frames": 3,
+      "estimated_detections": 8,
+      "reference_detections": 9,
+      "estimated_tracks": 4,
+      "reference_tracks": 3,
+      "matched_detections": 7
+    },
+    "detection": {
+      "precision": 0.875,
+      "recall": 0.7777777777777778,
+      "f1": 0.823529411764706
+    },
+    "tracking": {
+      "mota": 0.5555555555555556,
+      "id_switches": 1,
+      "track_fragmentations": 0,
+      "mostly_tracked_ratio": 0.6666666666666666,
+      "mean_iou": 0.9803276601374807,
+      "mean_center_distance": 0.0273233062971494
+    },
+    "per_class": {
+      "bush": {
+        "reference_detections": 3,
+        "estimated_detections": 3,
+        "matched_detections": 3,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "id_switches": 1,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "person": {
+        "reference_detections": 3,
+        "estimated_detections": 2,
+        "matched_detections": 1,
+        "false_positives": 1,
+        "false_negatives": 2,
+        "id_switches": 0,
+        "precision": 0.5,
+        "recall": 0.3333333333333333,
+        "f1": 0.4
+      },
+      "puddle": {
+        "reference_detections": 3,
+        "estimated_detections": 3,
+        "matched_detections": 3,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "id_switches": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    },
+    "matched_samples": [
+      {
+        "frame_id": "000001",
+        "label": "bush",
+        "reference_track_id": "gt-bush",
+        "estimated_track_id": "pred-bush",
+        "iou": 0.9895200014217275,
+        "center_distance": 0.03605551275463912
+      },
+      {
+        "frame_id": "000001",
+        "label": "puddle",
+        "reference_track_id": "gt-puddle",
+        "estimated_track_id": "pred-puddle",
+        "iou": 0.984533000930081,
+        "center_distance": 0.02236067977499747
+      },
+      {
+        "frame_id": "000001",
+        "label": "person",
+        "reference_track_id": "gt-person",
+        "estimated_track_id": "pred-person",
+        "iou": 0.9331317116549509,
+        "center_distance": 0.014142135623730963
+      },
+      {
+        "frame_id": "000002",
+        "label": "bush",
+        "reference_track_id": "gt-bush",
+        "estimated_track_id": "pred-bush",
+        "iou": 0.9919554281423649,
+        "center_distance": 0.03162277660168424
+      },
+      {
+        "frame_id": "000002",
+        "label": "puddle",
+        "reference_track_id": "gt-puddle",
+        "estimated_track_id": "pred-puddle",
+        "iou": 0.9909475862983563,
+        "center_distance": 0.020000000000000462
+      },
+      {
+        "frame_id": "000003",
+        "label": "bush",
+        "reference_track_id": "gt-bush",
+        "estimated_track_id": "pred-bush-alt",
+        "iou": 0.9876728915848041,
+        "center_distance": 0.04472135954999603
+      },
+      {
+        "frame_id": "000003",
+        "label": "puddle",
+        "reference_track_id": "gt-puddle",
+        "estimated_track_id": "pred-puddle",
+        "iou": 0.9845330009300802,
+        "center_distance": 0.02236067977499752
+      }
+    ],
+    "quality_gate": {
+      "passed": true,
+      "min_mota": 0.5,
+      "min_recall": 0.5,
+      "max_id_switches": 5,
+      "reasons": []
+    }
+  }
+}

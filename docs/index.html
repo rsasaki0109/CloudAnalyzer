@@ -177,7 +177,7 @@
 
     .detail-grid {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 18px;
       margin-top: 22px;
     }
@@ -306,10 +306,21 @@
       </article>
 
       <article class="detail-card">
+        <h2>Detection &amp; Tracking Demo</h2>
+        <p>
+          3D object detection (mAP/AP) and multi-object tracking (MOTA/ID switches) evaluation
+          on public RELLIS-3D-derived examples. Compares good and regressed candidates with
+          quality gates.
+        </p>
+        <a class="button button-primary" href="./demo/detection-tracking/index.html">View Detection &amp; Tracking Report</a>
+      </article>
+
+      <article class="detail-card">
         <h2>Build It Locally</h2>
         <p>After installing the package, rebuild the public demo bundles with:</p>
         <div class="code">python scripts/build_public_demo.py --output docs/demo/hdl-localization-map
-python scripts/build_perception_demo.py --output docs/demo/perception</div>
+python scripts/build_perception_demo.py --output docs/demo/perception
+python scripts/build_detection_tracking_demo.py --output docs/demo/detection-tracking</div>
       </article>
 
       <article class="detail-card">

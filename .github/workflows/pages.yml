@@ -38,6 +38,7 @@ jobs:
       - name: Build public demos
         run: |
           python scripts/build_public_demo.py --output docs/demo/hdl-localization-map
+          python scripts/build_detection_tracking_demo.py --output docs/demo/detection-tracking
           touch docs/.nojekyll
 
       - uses: actions/configure-pages@v5

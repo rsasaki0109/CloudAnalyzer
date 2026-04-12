@@ -1999,9 +1999,13 @@ def convert_labels_cmd(
 
     from ca.kitti import convert_kitti_labels
 
-    result = convert_kitti_labels(
-        input, output, camera_to_lidar=not no_camera_to_lidar
-    )
+    try:
+        result = convert_kitti_labels(
+            input, output, camera_to_lidar=not no_camera_to_lidar
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
     typer.echo(json.dumps(result, indent=2))
 
 

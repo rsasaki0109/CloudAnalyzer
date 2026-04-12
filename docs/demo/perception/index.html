@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CloudAnalyzer Perception Artifact Comparison</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #111827; }
+    h1, h2 { margin-bottom: 0.5rem; }
+    .report-notes { margin: 0 0 1.5rem 0; max-width: 72rem; color: #374151; line-height: 1.6; }
+    .report-note { margin: 0.35rem 0; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+    th, td { border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: left; }
+    th { background: #f3f4f6; }
+    tbody tr:nth-child(even) { background: #f9fafb; }
+    code { white-space: pre-wrap; word-break: break-word; }
+    button {
+      margin-left: 0.75rem; padding: 0.3rem 0.55rem; border: 1px solid #cbd5e1;
+      border-radius: 6px; background: #ffffff; cursor: pointer;
+    }
+    .filter-bar { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0 0 1rem 0; }
+    .filter-bar label { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.95rem; }
+    .filter-control {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      padding: 0.3rem 0.65rem; border: 1px solid #d1d5db; border-radius: 999px;
+      background: #ffffff; transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+    }
+    .filter-control-active {
+      border-color: #93c5fd; background: #eff6ff; color: #1d4ed8;
+    }
+    .filter-control-active select {
+      border-color: #93c5fd;
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+    .filter-control-active input {
+      accent-color: #2563eb;
+    }
+    .filter-control-disabled {
+      opacity: 0.6;
+    }
+    .filter-bar select {
+      padding: 0.25rem 0.4rem; border: 1px solid #cbd5e1; border-radius: 6px; background: #ffffff;
+    }
+    .filter-actions { display: inline-flex; align-items: center; gap: 0.75rem; }
+    .filter-summary { color: #4b5563; font-size: 0.9rem; }
+    .quick-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin: 0 0 1.5rem 0; }
+    .command-row { display: flex; align-items: flex-start; gap: 0.5rem; margin: 0.4rem 0; }
+    .command-row code { flex: 1; }
+    .summary-table td { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+    .summary-chip {
+      margin-left: 0; border-radius: 999px; padding: 0.25rem 0.4rem 0.25rem 0.65rem;
+      font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.45rem;
+    }
+    .summary-chip-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 1.45rem; height: 1.45rem; padding: 0 0.35rem; border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78); font-size: 0.76rem; line-height: 1;
+    }
+    .summary-chip-pass { border-color: #93c5fd; color: #1d4ed8; background: #eff6ff; }
+    .summary-chip-failed { border-color: #fca5a5; color: #991b1b; background: #fef2f2; }
+    .summary-chip-pareto { border-color: #86efac; color: #166534; background: #f0fdf4; }
+    .summary-chip-recommended { border-color: #fcd34d; color: #92400e; background: #fffbeb; }
+    .summary-chip-active {
+      box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.12) inset;
+      transform: translateY(-1px);
+    }
+    .quick-action-chip-active {
+      box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.12) inset;
+      transform: translateY(-1px);
+    }
+    .fail-row td { background: #fef2f2; }
+    .pareto-row td:first-child { box-shadow: inset 4px 0 0 #0f766e; }
+    .recommended-row td:first-child { box-shadow: inset 8px 0 0 #f59e0b; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>CloudAnalyzer Perception Artifact Comparison</h1>
+  <div class="report-notes"><p class="report-note">This static report compares a geometry-first non-deep baseline and a higher-fidelity deep baseline on the same public RELLIS-3D frame.</p>
+<p class="report-note">Both candidates are deterministic demo artifacts derived from the reference scene for documentation purposes; they are not archived model outputs.</p></div>
+  <h2>Summary</h2>
+  <table class="summary-table">
+    <tbody>
+      <tr><th>Reference</th><td><span>reference_scene.pcd</span></td></tr>
+<tr><th>Files</th><td><span>2</span></td></tr>
+<tr><th>Mean AUC</th><td><span>0.8081</span></td></tr>
+<tr><th>Mean Chamfer</th><td><span>0.0673</span></td></tr>
+<tr><th>Best AUC</th><td><span>candidates/deep_baseline.pcd (0.9515)</span></td></tr>
+<tr><th>Worst AUC</th><td><span>candidates/nondeep_baseline.pcd (0.6648)</span></td></tr>
+<tr><th>Best Chamfer</th><td><span>candidates/deep_baseline.pcd (0.0252)</span></td></tr>
+<tr><th>Worst Chamfer</th><td><span>candidates/nondeep_baseline.pcd (0.1094)</span></td></tr>
+<tr><th>Min AUC</th><td><span>0.9000</span></td></tr>
+<tr><th>Max Chamfer</th><td><span>0.0500</span></td></tr>
+<tr><th>Pass</th><td><span>1</span><button type="button" id="summary-show-pass" class="summary-chip summary-chip-pass" data-summary-action="pass" onclick="applyQuickAction('pass')"><span>Show pass</span><span class="summary-chip-count">1</span></button></td></tr>
+<tr><th>Fail</th><td><span>1</span><button type="button" id="summary-show-failed" class="summary-chip summary-chip-failed" data-summary-action="failed" onclick="applyQuickAction('failed')"><span>Show failed</span><span class="summary-chip-count">1</span></button></td></tr>
+    </tbody>
+  </table>
+  <div class="quick-actions">
+    <button type="button" id="quick-show-pass" data-quick-action="pass"  onclick="applyQuickAction('pass')">
+      Show pass (1)
+    </button>
+    <button type="button" id="quick-show-failed" data-quick-action="failed"  onclick="applyQuickAction('failed')">
+      Show failed (1)
+    </button>
+    <button type="button" id="quick-show-pareto" data-quick-action="pareto" disabled onclick="applyQuickAction('pareto')">
+      Show pareto (0)
+    </button>
+    <button type="button" id="quick-show-recommended" data-quick-action="recommended" disabled onclick="applyQuickAction('recommended')">
+      Show recommended (0)
+    </button>
+    <button type="button" id="quick-reset-view" data-quick-action="reset" onclick="applyQuickAction('reset')">
+      Reset view
+    </button>
+  </div>
+  
+
+  <h2>Results</h2>
+  <div class="filter-bar">
+    <label class="filter-control" id="sort-results-control">
+      Sort by
+      <select id="sort-results" onchange="refreshResultsView()">
+        <option value="path-asc">Path (A-Z)</option>
+        <option value="auc-desc">AUC (high-low)</option>
+        <option value="auc-asc">AUC (low-high)</option>
+        <option value="chamfer-asc">Chamfer (low-high)</option>
+        <option value="size-ratio-asc" disabled>Size Ratio (low-high)</option>
+        <option value="failed-first" >Failed first</option>
+        <option value="recommended-first" disabled>Recommended first</option>
+        <option value="points-desc">Points (high-low)</option>
+      </select>
+    </label>
+    <label class="filter-control" id="filter-pass-only-control">
+      <input type="checkbox" id="filter-pass-only"  onchange="refreshResultsView()">
+      Pass only
+    </label>
+    <label class="filter-control" id="filter-failed-only-control">
+      <input type="checkbox" id="filter-failed-only"  onchange="refreshResultsView()">
+      Failed only
+    </label>
+    <label class="filter-control filter-control-disabled" id="filter-recommended-only-control">
+      <input type="checkbox" id="filter-recommended-only" disabled onchange="refreshResultsView()">
+      Recommended only
+    </label>
+    <label class="filter-control filter-control-disabled" id="filter-pareto-only-control">
+      <input type="checkbox" id="filter-pareto-only" disabled onchange="refreshResultsView()">
+      Pareto only
+    </label>
+    <span class="filter-actions">
+      <button type="button" id="reset-filters" onclick="resetFilters()">Reset filters</button>
+    </span>
+    <span class="filter-summary" id="filter-summary"></span>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Path</th>
+        <th>Points</th>
+        <th>Chamfer</th>
+        <th>AUC</th>
+        
+        
+        
+        <th>Best F1</th>
+        <th>Threshold</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="results-table-body">
+      <tr data-passed="true" data-failed="false" data-pareto="false" data-recommended="false" data-path="candidates/deep_baseline.pcd" data-points="34370" data-chamfer="0.02517453" data-auc="0.95145089" data-size-ratio=""><td>candidates/deep_baseline.pcd</td><td>34370</td><td>0.0252</td><td>0.9515</td><td>1.0000</td><td>0.10</td><td>PASS</td></tr>
+<tr class="fail-row" data-passed="false" data-failed="true" data-pareto="false" data-recommended="false" data-path="candidates/nondeep_baseline.pcd" data-points="16906" data-chamfer="0.10936114" data-auc="0.66480803" data-size-ratio=""><td>candidates/nondeep_baseline.pcd</td><td>16906</td><td>0.1094</td><td>0.6648</td><td>0.9735</td><td>0.30</td><td>FAIL</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Inspection Commands</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Path</th>
+        <th>Inspection</th>
+      </tr>
+    </thead>
+    <tbody id="inspection-table-body">
+      <tr data-passed="true" data-failed="false" data-pareto="false" data-recommended="false" data-path="candidates/deep_baseline.pcd" data-points="34370" data-chamfer="0.02517453" data-auc="0.95145089" data-size-ratio=""><td>candidates/deep_baseline.pcd</td><td><div class="command-row"><code>ca web candidates/deep_baseline.pcd reference_scene.pcd --heatmap</code><button type="button" onclick='copyCommand("ca web candidates/deep_baseline.pcd reference_scene.pcd --heatmap", this)'>Copy</button></div><div class="command-row"><code>ca heatmap3d candidates/deep_baseline.pcd reference_scene.pcd -o deep_baseline_vs_reference_scene_heatmap.png</code><button type="button" onclick='copyCommand("ca heatmap3d candidates/deep_baseline.pcd reference_scene.pcd -o deep_baseline_vs_reference_scene_heatmap.png", this)'>Copy</button></div></td></tr>
+<tr data-passed="false" data-failed="true" data-pareto="false" data-recommended="false" data-path="candidates/nondeep_baseline.pcd" data-points="16906" data-chamfer="0.10936114" data-auc="0.66480803" data-size-ratio=""><td>candidates/nondeep_baseline.pcd</td><td><div class="command-row"><code>ca web candidates/nondeep_baseline.pcd reference_scene.pcd --heatmap</code><button type="button" onclick='copyCommand("ca web candidates/nondeep_baseline.pcd reference_scene.pcd --heatmap", this)'>Copy</button></div><div class="command-row"><code>ca heatmap3d candidates/nondeep_baseline.pcd reference_scene.pcd -o nondeep_baseline_vs_reference_scene_heatmap.png</code><button type="button" onclick='copyCommand("ca heatmap3d candidates/nondeep_baseline.pcd reference_scene.pcd -o nondeep_baseline_vs_reference_scene_heatmap.png", this)'>Copy</button></div></td></tr>
+    </tbody>
+  </table>
+  <script>
+    function compareRows(a, b, sortValue) {
+      const separatorIndex = sortValue.lastIndexOf('-');
+      const sortKey = separatorIndex >= 0 ? sortValue.slice(0, separatorIndex) : sortValue;
+      const sortDirection = separatorIndex >= 0 ? sortValue.slice(separatorIndex + 1) : 'asc';
+
+      function compareValues(left, right) {
+        if (left < right) return sortDirection === 'desc' ? 1 : -1;
+        if (left > right) return sortDirection === 'desc' ? -1 : 1;
+        return 0;
+      }
+
+      if (sortKey === 'path') {
+        return compareValues(a.dataset.path || '', b.dataset.path || '');
+      }
+      if (sortKey === 'points') {
+        return compareValues(Number(a.dataset.points || 0), Number(b.dataset.points || 0));
+      }
+      if (sortKey === 'auc') {
+        return compareValues(Number(a.dataset.auc || 0), Number(b.dataset.auc || 0));
+      }
+      if (sortKey === 'chamfer') {
+        return compareValues(Number(a.dataset.chamfer || 0), Number(b.dataset.chamfer || 0));
+      }
+      if (sortKey === 'size-ratio') {
+        const aValue = a.dataset.sizeRatio === '' ? Number.POSITIVE_INFINITY : Number(a.dataset.sizeRatio);
+        const bValue = b.dataset.sizeRatio === '' ? Number.POSITIVE_INFINITY : Number(b.dataset.sizeRatio);
+        return compareValues(aValue, bValue);
+      }
+      if (sortKey === 'failed' && sortDirection === 'first') {
+        const aFailed = a.dataset.failed === 'true';
+        const bFailed = b.dataset.failed === 'true';
+        if (aFailed !== bFailed) {
+          return aFailed ? -1 : 1;
+        }
+        const aucComparison = compareValues(Number(a.dataset.auc || 0), Number(b.dataset.auc || 0));
+        if (aucComparison !== 0) {
+          return aucComparison;
+        }
+        return compareValues(a.dataset.path || '', b.dataset.path || '');
+      }
+      if (sortKey === 'recommended' && sortDirection === 'first') {
+        const aRecommended = a.dataset.recommended === 'true';
+        const bRecommended = b.dataset.recommended === 'true';
+        if (aRecommended !== bRecommended) {
+          return aRecommended ? -1 : 1;
+        }
+        const aValue = a.dataset.sizeRatio === '' ? Number.POSITIVE_INFINITY : Number(a.dataset.sizeRatio);
+        const bValue = b.dataset.sizeRatio === '' ? Number.POSITIVE_INFINITY : Number(b.dataset.sizeRatio);
+        const sizeComparison = compareValues(aValue, bValue);
+        if (sizeComparison !== 0) {
+          return sizeComparison;
+        }
+        return compareValues(a.dataset.path || '', b.dataset.path || '');
+      }
+      return compareValues(a.dataset.path || '', b.dataset.path || '');
+    }
+
+    function setCheckedIfEnabled(id, checked) {
+      const input = document.getElementById(id);
+      if (input && !input.disabled) {
+        input.checked = checked;
+      }
+    }
+
+    function setSortValue(value) {
+      const sortResults = document.getElementById('sort-results');
+      if (sortResults) {
+        const option = Array.from(sortResults.options).find((item) => item.value === value && !item.disabled);
+        if (option) {
+          sortResults.value = value;
+        }
+      }
+    }
+
+    function updateActionStates(action) {
+      const summaryButtons = Array.from(document.querySelectorAll('[data-summary-action]'));
+      const quickButtons = Array.from(document.querySelectorAll('[data-quick-action]'));
+
+      summaryButtons.forEach((button) => {
+        button.classList.toggle('summary-chip-active', button.dataset.summaryAction === action);
+      });
+      quickButtons.forEach((button) => {
+        button.classList.toggle('quick-action-chip-active', button.dataset.quickAction === action);
+      });
+    }
+
+    function updateFilterControlStates(passEnabled, failedEnabled, paretoEnabled, recommendedEnabled, sortValue) {
+      const controlStates = [
+        ['filter-pass-only-control', passEnabled],
+        ['filter-failed-only-control', failedEnabled],
+        ['filter-pareto-only-control', paretoEnabled],
+        ['filter-recommended-only-control', recommendedEnabled],
+        ['sort-results-control', sortValue !== 'path-asc'],
+      ];
+
+      controlStates.forEach(([id, enabled]) => {
+        const control = document.getElementById(id);
+        if (control) {
+          control.classList.toggle('filter-control-active', enabled);
+        }
+      });
+    }
+
+    function refreshResultsView() {
+      const failedOnly = document.getElementById('filter-failed-only');
+      const passOnly = document.getElementById('filter-pass-only');
+      const recommendedOnly = document.getElementById('filter-recommended-only');
+      const paretoOnly = document.getElementById('filter-pareto-only');
+      const sortResults = document.getElementById('sort-results');
+      const passEnabled = passOnly && !passOnly.disabled && passOnly.checked;
+      const failedEnabled = failedOnly && !failedOnly.disabled && failedOnly.checked;
+      const recommendedEnabled = recommendedOnly && !recommendedOnly.disabled && recommendedOnly.checked;
+      const paretoEnabled = paretoOnly && !paretoOnly.disabled && paretoOnly.checked;
+      const sortValue = sortResults ? sortResults.value : 'path-asc';
+
+      const resultsTableBody = document.getElementById('results-table-body');
+      const inspectionTableBody = document.getElementById('inspection-table-body');
+      const resultRows = Array.from(document.querySelectorAll('#results-table-body tr'));
+      const inspectionRows = Array.from(document.querySelectorAll('#inspection-table-body tr'));
+      let visibleCount = 0;
+
+      function rowMatches(row) {
+        const isPassed = row.dataset.passed === 'true';
+        const isFailed = row.dataset.failed === 'true';
+        const isPareto = row.dataset.pareto === 'true';
+        const isRecommended = row.dataset.recommended === 'true';
+        if (passEnabled && !isPassed) return false;
+        if (failedEnabled && !isFailed) return false;
+        if (paretoEnabled && !isPareto) return false;
+        if (recommendedEnabled && !isRecommended) return false;
+        return true;
+      }
+
+      resultRows.sort((a, b) => compareRows(a, b, sortValue));
+      if (resultsTableBody) {
+        resultRows.forEach((row) => {
+          resultsTableBody.appendChild(row);
+        });
+      }
+
+      const resultOrder = new Map(resultRows.map((row, index) => [row.dataset.path || '', index]));
+      inspectionRows.sort((a, b) => {
+        const aOrder = resultOrder.get(a.dataset.path || '') ?? Number.MAX_SAFE_INTEGER;
+        const bOrder = resultOrder.get(b.dataset.path || '') ?? Number.MAX_SAFE_INTEGER;
+        return aOrder - bOrder;
+      });
+      if (inspectionTableBody) {
+        inspectionRows.forEach((row) => {
+          inspectionTableBody.appendChild(row);
+        });
+      }
+
+      resultRows.forEach((row) => {
+        const visible = rowMatches(row);
+        row.style.display = visible ? '' : 'none';
+        if (visible) visibleCount += 1;
+      });
+      inspectionRows.forEach((row) => {
+        row.style.display = rowMatches(row) ? '' : 'none';
+      });
+
+      const summary = document.getElementById('filter-summary');
+      if (summary) {
+        const activeFilters = [];
+        if (passEnabled) activeFilters.push('pass');
+        if (failedEnabled) activeFilters.push('failed');
+        if (paretoEnabled) activeFilters.push('pareto');
+        if (recommendedEnabled) activeFilters.push('recommended');
+        summary.textContent = `Showing ${visibleCount} / ${resultRows.length} result(s)` + (
+          activeFilters.length ? ` | Filters: ${activeFilters.join(', ')}` : ''
+        ) + (
+          sortValue ? ` | Sort: ${sortValue}` : ''
+        );
+      }
+
+      let activeAction = 'reset';
+      if (passEnabled && !failedEnabled && !paretoEnabled && !recommendedEnabled && sortValue === 'auc-desc') {
+        activeAction = 'pass';
+      } else if (failedEnabled && !passEnabled && !paretoEnabled && !recommendedEnabled && sortValue === 'auc-asc') {
+        activeAction = 'failed';
+      } else if (!passEnabled && !failedEnabled && paretoEnabled && !recommendedEnabled && sortValue === 'size-ratio-asc') {
+        activeAction = 'pareto';
+      } else if (!passEnabled && !failedEnabled && !paretoEnabled && recommendedEnabled && sortValue === 'size-ratio-asc') {
+        activeAction = 'recommended';
+      }
+      updateActionStates(activeAction);
+      updateFilterControlStates(passEnabled, failedEnabled, paretoEnabled, recommendedEnabled, sortValue);
+    }
+
+    function applyQuickAction(action) {
+      if (action === 'pass') {
+        setCheckedIfEnabled('filter-pass-only', true);
+        setCheckedIfEnabled('filter-failed-only', false);
+        setCheckedIfEnabled('filter-pareto-only', false);
+        setCheckedIfEnabled('filter-recommended-only', false);
+        setSortValue('auc-desc');
+      } else if (action === 'failed') {
+        setCheckedIfEnabled('filter-pass-only', false);
+        setCheckedIfEnabled('filter-failed-only', true);
+        setCheckedIfEnabled('filter-pareto-only', false);
+        setCheckedIfEnabled('filter-recommended-only', false);
+        setSortValue('auc-asc');
+      } else if (action === 'pareto') {
+        setCheckedIfEnabled('filter-pass-only', false);
+        setCheckedIfEnabled('filter-failed-only', false);
+        setCheckedIfEnabled('filter-pareto-only', true);
+        setCheckedIfEnabled('filter-recommended-only', false);
+        setSortValue('size-ratio-asc');
+      } else if (action === 'recommended') {
+        setCheckedIfEnabled('filter-pass-only', false);
+        setCheckedIfEnabled('filter-failed-only', false);
+        setCheckedIfEnabled('filter-pareto-only', false);
+        setCheckedIfEnabled('filter-recommended-only', true);
+        setSortValue('size-ratio-asc');
+      } else {
+        resetFilters();
+        return;
+      }
+      refreshResultsView();
+    }
+
+    function resetFilters() {
+      const filterIds = [
+        'filter-pass-only',
+        'filter-failed-only',
+        'filter-pareto-only',
+        'filter-recommended-only',
+      ];
+      filterIds.forEach((id) => {
+        const input = document.getElementById(id);
+        if (input && !input.disabled) {
+          input.checked = false;
+        }
+      });
+      const sortResults = document.getElementById('sort-results');
+      if (sortResults) {
+        sortResults.value = 'path-asc';
+      }
+      refreshResultsView();
+    }
+
+    async function copyCommand(text, button) {
+      if (!text) return;
+      try {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          window.prompt('Copy command:', text);
+        }
+        const original = button.textContent;
+        button.textContent = 'Copied';
+        setTimeout(() => { button.textContent = original; }, 1200);
+      } catch (err) {
+        window.prompt('Copy command:', text);
+      }
+    }
+    refreshResultsView();
+  </script>
+</body>
+</html>

@@ -85,7 +85,7 @@ ca batch decoded/ --evaluate reference.pcd \
 
 ## ca check
 
-Run config-driven QA across artifact, trajectory, and integrated run checks.
+Run config-driven QA across artifact, detection, tracking, trajectory, ground, and integrated run checks.
 
 ```bash
 # default config path
@@ -151,6 +151,9 @@ ca init-check --profile perception --force
 
 `--profile` supports `mapping`, `localization`, `perception`, and `integrated`. The generated config is immediately runnable with `ca check ...`.
 
+- `perception`: geometry artifact QA plus starter slices for 3D detection and 3D tracking JSON outputs
+- `integrated`: mapping + localization + perception slices, plus one combined run gate
+
 | Option | Default | Description |
 |---|---|---|
 | `OUTPUT` | `cloudanalyzer.yaml` | Destination path for the starter config |
@@ -182,6 +185,63 @@ Input files are the JSON summaries emitted by `ca check --output-json ...`. The 
 | `--format-json` | `false` | Print the decision summary to stdout as JSON |
 | `--output-json` | `None` | Dump the decision summary as JSON |
 
+## ca detection-evaluate
+
+Evaluate 3D object detections against reference annotations using class-aware 3D box matching. Supports both axis-aligned and oriented (yaw-rotated) boxes.
+
+```bash
+# basic evaluation
+ca detection-evaluate est_det.json gt_det.json
+
+# sweep IoU thresholds and enforce mAP / recall gates
+ca detection-evaluate est_det.json gt_det.json \
+  --iou-thresholds 0.25,0.5 --min-map 0.9 --min-recall 0.8 \
+  --report qa/detection_report.html
+
+# JSON output
+ca detection-evaluate est_det.json gt_det.json \
+  --format-json --output-json qa/detection_result.json
+```
+
+Input format:
+
+```json
+{
+  "frames": [
+    {
+      "frame_id": "000001",
+      "boxes": [
+        {
+          "label": "car",
+          "center": [0.0, 0.0, 0.0],
+          "size": [4.0, 1.8, 1.6],
+          "yaw": 0.0,
+          "score": 0.97
+        }
+      ]
+    }
+  ]
+}
+```
+
+The stable contract keeps only the fields needed for evaluation: `label`, `center`, `size`, optional `yaw` (radians, Z-axis rotation, default 0.0), and optional `score`. When any box has a non-zero `yaw`, oriented 3D box IoU (BEV polygon intersection) is used automatically; otherwise axis-aligned IoU is used. The field alias `rotation_y` is also accepted for KITTI compatibility. The `kind: detection` check type is also available in `cloudanalyzer.yaml`.
+
+Checked-in public example files are available under `demo_assets/public/rellis3d-frame-000001/object_eval/`.
+
+| Option | Default | Description |
+|---|---|---|
+| `ESTIMATED` | required | Estimated detection sequence JSON |
+| `REFERENCE` | required | Reference detection sequence JSON |
+| `--iou-thresholds` | `0.25,0.5` | Comma-separated IoU thresholds used for AP / mAP |
+| `--primary-iou-threshold` | `0.5` when available | Threshold used for precision / recall / F1 gate evaluation |
+| `--min-map` | `None` | Minimum mean AP gate |
+| `--min-precision` | `None` | Minimum precision gate at the primary IoU threshold |
+| `--min-recall` | `None` | Minimum recall gate at the primary IoU threshold |
+| `--min-f1` | `None` | Minimum F1 gate at the primary IoU threshold |
+| `--report` | `None` | Write Markdown/HTML detection report |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
+
 ## ca ground-evaluate
 
 Evaluate ground segmentation quality by comparing estimated ground/non-ground point clouds against reference labels.
@@ -197,9 +257,13 @@ ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground
 # JSON output
 ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd \
   --format-json --output-json qa/ground_result.json
+
+# HTML / Markdown report
+ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd \
+  --min-f1 0.9 --min-iou 0.8 --report qa/ground_report.html
 ```
 
-Both estimation and reference are provided as separate ground and non-ground point cloud files. Evaluation uses voxel-based confusion matrix comparison. The `kind: ground` check type is also available in `cloudanalyzer.yaml`.
+Both estimation and reference are provided as separate ground and non-ground point cloud files. Evaluation uses voxel-based confusion matrix comparison. The `kind: ground` check type is also available in `cloudanalyzer.yaml`, and ground checks can emit HTML/Markdown reports the same way as other QA checks.
 
 | Option | Default | Description |
 |---|---|---|
@@ -212,8 +276,84 @@ Both estimation and reference are provided as separate ground and non-ground poi
 | `--min-recall` | `None` | Minimum recall gate |
 | `--min-f1` | `None` | Minimum F1 gate |
 | `--min-iou` | `None` | Minimum IoU gate |
+| `--report` | `None` | Write Markdown/HTML ground segmentation report |
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON |
+
+## ca tracking-evaluate
+
+Evaluate 3D multi-object tracking against reference tracks using class-aware frame-wise box matching plus ID-switch accounting.
+
+```bash
+# basic evaluation
+ca tracking-evaluate est_track.json gt_track.json
+
+# enforce recall / MOTA / ID-switch gates
+ca tracking-evaluate est_track.json gt_track.json \
+  --iou-threshold 0.5 --min-mota 0.8 --min-recall 0.9 --max-id-switches 2 \
+  --report qa/tracking_report.html
+
+# JSON output
+ca tracking-evaluate est_track.json gt_track.json \
+  --format-json --output-json qa/tracking_result.json
+```
+
+Input format:
+
+```json
+{
+  "frames": [
+    {
+      "frame_id": "000001",
+      "boxes": [
+        {
+          "label": "car",
+          "track_id": "pred-17",
+          "center": [0.0, 0.0, 0.0],
+          "size": [4.0, 1.8, 1.6]
+        }
+      ]
+    }
+  ]
+}
+```
+
+`ca tracking-evaluate` uses the same 3D box contract as detection (including optional `yaw`), but requires `track_id` on every box. When oriented boxes are present, oriented IoU is used for matching. The current stable output emphasizes `precision / recall / F1`, `MOTA`, `ID switches`, `track fragmentations`, and mean matched IoU. The `kind: tracking` check type is also available in `cloudanalyzer.yaml`.
+
+Checked-in public example files are available under `demo_assets/public/rellis3d-frame-000001/object_eval/`. The tracking examples are deterministic synthetic sequences seeded from the public RELLIS-3D frame used by the detection examples.
+
+| Option | Default | Description |
+|---|---|---|
+| `ESTIMATED` | required | Estimated tracking sequence JSON |
+| `REFERENCE` | required | Reference tracking sequence JSON |
+| `--iou-threshold` | `0.5` | IoU threshold used for frame-wise box matching |
+| `--min-mota` | `None` | Minimum MOTA gate |
+| `--min-recall` | `None` | Minimum recall gate |
+| `--max-id-switches` | `None` | Maximum ID switches allowed |
+| `--report` | `None` | Write Markdown/HTML tracking report |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
+
+## ca convert-labels
+
+Convert external label formats to CloudAnalyzer JSON box sequences.
+
+```bash
+# Convert a directory of KITTI label files
+ca convert-labels --format kitti --input /path/to/kitti/label_2/ --output boxes.json
+
+# Skip camera-to-lidar coordinate transform
+ca convert-labels --format kitti --input labels/ --output boxes.json --no-camera-to-lidar
+```
+
+Currently supports KITTI 3D object detection label format. The converter reads `.txt` files from the input directory, parses 3D bounding box fields (dimensions, location, rotation_y), and writes a CloudAnalyzer-compatible JSON file with `yaw` populated from KITTI's `rotation_y`.
+
+| Option | Default | Description |
+|---|---|---|
+| `--format` | required | Label format (`kitti`) |
+| `--input` | required | Input label directory |
+| `--output` | required | Output JSON path |
+| `--no-camera-to-lidar` | `false` | Skip KITTI camera-to-lidar coordinate transform |
 
 ## ca traj-evaluate
 

@@ -36,6 +36,15 @@ jobs:
       - name: Run tests
         run: xvfb-run python -m pytest tests/ -v
 
+      - name: Verify checked-in perception demo
+        working-directory: .
+        run: |
+          python scripts/build_perception_demo.py \
+            --output docs/demo/perception \
+            --example-root demo_assets/public/rellis3d-frame-000001 \
+            --frame 000001
+          git diff --exit-code -- docs/demo/perception
+
       - name: Build package
         run: |
           python -m build

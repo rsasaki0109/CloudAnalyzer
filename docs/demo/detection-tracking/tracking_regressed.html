@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CloudAnalyzer Tracking Report</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 2rem; line-height: 1.5; color: #1f2937; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0 1.5rem; }
+    th, td { border: 1px solid #d1d5db; padding: 0.55rem 0.7rem; text-align: left; }
+    th { background: #f3f4f6; }
+    h1, h2 { color: #111827; }
+  </style>
+</head>
+<body>
+  <h1>CloudAnalyzer Tracking Report</h1>
+  <h2>Summary</h2>
+  <table><tr><th>Estimated</th><td>/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_estimated_regressed.json</td></tr>
+<tr><th>Reference</th><td>/media/sasaki/aiueo/ai_coding_ws/CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_reference.json</td></tr>
+<tr><th>IoU threshold</th><td>0.50</td></tr>
+<tr><th>Precision</th><td>0.8750</td></tr>
+<tr><th>Recall</th><td>0.7778</td></tr>
+<tr><th>F1</th><td>0.8235</td></tr>
+<tr><th>MOTA</th><td>0.5556</td></tr>
+<tr><th>ID switches</th><td>1</td></tr>
+<tr><th>Track fragmentations</th><td>0</td></tr>
+<tr><th>Mostly tracked ratio</th><td>0.6667</td></tr>
+<tr><th>Mean IoU</th><td>0.9803</td></tr>
+<tr><th>Mean center distance</th><td>0.0273</td></tr></table>
+  <h2>Dataset Counts</h2>
+  <table>
+    <tr><th>Shared Frames</th><td>3</td></tr>
+    <tr><th>Estimated Detections / Tracks</th><td>8 / 4</td></tr>
+    <tr><th>Reference Detections / Tracks</th><td>9 / 3</td></tr>
+    <tr><th>Matched Detections</th><td>7</td></tr>
+  </table>
+  <h2>Per-class Summary</h2>
+  <table>
+    <thead>
+      <tr><th>Class</th><th>Ref</th><th>Est</th><th>Matched</th><th>Precision</th><th>Recall</th><th>F1</th><th>IDSW</th></tr>
+    </thead>
+    <tbody><tr><td>bush</td><td>3</td><td>3</td><td>3</td><td>1.0000</td><td>1.0000</td><td>1.0000</td><td>1</td></tr>
+<tr><td>person</td><td>3</td><td>2</td><td>1</td><td>0.5000</td><td>0.3333</td><td>0.4000</td><td>0</td></tr>
+<tr><td>puddle</td><td>3</td><td>3</td><td>3</td><td>1.0000</td><td>1.0000</td><td>1.0000</td><td>0</td></tr></tbody>
+  </table>
+  <h2>Sample Matches</h2><table><thead><tr><th>Frame</th><th>Class</th><th>Ref Track</th><th>Est Track</th><th>IoU</th><th>Center Dist</th></tr></thead><tbody><tr><td>000001</td><td>bush</td><td>gt-bush</td><td>pred-bush</td><td>0.9895</td><td>0.0361</td></tr>
+<tr><td>000001</td><td>puddle</td><td>gt-puddle</td><td>pred-puddle</td><td>0.9845</td><td>0.0224</td></tr>
+<tr><td>000001</td><td>person</td><td>gt-person</td><td>pred-person</td><td>0.9331</td><td>0.0141</td></tr>
+<tr><td>000002</td><td>bush</td><td>gt-bush</td><td>pred-bush</td><td>0.9920</td><td>0.0316</td></tr>
+<tr><td>000002</td><td>puddle</td><td>gt-puddle</td><td>pred-puddle</td><td>0.9909</td><td>0.0200</td></tr>
+<tr><td>000003</td><td>bush</td><td>gt-bush</td><td>pred-bush-alt</td><td>0.9877</td><td>0.0447</td></tr>
+<tr><td>000003</td><td>puddle</td><td>gt-puddle</td><td>pred-puddle</td><td>0.9845</td><td>0.0224</td></tr></tbody></table>
+  <h2>Quality Gate</h2><table><tr><th>Status</th><td>PASS</td></tr>
+<tr><th>Min MOTA</th><td>0.5000</td></tr>
+<tr><th>Min Recall</th><td>0.5000</td></tr>
+<tr><th>Max ID switches</th><td>5</td></tr></table>
+</body>
+</html>

@@ -6,9 +6,12 @@ from ca.report import (
     make_batch_html,
     make_batch_markdown,
     make_batch_summary,
+    make_ground_html,
+    make_ground_markdown,
     make_json,
     make_markdown,
     save_batch_report,
+    save_ground_report,
     save_json,
 )
 
@@ -84,6 +87,33 @@ SAMPLE_BATCH_RESULTS_WITH_GATE = [
         },
     },
 ]
+SAMPLE_GROUND_RESULT = {
+    "estimated_ground_path": "estimated_ground.pcd",
+    "estimated_nonground_path": "estimated_nonground.pcd",
+    "reference_ground_path": "reference_ground.pcd",
+    "reference_nonground_path": "reference_nonground.pcd",
+    "voxel_size": 0.5,
+    "counts": {
+        "estimated_ground_points": 95,
+        "estimated_nonground_points": 105,
+        "reference_ground_points": 100,
+        "reference_nonground_points": 100,
+    },
+    "confusion_matrix": {"tp": 90, "fp": 5, "fn": 10, "tn": 95},
+    "precision": 0.9474,
+    "recall": 0.9000,
+    "f1": 0.9231,
+    "iou": 0.8571,
+    "accuracy": 0.9250,
+    "quality_gate": {
+        "passed": True,
+        "min_precision": 0.9,
+        "min_recall": 0.9,
+        "min_f1": 0.9,
+        "min_iou": 0.8,
+        "reasons": [],
+    },
+}
 
 
 class TestMakeJson:
@@ -180,6 +210,23 @@ class TestBatchReports:
         assert "`ca web a.pcd ref.pcd --heatmap`" in content
         assert "Snapshot: `ca heatmap3d a.pcd ref.pcd -o a_vs_ref_heatmap.png`" in content
         assert plot_path.exists()
+
+    def test_batch_markdown_with_custom_title_and_notes(self, tmp_path):
+        path = tmp_path / "batch.md"
+        make_batch_markdown(
+            SAMPLE_BATCH_RESULTS,
+            "ref.pcd",
+            str(path),
+            report_title="Perception Artifact Comparison",
+            report_notes=[
+                "Compare a non-deep baseline and a deep baseline on the same frame.",
+                "These are demo artifacts, not archived model outputs.",
+            ],
+        )
+        content = path.read_text()
+        assert "# Perception Artifact Comparison" in content
+        assert "Compare a non-deep baseline and a deep baseline on the same frame." in content
+        assert "These are demo artifacts, not archived model outputs." in content
 
     def test_batch_markdown_with_quality_gate(self, tmp_path):
         path = tmp_path / "batch.md"
@@ -280,6 +327,25 @@ class TestBatchReports:
         assert ">Copy</button>" in content
         assert plot_path.exists()
 
+    def test_batch_html_with_custom_title_and_notes(self, tmp_path):
+        path = tmp_path / "batch.html"
+        make_batch_html(
+            SAMPLE_BATCH_RESULTS,
+            "ref.pcd",
+            str(path),
+            report_title="Perception Artifact Comparison",
+            report_notes=[
+                "Compare a non-deep baseline and a deep baseline on the same frame.",
+                "These are demo artifacts, not archived model outputs.",
+            ],
+        )
+        content = path.read_text()
+        assert "<title>Perception Artifact Comparison</title>" in content
+        assert "<h1>Perception Artifact Comparison</h1>" in content
+        assert 'class="report-notes"' in content
+        assert "Compare a non-deep baseline and a deep baseline on the same frame." in content
+        assert "These are demo artifacts, not archived model outputs." in content
+
     def test_batch_html_with_quality_gate(self, tmp_path):
         path = tmp_path / "batch.html"
         make_batch_html(
@@ -347,6 +413,43 @@ class TestBatchReports:
         path = tmp_path / "batch.txt"
         try:
             save_batch_report(SAMPLE_BATCH_RESULTS, "ref.pcd", str(path))
+        except ValueError as e:
+            assert "Unsupported report format" in str(e)
+        else:
+            raise AssertionError("Expected ValueError for unsupported extension")
+
+
+class TestGroundReports:
+    def test_ground_markdown(self, tmp_path):
+        path = tmp_path / "ground.md"
+        make_ground_markdown(SAMPLE_GROUND_RESULT, str(path))
+        content = path.read_text()
+        assert "# CloudAnalyzer Ground Segmentation Report" in content
+        assert "## Metrics" in content
+        assert "Precision: 0.9474" in content
+        assert "| Ground | 90 | 5 |" in content
+        assert "## Quality Gate" in content
+        assert "Status: PASS" in content
+
+    def test_ground_html(self, tmp_path):
+        path = tmp_path / "ground.html"
+        make_ground_html(SAMPLE_GROUND_RESULT, str(path))
+        content = path.read_text()
+        assert "<title>CloudAnalyzer Ground Segmentation Report</title>" in content
+        assert "<h2>Confusion Matrix</h2>" in content
+        assert "<td>90</td><td>5</td>" in content
+        assert "Quality Gate" in content
+        assert "PASS" in content
+
+    def test_ground_report_dispatch(self, tmp_path):
+        path = tmp_path / "ground.html"
+        save_ground_report(SAMPLE_GROUND_RESULT, str(path))
+        assert path.exists()
+
+    def test_ground_report_invalid_extension(self, tmp_path):
+        path = tmp_path / "ground.txt"
+        try:
+            save_ground_report(SAMPLE_GROUND_RESULT, str(path))
         except ValueError as e:
             assert "Unsupported report format" in str(e)
         else:

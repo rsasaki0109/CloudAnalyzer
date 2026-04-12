@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from textwrap import dedent
 
+import numpy as np
+import open3d as o3d
 import pytest
 from typer.testing import CliRunner
 
@@ -31,6 +33,104 @@ def _write_json(path: Path, data: dict) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
     return str(path)
+
+
+def _write_pcd(path: Path, points: list[list[float]]) -> str:
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(np.array(points, dtype=np.float64))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    o3d.io.write_point_cloud(str(path), pcd)
+    return str(path)
+
+
+def _detection_reference_sequence() -> dict:
+    return {
+        "frames": [
+            {
+                "frame_id": "0001",
+                "boxes": [
+                    {"label": "car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                    {"label": "pedestrian", "center": [5.0, 0.0, 0.0], "size": [1.0, 1.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0002",
+                "boxes": [
+                    {"label": "car", "center": [10.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+        ]
+    }
+
+
+def _detection_estimated_sequence() -> dict:
+    return {
+        "frames": [
+            {
+                "frame_id": "0001",
+                "boxes": [
+                    {"label": "car", "center": [0.1, 0.0, 0.0], "size": [2.0, 2.0, 2.0], "score": 0.95},
+                    {"label": "pedestrian", "center": [5.0, 0.1, 0.0], "size": [1.0, 1.0, 2.0], "score": 0.90},
+                ],
+            },
+            {
+                "frame_id": "0002",
+                "boxes": [
+                    {"label": "car", "center": [10.0, 0.0, 0.1], "size": [2.0, 2.0, 2.0], "score": 0.92},
+                ],
+            },
+        ]
+    }
+
+
+def _tracking_reference_sequence() -> dict:
+    return {
+        "frames": [
+            {
+                "frame_id": "0001",
+                "boxes": [
+                    {"label": "car", "track_id": "gt-car", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0002",
+                "boxes": [
+                    {"label": "car", "track_id": "gt-car", "center": [1.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0003",
+                "boxes": [
+                    {"label": "car", "track_id": "gt-car", "center": [2.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+        ]
+    }
+
+
+def _tracking_estimated_sequence() -> dict:
+    return {
+        "frames": [
+            {
+                "frame_id": "0001",
+                "boxes": [
+                    {"label": "car", "track_id": "pred-a", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0002",
+                "boxes": [
+                    {"label": "car", "track_id": "pred-a", "center": [1.0, 0.1, 0.0], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+            {
+                "frame_id": "0003",
+                "boxes": [
+                    {"label": "car", "track_id": "pred-a", "center": [2.0, 0.0, 0.1], "size": [2.0, 2.0, 2.0]},
+                ],
+            },
+        ]
+    }
 
 
 class TestCLI:
@@ -944,9 +1044,133 @@ class TestCLI:
         assert any("Trajectory:" in reason for reason in data[0]["overall_quality_gate"]["reasons"])
         assert data[0]["inspect"]["run_evaluate"].startswith("ca run-evaluate ")
 
+    def test_ground_evaluate_report_and_quality_gate(self, tmp_path):
+        ground = [[0, 0, 0], [1, 0, 0], [2, 0, 0]]
+        nonground = [[0, 0, 2], [1, 0, 2], [2, 0, 2]]
+        est_ground = _write_pcd(tmp_path / "est_ground.pcd", ground)
+        est_nonground = _write_pcd(tmp_path / "est_nonground.pcd", nonground)
+        ref_ground = _write_pcd(tmp_path / "ref_ground.pcd", ground)
+        ref_nonground = _write_pcd(tmp_path / "ref_nonground.pcd", nonground)
+        report = tmp_path / "ground_report.html"
+
+        result = runner.invoke(
+            app,
+            [
+                "ground-evaluate",
+                est_ground,
+                est_nonground,
+                ref_ground,
+                ref_nonground,
+                "--min-f1",
+                "0.9",
+                "--report",
+                str(report),
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert "Quality Gate: PASS" in result.output
+        assert "Report:" in result.output
+        assert report.exists()
+        assert "CloudAnalyzer Ground Segmentation Report" in report.read_text()
+
+    def test_ground_evaluate_format_json_and_failed_gate(self, tmp_path):
+        ground = [[0, 0, 0], [1, 0, 0]]
+        nonground = [[0, 0, 2], [1, 0, 2]]
+        est_ground = _write_pcd(tmp_path / "est_ground.pcd", nonground)
+        est_nonground = _write_pcd(tmp_path / "est_nonground.pcd", ground)
+        ref_ground = _write_pcd(tmp_path / "ref_ground.pcd", ground)
+        ref_nonground = _write_pcd(tmp_path / "ref_nonground.pcd", nonground)
+
+        result = runner.invoke(
+            app,
+            [
+                "ground-evaluate",
+                est_ground,
+                est_nonground,
+                ref_ground,
+                ref_nonground,
+                "--min-iou",
+                "0.8",
+                "--format-json",
+            ],
+        )
+
+        assert result.exit_code == 1
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is False
+        assert any("IoU" in reason for reason in data["quality_gate"]["reasons"])
+
+    def test_detection_evaluate_report_and_quality_gate(self, tmp_path):
+        estimated = _write_json(tmp_path / "estimated.json", _detection_estimated_sequence())
+        reference = _write_json(tmp_path / "reference.json", _detection_reference_sequence())
+        report = tmp_path / "detection_report.html"
+
+        result = runner.invoke(
+            app,
+            [
+                "detection-evaluate",
+                estimated,
+                reference,
+                "--iou-thresholds",
+                "0.25,0.5",
+                "--min-map",
+                "0.9",
+                "--report",
+                str(report),
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert "mAP:" in result.output
+        assert "Quality Gate: PASS" in result.output
+        assert report.exists()
+        assert "CloudAnalyzer Detection Report" in report.read_text()
+
+    def test_tracking_evaluate_format_json_and_failed_gate(self, tmp_path):
+        estimated = _write_json(
+            tmp_path / "estimated.json",
+            {
+                "frames": [
+                    {
+                        "frame_id": "0001",
+                        "boxes": [
+                            {"label": "car", "track_id": "pred-a", "center": [0.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                    {"frame_id": "0002", "boxes": []},
+                    {
+                        "frame_id": "0003",
+                        "boxes": [
+                            {"label": "car", "track_id": "pred-b", "center": [2.0, 0.0, 0.0], "size": [2.0, 2.0, 2.0]},
+                        ],
+                    },
+                ]
+            },
+        )
+        reference = _write_json(tmp_path / "reference.json", _tracking_reference_sequence())
+
+        result = runner.invoke(
+            app,
+            [
+                "tracking-evaluate",
+                estimated,
+                reference,
+                "--min-mota",
+                "0.8",
+                "--max-id-switches",
+                "0",
+                "--format-json",
+            ],
+        )
+
+        assert result.exit_code == 1
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is False
+        assert data["tracking"]["id_switches"] == 1
+
     def test_web_heatmap_flag(self, tmp_path, identical_pcd, monkeypatch):
         import cloudanalyzer_cli.main as cli_main
-        import open3d as o3d
 
         source = tmp_path / "source.pcd"
         target = tmp_path / "target.pcd"
@@ -1263,6 +1487,8 @@ class TestCLI:
             "artifact",
             "trajectory",
             "artifact",
+            "detection",
+            "tracking",
             "run",
         ]
 
@@ -1280,6 +1506,23 @@ class TestCLI:
         assert len(suite.checks) == 1
         assert suite.checks[0].kind == "artifact"
         assert suite.checks[0].check_id == "mapping-postprocess"
+
+    def test_init_check_writes_perception_template(self, tmp_path):
+        config_path = tmp_path / "perception.yaml"
+
+        result = runner.invoke(
+            app,
+            ["init-check", str(config_path), "--profile", "perception"],
+        )
+
+        assert result.exit_code == 0
+        suite = load_check_suite(str(config_path))
+        assert suite.project == "perception-qa"
+        assert [check.kind for check in suite.checks] == [
+            "artifact",
+            "detection",
+            "tracking",
+        ]
 
     def test_init_check_refuses_to_overwrite_without_force(self, tmp_path):
         config_path = tmp_path / "cloudanalyzer.yaml"
@@ -1381,6 +1624,93 @@ class TestCLI:
 
         assert result.exit_code == 1
         assert "Decision:  reject" in result.output
+
+    def test_convert_labels_kitti(self, tmp_path):
+        label_dir = tmp_path / "labels"
+        label_dir.mkdir()
+        (label_dir / "000001.txt").write_text(
+            "Car 0.0 0 0 0 0 0 0 1.5 1.6 3.9 -1.0 1.8 30.0 -0.02\n",
+            encoding="utf-8",
+        )
+        (label_dir / "000002.txt").write_text(
+            "Car 0.0 0 0 0 0 0 0 1.5 1.6 3.9 2.0 1.8 25.0 0.5\n"
+            "Pedestrian 0.0 0 0 0 0 0 0 1.7 0.6 0.8 0.0 1.8 10.0 0.0\n",
+            encoding="utf-8",
+        )
+        output_json = tmp_path / "output.json"
+
+        result = runner.invoke(
+            app,
+            [
+                "convert-labels",
+                "--format", "kitti",
+                "--input", str(label_dir),
+                "--output", str(output_json),
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert '"frames": 2' in result.output
+        assert output_json.exists()
+        data = json.loads(output_json.read_text())
+        assert len(data["frames"]) == 2
+        assert data["frames"][0]["frame_id"] == "000001"
+
+    def test_convert_labels_missing_dir(self, tmp_path):
+        result = runner.invoke(
+            app,
+            [
+                "convert-labels",
+                "--format", "kitti",
+                "--input", str(tmp_path / "nonexistent"),
+                "--output", str(tmp_path / "out.json"),
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "Error" in result.output
+
+    def test_convert_labels_no_camera_to_lidar(self, tmp_path):
+        label_dir = tmp_path / "labels"
+        label_dir.mkdir()
+        (label_dir / "000001.txt").write_text(
+            "Car 0.0 0 0 0 0 0 0 2.0 1.5 4.0 5.0 3.0 10.0 1.5\n",
+            encoding="utf-8",
+        )
+        output_json = tmp_path / "output.json"
+
+        result = runner.invoke(
+            app,
+            [
+                "convert-labels",
+                "--format", "kitti",
+                "--input", str(label_dir),
+                "--output", str(output_json),
+                "--no-camera-to-lidar",
+            ],
+        )
+
+        assert result.exit_code == 0
+        data = json.loads(output_json.read_text())
+        box = data["frames"][0]["boxes"][0]
+        # No camera-to-lidar transform: center should be raw KITTI values
+        assert box["center"][0] == pytest.approx(5.0)
+        assert box["center"][1] == pytest.approx(3.0)
+        assert box["center"][2] == pytest.approx(10.0)
+
+    def test_convert_labels_unsupported_format(self, tmp_path):
+        result = runner.invoke(
+            app,
+            [
+                "convert-labels",
+                "--format", "coco",
+                "--input", str(tmp_path),
+                "--output", str(tmp_path / "out.json"),
+            ],
+        )
+
+        assert result.exit_code == 1
+        assert "Unsupported format" in result.output
 
     def test_help(self):
         result = runner.invoke(app, ["--help"])

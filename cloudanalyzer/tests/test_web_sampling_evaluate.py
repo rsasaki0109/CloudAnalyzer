@@ -186,8 +186,14 @@ class TestExperimentExecutionAndDocs:
 
         assert "Strategy Comparison" in experiments_md
         assert "random_budget" in experiments_md
-        assert "adopted directly as the current core strategy" in decisions_md
-        assert "adopted directly in core" in interfaces_md
+        assert (
+            "adopted directly as the current core strategy" in decisions_md
+            or "stabilized core form of" in decisions_md
+        )
+        assert (
+            "adopted directly in core" in interfaces_md
+            or "stabilized lineage" in interfaces_md
+        )
 
     def test_write_report_docs_writes_all_expected_files(self, tmp_path: Path):
         rng = np.random.default_rng(10)

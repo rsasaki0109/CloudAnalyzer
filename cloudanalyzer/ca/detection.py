@@ -8,6 +8,7 @@ from typing import Any
 import numpy as np
 
 from ca.object_eval import (
+    Box3D,
     BoxSequence,
     frame_map,
     greedy_match_boxes,

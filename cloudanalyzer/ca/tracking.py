@@ -5,11 +5,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any
 
-from ca.object_eval import BoxSequence, frame_map, greedy_match_boxes, load_box_sequence, ordered_frame_ids, sequence_counts
-
-
-def _has_yaw(sequence: BoxSequence) -> bool:
-    return any(box.yaw != 0.0 for frame in sequence.frames for box in frame.boxes)
+from ca.object_eval import BoxSequence, frame_map, greedy_match_boxes, has_yaw, load_box_sequence, ordered_frame_ids, sequence_counts
 
 
 def _quality_gate(
@@ -144,7 +140,7 @@ def evaluate_tracking(
     precision = float(total_tp / (total_tp + total_fp)) if (total_tp + total_fp) else 0.0
     recall = float(total_tp / (total_tp + total_fn)) if (total_tp + total_fn) else 0.0
     f1 = float(2.0 * precision * recall / (precision + recall)) if (precision + recall) else 0.0
-    total_reference = counts_reference = sequence_counts(reference)["boxes"]
+    total_reference = sequence_counts(reference)["boxes"]
     mota = (
         float(1.0 - ((total_fn + total_fp + id_switches) / total_reference))
         if total_reference > 0
@@ -204,9 +200,9 @@ def evaluate_tracking(
         "estimated_path": estimated_path,
         "reference_path": reference_path,
         "matching_policy": {
-            "geometry": "oriented_3d_boxes" if _has_yaw(estimated) or _has_yaw(reference) else "axis_aligned_3d_boxes",
+            "geometry": "oriented_3d_boxes" if has_yaw(estimated) or has_yaw(reference) else "axis_aligned_3d_boxes",
             "class_aware": True,
-            "yaw_ignored": not (_has_yaw(estimated) or _has_yaw(reference)),
+            "yaw_ignored": not (has_yaw(estimated) or has_yaw(reference)),
             "iou_threshold": float(iou_threshold),
         },
         "counts": {

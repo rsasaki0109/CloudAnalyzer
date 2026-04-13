@@ -69,7 +69,3 @@ checks:
       max_rpe: 0.2
       max_drift: 1.0
       min_coverage: 0.9
-      max_ate: 0.5
-      max_rpe: 0.2
-      max_drift: 1.0
-      min_coverage: 0.9

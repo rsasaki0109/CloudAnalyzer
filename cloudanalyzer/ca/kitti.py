@@ -3,11 +3,8 @@
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 from typing import Any
-
-import numpy as np
 
 
 # KITTI label columns: type truncated occluded alpha

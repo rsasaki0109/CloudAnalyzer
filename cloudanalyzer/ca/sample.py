@@ -3,7 +3,7 @@
 import numpy as np
 import open3d as o3d
 
-from ca.io import load_point_cloud
+from ca.io import load_point_cloud, save_point_cloud
 
 
 def random_sample(input_path: str, output_path: str, num_points: int) -> dict:
@@ -37,7 +37,7 @@ def random_sample(input_path: str, output_path: str, num_points: int) -> dict:
         indices = np.random.default_rng().choice(original_count, size=num_points, replace=False)
         sampled = pcd.select_by_index(indices.tolist())
 
-    o3d.io.write_point_cloud(output_path, sampled)
+    save_point_cloud(output_path, sampled)
 
     return {
         "input": input_path,

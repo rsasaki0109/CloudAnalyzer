@@ -7,7 +7,7 @@ import open3d as o3d
 import yaml  # type: ignore[import-untyped]
 from pathlib import Path
 
-from ca.io import load_point_cloud
+from ca.io import load_point_cloud, save_point_cloud
 from ca.log import logger
 
 
@@ -58,7 +58,7 @@ def split(
         tile_pcd = pcd.select_by_index(point_indices)
         filename = f"tile_{i:04d}_{j:04d}{ext}"
         tile_path = str(out / filename)
-        o3d.io.write_point_cloud(tile_path, tile_pcd)
+        save_point_cloud(tile_path, tile_pcd)
         tile_info.append({
             "file": filename,
             "grid": [i, j],

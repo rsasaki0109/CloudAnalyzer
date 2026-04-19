@@ -2,7 +2,7 @@
 
 import open3d as o3d
 
-from ca.io import load_point_cloud
+from ca.io import load_point_cloud, save_point_cloud
 
 
 def estimate_normals(
@@ -30,7 +30,7 @@ def estimate_normals(
     )
     pcd.orient_normals_consistent_tangent_plane(k=15)
 
-    o3d.io.write_point_cloud(output_path, pcd)
+    save_point_cloud(output_path, pcd)
 
     return {
         "input": input_path,

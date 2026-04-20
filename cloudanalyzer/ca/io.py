@@ -72,6 +72,8 @@ def save_point_cloud(path: str, pcd: o3d.geometry.PointCloud) -> None:
         import laspy
         xyz = np.asarray(pcd.points)
         header = laspy.LasHeader(point_format=0, version="1.4")
+        header.offsets = xyz.min(axis=0)
+        header.scales = np.full(3, 1e-6)
         las = laspy.LasData(header=header)
         las.x = xyz[:, 0]
         las.y = xyz[:, 1]

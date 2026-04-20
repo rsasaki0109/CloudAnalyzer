@@ -1,9 +1,10 @@
 """Tests for ca.io module."""
 
+import numpy as np
 import pytest
 import open3d as o3d
 
-from ca.io import load_point_cloud, SUPPORTED_EXTENSIONS
+from ca.io import load_point_cloud, save_point_cloud, SUPPORTED_EXTENSIONS
 
 
 class TestLoadPointCloud:
@@ -51,3 +52,30 @@ class TestLoadPointCloud:
         assert ".pcd" in SUPPORTED_EXTENSIONS
         assert ".ply" in SUPPORTED_EXTENSIONS
         assert ".las" in SUPPORTED_EXTENSIONS
+        assert ".laz" in SUPPORTED_EXTENSIONS
+
+
+class TestSavePointCloud:
+    def test_laz_roundtrip_preserves_coordinates(self, tmp_path, simple_pcd):
+        path = str(tmp_path / "test.laz")
+        save_point_cloud(path, simple_pcd)
+        loaded = load_point_cloud(path)
+        np.testing.assert_allclose(
+            np.asarray(loaded.points),
+            np.asarray(simple_pcd.points),
+            atol=1e-5,
+        )
+
+    def test_las_roundtrip_preserves_coordinates(self, tmp_path, simple_pcd):
+        path = str(tmp_path / "test.las")
+        save_point_cloud(path, simple_pcd)
+        loaded = load_point_cloud(path)
+        np.testing.assert_allclose(
+            np.asarray(loaded.points),
+            np.asarray(simple_pcd.points),
+            atol=1e-5,
+        )
+
+    def test_unsupported_format_raises(self, tmp_path, simple_pcd):
+        with pytest.raises(ValueError, match="Unsupported format"):
+            save_point_cloud(str(tmp_path / "out.xyz"), simple_pcd)

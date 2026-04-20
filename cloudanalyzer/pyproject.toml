@@ -40,6 +40,8 @@ dependencies = [
     "typer>=0.9.0",
     "matplotlib>=3.7.0",
     "PyYAML>=6.0",
+    "laspy>=2.5.0",
+    "lazrs>=0.6.0",
 ]
 
 [project.scripts]

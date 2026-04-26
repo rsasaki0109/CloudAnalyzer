@@ -53,6 +53,7 @@ from ca.report import (
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
+from ca.posegraph import validate_posegraph_session
 from ca.web import export_static_bundle as web_export_static_bundle
 from ca.web import serve as web_serve
 from ca.io import SUPPORTED_EXTENSIONS
@@ -455,6 +456,54 @@ def map_evaluate_cmd(
 
     if output_json:
         _dump_json(payload, output_json)
+
+
+@app.command("posegraph-validate")
+def posegraph_validate_cmd(
+    g2o_path: str = typer.Argument(..., help="Path to pose graph file (pose_graph.g2o)"),
+    tum_path: Optional[str] = typer.Option(
+        None,
+        "--tum",
+        help="Optional path to optimized poses in TUM format (optimized_poses_tum.txt)",
+    ),
+    key_point_frame_dir: Optional[str] = typer.Option(
+        None,
+        "--key-point-frame",
+        help="Optional directory containing keyframe point clouds (key_point_frame/*.pcd)",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Validate a manual-loop-closure style mapping session layout."""
+    try:
+        result = validate_posegraph_session(
+            g2o_path=g2o_path,
+            tum_path=tum_path,
+            key_point_frame_dir=key_point_frame_dir,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2, default=str))
+    else:
+        g = result["g2o"]
+        typer.echo(f"g2o: vertices={g['vertex_count']} edges={g['edge_count']} malformed={g['malformed_lines']}")
+        if g["missing_vertex_references"] > 0:
+            typer.echo(f"g2o: missing vertex refs: {g['missing_vertex_references']}")
+        if "tum" in result:
+            t = result["tum"]
+            typer.echo(f"tum: poses={t['num_poses']} duration={t['duration_s']:.3f}s")
+        if "key_point_frame" in result:
+            k = result["key_point_frame"]
+            typer.echo(f"key_point_frame: pcds={k['pcd_count']}")
+        status = "PASS" if result["summary"]["ok"] else "FAIL"
+        typer.echo(f"Session: {status}")
+        if result["summary"]["problems"]:
+            typer.echo("Problems: " + "; ".join(result["summary"]["problems"]))
+
+    if output_json:
+        _dump_json(result, output_json)
 
 
 @app.command("stats")

@@ -1,0 +1,170 @@
+"""Pose graph validation utilities (g2o + TUM + keyframe PCD session layout).
+
+This module is intentionally lightweight: it does not optimize graphs. It only
+parses and validates common mapping-session artifacts used by manual loop-closure
+workflows (e.g., pose_graph.g2o + optimized_poses_tum.txt + key_point_frame/*.pcd).
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Iterable
+
+import numpy as np
+
+from ca.trajectory import load_trajectory
+
+
+@dataclass(slots=True)
+class G2OParseSummary:
+    path: str
+    vertex_tags: dict[str, int]
+    edge_tags: dict[str, int]
+    vertex_ids: set[int]
+    edge_pairs: list[tuple[int, int]]
+    malformed_lines: int
+
+
+def _iter_nonempty_lines(path: Path) -> Iterable[tuple[int, str]]:
+    for idx, raw in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        yield idx, line
+
+
+def parse_g2o_summary(path: str) -> G2OParseSummary:
+    """Parse a g2o file and return counts + vertex/edge connectivity.
+
+    Supported (counted) tags include:
+    - vertices: VERTEX_SE3:QUAT, VERTEX_SE2, ...
+    - edges: EDGE_SE3:QUAT, EDGE_SE2, ...
+    """
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(path)
+
+    vertex_tags: dict[str, int] = {}
+    edge_tags: dict[str, int] = {}
+    vertex_ids: set[int] = set()
+    edge_pairs: list[tuple[int, int]] = []
+    malformed = 0
+
+    for _lineno, line in _iter_nonempty_lines(p):
+        parts = line.split()
+        if not parts:
+            continue
+        tag = parts[0]
+        if tag.startswith("VERTEX_"):
+            vertex_tags[tag] = vertex_tags.get(tag, 0) + 1
+            # vertex id is typically the 2nd token
+            if len(parts) < 2:
+                malformed += 1
+                continue
+            try:
+                vid = int(parts[1])
+            except ValueError:
+                malformed += 1
+                continue
+            vertex_ids.add(vid)
+        elif tag.startswith("EDGE_"):
+            edge_tags[tag] = edge_tags.get(tag, 0) + 1
+            # edge endpoints are typically the 2nd and 3rd tokens
+            if len(parts) < 3:
+                malformed += 1
+                continue
+            try:
+                a = int(parts[1])
+                b = int(parts[2])
+            except ValueError:
+                malformed += 1
+                continue
+            edge_pairs.append((a, b))
+        else:
+            # ignore other g2o records (PARAMS_*, FIX, etc.)
+            continue
+
+    return G2OParseSummary(
+        path=path,
+        vertex_tags=vertex_tags,
+        edge_tags=edge_tags,
+        vertex_ids=vertex_ids,
+        edge_pairs=edge_pairs,
+        malformed_lines=malformed,
+    )
+
+
+def validate_key_point_frame_dir(path: str) -> dict:
+    p = Path(path)
+    if not p.exists():
+        raise FileNotFoundError(path)
+    if not p.is_dir():
+        raise ValueError(f"key_point_frame must be a directory: {path}")
+    pcds = sorted([x for x in p.iterdir() if x.is_file() and x.suffix.lower() == ".pcd"])
+    return {
+        "path": str(p),
+        "pcd_count": int(len(pcds)),
+        "sample_files": [str(x.name) for x in pcds[:5]],
+    }
+
+
+def validate_posegraph_session(
+    g2o_path: str,
+    tum_path: str | None = None,
+    key_point_frame_dir: str | None = None,
+) -> dict:
+    """Validate common manual-loop-closure session inputs."""
+    g2o = parse_g2o_summary(g2o_path)
+
+    missing_vertices: int = 0
+    if g2o.edge_pairs:
+        endpoints = {v for pair in g2o.edge_pairs for v in pair}
+        missing_vertices = len(endpoints - g2o.vertex_ids)
+
+    result: dict = {
+        "g2o": {
+            "path": g2o.path,
+            "vertex_tags": g2o.vertex_tags,
+            "edge_tags": g2o.edge_tags,
+            "vertex_count": int(len(g2o.vertex_ids)),
+            "edge_count": int(len(g2o.edge_pairs)),
+            "malformed_lines": int(g2o.malformed_lines),
+            "missing_vertex_references": int(missing_vertices),
+        }
+    }
+
+    if tum_path is not None:
+        traj = load_trajectory(tum_path)
+        result["tum"] = {
+            "path": tum_path,
+            "num_poses": traj["num_poses"],
+            "timestamp_start": float(traj["timestamps"][0]),
+            "timestamp_end": float(traj["timestamps"][-1]),
+            "duration_s": float(traj["timestamps"][-1] - traj["timestamps"][0]),
+            "bbox_min": [float(x) for x in np.min(traj["positions"], axis=0)],
+            "bbox_max": [float(x) for x in np.max(traj["positions"], axis=0)],
+        }
+
+    if key_point_frame_dir is not None:
+        result["key_point_frame"] = validate_key_point_frame_dir(key_point_frame_dir)
+
+    # Simple overall status.
+    problems: list[str] = []
+    if result["g2o"]["vertex_count"] == 0:
+        problems.append("g2o: no vertices parsed")
+    if result["g2o"]["edge_count"] == 0:
+        problems.append("g2o: no edges parsed")
+    if result["g2o"]["malformed_lines"] > 0:
+        problems.append("g2o: malformed lines present")
+    if result["g2o"]["missing_vertex_references"] > 0:
+        problems.append("g2o: edges reference missing vertices")
+    if "tum" in result and result["tum"]["num_poses"] < 2:
+        problems.append("tum: fewer than 2 poses")
+
+    result["summary"] = {
+        "ok": len(problems) == 0,
+        "problems": problems,
+    }
+    return result
+

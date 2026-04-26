@@ -223,6 +223,46 @@ class TestCLI:
         assert data["artifacts"]["align_mode"] == "initial"
         assert "estimated_error_raw_ply" in data["artifacts"]
 
+    def test_posegraph_validate_format_json(self, tmp_path):
+        g2o = tmp_path / "pose_graph.g2o"
+        g2o.write_text(
+            "\n".join(
+                [
+                    "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1",
+                    "VERTEX_SE3:QUAT 1 1 0 0 0 0 0 1",
+                    "EDGE_SE3:QUAT 0 1 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        tum = tmp_path / "optimized_poses_tum.txt"
+        tum.write_text("0 0 0 0 0 0 0 1\n1 1 0 0 0 0 0 1\n", encoding="utf-8")
+        key_dir = tmp_path / "key_point_frame"
+        key_dir.mkdir()
+        # create a couple of placeholder PCDs; validator only counts extension.
+        (key_dir / "000000.pcd").write_text("dummy\n", encoding="utf-8")
+        (key_dir / "000001.pcd").write_text("dummy\n", encoding="utf-8")
+
+        result = runner.invoke(
+            app,
+            [
+                "posegraph-validate",
+                str(g2o),
+                "--tum",
+                str(tum),
+                "--key-point-frame",
+                str(key_dir),
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["summary"]["ok"] is True
+        assert data["g2o"]["vertex_count"] == 2
+        assert data["g2o"]["edge_count"] == 1
+        assert data["key_point_frame"]["pcd_count"] == 2
+
     def test_downsample(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "down.pcd")
         result = runner.invoke(app, ["downsample", sample_pcd_file, "-o", output, "-v", "0.3"])

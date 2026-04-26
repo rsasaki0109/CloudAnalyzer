@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+from pathlib import Path
 
 
 @dataclass(slots=True)
@@ -26,6 +27,8 @@ class MapEvaluateRequest:
     # (ICP/GICP is intentionally left to future strategies.)
     align_mode: str = "none"
     downsample_voxel_size: float = 0.0
+    # Optional: write strategy-specific artifacts (e.g., colored error point clouds).
+    artifact_dir: str | None = None
     # MapEval-like "accuracy_level": thresholds used for inlier ratios.
     thresholds_m: tuple[float, float, float, float, float] = (0.2, 0.1, 0.08, 0.05, 0.01)
     # A coarse voxel size useful for global-structure metrics / robust proxies.
@@ -76,6 +79,16 @@ def aligned_estimated_points(request: MapEvaluateRequest) -> np.ndarray:
             raise ValueError("align_mode='initial' requires initial_transform_4x4.")
         return apply_transform(est, request.initial_transform_4x4)
     raise ValueError(f"Unsupported align_mode: {request.align_mode!r}. Use 'none' or 'initial'.")
+
+
+def ensure_artifact_dir(request: MapEvaluateRequest, subdir: str) -> Path | None:
+    """Return an ensured artifact directory path or None if disabled."""
+    if request.artifact_dir is None:
+        return None
+    root = Path(request.artifact_dir)
+    out = root / subdir
+    out.mkdir(parents=True, exist_ok=True)
+    return out
 
 
 def voxel_downsample(points: np.ndarray, voxel_size: float) -> np.ndarray:

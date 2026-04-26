@@ -23,6 +23,7 @@ from ca.diff import run_diff
 from ca.view import view
 from ca.downsample import downsample
 from ca.merge import merge
+from ca.mme import compute_mme
 from ca.convert import convert
 from ca.crop import crop
 from ca.stats import compute_stats
@@ -111,7 +112,7 @@ def _handle_error(e: Exception) -> None:
 
     # Provide helpful hints
     if isinstance(e, FileNotFoundError):
-        typer.echo("Hint: Check the file path. Supported formats: .pcd, .ply, .las", err=True)
+        typer.echo("Hint: Check the file path. Supported formats: .pcd, .ply, .las, .laz", err=True)
     elif "Unsupported format" in msg:
         typer.echo(f"Hint: Supported formats are: {', '.join(sorted(SUPPORTED_EXTENSIONS))}", err=True)
     elif "Unsupported method" in msg:
@@ -379,6 +380,36 @@ def stats_cmd(
         typer.echo(f"Spacing min:    {s['min']:.4f}")
         typer.echo(f"Spacing max:    {s['max']:.4f}")
         typer.echo(f"Spacing std:    {s['std']:.4f}")
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("mme")
+def mme_cmd(
+    path: str = typer.Argument(..., help="Point cloud file"),
+    neighbors: int = typer.Option(20, "--neighbors", "-n", help="k nearest neighbors (min 4)"),
+    max_points: int = typer.Option(500_000, "--max-points", help="Max points before random sampling"),
+    workers: int = typer.Option(-1, "--workers", "-w", help="Parallel workers for k-NN (-1 = all CPUs)"),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Compute Mean Map Entropy (MME) — local geometric consistency metric (no ground truth needed)."""
+    try:
+        result = compute_mme(path, k_neighbors=neighbors, max_points=max_points, workers=workers)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        typer.echo(f"File:      {result['path']}")
+        typer.echo(f"Points:    {result['num_points']:,}")
+        if result["sampled"]:
+            typer.echo(f"Used:      {result['num_points_used']:,}  (sampled)")
+        else:
+            typer.echo(f"Used:      {result['num_points_used']:,}")
+        typer.echo(f"k:         {result['k_neighbors']}")
+        typer.echo(f"MME:       {result['mme']:.4f}")
     if output_json:
         _dump_json(result, output_json)
 

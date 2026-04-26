@@ -527,6 +527,46 @@ def loop_closure_report_cmd(
         "--max-after-chamfer",
         help="Fail if chamfer(after) exceeds this value.",
     ),
+    before_traj: Optional[str] = typer.Option(
+        None,
+        "--before-traj",
+        help="Optional trajectory before loop closure (CSV/TUM).",
+    ),
+    after_traj: Optional[str] = typer.Option(
+        None,
+        "--after-traj",
+        help="Optional trajectory after loop closure (CSV/TUM).",
+    ),
+    reference_traj: Optional[str] = typer.Option(
+        None,
+        "--ref-traj",
+        help="Optional reference trajectory (CSV/TUM).",
+    ),
+    traj_max_time_delta: float = typer.Option(
+        0.05,
+        "--traj-max-time-delta",
+        help="Max time delta for trajectory matching/interpolation.",
+    ),
+    traj_align_origin: bool = typer.Option(
+        False,
+        "--traj-align-origin",
+        help="Align trajectory by matching origins before scoring.",
+    ),
+    traj_align_rigid: bool = typer.Option(
+        False,
+        "--traj-align-rigid",
+        help="Rigidly align trajectory to reference before scoring.",
+    ),
+    min_ate_gain: Optional[float] = typer.Option(
+        None,
+        "--min-ate-gain",
+        help="Fail if trajectory ATE RMSE improvement (before-after) is below this value.",
+    ),
+    max_after_ate: Optional[float] = typer.Option(
+        None,
+        "--max-after-ate",
+        help="Fail if trajectory ATE RMSE(after) exceeds this value.",
+    ),
     before_g2o: Optional[str] = typer.Option(
         None,
         "--before-g2o",
@@ -561,7 +601,12 @@ def loop_closure_report_cmd(
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
     """Report before/after map quality for manual loop-closure workflows."""
-    gate = LoopClosureGate(min_auc_gain=min_auc_gain, max_after_chamfer=max_after_chamfer)
+    gate = LoopClosureGate(
+        min_auc_gain=min_auc_gain,
+        max_after_chamfer=max_after_chamfer,
+        min_ate_gain=min_ate_gain,
+        max_after_ate=max_after_ate,
+    )
     t_list = _parse_thresholds(thresholds)
     try:
         report = build_loop_closure_report(
@@ -569,6 +614,12 @@ def loop_closure_report_cmd(
             after_map=after_map,
             reference_map=reference_map,
             thresholds=t_list,
+            before_trajectory=before_traj,
+            after_trajectory=after_traj,
+            reference_trajectory=reference_traj,
+            trajectory_max_time_delta=traj_max_time_delta,
+            trajectory_align_origin=traj_align_origin,
+            trajectory_align_rigid=traj_align_rigid,
             before_g2o=before_g2o,
             after_g2o=after_g2o,
             before_tum=before_tum,

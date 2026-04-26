@@ -278,6 +278,12 @@ class TestCLI:
             encoding="utf-8",
         )
         # Before: shifted target vs reference src, After: src vs src (perfect)
+        before_traj = tmp_path / "before.csv"
+        after_traj = tmp_path / "after.csv"
+        ref_traj = tmp_path / "ref.csv"
+        ref_traj.write_text("timestamp,x,y,z\n0,0,0,0\n1,1,0,0\n2,2,0,0\n", encoding="utf-8")
+        before_traj.write_text("timestamp,x,y,z\n0,0.2,0,0\n1,1.2,0,0\n2,2.2,0,0\n", encoding="utf-8")
+        after_traj.write_text("timestamp,x,y,z\n0,0.0,0,0\n1,1.0,0,0\n2,2.0,0,0\n", encoding="utf-8")
         result = runner.invoke(
             app,
             [
@@ -287,6 +293,14 @@ class TestCLI:
                 src,
                 "--after-g2o",
                 str(g2o),
+                "--before-traj",
+                str(before_traj),
+                "--after-traj",
+                str(after_traj),
+                "--ref-traj",
+                str(ref_traj),
+                "--min-ate-gain",
+                "0.05",
                 "--thresholds",
                 "0.05,0.1,0.2",
                 "--min-auc-gain",
@@ -300,6 +314,7 @@ class TestCLI:
         assert data["map"]["delta"]["auc"] > 0
         assert data["map"]["delta"]["chamfer_distance"] < 0
         assert "posegraph_session" in data
+        assert "trajectory" in data
 
     def test_loop_closure_report_fails_gate(self, source_and_target_files):
         src, tgt = source_and_target_files

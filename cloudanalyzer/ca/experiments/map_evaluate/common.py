@@ -18,6 +18,13 @@ class MapEvaluateRequest:
 
     estimated_points: np.ndarray  # (N, 3)
     reference_points: np.ndarray | None = None  # (M, 3) when present
+    # MapEval-inspired: allow using an external coarse alignment (e.g., from CloudCompare).
+    # When set, this transform is applied to `estimated_points` before metric computation.
+    initial_transform_4x4: np.ndarray | None = None  # shape (4, 4)
+    # Alignment mode: "none" = do not apply any transform,
+    # "initial" = apply `initial_transform_4x4`.
+    # (ICP/GICP is intentionally left to future strategies.)
+    align_mode: str = "none"
     downsample_voxel_size: float = 0.0
     # MapEval-like "accuracy_level": thresholds used for inlier ratios.
     thresholds_m: tuple[float, float, float, float, float] = (0.2, 0.1, 0.08, 0.05, 0.01)
@@ -40,6 +47,35 @@ def _require_xyz(points: np.ndarray, name: str) -> np.ndarray:
     if arr.ndim != 2 or arr.shape[1] != 3:
         raise ValueError(f"{name} must be shape (N, 3); got {arr.shape}")
     return arr
+
+
+def _require_transform_4x4(matrix: np.ndarray, name: str) -> np.ndarray:
+    mat = np.asarray(matrix, dtype=np.float64)
+    if mat.shape != (4, 4):
+        raise ValueError(f"{name} must be shape (4, 4); got {mat.shape}")
+    return mat
+
+
+def apply_transform(points: np.ndarray, transform_4x4: np.ndarray) -> np.ndarray:
+    pts = _require_xyz(points, "points")
+    t = _require_transform_4x4(transform_4x4, "transform_4x4")
+    if pts.shape[0] == 0:
+        return pts
+    hom = np.concatenate([pts, np.ones((pts.shape[0], 1), dtype=np.float64)], axis=1)
+    out = (hom @ t.T)[:, :3]
+    return out
+
+
+def aligned_estimated_points(request: MapEvaluateRequest) -> np.ndarray:
+    est = _require_xyz(request.estimated_points, "estimated_points")
+    mode = (request.align_mode or "none").strip().lower()
+    if mode == "none":
+        return est
+    if mode == "initial":
+        if request.initial_transform_4x4 is None:
+            raise ValueError("align_mode='initial' requires initial_transform_4x4.")
+        return apply_transform(est, request.initial_transform_4x4)
+    raise ValueError(f"Unsupported align_mode: {request.align_mode!r}. Use 'none' or 'initial'.")
 
 
 def voxel_downsample(points: np.ndarray, voxel_size: float) -> np.ndarray:

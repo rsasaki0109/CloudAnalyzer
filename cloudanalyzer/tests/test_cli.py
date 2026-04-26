@@ -263,8 +263,20 @@ class TestCLI:
         assert data["g2o"]["edge_count"] == 1
         assert data["key_point_frame"]["pcd_count"] == 2
 
-    def test_loop_closure_report_format_json(self, source_and_target_files):
+    def test_loop_closure_report_format_json(self, source_and_target_files, tmp_path):
         src, tgt = source_and_target_files
+        g2o = tmp_path / "pose_graph_after.g2o"
+        g2o.write_text(
+            "\n".join(
+                [
+                    "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1",
+                    "VERTEX_SE3:QUAT 1 1 0 0 0 0 0 1",
+                    "EDGE_SE3:QUAT 0 1 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
         # Before: shifted target vs reference src, After: src vs src (perfect)
         result = runner.invoke(
             app,
@@ -273,6 +285,8 @@ class TestCLI:
                 tgt,
                 src,
                 src,
+                "--after-g2o",
+                str(g2o),
                 "--thresholds",
                 "0.05,0.1,0.2",
                 "--min-auc-gain",
@@ -285,6 +299,7 @@ class TestCLI:
         assert data["quality_gate"]["passed"] is True
         assert data["map"]["delta"]["auc"] > 0
         assert data["map"]["delta"]["chamfer_distance"] < 0
+        assert "posegraph_session" in data
 
     def test_loop_closure_report_fails_gate(self, source_and_target_files):
         src, tgt = source_and_target_files

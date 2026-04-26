@@ -527,6 +527,36 @@ def loop_closure_report_cmd(
         "--max-after-chamfer",
         help="Fail if chamfer(after) exceeds this value.",
     ),
+    before_g2o: Optional[str] = typer.Option(
+        None,
+        "--before-g2o",
+        help="Optional pose graph before manual loop closure (pose_graph.g2o).",
+    ),
+    after_g2o: Optional[str] = typer.Option(
+        None,
+        "--after-g2o",
+        help="Optional pose graph after manual loop closure (pose_graph.g2o).",
+    ),
+    before_tum: Optional[str] = typer.Option(
+        None,
+        "--before-tum",
+        help="Optional optimized poses before loop closure (TUM).",
+    ),
+    after_tum: Optional[str] = typer.Option(
+        None,
+        "--after-tum",
+        help="Optional optimized poses after loop closure (TUM).",
+    ),
+    before_key_point_frame: Optional[str] = typer.Option(
+        None,
+        "--before-key-point-frame",
+        help="Optional key_point_frame dir before loop closure.",
+    ),
+    after_key_point_frame: Optional[str] = typer.Option(
+        None,
+        "--after-key-point-frame",
+        help="Optional key_point_frame dir after loop closure.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -539,6 +569,12 @@ def loop_closure_report_cmd(
             after_map=after_map,
             reference_map=reference_map,
             thresholds=t_list,
+            before_g2o=before_g2o,
+            after_g2o=after_g2o,
+            before_tum=before_tum,
+            after_tum=after_tum,
+            before_key_point_frame_dir=before_key_point_frame,
+            after_key_point_frame_dir=after_key_point_frame,
             gate=gate,
         )
     except (FileNotFoundError, ValueError) as e:

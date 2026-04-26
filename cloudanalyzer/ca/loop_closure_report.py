@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from ca.evaluate import evaluate as evaluate_map
+from ca.posegraph import validate_posegraph_session
 from ca.trajectory import evaluate_trajectory
 
 
@@ -68,6 +69,12 @@ def build_loop_closure_report(
     trajectory_max_time_delta: float = 0.05,
     trajectory_align_origin: bool = False,
     trajectory_align_rigid: bool = False,
+    before_g2o: str | None = None,
+    after_g2o: str | None = None,
+    before_tum: str | None = None,
+    after_tum: str | None = None,
+    before_key_point_frame_dir: str | None = None,
+    after_key_point_frame_dir: str | None = None,
     gate: LoopClosureGate | None = None,
 ) -> dict[str, Any]:
     """Build a before/after report for manual loop-closure outcomes."""
@@ -102,6 +109,28 @@ def build_loop_closure_report(
             },
         }
     }
+
+    if before_g2o is not None or after_g2o is not None:
+        report["posegraph_session"] = {
+            "before": (
+                validate_posegraph_session(
+                    g2o_path=before_g2o,
+                    tum_path=before_tum,
+                    key_point_frame_dir=before_key_point_frame_dir,
+                )
+                if before_g2o is not None
+                else None
+            ),
+            "after": (
+                validate_posegraph_session(
+                    g2o_path=after_g2o,
+                    tum_path=after_tum,
+                    key_point_frame_dir=after_key_point_frame_dir,
+                )
+                if after_g2o is not None
+                else None
+            ),
+        }
 
     if (
         before_trajectory is not None

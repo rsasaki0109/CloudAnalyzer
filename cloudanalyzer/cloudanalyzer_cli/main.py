@@ -135,6 +135,21 @@ def _parse_thresholds(thresholds: Optional[str]) -> Optional[list[float]]:
         raise typer.Exit(code=1)
 
 
+def _parse_matrix16(matrix: Optional[str]) -> Optional[list[float]]:
+    """Parse a 4x4 matrix from 16 comma-separated floats (row-major)."""
+    if not matrix:
+        return None
+    try:
+        values = [float(x.strip()) for x in matrix.split(",")]
+    except ValueError:
+        typer.echo("Error: --initial-matrix must be 16 comma-separated numbers", err=True)
+        raise typer.Exit(code=1)
+    if len(values) != 16:
+        typer.echo("Error: --initial-matrix must contain exactly 16 numbers", err=True)
+        raise typer.Exit(code=1)
+    return values
+
+
 def _check_status_label(passed: bool | None) -> str:
     """Render a compact status label for config-driven checks."""
     if passed is True:
@@ -353,6 +368,93 @@ def diff_cmd(
             typer.echo(f"Exceed: {t['exceed_count']}/{t['total']} ({t['exceed_ratio']:.1%}) > {t['threshold']}")
     if output_json:
         _dump_json(result, output_json)
+
+
+@app.command("map-evaluate")
+def map_evaluate_cmd(
+    estimated: str = typer.Argument(..., help="Path to estimated map point cloud (pcd/ply/las/laz)"),
+    reference: str = typer.Argument(..., help="Path to reference/GT map point cloud (pcd/ply/las/laz)"),
+    thresholds: Optional[str] = typer.Option(
+        None,
+        "--thresholds",
+        help="Comma-separated distance thresholds in meters (MapEval-style accuracy levels).",
+    ),
+    align_mode: str = typer.Option(
+        "none",
+        "--align-mode",
+        help="Alignment mode: none | initial (apply --initial-matrix to estimated points).",
+    ),
+    initial_matrix: Optional[str] = typer.Option(
+        None,
+        "--initial-matrix",
+        help="Initial 4x4 transform as 16 comma-separated floats (row-major).",
+    ),
+    artifact_dir: Optional[str] = typer.Option(
+        None,
+        "--artifact-dir",
+        help="Optional output dir for visualization artifacts (colored PLY error maps).",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Experimental MapEval-inspired map-to-map evaluation (GT-based)."""
+    try:
+        import numpy as np
+
+        from ca.io import load_point_cloud
+
+        # Import experiments lazily so core/library callers remain decoupled.
+        from ca.experiments.map_evaluate.nn_thresholds import NNThresholdMapEvaluateStrategy
+        from ca.experiments.map_evaluate.common import MapEvaluateRequest
+    except Exception as e:
+        _handle_error(e)
+
+    t_list = _parse_thresholds(thresholds)
+    matrix16 = _parse_matrix16(initial_matrix)
+    init_4x4 = None
+    if matrix16 is not None:
+        init_4x4 = np.array(matrix16, dtype=np.float64).reshape(4, 4)
+
+    try:
+        est_pcd = load_point_cloud(estimated)
+        ref_pcd = load_point_cloud(reference)
+        req = MapEvaluateRequest(
+            estimated_points=np.asarray(est_pcd.points),
+            reference_points=np.asarray(ref_pcd.points),
+            thresholds_m=tuple(t_list) if t_list is not None else (0.2, 0.1, 0.08, 0.05, 0.01),
+            align_mode=align_mode,
+            initial_transform_4x4=init_4x4,
+            artifact_dir=artifact_dir,
+        )
+        result = NNThresholdMapEvaluateStrategy().evaluate(req)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    payload = {
+        "estimated": estimated,
+        "reference": reference,
+        "strategy": result.strategy,
+        "design": result.design,
+        "metrics": result.metrics,
+        "artifacts": result.artifacts,
+    }
+
+    if format_json:
+        typer.echo(json.dumps(payload, indent=2, default=str))
+    else:
+        t0 = result.artifacts.get("thresholds_m", [0.2])[0]
+        typer.echo(f"Estimated:  {estimated}")
+        typer.echo(f"Reference:  {reference}")
+        typer.echo(f"Align:      {result.artifacts.get('align_mode')}")
+        typer.echo(f"Chamfer:    {result.metrics.get('chamfer_m'):.6f} m")
+        typer.echo(f"F-score:    {result.metrics.get(f'fscore@{t0:.3f}m'):.6f} @ {t0:.3f} m")
+        typer.echo(f"Accuracy:   {result.metrics.get(f'accuracy@{t0:.3f}m'):.6f} @ {t0:.3f} m")
+        typer.echo(f"Complete:   {result.metrics.get(f'completeness@{t0:.3f}m'):.6f} @ {t0:.3f} m")
+        if "estimated_error_raw_ply" in result.artifacts:
+            typer.echo(f"Artifacts:  {result.artifacts['estimated_error_raw_ply']}")
+
+    if output_json:
+        _dump_json(payload, output_json)
 
 
 @app.command("stats")

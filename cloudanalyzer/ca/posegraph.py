@@ -26,6 +26,29 @@ class G2OParseSummary:
     malformed_lines: int
 
 
+def discover_session_paths(session_root: str, map_name: str = "map.pcd") -> dict:
+    """Discover common manual-loop-closure session artifacts under a root directory."""
+    root = Path(session_root)
+    if not root.exists():
+        raise FileNotFoundError(session_root)
+    if not root.is_dir():
+        raise ValueError(f"session_root must be a directory: {session_root}")
+
+    g2o = root / "pose_graph.g2o"
+    tum = root / "optimized_poses_tum.txt"
+    key_point_frame = root / "key_point_frame"
+    map_path = root / map_name
+
+    return {
+        "session_root": str(root),
+        "g2o_path": str(g2o) if g2o.exists() else None,
+        "tum_path": str(tum) if tum.exists() else None,
+        "key_point_frame_dir": str(key_point_frame) if key_point_frame.exists() else None,
+        "map_path": str(map_path) if map_path.exists() else None,
+        "map_name": map_name,
+    }
+
+
 def _iter_nonempty_lines(path: Path) -> Iterable[tuple[int, str]]:
     for idx, raw in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), start=1):
         line = raw.strip()

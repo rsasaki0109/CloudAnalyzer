@@ -316,6 +316,55 @@ class TestCLI:
         assert "posegraph_session" in data
         assert "trajectory" in data
 
+    def test_loop_closure_report_session_root_discovery(self, tmp_path, simple_pcd, shifted_pcd):
+        import open3d as o3d
+
+        before_root = tmp_path / "before"
+        after_root = tmp_path / "after"
+        before_root.mkdir()
+        after_root.mkdir()
+
+        # maps
+        o3d.io.write_point_cloud(str(before_root / "map.pcd"), shifted_pcd)
+        o3d.io.write_point_cloud(str(after_root / "map.pcd"), simple_pcd)
+        # g2o
+        (before_root / "pose_graph.g2o").write_text(
+            "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1\nEDGE_SE3:QUAT 0 0 0 0 0 0 0 0 1 " + " ".join(["1"] * 21) + "\n",
+            encoding="utf-8",
+        )
+        (after_root / "pose_graph.g2o").write_text(
+            "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1\nEDGE_SE3:QUAT 0 0 0 0 0 0 0 0 1 " + " ".join(["1"] * 21) + "\n",
+            encoding="utf-8",
+        )
+        # keyframes
+        (before_root / "key_point_frame").mkdir()
+        (after_root / "key_point_frame").mkdir()
+        (before_root / "key_point_frame" / "000000.pcd").write_text("dummy\n", encoding="utf-8")
+        (after_root / "key_point_frame" / "000000.pcd").write_text("dummy\n", encoding="utf-8")
+
+        # reference map is the "good" one
+        reference = tmp_path / "ref.pcd"
+        o3d.io.write_point_cloud(str(reference), simple_pcd)
+
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                str(before_root / "map.pcd"),
+                str(after_root / "map.pcd"),
+                str(reference),
+                "--before-session-root",
+                str(before_root),
+                "--after-session-root",
+                str(after_root),
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["posegraph_session"]["before"]["g2o"]["path"].endswith("pose_graph.g2o")
+        assert data["posegraph_session"]["after"]["g2o"]["path"].endswith("pose_graph.g2o")
+
     def test_loop_closure_report_fails_gate(self, source_and_target_files):
         src, tgt = source_and_target_files
         # No improvement: before==after

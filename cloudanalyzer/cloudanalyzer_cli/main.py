@@ -53,7 +53,7 @@ from ca.report import (
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
-from ca.posegraph import validate_posegraph_session
+from ca.posegraph import discover_session_paths, validate_posegraph_session
 from ca.loop_closure_report import LoopClosureGate, build_loop_closure_report
 from ca.web import export_static_bundle as web_export_static_bundle
 from ca.web import serve as web_serve
@@ -597,6 +597,21 @@ def loop_closure_report_cmd(
         "--after-key-point-frame",
         help="Optional key_point_frame dir after loop closure.",
     ),
+    before_session_root: Optional[str] = typer.Option(
+        None,
+        "--before-session-root",
+        help="Optional session root to auto-discover before paths (pose_graph.g2o, optimized_poses_tum.txt, key_point_frame/, map.pcd).",
+    ),
+    after_session_root: Optional[str] = typer.Option(
+        None,
+        "--after-session-root",
+        help="Optional session root to auto-discover after paths (pose_graph.g2o, optimized_poses_tum.txt, key_point_frame/, map.pcd).",
+    ),
+    session_map_name: str = typer.Option(
+        "map.pcd",
+        "--session-map-name",
+        help="Map filename to use when discovering from --before/after-session-root.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -609,6 +624,19 @@ def loop_closure_report_cmd(
     )
     t_list = _parse_thresholds(thresholds)
     try:
+        if before_session_root is not None:
+            discovered = discover_session_paths(before_session_root, map_name=session_map_name)
+            before_map = discovered["map_path"] or before_map
+            before_g2o = discovered["g2o_path"] or before_g2o
+            before_tum = discovered["tum_path"] or before_tum
+            before_key_point_frame = discovered["key_point_frame_dir"] or before_key_point_frame
+        if after_session_root is not None:
+            discovered = discover_session_paths(after_session_root, map_name=session_map_name)
+            after_map = discovered["map_path"] or after_map
+            after_g2o = discovered["g2o_path"] or after_g2o
+            after_tum = discovered["tum_path"] or after_tum
+            after_key_point_frame = discovered["key_point_frame_dir"] or after_key_point_frame
+
         report = build_loop_closure_report(
             before_map=before_map,
             after_map=after_map,

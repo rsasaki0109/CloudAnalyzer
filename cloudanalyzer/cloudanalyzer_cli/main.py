@@ -624,18 +624,32 @@ def loop_closure_report_cmd(
     )
     t_list = _parse_thresholds(thresholds)
     try:
+        before_discovery = None
+        after_discovery = None
         if before_session_root is not None:
-            discovered = discover_session_paths(before_session_root, map_name=session_map_name)
-            before_map = discovered["map_path"] or before_map
-            before_g2o = discovered["g2o_path"] or before_g2o
-            before_tum = discovered["tum_path"] or before_tum
-            before_key_point_frame = discovered["key_point_frame_dir"] or before_key_point_frame
+            before_discovery = discover_session_paths(before_session_root, map_name=session_map_name)
+            before_map = before_discovery["map_path"] or before_map
+            before_g2o = before_discovery["g2o_path"] or before_g2o
+            before_tum = before_discovery["tum_path"] or before_tum
+            before_key_point_frame = before_discovery["key_point_frame_dir"] or before_key_point_frame
+            if before_discovery["map_path"] is None and not Path(before_map).exists():
+                raise ValueError(
+                    "Before session discovery did not find a map file.\n"
+                    f"Looked for: {before_discovery['expected']['map_path']}\n"
+                    f"Also received before_map: {before_map}"
+                )
         if after_session_root is not None:
-            discovered = discover_session_paths(after_session_root, map_name=session_map_name)
-            after_map = discovered["map_path"] or after_map
-            after_g2o = discovered["g2o_path"] or after_g2o
-            after_tum = discovered["tum_path"] or after_tum
-            after_key_point_frame = discovered["key_point_frame_dir"] or after_key_point_frame
+            after_discovery = discover_session_paths(after_session_root, map_name=session_map_name)
+            after_map = after_discovery["map_path"] or after_map
+            after_g2o = after_discovery["g2o_path"] or after_g2o
+            after_tum = after_discovery["tum_path"] or after_tum
+            after_key_point_frame = after_discovery["key_point_frame_dir"] or after_key_point_frame
+            if after_discovery["map_path"] is None and not Path(after_map).exists():
+                raise ValueError(
+                    "After session discovery did not find a map file.\n"
+                    f"Looked for: {after_discovery['expected']['map_path']}\n"
+                    f"Also received after_map: {after_map}"
+                )
 
         report = build_loop_closure_report(
             before_map=before_map,
@@ -656,6 +670,8 @@ def loop_closure_report_cmd(
             after_key_point_frame_dir=after_key_point_frame,
             gate=gate,
         )
+        if before_discovery is not None or after_discovery is not None:
+            report["discovery"] = {"before": before_discovery, "after": after_discovery}
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
 

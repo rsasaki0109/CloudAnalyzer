@@ -364,6 +364,34 @@ class TestCLI:
         data = json.loads(result.output)
         assert data["posegraph_session"]["before"]["g2o"]["path"].endswith("pose_graph.g2o")
         assert data["posegraph_session"]["after"]["g2o"]["path"].endswith("pose_graph.g2o")
+        assert data["discovery"]["before"]["session_root"].endswith("before")
+        assert data["discovery"]["after"]["session_root"].endswith("after")
+
+    def test_loop_closure_report_session_root_missing_map_is_clear_error(self, tmp_path, simple_pcd):
+        import open3d as o3d
+
+        before_root = tmp_path / "before_missing_map"
+        after_root = tmp_path / "after_ok"
+        before_root.mkdir()
+        after_root.mkdir()
+        o3d.io.write_point_cloud(str(after_root / "map.pcd"), simple_pcd)
+        reference = tmp_path / "ref.pcd"
+        o3d.io.write_point_cloud(str(reference), simple_pcd)
+
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                "dummy_before.pcd",
+                str(after_root / "map.pcd"),
+                str(reference),
+                "--before-session-root",
+                str(before_root),
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 1
+        assert "Looked for:" in result.output
 
     def test_loop_closure_report_fails_gate(self, source_and_target_files):
         src, tgt = source_and_target_files

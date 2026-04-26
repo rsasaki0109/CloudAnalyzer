@@ -46,6 +46,18 @@ def discover_session_paths(session_root: str, map_name: str = "map.pcd") -> dict
         "key_point_frame_dir": str(key_point_frame) if key_point_frame.exists() else None,
         "map_path": str(map_path) if map_path.exists() else None,
         "map_name": map_name,
+        "expected": {
+            "g2o_path": str(g2o),
+            "tum_path": str(tum),
+            "key_point_frame_dir": str(key_point_frame),
+            "map_path": str(map_path),
+        },
+        "exists": {
+            "g2o_path": bool(g2o.exists()),
+            "tum_path": bool(tum.exists()),
+            "key_point_frame_dir": bool(key_point_frame.exists()),
+            "map_path": bool(map_path.exists()),
+        },
     }
 
 

@@ -263,6 +263,50 @@ class TestCLI:
         assert data["g2o"]["edge_count"] == 1
         assert data["key_point_frame"]["pcd_count"] == 2
 
+    def test_loop_closure_report_format_json(self, source_and_target_files):
+        src, tgt = source_and_target_files
+        # Before: shifted target vs reference src, After: src vs src (perfect)
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                tgt,
+                src,
+                src,
+                "--thresholds",
+                "0.05,0.1,0.2",
+                "--min-auc-gain",
+                "0.01",
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is True
+        assert data["map"]["delta"]["auc"] > 0
+        assert data["map"]["delta"]["chamfer_distance"] < 0
+
+    def test_loop_closure_report_fails_gate(self, source_and_target_files):
+        src, tgt = source_and_target_files
+        # No improvement: before==after
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                tgt,
+                tgt,
+                src,
+                "--thresholds",
+                "0.05,0.1,0.2",
+                "--min-auc-gain",
+                "0.01",
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 1
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is False
+
     def test_downsample(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "down.pcd")
         result = runner.invoke(app, ["downsample", sample_pcd_file, "-o", output, "-v", "0.3"])

@@ -415,6 +415,38 @@ class TestCLI:
         data = json.loads(result.output)
         assert data["quality_gate"]["passed"] is False
 
+    def test_loop_closure_report_posegraph_gate_affects_exit_code(self, source_and_target_files, tmp_path):
+        src, _tgt = source_and_target_files
+        bad_g2o = tmp_path / "bad.g2o"
+        bad_g2o.write_text(
+            "\n".join(
+                [
+                    "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1",
+                    "EDGE_SE3:QUAT 0 99 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                src,
+                src,
+                src,
+                "--after-g2o",
+                str(bad_g2o),
+                "--require-posegraph-ok",
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 1
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is False
+        assert data["quality_gate"]["require_posegraph_ok"] is True
+        assert data["posegraph_session"]["after"]["summary"]["ok"] is False
+
     def test_downsample(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "down.pcd")
         result = runner.invoke(app, ["downsample", sample_pcd_file, "-o", output, "-v", "0.3"])

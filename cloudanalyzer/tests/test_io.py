@@ -57,6 +57,10 @@ class TestLoadPointCloud:
 
 class TestSavePointCloud:
     def test_laz_roundtrip_preserves_coordinates(self, tmp_path, simple_pcd):
+        laspy = pytest.importorskip("laspy")
+        # LAZ support depends on optional compression backends (e.g., lazrs/laszip).
+        if not any(backend.is_available() for backend in laspy.LazBackend):
+            pytest.skip("No LAZ backend available for laspy; skipping .laz roundtrip test.")
         path = str(tmp_path / "test.laz")
         save_point_cloud(path, simple_pcd)
         loaded = load_point_cloud(path)

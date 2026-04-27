@@ -42,6 +42,7 @@ dependencies = [
     "PyYAML>=6.0",
     "laspy>=2.5.0",
     "lazrs>=0.6.0",
+    "scipy>=1.6.0",
 ]
 
 [project.scripts]

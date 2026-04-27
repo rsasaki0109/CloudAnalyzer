@@ -48,8 +48,8 @@ Reason: Best initial spatial coverage with acceptable planning cost and no extra
 
 ### Not Adopted
 
-- `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=3, readability rank=3, extensibility rank=3.
-- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=2, readability rank=1, extensibility rank=1.
+- `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=2, readability rank=3, extensibility rank=3.
+- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=3, readability rank=1, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -105,8 +105,8 @@ Reason: Best composite rank by avoiding premature promotions while preserving pe
 
 ### Not Adopted
 
-- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=3, readability rank=1, extensibility rank=3.
-- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=1, readability rank=3, extensibility rank=1.
+- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=1, readability rank=1, extensibility rank=3.
+- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=3, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -132,3 +132,18 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
 - Ground segmentation evaluation needs per-point rather than per-voxel resolution.
 - Height-band diagnostics become a first-class output for slope analysis.
 - A new matching or scoring strategy is proposed.
+
+## map_evaluate
+
+### Adopted
+
+No strategy is adopted yet (still experimental).
+
+### Not Adopted
+
+- All strategies remain experimental until we settle IO formats and performance constraints.
+
+### Trigger To Promote
+
+- A stable request/result contract is needed by the CLI or library callers.
+- We have at least two strategies with clear trade-offs and representative datasets.

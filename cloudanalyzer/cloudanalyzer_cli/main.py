@@ -23,6 +23,7 @@ from ca.diff import run_diff
 from ca.view import view
 from ca.downsample import downsample
 from ca.merge import merge
+from ca.mme import compute_mme
 from ca.convert import convert
 from ca.crop import crop
 from ca.stats import compute_stats
@@ -55,7 +56,6 @@ from ca.trajectory import evaluate_trajectory
 from ca.web import export_static_bundle as web_export_static_bundle
 from ca.web import serve as web_serve
 from ca.io import SUPPORTED_EXTENSIONS
-from ca.mme import compute_mme as _compute_mme
 from ca.log import setup_logging
 
 app = typer.Typer(
@@ -112,7 +112,7 @@ def _handle_error(e: Exception) -> None:
 
     # Provide helpful hints
     if isinstance(e, FileNotFoundError):
-        typer.echo("Hint: Check the file path. Supported formats: .pcd, .ply, .las", err=True)
+        typer.echo("Hint: Check the file path. Supported formats: .pcd, .ply, .las, .laz", err=True)
     elif "Unsupported format" in msg:
         typer.echo(f"Hint: Supported formats are: {', '.join(sorted(SUPPORTED_EXTENSIONS))}", err=True)
     elif "Unsupported method" in msg:
@@ -395,7 +395,7 @@ def mme_cmd(
 ) -> None:
     """Compute Mean Map Entropy (MME) — local geometric consistency metric (no ground truth needed)."""
     try:
-        result = _compute_mme(path, k_neighbors=neighbors, max_points=max_points, workers=workers)
+        result = compute_mme(path, k_neighbors=neighbors, max_points=max_points, workers=workers)
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
 

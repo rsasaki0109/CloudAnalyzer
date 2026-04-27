@@ -30,7 +30,8 @@ class MapEvaluateRequest:
     # Optional: write strategy-specific artifacts (e.g., colored error point clouds).
     artifact_dir: str | None = None
     # MapEval-like "accuracy_level": thresholds used for inlier ratios.
-    thresholds_m: tuple[float, float, float, float, float] = (0.2, 0.1, 0.08, 0.05, 0.01)
+    # Variable length (e.g. CLI can override); strategies enforce minimum count if needed.
+    thresholds_m: tuple[float, ...] = (0.2, 0.1, 0.08, 0.05, 0.01)
     # A coarse voxel size useful for global-structure metrics / robust proxies.
     structure_voxel_size: float = 0.5
 
@@ -66,7 +67,7 @@ def apply_transform(points: np.ndarray, transform_4x4: np.ndarray) -> np.ndarray
         return pts
     hom = np.concatenate([pts, np.ones((pts.shape[0], 1), dtype=np.float64)], axis=1)
     out = (hom @ t.T)[:, :3]
-    return out
+    return np.asarray(out, dtype=np.float64)
 
 
 def aligned_estimated_points(request: MapEvaluateRequest) -> np.ndarray:

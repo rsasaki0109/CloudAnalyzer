@@ -23,7 +23,33 @@ class G2OParseSummary:
     edge_tags: dict[str, int]
     vertex_ids: set[int]
     edge_pairs: list[tuple[int, int]]
+    self_loop_count: int
+    duplicate_undirected_edge_count: int
+    connected_component_count: int
+    isolated_vertex_count: int
     malformed_lines: int
+
+
+def _connected_components(vertices: set[int], undirected_edges: set[tuple[int, int]]) -> int:
+    """Count connected components in an undirected graph (vertices may be isolated)."""
+    parent: dict[int, int] = {v: v for v in vertices}
+
+    def find(x: int) -> int:
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+
+    def union(a: int, b: int) -> None:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[rb] = ra
+
+    for a, b in undirected_edges:
+        union(a, b)
+
+    roots = {find(v) for v in vertices}
+    return int(len(roots)) if vertices else 0
 
 
 def discover_session_paths(session_root: str, map_name: str = "map.pcd") -> dict:
@@ -84,6 +110,8 @@ def parse_g2o_summary(path: str) -> G2OParseSummary:
     edge_tags: dict[str, int] = {}
     vertex_ids: set[int] = set()
     edge_pairs: list[tuple[int, int]] = []
+    self_loops = 0
+    undirected_counts: dict[tuple[int, int], int] = {}
     malformed = 0
 
     for _lineno, line in _iter_nonempty_lines(p):
@@ -116,9 +144,25 @@ def parse_g2o_summary(path: str) -> G2OParseSummary:
                 malformed += 1
                 continue
             edge_pairs.append((a, b))
+            if a == b:
+                self_loops += 1
+            else:
+                u, v = (a, b) if a <= b else (b, a)
+                undirected_counts[u, v] = undirected_counts.get((u, v), 0) + 1
         else:
             # ignore other g2o records (PARAMS_*, FIX, etc.)
             continue
+
+    duplicate_edges = sum(max(0, c - 1) for c in undirected_counts.values() if c > 1)
+    all_vertices: set[int] = set(vertex_ids) | {v for pair in edge_pairs for v in pair}
+    unique_undirected = {k for k, c in undirected_counts.items() if c > 0}
+    comp_count = _connected_components(all_vertices, unique_undirected)
+    endpoint_vertices: set[int] = {v for a, b in undirected_counts.keys() for v in (a, b)} if undirected_counts else set()
+    isolated = (
+        len([v for v in all_vertices if v not in endpoint_vertices])
+        if all_vertices
+        else 0
+    )
 
     return G2OParseSummary(
         path=path,
@@ -126,6 +170,10 @@ def parse_g2o_summary(path: str) -> G2OParseSummary:
         edge_tags=edge_tags,
         vertex_ids=vertex_ids,
         edge_pairs=edge_pairs,
+        self_loop_count=int(self_loops),
+        duplicate_undirected_edge_count=int(duplicate_edges),
+        connected_component_count=int(comp_count),
+        isolated_vertex_count=int(isolated),
         malformed_lines=malformed,
     )
 
@@ -164,6 +212,10 @@ def validate_posegraph_session(
             "edge_tags": g2o.edge_tags,
             "vertex_count": int(len(g2o.vertex_ids)),
             "edge_count": int(len(g2o.edge_pairs)),
+            "self_loops": int(g2o.self_loop_count),
+            "duplicate_undirected_edges": int(g2o.duplicate_undirected_edge_count),
+            "connected_components": int(g2o.connected_component_count),
+            "isolated_vertices": int(g2o.isolated_vertex_count),
             "malformed_lines": int(g2o.malformed_lines),
             "missing_vertex_references": int(missing_vertices),
         }
@@ -184,22 +236,34 @@ def validate_posegraph_session(
     if key_point_frame_dir is not None:
         result["key_point_frame"] = validate_key_point_frame_dir(key_point_frame_dir)
 
-    # Simple overall status.
-    problems: list[str] = []
+    # Status split into hard errors vs informational warnings.
+    errors: list[str] = []
+    warnings: list[str] = []
     if result["g2o"]["vertex_count"] == 0:
-        problems.append("g2o: no vertices parsed")
+        errors.append("g2o: no vertices parsed")
     if result["g2o"]["edge_count"] == 0:
-        problems.append("g2o: no edges parsed")
+        errors.append("g2o: no edges parsed")
     if result["g2o"]["malformed_lines"] > 0:
-        problems.append("g2o: malformed lines present")
+        errors.append("g2o: malformed lines present")
     if result["g2o"]["missing_vertex_references"] > 0:
-        problems.append("g2o: edges reference missing vertices")
+        errors.append("g2o: edges reference missing vertices")
+    if g2o.self_loop_count > 0:
+        warnings.append(f"g2o: {g2o.self_loop_count} self-loop edge(s) (from==to)")
+    if g2o.duplicate_undirected_edge_count > 0:
+        warnings.append(
+            f"g2o: {g2o.duplicate_undirected_edge_count} duplicate undirected edge(s) beyond the first"
+        )
+    if g2o.edge_pairs and g2o.connected_component_count > 1:
+        errors.append(f"g2o: graph is disconnected ({g2o.connected_component_count} components)")
+    if g2o.isolated_vertex_count > 0 and g2o.edge_pairs:
+        errors.append(f"g2o: {g2o.isolated_vertex_count} isolated vertex/vertices")
     if "tum" in result and result["tum"]["num_poses"] < 2:
-        problems.append("tum: fewer than 2 poses")
+        errors.append("tum: fewer than 2 poses")
 
     result["summary"] = {
-        "ok": len(problems) == 0,
-        "problems": problems,
+        "ok": len(errors) == 0,
+        "errors": errors,
+        "warnings": warnings,
     }
     return result
 

@@ -259,6 +259,7 @@ class TestCLI:
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["summary"]["ok"] is True
+        assert data["summary"]["errors"] == []
         assert data["g2o"]["vertex_count"] == 2
         assert data["g2o"]["edge_count"] == 1
         assert data["key_point_frame"]["pcd_count"] == 2

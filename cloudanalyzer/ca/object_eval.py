@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 
@@ -221,7 +221,7 @@ def _sutherland_hodgman_clip(subject: np.ndarray, clip: np.ndarray) -> np.ndarra
     num_clip = len(clip)
     for i in range(num_clip):
         if len(output) == 0:
-            return output
+            return cast(np.ndarray, output)
         edge_start = clip[i]
         edge_end = clip[(i + 1) % num_clip]
         edge_vec = edge_end - edge_start
@@ -243,8 +243,8 @@ def _sutherland_hodgman_clip(subject: np.ndarray, clip: np.ndarray) -> np.ndarra
                 if abs(denom) > 1e-12:
                     t = cross_previous / denom
                     new_output.append(previous + t * (current - previous))
-        output = np.array(new_output) if new_output else np.empty((0, 2))
-    return output
+        output = np.array(new_output, dtype=np.float64) if new_output else np.empty((0, 2), dtype=np.float64)
+    return cast(np.ndarray, output)
 
 
 def _polygon_area(vertices: np.ndarray) -> float:

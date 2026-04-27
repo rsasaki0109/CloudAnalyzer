@@ -489,9 +489,18 @@ def posegraph_validate_cmd(
         typer.echo(json.dumps(result, indent=2, default=str))
     else:
         g = result["g2o"]
-        typer.echo(f"g2o: vertices={g['vertex_count']} edges={g['edge_count']} malformed={g['malformed_lines']}")
+        typer.echo(
+            f"g2o: vertices={g['vertex_count']} edges={g['edge_count']} "
+            f"components={g.get('connected_components', '?')} "
+            f"malformed={g['malformed_lines']}"
+        )
         if g["missing_vertex_references"] > 0:
             typer.echo(f"g2o: missing vertex refs: {g['missing_vertex_references']}")
+        if g.get("self_loops", 0) or g.get("duplicate_undirected_edges", 0):
+            typer.echo(
+                f"g2o: self_loops={g.get('self_loops', 0)} "
+                f"dup_edges={g.get('duplicate_undirected_edges', 0)}"
+            )
         if "tum" in result:
             t = result["tum"]
             typer.echo(f"tum: poses={t['num_poses']} duration={t['duration_s']:.3f}s")
@@ -500,8 +509,10 @@ def posegraph_validate_cmd(
             typer.echo(f"key_point_frame: pcds={k['pcd_count']}")
         status = "PASS" if result["summary"]["ok"] else "FAIL"
         typer.echo(f"Session: {status}")
-        if result["summary"]["problems"]:
-            typer.echo("Problems: " + "; ".join(result["summary"]["problems"]))
+        if result["summary"].get("errors"):
+            typer.echo("Errors:   " + "; ".join(result["summary"]["errors"]))
+        if result["summary"].get("warnings"):
+            typer.echo("Warnings: " + "; ".join(result["summary"]["warnings"]))
 
     if output_json:
         _dump_json(result, output_json)

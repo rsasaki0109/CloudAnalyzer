@@ -25,6 +25,9 @@ class LoopClosureGate:
 
     min_auc_gain: float | None = None
     max_after_chamfer: float | None = None
+    # Trajectory gates (lower is better; gain means improvement, so higher is better).
+    min_ate_gain: float | None = None
+    max_after_ate: float | None = None
 
 
 def _best_f1(eval_result: dict) -> dict:
@@ -32,7 +35,15 @@ def _best_f1(eval_result: dict) -> dict:
 
 
 def _apply_gate(report: dict, gate: LoopClosureGate) -> dict | None:
-    if gate.min_auc_gain is None and gate.max_after_chamfer is None:
+    if all(
+        v is None
+        for v in (
+            gate.min_auc_gain,
+            gate.max_after_chamfer,
+            gate.min_ate_gain,
+            gate.max_after_ate,
+        )
+    ):
         return None
     reasons: list[str] = []
     passed = True
@@ -49,11 +60,33 @@ def _apply_gate(report: dict, gate: LoopClosureGate) -> dict | None:
             passed = False
             reasons.append(f"After chamfer {chamfer:.6f} > max {gate.max_after_chamfer:.6f}")
 
+    if gate.min_ate_gain is not None:
+        if "trajectory" not in report:
+            passed = False
+            reasons.append("Trajectory ATE gate configured but trajectory inputs are missing")
+        else:
+            gain = report["trajectory"]["before"]["ate_rmse"] - report["trajectory"]["after"]["ate_rmse"]
+            if gain < gate.min_ate_gain:
+                passed = False
+                reasons.append(f"Trajectory ATE gain {gain:.6f} < min {gate.min_ate_gain:.6f}")
+
+    if gate.max_after_ate is not None:
+        if "trajectory" not in report:
+            passed = False
+            reasons.append("Trajectory max ATE gate configured but trajectory inputs are missing")
+        else:
+            ate = report["trajectory"]["after"]["ate_rmse"]
+            if ate > gate.max_after_ate:
+                passed = False
+                reasons.append(f"After trajectory ATE {ate:.6f} > max {gate.max_after_ate:.6f}")
+
     return {
         "passed": passed,
         "reasons": reasons,
         "min_auc_gain": gate.min_auc_gain,
         "max_after_chamfer": gate.max_after_chamfer,
+        "min_ate_gain": gate.min_ate_gain,
+        "max_after_ate": gate.max_after_ate,
     }
 
 
@@ -157,20 +190,20 @@ def build_loop_closure_report(
                 "path": before_trajectory,
                 "ate_rmse": before_traj["ate"]["rmse"],
                 "rpe_rmse": before_traj["rpe_translation"]["rmse"],
-                "endpoint_drift": before_traj["drift"]["endpoint_drift_m"],
+                "endpoint_drift": before_traj["drift"]["endpoint"],
                 "coverage": before_traj["matching"]["coverage_ratio"],
             },
             "after": {
                 "path": after_trajectory,
                 "ate_rmse": after_traj["ate"]["rmse"],
                 "rpe_rmse": after_traj["rpe_translation"]["rmse"],
-                "endpoint_drift": after_traj["drift"]["endpoint_drift_m"],
+                "endpoint_drift": after_traj["drift"]["endpoint"],
                 "coverage": after_traj["matching"]["coverage_ratio"],
             },
             "delta": {
                 "ate_rmse": after_traj["ate"]["rmse"] - before_traj["ate"]["rmse"],
                 "rpe_rmse": after_traj["rpe_translation"]["rmse"] - before_traj["rpe_translation"]["rmse"],
-                "endpoint_drift": after_traj["drift"]["endpoint_drift_m"] - before_traj["drift"]["endpoint_drift_m"],
+                "endpoint_drift": after_traj["drift"]["endpoint"] - before_traj["drift"]["endpoint"],
                 "coverage": after_traj["matching"]["coverage_ratio"] - before_traj["matching"]["coverage_ratio"],
             },
         }

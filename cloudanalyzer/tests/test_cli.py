@@ -195,6 +195,34 @@ class TestCLI:
         assert result.exit_code == 0
         assert "Exceed:" in result.output
 
+    def test_map_evaluate_with_initial_alignment_and_artifacts(self, source_and_target_files, tmp_path):
+        src, tgt = source_and_target_files
+        artifact_dir = str(tmp_path / "artifacts")
+        # Apply the inverse shift to align target back to source: x -= 0.1
+        initial = "1,0,0,-0.1, 0,1,0,0, 0,0,1,0, 0,0,0,1"
+        result = runner.invoke(
+            app,
+            [
+                "map-evaluate",
+                tgt,
+                src,
+                "--align-mode",
+                "initial",
+                "--initial-matrix",
+                initial,
+                "--artifact-dir",
+                artifact_dir,
+                "--thresholds",
+                "0.2,0.1,0.08,0.05,0.01",
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["strategy"] == "nn_thresholds"
+        assert data["artifacts"]["align_mode"] == "initial"
+        assert "estimated_error_raw_ply" in data["artifacts"]
+
     def test_downsample(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "down.pcd")
         result = runner.invoke(app, ["downsample", sample_pcd_file, "-o", output, "-v", "0.3"])

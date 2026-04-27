@@ -221,6 +221,15 @@ def _print_check_suite_result(result: dict) -> None:
                 f"traj_ate={summary['trajectory_ate_rmse']:.4f}  "
                 f"coverage={summary['coverage_ratio']:.1%}"
             )
+        elif item["kind"] == "loop_closure":
+            ate = summary.get("after_trajectory_ate_rmse")
+            ate_text = f"  after_ate={ate:.4f}" if isinstance(ate, (int, float)) else ""
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"auc_gain={summary['map_auc_gain']:.4f}  "
+                f"after_chamfer={summary['after_chamfer_distance']:.4f}"
+                f"{ate_text}"
+            )
         else:
             typer.echo(
                 f"[{status}] {item['id']} ({item['kind']}): "

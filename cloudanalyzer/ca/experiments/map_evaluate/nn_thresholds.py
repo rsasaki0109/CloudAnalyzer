@@ -16,19 +16,30 @@ from ca.experiments.map_evaluate.common import (
     MapEvaluateRequest,
     MapEvaluateResult,
     _require_xyz,
+    aligned_estimated_points,
     voxel_downsample,
 )
 
 
-def _min_distances(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    """Compute per-point min Euclidean distance from a to b (O(N*M)).
-
-    Kept intentionally simple for toy datasets; real maps should switch to KD-tree.
-    """
-    if a.shape[0] == 0 or b.shape[0] == 0:
+def _min_distances_kdtree(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """Compute per-point min Euclidean distance from a to b via Open3D KD-tree."""
+    if a.shape[0] == 0:
+        return np.zeros((0,), dtype=np.float64)
+    if b.shape[0] == 0:
         return np.full((a.shape[0],), np.inf, dtype=np.float64)
-    d2 = ((a[:, None, :] - b[None, :, :]) ** 2).sum(axis=2)
-    return np.sqrt(d2.min(axis=1))
+
+    import open3d as o3d
+
+    pcd_b = o3d.geometry.PointCloud()
+    pcd_b.points = o3d.utility.Vector3dVector(np.asarray(b, dtype=np.float64))
+    kdtree = o3d.geometry.KDTreeFlann(pcd_b)
+
+    out = np.empty((a.shape[0],), dtype=np.float64)
+    for i in range(a.shape[0]):
+        # 1-NN search
+        _k, _idx, dist2 = kdtree.search_knn_vector_3d(a[i], 1)
+        out[i] = float(np.sqrt(dist2[0])) if dist2 else float("inf")
+    return out
 
 
 @dataclass(slots=True)
@@ -37,13 +48,14 @@ class NNThresholdMapEvaluateStrategy:
     design: str = "functional"
 
     def evaluate(self, request: MapEvaluateRequest) -> MapEvaluateResult:
-        est = voxel_downsample(_require_xyz(request.estimated_points, "estimated_points"), request.downsample_voxel_size)
+        est_aligned = aligned_estimated_points(request)
+        est = voxel_downsample(_require_xyz(est_aligned, "estimated_points"), request.downsample_voxel_size)
         if request.reference_points is None:
             raise ValueError("nn_thresholds requires reference_points (GT).")
         ref = voxel_downsample(_require_xyz(request.reference_points, "reference_points"), request.downsample_voxel_size)
 
-        est_to_ref = _min_distances(est, ref)
-        ref_to_est = _min_distances(ref, est)
+        est_to_ref = _min_distances_kdtree(est, ref)
+        ref_to_est = _min_distances_kdtree(ref, est)
 
         thresholds = tuple(float(x) for x in request.thresholds_m)
         metrics: dict[str, float] = {
@@ -72,6 +84,7 @@ class NNThresholdMapEvaluateStrategy:
             artifacts={
                 "thresholds_m": thresholds,
                 "downsample_voxel_size": float(request.downsample_voxel_size),
+                "align_mode": request.align_mode,
             },
         )
 

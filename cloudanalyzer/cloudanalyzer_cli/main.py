@@ -54,6 +54,7 @@ from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
 from ca.posegraph import validate_posegraph_session
+from ca.loop_closure_report import LoopClosureGate, build_loop_closure_report
 from ca.web import export_static_bundle as web_export_static_bundle
 from ca.web import serve as web_serve
 from ca.io import SUPPORTED_EXTENSIONS
@@ -504,6 +505,64 @@ def posegraph_validate_cmd(
 
     if output_json:
         _dump_json(result, output_json)
+
+
+@app.command("loop-closure-report")
+def loop_closure_report_cmd(
+    before_map: str = typer.Argument(..., help="Map before manual loop closure (pcd/ply/las/laz)"),
+    after_map: str = typer.Argument(..., help="Map after manual loop closure (pcd/ply/las/laz)"),
+    reference_map: str = typer.Argument(..., help="Reference/GT map (pcd/ply/las/laz)"),
+    thresholds: Optional[str] = typer.Option(
+        None,
+        "--thresholds",
+        help="Comma-separated distance thresholds in meters for AUC/F1 curve.",
+    ),
+    min_auc_gain: Optional[float] = typer.Option(
+        None,
+        "--min-auc-gain",
+        help="Fail if AUC(after)-AUC(before) is below this value.",
+    ),
+    max_after_chamfer: Optional[float] = typer.Option(
+        None,
+        "--max-after-chamfer",
+        help="Fail if chamfer(after) exceeds this value.",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Report before/after map quality for manual loop-closure workflows."""
+    gate = LoopClosureGate(min_auc_gain=min_auc_gain, max_after_chamfer=max_after_chamfer)
+    t_list = _parse_thresholds(thresholds)
+    try:
+        report = build_loop_closure_report(
+            before_map=before_map,
+            after_map=after_map,
+            reference_map=reference_map,
+            thresholds=t_list,
+            gate=gate,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    if format_json:
+        typer.echo(json.dumps(report, indent=2, default=str))
+    else:
+        m = report["map"]
+        typer.echo(f"Reference: {m['reference']}")
+        typer.echo(f"Before:    chamfer={m['before']['chamfer_distance']:.6f} auc={m['before']['auc']:.6f}")
+        typer.echo(f"After:     chamfer={m['after']['chamfer_distance']:.6f} auc={m['after']['auc']:.6f}")
+        typer.echo(f"Delta:     chamfer={m['delta']['chamfer_distance']:.6f} auc={m['delta']['auc']:.6f}")
+        qg = report.get("quality_gate")
+        if isinstance(qg, dict):
+            typer.echo("Gate:      " + ("PASS" if qg["passed"] else "FAIL"))
+            if qg["reasons"]:
+                typer.echo("Reasons:   " + "; ".join(qg["reasons"]))
+
+    if output_json:
+        _dump_json(report, output_json)
+    qg = report.get("quality_gate")
+    if isinstance(qg, dict) and qg.get("passed") is False:
+        raise typer.Exit(code=1)
 
 
 @app.command("stats")

@@ -38,6 +38,104 @@ ca diff a.pcd b.pcd --threshold 0.05
 | `--threshold` | Report how many points exceed this distance |
 | `--format-json` | Print JSON to stdout |
 
+## ca map-evaluate
+
+Experimental MapEval-inspired map-to-map evaluation against a reference/GT map.
+
+```bash
+# GT-based threshold metrics
+ca map-evaluate estimated.pcd reference.pcd --thresholds 0.2,0.1,0.05
+
+# Apply a known initial transform and write colored PLY error maps
+ca map-evaluate estimated.pcd reference.pcd \
+  --align-mode initial \
+  --initial-matrix "1,0,0,-0.1,0,1,0,0,0,0,1,0,0,0,0,1" \
+  --artifact-dir qa/map-evaluate \
+  --format-json
+```
+
+Output: Chamfer distance plus accuracy / completeness / F-score at each configured threshold. These are per-threshold nearest-neighbor metrics. They are intentionally separate from the `ca evaluate` metrics used by `ca batch`, `ca run-evaluate`, and `ca loop-closure-report`, which report an AUC / best-F1 curve over thresholds.
+
+| Option | Default | Description |
+|---|---|---|
+| `--thresholds` | `0.2,0.1,0.08,0.05,0.01` | Comma-separated distance thresholds in meters for accuracy/completeness/F-score |
+| `--align-mode` | `none` | Alignment mode: `none` or `initial` |
+| `--initial-matrix` | `None` | 4x4 row-major transform applied when `--align-mode initial` is used |
+| `--artifact-dir` | `None` | Optional directory for colored PLY error-map artifacts |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
+
+## ca posegraph-validate
+
+Validate common manual-loop-closure session artifacts without optimizing the graph.
+
+```bash
+ca posegraph-validate session/pose_graph.g2o \
+  --tum session/optimized_poses_tum.txt \
+  --key-point-frame session/key_point_frame \
+  --format-json
+```
+
+Output: g2o vertex/edge/connectivity counts, optional TUM trajectory summary, optional keyframe count, and `summary.ok` with errors/warnings. This command is diagnostic: it exits nonzero for missing/malformed inputs that cannot be read, but a parsed session with `summary.ok: false` is reported in the payload instead of treated as a CLI failure. Use `ca loop-closure-report --require-posegraph-ok` when posegraph validity should participate in an automated quality gate.
+
+| Option | Default | Description |
+|---|---|---|
+| `--tum` | `None` | Optional optimized poses in TUM format |
+| `--key-point-frame` | `None` | Optional directory containing keyframe point clouds |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
+
+## ca loop-closure-report
+
+Compare before/after manual loop-closure outputs against one reference map, with optional trajectory and posegraph checks.
+
+```bash
+# Map-only before/after report
+ca loop-closure-report before/map.pcd after/map.pcd reference/map.pcd
+
+# Automated gate over map, trajectory, and validated posegraph sessions
+ca loop-closure-report before/map.pcd after/map.pcd reference/map.pcd \
+  --before-traj before/optimized_poses_tum.txt \
+  --after-traj after/optimized_poses_tum.txt \
+  --ref-traj reference/trajectory.tum \
+  --before-session-root before \
+  --after-session-root after \
+  --min-auc-gain 0.01 \
+  --max-after-chamfer 0.03 \
+  --min-ate-gain 0.05 \
+  --max-after-ate 0.5 \
+  --require-posegraph-ok \
+  --format-json
+```
+
+Output: before/after/delta map metrics from `ca.evaluate` (`AUC`, best-F1 curve, Chamfer, Hausdorff), optional trajectory before/after/delta metrics, optional posegraph session validation, and optional discovery metadata for `--before-session-root` / `--after-session-root`.
+
+Exit code policy: the command exits with code `1` only when a configured quality gate fails. Map and trajectory gates are enabled by their threshold options. Posegraph validation is included in the report by default but affects the quality gate only when `--require-posegraph-ok` is set.
+
+Metric note: `loop-closure-report` uses the existing `ca.evaluate` AUC/F1-curve metric set so before/after deltas line up with `ca batch` and `ca run-evaluate`. Use `ca map-evaluate` when you specifically need MapEval-style accuracy/completeness/F-score at fixed thresholds.
+
+| Option | Default | Description |
+|---|---|---|
+| `--thresholds` | default evaluate thresholds | Comma-separated thresholds for the AUC/F1 curve |
+| `--min-auc-gain` | `None` | Fail if `AUC(after)-AUC(before)` is below this value |
+| `--max-after-chamfer` | `None` | Fail if after-map Chamfer exceeds this value |
+| `--before-traj` | `None` | Optional trajectory before loop closure |
+| `--after-traj` | `None` | Optional trajectory after loop closure |
+| `--ref-traj` | `None` | Optional reference trajectory |
+| `--traj-max-time-delta` | `0.05` | Max timestamp gap for trajectory matching/interpolation |
+| `--traj-align-origin` | `false` | Align trajectory origins before scoring |
+| `--traj-align-rigid` | `false` | Rigidly align trajectories to reference before scoring |
+| `--min-ate-gain` | `None` | Fail if trajectory ATE RMSE improvement is below this value |
+| `--max-after-ate` | `None` | Fail if after-trajectory ATE RMSE exceeds this value |
+| `--before-g2o`, `--after-g2o` | `None` | Optional pose graph files |
+| `--before-tum`, `--after-tum` | `None` | Optional optimized poses for posegraph session validation |
+| `--before-key-point-frame`, `--after-key-point-frame` | `None` | Optional keyframe directories for posegraph session validation |
+| `--before-session-root`, `--after-session-root` | `None` | Auto-discover map, g2o, TUM, and keyframe paths under session roots |
+| `--session-map-name` | `map.pcd` | Map filename used during session-root discovery |
+| `--require-posegraph-ok` | `false` | Fail the quality gate if any validated posegraph session has `summary.ok: false` |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump report as JSON |
+
 ## ca batch
 
 Run info on all point cloud files in a directory.

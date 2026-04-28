@@ -28,6 +28,7 @@ class LoopClosureGate:
     # Trajectory gates (lower is better; gain means improvement, so higher is better).
     min_ate_gain: float | None = None
     max_after_ate: float | None = None
+    require_posegraph_ok: bool = False
 
 
 def _best_f1(eval_result: dict) -> dict:
@@ -43,7 +44,7 @@ def _apply_gate(report: dict, gate: LoopClosureGate) -> dict | None:
             gate.min_ate_gain,
             gate.max_after_ate,
         )
-    ):
+    ) and not gate.require_posegraph_ok:
         return None
     reasons: list[str] = []
     passed = True
@@ -80,6 +81,29 @@ def _apply_gate(report: dict, gate: LoopClosureGate) -> dict | None:
                 passed = False
                 reasons.append(f"After trajectory ATE {ate:.6f} > max {gate.max_after_ate:.6f}")
 
+    if gate.require_posegraph_ok:
+        sessions = report.get("posegraph_session")
+        if not isinstance(sessions, dict):
+            passed = False
+            reasons.append("Posegraph gate configured but posegraph session inputs are missing")
+        else:
+            checked = 0
+            for label in ("before", "after"):
+                session = sessions.get(label)
+                if session is None:
+                    continue
+                checked += 1
+                summary = session.get("summary") if isinstance(session, dict) else None
+                ok = summary.get("ok") if isinstance(summary, dict) else False
+                if ok is not True:
+                    passed = False
+                    errors = summary.get("errors", []) if isinstance(summary, dict) else []
+                    detail = f": {'; '.join(errors)}" if errors else ""
+                    reasons.append(f"{label.capitalize()} posegraph session is not ok{detail}")
+            if checked == 0:
+                passed = False
+                reasons.append("Posegraph gate configured but no posegraph sessions were validated")
+
     return {
         "passed": passed,
         "reasons": reasons,
@@ -87,6 +111,7 @@ def _apply_gate(report: dict, gate: LoopClosureGate) -> dict | None:
         "max_after_chamfer": gate.max_after_chamfer,
         "min_ate_gain": gate.min_ate_gain,
         "max_after_ate": gate.max_after_ate,
+        "require_posegraph_ok": gate.require_posegraph_ok,
     }
 
 
@@ -210,4 +235,3 @@ def build_loop_closure_report(
 
     report["quality_gate"] = _apply_gate(report, gate or LoopClosureGate())
     return report
-

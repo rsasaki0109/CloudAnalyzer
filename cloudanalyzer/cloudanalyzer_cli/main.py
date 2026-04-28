@@ -578,6 +578,11 @@ def loop_closure_report_cmd(
         "--max-after-ate",
         help="Fail if trajectory ATE RMSE(after) exceeds this value.",
     ),
+    require_posegraph_ok: bool = typer.Option(
+        False,
+        "--require-posegraph-ok",
+        help="Fail if any validated posegraph session summary is not ok.",
+    ),
     before_g2o: Optional[str] = typer.Option(
         None,
         "--before-g2o",
@@ -632,6 +637,7 @@ def loop_closure_report_cmd(
         max_after_chamfer=max_after_chamfer,
         min_ate_gain=min_ate_gain,
         max_after_ate=max_after_ate,
+        require_posegraph_ok=require_posegraph_ok,
     )
     t_list = _parse_thresholds(thresholds)
     try:

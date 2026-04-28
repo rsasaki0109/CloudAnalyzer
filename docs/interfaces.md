@@ -239,3 +239,10 @@ class GroundEvaluateRequest:
 - Experimental space: `cloudanalyzer/ca/experiments/ground_evaluate/`
 - Current stabilized lineage: `nearest_neighbor` -> `voxel_confusion`
 
+
+## map_evaluate
+
+### Current Minimal Interface (experimental)
+
+Not promoted to `ca/core` yet. Current request/result shapes live in `cloudanalyzer/ca/experiments/map_evaluate/common.py`.
+

@@ -195,6 +195,258 @@ class TestCLI:
         assert result.exit_code == 0
         assert "Exceed:" in result.output
 
+    def test_map_evaluate_with_initial_alignment_and_artifacts(self, source_and_target_files, tmp_path):
+        src, tgt = source_and_target_files
+        artifact_dir = str(tmp_path / "artifacts")
+        # Apply the inverse shift to align target back to source: x -= 0.1
+        initial = "1,0,0,-0.1, 0,1,0,0, 0,0,1,0, 0,0,0,1"
+        result = runner.invoke(
+            app,
+            [
+                "map-evaluate",
+                tgt,
+                src,
+                "--align-mode",
+                "initial",
+                "--initial-matrix",
+                initial,
+                "--artifact-dir",
+                artifact_dir,
+                "--thresholds",
+                "0.2,0.1,0.08,0.05,0.01",
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["strategy"] == "nn_thresholds"
+        assert data["artifacts"]["align_mode"] == "initial"
+        assert "estimated_error_raw_ply" in data["artifacts"]
+
+    def test_posegraph_validate_format_json(self, tmp_path):
+        g2o = tmp_path / "pose_graph.g2o"
+        g2o.write_text(
+            "\n".join(
+                [
+                    "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1",
+                    "VERTEX_SE3:QUAT 1 1 0 0 0 0 0 1",
+                    "EDGE_SE3:QUAT 0 1 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        tum = tmp_path / "optimized_poses_tum.txt"
+        tum.write_text("0 0 0 0 0 0 0 1\n1 1 0 0 0 0 0 1\n", encoding="utf-8")
+        key_dir = tmp_path / "key_point_frame"
+        key_dir.mkdir()
+        # create a couple of placeholder PCDs; validator only counts extension.
+        (key_dir / "000000.pcd").write_text("dummy\n", encoding="utf-8")
+        (key_dir / "000001.pcd").write_text("dummy\n", encoding="utf-8")
+
+        result = runner.invoke(
+            app,
+            [
+                "posegraph-validate",
+                str(g2o),
+                "--tum",
+                str(tum),
+                "--key-point-frame",
+                str(key_dir),
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["summary"]["ok"] is True
+        assert data["summary"]["errors"] == []
+        assert data["g2o"]["vertex_count"] == 2
+        assert data["g2o"]["edge_count"] == 1
+        assert data["key_point_frame"]["pcd_count"] == 2
+
+    def test_loop_closure_report_format_json(self, source_and_target_files, tmp_path):
+        src, tgt = source_and_target_files
+        g2o = tmp_path / "pose_graph_after.g2o"
+        g2o.write_text(
+            "\n".join(
+                [
+                    "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1",
+                    "VERTEX_SE3:QUAT 1 1 0 0 0 0 0 1",
+                    "EDGE_SE3:QUAT 0 1 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        # Before: shifted target vs reference src, After: src vs src (perfect)
+        before_traj = tmp_path / "before.csv"
+        after_traj = tmp_path / "after.csv"
+        ref_traj = tmp_path / "ref.csv"
+        ref_traj.write_text("timestamp,x,y,z\n0,0,0,0\n1,1,0,0\n2,2,0,0\n", encoding="utf-8")
+        before_traj.write_text("timestamp,x,y,z\n0,0.2,0,0\n1,1.2,0,0\n2,2.2,0,0\n", encoding="utf-8")
+        after_traj.write_text("timestamp,x,y,z\n0,0.0,0,0\n1,1.0,0,0\n2,2.0,0,0\n", encoding="utf-8")
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                tgt,
+                src,
+                src,
+                "--after-g2o",
+                str(g2o),
+                "--before-traj",
+                str(before_traj),
+                "--after-traj",
+                str(after_traj),
+                "--ref-traj",
+                str(ref_traj),
+                "--min-ate-gain",
+                "0.05",
+                "--thresholds",
+                "0.05,0.1,0.2",
+                "--min-auc-gain",
+                "0.01",
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is True
+        assert data["map"]["delta"]["auc"] > 0
+        assert data["map"]["delta"]["chamfer_distance"] < 0
+        assert "posegraph_session" in data
+        assert "trajectory" in data
+
+    def test_loop_closure_report_session_root_discovery(self, tmp_path, simple_pcd, shifted_pcd):
+        import open3d as o3d
+
+        before_root = tmp_path / "before"
+        after_root = tmp_path / "after"
+        before_root.mkdir()
+        after_root.mkdir()
+
+        # maps
+        o3d.io.write_point_cloud(str(before_root / "map.pcd"), shifted_pcd)
+        o3d.io.write_point_cloud(str(after_root / "map.pcd"), simple_pcd)
+        # g2o
+        (before_root / "pose_graph.g2o").write_text(
+            "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1\nEDGE_SE3:QUAT 0 0 0 0 0 0 0 0 1 " + " ".join(["1"] * 21) + "\n",
+            encoding="utf-8",
+        )
+        (after_root / "pose_graph.g2o").write_text(
+            "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1\nEDGE_SE3:QUAT 0 0 0 0 0 0 0 0 1 " + " ".join(["1"] * 21) + "\n",
+            encoding="utf-8",
+        )
+        # keyframes
+        (before_root / "key_point_frame").mkdir()
+        (after_root / "key_point_frame").mkdir()
+        (before_root / "key_point_frame" / "000000.pcd").write_text("dummy\n", encoding="utf-8")
+        (after_root / "key_point_frame" / "000000.pcd").write_text("dummy\n", encoding="utf-8")
+
+        # reference map is the "good" one
+        reference = tmp_path / "ref.pcd"
+        o3d.io.write_point_cloud(str(reference), simple_pcd)
+
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                str(before_root / "map.pcd"),
+                str(after_root / "map.pcd"),
+                str(reference),
+                "--before-session-root",
+                str(before_root),
+                "--after-session-root",
+                str(after_root),
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["posegraph_session"]["before"]["g2o"]["path"].endswith("pose_graph.g2o")
+        assert data["posegraph_session"]["after"]["g2o"]["path"].endswith("pose_graph.g2o")
+        assert data["discovery"]["before"]["session_root"].endswith("before")
+        assert data["discovery"]["after"]["session_root"].endswith("after")
+
+    def test_loop_closure_report_session_root_missing_map_is_clear_error(self, tmp_path, simple_pcd):
+        import open3d as o3d
+
+        before_root = tmp_path / "before_missing_map"
+        after_root = tmp_path / "after_ok"
+        before_root.mkdir()
+        after_root.mkdir()
+        o3d.io.write_point_cloud(str(after_root / "map.pcd"), simple_pcd)
+        reference = tmp_path / "ref.pcd"
+        o3d.io.write_point_cloud(str(reference), simple_pcd)
+
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                "dummy_before.pcd",
+                str(after_root / "map.pcd"),
+                str(reference),
+                "--before-session-root",
+                str(before_root),
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 1
+        assert "Looked for:" in result.output
+
+    def test_loop_closure_report_fails_gate(self, source_and_target_files):
+        src, tgt = source_and_target_files
+        # No improvement: before==after
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                tgt,
+                tgt,
+                src,
+                "--thresholds",
+                "0.05,0.1,0.2",
+                "--min-auc-gain",
+                "0.01",
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 1
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is False
+
+    def test_loop_closure_report_posegraph_gate_affects_exit_code(self, source_and_target_files, tmp_path):
+        src, _tgt = source_and_target_files
+        bad_g2o = tmp_path / "bad.g2o"
+        bad_g2o.write_text(
+            "\n".join(
+                [
+                    "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1",
+                    "EDGE_SE3:QUAT 0 99 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+        result = runner.invoke(
+            app,
+            [
+                "loop-closure-report",
+                src,
+                src,
+                src,
+                "--after-g2o",
+                str(bad_g2o),
+                "--require-posegraph-ok",
+                "--format-json",
+            ],
+        )
+        assert result.exit_code == 1
+        data = json.loads(result.output)
+        assert data["quality_gate"]["passed"] is False
+        assert data["quality_gate"]["require_posegraph_ok"] is True
+        assert data["posegraph_session"]["after"]["summary"]["ok"] is False
+
     def test_downsample(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "down.pcd")
         result = runner.invoke(app, ["downsample", sample_pcd_file, "-o", output, "-v", "0.3"])

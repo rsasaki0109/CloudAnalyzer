@@ -53,6 +53,8 @@ from ca.report import (
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
+from ca.posegraph import discover_session_paths, validate_posegraph_session
+from ca.loop_closure_report import LoopClosureGate, build_loop_closure_report
 from ca.web import export_static_bundle as web_export_static_bundle
 from ca.web import serve as web_serve
 from ca.io import SUPPORTED_EXTENSIONS
@@ -133,6 +135,21 @@ def _parse_thresholds(thresholds: Optional[str]) -> Optional[list[float]]:
     except ValueError:
         typer.echo("Error: --thresholds must be comma-separated numbers", err=True)
         raise typer.Exit(code=1)
+
+
+def _parse_matrix16(matrix: Optional[str]) -> Optional[list[float]]:
+    """Parse a 4x4 matrix from 16 comma-separated floats (row-major)."""
+    if not matrix:
+        return None
+    try:
+        values = [float(x.strip()) for x in matrix.split(",")]
+    except ValueError:
+        typer.echo("Error: --initial-matrix must be 16 comma-separated numbers", err=True)
+        raise typer.Exit(code=1)
+    if len(values) != 16:
+        typer.echo("Error: --initial-matrix must contain exactly 16 numbers", err=True)
+        raise typer.Exit(code=1)
+    return values
 
 
 def _check_status_label(passed: bool | None) -> str:
@@ -353,6 +370,347 @@ def diff_cmd(
             typer.echo(f"Exceed: {t['exceed_count']}/{t['total']} ({t['exceed_ratio']:.1%}) > {t['threshold']}")
     if output_json:
         _dump_json(result, output_json)
+
+
+@app.command("map-evaluate")
+def map_evaluate_cmd(
+    estimated: str = typer.Argument(..., help="Path to estimated map point cloud (pcd/ply/las/laz)"),
+    reference: str = typer.Argument(..., help="Path to reference/GT map point cloud (pcd/ply/las/laz)"),
+    thresholds: Optional[str] = typer.Option(
+        None,
+        "--thresholds",
+        help="Comma-separated distance thresholds in meters (MapEval-style accuracy levels).",
+    ),
+    align_mode: str = typer.Option(
+        "none",
+        "--align-mode",
+        help="Alignment mode: none | initial (apply --initial-matrix to estimated points).",
+    ),
+    initial_matrix: Optional[str] = typer.Option(
+        None,
+        "--initial-matrix",
+        help="Initial 4x4 transform as 16 comma-separated floats (row-major).",
+    ),
+    artifact_dir: Optional[str] = typer.Option(
+        None,
+        "--artifact-dir",
+        help="Optional output dir for visualization artifacts (colored PLY error maps).",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Experimental MapEval-inspired map-to-map evaluation (GT-based)."""
+    try:
+        import numpy as np
+
+        from ca.io import load_point_cloud
+
+        # Import experiments lazily so core/library callers remain decoupled.
+        from ca.experiments.map_evaluate.nn_thresholds import NNThresholdMapEvaluateStrategy
+        from ca.experiments.map_evaluate.common import MapEvaluateRequest
+    except Exception as e:
+        _handle_error(e)
+
+    t_list = _parse_thresholds(thresholds)
+    matrix16 = _parse_matrix16(initial_matrix)
+    init_4x4 = None
+    if matrix16 is not None:
+        init_4x4 = np.array(matrix16, dtype=np.float64).reshape(4, 4)
+
+    try:
+        est_pcd = load_point_cloud(estimated)
+        ref_pcd = load_point_cloud(reference)
+        req = MapEvaluateRequest(
+            estimated_points=np.asarray(est_pcd.points),
+            reference_points=np.asarray(ref_pcd.points),
+            thresholds_m=tuple(t_list) if t_list is not None else (0.2, 0.1, 0.08, 0.05, 0.01),
+            align_mode=align_mode,
+            initial_transform_4x4=init_4x4,
+            artifact_dir=artifact_dir,
+        )
+        result = NNThresholdMapEvaluateStrategy().evaluate(req)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    payload = {
+        "estimated": estimated,
+        "reference": reference,
+        "strategy": result.strategy,
+        "design": result.design,
+        "metrics": result.metrics,
+        "artifacts": result.artifacts,
+    }
+
+    if format_json:
+        typer.echo(json.dumps(payload, indent=2, default=str))
+    else:
+        t0 = result.artifacts.get("thresholds_m", [0.2])[0]
+        typer.echo(f"Estimated:  {estimated}")
+        typer.echo(f"Reference:  {reference}")
+        typer.echo(f"Align:      {result.artifacts.get('align_mode')}")
+        typer.echo(f"Chamfer:    {result.metrics.get('chamfer_m'):.6f} m")
+        typer.echo(f"F-score:    {result.metrics.get(f'fscore@{t0:.3f}m'):.6f} @ {t0:.3f} m")
+        typer.echo(f"Accuracy:   {result.metrics.get(f'accuracy@{t0:.3f}m'):.6f} @ {t0:.3f} m")
+        typer.echo(f"Complete:   {result.metrics.get(f'completeness@{t0:.3f}m'):.6f} @ {t0:.3f} m")
+        if "estimated_error_raw_ply" in result.artifacts:
+            typer.echo(f"Artifacts:  {result.artifacts['estimated_error_raw_ply']}")
+
+    if output_json:
+        _dump_json(payload, output_json)
+
+
+@app.command("posegraph-validate")
+def posegraph_validate_cmd(
+    g2o_path: str = typer.Argument(..., help="Path to pose graph file (pose_graph.g2o)"),
+    tum_path: Optional[str] = typer.Option(
+        None,
+        "--tum",
+        help="Optional path to optimized poses in TUM format (optimized_poses_tum.txt)",
+    ),
+    key_point_frame_dir: Optional[str] = typer.Option(
+        None,
+        "--key-point-frame",
+        help="Optional directory containing keyframe point clouds (key_point_frame/*.pcd)",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Validate a manual-loop-closure style mapping session layout."""
+    try:
+        result = validate_posegraph_session(
+            g2o_path=g2o_path,
+            tum_path=tum_path,
+            key_point_frame_dir=key_point_frame_dir,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2, default=str))
+    else:
+        g = result["g2o"]
+        typer.echo(
+            f"g2o: vertices={g['vertex_count']} edges={g['edge_count']} "
+            f"components={g.get('connected_components', '?')} "
+            f"malformed={g['malformed_lines']}"
+        )
+        if g["missing_vertex_references"] > 0:
+            typer.echo(f"g2o: missing vertex refs: {g['missing_vertex_references']}")
+        if g.get("self_loops", 0) or g.get("duplicate_undirected_edges", 0):
+            typer.echo(
+                f"g2o: self_loops={g.get('self_loops', 0)} "
+                f"dup_edges={g.get('duplicate_undirected_edges', 0)}"
+            )
+        if "tum" in result:
+            t = result["tum"]
+            typer.echo(f"tum: poses={t['num_poses']} duration={t['duration_s']:.3f}s")
+        if "key_point_frame" in result:
+            k = result["key_point_frame"]
+            typer.echo(f"key_point_frame: pcds={k['pcd_count']}")
+        status = "PASS" if result["summary"]["ok"] else "FAIL"
+        typer.echo(f"Session: {status}")
+        if result["summary"].get("errors"):
+            typer.echo("Errors:   " + "; ".join(result["summary"]["errors"]))
+        if result["summary"].get("warnings"):
+            typer.echo("Warnings: " + "; ".join(result["summary"]["warnings"]))
+
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("loop-closure-report")
+def loop_closure_report_cmd(
+    before_map: str = typer.Argument(..., help="Map before manual loop closure (pcd/ply/las/laz)"),
+    after_map: str = typer.Argument(..., help="Map after manual loop closure (pcd/ply/las/laz)"),
+    reference_map: str = typer.Argument(..., help="Reference/GT map (pcd/ply/las/laz)"),
+    thresholds: Optional[str] = typer.Option(
+        None,
+        "--thresholds",
+        help="Comma-separated distance thresholds in meters for AUC/F1 curve.",
+    ),
+    min_auc_gain: Optional[float] = typer.Option(
+        None,
+        "--min-auc-gain",
+        help="Fail if AUC(after)-AUC(before) is below this value.",
+    ),
+    max_after_chamfer: Optional[float] = typer.Option(
+        None,
+        "--max-after-chamfer",
+        help="Fail if chamfer(after) exceeds this value.",
+    ),
+    before_traj: Optional[str] = typer.Option(
+        None,
+        "--before-traj",
+        help="Optional trajectory before loop closure (CSV/TUM).",
+    ),
+    after_traj: Optional[str] = typer.Option(
+        None,
+        "--after-traj",
+        help="Optional trajectory after loop closure (CSV/TUM).",
+    ),
+    reference_traj: Optional[str] = typer.Option(
+        None,
+        "--ref-traj",
+        help="Optional reference trajectory (CSV/TUM).",
+    ),
+    traj_max_time_delta: float = typer.Option(
+        0.05,
+        "--traj-max-time-delta",
+        help="Max time delta for trajectory matching/interpolation.",
+    ),
+    traj_align_origin: bool = typer.Option(
+        False,
+        "--traj-align-origin",
+        help="Align trajectory by matching origins before scoring.",
+    ),
+    traj_align_rigid: bool = typer.Option(
+        False,
+        "--traj-align-rigid",
+        help="Rigidly align trajectory to reference before scoring.",
+    ),
+    min_ate_gain: Optional[float] = typer.Option(
+        None,
+        "--min-ate-gain",
+        help="Fail if trajectory ATE RMSE improvement (before-after) is below this value.",
+    ),
+    max_after_ate: Optional[float] = typer.Option(
+        None,
+        "--max-after-ate",
+        help="Fail if trajectory ATE RMSE(after) exceeds this value.",
+    ),
+    require_posegraph_ok: bool = typer.Option(
+        False,
+        "--require-posegraph-ok",
+        help="Fail if any validated posegraph session summary is not ok.",
+    ),
+    before_g2o: Optional[str] = typer.Option(
+        None,
+        "--before-g2o",
+        help="Optional pose graph before manual loop closure (pose_graph.g2o).",
+    ),
+    after_g2o: Optional[str] = typer.Option(
+        None,
+        "--after-g2o",
+        help="Optional pose graph after manual loop closure (pose_graph.g2o).",
+    ),
+    before_tum: Optional[str] = typer.Option(
+        None,
+        "--before-tum",
+        help="Optional optimized poses before loop closure (TUM).",
+    ),
+    after_tum: Optional[str] = typer.Option(
+        None,
+        "--after-tum",
+        help="Optional optimized poses after loop closure (TUM).",
+    ),
+    before_key_point_frame: Optional[str] = typer.Option(
+        None,
+        "--before-key-point-frame",
+        help="Optional key_point_frame dir before loop closure.",
+    ),
+    after_key_point_frame: Optional[str] = typer.Option(
+        None,
+        "--after-key-point-frame",
+        help="Optional key_point_frame dir after loop closure.",
+    ),
+    before_session_root: Optional[str] = typer.Option(
+        None,
+        "--before-session-root",
+        help="Optional session root to auto-discover before paths (pose_graph.g2o, optimized_poses_tum.txt, key_point_frame/, map.pcd).",
+    ),
+    after_session_root: Optional[str] = typer.Option(
+        None,
+        "--after-session-root",
+        help="Optional session root to auto-discover after paths (pose_graph.g2o, optimized_poses_tum.txt, key_point_frame/, map.pcd).",
+    ),
+    session_map_name: str = typer.Option(
+        "map.pcd",
+        "--session-map-name",
+        help="Map filename to use when discovering from --before/after-session-root.",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Report before/after map quality for manual loop-closure workflows."""
+    gate = LoopClosureGate(
+        min_auc_gain=min_auc_gain,
+        max_after_chamfer=max_after_chamfer,
+        min_ate_gain=min_ate_gain,
+        max_after_ate=max_after_ate,
+        require_posegraph_ok=require_posegraph_ok,
+    )
+    t_list = _parse_thresholds(thresholds)
+    try:
+        before_discovery = None
+        after_discovery = None
+        if before_session_root is not None:
+            before_discovery = discover_session_paths(before_session_root, map_name=session_map_name)
+            before_map = before_discovery["map_path"] or before_map
+            before_g2o = before_discovery["g2o_path"] or before_g2o
+            before_tum = before_discovery["tum_path"] or before_tum
+            before_key_point_frame = before_discovery["key_point_frame_dir"] or before_key_point_frame
+            if before_discovery["map_path"] is None and not Path(before_map).exists():
+                raise ValueError(
+                    "Before session discovery did not find a map file.\n"
+                    f"Looked for: {before_discovery['expected']['map_path']}\n"
+                    f"Also received before_map: {before_map}"
+                )
+        if after_session_root is not None:
+            after_discovery = discover_session_paths(after_session_root, map_name=session_map_name)
+            after_map = after_discovery["map_path"] or after_map
+            after_g2o = after_discovery["g2o_path"] or after_g2o
+            after_tum = after_discovery["tum_path"] or after_tum
+            after_key_point_frame = after_discovery["key_point_frame_dir"] or after_key_point_frame
+            if after_discovery["map_path"] is None and not Path(after_map).exists():
+                raise ValueError(
+                    "After session discovery did not find a map file.\n"
+                    f"Looked for: {after_discovery['expected']['map_path']}\n"
+                    f"Also received after_map: {after_map}"
+                )
+
+        report = build_loop_closure_report(
+            before_map=before_map,
+            after_map=after_map,
+            reference_map=reference_map,
+            thresholds=t_list,
+            before_trajectory=before_traj,
+            after_trajectory=after_traj,
+            reference_trajectory=reference_traj,
+            trajectory_max_time_delta=traj_max_time_delta,
+            trajectory_align_origin=traj_align_origin,
+            trajectory_align_rigid=traj_align_rigid,
+            before_g2o=before_g2o,
+            after_g2o=after_g2o,
+            before_tum=before_tum,
+            after_tum=after_tum,
+            before_key_point_frame_dir=before_key_point_frame,
+            after_key_point_frame_dir=after_key_point_frame,
+            gate=gate,
+        )
+        if before_discovery is not None or after_discovery is not None:
+            report["discovery"] = {"before": before_discovery, "after": after_discovery}
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    if format_json:
+        typer.echo(json.dumps(report, indent=2, default=str))
+    else:
+        m = report["map"]
+        typer.echo(f"Reference: {m['reference']}")
+        typer.echo(f"Before:    chamfer={m['before']['chamfer_distance']:.6f} auc={m['before']['auc']:.6f}")
+        typer.echo(f"After:     chamfer={m['after']['chamfer_distance']:.6f} auc={m['after']['auc']:.6f}")
+        typer.echo(f"Delta:     chamfer={m['delta']['chamfer_distance']:.6f} auc={m['delta']['auc']:.6f}")
+        qg = report.get("quality_gate")
+        if isinstance(qg, dict):
+            typer.echo("Gate:      " + ("PASS" if qg["passed"] else "FAIL"))
+            if qg["reasons"]:
+                typer.echo("Reasons:   " + "; ".join(qg["reasons"]))
+
+    if output_json:
+        _dump_json(report, output_json)
+    qg = report.get("quality_gate")
+    if isinstance(qg, dict) and qg.get("passed") is False:
+        raise typer.Exit(code=1)
 
 
 @app.command("stats")

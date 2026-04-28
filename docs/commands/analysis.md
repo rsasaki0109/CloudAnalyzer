@@ -183,7 +183,7 @@ ca batch decoded/ --evaluate reference.pcd \
 
 ## ca check
 
-Run config-driven QA across artifact, detection, tracking, trajectory, ground, and integrated run checks.
+Run config-driven QA across artifact, detection, tracking, trajectory, ground, integrated run, and manual loop-closure checks.
 
 ```bash
 # default config path
@@ -221,9 +221,23 @@ checks:
       max_rpe: 0.2
       max_drift: 1.0
       min_coverage: 0.9
+  - id: manual-loop-closure
+    kind: loop_closure
+    before_session_root: runs/before-loop
+    after_session_root: runs/after-loop
+    reference_map: baselines/map_ref.pcd
+    before_traj: runs/before-loop/optimized_poses_tum.txt
+    after_traj: runs/after-loop/optimized_poses_tum.txt
+    ref_traj: baselines/trajectory_ref.tum
+    thresholds: [0.05, 0.1, 0.2, 0.5]
+    gate:
+      min_auc_gain: 0.01
+      min_ate_gain: 0.05
+      require_posegraph_ok: true
 ```
 
-`kind` supports `artifact`, `artifact_batch`, `trajectory`, `trajectory_batch`, `run`, and `run_batch`. `map` and `map_batch` are supported as aliases when you want mapping-oriented wording. Relative paths resolve from the config file location.
+`kind` supports `artifact`, `artifact_batch`, `trajectory`, `trajectory_batch`, `run`, `run_batch`, `ground`, `detection`, `tracking`, and `loop_closure`. `map` and `map_batch` are supported as aliases when you want mapping-oriented wording. Relative paths resolve from the config file location.
+For `loop_closure`, map/trajectory gates use before/after deltas, and posegraph validation becomes a gate only with `require_posegraph_ok: true`.
 When one or more gated checks fail, `ca check` also prints a severity-first triage order. The JSON summary stores the same ranking under `summary.triage`.
 
 | Option | Default | Description |

@@ -20,6 +20,15 @@ def _write_csv_trajectory(path: Path, rows: list[tuple[float, float, float, floa
     return str(path)
 
 
+def _write_tum_trajectory(path: Path, rows: list[tuple[float, float, float, float]]) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(f"{timestamp} {x} {y} {z} 0 0 0 1" for timestamp, x, y, z in rows) + "\n",
+        encoding="utf-8",
+    )
+    return str(path)
+
+
 def _write_config(path: Path, text: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(dedent(text).strip() + "\n", encoding="utf-8")
@@ -37,6 +46,39 @@ def _write_pcd(path: Path, points: list[list[float]]) -> str:
 def _write_json(path: Path, data: dict) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    return str(path)
+
+
+def _write_valid_g2o(path: Path) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(
+            [
+                "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1",
+                "VERTEX_SE3:QUAT 1 1 0 0 0 0 0 1",
+                "VERTEX_SE3:QUAT 2 2 0 0 0 0 0 1",
+                "EDGE_SE3:QUAT 0 1 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                "EDGE_SE3:QUAT 1 2 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return str(path)
+
+
+def _write_bad_g2o(path: Path) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(
+            [
+                "VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1",
+                "EDGE_SE3:QUAT 0 99 1 0 0 0 0 0 1 " + " ".join(["1"] * 21),
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
     return str(path)
 
 
@@ -417,6 +459,104 @@ class TestRunCheckSuite:
             (tmp_path / "qa" / "reports" / "ground-seg.html").resolve()
         )
         assert (tmp_path / "qa" / "reports" / "ground-seg.html").exists()
+
+    def test_runs_loop_closure_check_with_posegraph_gate(self, tmp_path: Path):
+        before_dir = tmp_path / "before"
+        after_dir = tmp_path / "after"
+        ref_dir = tmp_path / "reference"
+        ref_points = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]]
+        before_points = [[x + 0.25, y, z] for x, y, z in ref_points]
+        _write_pcd(before_dir / "map.pcd", before_points)
+        _write_pcd(after_dir / "map.pcd", ref_points)
+        _write_pcd(ref_dir / "map.pcd", ref_points)
+        _write_valid_g2o(before_dir / "pose_graph.g2o")
+        _write_valid_g2o(after_dir / "pose_graph.g2o")
+        (before_dir / "key_point_frame").mkdir()
+        (after_dir / "key_point_frame").mkdir()
+        _write_pcd(before_dir / "key_point_frame" / "000000.pcd", [[0.2, 0, 0]])
+        _write_pcd(after_dir / "key_point_frame" / "000000.pcd", [[0, 0, 0]])
+        before_traj = _write_tum_trajectory(
+            before_dir / "optimized_poses_tum.txt",
+            [(0.0, 0.2, 0.0, 0.0), (1.0, 1.2, 0.0, 0.0), (2.0, 2.2, 0.0, 0.0)],
+        )
+        after_traj = _write_tum_trajectory(
+            after_dir / "optimized_poses_tum.txt",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0), (2.0, 2.0, 0.0, 0.0)],
+        )
+        ref_traj = _write_tum_trajectory(
+            ref_dir / "trajectory.tum",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0), (2.0, 2.0, 0.0, 0.0)],
+        )
+
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            defaults:
+              report_dir: qa/reports
+              json_dir: qa/results
+            checks:
+              - id: manual-loop
+                kind: loop_closure
+                before_session_root: {before_dir.relative_to(tmp_path)}
+                after_session_root: {after_dir.relative_to(tmp_path)}
+                reference_map: {Path(ref_dir / "map.pcd").relative_to(tmp_path)}
+                before_traj: {Path(before_traj).relative_to(tmp_path)}
+                after_traj: {Path(after_traj).relative_to(tmp_path)}
+                ref_traj: {Path(ref_traj).relative_to(tmp_path)}
+                thresholds: [0.05, 0.1, 0.2, 0.5]
+                gate:
+                  min_auc_gain: 0.01
+                  min_ate_gain: 0.05
+                  require_posegraph_ok: true
+            """,
+        )
+
+        suite = load_check_suite(str(config))
+        assert suite.checks[0].kind == "loop_closure"
+        assert suite.checks[0].gate["require_posegraph_ok"] is True
+        result = run_check_suite(suite)
+
+        assert result["summary"]["passed"] is True
+        assert result["summary"]["passed_checks"] == 1
+        check = result["checks"][0]
+        assert check["passed"] is True
+        assert check["summary"]["map_auc_gain"] > 0
+        assert check["summary"]["trajectory_ate_gain"] > 0
+        assert check["summary"]["posegraph_before_ok"] is True
+        assert check["summary"]["posegraph_after_ok"] is True
+        assert (tmp_path / "qa" / "reports" / "manual-loop.html").exists()
+        assert (tmp_path / "qa" / "results" / "manual-loop.json").exists()
+
+    def test_loop_closure_check_can_fail_on_posegraph_gate(self, tmp_path: Path):
+        ref_points = [[0, 0, 0], [1, 0, 0], [0, 1, 0], [1, 1, 0]]
+        before_map = _write_pcd(tmp_path / "before.pcd", ref_points)
+        after_map = _write_pcd(tmp_path / "after.pcd", ref_points)
+        ref_map = _write_pcd(tmp_path / "ref.pcd", ref_points)
+        bad_g2o = _write_bad_g2o(tmp_path / "bad.g2o")
+
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: bad-loop
+                kind: loop_closure
+                before_map: {Path(before_map).relative_to(tmp_path)}
+                after_map: {Path(after_map).relative_to(tmp_path)}
+                reference_map: {Path(ref_map).relative_to(tmp_path)}
+                after_g2o: {Path(bad_g2o).relative_to(tmp_path)}
+                gate:
+                  require_posegraph_ok: true
+            """,
+        )
+
+        result = run_check_suite(load_check_suite(str(config)))
+
+        assert result["summary"]["passed"] is False
+        assert result["summary"]["failed_check_ids"] == ["bad-loop"]
+        check = result["checks"][0]
+        assert check["passed"] is False
+        assert check["summary"]["posegraph_after_ok"] is False
+        assert "bad-loop" in result["summary"]["triage"]["ranked_ids"]
 
     def test_runs_detection_and_tracking_checks(self, tmp_path: Path):
         detection_reference = _write_json(

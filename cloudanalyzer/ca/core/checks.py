@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import shlex
 from dataclasses import dataclass, field
+from html import escape
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -14,6 +15,8 @@ from ca.core.check_triage import summarize_failed_checks
 from ca.batch import batch_evaluate, trajectory_batch_evaluate
 from ca.detection import evaluate_detection
 from ca.evaluate import evaluate
+from ca.loop_closure_report import LoopClosureGate, build_loop_closure_report
+from ca.posegraph import discover_session_paths
 from ca.report import (
     make_batch_summary,
     make_run_batch_summary,
@@ -42,6 +45,7 @@ CheckKind = Literal[
     "run",
     "run_batch",
     "ground",
+    "loop_closure",
 ]
 AlignmentMode = Literal["none", "origin", "rigid"]
 
@@ -60,6 +64,9 @@ _KIND_ALIASES: dict[str, CheckKind] = {
     "run_batch": "run_batch",
     "ground": "ground",
     "ground_segmentation": "ground",
+    "loop_closure": "loop_closure",
+    "loop-closure": "loop_closure",
+    "manual_loop_closure": "loop_closure",
 }
 
 _VALID_GATE_KEYS = {
@@ -76,6 +83,13 @@ _VALID_GATE_KEYS = {
     "min_mota",
     "min_iou",
     "max_id_switches",
+    "max_lateral",
+    "max_longitudinal",
+    "min_auc_gain",
+    "max_after_chamfer",
+    "min_ate_gain",
+    "max_after_ate",
+    "require_posegraph_ok",
     "voxel_size",
 }
 
@@ -107,6 +121,13 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_longitudinal",
     },
     "ground": {"min_precision", "min_recall", "min_f1", "min_iou", "voxel_size"},
+    "loop_closure": {
+        "min_auc_gain",
+        "max_after_chamfer",
+        "min_ate_gain",
+        "max_after_ate",
+        "require_posegraph_ok",
+    },
 }
 
 
@@ -129,7 +150,7 @@ class CheckSpec:
     max_time_delta: float = 0.05
     recursive: bool = False
     alignment: AlignmentMode = "none"
-    gate: dict[str, float] = field(default_factory=dict)
+    gate: dict[str, Any] = field(default_factory=dict)
     compressed_dir: str | None = None
     baseline_dir: str | None = None
     outputs: CheckOutputs = field(default_factory=CheckOutputs)
@@ -240,7 +261,7 @@ def _normalize_gate(
     defaults: dict[str, Any],
     raw_check: dict[str, Any],
     kind: CheckKind,
-) -> dict[str, float]:
+) -> dict[str, Any]:
     """Merge top-level and per-check gate settings."""
     defaults_gate = _as_mapping(defaults.get("gate"), "defaults.gate")
     check_gate = _as_mapping(raw_check.get("gate"), "check.gate")
@@ -250,11 +271,15 @@ def _normalize_gate(
         joined = ", ".join(sorted(unknown))
         raise ValueError(f"Unsupported gate key(s): {joined}")
     allowed = _ALLOWED_GATE_KEYS[kind]
-    return {
-        key: float(value)
-        for key, value in merged.items()
-        if key in allowed and value is not None
-    }
+    normalized: dict[str, Any] = {}
+    for key, value in merged.items():
+        if key not in allowed or value is None:
+            continue
+        if key == "require_posegraph_ok":
+            normalized[key] = _optional_bool(value, f"gate.{key}")
+        else:
+            normalized[key] = float(value)
+    return normalized
 
 
 def _default_output_paths(
@@ -424,6 +449,83 @@ def _normalize_ground_inputs(raw_check: dict[str, Any], config_dir: Path) -> dic
     }
 
 
+def _add_optional_resolved_input(
+    inputs: dict[str, str],
+    key: str,
+    value: object,
+    config_dir: Path,
+    context: str,
+) -> None:
+    resolved = _resolve_optional_path(config_dir, value, context)
+    if resolved is not None:
+        inputs[key] = resolved
+
+
+def _normalize_loop_closure_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
+    """Normalize inputs for a manual loop-closure before/after check."""
+    session_map_name = _optional_string(
+        raw_check.get("session_map_name"),
+        "check.session_map_name",
+    ) or "map.pcd"
+    before_session_root = _resolve_optional_path(
+        config_dir,
+        raw_check.get("before_session_root"),
+        "check.before_session_root",
+    )
+    after_session_root = _resolve_optional_path(
+        config_dir,
+        raw_check.get("after_session_root"),
+        "check.after_session_root",
+    )
+
+    before_map = raw_check.get("before_map", raw_check.get("before"))
+    after_map = raw_check.get("after_map", raw_check.get("after"))
+    reference_map = raw_check.get("reference_map", raw_check.get("reference"))
+    inputs = {
+        "before_map": (
+            _resolve_path(config_dir, _require_string(before_map, "check.before_map"))
+            if before_map is not None
+            else str((Path(before_session_root or "") / session_map_name).resolve())
+        ),
+        "after_map": (
+            _resolve_path(config_dir, _require_string(after_map, "check.after_map"))
+            if after_map is not None
+            else str((Path(after_session_root or "") / session_map_name).resolve())
+        ),
+        "reference_map": _resolve_path(
+            config_dir,
+            _require_string(reference_map, "check.reference_map"),
+        ),
+        "session_map_name": session_map_name,
+    }
+    if before_map is None and before_session_root is None:
+        raise ValueError("check.before_map is required unless check.before_session_root is set")
+    if after_map is None and after_session_root is None:
+        raise ValueError("check.after_map is required unless check.after_session_root is set")
+    if before_session_root is not None:
+        inputs["before_session_root"] = before_session_root
+    if after_session_root is not None:
+        inputs["after_session_root"] = after_session_root
+
+    optional_paths = {
+        "before_trajectory": raw_check.get("before_traj", raw_check.get("before_trajectory")),
+        "after_trajectory": raw_check.get("after_traj", raw_check.get("after_trajectory")),
+        "reference_trajectory": raw_check.get(
+            "ref_traj",
+            raw_check.get("reference_traj", raw_check.get("reference_trajectory")),
+        ),
+        "before_g2o": raw_check.get("before_g2o"),
+        "after_g2o": raw_check.get("after_g2o"),
+        "before_tum": raw_check.get("before_tum"),
+        "after_tum": raw_check.get("after_tum"),
+        "before_key_point_frame": raw_check.get("before_key_point_frame"),
+        "after_key_point_frame": raw_check.get("after_key_point_frame"),
+    }
+    for key, value in optional_paths.items():
+        _add_optional_resolved_input(inputs, key, value, config_dir, f"check.{key}")
+    return inputs
+
+
 def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
     """Normalize kind-specific input paths."""
     if kind == "artifact":
@@ -442,6 +544,8 @@ def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Pa
         return _normalize_run_inputs(raw_check, config_dir)
     if kind == "ground":
         return _normalize_ground_inputs(raw_check, config_dir)
+    if kind == "loop_closure":
+        return _normalize_loop_closure_inputs(raw_check, config_dir)
     return _normalize_run_batch_inputs(raw_check, config_dir)
 
 
@@ -1016,6 +1120,182 @@ def _run_ground_check(spec: CheckSpec) -> dict[str, Any]:
     }
 
 
+def _loop_closure_session_ok(report: dict[str, Any], label: str) -> bool | None:
+    sessions = report.get("posegraph_session")
+    if not isinstance(sessions, dict):
+        return None
+    session = sessions.get(label)
+    if not isinstance(session, dict):
+        return None
+    summary = session.get("summary")
+    if not isinstance(summary, dict):
+        return None
+    ok = summary.get("ok")
+    return bool(ok) if isinstance(ok, bool) else None
+
+
+def _write_loop_closure_report(path: str, report: dict[str, Any]) -> None:
+    """Write a compact Markdown/HTML report for a loop-closure check."""
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    m = report["map"]
+    gate = report.get("quality_gate")
+    gate_status = "INFO"
+    if isinstance(gate, dict):
+        gate_status = "PASS" if gate.get("passed") else "FAIL"
+    lines = [
+        "# Loop Closure QA Report",
+        "",
+        f"- Reference: `{m['reference']}`",
+        f"- Before map: `{m['before']['path']}`",
+        f"- After map: `{m['after']['path']}`",
+        f"- Gate: {gate_status}",
+        "",
+        "| Metric | Before | After | Delta |",
+        "|---|---:|---:|---:|",
+        (
+            f"| AUC | {m['before']['auc']:.6f} | {m['after']['auc']:.6f} | "
+            f"{m['delta']['auc']:.6f} |"
+        ),
+        (
+            f"| Chamfer | {m['before']['chamfer_distance']:.6f} | "
+            f"{m['after']['chamfer_distance']:.6f} | "
+            f"{m['delta']['chamfer_distance']:.6f} |"
+        ),
+    ]
+    if "trajectory" in report:
+        t = report["trajectory"]
+        lines.extend(
+            [
+                "",
+                "## Trajectory",
+                "",
+                "| Metric | Before | After | Delta |",
+                "|---|---:|---:|---:|",
+                (
+                    f"| ATE RMSE | {t['before']['ate_rmse']:.6f} | "
+                    f"{t['after']['ate_rmse']:.6f} | {t['delta']['ate_rmse']:.6f} |"
+                ),
+                (
+                    f"| Coverage | {t['before']['coverage']:.6f} | "
+                    f"{t['after']['coverage']:.6f} | {t['delta']['coverage']:.6f} |"
+                ),
+            ]
+        )
+    if isinstance(gate, dict) and gate.get("reasons"):
+        lines.extend(["", "## Gate Reasons", ""])
+        lines.extend(f"- {reason}" for reason in gate["reasons"])
+
+    text = "\n".join(lines) + "\n"
+    if output_path.suffix.lower() in {".html", ".htm"}:
+        body = escape(text)
+        output_path.write_text(f"<pre>{body}</pre>\n", encoding="utf-8")
+    else:
+        output_path.write_text(text, encoding="utf-8")
+
+
+def _run_loop_closure_check(spec: CheckSpec) -> dict[str, Any]:
+    """Run a manual loop-closure before/after QA check."""
+    before_map = spec.inputs["before_map"]
+    after_map = spec.inputs["after_map"]
+    before_g2o = spec.inputs.get("before_g2o")
+    after_g2o = spec.inputs.get("after_g2o")
+    before_tum = spec.inputs.get("before_tum")
+    after_tum = spec.inputs.get("after_tum")
+    before_key_point_frame = spec.inputs.get("before_key_point_frame")
+    after_key_point_frame = spec.inputs.get("after_key_point_frame")
+    before_discovery = None
+    after_discovery = None
+
+    if "before_session_root" in spec.inputs:
+        before_discovery = discover_session_paths(
+            spec.inputs["before_session_root"],
+            map_name=spec.inputs["session_map_name"],
+        )
+        before_map = before_discovery["map_path"] or before_map
+        before_g2o = before_discovery["g2o_path"] or before_g2o
+        before_tum = before_discovery["tum_path"] or before_tum
+        before_key_point_frame = before_discovery["key_point_frame_dir"] or before_key_point_frame
+        if before_discovery["map_path"] is None and not Path(before_map).exists():
+            raise ValueError(
+                "Before session discovery did not find a map file.\n"
+                f"Looked for: {before_discovery['expected']['map_path']}\n"
+                f"Also received before_map: {before_map}"
+            )
+    if "after_session_root" in spec.inputs:
+        after_discovery = discover_session_paths(
+            spec.inputs["after_session_root"],
+            map_name=spec.inputs["session_map_name"],
+        )
+        after_map = after_discovery["map_path"] or after_map
+        after_g2o = after_discovery["g2o_path"] or after_g2o
+        after_tum = after_discovery["tum_path"] or after_tum
+        after_key_point_frame = after_discovery["key_point_frame_dir"] or after_key_point_frame
+        if after_discovery["map_path"] is None and not Path(after_map).exists():
+            raise ValueError(
+                "After session discovery did not find a map file.\n"
+                f"Looked for: {after_discovery['expected']['map_path']}\n"
+                f"Also received after_map: {after_map}"
+            )
+
+    align_origin, align_rigid = _alignment_flags(spec.alignment)
+    result = build_loop_closure_report(
+        before_map=before_map,
+        after_map=after_map,
+        reference_map=spec.inputs["reference_map"],
+        thresholds=list(spec.thresholds) if spec.thresholds else None,
+        before_trajectory=spec.inputs.get("before_trajectory"),
+        after_trajectory=spec.inputs.get("after_trajectory"),
+        reference_trajectory=spec.inputs.get("reference_trajectory"),
+        trajectory_max_time_delta=spec.max_time_delta,
+        trajectory_align_origin=align_origin,
+        trajectory_align_rigid=align_rigid,
+        before_g2o=before_g2o,
+        after_g2o=after_g2o,
+        before_tum=before_tum,
+        after_tum=after_tum,
+        before_key_point_frame_dir=before_key_point_frame,
+        after_key_point_frame_dir=after_key_point_frame,
+        gate=LoopClosureGate(
+            min_auc_gain=cast(float | None, spec.gate.get("min_auc_gain")),
+            max_after_chamfer=cast(float | None, spec.gate.get("max_after_chamfer")),
+            min_ate_gain=cast(float | None, spec.gate.get("min_ate_gain")),
+            max_after_ate=cast(float | None, spec.gate.get("max_after_ate")),
+            require_posegraph_ok=bool(spec.gate.get("require_posegraph_ok", False)),
+        ),
+    )
+    if before_discovery is not None or after_discovery is not None:
+        result["discovery"] = {"before": before_discovery, "after": after_discovery}
+    if spec.outputs.report_path:
+        _write_loop_closure_report(spec.outputs.report_path, result)
+    if spec.outputs.json_path:
+        _write_json(spec.outputs.json_path, result)
+
+    gate = cast(dict[str, Any] | None, result.get("quality_gate"))
+    trajectory = result.get("trajectory")
+    before_ate = trajectory["before"]["ate_rmse"] if isinstance(trajectory, dict) else None
+    after_ate = trajectory["after"]["ate_rmse"] if isinstance(trajectory, dict) else None
+    return {
+        "id": spec.check_id,
+        "kind": spec.kind,
+        "passed": None if gate is None else gate["passed"],
+        "report_path": spec.outputs.report_path,
+        "json_path": spec.outputs.json_path,
+        "summary": {
+            "map_auc_gain": result["map"]["delta"]["auc"],
+            "after_map_auc": result["map"]["after"]["auc"],
+            "after_chamfer_distance": result["map"]["after"]["chamfer_distance"],
+            "trajectory_ate_gain": (before_ate - after_ate) if before_ate is not None and after_ate is not None else None,
+            "after_trajectory_ate_rmse": after_ate,
+            "posegraph_before_ok": _loop_closure_session_ok(result, "before"),
+            "posegraph_after_ok": _loop_closure_session_ok(result, "after"),
+            "passed": None if gate is None else gate["passed"],
+            "quality_gate": gate,
+        },
+        "result": result,
+    }
+
+
 def _run_check(spec: CheckSpec) -> dict[str, Any]:
     """Dispatch one normalized check spec."""
     if spec.kind == "artifact":
@@ -1034,6 +1314,8 @@ def _run_check(spec: CheckSpec) -> dict[str, Any]:
         return _run_run_check(spec)
     if spec.kind == "ground":
         return _run_ground_check(spec)
+    if spec.kind == "loop_closure":
+        return _run_loop_closure_check(spec)
     return _run_run_batch_check(spec)
 
 

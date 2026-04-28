@@ -13,8 +13,12 @@ _DIMENSION_GATE_KEYS = {
     "map": "min_map",
     "chamfer": "max_chamfer",
     "map_chamfer": "max_chamfer",
+    "map_auc_gain": "min_auc_gain",
+    "after_map_chamfer": "max_after_chamfer",
     "ate": "max_ate",
     "trajectory_ate": "max_ate",
+    "trajectory_ate_gain": "min_ate_gain",
+    "after_trajectory_ate": "max_after_ate",
     "rpe": "max_rpe",
     "trajectory_rpe": "max_rpe",
     "drift": "max_drift",
@@ -33,8 +37,12 @@ _DIMENSION_LABELS = {
     "map": "map",
     "chamfer": "chamfer",
     "map_chamfer": "map_chamfer",
+    "map_auc_gain": "map_auc_gain",
+    "after_map_chamfer": "after_map_chamfer",
     "ate": "ate",
     "trajectory_ate": "trajectory_ate",
+    "trajectory_ate_gain": "trajectory_ate_gain",
+    "after_trajectory_ate": "after_trajectory_ate",
     "rpe": "rpe",
     "trajectory_rpe": "trajectory_rpe",
     "drift": "drift",
@@ -307,6 +315,16 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
             "trajectory_drift": float(summary["trajectory_drift_endpoint"]),
             "coverage": float(summary["coverage_ratio"]),
         }
+    if kind == "loop_closure":
+        metrics = {
+            "map_auc_gain": float(summary["map_auc_gain"]),
+            "after_map_chamfer": float(summary["after_chamfer_distance"]),
+        }
+        if summary.get("trajectory_ate_gain") is not None:
+            metrics["trajectory_ate_gain"] = float(summary["trajectory_ate_gain"])
+        if summary.get("after_trajectory_ate_rmse") is not None:
+            metrics["after_trajectory_ate"] = float(summary["after_trajectory_ate_rmse"])
+        return metrics
     return _run_batch_metrics(result if isinstance(result, list) else [])
 
 

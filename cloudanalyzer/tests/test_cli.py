@@ -1724,6 +1724,37 @@ class TestCLI:
         assert "Triage: severity_weighted" in result.output
         assert "1. failing-artifact (artifact)" in result.output
 
+    def test_check_runs_loop_closure_kind(self, tmp_path, identical_pcd, shifted_pcd):
+        import open3d as o3d
+
+        before_map = tmp_path / "before.pcd"
+        after_map = tmp_path / "after.pcd"
+        reference_map = tmp_path / "ref.pcd"
+        o3d.io.write_point_cloud(str(before_map), shifted_pcd)
+        o3d.io.write_point_cloud(str(after_map), identical_pcd)
+        o3d.io.write_point_cloud(str(reference_map), identical_pcd)
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: manual-loop
+                kind: loop_closure
+                before_map: {before_map.name}
+                after_map: {after_map.name}
+                reference_map: {reference_map.name}
+                thresholds: [0.05, 0.1, 0.2]
+                gate:
+                  min_auc_gain: 0.01
+            """,
+        )
+
+        result = runner.invoke(app, ["check", config])
+
+        assert result.exit_code == 0
+        assert "[PASS] manual-loop (loop_closure)" in result.output
+        assert "auc_gain=" in result.output
+        assert "after_chamfer=" in result.output
+
     def test_init_check_writes_integrated_template(self, tmp_path):
         config_path = tmp_path / "cloudanalyzer.yaml"
 

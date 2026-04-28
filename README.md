@@ -30,6 +30,8 @@ Adding just one flag, `--evaluate`, tells you immediately how much quality chang
   Compare voxel downsampling, outlier removal, splitting, or compressed-and-restored maps against a baseline with `AUC / Chamfer / Hausdorff / heatmap`.
 - **Localization / SLAM run evaluation**
   Evaluate estimated trajectories against ground truth with `ATE / RPE / drift / lateral / longitudinal / coverage`, then inspect map heatmaps and trajectory timelines together in `ca web`.
+- **Manual loop-closure QA**
+  Compare before/after loop-closure maps, trajectories, and posegraph session artifacts with `loop-closure-report` or config-driven `kind: loop_closure` gates.
 - **Perception QA**
   Evaluate ground segmentation, 3D object detection, and 3D multi-object tracking with task-specific metrics and wire the result into config-driven CI gates.
 - **Regression checks for 3D generation pipelines**
@@ -52,7 +54,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **34 subcommands** |
+| CLI | Limited | None | None | **39 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -195,7 +197,7 @@ ca pipeline noisy.pcd reference.pcd -o production.pcd -v 0.2
 
 ## CI / Automation
 
-Place `cloudanalyzer.yaml` in your repo to unify mapping / localization / perception QA behind one command.
+Place `cloudanalyzer.yaml` in your repo to unify mapping, localization, loop-closure, and perception QA behind one command.
 
 To emit a starter config:
 
@@ -367,6 +369,15 @@ ca run-batch maps/ \
 # and `ca run-evaluate ...` drill-down commands.
 # The quality gate summary separates overall failures from map failures and trajectory failures.
 
+# Manual loop-closure before/after QA
+ca loop-closure-report before/map.pcd after/map.pcd reference/map.pcd \
+  --before-session-root before \
+  --after-session-root after \
+  --before-traj before/optimized_poses_tum.txt \
+  --after-traj after/optimized_poses_tum.txt \
+  --ref-traj reference/trajectory.tum \
+  --min-auc-gain 0.01 --min-ate-gain 0.05 --require-posegraph-ok
+
 # Quality gate: exit with code 1 if any file fails
 ca batch results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
 
@@ -400,11 +411,14 @@ deterministic synthetic 3-frame sequences seeded from that same public frame.
 
 ```bash
 ca evaluate src.pcd ref.pcd --plot f1.png   # F1 / Chamfer / Hausdorff / AUC
+ca map-evaluate est_map.pcd gt_map.pcd --thresholds 0.2,0.1,0.05  # fixed-threshold map metrics
 ca compare src.pcd tgt.pcd --register gicp  # Compare with registration
 ca diff a.pcd b.pcd --threshold 0.1         # Quick distance statistics
 ca pipeline in.pcd ref.pcd -o out.pcd       # filter -> downsample -> evaluate
 ca check cloudanalyzer.yaml                 # Config-driven unified QA
 ca init-check --profile integrated          # Generate a starter config
+ca posegraph-validate session/pose_graph.g2o --tum session/optimized_poses_tum.txt  # g2o/TUM session sanity check
+ca loop-closure-report before.pcd after.pcd ref.pcd --min-auc-gain 0.01  # before/after map QA
 ca baseline-decision qa/current.json --history-dir qa/history/  # promote / keep / reject
 ca baseline-save qa/summary.json --history-dir qa/history/      # save a baseline into history
 ca baseline-list --history-dir qa/history/                      # list saved baselines
@@ -448,6 +462,8 @@ ca traj-evaluate est.csv gt.csv --report traj.html  # trajectory quality report
 ca traj-batch runs/ --reference-dir gt/ --report traj_batch.html  # trajectory batch report
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # combined run report
 ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch report
+ca posegraph-validate session/pose_graph.g2o --key-point-frame session/key_point_frame  # posegraph artifact validation
+ca loop-closure-report before/map.pcd after/map.pcd ref/map.pcd --require-posegraph-ok  # loop-closure report
 ```
 
 ### Visualization
@@ -505,7 +521,7 @@ cd cloudanalyzer
 python3 -m ca.experiments.process_docs --write-docs
 ```
 
-At the moment, seven experiment slices follow that process:
+At the moment, eight experiment slices follow that process:
 
 | Slice | Core | Experiments |
 |---|---|---|
@@ -516,6 +532,7 @@ At the moment, seven experiment slices follow that process:
 | Regression triage | `ca.core.check_triage` | `ca.experiments.check_triage` |
 | Baseline evolution | `ca.core.check_baseline_evolution` | `ca.experiments.check_baseline_evolution` |
 | Ground evaluation | `ca.core.ground_evaluate` | `ca.experiments.ground_evaluate` |
+| Map evaluation | CLI / experimental boundary | `ca.experiments.map_evaluate` |
 
 `docs/experiments.md`, `docs/decisions.md`, and `docs/interfaces.md` are regenerated together from `ca.experiments.process_docs`.
 

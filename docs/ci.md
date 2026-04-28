@@ -104,6 +104,18 @@ checks:
       max_rpe: 0.2
       max_drift: 1.0
       min_coverage: 0.9
+  - id: manual-loop-closure
+    kind: loop_closure
+    before_session_root: runs/before-loop
+    after_session_root: runs/after-loop
+    reference_map: baselines/map_ref.pcd
+    before_traj: runs/before-loop/optimized_poses_tum.txt
+    after_traj: runs/after-loop/optimized_poses_tum.txt
+    ref_traj: baselines/trajectory_ref.tum
+    gate:
+      min_auc_gain: 0.01
+      min_ate_gain: 0.05
+      require_posegraph_ok: true
 ```
 
 `ca check` writes per-check reports / JSON when `report_dir` and `json_dir` are configured, and it exits with code `1` when any gated check fails.

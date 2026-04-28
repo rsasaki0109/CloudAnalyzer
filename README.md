@@ -247,6 +247,23 @@ Ground segmentation can also be integrated with `kind: ground`:
       min_iou: 0.8
 ```
 
+Manual loop-closure QA can be gated with `kind: loop_closure`:
+
+```yaml
+  - id: manual-loop-closure
+    kind: loop_closure
+    before_session_root: runs/before-loop
+    after_session_root: runs/after-loop
+    reference_map: baselines/map_ref.pcd
+    before_traj: runs/before-loop/optimized_poses_tum.txt
+    after_traj: runs/after-loop/optimized_poses_tum.txt
+    ref_traj: baselines/trajectory_ref.tum
+    gate:
+      min_auc_gain: 0.01
+      min_ate_gain: 0.05
+      require_posegraph_ok: true
+```
+
 When multiple gated checks fail, `ca check` also emits triage output to help prioritize inspection.
 
 ### Baseline Management

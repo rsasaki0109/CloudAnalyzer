@@ -1336,6 +1336,20 @@ function slamDiagnosisLabel(frame) {
     : 'needs_review';
 }
 
+function slamDiagnosisLabels(frame) {
+  const labels = [slamDiagnosisLabel(frame)];
+  const secondary = frame && frame.diagnosis && Array.isArray(frame.diagnosis.secondary_labels)
+    ? frame.diagnosis.secondary_labels
+    : [];
+  for (const label of secondary) {
+    const normalized = String(label || '').trim();
+    if (normalized && !labels.includes(normalized)) {
+      labels.push(normalized);
+    }
+  }
+  return labels;
+}
+
 function diagnosisColor(label) {
   const palette = {
     map_too_sparse: '#f59e0b',
@@ -1371,7 +1385,7 @@ function setupSlamDebugDiagnosisFilter(frames) {
   if (!filter) {
     return;
   }
-  const labels = Array.from(new Set(frames.map(slamDiagnosisLabel))).sort();
+  const labels = Array.from(new Set(frames.flatMap(slamDiagnosisLabels))).sort();
   filter.innerHTML = '<option value="__all__">All</option>' +
     labels.map((label) => `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`).join('');
 }
@@ -1388,7 +1402,7 @@ function updateSlamDebugMarkerGeometry() {
   slamDebugMarkerFrames = [];
   for (const frame of allSlamDebugMarkerFrames) {
     const label = slamDiagnosisLabel(frame);
-    if (selected !== '__all__' && label !== selected) {
+    if (selected !== '__all__' && !slamDiagnosisLabels(frame).includes(selected)) {
       continue;
     }
     const displayIndex = frame.display_index;

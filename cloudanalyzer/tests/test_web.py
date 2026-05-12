@@ -363,6 +363,8 @@ class TestPrepareViewerData:
         assert "Artifact overlays" in exported_html
         assert "slamDebugDiagnosisFilter" in exported_html
         assert "filtering_too_aggressive" in exported_html
+        assert "slamDiagnosisLabels" in exported_html
+        assert "flatMap(slamDiagnosisLabels)" in exported_html
         assert "diagnosisColor" in exported_html
         assert "_slamDebugVisibleMarkerCount" in exported_html
         assert "Initial" in exported_html

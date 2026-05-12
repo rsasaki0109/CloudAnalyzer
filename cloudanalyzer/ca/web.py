@@ -1229,6 +1229,9 @@ function describeSlamDebugFrame(markerIndex) {
   }
   if (diagnosis) {
     lines.push(`Diagnosis: ${diagnosis.label} (${diagnosis.confidence})`);
+    if (diagnosis.secondary_labels && diagnosis.secondary_labels.length > 0) {
+      lines.push(`Secondary: ${diagnosis.secondary_labels.join(', ')}`);
+    }
     if (diagnosis.suggested_action) {
       lines.push(`Action: ${diagnosis.suggested_action}`);
     }

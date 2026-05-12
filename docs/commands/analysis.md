@@ -95,7 +95,7 @@ trajectory overlay inspection. With `--run-scan-match-debug`, the command also
 runs frame-level ICP/GICP diagnostics for the selected frames and stores
 before/after nearest-neighbor distance summaries plus colored PLY artifact paths
 in the JSON/Markdown reports. Each selected frame also includes a diagnosis
-label and suggested action, such as `bad_initial_guess`, `weak_geometry`,
+label, secondary labels, and suggested action, such as `bad_initial_guess`, `weak_geometry`,
 `registration_local_minimum`, `map_too_sparse`, `sparse_raw_scan`,
 `filtering_too_aggressive`, or `scan_quality_issue`. GLIM metrics with
 `downsampled_points` and raw/filtered range summaries are preserved in the

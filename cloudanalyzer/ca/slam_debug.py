@@ -197,13 +197,53 @@ def _diagnosis(
     confidence: str,
     suggested_action: str,
     signals: dict[str, Any],
+    secondary_labels: list[str] | None = None,
 ) -> dict[str, Any]:
     return {
         "label": label,
         "confidence": confidence,
         "suggested_action": suggested_action,
+        "secondary_labels": secondary_labels or [],
         "signals": signals,
     }
+
+
+def _diagnosis_candidate(
+    label: str,
+    confidence: str,
+    suggested_action: str,
+) -> dict[str, str]:
+    return {
+        "label": label,
+        "confidence": confidence,
+        "suggested_action": suggested_action,
+    }
+
+
+def _select_primary_diagnosis(
+    candidates: list[dict[str, str]],
+    signals: dict[str, Any],
+) -> dict[str, Any]:
+    if not candidates:
+        return _diagnosis(
+            "needs_review",
+            "low",
+            "Review GLIM metrics and colored artifacts manually.",
+            signals,
+        )
+    primary = candidates[0]
+    secondary_labels: list[str] = []
+    for candidate in candidates[1:]:
+        label = candidate["label"]
+        if label not in secondary_labels:
+            secondary_labels.append(label)
+    return _diagnosis(
+        primary["label"],
+        primary["confidence"],
+        primary["suggested_action"],
+        signals,
+        secondary_labels=secondary_labels,
+    )
 
 
 def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
@@ -259,12 +299,15 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
         "scan_points_used": scan_points_used,
     }
 
+    candidates: list[dict[str, str]] = []
+
     if raw_points is not None and raw_points < 50:
-        return _diagnosis(
-            "sparse_raw_scan",
-            "high",
-            "Inspect the source scan around this frame; too few raw points reached SLAM.",
-            signals,
+        candidates.append(
+            _diagnosis_candidate(
+                "sparse_raw_scan",
+                "high",
+                "Inspect the source scan around this frame; too few raw points reached SLAM.",
+            )
         )
     if (
         raw_points is not None
@@ -274,25 +317,28 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
         and filtered_ratio is not None
         and filtered_ratio < 0.02
     ):
-        return _diagnosis(
-            "filtering_too_aggressive",
-            "high",
-            "Inspect voxel/filter settings; the raw scan has points but too few survive downsampling.",
-            signals,
+        candidates.append(
+            _diagnosis_candidate(
+                "filtering_too_aggressive",
+                "high",
+                "Inspect voxel/filter settings; the raw scan has points but too few survive downsampling.",
+            )
         )
     if scan_quality_low or (filtered_points is not None and filtered_points < 50):
-        return _diagnosis(
-            "scan_quality_issue",
-            "high",
-            "Inspect raw scan filtering and sensor data around this frame.",
-            signals,
+        candidates.append(
+            _diagnosis_candidate(
+                "scan_quality_issue",
+                "high",
+                "Inspect raw scan filtering and sensor data around this frame.",
+            )
         )
     if map_points_used is not None and map_points_used < 100:
-        return _diagnosis(
-            "map_too_sparse",
-            "high",
-            "Inspect keyframe insertion/local map selection and rerun with a wider local map.",
-            signals,
+        candidates.append(
+            _diagnosis_candidate(
+                "map_too_sparse",
+                "high",
+                "Inspect keyframe insertion/local map selection and rerun with a wider local map.",
+            )
         )
     if (
         improvement is not None
@@ -302,11 +348,12 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
         and after_mean <= 0.75
         and initial_delta >= 0.5
     ):
-        return _diagnosis(
-            "bad_initial_guess",
-            "high",
-            "Inspect IMU/prediction seed, initial pose, and motion model around this timestamp.",
-            signals,
+        candidates.append(
+            _diagnosis_candidate(
+                "bad_initial_guess",
+                "high",
+                "Inspect IMU/prediction seed, initial pose, and motion model around this timestamp.",
+            )
         )
     if (
         debug
@@ -317,11 +364,12 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
         and improvement < 0.1
         and inlier_rmse >= 0.5
     ):
-        return _diagnosis(
-            "weak_geometry",
-            "medium",
-            "Inspect geometry degeneracy, correspondence radius, and voxel/normal constraints.",
-            signals,
+        candidates.append(
+            _diagnosis_candidate(
+                "weak_geometry",
+                "medium",
+                "Inspect geometry degeneracy, correspondence radius, and voxel/normal constraints.",
+            )
         )
     if (
         debug
@@ -334,28 +382,25 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
             or (initial_delta is not None and initial_delta >= 0.75)
         )
     ):
-        return _diagnosis(
-            "registration_local_minimum",
-            "medium",
-            (
-                "Compare GLIM scan-match result with CloudAnalyzer aligned artifacts; "
-                "try a wider initial search or alternate registration seed."
-            ),
-            signals,
+        candidates.append(
+            _diagnosis_candidate(
+                "registration_local_minimum",
+                "medium",
+                (
+                    "Compare GLIM scan-match result with CloudAnalyzer aligned artifacts; "
+                    "try a wider initial search or alternate registration seed."
+                ),
+            )
         )
     if frame.get("scan_match_debug_error"):
-        return _diagnosis(
-            "scan_match_debug_error",
-            "medium",
-            "Open the scan-match error and verify scan/map paths and formats.",
-            signals,
+        candidates.append(
+            _diagnosis_candidate(
+                "scan_match_debug_error",
+                "medium",
+                "Open the scan-match error and verify scan/map paths and formats.",
+            )
         )
-    return _diagnosis(
-        "needs_review",
-        "low",
-        "Review GLIM metrics and colored artifacts manually.",
-        signals,
-    )
+    return _select_primary_diagnosis(candidates, signals)
 
 
 def render_slam_debug_markdown(result: dict[str, Any]) -> str:
@@ -397,6 +442,12 @@ def render_slam_debug_markdown(result: dict[str, Any]) -> str:
                     f"- Suggested action: {diagnosis['suggested_action']}",
                 ]
             )
+            secondary_labels = diagnosis.get("secondary_labels") or []
+            if secondary_labels:
+                lines.append(
+                    "- Secondary labels: "
+                    + ", ".join(f"`{label}`" for label in secondary_labels)
+                )
 
         metrics = frame.get("glim_metrics", {})
         lines.extend(

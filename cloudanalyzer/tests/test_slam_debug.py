@@ -173,7 +173,8 @@ def test_diagnose_slam_frame_detects_sparse_raw_scan():
 def test_diagnose_slam_frame_detects_scan_match_cost_hotspot():
     frame = {
         "glim_metrics": {
-            "scan_match_rmse_m": 2.1,
+            "scan_match_rmse_m": 0.41,
+            "scan_match_weighted_rmse": 2.1,
             "prediction_delta_m": 0.2,
             "initial_delta_m": 0.2,
             "scan_quality_low": False,
@@ -194,6 +195,8 @@ def test_diagnose_slam_frame_detects_scan_match_cost_hotspot():
 
     assert diagnosis["label"] == "scan_match_cost_hotspot"
     assert diagnosis["confidence"] == "medium"
+    assert diagnosis["signals"]["scan_match_rmse_m"] == 0.41
+    assert diagnosis["signals"]["scan_match_weighted_rmse"] == 2.1
     assert diagnosis["signals"]["fitness"] == 1.0
     assert diagnosis["signals"]["inlier_rmse"] == 0.15
 
@@ -201,14 +204,14 @@ def test_diagnose_slam_frame_detects_scan_match_cost_hotspot():
 def test_analyze_slam_run_preserves_glim_scan_quality_metrics(tmp_path):
     metrics = tmp_path / "metrics.csv"
     metrics.write_text(
-        "scan_id,timestamp_sec,scan_match_failed,scan_match_rmse_m,"
+        "scan_id,timestamp_sec,scan_match_failed,scan_match_rmse_m,scan_match_weighted_rmse,"
         "scan_match_correspondence_rejection_rate,prediction_delta_m,"
         "scan_match_vs_initial_pose_delta_m,registration_retry_count,"
         "consecutive_scan_match_failures,scan_quality_low,raw_points,"
         "downsampled_points,filtered_points,raw_range_min_m,raw_range_max_m,"
         "raw_range_mean_m,filtered_range_min_m,filtered_range_max_m,"
         "filtered_range_mean_m,initial_x_m,initial_y_m,initial_z_m\n"
-        "scan_0,0.0,false,2.0,0.2,0.1,0.1,0,0,true,5000,"
+        "scan_0,0.0,false,0.4,2.0,0.2,0.1,0.1,0,0,true,5000,"
         "20,20,1.0,30.0,12.5,1.5,20.0,11.9,0.0,0.0,0.0\n",
         encoding="utf-8",
     )
@@ -216,6 +219,8 @@ def test_analyze_slam_run_preserves_glim_scan_quality_metrics(tmp_path):
     result = analyze_slam_run(str(metrics), top_k=1)
 
     metrics_payload = result["selected_frames"][0]["glim_metrics"]
+    assert metrics_payload["scan_match_rmse_m"] == 0.4
+    assert metrics_payload["scan_match_weighted_rmse"] == 2.0
     assert metrics_payload["downsampled_points"] == 20
     assert metrics_payload["raw_range_mean_m"] == 12.5
     assert metrics_payload["filtered_range_mean_m"] == 11.9

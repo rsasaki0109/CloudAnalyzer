@@ -238,6 +238,7 @@ class TestPrepareViewerData:
                             "score": 12.5,
                             "reasons": ["rmse=3.0"],
                             "scan_match_rmse_m": 3.0,
+                            "scan_match_weighted_rmse": 8.0,
                             "prediction_delta_m": 0.4,
                             "diagnosis": {
                                 "label": "bad_initial_guess",
@@ -285,6 +286,7 @@ class TestPrepareViewerData:
         frame = data["trajectory"]["slam_debug_frames"][0]
         assert frame["scan_id"] == "scan_0001"
         assert frame["display_index"] == 1
+        assert frame["scan_match_weighted_rmse"] == 8.0
         assert frame["diagnosis"]["label"] == "bad_initial_guess"
         assert frame["diagnosis"]["secondary_labels"] == ["registration_local_minimum"]
         assert frame["diagnosis"]["signals"]["raw_points"] == 5000

@@ -325,6 +325,10 @@ class TestPrepareViewerData:
         assert assets["scan_aligned_error_ply"].startswith(
             "slam_debug_artifacts/01_scan_0001/"
         )
+        exported_html = (output_dir / "index.html").read_text(encoding="utf-8")
+        assert "PLYLoader" in exported_html
+        assert "data-slam-artifact-href" in exported_html
+        assert "Artifact Overlay" in exported_html
 
     def test_prepare_viewer_bundle_exposes_progressive_source_chunks(self, tmp_path, monkeypatch):
         rng = np.random.default_rng(321)

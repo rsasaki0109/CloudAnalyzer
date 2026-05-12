@@ -163,7 +163,165 @@ def _frame_metrics(row: dict[str, str]) -> dict[str, Any]:
         ),
         "scan_quality_low": _as_bool(row, "scan_quality_low"),
         "scan_quality_reason": row.get("scan_quality_reason") or None,
+        "raw_points": _as_float(row, "raw_points"),
+        "filtered_points": _as_float(row, "filtered_points"),
+        "map_points": _as_float(row, "map_points"),
+        "registration_map_points": _as_float(row, "registration_map_points"),
     }
+
+
+def _nested_float(data: dict[str, Any] | None, *keys: str) -> float | None:
+    value: Any = data
+    for key in keys:
+        if not isinstance(value, dict):
+            return None
+        value = value.get(key)
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        parsed = float(value)
+    except (TypeError, ValueError):
+        return None
+    return parsed if math.isfinite(parsed) else None
+
+
+def _diagnosis(
+    label: str,
+    confidence: str,
+    suggested_action: str,
+    signals: dict[str, Any],
+) -> dict[str, Any]:
+    return {
+        "label": label,
+        "confidence": confidence,
+        "suggested_action": suggested_action,
+        "signals": signals,
+    }
+
+
+def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
+    """Classify a suspicious SLAM frame into an actionable debug bucket."""
+
+    metrics = frame.get("glim_metrics") or {}
+    debug = frame.get("scan_match_debug_result")
+
+    rmse = metrics.get("scan_match_rmse_m")
+    prediction_delta = metrics.get("prediction_delta_m")
+    initial_delta = metrics.get("initial_delta_m")
+    raw_points = metrics.get("raw_points")
+    filtered_points = metrics.get("filtered_points")
+    scan_quality_low = bool(metrics.get("scan_quality_low"))
+
+    before_mean = _nested_float(debug, "distance_before", "stats", "mean")
+    after_mean = _nested_float(debug, "distance_after", "stats", "mean")
+    improvement = _nested_float(debug, "improvement", "mean")
+    fitness = _nested_float(debug, "registration", "fitness")
+    inlier_rmse = _nested_float(debug, "registration", "inlier_rmse")
+    map_points_used = _nested_float(debug, "preprocess", "map_points_used")
+    if map_points_used is None:
+        map_points_used = metrics.get("registration_map_points") or metrics.get(
+            "map_points"
+        )
+    scan_points_used = _nested_float(debug, "preprocess", "scan_points_used")
+
+    filtered_ratio = None
+    if raw_points not in (None, 0) and filtered_points is not None:
+        filtered_ratio = float(filtered_points) / float(raw_points)
+
+    signals = {
+        "scan_match_rmse_m": rmse,
+        "prediction_delta_m": prediction_delta,
+        "initial_delta_m": initial_delta,
+        "raw_points": raw_points,
+        "filtered_points": filtered_points,
+        "filtered_ratio": filtered_ratio,
+        "before_mean": before_mean,
+        "after_mean": after_mean,
+        "improvement_mean": improvement,
+        "fitness": fitness,
+        "inlier_rmse": inlier_rmse,
+        "map_points_used": map_points_used,
+        "scan_points_used": scan_points_used,
+    }
+
+    if scan_quality_low or (
+        filtered_points is not None and filtered_points < 50
+    ) or (filtered_ratio is not None and filtered_ratio < 0.02):
+        return _diagnosis(
+            "scan_quality_issue",
+            "high",
+            "Inspect raw scan filtering and sensor data around this frame.",
+            signals,
+        )
+    if map_points_used is not None and map_points_used < 100:
+        return _diagnosis(
+            "map_too_sparse",
+            "high",
+            "Inspect keyframe insertion/local map selection and rerun with a wider local map.",
+            signals,
+        )
+    if (
+        improvement is not None
+        and after_mean is not None
+        and initial_delta is not None
+        and improvement >= 0.5
+        and after_mean <= 0.75
+        and initial_delta >= 0.5
+    ):
+        return _diagnosis(
+            "bad_initial_guess",
+            "high",
+            "Inspect IMU/prediction seed, initial pose, and motion model around this timestamp.",
+            signals,
+        )
+    if (
+        debug
+        and rmse is not None
+        and improvement is not None
+        and inlier_rmse is not None
+        and rmse >= 2.0
+        and improvement < 0.1
+        and inlier_rmse >= 0.5
+    ):
+        return _diagnosis(
+            "weak_geometry",
+            "medium",
+            "Inspect geometry degeneracy, correspondence radius, and voxel/normal constraints.",
+            signals,
+        )
+    if (
+        debug
+        and rmse is not None
+        and improvement is not None
+        and rmse >= 2.0
+        and improvement >= 0.25
+        and (
+            (prediction_delta is not None and prediction_delta >= 0.75)
+            or (initial_delta is not None and initial_delta >= 0.75)
+        )
+    ):
+        return _diagnosis(
+            "registration_local_minimum",
+            "medium",
+            (
+                "Compare GLIM scan-match result with CloudAnalyzer aligned artifacts; "
+                "try a wider initial search or alternate registration seed."
+            ),
+            signals,
+        )
+    if frame.get("scan_match_debug_error"):
+        return _diagnosis(
+            "scan_match_debug_error",
+            "medium",
+            "Open the scan-match error and verify scan/map paths and formats.",
+            signals,
+        )
+    return _diagnosis(
+        "needs_review",
+        "low",
+        "Review GLIM metrics and colored artifacts manually.",
+        signals,
+    )
 
 
 def render_slam_debug_markdown(result: dict[str, Any]) -> str:
@@ -195,6 +353,16 @@ def render_slam_debug_markdown(result: dict[str, Any]) -> str:
         )
         if frame.get("reasons"):
             lines.append(f"- Reasons: {', '.join(frame['reasons'])}")
+
+        diagnosis = frame.get("diagnosis")
+        if diagnosis:
+            lines.extend(
+                [
+                    "- Diagnosis: "
+                    f"`{diagnosis['label']}` ({diagnosis['confidence']})",
+                    f"- Suggested action: {diagnosis['suggested_action']}",
+                ]
+            )
 
         metrics = frame.get("glim_metrics", {})
         lines.extend(
@@ -355,31 +523,31 @@ def analyze_slam_run(
             except (FileNotFoundError, ValueError, RuntimeError) as exc:
                 scan_match_debug_error = str(exc)
 
-        frames.append(
-            {
-                "rank": rank,
-                "score": _score_row(row, sort_by),
-                "scan_id": scan_id,
-                "timestamp_sec": _as_float(row, "timestamp_sec"),
-                "scan_path": scan_path,
-                "reasons": _row_reasons(row),
-                "scan_match_failed": _as_bool(row, "scan_match_failed"),
-                "scan_match_rmse_m": _as_float(row, "scan_match_rmse_m"),
-                "scan_match_rejection_rate": _as_float(
-                    row, "scan_match_correspondence_rejection_rate"
-                ),
-                "prediction_delta_m": _as_float(row, "prediction_delta_m"),
-                "initial_delta_m": _as_float(row, "scan_match_vs_initial_pose_delta_m"),
-                "glim_metrics": _frame_metrics(row),
-                "initial_pose_translation_m": [initial_x, initial_y, initial_z]
-                if initial_matrix is not None
-                else None,
-                "final_pose": trajectory.get(timestamp),
-                "scan_match_debug_command": command,
-                "scan_match_debug_result": scan_match_debug_result,
-                "scan_match_debug_error": scan_match_debug_error,
-            }
-        )
+        frame = {
+            "rank": rank,
+            "score": _score_row(row, sort_by),
+            "scan_id": scan_id,
+            "timestamp_sec": _as_float(row, "timestamp_sec"),
+            "scan_path": scan_path,
+            "reasons": _row_reasons(row),
+            "scan_match_failed": _as_bool(row, "scan_match_failed"),
+            "scan_match_rmse_m": _as_float(row, "scan_match_rmse_m"),
+            "scan_match_rejection_rate": _as_float(
+                row, "scan_match_correspondence_rejection_rate"
+            ),
+            "prediction_delta_m": _as_float(row, "prediction_delta_m"),
+            "initial_delta_m": _as_float(row, "scan_match_vs_initial_pose_delta_m"),
+            "glim_metrics": _frame_metrics(row),
+            "initial_pose_translation_m": [initial_x, initial_y, initial_z]
+            if initial_matrix is not None
+            else None,
+            "final_pose": trajectory.get(timestamp),
+            "scan_match_debug_command": command,
+            "scan_match_debug_result": scan_match_debug_result,
+            "scan_match_debug_error": scan_match_debug_error,
+        }
+        frame["diagnosis"] = diagnose_slam_frame(frame)
+        frames.append(frame)
 
     commands: dict[str, Any] = {"scan_match_debug": scan_debug_commands}
     if map_arg is not None and trajectory_csv is not None:

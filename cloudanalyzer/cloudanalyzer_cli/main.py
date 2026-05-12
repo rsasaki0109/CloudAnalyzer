@@ -536,6 +536,13 @@ def slam_debug_cmd(
             )
             if frame["reasons"]:
                 typer.echo(f"    reasons: {', '.join(frame['reasons'])}")
+            if frame.get("diagnosis"):
+                diagnosis = frame["diagnosis"]
+                typer.echo(
+                    "    diagnosis: "
+                    f"{diagnosis['label']} ({diagnosis['confidence']})"
+                )
+                typer.echo(f"    action:  {diagnosis['suggested_action']}")
             if frame["scan_path"]:
                 typer.echo(f"    scan:    {frame['scan_path']}")
             if frame["scan_match_debug_command"]:

@@ -202,6 +202,25 @@ class TestPrepareViewerData:
         assert data["trajectory"]["estimated_pose_count"] == 3
         assert data["trajectory"]["displayed_estimated_pose_count"] == 3
 
+    def test_trajectory_only_viewer_data(self, tmp_path):
+        trajectory_path = _write_csv_trajectory(
+            tmp_path / "odom.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 3.0, 1.0, 0.5), (2.0, 6.0, 2.0, 0.5)],
+        )
+
+        data = _prepare_viewer_data([], max_points=1000, trajectory_path=trajectory_path)
+
+        assert data["viewer_mode"] == "trajectory"
+        assert data["display_points"] == 0
+        assert data["filename"] == "odom.csv"
+        assert data["trajectory"]["mode"] == "single"
+        assert data["trajectory"]["estimated_pose_count"] == 3
+        assert data["scene_bounds"]["extent"] > 0
+
+    def test_trajectory_only_requires_trajectory(self):
+        with pytest.raises(ValueError, match="At least one point cloud"):
+            _prepare_viewer_data([], max_points=1000)
+
     def test_prepare_viewer_bundle_exposes_progressive_source_chunks(self, tmp_path, monkeypatch):
         rng = np.random.default_rng(321)
         pcd = o3d.geometry.PointCloud()

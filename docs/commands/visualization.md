@@ -64,6 +64,47 @@ ca web-export map.pcd map_ref.pcd \
 
 `ca web-export` shares the same visualization options as `ca web`, but writes `index.html`, `data.json`, and progressive chunk payloads into the target directory instead of starting a local server. The generated bundle uses relative asset paths, so it can be served from a repository subpath such as `https://<user>.github.io/<repo>/demo/...`.
 
+## ca lidar-odometry-view
+
+Open a LiDAR odometry trajectory directly in the browser. A map is optional, so this also works for odometry-only runs.
+
+```bash
+# Trajectory only
+ca lidar-odometry-view trajectory.csv
+
+# Trajectory over a map
+ca lidar-odometry-view trajectory.csv --map map.pcd
+
+# Estimated/reference trajectory comparison
+ca lidar-odometry-view trajectory.csv \
+  --map map.pcd \
+  --trajectory-reference reference.tum \
+  --trajectory-align-rigid
+```
+
+| Option | Default | Description |
+|---|---|---|
+| `--map`, `-m` | `None` | Optional map/point-cloud file behind the odometry trajectory. Repeatable |
+| `--trajectory-reference` | `None` | Optional reference trajectory overlay |
+| `--trajectory-max-time-delta` | `0.05` | Max timestamp gap used when matching to `--trajectory-reference` |
+| `--trajectory-align-origin` | `false` | Translate the odometry trajectory so its first matched pose aligns to the reference |
+| `--trajectory-align-rigid` | `false` | Fit a rigid transform from odometry trajectory to reference before display |
+| `-p`, `--port` | `8080` | HTTP port |
+| `--max-points` | `2000000` | Maximum map points displayed in browser |
+| `--no-browser` | `false` | Don't auto-open the browser |
+
+## ca lidar-odometry-export
+
+Write the LiDAR odometry viewer as a static bundle.
+
+```bash
+ca lidar-odometry-export trajectory.csv \
+  --map map.pcd \
+  --output-dir odometry_viewer
+```
+
+The exported directory contains `index.html` and `data.json`, so it can be opened by any static web server.
+
 ## ca view
 
 Open an interactive 3D viewer. Supports multiple files.

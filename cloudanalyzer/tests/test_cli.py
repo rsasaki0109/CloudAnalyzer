@@ -1642,6 +1642,120 @@ class TestCLI:
         assert "Exported:" in result.output
         assert "Viewer mode:  heatmap" in result.output
 
+    def test_lidar_odometry_view_trajectory_only(self, tmp_path, monkeypatch):
+        import cloudanalyzer_cli.main as cli_main
+
+        trajectory = _write_csv_trajectory(
+            tmp_path / "odom.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+        called = {}
+
+        def fake_web_serve(
+            paths,
+            port,
+            max_points,
+            open_browser,
+            heatmap,
+            trajectory_path=None,
+            trajectory_reference_path=None,
+            trajectory_max_time_delta=0.05,
+            trajectory_align_origin=False,
+            trajectory_align_rigid=False,
+        ):
+            called["paths"] = paths
+            called["port"] = port
+            called["max_points"] = max_points
+            called["open_browser"] = open_browser
+            called["heatmap"] = heatmap
+            called["trajectory_path"] = trajectory_path
+            called["trajectory_reference_path"] = trajectory_reference_path
+            called["trajectory_max_time_delta"] = trajectory_max_time_delta
+            called["trajectory_align_origin"] = trajectory_align_origin
+            called["trajectory_align_rigid"] = trajectory_align_rigid
+
+        monkeypatch.setattr(cli_main, "web_serve", fake_web_serve)
+
+        result = runner.invoke(
+            app,
+            ["lidar-odometry-view", trajectory, "--no-browser", "--port", "9010"],
+        )
+
+        assert result.exit_code == 0
+        assert called["paths"] == []
+        assert called["trajectory_path"] == trajectory
+        assert called["heatmap"] is False
+        assert called["open_browser"] is False
+        assert called["port"] == 9010
+
+    def test_lidar_odometry_export_with_map_and_reference(self, tmp_path, identical_pcd, monkeypatch):
+        import cloudanalyzer_cli.main as cli_main
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        output_dir = tmp_path / "odom_site"
+        trajectory = _write_csv_trajectory(
+            tmp_path / "odom.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+        trajectory_reference = _write_csv_trajectory(
+            tmp_path / "ref.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+        o3d.io.write_point_cloud(str(map_path), identical_pcd)
+        called = {}
+
+        def fake_web_export_static_bundle(
+            paths,
+            output_dir,
+            max_points,
+            heatmap,
+            trajectory_path=None,
+            trajectory_reference_path=None,
+            trajectory_max_time_delta=0.05,
+            trajectory_align_origin=False,
+            trajectory_align_rigid=False,
+        ):
+            called["paths"] = paths
+            called["output_dir"] = output_dir
+            called["heatmap"] = heatmap
+            called["trajectory_path"] = trajectory_path
+            called["trajectory_reference_path"] = trajectory_reference_path
+            called["trajectory_align_rigid"] = trajectory_align_rigid
+            return {
+                "output_dir": output_dir,
+                "viewer_mode": "trajectory",
+                "data_json": str(Path(output_dir) / "data.json"),
+                "chunk_count": 0,
+                "display_points": 0,
+            }
+
+        monkeypatch.setattr(cli_main, "web_export_static_bundle", fake_web_export_static_bundle)
+
+        result = runner.invoke(
+            app,
+            [
+                "lidar-odometry-export",
+                trajectory,
+                "--map",
+                str(map_path),
+                "--trajectory-reference",
+                trajectory_reference,
+                "--trajectory-align-rigid",
+                "--output-dir",
+                str(output_dir),
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert called["paths"] == [str(map_path)]
+        assert called["output_dir"] == str(output_dir)
+        assert called["heatmap"] is False
+        assert called["trajectory_path"] == trajectory
+        assert called["trajectory_reference_path"] == trajectory_reference
+        assert called["trajectory_align_rigid"] is True
+        assert "Viewer mode:  trajectory" in result.output
+
     def test_density_map(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "density.png")
         result = runner.invoke(app, ["density-map", sample_pcd_file, "-o", output])

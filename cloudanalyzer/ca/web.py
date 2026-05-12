@@ -1,6 +1,8 @@
 """Web-based 3D point cloud viewer using Three.js."""
 
 import json
+import re
+import shutil
 import threading
 import webbrowser
 from http.server import HTTPServer, SimpleHTTPRequestHandler
@@ -68,6 +70,8 @@ _VIEWER_HTML = """<!DOCTYPE html>
   #trajectoryInspectionHint { color: #94a3b8; }
   #pointInspectionBody,
   #trajectoryInspectionBody { margin-top: 4px; }
+  #trajectoryInspection a { color: #93c5fd; text-decoration: none; word-break: break-all; }
+  #trajectoryInspection a:hover { text-decoration: underline; }
   #trajectoryTimeline {
     margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(203, 213, 225, 0.18);
     font-size: 12px; line-height: 1.4; color: #cbd5e1;
@@ -753,8 +757,30 @@ function showTrajectoryInspection(title, lines) {
     hint.textContent = '';
   }
   if (body) {
-    body.innerHTML = lines.map((line) => `<div>${line}</div>`).join('');
+    body.innerHTML = lines.map(renderInspectionLine).join('');
   }
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function renderInspectionLine(line) {
+  if (line && typeof line === 'object') {
+    const label = line.label ? `${escapeHtml(line.label)}: ` : '';
+    const value = escapeHtml(line.value || line.href || '');
+    if (line.href) {
+      const href = escapeHtml(line.href);
+      return `<div>${label}<a href="${href}" target="_blank" rel="noopener">${value}</a></div>`;
+    }
+    return `<div>${label}${value}</div>`;
+  }
+  return `<div>${escapeHtml(line)}</div>`;
 }
 
 function describePointSelection(intersection) {
@@ -1162,13 +1188,30 @@ function describeSlamDebugFrame(markerIndex) {
   if (frame.scan_path) {
     lines.push(`Scan path: ${frame.scan_path}`);
   }
-  if (frame.artifacts && frame.artifacts.scan_aligned_error_ply) {
-    lines.push(`Aligned artifact: ${frame.artifacts.scan_aligned_error_ply}`);
+  if (frame.artifacts) {
+    for (const [key, path] of Object.entries(frame.artifacts)) {
+      lines.push(`Artifact ${formatArtifactLabel(key)}: ${path}`);
+    }
+  }
+  if (frame.artifact_assets) {
+    for (const [key, path] of Object.entries(frame.artifact_assets)) {
+      lines.push({
+        label: `Asset ${formatArtifactLabel(key)}`,
+        value: path,
+        href: path,
+      });
+    }
   }
   return {
     title: 'SLAM Debug Frame',
     lines,
   };
+}
+
+function formatArtifactLabel(key) {
+  return String(key || 'artifact')
+    .replace(/_ply$/, '')
+    .replaceAll('_', ' ');
 }
 
 function selectTrajectoryFeature(type, index, focusCamera = false) {
@@ -1710,6 +1753,85 @@ def _prepare_slam_debug_frames_for_viewer(
     }
 
 
+def _safe_export_component(value: object, fallback: str) -> str:
+    """Return a filesystem-safe path component for copied viewer assets."""
+
+    text = str(value).strip() if value is not None else ""
+    if not text:
+        text = fallback
+    text = re.sub(r"[^A-Za-z0-9._-]+", "_", text).strip("._")
+    return (text or fallback)[:120]
+
+
+def _resolve_slam_debug_artifact_path(path_value: str, report_dir: Path | None) -> Path | None:
+    """Resolve an artifact path from a SLAM debug report to an existing file."""
+
+    source = Path(path_value)
+    candidates = [source]
+    if not source.is_absolute() and report_dir is not None:
+        candidates.insert(0, report_dir / source)
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _copy_slam_debug_artifacts_for_export(data: dict, output_dir: Path) -> int:
+    """Copy SLAM debug artifact files into a static viewer bundle."""
+
+    trajectory = data.get("trajectory")
+    if not isinstance(trajectory, dict):
+        return 0
+    frames = trajectory.get("slam_debug_frames")
+    if not isinstance(frames, list):
+        return 0
+    summary = trajectory.get("slam_debug")
+    report_path = (
+        Path(summary["report_path"])
+        if isinstance(summary, dict) and isinstance(summary.get("report_path"), str)
+        else None
+    )
+    report_dir = report_path.parent if report_path is not None else None
+
+    copied = 0
+    asset_root = output_dir / "slam_debug_artifacts"
+    for frame_index, frame in enumerate(frames):
+        if not isinstance(frame, dict):
+            continue
+        artifacts = frame.get("artifacts")
+        if not isinstance(artifacts, dict):
+            continue
+
+        rank = frame.get("rank", frame_index + 1)
+        try:
+            rank_text = f"{int(rank):02d}"
+        except (TypeError, ValueError):
+            rank_text = f"{frame_index + 1:02d}"
+        scan_id = _safe_export_component(frame.get("scan_id"), f"frame_{frame_index + 1}")
+        frame_dir = asset_root / f"{rank_text}_{scan_id}"
+        assets: dict[str, str] = {}
+        for key, path_value in artifacts.items():
+            if not isinstance(path_value, str) or not path_value:
+                continue
+            source = _resolve_slam_debug_artifact_path(path_value, report_dir)
+            if source is None:
+                continue
+            safe_key = _safe_export_component(key, "artifact")
+            safe_name = _safe_export_component(
+                f"{safe_key}_{source.name}",
+                f"{safe_key}{source.suffix}",
+            )
+            destination = frame_dir / safe_name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+            assets[str(key)] = destination.relative_to(output_dir).as_posix()
+            copied += 1
+        if assets:
+            frame["artifact_assets"] = assets
+
+    return copied
+
+
 def _prepare_viewer_bundle(
     paths: list[str],
     max_points: int = 2_000_000,
@@ -2198,6 +2320,7 @@ def export_static_bundle(
 
     root = Path(output_dir)
     root.mkdir(parents=True, exist_ok=True)
+    copied_slam_debug_artifacts = _copy_slam_debug_artifacts_for_export(data, root)
     (root / "index.html").write_text(_VIEWER_HTML)
     (root / "data.json").write_text(json.dumps(data, indent=2))
 
@@ -2206,12 +2329,13 @@ def export_static_bundle(
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(payload)
 
-    exported_files = 2 + len(chunk_payloads)
+    exported_files = 2 + len(chunk_payloads) + copied_slam_debug_artifacts
     return {
         "output_dir": str(root),
         "index_html": str(root / "index.html"),
         "data_json": str(root / "data.json"),
         "chunk_count": len(chunk_payloads),
+        "slam_debug_artifact_count": copied_slam_debug_artifacts,
         "exported_files": exported_files,
         "viewer_mode": data["viewer_mode"],
         "display_points": data["display_points"],

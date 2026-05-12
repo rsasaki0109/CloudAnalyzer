@@ -316,6 +316,11 @@ class TestPrepareViewerData:
                             "rank": 1,
                             "scan_id": "scan/0001",
                             "timestamp_sec": 1.0,
+                            "diagnosis": {
+                                "label": "filtering_too_aggressive",
+                                "confidence": "high",
+                                "secondary_labels": ["map_too_sparse"],
+                            },
                             "scan_match_debug_result": {
                                 "artifacts": {
                                     "scan_initial_error_ply": str(initial_artifact),
@@ -341,6 +346,7 @@ class TestPrepareViewerData:
         assert result["slam_debug_artifact_count"] == 2
         exported_data = json.loads((output_dir / "data.json").read_text())
         frame = exported_data["trajectory"]["slam_debug_frames"][0]
+        assert frame["diagnosis"]["label"] == "filtering_too_aggressive"
         assets = frame["artifact_assets"]
         assert set(assets) == {"scan_initial_error_ply", "scan_aligned_error_ply"}
         for relative_path in assets.values():
@@ -355,6 +361,10 @@ class TestPrepareViewerData:
         assert "data-slam-artifact-href" in exported_html
         assert "data-slam-artifact-frame" in exported_html
         assert "Artifact overlays" in exported_html
+        assert "slamDebugDiagnosisFilter" in exported_html
+        assert "filtering_too_aggressive" in exported_html
+        assert "diagnosisColor" in exported_html
+        assert "_slamDebugVisibleMarkerCount" in exported_html
         assert "Initial" in exported_html
         assert "Aligned" in exported_html
         assert "Secondary:" in exported_html

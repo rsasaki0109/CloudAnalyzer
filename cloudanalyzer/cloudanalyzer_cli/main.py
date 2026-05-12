@@ -345,6 +345,15 @@ def info_cmd(
         typer.echo(f"BBox min:  [{info['bbox_min'][0]:.4f}, {info['bbox_min'][1]:.4f}, {info['bbox_min'][2]:.4f}]")
         typer.echo(f"BBox max:  [{info['bbox_max'][0]:.4f}, {info['bbox_max'][1]:.4f}, {info['bbox_max'][2]:.4f}]")
         typer.echo(f"Extent:    [{info['extent'][0]:.4f}, {info['extent'][1]:.4f}, {info['extent'][2]:.4f}]")
+        typer.echo(
+            "Robust extent p01-p99: "
+            f"[{info['robust_extent'][0]:.4f}, {info['robust_extent'][1]:.4f}, "
+            f"{info['robust_extent'][2]:.4f}]"
+        )
+        typer.echo(
+            "Outside robust bbox: "
+            f"{info['outside_robust_bbox_count']} ({info['outside_robust_bbox_ratio']:.2%})"
+        )
         typer.echo(f"Centroid:  [{info['centroid'][0]:.4f}, {info['centroid'][1]:.4f}, {info['centroid'][2]:.4f}]")
     if output_json:
         _dump_json(info, output_json)
@@ -741,7 +750,14 @@ def stats_cmd(
         typer.echo(f"Points:    {result['num_points']}")
         typer.echo(f"Volume:    {result['volume']:.4f}")
         typer.echo(f"Density:   {result['density']:.4g} pts/unit³")
+        typer.echo(f"Robust volume p01-p99:  {result['robust_volume']:.4f}")
+        typer.echo(f"Robust density p01-p99: {result['robust_density']:.4g} pts/unit³")
+        typer.echo(
+            "Outside robust bbox: "
+            f"{result['outside_robust_bbox_count']} ({result['outside_robust_bbox_ratio']:.2%})"
+        )
         s = result["spacing"]
+        typer.echo(f"Spacing samples: {result['spacing_sample_points']}")
         typer.echo(f"Spacing mean:   {s['mean']:.4f}")
         typer.echo(f"Spacing median: {s['median']:.4f}")
         typer.echo(f"Spacing min:    {s['min']:.4f}")
@@ -1151,6 +1167,7 @@ def density_map_cmd(
     typer.echo(f"Points:       {result['num_points']}")
     typer.echo(f"Projection:   {result['projection_axis']}-axis")
     typer.echo(f"Grid:         {result['grid_size'][0]}x{result['grid_size'][1]}")
+    typer.echo(f"Occupied:     {result['occupied_cells']} cells")
     typer.echo(f"Max density:  {result['max_density']}")
     typer.echo(f"Mean density: {result['mean_density']:.1f}")
     typer.echo(f"Saved:        {result['output']}")

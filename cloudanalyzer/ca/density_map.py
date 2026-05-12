@@ -6,6 +6,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from ca.io import load_point_cloud
+from ca.point_summary import require_points
 
 
 def density_map(
@@ -33,9 +34,12 @@ def density_map(
     axis_map = {"x": 0, "y": 1, "z": 2}
     if axis.lower() not in axis_map:
         raise ValueError(f"Invalid axis: '{axis}'. Must be 'x', 'y', or 'z'.")
+    if resolution <= 0:
+        raise ValueError(f"resolution must be positive, got {resolution}")
 
     pcd = load_point_cloud(input_path)
     points = np.asarray(pcd.points)
+    require_points(points, input_path)
     num_points = len(points)
 
     ax_idx = axis_map[axis.lower()]
@@ -49,6 +53,13 @@ def density_map(
 
     x_bins = max(1, int(np.ceil((x_range[1] - x_range[0]) / resolution)))
     y_bins = max(1, int(np.ceil((y_range[1] - y_range[0]) / resolution)))
+    num_cells = x_bins * y_bins
+    max_cells = 20_000_000
+    if num_cells > max_cells:
+        raise ValueError(
+            f"density grid too large: {x_bins}x{y_bins}={num_cells} cells. "
+            f"Increase --resolution or crop the cloud first."
+        )
 
     hist, xedges, yedges = np.histogram2d(
         proj[:, 0], proj[:, 1], bins=[x_bins, y_bins],
@@ -79,6 +90,8 @@ def density_map(
         "projection_axis": axis.lower(),
         "resolution": resolution,
         "grid_size": [x_bins, y_bins],
+        "grid_cells": int(num_cells),
+        "occupied_cells": int(np.count_nonzero(hist)),
         "max_density": int(hist.max()),
         "mean_density": float(hist.mean()),
     }

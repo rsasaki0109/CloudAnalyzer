@@ -15,6 +15,7 @@ class TestDensityMap:
         assert result["num_points"] == 100
         assert result["projection_axis"] == "z"
         assert result["max_density"] > 0
+        assert result["grid_cells"] >= result["occupied_cells"] > 0
 
     def test_x_axis(self, sample_pcd_file, tmp_path):
         output = str(tmp_path / "density_x.png")
@@ -35,3 +36,8 @@ class TestDensityMap:
         output = str(tmp_path / "density.png")
         with pytest.raises(ValueError, match="Invalid axis"):
             density_map(sample_pcd_file, output, axis="w")
+
+    def test_invalid_resolution(self, sample_pcd_file, tmp_path):
+        output = str(tmp_path / "density.png")
+        with pytest.raises(ValueError, match="resolution must be positive"):
+            density_map(sample_pcd_file, output, resolution=0)

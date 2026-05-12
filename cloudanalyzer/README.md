@@ -319,4 +319,5 @@ result = split("large.pcd", "tiles/", grid_size=100.0)
 
 - `.pcd` (Point Cloud Data)
 - `.ply` (Polygon File Format)
-- `.las` (LiDAR)
+- `.las` / `.laz` (LiDAR)
+- `.csv` (`x,y,z` or GLIM-style `x_m,y_m,z_m`)

@@ -31,13 +31,14 @@ python3 -m twine check dist/*
 
 ## Commands
 
-There are **34** CLI subcommands (see `ca --help`). Summary:
+There are **35** CLI subcommands (see `ca --help`). Summary:
 
 ### Analysis & Evaluation
 
 | Command | Description |
 |---|---|
 | `ca compare` | Compare two point clouds with ICP/GICP registration |
+| `ca scan-match-debug` | Debug one scan-to-map ICP/GICP attempt with before/after distances and artifacts |
 | `ca diff` | Quick distance stats (no registration) |
 | `ca evaluate` | F1, Chamfer, Hausdorff, AUC evaluation |
 | `ca check` | Config-driven unified QA (`cloudanalyzer.yaml`) |

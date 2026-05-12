@@ -18,6 +18,7 @@ cloudanalyzer/
 │   ├── __init__.py         # __version__
 │   ├── io.py               # Point cloud I/O (pcd/ply/las)
 │   ├── registration.py     # ICP / GICP registration
+│   ├── scan_match_debug.py # Scan-to-map matching diagnostics
 │   ├── metrics.py          # NN distance, summarize, threshold
 │   ├── evaluate.py         # F1, Chamfer, Hausdorff, AUC, plot
 │   ├── visualization.py    # Colorize, snapshot
@@ -42,7 +43,7 @@ cloudanalyzer/
 │   └── log.py              # Logging configuration
 ├── cli/
 │   ├── __init__.py
-│   └── main.py             # Typer CLI (22 commands)
+│   └── main.py             # Typer CLI
 ├── tests/                  # Core, CLI, process, and integration tests
 ├── pyproject.toml          # Package config, mypy, pytest
 └── setup.py                # Editable install shim

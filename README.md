@@ -54,7 +54,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **39 subcommands** |
+| CLI | Limited | None | None | **40 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -413,6 +413,7 @@ deterministic synthetic 3-frame sequences seeded from that same public frame.
 ca evaluate src.pcd ref.pcd --plot f1.png   # F1 / Chamfer / Hausdorff / AUC
 ca map-evaluate est_map.pcd gt_map.pcd --thresholds 0.2,0.1,0.05  # fixed-threshold map metrics
 ca compare src.pcd tgt.pcd --register gicp  # Compare with registration
+ca scan-match-debug scan.pcd map.pcd --method gicp --artifact-dir qa/scan_match  # scan-to-map ICP/GICP debug
 ca diff a.pcd b.pcd --threshold 0.1         # Quick distance statistics
 ca pipeline in.pcd ref.pcd -o out.pcd       # filter -> downsample -> evaluate
 ca check cloudanalyzer.yaml                 # Config-driven unified QA

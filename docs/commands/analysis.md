@@ -70,6 +70,38 @@ and colored PLY artifacts for the initial and aligned scan.
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON |
 
+## ca slam-debug
+
+Rank suspicious frames from a SLAM run metrics CSV and print CloudAnalyzer
+drill-down commands.
+
+```bash
+ca slam-debug runs/flatwall/metrics.csv \
+  --scans-manifest-csv runs/flatwall/scans_manifest.csv \
+  --trajectory-csv runs/flatwall/trajectory.csv \
+  --map runs/flatwall/map.pcd \
+  --top-k 5 \
+  --artifact-dir qa/slam_debug \
+  --output-json qa/slam_debug.json
+```
+
+Output: top-ranked frames, reasons such as scan-match failure, high RMSE,
+high correspondence rejection, prediction-vs-registration drift, low scan
+quality, plus ready-to-run `ca scan-match-debug` commands. When a map and
+trajectory are supplied, it also prints `ca web` / `ca web-export` commands for
+trajectory overlay inspection.
+
+| Option | Default | Description |
+|---|---|---|
+| `--scans-manifest-csv` | `None` | Optional scan manifest with `scan_id,timestamp_sec,points_csv` |
+| `--trajectory-csv` | `None` | Optional estimated trajectory CSV for viewer commands and pose lookup |
+| `--map` | `None` | Optional map/reference cloud used to create scan-match-debug commands |
+| `--top-k` | `10` | Number of suspicious frames to report |
+| `--sort-by` | `auto` | Ranking key: `auto`, `rmse`, `rejection`, `prediction-delta`, `initial-delta`, `failure` |
+| `--artifact-dir` | `None` | Base directory for generated debug artifact commands |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
+
 ## ca map-evaluate
 
 Experimental MapEval-inspired map-to-map evaluation against a reference/GT map.

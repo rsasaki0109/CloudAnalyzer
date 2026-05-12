@@ -1232,6 +1232,35 @@ function describeSlamDebugFrame(markerIndex) {
     if (diagnosis.suggested_action) {
       lines.push(`Action: ${diagnosis.suggested_action}`);
     }
+    if (diagnosis.signals) {
+      const signals = diagnosis.signals;
+      if (Number.isFinite(signals.raw_points) || Number.isFinite(signals.filtered_points)) {
+        const raw = Number.isFinite(signals.raw_points)
+          ? Number(signals.raw_points).toLocaleString()
+          : 'n/a';
+        const filtered = Number.isFinite(signals.filtered_points)
+          ? Number(signals.filtered_points).toLocaleString()
+          : 'n/a';
+        const ratio = Number.isFinite(signals.filtered_ratio)
+          ? ` (${(Number(signals.filtered_ratio) * 100).toFixed(2)}%)`
+          : '';
+        lines.push(`Scan points: raw ${raw} / downsampled ${filtered}${ratio}`);
+      }
+      if (Number.isFinite(signals.raw_range_mean_m) || Number.isFinite(signals.filtered_range_mean_m)) {
+        const rawRange = Number.isFinite(signals.raw_range_mean_m)
+          ? Number(signals.raw_range_mean_m).toFixed(3)
+          : 'n/a';
+        const filteredRange = Number.isFinite(signals.filtered_range_mean_m)
+          ? Number(signals.filtered_range_mean_m).toFixed(3)
+          : 'n/a';
+        lines.push(`Mean range: raw ${rawRange} / downsampled ${filteredRange}`);
+      }
+      if (Number.isFinite(signals.raw_range_min_m) && Number.isFinite(signals.raw_range_max_m)) {
+        lines.push(
+          `Raw range span: ${Number(signals.raw_range_min_m).toFixed(3)} - ${Number(signals.raw_range_max_m).toFixed(3)}`,
+        );
+      }
+    }
   }
   if (frame.reasons && frame.reasons.length > 0) {
     lines.push(`Reasons: ${frame.reasons.join(', ')}`);

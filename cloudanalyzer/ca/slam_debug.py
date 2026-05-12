@@ -164,7 +164,14 @@ def _frame_metrics(row: dict[str, str]) -> dict[str, Any]:
         "scan_quality_low": _as_bool(row, "scan_quality_low"),
         "scan_quality_reason": row.get("scan_quality_reason") or None,
         "raw_points": _as_float(row, "raw_points"),
+        "downsampled_points": _as_float(row, "downsampled_points"),
         "filtered_points": _as_float(row, "filtered_points"),
+        "raw_range_min_m": _as_float(row, "raw_range_min_m"),
+        "raw_range_max_m": _as_float(row, "raw_range_max_m"),
+        "raw_range_mean_m": _as_float(row, "raw_range_mean_m"),
+        "filtered_range_min_m": _as_float(row, "filtered_range_min_m"),
+        "filtered_range_max_m": _as_float(row, "filtered_range_max_m"),
+        "filtered_range_mean_m": _as_float(row, "filtered_range_mean_m"),
         "map_points": _as_float(row, "map_points"),
         "registration_map_points": _as_float(row, "registration_map_points"),
     }
@@ -209,8 +216,10 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
     prediction_delta = metrics.get("prediction_delta_m")
     initial_delta = metrics.get("initial_delta_m")
     raw_points = metrics.get("raw_points")
-    filtered_points = metrics.get("filtered_points")
+    filtered_points = metrics.get("downsampled_points") or metrics.get("filtered_points")
     scan_quality_low = bool(metrics.get("scan_quality_low"))
+    raw_range_mean = metrics.get("raw_range_mean_m")
+    filtered_range_mean = metrics.get("filtered_range_mean_m")
 
     before_mean = _nested_float(debug, "distance_before", "stats", "mean")
     after_mean = _nested_float(debug, "distance_after", "stats", "mean")
@@ -235,6 +244,12 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
         "raw_points": raw_points,
         "filtered_points": filtered_points,
         "filtered_ratio": filtered_ratio,
+        "raw_range_mean_m": raw_range_mean,
+        "filtered_range_mean_m": filtered_range_mean,
+        "raw_range_min_m": metrics.get("raw_range_min_m"),
+        "raw_range_max_m": metrics.get("raw_range_max_m"),
+        "filtered_range_min_m": metrics.get("filtered_range_min_m"),
+        "filtered_range_max_m": metrics.get("filtered_range_max_m"),
         "before_mean": before_mean,
         "after_mean": after_mean,
         "improvement_mean": improvement,
@@ -244,9 +259,28 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
         "scan_points_used": scan_points_used,
     }
 
-    if scan_quality_low or (
-        filtered_points is not None and filtered_points < 50
-    ) or (filtered_ratio is not None and filtered_ratio < 0.02):
+    if raw_points is not None and raw_points < 50:
+        return _diagnosis(
+            "sparse_raw_scan",
+            "high",
+            "Inspect the source scan around this frame; too few raw points reached SLAM.",
+            signals,
+        )
+    if (
+        raw_points is not None
+        and raw_points >= 1000
+        and filtered_points is not None
+        and filtered_points < 50
+        and filtered_ratio is not None
+        and filtered_ratio < 0.02
+    ):
+        return _diagnosis(
+            "filtering_too_aggressive",
+            "high",
+            "Inspect voxel/filter settings; the raw scan has points but too few survive downsampling.",
+            signals,
+        )
+    if scan_quality_low or (filtered_points is not None and filtered_points < 50):
         return _diagnosis(
             "scan_quality_issue",
             "high",
@@ -371,7 +405,11 @@ def render_slam_debug_markdown(result: dict[str, Any]) -> str:
                 f"rmse={metrics.get('scan_match_rmse_m')}, "
                 f"prediction_delta={metrics.get('prediction_delta_m')}, "
                 f"initial_delta={metrics.get('initial_delta_m')}, "
-                f"failed={metrics.get('scan_match_failed')}",
+                f"failed={metrics.get('scan_match_failed')}, "
+                f"raw_points={metrics.get('raw_points')}, "
+                f"downsampled_points={metrics.get('downsampled_points') or metrics.get('filtered_points')}, "
+                f"raw_range_mean={metrics.get('raw_range_mean_m')}, "
+                f"filtered_range_mean={metrics.get('filtered_range_mean_m')}",
             ]
         )
 

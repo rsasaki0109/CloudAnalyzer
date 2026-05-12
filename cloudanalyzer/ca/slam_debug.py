@@ -8,6 +8,8 @@ import shlex
 from pathlib import Path
 from typing import Any
 
+from ca.scan_match_debug import run_scan_match_debug
+
 
 def _as_float(row: dict[str, str], key: str) -> float | None:
     value = row.get(key)
@@ -145,6 +147,110 @@ def _row_reasons(row: dict[str, str]) -> list[str]:
     return reasons
 
 
+def _frame_metrics(row: dict[str, str]) -> dict[str, Any]:
+    return {
+        "scan_match_failed": _as_bool(row, "scan_match_failed"),
+        "scan_match_error": row.get("scan_match_error") or None,
+        "scan_match_rmse_m": _as_float(row, "scan_match_rmse_m"),
+        "scan_match_rejection_rate": _as_float(
+            row, "scan_match_correspondence_rejection_rate"
+        ),
+        "prediction_delta_m": _as_float(row, "prediction_delta_m"),
+        "initial_delta_m": _as_float(row, "scan_match_vs_initial_pose_delta_m"),
+        "registration_retry_count": _as_float(row, "registration_retry_count"),
+        "consecutive_scan_match_failures": _as_float(
+            row, "consecutive_scan_match_failures"
+        ),
+        "scan_quality_low": _as_bool(row, "scan_quality_low"),
+        "scan_quality_reason": row.get("scan_quality_reason") or None,
+    }
+
+
+def render_slam_debug_markdown(result: dict[str, Any]) -> str:
+    """Render a human-readable SLAM debug report."""
+
+    lines = [
+        "# SLAM Debug Report",
+        "",
+        f"- Metrics: `{result['metrics_csv']}`",
+        f"- Frames: {result['total_frames']}",
+        f"- Selected: {len(result['selected_frames'])}",
+        f"- Sort: `{result['sort_by']}`",
+    ]
+    if result.get("map_path"):
+        lines.append(f"- Map: `{result['map_path']}`")
+    if result.get("trajectory_csv"):
+        lines.append(f"- Trajectory: `{result['trajectory_csv']}`")
+    lines.extend(["", "## Suspicious Frames", ""])
+
+    for frame in result["selected_frames"]:
+        lines.extend(
+            [
+                f"### #{frame['rank']:02d} `{frame['scan_id']}`",
+                "",
+                f"- Score: {frame['score']:.3f}",
+                f"- Timestamp: {frame['timestamp_sec']}",
+                f"- Scan: `{frame['scan_path']}`" if frame.get("scan_path") else "- Scan: n/a",
+            ]
+        )
+        if frame.get("reasons"):
+            lines.append(f"- Reasons: {', '.join(frame['reasons'])}")
+
+        metrics = frame.get("glim_metrics", {})
+        lines.extend(
+            [
+                "- GLIM metrics: "
+                f"rmse={metrics.get('scan_match_rmse_m')}, "
+                f"prediction_delta={metrics.get('prediction_delta_m')}, "
+                f"initial_delta={metrics.get('initial_delta_m')}, "
+                f"failed={metrics.get('scan_match_failed')}",
+            ]
+        )
+
+        debug = frame.get("scan_match_debug_result")
+        if debug:
+            registration = debug["registration"]
+            before = debug["distance_before"]["stats"]
+            after = debug["distance_after"]["stats"]
+            improvement = debug["improvement"]
+            lines.extend(
+                [
+                    "- CloudAnalyzer scan-match: "
+                    f"fitness={registration['fitness']:.4f}, "
+                    f"inlier_rmse={registration['inlier_rmse']:.4f}",
+                    "- NN distance: "
+                    f"before_mean={before['mean']:.4f}, "
+                    f"after_mean={after['mean']:.4f}, "
+                    f"improvement_mean={improvement['mean']:.4f}",
+                ]
+            )
+            artifacts = debug.get("artifacts", {})
+            if artifacts:
+                lines.append("- Artifacts:")
+                for name, path in artifacts.items():
+                    lines.append(f"  - `{name}`: `{path}`")
+        elif frame.get("scan_match_debug_error"):
+            lines.append(f"- CloudAnalyzer scan-match error: `{frame['scan_match_debug_error']}`")
+
+        if frame.get("scan_match_debug_command"):
+            lines.extend(["", "```bash", frame["scan_match_debug_command"], "```"])
+        lines.append("")
+
+    commands = result.get("commands", {})
+    if commands:
+        lines.extend(["## Commands", ""])
+        for key, command in commands.items():
+            if isinstance(command, str):
+                lines.extend([f"### {key}", "", "```bash", command, "```", ""])
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def write_slam_debug_markdown(result: dict[str, Any], output_path: str) -> None:
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_slam_debug_markdown(result), encoding="utf-8")
+
+
 def analyze_slam_run(
     metrics_csv: str,
     scans_manifest_csv: str | None = None,
@@ -153,6 +259,13 @@ def analyze_slam_run(
     top_k: int = 10,
     sort_by: str = "auto",
     artifact_dir: str | None = None,
+    run_scan_match_debug_frames: bool = False,
+    scan_match_method: str = "gicp",
+    scan_match_max_correspondence_distance: float = 1.0,
+    scan_match_scan_voxel_size: float | None = None,
+    scan_match_map_voxel_size: float | None = None,
+    scan_match_crop_margin: float | None = None,
+    scan_match_threshold: float | None = None,
 ) -> dict[str, Any]:
     """Rank suspicious SLAM frames and emit CloudAnalyzer drill-down commands.
 
@@ -173,6 +286,10 @@ def analyze_slam_run(
     allowed = {"auto", "rmse", "rejection", "prediction-delta", "initial-delta", "failure"}
     if sort_by not in allowed:
         raise ValueError(f"sort_by must be one of: {', '.join(sorted(allowed))}")
+    if run_scan_match_debug_frames and (manifest_path is None or map_path is None):
+        raise ValueError(
+            "run_scan_match_debug_frames requires scans_manifest_csv and map_path"
+        )
 
     ranked = sorted(rows, key=lambda row: _score_row(row, sort_by), reverse=True)[:top_k]
     frames: list[dict[str, Any]] = []
@@ -197,12 +314,46 @@ def analyze_slam_run(
         command = None
         if scan_path is not None and map_arg is not None:
             parts = ["ca", "scan-match-debug", scan_path, map_arg]
+            parts.extend(["--method", scan_match_method])
+            parts.extend(
+                [
+                    "--max-correspondence-distance",
+                    f"{scan_match_max_correspondence_distance:.12g}",
+                ]
+            )
             if initial_matrix is not None:
                 parts.extend(["--initial-matrix", _matrix_csv(initial_matrix)])
+            if scan_match_scan_voxel_size is not None:
+                parts.extend(["--scan-voxel-size", f"{scan_match_scan_voxel_size:.12g}"])
+            if scan_match_map_voxel_size is not None:
+                parts.extend(["--map-voxel-size", f"{scan_match_map_voxel_size:.12g}"])
+            if scan_match_crop_margin is not None:
+                parts.extend(["--crop-margin", f"{scan_match_crop_margin:.12g}"])
+            if scan_match_threshold is not None:
+                parts.extend(["--threshold", f"{scan_match_threshold:.12g}"])
             if frame_artifact_dir is not None:
                 parts.extend(["--artifact-dir", frame_artifact_dir])
             command = " ".join(shlex.quote(part) for part in parts)
             scan_debug_commands.append(command)
+
+        scan_match_debug_result = None
+        scan_match_debug_error = None
+        if run_scan_match_debug_frames and scan_path is not None and map_arg is not None:
+            try:
+                scan_match_debug_result = run_scan_match_debug(
+                    scan_path=scan_path,
+                    map_path=map_arg,
+                    method=scan_match_method,
+                    max_correspondence_distance=scan_match_max_correspondence_distance,
+                    initial_transform=initial_matrix,
+                    scan_voxel_size=scan_match_scan_voxel_size,
+                    map_voxel_size=scan_match_map_voxel_size,
+                    crop_margin=scan_match_crop_margin,
+                    threshold=scan_match_threshold,
+                    artifact_dir=frame_artifact_dir,
+                )
+            except (FileNotFoundError, ValueError, RuntimeError) as exc:
+                scan_match_debug_error = str(exc)
 
         frames.append(
             {
@@ -218,11 +369,15 @@ def analyze_slam_run(
                     row, "scan_match_correspondence_rejection_rate"
                 ),
                 "prediction_delta_m": _as_float(row, "prediction_delta_m"),
+                "initial_delta_m": _as_float(row, "scan_match_vs_initial_pose_delta_m"),
+                "glim_metrics": _frame_metrics(row),
                 "initial_pose_translation_m": [initial_x, initial_y, initial_z]
                 if initial_matrix is not None
                 else None,
                 "final_pose": trajectory.get(timestamp),
                 "scan_match_debug_command": command,
+                "scan_match_debug_result": scan_match_debug_result,
+                "scan_match_debug_error": scan_match_debug_error,
             }
         )
 
@@ -254,5 +409,5 @@ def analyze_slam_run(
         "total_frames": len(rows),
         "selected_frames": frames,
         "commands": commands,
+        "scan_match_debug_ran": bool(run_scan_match_debug_frames),
     }
-

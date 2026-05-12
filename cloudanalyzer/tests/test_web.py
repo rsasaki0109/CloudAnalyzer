@@ -245,6 +245,15 @@ class TestPrepareViewerData:
                                 "suggested_action": "Inspect prediction.",
                             },
                             "scan_match_debug_result": {
+                                "method": "gicp",
+                                "registration": {"fitness": 0.75, "inlier_rmse": 0.42},
+                                "distance_before": {"stats": {"mean": 0.9, "median": 0.8}},
+                                "distance_after": {"stats": {"mean": 0.4, "median": 0.3}},
+                                "improvement": {"mean": 0.5, "median": 0.5, "max": 0.2},
+                                "preprocess": {
+                                    "scan_points_used": 100,
+                                    "map_points_used": 20,
+                                },
                                 "artifacts": {
                                     "scan_aligned_error_ply": "aligned.ply",
                                 },
@@ -270,6 +279,12 @@ class TestPrepareViewerData:
         assert frame["display_index"] == 1
         assert frame["diagnosis"]["label"] == "bad_initial_guess"
         assert frame["artifacts"]["scan_aligned_error_ply"] == "aligned.ply"
+        summary = frame["scan_match_debug_summary"]
+        assert summary["distance_before_mean_m"] == 0.9
+        assert summary["distance_after_mean_m"] == 0.4
+        assert summary["mean_improvement_m"] == 0.5
+        assert summary["registration_inlier_rmse_m"] == 0.42
+        assert summary["scan_points_used"] == 100
 
     def test_export_static_bundle_copies_slam_debug_artifacts(self, tmp_path):
         trajectory_path = _write_csv_trajectory(
@@ -328,6 +343,10 @@ class TestPrepareViewerData:
         exported_html = (output_dir / "index.html").read_text(encoding="utf-8")
         assert "PLYLoader" in exported_html
         assert "data-slam-artifact-href" in exported_html
+        assert "data-slam-artifact-frame" in exported_html
+        assert "Artifact overlays" in exported_html
+        assert "Initial" in exported_html
+        assert "Aligned" in exported_html
         assert "Artifact Overlay" in exported_html
 
     def test_prepare_viewer_bundle_exposes_progressive_source_chunks(self, tmp_path, monkeypatch):

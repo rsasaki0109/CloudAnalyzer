@@ -49,8 +49,8 @@ There are **34** CLI subcommands (see `ca --help`). Summary:
 | `ca traj-batch` | Batch trajectory benchmark with coverage, gate, and reports |
 | `ca run-evaluate` | Combined map + trajectory QA for one run |
 | `ca run-batch` | Combined map + trajectory benchmark across multiple runs |
-| `ca info` | Point cloud metadata (points, BBox, centroid) |
-| `ca stats` | Detailed statistics (density, spacing distribution) |
+| `ca info` | Point cloud metadata (points, BBox, robust BBox, centroid) |
+| `ca stats` | Detailed statistics (density, robust density, spacing distribution) |
 | `ca batch` | Run info on all files in a directory |
 
 ### Processing
@@ -204,6 +204,11 @@ ca batch /path/to/results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer
 # Density heatmap
 ca density-map cloud.pcd -o density.png -r 1.0 -a z
 ```
+
+`ca info` and `ca stats` also report p01-p99 robust extents and the number/ratio
+of points outside that robust bounding box. These fields are useful for SLAM maps
+where a small number of far outliers can dominate the ordinary axis-aligned
+extent and hide whether the main map body is stable.
 
 ## Global Options
 

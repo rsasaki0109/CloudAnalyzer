@@ -243,6 +243,13 @@ class TestPrepareViewerData:
                                 "label": "bad_initial_guess",
                                 "confidence": "high",
                                 "suggested_action": "Inspect prediction.",
+                                "signals": {
+                                    "raw_points": 5000,
+                                    "filtered_points": 55,
+                                    "filtered_ratio": 0.011,
+                                    "raw_range_mean_m": 12.5,
+                                    "filtered_range_mean_m": 11.9,
+                                },
                             },
                             "scan_match_debug_result": {
                                 "method": "gicp",
@@ -278,6 +285,7 @@ class TestPrepareViewerData:
         assert frame["scan_id"] == "scan_0001"
         assert frame["display_index"] == 1
         assert frame["diagnosis"]["label"] == "bad_initial_guess"
+        assert frame["diagnosis"]["signals"]["raw_points"] == 5000
         assert frame["artifacts"]["scan_aligned_error_ply"] == "aligned.ply"
         summary = frame["scan_match_debug_summary"]
         assert summary["distance_before_mean_m"] == 0.9
@@ -347,6 +355,8 @@ class TestPrepareViewerData:
         assert "Artifact overlays" in exported_html
         assert "Initial" in exported_html
         assert "Aligned" in exported_html
+        assert "Scan points: raw" in exported_html
+        assert "Mean range: raw" in exported_html
         assert "Artifact Overlay" in exported_html
 
     def test_prepare_viewer_bundle_exposes_progressive_source_chunks(self, tmp_path, monkeypatch):

@@ -96,7 +96,10 @@ runs frame-level ICP/GICP diagnostics for the selected frames and stores
 before/after nearest-neighbor distance summaries plus colored PLY artifact paths
 in the JSON/Markdown reports. Each selected frame also includes a diagnosis
 label and suggested action, such as `bad_initial_guess`, `weak_geometry`,
-`registration_local_minimum`, `map_too_sparse`, or `scan_quality_issue`.
+`registration_local_minimum`, `map_too_sparse`, `sparse_raw_scan`,
+`filtering_too_aggressive`, or `scan_quality_issue`. GLIM metrics with
+`downsampled_points` and raw/filtered range summaries are preserved in the
+diagnosis signals when present.
 
 | Option | Default | Description |
 |---|---|---|

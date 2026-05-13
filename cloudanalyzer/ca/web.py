@@ -74,6 +74,8 @@ _VIEWER_HTML = """<!DOCTYPE html>
   #trajectoryInspection a:hover { text-decoration: underline; }
   .inspection-link-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
   .inspection-link-row button { padding: 2px 6px; font-size: 11px; }
+  .artifact-button-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 5px 0; }
+  .artifact-button-row button { padding: 2px 7px; font-size: 11px; }
   #trajectoryTimeline {
     margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(203, 213, 225, 0.18);
     font-size: 12px; line-height: 1.4; color: #cbd5e1;
@@ -119,6 +121,7 @@ _VIEWER_HTML = """<!DOCTYPE html>
   <label id="trajectorySegmentToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstSegment" checked> Worst RPE Segment</label>
   <label id="slamDebugMarkerToggleWrap" style="display:none"><input type="checkbox" id="showSlamDebugMarkers" checked> SLAM Debug Frames</label>
   <label id="slamArtifactOverlayToggleWrap" style="display:none"><input type="checkbox" id="showSlamArtifactOverlay" checked> Artifact Overlay</label>
+  <div id="slamArtifactOverlayStatus" style="display:none"></div>
   <label id="thresholdWrap" style="display:none">Error Threshold <input type="range" id="distThreshold" min="0" max="1" step="0.001" value="0"></label>
   <label>Color <select id="colorMode">
     <option value="heatmap">Heatmap</option>
@@ -779,14 +782,29 @@ function renderInspectionLine(line) {
   if (line && typeof line === 'object') {
     const label = line.label ? `${escapeHtml(line.label)}: ` : '';
     const value = escapeHtml(line.value || line.href || '');
+    if (line.action === 'slam-artifact-actions' && Array.isArray(line.assets)) {
+      const buttons = line.assets.map((asset) => {
+        const href = escapeHtml(asset.href || '');
+        const assetLabel = escapeHtml(asset.label || asset.href || '');
+        const buttonLabel = escapeHtml(asset.buttonLabel || asset.label || 'Overlay');
+        const frameId = escapeHtml(asset.frameId || '');
+        return (
+          `<button type="button" data-slam-artifact-href="${href}" ` +
+          `data-slam-artifact-label="${assetLabel}" data-slam-artifact-frame="${frameId}">${buttonLabel}</button>`
+        );
+      }).join('');
+      return `<div>${label}</div><div class="artifact-button-row">${buttons}</div>`;
+    }
     if (line.href) {
       const href = escapeHtml(line.href);
       const link = `<a href="${href}" target="_blank" rel="noopener">${value}</a>`;
       if (line.action === 'load-slam-artifact') {
         const buttonLabel = escapeHtml(line.buttonLabel || 'Overlay');
+        const frameId = escapeHtml(line.frameId || '');
         return (
           `<div class="inspection-link-row">${label}${link}` +
-          `<button type="button" data-slam-artifact-href="${href}" data-slam-artifact-label="${value}">${buttonLabel}</button>` +
+          `<button type="button" data-slam-artifact-href="${href}" data-slam-artifact-label="${value}" ` +
+          `data-slam-artifact-frame="${frameId}">${buttonLabel}</button>` +
           `</div>`
         );
       }
@@ -1181,6 +1199,28 @@ function describeSlamDebugFrame(markerIndex) {
   if (Number.isFinite(frame.scan_match_rmse_m)) {
     lines.push(`GLIM RMSE: ${Number(frame.scan_match_rmse_m).toFixed(4)}`);
   }
+  if (frame.scan_match_debug_summary) {
+    const summary = frame.scan_match_debug_summary;
+    if (Number.isFinite(summary.distance_before_mean_m) && Number.isFinite(summary.distance_after_mean_m)) {
+      lines.push(
+        `CA mean distance: ${Number(summary.distance_before_mean_m).toFixed(4)} -> ${Number(summary.distance_after_mean_m).toFixed(4)}`,
+      );
+    }
+    if (Number.isFinite(summary.mean_improvement_m)) {
+      lines.push(`CA mean improvement: ${Number(summary.mean_improvement_m).toFixed(4)}`);
+    }
+    if (Number.isFinite(summary.registration_inlier_rmse_m)) {
+      lines.push(`CA ICP RMSE: ${Number(summary.registration_inlier_rmse_m).toFixed(4)}`);
+    }
+    if (Number.isFinite(summary.registration_fitness)) {
+      lines.push(`CA fitness: ${Number(summary.registration_fitness).toFixed(3)}`);
+    }
+    if (summary.scan_points_used || summary.map_points_used) {
+      lines.push(
+        `Debug points: scan ${Number(summary.scan_points_used || 0).toLocaleString()} / map ${Number(summary.map_points_used || 0).toLocaleString()}`,
+      );
+    }
+  }
   if (Number.isFinite(frame.prediction_delta_m)) {
     lines.push(`Prediction delta: ${Number(frame.prediction_delta_m).toFixed(4)}`);
   }
@@ -1208,6 +1248,14 @@ function describeSlamDebugFrame(markerIndex) {
     }
   }
   if (frame.artifact_assets) {
+    const actionAssets = buildSlamArtifactActionAssets(frame);
+    if (actionAssets.length > 0) {
+      lines.push({
+        label: 'Artifact overlays',
+        action: 'slam-artifact-actions',
+        assets: actionAssets,
+      });
+    }
     for (const [key, path] of Object.entries(frame.artifact_assets)) {
       lines.push({
         label: `Asset ${formatArtifactLabel(key)}`,
@@ -1215,6 +1263,7 @@ function describeSlamDebugFrame(markerIndex) {
         href: path,
         action: String(path).toLowerCase().endsWith('.ply') ? 'load-slam-artifact' : null,
         buttonLabel: 'Overlay',
+        frameId: frame.scan_id,
       });
     }
   }
@@ -1222,6 +1271,30 @@ function describeSlamDebugFrame(markerIndex) {
     title: 'SLAM Debug Frame',
     lines,
   };
+}
+
+function buildSlamArtifactActionAssets(frame) {
+  if (!frame || !frame.artifact_assets) {
+    return [];
+  }
+  const ordered = [
+    ['scan_initial_error_ply', 'Initial'],
+    ['scan_aligned_error_ply', 'Aligned'],
+    ['map_debug_ply', 'Map'],
+  ];
+  const assets = [];
+  for (const [key, label] of ordered) {
+    const href = frame.artifact_assets[key];
+    if (href && String(href).toLowerCase().endsWith('.ply')) {
+      assets.push({
+        href,
+        label: `${label}: ${href}`,
+        buttonLabel: label,
+        frameId: frame.scan_id,
+      });
+    }
+  }
+  return assets;
 }
 
 function formatArtifactLabel(key) {
@@ -1288,9 +1361,14 @@ function clearSlamArtifactOverlay() {
   if (toggleWrap) {
     toggleWrap.style.display = 'none';
   }
+  const status = document.getElementById('slamArtifactOverlayStatus');
+  if (status) {
+    status.style.display = 'none';
+    status.textContent = '';
+  }
 }
 
-async function loadSlamArtifactOverlay(href, label) {
+async function loadSlamArtifactOverlay(href, label, frameId = '') {
   const response = await fetch(href);
   if (!response.ok) {
     throw new Error(`Failed to load artifact: ${href}`);
@@ -1337,6 +1415,15 @@ async function loadSlamArtifactOverlay(href, label) {
   const toggleWrap = document.getElementById('slamArtifactOverlayToggleWrap');
   if (toggleWrap) {
     toggleWrap.style.display = 'block';
+  }
+  const status = document.getElementById('slamArtifactOverlayStatus');
+  if (status) {
+    const pointCount = geometry.getAttribute('position')
+      ? geometry.getAttribute('position').count.toLocaleString()
+      : '0';
+    const frameText = frameId ? `Frame: ${frameId}` : 'Frame: n/a';
+    status.textContent = `Overlay: ${label || href} | ${frameText} | Points: ${pointCount}`;
+    status.style.display = 'block';
   }
 }
 
@@ -1541,12 +1628,13 @@ document.addEventListener('click', event => {
   event.preventDefault();
   const href = button.getAttribute('data-slam-artifact-href');
   const label = button.getAttribute('data-slam-artifact-label') || href;
+  const frameId = button.getAttribute('data-slam-artifact-frame') || '';
   if (!href) {
     return;
   }
   button.disabled = true;
   button.textContent = 'Loading';
-  loadSlamArtifactOverlay(href, label)
+  loadSlamArtifactOverlay(href, label, frameId)
     .then(() => {
       button.textContent = 'Overlayed';
     })
@@ -1816,6 +1904,66 @@ def _optional_float(value) -> float | None:
     return result if np.isfinite(result) else None
 
 
+def _nested_float(document: dict, *keys: str) -> float | None:
+    """Return a finite float from nested report metadata, or None."""
+
+    value = document
+    for key in keys:
+        if not isinstance(value, dict):
+            return None
+        value = value.get(key)
+    return _optional_float(value)
+
+
+def _optional_int(value) -> int | None:
+    """Return integer metadata for viewer JSON, or None."""
+
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _prepare_scan_match_debug_summary(scan_debug: dict) -> dict:
+    """Extract compact scan-match debug metrics for the viewer panel."""
+
+    preprocess = scan_debug.get("preprocess") if isinstance(scan_debug, dict) else {}
+    summary = {
+        "method": scan_debug.get("method"),
+        "max_correspondence_distance": _optional_float(
+            scan_debug.get("max_correspondence_distance")
+        ),
+        "registration_fitness": _nested_float(scan_debug, "registration", "fitness"),
+        "registration_inlier_rmse_m": _nested_float(
+            scan_debug, "registration", "inlier_rmse"
+        ),
+        "distance_before_mean_m": _nested_float(
+            scan_debug, "distance_before", "stats", "mean"
+        ),
+        "distance_after_mean_m": _nested_float(
+            scan_debug, "distance_after", "stats", "mean"
+        ),
+        "distance_before_median_m": _nested_float(
+            scan_debug, "distance_before", "stats", "median"
+        ),
+        "distance_after_median_m": _nested_float(
+            scan_debug, "distance_after", "stats", "median"
+        ),
+        "mean_improvement_m": _nested_float(scan_debug, "improvement", "mean"),
+        "median_improvement_m": _nested_float(scan_debug, "improvement", "median"),
+        "max_improvement_m": _nested_float(scan_debug, "improvement", "max"),
+        "scan_points_used": _optional_int(preprocess.get("scan_points_used"))
+        if isinstance(preprocess, dict)
+        else None,
+        "map_points_used": _optional_int(preprocess.get("map_points_used"))
+        if isinstance(preprocess, dict)
+        else None,
+    }
+    return {key: value for key, value in summary.items() if value is not None}
+
+
 def _prepare_slam_debug_frames_for_viewer(
     report_path: str,
     trajectory_data: dict,
@@ -1845,6 +1993,11 @@ def _prepare_slam_debug_frames_for_viewer(
         closest_delta = float(abs(timestamps[display_index] - timestamp))
         scan_debug = item.get("scan_match_debug_result")
         artifacts = scan_debug.get("artifacts") if isinstance(scan_debug, dict) else None
+        scan_debug_summary = (
+            _prepare_scan_match_debug_summary(scan_debug)
+            if isinstance(scan_debug, dict)
+            else None
+        )
         diagnosis = item.get("diagnosis")
         frames.append(
             {
@@ -1861,6 +2014,7 @@ def _prepare_slam_debug_frames_for_viewer(
                 "diagnosis": diagnosis if isinstance(diagnosis, dict) else None,
                 "scan_path": item.get("scan_path"),
                 "scan_match_debug_command": item.get("scan_match_debug_command"),
+                "scan_match_debug_summary": scan_debug_summary,
                 "artifacts": artifacts if isinstance(artifacts, dict) else {},
             }
         )

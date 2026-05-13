@@ -243,6 +243,7 @@ class TestPrepareViewerData:
                                 "label": "bad_initial_guess",
                                 "confidence": "high",
                                 "suggested_action": "Inspect prediction.",
+                                "secondary_labels": ["registration_local_minimum"],
                                 "signals": {
                                     "raw_points": 5000,
                                     "filtered_points": 55,
@@ -285,6 +286,7 @@ class TestPrepareViewerData:
         assert frame["scan_id"] == "scan_0001"
         assert frame["display_index"] == 1
         assert frame["diagnosis"]["label"] == "bad_initial_guess"
+        assert frame["diagnosis"]["secondary_labels"] == ["registration_local_minimum"]
         assert frame["diagnosis"]["signals"]["raw_points"] == 5000
         assert frame["artifacts"]["scan_aligned_error_ply"] == "aligned.ply"
         summary = frame["scan_match_debug_summary"]
@@ -355,6 +357,7 @@ class TestPrepareViewerData:
         assert "Artifact overlays" in exported_html
         assert "Initial" in exported_html
         assert "Aligned" in exported_html
+        assert "Secondary:" in exported_html
         assert "Scan points: raw" in exported_html
         assert "Mean range: raw" in exported_html
         assert "Artifact Overlay" in exported_html

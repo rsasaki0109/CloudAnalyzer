@@ -105,6 +105,7 @@ def test_diagnose_slam_frame_detects_bad_initial_guess():
 
     assert diagnosis["label"] == "bad_initial_guess"
     assert diagnosis["confidence"] == "high"
+    assert diagnosis["secondary_labels"] == ["registration_local_minimum"]
     assert diagnosis["signals"]["improvement_mean"] == 0.9
 
 
@@ -129,6 +130,7 @@ def test_diagnose_slam_frame_detects_sparse_map_before_initial_guess():
     diagnosis = diagnose_slam_frame(frame)
 
     assert diagnosis["label"] == "map_too_sparse"
+    assert "bad_initial_guess" in diagnosis["secondary_labels"]
     assert diagnosis["suggested_action"].startswith("Inspect keyframe insertion")
 
 
@@ -148,6 +150,7 @@ def test_diagnose_slam_frame_distinguishes_aggressive_filtering():
     diagnosis = diagnose_slam_frame(frame)
 
     assert diagnosis["label"] == "filtering_too_aggressive"
+    assert diagnosis["secondary_labels"] == ["scan_quality_issue"]
     assert diagnosis["signals"]["filtered_ratio"] == 20 / 5000
     assert diagnosis["signals"]["raw_range_mean_m"] == 12.5
 
@@ -189,6 +192,7 @@ def test_analyze_slam_run_preserves_glim_scan_quality_metrics(tmp_path):
     assert metrics_payload["raw_range_mean_m"] == 12.5
     assert metrics_payload["filtered_range_mean_m"] == 11.9
     assert result["selected_frames"][0]["diagnosis"]["label"] == "filtering_too_aggressive"
+    assert "scan_quality_issue" in result["selected_frames"][0]["diagnosis"]["secondary_labels"]
 
 
 def test_analyze_slam_run_can_execute_scan_match_debug(source_and_target_files, tmp_path):

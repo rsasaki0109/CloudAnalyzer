@@ -4,7 +4,11 @@ import json
 
 from typer.testing import CliRunner
 
-from ca.slam_debug import analyze_slam_run, render_slam_debug_markdown
+from ca.slam_debug import (
+    analyze_slam_run,
+    diagnose_slam_frame,
+    render_slam_debug_markdown,
+)
 from cloudanalyzer_cli.main import app
 
 
@@ -75,6 +79,57 @@ def test_slam_debug_cli_outputs_json(tmp_path):
     payload = json.loads(result.stdout)
     assert payload["total_frames"] == 1
     assert payload["selected_frames"][0]["scan_id"] == "scan_0"
+    assert payload["selected_frames"][0]["diagnosis"]["label"] == "needs_review"
+
+
+def test_diagnose_slam_frame_detects_bad_initial_guess():
+    frame = {
+        "glim_metrics": {
+            "scan_match_rmse_m": 3.0,
+            "prediction_delta_m": 0.2,
+            "initial_delta_m": 1.2,
+            "scan_quality_low": False,
+            "raw_points": 2000,
+            "filtered_points": 1800,
+        },
+        "scan_match_debug_result": {
+            "distance_before": {"stats": {"mean": 1.3}},
+            "distance_after": {"stats": {"mean": 0.4}},
+            "improvement": {"mean": 0.9},
+            "registration": {"fitness": 0.9, "inlier_rmse": 0.3},
+            "preprocess": {"map_points_used": 500, "scan_points_used": 1000},
+        },
+    }
+
+    diagnosis = diagnose_slam_frame(frame)
+
+    assert diagnosis["label"] == "bad_initial_guess"
+    assert diagnosis["confidence"] == "high"
+    assert diagnosis["signals"]["improvement_mean"] == 0.9
+
+
+def test_diagnose_slam_frame_detects_sparse_map_before_initial_guess():
+    frame = {
+        "glim_metrics": {
+            "scan_match_rmse_m": 3.0,
+            "initial_delta_m": 1.2,
+            "scan_quality_low": False,
+            "raw_points": 2000,
+            "filtered_points": 1800,
+        },
+        "scan_match_debug_result": {
+            "distance_before": {"stats": {"mean": 1.3}},
+            "distance_after": {"stats": {"mean": 0.4}},
+            "improvement": {"mean": 0.9},
+            "registration": {"fitness": 0.9, "inlier_rmse": 0.3},
+            "preprocess": {"map_points_used": 30, "scan_points_used": 1000},
+        },
+    }
+
+    diagnosis = diagnose_slam_frame(frame)
+
+    assert diagnosis["label"] == "map_too_sparse"
+    assert diagnosis["suggested_action"].startswith("Inspect keyframe insertion")
 
 
 def test_analyze_slam_run_can_execute_scan_match_debug(source_and_target_files, tmp_path):
@@ -116,6 +171,7 @@ def test_analyze_slam_run_can_execute_scan_match_debug(source_and_target_files, 
 
     markdown = render_slam_debug_markdown(result)
     assert "SLAM Debug Report" in markdown
+    assert "Diagnosis:" in markdown
     assert "CloudAnalyzer scan-match" in markdown
     assert "scan_initial_error_ply" in markdown
 
@@ -167,5 +223,8 @@ def test_slam_debug_cli_writes_markdown_with_scan_match_debug(
 
     assert result.exit_code == 0
     assert "Markdown:" in result.stdout
+    assert "diagnosis:" in result.stdout
     assert "ca:" in result.stdout
-    assert "CloudAnalyzer scan-match" in report.read_text(encoding="utf-8")
+    report_text = report.read_text(encoding="utf-8")
+    assert "Diagnosis:" in report_text
+    assert "CloudAnalyzer scan-match" in report_text

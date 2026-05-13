@@ -94,7 +94,9 @@ trajectory are supplied, it also prints `ca web` / `ca web-export` commands for
 trajectory overlay inspection. With `--run-scan-match-debug`, the command also
 runs frame-level ICP/GICP diagnostics for the selected frames and stores
 before/after nearest-neighbor distance summaries plus colored PLY artifact paths
-in the JSON/Markdown reports.
+in the JSON/Markdown reports. Each selected frame also includes a diagnosis
+label and suggested action, such as `bad_initial_guess`, `weak_geometry`,
+`registration_local_minimum`, `map_too_sparse`, or `scan_quality_issue`.
 
 | Option | Default | Description |
 |---|---|---|

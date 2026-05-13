@@ -19,6 +19,7 @@ from ca.detection import evaluate_detection
 from ca.ground_evaluate import evaluate_ground_segmentation
 from ca.compare import run_compare
 from ca.scan_match_debug import run_scan_match_debug
+from ca.slam_debug import analyze_slam_run
 from ca.info import get_info
 from ca.diff import run_diff
 from ca.view import view
@@ -420,6 +421,80 @@ def scan_match_debug_cmd(
             typer.echo("Artifacts:")
             for path in result["artifacts"].values():
                 typer.echo(f"  {path}")
+
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("slam-debug")
+def slam_debug_cmd(
+    metrics_csv: str = typer.Argument(..., help="SLAM run metrics CSV, e.g. glim_mapping metrics.csv"),
+    scans_manifest_csv: Optional[str] = typer.Option(
+        None,
+        "--scans-manifest-csv",
+        help="Optional scan manifest CSV with scan_id,timestamp_sec,points_csv.",
+    ),
+    trajectory_csv: Optional[str] = typer.Option(
+        None,
+        "--trajectory-csv",
+        help="Optional estimated trajectory CSV for web inspection commands.",
+    ),
+    map_cloud: Optional[str] = typer.Option(
+        None,
+        "--map",
+        help="Optional map/reference cloud used to generate scan-match-debug commands.",
+    ),
+    top_k: int = typer.Option(10, "--top-k", help="Number of suspicious frames to report."),
+    sort_by: str = typer.Option(
+        "auto",
+        "--sort-by",
+        help="Ranking key: auto, rmse, rejection, prediction-delta, initial-delta, failure.",
+    ),
+    artifact_dir: Optional[str] = typer.Option(
+        None,
+        "--artifact-dir",
+        help="Optional base directory for scan-match-debug artifacts and web-export command.",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Rank suspicious SLAM frames and print CloudAnalyzer drill-down commands."""
+
+    try:
+        result = analyze_slam_run(
+            metrics_csv=metrics_csv,
+            scans_manifest_csv=scans_manifest_csv,
+            trajectory_csv=trajectory_csv,
+            map_path=map_cloud,
+            top_k=top_k,
+            sort_by=sort_by,
+            artifact_dir=artifact_dir,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        typer.echo(f"Metrics: {result['metrics_csv']}")
+        typer.echo(f"Frames:  {result['total_frames']}  selected={len(result['selected_frames'])}")
+        typer.echo(f"Sort:    {result['sort_by']}")
+        for frame in result["selected_frames"]:
+            typer.echo(
+                f"#{frame['rank']:02d} scan={frame['scan_id']} "
+                f"t={frame['timestamp_sec']} score={frame['score']:.3f}"
+            )
+            if frame["reasons"]:
+                typer.echo(f"    reasons: {', '.join(frame['reasons'])}")
+            if frame["scan_path"]:
+                typer.echo(f"    scan:    {frame['scan_path']}")
+            if frame["scan_match_debug_command"]:
+                typer.echo(f"    debug:   {frame['scan_match_debug_command']}")
+        commands = result.get("commands", {})
+        if commands.get("web"):
+            typer.echo(f"Web:     {commands['web']}")
+        if commands.get("web_export"):
+            typer.echo(f"Export:  {commands['web_export']}")
 
     if output_json:
         _dump_json(result, output_json)

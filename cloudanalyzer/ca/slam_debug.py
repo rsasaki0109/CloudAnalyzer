@@ -94,6 +94,8 @@ def _matrix_csv(matrix: list[float]) -> str:
 def _score_row(row: dict[str, str], sort_by: str) -> float:
     failed = 1.0 if _as_bool(row, "scan_match_failed") else 0.0
     rmse = _as_float(row, "scan_match_rmse_m") or 0.0
+    weighted_rmse = _as_float(row, "scan_match_weighted_rmse")
+    cost_rmse = weighted_rmse if weighted_rmse is not None else rmse
     rejection = _as_float(row, "scan_match_correspondence_rejection_rate") or 0.0
     prediction_delta = _as_float(row, "prediction_delta_m") or 0.0
     initial_delta = _as_float(row, "scan_match_vs_initial_pose_delta_m") or 0.0
@@ -103,6 +105,8 @@ def _score_row(row: dict[str, str], sort_by: str) -> float:
 
     if sort_by == "rmse":
         return rmse
+    if sort_by == "cost":
+        return cost_rmse
     if sort_by == "rejection":
         return rejection
     if sort_by == "prediction-delta":
@@ -117,7 +121,7 @@ def _score_row(row: dict[str, str], sort_by: str) -> float:
         + consecutive_failures * 10_000.0
         + low_quality * 1_000.0
         + retries * 100.0
-        + rmse * 10.0
+        + cost_rmse * 10.0
         + rejection * 5.0
         + prediction_delta
         + initial_delta
@@ -135,6 +139,9 @@ def _row_reasons(row: dict[str, str]) -> list[str]:
     rmse = _as_float(row, "scan_match_rmse_m")
     if rmse is not None:
         reasons.append(f"rmse={rmse:.4g}")
+    weighted_rmse = _as_float(row, "scan_match_weighted_rmse")
+    if weighted_rmse is not None:
+        reasons.append(f"weighted_rmse={weighted_rmse:.4g}")
     rejection = _as_float(row, "scan_match_correspondence_rejection_rate")
     if rejection is not None:
         reasons.append(f"rejection={rejection:.3g}")
@@ -152,6 +159,7 @@ def _frame_metrics(row: dict[str, str]) -> dict[str, Any]:
         "scan_match_failed": _as_bool(row, "scan_match_failed"),
         "scan_match_error": row.get("scan_match_error") or None,
         "scan_match_rmse_m": _as_float(row, "scan_match_rmse_m"),
+        "scan_match_weighted_rmse": _as_float(row, "scan_match_weighted_rmse"),
         "scan_match_rejection_rate": _as_float(
             row, "scan_match_correspondence_rejection_rate"
         ),
@@ -253,6 +261,8 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
     debug = frame.get("scan_match_debug_result")
 
     rmse = metrics.get("scan_match_rmse_m")
+    weighted_rmse = metrics.get("scan_match_weighted_rmse")
+    cost_rmse = weighted_rmse if weighted_rmse is not None else rmse
     prediction_delta = metrics.get("prediction_delta_m")
     initial_delta = metrics.get("initial_delta_m")
     raw_points = metrics.get("raw_points")
@@ -279,6 +289,8 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
 
     signals = {
         "scan_match_rmse_m": rmse,
+        "scan_match_weighted_rmse": weighted_rmse,
+        "scan_match_cost_rmse": cost_rmse,
         "prediction_delta_m": prediction_delta,
         "initial_delta_m": initial_delta,
         "raw_points": raw_points,
@@ -357,10 +369,10 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
         )
     if (
         debug
-        and rmse is not None
+        and cost_rmse is not None
         and fitness is not None
         and inlier_rmse is not None
-        and rmse >= 1.5
+        and cost_rmse >= 1.5
         and fitness >= 0.95
         and inlier_rmse <= 0.25
     ):
@@ -369,18 +381,18 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
                 "scan_match_cost_hotspot",
                 "medium",
                 (
-                    "GLIM reports a high scan-match RMSE while CloudAnalyzer "
-                    "re-registration is stable; compare cost scaling, residual "
-                    "definitions, and planar correspondence geometry."
+                    "GLIM reports a high weighted scan-match cost while "
+                    "CloudAnalyzer re-registration is stable; compare cost "
+                    "scaling, residual definitions, and planar correspondence geometry."
                 ),
             )
         )
     if (
         debug
-        and rmse is not None
+        and cost_rmse is not None
         and improvement is not None
         and inlier_rmse is not None
-        and rmse >= 2.0
+        and cost_rmse >= 2.0
         and improvement < 0.1
         and inlier_rmse >= 0.5
     ):
@@ -474,6 +486,7 @@ def render_slam_debug_markdown(result: dict[str, Any]) -> str:
             [
                 "- GLIM metrics: "
                 f"rmse={metrics.get('scan_match_rmse_m')}, "
+                f"weighted_rmse={metrics.get('scan_match_weighted_rmse')}, "
                 f"prediction_delta={metrics.get('prediction_delta_m')}, "
                 f"initial_delta={metrics.get('initial_delta_m')}, "
                 f"failed={metrics.get('scan_match_failed')}, "
@@ -560,7 +573,15 @@ def analyze_slam_run(
     trajectory = _read_trajectory_index(trajectory_path)
     top_k = max(1, int(top_k))
     sort_by = sort_by.lower()
-    allowed = {"auto", "rmse", "rejection", "prediction-delta", "initial-delta", "failure"}
+    allowed = {
+        "auto",
+        "rmse",
+        "cost",
+        "rejection",
+        "prediction-delta",
+        "initial-delta",
+        "failure",
+    }
     if sort_by not in allowed:
         raise ValueError(f"sort_by must be one of: {', '.join(sorted(allowed))}")
     if run_scan_match_debug_frames and (manifest_path is None or map_path is None):
@@ -641,6 +662,7 @@ def analyze_slam_run(
             "reasons": _row_reasons(row),
             "scan_match_failed": _as_bool(row, "scan_match_failed"),
             "scan_match_rmse_m": _as_float(row, "scan_match_rmse_m"),
+            "scan_match_weighted_rmse": _as_float(row, "scan_match_weighted_rmse"),
             "scan_match_rejection_rate": _as_float(
                 row, "scan_match_correspondence_rejection_rate"
             ),

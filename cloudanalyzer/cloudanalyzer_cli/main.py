@@ -451,7 +451,7 @@ def slam_debug_cmd(
     sort_by: str = typer.Option(
         "auto",
         "--sort-by",
-        help="Ranking key: auto, rmse, rejection, prediction-delta, initial-delta, failure.",
+        help="Ranking key: auto, rmse, cost, rejection, prediction-delta, initial-delta, failure.",
     ),
     artifact_dir: Optional[str] = typer.Option(
         None,

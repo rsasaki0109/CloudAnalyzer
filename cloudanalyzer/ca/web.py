@@ -1200,6 +1200,9 @@ function describeSlamDebugFrame(markerIndex) {
   if (Number.isFinite(frame.scan_match_rmse_m)) {
     lines.push(`GLIM RMSE: ${Number(frame.scan_match_rmse_m).toFixed(4)}`);
   }
+  if (Number.isFinite(frame.scan_match_weighted_rmse)) {
+    lines.push(`GLIM weighted RMSE: ${Number(frame.scan_match_weighted_rmse).toFixed(4)}`);
+  }
   if (frame.scan_match_debug_summary) {
     const summary = frame.scan_match_debug_summary;
     if (Number.isFinite(summary.distance_before_mean_m) && Number.isFinite(summary.distance_after_mean_m)) {
@@ -2152,6 +2155,9 @@ def _prepare_slam_debug_frames_for_viewer(
                 "score": _optional_float(item.get("score")),
                 "reasons": item.get("reasons") if isinstance(item.get("reasons"), list) else [],
                 "scan_match_rmse_m": _optional_float(item.get("scan_match_rmse_m")),
+                "scan_match_weighted_rmse": _optional_float(
+                    item.get("scan_match_weighted_rmse")
+                ),
                 "prediction_delta_m": _optional_float(item.get("prediction_delta_m")),
                 "initial_delta_m": _optional_float(item.get("initial_delta_m")),
                 "diagnosis": diagnosis if isinstance(diagnosis, dict) else None,

@@ -120,6 +120,9 @@ _VIEWER_HTML = """<!DOCTYPE html>
   <label id="trajectoryMarkerToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstMarker" checked> Worst ATE Marker</label>
   <label id="trajectorySegmentToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstSegment" checked> Worst RPE Segment</label>
   <label id="slamDebugMarkerToggleWrap" style="display:none"><input type="checkbox" id="showSlamDebugMarkers" checked> SLAM Debug Frames</label>
+  <label id="slamDebugDiagnosisFilterWrap" style="display:none">Diagnosis <select id="slamDebugDiagnosisFilter">
+    <option value="__all__">All</option>
+  </select></label>
   <label id="slamArtifactOverlayToggleWrap" style="display:none"><input type="checkbox" id="showSlamArtifactOverlay" checked> Artifact Overlay</label>
   <div id="slamArtifactOverlayStatus" style="display:none"></div>
   <label id="thresholdWrap" style="display:none">Error Threshold <input type="range" id="distThreshold" min="0" max="1" step="0.001" value="0"></label>
@@ -209,6 +212,7 @@ let defaultCameraPosition;
 let defaultControlTarget;
 let trajectorySelection = null;
 let slamDebugMarkerFrames = [];
+let allSlamDebugMarkerFrames = [];
 
 function centerFlatPositions(flatPositions, center) {
   if (!flatPositions) {
@@ -345,6 +349,7 @@ async function loadPoints() {
   centerFlatPositions(referencePositions, center);
   centerFlatPositions(trajectoryPositions, center);
   centerFlatPositions(trajectoryReferencePositions, center);
+  window._trajectoryPositions = trajectoryPositions ? trajectoryPositions.slice() : null;
   const n = positions.length / 3;
   const heatmapOption = document.querySelector('#colorMode option[value="heatmap"]');
   if (!data.distances && heatmapOption) {
@@ -453,8 +458,7 @@ async function loadPoints() {
     document.getElementById('trajectorySegmentToggleWrap').style.display = 'block';
   }
   if (trajectory && trajectory.slam_debug_frames && trajectory.slam_debug_frames.length > 0 && trajectoryPositions) {
-    const markerPositions = [];
-    slamDebugMarkerFrames = [];
+    allSlamDebugMarkerFrames = [];
     for (const frame of trajectory.slam_debug_frames) {
       const displayIndex = frame.display_index;
       const start = displayIndex * 3;
@@ -462,32 +466,27 @@ async function loadPoints() {
         Number.isInteger(displayIndex) &&
         start + 2 < trajectoryPositions.length
       ) {
-        markerPositions.push(
-          trajectoryPositions[start],
-          trajectoryPositions[start + 1],
-          trajectoryPositions[start + 2],
-        );
-        slamDebugMarkerFrames.push(frame);
+        allSlamDebugMarkerFrames.push(frame);
       }
     }
-    if (markerPositions.length > 0) {
+    if (allSlamDebugMarkerFrames.length > 0) {
       const slamGeometry = new THREE.BufferGeometry();
-      slamGeometry.setAttribute(
-        'position',
-        new THREE.BufferAttribute(new Float32Array(markerPositions), 3),
-      );
       const slamMaterial = new THREE.PointsMaterial({
         size: 9,
-        color: '#c084fc',
+        vertexColors: true,
         sizeAttenuation: false,
       });
       trajectorySlamDebugMarkers = new THREE.Points(slamGeometry, slamMaterial);
       trajectorySlamDebugMarkers.userData.inspectType = 'slam-debug-frame';
       scene.add(trajectorySlamDebugMarkers);
       document.getElementById('slamDebugMarkerToggleWrap').style.display = 'block';
+      document.getElementById('slamDebugDiagnosisFilterWrap').style.display = 'block';
+      setupSlamDebugDiagnosisFilter(allSlamDebugMarkerFrames);
+      updateSlamDebugMarkerGeometry();
     }
   } else {
     slamDebugMarkerFrames = [];
+    allSlamDebugMarkerFrames = [];
   }
   if (
     trajectory &&
@@ -1190,11 +1189,13 @@ function describeSlamDebugFrame(markerIndex) {
     return null;
   }
   const diagnosis = frame.diagnosis || null;
+  const diagnosisLabel = diagnosis ? diagnosis.label : 'needs_review';
   const lines = [
     `Rank: ${frame.rank}`,
     `Scan: ${frame.scan_id}`,
     `Timestamp: ${Number(frame.timestamp_sec).toFixed(3)}`,
     `Score: ${Number(frame.score || 0).toFixed(3)}`,
+    `Marker color: ${diagnosisColorName(diagnosisLabel)}`,
   ];
   if (Number.isFinite(frame.scan_match_rmse_m)) {
     lines.push(`GLIM RMSE: ${Number(frame.scan_match_rmse_m).toFixed(4)}`);
@@ -1327,6 +1328,95 @@ function buildSlamArtifactActionAssets(frame) {
     }
   }
   return assets;
+}
+
+function slamDiagnosisLabel(frame) {
+  return frame && frame.diagnosis && frame.diagnosis.label
+    ? String(frame.diagnosis.label)
+    : 'needs_review';
+}
+
+function diagnosisColor(label) {
+  const palette = {
+    map_too_sparse: '#f59e0b',
+    filtering_too_aggressive: '#ef4444',
+    sparse_raw_scan: '#dc2626',
+    scan_quality_issue: '#fb7185',
+    bad_initial_guess: '#60a5fa',
+    weak_geometry: '#a78bfa',
+    registration_local_minimum: '#22c55e',
+    scan_match_debug_error: '#f97316',
+    needs_review: '#c084fc',
+  };
+  return palette[label] || '#c084fc';
+}
+
+function diagnosisColorName(label) {
+  const names = {
+    map_too_sparse: 'orange',
+    filtering_too_aggressive: 'red',
+    sparse_raw_scan: 'red',
+    scan_quality_issue: 'pink',
+    bad_initial_guess: 'blue',
+    weak_geometry: 'purple',
+    registration_local_minimum: 'green',
+    scan_match_debug_error: 'orange',
+    needs_review: 'purple',
+  };
+  return names[label] || 'purple';
+}
+
+function setupSlamDebugDiagnosisFilter(frames) {
+  const filter = document.getElementById('slamDebugDiagnosisFilter');
+  if (!filter) {
+    return;
+  }
+  const labels = Array.from(new Set(frames.map(slamDiagnosisLabel))).sort();
+  filter.innerHTML = '<option value="__all__">All</option>' +
+    labels.map((label) => `<option value="${escapeHtml(label)}">${escapeHtml(label)}</option>`).join('');
+}
+
+function updateSlamDebugMarkerGeometry() {
+  if (!trajectorySlamDebugMarkers) {
+    return;
+  }
+  const filter = document.getElementById('slamDebugDiagnosisFilter');
+  const selected = filter ? filter.value : '__all__';
+  const trajectoryPositions = window._trajectoryPositions || [];
+  const markerPositions = [];
+  const markerColors = [];
+  slamDebugMarkerFrames = [];
+  for (const frame of allSlamDebugMarkerFrames) {
+    const label = slamDiagnosisLabel(frame);
+    if (selected !== '__all__' && label !== selected) {
+      continue;
+    }
+    const displayIndex = frame.display_index;
+    const start = displayIndex * 3;
+    if (!Number.isInteger(displayIndex) || start + 2 >= trajectoryPositions.length) {
+      continue;
+    }
+    markerPositions.push(
+      trajectoryPositions[start],
+      trajectoryPositions[start + 1],
+      trajectoryPositions[start + 2],
+    );
+    const color = new THREE.Color(diagnosisColor(label));
+    markerColors.push(color.r, color.g, color.b);
+    slamDebugMarkerFrames.push(frame);
+  }
+  trajectorySlamDebugMarkers.geometry.setAttribute(
+    'position',
+    new THREE.BufferAttribute(new Float32Array(markerPositions), 3),
+  );
+  trajectorySlamDebugMarkers.geometry.setAttribute(
+    'color',
+    new THREE.BufferAttribute(new Float32Array(markerColors), 3),
+  );
+  if (markerPositions.length > 0) {
+    trajectorySlamDebugMarkers.geometry.computeBoundingSphere();
+  }
+  window._slamDebugVisibleMarkerCount = slamDebugMarkerFrames.length;
 }
 
 function formatArtifactLabel(key) {
@@ -1630,6 +1720,11 @@ document.getElementById('showSlamDebugMarkers').addEventListener('change', e => 
   if (trajectorySlamDebugMarkers) {
     trajectorySlamDebugMarkers.visible = e.target.checked;
   }
+});
+document.getElementById('slamDebugDiagnosisFilter').addEventListener('change', () => {
+  updateSlamDebugMarkerGeometry();
+  trajectorySelection = null;
+  clearTrajectoryInspection();
 });
 document.getElementById('showSlamArtifactOverlay').addEventListener('change', e => {
   if (slamArtifactOverlay) {

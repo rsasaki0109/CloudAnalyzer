@@ -8,7 +8,8 @@ from pathlib import Path
 import numpy as np
 
 
-_TIMESTAMP_KEYS = ("timestamp", "time", "t")
+_TIMESTAMP_KEYS = ("timestamp", "timestamp_sec", "time", "t")
+_POSITION_KEY_SETS = (("x", "y", "z"), ("x_m", "y_m", "z_m"))
 SUPPORTED_TRAJECTORY_EXTENSIONS = {".csv", ".tum", ".txt"}
 
 
@@ -43,10 +44,16 @@ def _parse_csv_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
         timestamp_key = next((key for key in _TIMESTAMP_KEYS if key in field_map), None)
         if timestamp_key is None:
             raise ValueError("CSV trajectory must include a timestamp/time/t column")
-        position_keys = ["x", "y", "z"]
-        missing = [key for key in position_keys if key not in field_map]
-        if missing:
-            raise ValueError(f"CSV trajectory is missing required columns: {', '.join(missing)}")
+        position_keys = next(
+            (
+                candidate
+                for candidate in _POSITION_KEY_SETS
+                if all(key in field_map for key in candidate)
+            ),
+            None,
+        )
+        if position_keys is None:
+            raise ValueError("CSV trajectory must include x,y,z or x_m,y_m,z_m columns")
 
         timestamps = []
         positions = []
@@ -54,9 +61,9 @@ def _parse_csv_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
             timestamps.append(float(row[field_map[timestamp_key]]))
             positions.append(
                 [
-                    float(row[field_map["x"]]),
-                    float(row[field_map["y"]]),
-                    float(row[field_map["z"]]),
+                    float(row[field_map[position_keys[0]]]),
+                    float(row[field_map[position_keys[1]]]),
+                    float(row[field_map[position_keys[2]]]),
                 ]
             )
         return np.asarray(timestamps, dtype=float), np.asarray(positions, dtype=float)

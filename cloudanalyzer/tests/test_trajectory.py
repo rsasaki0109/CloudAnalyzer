@@ -36,6 +36,21 @@ class TestLoadTrajectory:
         assert result["num_poses"] == 2
         assert result["timestamps"].tolist() == [0.0, 1.0]
 
+    def test_load_glim_csv_with_metric_columns(self, tmp_path):
+        path = tmp_path / "glim_traj.csv"
+        path.write_text(
+            "timestamp_sec,x_m,y_m,z_m,roll_rad,pitch_rad,yaw_rad\n"
+            "10.0,1.0,2.0,3.0,0.0,0.0,0.0\n"
+            "10.1,4.0,5.0,6.0,0.1,0.2,0.3\n",
+            encoding="utf-8",
+        )
+
+        result = load_trajectory(str(path))
+
+        assert result["format"] == "csv"
+        assert result["timestamps"].tolist() == [10.0, 10.1]
+        assert result["positions"].tolist() == [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+
     def test_load_tum(self, tmp_path):
         path = _write_tum_trajectory(
             tmp_path / "traj.tum",

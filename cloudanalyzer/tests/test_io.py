@@ -19,6 +19,30 @@ class TestLoadPointCloud:
         pcd = load_point_cloud(str(path))
         assert len(pcd.points) == 100
 
+    def test_load_xyz_csv(self, tmp_path):
+        path = tmp_path / "scan.csv"
+        path.write_text("x,y,z\n1,2,3\n4,5,6\n", encoding="utf-8")
+
+        pcd = load_point_cloud(str(path))
+
+        np.testing.assert_allclose(np.asarray(pcd.points), [[1, 2, 3], [4, 5, 6]])
+
+    def test_load_glim_scan_csv(self, tmp_path):
+        path = tmp_path / "glim_scan.csv"
+        path.write_text(
+            "x_m,y_m,z_m,point_time_sec\n"
+            "1.5,2.5,3.5,0.0\n"
+            "4.5,5.5,6.5,0.01\n",
+            encoding="utf-8",
+        )
+
+        pcd = load_point_cloud(str(path))
+
+        np.testing.assert_allclose(
+            np.asarray(pcd.points),
+            [[1.5, 2.5, 3.5], [4.5, 5.5, 6.5]],
+        )
+
     def test_file_not_found(self):
         with pytest.raises(FileNotFoundError):
             load_point_cloud("/nonexistent/file.pcd")
@@ -53,6 +77,7 @@ class TestLoadPointCloud:
         assert ".ply" in SUPPORTED_EXTENSIONS
         assert ".las" in SUPPORTED_EXTENSIONS
         assert ".laz" in SUPPORTED_EXTENSIONS
+        assert ".csv" in SUPPORTED_EXTENSIONS
 
 
 class TestSavePointCloud:
@@ -83,3 +108,13 @@ class TestSavePointCloud:
     def test_unsupported_format_raises(self, tmp_path, simple_pcd):
         with pytest.raises(ValueError, match="Unsupported format"):
             save_point_cloud(str(tmp_path / "out.xyz"), simple_pcd)
+
+    def test_csv_roundtrip_preserves_coordinates(self, tmp_path, simple_pcd):
+        path = str(tmp_path / "test.csv")
+        save_point_cloud(path, simple_pcd)
+        loaded = load_point_cloud(path)
+        np.testing.assert_allclose(
+            np.asarray(loaded.points),
+            np.asarray(simple_pcd.points),
+            atol=1e-12,
+        )

@@ -116,7 +116,10 @@ def _handle_error(e: Exception) -> None:
 
     # Provide helpful hints
     if isinstance(e, FileNotFoundError):
-        typer.echo("Hint: Check the file path. Supported formats: .pcd, .ply, .las, .laz", err=True)
+        typer.echo(
+            "Hint: Check the file path. Supported formats: .pcd, .ply, .las, .laz, .csv",
+            err=True,
+        )
     elif "Unsupported format" in msg:
         typer.echo(f"Hint: Supported formats are: {', '.join(sorted(SUPPORTED_EXTENSIONS))}", err=True)
     elif "Unsupported method" in msg:
@@ -299,8 +302,8 @@ def common_options(
 
 @app.command("compare")
 def compare_cmd(
-    source: str = typer.Argument(..., help="Path to source point cloud (pcd/ply/las)"),
-    target: str = typer.Argument(..., help="Path to target point cloud (pcd/ply/las)"),
+    source: str = typer.Argument(..., help="Path to source point cloud (pcd/ply/las/laz/csv)"),
+    target: str = typer.Argument(..., help="Path to target point cloud (pcd/ply/las/laz/csv)"),
     method: Optional[str] = typer.Option(
         "gicp", "--register",
         help="Registration method: icp, gicp, or 'none' to skip",
@@ -327,8 +330,8 @@ def compare_cmd(
 
 @app.command("scan-match-debug")
 def scan_match_debug_cmd(
-    scan: str = typer.Argument(..., help="Path to source scan point cloud (pcd/ply/las/laz)"),
-    map_cloud: str = typer.Argument(..., help="Path to map/reference point cloud (pcd/ply/las/laz)"),
+    scan: str = typer.Argument(..., help="Path to source scan point cloud (pcd/ply/las/laz/csv)"),
+    map_cloud: str = typer.Argument(..., help="Path to map/reference point cloud (pcd/ply/las/laz/csv)"),
     method: str = typer.Option("gicp", "--method", help="Registration method: icp or gicp"),
     max_correspondence_distance: float = typer.Option(
         1.0,
@@ -502,7 +505,7 @@ def slam_debug_cmd(
 
 @app.command("info")
 def info_cmd(
-    path: str = typer.Argument(..., help="Path to point cloud file (pcd/ply/las)"),
+    path: str = typer.Argument(..., help="Path to point cloud file (pcd/ply/las/laz/csv)"),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:

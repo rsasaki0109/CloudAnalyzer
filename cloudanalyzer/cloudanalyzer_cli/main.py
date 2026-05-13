@@ -2639,6 +2639,115 @@ def web_export_cmd(
     typer.echo(f"Display pts:  {result['display_points']}")
 
 
+@app.command("lidar-odometry-view")
+def lidar_odometry_view_cmd(
+    trajectory: str = typer.Argument(..., help="LiDAR odometry trajectory (.csv/.tum/.txt)"),
+    map_clouds: Optional[List[str]] = typer.Option(
+        None,
+        "--map",
+        "-m",
+        help="Optional map/point-cloud file to show behind the odometry trajectory. Repeatable.",
+    ),
+    trajectory_reference: Optional[str] = typer.Option(
+        None,
+        "--trajectory-reference",
+        help="Optional reference trajectory to overlay alongside the odometry result.",
+    ),
+    trajectory_max_time_delta: float = typer.Option(
+        0.05,
+        "--trajectory-max-time-delta",
+        help="Max timestamp gap allowed when matching to --trajectory-reference.",
+    ),
+    trajectory_align_origin: bool = typer.Option(
+        False,
+        "--trajectory-align-origin",
+        help="Translate the odometry trajectory so its first matched pose aligns to the reference.",
+    ),
+    trajectory_align_rigid: bool = typer.Option(
+        False,
+        "--trajectory-align-rigid",
+        help="Fit a rigid transform from odometry trajectory to reference before display.",
+    ),
+    port: int = typer.Option(8080, "--port", "-p", help="HTTP port"),
+    max_points: int = typer.Option(2_000_000, "--max-points", help="Max map points for display"),
+    no_browser: bool = typer.Option(False, "--no-browser", help="Don't auto-open browser"),
+) -> None:
+    """Open a LiDAR odometry result in the web viewer."""
+
+    try:
+        web_serve(
+            list(map_clouds or []),
+            port=port,
+            max_points=max_points,
+            open_browser=not no_browser,
+            heatmap=False,
+            trajectory_path=trajectory,
+            trajectory_reference_path=trajectory_reference,
+            trajectory_max_time_delta=trajectory_max_time_delta,
+            trajectory_align_origin=trajectory_align_origin,
+            trajectory_align_rigid=trajectory_align_rigid,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+
+@app.command("lidar-odometry-export")
+def lidar_odometry_export_cmd(
+    trajectory: str = typer.Argument(..., help="LiDAR odometry trajectory (.csv/.tum/.txt)"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Static bundle output directory"),
+    map_clouds: Optional[List[str]] = typer.Option(
+        None,
+        "--map",
+        "-m",
+        help="Optional map/point-cloud file to show behind the odometry trajectory. Repeatable.",
+    ),
+    trajectory_reference: Optional[str] = typer.Option(
+        None,
+        "--trajectory-reference",
+        help="Optional reference trajectory to overlay alongside the odometry result.",
+    ),
+    trajectory_max_time_delta: float = typer.Option(
+        0.05,
+        "--trajectory-max-time-delta",
+        help="Max timestamp gap allowed when matching to --trajectory-reference.",
+    ),
+    trajectory_align_origin: bool = typer.Option(
+        False,
+        "--trajectory-align-origin",
+        help="Translate the odometry trajectory so its first matched pose aligns to the reference.",
+    ),
+    trajectory_align_rigid: bool = typer.Option(
+        False,
+        "--trajectory-align-rigid",
+        help="Fit a rigid transform from odometry trajectory to reference before display.",
+    ),
+    max_points: int = typer.Option(2_000_000, "--max-points", help="Max map points for display"),
+) -> None:
+    """Export a static LiDAR odometry viewer bundle."""
+
+    try:
+        result = web_export_static_bundle(
+            list(map_clouds or []),
+            output_dir=output_dir,
+            max_points=max_points,
+            heatmap=False,
+            trajectory_path=trajectory,
+            trajectory_reference_path=trajectory_reference,
+            trajectory_max_time_delta=trajectory_max_time_delta,
+            trajectory_align_origin=trajectory_align_origin,
+            trajectory_align_rigid=trajectory_align_rigid,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+        return
+
+    typer.echo(f"Exported:     {result['output_dir']}")
+    typer.echo(f"Viewer mode:  {result['viewer_mode']}")
+    typer.echo(f"Data:         {result['data_json']}")
+    typer.echo(f"Chunks:       {result['chunk_count']}")
+    typer.echo(f"Display pts:  {result['display_points']}")
+
+
 @app.command("version")
 def version_cmd() -> None:
     """Show CloudAnalyzer version."""

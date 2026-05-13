@@ -538,6 +538,13 @@ function makeInfo(data, n, extent) {
     }
   }
   const displayPoints = (data.display_points ?? n).toLocaleString();
+  if (data.viewer_mode === 'trajectory') {
+    return `<b>CloudAnalyzer LiDAR Odometry Viewer</b><br>` +
+      `Map points: ${displayPoints}<br>` +
+      `Extent: ${extent.toFixed(1)}m<br>` +
+      `File: ${data.filename}` +
+      trajectoryInfo;
+  }
   if (data.viewer_mode === 'heatmap' && data.distance_stats) {
     const original = data.original_points && data.original_points !== data.display_points
       ? `<br>Original source points: ${data.original_points.toLocaleString()}`
@@ -1538,6 +1545,35 @@ def _prepare_viewer_bundle(
         if trajectory_data and trajectory_data.get("reference_positions")
         else np.zeros((0, 3), dtype=float)
     )
+
+    if not paths:
+        if heatmap:
+            raise ValueError("--heatmap requires exactly 2 point cloud files")
+        if trajectory_data is None:
+            raise ValueError("At least one point cloud or --trajectory is required")
+        data = {
+            "positions": [],
+            "filename": Path(trajectory_path).name if trajectory_path is not None else "",
+            "viewer_mode": "trajectory",
+            "display_points": 0,
+            "initial_display_points": 0,
+            "original_points": 0,
+            "source_z_bounds": [
+                float(np.min(trajectory_positions[:, 2])) if trajectory_positions.size else 0.0,
+                float(np.max(trajectory_positions[:, 2])) if trajectory_positions.size else 0.0,
+            ],
+            "scene_bounds": _scene_bounds(
+                trajectory_positions,
+                trajectory_reference_positions,
+            ),
+            "progressive_loading": {
+                "enabled": False,
+                "source": None,
+                "reference": None,
+            },
+            "trajectory": trajectory_data,
+        }
+        return data, {}
 
     if heatmap:
         if len(paths) != 2:

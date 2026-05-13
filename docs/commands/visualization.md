@@ -106,7 +106,7 @@ ca lidar-odometry-export trajectory.csv \
   --output-dir odometry_viewer
 ```
 
-The exported directory contains `index.html` and `data.json`, so it can be opened by any static web server. When a SLAM debug report is supplied, suspicious frames are displayed as diagnosis-colored clickable trajectory markers with a diagnosis filter plus scan id, score, diagnosis, suggested action, CloudAnalyzer before/after distance summaries, and artifact paths. Existing SLAM debug artifacts referenced by the report are copied under `slam_debug_artifacts/`, linked from the marker inspection panel, and `.ply` assets can be loaded as in-view overlays with `Initial`, `Aligned`, and `Map` shortcut buttons when those artifacts exist.
+The exported directory contains `index.html` and `data.json`, so it can be opened by any static web server. When a SLAM debug report is supplied, suspicious frames are displayed as diagnosis-colored clickable trajectory markers with a diagnosis filter plus scan id, score, diagnosis, suggested action, CloudAnalyzer before/after distance summaries, and artifact paths. The filter matches both primary and secondary diagnosis labels while marker color remains tied to the primary label. Existing SLAM debug artifacts referenced by the report are copied under `slam_debug_artifacts/`, linked from the marker inspection panel, and `.ply` assets can be loaded as in-view overlays with `Initial`, `Aligned`, and `Map` shortcut buttons when those artifacts exist.
 
 ## ca view
 

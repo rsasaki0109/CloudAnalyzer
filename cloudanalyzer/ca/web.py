@@ -72,6 +72,8 @@ _VIEWER_HTML = """<!DOCTYPE html>
   #trajectoryInspectionBody { margin-top: 4px; }
   #trajectoryInspection a { color: #93c5fd; text-decoration: none; word-break: break-all; }
   #trajectoryInspection a:hover { text-decoration: underline; }
+  .inspection-link-row { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .inspection-link-row button { padding: 2px 6px; font-size: 11px; }
   #trajectoryTimeline {
     margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(203, 213, 225, 0.18);
     font-size: 12px; line-height: 1.4; color: #cbd5e1;
@@ -116,6 +118,7 @@ _VIEWER_HTML = """<!DOCTYPE html>
   <label id="trajectoryMarkerToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstMarker" checked> Worst ATE Marker</label>
   <label id="trajectorySegmentToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstSegment" checked> Worst RPE Segment</label>
   <label id="slamDebugMarkerToggleWrap" style="display:none"><input type="checkbox" id="showSlamDebugMarkers" checked> SLAM Debug Frames</label>
+  <label id="slamArtifactOverlayToggleWrap" style="display:none"><input type="checkbox" id="showSlamArtifactOverlay" checked> Artifact Overlay</label>
   <label id="thresholdWrap" style="display:none">Error Threshold <input type="range" id="distThreshold" min="0" max="1" step="0.001" value="0"></label>
   <label>Color <select id="colorMode">
     <option value="heatmap">Heatmap</option>
@@ -169,6 +172,7 @@ _VIEWER_HTML = """<!DOCTYPE html>
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color('#1a1a2e');
@@ -193,6 +197,7 @@ let trajectoryReferenceLine;
 let trajectoryWorstMarker;
 let trajectoryWorstSegment;
 let trajectorySlamDebugMarkers;
+let slamArtifactOverlay;
 let pickedPointMarker;
 let pickedReferenceMarker;
 let pickedCorrespondenceLine;
@@ -776,7 +781,16 @@ function renderInspectionLine(line) {
     const value = escapeHtml(line.value || line.href || '');
     if (line.href) {
       const href = escapeHtml(line.href);
-      return `<div>${label}<a href="${href}" target="_blank" rel="noopener">${value}</a></div>`;
+      const link = `<a href="${href}" target="_blank" rel="noopener">${value}</a>`;
+      if (line.action === 'load-slam-artifact') {
+        const buttonLabel = escapeHtml(line.buttonLabel || 'Overlay');
+        return (
+          `<div class="inspection-link-row">${label}${link}` +
+          `<button type="button" data-slam-artifact-href="${href}" data-slam-artifact-label="${value}">${buttonLabel}</button>` +
+          `</div>`
+        );
+      }
+      return `<div>${label}${link}</div>`;
     }
     return `<div>${label}${value}</div>`;
   }
@@ -1199,6 +1213,8 @@ function describeSlamDebugFrame(markerIndex) {
         label: `Asset ${formatArtifactLabel(key)}`,
         value: path,
         href: path,
+        action: String(path).toLowerCase().endsWith('.ply') ? 'load-slam-artifact' : null,
+        buttonLabel: 'Overlay',
       });
     }
   }
@@ -1258,6 +1274,70 @@ function resetView() {
   renderTrajectoryTimeline();
   clearTrajectoryInspection();
   clearPointInspection();
+  clearSlamArtifactOverlay();
+}
+
+function clearSlamArtifactOverlay() {
+  if (slamArtifactOverlay) {
+    scene.remove(slamArtifactOverlay);
+    slamArtifactOverlay.geometry.dispose();
+    slamArtifactOverlay.material.dispose();
+    slamArtifactOverlay = null;
+  }
+  const toggleWrap = document.getElementById('slamArtifactOverlayToggleWrap');
+  if (toggleWrap) {
+    toggleWrap.style.display = 'none';
+  }
+}
+
+async function loadSlamArtifactOverlay(href, label) {
+  const response = await fetch(href);
+  if (!response.ok) {
+    throw new Error(`Failed to load artifact: ${href}`);
+  }
+  const buffer = await response.arrayBuffer();
+  const loader = new PLYLoader();
+  const geometry = loader.parse(buffer);
+
+  const positionAttr = geometry.getAttribute('position');
+  const center = window._centerOffset || { x: 0, y: 0, z: 0 };
+  if (positionAttr) {
+    for (let i = 0; i < positionAttr.count; i += 1) {
+      positionAttr.setXYZ(
+        i,
+        positionAttr.getX(i) - center.x,
+        positionAttr.getY(i) - center.y,
+        positionAttr.getZ(i) - center.z,
+      );
+    }
+    positionAttr.needsUpdate = true;
+  }
+  geometry.computeBoundingSphere();
+
+  clearSlamArtifactOverlay();
+  const colorAttr = geometry.getAttribute('color');
+  const sizeInput = document.getElementById('ptSize');
+  const size = sizeInput ? Math.max(2, parseFloat(sizeInput.value) * 1.2) : 2.5;
+  const material = new THREE.PointsMaterial({
+    size,
+    color: '#a78bfa',
+    vertexColors: Boolean(colorAttr),
+    transparent: true,
+    opacity: 0.92,
+    sizeAttenuation: true,
+  });
+  slamArtifactOverlay = new THREE.Points(geometry, material);
+  slamArtifactOverlay.name = label || href;
+  scene.add(slamArtifactOverlay);
+
+  const toggle = document.getElementById('showSlamArtifactOverlay');
+  if (toggle) {
+    toggle.checked = true;
+  }
+  const toggleWrap = document.getElementById('slamArtifactOverlayToggleWrap');
+  if (toggleWrap) {
+    toggleWrap.style.display = 'block';
+  }
 }
 
 function onViewerClick(event) {
@@ -1396,6 +1476,7 @@ document.getElementById('ptSize').addEventListener('input', e => {
   const size = parseFloat(e.target.value);
   if (pointCloud) pointCloud.material.size = size;
   if (referenceCloud) referenceCloud.material.size = Math.max(0.5, size * 0.75);
+  if (slamArtifactOverlay) slamArtifactOverlay.material.size = Math.max(2, size * 1.2);
 });
 document.getElementById('colorMode').addEventListener('change', e => {
   if (!pointCloud) return;
@@ -1431,6 +1512,11 @@ document.getElementById('showSlamDebugMarkers').addEventListener('change', e => 
     trajectorySlamDebugMarkers.visible = e.target.checked;
   }
 });
+document.getElementById('showSlamArtifactOverlay').addEventListener('change', e => {
+  if (slamArtifactOverlay) {
+    slamArtifactOverlay.visible = e.target.checked;
+  }
+});
 document.getElementById('refOpacity').addEventListener('input', e => {
   if (referenceCloud) {
     referenceCloud.material.opacity = parseFloat(e.target.value);
@@ -1444,6 +1530,39 @@ document.getElementById('bgColor').addEventListener('change', e => {
 });
 document.getElementById('resetView').addEventListener('click', resetView);
 renderer.domElement.addEventListener('click', onViewerClick);
+document.addEventListener('click', event => {
+  if (!(event.target instanceof Element)) {
+    return;
+  }
+  const button = event.target.closest('[data-slam-artifact-href]');
+  if (!button) {
+    return;
+  }
+  event.preventDefault();
+  const href = button.getAttribute('data-slam-artifact-href');
+  const label = button.getAttribute('data-slam-artifact-label') || href;
+  if (!href) {
+    return;
+  }
+  button.disabled = true;
+  button.textContent = 'Loading';
+  loadSlamArtifactOverlay(href, label)
+    .then(() => {
+      button.textContent = 'Overlayed';
+    })
+    .catch((error) => {
+      console.error(error);
+      button.textContent = 'Failed';
+    })
+    .finally(() => {
+      setTimeout(() => {
+        button.disabled = false;
+        if (button.textContent !== 'Failed') {
+          button.textContent = 'Overlay';
+        }
+      }, 1200);
+    });
+});
 
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;

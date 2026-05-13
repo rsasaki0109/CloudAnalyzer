@@ -19,7 +19,7 @@ from ca.detection import evaluate_detection
 from ca.ground_evaluate import evaluate_ground_segmentation
 from ca.compare import run_compare
 from ca.scan_match_debug import run_scan_match_debug
-from ca.slam_debug import analyze_slam_run
+from ca.slam_debug import analyze_slam_run, write_slam_debug_markdown
 from ca.info import get_info
 from ca.diff import run_diff
 from ca.view import view
@@ -458,6 +458,46 @@ def slam_debug_cmd(
         "--artifact-dir",
         help="Optional base directory for scan-match-debug artifacts and web-export command.",
     ),
+    run_scan_match_debug: bool = typer.Option(
+        False,
+        "--run-scan-match-debug",
+        help="Run scan-match-debug automatically for selected suspicious frames.",
+    ),
+    scan_match_method: str = typer.Option(
+        "gicp",
+        "--scan-match-method",
+        help="Registration method for automatic scan-match-debug: icp or gicp.",
+    ),
+    scan_match_max_correspondence_distance: float = typer.Option(
+        1.0,
+        "--scan-match-max-correspondence-distance",
+        help="Maximum correspondence distance for automatic scan-match-debug.",
+    ),
+    scan_match_scan_voxel_size: Optional[float] = typer.Option(
+        None,
+        "--scan-match-scan-voxel-size",
+        help="Optional scan voxel size for automatic scan-match-debug.",
+    ),
+    scan_match_map_voxel_size: Optional[float] = typer.Option(
+        None,
+        "--scan-match-map-voxel-size",
+        help="Optional map voxel size for automatic scan-match-debug.",
+    ),
+    scan_match_crop_margin: Optional[float] = typer.Option(
+        None,
+        "--scan-match-crop-margin",
+        help="Optional map crop margin for automatic scan-match-debug.",
+    ),
+    scan_match_threshold: Optional[float] = typer.Option(
+        None,
+        "--scan-match-threshold",
+        help="Optional NN distance threshold for automatic scan-match-debug.",
+    ),
+    output_markdown: Optional[str] = typer.Option(
+        None,
+        "--output-markdown",
+        help="Write a Markdown SLAM debug report.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -472,6 +512,13 @@ def slam_debug_cmd(
             top_k=top_k,
             sort_by=sort_by,
             artifact_dir=artifact_dir,
+            run_scan_match_debug_frames=run_scan_match_debug,
+            scan_match_method=scan_match_method,
+            scan_match_max_correspondence_distance=scan_match_max_correspondence_distance,
+            scan_match_scan_voxel_size=scan_match_scan_voxel_size,
+            scan_match_map_voxel_size=scan_match_map_voxel_size,
+            scan_match_crop_margin=scan_match_crop_margin,
+            scan_match_threshold=scan_match_threshold,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -493,6 +540,17 @@ def slam_debug_cmd(
                 typer.echo(f"    scan:    {frame['scan_path']}")
             if frame["scan_match_debug_command"]:
                 typer.echo(f"    debug:   {frame['scan_match_debug_command']}")
+            if frame["scan_match_debug_result"]:
+                registration = frame["scan_match_debug_result"]["registration"]
+                improvement = frame["scan_match_debug_result"]["improvement"]
+                typer.echo(
+                    "    ca:      "
+                    f"fitness={registration['fitness']:.4f} "
+                    f"inlier_rmse={registration['inlier_rmse']:.4f} "
+                    f"mean_delta={improvement['mean']:.4f}"
+                )
+            if frame["scan_match_debug_error"]:
+                typer.echo(f"    ca_err:  {frame['scan_match_debug_error']}")
         commands = result.get("commands", {})
         if commands.get("web"):
             typer.echo(f"Web:     {commands['web']}")
@@ -501,6 +559,9 @@ def slam_debug_cmd(
 
     if output_json:
         _dump_json(result, output_json)
+    if output_markdown:
+        write_slam_debug_markdown(result, output_markdown)
+        typer.echo(f"Markdown: {output_markdown}")
 
 
 @app.command("info")

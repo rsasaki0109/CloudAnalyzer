@@ -82,14 +82,19 @@ ca slam-debug runs/flatwall/metrics.csv \
   --map runs/flatwall/map.pcd \
   --top-k 5 \
   --artifact-dir qa/slam_debug \
-  --output-json qa/slam_debug.json
+  --run-scan-match-debug \
+  --output-json qa/slam_debug.json \
+  --output-markdown qa/slam_debug.md
 ```
 
 Output: top-ranked frames, reasons such as scan-match failure, high RMSE,
 high correspondence rejection, prediction-vs-registration drift, low scan
 quality, plus ready-to-run `ca scan-match-debug` commands. When a map and
 trajectory are supplied, it also prints `ca web` / `ca web-export` commands for
-trajectory overlay inspection.
+trajectory overlay inspection. With `--run-scan-match-debug`, the command also
+runs frame-level ICP/GICP diagnostics for the selected frames and stores
+before/after nearest-neighbor distance summaries plus colored PLY artifact paths
+in the JSON/Markdown reports.
 
 | Option | Default | Description |
 |---|---|---|
@@ -99,8 +104,16 @@ trajectory overlay inspection.
 | `--top-k` | `10` | Number of suspicious frames to report |
 | `--sort-by` | `auto` | Ranking key: `auto`, `rmse`, `rejection`, `prediction-delta`, `initial-delta`, `failure` |
 | `--artifact-dir` | `None` | Base directory for generated debug artifact commands |
+| `--run-scan-match-debug` | `false` | Execute `ca scan-match-debug` for each selected frame |
+| `--scan-match-method` | `gicp` | Registration method for automatic scan-match-debug |
+| `--scan-match-max-correspondence-distance` | `1.0` | Maximum correspondence distance for automatic scan-match-debug |
+| `--scan-match-scan-voxel-size` | `None` | Optional scan voxel size for automatic scan-match-debug |
+| `--scan-match-map-voxel-size` | `None` | Optional map voxel size for automatic scan-match-debug |
+| `--scan-match-crop-margin` | `None` | Optional map crop margin for automatic scan-match-debug |
+| `--scan-match-threshold` | `None` | Optional NN distance threshold for automatic scan-match-debug |
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON |
+| `--output-markdown` | `None` | Write a Markdown SLAM debug report |
 
 ## ca map-evaluate
 

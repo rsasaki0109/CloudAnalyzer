@@ -4,7 +4,7 @@ import json
 
 from typer.testing import CliRunner
 
-from ca.slam_debug import analyze_slam_run
+from ca.slam_debug import analyze_slam_run, render_slam_debug_markdown
 from cloudanalyzer_cli.main import app
 
 
@@ -76,3 +76,96 @@ def test_slam_debug_cli_outputs_json(tmp_path):
     assert payload["total_frames"] == 1
     assert payload["selected_frames"][0]["scan_id"] == "scan_0"
 
+
+def test_analyze_slam_run_can_execute_scan_match_debug(source_and_target_files, tmp_path):
+    scan_path, map_path = source_and_target_files
+    metrics = tmp_path / "metrics.csv"
+    metrics.write_text(
+        "scan_id,timestamp_sec,scan_match_failed,scan_match_rmse_m,"
+        "scan_match_correspondence_rejection_rate,prediction_delta_m,"
+        "scan_match_vs_initial_pose_delta_m,registration_retry_count,"
+        "consecutive_scan_match_failures,scan_quality_low,initial_x_m,initial_y_m,initial_z_m\n"
+        "scan_0,0.0,false,0.5,0.2,0.1,0.1,0,0,false,0.0,0.0,0.0\n",
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "scans_manifest.csv"
+    manifest.write_text(
+        f"scan_id,timestamp_sec,points_csv\nscan_0,0.0,{scan_path}\n",
+        encoding="utf-8",
+    )
+    artifact_dir = tmp_path / "artifacts"
+
+    result = analyze_slam_run(
+        str(metrics),
+        scans_manifest_csv=str(manifest),
+        map_path=map_path,
+        top_k=1,
+        artifact_dir=str(artifact_dir),
+        run_scan_match_debug_frames=True,
+        scan_match_method="icp",
+        scan_match_max_correspondence_distance=0.5,
+        scan_match_threshold=0.05,
+    )
+
+    frame = result["selected_frames"][0]
+    assert result["scan_match_debug_ran"] is True
+    assert frame["scan_match_debug_error"] is None
+    assert frame["scan_match_debug_result"]["method"] == "icp"
+    assert frame["scan_match_debug_result"]["registration"]["fitness"] >= 0.0
+    assert (artifact_dir / "01_scan_0" / "scan_initial_error.ply").exists()
+
+    markdown = render_slam_debug_markdown(result)
+    assert "SLAM Debug Report" in markdown
+    assert "CloudAnalyzer scan-match" in markdown
+    assert "scan_initial_error_ply" in markdown
+
+
+def test_slam_debug_cli_writes_markdown_with_scan_match_debug(
+    source_and_target_files,
+    tmp_path,
+):
+    scan_path, map_path = source_and_target_files
+    metrics = tmp_path / "metrics.csv"
+    metrics.write_text(
+        "scan_id,timestamp_sec,scan_match_failed,scan_match_rmse_m,"
+        "scan_match_correspondence_rejection_rate,prediction_delta_m,"
+        "scan_match_vs_initial_pose_delta_m,registration_retry_count,"
+        "consecutive_scan_match_failures,scan_quality_low,initial_x_m,initial_y_m,initial_z_m\n"
+        "scan_0,0.0,false,0.5,0.2,0.1,0.1,0,0,false,0.0,0.0,0.0\n",
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "scans_manifest.csv"
+    manifest.write_text(
+        f"scan_id,timestamp_sec,points_csv\nscan_0,0.0,{scan_path}\n",
+        encoding="utf-8",
+    )
+    report = tmp_path / "report.md"
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "slam-debug",
+            str(metrics),
+            "--scans-manifest-csv",
+            str(manifest),
+            "--map",
+            map_path,
+            "--artifact-dir",
+            str(tmp_path / "artifacts"),
+            "--top-k",
+            "1",
+            "--run-scan-match-debug",
+            "--scan-match-method",
+            "icp",
+            "--scan-match-max-correspondence-distance",
+            "0.5",
+            "--output-markdown",
+            str(report),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Markdown:" in result.stdout
+    assert "ca:" in result.stdout
+    assert "CloudAnalyzer scan-match" in report.read_text(encoding="utf-8")

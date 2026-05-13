@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from ca.registration import register, SUPPORTED_METHODS
+from ca.registration import register, register_detailed, SUPPORTED_METHODS
 
 
 class TestRegister:
@@ -33,3 +33,10 @@ class TestRegister:
     def test_case_insensitive(self, simple_pcd, shifted_pcd):
         transformed, fitness, rmse = register(simple_pcd, shifted_pcd, method="GICP")
         assert 0.0 <= fitness <= 1.0
+
+    def test_register_detailed_returns_transformation(self, simple_pcd, shifted_pcd):
+        result = register_detailed(simple_pcd, shifted_pcd, method="icp")
+        assert 0.0 <= result.fitness <= 1.0
+        assert result.rmse >= 0.0
+        assert result.transformation.shape == (4, 4)
+        assert len(result.transformed.points) == len(simple_pcd.points)

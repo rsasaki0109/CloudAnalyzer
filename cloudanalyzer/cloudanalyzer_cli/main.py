@@ -18,6 +18,7 @@ from ca.baseline_history import discover_history, list_baselines, rotate_history
 from ca.detection import evaluate_detection
 from ca.ground_evaluate import evaluate_ground_segmentation
 from ca.compare import run_compare
+from ca.scan_match_debug import run_scan_match_debug
 from ca.info import get_info
 from ca.diff import run_diff
 from ca.view import view
@@ -319,6 +320,107 @@ def compare_cmd(
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("scan-match-debug")
+def scan_match_debug_cmd(
+    scan: str = typer.Argument(..., help="Path to source scan point cloud (pcd/ply/las/laz)"),
+    map_cloud: str = typer.Argument(..., help="Path to map/reference point cloud (pcd/ply/las/laz)"),
+    method: str = typer.Option("gicp", "--method", help="Registration method: icp or gicp"),
+    max_correspondence_distance: float = typer.Option(
+        1.0,
+        "--max-correspondence-distance",
+        help="Maximum correspondence distance for ICP/GICP.",
+    ),
+    initial_matrix: Optional[str] = typer.Option(
+        None,
+        "--initial-matrix",
+        help="Initial 4x4 scan-to-map transform as 16 comma-separated floats (row-major).",
+    ),
+    scan_voxel_size: Optional[float] = typer.Option(
+        None,
+        "--scan-voxel-size",
+        help="Optional voxel size used to downsample the scan before matching.",
+    ),
+    map_voxel_size: Optional[float] = typer.Option(
+        None,
+        "--map-voxel-size",
+        help="Optional voxel size used to downsample the map before matching.",
+    ),
+    crop_margin: Optional[float] = typer.Option(
+        None,
+        "--crop-margin",
+        help="Crop map to the initial scan bounding box plus this margin.",
+    ),
+    threshold: Optional[float] = typer.Option(
+        None,
+        "--threshold",
+        help="Distance threshold for before/after exceed counts.",
+    ),
+    artifact_dir: Optional[str] = typer.Option(
+        None,
+        "--artifact-dir",
+        help="Optional directory for colored before/after scan PLY artifacts.",
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Debug one scan-to-map ICP/GICP matching attempt."""
+    matrix16 = _parse_matrix16(initial_matrix)
+    try:
+        result = run_scan_match_debug(
+            scan_path=scan,
+            map_path=map_cloud,
+            method=method,
+            max_correspondence_distance=max_correspondence_distance,
+            initial_transform=matrix16,
+            scan_voxel_size=scan_voxel_size,
+            map_voxel_size=map_voxel_size,
+            crop_margin=crop_margin,
+            threshold=threshold,
+            artifact_dir=artifact_dir,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        prep = result["preprocess"]
+        reg = result["registration"]
+        before = result["distance_before"]["stats"]
+        after = result["distance_after"]["stats"]
+        imp = result["improvement"]
+        typer.echo(f"Scan:   {scan}")
+        typer.echo(f"Map:    {map_cloud}")
+        typer.echo(
+            "Points: "
+            f"scan {prep['scan_points_used']}/{prep['scan_points_raw']}  "
+            f"map {prep['map_points_used']}/{prep['map_points_raw']}"
+        )
+        typer.echo(
+            f"Reg:    {result['method']}  fitness={reg['fitness']:.4f}  "
+            f"rmse={reg['inlier_rmse']:.4f}"
+        )
+        typer.echo(
+            f"Before: mean={before['mean']:.4f}  median={before['median']:.4f}  "
+            f"max={before['max']:.4f}"
+        )
+        typer.echo(
+            f"After:  mean={after['mean']:.4f}  median={after['median']:.4f}  "
+            f"max={after['max']:.4f}"
+        )
+        typer.echo(
+            f"Delta:  mean={imp['mean']:.4f}  median={imp['median']:.4f}  "
+            f"max={imp['max']:.4f}"
+        )
+        if result["artifacts"]:
+            typer.echo("Artifacts:")
+            for path in result["artifacts"].values():
+                typer.echo(f"  {path}")
+
     if output_json:
         _dump_json(result, output_json)
 

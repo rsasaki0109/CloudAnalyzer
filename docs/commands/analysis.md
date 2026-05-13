@@ -38,6 +38,38 @@ ca diff a.pcd b.pcd --threshold 0.05
 | `--threshold` | Report how many points exceed this distance |
 | `--format-json` | Print JSON to stdout |
 
+## ca scan-match-debug
+
+Debug one scan-to-map ICP/GICP matching attempt.
+
+```bash
+ca scan-match-debug scan.pcd map.pcd \
+  --method gicp \
+  --max-correspondence-distance 1.0 \
+  --initial-matrix "1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1" \
+  --crop-margin 30 \
+  --threshold 0.5 \
+  --artifact-dir qa/scan_match \
+  --output-json qa/scan_match.json
+```
+
+Output: registration fitness / inlier RMSE, before/after nearest-neighbor distance
+statistics, the delta and final transform matrices, optional threshold exceed counts,
+and colored PLY artifacts for the initial and aligned scan.
+
+| Option | Default | Description |
+|---|---|---|
+| `--method` | `gicp` | Registration method: `icp` or `gicp` |
+| `--max-correspondence-distance` | `1.0` | Maximum correspondence distance for ICP/GICP |
+| `--initial-matrix` | `None` | 4x4 row-major initial scan-to-map transform |
+| `--scan-voxel-size` | `None` | Optional scan voxel downsample size |
+| `--map-voxel-size` | `None` | Optional map voxel downsample size |
+| `--crop-margin` | `None` | Crop map to the initial scan bounding box plus this margin |
+| `--threshold` | `None` | Report before/after exceed counts above this distance |
+| `--artifact-dir` | `None` | Write colored before/after scan PLYs and the debug map PLY |
+| `--format-json` | `false` | Print JSON to stdout |
+| `--output-json` | `None` | Dump result as JSON |
+
 ## ca map-evaluate
 
 Experimental MapEval-inspired map-to-map evaluation against a reference/GT map.

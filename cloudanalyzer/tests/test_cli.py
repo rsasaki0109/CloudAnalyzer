@@ -189,6 +189,30 @@ class TestCLI:
         assert result.exit_code == 0
         assert "Threshold" in result.output
 
+    def test_scan_match_debug(self, source_and_target_files, tmp_path):
+        src, tgt = source_and_target_files
+        json_out = str(tmp_path / "scan_match.json")
+        result = runner.invoke(
+            app,
+            [
+                "scan-match-debug",
+                src,
+                tgt,
+                "--method",
+                "icp",
+                "--max-correspondence-distance",
+                "0.5",
+                "--threshold",
+                "0.05",
+                "--output-json",
+                json_out,
+            ],
+        )
+        assert result.exit_code == 0
+        assert "Before:" in result.output
+        assert "After:" in result.output
+        assert (tmp_path / "scan_match.json").exists()
+
     def test_diff_with_threshold(self, source_and_target_files):
         src, tgt = source_and_target_files
         result = runner.invoke(app, ["diff", src, tgt, "--threshold", "0.05"])

@@ -271,6 +271,61 @@ class TestPrepareViewerData:
         assert frame["diagnosis"]["label"] == "bad_initial_guess"
         assert frame["artifacts"]["scan_aligned_error_ply"] == "aligned.ply"
 
+    def test_export_static_bundle_copies_slam_debug_artifacts(self, tmp_path):
+        trajectory_path = _write_csv_trajectory(
+            tmp_path / "odom.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 2.0, 0.0, 0.0), (2.0, 4.0, 0.0, 0.0)],
+        )
+        artifact_dir = tmp_path / "debug_artifacts"
+        artifact_dir.mkdir()
+        initial_artifact = artifact_dir / "scan_initial_error.ply"
+        aligned_artifact = artifact_dir / "scan_aligned_error.ply"
+        initial_artifact.write_text("ply\ninitial\n", encoding="utf-8")
+        aligned_artifact.write_text("ply\naligned\n", encoding="utf-8")
+        report_path = tmp_path / "slam_debug_report.json"
+        report_path.write_text(
+            json.dumps(
+                {
+                    "selected_frames": [
+                        {
+                            "rank": 1,
+                            "scan_id": "scan/0001",
+                            "timestamp_sec": 1.0,
+                            "scan_match_debug_result": {
+                                "artifacts": {
+                                    "scan_initial_error_ply": str(initial_artifact),
+                                    "scan_aligned_error_ply": "debug_artifacts/scan_aligned_error.ply",
+                                },
+                            },
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+        output_dir = tmp_path / "bundle"
+
+        result = export_static_bundle(
+            [],
+            str(output_dir),
+            max_points=1000,
+            trajectory_path=trajectory_path,
+            slam_debug_report_path=str(report_path),
+        )
+
+        assert result["slam_debug_artifact_count"] == 2
+        exported_data = json.loads((output_dir / "data.json").read_text())
+        frame = exported_data["trajectory"]["slam_debug_frames"][0]
+        assets = frame["artifact_assets"]
+        assert set(assets) == {"scan_initial_error_ply", "scan_aligned_error_ply"}
+        for relative_path in assets.values():
+            copied_path = output_dir / relative_path
+            assert copied_path.exists()
+            assert copied_path.read_text(encoding="utf-8").startswith("ply")
+        assert assets["scan_aligned_error_ply"].startswith(
+            "slam_debug_artifacts/01_scan_0001/"
+        )
+
     def test_prepare_viewer_bundle_exposes_progressive_source_chunks(self, tmp_path, monkeypatch):
         rng = np.random.default_rng(321)
         pcd = o3d.geometry.PointCloud()

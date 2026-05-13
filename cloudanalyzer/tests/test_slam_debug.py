@@ -170,6 +170,34 @@ def test_diagnose_slam_frame_detects_sparse_raw_scan():
     assert diagnosis["label"] == "sparse_raw_scan"
 
 
+def test_diagnose_slam_frame_detects_scan_match_cost_hotspot():
+    frame = {
+        "glim_metrics": {
+            "scan_match_rmse_m": 2.1,
+            "prediction_delta_m": 0.2,
+            "initial_delta_m": 0.2,
+            "scan_quality_low": False,
+            "raw_points": 24000,
+            "downsampled_points": 120,
+            "registration_map_points": 240,
+        },
+        "scan_match_debug_result": {
+            "distance_before": {"stats": {"mean": 0.22}},
+            "distance_after": {"stats": {"mean": 0.14}},
+            "improvement": {"mean": 0.08},
+            "registration": {"fitness": 1.0, "inlier_rmse": 0.15},
+            "preprocess": {"map_points_used": 240, "scan_points_used": 120},
+        },
+    }
+
+    diagnosis = diagnose_slam_frame(frame)
+
+    assert diagnosis["label"] == "scan_match_cost_hotspot"
+    assert diagnosis["confidence"] == "medium"
+    assert diagnosis["signals"]["fitness"] == 1.0
+    assert diagnosis["signals"]["inlier_rmse"] == 0.15
+
+
 def test_analyze_slam_run_preserves_glim_scan_quality_metrics(tmp_path):
     metrics = tmp_path / "metrics.csv"
     metrics.write_text(

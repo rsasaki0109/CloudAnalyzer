@@ -358,6 +358,26 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
     if (
         debug
         and rmse is not None
+        and fitness is not None
+        and inlier_rmse is not None
+        and rmse >= 1.5
+        and fitness >= 0.95
+        and inlier_rmse <= 0.25
+    ):
+        candidates.append(
+            _diagnosis_candidate(
+                "scan_match_cost_hotspot",
+                "medium",
+                (
+                    "GLIM reports a high scan-match RMSE while CloudAnalyzer "
+                    "re-registration is stable; compare cost scaling, residual "
+                    "definitions, and planar correspondence geometry."
+                ),
+            )
+        )
+    if (
+        debug
+        and rmse is not None
         and improvement is not None
         and inlier_rmse is not None
         and rmse >= 2.0

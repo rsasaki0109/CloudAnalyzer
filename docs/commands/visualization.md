@@ -78,6 +78,7 @@ ca lidar-odometry-view trajectory.csv --map map.pcd
 # Estimated/reference trajectory comparison
 ca lidar-odometry-view trajectory.csv \
   --map map.pcd \
+  --slam-debug-report slam_debug_report.json \
   --trajectory-reference reference.tum \
   --trajectory-align-rigid
 ```
@@ -89,6 +90,7 @@ ca lidar-odometry-view trajectory.csv \
 | `--trajectory-max-time-delta` | `0.05` | Max timestamp gap used when matching to `--trajectory-reference` |
 | `--trajectory-align-origin` | `false` | Translate the odometry trajectory so its first matched pose aligns to the reference |
 | `--trajectory-align-rigid` | `false` | Fit a rigid transform from odometry trajectory to reference before display |
+| `--slam-debug-report` | `None` | Optional `ca slam-debug --output-json` report; selected frames are marked on the trajectory |
 | `-p`, `--port` | `8080` | HTTP port |
 | `--max-points` | `2000000` | Maximum map points displayed in browser |
 | `--no-browser` | `false` | Don't auto-open the browser |
@@ -100,10 +102,11 @@ Write the LiDAR odometry viewer as a static bundle.
 ```bash
 ca lidar-odometry-export trajectory.csv \
   --map map.pcd \
+  --slam-debug-report slam_debug_report.json \
   --output-dir odometry_viewer
 ```
 
-The exported directory contains `index.html` and `data.json`, so it can be opened by any static web server.
+The exported directory contains `index.html` and `data.json`, so it can be opened by any static web server. When a SLAM debug report is supplied, suspicious frames are displayed as clickable trajectory markers with scan id, score, diagnosis, suggested action, and artifact paths.
 
 ## ca view
 

@@ -111,6 +111,7 @@ _VIEWER_HTML = """<!DOCTYPE html>
   <label id="trajectoryReferenceToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryReference" checked> Reference Trajectory</label>
   <label id="trajectoryMarkerToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstMarker" checked> Worst ATE Marker</label>
   <label id="trajectorySegmentToggleWrap" style="display:none"><input type="checkbox" id="showTrajectoryWorstSegment" checked> Worst RPE Segment</label>
+  <label id="slamDebugMarkerToggleWrap" style="display:none"><input type="checkbox" id="showSlamDebugMarkers" checked> SLAM Debug Frames</label>
   <label id="thresholdWrap" style="display:none">Error Threshold <input type="range" id="distThreshold" min="0" max="1" step="0.001" value="0"></label>
   <label>Color <select id="colorMode">
     <option value="heatmap">Heatmap</option>
@@ -187,6 +188,7 @@ let trajectoryLine;
 let trajectoryReferenceLine;
 let trajectoryWorstMarker;
 let trajectoryWorstSegment;
+let trajectorySlamDebugMarkers;
 let pickedPointMarker;
 let pickedReferenceMarker;
 let pickedCorrespondenceLine;
@@ -194,6 +196,7 @@ let viewerData;
 let defaultCameraPosition;
 let defaultControlTarget;
 let trajectorySelection = null;
+let slamDebugMarkerFrames = [];
 
 function centerFlatPositions(flatPositions, center) {
   if (!flatPositions) {
@@ -437,8 +440,50 @@ async function loadPoints() {
     scene.add(trajectoryWorstSegment);
     document.getElementById('trajectorySegmentToggleWrap').style.display = 'block';
   }
-  if (trajectory && trajectory.mode === 'paired') {
+  if (trajectory && trajectory.slam_debug_frames && trajectory.slam_debug_frames.length > 0 && trajectoryPositions) {
+    const markerPositions = [];
+    slamDebugMarkerFrames = [];
+    for (const frame of trajectory.slam_debug_frames) {
+      const displayIndex = frame.display_index;
+      const start = displayIndex * 3;
+      if (
+        Number.isInteger(displayIndex) &&
+        start + 2 < trajectoryPositions.length
+      ) {
+        markerPositions.push(
+          trajectoryPositions[start],
+          trajectoryPositions[start + 1],
+          trajectoryPositions[start + 2],
+        );
+        slamDebugMarkerFrames.push(frame);
+      }
+    }
+    if (markerPositions.length > 0) {
+      const slamGeometry = new THREE.BufferGeometry();
+      slamGeometry.setAttribute(
+        'position',
+        new THREE.BufferAttribute(new Float32Array(markerPositions), 3),
+      );
+      const slamMaterial = new THREE.PointsMaterial({
+        size: 9,
+        color: '#c084fc',
+        sizeAttenuation: false,
+      });
+      trajectorySlamDebugMarkers = new THREE.Points(slamGeometry, slamMaterial);
+      trajectorySlamDebugMarkers.userData.inspectType = 'slam-debug-frame';
+      scene.add(trajectorySlamDebugMarkers);
+      document.getElementById('slamDebugMarkerToggleWrap').style.display = 'block';
+    }
+  } else {
+    slamDebugMarkerFrames = [];
+  }
+  if (
+    trajectory &&
+    (trajectory.mode === 'paired' || (trajectory.slam_debug_frames && trajectory.slam_debug_frames.length > 0))
+  ) {
     document.getElementById('trajectoryInspection').style.display = 'block';
+  }
+  if (trajectory && trajectory.mode === 'paired') {
     document.getElementById('trajectoryTimeline').style.display = 'block';
   }
 
@@ -520,6 +565,9 @@ function makeInfo(data, n, extent) {
       `<br>Progressive strategy: ${data.progressive_loading.source.strategy}`;
   }
   if (data.trajectory) {
+    const slamDebugInfo = data.trajectory.slam_debug
+      ? `<br>SLAM debug frames: ${data.trajectory.slam_debug.displayed_frames.toLocaleString()} / ${data.trajectory.slam_debug.total_frames.toLocaleString()}`
+      : '';
     if (data.trajectory.mode === 'paired') {
       trajectoryInfo =
         `<br>Trajectory matched: ${data.trajectory.matching.matched_poses.toLocaleString()} (${(data.trajectory.matching.coverage_ratio * 100).toFixed(1)}%)` +
@@ -529,12 +577,14 @@ function makeInfo(data, n, extent) {
         `<br>Trajectory ATE RMSE (display): ${data.trajectory.ate.rmse.toFixed(4)}` +
         `<br>Trajectory RPE RMSE (display): ${data.trajectory.rpe.rmse.toFixed(4)}` +
         `<br>Trajectory worst ATE: ${data.trajectory.error_stats.max.toFixed(4)}` +
-        `<br>Trajectory worst RPE: ${data.trajectory.rpe.max.toFixed(4)}`;
+        `<br>Trajectory worst RPE: ${data.trajectory.rpe.max.toFixed(4)}` +
+        slamDebugInfo;
     } else {
       trajectoryInfo =
         `<br>Trajectory poses: ${data.trajectory.displayed_estimated_pose_count.toLocaleString()} / ${data.trajectory.estimated_pose_count.toLocaleString()}` +
         `<br>Trajectory sampler: ${data.trajectory.sampling.strategy}` +
-        `<br>Trajectory file: ${data.trajectory.estimated_filename}`;
+        `<br>Trajectory file: ${data.trajectory.estimated_filename}` +
+        slamDebugInfo;
     }
   }
   const displayPoints = (data.display_points ?? n).toLocaleString();
@@ -986,7 +1036,7 @@ function focusCameraOnSelection(selectionPositions) {
 }
 
 function focusTrajectorySelection(type, index) {
-  if (!viewerData || !viewerData.trajectory || viewerData.trajectory.mode !== 'paired') {
+  if (!viewerData || !viewerData.trajectory) {
     return false;
   }
   const trajectory = viewerData.trajectory;
@@ -1008,6 +1058,23 @@ function focusTrajectorySelection(type, index) {
     return true;
   }
   return false;
+}
+
+function focusSlamDebugFrame(markerIndex) {
+  if (!viewerData || !viewerData.trajectory) {
+    return false;
+  }
+  const frame = slamDebugMarkerFrames[markerIndex];
+  const estimatedPositions = viewerData.trajectory.estimated_positions || [];
+  if (!frame || !Number.isInteger(frame.display_index)) {
+    return false;
+  }
+  const start = frame.display_index * 3;
+  if (start + 2 >= estimatedPositions.length) {
+    return false;
+  }
+  focusCameraOnSelection(estimatedPositions.slice(start, start + 3));
+  return true;
 }
 
 function describeTrajectorySelection(type, index) {
@@ -1059,6 +1126,51 @@ function describeTrajectorySelection(type, index) {
   return null;
 }
 
+function describeSlamDebugFrame(markerIndex) {
+  const frame = slamDebugMarkerFrames[markerIndex];
+  if (!frame) {
+    return null;
+  }
+  const diagnosis = frame.diagnosis || null;
+  const lines = [
+    `Rank: ${frame.rank}`,
+    `Scan: ${frame.scan_id}`,
+    `Timestamp: ${Number(frame.timestamp_sec).toFixed(3)}`,
+    `Score: ${Number(frame.score || 0).toFixed(3)}`,
+  ];
+  if (Number.isFinite(frame.scan_match_rmse_m)) {
+    lines.push(`GLIM RMSE: ${Number(frame.scan_match_rmse_m).toFixed(4)}`);
+  }
+  if (Number.isFinite(frame.prediction_delta_m)) {
+    lines.push(`Prediction delta: ${Number(frame.prediction_delta_m).toFixed(4)}`);
+  }
+  if (Number.isFinite(frame.initial_delta_m)) {
+    lines.push(`Initial delta: ${Number(frame.initial_delta_m).toFixed(4)}`);
+  }
+  if (diagnosis) {
+    lines.push(`Diagnosis: ${diagnosis.label} (${diagnosis.confidence})`);
+    if (diagnosis.suggested_action) {
+      lines.push(`Action: ${diagnosis.suggested_action}`);
+    }
+  }
+  if (frame.reasons && frame.reasons.length > 0) {
+    lines.push(`Reasons: ${frame.reasons.join(', ')}`);
+  }
+  if (Number.isFinite(frame.closest_display_time_delta_sec)) {
+    lines.push(`Marker time delta: ${Number(frame.closest_display_time_delta_sec).toFixed(4)}`);
+  }
+  if (frame.scan_path) {
+    lines.push(`Scan path: ${frame.scan_path}`);
+  }
+  if (frame.artifacts && frame.artifacts.scan_aligned_error_ply) {
+    lines.push(`Aligned artifact: ${frame.artifacts.scan_aligned_error_ply}`);
+  }
+  return {
+    title: 'SLAM Debug Frame',
+    lines,
+  };
+}
+
 function selectTrajectoryFeature(type, index, focusCamera = false) {
   const description = describeTrajectorySelection(type, index);
   if (!description) {
@@ -1073,6 +1185,21 @@ function selectTrajectoryFeature(type, index, focusCamera = false) {
     if (focused) {
       description.lines.push('Camera: focused on selected feature');
     }
+  }
+  showTrajectoryInspection(description.title, description.lines);
+  renderTrajectoryTimeline();
+}
+
+function selectSlamDebugFrame(markerIndex, focusCamera = false) {
+  const description = describeSlamDebugFrame(markerIndex);
+  if (!description) {
+    trajectorySelection = null;
+    clearTrajectoryInspection();
+    return;
+  }
+  trajectorySelection = { type: 'slam-debug', index: markerIndex };
+  if (focusCamera && focusSlamDebugFrame(markerIndex)) {
+    description.lines.push('Camera: focused on selected frame');
   }
   showTrajectoryInspection(description.title, description.lines);
   renderTrajectoryTimeline();
@@ -1096,12 +1223,15 @@ function onViewerClick(event) {
   pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
   raycaster.setFromCamera(pointer, camera);
 
-  if (viewerData && viewerData.trajectory && viewerData.trajectory.mode === 'paired') {
+  if (viewerData && viewerData.trajectory) {
     const trajectoryTargets = [];
-    if (trajectoryWorstMarker && trajectoryWorstMarker.visible) {
+    if (trajectorySlamDebugMarkers && trajectorySlamDebugMarkers.visible) {
+      trajectoryTargets.push(trajectorySlamDebugMarkers);
+    }
+    if (viewerData.trajectory.mode === 'paired' && trajectoryWorstMarker && trajectoryWorstMarker.visible) {
       trajectoryTargets.push(trajectoryWorstMarker);
     }
-    if (trajectoryWorstSegment && trajectoryWorstSegment.visible) {
+    if (viewerData.trajectory.mode === 'paired' && trajectoryWorstSegment && trajectoryWorstSegment.visible) {
       trajectoryTargets.push(trajectoryWorstSegment);
     }
 
@@ -1110,6 +1240,10 @@ function onViewerClick(event) {
       if (trajectoryIntersections.length > 0) {
         const object = trajectoryIntersections[0].object;
         clearPointInspection();
+        if (object.userData.inspectType === 'slam-debug-frame') {
+          selectSlamDebugFrame(trajectoryIntersections[0].index, true);
+          return;
+        }
         if (object.userData.inspectType === 'worst-ate' && viewerData.trajectory.worst_ate_sample) {
           selectTrajectoryFeature('ate', viewerData.trajectory.worst_ate_index, true);
           return;
@@ -1247,6 +1381,11 @@ document.getElementById('showTrajectoryWorstMarker').addEventListener('change', 
 document.getElementById('showTrajectoryWorstSegment').addEventListener('change', e => {
   if (trajectoryWorstSegment) {
     trajectoryWorstSegment.visible = e.target.checked;
+  }
+});
+document.getElementById('showSlamDebugMarkers').addEventListener('change', e => {
+  if (trajectorySlamDebugMarkers) {
+    trajectorySlamDebugMarkers.visible = e.target.checked;
   }
 });
 document.getElementById('refOpacity').addEventListener('input', e => {
@@ -1503,6 +1642,74 @@ def _summarize_error_series(values: np.ndarray) -> dict[str, float]:
     }
 
 
+def _optional_float(value) -> float | None:
+    """Return finite float metadata for viewer JSON, or None."""
+
+    if value is None:
+        return None
+    try:
+        result = float(value)
+    except (TypeError, ValueError):
+        return None
+    return result if np.isfinite(result) else None
+
+
+def _prepare_slam_debug_frames_for_viewer(
+    report_path: str,
+    trajectory_data: dict,
+) -> tuple[list[dict], dict]:
+    """Project selected SLAM-debug frames onto displayed trajectory timestamps."""
+
+    path = Path(report_path)
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid SLAM debug report JSON: {path}: {exc.msg}") from exc
+    if not isinstance(report, dict):
+        raise ValueError(f"SLAM debug report must be a JSON object: {path}")
+    selected_frames = report.get("selected_frames", [])
+    if not isinstance(selected_frames, list):
+        raise ValueError(f"SLAM debug report selected_frames must be a list: {path}")
+
+    timestamps = np.asarray(trajectory_data.get("timestamps") or [], dtype=float)
+    frames: list[dict] = []
+    for item in selected_frames:
+        if not isinstance(item, dict):
+            continue
+        timestamp = _optional_float(item.get("timestamp_sec"))
+        if timestamp is None or timestamps.size == 0:
+            continue
+        display_index = int(np.argmin(np.abs(timestamps - timestamp)))
+        closest_delta = float(abs(timestamps[display_index] - timestamp))
+        scan_debug = item.get("scan_match_debug_result")
+        artifacts = scan_debug.get("artifacts") if isinstance(scan_debug, dict) else None
+        diagnosis = item.get("diagnosis")
+        frames.append(
+            {
+                "rank": int(item.get("rank", len(frames) + 1)),
+                "scan_id": str(item.get("scan_id", "")),
+                "timestamp_sec": timestamp,
+                "display_index": display_index,
+                "closest_display_time_delta_sec": closest_delta,
+                "score": _optional_float(item.get("score")),
+                "reasons": item.get("reasons") if isinstance(item.get("reasons"), list) else [],
+                "scan_match_rmse_m": _optional_float(item.get("scan_match_rmse_m")),
+                "prediction_delta_m": _optional_float(item.get("prediction_delta_m")),
+                "initial_delta_m": _optional_float(item.get("initial_delta_m")),
+                "diagnosis": diagnosis if isinstance(diagnosis, dict) else None,
+                "scan_path": item.get("scan_path"),
+                "scan_match_debug_command": item.get("scan_match_debug_command"),
+                "artifacts": artifacts if isinstance(artifacts, dict) else {},
+            }
+        )
+
+    return frames, {
+        "report_path": str(path),
+        "total_frames": len(selected_frames),
+        "displayed_frames": len(frames),
+    }
+
+
 def _prepare_viewer_bundle(
     paths: list[str],
     max_points: int = 2_000_000,
@@ -1512,12 +1719,15 @@ def _prepare_viewer_bundle(
     trajectory_max_time_delta: float = 0.05,
     trajectory_align_origin: bool = False,
     trajectory_align_rigid: bool = False,
+    slam_debug_report_path: str | None = None,
 ) -> tuple[dict, dict[str, str]]:
     """Prepare browser payload plus deferred chunk payloads."""
     if trajectory_reference_path is not None and trajectory_path is None:
         raise ValueError("--trajectory-reference requires --trajectory")
     if trajectory_path is None and (trajectory_align_origin or trajectory_align_rigid):
         raise ValueError("trajectory alignment options require --trajectory")
+    if trajectory_path is None and slam_debug_report_path is not None:
+        raise ValueError("--slam-debug-report requires --trajectory")
     if trajectory_path is not None and trajectory_reference_path is None and (
         trajectory_align_origin or trajectory_align_rigid
     ):
@@ -1535,6 +1745,13 @@ def _prepare_viewer_bundle(
             align_origin=trajectory_align_origin,
             align_rigid=trajectory_align_rigid,
         )
+        if slam_debug_report_path is not None:
+            frames, summary = _prepare_slam_debug_frames_for_viewer(
+                slam_debug_report_path,
+                trajectory_data,
+            )
+            trajectory_data["slam_debug"] = summary
+            trajectory_data["slam_debug_frames"] = frames
     trajectory_positions = (
         np.asarray(trajectory_data["estimated_positions"], dtype=float).reshape(-1, 3)
         if trajectory_data and trajectory_data.get("estimated_positions")
@@ -1718,6 +1935,7 @@ def _prepare_viewer_data(
     trajectory_max_time_delta: float = 0.05,
     trajectory_align_origin: bool = False,
     trajectory_align_rigid: bool = False,
+    slam_debug_report_path: str | None = None,
 ) -> dict:
     """Prepare browser payload for standard or heatmap web viewing."""
     data, _ = _prepare_viewer_bundle(
@@ -1729,6 +1947,7 @@ def _prepare_viewer_data(
         trajectory_max_time_delta=trajectory_max_time_delta,
         trajectory_align_origin=trajectory_align_origin,
         trajectory_align_rigid=trajectory_align_rigid,
+        slam_debug_report_path=slam_debug_report_path,
     )
     return data
 
@@ -1904,6 +2123,7 @@ def serve(
     trajectory_max_time_delta: float = 0.05,
     trajectory_align_origin: bool = False,
     trajectory_align_rigid: bool = False,
+    slam_debug_report_path: str | None = None,
 ) -> None:
     """Start a web viewer for point cloud(s).
 
@@ -1928,6 +2148,7 @@ def serve(
         trajectory_max_time_delta=trajectory_max_time_delta,
         trajectory_align_origin=trajectory_align_origin,
         trajectory_align_rigid=trajectory_align_rigid,
+        slam_debug_report_path=slam_debug_report_path,
     )
     data_json = json.dumps(data)
 
@@ -1959,6 +2180,7 @@ def export_static_bundle(
     trajectory_max_time_delta: float = 0.05,
     trajectory_align_origin: bool = False,
     trajectory_align_rigid: bool = False,
+    slam_debug_report_path: str | None = None,
 ) -> dict:
     """Write a static browser bundle that can be served from GitHub Pages or any static host."""
 
@@ -1971,6 +2193,7 @@ def export_static_bundle(
         trajectory_max_time_delta=trajectory_max_time_delta,
         trajectory_align_origin=trajectory_align_origin,
         trajectory_align_rigid=trajectory_align_rigid,
+        slam_debug_report_path=slam_debug_report_path,
     )
 
     root = Path(output_dir)

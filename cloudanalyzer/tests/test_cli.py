@@ -1466,6 +1466,7 @@ class TestCLI:
             trajectory_max_time_delta=0.05,
             trajectory_align_origin=False,
             trajectory_align_rigid=False,
+            slam_debug_report_path=None,
         ):
             called["paths"] = paths
             called["port"] = port
@@ -1522,6 +1523,7 @@ class TestCLI:
             trajectory_max_time_delta=0.05,
             trajectory_align_origin=False,
             trajectory_align_rigid=False,
+            slam_debug_report_path=None,
         ):
             called["paths"] = paths
             called["port"] = port
@@ -1662,6 +1664,7 @@ class TestCLI:
             trajectory_max_time_delta=0.05,
             trajectory_align_origin=False,
             trajectory_align_rigid=False,
+            slam_debug_report_path=None,
         ):
             called["paths"] = paths
             called["port"] = port
@@ -1673,12 +1676,21 @@ class TestCLI:
             called["trajectory_max_time_delta"] = trajectory_max_time_delta
             called["trajectory_align_origin"] = trajectory_align_origin
             called["trajectory_align_rigid"] = trajectory_align_rigid
+            called["slam_debug_report_path"] = slam_debug_report_path
 
         monkeypatch.setattr(cli_main, "web_serve", fake_web_serve)
 
         result = runner.invoke(
             app,
-            ["lidar-odometry-view", trajectory, "--no-browser", "--port", "9010"],
+            [
+                "lidar-odometry-view",
+                trajectory,
+                "--slam-debug-report",
+                str(tmp_path / "slam_debug_report.json"),
+                "--no-browser",
+                "--port",
+                "9010",
+            ],
         )
 
         assert result.exit_code == 0
@@ -1687,6 +1699,7 @@ class TestCLI:
         assert called["heatmap"] is False
         assert called["open_browser"] is False
         assert called["port"] == 9010
+        assert called["slam_debug_report_path"] == str(tmp_path / "slam_debug_report.json")
 
     def test_lidar_odometry_export_with_map_and_reference(self, tmp_path, identical_pcd, monkeypatch):
         import cloudanalyzer_cli.main as cli_main
@@ -1715,6 +1728,7 @@ class TestCLI:
             trajectory_max_time_delta=0.05,
             trajectory_align_origin=False,
             trajectory_align_rigid=False,
+            slam_debug_report_path=None,
         ):
             called["paths"] = paths
             called["output_dir"] = output_dir
@@ -1722,6 +1736,7 @@ class TestCLI:
             called["trajectory_path"] = trajectory_path
             called["trajectory_reference_path"] = trajectory_reference_path
             called["trajectory_align_rigid"] = trajectory_align_rigid
+            called["slam_debug_report_path"] = slam_debug_report_path
             return {
                 "output_dir": output_dir,
                 "viewer_mode": "trajectory",
@@ -1742,6 +1757,8 @@ class TestCLI:
                 "--trajectory-reference",
                 trajectory_reference,
                 "--trajectory-align-rigid",
+                "--slam-debug-report",
+                str(tmp_path / "slam_debug_report.json"),
                 "--output-dir",
                 str(output_dir),
             ],
@@ -1754,6 +1771,7 @@ class TestCLI:
         assert called["trajectory_path"] == trajectory
         assert called["trajectory_reference_path"] == trajectory_reference
         assert called["trajectory_align_rigid"] is True
+        assert called["slam_debug_report_path"] == str(tmp_path / "slam_debug_report.json")
         assert "Viewer mode:  trajectory" in result.output
 
     def test_density_map(self, sample_pcd_file, tmp_path):

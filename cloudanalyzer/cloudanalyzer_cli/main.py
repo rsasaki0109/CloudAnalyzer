@@ -2668,6 +2668,11 @@ def lidar_odometry_view_cmd(
         "--trajectory-align-rigid",
         help="Fit a rigid transform from odometry trajectory to reference before display.",
     ),
+    slam_debug_report: Optional[str] = typer.Option(
+        None,
+        "--slam-debug-report",
+        help="Optional ca slam-debug JSON report; selected frames are marked on the trajectory.",
+    ),
     port: int = typer.Option(8080, "--port", "-p", help="HTTP port"),
     max_points: int = typer.Option(2_000_000, "--max-points", help="Max map points for display"),
     no_browser: bool = typer.Option(False, "--no-browser", help="Don't auto-open browser"),
@@ -2686,6 +2691,7 @@ def lidar_odometry_view_cmd(
             trajectory_max_time_delta=trajectory_max_time_delta,
             trajectory_align_origin=trajectory_align_origin,
             trajectory_align_rigid=trajectory_align_rigid,
+            slam_debug_report_path=slam_debug_report,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -2721,6 +2727,11 @@ def lidar_odometry_export_cmd(
         "--trajectory-align-rigid",
         help="Fit a rigid transform from odometry trajectory to reference before display.",
     ),
+    slam_debug_report: Optional[str] = typer.Option(
+        None,
+        "--slam-debug-report",
+        help="Optional ca slam-debug JSON report; selected frames are marked on the trajectory.",
+    ),
     max_points: int = typer.Option(2_000_000, "--max-points", help="Max map points for display"),
 ) -> None:
     """Export a static LiDAR odometry viewer bundle."""
@@ -2736,6 +2747,7 @@ def lidar_odometry_export_cmd(
             trajectory_max_time_delta=trajectory_max_time_delta,
             trajectory_align_origin=trajectory_align_origin,
             trajectory_align_rigid=trajectory_align_rigid,
+            slam_debug_report_path=slam_debug_report,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)

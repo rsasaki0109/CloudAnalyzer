@@ -221,6 +221,56 @@ class TestPrepareViewerData:
         with pytest.raises(ValueError, match="At least one point cloud"):
             _prepare_viewer_data([], max_points=1000)
 
+    def test_slam_debug_report_frames_are_projected_to_trajectory(self, tmp_path):
+        trajectory_path = _write_csv_trajectory(
+            tmp_path / "odom.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 2.0, 0.0, 0.0), (2.0, 4.0, 0.0, 0.0)],
+        )
+        report_path = tmp_path / "slam_debug_report.json"
+        report_path.write_text(
+            json.dumps(
+                {
+                    "selected_frames": [
+                        {
+                            "rank": 1,
+                            "scan_id": "scan_0001",
+                            "timestamp_sec": 1.02,
+                            "score": 12.5,
+                            "reasons": ["rmse=3.0"],
+                            "scan_match_rmse_m": 3.0,
+                            "prediction_delta_m": 0.4,
+                            "diagnosis": {
+                                "label": "bad_initial_guess",
+                                "confidence": "high",
+                                "suggested_action": "Inspect prediction.",
+                            },
+                            "scan_match_debug_result": {
+                                "artifacts": {
+                                    "scan_aligned_error_ply": "aligned.ply",
+                                },
+                            },
+                        }
+                    ]
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        data = _prepare_viewer_data(
+            [],
+            max_points=1000,
+            trajectory_path=trajectory_path,
+            slam_debug_report_path=str(report_path),
+        )
+
+        assert data["trajectory"]["slam_debug"]["total_frames"] == 1
+        assert data["trajectory"]["slam_debug"]["displayed_frames"] == 1
+        frame = data["trajectory"]["slam_debug_frames"][0]
+        assert frame["scan_id"] == "scan_0001"
+        assert frame["display_index"] == 1
+        assert frame["diagnosis"]["label"] == "bad_initial_guess"
+        assert frame["artifacts"]["scan_aligned_error_ply"] == "aligned.ply"
+
     def test_prepare_viewer_bundle_exposes_progressive_source_chunks(self, tmp_path, monkeypatch):
         rng = np.random.default_rng(321)
         pcd = o3d.geometry.PointCloud()

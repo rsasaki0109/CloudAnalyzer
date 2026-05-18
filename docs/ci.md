@@ -146,6 +146,31 @@ gh workflow run config-quality-gate.yml \
 
 The workflow runs `ca check`, uploads `summary.json`, and also uploads each generated report / JSON file declared by the config.
 
+### QA Bundles (artifact retention)
+
+`ca bundle pack` freezes a single QA run (summary JSON + per-check reports + optional baseline + metadata header) into a `qa_bundle.zip` that is reopenable from any future runner. Pair it with `actions/upload-artifact@v6` in CI for long-term retention:
+
+```yaml
+- name: Pack QA bundle
+  run: |
+    ca bundle pack qa/summary.json \
+      --output qa/bundle.zip \
+      --baseline qa/baseline-summary.json \
+      --project "${{ github.repository }}" \
+      --commit "${{ github.sha }}" \
+      --pr-number "${{ github.event.pull_request.number }}" \
+      --runner-id "${{ github.run_id }}"
+
+- name: Upload QA bundle
+  uses: actions/upload-artifact@v6
+  with:
+    name: qa-bundle
+    path: qa/bundle.zip
+    retention-days: 90
+```
+
+The bundle format is documented at [`docs/commands/bundle.md`](commands/bundle.md). It is the OSS layer the hosted retention / dashboard story sits on top of.
+
 ### PR Comment From `summary.json`
 
 After `ca check` writes the suite summary (or `ca benchmark eval` / `ca run-evaluate` writes a single-run JSON), use `ca report-pr-comment` to turn that artifact into a Markdown blob. There are two ways to wire it in CI.

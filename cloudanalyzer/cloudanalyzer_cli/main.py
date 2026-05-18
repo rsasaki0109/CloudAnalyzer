@@ -58,6 +58,7 @@ from ca.benchmark import (
     evaluate_benchmark_run,
     load_benchmark_suite,
 )
+from ca.pr_comment import build_pr_comment
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
@@ -2230,6 +2231,60 @@ def benchmark_eval_cmd(
     overall = result["overall_quality_gate"]
     if overall is not None and not overall["passed"]:
         raise typer.Exit(code=1)
+
+
+@app.command("report-pr-comment")
+def report_pr_comment_cmd(
+    summary_path: str = typer.Argument(
+        ...,
+        help="Path to a `ca check` summary or `ca run-evaluate` / `ca benchmark eval` JSON",
+    ),
+    baseline: Optional[str] = typer.Option(
+        None,
+        "--baseline",
+        help="Baseline JSON of the same shape; renders metric deltas",
+    ),
+    project: Optional[str] = typer.Option(
+        None,
+        "--project",
+        help="Project label shown in the header (overrides the JSON's `project` field)",
+    ),
+    output: Optional[str] = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Write the Markdown to a file instead of stdout",
+    ),
+) -> None:
+    """Render a PR-comment Markdown blob from a CloudAnalyzer summary JSON."""
+    try:
+        summary = _load_json_mapping(summary_path)
+    except FileNotFoundError as exc:
+        _handle_error(exc)
+    except ValueError as exc:
+        _handle_error(exc)
+
+    baseline_data = None
+    if baseline:
+        try:
+            baseline_data = _load_json_mapping(baseline)
+        except FileNotFoundError as exc:
+            _handle_error(exc)
+        except ValueError as exc:
+            _handle_error(exc)
+
+    try:
+        markdown = build_pr_comment(summary, baseline=baseline_data, project=project)
+    except ValueError as exc:
+        _handle_error(exc)
+
+    if output:
+        out_path = Path(output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(markdown, encoding="utf-8")
+        typer.echo(f"PR comment: {output}")
+    else:
+        typer.echo(markdown, nl=False)
 
 
 @app.command("check")

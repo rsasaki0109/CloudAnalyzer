@@ -132,6 +132,26 @@ gh workflow run config-quality-gate.yml \
 
 The workflow runs `ca check`, uploads `summary.json`, and also uploads each generated report / JSON file declared by the config.
 
+### PR Comment From `summary.json`
+
+After `ca check` writes the suite summary (or `ca benchmark eval` / `ca run-evaluate` writes a single-run JSON), use `ca report-pr-comment` to turn that artifact into a Markdown blob and post it with `gh pr comment`. The renderer auto-detects the JSON shape and surfaces the same severity-weighted triage that `ca check` already computes.
+
+```yaml
+- name: Render PR comment
+  run: |
+    ca report-pr-comment qa/summary.json \
+      --baseline qa/baseline-summary.json \
+      --output qa/pr-comment.md
+
+- name: Post PR comment
+  if: github.event_name == 'pull_request'
+  env:
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  run: gh pr comment "${{ github.event.pull_request.number }}" --body-file qa/pr-comment.md
+```
+
+`--baseline` is optional; without it the comment is rendered without ↑/↓ delta annotations. See [`docs/commands/report-pr-comment.md`](commands/report-pr-comment.md) for the full schema and output format.
+
 ### Reusable Workflow From Another Repository
 
 CloudAnalyzer can also be consumed as a reusable workflow:

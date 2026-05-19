@@ -230,7 +230,7 @@ python scripts/prepare_kitti_mini.py \
 
 ### Cross-Representation Geometry QA
 
-`ca geometry-evaluate` runs the same Chamfer / AUC / F1 metrics as `ca evaluate` but first normalizes the source artifact through a *representation adapter* so non-point-cloud inputs can be scored against a reference scan without manual conversion. The first adapter targets 3D Gaussian Splatting exports: PLY files with an `opacity` (logit) property per vertex. A tiny synthetic demo lives under `benchmarks/3dgs/synthetic-room/`.
+`ca geometry-evaluate` runs the same Chamfer / AUC / F1 metrics as `ca evaluate` but first normalizes the source artifact through a *representation adapter* so non-point-cloud inputs can be scored against a reference scan without manual conversion. Two adapters ship today: 3D Gaussian Splatting PLY exports (opacity-aware) and triangle meshes (OBJ/STL/GLB/GLTF or PLY with faces, surface-sampled). A tiny synthetic demo lives under `benchmarks/3dgs/synthetic-room/`.
 
 ```bash
 # Auto-detect representation; see all splats (including low-alpha noise).
@@ -242,13 +242,17 @@ ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \
                     benchmarks/3dgs/synthetic-room/reference.pcd \
                     --opacity-threshold 0.5
 
+# Triangle mesh (OBJ/STL/GLB/GLTF or PLY-with-faces) — surface-sampled, not vertex-only.
+ca geometry-evaluate my_reconstruction.obj reference_scan.pcd \
+                    --mesh-samples 500000 --mesh-method poisson_disk
+
 # Voxel-downsample the adapted source for faster comparison on real maps.
 ca geometry-evaluate scene_export.ply scan_reference.pcd \
                     --opacity-threshold 0.1 --voxel 0.05 \
-                    --report geometry_qa.html
+                    --output-json geometry_qa.json
 ```
 
-`--representation` accepts `auto` (default), `point-cloud`, or `gaussian-points`. The output dict is the same as `ca evaluate` plus a `representation` block recording which adapter ran and what filters it applied — `ca report-pr-comment` already understands this shape, so a 3DGS regression flows straight into a PR comment.
+`--representation` accepts `auto` (default), `point-cloud`, `gaussian-points`, or `mesh`. The output dict is the same as `ca evaluate` plus a `representation` block recording which adapter ran and what filters / sampling settings it applied — `ca report-pr-comment` already understands this shape, so a 3DGS or mesh regression flows straight into a PR comment.
 
 ## Metrics
 

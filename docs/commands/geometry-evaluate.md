@@ -1,6 +1,6 @@
 # `ca geometry-evaluate`
 
-Cross-representation geometry QA. Runs the same Chamfer / AUC / F1 pipeline as `ca evaluate`, but first normalizes the source artifact through a *representation adapter* so non-point-cloud inputs (Gaussian Splatting PLY exports today, mesh vertex / depth-derived clouds later) score against a reference scan without forcing manual conversion.
+Cross-representation geometry QA. Runs the same Chamfer / AUC / F1 pipeline as `ca evaluate`, but first normalizes the source artifact through a *representation adapter* so non-point-cloud inputs (3D Gaussian Splatting PLY exports, triangle meshes) score against a reference scan without forcing manual conversion.
 
 ```bash
 ca geometry-evaluate exported_gaussians.ply reference_scan.pcd \
@@ -17,8 +17,16 @@ ca geometry-evaluate exported_gaussians.ply reference_scan.pcd \
 | `auto` (default) | Let the loader detect from file content | Same as the detected representation below |
 | `point-cloud` | Plain PCD / PLY / LAS / LAZ / CSV | None — passes through `ca.io.load_point_cloud` |
 | `gaussian-points` | 3DGS PLY exports with an `opacity` property | Extracts Gaussian centers (xyz); applies sigmoid to opacity and (optionally) filters splats below `--opacity-threshold` |
+| `mesh` | Triangle mesh (OBJ / STL / GLB / GLTF, or PLY with a `face` element) | Surface-samples `--mesh-samples` points via Open3D (default: uniform; `poisson_disk` available) |
 
-Detection is intentionally conservative: a PLY only flips to `gaussian-points` when the header advertises an `opacity` property. Plain vertex-only PLYs stay as `point-cloud`.
+Auto-detection precedence:
+
+1. `.obj` / `.stl` / `.glb` / `.gltf` → `mesh`
+2. `.ply` with an `opacity` property → `gaussian-points`
+3. `.ply` with a `face` element → `mesh`
+4. Everything else → `point-cloud`
+
+The mesh adapter samples points from the **surface**, not the vertex set, so flat faces get represented proportionally to their area. That's the difference that makes Chamfer / AUC meaningful for triangle meshes — sampling only vertices misses large quads and biases the score toward whichever face happens to be heavily subdivided.
 
 The reference is always loaded as a point cloud — `--representation` only describes the *source* artifact.
 
@@ -26,9 +34,11 @@ The reference is always loaded as a point cloud — `--representation` only desc
 
 | Option | Purpose |
 |---|---|
-| `--representation <kind>` | Override auto-detection (`auto` / `point-cloud` / `gaussian-points`) |
-| `--opacity-threshold <0..1>` | Drop splats whose rendered alpha (sigmoid of opacity) is below this. Ignored for `point-cloud` |
+| `--representation <kind>` | Override auto-detection (`auto` / `point-cloud` / `gaussian-points` / `mesh`) |
+| `--opacity-threshold <0..1>` | Drop splats whose rendered alpha (sigmoid of opacity) is below this. Ignored for `point-cloud` / `mesh` |
 | `--voxel <meters>` | Voxel-downsample the adapted source before scoring |
+| `--mesh-samples <N>` | Number of points to sample from the mesh surface (default `100000`). Mesh representation only |
+| `--mesh-method <name>` | Mesh sampling strategy: `uniform` (fast, default) or `poisson_disk` (slower, more uniform spread) |
 | `--thresholds 0.05,0.1,0.5` | Override the F1/AUC distance thresholds |
 | `--plot <file.png>` | Save the F1 curve plot |
 | `--output-json <file>` | Dump the full result dict (incl. `representation` block) |
@@ -79,8 +89,26 @@ ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \
                     --opacity-threshold 0.5
 ```
 
+## Mesh examples
+
+```bash
+# Score an OBJ export against a reference scan; defaults to 100k uniform samples.
+ca geometry-evaluate my_reconstruction.obj reference_scan.pcd
+
+# Tighten samples for higher-fidelity scoring (slower); use Poisson disk for
+# more uniform coverage on highly anisotropic meshes.
+ca geometry-evaluate my_reconstruction.obj reference_scan.pcd \
+  --mesh-samples 500000 --mesh-method poisson_disk \
+  --thresholds 0.01,0.05,0.10
+
+# A PLY with face elements is auto-detected as mesh.
+ca geometry-evaluate textured_mesh.ply reference_scan.pcd --output-json mesh_qa.json
+```
+
+The result's `representation` block records `mesh_samples` and `mesh_method` so downstream consumers (PR comments, dashboards) can show which sampling settings produced the numbers.
+
 ## What's deliberately out of scope (today)
 
 - **Ellipsoid sampling**. Gaussian splats are oriented ellipsoids (xyz + scale + rotation), but the current adapter treats each splat as the center point only. Sampling additional points along the ellipsoid surface using `scale`/`rot` is a future enhancement; for cross-representation regression tracking the center-only proxy already captures most drift.
-- **Mesh adapter**. Mesh vertex extraction is straightforward and will follow once the API stabilizes here.
+- **Reproducible mesh seeds**. Open3D ≤0.19 doesn't expose a seed for `sample_points_uniformly` / `sample_points_poisson_disk`, so two runs of the same mesh produce slightly different point sets. The *surface* matches; the Chamfer / AUC delta between runs is well under any meaningful gate threshold, but bit-reproducibility is on hold until Open3D adds the parameter.
 - **Color / SH coefficients**. Only geometry is scored; colors and spherical-harmonic coefficients are ignored.

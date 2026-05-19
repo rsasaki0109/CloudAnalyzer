@@ -292,3 +292,204 @@ def test_representations_constant_contains_known() -> None:
     assert "auto" in REPRESENTATIONS
     assert "point-cloud" in REPRESENTATIONS
     assert "gaussian-points" in REPRESENTATIONS
+    assert "mesh" in REPRESENTATIONS
+
+
+# ---------------------------------------------------------------- mesh
+
+
+def _write_cube_obj(path: Path, side: float = 1.0) -> None:
+    """Write a unit cube OBJ centered on the origin (12 triangles)."""
+    s = side / 2.0
+    vertices = [
+        (-s, -s, -s),
+        ( s, -s, -s),
+        ( s,  s, -s),
+        (-s,  s, -s),
+        (-s, -s,  s),
+        ( s, -s,  s),
+        ( s,  s,  s),
+        (-s,  s,  s),
+    ]
+    # OBJ faces are 1-indexed.
+    faces = [
+        (1, 2, 3), (1, 3, 4),  # -Z
+        (5, 7, 6), (5, 8, 7),  # +Z
+        (1, 5, 6), (1, 6, 2),  # -Y
+        (4, 3, 7), (4, 7, 8),  # +Y
+        (1, 4, 8), (1, 8, 5),  # -X
+        (2, 6, 7), (2, 7, 3),  # +X
+    ]
+    lines = [f"v {x:.6f} {y:.6f} {z:.6f}" for x, y, z in vertices]
+    lines += [f"f {a} {b} {c}" for a, b, c in faces]
+    path.write_text("\n".join(lines) + "\n", encoding="ascii")
+
+
+def _write_cube_ply_mesh(path: Path, side: float = 1.0) -> None:
+    """Write a unit-cube PLY with face elements (ASCII)."""
+    s = side / 2.0
+    vertices = [
+        (-s, -s, -s), ( s, -s, -s), ( s,  s, -s), (-s,  s, -s),
+        (-s, -s,  s), ( s, -s,  s), ( s,  s,  s), (-s,  s,  s),
+    ]
+    # PLY faces are 0-indexed.
+    faces = [
+        (0, 1, 2), (0, 2, 3),
+        (4, 6, 5), (4, 7, 6),
+        (0, 4, 5), (0, 5, 1),
+        (3, 2, 6), (3, 6, 7),
+        (0, 3, 7), (0, 7, 4),
+        (1, 5, 6), (1, 6, 2),
+    ]
+    header = [
+        "ply",
+        "format ascii 1.0",
+        f"element vertex {len(vertices)}",
+        "property float x",
+        "property float y",
+        "property float z",
+        f"element face {len(faces)}",
+        "property list uchar int vertex_indices",
+        "end_header",
+    ]
+    body = [f"{x:.6f} {y:.6f} {z:.6f}" for x, y, z in vertices]
+    body += [f"3 {a} {b} {c}" for a, b, c in faces]
+    path.write_text("\n".join(header + body) + "\n", encoding="ascii")
+
+
+def test_detection_obj_is_mesh(tmp_path: Path) -> None:
+    obj = tmp_path / "cube.obj"
+    _write_cube_obj(obj)
+    assert detect_representation(str(obj)) == "mesh"
+
+
+def test_detection_ply_with_face_is_mesh(tmp_path: Path) -> None:
+    ply = tmp_path / "cube.ply"
+    _write_cube_ply_mesh(ply)
+    assert detect_representation(str(ply)) == "mesh"
+
+
+def test_mesh_sampling_count(tmp_path: Path) -> None:
+    obj = tmp_path / "cube.obj"
+    _write_cube_obj(obj)
+    result = load_representation(str(obj), representation="mesh", mesh_samples=2000)
+    assert result.representation_detected == "mesh"
+    assert result.points.shape[0] == 2000
+    assert result.points.shape[1] == 3
+    # Points should land on the cube surface (|coord| ≤ 0.5 + small slack).
+    assert np.all(np.abs(result.points) <= 0.5 + 1e-6)
+    # And use all six faces — checking the range spans ±0.5 on every axis.
+    assert result.points[:, 0].min() < -0.49 and result.points[:, 0].max() > 0.49
+    assert result.points[:, 1].min() < -0.49 and result.points[:, 1].max() > 0.49
+    assert result.points[:, 2].min() < -0.49 and result.points[:, 2].max() > 0.49
+
+
+def test_mesh_sampling_poisson(tmp_path: Path) -> None:
+    obj = tmp_path / "cube.obj"
+    _write_cube_obj(obj)
+    result = load_representation(
+        str(obj),
+        representation="mesh",
+        mesh_samples=500,
+        mesh_method="poisson_disk",
+    )
+    # Poisson disk doesn't promise an exact count, but it should respect
+    # the request within a small margin and not produce zero / way more.
+    assert 100 <= result.points.shape[0] <= 500
+    assert any("poisson_disk" in f for f in result.applied_filters)
+
+
+def test_mesh_invalid_sampling_method(tmp_path: Path) -> None:
+    obj = tmp_path / "cube.obj"
+    _write_cube_obj(obj)
+    with pytest.raises(ValueError, match="Unsupported mesh sampling method"):
+        load_representation(
+            str(obj), representation="mesh", mesh_method="hammersley"
+        )
+
+
+def test_mesh_zero_samples_rejected(tmp_path: Path) -> None:
+    obj = tmp_path / "cube.obj"
+    _write_cube_obj(obj)
+    with pytest.raises(ValueError, match="mesh_samples must be positive"):
+        load_representation(str(obj), representation="mesh", mesh_samples=0)
+
+
+def test_evaluate_geometry_mesh_against_self(tmp_path: Path) -> None:
+    """Cube mesh scored against its own surface sample → Chamfer ≈ 0."""
+    obj = tmp_path / "cube.obj"
+    _write_cube_obj(obj)
+    # Build a dense reference cloud from the same mesh (different seed
+    # produces different points but the same underlying surface).
+    reference_pcd = tmp_path / "cube_reference.pcd"
+    mesh = o3d.io.read_triangle_mesh(str(obj))
+    if not mesh.has_triangle_normals():
+        mesh.compute_triangle_normals()
+    sampled = mesh.sample_points_uniformly(number_of_points=10_000)
+    o3d.io.write_point_cloud(str(reference_pcd), sampled, write_ascii=False)
+
+    result = evaluate_geometry(
+        str(obj),
+        str(reference_pcd),
+        representation="mesh",
+        mesh_samples=10_000,
+    )
+    rep = result["representation"]
+    assert rep["detected"] == "mesh"
+    assert rep["mesh_samples"] == 10_000
+    assert rep["mesh_method"] == "uniform"
+    # Same surface → Chamfer should be tiny (< 5% of the cube side).
+    # Open3D's sampler doesn't expose a seed so the exact value varies
+    # run-to-run; the surface match is the load-bearing signal here.
+    assert result["chamfer_distance"] < 0.05
+    assert result["auc"] > 0.9
+
+
+def test_cli_mesh_evaluation(tmp_path: Path) -> None:
+    obj = tmp_path / "cube.obj"
+    _write_cube_obj(obj)
+    reference_pcd = tmp_path / "cube_reference.pcd"
+    mesh = o3d.io.read_triangle_mesh(str(obj))
+    mesh.compute_triangle_normals()
+    sampled = mesh.sample_points_uniformly(number_of_points=5000)
+    o3d.io.write_point_cloud(str(reference_pcd), sampled, write_ascii=False)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "geometry-evaluate",
+            str(obj),
+            str(reference_pcd),
+            "--mesh-samples",
+            "5000",
+            "--format-json",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.stdout)
+    assert payload["representation"]["detected"] == "mesh"
+    assert payload["representation"]["mesh_samples"] == 5000
+
+
+def test_cli_rejects_unknown_mesh_method(tmp_path: Path) -> None:
+    obj = tmp_path / "cube.obj"
+    _write_cube_obj(obj)
+    reference_pcd = tmp_path / "reference.pcd"
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(np.random.RandomState(0).rand(100, 3))
+    o3d.io.write_point_cloud(str(reference_pcd), pcd, write_ascii=False)
+
+    runner = CliRunner()
+    result = runner.invoke(
+        app,
+        [
+            "geometry-evaluate",
+            str(obj),
+            str(reference_pcd),
+            "--mesh-method",
+            "halton",
+        ],
+    )
+    assert result.exit_code == 1
+    assert "--mesh-method" in result.output

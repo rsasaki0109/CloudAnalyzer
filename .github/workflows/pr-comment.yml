@@ -8,11 +8,21 @@ on:
   workflow_call:
     inputs:
       summary_path:
-        description: "Path to the CloudAnalyzer summary JSON, relative to the caller repository root"
+        description: "Path to the CloudAnalyzer summary JSON. When summary_artifact is also set, this is interpreted relative to the artifact's extracted root; otherwise relative to the caller repository root."
         required: true
         type: string
+      summary_artifact:
+        description: "Optional artifact name (uploaded earlier in the same workflow run) that contains the summary JSON. When set, summary_path is interpreted relative to the artifact's extracted directory."
+        required: false
+        type: string
+        default: ""
       baseline_summary_path:
-        description: "Optional baseline JSON of the same shape for ↑/↓ deltas"
+        description: "Optional baseline JSON of the same shape for ↑/↓ deltas. When baseline_summary_artifact is also set, this is interpreted relative to the artifact's extracted root."
+        required: false
+        type: string
+        default: ""
+      baseline_summary_artifact:
+        description: "Optional artifact name (uploaded earlier in the same workflow run) that contains the baseline summary JSON."
         required: false
         type: string
         default: ""
@@ -49,10 +59,18 @@ on:
   workflow_dispatch:
     inputs:
       summary_path:
-        description: "Path to the CloudAnalyzer summary JSON, relative to the repository root"
+        description: "Path to the CloudAnalyzer summary JSON, relative to the repository root (or to a previously-downloaded artifact root)"
         required: true
+      summary_artifact:
+        description: "Optional artifact name from the same workflow run; summary_path is then interpreted relative to that artifact"
+        required: false
+        default: ""
       baseline_summary_path:
         description: "Optional baseline JSON of the same shape"
+        required: false
+        default: ""
+      baseline_summary_artifact:
+        description: "Optional artifact name carrying the baseline summary"
         required: false
         default: ""
       project:
@@ -112,6 +130,20 @@ jobs:
             pip install "git+https://github.com/${CLOUDANALYZER_REPOSITORY}.git@${CLOUDANALYZER_REF}#subdirectory=cloudanalyzer"
           fi
 
+      - name: Download summary artifact
+        if: ${{ inputs.summary_artifact != '' }}
+        uses: actions/download-artifact@v6
+        with:
+          name: ${{ inputs.summary_artifact }}
+          path: /tmp/cloudanalyzer-pr-comment-summary
+
+      - name: Download baseline summary artifact
+        if: ${{ inputs.baseline_summary_artifact != '' }}
+        uses: actions/download-artifact@v6
+        with:
+          name: ${{ inputs.baseline_summary_artifact }}
+          path: /tmp/cloudanalyzer-pr-comment-baseline
+
       - name: Resolve PR number
         id: resolve_pr
         env:
@@ -129,19 +161,29 @@ jobs:
       - name: Render PR comment Markdown
         env:
           SUMMARY_PATH: ${{ inputs.summary_path }}
+          SUMMARY_ARTIFACT: ${{ inputs.summary_artifact }}
           BASELINE_PATH: ${{ inputs.baseline_summary_path }}
+          BASELINE_ARTIFACT: ${{ inputs.baseline_summary_artifact }}
           PROJECT: ${{ inputs.project }}
         run: |
-          summary_abs="${CALLER_ROOT}/${SUMMARY_PATH}"
+          if [ -n "${SUMMARY_ARTIFACT}" ]; then
+            summary_abs="/tmp/cloudanalyzer-pr-comment-summary/${SUMMARY_PATH}"
+          else
+            summary_abs="${CALLER_ROOT}/${SUMMARY_PATH}"
+          fi
           if [ ! -f "${summary_abs}" ]; then
-            echo "::error::summary_path not found: ${summary_abs}"
+            echo "::error::summary not found: ${summary_abs}"
             exit 1
           fi
           extra=()
           if [ -n "${BASELINE_PATH}" ]; then
-            baseline_abs="${CALLER_ROOT}/${BASELINE_PATH}"
+            if [ -n "${BASELINE_ARTIFACT}" ]; then
+              baseline_abs="/tmp/cloudanalyzer-pr-comment-baseline/${BASELINE_PATH}"
+            else
+              baseline_abs="${CALLER_ROOT}/${BASELINE_PATH}"
+            fi
             if [ ! -f "${baseline_abs}" ]; then
-              echo "::error::baseline_summary_path not found: ${baseline_abs}"
+              echo "::error::baseline summary not found: ${baseline_abs}"
               exit 1
             fi
             extra+=(--baseline "${baseline_abs}")

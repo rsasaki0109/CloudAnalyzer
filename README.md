@@ -54,7 +54,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **46 subcommands** |
+| CLI | Limited | None | None | **47 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -174,6 +174,7 @@ The CLI exposes several evaluation entry points. They look related but answer di
 | `ca run-evaluate` | "Is this SLAM run acceptable end-to-end (map + trajectory)?" | Map pair + trajectory pair | Per-run regression gate for a localization / mapping pipeline |
 | `ca check` | "Run all configured gates and report pass/fail with triage." | `cloudanalyzer.yaml` | CI / pre-merge gate orchestration; chains `evaluate`, `map-evaluate`, `traj-evaluate`, `loop-closure-report`, `ground-evaluate`, etc. |
 | `ca benchmark eval` | "Does this SLAM run pass the frozen reference + gate of a published benchmark?" | Benchmark suite manifest + user map + user trajectory | Wraps `run-evaluate` against a suite's fixed reference and gate; use it as the one-command SLAM regression check |
+| `ca geometry-evaluate` | "Does this Gaussian Splat / mesh / depth-derived cloud match a reference scan geometrically?" | Source artifact (3DGS PLY, mesh PLY, point cloud, ...) + reference point cloud | Normalizes the source through a representation adapter (3DGS opacity filter, voxel downsample, etc.) and runs the same Chamfer/AUC/F1 metrics as `ca evaluate` |
 
 Rule of thumb: `ca evaluate` is for **preservation QA** between two snapshots of the same artifact, `ca map-evaluate` is for **map-quality QA** against a reference map, `ca run-evaluate` is for **SLAM-run QA**, `ca benchmark eval` is the same SLAM-run QA but against a **frozen suite** so you can swap in your own pipeline, and `ca check` is the **gate orchestrator** that ties them together for CI.
 
@@ -199,6 +200,28 @@ ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
 ```
 
 A suite manifest is a small YAML pointing at reference artifacts and quality-gate thresholds; the `synthetic-figure8` example is regenerated deterministically by `scripts/build_synthetic_slam_suite.py` and is intended as a template for adding real public benchmarks (Newer College, KITTI, Hilti, ...).
+
+### Cross-Representation Geometry QA
+
+`ca geometry-evaluate` runs the same Chamfer / AUC / F1 metrics as `ca evaluate` but first normalizes the source artifact through a *representation adapter* so non-point-cloud inputs can be scored against a reference scan without manual conversion. The first adapter targets 3D Gaussian Splatting exports: PLY files with an `opacity` (logit) property per vertex. A tiny synthetic demo lives under `benchmarks/3dgs/synthetic-room/`.
+
+```bash
+# Auto-detect representation; see all splats (including low-alpha noise).
+ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \
+                    benchmarks/3dgs/synthetic-room/reference.pcd
+
+# Filter low-alpha splats before scoring (much closer to the reference).
+ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \
+                    benchmarks/3dgs/synthetic-room/reference.pcd \
+                    --opacity-threshold 0.5
+
+# Voxel-downsample the adapted source for faster comparison on real maps.
+ca geometry-evaluate scene_export.ply scan_reference.pcd \
+                    --opacity-threshold 0.1 --voxel 0.05 \
+                    --report geometry_qa.html
+```
+
+`--representation` accepts `auto` (default), `point-cloud`, or `gaussian-points`. The output dict is the same as `ca evaluate` plus a `representation` block recording which adapter ran and what filters it applied — `ca report-pr-comment` already understands this shape, so a 3DGS regression flows straight into a PR comment.
 
 ## Metrics
 

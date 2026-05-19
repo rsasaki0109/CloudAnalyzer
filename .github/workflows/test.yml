@@ -44,6 +44,21 @@ jobs:
             --example-root demo_assets/public/rellis3d-frame-000001 \
             --frame 000001
           git diff --exit-code -- docs/demo/perception
+
+      - name: Verify checked-in synthetic-figure8 SLAM benchmark suite
+        working-directory: .
+        run: |
+          python scripts/build_synthetic_slam_suite.py \
+            --output benchmarks/slam/synthetic-figure8
+          git diff --exit-code -- benchmarks/slam/synthetic-figure8
+
+      - name: Verify checked-in synthetic-room 3DGS demo
+        working-directory: .
+        run: |
+          python scripts/build_synthetic_3dgs_demo.py \
+            --output benchmarks/3dgs/synthetic-room
+          git diff --exit-code -- benchmarks/3dgs/synthetic-room
+
       - name: Build package
         run: |
           python -m build

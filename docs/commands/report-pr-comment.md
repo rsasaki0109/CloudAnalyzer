@@ -58,13 +58,45 @@ Inputs:
 
 | Input | Required | Notes |
 |---|---|---|
-| `summary_path` | yes | Path to summary JSON, relative to the caller repo root |
+| `summary_path` | yes | Path to summary JSON. With `summary_artifact` set, interpreted relative to the artifact's extracted root; otherwise relative to the caller repo root |
+| `summary_artifact` | no | Name of an artifact uploaded earlier in the same workflow run that contains the summary JSON. Lets the reusable workflow consume CI-produced summaries (e.g. from a previous `ca check` job) without committing them to the caller repo |
 | `baseline_summary_path` | no | Baseline JSON of the same shape for ↑/↓ deltas |
+| `baseline_summary_artifact` | no | Same as `summary_artifact`, but for the baseline summary |
 | `project` | no | Header label override |
 | `marker` | no | Hidden HTML comment used to find / update the previous comment |
 | `pr_number` | no | Override the PR number (defaults to the triggering pull_request) |
 | `dry_run` | no | If true, print the rendered Markdown to the job log and skip posting |
 | `cloudanalyzer_repository` / `cloudanalyzer_ref` | no | Install source when the caller repo doesn't ship CloudAnalyzer itself |
+
+### Chained job pattern
+
+When `ca check` runs in one job and you want to comment from another (so the two have clean responsibility boundaries), upload the summary as an artifact and let `pr-comment.yml` consume it:
+
+```yaml
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: ca check cloudanalyzer.yaml --output-json /tmp/qa/summary.json
+      - uses: actions/upload-artifact@v6
+        with:
+          name: cloudanalyzer-summary
+          path: /tmp/qa/summary.json
+
+  pr-comment:
+    needs: qa
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      pull-requests: write
+      contents: read
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/pr-comment.yml@main
+    with:
+      summary_artifact: cloudanalyzer-summary
+      summary_path: summary.json
+```
+
+CloudAnalyzer's own `.github/workflows/self-qa.yml` follows exactly this pattern; consult it as a working reference.
 
 The rendered Markdown is uploaded as the `cloudanalyzer-pr-comment`
 workflow artifact even when `dry_run: true`, so you can preview the

@@ -12,14 +12,12 @@ See `.github/workflows/test.yml`.
 
 ## Self QA (dogfood)
 
-Every pull request also runs `.github/workflows/self-qa.yml`, which:
+Every pull request also runs `.github/workflows/self-qa.yml`. It is split into two jobs that chain via a workflow artifact, deliberately mirroring the public pattern downstream users adopt:
 
-1. Installs CloudAnalyzer from the PR's checkout
-2. Runs `ca check` against the bundled `benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml`
-3. Renders the resulting summary with `ca report-pr-comment`
-4. Posts (or updates) a comment on the PR marked with `cloudanalyzer-self-qa`
+1. **`qa`** — installs CloudAnalyzer from the PR's checkout, runs `ca check` against the bundled `benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml`, uploads the summary as the `self-qa-summary` artifact, and fails the job if the gate failed.
+2. **`pr-comment`** — `needs: qa`, calls the reusable `./.github/workflows/pr-comment.yml` with `summary_artifact: self-qa-summary` so the reusable workflow downloads, renders, and posts (or idempotently updates) a comment marked `cloudanalyzer-self-qa`. Runs even when the `qa` job failed so a reviewer sees a FAIL comment instead of a missing comment.
 
-This serves three purposes: it dogfoods the `ca check` + `ca report-pr-comment` flow, gives every PR a living example of what users get when they wire the same tools into their own repos, and detects accidental damage to the bundled QA pack — if a PR changes a baseline `.pcd` without updating the expected summary, the gate fails and the PR turns red.
+This serves three purposes: it dogfoods the `ca check` + `ca report-pr-comment` + `pr-comment.yml` flow end to end, gives every PR a living example of what users get when they wire the same tools into their own repos, and detects accidental damage to the bundled QA pack — if a PR changes a baseline `.pcd` without updating the expected summary, the gate fails and the PR turns red.
 
 Fork PRs are skipped (the `GITHUB_TOKEN` from a fork PR doesn't have `pull-requests: write`); the comment artifact is still produced via the regular `Test` workflow run.
 

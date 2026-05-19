@@ -436,9 +436,10 @@ jobs:
 
 For external use, pin a tag or commit SHA instead of `@main`.
 
-Or chain QA → PR comment with the bundled reusable workflow. The PR-comment job idempotently updates the same comment on re-runs (marked by `cloudanalyzer-qa` so a force-push doesn't stack duplicates):
+Or chain QA → PR comment with the bundled reusable workflow. Two ways:
 
 ```yaml
+# Pattern A: summary is committed in the caller repo (e.g. checked-in fixtures).
 jobs:
   qa:
     uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
@@ -456,6 +457,33 @@ jobs:
       summary_path: qa/summary.json
       baseline_summary_path: qa/baseline-summary.json   # optional
 ```
+
+```yaml
+# Pattern B: summary is produced inside the CI run and passed via artifact.
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: ca check cloudanalyzer.yaml --output-json /tmp/qa/summary.json
+      - uses: actions/upload-artifact@v6
+        with:
+          name: cloudanalyzer-summary
+          path: /tmp/qa/summary.json
+
+  pr-comment:
+    needs: qa
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    permissions:
+      pull-requests: write
+      contents: read
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/pr-comment.yml@main
+    with:
+      summary_artifact: cloudanalyzer-summary
+      summary_path: summary.json   # path *inside* the downloaded artifact
+```
+
+Both patterns idempotently update the same comment on re-runs (marked by `cloudanalyzer-qa` by default so a force-push doesn't stack duplicates). The `.github/workflows/self-qa.yml` workflow in this repo follows Pattern B and is a working reference.
 
 Or, if you want to call `ca report-pr-comment` yourself inside an existing job:
 

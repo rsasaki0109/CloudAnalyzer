@@ -54,7 +54,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **45 subcommands** |
+| CLI | Limited | None | None | **46 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -305,6 +305,39 @@ Manual loop-closure QA can be gated with `kind: loop_closure`:
 
 When multiple gated checks fail, `ca check` also emits triage output to help prioritize inspection.
 
+### PR Comments
+
+`ca report-pr-comment` turns any CloudAnalyzer summary JSON into a Markdown blob that drops cleanly into a GitHub PR comment. It works with `ca check` suite summaries, `ca run-evaluate --output-json`, and `ca benchmark eval --output-json`, and auto-detects which shape it received.
+
+```bash
+# Run the gate and emit the summary JSON.
+ca check cloudanalyzer.yaml          # writes qa/summary.json via `summary_output_json:`
+
+# Render Markdown for the PR; --baseline shows ↑/↓ deltas against a known-good run.
+ca report-pr-comment qa/summary.json \
+  --baseline qa/baseline-summary.json \
+  --output qa/pr-comment.md
+```
+
+The output mirrors the existing `ca check` triage so the worst regression appears first:
+
+```markdown
+## CloudAnalyzer QA: FAIL ❌ — `public-benchmark-regression`
+
+**Checks**: 0/4 passed, 4 failed
+
+| Status | Check | Kind | Metrics | Reasons |
+|---|---|---|---|---|
+| ❌ | `mapping-postprocess` | artifact | AUC=0.5282 (was 1.0000 ↓), Chamfer=0.0394 (was 0.0015 ↑) | AUC < min_auc 0.97; Chamfer > max_chamfer 0.01 |
+| ❌ | `localization-run` | trajectory | ATE=0.0716 (was 0.0030 ↑), Coverage=81.2% (was 100.0% ↓) | ATE > max_ate; Coverage < min_coverage |
+
+### Recommended triage
+1. `localization-run` (trajectory) — ATE RMSE 0.0716 > max_ate 0.0200
+2. `mapping-postprocess` (artifact) — AUC 0.5282 < min_auc 0.9700
+```
+
+Arrows track *value direction* (number went up / down). Whether ↑/↓ is good or bad is obvious from the gate direction right next to the metric.
+
 ### Baseline Management
 
 If you are unsure whether a baseline should be updated, use a history directory:
@@ -339,6 +372,19 @@ jobs:
 ```
 
 For external use, pin a tag or commit SHA instead of `@main`.
+
+To post a PR comment directly from a workflow, run `ca report-pr-comment` and pipe the Markdown to `gh pr comment`:
+
+```yaml
+- name: Render PR comment
+  run: ca report-pr-comment qa/summary.json --baseline qa/baseline-summary.json --output qa/pr-comment.md
+
+- name: Post PR comment
+  if: github.event_name == 'pull_request'
+  env:
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  run: gh pr comment "${{ github.event.pull_request.number }}" --body-file qa/pr-comment.md
+```
 
 ```bash
 # Read AUC and gate it in a shell script

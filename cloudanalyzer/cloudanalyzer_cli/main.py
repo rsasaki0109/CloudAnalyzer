@@ -59,7 +59,13 @@ from ca.benchmark import (
     evaluate_benchmark_run,
     load_benchmark_suite,
 )
-from ca.bundle import pack_bundle, show_bundle, unpack_bundle
+from ca.bundle import (
+    diff_bundles,
+    pack_bundle,
+    render_diff_markdown,
+    show_bundle,
+    unpack_bundle,
+)
 from ca.geometry import REPRESENTATIONS, evaluate_geometry
 from ca.pr_comment import build_pr_comment
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
@@ -2172,6 +2178,47 @@ def bundle_show_cmd(
         typer.echo(
             f"  {entry['path']}  ({entry['size_bytes']} B / {entry['compressed_bytes']} B compressed)"
         )
+
+
+@bundle_app.command("diff")
+def bundle_diff_cmd(
+    old_bundle: str = typer.Argument(..., help="Path to the older qa_bundle.zip"),
+    new_bundle: str = typer.Argument(..., help="Path to the newer qa_bundle.zip"),
+    output: Optional[str] = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Write the diff Markdown to a file instead of stdout",
+    ),
+    format_json: bool = typer.Option(
+        False,
+        "--format-json",
+        help="Print the structured diff dict as JSON (suitable for dashboards / scripting)",
+    ),
+) -> None:
+    """Compare two QA bundles and render a Markdown report.
+
+    Reuses the same metric layout as `ca report-pr-comment`, so the diff
+    looks identical to what PRs already render — old becomes the baseline,
+    new is the "current" set of numbers.
+    """
+    try:
+        diff = diff_bundles(old_bundle, new_bundle)
+    except (FileNotFoundError, ValueError, zipfile.BadZipFile) as exc:
+        _handle_error(exc)
+
+    if format_json:
+        typer.echo(json.dumps(diff, indent=2))
+        return
+
+    markdown = render_diff_markdown(diff)
+    if output:
+        out_path = Path(output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(markdown, encoding="utf-8")
+        typer.echo(f"Diff written: {output}")
+    else:
+        typer.echo(markdown, nl=False)
 
 
 def _parse_gate_overrides(values: Optional[List[str]]) -> dict[str, float | None]:

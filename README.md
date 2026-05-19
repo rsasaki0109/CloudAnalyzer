@@ -55,7 +55,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **50 subcommands** |
+| CLI | Limited | None | None | **51 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -398,6 +398,12 @@ ca bundle show qa/bundle.zip --format-json | jq '.metadata.notes'
 
 # Restore everything to a directory.
 ca bundle unpack qa/bundle.zip --output qa/restored/
+
+# Compare two bundles (typically: yesterday's vs today's). Reuses the same
+# delta layout as `ca report-pr-comment`, so the diff drops cleanly into a
+# PR comment or a dashboard.
+ca bundle diff qa/baseline.zip qa/bundle.zip --output qa/diff.md
+ca bundle diff qa/baseline.zip qa/bundle.zip --format-json | jq '.warnings'
 ```
 
 The bundle layout (versioned, stable across CloudAnalyzer releases):

@@ -16,6 +16,43 @@ ca benchmark info benchmarks/slam/synthetic-figure8/suite.yaml
 
 With `--format-json`, emits the same payload as a JSON object for tooling.
 
+### `ca benchmark init <suite_dir> --reference-map ... --reference-trajectory ...`
+
+Build a `suite.yaml` (plus copied/downsampled data files) from raw reference inputs on disk. Use this to turn a downloaded public SLAM dataset into a `ca benchmark eval`-ready suite without hand-writing the manifest.
+
+```bash
+ca benchmark init /tmp/my-suite \
+  --name my-suite \
+  --description "My SLAM regression suite" \
+  --reference-map  /data/site/gt_map.pcd \
+  --reference-trajectory /data/site/gt_poses.tum \
+  --sequence default \
+  --voxel 0.10 \
+  --max-poses 2000 \
+  --gate min_auc=0.95 --gate max_ate=0.30
+```
+
+What it does:
+
+- Voxel-downsamples the reference map (`--voxel 0` disables).
+- Subsamples the reference trajectory to an evenly-spaced subset (`--max-poses 0` keeps everything).
+- Writes `suite.yaml` + `data/<sequence>/{map.pcd,trajectory.tum}` under `<suite_dir>`.
+- Optionally bakes in a passing sample output (`--sample-map`/`--sample-trajectory`).
+
+Useful options:
+
+| Option | Purpose |
+|---|---|
+| `--sequence <name>` | Sequence name written to the manifest (default: `default`) |
+| `--sequence-description <text>` | Per-sequence description (defaults to the suite description) |
+| `--license <text>` | License string for the suite manifest |
+| `--voxel <m>` | Voxel size for map downsampling (default: `0.0`, plain copy) |
+| `--max-poses <N>` | Subsample the trajectory to at most N evenly-spaced poses (default: unlimited) |
+| `--sample-map` / `--sample-trajectory` | Bundle a known-good SLAM output as a smoke-test reference |
+| `--gate key=value` | Bake a gate threshold into the manifest (repeatable; unknown keys are dropped) |
+
+For public datasets that need a license-aware download step, prefer the dedicated wrapper scripts under `scripts/` (e.g. `scripts/prepare_newer_college_mini.py`) — they call this same code path with dataset-specific defaults.
+
 ### `ca benchmark eval <suite.yaml> --map ... --trajectory ...`
 
 Evaluate one SLAM run against the suite's frozen reference + gate. Exit code is `1` when `overall_quality_gate` fails, matching `ca run-evaluate`.
@@ -68,17 +105,28 @@ All paths in the manifest are resolved relative to the manifest file. Allowed ga
 
 ## Adding your own suite
 
-Drop a `suite.yaml` next to your reference data:
+Two ways:
 
-```
-benchmarks/slam/my-suite/
-├── suite.yaml
-└── reference/
-    ├── map.pcd
-    └── trajectory.tum
-```
+1. **Hand-write the manifest.** Drop a `suite.yaml` next to your reference data:
+
+   ```
+   benchmarks/slam/my-suite/
+   ├── suite.yaml
+   └── reference/
+       ├── map.pcd
+       └── trajectory.tum
+   ```
+
+2. **Let `ca benchmark init` build it** for you from raw ground-truth files (see above). This is the recommended path for public datasets that ship multi-million-point reference maps and need voxel downsampling.
 
 Then point `ca benchmark` at it. There is no global registry yet — suites are addressed by manifest path.
+
+## Public-dataset wrappers
+
+| Suite | Wrapper script | Notes |
+|---|---|---|
+| `synthetic-figure8` | `scripts/build_synthetic_slam_suite.py` | Tiny synthetic data; checked in under `benchmarks/slam/synthetic-figure8/`. |
+| `newer-college-mini` | `scripts/prepare_newer_college_mini.py` | Local prep from a Newer College Dataset (CC-BY-NC-SA 4.0) download. See `benchmarks/slam/newer-college-mini/README.md`. |
 
 ## Result shape
 

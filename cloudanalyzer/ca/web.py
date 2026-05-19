@@ -7,7 +7,7 @@ import threading
 import webbrowser
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 import open3d as o3d
@@ -2053,7 +2053,7 @@ def _optional_float(value) -> float | None:
 def _nested_float(document: dict, *keys: str) -> float | None:
     """Return a finite float from nested report metadata, or None."""
 
-    value = document
+    value: Any = document
     for key in keys:
         if not isinstance(value, dict):
             return None

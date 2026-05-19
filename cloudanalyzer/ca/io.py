@@ -25,10 +25,10 @@ def _load_csv_point_cloud(path: Path) -> o3d.geometry.PointCloud:
 
         points: list[list[float]] = []
         if has_header:
-            reader = csv.DictReader(f)
-            if reader.fieldnames is None:
+            dict_reader = csv.DictReader(f)
+            if dict_reader.fieldnames is None:
                 raise ValueError(f"CSV point cloud has no header: {path}")
-            normalized = {name.strip().lower(): name for name in reader.fieldnames}
+            normalized = {name.strip().lower(): name for name in dict_reader.fieldnames}
             axis_names = None
             for candidate in (("x", "y", "z"), ("x_m", "y_m", "z_m")):
                 if all(axis in normalized for axis in candidate):
@@ -38,13 +38,13 @@ def _load_csv_point_cloud(path: Path) -> o3d.geometry.PointCloud:
                 raise ValueError(
                     "CSV point cloud must contain x,y,z or x_m,y_m,z_m columns"
                 )
-            for row in reader:
-                xyz = [float(row[name]) for name in axis_names]
+            for dict_row in dict_reader:
+                xyz = [float(dict_row[name]) for name in axis_names]
                 if np.isfinite(xyz).all():
                     points.append(xyz)
         else:
-            reader = csv.reader(f)
-            for row in reader:
+            plain_reader = csv.reader(f)
+            for row in plain_reader:
                 if len(row) < 3:
                     continue
                 xyz = [float(row[0]), float(row[1]), float(row[2])]

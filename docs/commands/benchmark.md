@@ -127,6 +127,7 @@ Then point `ca benchmark` at it. There is no global registry yet — suites are 
 |---|---|---|
 | `synthetic-figure8` | `scripts/build_synthetic_slam_suite.py` | Tiny synthetic data; checked in under `benchmarks/slam/synthetic-figure8/`. |
 | `newer-college-mini` | `scripts/prepare_newer_college_mini.py` | Local prep from a Newer College Dataset (CC-BY-NC-SA 4.0) download. See `benchmarks/slam/newer-college-mini/README.md`. |
+| `kitti-mini` | `scripts/prepare_kitti_mini.py` | Local prep from a KITTI Odometry (CC-BY-NC-SA 3.0) download. Converts KITTI 12-float poses to TUM internally. See `benchmarks/slam/kitti-mini/README.md`. |
 
 ## Result shape
 

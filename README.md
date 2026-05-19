@@ -219,6 +219,13 @@ python scripts/prepare_newer_college_mini.py \
   --reference-map  /data/newer-college/short_experiment/gt_map.pcd \
   --reference-trajectory /data/newer-college/short_experiment/gt_poses.tum \
   --sequence short_experiment
+
+# KITTI Odometry (CC-BY-NC-SA 3.0): same idea, with KITTI 12-float pose → TUM conversion built in.
+# See benchmarks/slam/kitti-mini/README.md for the full workflow.
+python scripts/prepare_kitti_mini.py \
+  --kitti-poses    /data/kitti/odometry/poses/00.txt \
+  --reference-map  /data/kitti/sequence_00/accumulated_map.pcd \
+  --sequence sequence_00
 ```
 
 ### Cross-Representation Geometry QA

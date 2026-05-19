@@ -51,6 +51,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e cloudanalyzer
 
+      - name: Build public benchmark pack fixtures
+        # The pack referenced by suite-pass.cloudanalyzer.yaml is
+        # gitignored — regenerate it before `ca check` runs.
+        run: |
+          xvfb-run python scripts/build_public_benchmark_pack.py \
+            --output benchmarks/public/stanford-bunny-mini
+
       - name: Run config-driven QA against the bundled pack
         id: run_check
         continue-on-error: true

@@ -120,10 +120,23 @@ class NNThresholdMapEvaluateStrategy:
             artifacts["estimated_error_raw_ply"] = raw_path
             artifacts[f"estimated_error_inlier_{vmax:.3f}m_ply"] = inlier_path
 
+        downsample_voxel = float(request.downsample_voxel_size)
+        mode = "voxelized" if downsample_voxel > 0 else "exact"
+        sampling_policy: dict[str, object] = {
+            "downsample_voxel_size_m": downsample_voxel,
+            "thresholds_m": list(thresholds),
+            "align_mode": request.align_mode,
+            "nn_backend": "open3d_kdtree",
+        }
+
         return MapEvaluateResult(
             strategy=self.name,
             design=self.design,
             metrics=metrics,
             artifacts=artifacts,
+            metric_family="reference_based_nn_thresholds",
+            reference_required=True,
+            mode=mode,
+            sampling_policy=sampling_policy,
         )
 

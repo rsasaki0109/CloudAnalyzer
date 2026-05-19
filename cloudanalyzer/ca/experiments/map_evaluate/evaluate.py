@@ -26,6 +26,10 @@ def benchmark_strategy_on_dataset(strategy, dataset: MapEvaluateDatasetCase, rep
         "description": dataset.description,
         "runtime_ms": float(fmean(runtimes_ms)),
         "metrics": last.metrics,
+        "metric_family": last.metric_family,
+        "reference_required": last.reference_required,
+        "mode": last.mode,
+        "sampling_policy": last.sampling_policy,
     }
 
 
@@ -90,14 +94,37 @@ def render_experiment_section(report: dict) -> str:
     for d in report["datasets"]:
         dataset_lines.append(f"| {d['name']} | {str(d['has_gt']).lower()} | {d['description']} |")
 
+    family_lines = [
+        "| Strategy | Metric family | Reference required | Mode |",
+        "|---|---|---:|---|",
+    ]
+    seen_strategies: set[str] = set()
+    for row in report.get("results", []):
+        strat = row.get("strategy")
+        # Skip error rows (they lack classification fields) and duplicates.
+        if not strat or strat in seen_strategies or "metric_family" not in row:
+            continue
+        seen_strategies.add(strat)
+        family_lines.append(
+            "| {strat} | {family} | {ref} | {mode} |".format(
+                strat=strat,
+                family=row.get("metric_family", "unspecified"),
+                ref=str(bool(row.get("reference_required", False))).lower(),
+                mode=row.get("mode", "exact"),
+            )
+        )
+
     return (
         "## map_evaluate\n\n"
         f"{report['problem']['statement']}\n\n"
         "Experimental code lives in `cloudanalyzer/ca/experiments/map_evaluate/`.\n\n"
         "### Shared Inputs\n\n"
         + "\n".join(dataset_lines)
+        + "\n\n### Metric Families\n\n"
+        + "\n".join(family_lines)
         + "\n\n### Notes\n\n"
         "- This slice is MapEval-inspired: it keeps a threshold list (accuracy levels) and separates GT-based vs GT-free evaluation.\n"
+        "- Reference-based and reference-free metrics live in separate `metric_family` lanes (`reference_based_nn_thresholds`, `reference_free_voxel_consistency`); CI gates should pick one family per check.\n"
         "- Current implementations are lightweight proxies; real-map scale should switch to KD-trees and richer outputs.\n"
     )
 
@@ -132,6 +159,13 @@ def render_interface_section(report: dict) -> str:
             "",
             "Not promoted to `ca/core` yet. Current request/result shapes live in "
             "`cloudanalyzer/ca/experiments/map_evaluate/common.py`.",
+            "",
+            "Result objects carry classification fields so reference-based and reference-free metrics stay in separate lanes:",
+            "",
+            "- `metric_family` — stable id (e.g. `reference_based_nn_thresholds`, `reference_free_voxel_consistency`).",
+            "- `reference_required` — whether the strategy needs a reference map.",
+            "- `mode` — `exact` / `voxelized` / `sampled`; records what approximation was used.",
+            "- `sampling_policy` — structured record of voxel sizes, thresholds, and alignment used to produce the metrics.",
             "",
         ]
     )

@@ -48,8 +48,8 @@ Reason: Best initial spatial coverage with acceptable planning cost and no extra
 
 ### Not Adopted
 
-- `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=2, readability rank=3, extensibility rank=3.
-- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=3, readability rank=1, extensibility rank=1.
+- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=1, readability rank=1, extensibility rank=1.
+- `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=3, readability rank=3, extensibility rank=3.
 
 ### Trigger To Re-run
 
@@ -99,14 +99,14 @@ Reason: Best composite rank while preserving direct threshold-based ordering and
 
 ### Adopted
 
-`stability_window` is adopted directly as the current core strategy.
+`stability_window` is the stabilized core form of `threshold_guard`.
 
 Reason: Best composite rank by avoiding premature promotions while preserving perfect reject/promote accuracy on the shared scenarios.
 
 ### Not Adopted
 
-- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=1, readability rank=1, extensibility rank=3.
-- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=3, readability rank=3, extensibility rank=1.
+- `stability_window` remains experimental. Quality rank=1, stability rank=3, runtime rank=3, readability rank=2, extensibility rank=2.
+- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=2, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
 

@@ -209,7 +209,7 @@ class BaselineEvolutionSnapshot:
 
 - Stable core: `cloudanalyzer/ca/core/check_baseline_evolution.py`
 - Experimental space: `cloudanalyzer/ca/experiments/check_baseline_evolution/`
-- Current stabilized lineage: `stability_window` adopted directly in core
+- Current stabilized lineage: `threshold_guard` -> `stability_window`
 
 
 ## ground_segmentation_evaluate
@@ -245,4 +245,11 @@ class GroundEvaluateRequest:
 ### Current Minimal Interface (experimental)
 
 Not promoted to `ca/core` yet. Current request/result shapes live in `cloudanalyzer/ca/experiments/map_evaluate/common.py`.
+
+Result objects carry classification fields so reference-based and reference-free metrics stay in separate lanes:
+
+- `metric_family` — stable id (e.g. `reference_based_nn_thresholds`, `reference_free_voxel_consistency`).
+- `reference_required` — whether the strategy needs a reference map.
+- `mode` — `exact` / `voxelized` / `sampled`; records what approximation was used.
+- `sampling_policy` — structured record of voxel sizes, thresholds, and alignment used to produce the metrics.
 

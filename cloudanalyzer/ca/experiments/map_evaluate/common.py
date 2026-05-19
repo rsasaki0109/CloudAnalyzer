@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -38,12 +38,36 @@ class MapEvaluateRequest:
 
 @dataclass(slots=True)
 class MapEvaluateResult:
-    """Common output for all strategies."""
+    """Common output for all strategies.
+
+    Classification fields (`metric_family`, `reference_required`, `mode`,
+    `sampling_policy`) describe *how* the metrics were computed so that
+    downstream consumers (CI gates, reports, batch aggregators) can keep
+    reference-based and reference-free metrics in separate lanes without
+    parsing metric names.
+
+    - `metric_family` — short stable id, e.g. ``reference_based_nn_thresholds``
+      or ``reference_free_voxel_consistency``. Used to group results in
+      docs/reports and to pick the right gate semantics.
+    - `reference_required` — whether the strategy needs a reference map.
+      Reference-free strategies are diagnostic-only and should not gate by
+      themselves until promoted.
+    - `mode` — ``exact`` / ``voxelized`` / ``sampled``. Records what
+      approximation, if any, was used. CI gates may require ``exact`` or
+      ``voxelized``; ``sampled`` is best-effort.
+    - `sampling_policy` — structured record of voxel sizes, point caps,
+      thresholds, and alignment used to produce ``metrics``. Lets a CI run
+      reproduce the same numbers.
+    """
 
     strategy: str
     design: str
     metrics: dict[str, float]
     artifacts: dict[str, Any]
+    metric_family: str = "unspecified"
+    reference_required: bool = False
+    mode: str = "exact"
+    sampling_policy: dict[str, Any] = field(default_factory=dict)
 
 
 def _require_xyz(points: np.ndarray, name: str) -> np.ndarray:

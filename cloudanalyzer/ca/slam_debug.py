@@ -284,7 +284,7 @@ def diagnose_slam_frame(frame: dict[str, Any]) -> dict[str, Any]:
     scan_points_used = _nested_float(debug, "preprocess", "scan_points_used")
 
     filtered_ratio = None
-    if raw_points not in (None, 0) and filtered_points is not None:
+    if raw_points is not None and raw_points != 0 and filtered_points is not None:
         filtered_ratio = float(filtered_points) / float(raw_points)
 
     signals = {

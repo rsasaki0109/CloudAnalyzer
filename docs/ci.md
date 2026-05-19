@@ -134,7 +134,35 @@ The workflow runs `ca check`, uploads `summary.json`, and also uploads each gene
 
 ### PR Comment From `summary.json`
 
-After `ca check` writes the suite summary (or `ca benchmark eval` / `ca run-evaluate` writes a single-run JSON), use `ca report-pr-comment` to turn that artifact into a Markdown blob and post it with `gh pr comment`. The renderer auto-detects the JSON shape and surfaces the same severity-weighted triage that `ca check` already computes.
+After `ca check` writes the suite summary (or `ca benchmark eval` / `ca run-evaluate` writes a single-run JSON), use `ca report-pr-comment` to turn that artifact into a Markdown blob. There are two ways to wire it in CI.
+
+**Reusable workflow (recommended).** `pr-comment.yml` handles checkout, install, rendering, and (idempotent) posting via `gh`:
+
+```yaml
+jobs:
+  qa:
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
+    with:
+      config_path: cloudanalyzer.yaml
+
+  pr-comment:
+    needs: qa
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      pull-requests: write
+      contents: read
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/pr-comment.yml@main
+    with:
+      summary_path: qa/summary.json
+      baseline_summary_path: qa/baseline-summary.json   # optional
+      project: my-mapping-pipeline                       # optional header label
+      marker: my-pipeline-qa                             # optional; used for idempotent updates
+      dry_run: false                                     # set true to log without posting
+```
+
+Re-runs find the previous comment via the marker (default `cloudanalyzer-qa`) and *update it in place* instead of stacking duplicates on every force-push. The rendered Markdown is also uploaded as the `cloudanalyzer-pr-comment` artifact for inspection.
+
+**Inline (when you already have a job set up).** Call the CLI directly and pipe to `gh`:
 
 ```yaml
 - name: Render PR comment

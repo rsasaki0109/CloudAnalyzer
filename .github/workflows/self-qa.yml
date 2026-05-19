@@ -1,0 +1,122 @@
+name: Self QA
+
+# Dogfoods `ca check` and `ca report-pr-comment` on every PR. Runs the
+# bundled `benchmarks/public/stanford-bunny-mini` quality gate, then
+# posts a PR comment with the rendered Markdown. Re-runs update the same
+# comment in place via the `cloudanalyzer-self-qa` marker.
+#
+# Two side benefits:
+# - If a PR damages the bundled pack (e.g. mutates a baseline pcd
+#   without regenerating the expected summary), `ca check` fails the
+#   gate and turns CI red.
+# - Repository visitors see a real, up-to-date example of the PR
+#   comment format on every open PR.
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  self-qa:
+    # Fork PRs do not get `pull-requests: write`, so the comment post
+    # would fail. Skip them to keep the run signal honest; the underlying
+    # `ca check` still runs in the regular `Test` workflow.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+
+      - name: Install CloudAnalyzer
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e cloudanalyzer
+
+      - name: Run config-driven QA against the bundled pack
+        id: run_check
+        continue-on-error: true
+        run: |
+          xvfb-run ca check \
+            benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml \
+            --output-json /tmp/self-qa-summary.json
+
+      - name: Render PR comment Markdown
+        if: always()
+        run: |
+          if [ ! -f /tmp/self-qa-summary.json ]; then
+            echo "::warning::ca check produced no summary; skipping PR comment render"
+            exit 0
+          fi
+          mkdir -p /tmp/self-qa
+          ca report-pr-comment /tmp/self-qa-summary.json \
+            --project cloudanalyzer-self-qa \
+            --output /tmp/self-qa/body.md
+          {
+            printf '<!-- cloudanalyzer-self-qa -->\n'
+            cat /tmp/self-qa/body.md
+          } > /tmp/self-qa/body.with-marker.md
+          mv /tmp/self-qa/body.with-marker.md /tmp/self-qa/body.md
+
+      - name: Print Markdown to job log
+        if: always()
+        run: |
+          if [ -f /tmp/self-qa/body.md ]; then
+            echo "## Rendered PR comment"
+            sed -e 's/^/  /' /tmp/self-qa/body.md
+          fi
+
+      - name: Post or update PR comment
+        if: always() && github.event.pull_request.number
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          MARKER: cloudanalyzer-self-qa
+        run: |
+          if [ ! -f /tmp/self-qa/body.md ]; then
+            echo "No rendered Markdown; skipping comment post."
+            exit 0
+          fi
+          existing_id=$(gh api \
+            "repos/${REPO}/issues/${PR}/comments" \
+            --paginate \
+            --jq "[.[] | select(.body | test(\"<!-- ${MARKER} -->\"; \"l\"))] | .[0].id // empty")
+          if [ -n "${existing_id}" ]; then
+            echo "Updating existing comment ${existing_id}"
+            gh api \
+              -X PATCH \
+              "repos/${REPO}/issues/comments/${existing_id}" \
+              -f body="$(cat /tmp/self-qa/body.md)"
+          else
+            echo "Posting new comment on PR #${PR}"
+            gh pr comment "${PR}" \
+              --repo "${REPO}" \
+              --body-file /tmp/self-qa/body.md
+          fi
+
+      - name: Upload rendered Markdown
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cloudanalyzer-self-qa
+          path: /tmp/self-qa/body.md
+          if-no-files-found: warn
+
+      - name: Fail when the gated check failed
+        if: steps.run_check.outcome == 'failure'
+        run: |
+          echo "CloudAnalyzer self-QA gate failed (see the PR comment for which check broke)."
+          exit 1

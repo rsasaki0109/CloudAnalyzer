@@ -6,8 +6,22 @@ Every push to `main` runs:
 
 1. **mypy** type check on `ca/` and `cli/`
 2. **pytest** with `xvfb-run` (for Open3D offscreen rendering)
+3. **Asset sync checks** for `docs/demo/perception/`, `benchmarks/slam/synthetic-figure8/`, and `benchmarks/3dgs/synthetic-room/` — each generator is re-run and `git diff --exit-code` enforces no drift between the script and the checked-in bytes
 
 See `.github/workflows/test.yml`.
+
+## Self QA (dogfood)
+
+Every pull request also runs `.github/workflows/self-qa.yml`, which:
+
+1. Installs CloudAnalyzer from the PR's checkout
+2. Runs `ca check` against the bundled `benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml`
+3. Renders the resulting summary with `ca report-pr-comment`
+4. Posts (or updates) a comment on the PR marked with `cloudanalyzer-self-qa`
+
+This serves three purposes: it dogfoods the `ca check` + `ca report-pr-comment` flow, gives every PR a living example of what users get when they wire the same tools into their own repos, and detects accidental damage to the bundled QA pack — if a PR changes a baseline `.pcd` without updating the expected summary, the gate fails and the PR turns red.
+
+Fork PRs are skipped (the `GITHUB_TOKEN` from a fork PR doesn't have `pull-requests: write`); the comment artifact is still produced via the regular `Test` workflow run.
 
 ## Quality Gate
 

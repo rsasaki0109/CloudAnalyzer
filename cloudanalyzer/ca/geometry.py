@@ -2,8 +2,7 @@
 
 ``ca geometry-evaluate`` runs the same Chamfer/AUC/F1 metric pipeline that
 ``ca evaluate`` uses, but it first normalizes the source artifact through a
-representation-specific adapter so non-point-cloud inputs (Gaussian Splatting
-PLY exports today, mesh vertex / depth-derived clouds later) can be scored
+representation-specific adapter so non-point-cloud inputs can be scored
 against a reference scan without forcing the user to convert them by hand.
 
 Currently supported source representations:
@@ -14,8 +13,15 @@ Currently supported source representations:
   adapter extracts the Gaussian centers (xyz), applies the sigmoid to the
   stored opacity logit, and (optionally) filters splats whose rendered
   alpha falls below ``opacity_threshold``.
+- ``mesh`` — triangle mesh (OBJ / STL / PLY-with-faces) loaded via Open3D
+  and surface-sampled into a point cloud. Vertex-only sampling misses
+  large flat faces; ``ca`` defaults to ``sample_points_uniformly`` with
+  ``mesh_samples`` points (override with ``--mesh-method poisson_disk``
+  when you need a more uniform spread at higher cost).
 - ``auto`` — peek the source file. PLY with an ``opacity`` property →
-  ``gaussian-points``; everything else → ``point-cloud``.
+  ``gaussian-points``; PLY with a ``face`` element / non-PLY mesh
+  extension (``.obj``/``.stl``/``.glb``/``.gltf``) → ``mesh``; everything
+  else → ``point-cloud``.
 
 The library deliberately treats Gaussian splats as points rather than
 ellipsoids for now. Ellipsoid surface sampling using ``scale``/``rot`` is a
@@ -39,7 +45,10 @@ from ca.evaluate import evaluate as _evaluate_paths
 from ca.io import load_point_cloud
 
 
-REPRESENTATIONS: tuple[str, ...] = ("auto", "point-cloud", "gaussian-points")
+REPRESENTATIONS: tuple[str, ...] = ("auto", "point-cloud", "gaussian-points", "mesh")
+MESH_SAMPLE_METHODS: tuple[str, ...] = ("uniform", "poisson_disk")
+MESH_FILE_EXTENSIONS: tuple[str, ...] = (".obj", ".stl", ".glb", ".gltf")
+DEFAULT_MESH_SAMPLES: int = 100_000
 
 
 @dataclass(slots=True)
@@ -211,19 +220,63 @@ def _ply_has_property(path: Path, name: str) -> bool:
     return any(prop_name == name for _, prop_name in properties)
 
 
+def _ply_has_face_element(path: Path) -> bool:
+    """Cheap scan: return True iff the PLY header declares an ``element face`` row.
+
+    Avoids reusing :func:`_read_ply_header` because that helper only tracks
+    vertex properties; we need to spot the ``face`` element header line
+    itself, regardless of how many vertex properties precede it.
+    """
+    try:
+        with path.open("rb") as f:
+            magic = f.readline().rstrip(b"\r\n")
+            if magic != b"ply":
+                return False
+            while True:
+                line = f.readline()
+                if not line:
+                    return False
+                text = line.decode("ascii", errors="replace").strip()
+                if text == "end_header":
+                    return False
+                tokens = text.split()
+                if (
+                    len(tokens) >= 3
+                    and tokens[0] == "element"
+                    and tokens[1] == "face"
+                ):
+                    return True
+    except OSError:
+        return False
+
+
 # --------------------------------------------------------------------- detect
 
 
 def detect_representation(source_path: str) -> str:
     """Inspect ``source_path`` and pick a non-``auto`` representation.
 
-    Heuristics intentionally err toward ``point-cloud``: a PLY only flips
-    to ``gaussian-points`` when an ``opacity`` property is present, since
-    that field is the load-bearing identifier 3DGS exports share.
+    Heuristics:
+
+    1. ``.obj``/``.stl``/``.glb``/``.gltf`` → ``mesh`` (those formats are
+       mesh-only; treating them as point clouds would silently sample the
+       vertex set, which is a much worse proxy than surface sampling).
+    2. ``.ply`` with an ``opacity`` property → ``gaussian-points``.
+       Opacity is the load-bearing identifier 3DGS exports share, so it
+       takes precedence over face detection (a 3DGS PLY could in
+       principle ship faces it doesn't use).
+    3. ``.ply`` with an ``element face`` line → ``mesh``.
+    4. Everything else → ``point-cloud``.
     """
     path = Path(source_path)
-    if path.suffix.lower() == ".ply" and _ply_has_property(path, "opacity"):
-        return "gaussian-points"
+    suffix = path.suffix.lower()
+    if suffix in MESH_FILE_EXTENSIONS:
+        return "mesh"
+    if suffix == ".ply":
+        if _ply_has_property(path, "opacity"):
+            return "gaussian-points"
+        if _ply_has_face_element(path):
+            return "mesh"
     return "point-cloud"
 
 
@@ -259,6 +312,57 @@ def _load_gaussian_points(
     return points, applied
 
 
+def _load_mesh_points(
+    path: Path,
+    *,
+    mesh_samples: int,
+    mesh_method: str,
+) -> tuple[np.ndarray, list[str]]:
+    """Surface-sample a triangle mesh into a deterministic point cloud."""
+    if mesh_samples <= 0:
+        raise ValueError(
+            f"mesh_samples must be positive; got {mesh_samples}"
+        )
+    if mesh_method not in MESH_SAMPLE_METHODS:
+        raise ValueError(
+            f"Unsupported mesh sampling method {mesh_method!r}. "
+            f"Allowed: {', '.join(MESH_SAMPLE_METHODS)}"
+        )
+
+    mesh = o3d.io.read_triangle_mesh(str(path))
+    if not mesh.has_vertices():
+        raise ValueError(f"{path}: mesh has no vertices")
+    if not mesh.has_triangles():
+        raise ValueError(
+            f"{path}: mesh has vertices but no triangles — "
+            "use --representation point-cloud to score vertices directly"
+        )
+
+    # Open3D's sample_points_uniformly requires triangle normals for some
+    # paths; make sure they exist so the function is deterministic across
+    # Open3D versions.
+    if not mesh.has_triangle_normals():
+        mesh.compute_triangle_normals()
+
+    applied: list[str] = [f"mesh_samples={mesh_samples}, method={mesh_method}"]
+    # Open3D ≤0.19 doesn't accept an explicit seed; the sampler uses its own
+    # RNG. Output isn't bit-reproducible across runs, but the *surface* is —
+    # consumers compare the resulting point cloud against a reference scan
+    # via Chamfer/AUC, which is robust to that variance.
+    if mesh_method == "uniform":
+        sampled = mesh.sample_points_uniformly(number_of_points=int(mesh_samples))
+    else:
+        sampled = mesh.sample_points_poisson_disk(number_of_points=int(mesh_samples))
+
+    points = np.asarray(sampled.points, dtype=np.float64)
+    if points.shape[0] == 0:
+        raise ValueError(
+            f"{path}: mesh sampling produced zero points "
+            f"(method={mesh_method}, requested={mesh_samples})"
+        )
+    return points, applied
+
+
 def _voxel_downsample(points: np.ndarray, voxel_size: float) -> np.ndarray:
     """Open3D voxel downsample preserving deterministic order."""
     if voxel_size <= 0 or points.shape[0] == 0:
@@ -278,6 +382,8 @@ def load_representation(
     *,
     opacity_threshold: float | None = None,
     voxel_size: float | None = None,
+    mesh_samples: int = DEFAULT_MESH_SAMPLES,
+    mesh_method: str = "uniform",
 ) -> GeometryLoadResult:
     """Load a 3D artifact and normalize it to a point cloud."""
     if representation not in REPRESENTATIONS:
@@ -297,6 +403,15 @@ def load_representation(
     if chosen == "gaussian-points":
         points, opacity_filters = _load_gaussian_points(path, opacity_threshold)
         applied.extend(opacity_filters)
+    elif chosen == "mesh":
+        points, mesh_filters = _load_mesh_points(
+            path, mesh_samples=mesh_samples, mesh_method=mesh_method
+        )
+        applied.extend(mesh_filters)
+        if opacity_threshold is not None:
+            applied.append(
+                "opacity_threshold ignored (representation=mesh)"
+            )
     elif chosen == "point-cloud":
         pcd = load_point_cloud(source_path)
         points = np.asarray(pcd.points, dtype=np.float64)
@@ -338,6 +453,8 @@ def evaluate_geometry(
     opacity_threshold: float | None = None,
     voxel_size: float | None = None,
     thresholds: list[float] | None = None,
+    mesh_samples: int = DEFAULT_MESH_SAMPLES,
+    mesh_method: str = "uniform",
 ) -> dict:
     """Cross-representation geometry QA against a reference point cloud.
 
@@ -351,6 +468,8 @@ def evaluate_geometry(
         representation=representation,
         opacity_threshold=opacity_threshold,
         voxel_size=voxel_size,
+        mesh_samples=mesh_samples,
+        mesh_method=mesh_method,
     )
 
     if loaded.points.shape[0] == 0:
@@ -379,13 +498,24 @@ def evaluate_geometry(
         "opacity_threshold": (
             float(opacity_threshold) if opacity_threshold is not None else None
         ),
+        "mesh_samples": (
+            int(mesh_samples) if loaded.representation_detected == "mesh"
+            or (representation == "mesh") else None
+        ),
+        "mesh_method": (
+            mesh_method if loaded.representation_detected == "mesh"
+            or (representation == "mesh") else None
+        ),
     }
     return result
 
 
 # Re-export the few symbols a CLI / tests need.
 __all__ = [
+    "DEFAULT_MESH_SAMPLES",
     "GeometryLoadResult",
+    "MESH_FILE_EXTENSIONS",
+    "MESH_SAMPLE_METHODS",
     "REPRESENTATIONS",
     "detect_representation",
     "evaluate_geometry",

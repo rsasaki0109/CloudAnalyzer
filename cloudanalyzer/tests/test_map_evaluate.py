@@ -24,6 +24,11 @@ class TestNNThresholdMapEvaluate:
         assert out.metrics["chamfer_m"] == pytest.approx(0.0, abs=1e-9)
         assert out.metrics[f"accuracy@{0.2:.3f}m"] == pytest.approx(1.0)
         assert out.metrics[f"completeness@{0.2:.3f}m"] == pytest.approx(1.0)
+        assert out.metric_family == "reference_based_nn_thresholds"
+        assert out.reference_required is True
+        assert out.mode == "exact"
+        assert out.sampling_policy["downsample_voxel_size_m"] == pytest.approx(0.0)
+        assert tuple(out.sampling_policy["thresholds_m"]) == (0.2, 0.1, 0.05)
 
     def test_shifted_map_has_positive_chamfer(self):
         rng = np.random.default_rng(1)
@@ -59,6 +64,10 @@ class TestVoxelEntropyMapEvaluate:
         out = VoxelEntropyMapEvaluateStrategy().evaluate(req)
         assert out.strategy == "voxel_entropy"
         assert "mean_neighbor_entropy_bits" in out.metrics
+        assert out.metric_family == "reference_free_voxel_consistency"
+        assert out.reference_required is False
+        assert out.mode == "voxelized"
+        assert out.sampling_policy["structure_voxel_size_m"] == pytest.approx(0.25)
 
     def test_rejects_reference_points(self):
         rng = np.random.default_rng(3)

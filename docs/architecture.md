@@ -57,6 +57,36 @@ cloudanalyzer/
 4. **Logging on stderr** — Progress info goes to stderr via `logging`, keeping stdout clean for `--format-json` piping
 5. **No global state** — Each function is stateless and takes explicit arguments unless an experiment explicitly tests a stateful design
 
+## Core Promotion Checklist
+
+An experiment slice graduates from `ca.experiments.<slice>/` to `ca.core.<slice>.py` only when **all** of the following are true. The checklist is enforced socially (PR review), not yet mechanically.
+
+- [ ] Stable request / result contract is documented in `docs/interfaces.md` (regenerated via `ca.experiments.process_docs`).
+- [ ] At least **three fixtures**: one synthetic, one small public sample, one regression fixture covering a past failure mode.
+- [ ] JSON output is deterministic across re-runs on the same input.
+- [ ] At least one path through `ca check` can consume the result (or the slice declares it is diagnostic-only).
+- [ ] Failure cases produce triage-able output (named error / metric, not just an exception).
+- [ ] A documented performance budget (target runtime + peak memory on the largest fixture) is recorded in `docs/decisions.md`.
+- [ ] `docs/decisions.md` records why this implementation was adopted and what the others traded off.
+- [ ] Losing implementations are either archived under `experiments/<slice>/archive/` or deleted within 1–2 releases of promotion.
+- [ ] Evaluation harness and fixtures stay in `experiments/<slice>/` even after promotion — they double as regression tests.
+
+A slice that fails any item stays in `ca.experiments` and keeps being re-benchmarked by `process_docs`.
+
+## Evaluation Command Roles
+
+CloudAnalyzer exposes several evaluation entry points that answer different questions. They are intentionally separate so that downstream consumers (CI gates, batch reports, library callers) can pick the right one without overloading a single command.
+
+| Command | Question | Input shape | Notes |
+|---|---|---|---|
+| `ca evaluate` | Preservation QA — did processing degrade the artifact relative to its source? | Two artifacts of the same kind | Used by `--evaluate` on processing commands; uses F1 / Chamfer / AUC curves |
+| `ca map-evaluate` | Map-quality QA — how close is a reconstructed map to a reference map? | Estimated map + reference map | MapEval-inspired accuracy/completeness@t; experimental, not yet in `ca.core` |
+| `ca run-evaluate` | SLAM-run QA — is one run acceptable end-to-end (map + trajectory)? | Map pair + trajectory pair | Combines map evaluation and trajectory evaluation; emits a combined HTML report |
+| `ca check` | Gate orchestration — run all configured gates and report pass/fail with triage | `cloudanalyzer.yaml` | Chains `evaluate`, `map-evaluate`, `traj-evaluate`, `loop-closure-report`, `ground-evaluate`, perception evals; produces config-driven exit codes |
+| `ca loop-closure-report` | Manual loop-closure QA — did closing the loop actually improve the map / trajectory? | Before / after / reference artifacts (+ optional posegraph session) | Wires `ca.evaluate` + trajectory evaluation + `posegraph-validate` |
+
+Naming heuristic: `evaluate` ≈ preservation, `map-evaluate` ≈ map quality, `run-evaluate` ≈ run quality, `check` ≈ gate. When unsure, start from `ca check` with a config snippet — it picks the right primitive per check.
+
 ## Dependencies
 
 | Package | Purpose |

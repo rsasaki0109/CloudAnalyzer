@@ -54,7 +54,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **40 subcommands** |
+| CLI | Limited | None | None | **43 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -162,6 +162,19 @@ ca sample map.pcd -o sampled.pcd -n 100000 --evaluate
 # Pipeline: filter -> downsample -> evaluate in one command
 ca pipeline noisy.pcd reference.pcd -o production.pcd -v 0.2
 ```
+
+## Which Evaluation Command Does What
+
+The CLI exposes several evaluation entry points. They look related but answer different questions and should be used in different situations.
+
+| Command | Question it answers | Typical input | When to reach for it |
+|---|---|---|---|
+| `ca evaluate` | "Did post-processing degrade the artifact compared to its source?" | Two artifacts of the same kind (post-processed vs. original / baseline) | Voxel downsampling, filtering, sampling, compression round-trips |
+| `ca map-evaluate` | "How well does the reconstructed map match a survey / GT map?" | Estimated map + reference map (MapEval-style accuracy/completeness@t) | SLAM map quality vs. survey scan, before/after loop closure maps |
+| `ca run-evaluate` | "Is this SLAM run acceptable end-to-end (map + trajectory)?" | Map pair + trajectory pair | Per-run regression gate for a localization / mapping pipeline |
+| `ca check` | "Run all configured gates and report pass/fail with triage." | `cloudanalyzer.yaml` | CI / pre-merge gate orchestration; chains `evaluate`, `map-evaluate`, `traj-evaluate`, `loop-closure-report`, `ground-evaluate`, etc. |
+
+Rule of thumb: `ca evaluate` is for **preservation QA** between two snapshots of the same artifact, `ca map-evaluate` is for **map-quality QA** against a reference map, `ca run-evaluate` is for **SLAM-run QA**, and `ca check` is the **gate orchestrator** that ties them together for CI.
 
 ## Metrics
 

@@ -55,7 +55,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **51 subcommands** |
+| CLI | Limited | None | None | **52 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -200,7 +200,26 @@ ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
   --gate min_auc=0.97 --gate max_rpe=none
 ```
 
-A suite manifest is a small YAML pointing at reference artifacts and quality-gate thresholds; the `synthetic-figure8` example is regenerated deterministically by `scripts/build_synthetic_slam_suite.py` and is intended as a template for adding real public benchmarks (Newer College, KITTI, Hilti, ...).
+A suite manifest is a small YAML pointing at reference artifacts and quality-gate thresholds; the `synthetic-figure8` example is regenerated deterministically by `scripts/build_synthetic_slam_suite.py`.
+
+For real public datasets that ship multi-million-point reference maps, use `ca benchmark init` (or a dataset-specific wrapper under `scripts/`) to build a `suite.yaml` from a local download:
+
+```bash
+# Generic: build a suite from any reference map + trajectory on disk.
+ca benchmark init /tmp/my-suite \
+  --name my-suite --description "My SLAM regression suite" \
+  --reference-map /data/site/gt_map.pcd \
+  --reference-trajectory /data/site/gt_poses.tum \
+  --voxel 0.10 --max-poses 2000 \
+  --gate min_auc=0.95 --gate max_ate=0.30
+
+# Newer College Dataset (CC-BY-NC-SA 4.0): prep a benchmark suite from a local download.
+# See benchmarks/slam/newer-college-mini/README.md for the full workflow.
+python scripts/prepare_newer_college_mini.py \
+  --reference-map  /data/newer-college/short_experiment/gt_map.pcd \
+  --reference-trajectory /data/newer-college/short_experiment/gt_poses.tum \
+  --sequence short_experiment
+```
 
 ### Cross-Representation Geometry QA
 

@@ -14,6 +14,7 @@ from ca.benchmark import (
     BenchmarkSuite,
     evaluate_benchmark_run,
     load_benchmark_suite,
+    materialize_suite,
 )
 from cloudanalyzer_cli.main import app
 
@@ -172,3 +173,205 @@ def test_cli_eval_gate_override_fails(synthetic_suite_dir: Path) -> None:
     )
     assert result.exit_code == 1, result.output
     assert "FAIL" in result.output
+
+
+def _count_tum_lines(path: Path) -> int:
+    return sum(
+        1
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    )
+
+
+def test_materialize_suite_round_trip(
+    synthetic_suite_dir: Path, tmp_path: Path
+) -> None:
+    ref_map = synthetic_suite_dir / "reference" / "map.pcd"
+    ref_traj = synthetic_suite_dir / "reference" / "trajectory.tum"
+    out_dir = tmp_path / "suite"
+
+    suite = materialize_suite(
+        out_dir,
+        name="round-trip",
+        description="Round-trip test suite",
+        reference_map=ref_map,
+        reference_trajectory=ref_traj,
+        sequence_name="seq0",
+        sequence_description="Seq0 description",
+        license="MIT (synthetic)",
+        voxel_size=0.0,  # plain copy
+        max_poses=None,
+        gate={"min_auc": 0.9, "max_ate": 0.4, "not_a_key": 1.0},
+    )
+
+    # suite.yaml landed where we asked
+    assert suite.source_path == (out_dir / "suite.yaml").resolve()
+    assert suite.name == "round-trip"
+    assert "seq0" in suite.sequences
+
+    # Reference files actually exist on disk and contain the source bytes.
+    seq = suite.sequences["seq0"]
+    assert seq.reference_map_path.is_file()
+    assert seq.reference_trajectory_path.is_file()
+    assert seq.reference_map_path.read_bytes() == ref_map.read_bytes()
+    assert _count_tum_lines(seq.reference_trajectory_path) == _count_tum_lines(ref_traj)
+
+    # Unknown gate keys are dropped silently; known ones are preserved.
+    assert "not_a_key" not in suite.gate
+    assert suite.gate["min_auc"] == pytest.approx(0.9)
+    assert suite.gate["max_ate"] == pytest.approx(0.4)
+
+
+def test_materialize_suite_voxel_downsample_shrinks_map(
+    synthetic_suite_dir: Path, tmp_path: Path
+) -> None:
+    import open3d as o3d
+
+    ref_map = synthetic_suite_dir / "reference" / "map.pcd"
+    ref_traj = synthetic_suite_dir / "reference" / "trajectory.tum"
+
+    original_points = len(o3d.io.read_point_cloud(str(ref_map)).points)
+    assert original_points > 0
+
+    suite = materialize_suite(
+        tmp_path / "suite",
+        name="voxel",
+        description="Voxel downsample test",
+        reference_map=ref_map,
+        reference_trajectory=ref_traj,
+        voxel_size=2.0,
+    )
+    seq = suite.resolve_sequence(None)
+    downsampled_points = len(o3d.io.read_point_cloud(str(seq.reference_map_path)).points)
+    assert 0 < downsampled_points < original_points
+
+
+def test_materialize_suite_max_poses_subsamples(
+    synthetic_suite_dir: Path, tmp_path: Path
+) -> None:
+    ref_map = synthetic_suite_dir / "reference" / "map.pcd"
+    ref_traj = synthetic_suite_dir / "reference" / "trajectory.tum"
+    original_lines = _count_tum_lines(ref_traj)
+    assert original_lines >= 50  # synthetic suite generates 200 poses
+
+    suite = materialize_suite(
+        tmp_path / "suite",
+        name="subsample",
+        description="Trajectory subsample test",
+        reference_map=ref_map,
+        reference_trajectory=ref_traj,
+        max_poses=20,
+    )
+    seq = suite.resolve_sequence(None)
+    kept = _count_tum_lines(seq.reference_trajectory_path)
+    assert kept == 20
+
+
+def test_materialize_suite_with_sample_outputs(
+    synthetic_suite_dir: Path, tmp_path: Path
+) -> None:
+    ref_map = synthetic_suite_dir / "reference" / "map.pcd"
+    ref_traj = synthetic_suite_dir / "reference" / "trajectory.tum"
+    sample_map = synthetic_suite_dir / "sample_outputs" / "map_pass.pcd"
+    sample_traj = synthetic_suite_dir / "sample_outputs" / "trajectory_pass.tum"
+
+    suite = materialize_suite(
+        tmp_path / "suite",
+        name="with-sample",
+        description="Sample outputs test",
+        reference_map=ref_map,
+        reference_trajectory=ref_traj,
+        sample_map=sample_map,
+        sample_trajectory=sample_traj,
+        gate={"min_auc": 0.95},
+    )
+    seq = suite.resolve_sequence(None)
+    assert seq.sample_map_path is not None and seq.sample_map_path.exists()
+    assert (
+        seq.sample_trajectory_path is not None and seq.sample_trajectory_path.exists()
+    )
+
+    # End-to-end: the materialized suite is immediately runnable via evaluate_benchmark_run.
+    result = evaluate_benchmark_run(
+        suite,
+        str(seq.sample_map_path),
+        str(seq.sample_trajectory_path),
+    )
+    assert result["benchmark"]["suite"] == "with-sample"
+    assert result["overall_quality_gate"]["passed"] is True
+
+
+def test_prepare_newer_college_mini_smoke(
+    synthetic_suite_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Drive `prepare_newer_college_mini.py` against synthetic GT files.
+
+    The script itself is a thin wrapper around `materialize_suite`; we
+    only need to confirm the CLI plumbing (arg parsing, default gate,
+    description rendering) produces a loadable suite.
+    """
+    import importlib.util
+
+    script_path = REPO_ROOT / "scripts" / "prepare_newer_college_mini.py"
+    spec = importlib.util.spec_from_file_location("prepare_ncm", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    output = tmp_path / "ncm-suite"
+    argv = [
+        "prepare_newer_college_mini.py",
+        "--reference-map",
+        str(synthetic_suite_dir / "reference" / "map.pcd"),
+        "--reference-trajectory",
+        str(synthetic_suite_dir / "reference" / "trajectory.tum"),
+        "--sequence",
+        "short_experiment",
+        "--voxel",
+        "0.5",
+        "--max-poses",
+        "50",
+        "--gate",
+        "min_auc=0.80",
+        "--output",
+        str(output),
+    ]
+    monkeypatch.setattr(sys, "argv", argv)
+    module.main()
+
+    suite = load_benchmark_suite(output / "suite.yaml")
+    assert suite.name == "newer-college-mini"
+    assert "short_experiment" in suite.sequences
+    seq = suite.sequences["short_experiment"]
+    assert seq.reference_map_path.exists()
+    assert seq.reference_trajectory_path.exists()
+    # Default gate from the wrapper, then overridden via --gate.
+    assert suite.gate["min_auc"] == pytest.approx(0.80)
+    assert suite.gate["max_chamfer"] == pytest.approx(0.30)  # wrapper default
+
+
+def test_prepare_newer_college_mini_rejects_unknown_gate(
+    synthetic_suite_dir: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import importlib.util
+
+    script_path = REPO_ROOT / "scripts" / "prepare_newer_college_mini.py"
+    spec = importlib.util.spec_from_file_location("prepare_ncm_bad", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    argv = [
+        "prepare_newer_college_mini.py",
+        "--reference-map",
+        str(synthetic_suite_dir / "reference" / "map.pcd"),
+        "--reference-trajectory",
+        str(synthetic_suite_dir / "reference" / "trajectory.tum"),
+        "--gate",
+        "not_a_real_gate=0.5",
+        "--output",
+        str(tmp_path / "bad-suite"),
+    ]
+    monkeypatch.setattr(sys, "argv", argv)
+    with pytest.raises(SystemExit, match="unknown gate key"):
+        module.main()

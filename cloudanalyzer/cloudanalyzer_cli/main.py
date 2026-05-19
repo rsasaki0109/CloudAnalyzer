@@ -58,6 +58,7 @@ from ca.benchmark import (
     GATE_KEYS,
     evaluate_benchmark_run,
     load_benchmark_suite,
+    materialize_suite,
 )
 from ca.bundle import (
     diff_bundles,
@@ -2417,6 +2418,114 @@ def benchmark_eval_cmd(
     overall = result["overall_quality_gate"]
     if overall is not None and not overall["passed"]:
         raise typer.Exit(code=1)
+
+
+@benchmark_app.command("init")
+def benchmark_init_cmd(
+    suite_dir: str = typer.Argument(..., help="Directory to materialize the suite into (will be created)"),
+    name: str = typer.Option(..., "--name", help="Suite name written to suite.yaml"),
+    description: str = typer.Option(..., "--description", help="Suite description"),
+    reference_map: str = typer.Option(..., "--reference-map", help="Path to the reference (GT) point cloud map"),
+    reference_trajectory: str = typer.Option(
+        ...,
+        "--reference-trajectory",
+        help="Path to the reference (GT) trajectory in TUM format",
+    ),
+    sequence: str = typer.Option(
+        "default",
+        "--sequence",
+        help="Sequence name inside the suite manifest",
+    ),
+    sequence_description: Optional[str] = typer.Option(
+        None,
+        "--sequence-description",
+        help="Per-sequence description (defaults to the suite description)",
+    ),
+    license: Optional[str] = typer.Option(
+        None,
+        "--license",
+        help="License string written into suite.yaml (e.g. dataset attribution)",
+    ),
+    voxel: float = typer.Option(
+        0.0,
+        "--voxel",
+        help="Voxel size (meters) for downsampling the reference map; 0 = no downsample",
+    ),
+    max_poses: Optional[int] = typer.Option(
+        None,
+        "--max-poses",
+        help="Keep at most this many evenly-spaced trajectory poses; default = keep all",
+    ),
+    sample_map: Optional[str] = typer.Option(
+        None,
+        "--sample-map",
+        help="Optional sample-output map to bundle for smoke tests",
+    ),
+    sample_trajectory: Optional[str] = typer.Option(
+        None,
+        "--sample-trajectory",
+        help="Optional sample-output trajectory to bundle for smoke tests",
+    ),
+    gate_values: Optional[List[str]] = typer.Option(
+        None,
+        "--gate",
+        help="Gate threshold as key=value (repeatable): --gate min_auc=0.97 --gate max_chamfer=0.05",
+    ),
+) -> None:
+    """Materialize a SLAM benchmark suite from raw GT data on disk."""
+    gate: dict[str, float] = {}
+    if gate_values:
+        for raw in gate_values:
+            if "=" not in raw:
+                typer.echo(f"Error: --gate expects key=value; got {raw!r}", err=True)
+                raise typer.Exit(code=1)
+            key, _, value = raw.partition("=")
+            key = key.strip()
+            if key not in GATE_KEYS:
+                typer.echo(
+                    f"Error: unknown gate key {key!r}. Allowed: {', '.join(GATE_KEYS)}",
+                    err=True,
+                )
+                raise typer.Exit(code=1)
+            try:
+                gate[key] = float(value)
+            except ValueError:
+                typer.echo(f"Error: --gate {key} must be numeric; got {value!r}", err=True)
+                raise typer.Exit(code=1)
+
+    try:
+        suite = materialize_suite(
+            suite_dir,
+            name=name,
+            description=description,
+            reference_map=reference_map,
+            reference_trajectory=reference_trajectory,
+            sequence_name=sequence,
+            sequence_description=sequence_description,
+            license=license,
+            voxel_size=voxel,
+            max_poses=max_poses,
+            gate=gate or None,
+            sample_map=sample_map,
+            sample_trajectory=sample_trajectory,
+        )
+    except (FileNotFoundError, ValueError, RuntimeError) as exc:
+        _handle_error(exc)
+
+    seq = suite.resolve_sequence(sequence)
+    typer.echo(f"Suite:               {suite.name}")
+    typer.echo(f"Manifest:            {suite.source_path}")
+    typer.echo(f"Sequence:            {seq.name}")
+    typer.echo(f"Reference map:       {seq.reference_map_path}")
+    typer.echo(f"Reference trajectory: {seq.reference_trajectory_path}")
+    if voxel > 0:
+        typer.echo(f"Voxel downsample:    {voxel} m")
+    if max_poses is not None:
+        typer.echo(f"Max poses kept:      {max_poses}")
+    if suite.gate:
+        typer.echo("Gate:")
+        for gate_key, gate_value in suite.gate.items():
+            typer.echo(f"  {gate_key}: {gate_value}")
 
 
 @app.command("report-pr-comment")

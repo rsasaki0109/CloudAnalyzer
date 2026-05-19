@@ -43,6 +43,24 @@ ca bundle unpack qa/bundle.zip --output qa/restored/
 
 Rejects archive entries with absolute paths or `..` traversal up front, so it is safe to point at bundles from untrusted sources.
 
+### `ca bundle diff <old.zip> <new.zip>`
+
+Compare two bundles and render a Markdown report. Reuses the same metric / delta layout as `ca report-pr-comment`, so the diff drops straight into a PR comment or a dashboard table.
+
+```bash
+ca bundle diff qa/baseline.zip qa/bundle.zip --output qa/diff.md
+ca bundle diff qa/baseline.zip qa/bundle.zip --format-json | jq '.warnings'
+```
+
+| Option | Purpose |
+|---|---|
+| `--output <file>` / `-o` | Write Markdown to a file instead of stdout |
+| `--format-json` | Emit the structured diff dict (`old`, `new`, `warnings`) for tooling |
+
+Convention: `<old>` is the baseline (e.g. last release), `<new>` is the current run. The Markdown header shows a metadata-comparison table (project / commit / PR / runner / dataset notes) with `⚠️` next to each field whose value differs; then a `**Metadata divergence**` list highlights the mismatches; then the `## CloudAnalyzer QA:` block (identical to what `ca report-pr-comment` renders) shows the per-metric / per-check deltas.
+
+`ca bundle diff` rejects diffs across different `summary_kind` values (a `ca check` bundle vs. a single-run bundle) because the metric layouts are not comparable. Metadata mismatches (different commit, different PR, different notes) are surfaced as **warnings** rather than errors so reviewers can decide whether the comparison is apples-to-apples.
+
 ### `ca bundle show <bundle.zip>`
 
 Print metadata and table of contents without extracting.

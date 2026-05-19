@@ -349,12 +349,174 @@ def show_bundle(bundle_path: str | Path) -> dict[str, Any]:
     }
 
 
+# --------------------------------------------------------------------- diff
+
+
+_METADATA_COMPARE_FIELDS: tuple[str, ...] = (
+    "summary_kind",
+    "project",
+    "git_commit",
+    "pr_number",
+    "runner_id",
+    "cloudanalyzer_version",
+)
+
+
+def _read_bundle_payload(bundle_path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Open a bundle in-place and return its (metadata, summary) JSON blobs."""
+    with zipfile.ZipFile(bundle_path, mode="r") as zf:
+        names = zf.namelist()
+        if METADATA_FILENAME not in names:
+            raise ValueError(f"{bundle_path}: missing {METADATA_FILENAME}")
+        if SUMMARY_FILENAME not in names:
+            raise ValueError(f"{bundle_path}: missing {SUMMARY_FILENAME}")
+        with zf.open(METADATA_FILENAME) as fp:
+            metadata = json.loads(io.TextIOWrapper(fp, encoding="utf-8").read())
+        with zf.open(SUMMARY_FILENAME) as fp:
+            summary = json.loads(io.TextIOWrapper(fp, encoding="utf-8").read())
+    if not isinstance(metadata, dict) or not isinstance(summary, dict):
+        raise ValueError(f"{bundle_path}: metadata/summary must be JSON objects")
+    return metadata, summary
+
+
+def _metadata_mismatches(
+    old_meta: Mapping[str, Any], new_meta: Mapping[str, Any]
+) -> list[str]:
+    """Return a list of human-readable mismatch warnings between two metadata blobs."""
+    warnings: list[str] = []
+    for key in _METADATA_COMPARE_FIELDS:
+        old_value = old_meta.get(key)
+        new_value = new_meta.get(key)
+        if old_value != new_value:
+            warnings.append(
+                f"{key}: old={old_value!r} new={new_value!r}"
+            )
+    # Notes are dicts; compare keys + values explicitly.
+    old_notes = old_meta.get("notes") or {}
+    new_notes = new_meta.get("notes") or {}
+    if isinstance(old_notes, Mapping) and isinstance(new_notes, Mapping):
+        keys = set(old_notes) | set(new_notes)
+        for key in sorted(keys):
+            if old_notes.get(key) != new_notes.get(key):
+                warnings.append(
+                    f"notes.{key}: old={old_notes.get(key)!r} new={new_notes.get(key)!r}"
+                )
+    return warnings
+
+
+def diff_bundles(
+    old_bundle: str | Path,
+    new_bundle: str | Path,
+) -> dict[str, Any]:
+    """Compare two QA bundles and return a structured diff.
+
+    The returned dict has three top-level keys:
+
+    - ``old`` / ``new``: ``{"metadata": ..., "summary": ...}`` for each bundle.
+    - ``warnings``: human-readable strings flagging metadata divergence
+      (different project / commit / dataset notes etc.) — non-fatal,
+      surfaced so reviewers can decide if the comparison is apples-to-apples.
+
+    Both bundles must use the same ``summary_kind``; mixing
+    ``check_suite`` and ``single_run`` is rejected because the underlying
+    metric layouts are not comparable.
+    """
+    old_path = Path(old_bundle).resolve()
+    new_path = Path(new_bundle).resolve()
+    if not old_path.is_file():
+        raise FileNotFoundError(old_path)
+    if not new_path.is_file():
+        raise FileNotFoundError(new_path)
+
+    old_meta, old_summary = _read_bundle_payload(old_path)
+    new_meta, new_summary = _read_bundle_payload(new_path)
+
+    old_kind = str(old_meta.get("summary_kind", "unknown"))
+    new_kind = str(new_meta.get("summary_kind", "unknown"))
+    if old_kind != new_kind:
+        raise ValueError(
+            f"Cannot diff bundles with different summary_kind: "
+            f"old={old_kind!r}, new={new_kind!r}"
+        )
+
+    warnings = _metadata_mismatches(old_meta, new_meta)
+
+    return {
+        "old": {
+            "bundle_path": str(old_path),
+            "metadata": old_meta,
+            "summary": old_summary,
+        },
+        "new": {
+            "bundle_path": str(new_path),
+            "metadata": new_meta,
+            "summary": new_summary,
+        },
+        "warnings": warnings,
+    }
+
+
+def render_diff_markdown(diff: Mapping[str, Any]) -> str:
+    """Render a Markdown report from :func:`diff_bundles` output.
+
+    Reuses :func:`ca.pr_comment.build_pr_comment` for the per-check /
+    per-metric delta tables so the diff and the PR comment share an
+    identical metric layout.
+    """
+    from ca.pr_comment import build_pr_comment  # local import: avoid cycles
+
+    old = diff["old"]
+    new = diff["new"]
+    old_meta = old["metadata"]
+    new_meta = new["metadata"]
+
+    lines: list[str] = ["## CloudAnalyzer Bundle Diff", ""]
+    lines.append(f"- Old: `{old['bundle_path']}`")
+    lines.append(f"- New: `{new['bundle_path']}`")
+    lines.append("")
+
+    rows = [
+        ("Created at", old_meta.get("created_at"), new_meta.get("created_at")),
+        ("Project", old_meta.get("project"), new_meta.get("project")),
+        ("Git commit", old_meta.get("git_commit"), new_meta.get("git_commit")),
+        ("PR number", old_meta.get("pr_number"), new_meta.get("pr_number")),
+        ("Runner id", old_meta.get("runner_id"), new_meta.get("runner_id")),
+        ("Summary kind", old_meta.get("summary_kind"), new_meta.get("summary_kind")),
+        (
+            "CloudAnalyzer version",
+            old_meta.get("cloudanalyzer_version"),
+            new_meta.get("cloudanalyzer_version"),
+        ),
+    ]
+    lines.append("| Field | Old | New |")
+    lines.append("|---|---|---|")
+    for label, ov, nv in rows:
+        marker = " ⚠️" if ov != nv and not (ov is None and nv is None) else ""
+        lines.append(f"| {label}{marker} | {ov if ov is not None else '—'} | {nv if nv is not None else '—'} |")
+    lines.append("")
+
+    if diff.get("warnings"):
+        lines.append("**Metadata divergence:**")
+        for warning in diff["warnings"]:
+            lines.append(f"- {warning}")
+        lines.append("")
+
+    lines.append("---")
+    lines.append("")
+    summary_md = build_pr_comment(new["summary"], baseline=old["summary"])
+    lines.append(summary_md.rstrip())
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
 __all__ = [
     "BUNDLE_FILENAME",
     "BUNDLE_VERSION",
     "BundleArtifact",
     "BundleMetadata",
+    "diff_bundles",
     "pack_bundle",
+    "render_diff_markdown",
     "show_bundle",
     "unpack_bundle",
 ]

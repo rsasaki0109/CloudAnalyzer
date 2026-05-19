@@ -55,7 +55,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **52 subcommands** |
+| CLI | Limited | None | None | **53 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -430,6 +430,11 @@ ca bundle unpack qa/bundle.zip --output qa/restored/
 # PR comment or a dashboard.
 ca bundle diff qa/baseline.zip qa/bundle.zip --output qa/diff.md
 ca bundle diff qa/baseline.zip qa/bundle.zip --format-json | jq '.warnings'
+
+# Trend gate metrics across many bundles (sorted by metadata.created_at).
+# Works on a rolling archive populated by `ca bundle pack` over time.
+ca history --from-dir qa/archive/ --output qa/history.md
+ca history --from-dir qa/archive/ --format-json > qa/trend.json
 ```
 
 The bundle layout (versioned, stable across CloudAnalyzer releases):

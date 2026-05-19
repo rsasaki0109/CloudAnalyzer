@@ -322,9 +322,9 @@ def _subsample_tum(source: Path, target: Path, max_poses: int | None) -> None:
         # Evenly-spaced indices; always keep first and last.
         import numpy as np
 
-        indices = np.linspace(0, len(lines) - 1, num=max_poses).round().astype(int)
-        indices = sorted(set(int(i) for i in indices))
-        kept = [lines[i] for i in indices]
+        raw_indices = np.linspace(0, len(lines) - 1, num=max_poses).round().astype(int)
+        keep_indices = sorted({int(i) for i in raw_indices})
+        kept = [lines[i] for i in keep_indices]
     else:
         kept = lines
     target.write_text("\n".join(kept) + "\n", encoding="utf-8")

@@ -83,6 +83,7 @@ CloudAnalyzer exposes several evaluation entry points that answer different ques
 | `ca map-evaluate` | Map-quality QA — how close is a reconstructed map to a reference map? | Estimated map + reference map | MapEval-inspired accuracy/completeness@t; experimental, not yet in `ca.core` |
 | `ca run-evaluate` | SLAM-run QA — is one run acceptable end-to-end (map + trajectory)? | Map pair + trajectory pair | Combines map evaluation and trajectory evaluation; emits a combined HTML report |
 | `ca check` | Gate orchestration — run all configured gates and report pass/fail with triage | `cloudanalyzer.yaml` | Chains `evaluate`, `map-evaluate`, `traj-evaluate`, `loop-closure-report`, `ground-evaluate`, perception evals; produces config-driven exit codes |
+| `ca benchmark eval` | Frozen-suite SLAM QA — does this run pass a published reference + gate? | Benchmark suite YAML + user map + user trajectory | Wraps `run-evaluate` against a suite's fixed reference + gate so swapping SLAM pipelines is one command |
 | `ca loop-closure-report` | Manual loop-closure QA — did closing the loop actually improve the map / trajectory? | Before / after / reference artifacts (+ optional posegraph session) | Wires `ca.evaluate` + trajectory evaluation + `posegraph-validate` |
 
 Naming heuristic: `evaluate` ≈ preservation, `map-evaluate` ≈ map quality, `run-evaluate` ≈ run quality, `check` ≈ gate. When unsure, start from `ca check` with a config snippet — it picks the right primitive per check.

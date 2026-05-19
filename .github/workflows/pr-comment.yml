@@ -1,0 +1,203 @@
+name: PR Comment
+
+# Reusable workflow: render a CloudAnalyzer summary as Markdown and post it
+# to the pull request that triggered the caller. Updates an existing
+# comment marked by `marker` instead of stacking duplicates on re-runs.
+
+on:
+  workflow_call:
+    inputs:
+      summary_path:
+        description: "Path to the CloudAnalyzer summary JSON, relative to the caller repository root"
+        required: true
+        type: string
+      baseline_summary_path:
+        description: "Optional baseline JSON of the same shape for ↑/↓ deltas"
+        required: false
+        type: string
+        default: ""
+      project:
+        description: "Project label shown in the PR comment header (overrides the JSON's `project` field)"
+        required: false
+        type: string
+        default: ""
+      marker:
+        description: "Hidden marker used to find and update an existing comment on re-runs"
+        required: false
+        type: string
+        default: "cloudanalyzer-qa"
+      pr_number:
+        description: "PR number to comment on (defaults to the triggering pull_request number)"
+        required: false
+        type: string
+        default: ""
+      dry_run:
+        description: "If true, print the rendered Markdown to the job log without posting"
+        required: false
+        type: boolean
+        default: false
+      cloudanalyzer_repository:
+        description: "Repository used when CloudAnalyzer must be installed from GitHub"
+        required: false
+        type: string
+        default: "rsasaki0109/CloudAnalyzer"
+      cloudanalyzer_ref:
+        description: "Git ref used when CloudAnalyzer must be installed from GitHub"
+        required: false
+        type: string
+        default: "main"
+  workflow_dispatch:
+    inputs:
+      summary_path:
+        description: "Path to the CloudAnalyzer summary JSON, relative to the repository root"
+        required: true
+      baseline_summary_path:
+        description: "Optional baseline JSON of the same shape"
+        required: false
+        default: ""
+      project:
+        description: "Project label shown in the PR comment header"
+        required: false
+        default: ""
+      marker:
+        description: "Hidden marker used to find and update an existing comment on re-runs"
+        required: false
+        default: "cloudanalyzer-qa"
+      pr_number:
+        description: "PR number to comment on"
+        required: false
+        default: ""
+      dry_run:
+        description: "Print Markdown without posting"
+        required: false
+        default: "true"
+      cloudanalyzer_repository:
+        description: "Repository used when CloudAnalyzer must be installed from GitHub"
+        required: false
+        default: "rsasaki0109/CloudAnalyzer"
+      cloudanalyzer_ref:
+        description: "Git ref used when CloudAnalyzer must be installed from GitHub"
+        required: false
+        default: "main"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    env:
+      CALLER_ROOT: ${{ github.workspace }}/workspace
+      MARKER: ${{ inputs.marker }}
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: workspace
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install CloudAnalyzer
+        env:
+          CLOUDANALYZER_REPOSITORY: ${{ inputs.cloudanalyzer_repository }}
+          CLOUDANALYZER_REF: ${{ inputs.cloudanalyzer_ref }}
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f "${CALLER_ROOT}/cloudanalyzer/pyproject.toml" ] && [ -d "${CALLER_ROOT}/cloudanalyzer/ca" ]; then
+            pip install -e "${CALLER_ROOT}/cloudanalyzer"
+          else
+            pip install "git+https://github.com/${CLOUDANALYZER_REPOSITORY}.git@${CLOUDANALYZER_REF}#subdirectory=cloudanalyzer"
+          fi
+
+      - name: Resolve PR number
+        id: resolve_pr
+        env:
+          INPUT_PR_NUMBER: ${{ inputs.pr_number }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          if [ -n "${INPUT_PR_NUMBER}" ]; then
+            echo "pr=${INPUT_PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${EVENT_PR_NUMBER}" ]; then
+            echo "pr=${EVENT_PR_NUMBER}" >> "$GITHUB_OUTPUT"
+          else
+            echo "pr=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Render PR comment Markdown
+        env:
+          SUMMARY_PATH: ${{ inputs.summary_path }}
+          BASELINE_PATH: ${{ inputs.baseline_summary_path }}
+          PROJECT: ${{ inputs.project }}
+        run: |
+          summary_abs="${CALLER_ROOT}/${SUMMARY_PATH}"
+          if [ ! -f "${summary_abs}" ]; then
+            echo "::error::summary_path not found: ${summary_abs}"
+            exit 1
+          fi
+          extra=()
+          if [ -n "${BASELINE_PATH}" ]; then
+            baseline_abs="${CALLER_ROOT}/${BASELINE_PATH}"
+            if [ ! -f "${baseline_abs}" ]; then
+              echo "::error::baseline_summary_path not found: ${baseline_abs}"
+              exit 1
+            fi
+            extra+=(--baseline "${baseline_abs}")
+          fi
+          if [ -n "${PROJECT}" ]; then
+            extra+=(--project "${PROJECT}")
+          fi
+          mkdir -p /tmp/cloudanalyzer-pr-comment
+          ca report-pr-comment "${summary_abs}" "${extra[@]}" \
+            --output /tmp/cloudanalyzer-pr-comment/body.md
+          # Prepend the marker so we can find this comment on re-runs.
+          {
+            printf '<!-- %s -->\n' "${MARKER}"
+            cat /tmp/cloudanalyzer-pr-comment/body.md
+          } > /tmp/cloudanalyzer-pr-comment/body.with-marker.md
+          mv /tmp/cloudanalyzer-pr-comment/body.with-marker.md /tmp/cloudanalyzer-pr-comment/body.md
+
+      - name: Print Markdown to job log
+        run: |
+          echo "## Rendered PR comment"
+          echo
+          sed -e 's/^/  /' /tmp/cloudanalyzer-pr-comment/body.md
+
+      - name: Post or update PR comment
+        if: ${{ inputs.dry_run == false || inputs.dry_run == 'false' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ steps.resolve_pr.outputs.pr }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ -z "${PR}" ]; then
+            echo "::warning::No PR number available; skipping comment post (dry_run=false). Set inputs.pr_number or trigger on pull_request."
+            exit 0
+          fi
+          marker_pattern="<!-- ${MARKER} -->"
+          existing_id=$(gh api \
+            "repos/${REPO}/issues/${PR}/comments" \
+            --paginate \
+            --jq "[.[] | select(.body | test(\"${marker_pattern}\"; \"l\"))] | .[0].id // empty")
+          if [ -n "${existing_id}" ]; then
+            echo "Updating existing comment ${existing_id}"
+            gh api \
+              -X PATCH \
+              "repos/${REPO}/issues/comments/${existing_id}" \
+              -f body="$(cat /tmp/cloudanalyzer-pr-comment/body.md)"
+          else
+            echo "Posting new comment on PR #${PR}"
+            gh pr comment "${PR}" \
+              --repo "${REPO}" \
+              --body-file /tmp/cloudanalyzer-pr-comment/body.md
+          fi
+
+      - name: Upload rendered Markdown
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: cloudanalyzer-pr-comment
+          path: /tmp/cloudanalyzer-pr-comment/body.md
+          if-no-files-found: warn

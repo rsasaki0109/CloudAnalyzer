@@ -396,7 +396,28 @@ jobs:
 
 For external use, pin a tag or commit SHA instead of `@main`.
 
-To post a PR comment directly from a workflow, run `ca report-pr-comment` and pipe the Markdown to `gh pr comment`:
+Or chain QA → PR comment with the bundled reusable workflow. The PR-comment job idempotently updates the same comment on re-runs (marked by `cloudanalyzer-qa` so a force-push doesn't stack duplicates):
+
+```yaml
+jobs:
+  qa:
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
+    with:
+      config_path: cloudanalyzer.yaml
+
+  pr-comment:
+    needs: qa
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      pull-requests: write
+      contents: read
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/pr-comment.yml@main
+    with:
+      summary_path: qa/summary.json
+      baseline_summary_path: qa/baseline-summary.json   # optional
+```
+
+Or, if you want to call `ca report-pr-comment` yourself inside an existing job:
 
 ```yaml
 - name: Render PR comment

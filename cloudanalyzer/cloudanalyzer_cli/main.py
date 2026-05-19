@@ -73,7 +73,12 @@ from ca.history import (
     render_history_json,
     render_history_markdown,
 )
-from ca.geometry import REPRESENTATIONS, evaluate_geometry
+from ca.geometry import (
+    DEFAULT_MESH_SAMPLES,
+    MESH_SAMPLE_METHODS,
+    REPRESENTATIONS,
+    evaluate_geometry,
+)
 from ca.pr_comment import build_pr_comment
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
@@ -2861,6 +2866,16 @@ def geometry_evaluate_cmd(
         "--voxel",
         help="Voxel-downsample the adapted source before evaluation (meters)",
     ),
+    mesh_samples: int = typer.Option(
+        DEFAULT_MESH_SAMPLES,
+        "--mesh-samples",
+        help=f"Surface-sample this many points from a mesh (default: {DEFAULT_MESH_SAMPLES}); mesh representation only",
+    ),
+    mesh_method: str = typer.Option(
+        "uniform",
+        "--mesh-method",
+        help=f"Mesh sampling strategy ({', '.join(MESH_SAMPLE_METHODS)}); mesh representation only",
+    ),
     thresholds: Optional[str] = typer.Option(
         None,
         "--thresholds",
@@ -2871,10 +2886,16 @@ def geometry_evaluate_cmd(
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
-    """Cross-representation geometry QA (3DGS PLY, mesh vertices, point clouds, ...)."""
+    """Cross-representation geometry QA (3DGS PLY, triangle meshes, point clouds, ...)."""
     if representation not in REPRESENTATIONS:
         typer.echo(
             f"Error: --representation must be one of {', '.join(REPRESENTATIONS)}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    if mesh_method not in MESH_SAMPLE_METHODS:
+        typer.echo(
+            f"Error: --mesh-method must be one of {', '.join(MESH_SAMPLE_METHODS)}",
             err=True,
         )
         raise typer.Exit(code=1)
@@ -2887,6 +2908,8 @@ def geometry_evaluate_cmd(
             opacity_threshold=opacity_threshold,
             voxel_size=voxel,
             thresholds=_parse_thresholds(thresholds),
+            mesh_samples=mesh_samples,
+            mesh_method=mesh_method,
         )
     except (FileNotFoundError, ValueError) as exc:
         _handle_error(exc)

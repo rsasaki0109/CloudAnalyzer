@@ -67,6 +67,12 @@ from ca.bundle import (
     show_bundle,
     unpack_bundle,
 )
+from ca.history import (
+    build_history_series,
+    discover_bundles,
+    render_history_json,
+    render_history_markdown,
+)
 from ca.geometry import REPRESENTATIONS, evaluate_geometry
 from ca.pr_comment import build_pr_comment
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
@@ -2218,6 +2224,81 @@ def bundle_diff_cmd(
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(markdown, encoding="utf-8")
         typer.echo(f"Diff written: {output}")
+    else:
+        typer.echo(markdown, nl=False)
+
+
+@app.command("history")
+def history_cmd(
+    bundles: List[str] = typer.Argument(
+        None,
+        help="Paths to one or more qa_bundle.zip archives (oldest-to-newest is determined "
+        "from metadata.created_at, not the argument order).",
+    ),
+    from_dir: Optional[str] = typer.Option(
+        None,
+        "--from-dir",
+        help="Discover bundles in this directory (matches `*.zip` by default).",
+    ),
+    pattern: str = typer.Option(
+        "*.zip",
+        "--pattern",
+        help="Glob pattern used with --from-dir (default: *.zip)",
+    ),
+    output: Optional[str] = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Write the Markdown history to a file instead of stdout.",
+    ),
+    format_json: bool = typer.Option(
+        False,
+        "--format-json",
+        help="Emit the structured history payload as JSON (suitable for dashboards / scripting).",
+    ),
+) -> None:
+    """Build a time-series view of QA gate metrics across many bundles.
+
+    Reads N `qa_bundle.zip` archives, sorts them by their metadata's
+    `created_at` stamp, and renders a per-metric trend table:
+
+    - `check_suite` bundles: one table per `check_id` with that check's
+      relevant metrics across the timeline.
+    - `single_run` (`ca run-evaluate` / `ca benchmark eval`) bundles: one
+      table covering map AUC / Chamfer / F1 + trajectory ATE / RPE /
+      Drift / Coverage.
+
+    Mixing bundle shapes across the input set is rejected.
+    """
+    paths: list[str] = list(bundles or [])
+    if from_dir:
+        try:
+            discovered = discover_bundles(from_dir, pattern=pattern)
+        except NotADirectoryError as exc:
+            _handle_error(exc)
+        paths.extend(str(p) for p in discovered)
+    if not paths:
+        typer.echo(
+            "Error: provide at least one bundle path or use --from-dir.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    try:
+        entries = build_history_series(paths)
+    except (FileNotFoundError, ValueError, zipfile.BadZipFile) as exc:
+        _handle_error(exc)
+
+    if format_json:
+        typer.echo(json.dumps(render_history_json(entries), indent=2))
+        return
+
+    markdown = render_history_markdown(entries)
+    if output:
+        out_path = Path(output)
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(markdown, encoding="utf-8")
+        typer.echo(f"History written: {output}")
     else:
         typer.echo(markdown, nl=False)
 

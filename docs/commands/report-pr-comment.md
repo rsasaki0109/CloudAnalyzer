@@ -26,7 +26,51 @@ ca report-pr-comment qa/summary.json \
 | `--project <label>` | Override the project label shown in the header |
 | `--output <file>` / `-o` | Write Markdown to a file instead of stdout |
 
-## GitHub Actions wiring
+## Reusable workflow
+
+The simplest way to wire this in CI is the bundled reusable workflow
+`pr-comment.yml`. It handles install, render, and idempotent comment
+update on re-runs (no duplicate comments after a force-push).
+
+```yaml
+jobs:
+  qa:
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
+    with:
+      config_path: cloudanalyzer.yaml
+
+  pr-comment:
+    needs: qa
+    if: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      pull-requests: write
+      contents: read
+    uses: rsasaki0109/CloudAnalyzer/.github/workflows/pr-comment.yml@main
+    with:
+      summary_path: qa/summary.json
+      baseline_summary_path: qa/baseline-summary.json   # optional
+      project: my-mapping-pipeline                       # optional
+      marker: my-pipeline-qa                             # optional, default cloudanalyzer-qa
+      dry_run: false                                     # set true to log without posting
+```
+
+Inputs:
+
+| Input | Required | Notes |
+|---|---|---|
+| `summary_path` | yes | Path to summary JSON, relative to the caller repo root |
+| `baseline_summary_path` | no | Baseline JSON of the same shape for ↑/↓ deltas |
+| `project` | no | Header label override |
+| `marker` | no | Hidden HTML comment used to find / update the previous comment |
+| `pr_number` | no | Override the PR number (defaults to the triggering pull_request) |
+| `dry_run` | no | If true, print the rendered Markdown to the job log and skip posting |
+| `cloudanalyzer_repository` / `cloudanalyzer_ref` | no | Install source when the caller repo doesn't ship CloudAnalyzer itself |
+
+The rendered Markdown is uploaded as the `cloudanalyzer-pr-comment`
+workflow artifact even when `dry_run: true`, so you can preview the
+output without granting `pull-requests: write` first.
+
+## Inline GitHub Actions wiring
 
 ```yaml
 - name: Run gate

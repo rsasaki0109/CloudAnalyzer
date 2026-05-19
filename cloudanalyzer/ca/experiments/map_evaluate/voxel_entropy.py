@@ -50,6 +50,12 @@ class VoxelEntropyMapEvaluateStrategy:
         if vs <= 0:
             raise ValueError("structure_voxel_size must be > 0 for voxel_entropy.")
 
+        sampling_policy: dict[str, object] = {
+            "structure_voxel_size_m": vs,
+            "downsample_voxel_size_m": float(request.downsample_voxel_size),
+            "neighborhood": "3x3x3",
+        }
+
         keys = _voxel_keys(est, vs)
         if keys.shape[0] == 0:
             return MapEvaluateResult(
@@ -57,6 +63,10 @@ class VoxelEntropyMapEvaluateStrategy:
                 design=self.design,
                 metrics={"n_est": 0.0, "occupied_voxels": 0.0, "mean_neighbor_entropy_bits": 0.0},
                 artifacts={"structure_voxel_size": vs},
+                metric_family="reference_free_voxel_consistency",
+                reference_required=False,
+                mode="voxelized",
+                sampling_policy=sampling_policy,
             )
 
         # Unique occupied voxels
@@ -97,5 +107,9 @@ class VoxelEntropyMapEvaluateStrategy:
                 "consistency_score": consistency_score,
             },
             artifacts={"structure_voxel_size": vs, "downsample_voxel_size": float(request.downsample_voxel_size)},
+            metric_family="reference_free_voxel_consistency",
+            reference_required=False,
+            mode="voxelized",
+            sampling_policy=sampling_policy,
         )
 

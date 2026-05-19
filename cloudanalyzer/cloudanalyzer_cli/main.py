@@ -58,6 +58,7 @@ from ca.benchmark import (
     evaluate_benchmark_run,
     load_benchmark_suite,
 )
+from ca.geometry import REPRESENTATIONS, evaluate_geometry
 from ca.pr_comment import build_pr_comment
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
@@ -2464,6 +2465,88 @@ def baseline_list_cmd(
         for entry in entries:
             status = "PASS" if entry["passed"] else "FAIL" if entry["passed"] is False else "?"
             typer.echo(f"  [{status}] {entry['name']}")
+
+
+@app.command("geometry-evaluate")
+def geometry_evaluate_cmd(
+    source: str = typer.Argument(..., help="Source artifact (.ply/.pcd/.las/...). 3DGS PLY auto-detected."),
+    reference: str = typer.Argument(..., help="Reference point cloud (.pcd/.ply/.las/...)"),
+    representation: str = typer.Option(
+        "auto",
+        "--representation",
+        help=f"Source representation: {', '.join(REPRESENTATIONS)}",
+    ),
+    opacity_threshold: Optional[float] = typer.Option(
+        None,
+        "--opacity-threshold",
+        help="Drop splats whose rendered alpha (sigmoid of opacity) is below this; gaussian-points only",
+    ),
+    voxel: Optional[float] = typer.Option(
+        None,
+        "--voxel",
+        help="Voxel-downsample the adapted source before evaluation (meters)",
+    ),
+    thresholds: Optional[str] = typer.Option(
+        None,
+        "--thresholds",
+        "-t",
+        help="Comma-separated distance thresholds for F1/AUC evaluation",
+    ),
+    plot: Optional[str] = typer.Option(None, "--plot", help="Write the F1 curve to this PNG"),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Cross-representation geometry QA (3DGS PLY, mesh vertices, point clouds, ...)."""
+    if representation not in REPRESENTATIONS:
+        typer.echo(
+            f"Error: --representation must be one of {', '.join(REPRESENTATIONS)}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    try:
+        result = evaluate_geometry(
+            source,
+            reference,
+            representation=representation,
+            opacity_threshold=opacity_threshold,
+            voxel_size=voxel,
+            thresholds=_parse_thresholds(thresholds),
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+
+    if plot:
+        try:
+            plot_f1_curve(result, plot)
+        except ValueError as exc:
+            _handle_error(exc)
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        rep = result["representation"]
+        best_f1 = max(result["f1_scores"], key=lambda s: s["f1"])
+        typer.echo(
+            f"Source:        {result['source_points']} pts "
+            f"(representation={rep['detected']}, original={rep['original_count']})"
+        )
+        if rep["applied_filters"]:
+            typer.echo("Filters:       " + "; ".join(rep["applied_filters"]))
+        typer.echo(f"Reference:     {result['target_points']} pts")
+        typer.echo(
+            f"  Chamfer={result['chamfer_distance']:.4f}  "
+            f"Hausdorff={result['hausdorff_distance']:.4f}  "
+            f"AUC={result['auc']:.4f}"
+        )
+        typer.echo(
+            f"  Best F1={best_f1['f1']:.4f} @ d={best_f1['threshold']:.2f}"
+        )
+        if plot:
+            typer.echo(f"Plot: {plot}")
+
+    if output_json:
+        _dump_json(result, output_json)
 
 
 @app.command("ground-evaluate")

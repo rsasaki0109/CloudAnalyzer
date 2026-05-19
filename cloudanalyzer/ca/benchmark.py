@@ -285,3 +285,147 @@ def evaluate_benchmark_run(
         },
     }
     return result
+
+
+# ----------------------------------------------------------- materialize
+
+
+def _voxel_downsample_pcd(source: Path, target: Path, voxel_size: float) -> None:
+    """Voxel-downsample a point cloud file using Open3D. No-op if voxel<=0."""
+    import open3d as o3d  # local import: avoid open3d on cold benchmark path
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    if voxel_size <= 0:
+        # Plain copy when no downsampling requested.
+        target.write_bytes(source.read_bytes())
+        return
+    pcd = o3d.io.read_point_cloud(str(source))
+    if len(pcd.points) == 0:
+        raise ValueError(f"{source} contains no points")
+    downsampled = pcd.voxel_down_sample(voxel_size=voxel_size)
+    if not o3d.io.write_point_cloud(str(target), downsampled, write_ascii=False):
+        raise RuntimeError(f"Failed to write downsampled point cloud: {target}")
+
+
+def _subsample_tum(source: Path, target: Path, max_poses: int | None) -> None:
+    """Copy a TUM trajectory; if max_poses is set, keep an evenly-spaced subset."""
+    target.parent.mkdir(parents=True, exist_ok=True)
+    text = source.read_text(encoding="utf-8")
+    # Drop blank lines and full-line comments; preserve trailing whitespace on data lines.
+    lines = [
+        line for line in text.splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    if not lines:
+        raise ValueError(f"{source} contains no TUM poses")
+    if max_poses is not None and max_poses > 0 and len(lines) > max_poses:
+        # Evenly-spaced indices; always keep first and last.
+        import numpy as np
+
+        raw_indices = np.linspace(0, len(lines) - 1, num=max_poses).round().astype(int)
+        keep_indices = sorted({int(i) for i in raw_indices})
+        kept = [lines[i] for i in keep_indices]
+    else:
+        kept = lines
+    target.write_text("\n".join(kept) + "\n", encoding="utf-8")
+
+
+def materialize_suite(
+    suite_dir: str | Path,
+    *,
+    name: str,
+    description: str,
+    reference_map: str | Path,
+    reference_trajectory: str | Path,
+    sequence_name: str = "default",
+    sequence_description: str | None = None,
+    license: str | None = None,
+    voxel_size: float = 0.0,
+    max_poses: int | None = None,
+    gate: Mapping[str, float] | None = None,
+    sample_map: str | Path | None = None,
+    sample_trajectory: str | Path | None = None,
+) -> BenchmarkSuite:
+    """Build a benchmark suite from raw reference data on disk.
+
+    Materializes the supplied map / trajectory (and optionally a sample
+    output pair) under ``<suite_dir>/data/`` and writes a ``suite.yaml``
+    that ``load_benchmark_suite`` can read. The output layout is::
+
+        <suite_dir>/
+        ├── suite.yaml
+        └── data/
+            ├── <sequence_name>/map.pcd
+            ├── <sequence_name>/trajectory.tum
+            └── sample_outputs/<sequence_name>/{map.pcd,trajectory.tum}  # optional
+
+    Use this to convert a public SLAM dataset (e.g. Newer College Dataset
+    ground-truth bundle) into a ``ca benchmark eval``-ready suite without
+    hand-writing the manifest. ``voxel_size > 0`` downsamples the map,
+    ``max_poses`` keeps an evenly-spaced subset of the trajectory.
+    """
+    suite_dir_path = Path(suite_dir).resolve()
+    suite_dir_path.mkdir(parents=True, exist_ok=True)
+
+    data_dir = suite_dir_path / "data" / sequence_name
+    map_target = data_dir / "map.pcd"
+    traj_target = data_dir / "trajectory.tum"
+
+    _voxel_downsample_pcd(Path(reference_map), map_target, voxel_size)
+    _subsample_tum(Path(reference_trajectory), traj_target, max_poses)
+
+    sample_section: dict[str, dict[str, str]] | None = None
+    if sample_map is not None and sample_trajectory is not None:
+        sample_target_dir = suite_dir_path / "data" / "sample_outputs" / sequence_name
+        sample_map_target = sample_target_dir / "map.pcd"
+        sample_traj_target = sample_target_dir / "trajectory.tum"
+        _voxel_downsample_pcd(Path(sample_map), sample_map_target, voxel_size)
+        _subsample_tum(Path(sample_trajectory), sample_traj_target, max_poses)
+        sample_section = {
+            sequence_name: {
+                "map": str(sample_map_target.relative_to(suite_dir_path)),
+                "trajectory": str(sample_traj_target.relative_to(suite_dir_path)),
+            }
+        }
+
+    manifest: dict[str, Any] = {
+        "version": 1,
+        "name": name,
+        "description": description,
+        "sequences": {
+            sequence_name: {
+                "description": sequence_description or description,
+                "reference_map": str(map_target.relative_to(suite_dir_path)),
+                "reference_trajectory": str(
+                    traj_target.relative_to(suite_dir_path)
+                ),
+            }
+        },
+    }
+    if license:
+        manifest["license"] = license
+    if sample_section is not None:
+        manifest["sample_outputs"] = sample_section
+    if gate:
+        manifest["gate"] = {
+            key: float(value) for key, value in gate.items() if key in GATE_KEYS
+        }
+
+    suite_yaml_path = suite_dir_path / "suite.yaml"
+    suite_yaml_path.write_text(
+        yaml.safe_dump(manifest, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    return load_benchmark_suite(suite_yaml_path)
+
+
+# Add to __all__
+__all__: list[str] = [
+    "BenchmarkSequence",
+    "BenchmarkSuite",
+    "GATE_KEYS",
+    "evaluate_benchmark_run",
+    "load_benchmark_suite",
+    "materialize_suite",
+]

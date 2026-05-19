@@ -2,6 +2,7 @@
 
 import json
 import sys
+import zipfile
 from dataclasses import replace
 from pathlib import Path
 from typing import List, Optional
@@ -58,6 +59,7 @@ from ca.benchmark import (
     evaluate_benchmark_run,
     load_benchmark_suite,
 )
+from ca.bundle import pack_bundle, show_bundle, unpack_bundle
 from ca.geometry import REPRESENTATIONS, evaluate_geometry
 from ca.pr_comment import build_pr_comment
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
@@ -2034,6 +2036,142 @@ benchmark_app = typer.Typer(
     no_args_is_help=True,
 )
 app.add_typer(benchmark_app, name="benchmark")
+
+
+bundle_app = typer.Typer(
+    name="bundle",
+    help="Pack / unpack / inspect CloudAnalyzer QA result bundles.",
+    no_args_is_help=True,
+)
+app.add_typer(bundle_app, name="bundle")
+
+
+def _parse_notes(values: Optional[List[str]]) -> dict[str, str]:
+    notes: dict[str, str] = {}
+    if not values:
+        return notes
+    for raw in values:
+        if "=" not in raw:
+            typer.echo(
+                f"Error: --note expects key=value; got {raw!r}",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        key, _, value = raw.partition("=")
+        key = key.strip()
+        if not key:
+            typer.echo("Error: --note key cannot be empty", err=True)
+            raise typer.Exit(code=1)
+        notes[key] = value.strip()
+    return notes
+
+
+@bundle_app.command("pack")
+def bundle_pack_cmd(
+    summary_path: str = typer.Argument(..., help="Path to summary JSON (ca check / run-evaluate / benchmark eval)"),
+    output: str = typer.Option(..., "--output", "-o", help="Output bundle ZIP path"),
+    baseline: Optional[str] = typer.Option(None, "--baseline", help="Optional baseline summary JSON of the same shape"),
+    project: Optional[str] = typer.Option(None, "--project", help="Project label written into bundle metadata"),
+    commit: Optional[str] = typer.Option(None, "--commit", help="Git commit SHA to record in metadata"),
+    pr_number: Optional[str] = typer.Option(None, "--pr-number", help="PR number to record in metadata"),
+    runner_id: Optional[str] = typer.Option(None, "--runner-id", help="CI runner identifier to record"),
+    note: Optional[List[str]] = typer.Option(
+        None,
+        "--note",
+        help="Extra metadata as key=value (repeatable), e.g. --note dataset=newer-college",
+    ),
+) -> None:
+    """Bundle a QA summary plus referenced reports into a single qa_bundle.zip."""
+    try:
+        notes = _parse_notes(note)
+        metadata = pack_bundle(
+            summary_path,
+            output,
+            baseline_path=baseline,
+            project=project,
+            git_commit=commit,
+            pr_number=pr_number,
+            runner_id=runner_id,
+            notes=notes,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+
+    typer.echo(f"Bundle:   {output}")
+    typer.echo(f"Kind:     {metadata.summary_kind}")
+    typer.echo(f"Artifacts: {len(metadata.artifacts)} report file(s) included")
+    if metadata.has_baseline:
+        typer.echo("Baseline:  included")
+    if metadata.project:
+        typer.echo(f"Project:   {metadata.project}")
+    if metadata.git_commit:
+        typer.echo(f"Commit:    {metadata.git_commit}")
+    if metadata.pr_number:
+        typer.echo(f"PR:        {metadata.pr_number}")
+    if metadata.runner_id:
+        typer.echo(f"Runner:    {metadata.runner_id}")
+    if metadata.notes:
+        typer.echo("Notes:")
+        for key, value in metadata.notes.items():
+            typer.echo(f"  {key}={value}")
+
+
+@bundle_app.command("unpack")
+def bundle_unpack_cmd(
+    bundle_path: str = typer.Argument(..., help="Path to a CloudAnalyzer qa_bundle.zip"),
+    output_dir: str = typer.Option(..., "--output", "-o", help="Directory to extract into"),
+) -> None:
+    """Extract a bundle to a directory."""
+    try:
+        metadata = unpack_bundle(bundle_path, output_dir)
+    except (FileNotFoundError, ValueError, zipfile.BadZipFile) as exc:
+        _handle_error(exc)
+    typer.echo(f"Extracted: {output_dir}")
+    typer.echo(f"Kind:      {metadata.summary_kind}")
+    typer.echo(f"Artifacts: {len(metadata.artifacts)} report file(s) restored")
+
+
+@bundle_app.command("show")
+def bundle_show_cmd(
+    bundle_path: str = typer.Argument(..., help="Path to a CloudAnalyzer qa_bundle.zip"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print as JSON"),
+) -> None:
+    """Show bundle metadata and table of contents without extracting."""
+    try:
+        info = show_bundle(bundle_path)
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+
+    if format_json:
+        typer.echo(json.dumps(info, indent=2))
+        return
+
+    metadata = info["metadata"]
+    typer.echo(f"Bundle:               {info['bundle_path']}")
+    typer.echo(f"Bundle version:       {metadata.get('bundle_version')}")
+    typer.echo(f"Created at:           {metadata.get('created_at')}")
+    typer.echo(f"CloudAnalyzer:        {metadata.get('cloudanalyzer_version')}")
+    typer.echo(f"Summary kind:         {metadata.get('summary_kind')}")
+    if metadata.get("project"):
+        typer.echo(f"Project:              {metadata['project']}")
+    if metadata.get("git_commit"):
+        typer.echo(f"Git commit:           {metadata['git_commit']}")
+    if metadata.get("pr_number"):
+        typer.echo(f"PR number:            {metadata['pr_number']}")
+    if metadata.get("runner_id"):
+        typer.echo(f"Runner id:            {metadata['runner_id']}")
+    if metadata.get("has_baseline"):
+        typer.echo("Baseline:             included")
+    if metadata.get("notes"):
+        typer.echo("Notes:")
+        for key, value in metadata["notes"].items():
+            typer.echo(f"  {key}={value}")
+    typer.echo("")
+    typer.echo("Contents:")
+    for entry in info["contents"]:
+        typer.echo(
+            f"  {entry['path']}  ({entry['size_bytes']} B / {entry['compressed_bytes']} B compressed)"
+        )
 
 
 def _parse_gate_overrides(values: Optional[List[str]]) -> dict[str, float | None]:

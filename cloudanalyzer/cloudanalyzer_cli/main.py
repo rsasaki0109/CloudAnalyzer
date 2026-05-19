@@ -52,6 +52,12 @@ from ca.report import (
     save_trajectory_batch_report,
     save_trajectory_report,
 )
+from ca.benchmark import (
+    BenchmarkSuite,
+    GATE_KEYS,
+    evaluate_benchmark_run,
+    load_benchmark_suite,
+)
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
@@ -2017,6 +2023,212 @@ def run_batch_cmd(
     if output_json:
         _dump_json(results, output_json)
     if should_fail:
+        raise typer.Exit(code=1)
+
+
+benchmark_app = typer.Typer(
+    name="benchmark",
+    help="SLAM benchmark suite runner (fixed reference + gate).",
+    no_args_is_help=True,
+)
+app.add_typer(benchmark_app, name="benchmark")
+
+
+def _parse_gate_overrides(values: Optional[List[str]]) -> dict[str, float | None]:
+    """Parse repeated --gate key=value (or key=none) overrides."""
+    overrides: dict[str, float | None] = {}
+    if not values:
+        return overrides
+    for raw in values:
+        if "=" not in raw:
+            typer.echo(
+                f"Error: --gate expects key=value; got {raw!r}",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        key, _, value = raw.partition("=")
+        key = key.strip()
+        value = value.strip()
+        if key not in GATE_KEYS:
+            typer.echo(
+                f"Error: unknown gate key {key!r}. Allowed: {', '.join(GATE_KEYS)}",
+                err=True,
+            )
+            raise typer.Exit(code=1)
+        if value.lower() in {"none", "null", ""}:
+            overrides[key] = None
+        else:
+            try:
+                overrides[key] = float(value)
+            except ValueError:
+                typer.echo(
+                    f"Error: --gate {key} must be numeric or 'none'; got {value!r}",
+                    err=True,
+                )
+                raise typer.Exit(code=1)
+    return overrides
+
+
+def _print_suite_info(suite: BenchmarkSuite) -> None:
+    typer.echo(f"Suite:       {suite.name} (v{suite.version})")
+    typer.echo(f"Description: {suite.description}")
+    if suite.license:
+        typer.echo(f"License:     {suite.license}")
+    typer.echo(f"Source:      {suite.source_path}")
+    typer.echo("Sequences:")
+    for name, seq in suite.sequences.items():
+        typer.echo(f"  - {name}: {seq.description}")
+        typer.echo(f"      reference_map:        {seq.reference_map_path}")
+        typer.echo(f"      reference_trajectory: {seq.reference_trajectory_path}")
+        if seq.sample_map_path or seq.sample_trajectory_path:
+            typer.echo("      sample_outputs:")
+            if seq.sample_map_path:
+                typer.echo(f"        map:        {seq.sample_map_path}")
+            if seq.sample_trajectory_path:
+                typer.echo(f"        trajectory: {seq.sample_trajectory_path}")
+    if suite.gate:
+        typer.echo("Gate:")
+        for key in GATE_KEYS:
+            if key in suite.gate:
+                typer.echo(f"  {key}: {suite.gate[key]}")
+
+
+@benchmark_app.command("info")
+def benchmark_info_cmd(
+    suite_path: str = typer.Argument(..., help="Path to a benchmark suite YAML manifest"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print suite metadata as JSON"),
+) -> None:
+    """Show the sequences, references, and gate for a benchmark suite."""
+    try:
+        suite = load_benchmark_suite(suite_path)
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+
+    if format_json:
+        payload = {
+            "name": suite.name,
+            "version": suite.version,
+            "description": suite.description,
+            "license": suite.license,
+            "source_path": str(suite.source_path),
+            "sequences": {
+                name: {
+                    "description": seq.description,
+                    "reference_map": str(seq.reference_map_path),
+                    "reference_trajectory": str(seq.reference_trajectory_path),
+                    "sample_map": (
+                        str(seq.sample_map_path) if seq.sample_map_path else None
+                    ),
+                    "sample_trajectory": (
+                        str(seq.sample_trajectory_path)
+                        if seq.sample_trajectory_path
+                        else None
+                    ),
+                }
+                for name, seq in suite.sequences.items()
+            },
+            "gate": dict(suite.gate),
+        }
+        typer.echo(json.dumps(payload, indent=2))
+    else:
+        _print_suite_info(suite)
+
+
+@benchmark_app.command("eval")
+def benchmark_eval_cmd(
+    suite_path: str = typer.Argument(..., help="Path to a benchmark suite YAML manifest"),
+    map_path: str = typer.Option(..., "--map", help="Estimated map point cloud"),
+    trajectory_path: str = typer.Option(..., "--trajectory", help="Estimated trajectory"),
+    sequence: Optional[str] = typer.Option(
+        None,
+        "--sequence",
+        help="Sequence name to evaluate against (defaults to the first sequence)",
+    ),
+    thresholds: Optional[str] = typer.Option(
+        None,
+        "--thresholds",
+        "-t",
+        help="Comma-separated distance thresholds for map F1/AUC evaluation",
+    ),
+    max_time_delta: float = typer.Option(
+        0.05,
+        "--max-time-delta",
+        help="Max timestamp gap allowed for trajectory matching (seconds)",
+    ),
+    align_origin: bool = typer.Option(False, "--align-origin"),
+    align_rigid: bool = typer.Option(False, "--align-rigid"),
+    gate_overrides: Optional[List[str]] = typer.Option(
+        None,
+        "--gate",
+        help="Override suite gate (repeatable): --gate min_auc=0.97 --gate max_rpe=none",
+    ),
+    report: Optional[str] = typer.Option(None, "--report", help="Write combined run report"),
+    output_json: Optional[str] = typer.Option(
+        None,
+        "--output-json",
+        help="Dump benchmark result as JSON",
+    ),
+    format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
+) -> None:
+    """Evaluate a SLAM run against a benchmark suite's fixed reference and gate."""
+    try:
+        suite = load_benchmark_suite(suite_path)
+        overrides = _parse_gate_overrides(gate_overrides)
+        result = evaluate_benchmark_run(
+            suite,
+            map_path,
+            trajectory_path,
+            sequence=sequence,
+            gate_overrides=overrides,
+            thresholds=_parse_thresholds(thresholds),
+            max_time_delta=max_time_delta,
+            align_origin=align_origin,
+            align_rigid=align_rigid,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+
+    if report:
+        try:
+            save_run_report(result, report)
+        except ValueError as exc:
+            _handle_error(exc)
+
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        info = result["benchmark"]
+        map_result = result["map"]
+        trajectory_result = result["trajectory"]
+        typer.echo(
+            f"Benchmark:  {info['suite']} v{info['version']} / sequence={info['sequence']}"
+        )
+        typer.echo(
+            f"Map:        AUC={map_result['auc']:.4f}  Chamfer={map_result['chamfer_distance']:.4f}"
+        )
+        typer.echo(
+            "Trajectory: ATE={ate:.4f}  RPE={rpe:.4f}  Drift={drift:.4f}  Coverage={cov:.1%}".format(
+                ate=trajectory_result["ate"]["rmse"],
+                rpe=trajectory_result["rpe_translation"]["rmse"],
+                drift=trajectory_result["drift"]["endpoint"],
+                cov=trajectory_result["matching"]["coverage_ratio"],
+            )
+        )
+        overall_gate = result["overall_quality_gate"]
+        if overall_gate is not None:
+            typer.echo("")
+            typer.echo(
+                f"Overall Quality Gate: {'PASS' if overall_gate['passed'] else 'FAIL'}"
+            )
+            for reason in overall_gate["reasons"]:
+                typer.echo(f"  - {reason}")
+        if report:
+            typer.echo(f"Report: {report}")
+
+    if output_json:
+        _dump_json(result, output_json)
+    overall = result["overall_quality_gate"]
+    if overall is not None and not overall["passed"]:
         raise typer.Exit(code=1)
 
 

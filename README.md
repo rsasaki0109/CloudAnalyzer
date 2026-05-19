@@ -54,7 +54,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **43 subcommands** |
+| CLI | Limited | None | None | **45 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -173,8 +173,32 @@ The CLI exposes several evaluation entry points. They look related but answer di
 | `ca map-evaluate` | "How well does the reconstructed map match a survey / GT map?" | Estimated map + reference map (MapEval-style accuracy/completeness@t) | SLAM map quality vs. survey scan, before/after loop closure maps |
 | `ca run-evaluate` | "Is this SLAM run acceptable end-to-end (map + trajectory)?" | Map pair + trajectory pair | Per-run regression gate for a localization / mapping pipeline |
 | `ca check` | "Run all configured gates and report pass/fail with triage." | `cloudanalyzer.yaml` | CI / pre-merge gate orchestration; chains `evaluate`, `map-evaluate`, `traj-evaluate`, `loop-closure-report`, `ground-evaluate`, etc. |
+| `ca benchmark eval` | "Does this SLAM run pass the frozen reference + gate of a published benchmark?" | Benchmark suite manifest + user map + user trajectory | Wraps `run-evaluate` against a suite's fixed reference and gate; use it as the one-command SLAM regression check |
 
-Rule of thumb: `ca evaluate` is for **preservation QA** between two snapshots of the same artifact, `ca map-evaluate` is for **map-quality QA** against a reference map, `ca run-evaluate` is for **SLAM-run QA**, and `ca check` is the **gate orchestrator** that ties them together for CI.
+Rule of thumb: `ca evaluate` is for **preservation QA** between two snapshots of the same artifact, `ca map-evaluate` is for **map-quality QA** against a reference map, `ca run-evaluate` is for **SLAM-run QA**, `ca benchmark eval` is the same SLAM-run QA but against a **frozen suite** so you can swap in your own pipeline, and `ca check` is the **gate orchestrator** that ties them together for CI.
+
+### SLAM Benchmark Suites
+
+`ca benchmark` lets you point any SLAM pipeline's map + trajectory at a benchmark suite (frozen reference + gate) for a one-command regression check. A tiny synthetic suite ships with the repo to smoke-test the command without external data:
+
+```bash
+# Inspect the bundled synthetic suite.
+ca benchmark info benchmarks/slam/synthetic-figure8/suite.yaml
+
+# Run your SLAM output against it (overall_quality_gate goes to exit code).
+ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
+  --map outputs/my_slam_map.pcd \
+  --trajectory outputs/my_slam_trajectory.tum \
+  --report qa/run_report.html
+
+# Tighten or relax the suite's gate without forking the YAML.
+ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
+  --map outputs/my_slam_map.pcd \
+  --trajectory outputs/my_slam_trajectory.tum \
+  --gate min_auc=0.97 --gate max_rpe=none
+```
+
+A suite manifest is a small YAML pointing at reference artifacts and quality-gate thresholds; the `synthetic-figure8` example is regenerated deterministically by `scripts/build_synthetic_slam_suite.py` and is intended as a template for adding real public benchmarks (Newer College, KITTI, Hilti, ...).
 
 ## Metrics
 

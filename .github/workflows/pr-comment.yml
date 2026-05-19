@@ -222,7 +222,7 @@ jobs:
           existing_id=$(gh api \
             "repos/${REPO}/issues/${PR}/comments" \
             --paginate \
-            --jq "[.[] | select(.body | test(\"${marker_pattern}\"; \"l\"))] | .[0].id // empty")
+            --jq "[.[] | select(.body | contains(\"${marker_pattern}\"))] | .[0].id // empty")
           if [ -n "${existing_id}" ]; then
             echo "Updating existing comment ${existing_id}"
             gh api \

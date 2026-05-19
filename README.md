@@ -55,7 +55,7 @@ AISL at Toyohashi University of Technology and bundled in
 |---|---|---|---|---|
 | Quality evaluation (F1/AUC) | - | - | Requires scripting | **Immediate with `--evaluate`** |
 | Trajectory QA (ATE/RPE/drift) | Limited | - | Requires scripting | **Batchable via CLI + report** |
-| CLI | Limited | None | None | **47 subcommands** |
+| CLI | Limited | None | None | **50 subcommands** |
 | CI / automation | Not practical | Custom C++ needed | Requires scripting | **JSON output + quality gates** |
 | Processing + evaluation | Separate steps | Separate program | Separate scripts | **One command** |
 | Browser inspection | No | No | No | **`ca web` / `ca web-export`** |
@@ -375,6 +375,39 @@ ca baseline-decision qa/current-summary.json --history-dir qa/history/
 
 # List saved baselines
 ca baseline-list --history-dir qa/history/
+```
+
+### QA Bundles (artifact retention)
+
+`ca bundle pack` freezes one QA run — the summary JSON, the per-check reports the summary points at, and an optional baseline — into a single `qa_bundle.zip` along with a metadata header (project, git commit, PR number, runner id, free-form notes). The result is reopenable without going back to the original CI workspace, which is the OSS foundation for long-term retention and a future hosted dashboard.
+
+```bash
+# After ca check / ca run-evaluate / ca benchmark eval, pack everything for retention.
+ca bundle pack qa/summary.json \
+  --output qa/bundle.zip \
+  --baseline qa/baseline-summary.json \
+  --project my-mapping-pipeline \
+  --commit "$GITHUB_SHA" \
+  --pr-number "$PR_NUMBER" \
+  --runner-id "$GITHUB_RUN_ID" \
+  --note dataset=newer-college-mini --note voxel=0.05
+
+# Inspect a bundle without extracting it (good for dashboards / CI logs).
+ca bundle show qa/bundle.zip
+ca bundle show qa/bundle.zip --format-json | jq '.metadata.notes'
+
+# Restore everything to a directory.
+ca bundle unpack qa/bundle.zip --output qa/restored/
+```
+
+The bundle layout (versioned, stable across CloudAnalyzer releases):
+
+```
+qa_bundle.zip
+├── metadata.json              # bundle_version / created_at / project / commit / notes / artifact index
+├── summary.json               # the original ca check / ca run-evaluate / ca benchmark eval JSON
+├── baseline-summary.json      # only when --baseline was supplied
+└── reports/<check_id>/        # per-check report.html / report.md / report.json copied from the summary
 ```
 
 ### GitHub Actions

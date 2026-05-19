@@ -11,7 +11,9 @@ from typer.testing import CliRunner
 
 from ca.bundle import (
     BUNDLE_VERSION,
+    diff_bundles,
     pack_bundle,
+    render_diff_markdown,
     show_bundle,
     unpack_bundle,
 )
@@ -311,3 +313,103 @@ def test_cli_show_json(tmp_path: Path) -> None:
     payload = json.loads(result.stdout)
     assert payload["metadata"]["summary_kind"] == "single_run"
     assert isinstance(payload["contents"], list)
+
+
+# ---------------------------------------------------------------- diff
+
+
+def test_diff_same_bundle_no_warnings(tmp_path: Path) -> None:
+    summary = _make_check_summary(tmp_path)
+    bundle = tmp_path / "qa.zip"
+    pack_bundle(str(summary), str(bundle), project="p", git_commit="abc")
+    diff = diff_bundles(str(bundle), str(bundle))
+    assert diff["warnings"] == []
+    assert diff["old"]["bundle_path"] == diff["new"]["bundle_path"]
+
+
+def test_diff_metadata_mismatches(tmp_path: Path) -> None:
+    summary = _make_check_summary(tmp_path)
+    old_bundle = tmp_path / "old.zip"
+    new_bundle = tmp_path / "new.zip"
+    pack_bundle(
+        str(summary),
+        str(old_bundle),
+        project="p",
+        git_commit="abc",
+        pr_number="1",
+        notes={"dataset": "v1"},
+    )
+    pack_bundle(
+        str(summary),
+        str(new_bundle),
+        project="p",
+        git_commit="def",
+        pr_number="2",
+        notes={"dataset": "v2", "voxel": "0.05"},
+    )
+    diff = diff_bundles(str(old_bundle), str(new_bundle))
+    msgs = "\n".join(diff["warnings"])
+    assert "git_commit" in msgs
+    assert "pr_number" in msgs
+    assert "notes.dataset" in msgs
+    assert "notes.voxel" in msgs  # only on the new side
+
+
+def test_diff_rejects_mismatched_summary_kind(tmp_path: Path) -> None:
+    check_summary = _make_check_summary(tmp_path)
+    single = _make_single_run_summary(tmp_path)
+    old_bundle = tmp_path / "old.zip"
+    new_bundle = tmp_path / "new.zip"
+    pack_bundle(str(check_summary), str(old_bundle))
+    pack_bundle(str(single), str(new_bundle))
+    with pytest.raises(ValueError, match="different summary_kind"):
+        diff_bundles(str(old_bundle), str(new_bundle))
+
+
+def test_diff_real_bundles_renders_delta_table(tmp_path: Path) -> None:
+    """End-to-end: pack the bundled stanford fixtures and render a diff."""
+    old_bundle = tmp_path / "pass.zip"
+    new_bundle = tmp_path / "regression.zip"
+    pack_bundle(str(SUITE_PASS), str(old_bundle), project="demo", git_commit="abc")
+    pack_bundle(str(SUITE_REGRESSION), str(new_bundle), project="demo", git_commit="def")
+    diff = diff_bundles(str(old_bundle), str(new_bundle))
+    md = render_diff_markdown(diff)
+    assert "## CloudAnalyzer Bundle Diff" in md
+    # The PR-comment block should be embedded under the bundle header.
+    assert "## CloudAnalyzer QA:" in md
+    # AUC dropped pass -> regression, so the renderer should show ↓.
+    assert "AUC=0.5282 (was 1.0000 ↓)" in md
+
+
+def test_cli_bundle_diff(tmp_path: Path) -> None:
+    old_bundle = tmp_path / "old.zip"
+    new_bundle = tmp_path / "new.zip"
+    pack_bundle(str(SUITE_PASS), str(old_bundle), project="p", git_commit="abc")
+    pack_bundle(str(SUITE_REGRESSION), str(new_bundle), project="p", git_commit="def")
+
+    runner = CliRunner()
+    out_file = tmp_path / "diff.md"
+    result = runner.invoke(
+        app,
+        ["bundle", "diff", str(old_bundle), str(new_bundle), "--output", str(out_file)],
+    )
+    assert result.exit_code == 0, result.output
+    assert out_file.exists()
+    md = out_file.read_text(encoding="utf-8")
+    assert "## CloudAnalyzer Bundle Diff" in md
+    assert "git_commit" in md  # mismatch warning rendered
+
+
+def test_cli_bundle_diff_format_json(tmp_path: Path) -> None:
+    summary = _make_check_summary(tmp_path)
+    bundle = tmp_path / "qa.zip"
+    pack_bundle(str(summary), str(bundle), project="p")
+    runner = CliRunner()
+    result = runner.invoke(
+        app, ["bundle", "diff", str(bundle), str(bundle), "--format-json"]
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.stdout)
+    assert payload["warnings"] == []
+    assert payload["old"]["metadata"]["bundle_version"] == BUNDLE_VERSION
+    assert payload["new"]["metadata"]["bundle_version"] == BUNDLE_VERSION

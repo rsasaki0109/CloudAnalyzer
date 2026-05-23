@@ -33,7 +33,7 @@ def _per_band_confusion(
     voxel_size: float,
 ) -> list[dict]:
     """Compute confusion matrix per height band using voxel matching."""
-    from ca.core.ground_evaluate import _voxel_keys
+    from ca.core.ground_evaluate import _voxel_intersection_size, _voxel_keys
 
     num_bands = len(band_edges) - 1
     bands: list[dict] = []
@@ -51,10 +51,10 @@ def _per_band_confusion(
         rg = _voxel_keys(_filter(reference_ground), voxel_size)
         rn = _voxel_keys(_filter(reference_nonground), voxel_size)
 
-        tp = len(eg & rg)
-        fp = len(eg & rn)
-        fn = len(en & rg)
-        tn = len(en & rn)
+        tp = _voxel_intersection_size(eg, rg)
+        fp = _voxel_intersection_size(eg, rn)
+        fn = _voxel_intersection_size(en, rg)
+        tn = _voxel_intersection_size(en, rn)
         metrics = confusion_metrics(tp, fp, fn, tn)
         bands.append({
             "band": band_idx,

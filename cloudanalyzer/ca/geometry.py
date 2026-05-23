@@ -23,11 +23,13 @@ Currently supported source representations:
   extension (``.obj``/``.stl``/``.glb``/``.gltf``) → ``mesh``; everything
   else → ``point-cloud``.
 
-The library deliberately treats Gaussian splats as points rather than
-ellipsoids for now. Ellipsoid surface sampling using ``scale``/``rot`` is a
-future enhancement; for cross-representation regression tracking the
-center-only proxy already catches most "did the splat reconstruction drift?"
-questions.
+For ``gaussian-points`` the default ``splat_method="centers"`` keeps the
+center-only proxy that the original adapter shipped — robust, cheap, and
+catches most "did the splat reconstruction drift?" questions for
+cross-representation regression tracking. Opt in to
+``splat_method="ellipsoid"`` to use ``scale_*``/``rot_*`` and surface-sample
+each splat's anisotropic ellipsoid, which gives a much closer proxy to the
+rendered surface for thin/elongated splats at higher cost.
 """
 
 from __future__ import annotations
@@ -48,6 +50,10 @@ REPRESENTATIONS: tuple[str, ...] = ("auto", "point-cloud", "gaussian-points", "m
 MESH_SAMPLE_METHODS: tuple[str, ...] = ("uniform", "poisson_disk")
 MESH_FILE_EXTENSIONS: tuple[str, ...] = (".obj", ".stl", ".glb", ".gltf")
 DEFAULT_MESH_SAMPLES: int = 100_000
+SPLAT_METHODS: tuple[str, ...] = ("centers", "ellipsoid")
+DEFAULT_SPLAT_SAMPLES: int = 8
+_GAUSSIAN_SCALE_FIELDS: tuple[str, ...] = ("scale_0", "scale_1", "scale_2")
+_GAUSSIAN_ROT_FIELDS: tuple[str, ...] = ("rot_0", "rot_1", "rot_2", "rot_3")
 
 
 @dataclass(slots=True)
@@ -308,32 +314,182 @@ def detect_representation(source_path: str) -> str:
 # --------------------------------------------------------------------- adapters
 
 
-def _filter_by_opacity(
-    points: np.ndarray, opacities_logit: np.ndarray, threshold: float
-) -> tuple[np.ndarray, int]:
-    """Apply sigmoid to logits and keep splats whose rendered alpha ≥ threshold."""
+def _opacity_keep_mask(opacities_logit: np.ndarray, threshold: float) -> np.ndarray:
+    """Boolean mask of splats whose sigmoid(opacity) ≥ threshold."""
     alphas = 1.0 / (1.0 + np.exp(-opacities_logit))
-    keep = alphas >= threshold
-    return points[keep], int(keep.sum())
+    return np.asarray(alphas >= threshold)
+
+
+def _fibonacci_sphere(n: int) -> np.ndarray:
+    """Return ``n`` quasi-uniform points on the unit sphere (Fibonacci lattice).
+
+    Deterministic for a given ``n``. ``n>=2`` is required so the lattice
+    actually distributes points across both poles.
+    """
+    if n < 2:
+        raise ValueError(f"_fibonacci_sphere requires n>=2; got {n}")
+    indices = np.arange(n, dtype=np.float64)
+    y = 1.0 - (indices / (n - 1)) * 2.0  # 1 → -1
+    radius = np.sqrt(np.clip(1.0 - y * y, 0.0, 1.0))
+    # Golden angle spacing.
+    theta = (math.pi * (3.0 - math.sqrt(5.0))) * indices
+    x = np.cos(theta) * radius
+    z = np.sin(theta) * radius
+    return np.stack([x, y, z], axis=-1)
+
+
+def _quaternions_to_rotmats(quats_wxyz: np.ndarray) -> np.ndarray:
+    """Convert (N, 4) ``wxyz`` quaternions into (N, 3, 3) rotation matrices.
+
+    3DGS PLY exports store ``rot_0..rot_3`` as ``(w, x, y, z)``. Quaternions
+    are normalized defensively because some exporters drop precision in the
+    log.
+    """
+    if quats_wxyz.ndim != 2 or quats_wxyz.shape[1] != 4:
+        raise ValueError(
+            f"_quaternions_to_rotmats expects (N, 4); got {quats_wxyz.shape}"
+        )
+    norm = np.linalg.norm(quats_wxyz, axis=1, keepdims=True)
+    norm = np.where(norm > 0.0, norm, 1.0)
+    q = quats_wxyz / norm
+    w, x, y, z = q[:, 0], q[:, 1], q[:, 2], q[:, 3]
+
+    xx = x * x
+    yy = y * y
+    zz = z * z
+    xy = x * y
+    xz = x * z
+    yz = y * z
+    wx = w * x
+    wy = w * y
+    wz = w * z
+
+    matrices = np.empty((q.shape[0], 3, 3), dtype=np.float64)
+    matrices[:, 0, 0] = 1.0 - 2.0 * (yy + zz)
+    matrices[:, 0, 1] = 2.0 * (xy - wz)
+    matrices[:, 0, 2] = 2.0 * (xz + wy)
+    matrices[:, 1, 0] = 2.0 * (xy + wz)
+    matrices[:, 1, 1] = 1.0 - 2.0 * (xx + zz)
+    matrices[:, 1, 2] = 2.0 * (yz - wx)
+    matrices[:, 2, 0] = 2.0 * (xz - wy)
+    matrices[:, 2, 1] = 2.0 * (yz + wx)
+    matrices[:, 2, 2] = 1.0 - 2.0 * (xx + yy)
+    return matrices
+
+
+def _sample_splat_ellipsoids(
+    centers: np.ndarray,
+    scales_log: np.ndarray,
+    quats_wxyz: np.ndarray,
+    samples_per_splat: int,
+) -> np.ndarray:
+    """Surface-sample anisotropic ellipsoids from 3DGS splat parameters.
+
+    Args:
+        centers: (N, 3) splat centers.
+        scales_log: (N, 3) per-axis log-scales (3DGS stores log-σ).
+        quats_wxyz: (N, 4) per-splat rotation quaternion (w, x, y, z).
+        samples_per_splat: ``K`` points per splat, drawn from a shared
+            Fibonacci unit-sphere template scaled by ``exp(scales_log)`` and
+            rotated by the quaternion. Total returned points are ``N*K``.
+
+    Returns:
+        (N*K, 3) ``float64`` array, with the K samples for splat ``i``
+        stored at rows ``i*K..(i+1)*K``.
+    """
+    if samples_per_splat < 2:
+        raise ValueError(
+            f"splat_samples must be >= 2 for ellipsoid sampling; got {samples_per_splat}"
+        )
+    if centers.shape != scales_log.shape:
+        raise ValueError(
+            f"centers shape {centers.shape} != scales shape {scales_log.shape}"
+        )
+    if quats_wxyz.shape != (centers.shape[0], 4):
+        raise ValueError(
+            f"quats shape {quats_wxyz.shape} doesn't match centers count {centers.shape[0]}"
+        )
+    if centers.shape[0] == 0:
+        return np.empty((0, 3), dtype=np.float64)
+
+    scales = np.exp(scales_log)  # (N, 3)
+    rotmat = _quaternions_to_rotmats(quats_wxyz)  # (N, 3, 3)
+    template = _fibonacci_sphere(samples_per_splat)  # (K, 3)
+    # Broadcast scale per axis: (N, K, 3)
+    scaled = template[np.newaxis, :, :] * scales[:, np.newaxis, :]
+    # Rotate each (K, 3) batch by its rotmat: rotmat @ scaled^T → transpose.
+    # einsum: (N, i, j) x (N, K, j) -> (N, K, i)
+    rotated = np.einsum("nij,nkj->nki", rotmat, scaled)
+    sampled = rotated + centers[:, np.newaxis, :]
+    return np.asarray(sampled.reshape(-1, 3).astype(np.float64, copy=False))
 
 
 def _load_gaussian_points(
-    path: Path, opacity_threshold: float | None
+    path: Path,
+    opacity_threshold: float | None,
+    *,
+    splat_method: str = "centers",
+    splat_samples: int = DEFAULT_SPLAT_SAMPLES,
 ) -> tuple[np.ndarray, list[str]]:
-    fields = _read_ply_vertices(path, ("x", "y", "z", "opacity"))
+    if splat_method not in SPLAT_METHODS:
+        raise ValueError(
+            f"Unsupported splat_method {splat_method!r}. "
+            f"Allowed: {', '.join(SPLAT_METHODS)}"
+        )
+
+    wanted: tuple[str, ...] = ("x", "y", "z", "opacity")
+    if splat_method == "ellipsoid":
+        wanted = wanted + _GAUSSIAN_SCALE_FIELDS + _GAUSSIAN_ROT_FIELDS
+    fields = _read_ply_vertices(path, wanted)
     for axis in ("x", "y", "z"):
         if axis not in fields:
             raise ValueError(f"{path}: gaussian-points PLY missing `{axis}` property")
-    points = np.column_stack([fields["x"], fields["y"], fields["z"]]).astype(np.float64)
+
+    centers = np.column_stack([fields["x"], fields["y"], fields["z"]]).astype(np.float64)
     applied: list[str] = []
+
+    if splat_method == "ellipsoid":
+        missing = [
+            name for name in (*_GAUSSIAN_SCALE_FIELDS, *_GAUSSIAN_ROT_FIELDS)
+            if name not in fields
+        ]
+        if missing:
+            raise ValueError(
+                f"{path}: splat_method='ellipsoid' but PLY is missing "
+                f"required 3DGS properties: {', '.join(missing)}"
+            )
+        scales_log = np.column_stack(
+            [fields[name] for name in _GAUSSIAN_SCALE_FIELDS]
+        ).astype(np.float64)
+        quats = np.column_stack(
+            [fields[name] for name in _GAUSSIAN_ROT_FIELDS]
+        ).astype(np.float64)
+    else:
+        scales_log = np.empty((centers.shape[0], 3), dtype=np.float64)
+        quats = np.empty((centers.shape[0], 4), dtype=np.float64)
+
     if opacity_threshold is not None:
         if "opacity" not in fields:
             raise ValueError(
                 f"{path}: opacity_threshold set but PLY has no `opacity` property"
             )
-        points, kept = _filter_by_opacity(points, fields["opacity"], opacity_threshold)
-        applied.append(f"opacity>={opacity_threshold:g} kept={kept}")
-        _ = kept  # surfaced via applied_filters
+        keep = _opacity_keep_mask(fields["opacity"], opacity_threshold)
+        centers = centers[keep]
+        scales_log = scales_log[keep]
+        quats = quats[keep]
+        applied.append(f"opacity>={opacity_threshold:g} kept={int(keep.sum())}")
+
+    if splat_method == "ellipsoid":
+        points = _sample_splat_ellipsoids(
+            centers, scales_log, quats, samples_per_splat=splat_samples
+        )
+        applied.append(
+            f"splat_method=ellipsoid samples_per_splat={splat_samples} "
+            f"splats={centers.shape[0]}"
+        )
+    else:
+        points = centers
+
     return points, applied
 
 
@@ -409,12 +565,19 @@ def load_representation(
     voxel_size: float | None = None,
     mesh_samples: int = DEFAULT_MESH_SAMPLES,
     mesh_method: str = "uniform",
+    splat_method: str = "centers",
+    splat_samples: int = DEFAULT_SPLAT_SAMPLES,
 ) -> GeometryLoadResult:
     """Load a 3D artifact and normalize it to a point cloud."""
     if representation not in REPRESENTATIONS:
         raise ValueError(
             f"Unsupported representation: {representation!r}. "
             f"Allowed: {', '.join(REPRESENTATIONS)}"
+        )
+    if splat_method not in SPLAT_METHODS:
+        raise ValueError(
+            f"Unsupported splat_method: {splat_method!r}. "
+            f"Allowed: {', '.join(SPLAT_METHODS)}"
         )
 
     path = Path(source_path)
@@ -426,7 +589,12 @@ def load_representation(
 
     applied: list[str] = []
     if chosen == "gaussian-points":
-        points, opacity_filters = _load_gaussian_points(path, opacity_threshold)
+        points, opacity_filters = _load_gaussian_points(
+            path,
+            opacity_threshold,
+            splat_method=splat_method,
+            splat_samples=splat_samples,
+        )
         applied.extend(opacity_filters)
     elif chosen == "mesh":
         points, mesh_filters = _load_mesh_points(
@@ -480,6 +648,8 @@ def evaluate_geometry(
     thresholds: list[float] | None = None,
     mesh_samples: int = DEFAULT_MESH_SAMPLES,
     mesh_method: str = "uniform",
+    splat_method: str = "centers",
+    splat_samples: int = DEFAULT_SPLAT_SAMPLES,
 ) -> dict:
     """Cross-representation geometry QA against a reference point cloud.
 
@@ -495,6 +665,8 @@ def evaluate_geometry(
         voxel_size=voxel_size,
         mesh_samples=mesh_samples,
         mesh_method=mesh_method,
+        splat_method=splat_method,
+        splat_samples=splat_samples,
     )
 
     if loaded.points.shape[0] == 0:
@@ -513,6 +685,14 @@ def evaluate_geometry(
 
     # Restore the user-facing source path so reports show the real input.
     result["source_path"] = loaded.source_path
+    is_gaussian = (
+        loaded.representation_detected == "gaussian-points"
+        or representation == "gaussian-points"
+    )
+    is_mesh = (
+        loaded.representation_detected == "mesh"
+        or representation == "mesh"
+    )
     result["representation"] = {
         "requested": loaded.representation_requested,
         "detected": loaded.representation_detected,
@@ -523,13 +703,12 @@ def evaluate_geometry(
         "opacity_threshold": (
             float(opacity_threshold) if opacity_threshold is not None else None
         ),
-        "mesh_samples": (
-            int(mesh_samples) if loaded.representation_detected == "mesh"
-            or (representation == "mesh") else None
-        ),
-        "mesh_method": (
-            mesh_method if loaded.representation_detected == "mesh"
-            or (representation == "mesh") else None
+        "mesh_samples": int(mesh_samples) if is_mesh else None,
+        "mesh_method": mesh_method if is_mesh else None,
+        "splat_method": splat_method if is_gaussian else None,
+        "splat_samples": (
+            int(splat_samples) if is_gaussian and splat_method == "ellipsoid"
+            else None
         ),
     }
     return result
@@ -538,10 +717,12 @@ def evaluate_geometry(
 # Re-export the few symbols a CLI / tests need.
 __all__ = [
     "DEFAULT_MESH_SAMPLES",
+    "DEFAULT_SPLAT_SAMPLES",
     "GeometryLoadResult",
     "MESH_FILE_EXTENSIONS",
     "MESH_SAMPLE_METHODS",
     "REPRESENTATIONS",
+    "SPLAT_METHODS",
     "detect_representation",
     "evaluate_geometry",
     "load_representation",

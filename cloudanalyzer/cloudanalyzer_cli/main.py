@@ -75,8 +75,10 @@ from ca.history import (
 )
 from ca.geometry import (
     DEFAULT_MESH_SAMPLES,
+    DEFAULT_SPLAT_SAMPLES,
     MESH_SAMPLE_METHODS,
     REPRESENTATIONS,
+    SPLAT_METHODS,
     evaluate_geometry,
 )
 from ca.pr_comment import build_pr_comment
@@ -2876,6 +2878,23 @@ def geometry_evaluate_cmd(
         "--mesh-method",
         help=f"Mesh sampling strategy ({', '.join(MESH_SAMPLE_METHODS)}); mesh representation only",
     ),
+    splat_method: str = typer.Option(
+        "centers",
+        "--splat-method",
+        help=(
+            f"3DGS sampling strategy ({', '.join(SPLAT_METHODS)}); gaussian-points only. "
+            "`centers` uses splat centers only; `ellipsoid` surface-samples each splat "
+            "using scale_*/rot_* properties for a better proxy of the rendered surface."
+        ),
+    ),
+    splat_samples: int = typer.Option(
+        DEFAULT_SPLAT_SAMPLES,
+        "--splat-samples",
+        help=(
+            f"Points sampled per splat in ellipsoid mode (default: {DEFAULT_SPLAT_SAMPLES}); "
+            "ignored unless --splat-method=ellipsoid"
+        ),
+    ),
     thresholds: Optional[str] = typer.Option(
         None,
         "--thresholds",
@@ -2899,6 +2918,18 @@ def geometry_evaluate_cmd(
             err=True,
         )
         raise typer.Exit(code=1)
+    if splat_method not in SPLAT_METHODS:
+        typer.echo(
+            f"Error: --splat-method must be one of {', '.join(SPLAT_METHODS)}",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+    if splat_samples < 2:
+        typer.echo(
+            "Error: --splat-samples must be >= 2 for ellipsoid sampling",
+            err=True,
+        )
+        raise typer.Exit(code=1)
 
     try:
         result = evaluate_geometry(
@@ -2910,6 +2941,8 @@ def geometry_evaluate_cmd(
             thresholds=_parse_thresholds(thresholds),
             mesh_samples=mesh_samples,
             mesh_method=mesh_method,
+            splat_method=splat_method,
+            splat_samples=splat_samples,
         )
     except (FileNotFoundError, ValueError) as exc:
         _handle_error(exc)

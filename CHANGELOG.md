@@ -4,6 +4,54 @@ All notable changes to CloudAnalyzer are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-24
+
+Fast follow-on to `v0.2.0` focused on performance hardening of the hot paths,
+a meaningful new 3DGS evaluation feature, and an architecture cleanup that
+graduates `map_evaluate` to the stable core.
+
+### Added
+
+- **`ca geometry-evaluate --splat-method ellipsoid`** — opt-in splat-aware
+  ellipsoid surface sampling for 3D Gaussian Splatting PLY exports. Reads the
+  standard `scale_0..2` (log-σ) and `rot_0..3` (`wxyz` quaternion) properties
+  and surface-samples each splat using a Fibonacci unit-sphere lattice scaled
+  per axis and rotated by the quaternion. Default remains `--splat-method
+  centers` (backward-compatible). New `--splat-samples K` (default 8) sets
+  points per splat. Fully vectorized via `np.einsum` so million-splat exports
+  stay practical.
+- **`benchmarks/3dgs/synthetic-room/` now ships the full 3DGS PLY schema**
+  (`x, y, z, opacity, scale_0..2, rot_0..3`), so `--splat-method ellipsoid`
+  can be exercised against the checked-in demo without external data.
+
+### Changed
+
+- **Performance: vectorize PLY vertex parsing and split tile bucketing**
+  (Phase 17). ASCII PLY now reads the entire vertex block via one
+  `np.loadtxt` call; binary little-endian PLY uses `np.frombuffer` with a
+  structured dtype. `ca split` builds tile buckets with
+  `np.unique(axis=0)` + `np.argsort`. Real 3DGS exports (1M+ splats) and
+  city-scale `ca split` runs that previously took ~1 minute now finish in
+  well under a second.
+- **Performance: vectorize voxel-based `ca ground-evaluate`** (Phase 18).
+  `_voxel_keys` no longer builds a Python `set` of tuples per call. It now
+  returns the unique `(M, 3) int64` ndarray from `np.unique(axis=0)`, and a
+  new `_voxel_intersection_size` helper runs `np.intersect1d` on a void view
+  of each row. The four per-evaluation set comprehensions that dominated
+  city-scale ground QA are gone.
+- **Architecture: `map_evaluate` graduates to `ca.core`** (Phase 20). The
+  request/result contract, shared helpers, and adopted
+  `NNThresholdMapEvaluateStrategy` move to `ca/core/map_evaluate.py`. The
+  reference-free `voxel_entropy` lane stays under `ca/experiments` as the
+  orthogonal GT-free option. `ca map-evaluate` no longer reaches into
+  experiments; the experiment-side modules remain as thin re-exports for
+  backward compatibility.
+
+### Fixed
+
+- `_opacity_keep_mask` and `_sample_splat_ellipsoids` annotated to satisfy
+  the stricter `ndarray` return-type checks under Python 3.10 mypy.
+
 ## [0.2.0] - 2026-05-23
 
 This release consolidates roughly half a year of work since `v0.1.0`: 132 commits
@@ -118,5 +166,6 @@ immediately" CLI (`ca evaluate`, `ca downsample`, `ca filter`,
 `ca traj-evaluate`, `ca run-evaluate`, `ca check`, `ca web`, ...) and the
 core / experiments split documented in `docs/architecture.md`.
 
+[0.3.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.3.0
 [0.2.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.2.0
 [0.1.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.1.0

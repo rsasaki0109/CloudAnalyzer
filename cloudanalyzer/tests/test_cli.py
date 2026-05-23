@@ -135,9 +135,11 @@ def _tracking_estimated_sequence() -> dict:
 
 class TestCLI:
     def test_version(self):
+        from ca import __version__
+
         result = runner.invoke(app, ["version"])
         assert result.exit_code == 0
-        assert "v0.1.0" in result.output
+        assert f"v{__version__}" in result.output
 
     def test_compare_basic(self, source_and_target_files):
         src, tgt = source_and_target_files

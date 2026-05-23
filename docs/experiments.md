@@ -20,9 +20,9 @@ Stable code lives in `cloudanalyzer/ca/core/web_sampling.py`. Discardable varian
 
 | Strategy | Design | Avg runtime ms | Avg chamfer | Avg coverage p95 | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| random_budget | oop | 0.7881 | 0.123013 | 0.278898 | 81.70 | 50.00 | 1.300 |
-| hybrid_pipeline | pipeline | 1.0747 | 0.204581 | 0.262417 | 69.70 | 60.12 | 1.850 |
-| functional_voxel | functional | 18.4255 | 0.214913 | 0.240124 | 54.25 | 55.75 | 2.850 |
+| random_budget | oop | 0.4522 | 0.123013 | 0.278898 | 81.70 | 50.00 | 1.300 |
+| hybrid_pipeline | pipeline | 1.3354 | 0.204581 | 0.262417 | 69.70 | 60.12 | 1.850 |
+| functional_voxel | functional | 19.3608 | 0.214913 | 0.240124 | 54.25 | 55.75 | 2.850 |
 
 ### Notes
 
@@ -49,9 +49,9 @@ Stable code lives in `cloudanalyzer/ca/core/web_trajectory_sampling.py`. Discard
 
 | Strategy | Design | Avg runtime ms | Avg mean error | Avg p95 error | Preserve ratio | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| turn_aware | oop | 1.0958 | 0.000000 | 0.000000 | 1.0000 | 44.00 | 38.70 | 1.900 |
-| uniform_stride | functional | 0.2283 | 0.000549 | 0.000000 | 1.0000 | 95.85 | 59.40 | 2.000 |
-| distance_accumulator | pipeline | 7.3020 | 0.000543 | 0.000000 | 1.0000 | 51.35 | 58.70 | 2.100 |
+| turn_aware | oop | 1.4585 | 0.000000 | 0.000000 | 1.0000 | 44.00 | 38.70 | 1.900 |
+| uniform_stride | functional | 0.2211 | 0.000549 | 0.000000 | 1.0000 | 95.85 | 59.40 | 2.000 |
+| distance_accumulator | pipeline | 11.3999 | 0.000543 | 0.000000 | 1.0000 | 51.35 | 58.70 | 2.100 |
 
 ### Notes
 
@@ -78,9 +78,9 @@ Stable code lives in `cloudanalyzer/ca/core/web_progressive_loading.py`. Discard
 
 | Strategy | Design | Avg runtime ms | Initial coverage p95 | Progressive coverage AUC | Chunk std | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| distance_shells | radial | 1.6170 | 0.881581 | 0.400205 | 38.165523 | 62.10 | 38.60 | 1.650 |
-| spatial_shuffle | functional | 1.5537 | 1.596086 | 0.661457 | 38.165523 | 68.50 | 55.60 | 2.150 |
-| grid_tiles | grid | 1.8029 | 1.596086 | 0.661457 | 38.165523 | 60.50 | 34.50 | 2.200 |
+| distance_shells | radial | 1.3261 | 0.881581 | 0.400205 | 38.165523 | 62.10 | 38.60 | 1.500 |
+| grid_tiles | grid | 2.1280 | 1.596086 | 0.661457 | 38.165523 | 60.50 | 34.50 | 2.200 |
+| spatial_shuffle | functional | 1.8818 | 1.596086 | 0.661457 | 38.165523 | 68.50 | 55.60 | 2.300 |
 
 ### Notes
 
@@ -108,9 +108,9 @@ Stable code lives in `cloudanalyzer/ca/core/check_scaffolding.py`. Discardable v
 
 | Strategy | Design | Avg runtime ms | Fidelity | Avg yaml lines | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| static_profiles | functional | 0.0039 | 1.0000 | 26.50 | 67.70 | 43.03 | 1.350 |
-| object_sections | oop | 0.0258 | 1.0000 | 26.50 | 25.10 | 81.40 | 2.200 |
-| pipeline_overlays | pipeline | 1.5281 | 1.0000 | 26.00 | 48.76 | 89.90 | 2.450 |
+| static_profiles | functional | 0.0038 | 1.0000 | 26.50 | 67.70 | 43.03 | 1.350 |
+| object_sections | oop | 0.0240 | 1.0000 | 26.50 | 25.10 | 81.40 | 2.200 |
+| pipeline_overlays | pipeline | 1.3767 | 1.0000 | 26.00 | 48.76 | 89.90 | 2.450 |
 
 ### Notes
 
@@ -137,9 +137,9 @@ Stable code lives in `cloudanalyzer/ca/core/check_triage.py`. Discardable varian
 
 | Strategy | Design | Avg runtime ms | Avg NDCG | Top1 hit | Stability | Diversity | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| severity_weighted | functional | 0.0394 | 0.9872 | 1.0000 | 1.0000 | 0.8889 | 77.50 | 38.42 | 1.100 |
-| signature_cluster | pipeline | 0.0508 | 0.9744 | 1.0000 | 1.0000 | 0.8889 | 63.30 | 34.10 | 2.250 |
-| pareto_frontier | oop | 0.0689 | 0.8846 | 0.6667 | 1.0000 | 0.8889 | 53.02 | 55.45 | 2.650 |
+| severity_weighted | functional | 0.0375 | 0.9872 | 1.0000 | 1.0000 | 0.8889 | 77.50 | 38.42 | 1.250 |
+| signature_cluster | pipeline | 0.0367 | 0.9744 | 1.0000 | 1.0000 | 0.8889 | 63.30 | 34.10 | 2.100 |
+| pareto_frontier | oop | 0.0722 | 0.8846 | 0.6667 | 1.0000 | 0.8889 | 53.02 | 55.45 | 2.650 |
 
 ### Notes
 
@@ -168,9 +168,9 @@ Stable code lives in `cloudanalyzer/ca/core/check_baseline_evolution.py`. Discar
 
 | Strategy | Design | Avg runtime ms | Decision match | Critical match | Stability | False promote | False reject | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| stability_window | pipeline | 0.0330 | 1.0000 | 1.0000 | 1.0000 | 0.0000 | 0.0000 | 46.11 | 39.54 | 1.500 |
-| threshold_guard | functional | 0.0343 | 0.6000 | 0.6000 | 1.0000 | 0.4000 | 0.0000 | 64.98 | 36.22 | 2.000 |
-| pareto_promote | oop | 0.0335 | 0.6000 | 0.6000 | 1.0000 | 0.4000 | 0.0000 | 45.85 | 48.79 | 2.500 |
+| stability_window | pipeline | 0.0279 | 1.0000 | 1.0000 | 1.0000 | 0.0000 | 0.0000 | 46.11 | 39.54 | 1.650 |
+| threshold_guard | functional | 0.0252 | 0.6000 | 0.6000 | 1.0000 | 0.4000 | 0.0000 | 64.98 | 36.22 | 1.700 |
+| pareto_promote | oop | 0.0327 | 0.6000 | 0.6000 | 1.0000 | 0.4000 | 0.0000 | 45.85 | 48.79 | 2.650 |
 
 ### Notes
 
@@ -197,9 +197,9 @@ Stable code lives in `cloudanalyzer/ca/core/ground_evaluate.py`. Discardable var
 
 | Strategy | Design | Avg runtime ms | Avg F1 | Avg IoU | Avg precision | Avg recall | Stability | Readability | Extensibility | Composite rank |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| nearest_neighbor | oop | 7.2735 | 0.9552 | 0.9160 | 0.9910 | 0.9233 | 1.0000 | 84.31 | 55.68 | 1.500 |
-| voxel_confusion | functional | 1.0872 | 0.9539 | 0.9138 | 0.9907 | 0.9213 | 0.9969 | 95.18 | 40.22 | 1.850 |
-| height_band | pipeline | 2.2435 | 0.9539 | 0.9138 | 0.9907 | 0.9213 | 0.9959 | 66.99 | 75.77 | 2.650 |
+| nearest_neighbor | oop | 7.5914 | 0.9552 | 0.9160 | 0.9910 | 0.9233 | 1.0000 | 84.31 | 55.68 | 1.500 |
+| voxel_confusion | functional | 1.1287 | 0.9539 | 0.9138 | 0.9907 | 0.9213 | 0.9969 | 95.18 | 40.22 | 1.850 |
+| height_band | pipeline | 2.0164 | 0.9539 | 0.9138 | 0.9907 | 0.9213 | 0.9959 | 66.99 | 75.77 | 2.650 |
 
 ### Notes
 
@@ -254,6 +254,7 @@ Experimental code lives in `cloudanalyzer/ca/experiments/slam_run/`.
 | Driver | Role |
 |---|---|
 | `kiss_icp` | Adopted — wraps the `kiss-icp` package (BSD, PyPI). |
+| `kiss_slam` | Experimental upgrade contender — wraps `kiss-slam` (KISS-ICP + pose-graph + MapClosures loop closure). Equivalent to `kiss_icp` on the synthetic cases that ship; promotion blocked on real-data dogfood with drift / revisits. |
 | `identity_passthrough` | Sentinel — identity poses + concatenated scans. Sets the failure floor. |
 
 ### Notes

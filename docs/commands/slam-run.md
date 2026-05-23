@@ -50,7 +50,7 @@ ca slam-run <input> <output_dir> [--driver kiss-icp] [options]
 
 | Option | Description |
 |---|---|
-| `--driver kiss-icp\|kiss-slam\|small-gicp` | SLAM driver to use. `kiss-icp` (default, adopted) is the upstream KISS-ICP scan-to-map LiDAR odometry. `kiss-slam` adds pose-graph optimization and MapClosures-based loop closures on top of the same odometry. `small-gicp` is pure scan-to-scan GICP via the `small_gicp` library (no local map; faster per frame but drifts more on long sequences). All three are experimental except `kiss-icp`, see [What's adopted vs. what's experimental](#whats-adopted-vs-whats-experimental). |
+| `--driver kiss-icp\|kiss-slam\|small-gicp` | SLAM driver to use. `kiss-icp` (default, adopted) is the upstream KISS-ICP scan-to-map LiDAR odometry. `kiss-slam` adds pose-graph optimization and MapClosures-based loop closures on top of the same odometry. `small-gicp` is scan-to-map VGICP via the `small_gicp` library's GaussianVoxelMap. All three pass the synthetic-figure8 gate; all but `kiss-icp` stay in experiments — see [What's adopted vs. what's experimental](#whats-adopted-vs-whats-experimental). |
 | `--max-range 80` | Drop scan points farther than this from the sensor (meters). |
 | `--voxel-size 0.5` | Local-map voxel grid (meters). Driver default kept if omitted. |
 | `--deskew` | Enable KISS-ICP motion-deskew. Default off because `.bin/.pcd` dumps don't typically carry per-point timestamps. |
@@ -130,11 +130,11 @@ kiss-slam` output also passes the gate (its map is pulled from
 kiss-icp's own multi-point-per-voxel local map representation),
 verified by
 `test_cli_slam_run_kiss_slam_passes_synthetic_figure8_gate`. The
-`--driver small-gicp` output recovers the trajectory to sub-cm ATE
-but its scan-stitched map (genuine scan-to-scan registration, no
-local map) falls slightly under the default AUC ≥ 0.95 / Chamfer ≤
-0.05 gate (typically AUC≈0.92, Chamfer≈0.10) — a visible artifact of
-the scan-to-map vs. scan-to-scan design choice.
+`--driver small-gicp` output also passes the gate after the Phase 27
+upgrade to scan-to-map VGICP (typically AUC≈0.99, Chamfer≈0.025,
+ATE≈2 mm), verified by
+`test_cli_slam_run_small_gicp_passes_synthetic_figure8_gate`. All
+three real drivers now clear the synthetic-figure8 gate.
 
 ## What's adopted vs. what's experimental
 
@@ -153,12 +153,12 @@ the scan-to-map vs. scan-to-scan design choice.
   real-drift / revisit data that exercises the loop-closure path.
 - `SmallGICPSlamDriver` (wraps `small_gicp`, MIT) is also in
   `ca.experiments.slam_run`. Exposed as `--driver small-gicp`. Does
-  **scan-to-scan** GICP — no local map, no constant-velocity prediction.
-  Faster per frame but drift accumulates unbounded; on the figure-8
-  dogfood case it has ~10× the ATE of `kiss-icp`. It stays in
-  experiments because the different speed / accuracy operating point is
-  worth keeping visible — a future low-latency use case may prefer it
-  over `kiss-icp`.
+  **scan-to-map VGICP** using `small_gicp.GaussianVoxelMap` as the
+  registration target, with constant-velocity prediction for the
+  initial guess. World-frame map is scan-stitched + voxel-downsampled
+  (the voxel map's quantized centers don't satisfy the AUC / Chamfer
+  gate on their own). After the Phase 27 upgrade from scan-to-scan it
+  also passes the synthetic-figure8 default gate.
 - `IdentityPassthroughSlamDriver` (under
   `ca.experiments.slam_run.identity_passthrough`) is a sentinel — always
   returns identity poses and concatenates the raw input frames as the

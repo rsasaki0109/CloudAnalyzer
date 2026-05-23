@@ -99,14 +99,14 @@ Reason: Best composite rank while preserving direct threshold-based ordering and
 
 ### Adopted
 
-`stability_window` is the stabilized core form of `threshold_guard`.
+`stability_window` is adopted directly as the current core strategy.
 
 Reason: Best composite rank by avoiding premature promotions while preserving perfect reject/promote accuracy on the shared scenarios.
 
 ### Not Adopted
 
-- `stability_window` remains experimental. Quality rank=1, stability rank=3, runtime rank=3, readability rank=2, extensibility rank=2.
-- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=2, readability rank=3, extensibility rank=1.
+- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=2, readability rank=1, extensibility rank=3.
+- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=1, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -168,14 +168,14 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
   odometry chain and produces the same trajectory KISS-ICP does.
   Held in experiments and re-evaluated once real-drift / revisit
   data lands.
-- `small_gicp` (`SmallGICPSlamDriver`). Wraps `small_gicp`. Pure
-  scan-to-scan GICP with no local map — faster per frame but ATE
-  is roughly an order of magnitude higher than `kiss_icp`'s on
-  the figure-8 dogfood case because drift accumulates unbounded.
-  Kept in experiments because the different operating point (low
-  per-frame cost) is interesting on its own; the slice will
-  promote it if a future use case prefers latency over absolute
-  accuracy.
+- `small_gicp` (`SmallGICPSlamDriver`). Wraps `small_gicp`.
+  Scan-to-map VGICP using a `GaussianVoxelMap` as the
+  registration target. After the Phase 27 upgrade from
+  scan-to-scan it also clears the synthetic-figure8 gate.
+  Held in experiments alongside `kiss_slam` because real-data
+  dogfood (KITTI / Newer-College drift / revisits) hasn't yet
+  separated the three drivers on anything but synthetic
+  geometry.
 - `identity_passthrough` is a sentinel: it returns identity poses
   and concatenates the input frames as the 'map'. Its job is to
   fail loudly on any case that has non-trivial motion so that a

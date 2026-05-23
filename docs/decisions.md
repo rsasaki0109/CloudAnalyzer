@@ -48,8 +48,8 @@ Reason: Best initial spatial coverage with acceptable planning cost and no extra
 
 ### Not Adopted
 
+- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=1, readability rank=1, extensibility rank=1.
 - `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=3, readability rank=3, extensibility rank=3.
-- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=2, readability rank=1, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -105,8 +105,8 @@ Reason: Best composite rank by avoiding premature promotions while preserving pe
 
 ### Not Adopted
 
-- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=2, readability rank=1, extensibility rank=3.
-- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=1, readability rank=3, extensibility rank=1.
+- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=3, readability rank=1, extensibility rank=3.
+- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=2, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -149,3 +149,27 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
 
 - Pick one GT-free metric (entropy / structure / MME) as the canonical lane.
 - Define a stable failure-mode contract (when does a GT-free score block CI?).
+
+## slam_run
+
+### Adopted
+
+- `kiss_icp` (`KissICPSlamDriver`). Wraps `kiss-icp` and is also
+  exposed from `ca/core/slam_run.py` so `cloudanalyzer_cli` and
+  `ca.benchmark` can depend only on `ca.core`.
+
+### Not Adopted
+
+- `identity_passthrough` is a sentinel: it returns identity poses
+  and concatenates the input frames as the 'map'. Its job is to
+  fail loudly on any case that has non-trivial motion so that a
+  regression in the real driver doesn't slip through.
+
+### Triggers To Reconsider
+
+- A second real driver lands (e.g. `kiss-slam` for LIO with loop
+  closure, or a richer scan-matcher). The slice then becomes a
+  proper bake-off and the adopted core driver may change.
+- Datasets stop being synthetic — once KITTI / Newer-College
+  fixtures are wired through `ca slam-run`, the evaluator can
+  compare drivers on real sequences.

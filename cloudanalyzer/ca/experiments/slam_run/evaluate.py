@@ -101,16 +101,22 @@ def run_slam_run_experiment(
             "stabilized_core_strategy": "KissICPSlamDriver",
             "reason": (
                 "KISS-ICP wraps a well-known scan-to-map LiDAR-odometry pipeline "
-                "available on PyPI under a BSD license. KISS-SLAM (its own pose-"
-                "graph + loop-closure extension) is now also in the bake-off but "
-                "does not consistently beat KISS-ICP on the synthetic cases the "
-                "slice ships — the trajectories are too short to trigger a loop "
-                "closure, so KISS-SLAM degrades to one round of pose-graph "
-                "optimization over KISS-ICP's odometry chain. KISS-ICP stays "
-                "core for the smaller, faster surface area; KISS-SLAM is held in "
-                "experiments and will be promoted once dogfood data with real "
-                "drift / revisits lands. identity_passthrough is the failure "
-                "floor (zero-motion sentinel)."
+                "available on PyPI under a BSD license. The slice currently runs "
+                "a 4-way bake-off (kiss_icp, kiss_slam, small_gicp, identity_"
+                "passthrough). On the bundled short synthetic cases the three "
+                "real drivers all clear the gate, but at different operating "
+                "points: kiss_icp uses scan-to-map with constant-velocity "
+                "prediction; kiss_slam adds pose-graph optimization on top of "
+                "kiss_icp (and would fire loop closures on longer sequences, "
+                "but the synthetic trajectories don't travel far enough to "
+                "trigger one); small_gicp does pure scan-to-scan GICP with no "
+                "local map and drifts ~10x more on the figure-8 case as a "
+                "result. kiss_icp wins the default slot for the smaller, "
+                "faster surface area and tighter ATE on the bundled cases. "
+                "kiss_slam and small_gicp stay in experiments and will be "
+                "re-evaluated once real-drift / revisit data lands. "
+                "identity_passthrough is the failure floor (zero-motion "
+                "sentinel)."
             ),
         },
     }
@@ -129,8 +135,9 @@ def render_experiment_section(report: dict) -> str:
     driver_lines = [
         "| Driver | Role |",
         "|---|---|",
-        "| `kiss_icp` | Adopted — wraps the `kiss-icp` package (BSD, PyPI). |",
-        "| `kiss_slam` | Experimental upgrade contender — wraps `kiss-slam` (KISS-ICP + pose-graph + MapClosures loop closure). Equivalent to `kiss_icp` on the synthetic cases that ship; promotion blocked on real-data dogfood with drift / revisits. |",
+        "| `kiss_icp` | Adopted — wraps the `kiss-icp` package (BSD, PyPI). Scan-to-map with constant-velocity prediction. |",
+        "| `kiss_slam` | Experimental — wraps `kiss-slam` (KISS-ICP + pose-graph + MapClosures loop closure). Equivalent to `kiss_icp` on the synthetic cases that ship; promotion blocked on real-data dogfood with drift / revisits. |",
+        "| `small_gicp` | Experimental — wraps `small_gicp` (MIT, PyPI). Pure scan-to-scan GICP, no local map; ~10× higher ATE than `kiss_icp` on the figure-8 case because drift accumulates unbounded. Different speed/accuracy operating point. |",
         "| `identity_passthrough` | Sentinel — identity poses + concatenated scans. Sets the failure floor. |",
     ]
 
@@ -170,6 +177,14 @@ def render_decision_section(report: dict) -> str:
             "  odometry chain and produces the same trajectory KISS-ICP does.",
             "  Held in experiments and re-evaluated once real-drift / revisit",
             "  data lands.",
+            "- `small_gicp` (`SmallGICPSlamDriver`). Wraps `small_gicp`. Pure",
+            "  scan-to-scan GICP with no local map — faster per frame but ATE",
+            "  is roughly an order of magnitude higher than `kiss_icp`'s on",
+            "  the figure-8 dogfood case because drift accumulates unbounded.",
+            "  Kept in experiments because the different operating point (low",
+            "  per-frame cost) is interesting on its own; the slice will",
+            "  promote it if a future use case prefers latency over absolute",
+            "  accuracy.",
             "- `identity_passthrough` is a sentinel: it returns identity poses",
             "  and concatenates the input frames as the 'map'. Its job is to",
             "  fail loudly on any case that has non-trivial motion so that a",
@@ -181,9 +196,11 @@ def render_decision_section(report: dict) -> str:
             "  `ca slam-run` and KISS-SLAM's loop-closure / pose-graph kicks",
             "  in. The KISS-ICP vs KISS-SLAM gap on those sequences flips the",
             "  default driver.",
-            "- A third real driver lands (e.g. `small_gicp` for faster GICP).",
-            "  Different speed / accuracy operating point may justify a",
-            "  driver-per-budget pick rather than a single core driver.",
+            "- A latency-sensitive use case lands (e.g. a real-time CI",
+            "  budget) where `small_gicp`'s lower per-frame cost matters more",
+            "  than its higher drift. The slice could then promote driver",
+            "  selection from \"single core driver\" to \"core driver per",
+            "  budget\".",
         ]
     )
 

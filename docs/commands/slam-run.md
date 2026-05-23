@@ -121,9 +121,16 @@ ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
 ```
 
 On a clean run this passes the suite's default gate
-(AUC=1.00, ATE≈1.4 mm, Coverage=100%). It is exercised in CI by
+(AUC=1.00, ATE≈1.6 mm, Coverage=100%). It is exercised in CI by
 `tests/test_slam_run.py::test_cli_slam_run_then_benchmark_eval_passes_synthetic_figure8`
-when the optional `[slam]` extra is installed.
+when the optional `[slam]` extra is installed. The suite's sensor
+heading is tangent to the figure-8 trajectory (vehicle-style), so it
+exercises both translation and rotation recovery. The other two real
+drivers (`--driver kiss-slam`, `--driver small-gicp`) recover the
+trajectory to sub-cm ATE but their scan-stitched maps fall slightly
+under the default AUC ≥ 0.95 / Chamfer ≤ 0.05 gate (typically
+AUC≈0.92, Chamfer≈0.10) — a visible artifact of the scan-to-map vs.
+scan-stitching design choice.
 
 ## What's adopted vs. what's experimental
 

@@ -4,6 +4,27 @@ All notable changes to CloudAnalyzer are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`ca slam-run`** (Phase 21) — drive a LiDAR-odometry pipeline
+  end-to-end on a sequence of scans and emit the trajectory + accumulated
+  map that the rest of CloudAnalyzer's evaluation stack already consumes.
+  The default driver wraps the [KISS-ICP](https://github.com/PRBonn/kiss-icp)
+  package; an `--evaluate` flag pipes the result straight into
+  `ca run-evaluate` against a reference map + trajectory. This is the
+  first step of CloudAnalyzer driving the SLAM itself rather than only
+  scoring third-party outputs. Install with `pip install 'cloudanalyzer[slam]'`.
+- New experiment slice `ca/experiments/slam_run/`: `KissICPSlamDriver`
+  (adopted, re-exported from `ca/core/slam_run.py`) and
+  `IdentityPassthroughSlamDriver` (sentinel — identity poses and
+  concatenated input frames; sets the slice's failure floor).
+- New core module `ca/core/slam_run.py` with the `SlamRunRequest`,
+  `SlamRunResult`, `SlamRunDriver` Protocol, frame loaders (KITTI `.bin`
+  + `.pcd` / `.ply` / `.csv`), TUM trajectory + PLY map writers, and a
+  vectorized rotation-matrix → quaternion helper.
+
 ## [0.3.0] - 2026-05-24
 
 Fast follow-on to `v0.2.0` focused on performance hardening of the hot paths,

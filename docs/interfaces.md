@@ -255,3 +255,23 @@ Result objects carry classification fields so reference-based and reference-free
 - `mode` — `exact` / `voxelized` / `sampled`; records what approximation was used.
 - `sampling_policy` — structured record of voxel sizes, thresholds, and alignment used to produce the metrics.
 
+
+## slam_run
+
+### Current Minimal Interface
+
+Promoted to `ca/core/slam_run.py`. The request/result contract,
+frame loaders, trajectory/map writers, and the adopted
+`KissICPSlamDriver` re-export all live there.
+
+- `SlamRunRequest` — frame paths, optional per-frame timestamps,
+  driver knobs (`max_range_m`, `voxel_size_m`, `deskew`,
+  `max_frames`).
+- `SlamRunResult` — `(N, 4, 4)` poses, per-pose timestamps,
+  accumulated map ndarray, runtime, frames processed, and a
+  driver-specific metadata block snapshotted into the summary
+  JSON so two runs can be proven to share config.
+- `SlamRunDriver` — `@runtime_checkable` Protocol; concrete
+  drivers live under `ca/experiments/slam_run/` and are picked up
+  by the slice evaluator.
+

@@ -24,6 +24,7 @@ class TestProcessDocs:
             "check_baseline_evolution",
             "ground_segmentation_evaluate",
             "map_evaluate",
+            "slam_run",
         ]
 
     def test_renderers_include_all_experiment_sections(self):
@@ -41,6 +42,7 @@ class TestProcessDocs:
         assert "check_baseline_evolution" in experiments_md
         assert "ground_segmentation_evaluate" in experiments_md
         assert "map_evaluate" in experiments_md
+        assert "slam_run" in experiments_md
         assert "Trigger To Re-run" in decisions_md
         assert "cloudanalyzer/ca/core/web_sampling.py" in interfaces_md
         assert "cloudanalyzer/ca/core/web_trajectory_sampling.py" in interfaces_md
@@ -69,5 +71,6 @@ class TestProcessDocs:
         assert "check_baseline_evolution" in experiments_path.read_text(encoding="utf-8")
         assert "ground_segmentation_evaluate" in experiments_path.read_text(encoding="utf-8")
         assert "map_evaluate" in experiments_path.read_text(encoding="utf-8")
+        assert "slam_run" in experiments_path.read_text(encoding="utf-8")
         assert "web_point_cloud_reduction" in decisions_path.read_text(encoding="utf-8")
         assert "Stable interfaces keep only" in interfaces_path.read_text(encoding="utf-8")

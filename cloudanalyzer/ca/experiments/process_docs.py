@@ -54,6 +54,12 @@ from ca.experiments.map_evaluate.evaluate import (
     render_interface_section as render_map_evaluate_interface_section,
     run_map_evaluate_experiment,
 )
+from ca.experiments.slam_run.evaluate import (
+    render_decision_section as render_slam_run_decision_section,
+    render_experiment_section as render_slam_run_experiment_section,
+    render_interface_section as render_slam_run_interface_section,
+    run_slam_run_experiment,
+)
 
 
 def build_experiment_reports(repetitions: int = 3) -> list[dict]:
@@ -68,6 +74,7 @@ def build_experiment_reports(repetitions: int = 3) -> list[dict]:
         run_check_baseline_evolution_experiment(repetitions=repetitions),
         run_ground_evaluate_experiment(repetitions=repetitions),
         run_map_evaluate_experiment(repetitions=repetitions),
+        run_slam_run_experiment(repetitions=1),
     ]
 
 
@@ -83,6 +90,7 @@ def render_experiments_markdown(reports: list[dict]) -> str:
         render_check_baseline_evolution_experiment_section(reports[5]),
         render_ground_evaluate_experiment_section(reports[6]),
         render_map_evaluate_experiment_section(reports[7]),
+        render_slam_run_experiment_section(reports[8]),
     ]
     return (
         "# Experiments\n\n"
@@ -104,6 +112,7 @@ def render_decisions_markdown(reports: list[dict]) -> str:
         render_check_baseline_evolution_decision_section(reports[5]),
         render_ground_evaluate_decision_section(reports[6]),
         render_map_evaluate_decision_section(reports[7]),
+        render_slam_run_decision_section(reports[8]),
     ]
     return "# Decisions\n\n" + "\n\n".join(sections) + "\n"
 
@@ -120,6 +129,7 @@ def render_interfaces_markdown(reports: list[dict]) -> str:
         render_check_baseline_evolution_interface_section(reports[5]),
         render_ground_evaluate_interface_section(reports[6]),
         render_map_evaluate_interface_section(reports[7]),
+        render_slam_run_interface_section(reports[8]),
     ]
     return (
         "# Interfaces\n\n"

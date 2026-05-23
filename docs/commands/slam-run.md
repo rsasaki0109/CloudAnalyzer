@@ -1,0 +1,122 @@
+# `ca slam-run`
+
+Drive a LiDAR-odometry pipeline end-to-end on a sequence of input scans and
+emit the artifacts that the rest of CloudAnalyzer's evaluation stack
+(`ca run-evaluate`, `ca check`, `ca history`) already consumes.
+
+This turns CloudAnalyzer from a "you bring the output, I'll score it" tool
+into a "give me your scans, I'll run a SLAM and score it for you" tool. The
+default driver wraps [KISS-ICP](https://github.com/PRBonn/kiss-icp), a small
+scan-to-map LiDAR-odometry registration pipeline available on PyPI under
+BSD.
+
+## Install
+
+```bash
+pip install 'cloudanalyzer[slam]'
+# or, if cloudanalyzer is already installed:
+pip install kiss-icp
+```
+
+The driver is loaded lazily, so `ca` itself works without `kiss-icp`
+installed — `ca slam-run` raises a clear error if the extra is missing.
+
+## Usage
+
+```bash
+ca slam-run <input> <output_dir> [--driver kiss-icp] [options]
+```
+
+`<input>` is either:
+
+- A directory of LiDAR scans named so they sort into temporal order
+  (`*.bin` KITTI Velodyne / `*.pcd` / `*.ply`); the first matching
+  extension wins. Or
+- A frames-list `.txt` with one scan path per line (relative paths are
+  resolved against the list file).
+
+`<output_dir>` will receive three files:
+
+- `trajectory.tum` — estimated sensor poses (TUM format).
+  Consumable by `ca traj-evaluate` and `ca run-evaluate`.
+- `map.ply` — accumulated world-frame map. Consumable by `ca evaluate`
+  / `ca map-evaluate` / `ca check`.
+- `summary.json` — driver name, runtime, frame count, the driver config
+  snapshot, and (when `--evaluate` is set) the nested `ca run-evaluate`
+  block.
+
+## Common options
+
+| Option | Description |
+|---|---|
+| `--driver kiss-icp` | SLAM driver to use. Only `kiss-icp` is wired today. |
+| `--max-range 80` | Drop scan points farther than this from the sensor (meters). |
+| `--voxel-size 0.5` | Local-map voxel grid (meters). Driver default kept if omitted. |
+| `--deskew` | Enable KISS-ICP motion-deskew. Default off because `.bin/.pcd` dumps don't typically carry per-point timestamps. |
+| `--max-frames N` | Cap how many frames are consumed. |
+| `--frame-period 0.1` | Fallback per-frame time spacing in seconds. |
+| `--evaluate` | After driving the SLAM, score the result against `--reference-map` and `--reference-trajectory` using `ca run-evaluate`. |
+| `--format-json` | Print the summary to stdout as JSON (artifacts still land in `<output_dir>`). |
+
+## Examples
+
+### Drive KISS-ICP on a folder of KITTI Velodyne sweeps
+
+```bash
+ca slam-run /data/kitti/00/velodyne runs/seq00 \
+    --driver kiss-icp \
+    --max-range 80 \
+    --voxel-size 0.5
+```
+
+Reads `*.bin` in lex order, drops the intensity column, and writes
+`runs/seq00/{trajectory.tum,map.ply,summary.json}`.
+
+### Drive + evaluate against a reference map / trajectory
+
+```bash
+ca slam-run scans/ runs/seq01 \
+    --max-range 80 \
+    --evaluate \
+    --reference-map     ref/map.pcd \
+    --reference-trajectory ref/poses.tum
+```
+
+The nested `evaluate` block in `summary.json` carries the same
+Chamfer / AUC / ATE / RPE numbers as a standalone `ca run-evaluate` call,
+so it slots straight into the existing `ca check` and
+`ca report-pr-comment` flows.
+
+### Drive on a frames-list
+
+```bash
+cat > frames.txt <<'EOF'
+sweeps/00.pcd
+sweeps/05.pcd
+sweeps/10.pcd
+EOF
+ca slam-run frames.txt runs/sub --driver kiss-icp
+```
+
+Useful when you want to subsample a long sequence without renaming files.
+
+## What's adopted vs. what's experimental
+
+- `KissICPSlamDriver` is the adopted driver — re-exported from
+  `ca.core.slam_run`. The CLI imports only from `ca.core`.
+- The slam_run experiment slice also keeps an `IdentityPassthroughSlamDriver`
+  sentinel under `ca.experiments.slam_run.identity_passthrough`. It always
+  returns identity poses and concatenates the raw input frames as the
+  "map", which makes it a useful failure floor for the slice's evaluator
+  (any real driver should beat it by a wide margin on a curved trajectory).
+- A second real driver (e.g. `kiss-slam` for LIO with loop closure) will
+  land alongside `KissICPSlamDriver` in `ca.experiments.slam_run` and the
+  evaluator will decide which one core re-exports next.
+
+## Related
+
+- `ca traj-evaluate` — score just the trajectory against a reference TUM.
+- `ca evaluate` / `ca map-evaluate` — score just the map against a reference cloud.
+- `ca run-evaluate` — score both map + trajectory together.
+- `ca benchmark eval` — wrap one `ca run-evaluate` call as a benchmark
+  suite step (frozen reference + gate).

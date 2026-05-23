@@ -1,7 +1,7 @@
 """Detailed single point cloud statistics."""
 
 import numpy as np
-import open3d as o3d
+from scipy.spatial import cKDTree
 
 from ca.io import load_point_cloud
 from ca.point_summary import axis_summary, require_points
@@ -32,16 +32,15 @@ def compute_stats(path: str) -> dict:
     # Sample for large clouds to keep nearest-neighbor spacing computation bounded.
     if num_points > 500_000:
         sample_idx = np.random.default_rng(42).choice(num_points, size=500_000, replace=False)
-        sample_pcd = pcd.select_by_index(sample_idx.tolist())
+        sample_points = points[sample_idx]
     else:
-        sample_pcd = pcd
+        sample_points = points
 
-    tree = o3d.geometry.KDTreeFlann(pcd)
-    sample_points = np.asarray(sample_pcd.points)
-    nn_dists = np.zeros(len(sample_points))
-    for i, pt in enumerate(sample_points):
-        _, _, dist_sq = tree.search_knn_vector_3d(pt, 2)  # k=2: self + nearest
-        nn_dists[i] = np.sqrt(dist_sq[1])
+    tree = cKDTree(points)
+    # k=2: a sample point is itself in the full cloud, so its 1-NN is itself
+    # (distance 0); take the second-nearest as the spacing.
+    distances, _ = tree.query(sample_points, k=2)
+    nn_dists = np.asarray(distances[:, 1], dtype=np.float64)
 
     result = {
         "path": path,

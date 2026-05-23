@@ -86,7 +86,7 @@ Reason: Best composite rank while preserving direct threshold-based ordering and
 
 ### Not Adopted
 
-- `signature_cluster` remains experimental. Quality rank=2, stability rank=3, runtime rank=1, readability rank=2, extensibility rank=3.
+- `signature_cluster` remains experimental. Quality rank=2, stability rank=3, runtime rank=2, readability rank=2, extensibility rank=3.
 - `pareto_frontier` remains experimental. Quality rank=3, stability rank=2, runtime rank=3, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
@@ -99,14 +99,14 @@ Reason: Best composite rank while preserving direct threshold-based ordering and
 
 ### Adopted
 
-`stability_window` is adopted directly as the current core strategy.
+`stability_window` is the stabilized core form of `threshold_guard`.
 
 Reason: Best composite rank by avoiding premature promotions while preserving perfect reject/promote accuracy on the shared scenarios.
 
 ### Not Adopted
 
-- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=1, readability rank=1, extensibility rank=3.
-- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=3, readability rank=3, extensibility rank=1.
+- `stability_window` remains experimental. Quality rank=1, stability rank=3, runtime rank=3, readability rank=2, extensibility rank=2.
+- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=2, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -168,6 +168,14 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
   odometry chain and produces the same trajectory KISS-ICP does.
   Held in experiments and re-evaluated once real-drift / revisit
   data lands.
+- `small_gicp` (`SmallGICPSlamDriver`). Wraps `small_gicp`. Pure
+  scan-to-scan GICP with no local map — faster per frame but ATE
+  is roughly an order of magnitude higher than `kiss_icp`'s on
+  the figure-8 dogfood case because drift accumulates unbounded.
+  Kept in experiments because the different operating point (low
+  per-frame cost) is interesting on its own; the slice will
+  promote it if a future use case prefers latency over absolute
+  accuracy.
 - `identity_passthrough` is a sentinel: it returns identity poses
   and concatenates the input frames as the 'map'. Its job is to
   fail loudly on any case that has non-trivial motion so that a
@@ -179,6 +187,8 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
   `ca slam-run` and KISS-SLAM's loop-closure / pose-graph kicks
   in. The KISS-ICP vs KISS-SLAM gap on those sequences flips the
   default driver.
-- A third real driver lands (e.g. `small_gicp` for faster GICP).
-  Different speed / accuracy operating point may justify a
-  driver-per-budget pick rather than a single core driver.
+- A latency-sensitive use case lands (e.g. a real-time CI
+  budget) where `small_gicp`'s lower per-frame cost matters more
+  than its higher drift. The slice could then promote driver
+  selection from "single core driver" to "core driver per
+  budget".

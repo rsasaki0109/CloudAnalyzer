@@ -56,6 +56,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **`synthetic-figure8` now exercises rotation, not just translation**
+  (Phase 25). The sensor heading is now tangent to the figure-8
+  trajectory (vehicle-style), and both the trajectory and the reference
+  map are rotated so the first sensor pose is the identity. Previously
+  every pose had `qw=1` and the suite only measured translation
+  recovery — the drivers' rotation estimation was untested. With yaw
+  added, `kiss_icp`'s scan-to-map representation still passes the
+  default gate (AUC=1.00, ATE≈1.6 mm) while the scan-stitched maps
+  from `kiss_slam` and `small_gicp` fall just under the AUC threshold
+  (~0.92) — a real, CI-visible artifact of the scan-to-map vs.
+  scan-stitching design choice. A new test
+  `test_all_three_drivers_recover_yaw_figure8_trajectory` asserts every
+  real driver still recovers the trajectory to within 10 cm ATE on the
+  new suite, so any driver that loses heading tracking would be caught
+  immediately.
+
+### Changed
+
 - `scripts/build_synthetic_slam_suite.py`: `_planar_map()` now emits a
   fully boxed room (four walls at x=±8 and y=±8 instead of only two).
   The two-wall layout left east/west translation under-constrained, so

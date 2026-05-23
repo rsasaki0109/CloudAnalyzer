@@ -73,15 +73,72 @@ def _planar_map(seed: int = 42) -> np.ndarray:
     )
 
 
-def _figure8_trajectory(n: int = 200) -> tuple[np.ndarray, np.ndarray]:
-    """Return (timestamps, positions) for a planar figure-8 of ``n`` poses."""
+def _figure8_trajectory(
+    n: int = 200,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """Return ``(timestamps, positions, yaws, raw_yaw0)`` for a planar figure-8.
+
+    The sensor's heading is tangent to the trajectory at each frame
+    (vehicle-style), so yaw varies over the loop. The trajectory and
+    yaw series are both rotated so that the first pose is the identity
+    (position at origin, yaw = 0). That makes the reference comparable
+    to what a SLAM driver naturally outputs — every driver places its
+    first frame at identity and accumulates from there.
+
+    The fourth return value is the raw (pre-rotation) tangent yaw at
+    ``t=0``. Callers pass it to ``_rotate_map_into_slam_frame`` to bring
+    the bundled map into the same coordinate system.
+    """
+
     t = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
     x = 5.0 * np.sin(t)
     y = 5.0 * np.sin(t) * np.cos(t)
+    dx = 5.0 * np.cos(t)
+    dy = 5.0 * np.cos(2.0 * t)
+    raw_yaws = np.arctan2(dy, dx)
+    yaw0 = float(raw_yaws[0])
+    c, s = float(np.cos(yaw0)), float(np.sin(yaw0))
+    x_rot = c * x + s * y
+    y_rot = -s * x + c * y
     z = np.zeros_like(t)
-    positions = np.column_stack([x, y, z])
+    positions = np.column_stack([x_rot, y_rot, z])
+    yaws = raw_yaws - yaw0
+    yaws = np.arctan2(np.sin(yaws), np.cos(yaws))
     timestamps = np.arange(n) * 0.1
-    return timestamps, positions
+    return timestamps, positions, yaws, yaw0
+
+
+def _rotate_map_into_slam_frame(map_world: np.ndarray, yaw0: float) -> np.ndarray:
+    """Rotate the world map so it lives in the same frame as ``_figure8_trajectory``.
+
+    ``_figure8_trajectory`` rotates the raw figure-8 by ``-yaw0`` so the
+    first sensor pose is identity. The bundled map needs the same
+    rotation so scans built from ``(map - position) @ R(yaw)`` agree with
+    the reference trajectory.
+    """
+
+    c, s = float(np.cos(yaw0)), float(np.sin(yaw0))
+    R = np.array(
+        [[c, s, 0.0], [-s, c, 0.0], [0.0, 0.0, 1.0]],
+        dtype=np.float64,
+    )
+    return map_world @ R.T
+
+
+def _yaw_to_quaternion(yaw: float) -> tuple[float, float, float, float]:
+    """Return ``(qx, qy, qz, qw)`` for a yaw-only rotation."""
+
+    return 0.0, 0.0, float(np.sin(yaw / 2.0)), float(np.cos(yaw / 2.0))
+
+
+def _rotation_z(yaw: float) -> np.ndarray:
+    """Return the 3×3 rotation matrix for a yaw-only rotation."""
+
+    c, s = np.cos(yaw), np.sin(yaw)
+    return np.array(
+        [[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]],
+        dtype=np.float64,
+    )
 
 
 def _write_pcd(points: np.ndarray, path: Path) -> None:
@@ -91,18 +148,27 @@ def _write_pcd(points: np.ndarray, path: Path) -> None:
     o3d.io.write_point_cloud(str(path), pcd, write_ascii=False)
 
 
-def _write_tum(timestamps: np.ndarray, positions: np.ndarray, path: Path) -> None:
+def _write_tum(
+    timestamps: np.ndarray,
+    positions: np.ndarray,
+    yaws: np.ndarray,
+    path: Path,
+) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    lines = [
-        f"{ts:.6f} {x:.6f} {y:.6f} {z:.6f} 0.000000 0.000000 0.000000 1.000000"
-        for ts, (x, y, z) in zip(timestamps, positions)
-    ]
+    lines = []
+    for ts, (x, y, z), yaw in zip(timestamps, positions, yaws):
+        qx, qy, qz, qw = _yaw_to_quaternion(float(yaw))
+        lines.append(
+            f"{ts:.6f} {x:.6f} {y:.6f} {z:.6f} "
+            f"{qx:.6f} {qy:.6f} {qz:.6f} {qw:.6f}"
+        )
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def _write_scans(
     map_world: np.ndarray,
     positions: np.ndarray,
+    yaws: np.ndarray,
     out_dir: Path,
     *,
     stride: int = 1,
@@ -112,20 +178,24 @@ def _write_scans(
 ) -> int:
     """Write per-frame raw sensor-frame scans to ``out_dir``.
 
-    The figure-8 trajectory has identity rotation throughout (qw=1), so
-    each scan is just ``map_world - position`` filtered by ``max_range`` and
-    perturbed by per-scan Gaussian noise.
+    For each frame ``i`` the scan is
+    ``R(yaw_i)^T @ (map_world - position_i)`` filtered by ``max_range``
+    and perturbed by per-scan Gaussian noise. With the yaw rotation
+    applied, the drivers actually have to recover heading and not just
+    translation.
 
     Default ``stride=1`` writes one scan per reference pose (~0.16 m
     per-frame motion). Coarser strides (e.g. stride 4 = ~0.62 m/frame)
     starve KISS-ICP's constant-velocity bootstrap and the trajectory
     comes back the wrong direction. Returns the number of scans written.
     """
+
     out_dir.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(seed)
     indices = list(range(0, positions.shape[0], stride))
     for j, i in enumerate(indices):
-        sensor_pts = map_world - positions[i][np.newaxis, :]
+        R_t = _rotation_z(float(yaws[i])).T
+        sensor_pts = (map_world - positions[i][np.newaxis, :]) @ R_t.T
         dists = np.linalg.norm(sensor_pts, axis=1)
         sensor_pts = sensor_pts[dists <= max_range]
         if noise_sigma > 0 and sensor_pts.size > 0:
@@ -137,11 +207,11 @@ def _write_scans(
 SUITE_YAML = """\
 version: 1
 name: synthetic-figure8
-description: Tiny synthetic figure-8 trajectory with a planar room map. Use it to smoke-test `ca benchmark` without external data.
+description: Tiny synthetic figure-8 trajectory with a closed planar room map and tangent-aligned sensor heading. Use it to smoke-test `ca benchmark` without external data.
 license: MIT (synthetic data generated by scripts/build_synthetic_slam_suite.py)
 sequences:
   default:
-    description: 200-pose figure-8 over a ~1.6k point planar room with two raised walls.
+    description: 200-pose figure-8 over a ~2.3k point closed planar room with four raised walls. Sensor heading is tangent to the trajectory (vehicle-style), so the suite exercises rotation estimation alongside translation.
     reference_map: reference/map.pcd
     reference_trajectory: reference/trajectory.tum
 sample_outputs:
@@ -162,21 +232,29 @@ def build(output_dir: Path) -> None:
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    map_ref = _planar_map()
-    timestamps, traj_ref = _figure8_trajectory()
+    # _figure8_trajectory rotates the figure-8 so the initial sensor pose
+    # is identity. Apply the matching rotation to the planar map so the
+    # SLAM driver's first frame and the bundled reference map share a
+    # coordinate system.
+    timestamps, traj_ref, yaws_ref, raw_yaw0 = _figure8_trajectory()
+    map_ref = _rotate_map_into_slam_frame(_planar_map(), raw_yaw0)
 
     _write_pcd(map_ref, output_dir / "reference" / "map.pcd")
-    _write_tum(timestamps, traj_ref, output_dir / "reference" / "trajectory.tum")
+    _write_tum(timestamps, traj_ref, yaws_ref, output_dir / "reference" / "trajectory.tum")
 
     # Sample passing output: reference + small noise. Determinism via fixed seed.
     rng = np.random.default_rng(7)
     map_pass = map_ref + rng.normal(0, 0.02, size=map_ref.shape)
     traj_pass = traj_ref + rng.normal(0, 0.05, size=traj_ref.shape)
+    yaws_pass = yaws_ref + rng.normal(0, 0.02, size=yaws_ref.shape)
 
     _write_pcd(map_pass, output_dir / "sample_outputs" / "map_pass.pcd")
-    _write_tum(timestamps, traj_pass, output_dir / "sample_outputs" / "trajectory_pass.tum")
+    _write_tum(
+        timestamps, traj_pass, yaws_pass,
+        output_dir / "sample_outputs" / "trajectory_pass.tum",
+    )
 
-    _write_scans(map_ref, traj_ref, output_dir / "scans")
+    _write_scans(map_ref, traj_ref, yaws_ref, output_dir / "scans")
 
     (output_dir / "suite.yaml").write_text(SUITE_YAML, encoding="utf-8")
 

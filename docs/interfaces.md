@@ -209,7 +209,7 @@ class BaselineEvolutionSnapshot:
 
 - Stable core: `cloudanalyzer/ca/core/check_baseline_evolution.py`
 - Experimental space: `cloudanalyzer/ca/experiments/check_baseline_evolution/`
-- Current stabilized lineage: `threshold_guard` -> `stability_window`
+- Current stabilized lineage: `stability_window` adopted directly in core
 
 
 ## ground_segmentation_evaluate
@@ -242,9 +242,11 @@ class GroundEvaluateRequest:
 
 ## map_evaluate
 
-### Current Minimal Interface (experimental)
+### Current Minimal Interface
 
-Not promoted to `ca/core` yet. Current request/result shapes live in `cloudanalyzer/ca/experiments/map_evaluate/common.py`.
+Promoted to `ca/core/map_evaluate.py`. The request/result contract,
+shared helpers, and adopted `NNThresholdMapEvaluateStrategy` all live there.
+`ca/experiments/map_evaluate/{common,nn_thresholds}.py` re-export from core for back-compat.
 
 Result objects carry classification fields so reference-based and reference-free metrics stay in separate lanes:
 

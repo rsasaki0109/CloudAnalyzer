@@ -79,9 +79,14 @@ def run_map_evaluate_experiment(
         ],
         "results": rows,
         "decision": {
-            "selected_experiment": None,
-            "stabilized_core_strategy": None,
-            "reason": "Not yet promoted to core; keep iterating on metrics and IO formats.",
+            "selected_experiment": "nn_thresholds",
+            "stabilized_core_strategy": "nn_thresholds",
+            "reason": (
+                "Promoted to ca.core.map_evaluate as the reference-based "
+                "(GT-aware) MapEval-style nearest-neighbor threshold strategy. "
+                "voxel_entropy remains experimental as the orthogonal "
+                "reference-free lane until a single GT-free metric is settled."
+            ),
         },
     }
 
@@ -136,16 +141,18 @@ def render_decision_section(report: dict) -> str:
             "",
             "### Adopted",
             "",
-            "No strategy is adopted yet (still experimental).",
+            "- `nn_thresholds` (reference-based, GT-aware MapEval-style accuracy/completeness@τ).",
+            "  Promoted to `ca/core/map_evaluate.py` as `NNThresholdMapEvaluateStrategy`.",
             "",
             "### Not Adopted",
             "",
-            "- All strategies remain experimental until we settle IO formats and performance constraints.",
+            "- `voxel_entropy` (reference-free self-consistency proxy) stays under `ca/experiments`",
+            "  as the orthogonal GT-free lane until a single reference-free metric is settled.",
             "",
-            "### Trigger To Promote",
+            "### Trigger To Promote `voxel_entropy`",
             "",
-            "- A stable request/result contract is needed by the CLI or library callers.",
-            "- We have at least two strategies with clear trade-offs and representative datasets.",
+            "- Pick one GT-free metric (entropy / structure / MME) as the canonical lane.",
+            "- Define a stable failure-mode contract (when does a GT-free score block CI?).",
         ]
     )
 
@@ -155,10 +162,11 @@ def render_interface_section(report: dict) -> str:
         [
             "## map_evaluate",
             "",
-            "### Current Minimal Interface (experimental)",
+            "### Current Minimal Interface",
             "",
-            "Not promoted to `ca/core` yet. Current request/result shapes live in "
-            "`cloudanalyzer/ca/experiments/map_evaluate/common.py`.",
+            "Promoted to `ca/core/map_evaluate.py`. The request/result contract,",
+            "shared helpers, and adopted `NNThresholdMapEvaluateStrategy` all live there.",
+            "`ca/experiments/map_evaluate/{common,nn_thresholds}.py` re-export from core for back-compat.",
             "",
             "Result objects carry classification fields so reference-based and reference-free metrics stay in separate lanes:",
             "",

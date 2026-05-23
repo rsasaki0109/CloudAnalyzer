@@ -45,17 +45,29 @@ def split(
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    tiles: dict[tuple[int, int], list[int]] = {}
-    for idx in range(len(points)):
-        key = (int(indices[idx, 0]), int(indices[idx, 1]))
-        if key not in tiles:
-            tiles[key] = []
-        tiles[key].append(idx)
+    # Bucket points into tiles in C: find each unique (i, j) cell, then sort
+    # point indices by their tile id so a single contiguous slice gives each
+    # tile's index list. Previously this was a per-point Python loop, which
+    # made multi-million-point splits unusable.
+    if len(points) > 0:
+        unique_keys, inverse = np.unique(indices, axis=0, return_inverse=True)
+        inverse = np.asarray(inverse).reshape(-1)
+        order = np.argsort(inverse, kind="stable")
+        sorted_inverse = inverse[order]
+        boundaries = np.flatnonzero(np.diff(sorted_inverse)) + 1
+        group_starts = np.concatenate([[0], boundaries])
+        group_ends = np.concatenate([boundaries, [len(order)]])
+        tiles: dict[tuple[int, int], np.ndarray] = {
+            (int(unique_keys[k, 0]), int(unique_keys[k, 1])): order[start:end]
+            for k, (start, end) in enumerate(zip(group_starts, group_ends))
+        }
+    else:
+        tiles = {}
 
     tile_info = []
     ext = Path(input_path).suffix
     for (i, j), point_indices in sorted(tiles.items()):
-        tile_pcd = pcd.select_by_index(point_indices)
+        tile_pcd = pcd.select_by_index(point_indices.tolist())
         filename = f"tile_{i:04d}_{j:04d}{ext}"
         tile_path = str(out / filename)
         save_point_cloud(tile_path, tile_pcd)

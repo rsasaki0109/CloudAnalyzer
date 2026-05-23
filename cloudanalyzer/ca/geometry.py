@@ -33,7 +33,6 @@ questions.
 from __future__ import annotations
 
 import math
-import struct
 import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -114,23 +113,23 @@ def _read_ply_header(path: Path) -> tuple[str, int, list[tuple[str, str]]]:
     return ply_format, vertex_count, properties
 
 
-_BINARY_TYPE_TO_STRUCT = {
-    "char": "b",
-    "int8": "b",
-    "uchar": "B",
-    "uint8": "B",
-    "short": "h",
-    "int16": "h",
-    "ushort": "H",
-    "uint16": "H",
-    "int": "i",
-    "int32": "i",
-    "uint": "I",
-    "uint32": "I",
-    "float": "f",
-    "float32": "f",
-    "double": "d",
-    "float64": "d",
+_BINARY_TYPE_TO_NUMPY = {
+    "char": "i1",
+    "int8": "i1",
+    "uchar": "u1",
+    "uint8": "u1",
+    "short": "i2",
+    "int16": "i2",
+    "ushort": "u2",
+    "uint16": "u2",
+    "int": "i4",
+    "int32": "i4",
+    "uint": "u4",
+    "uint32": "u4",
+    "float": "f4",
+    "float32": "f4",
+    "double": "f8",
+    "float64": "f8",
 }
 
 
@@ -143,10 +142,17 @@ def _read_ply_vertices(path: Path, wanted: tuple[str, ...]) -> dict[str, np.ndar
     test fixtures here). Big-endian and uncommon list properties are not
     supported; an explicit error is raised so users see why instead of
     getting silent corruption.
+
+    The vertex block is read in one ``np.loadtxt`` (ASCII) or
+    ``np.frombuffer`` (binary) call so 3DGS exports with millions of splats
+    don't pay a Python-loop tax.
     """
     ply_format, vertex_count, properties = _read_ply_header(path)
     wanted_set = set(wanted)
+    prop_names = [name for _, name in properties]
+    num_props = len(properties)
 
+    columns: dict[str, np.ndarray]
     if ply_format == "ascii":
         with path.open("r", encoding="ascii", errors="replace") as f:
             # Skip the header again (we already consumed it for layout).
@@ -156,49 +162,67 @@ def _read_ply_vertices(path: Path, wanted: tuple[str, ...]) -> dict[str, np.ndar
                     raise ValueError(f"{path}: truncated PLY header")
                 if line.strip() == "end_header":
                     break
-            columns: dict[str, list[float]] = {name: [] for _, name in properties}
-            for _ in range(vertex_count):
-                row = f.readline()
-                if not row:
-                    raise ValueError(f"{path}: truncated vertex block")
-                values = row.split()
-                if len(values) < len(properties):
-                    raise ValueError(
-                        f"{path}: vertex row has {len(values)} fields, expected {len(properties)}"
+            if vertex_count == 0:
+                raw = np.empty((0, num_props), dtype=np.float64)
+            else:
+                try:
+                    raw = np.loadtxt(
+                        f, max_rows=vertex_count, dtype=np.float64, ndmin=2
                     )
-                for (_, name), value in zip(properties, values):
-                    columns[name].append(float(value))
+                except ValueError as exc:
+                    raise ValueError(
+                        f"{path}: failed to parse ASCII vertex block: {exc}"
+                    ) from exc
+        if raw.shape[0] < vertex_count:
+            raise ValueError(
+                f"{path}: truncated vertex block "
+                f"({raw.shape[0]}/{vertex_count} rows)"
+            )
+        if raw.shape[1] < num_props:
+            raise ValueError(
+                f"{path}: vertex row has {raw.shape[1]} fields, expected {num_props}"
+            )
+        columns = {name: raw[:, idx] for idx, name in enumerate(prop_names)}
     elif ply_format == "binary_little_endian":
-        fmt_chars: list[str] = []
-        sizes: list[int] = []
-        for ply_type, _ in properties:
-            char = _BINARY_TYPE_TO_STRUCT.get(ply_type)
-            if char is None:
+        dtype_fields: list[tuple[str, str]] = []
+        seen: set[str] = set()
+        for ply_type, name in properties:
+            np_code = _BINARY_TYPE_TO_NUMPY.get(ply_type)
+            if np_code is None:
                 raise ValueError(
                     f"{path}: unsupported PLY property type {ply_type!r}"
                 )
-            fmt_chars.append(char)
-            sizes.append(struct.calcsize(char))
-        record_size = sum(sizes)
-        record_fmt = "<" + "".join(fmt_chars)
+            # numpy structured dtype requires unique field names; in the
+            # unlikely case of a duplicate, suffix it so np.frombuffer still
+            # parses the record layout — duplicates are dropped at the
+            # ``columns`` assignment below anyway (last-wins).
+            field_name = name
+            if field_name in seen:
+                suffix = 1
+                while f"{name}__dup{suffix}" in seen:
+                    suffix += 1
+                field_name = f"{name}__dup{suffix}"
+            seen.add(field_name)
+            dtype_fields.append((field_name, "<" + np_code))
+        record_dtype = np.dtype(dtype_fields)
+        record_size = record_dtype.itemsize
         with path.open("rb") as fb:
             # Re-skip header on the binary handle.
             while True:
-                raw = fb.readline()
-                if not raw:
+                raw_line = fb.readline()
+                if not raw_line:
                     raise ValueError(f"{path}: truncated PLY header")
-                if raw.rstrip(b"\r\n") == b"end_header":
+                if raw_line.rstrip(b"\r\n") == b"end_header":
                     break
             payload = fb.read(record_size * vertex_count)
         if len(payload) < record_size * vertex_count:
             raise ValueError(f"{path}: truncated vertex block")
-        columns_b: dict[str, list[float]] = {name: [] for _, name in properties}
-        for i in range(vertex_count):
-            chunk = payload[i * record_size : (i + 1) * record_size]
-            unpacked = struct.unpack(record_fmt, chunk)
-            for (_, name), value in zip(properties, unpacked):
-                columns_b[name].append(float(value))
-        columns = columns_b
+        structured = np.frombuffer(payload, dtype=record_dtype, count=vertex_count)
+        field_names = record_dtype.names
+        assert field_names is not None  # structured dtype always has names
+        columns = {}
+        for field_name, name in zip(field_names, prop_names):
+            columns[name] = np.asarray(structured[field_name], dtype=np.float64)
     else:
         raise ValueError(
             f"{path}: PLY format {ply_format!r} not supported "

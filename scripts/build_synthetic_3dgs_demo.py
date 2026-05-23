@@ -6,12 +6,21 @@ Layout produced::
     benchmarks/3dgs/synthetic-room/
     ├── README.md
     ├── reference.pcd          # planar room with two walls (same shape as the SLAM demo)
-    ├── gaussians.ply          # 3DGS-style PLY: xyz + opacity (logit), ~50% high alpha
+    ├── gaussians.ply          # 3DGS PLY: xyz + opacity + scale_0..2 + rot_0..3, ~50% high alpha
     └── gaussians_dense.ply    # same scene but only high-opacity splats (sanity case)
 
 Both PLY files are written as ASCII so the diff is reviewable and ``ca
 geometry-evaluate`` tests can read them without binary plumbing. Real 3DGS
 exports are binary little-endian; the geometry adapter supports both.
+
+The PLY layout matches the standard INRIA 3DGS export schema:
+
+- ``x, y, z, opacity`` — splat center and pre-sigmoid opacity (logit)
+- ``scale_0, scale_1, scale_2`` — log-σ per axis
+- ``rot_0, rot_1, rot_2, rot_3`` — orientation quaternion (``w, x, y, z``)
+
+so ``ca geometry-evaluate --splat-method ellipsoid`` can be exercised against
+this fixture without external data.
 """
 
 from __future__ import annotations
@@ -66,24 +75,46 @@ def _write_pcd(points: np.ndarray, path: Path) -> None:
 
 
 def _write_ascii_gaussian_ply(
-    points: np.ndarray, opacity_logits: np.ndarray, path: Path
+    points: np.ndarray,
+    opacity_logits: np.ndarray,
+    scales_log: np.ndarray,
+    quats_wxyz: np.ndarray,
+    path: Path,
 ) -> None:
-    if points.shape[0] != opacity_logits.shape[0]:
+    n = points.shape[0]
+    if n != opacity_logits.shape[0]:
         raise ValueError("points and opacities must have equal length")
+    if scales_log.shape != (n, 3):
+        raise ValueError(f"scales_log must be ({n}, 3); got {scales_log.shape}")
+    if quats_wxyz.shape != (n, 4):
+        raise ValueError(f"quats_wxyz must be ({n}, 4); got {quats_wxyz.shape}")
     path.parent.mkdir(parents=True, exist_ok=True)
     header = [
         "ply",
         "format ascii 1.0",
-        f"element vertex {points.shape[0]}",
+        f"element vertex {n}",
         "property float x",
         "property float y",
         "property float z",
         "property float opacity",
+        "property float scale_0",
+        "property float scale_1",
+        "property float scale_2",
+        "property float rot_0",
+        "property float rot_1",
+        "property float rot_2",
+        "property float rot_3",
         "end_header",
     ]
     rows = [
-        f"{x:.6f} {y:.6f} {z:.6f} {op:.6f}"
-        for (x, y, z), op in zip(points, opacity_logits)
+        (
+            f"{x:.6f} {y:.6f} {z:.6f} {op:.6f} "
+            f"{s0:.6f} {s1:.6f} {s2:.6f} "
+            f"{rw:.6f} {rx:.6f} {ry:.6f} {rz:.6f}"
+        )
+        for (x, y, z), op, (s0, s1, s2), (rw, rx, ry, rz) in zip(
+            points, opacity_logits, scales_log, quats_wxyz
+        )
     ]
     path.write_text("\n".join(header + rows) + "\n", encoding="ascii")
 
@@ -101,6 +132,9 @@ without external data. Both PLY files are deterministic; rerun
 | `gaussians.ply` | reference centers + small noise; mixed opacity | Half the splats are "high alpha" (rendered alpha ≥ 0.6); the rest are "low alpha" (≤ 0.2) so the opacity filter has something to drop |
 | `gaussians_dense.ply` | only the high-alpha half | Sanity case: should score very close to the reference even without opacity filtering |
 
+Both PLYs carry the full 3DGS schema (``x, y, z, opacity, scale_0..2, rot_0..3``)
+so the splat-aware ellipsoid sampler can be exercised without external data.
+
 Example commands:
 
 ```bash
@@ -112,8 +146,21 @@ ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \\
 ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \\
                     benchmarks/3dgs/synthetic-room/reference.pcd \\
                     --opacity-threshold 0.5
+
+# Surface-sample each splat as an anisotropic ellipsoid before scoring.
+ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \\
+                    benchmarks/3dgs/synthetic-room/reference.pcd \\
+                    --splat-method ellipsoid --splat-samples 12 \\
+                    --opacity-threshold 0.5
 ```
 """
+
+
+def _identity_quaternions(n: int) -> np.ndarray:
+    """Return ``n`` identity quaternions in ``(w, x, y, z)`` order."""
+    quats = np.zeros((n, 4), dtype=np.float64)
+    quats[:, 0] = 1.0
+    return quats
 
 
 def build(output_dir: Path) -> None:
@@ -138,18 +185,39 @@ def build(output_dir: Path) -> None:
     alpha = np.concatenate([high_alpha, low_alpha])
     logits = np.array([_logit(a) for a in alpha], dtype=np.float64)
 
+    # 3DGS log-σ. Keep splats tiny (~2-4 cm radius) so the demo stays a
+    # surface proxy rather than a cloud of fat blobs.
+    n = points.shape[0]
+    log_sigma_high = np.log(0.02)
+    log_sigma_low = np.log(0.04)
+    scales_log = np.empty((n, 3), dtype=np.float64)
+    scales_log[: centers_high.shape[0]] = log_sigma_high
+    scales_log[centers_high.shape[0] :] = log_sigma_low
+
+    # Identity orientation — the demo doesn't need rotated splats to
+    # exercise the ellipsoid sampler; tests/test_geometry_splat_ellipsoid.py
+    # already covers rotation in synthetic units.
+    quats = _identity_quaternions(n)
+
     # Deterministic shuffle so the file ordering exercises the opacity
     # filter (otherwise high-alpha splats would all come first).
-    order = rng.permutation(points.shape[0])
+    order = rng.permutation(n)
     points = points[order]
     logits = logits[order]
+    scales_log = scales_log[order]
+    quats = quats[order]
 
-    _write_ascii_gaussian_ply(points, logits, output_dir / "gaussians.ply")
+    _write_ascii_gaussian_ply(
+        points, logits, scales_log, quats, output_dir / "gaussians.ply"
+    )
 
     # Dense variant = only high-alpha splats, preserved order.
+    dense_count = centers_high.shape[0]
     _write_ascii_gaussian_ply(
         centers_high,
         np.array([_logit(a) for a in high_alpha], dtype=np.float64),
+        np.full((dense_count, 3), log_sigma_high, dtype=np.float64),
+        _identity_quaternions(dense_count),
         output_dir / "gaussians_dense.ply",
     )
 

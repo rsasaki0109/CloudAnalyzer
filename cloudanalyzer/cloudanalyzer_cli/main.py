@@ -700,10 +700,10 @@ def map_evaluate_cmd(
         import numpy as np
 
         from ca.io import load_point_cloud
-
-        # Import experiments lazily so core/library callers remain decoupled.
-        from ca.experiments.map_evaluate.nn_thresholds import NNThresholdMapEvaluateStrategy
-        from ca.experiments.map_evaluate.common import MapEvaluateRequest
+        from ca.core.map_evaluate import (
+            MapEvaluateRequest,
+            NNThresholdMapEvaluateStrategy,
+        )
     except Exception as e:
         _handle_error(e)
 

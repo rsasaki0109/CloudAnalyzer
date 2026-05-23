@@ -227,3 +227,77 @@ def test_cli_slam_run_end_to_end(tmp_path: Path) -> None:
     assert summary["map_points"] > 0
     assert (output_dir / "trajectory.tum").is_file()
     assert (output_dir / "map.ply").is_file()
+
+
+def test_cli_slam_run_then_benchmark_eval_passes_synthetic_figure8(
+    tmp_path: Path,
+) -> None:
+    """End-to-end dogfood: drive the bundled synthetic-figure8 scans through
+    ``ca slam-run``, then score the resulting map + trajectory against the
+    suite's reference + gate via ``ca benchmark eval``.
+
+    This is the smallest pipeline that proves "give us raw scans, we'll
+    produce something that passes our own benchmark gate" works on data
+    committed to the repo (no BYO KITTI download needed).
+    """
+
+    repo_root = Path(__file__).resolve().parents[2]
+    suite_dir = repo_root / "benchmarks" / "slam" / "synthetic-figure8"
+    scans_dir = suite_dir / "scans"
+    if not scans_dir.is_dir():
+        pytest.skip(
+            "benchmarks/slam/synthetic-figure8/scans not present "
+            "(run scripts/build_synthetic_slam_suite.py to regenerate)"
+        )
+
+    run_dir = tmp_path / "run"
+    slam_cmd = [
+        sys.executable,
+        "-m",
+        "cloudanalyzer_cli.main",
+        "slam-run",
+        str(scans_dir),
+        str(run_dir),
+        "--driver",
+        "kiss-icp",
+        "--max-range",
+        "25",
+        "--voxel-size",
+        "0.5",
+        "--frame-period",
+        "0.1",
+    ]
+    proc = subprocess.run(slam_cmd, capture_output=True, text=True)
+    assert proc.returncode == 0, (proc.stdout, proc.stderr)
+    summary = json.loads((run_dir / "summary.json").read_text())
+    assert summary["frames_processed"] == 200
+
+    bench_json = tmp_path / "bench.json"
+    bench_cmd = [
+        sys.executable,
+        "-m",
+        "cloudanalyzer_cli.main",
+        "benchmark",
+        "eval",
+        str(suite_dir / "suite.yaml"),
+        "--map",
+        str(run_dir / "map.ply"),
+        "--trajectory",
+        str(run_dir / "trajectory.tum"),
+        "--sequence",
+        "default",
+        "--output-json",
+        str(bench_json),
+    ]
+    proc = subprocess.run(bench_cmd, capture_output=True, text=True)
+    assert proc.returncode == 0, (proc.stdout, proc.stderr)
+    bench = json.loads(bench_json.read_text())
+    overall = bench["overall_quality_gate"]
+    assert overall is not None
+    assert overall["passed"], (
+        f"synthetic-figure8 gate FAIL: {overall['reasons']!r}\n"
+        f"map AUC={bench['map']['auc']:.4f} "
+        f"Chamfer={bench['map']['chamfer_distance']:.4f}\n"
+        f"trajectory ATE={bench['trajectory']['ate']['rmse']:.4f} "
+        f"Coverage={bench['trajectory']['matching']['coverage_ratio']:.4f}"
+    )

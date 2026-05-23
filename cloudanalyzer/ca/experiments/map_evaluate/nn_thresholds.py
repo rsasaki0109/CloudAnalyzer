@@ -23,24 +23,17 @@ from ca.experiments.map_evaluate.common import (
 
 
 def _min_distances_kdtree(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    """Compute per-point min Euclidean distance from a to b via Open3D KD-tree."""
+    """Compute per-point min Euclidean distance from a to b via scipy.cKDTree."""
     if a.shape[0] == 0:
         return np.zeros((0,), dtype=np.float64)
     if b.shape[0] == 0:
         return np.full((a.shape[0],), np.inf, dtype=np.float64)
 
-    import open3d as o3d
+    from scipy.spatial import cKDTree
 
-    pcd_b = o3d.geometry.PointCloud()
-    pcd_b.points = o3d.utility.Vector3dVector(np.asarray(b, dtype=np.float64))
-    kdtree = o3d.geometry.KDTreeFlann(pcd_b)
-
-    out = np.empty((a.shape[0],), dtype=np.float64)
-    for i in range(a.shape[0]):
-        # 1-NN search
-        _k, _idx, dist2 = kdtree.search_knn_vector_3d(a[i], 1)
-        out[i] = float(np.sqrt(dist2[0])) if dist2 else float("inf")
-    return out
+    tree = cKDTree(np.asarray(b, dtype=np.float64))
+    distances, _ = tree.query(np.asarray(a, dtype=np.float64), k=1)
+    return np.asarray(distances, dtype=np.float64)
 
 
 def _error_colors(dist_m: np.ndarray, vmax_m: float) -> np.ndarray:
@@ -126,7 +119,7 @@ class NNThresholdMapEvaluateStrategy:
             "downsample_voxel_size_m": downsample_voxel,
             "thresholds_m": list(thresholds),
             "align_mode": request.align_mode,
-            "nn_backend": "open3d_kdtree",
+            "nn_backend": "scipy_ckdtree",
         }
 
         return MapEvaluateResult(

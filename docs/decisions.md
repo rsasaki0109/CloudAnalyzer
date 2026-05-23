@@ -48,8 +48,8 @@ Reason: Best initial spatial coverage with acceptable planning cost and no extra
 
 ### Not Adopted
 
-- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=1, readability rank=1, extensibility rank=1.
 - `grid_tiles` remains experimental. Quality rank=2, chunk balance rank=1, runtime rank=3, readability rank=3, extensibility rank=3.
+- `spatial_shuffle` remains experimental. Quality rank=3, chunk balance rank=2, runtime rank=2, readability rank=1, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -86,7 +86,7 @@ Reason: Best composite rank while preserving direct threshold-based ordering and
 
 ### Not Adopted
 
-- `signature_cluster` remains experimental. Quality rank=2, stability rank=3, runtime rank=2, readability rank=2, extensibility rank=3.
+- `signature_cluster` remains experimental. Quality rank=2, stability rank=3, runtime rank=1, readability rank=2, extensibility rank=3.
 - `pareto_frontier` remains experimental. Quality rank=3, stability rank=2, runtime rank=3, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
@@ -105,8 +105,8 @@ Reason: Best composite rank by avoiding premature promotions while preserving pe
 
 ### Not Adopted
 
-- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=3, readability rank=1, extensibility rank=3.
-- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=2, readability rank=3, extensibility rank=1.
+- `threshold_guard` remains experimental. Quality rank=2, stability rank=1, runtime rank=1, readability rank=1, extensibility rank=3.
+- `pareto_promote` remains experimental. Quality rank=3, stability rank=2, runtime rank=3, readability rank=3, extensibility rank=1.
 
 ### Trigger To Re-run
 
@@ -160,6 +160,14 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
 
 ### Not Adopted
 
+- `kiss_slam` (`KissSLAMSlamDriver`). Wraps `kiss-slam` (KISS-ICP
+  + pose-graph optimization + MapClosures loop closure). On the
+  short synthetic trajectories the slice ships, sensor displacement
+  from origin never crosses the local-map splitting distance, so
+  KISS-SLAM degenerates to one round of PGO over the KISS-ICP
+  odometry chain and produces the same trajectory KISS-ICP does.
+  Held in experiments and re-evaluated once real-drift / revisit
+  data lands.
 - `identity_passthrough` is a sentinel: it returns identity poses
   and concatenates the input frames as the 'map'. Its job is to
   fail loudly on any case that has non-trivial motion so that a
@@ -167,9 +175,10 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
 
 ### Triggers To Reconsider
 
-- A second real driver lands (e.g. `kiss-slam` for LIO with loop
-  closure, or a richer scan-matcher). The slice then becomes a
-  proper bake-off and the adopted core driver may change.
-- Datasets stop being synthetic — once KITTI / Newer-College
-  fixtures are wired through `ca slam-run`, the evaluator can
-  compare drivers on real sequences.
+- KITTI / Newer-College mini fixtures get wired through
+  `ca slam-run` and KISS-SLAM's loop-closure / pose-graph kicks
+  in. The KISS-ICP vs KISS-SLAM gap on those sequences flips the
+  default driver.
+- A third real driver lands (e.g. `small_gicp` for faster GICP).
+  Different speed / accuracy operating point may justify a
+  driver-per-budget pick rather than a single core driver.

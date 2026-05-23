@@ -31,6 +31,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   → `ca benchmark eval`" loop now passes the suite's default gate
   (AUC=1.00, ATE≈1.4 mm) from a clean checkout, locked in by
   `tests/test_slam_run.py::test_cli_slam_run_then_benchmark_eval_passes_synthetic_figure8`.
+- **`KissSLAMSlamDriver`** (Phase 23) — second real SLAM driver in
+  `ca/experiments/slam_run/`, wrapping the `kiss-slam` package (KISS-ICP
+  odometry + pose-graph optimization + MapClosures loop closure).
+  Exposed via `ca slam-run --driver kiss-slam`. The slice evaluator now
+  runs a 3-way bake-off (`kiss_icp` adopted, `kiss_slam` experimental,
+  `identity_passthrough` sentinel). On the short synthetic cases the
+  slice ships, KISS-SLAM degenerates to one round of PGO over the
+  KISS-ICP odometry chain (no loop closures fire), so the docs keep
+  KISS-ICP adopted and re-evaluate once real-drift / revisit data lands.
+  Install via `pip install 'cloudanalyzer[slam]'` (`kiss-slam>=0.0.2`
+  added to the `[slam]` extra).
 
 ### Changed
 

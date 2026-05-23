@@ -101,10 +101,16 @@ def run_slam_run_experiment(
             "stabilized_core_strategy": "KissICPSlamDriver",
             "reason": (
                 "KISS-ICP wraps a well-known scan-to-map LiDAR-odometry pipeline "
-                "available on PyPI under a BSD license, and was the only real "
-                "driver in the initial bake-off. identity_passthrough is a sentinel "
-                "(zero-motion floor) — its only role is to fail visibly so a "
-                "regression in KISS-ICP doesn't silently look 'OK'."
+                "available on PyPI under a BSD license. KISS-SLAM (its own pose-"
+                "graph + loop-closure extension) is now also in the bake-off but "
+                "does not consistently beat KISS-ICP on the synthetic cases the "
+                "slice ships — the trajectories are too short to trigger a loop "
+                "closure, so KISS-SLAM degrades to one round of pose-graph "
+                "optimization over KISS-ICP's odometry chain. KISS-ICP stays "
+                "core for the smaller, faster surface area; KISS-SLAM is held in "
+                "experiments and will be promoted once dogfood data with real "
+                "drift / revisits lands. identity_passthrough is the failure "
+                "floor (zero-motion sentinel)."
             ),
         },
     }
@@ -124,6 +130,7 @@ def render_experiment_section(report: dict) -> str:
         "| Driver | Role |",
         "|---|---|",
         "| `kiss_icp` | Adopted — wraps the `kiss-icp` package (BSD, PyPI). |",
+        "| `kiss_slam` | Experimental upgrade contender — wraps `kiss-slam` (KISS-ICP + pose-graph + MapClosures loop closure). Equivalent to `kiss_icp` on the synthetic cases that ship; promotion blocked on real-data dogfood with drift / revisits. |",
         "| `identity_passthrough` | Sentinel — identity poses + concatenated scans. Sets the failure floor. |",
     ]
 
@@ -155,6 +162,14 @@ def render_decision_section(report: dict) -> str:
             "",
             "### Not Adopted",
             "",
+            "- `kiss_slam` (`KissSLAMSlamDriver`). Wraps `kiss-slam` (KISS-ICP",
+            "  + pose-graph optimization + MapClosures loop closure). On the",
+            "  short synthetic trajectories the slice ships, sensor displacement",
+            "  from origin never crosses the local-map splitting distance, so",
+            "  KISS-SLAM degenerates to one round of PGO over the KISS-ICP",
+            "  odometry chain and produces the same trajectory KISS-ICP does.",
+            "  Held in experiments and re-evaluated once real-drift / revisit",
+            "  data lands.",
             "- `identity_passthrough` is a sentinel: it returns identity poses",
             "  and concatenates the input frames as the 'map'. Its job is to",
             "  fail loudly on any case that has non-trivial motion so that a",
@@ -162,12 +177,13 @@ def render_decision_section(report: dict) -> str:
             "",
             "### Triggers To Reconsider",
             "",
-            "- A second real driver lands (e.g. `kiss-slam` for LIO with loop",
-            "  closure, or a richer scan-matcher). The slice then becomes a",
-            "  proper bake-off and the adopted core driver may change.",
-            "- Datasets stop being synthetic — once KITTI / Newer-College",
-            "  fixtures are wired through `ca slam-run`, the evaluator can",
-            "  compare drivers on real sequences.",
+            "- KITTI / Newer-College mini fixtures get wired through",
+            "  `ca slam-run` and KISS-SLAM's loop-closure / pose-graph kicks",
+            "  in. The KISS-ICP vs KISS-SLAM gap on those sequences flips the",
+            "  default driver.",
+            "- A third real driver lands (e.g. `small_gicp` for faster GICP).",
+            "  Different speed / accuracy operating point may justify a",
+            "  driver-per-budget pick rather than a single core driver.",
         ]
     )
 

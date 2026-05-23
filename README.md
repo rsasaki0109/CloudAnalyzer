@@ -124,11 +124,9 @@ The map viewer is generated from the public `hdl_localization` sample map publis
 AISL at Toyohashi University of Technology. The perception report is generated from the
 public RELLIS-3D "Ouster LiDAR with Annotation Examples" bundle and compares a geometry-first
 non-deep baseline artifact with a higher-fidelity deep baseline artifact against the same
-reference frame. Those two artifacts are deterministic demo baselines, not archived model
-outputs. The generated report is checked into `docs/demo/perception` so GitHub Pages does not
-depend on third-party Google Drive downloads at publish time. A minimal public reproducibility
-seed is checked into `demo_assets/public/rellis3d-frame-000001`, and CI verifies that the
-checked-in report stays in sync with `scripts/build_perception_demo.py`.
+reference frame. A minimal public reproducibility seed is checked into
+`demo_assets/public/rellis3d-frame-000001`, and CI verifies that the checked-in report stays
+in sync with `scripts/build_perception_demo.py`.
 
 License note: the Python package remains MIT, but the checked-in RELLIS-derived demo assets under
 `docs/demo/perception` and `demo_assets/public/rellis3d-frame-000001` continue to follow the
@@ -181,78 +179,27 @@ Rule of thumb: `ca evaluate` is for **preservation QA** between two snapshots of
 
 ### SLAM Benchmark Suites
 
-`ca benchmark` lets you point any SLAM pipeline's map + trajectory at a benchmark suite (frozen reference + gate) for a one-command regression check. A tiny synthetic suite ships with the repo to smoke-test the command without external data:
+`ca benchmark` points any SLAM pipeline's map + trajectory at a frozen suite (reference + gate) for a one-command regression check. A tiny synthetic suite ships in `benchmarks/slam/synthetic-figure8/`:
 
 ```bash
-# Inspect the bundled synthetic suite.
 ca benchmark info benchmarks/slam/synthetic-figure8/suite.yaml
-
-# Run your SLAM output against it (overall_quality_gate goes to exit code).
 ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
-  --map outputs/my_slam_map.pcd \
-  --trajectory outputs/my_slam_trajectory.tum \
+  --map outputs/my_slam_map.pcd --trajectory outputs/my_slam_trajectory.tum \
   --report qa/run_report.html
-
-# Tighten or relax the suite's gate without forking the YAML.
-ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
-  --map outputs/my_slam_map.pcd \
-  --trajectory outputs/my_slam_trajectory.tum \
-  --gate min_auc=0.97 --gate max_rpe=none
 ```
 
-A suite manifest is a small YAML pointing at reference artifacts and quality-gate thresholds; the `synthetic-figure8` example is regenerated deterministically by `scripts/build_synthetic_slam_suite.py`.
-
-For real public datasets that ship multi-million-point reference maps, use `ca benchmark init` (or a dataset-specific wrapper under `scripts/`) to build a `suite.yaml` from a local download:
-
-```bash
-# Generic: build a suite from any reference map + trajectory on disk.
-ca benchmark init /tmp/my-suite \
-  --name my-suite --description "My SLAM regression suite" \
-  --reference-map /data/site/gt_map.pcd \
-  --reference-trajectory /data/site/gt_poses.tum \
-  --voxel 0.10 --max-poses 2000 \
-  --gate min_auc=0.95 --gate max_ate=0.30
-
-# Newer College Dataset (CC-BY-NC-SA 4.0): prep a benchmark suite from a local download.
-# See benchmarks/slam/newer-college-mini/README.md for the full workflow.
-python scripts/prepare_newer_college_mini.py \
-  --reference-map  /data/newer-college/short_experiment/gt_map.pcd \
-  --reference-trajectory /data/newer-college/short_experiment/gt_poses.tum \
-  --sequence short_experiment
-
-# KITTI Odometry (CC-BY-NC-SA 3.0): same idea, with KITTI 12-float pose → TUM conversion built in.
-# See benchmarks/slam/kitti-mini/README.md for the full workflow.
-python scripts/prepare_kitti_mini.py \
-  --kitti-poses    /data/kitti/odometry/poses/00.txt \
-  --reference-map  /data/kitti/sequence_00/accumulated_map.pcd \
-  --sequence sequence_00
-```
+`ca benchmark init` builds a custom suite from your own reference map + trajectory. Newer College / KITTI Odometry wrappers live under `scripts/prepare_*_mini.py`. Full workflow and `--gate` overrides: **[docs/commands/benchmark.md](docs/commands/benchmark.md)**.
 
 ### Cross-Representation Geometry QA
 
-`ca geometry-evaluate` runs the same Chamfer / AUC / F1 metrics as `ca evaluate` but first normalizes the source artifact through a *representation adapter* so non-point-cloud inputs can be scored against a reference scan without manual conversion. Two adapters ship today: 3D Gaussian Splatting PLY exports (opacity-aware) and triangle meshes (OBJ/STL/GLB/GLTF or PLY with faces, surface-sampled). A tiny synthetic demo lives under `benchmarks/3dgs/synthetic-room/`.
+`ca geometry-evaluate` runs the same Chamfer / AUC / F1 metrics as `ca evaluate`, but first normalizes the source artifact through a *representation adapter* so non-point-cloud inputs (3D Gaussian Splatting PLYs, triangle meshes) can be scored against a reference scan:
 
 ```bash
-# Auto-detect representation; see all splats (including low-alpha noise).
-ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \
-                    benchmarks/3dgs/synthetic-room/reference.pcd
-
-# Filter low-alpha splats before scoring (much closer to the reference).
-ca geometry-evaluate benchmarks/3dgs/synthetic-room/gaussians.ply \
-                    benchmarks/3dgs/synthetic-room/reference.pcd \
-                    --opacity-threshold 0.5
-
-# Triangle mesh (OBJ/STL/GLB/GLTF or PLY-with-faces) — surface-sampled, not vertex-only.
-ca geometry-evaluate my_reconstruction.obj reference_scan.pcd \
-                    --mesh-samples 500000 --mesh-method poisson_disk
-
-# Voxel-downsample the adapted source for faster comparison on real maps.
-ca geometry-evaluate scene_export.ply scan_reference.pcd \
-                    --opacity-threshold 0.1 --voxel 0.05 \
-                    --output-json geometry_qa.json
+ca geometry-evaluate scene.ply reference.pcd --opacity-threshold 0.5
+ca geometry-evaluate reconstruction.obj reference.pcd --mesh-samples 500000
 ```
 
-`--representation` accepts `auto` (default), `point-cloud`, `gaussian-points`, or `mesh`. The output dict is the same as `ca evaluate` plus a `representation` block recording which adapter ran and what filters / sampling settings it applied — `ca report-pr-comment` already understands this shape, so a 3DGS or mesh regression flows straight into a PR comment.
+`--representation` accepts `auto` (default), `point-cloud`, `gaussian-points`, or `mesh`. Output is the `ca evaluate` shape plus a `representation` block, so it flows into `ca report-pr-comment` as-is. Adapter details and the synthetic demo: **[docs/commands/geometry-evaluate.md](docs/commands/geometry-evaluate.md)**.
 
 ## Metrics
 
@@ -290,11 +237,12 @@ ca geometry-evaluate scene_export.ply scan_reference.pcd \
 
 Place `cloudanalyzer.yaml` in your repo to unify mapping, localization, loop-closure, and perception QA behind one command.
 
-To emit a starter config:
-
 ```bash
-ca init-check --profile integrated
+ca init-check --profile integrated   # emit a starter config
+ca check cloudanalyzer.yaml          # run all configured gates
 ```
+
+A minimal `cloudanalyzer.yaml`:
 
 ```yaml
 version: 1
@@ -321,160 +269,49 @@ checks:
       min_coverage: 0.9
 ```
 
-```bash
-ca check cloudanalyzer.yaml
-```
-
-See the complete example at [docs/examples/cloudanalyzer.yaml](docs/examples/cloudanalyzer.yaml).
-Ground segmentation can also be integrated with `kind: ground`:
-
-```yaml
-  - id: ground-seg
-    kind: ground
-    estimated_ground: outputs/ground.pcd
-    estimated_nonground: outputs/nonground.pcd
-    reference_ground: baselines/ground_ref.pcd
-    reference_nonground: baselines/nonground_ref.pcd
-    gate:
-      min_f1: 0.9
-      min_iou: 0.8
-```
-
-Manual loop-closure QA can be gated with `kind: loop_closure`:
-
-```yaml
-  - id: manual-loop-closure
-    kind: loop_closure
-    before_session_root: runs/before-loop
-    after_session_root: runs/after-loop
-    reference_map: baselines/map_ref.pcd
-    before_traj: runs/before-loop/optimized_poses_tum.txt
-    after_traj: runs/after-loop/optimized_poses_tum.txt
-    ref_traj: baselines/trajectory_ref.tum
-    gate:
-      min_auc_gain: 0.01
-      min_ate_gain: 0.05
-      require_posegraph_ok: true
-```
-
-When multiple gated checks fail, `ca check` also emits triage output to help prioritize inspection.
+Supported check kinds: `artifact`, `trajectory`, `loop_closure`, `ground`, `detection`, `tracking`, `map`, `run`, `benchmark`. Full schema and worked examples: **[docs/ci.md](docs/ci.md)** and **[docs/examples/cloudanalyzer.yaml](docs/examples/cloudanalyzer.yaml)**.
 
 ### PR Comments
 
-`ca report-pr-comment` turns any CloudAnalyzer summary JSON into a Markdown blob that drops cleanly into a GitHub PR comment. It works with `ca check` suite summaries, `ca run-evaluate --output-json`, and `ca benchmark eval --output-json`, and auto-detects which shape it received.
+`ca report-pr-comment` turns any CloudAnalyzer summary JSON (`ca check`, `ca run-evaluate`, `ca benchmark eval`) into a Markdown blob that drops cleanly into a GitHub PR comment.
 
 ```bash
-# Run the gate and emit the summary JSON.
-ca check cloudanalyzer.yaml          # writes qa/summary.json via `summary_output_json:`
-
-# Render Markdown for the PR; --baseline shows ↑/↓ deltas against a known-good run.
+ca check cloudanalyzer.yaml          # writes qa/summary.json via summary_output_json:
 ca report-pr-comment qa/summary.json \
-  --baseline qa/baseline-summary.json \
-  --output qa/pr-comment.md
+  --baseline qa/baseline-summary.json --output qa/pr-comment.md
 ```
 
-The output mirrors the existing `ca check` triage so the worst regression appears first:
-
-```markdown
-## CloudAnalyzer QA: FAIL ❌ — `public-benchmark-regression`
-
-**Checks**: 0/4 passed, 4 failed
-
-| Status | Check | Kind | Metrics | Reasons |
-|---|---|---|---|---|
-| ❌ | `mapping-postprocess` | artifact | AUC=0.5282 (was 1.0000 ↓), Chamfer=0.0394 (was 0.0015 ↑) | AUC < min_auc 0.97; Chamfer > max_chamfer 0.01 |
-| ❌ | `localization-run` | trajectory | ATE=0.0716 (was 0.0030 ↑), Coverage=81.2% (was 100.0% ↓) | ATE > max_ate; Coverage < min_coverage |
-
-### Recommended triage
-1. `localization-run` (trajectory) — ATE RMSE 0.0716 > max_ate 0.0200
-2. `mapping-postprocess` (artifact) — AUC 0.5282 < min_auc 0.9700
-```
-
-Arrows track *value direction* (number went up / down). Whether ↑/↓ is good or bad is obvious from the gate direction right next to the metric.
+The output mirrors the existing `ca check` triage so the worst regression appears first, with `↑/↓` deltas against the baseline. Output shape and Markdown layout: **[docs/commands/report-pr-comment.md](docs/commands/report-pr-comment.md)**.
 
 ### Baseline Management
 
-If you are unsure whether a baseline should be updated, use a history directory:
-
 ```bash
-# Save a QA summary into history with rotation
 ca baseline-save qa/summary.json --history-dir qa/history/ --keep 10
-
-# Discover history automatically and decide promote / keep / reject
 ca baseline-decision qa/current-summary.json --history-dir qa/history/
-
-# List saved baselines
 ca baseline-list --history-dir qa/history/
 ```
 
 ### QA Bundles (artifact retention)
 
-`ca bundle pack` freezes one QA run — the summary JSON, the per-check reports the summary points at, and an optional baseline — into a single `qa_bundle.zip` along with a metadata header (project, git commit, PR number, runner id, free-form notes). The result is reopenable without going back to the original CI workspace, which is the OSS foundation for long-term retention and a future hosted dashboard.
+`ca bundle pack` freezes one QA run — summary JSON, the per-check reports it points at, and an optional baseline — into a single `qa_bundle.zip` with a metadata header (project, commit, PR, notes). Reopenable without the original CI workspace.
 
 ```bash
-# After ca check / ca run-evaluate / ca benchmark eval, pack everything for retention.
-ca bundle pack qa/summary.json \
-  --output qa/bundle.zip \
-  --baseline qa/baseline-summary.json \
-  --project my-mapping-pipeline \
-  --commit "$GITHUB_SHA" \
-  --pr-number "$PR_NUMBER" \
-  --runner-id "$GITHUB_RUN_ID" \
-  --note dataset=newer-college-mini --note voxel=0.05
-
-# Inspect a bundle without extracting it (good for dashboards / CI logs).
+ca bundle pack qa/summary.json --output qa/bundle.zip \
+  --baseline qa/baseline-summary.json --project my-pipeline \
+  --commit "$GITHUB_SHA" --note dataset=newer-college-mini
 ca bundle show qa/bundle.zip
-ca bundle show qa/bundle.zip --format-json | jq '.metadata.notes'
-
-# Restore everything to a directory.
 ca bundle unpack qa/bundle.zip --output qa/restored/
-
-# Compare two bundles (typically: yesterday's vs today's). Reuses the same
-# delta layout as `ca report-pr-comment`, so the diff drops cleanly into a
-# PR comment or a dashboard.
 ca bundle diff qa/baseline.zip qa/bundle.zip --output qa/diff.md
-ca bundle diff qa/baseline.zip qa/bundle.zip --format-json | jq '.warnings'
-
-# Trend gate metrics across many bundles (sorted by metadata.created_at).
-# Works on a rolling archive populated by `ca bundle pack` over time.
-ca history --from-dir qa/archive/ --output qa/history.md
-ca history --from-dir qa/archive/ --format-json > qa/trend.json
+ca history --from-dir qa/archive/ --output qa/history.md   # trend across many bundles
 ```
 
-The bundle layout (versioned, stable across CloudAnalyzer releases):
-
-```
-qa_bundle.zip
-├── metadata.json              # bundle_version / created_at / project / commit / notes / artifact index
-├── summary.json               # the original ca check / ca run-evaluate / ca benchmark eval JSON
-├── baseline-summary.json      # only when --baseline was supplied
-└── reports/<check_id>/        # per-check report.html / report.md / report.json copied from the summary
-```
+Bundle layout, `ca history` trend gate, and dashboard-friendly JSON shape: **[docs/commands/bundle.md](docs/commands/bundle.md)** / **[docs/commands/history.md](docs/commands/history.md)**.
 
 ### GitHub Actions
 
-Use reusable workflows to run QA and baseline decisions in separate jobs:
+Reusable workflows ship with the repo so QA, baseline decisions, and PR comments can be composed:
 
 ```yaml
-jobs:
-  qa:
-    uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
-    with:
-      config_path: cloudanalyzer.yaml
-
-  baseline:
-    uses: rsasaki0109/CloudAnalyzer/.github/workflows/baseline-gate.yml@main
-    with:
-      config_path: cloudanalyzer.yaml
-      history_dir: qa/history
-```
-
-For external use, pin a tag or commit SHA instead of `@main`.
-
-Or chain QA → PR comment with the bundled reusable workflow. Two ways:
-
-```yaml
-# Pattern A: summary is committed in the caller repo (e.g. checked-in fixtures).
 jobs:
   qa:
     uses: rsasaki0109/CloudAnalyzer/.github/workflows/config-quality-gate.yml@main
@@ -490,226 +327,49 @@ jobs:
     uses: rsasaki0109/CloudAnalyzer/.github/workflows/pr-comment.yml@main
     with:
       summary_path: qa/summary.json
-      baseline_summary_path: qa/baseline-summary.json   # optional
 ```
 
-```yaml
-# Pattern B: summary is produced inside the CI run and passed via artifact.
-jobs:
-  qa:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - run: ca check cloudanalyzer.yaml --output-json /tmp/qa/summary.json
-      - uses: actions/upload-artifact@v6
-        with:
-          name: cloudanalyzer-summary
-          path: /tmp/qa/summary.json
+For external use, pin a tag or commit SHA instead of `@main`. Both summary-from-repo and summary-from-artifact patterns, plus inline `ca report-pr-comment` usage: **[docs/ci.md](docs/ci.md)**. `.github/workflows/self-qa.yml` is a working reference.
 
-  pr-comment:
-    needs: qa
-    if: ${{ always() && github.event_name == 'pull_request' }}
-    permissions:
-      pull-requests: write
-      contents: read
-    uses: rsasaki0109/CloudAnalyzer/.github/workflows/pr-comment.yml@main
-    with:
-      summary_artifact: cloudanalyzer-summary
-      summary_path: summary.json   # path *inside* the downloaded artifact
-```
+## Command Overview
 
-Both patterns idempotently update the same comment on re-runs (marked by `cloudanalyzer-qa` by default so a force-push doesn't stack duplicates). The `.github/workflows/self-qa.yml` workflow in this repo follows Pattern B and is a working reference.
+Full per-command reference lives under **[docs/commands/](docs/commands/)**. Quick map:
 
-Or, if you want to call `ca report-pr-comment` yourself inside an existing job:
+| Group | Commands | Reference |
+|---|---|---|
+| Single-artifact QA | `evaluate`, `compare`, `diff`, `pipeline`, `scan-match-debug` | [evaluate.md](docs/commands/evaluate.md), [compare.md](docs/commands/compare.md) |
+| Map / SLAM run QA | `map-evaluate`, `run-evaluate`, `run-batch`, `loop-closure-report`, `posegraph-validate` | [analysis.md](docs/commands/analysis.md) |
+| Trajectory QA | `traj-evaluate`, `traj-batch` | [analysis.md](docs/commands/analysis.md) |
+| Perception QA | `ground-evaluate`, `detection-evaluate`, `tracking-evaluate` | [analysis.md](docs/commands/analysis.md) |
+| Cross-representation | `geometry-evaluate` | [geometry-evaluate.md](docs/commands/geometry-evaluate.md) |
+| Benchmark suites | `benchmark info`, `benchmark init`, `benchmark eval` | [benchmark.md](docs/commands/benchmark.md) |
+| Config-driven gate | `check`, `init-check`, `baseline-save/list/decision` | [ci.md](docs/ci.md) |
+| Bundles & history | `bundle pack/show/unpack/diff`, `history` | [bundle.md](docs/commands/bundle.md), [history.md](docs/commands/history.md) |
+| PR comment | `report-pr-comment` | [report-pr-comment.md](docs/commands/report-pr-comment.md) |
+| Processing (all `--evaluate`-able) | `downsample`, `filter`, `sample`, `merge`, `align`, `split`, `crop`, `convert`, `normals`, `mme` | [processing.md](docs/commands/processing.md) |
+| Visualization | `web`, `web-export`, `view`, `density-map`, `heatmap3d` | [visualization.md](docs/commands/visualization.md) |
+| Info | `info`, `stats`, `batch` | [analysis.md](docs/commands/analysis.md) |
 
-```yaml
-- name: Render PR comment
-  run: ca report-pr-comment qa/summary.json --baseline qa/baseline-summary.json --output qa/pr-comment.md
-
-- name: Post PR comment
-  if: github.event_name == 'pull_request'
-  env:
-    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  run: gh pr comment "${{ github.event.pull_request.number }}" --body-file qa/pr-comment.md
-```
+Common patterns:
 
 ```bash
-# Read AUC and gate it in a shell script
+# Read AUC and gate it in shell
 AUC=$(ca evaluate new.pcd ref.pcd --format-json | jq -r '.auc')
-[ $(echo "$AUC < 0.9" | bc -l) -eq 1 ] && echo "FAIL" && exit 1
 
-# Evaluate every file in a directory
-ca batch results/ --evaluate reference.pcd --format-json | jq '.[] | {path, auc, chamfer_distance}'
-
-# Emit Markdown / HTML reports for sharing
-ca batch results/ --evaluate reference.pcd --report batch_report.md
-ca batch results/ --evaluate reference.pcd --report batch_report.html
-# Reports include inspection commands; the HTML version also adds Copy buttons,
-# count badges, quick actions, failed-first / recommended-first sort presets,
-# and pass / failed / pareto / recommended filters.
-
-# Evaluate quality vs size together with compressed artifacts such as Cloudini output
-ca batch decoded/ --evaluate reference.pcd \
-  --compressed-dir compressed/ --baseline-dir original/ \
-  --report cloudini_report.html
-# The report includes a Quality vs Size scatter plot, Pareto candidates,
-# a recommended point, clickable summary rows, quick actions,
-# failed-first / recommended-first sort presets, and HTML filters.
-
-# Trajectory quality gate
+# Trajectory quality gate with a sharable HTML report
 ca traj-evaluate estimated.csv reference.csv \
-  --max-time-delta 0.05 --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
+  --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
   --report trajectory_report.html
-# Supports CSV(timestamp,x,y,z) and TUM(timestamp x y z qx qy qz qw)
-# The report also writes sibling trajectory overlay and error timeline PNGs.
 
-# Ignore initial translation offset and evaluate trajectory shape only
-ca traj-evaluate estimated.csv reference.csv --align-origin
-
-# Fit a rigid transform before evaluation
-ca traj-evaluate estimated.csv reference.csv --align-rigid
-
-# Trajectory batch benchmark
-ca traj-batch runs/ --reference-dir gt/ \
-  --max-time-delta 0.05 --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
-  --report traj_batch.html
-# The HTML report adds pass / failed / low-coverage filters and ATE / RPE / coverage sorting.
-# The low-coverage threshold follows --min-coverage when provided.
-
-# Integrated map + trajectory QA for one run
+# Integrated map + trajectory QA for one SLAM run
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv \
   --min-auc 0.95 --max-chamfer 0.02 \
   --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
   --report run_report.html
-# Emits a map F1 curve together with trajectory overlays and error timelines.
-# Inspection commands also include a `ca web ... --trajectory ... --trajectory-reference ...` run viewer.
 
-# Combined benchmark across multiple map + trajectory runs
-ca run-batch maps/ \
-  --map-reference-dir map_refs/ \
-  --trajectory-dir trajs/ \
-  --trajectory-reference-dir traj_refs/ \
-  --min-auc 0.95 --max-chamfer 0.02 \
-  --max-ate 0.5 --max-rpe 0.2 --max-drift 1.0 --min-coverage 0.9 \
-  --report run_batch.html
-# Map and trajectory files are matched by relative path / stem.
-# The HTML report adds pass / failed / map issue / trajectory issue filters,
-# plus sorting by map AUC / Chamfer and trajectory ATE / drift / coverage.
-# Report and JSON inspection commands include both per-run `ca web ...` viewers
-# and `ca run-evaluate ...` drill-down commands.
-# The quality gate summary separates overall failures from map failures and trajectory failures.
-
-# Manual loop-closure before/after QA
-ca loop-closure-report before/map.pcd after/map.pcd reference/map.pcd \
-  --before-session-root before \
-  --after-session-root after \
-  --before-traj before/optimized_poses_tum.txt \
-  --after-traj after/optimized_poses_tum.txt \
-  --ref-traj reference/trajectory.tum \
-  --min-auc-gain 0.01 --min-ate-gain 0.05 --require-posegraph-ok
-
-# Quality gate: exit with code 1 if any file fails
-ca batch results/ --evaluate reference.pcd --min-auc 0.95 --max-chamfer 0.02
-
-# 3D detection QA from JSON box sequences
-ca detection-evaluate estimated_detection.json reference_detection.json \
-  --iou-thresholds 0.25,0.5 --min-map 0.9 --report detection_report.html
-
-# 3D tracking QA from JSON box sequences
-ca tracking-evaluate estimated_tracking.json reference_tracking.json \
-  --iou-threshold 0.5 --min-mota 0.8 --max-id-switches 2 --report tracking_report.html
-
-# Config-driven quality gate
-ca check cloudanalyzer.yaml
-
-# Baseline promotion decision from QA summaries
-ca baseline-decision qa/current-summary.json --history qa/baseline-summary.json
-
-# Trigger the GitHub Actions quality gate
-gh workflow run quality-gate.yml \
-  -f source=new.pcd -f reference=ref.pcd -f auc_threshold=0.9
-```
-
-Checked-in public JSON examples for detection / tracking live in
-`demo_assets/public/rellis3d-frame-000001/object_eval/`. The detection examples are
-derived from the public RELLIS-3D seed frame, and the tracking examples are
-deterministic synthetic 3-frame sequences seeded from that same public frame.
-
-## Command Overview
-
-### Evaluation
-
-```bash
-ca evaluate src.pcd ref.pcd --plot f1.png   # F1 / Chamfer / Hausdorff / AUC
-ca map-evaluate est_map.pcd gt_map.pcd --thresholds 0.2,0.1,0.05  # fixed-threshold map metrics
-ca compare src.pcd tgt.pcd --register gicp  # Compare with registration
-ca scan-match-debug scan.pcd map.pcd --method gicp --artifact-dir qa/scan_match  # scan-to-map ICP/GICP debug
-ca diff a.pcd b.pcd --threshold 0.1         # Quick distance statistics
-ca pipeline in.pcd ref.pcd -o out.pcd       # filter -> downsample -> evaluate
-ca check cloudanalyzer.yaml                 # Config-driven unified QA
-ca init-check --profile integrated          # Generate a starter config
-ca posegraph-validate session/pose_graph.g2o --tum session/optimized_poses_tum.txt  # g2o/TUM session sanity check
-ca loop-closure-report before.pcd after.pcd ref.pcd --min-auc-gain 0.01  # before/after map QA
-ca baseline-decision qa/current.json --history-dir qa/history/  # promote / keep / reject
-ca baseline-save qa/summary.json --history-dir qa/history/      # save a baseline into history
-ca baseline-list --history-dir qa/history/                      # list saved baselines
-ca detection-evaluate est_det.json gt_det.json --iou-thresholds 0.25,0.5 --min-map 0.9  # 3D detection QA
-ca tracking-evaluate est_track.json gt_track.json --min-mota 0.8 --max-id-switches 2  # 3D MOT QA
-ca traj-evaluate est.csv gt.csv --max-ate 0.5 --max-drift 1.0 --min-coverage 0.9  # ATE / RPE / drift + coverage gate
-ca traj-evaluate est.csv gt.csv --align-origin  # absorb initial translation offset
-ca traj-evaluate est.csv gt.csv --align-rigid   # rigid alignment before scoring
-ca traj-batch runs/ --reference-dir gt/ --max-drift 1.0 --min-coverage 0.9  # trajectory benchmark
-ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # integrated map + trajectory QA
-ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch QA
-ca ground-evaluate est_ground.pcd est_nonground.pcd ref_ground.pcd ref_nonground.pcd --min-f1 0.9 --report ground.html  # ground segmentation QA
-```
-
-### Processing (all support `--evaluate`)
-
-```bash
-ca downsample cloud.pcd -o d.pcd -v 0.2 -e  # voxel downsampling
-ca filter cloud.pcd -o f.pcd -e              # outlier removal
-ca sample cloud.pcd -o s.pcd -n 10000 -e     # random sampling
-ca merge a.pcd b.pcd -o m.pcd                # merge clouds
-ca align s1.pcd s2.pcd -o a.pcd              # register + merge
-ca split map.pcd -o tiles/ -g 100            # grid split
-ca crop cloud.pcd -o c.pcd --x-min 0 ...     # bounding-box crop
-ca convert in.pcd out.ply                     # format conversion
-ca normals cloud.pcd -o n.ply                 # normal estimation
-```
-
-### Analysis
-
-```bash
-ca info cloud.pcd                   # basic metadata
-ca stats cloud.pcd                  # density and spacing statistics
-ca batch /path/to/dir/ -r           # run over a directory
-ca batch results/ --evaluate ref.pcd  # compare all files to a reference
-ca batch results/ --evaluate ref.pcd --report batch.html  # report for sharing
-ca batch results/ --evaluate ref.pcd --min-auc 0.95 --max-chamfer 0.02  # quality gate
-ca detection-evaluate est_det.json gt_det.json --report detection.html  # detection report
-ca tracking-evaluate est_track.json gt_track.json --report tracking.html  # tracking report
-ca traj-evaluate est.csv gt.csv --report traj.html  # trajectory quality report
-ca traj-batch runs/ --reference-dir gt/ --report traj_batch.html  # trajectory batch report
-ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --report run.html  # combined run report
-ca run-batch maps/ --map-reference-dir map_refs/ --trajectory-dir trajs/ --trajectory-reference-dir traj_refs/ --report run_batch.html  # combined batch report
-ca posegraph-validate session/pose_graph.g2o --key-point-frame session/key_point_frame  # posegraph artifact validation
-ca loop-closure-report before/map.pcd after/map.pcd ref/map.pcd --require-posegraph-ok  # loop-closure report
-```
-
-### Visualization
-
-```bash
-ca web cloud.pcd                    # browser-based 3D viewer
-ca web src.pcd ref.pcd --heatmap    # distance heatmap + overlay + threshold filter
-ca web map.pcd map_ref.pcd --heatmap --trajectory traj.csv --trajectory-reference traj_ref.csv  # map + trajectory run viewer
-# With paired trajectories, the browser also highlights the worst ATE pose and worst RPE segment.
-# Clicking a marker or segment shows the timestamp and error summary in-place.
-# The camera also moves toward the selected location, and Reset View returns to the full scene.
-# The trajectory error timeline is displayed in the same viewer and stays synced with 3D selections.
-ca view cloud.pcd                   # desktop 3D viewer
-ca density-map cloud.pcd -o d.png   # density heatmap
-ca heatmap3d src.pcd ref.pcd -o h.png  # 3D distance heatmap
+# Browser viewer with map heatmap + paired trajectories
+ca web map.pcd map_ref.pcd --heatmap \
+  --trajectory traj.csv --trajectory-reference traj_ref.csv
 ```
 
 ## Python API
@@ -731,16 +391,14 @@ plot_multi_f1(results, ["0.1m", "0.2m", "0.5m"], "comparison.png")
 ## Docs
 
 - [Vision](VISION.md)
-- [Experiments](docs/experiments.md)
-- [Decisions](docs/decisions.md)
-- [Interfaces](docs/interfaces.md)
+- [Architecture](docs/architecture.md)
+- [Command Reference](docs/commands/)
+- [CI / Quality Gate](docs/ci.md)
+- [Experiments](docs/experiments.md) · [Decisions](docs/decisions.md) · [Interfaces](docs/interfaces.md)
 - [Cloudini Benchmark Tutorial](docs/tutorial-cloudini-benchmark.md)
 - [Map Quality Gate Tutorial](docs/tutorial-map-quality-gate.md)
 - [Unified Run Quality Gate Tutorial](docs/tutorial-run-quality-gate.md)
 - [Public Benchmark Packs](benchmarks/public/README.md)
-- [Command Reference](docs/commands/)
-- [Architecture](docs/architecture.md)
-- [CI / Quality Gate](docs/ci.md)
 
 ## Experimental Development
 

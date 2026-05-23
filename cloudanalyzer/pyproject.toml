@@ -62,6 +62,9 @@ dev = [
     "pytest",
     "twine>=6.0.0",
 ]
+slam = [
+    "kiss-icp>=1.2.0",
+]
 
 [tool.setuptools]
 include-package-data = false

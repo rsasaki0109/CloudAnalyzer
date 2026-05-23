@@ -5,7 +5,7 @@ import sys
 import zipfile
 from dataclasses import replace
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
 
 import typer
 
@@ -21,6 +21,13 @@ from ca.ground_evaluate import evaluate_ground_segmentation
 from ca.compare import run_compare
 from ca.scan_match_debug import run_scan_match_debug
 from ca.slam_debug import analyze_slam_run, write_slam_debug_markdown
+from ca.core.slam_run import (
+    SlamRunRequest,
+    discover_frame_paths,
+    make_default_driver,
+    write_map_ply,
+    write_tum_trajectory,
+)
 from ca.info import get_info
 from ca.diff import run_diff
 from ca.view import view
@@ -1752,6 +1759,189 @@ def traj_batch_cmd(
         _dump_json(results, output_json)
     if should_fail:
         raise typer.Exit(code=1)
+
+
+@app.command("slam-run")
+def slam_run_cmd(
+    input_path: str = typer.Argument(
+        ...,
+        help=(
+            "Directory of LiDAR scans (.bin/.pcd/.ply) or a frames-list .txt "
+            "(one path per line)."
+        ),
+    ),
+    output_dir: str = typer.Argument(
+        ...,
+        help=(
+            "Directory to write trajectory.tum, map.ply, and summary.json into. "
+            "Created if missing."
+        ),
+    ),
+    driver: str = typer.Option(
+        "kiss-icp",
+        "--driver",
+        help="SLAM driver to run. Currently only 'kiss-icp' is wired.",
+    ),
+    max_range: Optional[float] = typer.Option(
+        None,
+        "--max-range",
+        help="Drop scan points farther than this from the sensor (meters).",
+    ),
+    voxel_size: Optional[float] = typer.Option(
+        None,
+        "--voxel-size",
+        help="Driver-side voxel grid size for the local map (meters). Driver default if omitted.",
+    ),
+    deskew: bool = typer.Option(
+        False,
+        "--deskew",
+        help=(
+            "Enable KISS-ICP motion-deskew. Requires meaningful per-point "
+            "timestamps in the input frames; default off because .bin / .pcd "
+            "dumps don't typically carry them."
+        ),
+    ),
+    max_frames: Optional[int] = typer.Option(
+        None, "--max-frames", help="Cap on the number of frames consumed."
+    ),
+    frame_period: float = typer.Option(
+        0.1,
+        "--frame-period",
+        help=(
+            "Fallback per-frame time spacing (seconds), used when no explicit "
+            "timestamps file is provided."
+        ),
+    ),
+    evaluate_run_flag: bool = typer.Option(
+        False,
+        "--evaluate",
+        help=(
+            "After driving the SLAM, evaluate the resulting map + trajectory "
+            "against --reference-map and --reference-trajectory using ca run-evaluate."
+        ),
+    ),
+    reference_map: Optional[str] = typer.Option(
+        None,
+        "--reference-map",
+        help="Reference map cloud for --evaluate (pcd/ply/las).",
+    ),
+    reference_trajectory: Optional[str] = typer.Option(
+        None,
+        "--reference-trajectory",
+        help="Reference trajectory for --evaluate (.csv/.tum/.txt).",
+    ),
+    format_json: bool = typer.Option(
+        False, "--format-json", help="Print the run summary as JSON on stdout."
+    ),
+) -> None:
+    """Drive a LiDAR-odometry pipeline end-to-end on a sequence of scans.
+
+    Produces three artifacts under OUTPUT_DIR:
+
+    - ``trajectory.tum`` — estimated sensor poses, consumable by ``ca traj-evaluate``.
+    - ``map.ply`` — accumulated world-frame map, consumable by ``ca evaluate``.
+    - ``summary.json`` — driver name, runtime, frame count, plus the optional
+      ``--evaluate`` block when a reference map/trajectory is supplied.
+
+    Example::
+
+        ca slam-run scans/ runs/seq01 --driver kiss-icp --max-range 80
+        ca slam-run scans/ runs/seq01 --evaluate \\
+            --reference-map ref/map.pcd \\
+            --reference-trajectory ref/poses.tum
+    """
+
+    if driver != "kiss-icp":
+        typer.echo(
+            f"Unsupported --driver '{driver}'. Only 'kiss-icp' is wired today.",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+    if evaluate_run_flag and (reference_map is None or reference_trajectory is None):
+        typer.echo(
+            "--evaluate requires both --reference-map and --reference-trajectory.",
+            err=True,
+        )
+        raise typer.Exit(code=2)
+
+    in_path = Path(input_path)
+    out_path = Path(output_dir)
+    out_path.mkdir(parents=True, exist_ok=True)
+
+    try:
+        frame_paths = discover_frame_paths(in_path)
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=2)
+
+    request = SlamRunRequest(
+        frame_paths=tuple(frame_paths),
+        timestamps_s=None,
+        frame_period_s=frame_period,
+        max_range_m=max_range,
+        voxel_size_m=voxel_size,
+        deskew=deskew,
+        max_frames=max_frames,
+    )
+
+    setup_logging()
+    from ca.log import logger as _logger
+    _logger.info(
+        "slam-run: %d frames -> %s (driver=%s)",
+        len(frame_paths),
+        out_path,
+        driver,
+    )
+
+    try:
+        drv = make_default_driver()
+        result = drv.run(request)
+    except (ImportError, ValueError) as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=2)
+
+    trajectory_path = out_path / "trajectory.tum"
+    map_path = out_path / "map.ply"
+    write_tum_trajectory(trajectory_path, result.poses, result.timestamps_s)
+    write_map_ply(map_path, result.map_points)
+
+    summary: dict[str, Any] = {
+        "driver": result.driver,
+        "frames_processed": result.frames_processed,
+        "runtime_s": float(result.runtime_s),
+        "map_points": int(result.map_points.shape[0]),
+        "trajectory_path": str(trajectory_path),
+        "map_path": str(map_path),
+        "driver_metadata": result.metadata,
+    }
+
+    if evaluate_run_flag:
+        try:
+            assert reference_map is not None and reference_trajectory is not None
+            eval_result = evaluate_run(
+                str(map_path),
+                reference_map,
+                str(trajectory_path),
+                reference_trajectory,
+            )
+        except (FileNotFoundError, ValueError) as e:
+            typer.echo(f"Error during --evaluate: {e}", err=True)
+            raise typer.Exit(code=2)
+        summary["evaluate"] = eval_result
+
+    summary_path = out_path / "summary.json"
+    _dump_json(summary, str(summary_path))
+
+    typer.echo(f"slam-run: wrote {summary_path}")
+    typer.echo(f"  trajectory: {trajectory_path}")
+    typer.echo(f"  map: {map_path}  ({result.map_points.shape[0]} pts)")
+    typer.echo(
+        f"  driver={result.driver} frames={result.frames_processed} "
+        f"runtime={result.runtime_s:.3f}s"
+    )
+
+    if format_json:
+        typer.echo(json.dumps(summary, indent=2, default=str))
 
 
 @app.command("run-evaluate")

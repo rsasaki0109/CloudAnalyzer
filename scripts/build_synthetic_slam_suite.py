@@ -11,9 +11,11 @@ Layout produced::
     ├── reference/
     │   ├── map.pcd
     │   └── trajectory.tum
-    └── sample_outputs/
-        ├── map_pass.pcd                      # reference + small noise; passes the gate
-        └── trajectory_pass.tum
+    ├── sample_outputs/
+    │   ├── map_pass.pcd                      # reference + small noise; passes the gate
+    │   └── trajectory_pass.tum
+    └── scans/                                # raw per-frame sensor-frame scans
+        └── frame_NNNNN.pcd                   # consumable by `ca slam-run`
 """
 
 from __future__ import annotations
@@ -30,7 +32,14 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "benchmarks" / "slam" / "synthetic-figure8"
 
 
 def _planar_map(seed: int = 42) -> np.ndarray:
-    """Return a ~640-point planar room with two raised box edges."""
+    """Return a closed planar room: floor plus four boxed walls.
+
+    The four walls (at x=±8 and y=±8) anchor ICP in every horizontal
+    direction — earlier revisions only had north/south walls, which left
+    east/west translation under-constrained and made it impossible for
+    ``ca slam-run`` (KISS-ICP) to recover a figure-8 trajectory.
+    """
+
     rng = np.random.default_rng(seed)
     xs = np.linspace(-10.0, 10.0, 20)
     ys = np.linspace(-10.0, 10.0, 20)
@@ -38,23 +47,30 @@ def _planar_map(seed: int = 42) -> np.ndarray:
     floor = np.column_stack([xx.ravel(), yy.ravel(), np.zeros(xx.size)])
     floor += rng.normal(0, 0.005, size=floor.shape)
 
-    # Two vertical "walls" that anchor the figure-8 visually.
-    wall_x = np.linspace(-8.0, 8.0, 80)
-    wall_y_pos = np.full_like(wall_x, 8.0)
-    wall_y_neg = np.full_like(wall_x, -8.0)
+    wall_sweep = np.linspace(-8.0, 8.0, 80)
     wall_z = np.linspace(0.0, 1.5, 6)
-    wall_xs, wall_zs = np.meshgrid(wall_x, wall_z)
-    wall_pos = np.column_stack(
-        [wall_xs.ravel(), np.full(wall_xs.size, 8.0), wall_zs.ravel()]
-    )
-    wall_neg = np.column_stack(
-        [wall_xs.ravel(), np.full(wall_xs.size, -8.0), wall_zs.ravel()]
-    )
-    wall_pos += rng.normal(0, 0.005, size=wall_pos.shape)
-    wall_neg += rng.normal(0, 0.005, size=wall_neg.shape)
-    del wall_y_pos, wall_y_neg  # parameter only kept for readability
+    sweep_grid, z_grid = np.meshgrid(wall_sweep, wall_z)
 
-    return np.vstack([floor, wall_pos, wall_neg]).astype(np.float64)
+    # North / south walls (constant y, sweep x).
+    wall_north = np.column_stack(
+        [sweep_grid.ravel(), np.full(sweep_grid.size, 8.0), z_grid.ravel()]
+    )
+    wall_south = np.column_stack(
+        [sweep_grid.ravel(), np.full(sweep_grid.size, -8.0), z_grid.ravel()]
+    )
+    # East / west walls (constant x, sweep y).
+    wall_east = np.column_stack(
+        [np.full(sweep_grid.size, 8.0), sweep_grid.ravel(), z_grid.ravel()]
+    )
+    wall_west = np.column_stack(
+        [np.full(sweep_grid.size, -8.0), sweep_grid.ravel(), z_grid.ravel()]
+    )
+    for w in (wall_north, wall_south, wall_east, wall_west):
+        w += rng.normal(0, 0.005, size=w.shape)
+
+    return np.vstack([floor, wall_north, wall_south, wall_east, wall_west]).astype(
+        np.float64
+    )
 
 
 def _figure8_trajectory(n: int = 200) -> tuple[np.ndarray, np.ndarray]:
@@ -82,6 +98,40 @@ def _write_tum(timestamps: np.ndarray, positions: np.ndarray, path: Path) -> Non
         for ts, (x, y, z) in zip(timestamps, positions)
     ]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _write_scans(
+    map_world: np.ndarray,
+    positions: np.ndarray,
+    out_dir: Path,
+    *,
+    stride: int = 1,
+    max_range: float = 25.0,
+    noise_sigma: float = 0.01,
+    seed: int = 19,
+) -> int:
+    """Write per-frame raw sensor-frame scans to ``out_dir``.
+
+    The figure-8 trajectory has identity rotation throughout (qw=1), so
+    each scan is just ``map_world - position`` filtered by ``max_range`` and
+    perturbed by per-scan Gaussian noise.
+
+    Default ``stride=1`` writes one scan per reference pose (~0.16 m
+    per-frame motion). Coarser strides (e.g. stride 4 = ~0.62 m/frame)
+    starve KISS-ICP's constant-velocity bootstrap and the trajectory
+    comes back the wrong direction. Returns the number of scans written.
+    """
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(seed)
+    indices = list(range(0, positions.shape[0], stride))
+    for j, i in enumerate(indices):
+        sensor_pts = map_world - positions[i][np.newaxis, :]
+        dists = np.linalg.norm(sensor_pts, axis=1)
+        sensor_pts = sensor_pts[dists <= max_range]
+        if noise_sigma > 0 and sensor_pts.size > 0:
+            sensor_pts = sensor_pts + rng.normal(0, noise_sigma, size=sensor_pts.shape)
+        _write_pcd(sensor_pts.astype(np.float64), out_dir / f"frame_{j:05d}.pcd")
+    return len(indices)
 
 
 SUITE_YAML = """\
@@ -125,6 +175,8 @@ def build(output_dir: Path) -> None:
 
     _write_pcd(map_pass, output_dir / "sample_outputs" / "map_pass.pcd")
     _write_tum(timestamps, traj_pass, output_dir / "sample_outputs" / "trajectory_pass.tum")
+
+    _write_scans(map_ref, traj_ref, output_dir / "scans")
 
     (output_dir / "suite.yaml").write_text(SUITE_YAML, encoding="utf-8")
 

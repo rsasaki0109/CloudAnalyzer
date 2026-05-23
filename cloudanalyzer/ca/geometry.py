@@ -162,6 +162,7 @@ def _read_ply_vertices(path: Path, wanted: tuple[str, ...]) -> dict[str, np.ndar
                     raise ValueError(f"{path}: truncated PLY header")
                 if line.strip() == "end_header":
                     break
+            raw: np.ndarray
             if vertex_count == 0:
                 raw = np.empty((0, num_props), dtype=np.float64)
             else:

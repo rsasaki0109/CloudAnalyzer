@@ -426,6 +426,74 @@ def test_all_three_drivers_recover_yaw_figure8_trajectory(tmp_path: Path) -> Non
         assert ate < 0.10, f"{name} ATE {ate:.4f}m exceeds 0.10m on yaw figure-8"
 
 
+def test_cli_slam_run_kiss_slam_passes_synthetic_figure8_gate(
+    tmp_path: Path,
+) -> None:
+    """Phase 26 invariant: ``ca slam-run --driver kiss-slam`` now also
+    passes the synthetic-figure8 suite's default gate (AUC≥0.95,
+    Chamfer≤0.05, ATE≤0.30 m, RPE≤0.20 m). Before Phase 26 the kiss-slam
+    driver fell ~0.03 short of the AUC floor because its world-frame map
+    was naively stitched from raw scans instead of using kiss-icp's
+    own multi-point-per-voxel local map representation."""
+
+    pytest.importorskip("kiss_slam", reason="kiss-slam not installed")
+
+    repo_root = Path(__file__).resolve().parents[2]
+    suite_dir = repo_root / "benchmarks" / "slam" / "synthetic-figure8"
+    scans_dir = suite_dir / "scans"
+    if not scans_dir.is_dir():
+        pytest.skip("synthetic-figure8 scans not present")
+
+    run_dir = tmp_path / "run"
+    slam_cmd = [
+        sys.executable,
+        "-m",
+        "cloudanalyzer_cli.main",
+        "slam-run",
+        str(scans_dir),
+        str(run_dir),
+        "--driver",
+        "kiss-slam",
+        "--max-range",
+        "25",
+        "--voxel-size",
+        "0.5",
+        "--frame-period",
+        "0.1",
+    ]
+    proc = subprocess.run(slam_cmd, capture_output=True, text=True)
+    assert proc.returncode == 0, (proc.stdout, proc.stderr)
+
+    bench_json = tmp_path / "bench.json"
+    bench_cmd = [
+        sys.executable,
+        "-m",
+        "cloudanalyzer_cli.main",
+        "benchmark",
+        "eval",
+        str(suite_dir / "suite.yaml"),
+        "--map",
+        str(run_dir / "map.ply"),
+        "--trajectory",
+        str(run_dir / "trajectory.tum"),
+        "--sequence",
+        "default",
+        "--output-json",
+        str(bench_json),
+    ]
+    proc = subprocess.run(bench_cmd, capture_output=True, text=True)
+    assert proc.returncode == 0, (proc.stdout, proc.stderr)
+    bench = json.loads(bench_json.read_text())
+    overall = bench["overall_quality_gate"]
+    assert overall is not None
+    assert overall["passed"], (
+        f"kiss-slam gate FAIL: {overall['reasons']!r}\n"
+        f"map AUC={bench['map']['auc']:.4f} "
+        f"Chamfer={bench['map']['chamfer_distance']:.4f}\n"
+        f"trajectory ATE={bench['trajectory']['ate']['rmse']:.4f}"
+    )
+
+
 def test_cli_slam_run_then_benchmark_eval_passes_synthetic_figure8(
     tmp_path: Path,
 ) -> None:

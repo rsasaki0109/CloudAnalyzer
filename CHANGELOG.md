@@ -71,6 +71,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   real driver still recovers the trajectory to within 10 cm ATE on the
   new suite, so any driver that loses heading tracking would be caught
   immediately.
+- **`KissSLAMSlamDriver` now uses kiss-icp's own local map** (Phase 26).
+  The driver no longer scan-stitches its world-frame map. Instead it
+  snapshots ``slam.odometry.local_map.point_cloud()`` before kiss-slam's
+  ``generate_new_node`` clears it. That snapshot is the same dense
+  multi-point-per-voxel representation kiss-icp uses standalone, so the
+  ``ca slam-run --driver kiss-slam`` output now also passes the
+  synthetic-figure8 default gate (AUC=1.00, Chamfer=0.016) — closing
+  the gap surfaced in Phase 25. A new
+  `test_cli_slam_run_kiss_slam_passes_synthetic_figure8_gate` pins
+  this in CI. The decision text in `docs/decisions.md` was updated; the
+  scan-stitching gap is now specific to ``small_gicp`` (genuine
+  scan-to-scan, no local map at all) rather than a generic
+  experimental-driver weakness.
 
 ### Changed
 

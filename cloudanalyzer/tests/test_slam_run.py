@@ -370,6 +370,62 @@ def test_cli_slam_run_end_to_end(tmp_path: Path) -> None:
     assert (output_dir / "map.ply").is_file()
 
 
+def test_all_three_drivers_recover_yaw_figure8_trajectory(tmp_path: Path) -> None:
+    """Phase 25 invariant: with the synthetic-figure8 scans rotated into
+    yaw-bearing form, every real driver should still recover the
+    trajectory to within 10 cm ATE. This guards against a regression
+    where one driver loses heading tracking but quietly keeps reporting
+    positions — a kind of failure the translation-only suite couldn't
+    catch."""
+
+    pytest.importorskip("kiss_icp", reason="kiss-icp not installed")
+    pytest.importorskip("kiss_slam", reason="kiss-slam not installed")
+    pytest.importorskip("small_gicp", reason="small_gicp not installed")
+
+    from ca.experiments.slam_run.kiss_icp_driver import KissICPSlamDriver
+    from ca.experiments.slam_run.kiss_slam_driver import KissSLAMSlamDriver
+    from ca.experiments.slam_run.small_gicp_driver import SmallGICPSlamDriver
+
+    repo_root = Path(__file__).resolve().parents[2]
+    scans_dir = repo_root / "benchmarks" / "slam" / "synthetic-figure8" / "scans"
+    if not scans_dir.is_dir():
+        pytest.skip("synthetic-figure8 scans not present")
+
+    paths = discover_frame_paths(scans_dir)
+    gt_tum = np.loadtxt(
+        repo_root
+        / "benchmarks"
+        / "slam"
+        / "synthetic-figure8"
+        / "reference"
+        / "trajectory.tum"
+    )
+    gt_positions = gt_tum[:, 1:4]
+
+    request = SlamRunRequest(
+        frame_paths=tuple(paths),
+        timestamps_s=None,
+        frame_period_s=0.1,
+        max_range_m=25.0,
+        voxel_size_m=0.5,
+        deskew=False,
+        max_frames=None,
+    )
+
+    for name, driver in [
+        ("kiss_icp", KissICPSlamDriver()),
+        ("kiss_slam", KissSLAMSlamDriver()),
+        ("small_gicp", SmallGICPSlamDriver()),
+    ]:
+        result = driver.run(request)
+        n = min(result.poses.shape[0], gt_positions.shape[0])
+        diffs = np.linalg.norm(
+            result.poses[:n, :3, 3] - gt_positions[:n], axis=1
+        )
+        ate = float(np.sqrt((diffs ** 2).mean()))
+        assert ate < 0.10, f"{name} ATE {ate:.4f}m exceeds 0.10m on yaw figure-8"
+
+
 def test_cli_slam_run_then_benchmark_eval_passes_synthetic_figure8(
     tmp_path: Path,
 ) -> None:

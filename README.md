@@ -189,6 +189,14 @@ ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
   --report qa/run_report.html
 ```
 
+The synthetic suite also ships raw per-frame scans under `scans/`, so you can run the full "scans → SLAM → benchmark" loop from a clean checkout with `pip install 'cloudanalyzer[slam]'`:
+
+```bash
+ca slam-run benchmarks/slam/synthetic-figure8/scans /tmp/run --driver kiss-icp --max-range 25
+ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
+  --map /tmp/run/map.ply --trajectory /tmp/run/trajectory.tum --sequence default
+```
+
 `ca benchmark init` builds a custom suite from your own reference map + trajectory. Newer College / KITTI Odometry wrappers live under `scripts/prepare_*_mini.py`. Full workflow and `--gate` overrides: **[docs/commands/benchmark.md](docs/commands/benchmark.md)**.
 
 ### Cross-Representation Geometry QA

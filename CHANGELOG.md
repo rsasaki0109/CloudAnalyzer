@@ -24,6 +24,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `SlamRunResult`, `SlamRunDriver` Protocol, frame loaders (KITTI `.bin`
   + `.pcd` / `.ply` / `.csv`), TUM trajectory + PLY map writers, and a
   vectorized rotation-matrix → quaternion helper.
+- **End-to-end dogfood on `synthetic-figure8`** (Phase 22) — the bundled
+  `benchmarks/slam/synthetic-figure8/` suite now ships raw per-frame
+  scans under `scans/` (200 frames, ~5.5 MB), regenerated deterministically
+  by `scripts/build_synthetic_slam_suite.py`. The full "scans → `ca slam-run`
+  → `ca benchmark eval`" loop now passes the suite's default gate
+  (AUC=1.00, ATE≈1.4 mm) from a clean checkout, locked in by
+  `tests/test_slam_run.py::test_cli_slam_run_then_benchmark_eval_passes_synthetic_figure8`.
+
+### Changed
+
+- `scripts/build_synthetic_slam_suite.py`: `_planar_map()` now emits a
+  fully boxed room (four walls at x=±8 and y=±8 instead of only two).
+  The two-wall layout left east/west translation under-constrained, so
+  KISS-ICP recovered figure-8 motion in the wrong direction. This
+  regenerates `reference/map.pcd` and the derived `sample_outputs/`.
 
 ## [0.3.0] - 2026-05-24
 

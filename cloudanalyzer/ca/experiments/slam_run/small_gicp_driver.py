@@ -2,15 +2,18 @@
 
 Wraps `small_gicp` (https://github.com/koide3/small_gicp), a fast,
 parallelized C++ point-cloud registration library with a Python binding
-on PyPI under MIT. The driver does **scan-to-scan** GICP registration —
-no incremental local map — which is intentionally simpler than the
-KISS-ICP scan-to-map approach and gives an honest second operating point
-for the slice's bake-off: lower per-frame cost, higher drift over long
-sequences.
+on PyPI under MIT. The driver does **scan-to-map VGICP**: it maintains
+an incremental ``GaussianVoxelMap`` as the registration target,
+inserting each newly-registered scan into the map at its recovered
+pose. Initial guess for the next frame's registration comes from a
+constant-velocity model.
 
-The world-frame map is built by transforming each input scan with its
-recovered pose and voxel-downsampling once at the end (mirrors what
-``KissSLAMSlamDriver`` does).
+This used to be a scan-to-scan driver, which gave it a deliberately
+different operating point (lower per-frame cost, higher drift). The
+scan-to-map upgrade (Phase 27) closes the AUC gap on the
+synthetic-figure8 benchmark — it now also passes the suite's default
+gate. The world-frame map is the voxel map's own ``voxel_points()``
+rather than scan-stitched output.
 """
 
 from __future__ import annotations
@@ -28,7 +31,7 @@ from ca.core.slam_run import (
 
 
 class SmallGICPSlamDriver:
-    """Experimental SLAM driver — scan-to-scan GICP via ``small_gicp``."""
+    """Experimental SLAM driver — scan-to-map VGICP via ``small_gicp``."""
 
     name: str = "small_gicp"
 
@@ -61,53 +64,59 @@ class SmallGICPSlamDriver:
                 request.frame_period_s
             )
 
-        # Knobs. max_range, voxel_size, deskew share names with the other
-        # drivers; small_gicp doesn't support deskew so it is silently
-        # ignored (with the request still recorded in the metadata block
-        # so a misconfig is visible in the summary).
-        downsampling = (
-            float(request.voxel_size_m) if request.voxel_size_m is not None else 0.25
+        # Knobs. ``voxel_size_m`` doubles as both the voxelmap leaf size
+        # and the preprocessing downsampling resolution. ``max_range_m``
+        # caps the registration's max-correspondence-distance — beyond 5 m
+        # the scan-to-map matching cost grows quickly and stops helping.
+        voxel_size = (
+            float(request.voxel_size_m) if request.voxel_size_m is not None else 0.5
         )
+        downsampling = voxel_size / 2.0
         max_corr_dist = (
             float(request.max_range_m) if request.max_range_m is not None else 1.0
         )
-        # max_correspondence_distance smaller than scan extent is correct.
-        # Cap it at 5 m so short-range scans still match meaningfully even
-        # if --max-range is 80.
         max_corr_dist = min(max_corr_dist, 5.0)
 
+        voxelmap = small_gicp.GaussianVoxelMap(voxel_size)
         poses_list: list[np.ndarray] = []
-        scans: list[np.ndarray] = []
+        raw_scans: list[np.ndarray] = []
         processed = 0
-        cumulative_pose = np.eye(4, dtype=np.float64)
+        prev_pose = np.eye(4, dtype=np.float64)
+        prev_delta = np.eye(4, dtype=np.float64)
 
         t0 = time.perf_counter()
-        prev_pts: np.ndarray | None = None
         for path in frame_paths:
             pts = load_frame(path)
             if pts.shape[0] == 0:
                 continue
-            if prev_pts is None:
-                poses_list.append(cumulative_pose.copy())
-                scans.append(pts)
-                prev_pts = pts
-                processed += 1
-                continue
-
-            result = small_gicp.align(
-                prev_pts.astype(np.float64),
-                pts.astype(np.float64),
-                registration_type="GICP",
+            pts = pts.astype(np.float64, copy=False)
+            src = small_gicp.PointCloud(pts)
+            src_prep, _ = small_gicp.preprocess_points(
+                src,
                 downsampling_resolution=downsampling,
-                max_correspondence_distance=max_corr_dist,
                 num_threads=1,
-                max_iterations=30,
             )
-            t_relative = np.asarray(result.T_target_source, dtype=np.float64)
-            cumulative_pose = cumulative_pose @ t_relative
-            poses_list.append(cumulative_pose.copy())
-            scans.append(pts)
-            prev_pts = pts
+            if processed == 0:
+                pose = np.eye(4, dtype=np.float64)
+                voxelmap.insert(src_prep)
+            else:
+                # Constant-velocity prediction for the initial guess.
+                init_guess = prev_pose @ prev_delta
+                result = small_gicp.align(
+                    voxelmap,
+                    src_prep,
+                    init_T_target_source=init_guess,
+                    max_correspondence_distance=max_corr_dist,
+                    num_threads=1,
+                    max_iterations=30,
+                )
+                pose = np.asarray(result.T_target_source, dtype=np.float64)
+                voxelmap.insert(src_prep, T=pose)
+
+            prev_delta = np.linalg.inv(prev_pose) @ pose
+            prev_pose = pose
+            poses_list.append(pose.copy())
+            raw_scans.append(pts)
             processed += 1
         runtime_s = time.perf_counter() - t0
 
@@ -120,33 +129,38 @@ class SmallGICPSlamDriver:
         poses_arr = np.stack(poses_list, axis=0).astype(np.float64, copy=False)
         timestamps_kept = timestamps_s[:processed]
 
-        # Build the world-frame map by transforming each scan with its
-        # recovered pose and voxel-downsampling once at the end.
+        # Build the world-frame map by transforming each input scan with
+        # its recovered pose and concatenating. small_gicp's
+        # GaussianVoxelMap stores voxel CENTERS (quantized to voxel_size),
+        # which makes voxel_points() inherently quantization-limited
+        # against an exact reference. A scan-stitched map preserves the
+        # underlying point density and matches what kiss-icp / kiss-slam
+        # output. Open3D's voxel_down_sample with a small voxel keeps the
+        # output size bounded without over-quantizing positions.
         world_chunks: list[np.ndarray] = []
-        for pose, scan in zip(poses_arr, scans):
-            if scan.shape[0] == 0:
-                continue
+        for pose, scan in zip(poses_arr, raw_scans):
             R = pose[:3, :3]
             t = pose[:3, 3]
             world_chunks.append(scan @ R.T + t)
         if world_chunks:
-            map_world = np.vstack(world_chunks)
-            if downsampling > 0 and map_world.shape[0] > 0:
-                import open3d as o3d
+            stitched = np.vstack(world_chunks)
+            import open3d as o3d
 
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(map_world)
-                pcd = pcd.voxel_down_sample(voxel_size=downsampling)
-                map_world = np.asarray(pcd.points, dtype=np.float64)
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(stitched)
+            pcd = pcd.voxel_down_sample(voxel_size=downsampling)
+            map_world = np.asarray(pcd.points, dtype=np.float64)
         else:
             map_world = np.zeros((0, 3), dtype=np.float64)
 
         metadata: dict[str, Any] = {
             "small_gicp": {
-                "registration_type": "GICP",
+                "registration_type": "VGICP",
+                "scan_to_map": True,
+                "voxel_size_m": float(voxel_size),
                 "downsampling_resolution_m": float(downsampling),
                 "max_correspondence_distance_m": float(max_corr_dist),
-                "scan_to_scan": True,
+                "voxelmap_size": int(voxelmap.size()),
                 "deskew_requested_but_unsupported": bool(request.deskew),
             }
         }

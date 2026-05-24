@@ -9,10 +9,11 @@ Four drivers participate:
 - :class:`KissSLAMSlamDriver` — wraps ``kiss-slam`` (KISS-ICP odometry +
   pose-graph optimization + MapClosures loop closure). Same scan-to-map
   inner loop as KISS-ICP with a PGO pass on top.
-- :class:`SmallGICPSlamDriver` — wraps ``small_gicp`` (PyPI MIT). Pure
-  scan-to-scan GICP with no local map; faster per frame but drifts more
-  on long sequences. Represents a different operating point in the
-  speed / accuracy plane.
+- :class:`SmallGICPSlamDriver` — wraps ``small_gicp`` (PyPI MIT).
+  Scan-to-map VGICP using ``small_gicp.GaussianVoxelMap`` as the
+  registration target; map output is scan-stitched + voxel-downsampled
+  (the voxel map stores quantized centers and can't clear the Chamfer
+  threshold against a dense reference on its own).
 - :class:`IdentityPassthroughSlamDriver` — sentinel that returns identity
   poses and concatenates input frames as the "map". It is intentionally
   bad; its only job is to prove the harness runs and to set the floor for

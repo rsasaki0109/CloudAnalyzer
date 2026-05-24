@@ -1780,7 +1780,11 @@ def slam_run_cmd(
     driver: str = typer.Option(
         "kiss-icp",
         "--driver",
-        help="SLAM driver to run. Currently only 'kiss-icp' is wired.",
+        help=(
+            "SLAM driver to run. Choices: 'kiss-icp' (default, adopted) or "
+            "'kiss-slam' (experimental — adds pose-graph optimization and "
+            "loop closures on top of KISS-ICP)."
+        ),
     ),
     max_range: Optional[float] = typer.Option(
         None,
@@ -1851,9 +1855,10 @@ def slam_run_cmd(
             --reference-trajectory ref/poses.tum
     """
 
-    if driver != "kiss-icp":
+    if driver not in ("kiss-icp", "kiss-slam"):
         typer.echo(
-            f"Unsupported --driver '{driver}'. Only 'kiss-icp' is wired today.",
+            f"Unsupported --driver '{driver}'. "
+            "Choices: 'kiss-icp' (adopted), 'kiss-slam' (experimental).",
             err=True,
         )
         raise typer.Exit(code=2)
@@ -1894,7 +1899,15 @@ def slam_run_cmd(
     )
 
     try:
-        drv = make_default_driver()
+        from ca.core.slam_run import SlamRunDriver as _SlamRunDriver
+
+        drv: _SlamRunDriver
+        if driver == "kiss-slam":
+            from ca.experiments.slam_run.kiss_slam_driver import KissSLAMSlamDriver
+
+            drv = KissSLAMSlamDriver()
+        else:
+            drv = make_default_driver()
         result = drv.run(request)
     except (ImportError, ValueError) as e:
         typer.echo(f"Error: {e}", err=True)

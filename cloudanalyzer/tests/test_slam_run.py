@@ -192,6 +192,76 @@ def test_kiss_icp_driver_writes_consumable_artifacts(tmp_path: Path) -> None:
     assert len(lines[0].split()) == 8
 
 
+# --- KISS-SLAM --------------------------------------------------------------
+
+_kiss_slam = pytest.importorskip(
+    "kiss_slam",
+    reason="kiss-slam not installed (optional [slam] extra)",
+)
+
+
+def test_kiss_slam_driver_recovers_straight_line_motion(tmp_path: Path) -> None:
+    from ca.experiments.slam_run.kiss_slam_driver import KissSLAMSlamDriver
+
+    ds = _straight_line_dataset()
+    request = ds.build_request(tmp_path)
+    drv = KissSLAMSlamDriver()
+    result = drv.run(request)
+    assert result.driver == "kiss_slam"
+    assert result.frames_processed == 6
+    ate = absolute_trajectory_error_m(result.poses, ds.gt_poses)
+    # KISS-SLAM uses KISS-ICP underneath so it should hit at least the same
+    # ATE threshold KISS-ICP does on this case.
+    assert ate <= ds.expected_kiss_icp_max_ate_m
+    assert result.metadata["kiss_slam"]["closures_detected"] == 0
+
+
+def test_kiss_slam_driver_is_in_bake_off(tmp_path: Path) -> None:
+    """Sanity check that ``get_slam_run_drivers`` exposes KISS-SLAM so the
+    slice evaluator and the docs generator see it."""
+    from ca.experiments.slam_run import get_slam_run_drivers
+
+    names = [d.name for d in get_slam_run_drivers()]
+    assert "kiss_icp" in names
+    assert "kiss_slam" in names
+    assert "identity_passthrough" in names
+
+
+def test_cli_slam_run_with_kiss_slam_driver(tmp_path: Path) -> None:
+    """Drive ``ca slam-run --driver kiss-slam`` end-to-end on the bundled
+    synthetic-figure8 scans."""
+
+    repo_root = Path(__file__).resolve().parents[2]
+    scans_dir = repo_root / "benchmarks" / "slam" / "synthetic-figure8" / "scans"
+    if not scans_dir.is_dir():
+        pytest.skip("benchmarks/slam/synthetic-figure8/scans not present")
+
+    out_dir = tmp_path / "out"
+    cmd = [
+        sys.executable,
+        "-m",
+        "cloudanalyzer_cli.main",
+        "slam-run",
+        str(scans_dir),
+        str(out_dir),
+        "--driver",
+        "kiss-slam",
+        "--max-range",
+        "25",
+        "--voxel-size",
+        "0.5",
+        "--frame-period",
+        "0.1",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    assert proc.returncode == 0, (proc.stdout, proc.stderr)
+    summary = json.loads((out_dir / "summary.json").read_text())
+    assert summary["driver"] == "kiss_slam"
+    assert summary["frames_processed"] == 200
+    assert (out_dir / "trajectory.tum").is_file()
+    assert (out_dir / "map.ply").is_file()
+
+
 def test_cli_slam_run_end_to_end(tmp_path: Path) -> None:
     """Drive the full CLI on a synthetic straight-line case."""
 

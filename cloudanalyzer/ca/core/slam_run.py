@@ -25,6 +25,7 @@ The contract:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from importlib.metadata import entry_points
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
@@ -289,23 +290,165 @@ def _rotation_matrices_to_quaternions(rotmats: np.ndarray) -> np.ndarray:
 
 
 # ---------------------------------------------------------------------------
-# Adopted driver re-export. Concrete impl lives under ca.experiments.slam_run
-# so the slice's evaluator can still benchmark it against the sentinel; the
-# CLI imports from here so ``ca.core`` stays the only stable surface.
+# Driver registry. Built-in drivers register themselves at import time via the
+# factories below; external packages can publish drivers via the
+# ``cloudanalyzer.slam_run_drivers`` entry-point group and they get folded
+# into the same registry on first lookup. The CLI resolves ``--driver <name>``
+# through ``get_driver`` so the if/elif chain stays out of the CLI.
 # ---------------------------------------------------------------------------
 
 
-def _import_kiss_icp_driver() -> type[SlamRunDriver]:
+from typing import Callable
+
+
+DriverFactory = Callable[[], SlamRunDriver]
+"""Zero-arg factory that instantiates a SLAM driver. Indirection lets us defer
+heavy imports (kiss-icp, kiss-slam, small_gicp) until the driver is actually
+selected."""
+
+DEFAULT_DRIVER_NAME: str = "kiss-icp"
+"""Driver picked when ``--driver`` is omitted."""
+
+_DRIVER_REGISTRY: dict[str, DriverFactory] = {}
+"""Maps CLI driver name (kebab-case, e.g. ``"kiss-icp"``) to factory."""
+
+_ENTRY_POINTS_LOADED: bool = False
+"""Cache: external entry-points are scanned once per process."""
+
+
+def register_driver(name: str, factory: DriverFactory) -> None:
+    """Register a SLAM driver factory under ``name``.
+
+    ``name`` is the CLI / config string (kebab-case by convention, e.g.
+    ``"kiss-icp"``). ``factory`` is a callable returning a fresh
+    :class:`SlamRunDriver` instance — keeping it a factory (not an instance)
+    lets us defer heavy imports until the user actually selects the driver.
+
+    Re-registering an existing name silently overwrites the previous entry —
+    external packages can intentionally shadow a built-in driver with a fork.
+    """
+
+    if not name:
+        raise ValueError("driver name must be a non-empty string")
+    _DRIVER_REGISTRY[name] = factory
+
+
+def _load_entry_point_drivers() -> None:
+    """Discover and register drivers exposed by external packages via the
+    ``cloudanalyzer.slam_run_drivers`` entry-point group.
+
+    Failures to import an individual plugin are logged but never raised — a
+    broken third-party driver must not take down the built-in ones.
+    """
+
+    global _ENTRY_POINTS_LOADED
+    if _ENTRY_POINTS_LOADED:
+        return
+    _ENTRY_POINTS_LOADED = True
+
+    eps: Any
+    try:
+        eps = entry_points(group="cloudanalyzer.slam_run_drivers")
+    except TypeError:  # pragma: no cover - py<3.10 fallback
+        # Older Python versions: entry_points() returns a dict[str, list].
+        eps = entry_points().get("cloudanalyzer.slam_run_drivers", [])  # type: ignore[union-attr]
+
+    for ep in eps:
+        try:
+            loaded = ep.load()
+        except Exception as exc:
+            from ca.log import logger
+
+            logger.warning(
+                "cloudanalyzer.slam_run_drivers plugin %s failed to load: %s",
+                ep.name,
+                exc,
+            )
+            continue
+        # The entry-point may resolve to either a factory (callable that returns
+        # a driver) or to the driver class itself; accept both.
+        if isinstance(loaded, type):
+            factory: DriverFactory = loaded  # type: ignore[assignment]
+        elif callable(loaded):
+            factory = loaded  # type: ignore[assignment]
+        else:
+            from ca.log import logger
+
+            logger.warning(
+                "cloudanalyzer.slam_run_drivers plugin %s must resolve to a "
+                "callable or class; got %r",
+                ep.name,
+                type(loaded),
+            )
+            continue
+        register_driver(ep.name, factory)
+
+
+def get_driver(name: str) -> SlamRunDriver:
+    """Resolve ``name`` to a fresh :class:`SlamRunDriver` instance.
+
+    Checks the in-process registry first, then scans entry-points on first
+    miss to fold in any third-party drivers installed alongside us. Raises
+    :class:`ValueError` if no driver matches.
+    """
+
+    if name in _DRIVER_REGISTRY:
+        return _DRIVER_REGISTRY[name]()
+    _load_entry_point_drivers()
+    if name in _DRIVER_REGISTRY:
+        return _DRIVER_REGISTRY[name]()
+    available = ", ".join(sorted(_DRIVER_REGISTRY)) or "(none)"
+    raise ValueError(
+        f"Unknown slam_run driver '{name}'. Available: {available}. "
+        "Third-party drivers can register themselves under the "
+        "'cloudanalyzer.slam_run_drivers' entry-point group."
+    )
+
+
+def list_drivers() -> list[str]:
+    """Return the sorted list of available driver names (built-in + plugins).
+
+    Forces a one-time entry-point scan so listing is always complete.
+    """
+
+    _load_entry_point_drivers()
+    return sorted(_DRIVER_REGISTRY)
+
+
+# ---------------------------------------------------------------------------
+# Built-in drivers. Each factory is a lazy import — the optional ``[slam]``
+# extra packages (kiss-icp, kiss-slam, small_gicp) are only touched when the
+# user actually selects the corresponding driver.
+# ---------------------------------------------------------------------------
+
+
+def _kiss_icp_factory() -> SlamRunDriver:
     from ca.experiments.slam_run.kiss_icp_driver import KissICPSlamDriver
 
-    return KissICPSlamDriver
+    return KissICPSlamDriver()
+
+
+def _kiss_slam_factory() -> SlamRunDriver:
+    from ca.experiments.slam_run.kiss_slam_driver import KissSLAMSlamDriver
+
+    return KissSLAMSlamDriver()
+
+
+def _small_gicp_factory() -> SlamRunDriver:
+    from ca.experiments.slam_run.small_gicp_driver import SmallGICPSlamDriver
+
+    return SmallGICPSlamDriver()
+
+
+register_driver("kiss-icp", _kiss_icp_factory)
+register_driver("kiss-slam", _kiss_slam_factory)
+register_driver("small-gicp", _small_gicp_factory)
 
 
 def make_default_driver() -> SlamRunDriver:
-    """Return the currently adopted SLAM driver instance (KISS-ICP)."""
+    """Return a fresh instance of the currently adopted SLAM driver."""
 
-    cls = _import_kiss_icp_driver()
-    return cls()
+    return get_driver(DEFAULT_DRIVER_NAME)
 
 
 def run_slam(request: SlamRunRequest, driver: SlamRunDriver | None = None) -> SlamRunResult:
@@ -320,10 +463,15 @@ __all__ = [
     "SlamRunRequest",
     "SlamRunResult",
     "SlamRunDriver",
+    "DriverFactory",
+    "DEFAULT_DRIVER_NAME",
     "load_frame",
     "discover_frame_paths",
     "write_tum_trajectory",
     "write_map_ply",
     "make_default_driver",
     "run_slam",
+    "register_driver",
+    "get_driver",
+    "list_drivers",
 ]

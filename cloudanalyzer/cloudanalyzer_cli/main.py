@@ -24,7 +24,7 @@ from ca.slam_debug import analyze_slam_run, write_slam_debug_markdown
 from ca.core.slam_run import (
     SlamRunRequest,
     discover_frame_paths,
-    make_default_driver,
+    get_driver,
     write_map_ply,
     write_tum_trajectory,
 )
@@ -1781,10 +1781,12 @@ def slam_run_cmd(
         "kiss-icp",
         "--driver",
         help=(
-            "SLAM driver to run. Choices: 'kiss-icp' (default, adopted), "
-            "'kiss-slam' (experimental — adds pose-graph optimization and "
-            "loop closures on top of KISS-ICP), or 'small-gicp' "
-            "(experimental — scan-to-scan GICP via the small_gicp library)."
+            "SLAM driver to run. Built-in: 'kiss-icp' (default, adopted), "
+            "'kiss-slam' (experimental — pose-graph + loop closures), "
+            "'small-gicp' (experimental — scan-to-map VGICP). Third-party "
+            "packages can register additional drivers under the "
+            "'cloudanalyzer.slam_run_drivers' entry-point group; see "
+            "`docs/commands/slam-run.md` for the contract."
         ),
     ),
     max_range: Optional[float] = typer.Option(
@@ -1856,14 +1858,6 @@ def slam_run_cmd(
             --reference-trajectory ref/poses.tum
     """
 
-    if driver not in ("kiss-icp", "kiss-slam", "small-gicp"):
-        typer.echo(
-            f"Unsupported --driver '{driver}'. Choices: "
-            "'kiss-icp' (adopted), 'kiss-slam' (experimental), "
-            "'small-gicp' (experimental).",
-            err=True,
-        )
-        raise typer.Exit(code=2)
     if evaluate_run_flag and (reference_map is None or reference_trajectory is None):
         typer.echo(
             "--evaluate requires both --reference-map and --reference-trajectory.",
@@ -1901,19 +1895,7 @@ def slam_run_cmd(
     )
 
     try:
-        from ca.core.slam_run import SlamRunDriver as _SlamRunDriver
-
-        drv: _SlamRunDriver
-        if driver == "kiss-slam":
-            from ca.experiments.slam_run.kiss_slam_driver import KissSLAMSlamDriver
-
-            drv = KissSLAMSlamDriver()
-        elif driver == "small-gicp":
-            from ca.experiments.slam_run.small_gicp_driver import SmallGICPSlamDriver
-
-            drv = SmallGICPSlamDriver()
-        else:
-            drv = make_default_driver()
+        drv = get_driver(driver)
         result = drv.run(request)
     except (ImportError, ValueError) as e:
         typer.echo(f"Error: {e}", err=True)

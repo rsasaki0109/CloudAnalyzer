@@ -42,6 +42,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   KISS-ICP adopted and re-evaluate once real-drift / revisit data lands.
   Install via `pip install 'cloudanalyzer[slam]'` (`kiss-slam>=0.0.2`
   added to the `[slam]` extra).
+- **`SmallGICPSlamDriver`** (Phase 24) — third real SLAM driver in
+  `ca/experiments/slam_run/`, wrapping the `small_gicp` package (MIT,
+  PyPI). Does pure scan-to-scan GICP with no local map. The bake-off is
+  now 4-way (`kiss_icp` adopted, `kiss_slam` and `small_gicp`
+  experimental, `identity_passthrough` sentinel). `small_gicp` is a
+  deliberately different operating point: ~10× higher ATE than
+  `kiss_icp` on the figure-8 dogfood case because drift accumulates
+  unbounded, but lower per-frame cost. Kept in experiments so the
+  speed / accuracy tradeoff stays visible. Exposed via
+  `ca slam-run --driver small-gicp`. `small_gicp>=1.0.0` added to the
+  `[slam]` extra.
 
 ### Changed
 

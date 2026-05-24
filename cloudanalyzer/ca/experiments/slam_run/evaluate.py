@@ -101,20 +101,20 @@ def run_slam_run_experiment(
             "stabilized_core_strategy": "KissICPSlamDriver",
             "reason": (
                 "KISS-ICP wraps a well-known scan-to-map LiDAR-odometry pipeline "
-                "available on PyPI under a BSD license. The slice currently runs "
-                "a 4-way bake-off (kiss_icp, kiss_slam, small_gicp, identity_"
-                "passthrough). On the bundled short synthetic cases the three "
-                "real drivers all clear the gate, but at different operating "
-                "points: kiss_icp uses scan-to-map with constant-velocity "
-                "prediction; kiss_slam adds pose-graph optimization on top of "
-                "kiss_icp (and would fire loop closures on longer sequences, "
-                "but the synthetic trajectories don't travel far enough to "
-                "trigger one); small_gicp does pure scan-to-scan GICP with no "
-                "local map and drifts ~10x more on the figure-8 case as a "
-                "result. kiss_icp wins the default slot for the smaller, "
-                "faster surface area and tighter ATE on the bundled cases. "
-                "kiss_slam and small_gicp stay in experiments and will be "
-                "re-evaluated once real-drift / revisit data lands. "
+                "available on PyPI under a BSD license. The slice now runs a "
+                "4-way bake-off (kiss_icp, kiss_slam, small_gicp, identity_"
+                "passthrough) and all three real drivers clear the synthetic-"
+                "figure8 gate. They sit at slightly different architectural "
+                "points: kiss_icp does scan-to-map with constant-velocity "
+                "prediction and an adaptive ICP threshold; kiss_slam adds a "
+                "pose-graph + MapClosures loop-closure layer (but the bundled "
+                "trajectories are too short to fire one); small_gicp does "
+                "VGICP scan-to-map against a Gaussian voxel map. kiss_icp "
+                "wins the core slot for the tightest synthetic-figure8 ATE "
+                "(~1.6 mm) and the smallest dependency surface; kiss_slam "
+                "and small_gicp stay in experiments because a real-data "
+                "dogfood (KITTI / Newer-College drift / revisits) hasn't yet "
+                "stress-tested any of them beyond synthetic geometry. "
                 "identity_passthrough is the failure floor (zero-motion "
                 "sentinel)."
             ),
@@ -137,7 +137,7 @@ def render_experiment_section(report: dict) -> str:
         "|---|---|",
         "| `kiss_icp` | Adopted — wraps the `kiss-icp` package (BSD, PyPI). Scan-to-map with constant-velocity prediction. |",
         "| `kiss_slam` | Experimental — wraps `kiss-slam` (KISS-ICP + pose-graph + MapClosures loop closure). Map is pulled from kiss-icp's own multi-point-per-voxel local map (snapshotted before kiss-slam clears it on node finalization), so the output passes the same synthetic-figure8 gate as `kiss_icp`. Promotion blocked on real-data dogfood with drift / revisits. |",
-        "| `small_gicp` | Experimental — wraps `small_gicp` (MIT, PyPI). Pure scan-to-scan GICP, no local map; ~10× higher ATE than `kiss_icp` on the figure-8 case because drift accumulates unbounded. Different speed/accuracy operating point. |",
+        "| `small_gicp` | Experimental — wraps `small_gicp` (MIT, PyPI). Scan-to-map VGICP using a `GaussianVoxelMap` as the registration target; map output is scan-stitched + voxel-downsampled. Passes the synthetic-figure8 gate after the Phase 27 upgrade from scan-to-scan. |",
         "| `identity_passthrough` | Sentinel — identity poses + concatenated scans. Sets the failure floor. |",
     ]
 
@@ -177,14 +177,14 @@ def render_decision_section(report: dict) -> str:
             "  odometry chain and produces the same trajectory KISS-ICP does.",
             "  Held in experiments and re-evaluated once real-drift / revisit",
             "  data lands.",
-            "- `small_gicp` (`SmallGICPSlamDriver`). Wraps `small_gicp`. Pure",
-            "  scan-to-scan GICP with no local map — faster per frame but ATE",
-            "  is roughly an order of magnitude higher than `kiss_icp`'s on",
-            "  the figure-8 dogfood case because drift accumulates unbounded.",
-            "  Kept in experiments because the different operating point (low",
-            "  per-frame cost) is interesting on its own; the slice will",
-            "  promote it if a future use case prefers latency over absolute",
-            "  accuracy.",
+            "- `small_gicp` (`SmallGICPSlamDriver`). Wraps `small_gicp`.",
+            "  Scan-to-map VGICP using a `GaussianVoxelMap` as the",
+            "  registration target. After the Phase 27 upgrade from",
+            "  scan-to-scan it also clears the synthetic-figure8 gate.",
+            "  Held in experiments alongside `kiss_slam` because real-data",
+            "  dogfood (KITTI / Newer-College drift / revisits) hasn't yet",
+            "  separated the three drivers on anything but synthetic",
+            "  geometry.",
             "- `identity_passthrough` is a sentinel: it returns identity poses",
             "  and concatenates the input frames as the 'map'. Its job is to",
             "  fail loudly on any case that has non-trivial motion so that a",

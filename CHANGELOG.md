@@ -84,6 +84,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   scan-stitching gap is now specific to ``small_gicp`` (genuine
   scan-to-scan, no local map at all) rather than a generic
   experimental-driver weakness.
+- **`SmallGICPSlamDriver` upgraded from scan-to-scan to scan-to-map**
+  (Phase 27). The driver now keeps an incremental
+  ``small_gicp.GaussianVoxelMap`` as the registration target and
+  registers each new scan against it via VGICP. Initial guess for each
+  frame comes from a constant-velocity model. Trajectory accuracy on
+  the synthetic-figure8 case improved ~8× (ATE 17 mm → 2.2 mm) and
+  ``ca slam-run --driver small-gicp`` now also clears the suite's
+  default gate (AUC=0.99, Chamfer=0.025). All three real drivers in
+  the slam_run bake-off now pass the gate — the slice gains a clean
+  ``"all real drivers verified"`` state. New gated test
+  ``test_cli_slam_run_small_gicp_passes_synthetic_figure8_gate`` pins
+  this in CI; the driver metadata also changes
+  ``scan_to_scan=True`` → ``scan_to_map=True`` /
+  ``registration_type="VGICP"``.
 
 ### Changed
 

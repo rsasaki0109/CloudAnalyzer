@@ -283,7 +283,8 @@ def test_small_gicp_driver_recovers_straight_line_motion(tmp_path: Path) -> None
     # Scan-to-scan GICP recovers the straight-line case essentially exactly
     # on the closed room — well within KISS-ICP's threshold.
     assert ate <= ds.expected_kiss_icp_max_ate_m
-    assert result.metadata["small_gicp"]["scan_to_scan"] is True
+    assert result.metadata["small_gicp"]["scan_to_map"] is True
+    assert result.metadata["small_gicp"]["registration_type"] == "VGICP"
 
 
 def test_small_gicp_driver_is_in_bake_off() -> None:
@@ -424,6 +425,75 @@ def test_all_three_drivers_recover_yaw_figure8_trajectory(tmp_path: Path) -> Non
         )
         ate = float(np.sqrt((diffs ** 2).mean()))
         assert ate < 0.10, f"{name} ATE {ate:.4f}m exceeds 0.10m on yaw figure-8"
+
+
+def test_cli_slam_run_small_gicp_passes_synthetic_figure8_gate(
+    tmp_path: Path,
+) -> None:
+    """Phase 27 invariant: ``ca slam-run --driver small-gicp`` now also
+    passes the synthetic-figure8 suite's default gate. The driver was
+    upgraded from scan-to-scan ICP to scan-to-map VGICP via
+    ``small_gicp.GaussianVoxelMap``, with a scan-stitched + voxel-
+    downsampled map output (the voxel-map centers are quantization-
+    limited and don't clear the Chamfer threshold against the dense
+    reference)."""
+
+    pytest.importorskip("small_gicp", reason="small_gicp not installed")
+
+    repo_root = Path(__file__).resolve().parents[2]
+    suite_dir = repo_root / "benchmarks" / "slam" / "synthetic-figure8"
+    scans_dir = suite_dir / "scans"
+    if not scans_dir.is_dir():
+        pytest.skip("synthetic-figure8 scans not present")
+
+    run_dir = tmp_path / "run"
+    slam_cmd = [
+        sys.executable,
+        "-m",
+        "cloudanalyzer_cli.main",
+        "slam-run",
+        str(scans_dir),
+        str(run_dir),
+        "--driver",
+        "small-gicp",
+        "--max-range",
+        "5",
+        "--voxel-size",
+        "0.5",
+        "--frame-period",
+        "0.1",
+    ]
+    proc = subprocess.run(slam_cmd, capture_output=True, text=True)
+    assert proc.returncode == 0, (proc.stdout, proc.stderr)
+
+    bench_json = tmp_path / "bench.json"
+    bench_cmd = [
+        sys.executable,
+        "-m",
+        "cloudanalyzer_cli.main",
+        "benchmark",
+        "eval",
+        str(suite_dir / "suite.yaml"),
+        "--map",
+        str(run_dir / "map.ply"),
+        "--trajectory",
+        str(run_dir / "trajectory.tum"),
+        "--sequence",
+        "default",
+        "--output-json",
+        str(bench_json),
+    ]
+    proc = subprocess.run(bench_cmd, capture_output=True, text=True)
+    assert proc.returncode == 0, (proc.stdout, proc.stderr)
+    bench = json.loads(bench_json.read_text())
+    overall = bench["overall_quality_gate"]
+    assert overall is not None
+    assert overall["passed"], (
+        f"small-gicp gate FAIL: {overall['reasons']!r}\n"
+        f"map AUC={bench['map']['auc']:.4f} "
+        f"Chamfer={bench['map']['chamfer_distance']:.4f}\n"
+        f"trajectory ATE={bench['trajectory']['ate']['rmse']:.4f}"
+    )
 
 
 def test_cli_slam_run_kiss_slam_passes_synthetic_figure8_gate(

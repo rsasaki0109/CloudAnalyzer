@@ -6,6 +6,28 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Plugin / entry-point registry for `ca slam-run` drivers** (Phase 28).
+  `ca.core.slam_run` now exposes `register_driver(name, factory)`,
+  `get_driver(name)`, and `list_drivers()`. The three built-in drivers
+  (`kiss-icp`, `kiss-slam`, `small-gicp`) register themselves at module
+  import time via lazy factories. Third-party packages can publish their
+  own driver under the `cloudanalyzer.slam_run_drivers` entry-point
+  group and have it surface automatically as
+  `ca slam-run --driver <their-name>` after `pip install`. The CLI's
+  former hard-coded `if/elif` over driver names is gone — `--driver`
+  now resolves through the registry. Broken third-party plugins are
+  logged and skipped instead of crashing the CLI. See
+  `docs/commands/slam-run.md` § *Adding a third-party SLAM driver* for
+  the contract + a worked `pyproject.toml` example.
+
+### Changed
+
+- `ca slam-run --driver` help text now lists the three built-in drivers
+  and points at the entry-point group; the validated choice set is
+  computed dynamically from the registry rather than hard-coded.
+
 ## [0.4.0] - 2026-05-24
 
 CloudAnalyzer goes from "you bring the SLAM output, I'll score it" to

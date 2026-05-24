@@ -166,6 +166,69 @@ three real drivers now clear the synthetic-figure8 gate.
   should beat it by a wide margin on a curved trajectory). Not exposed
   through the CLI.
 
+## Adding a third-party SLAM driver
+
+External packages can publish their own driver under
+`--driver <your-name>` without touching CloudAnalyzer itself. The CLI
+resolves `--driver` through a registry in `ca.core.slam_run`; the
+registry seeds the three built-in drivers at import time and folds in
+anything published under the `cloudanalyzer.slam_run_drivers`
+entry-point group on first lookup.
+
+### 1. Implement the contract
+
+Your driver needs to satisfy the `SlamRunDriver` Protocol —
+a `name` attribute (the driver's *internal* string, snake_case by
+convention) and a `run(request: SlamRunRequest) -> SlamRunResult`
+method. Both types live in `ca.core.slam_run`.
+
+```python
+# my_slam_pkg/my_slam_driver.py
+import numpy as np
+from ca.core.slam_run import SlamRunRequest, SlamRunResult
+
+
+class MySlamDriver:
+    name = "my_slam"
+
+    def run(self, request: SlamRunRequest) -> SlamRunResult:
+        # ... your registration loop ...
+        return SlamRunResult(
+            driver=self.name,
+            poses=poses,            # (N, 4, 4) ndarray
+            timestamps_s=ts,        # (N,) ndarray
+            map_points=map_world,   # (M, 3) ndarray
+            runtime_s=runtime,
+            frames_processed=n,
+            metadata={"my_slam": {...}},
+        )
+```
+
+### 2. Register via entry-point
+
+Add this to your package's `pyproject.toml`:
+
+```toml
+[project.entry-points."cloudanalyzer.slam_run_drivers"]
+my-slam = "my_slam_pkg.my_slam_driver:MySlamDriver"
+```
+
+The entry-point's left-hand side (`my-slam`) is the CLI string —
+`ca slam-run --driver my-slam` after a `pip install my_slam_pkg`. The
+right-hand side may resolve to either a callable factory or directly
+to your driver class (we accept both).
+
+### 3. Verify
+
+```bash
+pip install -e ./my_slam_pkg
+ca slam-run scans/ runs/ --driver my-slam
+```
+
+The registry also accepts in-process registration via
+`ca.core.slam_run.register_driver(name, factory)` — useful for
+unit-testing your driver without going through `pip install`.
+
 ## Related
 
 - `ca traj-evaluate` — score just the trajectory against a reference TUM.

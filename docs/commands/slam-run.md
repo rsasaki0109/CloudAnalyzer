@@ -100,6 +100,30 @@ ca slam-run frames.txt runs/sub --driver kiss-icp
 
 Useful when you want to subsample a long sequence without renaming files.
 
+### End-to-end dogfood on the bundled synthetic-figure8 suite
+
+The `benchmarks/slam/synthetic-figure8/` fixture ships with raw scans
+under `scans/`, so the full "scans → SLAM → benchmark eval" loop
+reproduces from a clean checkout (no BYO data needed):
+
+```bash
+ca slam-run benchmarks/slam/synthetic-figure8/scans /tmp/figure8_run \
+    --driver kiss-icp \
+    --max-range 25 \
+    --voxel-size 0.5 \
+    --frame-period 0.1
+
+ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
+    --map        /tmp/figure8_run/map.ply \
+    --trajectory /tmp/figure8_run/trajectory.tum \
+    --sequence default
+```
+
+On a clean run this passes the suite's default gate
+(AUC=1.00, ATE≈1.4 mm, Coverage=100%). It is exercised in CI by
+`tests/test_slam_run.py::test_cli_slam_run_then_benchmark_eval_passes_synthetic_figure8`
+when the optional `[slam]` extra is installed.
+
 ## What's adopted vs. what's experimental
 
 - `KissICPSlamDriver` is the adopted driver — re-exported from

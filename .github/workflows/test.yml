@@ -30,6 +30,15 @@ jobs:
           pip install --upgrade pip
           pip install -e .[dev]
 
+      - name: Install example SLAM driver plugin (validates Phase 28 entry-point pathway)
+        # Installs the canonical third-party SLAM driver package shipped
+        # under plugins/cloudanalyzer-driver-example/. --no-deps keeps pip
+        # from pulling cloudanalyzer from PyPI and shadowing the editable
+        # install we just did. With the plugin installed,
+        # tests/test_slam_run_plugin_example.py exercises the entry-point
+        # discovery + CLI dispatch end-to-end (no monkey-patching).
+        run: pip install --no-deps -e ../plugins/cloudanalyzer-driver-example
+
       - name: Type check
         run: python -m mypy ca/ cloudanalyzer_cli/
 

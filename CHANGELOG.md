@@ -8,6 +8,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Canonical third-party SLAM driver plugin** (Phase 29). The repo
+  now ships
+  [`plugins/cloudanalyzer-driver-example/`](plugins/cloudanalyzer-driver-example/),
+  a complete pip-installable package that registers an Open3D
+  scan-to-scan point-to-point ICP driver under the
+  `cloudanalyzer.slam_run_drivers` entry-point group. After
+  `pip install -e plugins/cloudanalyzer-driver-example`,
+  `ca slam-run --driver example` works end-to-end. The plugin depends
+  only on what CloudAnalyzer already pulls in (no `kiss-icp` / `kiss-slam`
+  / `small_gicp` extras required) — so it doubles as a worked template
+  for third-party authors. CI installs and exercises it via a new test
+  (`tests/test_slam_run_plugin_example.py`), so the entry-point
+  pathway introduced in Phase 28 is now validated against regressions
+  by a real package install, not just by in-process monkey-patches.
 - **Plugin / entry-point registry for `ca slam-run` drivers** (Phase 28).
   `ca.core.slam_run` now exposes `register_driver(name, factory)`,
   `get_driver(name)`, and `list_drivers()`. The three built-in drivers

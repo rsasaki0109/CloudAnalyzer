@@ -1781,9 +1781,10 @@ def slam_run_cmd(
         "kiss-icp",
         "--driver",
         help=(
-            "SLAM driver to run. Choices: 'kiss-icp' (default, adopted) or "
+            "SLAM driver to run. Choices: 'kiss-icp' (default, adopted), "
             "'kiss-slam' (experimental — adds pose-graph optimization and "
-            "loop closures on top of KISS-ICP)."
+            "loop closures on top of KISS-ICP), or 'small-gicp' "
+            "(experimental — scan-to-scan GICP via the small_gicp library)."
         ),
     ),
     max_range: Optional[float] = typer.Option(
@@ -1855,10 +1856,11 @@ def slam_run_cmd(
             --reference-trajectory ref/poses.tum
     """
 
-    if driver not in ("kiss-icp", "kiss-slam"):
+    if driver not in ("kiss-icp", "kiss-slam", "small-gicp"):
         typer.echo(
-            f"Unsupported --driver '{driver}'. "
-            "Choices: 'kiss-icp' (adopted), 'kiss-slam' (experimental).",
+            f"Unsupported --driver '{driver}'. Choices: "
+            "'kiss-icp' (adopted), 'kiss-slam' (experimental), "
+            "'small-gicp' (experimental).",
             err=True,
         )
         raise typer.Exit(code=2)
@@ -1906,6 +1908,10 @@ def slam_run_cmd(
             from ca.experiments.slam_run.kiss_slam_driver import KissSLAMSlamDriver
 
             drv = KissSLAMSlamDriver()
+        elif driver == "small-gicp":
+            from ca.experiments.slam_run.small_gicp_driver import SmallGICPSlamDriver
+
+            drv = SmallGICPSlamDriver()
         else:
             drv = make_default_driver()
         result = drv.run(request)

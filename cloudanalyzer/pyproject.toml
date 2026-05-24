@@ -65,6 +65,7 @@ dev = [
 slam = [
     "kiss-icp>=1.2.0",
     "kiss-slam>=0.0.2",
+    "small_gicp>=1.0.0",
 ]
 
 [tool.setuptools]

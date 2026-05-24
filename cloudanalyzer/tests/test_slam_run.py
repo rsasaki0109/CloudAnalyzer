@@ -262,6 +262,77 @@ def test_cli_slam_run_with_kiss_slam_driver(tmp_path: Path) -> None:
     assert (out_dir / "map.ply").is_file()
 
 
+# --- small_gicp -------------------------------------------------------------
+
+_small_gicp = pytest.importorskip(
+    "small_gicp",
+    reason="small_gicp not installed (optional [slam] extra)",
+)
+
+
+def test_small_gicp_driver_recovers_straight_line_motion(tmp_path: Path) -> None:
+    from ca.experiments.slam_run.small_gicp_driver import SmallGICPSlamDriver
+
+    ds = _straight_line_dataset()
+    request = ds.build_request(tmp_path)
+    drv = SmallGICPSlamDriver()
+    result = drv.run(request)
+    assert result.driver == "small_gicp"
+    assert result.frames_processed == 6
+    ate = absolute_trajectory_error_m(result.poses, ds.gt_poses)
+    # Scan-to-scan GICP recovers the straight-line case essentially exactly
+    # on the closed room — well within KISS-ICP's threshold.
+    assert ate <= ds.expected_kiss_icp_max_ate_m
+    assert result.metadata["small_gicp"]["scan_to_scan"] is True
+
+
+def test_small_gicp_driver_is_in_bake_off() -> None:
+    """Sanity check that ``get_slam_run_drivers`` exposes small_gicp so the
+    slice evaluator and the docs generator see it."""
+    from ca.experiments.slam_run import get_slam_run_drivers
+
+    names = [d.name for d in get_slam_run_drivers()]
+    assert "kiss_icp" in names
+    assert "kiss_slam" in names
+    assert "small_gicp" in names
+    assert "identity_passthrough" in names
+
+
+def test_cli_slam_run_with_small_gicp_driver(tmp_path: Path) -> None:
+    """Drive ``ca slam-run --driver small-gicp`` end-to-end on the bundled
+    synthetic-figure8 scans."""
+
+    repo_root = Path(__file__).resolve().parents[2]
+    scans_dir = repo_root / "benchmarks" / "slam" / "synthetic-figure8" / "scans"
+    if not scans_dir.is_dir():
+        pytest.skip("benchmarks/slam/synthetic-figure8/scans not present")
+
+    out_dir = tmp_path / "out"
+    cmd = [
+        sys.executable,
+        "-m",
+        "cloudanalyzer_cli.main",
+        "slam-run",
+        str(scans_dir),
+        str(out_dir),
+        "--driver",
+        "small-gicp",
+        "--max-range",
+        "5",
+        "--voxel-size",
+        "0.5",
+        "--frame-period",
+        "0.1",
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    assert proc.returncode == 0, (proc.stdout, proc.stderr)
+    summary = json.loads((out_dir / "summary.json").read_text())
+    assert summary["driver"] == "small_gicp"
+    assert summary["frames_processed"] == 200
+    assert (out_dir / "trajectory.tum").is_file()
+    assert (out_dir / "map.ply").is_file()
+
+
 def test_cli_slam_run_end_to_end(tmp_path: Path) -> None:
     """Drive the full CLI on a synthetic straight-line case."""
 

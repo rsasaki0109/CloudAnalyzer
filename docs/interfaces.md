@@ -209,7 +209,7 @@ class BaselineEvolutionSnapshot:
 
 - Stable core: `cloudanalyzer/ca/core/check_baseline_evolution.py`
 - Experimental space: `cloudanalyzer/ca/experiments/check_baseline_evolution/`
-- Current stabilized lineage: `stability_window` adopted directly in core
+- Current stabilized lineage: `threshold_guard` -> `stability_window`
 
 
 ## ground_segmentation_evaluate

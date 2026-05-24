@@ -8,6 +8,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`ca image-evaluate`** (Phase 30) — first photometric evaluation
+  surface in CloudAnalyzer. Scores a set of rendered images against a
+  reference (ground-truth) set on PSNR + SSIM, pairing by filename
+  across two directories. Implementation is pure numpy +
+  `scipy.ndimage.gaussian_filter` (no new heavy dep). Emits per-pair
+  metrics plus a per-metric summary (mean / median / min / max). New
+  module `ca/core/image_evaluate.py` carries the
+  `ImageEvalRequest` / `ImageEvalResult` contract and the `psnr` /
+  `ssim` helpers. This is the foundation for a future
+  `ca rendered-evaluate` that would drive a 3DGS PLY into images at
+  known camera poses and chain into this scoring path; see
+  `docs/commands/image-evaluate.md` for the full reference.
 - **Canonical third-party SLAM driver plugin** (Phase 29). The repo
   now ships
   [`plugins/cloudanalyzer-driver-example/`](plugins/cloudanalyzer-driver-example/),

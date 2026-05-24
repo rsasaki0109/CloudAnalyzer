@@ -762,6 +762,120 @@ def map_evaluate_cmd(
         _dump_json(payload, output_json)
 
 
+@app.command("image-evaluate")
+def image_evaluate_cmd(
+    rendered_dir: str = typer.Argument(
+        ...,
+        help="Directory of rendered (candidate) images.",
+    ),
+    reference_dir: str = typer.Argument(
+        ...,
+        help="Directory of reference (ground-truth) images. Pairs match by filename.",
+    ),
+    metrics: str = typer.Option(
+        "psnr,ssim",
+        "--metrics",
+        help="Comma-separated metrics to compute: psnr, ssim.",
+    ),
+    extensions: str = typer.Option(
+        ".png,.jpg,.jpeg",
+        "--extensions",
+        help="Comma-separated image extensions to discover under <rendered_dir>.",
+    ),
+    ssim_window: int = typer.Option(
+        11,
+        "--ssim-window",
+        help="Gaussian-window side length used in SSIM (Wang & Bovik 2004 use 11).",
+    ),
+    ssim_sigma: float = typer.Option(
+        1.5, "--ssim-sigma", help="Gaussian-window sigma used in SSIM."
+    ),
+    max_pairs: Optional[int] = typer.Option(
+        None,
+        "--max-pairs",
+        help="Cap on number of pairs evaluated. Useful for smoke-testing large render sets.",
+    ),
+    output_json: Optional[str] = typer.Option(
+        None, "--output-json", help="Write the full result (per-pair + summary) as JSON."
+    ),
+    format_json: bool = typer.Option(
+        False, "--format-json", help="Print the result as JSON to stdout."
+    ),
+) -> None:
+    """Score rendered images against a reference set on PSNR / SSIM.
+
+    The first photometric eval surface in CloudAnalyzer. Pairs images by
+    filename across the two directories and emits per-pair metrics plus
+    a per-metric summary (mean / median / min / max). Useful today for
+    comparing two image dirs; future ``ca rendered-evaluate`` will
+    render a 3DGS PLY into images at given camera poses and chain into
+    this same scoring function.
+
+    Example::
+
+        ca image-evaluate renders/seq00 references/seq00 \\
+            --metrics psnr,ssim --format-json
+    """
+
+    try:
+        from ca.core.image_evaluate import ImageEvalRequest, image_evaluate
+    except ImportError as exc:
+        _handle_error(exc)
+
+    metric_tuple = tuple(m.strip() for m in metrics.split(",") if m.strip())
+    ext_tuple = tuple(e.strip() for e in extensions.split(",") if e.strip())
+    if not metric_tuple:
+        typer.echo("Error: --metrics cannot be empty.", err=True)
+        raise typer.Exit(code=2)
+
+    try:
+        request = ImageEvalRequest(
+            rendered_dir=Path(rendered_dir),
+            reference_dir=Path(reference_dir),
+            metrics=metric_tuple,
+            extensions=ext_tuple,
+            ssim_window_size=ssim_window,
+            ssim_sigma=ssim_sigma,
+            max_pairs=max_pairs,
+        )
+        result = image_evaluate(request)
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+
+    payload = {
+        "summary": result.summary,
+        "pairs": result.pairs,
+        "metadata": result.metadata,
+    }
+
+    if format_json:
+        typer.echo(json.dumps(payload, indent=2, default=str))
+    else:
+        s = result.summary
+        typer.echo(
+            f"image-evaluate: {s['pairs_evaluated']} pair(s) scored "
+            f"({s['pairs_missing_in_reference']} missing in reference, "
+            f"{s['pairs_size_mismatch']} size-mismatch)"
+        )
+        for m in metric_tuple:
+            mean = s.get(f"{m}_mean")
+            median = s.get(f"{m}_median")
+            if mean is None:
+                typer.echo(f"  {m.upper():<5} -- no finite values")
+            else:
+                lo = s.get(f"{m}_min")
+                hi = s.get(f"{m}_max")
+                unit = " dB" if m == "psnr" else ""
+                typer.echo(
+                    f"  {m.upper():<5} mean={mean:.4f}{unit} "
+                    f"median={median:.4f}{unit} "
+                    f"min={lo:.4f}{unit} max={hi:.4f}{unit}"
+                )
+
+    if output_json:
+        _dump_json(payload, output_json)
+
+
 @app.command("posegraph-validate")
 def posegraph_validate_cmd(
     g2o_path: str = typer.Argument(..., help="Path to pose graph file (pose_graph.g2o)"),

@@ -6,6 +6,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-05-24
+
+CloudAnalyzer goes from "you bring the SLAM output, I'll score it" to
+"give me your raw scans, I'll run the SLAM and score it for you" —
+plus a real 3-driver bake-off where every driver is independently
+verified against a bundled rotation-bearing dogfood suite.
+
+### Highlights
+
+- **`ca slam-run`** drives a LiDAR-odometry pipeline end-to-end on a
+  sequence of scans and emits the trajectory + map that the rest of
+  the QA stack consumes (`ca run-evaluate`, `ca check`, `ca history`,
+  `ca benchmark eval`).
+- The `slam_run` experiment slice ships **three architecturally distinct
+  real drivers** plus a sentinel. All three real drivers pass the
+  synthetic-figure8 default gate:
+  - `kiss_icp` (adopted, BSD): scan-to-map with constant-velocity
+    prediction. ATE≈1.6 mm.
+  - `kiss_slam` (experimental, MIT): KISS-ICP odometry + pose-graph
+    optimization + MapClosures loop closure. ATE≈1.6 mm.
+  - `small_gicp` (experimental, MIT): scan-to-map VGICP via
+    `GaussianVoxelMap` + constant-velocity prediction. ATE≈2.2 mm.
+- The bundled `benchmarks/slam/synthetic-figure8/` benchmark suite now
+  ships 200 raw per-frame scans under `scans/`, with the sensor heading
+  tangent to the trajectory (vehicle-style) so the suite exercises
+  both translation and rotation recovery. A clean checkout with
+  `pip install 'cloudanalyzer[slam]'` can run the full
+  *scans → SLAM → benchmark eval* loop from a clean checkout (no BYO
+  data needed).
+
 ### Added
 
 - **`ca slam-run`** (Phase 21) — drive a LiDAR-odometry pipeline

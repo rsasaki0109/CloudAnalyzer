@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=77.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cloudanalyzer-driver-example"
+version = "0.1.0"
+description = "Example third-party SLAM driver for `ca slam-run` (scan-to-scan ICP via Open3D)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+    {name = "CloudAnalyzer contributors"},
+]
+keywords = ["cloudanalyzer", "slam", "icp", "open3d", "plugin"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "cloudanalyzer>=0.4.0",
+    "open3d>=0.17",
+    "numpy>=1.24",
+]
+
+[project.urls]
+Homepage = "https://github.com/rsasaki0109/CloudAnalyzer/tree/main/plugins/cloudanalyzer-driver-example"
+Repository = "https://github.com/rsasaki0109/CloudAnalyzer"
+
+# This is the surface that makes `ca slam-run --driver example` work after
+# `pip install cloudanalyzer-driver-example`. The left-hand side ("example")
+# becomes the CLI string; the right-hand side resolves to a class (or
+# factory) implementing the ca.core.slam_run.SlamRunDriver protocol.
+[project.entry-points."cloudanalyzer.slam_run_drivers"]
+example = "cloudanalyzer_driver_example.driver:Open3DICPSlamDriver"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "src"

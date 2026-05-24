@@ -229,6 +229,17 @@ The registry also accepts in-process registration via
 `ca.core.slam_run.register_driver(name, factory)` — useful for
 unit-testing your driver without going through `pip install`.
 
+### Canonical working example
+
+The repo ships a complete worked example under
+[`plugins/cloudanalyzer-driver-example/`](../../plugins/cloudanalyzer-driver-example/):
+a scan-to-scan point-to-point ICP driver via Open3D, depending only on
+what CloudAnalyzer already requires (no `kiss-icp` / `kiss-slam` /
+`small_gicp` extras). CI installs it in editable mode and exercises
+`ca slam-run --driver example` end-to-end against the bundled
+`synthetic-figure8` scans, so the entry-point pathway is locked in
+against regressions.
+
 ## Related
 
 - `ca traj-evaluate` — score just the trajectory against a reference TUM.

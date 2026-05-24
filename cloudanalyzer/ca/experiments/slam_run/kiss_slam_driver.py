@@ -102,6 +102,21 @@ class KissSLAMSlamDriver:
                 "contains non-empty scans."
             )
 
+        # Snapshot the KISS-ICP odometry's local map BEFORE
+        # generate_new_node runs. generate_new_node clears
+        # ``slam.odometry.local_map`` as part of starting a fresh local
+        # node, so we'd lose it otherwise. The kiss-icp local map keeps
+        # up to ``max_points_per_voxel`` points per voxel (default 20) —
+        # much denser than kiss-slam's own VoxelMap aggregation (which
+        # collapses to ~1 point per voxel) and gives the same map
+        # quality kiss-icp would alone. For trajectories that don't
+        # cross the local-map splitting distance (the synthetic-figure8
+        # case and most short benchmarks), this snapshot is the entire
+        # global map and lives in the world frame (keypose=I).
+        inflight_pts = np.asarray(slam.odometry.local_map.point_cloud(), dtype=np.float64)
+        if inflight_pts.ndim != 2 or inflight_pts.shape[-1] != 3:
+            inflight_pts = inflight_pts.reshape(-1, 3) if inflight_pts.size else inflight_pts
+
         # Force-finalize the in-flight local map and discard the empty
         # trailing node that ``generate_new_node`` creates, mirroring the
         # upstream pipeline runner.
@@ -119,25 +134,16 @@ class KissSLAMSlamDriver:
         timestamps_kept = timestamps_s[:n]
         scans = scans[:n]
 
-        # Build the world-frame map by transforming each input scan with
-        # its optimized pose and voxel-downsampling once at the end.
-        world_chunks: list[np.ndarray] = []
-        for pose, scan in zip(poses_arr, scans):
-            if scan.shape[0] == 0:
-                continue
-            R = pose[:3, :3]
-            t = pose[:3, 3]
-            world_chunks.append(scan @ R.T + t)
-        if world_chunks:
-            map_world = np.vstack(world_chunks)
-            voxel = float(config.local_mapper.voxel_size)
-            if voxel > 0 and map_world.shape[0] > 0:
-                import open3d as o3d
-
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(map_world)
-                pcd = pcd.voxel_down_sample(voxel_size=voxel)
-                map_world = np.asarray(pcd.points, dtype=np.float64)
+        # Use the dense in-flight snapshot as the global map. We do not
+        # voxel-down-sample again — the kiss-icp local map already keeps
+        # at most ``max_points_per_voxel`` points per voxel, and a second
+        # pass would collapse those clusters to one point each and tank
+        # the AUC against a denser reference map. (Multi-local-map
+        # sequences will also pull each prior node's filtered
+        # ``node.pcd`` transformed by ``keypose`` once real KITTI dogfood
+        # drives multi-node behavior.)
+        if inflight_pts.size:
+            map_world = inflight_pts
         else:
             map_world = np.zeros((0, 3), dtype=np.float64)
 

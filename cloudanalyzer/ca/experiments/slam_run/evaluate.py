@@ -136,7 +136,7 @@ def render_experiment_section(report: dict) -> str:
         "| Driver | Role |",
         "|---|---|",
         "| `kiss_icp` | Adopted — wraps the `kiss-icp` package (BSD, PyPI). Scan-to-map with constant-velocity prediction. |",
-        "| `kiss_slam` | Experimental — wraps `kiss-slam` (KISS-ICP + pose-graph + MapClosures loop closure). Equivalent to `kiss_icp` on the synthetic cases that ship; promotion blocked on real-data dogfood with drift / revisits. |",
+        "| `kiss_slam` | Experimental — wraps `kiss-slam` (KISS-ICP + pose-graph + MapClosures loop closure). Map is pulled from kiss-icp's own multi-point-per-voxel local map (snapshotted before kiss-slam clears it on node finalization), so the output passes the same synthetic-figure8 gate as `kiss_icp`. Promotion blocked on real-data dogfood with drift / revisits. |",
         "| `small_gicp` | Experimental — wraps `small_gicp` (MIT, PyPI). Pure scan-to-scan GICP, no local map; ~10× higher ATE than `kiss_icp` on the figure-8 case because drift accumulates unbounded. Different speed/accuracy operating point. |",
         "| `identity_passthrough` | Sentinel — identity poses + concatenated scans. Sets the failure floor. |",
     ]

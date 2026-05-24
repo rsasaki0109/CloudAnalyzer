@@ -15,11 +15,12 @@ BSD.
 ```bash
 pip install 'cloudanalyzer[slam]'
 # or, if cloudanalyzer is already installed:
-pip install kiss-icp
+pip install kiss-icp kiss-slam
 ```
 
-The driver is loaded lazily, so `ca` itself works without `kiss-icp`
-installed — `ca slam-run` raises a clear error if the extra is missing.
+The drivers are loaded lazily, so `ca` itself works without the SLAM
+packages installed — `ca slam-run` only raises if the extra is missing
+when you actually request that driver.
 
 ## Usage
 
@@ -49,7 +50,7 @@ ca slam-run <input> <output_dir> [--driver kiss-icp] [options]
 
 | Option | Description |
 |---|---|
-| `--driver kiss-icp` | SLAM driver to use. Only `kiss-icp` is wired today. |
+| `--driver kiss-icp\|kiss-slam` | SLAM driver to use. `kiss-icp` (default, adopted) is the upstream KISS-ICP scan-to-map LiDAR odometry. `kiss-slam` adds pose-graph optimization and MapClosures-based loop closures on top of the same odometry; experimental, see [What's adopted vs. what's experimental](#whats-adopted-vs-whats-experimental). |
 | `--max-range 80` | Drop scan points farther than this from the sensor (meters). |
 | `--voxel-size 0.5` | Local-map voxel grid (meters). Driver default kept if omitted. |
 | `--deskew` | Enable KISS-ICP motion-deskew. Default off because `.bin/.pcd` dumps don't typically carry per-point timestamps. |
@@ -127,15 +128,24 @@ when the optional `[slam]` extra is installed.
 ## What's adopted vs. what's experimental
 
 - `KissICPSlamDriver` is the adopted driver — re-exported from
-  `ca.core.slam_run`. The CLI imports only from `ca.core`.
-- The slam_run experiment slice also keeps an `IdentityPassthroughSlamDriver`
-  sentinel under `ca.experiments.slam_run.identity_passthrough`. It always
+  `ca.core.slam_run`. The CLI imports only from `ca.core` for this one.
+- `KissSLAMSlamDriver` (wraps the `kiss-slam` package: KISS-ICP odometry
+  + pose-graph optimization + MapClosures loop closure) is in
+  `ca.experiments.slam_run`. The CLI exposes it as `--driver kiss-slam`
+  via a per-name lazy import — keeping the import path in `experiments`
+  reflects that it is not the adopted core driver. On the short synthetic
+  trajectories the slice's evaluator ships, KISS-SLAM degenerates to one
+  round of pose-graph optimization over the KISS-ICP odometry chain (no
+  loop closures fire because the sensor never travels far enough to
+  cross the local-map splitting distance), so it produces effectively
+  the same trajectory KISS-ICP does. Promotion to core is blocked on
+  real-drift / revisit data that exercises the loop-closure path.
+- `IdentityPassthroughSlamDriver` (under
+  `ca.experiments.slam_run.identity_passthrough`) is a sentinel — always
   returns identity poses and concatenates the raw input frames as the
-  "map", which makes it a useful failure floor for the slice's evaluator
-  (any real driver should beat it by a wide margin on a curved trajectory).
-- A second real driver (e.g. `kiss-slam` for LIO with loop closure) will
-  land alongside `KissICPSlamDriver` in `ca.experiments.slam_run` and the
-  evaluator will decide which one core re-exports next.
+  "map". Useful failure floor for the slice's evaluator (any real driver
+  should beat it by a wide margin on a curved trajectory). Not exposed
+  through the CLI.
 
 ## Related
 

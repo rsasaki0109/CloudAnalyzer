@@ -128,9 +128,23 @@ checks:
       min_auc_gain: 0.01
       min_ate_gain: 0.05
       require_posegraph_ok: true
+  - id: rendered-views
+    kind: image
+    rendered_dir: outputs/renders/seq00
+    reference_dir: baselines/references/seq00
+    gate:
+      min_psnr: 28.0
+      min_ssim: 0.85
 ```
 
 `ca check` writes per-check reports / JSON when `report_dir` and `json_dir` are configured, and it exits with code `1` when any gated check fails.
+
+The `image` check kind wraps `ca image-evaluate`: it pairs rendered and reference
+images by filename, computes per-pair PSNR / SSIM, and gates on the aggregate
+**mean** (`min_psnr` is in dB, `min_ssim` in `[0, 1]`). Bit-identical pairs
+(PSNR = +∞) are excluded from the mean and trivially satisfy `min_psnr`; a gate
+fails if zero pairs match across the two directories. PSNR / SSIM means flow into
+`ca report-pr-comment` with up/down deltas against a baseline like every other kind.
 
 ### GitHub Actions
 

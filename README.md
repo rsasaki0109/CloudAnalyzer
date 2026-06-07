@@ -279,7 +279,7 @@ checks:
       min_coverage: 0.9
 ```
 
-Supported check kinds: `artifact`, `trajectory`, `loop_closure`, `ground`, `detection`, `tracking`, `map`, `run`, `benchmark`. Full schema and worked examples: **[docs/ci.md](docs/ci.md)** and **[docs/examples/cloudanalyzer.yaml](docs/examples/cloudanalyzer.yaml)**.
+Supported check kinds: `artifact`, `trajectory`, `loop_closure`, `ground`, `detection`, `tracking`, `image`, `map`, `run`, `benchmark`. Full schema and worked examples: **[docs/ci.md](docs/ci.md)** and **[docs/examples/cloudanalyzer.yaml](docs/examples/cloudanalyzer.yaml)**.
 
 ### PR Comments
 

@@ -24,6 +24,7 @@ from ca.report import (
     save_batch_report,
     save_detection_report,
     save_ground_report,
+    save_image_report,
     save_run_batch_report,
     save_run_report,
     save_tracking_report,
@@ -46,6 +47,7 @@ CheckKind = Literal[
     "run_batch",
     "ground",
     "loop_closure",
+    "image",
 ]
 AlignmentMode = Literal["none", "origin", "rigid"]
 
@@ -67,6 +69,9 @@ _KIND_ALIASES: dict[str, CheckKind] = {
     "loop_closure": "loop_closure",
     "loop-closure": "loop_closure",
     "manual_loop_closure": "loop_closure",
+    "image": "image",
+    "image_evaluate": "image",
+    "photometric": "image",
 }
 
 _VALID_GATE_KEYS = {
@@ -91,6 +96,8 @@ _VALID_GATE_KEYS = {
     "max_after_ate",
     "require_posegraph_ok",
     "voxel_size",
+    "min_psnr",
+    "min_ssim",
 }
 
 _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
@@ -128,6 +135,7 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_after_ate",
         "require_posegraph_ok",
     },
+    "image": {"min_psnr", "min_ssim"},
 }
 
 
@@ -449,6 +457,20 @@ def _normalize_ground_inputs(raw_check: dict[str, Any], config_dir: Path) -> dic
     }
 
 
+def _normalize_image_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
+    """Normalize inputs for a photometric (PSNR/SSIM) image check."""
+    return {
+        "rendered_dir": _resolve_path(
+            config_dir,
+            _require_string(raw_check.get("rendered_dir"), "check.rendered_dir"),
+        ),
+        "reference_dir": _resolve_path(
+            config_dir,
+            _require_string(raw_check.get("reference_dir"), "check.reference_dir"),
+        ),
+    }
+
+
 def _add_optional_resolved_input(
     inputs: dict[str, str],
     key: str,
@@ -546,6 +568,8 @@ def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Pa
         return _normalize_ground_inputs(raw_check, config_dir)
     if kind == "loop_closure":
         return _normalize_loop_closure_inputs(raw_check, config_dir)
+    if kind == "image":
+        return _normalize_image_inputs(raw_check, config_dir)
     return _normalize_run_batch_inputs(raw_check, config_dir)
 
 
@@ -1296,6 +1320,83 @@ def _run_loop_closure_check(spec: CheckSpec) -> dict[str, Any]:
     }
 
 
+def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
+    """Run a single photometric (PSNR/SSIM) image-set QA check."""
+    from ca.core.image_evaluate import ImageEvalRequest, image_evaluate  # lazy import
+
+    result = image_evaluate(
+        ImageEvalRequest(
+            rendered_dir=Path(spec.inputs["rendered_dir"]),
+            reference_dir=Path(spec.inputs["reference_dir"]),
+        )
+    )
+    summary = result.summary
+    psnr_mean = cast(float | None, summary.get("psnr_mean"))
+    ssim_mean = cast(float | None, summary.get("ssim_mean"))
+    pairs_evaluated = int(summary["pairs_evaluated"])
+
+    min_psnr = cast(float | None, spec.gate.get("min_psnr"))
+    min_ssim = cast(float | None, spec.gate.get("min_ssim"))
+    has_gate = min_psnr is not None or min_ssim is not None
+
+    gate_reasons: list[str] = []
+    if has_gate and pairs_evaluated == 0:
+        gate_reasons.append(
+            "0 pairs evaluated (no rendered/reference filename matches)"
+        )
+    else:
+        # A None mean with pairs_evaluated > 0 means every scored pair was
+        # bit-identical (PSNR=+inf, filtered from the aggregate), which
+        # trivially satisfies any min_psnr floor — so only fail on a finite
+        # mean that falls short.
+        if min_psnr is not None and psnr_mean is not None and psnr_mean < min_psnr:
+            gate_reasons.append(
+                f"PSNR mean {psnr_mean:.4f} dB < min_psnr {min_psnr:.4f} dB"
+            )
+        if min_ssim is not None and ssim_mean is not None and ssim_mean < min_ssim:
+            gate_reasons.append(
+                f"SSIM mean {ssim_mean:.4f} < min_ssim {min_ssim:.4f}"
+            )
+
+    quality_gate = (
+        {
+            "passed": not gate_reasons,
+            "min_psnr": min_psnr,
+            "min_ssim": min_ssim,
+            "reasons": gate_reasons,
+        }
+        if has_gate
+        else None
+    )
+
+    result_dict: dict[str, Any] = {
+        "summary": summary,
+        "pairs": result.pairs,
+        "metadata": result.metadata,
+        "quality_gate": quality_gate,
+    }
+    if spec.outputs.report_path:
+        save_image_report(result_dict, spec.outputs.report_path)
+    if spec.outputs.json_path:
+        _write_json(spec.outputs.json_path, result_dict)
+    return {
+        "id": spec.check_id,
+        "kind": spec.kind,
+        "passed": None if quality_gate is None else quality_gate["passed"],
+        "report_path": spec.outputs.report_path,
+        "json_path": spec.outputs.json_path,
+        "summary": {
+            "psnr_mean": psnr_mean,
+            "ssim_mean": ssim_mean,
+            "pairs_evaluated": pairs_evaluated,
+            "pairs_missing_in_reference": int(summary["pairs_missing_in_reference"]),
+            "pairs_size_mismatch": int(summary["pairs_size_mismatch"]),
+            "passed": None if quality_gate is None else quality_gate["passed"],
+        },
+        "result": result_dict,
+    }
+
+
 def _run_check(spec: CheckSpec) -> dict[str, Any]:
     """Dispatch one normalized check spec."""
     if spec.kind == "artifact":
@@ -1316,6 +1417,8 @@ def _run_check(spec: CheckSpec) -> dict[str, Any]:
         return _run_ground_check(spec)
     if spec.kind == "loop_closure":
         return _run_loop_closure_check(spec)
+    if spec.kind == "image":
+        return _run_image_check(spec)
     return _run_run_batch_check(spec)
 
 

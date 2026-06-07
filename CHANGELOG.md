@@ -8,6 +8,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`image` config check kind** (Phase 31) — wires `ca image-evaluate`
+  into the config-driven QA layer so photometric quality can ride the
+  same regression gate as every other artifact. A `kind: image` check
+  takes `rendered_dir` + `reference_dir`, scores PSNR / SSIM per pair,
+  and gates on the aggregate mean via `gate: { min_psnr, min_ssim }`
+  (`min_psnr` in dB). Bit-identical pairs (PSNR = +∞) are excluded from
+  the mean and trivially pass `min_psnr`; a gate fails when zero pairs
+  match across the two directories. The kind emits Markdown/HTML reports
+  (`save_image_report`), participates in `ca`'s severity-weighted triage
+  ranking, and surfaces PSNR / SSIM means with up/down deltas in
+  `ca report-pr-comment`. This is the first non-geometric axis to reach
+  the CI gate; LPIPS (an optional `[photometric]` extra, adding a
+  `max_lpips` gate key) follows in a later phase. See `docs/ci.md`
+  § *Config-Driven QA*.
 - **`ca image-evaluate`** (Phase 30) — first photometric evaluation
   surface in CloudAnalyzer. Scores a set of rendered images against a
   reference (ground-truth) set on PSNR + SSIM, pairing by filename

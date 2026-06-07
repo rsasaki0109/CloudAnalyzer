@@ -1411,6 +1411,167 @@ def save_ground_report(result: dict, output_path: str) -> None:
     raise ValueError("Unsupported report format. Use .md, .markdown, or .html")
 
 
+def _format_optional_metric(value: object, *, unit: str = "") -> str:
+    """Format a possibly-None aggregate (mean/median/min/max) for a report."""
+    if isinstance(value, (int, float)):
+        return f"{float(value):.4f}{unit}"
+    return "--"
+
+
+def make_image_markdown(result: dict, output_path: str) -> None:
+    """Generate a Markdown report for a photometric (PSNR/SSIM) image check."""
+    summary = result["summary"]
+    metadata = result.get("metadata", {})
+    gate = cast(dict[str, Any] | None, result.get("quality_gate"))
+    metrics = cast(list, metadata.get("metrics", ["psnr", "ssim"]))
+
+    lines = [
+        "# CloudAnalyzer Image Evaluation Report",
+        "",
+        "## Summary",
+        f"- Rendered dir: {metadata.get('rendered_dir', '')}",
+        f"- Reference dir: {metadata.get('reference_dir', '')}",
+        f"- Pairs evaluated: {summary['pairs_evaluated']}",
+        f"- Missing in reference: {summary['pairs_missing_in_reference']}",
+        f"- Size mismatch: {summary['pairs_size_mismatch']}",
+        "",
+        "## Metrics",
+        "",
+        "| Metric | Mean | Median | Min | Max |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for m in metrics:
+        unit = " dB" if m == "psnr" else ""
+        lines.append(
+            f"| {m.upper()} "
+            f"| {_format_optional_metric(summary.get(f'{m}_mean'), unit=unit)} "
+            f"| {_format_optional_metric(summary.get(f'{m}_median'), unit=unit)} "
+            f"| {_format_optional_metric(summary.get(f'{m}_min'), unit=unit)} "
+            f"| {_format_optional_metric(summary.get(f'{m}_max'), unit=unit)} |"
+        )
+
+    if gate is not None:
+        lines += [
+            "",
+            "## Quality Gate",
+            f"- Status: {'PASS' if gate['passed'] else 'FAIL'}",
+            f"- Min PSNR: {_format_optional_float(cast(float | None, gate.get('min_psnr')))}",
+            f"- Min SSIM: {_format_optional_float(cast(float | None, gate.get('min_ssim')))}",
+        ]
+        if gate["reasons"]:
+            lines.append("- Reasons:")
+            lines.extend(f"  - {reason}" for reason in gate["reasons"])
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+
+def make_image_html(result: dict, output_path: str) -> None:
+    """Generate an HTML report for a photometric (PSNR/SSIM) image check."""
+    summary = result["summary"]
+    metadata = result.get("metadata", {})
+    gate = cast(dict[str, Any] | None, result.get("quality_gate"))
+    metrics = cast(list, metadata.get("metrics", ["psnr", "ssim"]))
+
+    summary_rows = [
+        ("Rendered dir", str(metadata.get("rendered_dir", ""))),
+        ("Reference dir", str(metadata.get("reference_dir", ""))),
+        ("Pairs evaluated", str(summary["pairs_evaluated"])),
+        ("Missing in reference", str(summary["pairs_missing_in_reference"])),
+        ("Size mismatch", str(summary["pairs_size_mismatch"])),
+    ]
+    summary_html = "\n".join(
+        f"<tr><th>{escape(label)}</th><td>{escape(value)}</td></tr>"
+        for label, value in summary_rows
+    )
+    metric_rows_html = "\n".join(
+        (
+            "<tr>"
+            f"<td>{escape(m.upper())}</td>"
+            f"<td>{escape(_format_optional_metric(summary.get(f'{m}_mean'), unit=' dB' if m == 'psnr' else ''))}</td>"
+            f"<td>{escape(_format_optional_metric(summary.get(f'{m}_median'), unit=' dB' if m == 'psnr' else ''))}</td>"
+            f"<td>{escape(_format_optional_metric(summary.get(f'{m}_min'), unit=' dB' if m == 'psnr' else ''))}</td>"
+            f"<td>{escape(_format_optional_metric(summary.get(f'{m}_max'), unit=' dB' if m == 'psnr' else ''))}</td>"
+            "</tr>"
+        )
+        for m in metrics
+    )
+
+    gate_html = ""
+    if gate is not None:
+        gate_rows = [
+            ("Status", "PASS" if gate["passed"] else "FAIL"),
+            ("Min PSNR", _format_optional_float(cast(float | None, gate.get("min_psnr")))),
+            ("Min SSIM", _format_optional_float(cast(float | None, gate.get("min_ssim")))),
+        ]
+        gate_rows_html = "\n".join(
+            f"<tr><th>{escape(label)}</th><td>{escape(value)}</td></tr>"
+            for label, value in gate_rows
+        )
+        reasons_html = ""
+        if gate["reasons"]:
+            reasons_html = (
+                "<h3>Gate Reasons</h3><ul>"
+                + "".join(f"<li>{escape(reason)}</li>" for reason in gate["reasons"])
+                + "</ul>"
+            )
+        gate_html = (
+            "<h2>Quality Gate</h2>"
+            f"<table><tbody>{gate_rows_html}</tbody></table>"
+            f"{reasons_html}"
+        )
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CloudAnalyzer Image Evaluation Report</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; margin: 2rem; color: #111827; }}
+    h1, h2, h3 {{ margin-bottom: 0.5rem; }}
+    table {{ border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }}
+    th, td {{ border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: left; }}
+    th {{ background: #f3f4f6; width: 18rem; }}
+    tbody tr:nth-child(even) {{ background: #f9fafb; }}
+  </style>
+</head>
+<body>
+  <h1>CloudAnalyzer Image Evaluation Report</h1>
+
+  <h2>Summary</h2>
+  <table><tbody>{summary_html}</tbody></table>
+
+  <h2>Metrics</h2>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Mean</th><th>Median</th><th>Min</th><th>Max</th></tr>
+    </thead>
+    <tbody>{metric_rows_html}</tbody>
+  </table>
+
+  {gate_html}
+</body>
+</html>
+"""
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        f.write(html)
+
+
+def save_image_report(result: dict, output_path: str) -> None:
+    """Write a photometric image evaluation report based on the file extension."""
+    ext = Path(output_path).suffix.lower()
+    if ext in {".md", ".markdown"}:
+        make_image_markdown(result, output_path)
+        return
+    if ext == ".html":
+        make_image_html(result, output_path)
+        return
+    raise ValueError("Unsupported report format. Use .md, .markdown, or .html")
+
+
 def make_detection_markdown(result: dict, output_path: str) -> None:
     """Generate a Markdown report for 3D detection evaluation."""
 

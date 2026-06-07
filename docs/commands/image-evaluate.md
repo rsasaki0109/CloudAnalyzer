@@ -91,6 +91,26 @@ ca image-evaluate renders/seq00 references/seq00 \
   --metrics psnr --max-pairs 20 --output-json qa/image_eval.json
 ```
 
+## CI quality gate
+
+`image-evaluate` is also exposed as a config-driven check kind, so photometric
+quality rides the same regression gate as geometric/trajectory checks:
+
+```yaml
+checks:
+  - id: rendered-views
+    kind: image
+    rendered_dir: outputs/renders/seq00
+    reference_dir: baselines/references/seq00
+    gate:
+      min_psnr: 28.0   # dB
+      min_ssim: 0.85
+```
+
+`ca check` gates on the aggregate **mean** PSNR / SSIM, emits a per-check
+report, ranks failures in triage, and `ca report-pr-comment` shows the means
+with up/down deltas against a baseline. See [../ci.md](../ci.md) § *Config-Driven QA*.
+
 ## Future directions
 
 - `ca rendered-evaluate <3dgs.ply> <reference_dir>` — render a 3DGS PLY
@@ -98,9 +118,8 @@ ca image-evaluate renders/seq00 references/seq00 \
   (or a separate camera JSON), then drive the result through the
   scoring path here.
 - LPIPS support behind an optional `[photometric]` extra (requires
-  `torch` + a pretrained network — not landed yet).
-- Folding photometric metrics into `ca run-evaluate` alongside geometric
-  ones so a single quality gate can cover both axes.
+  `torch` + a pretrained network — not landed yet); once it lands,
+  `max_lpips` joins the `image` check gate.
 
 ## Related
 

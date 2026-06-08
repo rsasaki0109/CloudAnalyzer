@@ -29,6 +29,8 @@ _DIMENSION_GATE_KEYS = {
     "f1": "min_f1",
     "mota": "min_mota",
     "id_switches": "max_id_switches",
+    "psnr": "min_psnr",
+    "ssim": "min_ssim",
 }
 
 _DIMENSION_LABELS = {
@@ -53,6 +55,8 @@ _DIMENSION_LABELS = {
     "f1": "f1",
     "mota": "mota",
     "id_switches": "id_switches",
+    "psnr": "psnr",
+    "ssim": "ssim",
 }
 
 
@@ -263,7 +267,7 @@ def _extract_gate_payload(check: dict[str, Any]) -> tuple[dict[str, float], tupl
     result = check.get("result")
     summary = check.get("summary", {})
     gate = None
-    if check["kind"] in {"artifact", "trajectory", "detection", "tracking"} and isinstance(result, dict):
+    if check["kind"] in {"artifact", "trajectory", "detection", "tracking", "image"} and isinstance(result, dict):
         gate = result.get("quality_gate")
     elif check["kind"] == "run" and isinstance(result, dict):
         gate = result.get("overall_quality_gate")
@@ -315,6 +319,13 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
             "trajectory_drift": float(summary["trajectory_drift_endpoint"]),
             "coverage": float(summary["coverage_ratio"]),
         }
+    if kind == "image":
+        metrics: dict[str, float] = {}
+        if summary.get("psnr_mean") is not None:
+            metrics["psnr"] = float(summary["psnr_mean"])
+        if summary.get("ssim_mean") is not None:
+            metrics["ssim"] = float(summary["ssim_mean"])
+        return metrics
     if kind == "loop_closure":
         metrics = {
             "map_auc_gain": float(summary["map_auc_gain"]),

@@ -94,6 +94,7 @@ _RUN_METRIC_KEYS = (
     "trajectory_drift_endpoint",
     "coverage_ratio",
 )
+_IMAGE_METRIC_KEYS = ("psnr_mean", "ssim_mean")
 
 
 _METRIC_LABELS = {
@@ -115,6 +116,8 @@ _METRIC_LABELS = {
     "precision": "Precision",
     "recall": "Recall",
     "matched_poses": "Matched poses",
+    "psnr_mean": "PSNR",
+    "ssim_mean": "SSIM",
 }
 
 
@@ -123,12 +126,16 @@ def _check_metric_keys(kind: str) -> tuple[str, ...]:
         return _TRAJECTORY_METRIC_KEYS
     if kind == "run":
         return _RUN_METRIC_KEYS
+    if kind == "image":
+        return _IMAGE_METRIC_KEYS
     return _ARTIFACT_METRIC_KEYS
 
 
 def _fmt_metric_value(key: str, value: float) -> str:
     if key == "coverage_ratio":
         return f"{value:.1%}"
+    if key == "psnr_mean":
+        return f"{value:.4f} dB"
     return f"{value:.4f}"
 
 

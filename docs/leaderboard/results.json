@@ -1,0 +1,183 @@
+{
+  "title": "CloudAnalyzer SLAM Leaderboard",
+  "generated_at": "2026-06-10T04:29:35+00:00",
+  "cloudanalyzer_version": "0.4.0",
+  "host": {
+    "platform": "Linux-6.14.0-36-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3"
+  },
+  "drivers": [
+    "kiss-icp",
+    "kiss-slam",
+    "small-gicp"
+  ],
+  "datasets": [
+    "synthetic-figure8",
+    "synthetic-oval"
+  ],
+  "rows": [
+    {
+      "id": "kiss-icp__synthetic-figure8",
+      "driver": "kiss-icp",
+      "dataset": "synthetic-figure8",
+      "sequence": "default",
+      "gate_passed": true,
+      "metrics": {
+        "ate_rmse_m": 0.0016243312777878853,
+        "rpe_rmse_m": 0.0015024205394585678,
+        "drift_m": 0.0008701091885504958,
+        "map_auc": 1.0,
+        "chamfer_m": 0.015832028222999867,
+        "runtime_s": 0.6602921669837087,
+        "frames_processed": 200
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/kiss-icp__synthetic-figure8/benchmark.json",
+        "slam_summary_json": "runs/kiss-icp__synthetic-figure8/slam_summary.json",
+        "report_html": "runs/kiss-icp__synthetic-figure8/report.html",
+        "viewer_html": "runs/kiss-icp__synthetic-figure8/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/synthetic-figure8/scans docs/leaderboard/runs/kiss-icp__synthetic-figure8 --driver kiss-icp --max-range 25 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml --map docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply --trajectory docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum --sequence default --report docs/leaderboard/runs/kiss-icp__synthetic-figure8/report.html"
+      }
+    },
+    {
+      "id": "kiss-slam__synthetic-figure8",
+      "driver": "kiss-slam",
+      "dataset": "synthetic-figure8",
+      "sequence": "default",
+      "gate_passed": true,
+      "metrics": {
+        "ate_rmse_m": 0.0016243312777878853,
+        "rpe_rmse_m": 0.0015024205394585678,
+        "drift_m": 0.0008701091885504958,
+        "map_auc": 1.0,
+        "chamfer_m": 0.015832028222999867,
+        "runtime_s": 0.6976225639227778,
+        "frames_processed": 200
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/kiss-slam__synthetic-figure8/benchmark.json",
+        "slam_summary_json": "runs/kiss-slam__synthetic-figure8/slam_summary.json",
+        "report_html": "runs/kiss-slam__synthetic-figure8/report.html",
+        "viewer_html": "runs/kiss-slam__synthetic-figure8/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/synthetic-figure8/scans docs/leaderboard/runs/kiss-slam__synthetic-figure8 --driver kiss-slam --max-range 25 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml --map docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply --trajectory docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum --sequence default --report docs/leaderboard/runs/kiss-slam__synthetic-figure8/report.html"
+      }
+    },
+    {
+      "id": "small-gicp__synthetic-figure8",
+      "driver": "small-gicp",
+      "dataset": "synthetic-figure8",
+      "sequence": "default",
+      "gate_passed": true,
+      "metrics": {
+        "ate_rmse_m": 0.002174297003631286,
+        "rpe_rmse_m": 0.0013422434924277979,
+        "drift_m": 0.0010181772930094217,
+        "map_auc": 0.9921129967902085,
+        "chamfer_m": 0.024591420164473597,
+        "runtime_s": 1.1673336289823055,
+        "frames_processed": 200
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/small-gicp__synthetic-figure8/benchmark.json",
+        "slam_summary_json": "runs/small-gicp__synthetic-figure8/slam_summary.json",
+        "report_html": "runs/small-gicp__synthetic-figure8/report.html",
+        "viewer_html": "runs/small-gicp__synthetic-figure8/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/synthetic-figure8/scans docs/leaderboard/runs/small-gicp__synthetic-figure8 --driver small-gicp --max-range 25 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml --map docs/leaderboard/runs/small-gicp__synthetic-figure8/map.ply --trajectory docs/leaderboard/runs/small-gicp__synthetic-figure8/trajectory.tum --sequence default --report docs/leaderboard/runs/small-gicp__synthetic-figure8/report.html"
+      }
+    },
+    {
+      "id": "kiss-icp__synthetic-oval",
+      "driver": "kiss-icp",
+      "dataset": "synthetic-oval",
+      "sequence": "default",
+      "gate_passed": true,
+      "metrics": {
+        "ate_rmse_m": 0.0015879095082056691,
+        "rpe_rmse_m": 0.001893054577982388,
+        "drift_m": 0.0003157118939793063,
+        "map_auc": 1.0,
+        "chamfer_m": 0.014470355655877919,
+        "runtime_s": 0.5901286110747606,
+        "frames_processed": 160
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/kiss-icp__synthetic-oval/benchmark.json",
+        "slam_summary_json": "runs/kiss-icp__synthetic-oval/slam_summary.json",
+        "report_html": "runs/kiss-icp__synthetic-oval/report.html",
+        "viewer_html": "runs/kiss-icp__synthetic-oval/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/synthetic-oval/scans docs/leaderboard/runs/kiss-icp__synthetic-oval --driver kiss-icp --max-range 25 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/synthetic-oval/suite.yaml --map docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply --trajectory docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum --sequence default --report docs/leaderboard/runs/kiss-icp__synthetic-oval/report.html"
+      }
+    },
+    {
+      "id": "kiss-slam__synthetic-oval",
+      "driver": "kiss-slam",
+      "dataset": "synthetic-oval",
+      "sequence": "default",
+      "gate_passed": true,
+      "metrics": {
+        "ate_rmse_m": 0.0015879095082056691,
+        "rpe_rmse_m": 0.001893054577982388,
+        "drift_m": 0.0003157118939793063,
+        "map_auc": 1.0,
+        "chamfer_m": 0.014470355655877919,
+        "runtime_s": 0.6148380271624774,
+        "frames_processed": 160
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/kiss-slam__synthetic-oval/benchmark.json",
+        "slam_summary_json": "runs/kiss-slam__synthetic-oval/slam_summary.json",
+        "report_html": "runs/kiss-slam__synthetic-oval/report.html",
+        "viewer_html": "runs/kiss-slam__synthetic-oval/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/synthetic-oval/scans docs/leaderboard/runs/kiss-slam__synthetic-oval --driver kiss-slam --max-range 25 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/synthetic-oval/suite.yaml --map docs/leaderboard/runs/kiss-slam__synthetic-oval/map.ply --trajectory docs/leaderboard/runs/kiss-slam__synthetic-oval/trajectory.tum --sequence default --report docs/leaderboard/runs/kiss-slam__synthetic-oval/report.html"
+      }
+    },
+    {
+      "id": "small-gicp__synthetic-oval",
+      "driver": "small-gicp",
+      "dataset": "synthetic-oval",
+      "sequence": "default",
+      "gate_passed": true,
+      "metrics": {
+        "ate_rmse_m": 0.010497481117510954,
+        "rpe_rmse_m": 0.0025721405763787356,
+        "drift_m": 0.0025490409961395283,
+        "map_auc": 0.9840972452314727,
+        "chamfer_m": 0.036557411877197285,
+        "runtime_s": 0.9896357879042625,
+        "frames_processed": 160
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/small-gicp__synthetic-oval/benchmark.json",
+        "slam_summary_json": "runs/small-gicp__synthetic-oval/slam_summary.json",
+        "report_html": "runs/small-gicp__synthetic-oval/report.html",
+        "viewer_html": "runs/small-gicp__synthetic-oval/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/synthetic-oval/scans docs/leaderboard/runs/small-gicp__synthetic-oval --driver small-gicp --max-range 25 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/synthetic-oval/suite.yaml --map docs/leaderboard/runs/small-gicp__synthetic-oval/map.ply --trajectory docs/leaderboard/runs/small-gicp__synthetic-oval/trajectory.tum --sequence default --report docs/leaderboard/runs/small-gicp__synthetic-oval/report.html"
+      }
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloudAnalyzer SLAM Leaderboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6efe3;
+      --ink: #16110f;
+      --muted: #6a5b52;
+      --panel: rgba(255, 251, 245, 0.88);
+      --line: rgba(22, 17, 15, 0.12);
+      --accent: #c24f2d;
+      --pass: #166534;
+      --fail: #991b1b;
+      --shadow: 0 24px 80px rgba(27, 17, 11, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(194, 79, 45, 0.12), transparent 34%),
+        radial-gradient(circle at top right, rgba(31, 95, 114, 0.14), transparent 28%),
+        linear-gradient(180deg, #f8f2e8 0%, var(--bg) 52%, #efe7d8 100%);
+    }
+    a { color: var(--accent); }
+    .shell { width: min(1180px, calc(100vw - 32px)); margin: 0 auto; padding: 28px 0 56px; }
+    .hero, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .hero { padding: 30px 32px 26px; margin-bottom: 22px; }
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    h1 {
+      margin: 16px 0 10px;
+      font-family: "Newsreader", serif;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      max-width: 14ch;
+    }
+    .lede { margin: 0; max-width: 70ch; color: var(--muted); line-height: 1.7; }
+    .meta { margin-top: 16px; color: var(--muted); font-size: 0.92rem; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 42px; padding: 0 16px; border-radius: 999px;
+      text-decoration: none; font-weight: 700; border: 1px solid var(--line);
+      background: rgba(255,255,255,0.45); color: var(--ink);
+    }
+    .panel { padding: 18px 18px 22px; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+    tbody tr:hover { background: rgba(255,255,255,0.45); }
+    .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .badge {
+      display: inline-flex; align-items: center; border-radius: 999px;
+      padding: 0.18rem 0.55rem; font-size: 0.78rem; font-weight: 700;
+    }
+    .badge-pass { background: #ecfdf5; color: var(--pass); }
+    .badge-fail { background: #fef2f2; color: var(--fail); }
+    .link-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .link-chip {
+      display: inline-flex; padding: 0.18rem 0.55rem; border-radius: 999px;
+      border: 1px solid var(--line); text-decoration: none; font-size: 0.78rem;
+      background: rgba(255,255,255,0.55); color: var(--ink);
+    }
+    code { font-size: 0.78rem; white-space: pre-wrap; word-break: break-word; color: #374151; }
+    .error-box {
+      margin-top: 18px; padding: 14px 16px; border-radius: 18px;
+      border: 1px solid #fecaca; background: #fef2f2; color: #7f1d1d;
+    }
+    @media (max-width: 900px) {
+      .shell { width: min(100vw - 20px, 1180px); }
+      .hero, .panel { border-radius: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">CloudAnalyzer / SLAM Leaderboard</div>
+      <h1>LiDAR SLAM regression snapshots on bundled synthetic suites.</h1>
+      <p class="lede">
+        Each row is a full <code>ca slam-run</code> followed by <code>ca benchmark eval</code>
+        against a frozen reference map, trajectory, and gate. Numbers are hardware snapshots —
+        regenerate locally or via the monthly GitHub Action when drivers change.
+      </p>
+      <div class="actions">
+        <a class="button" href="https://github.com/rsasaki0109/CloudAnalyzer">Repository</a>
+        <a class="button" href="../index.html">Public Demo Hub</a>
+      </div>
+      <div class="meta" id="meta"></div>
+    </section>
+
+    <section class="panel">
+      <table>
+        <thead>
+          <tr>
+            <th>Driver</th>
+            <th>Dataset</th>
+            <th>ATE</th>
+            <th>RPE</th>
+            <th>Drift</th>
+            <th>Map AUC</th>
+            <th>Chamfer</th>
+            <th>Runtime</th>
+            <th>Gate</th>
+            <th>Links</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div id="errors"></div>
+    </section>
+  </main>
+  <script>
+    function fmt(value, digits) {
+      if (value === null || value === undefined || Number.isNaN(value)) return "—";
+      return Number(value).toFixed(digits);
+    }
+
+    function renderRows(payload) {
+      const tbody = document.getElementById("rows");
+      tbody.innerHTML = "";
+      for (const row of payload.rows) {
+        const m = row.metrics;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td><strong>${row.driver}</strong><div class="meta">v${row.cloudanalyzer_version}</div></td>
+          <td>${row.dataset}</td>
+          <td class="num">${fmt(m.ate_rmse_m, 3)} m</td>
+          <td class="num">${fmt(m.rpe_rmse_m, 3)} m</td>
+          <td class="num">${fmt(m.drift_m, 3)} m</td>
+          <td class="num">${fmt(m.map_auc, 4)}</td>
+          <td class="num">${fmt(m.chamfer_m, 4)} m</td>
+          <td class="num">${fmt(m.runtime_s, 2)} s</td>
+          <td><span class="badge ${row.gate_passed ? "badge-pass" : "badge-fail"}">${row.gate_passed ? "PASS" : "FAIL"}</span></td>
+          <td>
+            <div class="link-list">
+              <a class="link-chip" href="${row.links.viewer_html}">viewer</a>
+              <a class="link-chip" href="${row.links.report_html}">report</a>
+              <a class="link-chip" href="${row.links.benchmark_json}">json</a>
+            </div>
+            <details><summary>commands</summary>
+              <code>${row.commands.slam_run}\n${row.commands.benchmark_eval}</code>
+            </details>
+          </td>`;
+        tbody.appendChild(tr);
+      }
+
+      const meta = document.getElementById("meta");
+      meta.textContent = `Generated ${payload.generated_at} · CloudAnalyzer v${payload.cloudanalyzer_version} · ${payload.rows.length} runs`;
+
+      const errors = document.getElementById("errors");
+      if (!payload.errors.length) {
+        errors.innerHTML = "";
+        return;
+      }
+      errors.innerHTML = `<div class="error-box"><strong>Failed runs</strong><ul>${payload.errors.map(e => `<li><code>${e.id}</code>: ${e.error}</li>`).join("")}</ul></div>`;
+    }
+
+    fetch("./results.json")
+      .then(r => r.json())
+      .then(renderRows)
+      .catch(err => {
+        document.getElementById("meta").textContent = `Failed to load results.json: ${err}`;
+      });
+  </script>
+</body>
+</html>

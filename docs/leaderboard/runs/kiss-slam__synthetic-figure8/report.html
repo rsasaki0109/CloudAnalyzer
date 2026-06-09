@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CloudAnalyzer Run Evaluation Report</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; color: #111827; }
+    h1, h2, h3 { margin-bottom: 0.5rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }
+    th, td { border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: left; }
+    th { background: #f3f4f6; width: 20rem; }
+    tbody tr:nth-child(even) { background: #f9fafb; }
+    .command-row { display: flex; align-items: flex-start; gap: 0.5rem; margin: 0.4rem 0; }
+    .command-row code { flex: 1; white-space: pre-wrap; word-break: break-word; }
+    button {
+      padding: 0.3rem 0.55rem; border: 1px solid #cbd5e1;
+      border-radius: 6px; background: #ffffff; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>CloudAnalyzer Run Evaluation Report</h1>
+  <h2>Overall Summary</h2>
+  <table><tbody><tr><th>Map</th><td>old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply vs old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd</td></tr>
+<tr><th>Trajectory</th><td>old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum vs old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum</td></tr>
+<tr><th>Map AUC</th><td>1.0000</td></tr>
+<tr><th>Trajectory ATE RMSE</th><td>0.0016</td></tr>
+<tr><th>Trajectory Drift</th><td>0.0009</td></tr>
+<tr><th>Overall Quality Gate</th><td>PASS</td></tr></tbody></table>
+  
+
+  <h2>Map Quality</h2>
+  <table><tbody><tr><th>Source points</th><td>4239</td></tr>
+<tr><th>Reference points</th><td>2320</td></tr>
+<tr><th>Chamfer Distance</th><td>0.0158</td></tr>
+<tr><th>Hausdorff Distance</th><td>0.0470</td></tr>
+<tr><th>AUC (F1)</th><td>1.0000</td></tr>
+<tr><th>Best F1</th><td>1.0000 @ d=0.05</td></tr>
+<tr><th>Map Quality Gate</th><td>PASS</td></tr>
+<tr><th>Min AUC</th><td>0.9500</td></tr>
+<tr><th>Max Chamfer</th><td>0.0500</td></tr></tbody></table>
+  
+
+  <h2>Trajectory Quality</h2>
+  <table><tbody><tr><th>Estimated poses</th><td>200</td></tr>
+<tr><th>Reference poses</th><td>200</td></tr>
+<tr><th>Matched poses</th><td>200 (100.0%)</td></tr>
+<tr><th>Alignment</th><td>none</td></tr>
+<tr><th>ATE RMSE</th><td>0.0016</td></tr>
+<tr><th>RPE RMSE</th><td>0.0015</td></tr>
+<tr><th>Endpoint Drift</th><td>0.0009</td></tr>
+<tr><th>Trajectory Quality Gate</th><td>PASS</td></tr>
+<tr><th>Max ATE RMSE</th><td>0.3000</td></tr>
+<tr><th>Max RPE RMSE</th><td>0.2000</td></tr>
+<tr><th>Max Drift</th><td>0.5000</td></tr>
+<tr><th>Min Coverage</th><td>90.0%</td></tr></tbody></table>
+  
+
+  <h2>Visualizations</h2>
+  <p><img src="report_map_f1.png" alt="Map F1 curve" style="max-width: 100%; height: auto;"></p>
+  <p><img src="report_trajectory_overlay.png" alt="Trajectory overlay plot" style="max-width: 100%; height: auto;"></p>
+  <p><img src="report_trajectory_errors.png" alt="Trajectory error plot" style="max-width: 100%; height: auto;"></p>
+
+  <h2>Inspection Commands</h2><div class="command-row"><code>ca web &#x27;old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply&#x27; &#x27;old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd&#x27; --heatmap --trajectory &#x27;old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum&#x27; --trajectory-reference &#x27;old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum&#x27;</code><button type="button" onclick='copyCommand("ca web 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd' --heatmap --trajectory 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum' --trajectory-reference 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum'", this)'>Copy</button></div><div class="command-row"><code>ca web &#x27;old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply&#x27; &#x27;old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd&#x27; --heatmap</code><button type="button" onclick='copyCommand("ca web 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd' --heatmap", this)'>Copy</button></div><div class="command-row"><code>ca heatmap3d &#x27;old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply&#x27; &#x27;old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd&#x27; -o map_vs_map_heatmap.png</code><button type="button" onclick='copyCommand("ca heatmap3d 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd' -o map_vs_map_heatmap.png", this)'>Copy</button></div><div class="command-row"><code>ca traj-evaluate &#x27;old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum&#x27; &#x27;old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum&#x27; --report trajectory_vs_trajectory_trajectory_report.html</code><button type="button" onclick='copyCommand("ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --report trajectory_vs_trajectory_trajectory_report.html", this)'>Copy</button></div><div class="command-row"><code>ca traj-evaluate &#x27;old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum&#x27; &#x27;old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum&#x27; --align-origin --report trajectory_vs_trajectory_trajectory_aligned_report.html</code><button type="button" onclick='copyCommand("ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --align-origin --report trajectory_vs_trajectory_trajectory_aligned_report.html", this)'>Copy</button></div><div class="command-row"><code>ca traj-evaluate &#x27;old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum&#x27; &#x27;old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum&#x27; --align-rigid --report trajectory_vs_trajectory_trajectory_rigid_report.html</code><button type="button" onclick='copyCommand("ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --align-rigid --report trajectory_vs_trajectory_trajectory_rigid_report.html", this)'>Copy</button></div>
+
+  <script>
+    async function copyCommand(text, button) {
+      if (!text) return;
+      try {
+        if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          window.prompt('Copy command:', text);
+        }
+        const original = button.textContent;
+        button.textContent = 'Copied';
+        setTimeout(() => { button.textContent = original; }, 1200);
+      } catch (err) {
+        window.prompt('Copy command:', text);
+      }
+    }
+  </script>
+</body>
+</html>

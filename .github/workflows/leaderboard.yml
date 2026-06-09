@@ -1,0 +1,58 @@
+name: SLAM Leaderboard
+
+on:
+  workflow_dispatch:
+  schedule:
+    # First day of each month, 06:15 UTC
+    - cron: "15 6 1 * *"
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+
+      - name: Install CloudAnalyzer with SLAM drivers
+        run: |
+          pip install --upgrade pip
+          pip install -e "./cloudanalyzer[slam]"
+
+      - name: Regenerate bundled synthetic suites
+        run: |
+          python scripts/build_synthetic_slam_suite.py --preset figure8
+          python scripts/build_synthetic_slam_suite.py --preset oval
+
+      - name: Build public SLAM leaderboard snapshot
+        run: |
+          xvfb-run python scripts/build_leaderboard.py --output docs/leaderboard
+
+      - name: Commit leaderboard snapshot when changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/leaderboard benchmarks/slam/synthetic-oval
+          if git diff --cached --quiet; then
+            echo "Leaderboard snapshot unchanged."
+            exit 0
+          fi
+          git commit -m "$(cat <<'EOF'
+Refresh SLAM leaderboard snapshot.
+
+Regenerate docs/leaderboard from ca slam-run + ca benchmark eval on the
+bundled synthetic suites (kiss-icp, kiss-slam, small-gicp).
+EOF
+)"
+          git push

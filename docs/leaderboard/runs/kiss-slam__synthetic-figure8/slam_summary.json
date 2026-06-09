@@ -1,0 +1,17 @@
+{
+  "driver": "kiss_slam",
+  "frames_processed": 200,
+  "runtime_s": 0.6976225639227778,
+  "map_points": 4239,
+  "trajectory_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/trajectory.tum",
+  "map_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__synthetic-figure8/map.ply",
+  "driver_metadata": {
+    "kiss_slam": {
+      "max_range_m": 25.0,
+      "voxel_size_m": 0.5,
+      "deskew": false,
+      "local_map_splitting_distance_m": 100.0,
+      "closures_detected": 0
+    }
+  }
+}

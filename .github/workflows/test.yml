@@ -69,8 +69,17 @@ jobs:
         working-directory: .
         run: |
           python scripts/build_synthetic_slam_suite.py \
+            --preset figure8 \
             --output benchmarks/slam/synthetic-figure8
           git diff --exit-code -- benchmarks/slam/synthetic-figure8
+
+      - name: Verify checked-in synthetic-oval SLAM benchmark suite
+        working-directory: .
+        run: |
+          python scripts/build_synthetic_slam_suite.py \
+            --preset oval \
+            --output benchmarks/slam/synthetic-oval
+          git diff --exit-code -- benchmarks/slam/synthetic-oval
 
       - name: Verify checked-in synthetic-room 3DGS demo
         working-directory: .

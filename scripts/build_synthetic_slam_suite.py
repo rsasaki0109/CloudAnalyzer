@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
-"""Generate the synthetic-figure8 benchmark suite under benchmarks/slam/.
+"""Generate synthetic SLAM benchmark suites under benchmarks/slam/.
 
 This script is deterministic — running it on a clean checkout reproduces
-exactly the files committed under ``benchmarks/slam/synthetic-figure8/``.
+exactly the files committed under ``benchmarks/slam/synthetic-*/``.
+
+Presets:
+
+- ``figure8`` (default): 200-pose figure-8 loop
+- ``rectloop``: 120-pose rectangular loop
+- ``oval``: 160-pose smooth elliptical loop
 
 Layout produced::
 
@@ -28,7 +34,11 @@ import open3d as o3d
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "benchmarks" / "slam" / "synthetic-figure8"
+PRESET_OUTPUT_DIRS = {
+    "figure8": REPO_ROOT / "benchmarks" / "slam" / "synthetic-figure8",
+    "rectloop": REPO_ROOT / "benchmarks" / "slam" / "synthetic-rectloop",
+    "oval": REPO_ROOT / "benchmarks" / "slam" / "synthetic-oval",
+}
 
 
 def _planar_map(seed: int = 42) -> np.ndarray:
@@ -108,13 +118,79 @@ def _figure8_trajectory(
     return timestamps, positions, yaws, yaw0
 
 
-def _rotate_map_into_slam_frame(map_world: np.ndarray, yaw0: float) -> np.ndarray:
-    """Rotate the world map so it lives in the same frame as ``_figure8_trajectory``.
+def _rectloop_trajectory(
+    n_per_side: int = 30,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """Return ``(timestamps, positions, yaws, raw_yaw0)`` for a rectangular loop.
 
-    ``_figure8_trajectory`` rotates the raw figure-8 by ``-yaw0`` so the
-    first sensor pose is identity. The bundled map needs the same
-    rotation so scans built from ``(map - position) @ R(yaw)`` agree with
-    the reference trajectory.
+    The loop walks the rectangle ``(-4, -3) -> (4, -3) -> (4, 3) -> (-4, 3)``
+    with tangent-aligned heading, then rotates the path so the first pose is
+    identity — same convention as ``_figure8_trajectory``.
+    """
+
+    corners = [(-4.0, -3.0), (4.0, -3.0), (4.0, 3.0), (-4.0, 3.0)]
+    positions_list: list[np.ndarray] = []
+    yaws_list: list[np.ndarray] = []
+    for idx in range(4):
+        x0, y0 = corners[idx]
+        x1, y1 = corners[(idx + 1) % 4]
+        t = np.linspace(0.0, 1.0, n_per_side, endpoint=False)
+        xs = x0 + (x1 - x0) * t
+        ys = y0 + (y1 - y0) * t
+        positions_list.append(np.column_stack([xs, ys, np.zeros_like(xs)]))
+        yaw = float(np.arctan2(y1 - y0, x1 - x0))
+        yaws_list.append(np.full(n_per_side, yaw, dtype=np.float64))
+
+    positions = np.vstack(positions_list)
+    raw_yaws = np.concatenate(yaws_list)
+    yaw0 = float(raw_yaws[0])
+    c, s = float(np.cos(yaw0)), float(np.sin(yaw0))
+    xy = positions[:, :2]
+    x_rot = c * xy[:, 0] + s * xy[:, 1]
+    y_rot = -s * xy[:, 0] + c * xy[:, 1]
+    positions = np.column_stack([x_rot, y_rot, np.zeros_like(x_rot)])
+    yaws = raw_yaws - yaw0
+    yaws = np.arctan2(np.sin(yaws), np.cos(yaws))
+    # Place the first pose at the origin, same convention as figure-8 (which
+    # naturally passes through (0, 0) at t=0).
+    positions -= positions[0]
+    timestamps = np.arange(positions.shape[0]) * 0.1
+    return timestamps, positions, yaws, yaw0
+
+
+def _oval_trajectory(
+    n: int = 160,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+    """Return ``(timestamps, positions, yaws, raw_yaw0)`` for a smooth elliptical loop.
+
+    Same identity-first convention as ``_figure8_trajectory`` — the path is a
+    planar ellipse with tangent-aligned heading so KISS-ICP can track it.
+    """
+
+    t = np.linspace(0.0, 2.0 * np.pi, n, endpoint=False)
+    x = 6.0 * np.cos(t)
+    y = 3.5 * np.sin(t)
+    dx = -6.0 * np.sin(t)
+    dy = 3.5 * np.cos(t)
+    raw_yaws = np.arctan2(dy, dx)
+    yaw0 = float(raw_yaws[0])
+    c, s = float(np.cos(yaw0)), float(np.sin(yaw0))
+    x_rot = c * x + s * y
+    y_rot = -s * x + c * y
+    positions = np.column_stack([x_rot, y_rot, np.zeros_like(t)])
+    yaws = raw_yaws - yaw0
+    yaws = np.arctan2(np.sin(yaws), np.cos(yaws))
+    positions -= positions[0]
+    timestamps = np.arange(n) * 0.1
+    return timestamps, positions, yaws, yaw0
+
+
+def _rotate_map_into_slam_frame(map_world: np.ndarray, yaw0: float) -> np.ndarray:
+    """Rotate the world map so it lives in the same frame as a synthetic trajectory.
+
+    Synthetic trajectories rotate the raw path by ``-yaw0`` so the first sensor
+    pose is identity. The bundled map needs the same rotation so scans built
+    from ``(map - position) @ R(yaw)`` agree with the reference trajectory.
     """
 
     c, s = float(np.cos(yaw0)), float(np.sin(yaw0))
@@ -204,7 +280,8 @@ def _write_scans(
     return len(indices)
 
 
-SUITE_YAML = """\
+SUITE_YAML_BY_PRESET = {
+    "figure8": """\
 version: 1
 name: synthetic-figure8
 description: Tiny synthetic figure-8 trajectory with a closed planar room map and tangent-aligned sensor heading. Use it to smoke-test `ca benchmark` without external data.
@@ -225,24 +302,75 @@ gate:
   max_rpe: 0.20
   max_drift: 0.50
   min_coverage: 0.90
-"""
+""",
+    "rectloop": """\
+version: 1
+name: synthetic-rectloop
+description: Tiny synthetic rectangular loop with a closed planar room map and tangent-aligned sensor heading. Companion to synthetic-figure8 for leaderboard smoke tests.
+license: MIT (synthetic data generated by scripts/build_synthetic_slam_suite.py)
+sequences:
+  default:
+    description: 120-pose rectangular loop over the same closed planar room as synthetic-figure8. Exercises 90-degree turns and straight segments.
+    reference_map: reference/map.pcd
+    reference_trajectory: reference/trajectory.tum
+sample_outputs:
+  default:
+    map: sample_outputs/map_pass.pcd
+    trajectory: sample_outputs/trajectory_pass.tum
+gate:
+  min_auc: 0.95
+  max_chamfer: 0.05
+  max_ate: 0.30
+  max_rpe: 0.20
+  max_drift: 0.50
+  min_coverage: 0.90
+""",
+    "oval": """\
+version: 1
+name: synthetic-oval
+description: Tiny synthetic elliptical loop with a closed planar room map and tangent-aligned sensor heading. Companion to synthetic-figure8 for leaderboard smoke tests.
+license: MIT (synthetic data generated by scripts/build_synthetic_slam_suite.py)
+sequences:
+  default:
+    description: 160-pose smooth elliptical loop over the same closed planar room as synthetic-figure8.
+    reference_map: reference/map.pcd
+    reference_trajectory: reference/trajectory.tum
+sample_outputs:
+  default:
+    map: sample_outputs/map_pass.pcd
+    trajectory: sample_outputs/trajectory_pass.tum
+gate:
+  min_auc: 0.95
+  max_chamfer: 0.05
+  max_ate: 0.30
+  max_rpe: 0.20
+  max_drift: 0.50
+  min_coverage: 0.90
+""",
+}
 
 
-def build(output_dir: Path) -> None:
+def build(output_dir: Path, preset: str = "figure8") -> None:
+    if preset not in SUITE_YAML_BY_PRESET:
+        raise ValueError(
+            f"Unknown preset {preset!r}; allowed: {', '.join(SUITE_YAML_BY_PRESET)}"
+        )
+
     output_dir = output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # _figure8_trajectory rotates the figure-8 so the initial sensor pose
-    # is identity. Apply the matching rotation to the planar map so the
-    # SLAM driver's first frame and the bundled reference map share a
-    # coordinate system.
-    timestamps, traj_ref, yaws_ref, raw_yaw0 = _figure8_trajectory()
+    if preset == "figure8":
+        timestamps, traj_ref, yaws_ref, raw_yaw0 = _figure8_trajectory()
+    elif preset == "rectloop":
+        timestamps, traj_ref, yaws_ref, raw_yaw0 = _rectloop_trajectory()
+    else:
+        timestamps, traj_ref, yaws_ref, raw_yaw0 = _oval_trajectory()
+
     map_ref = _rotate_map_into_slam_frame(_planar_map(), raw_yaw0)
 
     _write_pcd(map_ref, output_dir / "reference" / "map.pcd")
     _write_tum(timestamps, traj_ref, yaws_ref, output_dir / "reference" / "trajectory.tum")
 
-    # Sample passing output: reference + small noise. Determinism via fixed seed.
     rng = np.random.default_rng(7)
     map_pass = map_ref + rng.normal(0, 0.02, size=map_ref.shape)
     traj_pass = traj_ref + rng.normal(0, 0.05, size=traj_ref.shape)
@@ -256,20 +384,30 @@ def build(output_dir: Path) -> None:
 
     _write_scans(map_ref, traj_ref, yaws_ref, output_dir / "scans")
 
-    (output_dir / "suite.yaml").write_text(SUITE_YAML, encoding="utf-8")
+    (output_dir / "suite.yaml").write_text(
+        SUITE_YAML_BY_PRESET[preset],
+        encoding="utf-8",
+    )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--preset",
+        choices=tuple(SUITE_YAML_BY_PRESET),
+        default="figure8",
+        help="Synthetic trajectory preset to generate",
+    )
+    parser.add_argument(
         "--output",
         type=Path,
-        default=DEFAULT_OUTPUT_DIR,
-        help="Output directory for the synthetic-figure8 suite",
+        default=None,
+        help="Output directory (defaults to benchmarks/slam/synthetic-<preset>/)",
     )
     args = parser.parse_args()
-    build(args.output)
-    print(f"Wrote synthetic-figure8 suite to {args.output}")
+    output_dir = args.output or PRESET_OUTPUT_DIRS[args.preset]
+    build(output_dir, preset=args.preset)
+    print(f"Wrote synthetic-{args.preset} suite to {output_dir}")
 
 
 if __name__ == "__main__":

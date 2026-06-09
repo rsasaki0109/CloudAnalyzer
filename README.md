@@ -9,6 +9,8 @@
 
 ▶ **Try the public browser demo**: https://rsasaki0109.github.io/CloudAnalyzer/
 
+▶ **Live SLAM Leaderboard**: https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/
+
 ▶ **Try without installing** (first run may take a while — Open3D is installed on demand):
 
 ```bash
@@ -217,6 +219,8 @@ ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
 ```
 
 `ca benchmark init` builds a custom suite from your own reference map + trajectory. Newer College / KITTI Odometry wrappers live under `scripts/prepare_*_mini.py`. Full workflow and `--gate` overrides: **[docs/commands/benchmark.md](docs/commands/benchmark.md)**.
+
+A **[live SLAM leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/)** publishes frozen `kiss-icp` / `kiss-slam` / `small-gicp` snapshots on the bundled `synthetic-figure8` and `synthetic-oval` suites. Regenerate locally with `pip install 'cloudanalyzer[slam]'` then `python scripts/build_leaderboard.py`.
 
 ### Cross-Representation Geometry QA
 

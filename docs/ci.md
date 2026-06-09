@@ -12,14 +12,11 @@ See `.github/workflows/test.yml`.
 
 ## Self QA (dogfood)
 
-Every pull request also runs `.github/workflows/self-qa.yml`. It is split into two jobs that chain via a workflow artifact, deliberately mirroring the public pattern downstream users adopt:
+Every pull request also runs `.github/workflows/self-qa.yml`. It builds the gitignored `benchmarks/public/stanford-bunny-mini` pack, then runs the bundled **[cloudanalyzer-action](https://github.com/rsasaki0109/cloudanalyzer-action)** (`@v1`) against `suite-pass.cloudanalyzer.yaml`. The action runs `ca check`, posts (or idempotently updates) a PR comment marked `cloudanalyzer-self-qa`, uploads QA artifacts, and fails the job when the gate fails.
 
-1. **`qa`** — installs CloudAnalyzer from the PR's checkout, runs `ca check` against the bundled `benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml`, uploads the summary as the `self-qa-summary` artifact, and fails the job if the gate failed.
-2. **`pr-comment`** — `needs: qa`, calls the reusable `./.github/workflows/pr-comment.yml` with `summary_artifact: self-qa-summary` so the reusable workflow downloads, renders, and posts (or idempotently updates) a comment marked `cloudanalyzer-self-qa`. Runs even when the `qa` job failed so a reviewer sees a FAIL comment instead of a missing comment.
+This dogfoods the public three-line Action entry point, gives every PR a living example of what downstream users get, and detects accidental damage to the bundled QA pack — if a PR changes a baseline `.pcd` without updating the expected summary, the gate fails and the PR turns red.
 
-This serves three purposes: it dogfoods the `ca check` + `ca report-pr-comment` + `pr-comment.yml` flow end to end, gives every PR a living example of what users get when they wire the same tools into their own repos, and detects accidental damage to the bundled QA pack — if a PR changes a baseline `.pcd` without updating the expected summary, the gate fails and the PR turns red.
-
-Fork PRs are skipped (the `GITHUB_TOKEN` from a fork PR doesn't have `pull-requests: write`); the comment artifact is still produced via the regular `Test` workflow run.
+Fork PRs are skipped (the `GITHUB_TOKEN` from a fork PR doesn't have `pull-requests: write`); the underlying `ca check` still runs in the regular `Test` workflow.
 
 ## Quality Gate
 
@@ -148,7 +145,27 @@ fails if zero pairs match across the two directories. PSNR / SSIM means flow int
 
 ### GitHub Actions
 
-Use `.github/workflows/config-quality-gate.yml` when the repository already contains `cloudanalyzer.yaml`.
+**Marketplace Action (recommended).** [`rsasaki0109/cloudanalyzer-action@v1`](https://github.com/rsasaki0109/cloudanalyzer-action) runs `ca check`, renders the PR comment, posts it idempotently, and fails on gate errors:
+
+```yaml
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: rsasaki0109/cloudanalyzer-action@v1
+        with:
+          config: cloudanalyzer.yaml
+          baseline: qa/baseline-summary.json   # optional
+          project: my-mapping-pipeline         # optional
+```
+
+**Reusable workflow.** Use `.github/workflows/config-quality-gate.yml` when the repository already contains `cloudanalyzer.yaml` and you want to compose jobs manually:
 
 ```bash
 gh workflow run config-quality-gate.yml \
@@ -187,7 +204,7 @@ The bundle format is documented at [`docs/commands/bundle.md`](commands/bundle.m
 
 After `ca check` writes the suite summary (or `ca benchmark eval` / `ca run-evaluate` writes a single-run JSON), use `ca report-pr-comment` to turn that artifact into a Markdown blob. There are two ways to wire it in CI.
 
-**Reusable workflow (recommended).** `pr-comment.yml` handles checkout, install, rendering, and (idempotent) posting via `gh`:
+**Reusable workflow.** `pr-comment.yml` handles checkout, install, rendering, and (idempotent) posting via `gh` when you already ran `ca check` in a separate job:
 
 ```yaml
 jobs:

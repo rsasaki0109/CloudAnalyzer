@@ -1,22 +1,8 @@
 name: Self QA
 
-# Dogfoods `ca check`, `ca report-pr-comment`, and the reusable
-# `pr-comment.yml` workflow on every internal PR. Two jobs:
-#
-#   qa          — runs the bundled `benchmarks/public/stanford-bunny-mini`
-#                 quality gate and uploads the resulting summary JSON as a
-#                 workflow artifact. Fails the job (and the CI) if the gate
-#                 itself failed, regardless of whether the artifact upload
-#                 succeeded.
-#   pr-comment  — consumes that artifact via the reusable `pr-comment.yml`
-#                 workflow and posts (or idempotently updates) the QA
-#                 comment marked `cloudanalyzer-self-qa`.
-#
-# Splitting the work into two jobs lets us call `pr-comment.yml` directly
-# instead of inlining its post logic — that workflow is the public API
-# we ship for downstream users, so dogfooding it removes a class of "the
-# reusable workflow works in theory but we don't actually exercise it"
-# bugs.
+# Dogfoods the bundled `cloudanalyzer-action` on every internal PR.
+# Builds the gitignored public benchmark pack, runs `ca check` via the
+# action, posts an idempotent PR comment, and fails when the gate fails.
 
 on:
   pull_request:
@@ -28,10 +14,6 @@ permissions:
 
 jobs:
   qa:
-    # Fork PRs do not get `pull-requests: write` on `GITHUB_TOKEN`, so
-    # the downstream comment post would fail. Skip both jobs to keep the
-    # run signal honest; the underlying `ca check` still runs in the
-    # regular `Test` workflow.
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     steps:
@@ -46,56 +28,19 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
 
-      - name: Install CloudAnalyzer
+      - name: Install CloudAnalyzer for fixture build
         run: |
           python -m pip install --upgrade pip
           pip install -e cloudanalyzer
 
       - name: Build public benchmark pack fixtures
-        # The pack referenced by suite-pass.cloudanalyzer.yaml is
-        # gitignored — regenerate it before `ca check` runs.
         run: |
           xvfb-run python scripts/build_public_benchmark_pack.py \
             --output benchmarks/public/stanford-bunny-mini
 
-      - name: Run config-driven QA against the bundled pack
-        id: run_check
-        continue-on-error: true
-        run: |
-          mkdir -p /tmp/self-qa-out
-          xvfb-run ca check \
-            benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml \
-            --output-json /tmp/self-qa-out/summary.json
-
-      - name: Upload self-qa summary
-        if: always()
-        uses: actions/upload-artifact@v6
+      - name: Run CloudAnalyzer self-QA
+        uses: rsasaki0109/cloudanalyzer-action@v1
         with:
-          name: self-qa-summary
-          path: /tmp/self-qa-out/summary.json
-          if-no-files-found: warn
-          retention-days: 14
-
-      - name: Fail when the gated check failed
-        if: steps.run_check.outcome == 'failure'
-        run: |
-          echo "CloudAnalyzer self-QA gate failed (see the PR comment for which check broke)."
-          exit 1
-
-  pr-comment:
-    needs: qa
-    # Run even when `qa` failed: a FAIL comment is more useful to a reviewer
-    # than a missing comment. Skip on cancellation though.
-    if: |
-      always()
-      && needs.qa.result != 'cancelled'
-      && needs.qa.result != 'skipped'
-    permissions:
-      pull-requests: write
-      contents: read
-    uses: ./.github/workflows/pr-comment.yml
-    with:
-      summary_artifact: self-qa-summary
-      summary_path: summary.json
-      project: cloudanalyzer-self-qa
-      marker: cloudanalyzer-self-qa
+          config: benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
+          project: cloudanalyzer-self-qa
+          marker: cloudanalyzer-self-qa

@@ -1,0 +1,20 @@
+name: CloudAnalyzer QA with PR comment
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: rsasaki0109/cloudanalyzer-action@v1
+        with:
+          config: cloudanalyzer.yaml
+          project: my-project
+          marker: cloudanalyzer-qa

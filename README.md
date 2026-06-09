@@ -7,6 +7,14 @@
 
 **Quantify whether post-processing breaks your point clouds or trajectories in localization, mapping, and perception pipelines.**
 
+▶ **Try the public browser demo**: https://rsasaki0109.github.io/CloudAnalyzer/
+
+▶ **Try without installing** (first run may take a while — Open3D is installed on demand):
+
+```bash
+uvx cloudanalyzer evaluate before.pcd after.pcd
+```
+
 CloudAnalyzer is not trying to replace point cloud processing libraries or viewers.
 Its target is a higher-level **3D data QA / benchmark / operations layer** that lets you run
 **map post-processing QA, trajectory evaluation, and regression checks for perception-oriented 3D outputs**
@@ -24,6 +32,9 @@ Saved:        down.pcd
 ```
 
 Adding just one flag, `--evaluate`, tells you immediately how much quality changed before and after processing.
+
+<!-- README demo GIF: regenerate with `scripts/build_readme_gif.sh` (requires vhs). -->
+<!-- ![Terminal demo](docs/images/readme-demo.gif) -->
 
 ## What It Is For
 
@@ -79,6 +90,10 @@ that sits on top of a `mapping stack / localization stack / perception stack`.
 ## Install
 
 ```bash
+# no install — try a command immediately (Open3D is fetched on first run; may take a while)
+uvx cloudanalyzer evaluate before.pcd after.pcd
+
+# persistent install
 pip install cloudanalyzer
 
 # or install the current checkout
@@ -319,7 +334,27 @@ Bundle layout, `ca history` trend gate, and dashboard-friendly JSON shape: **[do
 
 ### GitHub Actions
 
-Reusable workflows ship with the repo so QA, baseline decisions, and PR comments can be composed:
+**Marketplace Action (recommended).** Three lines — `ca check`, PR comment, and gate failure in one step:
+
+```yaml
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: rsasaki0109/cloudanalyzer-action@v1
+        with:
+          config: cloudanalyzer.yaml
+```
+
+Optional baseline comparison: `baseline: qa/baseline-summary.json`, `project: my-pipeline`. Full inputs/outputs: **[cloudanalyzer-action](https://github.com/rsasaki0109/cloudanalyzer-action)**.
+
+**Reusable workflows (advanced).** Compose QA, baseline decisions, and PR comments separately when you need artifact chaining or custom job layout:
 
 ```yaml
 jobs:
@@ -339,7 +374,7 @@ jobs:
       summary_path: qa/summary.json
 ```
 
-For external use, pin a tag or commit SHA instead of `@main`. Both summary-from-repo and summary-from-artifact patterns, plus inline `ca report-pr-comment` usage: **[docs/ci.md](docs/ci.md)**. `.github/workflows/self-qa.yml` is a working reference.
+For external use, pin a tag or commit SHA instead of `@main`. Both summary-from-repo and summary-from-artifact patterns, plus inline `ca report-pr-comment` usage: **[docs/ci.md](docs/ci.md)**. `.github/workflows/self-qa.yml` dogfoods `cloudanalyzer-action@v1`.
 
 ## Command Overview
 

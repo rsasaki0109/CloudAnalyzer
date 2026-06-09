@@ -1,0 +1,20 @@
+---
+description: Git commit style when Cursor creates commits
+alwaysApply: true
+---
+
+# Git commits (no Cursor attribution)
+
+When creating git commits in this repository:
+
+- **Do not reveal Cursor / AI involvement** — commits must look like ordinary human commits in `git log`.
+- Do **not** add `Co-authored-by`, `Co-Authored-By`, or any trailer mentioning Cursor, Claude, AI, or agents.
+- Do **not** prefix subjects with `[cursor]`, `[ai]`, or similar tags.
+- Match the existing repo commit style (phase-style or concise imperative subject + optional body).
+- Do **not** create commits unless the user explicitly asks.
+
+Example:
+
+```
+README: add uvx install lead and public demo link
+```

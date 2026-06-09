@@ -1,0 +1,91 @@
+name: CloudAnalyzer QA
+description: Run config-driven CloudAnalyzer checks and optionally post a PR comment
+branding:
+  icon: check-circle
+  color: blue
+
+inputs:
+  config:
+    description: Path to cloudanalyzer.yaml relative to the repository root
+    required: true
+  baseline:
+    description: Optional baseline summary JSON path relative to the repository root
+    required: false
+    default: ""
+  comment:
+    description: Post or update a PR comment when running on a pull request
+    required: false
+    default: "true"
+  fail_on_gate:
+    description: Fail the job when the CloudAnalyzer gate fails
+    required: false
+    default: "true"
+  project:
+    description: Optional project label in the PR comment header
+    required: false
+    default: ""
+  marker:
+    description: Hidden marker for idempotent PR comment updates
+    required: false
+    default: cloudanalyzer-qa
+
+outputs:
+  summary_json:
+    description: Path to generated summary JSON
+    value: ${{ steps.run.outputs.summary_json }}
+  passed:
+    description: "true when all gated checks passed"
+    value: ${{ steps.run.outputs.passed }}
+  worst_check:
+    description: First failed check id when available
+    value: ${{ steps.run.outputs.worst_check }}
+  comment_path:
+    description: Path to rendered Markdown comment
+    value: ${{ steps.run.outputs.comment_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Build CloudAnalyzer action image
+      shell: bash
+      run: docker build -t cloudanalyzer-action:local "${{ github.action_path }}"
+
+    - name: Run CloudAnalyzer QA
+      id: run
+      shell: bash
+      env:
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_BASELINE: ${{ inputs.baseline }}
+        INPUT_COMMENT: ${{ inputs.comment }}
+        INPUT_FAIL_ON_GATE: ${{ inputs.fail_on_gate }}
+        INPUT_PROJECT: ${{ inputs.project }}
+        INPUT_MARKER: ${{ inputs.marker }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        docker run --rm \
+          -v "${{ github.workspace }}:${{ github.workspace }}" \
+          -v "${{ github.action_path }}:${{ github.action_path }}" \
+          -v "${GITHUB_OUTPUT}:${GITHUB_OUTPUT}" \
+          -w "${{ github.workspace }}" \
+          -e GITHUB_WORKSPACE="${{ github.workspace }}" \
+          -e GITHUB_REPOSITORY="${{ github.repository }}" \
+          -e GITHUB_EVENT_PATH="${{ github.event_path }}" \
+          -e GITHUB_OUTPUT="${GITHUB_OUTPUT}" \
+          -e GITHUB_TOKEN \
+          -e INPUT_CONFIG \
+          -e INPUT_BASELINE \
+          -e INPUT_COMMENT \
+          -e INPUT_FAIL_ON_GATE \
+          -e INPUT_PROJECT \
+          -e INPUT_MARKER \
+          cloudanalyzer-action:local
+
+    - name: Upload CloudAnalyzer outputs
+      if: always()
+      uses: actions/upload-artifact@v6
+      with:
+        name: cloudanalyzer-action-results
+        path: |
+          ${{ steps.run.outputs.summary_json }}
+          ${{ steps.run.outputs.comment_path }}
+        if-no-files-found: warn

@@ -532,6 +532,9 @@ def _normalize_rendered_inputs(raw_check: dict[str, Any], config_dir: Path) -> d
     render_device = raw_check.get("render_device")
     if render_device is not None:
         inputs["render_device"] = _require_string(render_device, "check.render_device")
+    skip_render = raw_check.get("skip_render")
+    if skip_render is not None:
+        inputs["skip_render"] = "true" if bool(skip_render) else "false"
     return inputs
 
 
@@ -1494,6 +1497,7 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
     geometry_splat_method = spec.inputs.get("geometry_splat_method", "centers")
     geometry_splat_samples = int(spec.inputs.get("geometry_splat_samples", "8"))
     render_device = spec.inputs.get("render_device")
+    skip_render = spec.inputs.get("skip_render", "false").lower() in {"1", "true", "yes"}
 
     reference_pointcloud = spec.inputs.get("reference_pointcloud")
     keep_rendered_dir = (
@@ -1517,6 +1521,7 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
             geometry_thresholds=list(spec.thresholds) if spec.thresholds else None,
             render_device=render_device,
             keep_rendered_dir=keep_rendered_dir,
+            skip_render=skip_render,
             max_pairs=max_pairs,
         )
     )

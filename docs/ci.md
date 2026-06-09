@@ -18,6 +18,10 @@ This dogfoods the public three-line Action entry point, gives every PR a living 
 
 Fork PRs are skipped (the `GITHUB_TOKEN` from a fork PR doesn't have `pull-requests: write`); the underlying `ca check` still runs in the regular `Test` workflow.
 
+## Rendered Self QA (3DGS dogfood)
+
+Pull requests that touch the rendered check path also run `.github/workflows/rendered-self-qa.yml`. It runs `ca check` against the bundled `benchmarks/3dgs/synthetic-room/configs/suite-rendered.cloudanalyzer.yaml` (`kind: rendered`, `skip_render: true` with checked-in reference PNGs, SSIM + Chamfer gates). This validates the 3DGS CI gate wiring on standard runners without gsplat/CUDA; live gsplat rendering remains optional on GPU runners.
+
 ## Quality Gate
 
 The `quality-gate.yml` workflow evaluates point cloud quality and fails if thresholds are not met.

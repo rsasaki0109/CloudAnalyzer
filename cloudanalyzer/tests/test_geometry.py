@@ -82,7 +82,15 @@ def demo_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
     """Regenerate the 3DGS demo in a temp dir so tests don't depend on the
     checked-in copy being up to date."""
     out = tmp_path_factory.mktemp("synthetic-room-3dgs")
-    build_3dgs_demo(out)
+    skip_renders = True
+    try:
+        import gsplat  # noqa: F401
+        import torch
+
+        skip_renders = not torch.cuda.is_available()
+    except ImportError:
+        pass
+    build_3dgs_demo(out, skip_renders=skip_renders)
     return out
 
 

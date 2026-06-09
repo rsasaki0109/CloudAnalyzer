@@ -213,6 +213,34 @@ def test_rendered_check_pr_comment_shows_psnr(tmp_path: Path) -> None:
     assert "splat" in comment
 
 
+@pytest.mark.skipif(not DEMO_ROOT.is_dir(), reason="synthetic-room demo missing")
+def test_rendered_check_skip_render_synthetic_room(tmp_path: Path) -> None:
+    config = _write_config(
+        tmp_path / "cloudanalyzer.yaml",
+        f"""
+        checks:
+          - id: room
+            kind: rendered
+            splat: {DEMO_ROOT / "gaussians_dense.ply"}
+            cameras: {DEMO_ROOT / "transforms.json"}
+            rendered_dir: {DEMO_ROOT / "reference"}
+            reference_dir: {DEMO_ROOT / "reference"}
+            reference_pointcloud: {DEMO_ROOT / "reference.pcd"}
+            skip_render: true
+            gate:
+              min_ssim: 0.99
+              max_chamfer: 0.2
+        """,
+    )
+
+    result = run_check_suite(load_check_suite(str(config)))
+    check = result["checks"][0]
+    assert check["passed"] is True
+    assert check["summary"]["ssim_mean"] == pytest.approx(1.0, abs=1e-3)
+    assert check["summary"]["chamfer_distance"] < 0.2
+    assert check["result"]["renderer"]["backend"] == "pre-rendered"
+
+
 @pytest.mark.skipif(not _gs_available(), reason="cloudanalyzer[gs] with CUDA required")
 @pytest.mark.skipif(not DEMO_ROOT.is_dir(), reason="synthetic-room demo missing")
 def test_rendered_check_integration_synthetic_room(tmp_path: Path) -> None:

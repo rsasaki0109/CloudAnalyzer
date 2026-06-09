@@ -40,6 +40,7 @@ class RenderedEvalRequest:
     geometry_thresholds: list[float] | None = None
     render_device: str | None = None
     keep_rendered_dir: Path | None = None
+    skip_render: bool = False
     max_pairs: int | None = None
 
 
@@ -64,25 +65,38 @@ def rendered_evaluate(request: RenderedEvalRequest) -> RenderedEvalResult:
 
     temp_dir: tempfile.TemporaryDirectory[str] | None = None
     rendered_dir = request.keep_rendered_dir
-    if rendered_dir is None:
-        temp_dir = tempfile.TemporaryDirectory(prefix="ca-rendered-")
-        rendered_dir = Path(temp_dir.name)
+    if request.skip_render:
+        if rendered_dir is None:
+            raise ValueError(
+                "skip_render requires rendered_dir (pre-rendered PNG directory)"
+            )
+        if not rendered_dir.is_dir():
+            raise ValueError(f"pre-rendered directory not found: {rendered_dir}")
+        written = sorted(rendered_dir.glob("*.png"))
+        if not written:
+            raise ValueError(f"no PNG renders found under {rendered_dir}")
+        renderer_backend = "pre-rendered"
+    else:
+        if rendered_dir is None:
+            temp_dir = tempfile.TemporaryDirectory(prefix="ca-rendered-")
+            rendered_dir = Path(temp_dir.name)
 
-    assert rendered_dir is not None
-    rendered_dir.mkdir(parents=True, exist_ok=True)
+        assert rendered_dir is not None
+        rendered_dir.mkdir(parents=True, exist_ok=True)
 
-    try:
-        written = render_gaussian_views(
-            scene,
-            cameras.frames,
-            rendered_dir,
-            opacity_threshold=request.opacity_threshold,
-            device=request.render_device,
-        )
-    except ValueError as exc:
-        if GS_INSTALL_HINT.splitlines()[0] in str(exc):
+        try:
+            written = render_gaussian_views(
+                scene,
+                cameras.frames,
+                rendered_dir,
+                opacity_threshold=request.opacity_threshold,
+                device=request.render_device,
+            )
+        except ValueError as exc:
+            if GS_INSTALL_HINT.splitlines()[0] in str(exc):
+                raise
             raise
-        raise
+        renderer_backend = "gsplat"
 
     image_result = image_evaluate(
         ImageEvalRequest(
@@ -113,7 +127,7 @@ def rendered_evaluate(request: RenderedEvalRequest) -> RenderedEvalResult:
     }
 
     renderer = {
-        "backend": "gsplat",
+        "backend": renderer_backend,
         "frames_rendered": len(written),
         "rendered_dir": str(rendered_dir),
         "camera_source": cameras.source,

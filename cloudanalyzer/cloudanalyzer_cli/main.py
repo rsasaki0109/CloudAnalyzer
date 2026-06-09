@@ -272,6 +272,32 @@ def _print_check_suite_result(result: dict) -> None:
                 f"after_chamfer={summary['after_chamfer_distance']:.4f}"
                 f"{ate_text}"
             )
+        elif item["kind"] == "image":
+            psnr = summary.get("psnr_mean")
+            psnr_text = f"{psnr:.4f}" if isinstance(psnr, (int, float)) else "inf"
+            ssim = summary.get("ssim_mean")
+            ssim_text = f"{ssim:.4f}" if isinstance(ssim, (int, float)) else "n/a"
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"pairs={summary['pairs_evaluated']}  "
+                f"psnr={psnr_text}  "
+                f"ssim={ssim_text}"
+            )
+        elif item["kind"] == "rendered":
+            psnr = summary.get("psnr_mean")
+            psnr_text = f"{psnr:.4f}" if isinstance(psnr, (int, float)) else "inf"
+            ssim = summary.get("ssim_mean")
+            ssim_text = f"{ssim:.4f}" if isinstance(ssim, (int, float)) else "n/a"
+            geom = ""
+            chamfer = summary.get("chamfer_distance")
+            if isinstance(chamfer, (int, float)):
+                geom = f"  chamfer={chamfer:.4f}"
+            typer.echo(
+                f"[{status}] {item['id']} ({item['kind']}): "
+                f"pairs={summary['pairs_evaluated']}  "
+                f"psnr={psnr_text}  "
+                f"ssim={ssim_text}{geom}"
+            )
         else:
             typer.echo(
                 f"[{status}] {item['id']} ({item['kind']}): "

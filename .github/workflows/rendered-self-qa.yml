@@ -1,0 +1,59 @@
+name: Rendered Self QA
+
+# Dogfoods `kind: rendered` in ca check on the bundled synthetic-room 3DGS demo.
+# Uses skip_render with checked-in reference PNGs so gsplat/CUDA is not required
+# on standard GitHub-hosted runners (geometry QA still exercises the splat PLY).
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/rendered-self-qa.yml"
+      - "benchmarks/3dgs/synthetic-room/**"
+      - "cloudanalyzer/ca/core/checks.py"
+      - "cloudanalyzer/ca/core/rendered_evaluate.py"
+      - "cloudanalyzer/ca/core/gs_renderer.py"
+      - "cloudanalyzer/ca/core/cameras.py"
+      - "cloudanalyzer/tests/test_check_suite_rendered.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rendered-qa:
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+
+      - name: Install CloudAnalyzer
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "./cloudanalyzer"
+
+      - name: Run rendered check self-QA
+        run: |
+          xvfb-run ca check \
+            benchmarks/3dgs/synthetic-room/configs/suite-rendered.cloudanalyzer.yaml \
+            --output-json /tmp/rendered-self-qa.json
+
+      - name: Upload rendered QA artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: rendered-self-qa
+          path: |
+            /tmp/rendered-self-qa.json
+            benchmarks/3dgs/synthetic-room/reports/rendered-qa
+            benchmarks/3dgs/synthetic-room/results/rendered-qa
+          if-no-files-found: warn

@@ -1,0 +1,19 @@
+version: 1
+project: cloudanalyzer-rendered-self-qa
+defaults:
+  report_dir: ../reports/rendered-qa
+  json_dir: ../results/rendered-qa
+checks:
+  - id: synthetic-room
+    kind: rendered
+    splat: ../gaussians_dense.ply
+    cameras: ../transforms.json
+    rendered_dir: ../reference
+    reference_dir: ../reference
+    reference_pointcloud: ../reference.pcd
+    skip_render: true
+    metrics: psnr,ssim
+    max_pairs: 4
+    gate:
+      min_ssim: 0.99
+      max_chamfer: 0.2

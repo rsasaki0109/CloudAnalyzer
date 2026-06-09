@@ -100,6 +100,24 @@ checks:
 Photometric and geometry means flow into `ca report-pr-comment` like other check kinds.
 See [../ci.md](../ci.md).
 
+For CPU-only CI runners (no gsplat/CUDA), set `skip_render: true` and point
+`rendered_dir` at pre-rendered PNGs; geometry QA still runs against the splat PLY.
+
+```yaml
+checks:
+  - id: splat-qa
+    kind: rendered
+    splat: outputs/scene.ply
+    cameras: outputs/transforms.json
+    rendered_dir: baselines/renders/
+    reference_dir: baselines/renders/
+    reference_pointcloud: baselines/reference.pcd
+    skip_render: true
+    gate:
+      min_ssim: 0.99
+      max_chamfer: 0.15
+```
+
 ## Related
 
 - [`ca image-evaluate`](image-evaluate.md) — score two existing image directories

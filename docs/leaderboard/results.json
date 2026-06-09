@@ -1,6 +1,6 @@
 {
   "title": "CloudAnalyzer SLAM Leaderboard",
-  "generated_at": "2026-06-10T04:29:35+00:00",
+  "generated_at": "2026-06-10T06:01:47+00:00",
   "cloudanalyzer_version": "0.4.0",
   "host": {
     "platform": "Linux-6.14.0-36-generic-x86_64-with-glibc2.39",
@@ -13,7 +13,8 @@
   ],
   "datasets": [
     "synthetic-figure8",
-    "synthetic-oval"
+    "synthetic-oval",
+    "kitti-mini"
   ],
   "rows": [
     {
@@ -27,8 +28,8 @@
         "rpe_rmse_m": 0.0015024205394585678,
         "drift_m": 0.0008701091885504958,
         "map_auc": 1.0,
-        "chamfer_m": 0.015832028222999867,
-        "runtime_s": 0.6602921669837087,
+        "chamfer_m": 0.015832028222999863,
+        "runtime_s": 1.534153182990849,
         "frames_processed": 200
       },
       "cloudanalyzer_version": "0.4.0",
@@ -54,8 +55,8 @@
         "rpe_rmse_m": 0.0015024205394585678,
         "drift_m": 0.0008701091885504958,
         "map_auc": 1.0,
-        "chamfer_m": 0.015832028222999867,
-        "runtime_s": 0.6976225639227778,
+        "chamfer_m": 0.015832028222999863,
+        "runtime_s": 1.9010182360652834,
         "frames_processed": 200
       },
       "cloudanalyzer_version": "0.4.0",
@@ -82,7 +83,7 @@
         "drift_m": 0.0010181772930094217,
         "map_auc": 0.9921129967902085,
         "chamfer_m": 0.024591420164473597,
-        "runtime_s": 1.1673336289823055,
+        "runtime_s": 1.240838075056672,
         "frames_processed": 200
       },
       "cloudanalyzer_version": "0.4.0",
@@ -108,8 +109,8 @@
         "rpe_rmse_m": 0.001893054577982388,
         "drift_m": 0.0003157118939793063,
         "map_auc": 1.0,
-        "chamfer_m": 0.014470355655877919,
-        "runtime_s": 0.5901286110747606,
+        "chamfer_m": 0.014470355655877917,
+        "runtime_s": 1.427158028818667,
         "frames_processed": 160
       },
       "cloudanalyzer_version": "0.4.0",
@@ -136,7 +137,7 @@
         "drift_m": 0.0003157118939793063,
         "map_auc": 1.0,
         "chamfer_m": 0.014470355655877919,
-        "runtime_s": 0.6148380271624774,
+        "runtime_s": 1.3710841520223767,
         "frames_processed": 160
       },
       "cloudanalyzer_version": "0.4.0",
@@ -163,7 +164,7 @@
         "drift_m": 0.0025490409961395283,
         "map_auc": 0.9840972452314727,
         "chamfer_m": 0.036557411877197285,
-        "runtime_s": 0.9896357879042625,
+        "runtime_s": 1.1607674020342529,
         "frames_processed": 160
       },
       "cloudanalyzer_version": "0.4.0",
@@ -176,6 +177,87 @@
       "commands": {
         "slam_run": "ca slam-run benchmarks/slam/synthetic-oval/scans docs/leaderboard/runs/small-gicp__synthetic-oval --driver small-gicp --max-range 25 --voxel-size 0.5 --frame-period 0.1",
         "benchmark_eval": "ca benchmark eval benchmarks/slam/synthetic-oval/suite.yaml --map docs/leaderboard/runs/small-gicp__synthetic-oval/map.ply --trajectory docs/leaderboard/runs/small-gicp__synthetic-oval/trajectory.tum --sequence default --report docs/leaderboard/runs/small-gicp__synthetic-oval/report.html"
+      }
+    },
+    {
+      "id": "kiss-icp__kitti-mini",
+      "driver": "kiss-icp",
+      "dataset": "kitti-mini",
+      "sequence": "sequence_00",
+      "gate_passed": false,
+      "metrics": {
+        "ate_rmse_m": 131.7786411905191,
+        "rpe_rmse_m": 13.837806490782016,
+        "drift_m": 234.3591946503489,
+        "map_auc": 0.005336681683769187,
+        "chamfer_m": 133.5017693081317,
+        "runtime_s": 755.4188478651922,
+        "frames_processed": 400
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/kiss-icp__kitti-mini/benchmark.json",
+        "slam_summary_json": "runs/kiss-icp__kitti-mini/slam_summary.json",
+        "report_html": "runs/kiss-icp__kitti-mini/report.html",
+        "viewer_html": "runs/kiss-icp__kitti-mini/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/kitti-mini/scans docs/leaderboard/runs/kiss-icp__kitti-mini --driver kiss-icp --max-range 80 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/kitti-mini/suite.yaml --map docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply --trajectory docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum --sequence sequence_00 --report docs/leaderboard/runs/kiss-icp__kitti-mini/report.html"
+      }
+    },
+    {
+      "id": "kiss-slam__kitti-mini",
+      "driver": "kiss-slam",
+      "dataset": "kitti-mini",
+      "sequence": "sequence_00",
+      "gate_passed": false,
+      "metrics": {
+        "ate_rmse_m": 131.7786411905191,
+        "rpe_rmse_m": 13.837806490782016,
+        "drift_m": 234.3591946503489,
+        "map_auc": 0.005336681683769187,
+        "chamfer_m": 133.5017693081317,
+        "runtime_s": 1518.3799527310766,
+        "frames_processed": 400
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/kiss-slam__kitti-mini/benchmark.json",
+        "slam_summary_json": "runs/kiss-slam__kitti-mini/slam_summary.json",
+        "report_html": "runs/kiss-slam__kitti-mini/report.html",
+        "viewer_html": "runs/kiss-slam__kitti-mini/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/kitti-mini/scans docs/leaderboard/runs/kiss-slam__kitti-mini --driver kiss-slam --max-range 80 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/kitti-mini/suite.yaml --map docs/leaderboard/runs/kiss-slam__kitti-mini/map.ply --trajectory docs/leaderboard/runs/kiss-slam__kitti-mini/trajectory.tum --sequence sequence_00 --report docs/leaderboard/runs/kiss-slam__kitti-mini/report.html"
+      }
+    },
+    {
+      "id": "small-gicp__kitti-mini",
+      "driver": "small-gicp",
+      "dataset": "kitti-mini",
+      "sequence": "sequence_00",
+      "gate_passed": false,
+      "metrics": {
+        "ate_rmse_m": 147.27115117476222,
+        "rpe_rmse_m": 15.223563711823667,
+        "drift_m": 261.7619540509305,
+        "map_auc": 0.006574075763277094,
+        "chamfer_m": 134.05034678036512,
+        "runtime_s": 281.86265626293607,
+        "frames_processed": 400
+      },
+      "cloudanalyzer_version": "0.4.0",
+      "links": {
+        "benchmark_json": "runs/small-gicp__kitti-mini/benchmark.json",
+        "slam_summary_json": "runs/small-gicp__kitti-mini/slam_summary.json",
+        "report_html": "runs/small-gicp__kitti-mini/report.html",
+        "viewer_html": "runs/small-gicp__kitti-mini/viewer/index.html"
+      },
+      "commands": {
+        "slam_run": "ca slam-run benchmarks/slam/kitti-mini/scans docs/leaderboard/runs/small-gicp__kitti-mini --driver small-gicp --max-range 80 --voxel-size 0.5 --frame-period 0.1",
+        "benchmark_eval": "ca benchmark eval benchmarks/slam/kitti-mini/suite.yaml --map docs/leaderboard/runs/small-gicp__kitti-mini/map.ply --trajectory docs/leaderboard/runs/small-gicp__kitti-mini/trajectory.tum --sequence sequence_00 --report docs/leaderboard/runs/small-gicp__kitti-mini/report.html"
       }
     }
   ],

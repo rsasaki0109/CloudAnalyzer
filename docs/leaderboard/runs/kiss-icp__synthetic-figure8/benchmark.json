@@ -4,7 +4,7 @@
     "target_path": "old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd",
     "source_points": 4239,
     "target_points": 2320,
-    "chamfer_distance": 0.015832028222999867,
+    "chamfer_distance": 0.015832028222999863,
     "hausdorff_distance": 0.04699882985473283,
     "f1_scores": [
       {
@@ -47,16 +47,16 @@
     "auc": 1.0,
     "distance_stats": {
       "source_to_target": {
-        "mean": 0.017547714853977003,
+        "mean": 0.017547714853976996,
         "median": 0.01696157180523605,
         "max": 0.04699882985473283,
         "std": 0.007362887180638725
       },
       "target_to_source": {
-        "mean": 0.01411634159202273,
+        "mean": 0.014116341592022729,
         "median": 0.01352466776186706,
         "max": 0.04175750095582544,
-        "std": 0.006125525239701407
+        "std": 0.006125525239701404
       }
     },
     "best_f1": {

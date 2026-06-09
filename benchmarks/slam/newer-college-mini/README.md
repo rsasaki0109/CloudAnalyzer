@@ -91,6 +91,20 @@ You can chain the result straight into a PR comment (Phase 5 / 10
 reusable workflow) or pack it for retention (Phase 8 / 9
 `ca bundle pack`/`diff`).
 
+## Leaderboard
+
+After preparing the suite, symlink or copy scan frames into `scans/`
+(gitignored) and rebuild the public leaderboard:
+
+```bash
+python scripts/prepare_leaderboard_newer_college.py \
+  --scans-dir /path/to/scans \
+  --reference-map /path/to/gt_map.pcd \
+  --reference-trajectory /path/to/gt_poses.tum
+
+python scripts/build_leaderboard.py --include-optional --output docs/leaderboard
+```
+
 ## Recalibrating the gate
 
 The starter gate is intentionally loose. Once you've run a known-good

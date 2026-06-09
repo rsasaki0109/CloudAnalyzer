@@ -113,3 +113,19 @@ python scripts/prepare_kitti_mini.py \
 
 This will overwrite the existing `suite.yaml` and re-materialize the
 data files.
+
+## Leaderboard
+
+To add `kitti-mini` rows to the public SLAM leaderboard after preparing
+the suite locally:
+
+```bash
+python scripts/prepare_leaderboard_kitti.py \
+  --velodyne-dir /path/to/velodyne \
+  --kitti-poses /path/to/poses/00.txt
+
+python scripts/build_leaderboard.py --include-optional --output docs/leaderboard
+```
+
+The prep script subsamples Velodyne frames into `scans/` (gitignored),
+accumulates a coarse GT reference map, and writes `suite.yaml`.

@@ -40,7 +40,7 @@ Saved:        down.pcd
 Adding just one flag, `--evaluate`, tells you immediately how much quality changed before and after processing.
 
 <!-- README demo GIF: regenerate with `scripts/build_readme_gif.sh` (requires vhs). -->
-<!-- ![Terminal demo](docs/images/readme-demo.gif) -->
+![Terminal demo](docs/images/readme-demo.gif)
 
 ## What It Is For
 
@@ -225,7 +225,7 @@ ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
 
 `ca benchmark init` builds a custom suite from your own reference map + trajectory. Newer College / KITTI Odometry wrappers live under `scripts/prepare_*_mini.py`. Full workflow and `--gate` overrides: **[docs/commands/benchmark.md](docs/commands/benchmark.md)**.
 
-A **[live SLAM leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/)** publishes frozen `kiss-icp` / `kiss-slam` / `small-gicp` snapshots on the bundled `synthetic-figure8` and `synthetic-oval` suites. Regenerate locally with `pip install 'cloudanalyzer[slam]'` then `python scripts/build_leaderboard.py`.
+A **[live SLAM leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/)** publishes frozen `kiss-icp` / `kiss-slam` / `small-gicp` snapshots on the bundled `synthetic-figure8` / `synthetic-oval` suites plus **KITTI Odometry mini** (`kitti-mini`, locally prepared). Regenerate with `pip install 'cloudanalyzer[slam]'` then `python scripts/build_leaderboard.py --include-optional`. Newer College rows follow the same `--include-optional` path once you run `scripts/prepare_leaderboard_newer_college.py`.
 
 ### Cross-Representation Geometry QA
 

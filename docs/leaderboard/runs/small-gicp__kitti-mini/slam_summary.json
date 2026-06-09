@@ -1,0 +1,19 @@
+{
+  "driver": "small_gicp",
+  "frames_processed": 400,
+  "runtime_s": 281.86265626293607,
+  "map_points": 2902258,
+  "trajectory_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/small-gicp__kitti-mini/trajectory.tum",
+  "map_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/small-gicp__kitti-mini/map.ply",
+  "driver_metadata": {
+    "small_gicp": {
+      "registration_type": "VGICP",
+      "scan_to_map": true,
+      "voxel_size_m": 0.5,
+      "downsampling_resolution_m": 0.25,
+      "max_correspondence_distance_m": 5.0,
+      "voxelmap_size": 314262,
+      "deskew_requested_but_unsupported": false
+    }
+  }
+}

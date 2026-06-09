@@ -1,0 +1,17 @@
+{
+  "driver": "kiss_slam",
+  "frames_processed": 400,
+  "runtime_s": 1518.3799527310766,
+  "map_points": 2840155,
+  "trajectory_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__kitti-mini/trajectory.tum",
+  "map_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-slam__kitti-mini/map.ply",
+  "driver_metadata": {
+    "kiss_slam": {
+      "max_range_m": 80.0,
+      "voxel_size_m": 0.5,
+      "deskew": false,
+      "local_map_splitting_distance_m": 100.0,
+      "closures_detected": 0
+    }
+  }
+}

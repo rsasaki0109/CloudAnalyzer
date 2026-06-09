@@ -71,6 +71,68 @@ DEFAULT_DATASETS: tuple[LeaderboardDataset, ...] = (
     ),
 )
 
+OPTIONAL_DATASETS: tuple[LeaderboardDataset, ...] = (
+    LeaderboardDataset(
+        id="kitti-mini",
+        suite_path=REPO_ROOT / "benchmarks/slam/kitti-mini/suite.yaml",
+        scans_dir=REPO_ROOT / "benchmarks/slam/kitti-mini/scans",
+        sequence="sequence_00",
+        max_range=80.0,
+        voxel_size=0.5,
+        frame_period=0.1,
+    ),
+    LeaderboardDataset(
+        id="newer-college-mini",
+        suite_path=REPO_ROOT / "benchmarks/slam/newer-college-mini/suite.yaml",
+        scans_dir=REPO_ROOT / "benchmarks/slam/newer-college-mini/scans",
+        sequence="short_experiment",
+        max_range=30.0,
+        voxel_size=0.2,
+        frame_period=0.1,
+    ),
+)
+
+
+def _dataset_is_ready(dataset: LeaderboardDataset) -> bool:
+    return dataset.suite_path.is_file() and dataset.scans_dir.is_dir()
+
+
+def discover_datasets(
+    *,
+    include_optional: bool = False,
+    dataset_ids: tuple[str, ...] | None = None,
+) -> tuple[LeaderboardDataset, ...]:
+    """Return bundled synthetic suites plus optional locally-prepared ones."""
+
+    catalog: dict[str, LeaderboardDataset] = {
+        dataset.id: dataset for dataset in (*DEFAULT_DATASETS, *OPTIONAL_DATASETS)
+    }
+    if dataset_ids:
+        missing = [name for name in dataset_ids if name not in catalog]
+        if missing:
+            allowed = ", ".join(sorted(catalog))
+            raise ValueError(f"Unknown dataset(s): {', '.join(missing)}. Allowed: {allowed}")
+        selected = [catalog[name] for name in dataset_ids]
+    else:
+        selected = list(DEFAULT_DATASETS)
+        if include_optional:
+            for dataset in OPTIONAL_DATASETS:
+                if _dataset_is_ready(dataset):
+                    selected.append(dataset)
+
+    not_ready = [
+        dataset.id
+        for dataset in selected
+        if dataset.id not in {item.id for item in DEFAULT_DATASETS} and not _dataset_is_ready(dataset)
+    ]
+    if not_ready:
+        raise FileNotFoundError(
+            "Optional dataset(s) are not prepared locally: "
+            + ", ".join(not_ready)
+            + ". See benchmarks/slam/*/README.md and scripts/prepare_leaderboard_kitti.py."
+        )
+    return tuple(selected)
+
 
 def _run_id(driver: str, dataset_id: str) -> str:
     return f"{driver}__{dataset_id}"
@@ -311,7 +373,14 @@ def _render_readme() -> str:
             "```bash",
             "pip install -e './cloudanalyzer[slam]'",
             "python scripts/build_leaderboard.py --output docs/leaderboard",
+            "# add locally-prepared KITTI / Newer College rows when available:",
+            "python scripts/prepare_leaderboard_kitti.py --velodyne-dir ... --kitti-poses ...",
+            "python scripts/build_leaderboard.py --include-optional --output docs/leaderboard",
             "```",
+            "",
+            "Optional real-world datasets (`kitti-mini`, `newer-college-mini`) are",
+            "not bundled because of size and upstream licenses. Prepare them locally,",
+            "then rebuild with `--include-optional`.",
             "",
         ]
     )
@@ -529,6 +598,11 @@ def main() -> None:
         help="Dataset id to include (repeatable; default: bundled synthetic suites)",
     )
     parser.add_argument(
+        "--include-optional",
+        action="store_true",
+        help="Also include locally-prepared kitti-mini / newer-college-mini when ready",
+    )
+    parser.add_argument(
         "--skip-viewer",
         action="store_true",
         help="Skip ca web-export viewer bundles (faster local rebuild)",
@@ -542,17 +616,11 @@ def main() -> None:
     args = parser.parse_args()
 
     drivers = tuple(args.drivers) if args.drivers else DEFAULT_DRIVERS
-    if args.datasets:
-        allowed = {dataset.id: dataset for dataset in DEFAULT_DATASETS}
-        missing = [name for name in args.datasets if name not in allowed]
-        if missing:
-            raise SystemExit(
-                f"Unknown dataset(s): {', '.join(missing)}. "
-                f"Allowed: {', '.join(allowed)}"
-            )
-        datasets = tuple(allowed[name] for name in args.datasets)
-    else:
-        datasets = DEFAULT_DATASETS
+    dataset_ids = tuple(args.datasets) if args.datasets else None
+    datasets = discover_datasets(
+        include_optional=args.include_optional,
+        dataset_ids=dataset_ids,
+    )
 
     payload = build_leaderboard(
         args.output,

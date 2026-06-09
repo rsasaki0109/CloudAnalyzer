@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloudAnalyzer — 3DGS Rendered Evaluation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6efe3;
+      --ink: #16110f;
+      --muted: #6a5b52;
+      --panel: rgba(255, 251, 245, 0.88);
+      --line: rgba(22, 17, 15, 0.12);
+      --accent: #c24f2d;
+      --accent-2: #1f5f72;
+      --shadow: 0 24px 80px rgba(27, 17, 11, 0.14);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(194, 79, 45, 0.12), transparent 34%),
+        radial-gradient(circle at top right, rgba(31, 95, 114, 0.14), transparent 28%),
+        linear-gradient(180deg, #f8f2e8 0%, var(--bg) 52%, #efe7d8 100%);
+    }
+    a { color: var(--accent); }
+    .shell { width: min(980px, calc(100vw - 32px)); margin: 0 auto; padding: 28px 0 56px; }
+    .hero, .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .hero { padding: 30px 32px 26px; margin-bottom: 22px; }
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    h1 {
+      margin: 16px 0 10px;
+      font-family: "Newsreader", serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.02;
+      letter-spacing: -0.04em;
+      max-width: 16ch;
+    }
+    .lede { margin: 0; max-width: 72ch; color: var(--muted); line-height: 1.7; }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+    .button {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 42px; padding: 0 16px; border-radius: 999px;
+      text-decoration: none; font-weight: 700; border: 1px solid var(--line);
+      background: rgba(255,255,255,0.45); color: var(--ink);
+    }
+    .button-primary { background: var(--accent); color: #fff; border-color: transparent; }
+    .panel { padding: 22px 24px 24px; margin-bottom: 18px; }
+    h2 { margin: 0 0 12px; font-family: "Newsreader", serif; }
+    pre {
+      margin: 0;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #16110f;
+      color: #f8f2e8;
+      overflow-x: auto;
+      font-size: 0.86rem;
+      line-height: 1.55;
+    }
+    .samples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .samples img {
+      width: 100%;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      display: block;
+    }
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .metric {
+      padding: 14px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.45);
+    }
+    .metric strong { display: block; font-size: 1.3rem; margin-bottom: 4px; }
+    .metric span { color: var(--muted); font-size: 0.88rem; }
+    ul { color: var(--muted); line-height: 1.7; padding-left: 1.2rem; }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">CloudAnalyzer / 3DGS Evaluation</div>
+      <h1>Render a Gaussian Splat. Score photometric + geometry in one gate.</h1>
+      <p class="lede">
+        <code>ca rendered-evaluate</code> drives a 3DGS PLY through gsplat at nerfstudio
+        camera poses, then chains PSNR / SSIM / LPIPS with optional Chamfer / AUC / F1
+        against a reference scan. The bundled synthetic-room demo below is fully reproducible
+        from the repository — no external datasets required.
+      </p>
+      <div class="actions">
+        <a class="button button-primary" href="https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/commands/rendered-evaluate.md">Command Reference</a>
+        <a class="button" href="../index.html">Demo Hub</a>
+        <a class="button" href="https://github.com/rsasaki0109/CloudAnalyzer/tree/main/benchmarks/3dgs/synthetic-room">Demo Dataset</a>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Sample renders (synthetic-room)</h2>
+      <p class="lede">Reference views generated from <code>gaussians_dense.ply</code> via gsplat.</p>
+      <div class="samples">
+        <img src="./samples/view_00.png" alt="Synthetic room render view 0">
+        <img src="./samples/view_04.png" alt="Synthetic room render view 4">
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>One-command regression check</h2>
+      <pre>pip install "cloudanalyzer[gs]"
+
+ca rendered-evaluate benchmarks/3dgs/synthetic-room/gaussians_dense.ply \
+  benchmarks/3dgs/synthetic-room/reference \
+  --cameras benchmarks/3dgs/synthetic-room/transforms.json \
+  --reference-pointcloud benchmarks/3dgs/synthetic-room/reference.pcd \
+  --metrics psnr,ssim,lpips \
+  --report rendered-report.html</pre>
+    </section>
+
+    <section class="panel">
+      <h2>What you get</h2>
+      <div class="metric-grid">
+        <div class="metric"><strong>PSNR / SSIM</strong><span>Photometric fidelity per view</span></div>
+        <div class="metric"><strong>LPIPS</strong><span>Perceptual distance (optional [gs])</span></div>
+        <div class="metric"><strong>Chamfer / AUC</strong><span>Geometry QA vs reference scan</span></div>
+        <div class="metric"><strong>HTML report</strong><span>Combined gate for CI / PR comments</span></div>
+      </div>
+      <ul>
+        <li>Camera poses: nerfstudio <code>transforms.json</code> or COLMAP text exports.</li>
+        <li>Renderer: gsplat behind <code>pip install "cloudanalyzer[gs]"</code>.</li>
+        <li>Geometry-only path still available via <code>ca geometry-evaluate</code>.</li>
+      </ul>
+    </section>
+  </main>
+</body>
+</html>

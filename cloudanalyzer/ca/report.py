@@ -1572,6 +1572,172 @@ def save_image_report(result: dict, output_path: str) -> None:
     raise ValueError("Unsupported report format. Use .md, .markdown, or .html")
 
 
+def make_rendered_markdown(result: dict, output_path: str) -> None:
+    """Generate a Markdown report for rendered 3DGS evaluation."""
+
+    metadata = result.get("metadata", {})
+    renderer = result.get("renderer", {})
+    photometric = result.get("photometric", {})
+    geometry = result.get("geometry")
+
+    lines = [
+        "# CloudAnalyzer Rendered 3DGS Evaluation Report",
+        "",
+        "## Summary",
+        f"- Splat: {metadata.get('splat_path', '')}",
+        f"- Cameras: {metadata.get('cameras_path', '')}",
+        f"- Reference dir: {metadata.get('reference_dir', '')}",
+        f"- Renderer: {renderer.get('backend', '')} ({renderer.get('frames_rendered', 0)} frames)",
+        f"- Rendered dir: {renderer.get('rendered_dir', '')}",
+        "",
+        "## Photometric metrics",
+        "",
+    ]
+    summary = photometric.get("summary", {})
+    metrics = metadata.get("metrics", ["psnr", "ssim"])
+    lines += [
+        "| Metric | Mean | Median | Min | Max |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for m in metrics:
+        unit = " dB" if m == "psnr" else ""
+        lines.append(
+            f"| {str(m).upper()} "
+            f"| {_format_optional_metric(summary.get(f'{m}_mean'), unit=unit)} "
+            f"| {_format_optional_metric(summary.get(f'{m}_median'), unit=unit)} "
+            f"| {_format_optional_metric(summary.get(f'{m}_min'), unit=unit)} "
+            f"| {_format_optional_metric(summary.get(f'{m}_max'), unit=unit)} |"
+        )
+
+    if geometry is not None:
+        lines += [
+            "",
+            "## Geometry metrics",
+            "",
+            f"- Chamfer: {geometry.get('chamfer_distance', '--')}",
+            f"- AUC: {geometry.get('auc', '--')}",
+            f"- F1 @ primary threshold: "
+            f"{(geometry.get('best_f1') or {}).get('f1', '--')}",
+        ]
+        rep = geometry.get("representation")
+        if isinstance(rep, dict):
+            lines.append(
+                f"- Representation: {rep.get('detected')} "
+                f"({rep.get('final_count')} points after filters)"
+            )
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+
+def make_rendered_html(result: dict, output_path: str) -> None:
+    """Generate an HTML report for rendered 3DGS evaluation."""
+
+    metadata = result.get("metadata", {})
+    renderer = result.get("renderer", {})
+    photometric = result.get("photometric", {})
+    geometry = result.get("geometry")
+    summary = photometric.get("summary", {})
+    metrics = metadata.get("metrics", ["psnr", "ssim"])
+
+    summary_rows = [
+        ("Splat", str(metadata.get("splat_path", ""))),
+        ("Cameras", str(metadata.get("cameras_path", ""))),
+        ("Reference dir", str(metadata.get("reference_dir", ""))),
+        ("Renderer", str(renderer.get("backend", ""))),
+        ("Frames rendered", str(renderer.get("frames_rendered", ""))),
+        ("Rendered dir", str(renderer.get("rendered_dir", ""))),
+    ]
+    summary_html = "\n".join(
+        f"<tr><th>{escape(label)}</th><td>{escape(value)}</td></tr>"
+        for label, value in summary_rows
+    )
+    metric_rows_html = "\n".join(
+        (
+            "<tr>"
+            f"<td>{escape(str(m).upper())}</td>"
+            f"<td>{escape(_format_optional_metric(summary.get(f'{m}_mean'), unit=' dB' if m == 'psnr' else ''))}</td>"
+            f"<td>{escape(_format_optional_metric(summary.get(f'{m}_median'), unit=' dB' if m == 'psnr' else ''))}</td>"
+            f"<td>{escape(_format_optional_metric(summary.get(f'{m}_min'), unit=' dB' if m == 'psnr' else ''))}</td>"
+            f"<td>{escape(_format_optional_metric(summary.get(f'{m}_max'), unit=' dB' if m == 'psnr' else ''))}</td>"
+            "</tr>"
+        )
+        for m in metrics
+    )
+
+    geometry_html = ""
+    if geometry is not None:
+        rep = geometry.get("representation") if isinstance(geometry.get("representation"), dict) else {}
+        geometry_rows = [
+            ("Chamfer", f"{geometry.get('chamfer_distance', '--')}"),
+            ("AUC", f"{geometry.get('auc', '--')}"),
+            (
+                "Best F1",
+                str((geometry.get("best_f1") or {}).get("f1", "--")),
+            ),
+            ("Representation", str(rep.get("detected", "--"))),
+            ("Adapted points", str(rep.get("final_count", "--"))),
+        ]
+        geometry_html = (
+            "<h2>Geometry metrics</h2><table><tbody>"
+            + "".join(
+                f"<tr><th>{escape(label)}</th><td>{escape(value)}</td></tr>"
+                for label, value in geometry_rows
+            )
+            + "</tbody></table>"
+        )
+
+    html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CloudAnalyzer Rendered 3DGS Evaluation Report</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; margin: 2rem; color: #111827; }}
+    h1, h2, h3 {{ margin-bottom: 0.5rem; }}
+    table {{ border-collapse: collapse; width: 100%; margin: 1rem 0 2rem; }}
+    th, td {{ border: 1px solid #d1d5db; padding: 0.5rem 0.75rem; text-align: left; }}
+    th {{ background: #f3f4f6; width: 18rem; }}
+    tbody tr:nth-child(even) {{ background: #f9fafb; }}
+  </style>
+</head>
+<body>
+  <h1>CloudAnalyzer Rendered 3DGS Evaluation Report</h1>
+
+  <h2>Summary</h2>
+  <table><tbody>{summary_html}</tbody></table>
+
+  <h2>Photometric metrics</h2>
+  <table>
+    <thead>
+      <tr><th>Metric</th><th>Mean</th><th>Median</th><th>Min</th><th>Max</th></tr>
+    </thead>
+    <tbody>{metric_rows_html}</tbody>
+  </table>
+
+  {geometry_html}
+</body>
+</html>
+"""
+
+    Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, "w") as f:
+        f.write(html)
+
+
+def save_rendered_report(result: dict, output_path: str) -> None:
+    """Write a rendered 3DGS evaluation report based on the file extension."""
+    ext = Path(output_path).suffix.lower()
+    if ext in {".md", ".markdown"}:
+        make_rendered_markdown(result, output_path)
+        return
+    if ext == ".html":
+        make_rendered_html(result, output_path)
+        return
+    raise ValueError("Unsupported report format. Use .md, .markdown, or .html")
+
+
 def make_detection_markdown(result: dict, output_path: str) -> None:
     """Generate a Markdown report for 3D detection evaluation."""
 

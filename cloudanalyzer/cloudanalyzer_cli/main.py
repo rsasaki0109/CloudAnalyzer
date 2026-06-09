@@ -783,7 +783,7 @@ def image_evaluate_cmd(
     metrics: str = typer.Option(
         "psnr,ssim",
         "--metrics",
-        help="Comma-separated metrics to compute: psnr, ssim.",
+        help="Comma-separated metrics to compute: psnr, ssim, lpips (lpips needs cloudanalyzer[gs]).",
     ),
     extensions: str = typer.Option(
         ".png,.jpg,.jpeg",
@@ -879,6 +879,180 @@ def image_evaluate_cmd(
                     f"median={median:.4f}{unit} "
                     f"min={lo:.4f}{unit} max={hi:.4f}{unit}"
                 )
+
+    if output_json:
+        _dump_json(payload, output_json)
+
+
+@app.command("rendered-evaluate")
+def rendered_evaluate_cmd(
+    splat_path: str = typer.Argument(..., help="3D Gaussian Splatting PLY to render."),
+    reference_dir: str = typer.Argument(
+        ...,
+        help="Directory of reference (ground-truth) images. Pairs match by filename.",
+    ),
+    cameras: str = typer.Option(
+        ...,
+        "--cameras",
+        help="Camera bundle: transforms.json, COLMAP images.txt, or a directory containing either.",
+    ),
+    reference_pointcloud: Optional[str] = typer.Option(
+        None,
+        "--reference-pointcloud",
+        help="Optional reference scan for combined geometry QA (Chamfer / AUC / F1).",
+    ),
+    metrics: str = typer.Option(
+        "psnr,ssim",
+        "--metrics",
+        help="Comma-separated photometric metrics: psnr, ssim, lpips.",
+    ),
+    opacity_threshold: Optional[float] = typer.Option(
+        None,
+        "--opacity-threshold",
+        help="Drop splats below this rendered alpha before rasterization.",
+    ),
+    geometry_opacity_threshold: Optional[float] = typer.Option(
+        None,
+        "--geometry-opacity-threshold",
+        help="Opacity filter for the optional geometry pass (defaults to --opacity-threshold).",
+    ),
+    geometry_voxel: Optional[float] = typer.Option(
+        None,
+        "--geometry-voxel",
+        help="Voxel-downsample the adapted source before geometry QA.",
+    ),
+    geometry_splat_method: str = typer.Option(
+        "centers",
+        "--geometry-splat-method",
+        help="3DGS geometry adapter: centers or ellipsoid.",
+    ),
+    geometry_splat_samples: int = typer.Option(
+        8,
+        "--geometry-splat-samples",
+        help="Samples per splat when --geometry-splat-method=ellipsoid.",
+    ),
+    render_device: Optional[str] = typer.Option(
+        None,
+        "--render-device",
+        help="Torch device for gsplat rendering (default: cuda when available).",
+    ),
+    rendered_dir: Optional[str] = typer.Option(
+        None,
+        "--rendered-dir",
+        help="Keep rendered PNGs in this directory instead of a temp folder.",
+    ),
+    max_pairs: Optional[int] = typer.Option(
+        None,
+        "--max-pairs",
+        help="Cap on number of photometric pairs evaluated.",
+    ),
+    report: Optional[str] = typer.Option(
+        None,
+        "--report",
+        help="Write a combined HTML/Markdown report to this path.",
+    ),
+    output_json: Optional[str] = typer.Option(
+        None, "--output-json", help="Write the full result (photometric + geometry) as JSON."
+    ),
+    format_json: bool = typer.Option(
+        False, "--format-json", help="Print the result as JSON to stdout."
+    ),
+) -> None:
+    """Render a 3DGS PLY and score photometric + optional geometry QA.
+
+    Requires ``pip install 'cloudanalyzer[gs]'`` for gsplat rendering and
+    optional LPIPS. Camera poses come from nerfstudio ``transforms.json`` or
+    COLMAP ``cameras.txt`` + ``images.txt``.
+
+    Example::
+
+        ca rendered-evaluate scene.ply references/ \\
+            --cameras transforms.json \\
+            --reference-pointcloud reference.pcd \\
+            --metrics psnr,ssim,lpips --report report.html
+    """
+
+    try:
+        from ca.core.rendered_evaluate import (
+            RenderedEvalRequest,
+            rendered_evaluate,
+            rendered_evaluate_to_dict,
+        )
+    except ImportError as exc:
+        _handle_error(exc)
+
+    metric_tuple = tuple(m.strip() for m in metrics.split(",") if m.strip())
+    if not metric_tuple:
+        typer.echo("Error: --metrics cannot be empty.", err=True)
+        raise typer.Exit(code=2)
+
+    geom_opacity = geometry_opacity_threshold
+    if geom_opacity is None:
+        geom_opacity = opacity_threshold
+
+    try:
+        result = rendered_evaluate(
+            RenderedEvalRequest(
+                splat_path=Path(splat_path),
+                cameras_path=Path(cameras),
+                reference_dir=Path(reference_dir),
+                metrics=metric_tuple,
+                reference_pointcloud=(
+                    Path(reference_pointcloud) if reference_pointcloud else None
+                ),
+                opacity_threshold=opacity_threshold,
+                geometry_opacity_threshold=geom_opacity,
+                geometry_voxel=geometry_voxel,
+                geometry_splat_method=geometry_splat_method,
+                geometry_splat_samples=geometry_splat_samples,
+                render_device=render_device,
+                keep_rendered_dir=Path(rendered_dir) if rendered_dir else None,
+                max_pairs=max_pairs,
+            )
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+
+    payload = rendered_evaluate_to_dict(result)
+
+    if report:
+        from ca.report import save_rendered_report
+
+        save_rendered_report(payload, report)
+
+    if format_json:
+        typer.echo(json.dumps(payload, indent=2, default=str))
+    else:
+        s = result.photometric["summary"]
+        typer.echo(
+            f"rendered-evaluate: {s['pairs_evaluated']} pair(s) scored "
+            f"({s['pairs_missing_in_reference']} missing in reference, "
+            f"{s['pairs_size_mismatch']} size-mismatch)"
+        )
+        typer.echo(
+            f"  renderer: {result.renderer.get('backend')} "
+            f"frames={result.renderer.get('frames_rendered')} "
+            f"dir={result.renderer.get('rendered_dir')}"
+        )
+        for m in metric_tuple:
+            mean = s.get(f"{m}_mean")
+            median = s.get(f"{m}_median")
+            if mean is None:
+                typer.echo(f"  {m.upper():<5} -- no finite values")
+            else:
+                lo = s.get(f"{m}_min")
+                hi = s.get(f"{m}_max")
+                unit = " dB" if m == "psnr" else ""
+                typer.echo(
+                    f"  {m.upper():<5} mean={mean:.4f}{unit} "
+                    f"median={median:.4f}{unit} "
+                    f"min={lo:.4f}{unit} max={hi:.4f}{unit}"
+                )
+        if result.geometry is not None:
+            typer.echo(
+                f"  geometry Chamfer={result.geometry.get('chamfer_distance', 0):.4f} "
+                f"AUC={result.geometry.get('auc', 0):.4f}"
+            )
 
     if output_json:
         _dump_json(payload, output_json)

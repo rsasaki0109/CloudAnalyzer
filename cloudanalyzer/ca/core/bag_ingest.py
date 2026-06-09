@@ -8,7 +8,7 @@ Adopted from ``ca.experiments.bag_ingest``: materialize PointCloud2 scans for
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import open3d as o3d
@@ -240,12 +240,15 @@ def pointcloud2_to_xyz(message: Any) -> np.ndarray:
         dtype = _DATATYPE_TO_DTYPE.get(int(field.datatype))
         if dtype is None:
             raise ValueError(f"Unsupported PointCloud2 datatype for '{axis}': {field.datatype}")
-        column = np.ndarray(
-            shape=(point_count,),
-            dtype=dtype,
-            buffer=raw,
-            offset=int(field.offset),
-            strides=(point_step,),
+        column = cast(
+            np.ndarray,
+            np.ndarray(
+                shape=(point_count,),
+                dtype=dtype,
+                buffer=raw,
+                offset=int(field.offset),
+                strides=(point_step,),
+            ),
         )
         coords[:, axis_index] = column.astype(np.float64, copy=False)
 

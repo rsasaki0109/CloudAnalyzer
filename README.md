@@ -13,6 +13,8 @@
 
 ▶ **Live SLAM Leaderboard**: https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/
 
+▶ **3DGS rendered evaluation demo**: https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/
+
 ▶ **Try without installing** (first run may take a while — Open3D is installed on demand):
 
 ```bash
@@ -197,7 +199,8 @@ The CLI exposes several evaluation entry points. They look related but answer di
 | `ca check` | "Run all configured gates and report pass/fail with triage." | `cloudanalyzer.yaml` | CI / pre-merge gate orchestration; chains `evaluate`, `map-evaluate`, `traj-evaluate`, `loop-closure-report`, `ground-evaluate`, etc. |
 | `ca benchmark eval` | "Does this SLAM run pass the frozen reference + gate of a published benchmark?" | Benchmark suite manifest + user map + user trajectory | Wraps `run-evaluate` against a suite's fixed reference and gate; use it as the one-command SLAM regression check |
 | `ca geometry-evaluate` | "Does this Gaussian Splat / mesh / depth-derived cloud match a reference scan geometrically?" | Source artifact (3DGS PLY, mesh PLY, point cloud, ...) + reference point cloud | Normalizes the source through a representation adapter (3DGS opacity filter, voxel downsample, etc.) and runs the same Chamfer/AUC/F1 metrics as `ca evaluate` |
-| `ca image-evaluate` | "Do these rendered images match the reference photometrically?" | Directory of rendered images + directory of reference images (paired by filename) | First **photometric** axis. PSNR + SSIM per pair plus aggregate stats. Future `ca rendered-evaluate` will drive a 3DGS PLY into images and chain through here. |
+| `ca image-evaluate` | "Do these rendered images match the reference photometrically?" | Directory of rendered images + directory of reference images (paired by filename) | PSNR + SSIM (+ optional LPIPS with `cloudanalyzer[gs]`) per pair plus aggregate stats |
+| `ca rendered-evaluate` | "Does this 3DGS reconstruction match reference views and scan geometry?" | 3DGS PLY + camera poses + reference image dir (+ optional reference scan) | gsplat render → photometric metrics → optional geometry QA; combined HTML report |
 
 Rule of thumb: `ca evaluate` is for **preservation QA** between two snapshots of the same artifact, `ca map-evaluate` is for **map-quality QA** against a reference map, `ca run-evaluate` is for **SLAM-run QA**, `ca benchmark eval` is the same SLAM-run QA but against a **frozen suite** so you can swap in your own pipeline, and `ca check` is the **gate orchestrator** that ties them together for CI.
 
@@ -234,6 +237,17 @@ ca geometry-evaluate reconstruction.obj reference.pcd --mesh-samples 500000
 ```
 
 `--representation` accepts `auto` (default), `point-cloud`, `gaussian-points`, or `mesh`. Output is the `ca evaluate` shape plus a `representation` block, so it flows into `ca report-pr-comment` as-is. Adapter details and the synthetic demo: **[docs/commands/geometry-evaluate.md](docs/commands/geometry-evaluate.md)**.
+
+For full 3DGS QA that includes **rendered views**, use `ca rendered-evaluate` (requires `pip install "cloudanalyzer[gs]"`):
+
+```bash
+ca rendered-evaluate scene.ply references/ \
+  --cameras transforms.json \
+  --reference-pointcloud reference.pcd \
+  --metrics psnr,ssim,lpips --report rendered-report.html
+```
+
+Bundled demo: `benchmarks/3dgs/synthetic-room/`. Details: **[docs/commands/rendered-evaluate.md](docs/commands/rendered-evaluate.md)** · **[live demo](https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/)**.
 
 ## Metrics
 
@@ -395,7 +409,7 @@ Full per-command reference lives under **[docs/commands/](docs/commands/)**. Qui
 | Map / SLAM run QA | `map-evaluate`, `run-evaluate`, `run-batch`, `loop-closure-report`, `posegraph-validate` | [analysis.md](docs/commands/analysis.md) |
 | Trajectory QA | `traj-evaluate`, `traj-batch` | [analysis.md](docs/commands/analysis.md) |
 | Perception QA | `ground-evaluate`, `detection-evaluate`, `tracking-evaluate` | [analysis.md](docs/commands/analysis.md) |
-| Cross-representation | `geometry-evaluate` | [geometry-evaluate.md](docs/commands/geometry-evaluate.md) |
+| Cross-representation | `geometry-evaluate`, `image-evaluate`, `rendered-evaluate` | [geometry-evaluate.md](docs/commands/geometry-evaluate.md), [image-evaluate.md](docs/commands/image-evaluate.md), [rendered-evaluate.md](docs/commands/rendered-evaluate.md) |
 | Benchmark suites | `benchmark info`, `benchmark init`, `benchmark eval` | [benchmark.md](docs/commands/benchmark.md) |
 | Config-driven gate | `check`, `init-check`, `baseline-save/list/decision` | [ci.md](docs/ci.md) |
 | Bundles & history | `bundle pack/show/unpack/diff`, `history` | [bundle.md](docs/commands/bundle.md), [history.md](docs/commands/history.md) |

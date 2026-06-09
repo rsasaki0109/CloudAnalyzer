@@ -111,18 +111,9 @@ checks:
 report, ranks failures in triage, and `ca report-pr-comment` shows the means
 with up/down deltas against a baseline. See [../ci.md](../ci.md) § *Config-Driven QA*.
 
-## Future directions
-
-- `ca rendered-evaluate <3dgs.ply> <reference_dir>` — render a 3DGS PLY
-  at the camera poses implied by `reference_dir`'s filename metadata
-  (or a separate camera JSON), then drive the result through the
-  scoring path here.
-- LPIPS support behind an optional `[photometric]` extra (requires
-  `torch` + a pretrained network — not landed yet); once it lands,
-  `max_lpips` joins the `image` check gate.
-
 ## Related
 
-- `ca evaluate` / `ca map-evaluate` — geometric scoring of point clouds.
-- `ca geometry-evaluate` — 3DGS / mesh sampled to point cloud, scored geometrically.
-- `ca traj-evaluate` — trajectory scoring (ATE / RPE).
+- [`ca rendered-evaluate`](rendered-evaluate.md) — render a 3DGS PLY and score photometric + geometry QA.
+- [`ca evaluate`](evaluate.md) / [`ca map-evaluate`](analysis.md) — geometric scoring of point clouds.
+- [`ca geometry-evaluate`](geometry-evaluate.md) — 3DGS / mesh sampled to point cloud, scored geometrically.
+- [`ca traj-evaluate`](analysis.md) — trajectory scoring (ATE / RPE).

@@ -217,9 +217,48 @@ def ssim(
 # ---------------------------------------------------------------------------
 
 
+LPIPS_INSTALL_HINT = (
+    "LPIPS requires optional dependencies.\n"
+    'Install with: pip install "cloudanalyzer[gs]"'
+)
+
+
+def lpips(rendered: np.ndarray, reference: np.ndarray) -> float:
+    """Learned perceptual image patch similarity (AlexNet backbone).
+
+    Inputs are ``(H, W, 3)`` float arrays in ``[0, 1]``. Lower is better.
+    """
+
+    if rendered.shape != reference.shape:
+        raise ValueError(
+            f"LPIPS input shape mismatch: {rendered.shape} vs {reference.shape}"
+        )
+
+    try:
+        import lpips as lpips_mod
+        import torch
+    except ImportError as exc:
+        raise ValueError(LPIPS_INSTALL_HINT) from exc
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    loss_fn = lpips_mod.LPIPS(net="alex").to(device)
+    loss_fn.eval()
+
+    def _to_tensor(image: np.ndarray) -> "torch.Tensor":
+        tensor = torch.from_numpy(image.astype(np.float32, copy=False))
+        tensor = tensor.permute(2, 0, 1).unsqueeze(0)
+        tensor = tensor * 2.0 - 1.0
+        return tensor.to(device)
+
+    with torch.no_grad():
+        score = loss_fn(_to_tensor(rendered), _to_tensor(reference))
+    return float(score.item())
+
+
 _METRIC_FUNCS: dict[str, Any] = {
     "psnr": psnr,
     "ssim": ssim,
+    "lpips": lpips,
 }
 
 
@@ -282,8 +321,6 @@ def image_evaluate(request: ImageEvalRequest) -> ImageEvalResult:
         "pairs_size_mismatch": size_mismatch,
     }
     for m in request.metrics:
-        # Filter out infs so the aggregate stays meaningful when a pair
-        # is bit-identical (PSNR=+inf).
         raw = [p[m] for p in pairs if np.isfinite(p[m])]
         if raw:
             summary[f"{m}_mean"] = float(fmean(raw))
@@ -312,7 +349,9 @@ def image_evaluate(request: ImageEvalRequest) -> ImageEvalResult:
 __all__ = [
     "ImageEvalRequest",
     "ImageEvalResult",
+    "LPIPS_INSTALL_HINT",
     "image_evaluate",
+    "lpips",
     "psnr",
     "ssim",
 ]

@@ -34,7 +34,10 @@ ca slam-run <input> <output_dir> [--driver kiss-icp] [options]
   (`*.bin` KITTI Velodyne / `*.pcd` / `*.ply`); the first matching
   extension wins. Or
 - A frames-list `.txt` with one scan path per line (relative paths are
-  resolved against the list file).
+  resolved against the list file). Or
+- A ROS bag recording (`.bag` / `.mcap` / `.db3`) with
+  `sensor_msgs/PointCloud2` scans — requires `pip install "cloudanalyzer[ros]"`.
+  See [bag-ingest.md](bag-ingest.md).
 
 `<output_dir>` will receive three files:
 

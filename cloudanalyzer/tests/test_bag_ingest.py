@@ -7,10 +7,12 @@ from unittest.mock import patch
 
 import pytest
 
-from ca.experiments.bag_ingest.common import (
+from ca.core.bag_ingest import (
     ROS_INSTALL_HINT,
-    inspect_bag_metadata,
+    inspect_bag,
     is_bag_path,
+    load_trajectory_from_bag,
+    materialize_pointcloud_bag,
 )
 from ca.info import get_info
 
@@ -28,7 +30,7 @@ def test_get_info_missing_bag_raises_file_not_found() -> None:
 
 
 def test_get_info_without_ros_extra_shows_hint() -> None:
-    with patch("ca.experiments.bag_ingest.common.require_rosbags", side_effect=ValueError(ROS_INSTALL_HINT)):
+    with patch("ca.core.bag_ingest.require_rosbags", side_effect=ValueError(ROS_INSTALL_HINT)):
         with pytest.raises(ValueError, match="cloudanalyzer\\[ros\\]"):
             get_info("/tmp/run.mcap")
 
@@ -38,8 +40,6 @@ from rosbags.rosbag2 import StoragePlugin, Writer  # noqa: E402
 from rosbags.typesys import Stores, get_typestore  # noqa: E402
 from typer.testing import CliRunner
 
-from ca.experiments.bag_ingest.pointcloud import materialize_pointcloud_bag
-from ca.experiments.bag_ingest.trajectory import load_trajectory_from_bag
 from ca.core.slam_run import SlamRunRequest
 from ca.experiments.slam_run.identity_passthrough import IdentityPassthroughSlamDriver
 from cloudanalyzer_cli.main import app
@@ -160,11 +160,46 @@ def _write_pointcloud_bag(path: Path, topic: str = "/points", frames: int = 3) -
             writer.write(connection, int(t_sec * 1e9), payload)
 
 
+def _write_tf_bag(path: Path, topic: str = "/tf", frame: str = "base_link") -> None:
+    typestore = get_typestore(Stores.ROS2_HUMBLE)
+    Header = typestore.get_msgdef("std_msgs/msg/Header").cls
+    Time = typestore.get_msgdef("builtin_interfaces/msg/Time").cls
+    Vector3 = typestore.get_msgdef("geometry_msgs/msg/Vector3").cls
+    Quat = typestore.get_msgdef("geometry_msgs/msg/Quaternion").cls
+    Transform = typestore.get_msgdef("geometry_msgs/msg/Transform").cls
+    TransformStamped = typestore.get_msgdef("geometry_msgs/msg/TransformStamped").cls
+    TFMessage = typestore.get_msgdef("tf2_msgs/msg/TFMessage").cls
+
+    def make_tf(t_sec: float, x: float):
+        stamp = Time(sec=int(t_sec), nanosec=int(round((t_sec - int(t_sec)) * 1e9)))
+        header = Header(stamp=stamp, frame_id="map")
+        transform = Transform(
+            translation=Vector3(x=float(x), y=0.0, z=0.0),
+            rotation=Quat(x=0.0, y=0.0, z=0.0, w=1.0),
+        )
+        stamped = TransformStamped(
+            header=header,
+            child_frame_id=frame,
+            transform=transform,
+        )
+        return TFMessage(transforms=[stamped])
+
+    with Writer(path, version=9, storage_plugin=StoragePlugin.MCAP) as writer:
+        connection = writer.add_connection(
+            topic,
+            "tf2_msgs/msg/TFMessage",
+            typestore=typestore,
+        )
+        for t_sec, x in ((0.0, 0.1), (1.0, 1.1), (2.0, 2.1)):
+            payload = typestore.serialize_cdr(make_tf(t_sec, x), "tf2_msgs/msg/TFMessage")
+            writer.write(connection, int(t_sec * 1e9), payload)
+
+
 def test_inspect_bag_metadata_on_mcap(tmp_path: Path) -> None:
     bag_path = tmp_path / "sample.mcap"
     _write_string_bag(bag_path)
 
-    info = inspect_bag_metadata(str(bag_path))
+    info = inspect_bag(str(bag_path))
     assert info["kind"] == "rosbag"
     assert info["message_count"] == 2
     assert info["topics"] == [
@@ -185,7 +220,7 @@ def test_extract_all_decodes_sample_message(tmp_path: Path) -> None:
     bag_path = tmp_path / "sample.mcap"
     _write_string_bag(bag_path)
 
-    info = inspect_bag_metadata(str(bag_path), decode_sample=True)
+    info = inspect_bag(str(bag_path), decode_sample=True)
     assert info["decoded_sample_topics"] == ["/chatter"]
 
 
@@ -253,3 +288,42 @@ def test_slam_run_from_pointcloud_bag(tmp_path: Path) -> None:
     )
     assert result.frames_processed == 2
     assert result.map_points.shape[0] == 6
+
+
+def test_load_trajectory_from_tf_bag(tmp_path: Path) -> None:
+    bag_path = tmp_path / "tf.mcap"
+    _write_tf_bag(bag_path)
+    traj = load_trajectory_from_bag(str(bag_path), topic="/tf", frame="base_link")
+    assert traj["message_type"] == "tf2_msgs/msg/TFMessage"
+    assert traj["num_poses"] == 3
+    assert traj["positions"][1][0] == pytest.approx(1.1)
+
+
+def test_traj_evaluate_tf_mcap_against_tum(tmp_path: Path) -> None:
+    bag_path = tmp_path / "tf.mcap"
+    _write_tf_bag(bag_path)
+    reference = tmp_path / "reference.tum"
+    _write_tum(
+        reference,
+        [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0), (2.0, 2.0, 0.0, 0.0)],
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "traj-evaluate",
+            str(bag_path),
+            str(reference),
+            "--topic",
+            "/tf",
+            "--frame",
+            "base_link",
+            "--format-json",
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    import json
+
+    data = json.loads(result.output)
+    assert data["matching"]["matched_poses"] == 3
+    assert data["ate"]["rmse"] == pytest.approx(0.1)

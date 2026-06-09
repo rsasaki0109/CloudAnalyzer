@@ -96,6 +96,9 @@ uvx cloudanalyzer evaluate before.pcd after.pcd
 # persistent install
 pip install cloudanalyzer
 
+# ROS / MCAP / bag input (optional)
+pip install "cloudanalyzer[ros]"
+
 # or install the current checkout
 cd cloudanalyzer && pip install -e .
 ```
@@ -394,6 +397,7 @@ Full per-command reference lives under **[docs/commands/](docs/commands/)**. Qui
 | Processing (all `--evaluate`-able) | `downsample`, `filter`, `sample`, `merge`, `align`, `split`, `crop`, `convert`, `normals`, `mme` | [processing.md](docs/commands/processing.md) |
 | Visualization | `web`, `web-export`, `view`, `density-map`, `heatmap3d` | [visualization.md](docs/commands/visualization.md) |
 | Info | `info`, `stats`, `batch` | [analysis.md](docs/commands/analysis.md) |
+| ROS bag input | `info`, `traj-evaluate`, `slam-run` on `.bag`/`.mcap` | [bag-ingest.md](docs/commands/bag-ingest.md) |
 
 Common patterns:
 

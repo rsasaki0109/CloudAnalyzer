@@ -1634,6 +1634,11 @@ def traj_evaluate_cmd(
         "--topic",
         help="ROS topic when estimated (or reference) input is a bag recording",
     ),
+    frame: Optional[str] = typer.Option(
+        None,
+        "--frame",
+        help="Child frame id when the bag topic carries tf2_msgs/msg/TFMessage",
+    ),
     max_time_delta: float = typer.Option(
         0.05, "--max-time-delta",
         help="Max timestamp gap allowed for matching/interpolation (seconds)",
@@ -1683,6 +1688,7 @@ def traj_evaluate_cmd(
             estimated,
             reference,
             topic=topic,
+            frame=frame,
             max_time_delta=max_time_delta,
             align_origin=align_origin,
             align_rigid=align_rigid,
@@ -2002,13 +2008,11 @@ def slam_run_cmd(
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
-    from ca.experiments.bag_ingest.common import is_bag_path
+    from ca.core.bag_ingest import is_bag_path, materialize_pointcloud_bag
 
     timestamps_s: tuple[float, ...] | None = None
     try:
         if is_bag_path(in_path):
-            from ca.experiments.bag_ingest.pointcloud import materialize_pointcloud_bag
-
             frame_paths, timestamps_s = materialize_pointcloud_bag(
                 in_path,
                 out_path / ".ingested_frames",

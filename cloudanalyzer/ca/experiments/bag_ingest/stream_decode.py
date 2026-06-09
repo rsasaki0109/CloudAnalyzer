@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from ca.experiments.bag_ingest.common import inspect_bag_metadata
+from ca.core.bag_ingest import inspect_bag
 
 
 def inspect(path: str) -> dict:
     """Inspect a bag using topic headers only."""
-    return inspect_bag_metadata(path, decode_sample=False)
+    return inspect_bag(path, decode_sample=False)

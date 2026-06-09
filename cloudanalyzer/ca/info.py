@@ -1,21 +1,24 @@
-"""Point cloud info module."""
+"""Point cloud and ROS bag info module."""
+
+from __future__ import annotations
+
+from pathlib import Path
 
 import numpy as np
 import open3d as o3d
 
+from ca.experiments.bag_ingest.common import is_bag_path
 from ca.io import load_point_cloud
 from ca.point_summary import axis_summary, require_points
 
 
 def get_info(path: str) -> dict:
-    """Get basic information about a point cloud file.
+    """Get basic information about a point cloud or ROS bag file."""
+    if is_bag_path(path):
+        from ca.experiments.bag_ingest.stream_decode import inspect
 
-    Args:
-        path: Path to point cloud file.
+        return inspect(path)
 
-    Returns:
-        Dict with point cloud metadata.
-    """
     pcd = load_point_cloud(path)
     points = np.asarray(pcd.points)
     require_points(points, path)
@@ -23,6 +26,7 @@ def get_info(path: str) -> dict:
 
     info = {
         "path": path,
+        "kind": "point_cloud",
         "num_points": len(points),
         "has_colors": pcd.has_colors(),
         "has_normals": pcd.has_normals(),

@@ -610,11 +610,11 @@ def slam_debug_cmd(
 
 @app.command("info")
 def info_cmd(
-    path: str = typer.Argument(..., help="Path to point cloud file (pcd/ply/las/laz/csv)"),
+    path: str = typer.Argument(..., help="Path to point cloud or ROS bag file (pcd/ply/las/laz/csv/bag/mcap/db3)"),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
-    """Show basic information about a point cloud file."""
+    """Show basic information about a point cloud or ROS bag file."""
     try:
         info = get_info(path)
     except (FileNotFoundError, ValueError) as e:
@@ -622,6 +622,14 @@ def info_cmd(
 
     if format_json:
         typer.echo(json.dumps(info, indent=2))
+    elif info.get("kind") == "rosbag":
+        typer.echo(f"File:      {info['path']}")
+        typer.echo(f"Kind:      ROS bag / MCAP")
+        typer.echo(f"Messages:  {info['message_count']}")
+        typer.echo(f"Duration:  {info['duration_ns'] / 1e9:.3f} s")
+        typer.echo("Topics:")
+        for row in info["topics"]:
+            typer.echo(f"  {row['topic']} ({row['type']}): {row['count']}")
     else:
         typer.echo(f"File:      {info['path']}")
         typer.echo(f"Points:    {info['num_points']}")

@@ -67,6 +67,9 @@ slam = [
     "kiss-slam>=0.0.2",
     "small_gicp>=1.0.0",
 ]
+ros = [
+    "rosbags>=0.10",
+]
 
 [tool.setuptools]
 include-package-data = false

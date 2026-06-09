@@ -38,7 +38,10 @@ from rosbags.rosbag2 import StoragePlugin, Writer  # noqa: E402
 from rosbags.typesys import Stores, get_typestore  # noqa: E402
 from typer.testing import CliRunner
 
+from ca.experiments.bag_ingest.pointcloud import materialize_pointcloud_bag
 from ca.experiments.bag_ingest.trajectory import load_trajectory_from_bag
+from ca.core.slam_run import SlamRunRequest
+from ca.experiments.slam_run.identity_passthrough import IdentityPassthroughSlamDriver
 from cloudanalyzer_cli.main import app
 
 
@@ -111,6 +114,52 @@ def _write_tum(path: Path, rows: list[tuple[float, float, float, float]]) -> Non
     )
 
 
+def _write_pointcloud_bag(path: Path, topic: str = "/points", frames: int = 3) -> None:
+    typestore = get_typestore(Stores.ROS2_HUMBLE)
+    Header = typestore.get_msgdef("std_msgs/msg/Header").cls
+    Time = typestore.get_msgdef("builtin_interfaces/msg/Time").cls
+    PointField = typestore.get_msgdef("sensor_msgs/msg/PointField").cls
+    PC2 = typestore.get_msgdef("sensor_msgs/msg/PointCloud2").cls
+    fields = [
+        PointField(name="x", offset=0, datatype=7, count=1),
+        PointField(name="y", offset=4, datatype=7, count=1),
+        PointField(name="z", offset=8, datatype=7, count=1),
+    ]
+
+    def make_pointcloud(t_sec: float, point_count: int):
+        import numpy as np
+
+        stamp = Time(sec=int(t_sec), nanosec=int(round((t_sec - int(t_sec)) * 1e9)))
+        header = Header(stamp=stamp, frame_id="lidar")
+        pts = np.array([[float(i), 0.0, 0.0] for i in range(point_count)], dtype=np.float32)
+        data = np.frombuffer(pts.tobytes(), dtype=np.uint8)
+        return PC2(
+            header=header,
+            height=1,
+            width=point_count,
+            fields=fields,
+            is_bigendian=False,
+            point_step=12,
+            row_step=12 * point_count,
+            data=data,
+            is_dense=True,
+        )
+
+    with Writer(path, version=9, storage_plugin=StoragePlugin.MCAP) as writer:
+        connection = writer.add_connection(
+            topic,
+            "sensor_msgs/msg/PointCloud2",
+            typestore=typestore,
+        )
+        for index in range(frames):
+            t_sec = float(index) * 0.1
+            payload = typestore.serialize_cdr(
+                make_pointcloud(t_sec, 3),
+                "sensor_msgs/msg/PointCloud2",
+            )
+            writer.write(connection, int(t_sec * 1e9), payload)
+
+
 def test_inspect_bag_metadata_on_mcap(tmp_path: Path) -> None:
     bag_path = tmp_path / "sample.mcap"
     _write_string_bag(bag_path)
@@ -169,3 +218,38 @@ def test_traj_evaluate_mcap_against_tum(tmp_path: Path) -> None:
     data = json.loads(result.output)
     assert data["matching"]["matched_poses"] == 3
     assert data["ate"]["rmse"] == pytest.approx(0.1)
+
+
+def test_materialize_pointcloud_bag(tmp_path: Path) -> None:
+    bag_path = tmp_path / "points.mcap"
+    _write_pointcloud_bag(bag_path)
+    frame_dir = tmp_path / "frames"
+
+    frame_paths, timestamps = materialize_pointcloud_bag(
+        bag_path,
+        frame_dir,
+        topic="/points",
+    )
+    assert len(frame_paths) == 3
+    assert timestamps == pytest.approx((0.0, 0.1, 0.2))
+    assert frame_paths[0].name == "frame_000000.pcd"
+
+
+def test_slam_run_from_pointcloud_bag(tmp_path: Path) -> None:
+    bag_path = tmp_path / "points.mcap"
+    _write_pointcloud_bag(bag_path, frames=2)
+    frame_dir = tmp_path / "frames"
+    frame_paths, timestamps = materialize_pointcloud_bag(
+        bag_path,
+        frame_dir,
+        topic="/points",
+    )
+
+    result = IdentityPassthroughSlamDriver().run(
+        SlamRunRequest(
+            frame_paths=tuple(frame_paths),
+            timestamps_s=timestamps,
+        )
+    )
+    assert result.frames_processed == 2
+    assert result.map_points.shape[0] == 6

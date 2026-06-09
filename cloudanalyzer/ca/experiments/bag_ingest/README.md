@@ -14,7 +14,7 @@ Compare how CloudAnalyzer should read robotics recordings before wiring
 
 Phase 1: `ca info run.mcap` lists topics/types/counts.
 Phase 2: `ca traj-evaluate run.mcap ref.tum --topic /odom` reads Odometry / PoseStamped trajectories.
-Phase 3: PointCloud2 extraction for `ca slam-run`.
+Phase 3: `ca slam-run run.mcap out --pointcloud-topic /points` extracts PointCloud2 scans.
 
 Install optional dependencies:
 

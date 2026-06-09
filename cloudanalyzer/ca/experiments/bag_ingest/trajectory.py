@@ -63,7 +63,7 @@ def load_trajectory_from_bag(path: str, *, topic: str | None = None) -> dict:
         connection = _pick_trajectory_connection(reader.connections, topic)
         timestamps: list[float] = []
         positions: list[list[float]] = []
-        for _bag_timestamp, _connection, raw in reader.messages(connections=[connection]):
+        for _connection, _timestamp, raw in reader.messages(connections=[connection]):
             message = reader.deserialize(raw, connection.msgtype)
             timestamps.append(_header_timestamp_sec(message))
             positions.append(_position_from_message(message, connection.msgtype))

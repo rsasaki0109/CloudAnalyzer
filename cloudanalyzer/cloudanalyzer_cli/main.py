@@ -1894,8 +1894,8 @@ def slam_run_cmd(
     input_path: str = typer.Argument(
         ...,
         help=(
-            "Directory of LiDAR scans (.bin/.pcd/.ply) or a frames-list .txt "
-            "(one path per line)."
+            "Directory of LiDAR scans (.bin/.pcd/.ply), a frames-list .txt "
+            "(one path per line), or a ROS bag recording (.bag/.mcap/.db3)."
         ),
     ),
     output_dir: str = typer.Argument(
@@ -1938,6 +1938,11 @@ def slam_run_cmd(
     ),
     max_frames: Optional[int] = typer.Option(
         None, "--max-frames", help="Cap on the number of frames consumed."
+    ),
+    pointcloud_topic: Optional[str] = typer.Option(
+        None,
+        "--pointcloud-topic",
+        help="ROS topic when --input is a bag recording with PointCloud2 scans",
     ),
     frame_period: float = typer.Option(
         0.1,
@@ -1997,15 +2002,28 @@ def slam_run_cmd(
     out_path = Path(output_dir)
     out_path.mkdir(parents=True, exist_ok=True)
 
+    from ca.experiments.bag_ingest.common import is_bag_path
+
+    timestamps_s: tuple[float, ...] | None = None
     try:
-        frame_paths = discover_frame_paths(in_path)
-    except ValueError as e:
+        if is_bag_path(in_path):
+            from ca.experiments.bag_ingest.pointcloud import materialize_pointcloud_bag
+
+            frame_paths, timestamps_s = materialize_pointcloud_bag(
+                in_path,
+                out_path / ".ingested_frames",
+                topic=pointcloud_topic,
+                max_frames=max_frames,
+            )
+        else:
+            frame_paths = discover_frame_paths(in_path)
+    except (FileNotFoundError, ValueError) as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(code=2)
 
     request = SlamRunRequest(
         frame_paths=tuple(frame_paths),
-        timestamps_s=None,
+        timestamps_s=timestamps_s,
         frame_period_s=frame_period,
         max_range_m=max_range,
         voxel_size_m=voxel_size,

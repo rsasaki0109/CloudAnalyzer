@@ -9,6 +9,8 @@
 
 ▶ **Try the public browser demo**: https://rsasaki0109.github.io/CloudAnalyzer/
 
+▶ **Try in your browser — no install**: [compare two point clouds](https://rsasaki0109.github.io/CloudAnalyzer/demo/compare/)
+
 ▶ **Live SLAM Leaderboard**: https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/
 
 ▶ **Try without installing** (first run may take a while — Open3D is installed on demand):

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloudAnalyzer — Compare Point Clouds</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f6efe3;
+      --ink: #16110f;
+      --muted: #6a5b52;
+      --panel: rgba(255, 251, 245, 0.92);
+      --line: rgba(22, 17, 15, 0.12);
+      --accent: #c24f2d;
+      --viewer-bg: #1a1a2e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", sans-serif;
+      color: var(--ink);
+      background: var(--viewer-bg);
+    }
+    body.compare-ready { overflow: hidden; }
+    #dropShell {
+      min-height: 100vh;
+      padding: 28px 20px 40px;
+      background:
+        radial-gradient(circle at top left, rgba(194, 79, 45, 0.14), transparent 34%),
+        radial-gradient(circle at top right, rgba(31, 95, 114, 0.16), transparent 28%),
+        linear-gradient(180deg, #f8f2e8 0%, var(--bg) 52%, #efe7d8 100%);
+    }
+    .intro {
+      width: min(980px, 100%);
+      margin: 0 auto 22px;
+    }
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    h1 {
+      margin: 14px 0 10px;
+      font-family: "Newsreader", serif;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 0.98;
+      letter-spacing: -0.04em;
+      max-width: 16ch;
+    }
+    .lede {
+      margin: 0;
+      max-width: 62ch;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .drop-grid {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .drop-zone {
+      background: var(--panel);
+      border: 2px dashed var(--line);
+      border-radius: 24px;
+      padding: 28px 22px;
+      min-height: 220px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      text-align: center;
+      transition: border-color 140ms ease, transform 140ms ease, box-shadow 140ms ease;
+      cursor: pointer;
+    }
+    .drop-zone.dragover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 18px 50px rgba(27, 17, 11, 0.12);
+    }
+    .drop-zone.ready {
+      border-style: solid;
+      border-color: rgba(31, 95, 114, 0.35);
+    }
+    .drop-zone h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .drop-zone p { margin: 0; color: var(--muted); line-height: 1.6; }
+    .drop-zone .filename {
+      margin-top: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      word-break: break-all;
+    }
+    .drop-zone input { display: none; }
+    .note {
+      width: min(980px, 100%);
+      margin: 18px auto 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+    .note code {
+      background: rgba(255,255,255,0.55);
+      padding: 0.1rem 0.35rem;
+      border-radius: 6px;
+    }
+    #statusBar {
+      width: min(980px, 100%);
+      margin: 16px auto 0;
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.55);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      min-height: 48px;
+    }
+    #statusBar.error { color: #991b1b; background: #fef2f2; border-color: #fecaca; }
+    #statusBar.working { color: #1d4ed8; background: #eff6ff; border-color: #bfdbfe; }
+    #viewerShell {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: var(--viewer-bg);
+    }
+    body.compare-ready #dropShell { display: none; }
+    body.compare-ready #viewerShell { display: block; }
+    canvas { display: block; width: 100%; height: 100%; }
+    #info, #metrics, #controls, #legend {
+      position: absolute;
+      color: #e0e0e0;
+      background: rgba(0,0,0,0.72);
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.55;
+      z-index: 2;
+    }
+    #info { top: 10px; left: 10px; padding: 12px 16px; max-width: 320px; pointer-events: none; }
+    #metrics {
+      top: 10px;
+      right: 10px;
+      padding: 12px 16px;
+      width: min(320px, calc(100vw - 20px));
+    }
+    #metrics h3 { margin: 0 0 8px; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: #94a3b8; }
+    #metrics .value { font-size: 1.35rem; font-weight: 700; color: #f8fafc; }
+    #metrics .hint { margin-top: 8px; color: #94a3b8; font-size: 12px; }
+    #controls {
+      right: 10px;
+      top: 210px;
+      padding: 12px 16px;
+      width: min(320px, calc(100vw - 20px));
+    }
+    #controls label { display: block; margin: 5px 0; }
+    #controls input[type=range] { width: 140px; vertical-align: middle; }
+    #controls select, #controls button {
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+    #controls button { cursor: pointer; margin-top: 8px; }
+    #legend {
+      left: 10px;
+      bottom: 10px;
+      padding: 12px 16px;
+      width: 240px;
+    }
+    #legendBar {
+      height: 12px;
+      border-radius: 999px;
+      margin: 8px 0 6px;
+      background: linear-gradient(90deg, #1f3cff 0%, #00d4ff 25%, #8ef000 50%, #ffb000 75%, #ff3300 100%);
+    }
+    #legendLabels { display: flex; justify-content: space-between; color: #cbd5e1; font-size: 12px; }
+    @media (max-width: 760px) {
+      .drop-grid { grid-template-columns: 1fr; }
+      #controls { top: auto; bottom: 10px; right: 10px; left: 10px; width: auto; }
+    }
+  </style>
+</head>
+<body>
+  <section id="dropShell">
+    <div class="intro">
+      <div class="eyebrow">CloudAnalyzer / Browser Compare</div>
+      <h1>Drop two point clouds. See the heatmap instantly.</h1>
+      <p class="lede">
+        No install, no upload — everything stays in your browser. Supports PLY and PCD.
+        Metrics are sampled approximations for quick inspection; use
+        <code>ca evaluate</code> for full-precision QA gates.
+      </p>
+    </div>
+    <div class="drop-grid">
+      <label class="drop-zone" id="sourceZone" for="sourceInput">
+        <h2>Source</h2>
+        <p>Drag &amp; drop or click to pick the cloud you changed.</p>
+        <div class="filename" id="sourceName">No file yet</div>
+        <input id="sourceInput" type="file" accept=".ply,.pcd,.PLY,.PCD">
+      </label>
+      <label class="drop-zone" id="referenceZone" for="referenceInput">
+        <h2>Reference</h2>
+        <p>Drag &amp; drop or click to pick the baseline cloud.</p>
+        <div class="filename" id="referenceName">No file yet</div>
+        <input id="referenceInput" type="file" accept=".ply,.pcd,.PLY,.PCD">
+      </label>
+    </div>
+    <div id="statusBar">Drop a source and reference cloud to begin.</div>
+    <p class="note">
+      Limits: files up to 64&nbsp;MB, each cloud downsampled to 50&nbsp;000 points for display.
+      Distance stats use up to 5&nbsp;000 random samples per direction.
+      Need CI-grade Chamfer / AUC / F1? Run
+      <code>uvx cloudanalyzer evaluate before.pcd after.pcd</code>.
+    </p>
+  </section>
+
+  <section id="viewerShell">
+    <div id="info"></div>
+    <div id="metrics"></div>
+    <div id="controls">
+      <label>Point Size <input type="range" id="ptSize" min="0.5" max="10" step="0.5" value="2"></label>
+      <label><input type="checkbox" id="showReference" checked> Reference overlay</label>
+      <label>Ref opacity <input type="range" id="refOpacity" min="0.05" max="1" step="0.05" value="0.35"></label>
+      <label>Error threshold <input type="range" id="distThreshold" min="0" max="1" step="0.001" value="0"></label>
+      <div id="thresholdInfo">Visible: <span id="visibleCount">0</span></div>
+      <button type="button" id="resetCompare">Load different files</button>
+    </div>
+    <div id="legend">
+      <div><b>Distance to reference</b></div>
+      <div id="legendBar"></div>
+      <div id="legendLabels">
+        <span id="legendMin">0</span>
+        <span id="legendMean">mean</span>
+        <span id="legendMax">0</span>
+      </div>
+    </div>
+  </section>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }}
+  </script>
+  <script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
+
+  const MAX_FILE_BYTES = 64 * 1024 * 1024;
+  const MAX_DISPLAY_POINTS = 50000;
+  const METRIC_SAMPLE_SIZE = 5000;
+
+  const state = {
+    sourceName: '',
+    referenceName: '',
+    sourceRawCount: 0,
+    referenceRawCount: 0,
+    sourcePoints: null,
+    referencePoints: null,
+    distances: null,
+    distanceStats: null,
+    metricSummary: null,
+    warnings: [],
+  };
+
+  const els = {
+    sourceZone: document.getElementById('sourceZone'),
+    referenceZone: document.getElementById('referenceZone'),
+    sourceInput: document.getElementById('sourceInput'),
+    referenceInput: document.getElementById('referenceInput'),
+    sourceName: document.getElementById('sourceName'),
+    referenceName: document.getElementById('referenceName'),
+    statusBar: document.getElementById('statusBar'),
+    info: document.getElementById('info'),
+    metrics: document.getElementById('metrics'),
+    visibleCount: document.getElementById('visibleCount'),
+    legendMin: document.getElementById('legendMin'),
+    legendMean: document.getElementById('legendMean'),
+    legendMax: document.getElementById('legendMax'),
+  };
+
+  let scene, camera, renderer, controls, sourceCloud, referenceCloud;
+
+  function setStatus(message, kind = '') {
+    els.statusBar.textContent = message;
+    els.statusBar.className = kind ? kind : '';
+  }
+
+  function parsePcdHeader(text) {
+    const lines = text.split(/\r?\n/);
+    const header = {};
+    let dataLine = -1;
+    for (let i = 0; i < lines.length; i += 1) {
+      const line = lines[i].trim();
+      if (!line || line.startsWith('#')) continue;
+      if (line.startsWith('DATA')) {
+        header.data = line.split(/\s+/)[1].toLowerCase();
+        dataLine = i;
+        break;
+      }
+      const parts = line.split(/\s+/);
+      header[parts[0].toLowerCase()] = parts.slice(1).join(' ');
+    }
+    if (dataLine < 0) throw new Error('Invalid PCD: missing DATA line');
+    let offset = 0;
+    for (let i = 0; i <= dataLine; i += 1) {
+      offset += lines[i].length + 1;
+    }
+    header._dataOffset = offset;
+    header.fields = (header.fields || 'x y z').trim().split(/\s+/);
+    header.type = (header.type || 'F F F').trim().split(/\s+/);
+    header.size = (header.size || '4 4 4').trim().split(/\s+/).map(Number);
+    header.count = (header.count || header.fields.map(() => '1')).trim().split(/\s+/).map(Number);
+    header.points = Number(header.points || header.width || 0);
+    return header;
+  }
+
+  function parseAsciiPcd(text) {
+    const header = parsePcdHeader(text);
+    if (header.data !== 'ascii') throw new Error('Expected ASCII PCD');
+    const idx = { x: header.fields.indexOf('x'), y: header.fields.indexOf('y'), z: header.fields.indexOf('z') };
+    if (idx.x < 0 || idx.y < 0 || idx.z < 0) throw new Error('PCD must contain x, y, z fields');
+    const body = text.slice(header._dataOffset).trim().split(/\r?\n/);
+    const out = new Float32Array(header.points * 3);
+    let written = 0;
+    for (const line of body) {
+      if (!line.trim()) continue;
+      const parts = line.trim().split(/\s+/);
+      out[written++] = Number(parts[idx.x]);
+      out[written++] = Number(parts[idx.y]);
+      out[written++] = Number(parts[idx.z]);
+      if (written >= out.length) break;
+    }
+    return out.subarray(0, written);
+  }
+
+  function parseBinaryPcd(buffer) {
+    const headerText = new TextDecoder('utf-8').decode(buffer.slice(0, Math.min(buffer.byteLength, 8192)));
+    const header = parsePcdHeader(headerText);
+    if (header.data !== 'binary') throw new Error('Expected binary PCD');
+    const stride = header.fields.reduce((sum, _field, i) => sum + header.size[i] * header.count[i], 0);
+    const offsets = [];
+    let cursor = 0;
+    for (let i = 0; i < header.fields.length; i += 1) {
+      offsets.push(cursor);
+      cursor += header.size[i] * header.count[i];
+    }
+    const idx = { x: header.fields.indexOf('x'), y: header.fields.indexOf('y'), z: header.fields.indexOf('z') };
+    if (idx.x < 0 || idx.y < 0 || idx.z < 0) throw new Error('PCD must contain x, y, z fields');
+    const data = new DataView(buffer, header._dataOffset);
+    const out = new Float32Array(header.points * 3);
+    for (let p = 0; p < header.points; p += 1) {
+      const base = p * stride;
+      out[p * 3] = readField(data, base + offsets[idx.x], header.type[idx.x], header.size[idx.x]);
+      out[p * 3 + 1] = readField(data, base + offsets[idx.y], header.type[idx.y], header.size[idx.y]);
+      out[p * 3 + 2] = readField(data, base + offsets[idx.z], header.type[idx.z], header.size[idx.z]);
+    }
+    return out;
+  }
+
+  function readField(view, offset, type, size) {
+    if (type === 'F' && size === 4) return view.getFloat32(offset, true);
+    if (type === 'F' && size === 8) return view.getFloat64(offset, true);
+    if (type === 'U' && size === 1) return view.getUint8(offset);
+    if (type === 'U' && size === 2) return view.getUint16(offset, true);
+    if (type === 'U' && size === 4) return view.getUint32(offset, true);
+    if (type === 'I' && size === 4) return view.getInt32(offset, true);
+    throw new Error(`Unsupported PCD field type ${type}${size}`);
+  }
+
+  async function loadPointCloudFile(file) {
+    if (file.size > MAX_FILE_BYTES) {
+      throw new Error(`${file.name} is ${(file.size / (1024 * 1024)).toFixed(1)} MB — limit is 64 MB.`);
+    }
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (ext === 'ply') {
+      const text = await file.text();
+      const geometry = new PLYLoader().parse(text);
+      return geometry.attributes.position.array.slice();
+    }
+    if (ext === 'pcd') {
+      const buffer = await file.arrayBuffer();
+      const preview = new TextDecoder('utf-8').decode(buffer.slice(0, 4096));
+      if (/DATA\s+ascii/i.test(preview)) {
+        return parseAsciiPcd(new TextDecoder('utf-8').decode(buffer));
+      }
+      return parseBinaryPcd(buffer);
+    }
+    throw new Error('Unsupported format — use .ply or .pcd');
+  }
+
+  function randomSample(positions, maxPoints) {
+    const count = positions.length / 3;
+    if (count <= maxPoints) return { points: positions, sampled: false, from: count, to: count };
+    const indices = Array.from({ length: count }, (_, i) => i);
+    for (let i = indices.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    const picked = indices.slice(0, maxPoints);
+    const out = new Float32Array(maxPoints * 3);
+    picked.forEach((idx, i) => {
+      out[i * 3] = positions[idx * 3];
+      out[i * 3 + 1] = positions[idx * 3 + 1];
+      out[i * 3 + 2] = positions[idx * 3 + 2];
+    });
+    return { points: out, sampled: true, from: count, to: maxPoints };
+  }
+
+  function bbox(positions) {
+    let minX = Infinity, minY = Infinity, minZ = Infinity;
+    let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+    for (let i = 0; i < positions.length; i += 3) {
+      minX = Math.min(minX, positions[i]);
+      minY = Math.min(minY, positions[i + 1]);
+      minZ = Math.min(minZ, positions[i + 2]);
+      maxX = Math.max(maxX, positions[i]);
+      maxY = Math.max(maxY, positions[i + 1]);
+      maxZ = Math.max(maxZ, positions[i + 2]);
+    }
+    return { minX, minY, minZ, maxX, maxY, maxZ,
+      extent: Math.max(maxX - minX, maxY - minY, maxZ - minZ) || 1 };
+  }
+
+  function buildGrid(positions, cellSize) {
+    const grid = new Map();
+    for (let i = 0; i < positions.length; i += 3) {
+      const ix = Math.floor(positions[i] / cellSize);
+      const iy = Math.floor(positions[i + 1] / cellSize);
+      const iz = Math.floor(positions[i + 2] / cellSize);
+      const key = `${ix},${iy},${iz}`;
+      if (!grid.has(key)) grid.set(key, []);
+      grid.get(key).push(i);
+    }
+    return grid;
+  }
+
+  function nearestDistance(query, refPoints, grid, cellSize) {
+    const qx = query[0], qy = query[1], qz = query[2];
+    const ix = Math.floor(qx / cellSize);
+    const iy = Math.floor(qy / cellSize);
+    const iz = Math.floor(qz / cellSize);
+    let best = Infinity;
+    for (let dx = -1; dx <= 1; dx += 1) {
+      for (let dy = -1; dy <= 1; dy += 1) {
+        for (let dz = -1; dz <= 1; dz += 1) {
+          const bucket = grid.get(`${ix + dx},${iy + dy},${iz + dz}`);
+          if (!bucket) continue;
+          for (const idx of bucket) {
+            const rx = refPoints[idx];
+            const ry = refPoints[idx + 1];
+            const rz = refPoints[idx + 2];
+            const dist = Math.hypot(qx - rx, qy - ry, qz - rz);
+            if (dist < best) best = dist;
+          }
+        }
+      }
+    }
+    return best;
+  }
+
+  function meanNearestDistance(source, reference, sampleSize) {
+    const box = bbox(reference);
+    const cellSize = Math.max(box.extent / 100, 1e-4);
+    const grid = buildGrid(reference, cellSize);
+    const count = source.length / 3;
+    const step = Math.max(1, Math.floor(count / sampleSize));
+    let total = 0;
+    let seen = 0;
+    for (let i = 0; i < count; i += step) {
+      const idx = i * 3;
+      const dist = nearestDistance(
+        [source[idx], source[idx + 1], source[idx + 2]],
+        reference,
+        grid,
+        cellSize,
+      );
+      if (Number.isFinite(dist)) {
+        total += dist;
+        seen += 1;
+      }
+    }
+    return seen ? total / seen : NaN;
+  }
+
+  function computeDistances(source, reference) {
+    const box = bbox(reference);
+    const cellSize = Math.max(box.extent / 100, 1e-4);
+    const grid = buildGrid(reference, cellSize);
+    const distances = new Float32Array(source.length / 3);
+    for (let i = 0; i < distances.length; i += 1) {
+      const idx = i * 3;
+      const dist = nearestDistance(
+        [source[idx], source[idx + 1], source[idx + 2]],
+        reference,
+        grid,
+        cellSize,
+      );
+      distances[i] = Number.isFinite(dist) ? dist : 0;
+    }
+    let min = Infinity, max = -Infinity, sum = 0;
+    for (const value of distances) {
+      min = Math.min(min, value);
+      max = Math.max(max, value);
+      sum += value;
+    }
+    return {
+      distances,
+      stats: { min, max, mean: sum / distances.length },
+    };
+  }
+
+  function computeColors(positions, distances, stats) {
+    const n = positions.length / 3;
+    const colors = new Float32Array(n * 3);
+    const range = Math.max(stats.max - stats.min, 1e-9);
+    for (let i = 0; i < n; i += 1) {
+      const t = (distances[i] - stats.min) / range;
+      colors[i * 3] = Math.max(0, Math.min(1, 1.5 - Math.abs(t - 0.75) * 4));
+      colors[i * 3 + 1] = Math.max(0, Math.min(1, 1.5 - Math.abs(t - 0.5) * 4));
+      colors[i * 3 + 2] = Math.max(0, Math.min(1, 1.5 - Math.abs(t - 0.25) * 4));
+    }
+    return colors;
+  }
+
+  function initViewer() {
+    if (renderer) return;
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color('#1a1a2e');
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 100000);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    document.getElementById('viewerShell').appendChild(renderer.domElement);
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    window.addEventListener('resize', onResize);
+    document.getElementById('ptSize').addEventListener('input', refreshCloudStyle);
+    document.getElementById('showReference').addEventListener('change', refreshCloudStyle);
+    document.getElementById('refOpacity').addEventListener('input', refreshCloudStyle);
+    document.getElementById('distThreshold').addEventListener('input', applyThreshold);
+    document.getElementById('resetCompare').addEventListener('click', resetCompare);
+    animate();
+  }
+
+  function onResize() {
+    if (!renderer) return;
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  }
+
+  function fitCamera(source, reference) {
+    const box = bbox(source);
+    const refBox = bbox(reference);
+    const cx = (box.minX + box.maxX + refBox.minX + refBox.maxX) / 4;
+    const cy = (box.minY + box.maxY + refBox.minY + refBox.maxY) / 4;
+    const cz = (box.minZ + box.maxZ + refBox.minZ + refBox.maxZ) / 4;
+    const extent = Math.max(box.extent, refBox.extent);
+    camera.position.set(cx + extent, cy + extent * 0.4, cz + extent * 1.2);
+    controls.target.set(cx, cy, cz);
+    controls.update();
+  }
+
+  function renderCompare() {
+    initViewer();
+    if (sourceCloud) scene.remove(sourceCloud);
+    if (referenceCloud) scene.remove(referenceCloud);
+
+    const sourceGeometry = new THREE.BufferGeometry();
+    sourceGeometry.setAttribute('position', new THREE.BufferAttribute(state.sourcePoints, 3));
+    sourceGeometry.setAttribute('color', new THREE.BufferAttribute(
+      computeColors(state.sourcePoints, state.distances, state.distanceStats), 3,
+    ));
+    sourceCloud = new THREE.Points(
+      sourceGeometry,
+      new THREE.PointsMaterial({ size: 2, vertexColors: true, sizeAttenuation: true }),
+    );
+    scene.add(sourceCloud);
+
+    const refGeometry = new THREE.BufferGeometry();
+    refGeometry.setAttribute('position', new THREE.BufferAttribute(state.referencePoints, 3));
+    referenceCloud = new THREE.Points(
+      refGeometry,
+      new THREE.PointsMaterial({
+        size: 1.5,
+        color: '#64748b',
+        opacity: 0.35,
+        transparent: true,
+        sizeAttenuation: true,
+      }),
+    );
+    scene.add(referenceCloud);
+
+    fitCamera(state.sourcePoints, state.referencePoints);
+    refreshCloudStyle();
+    applyThreshold();
+
+    const maxDist = state.distanceStats.max;
+    document.getElementById('distThreshold').max = String(Math.max(maxDist, 0.001));
+    document.getElementById('distThreshold').step = String(Math.max(maxDist / 200, 0.0001));
+    document.getElementById('distThreshold').value = '0';
+
+    els.legendMin.textContent = state.distanceStats.min.toFixed(4);
+    els.legendMean.textContent = `mean ${state.distanceStats.mean.toFixed(4)}`;
+    els.legendMax.textContent = state.distanceStats.max.toFixed(4);
+
+    const m = state.metricSummary;
+    els.metrics.innerHTML = `
+      <h3>Approximate metrics</h3>
+      <div>Symmetric Chamfer<br><span class="value">${m.chamfer.toFixed(4)} m</span></div>
+      <div style="margin-top:10px">Source → Ref mean<br><span class="value">${m.sourceToRef.toFixed(4)} m</span></div>
+      <div style="margin-top:10px">Ref → Source mean<br><span class="value">${m.refToSource.toFixed(4)} m</span></div>
+      <div class="hint">${state.warnings.join(' ')} Sampled browser metrics only — use <code>ca evaluate</code> for gate-ready scores.</div>
+    `;
+
+    els.info.innerHTML =
+      `<b>${state.sourceName}</b> vs <b>${state.referenceName}</b><br>` +
+      `Source points: ${state.sourcePoints.length / 3 | 0}<br>` +
+      `Reference points: ${state.referencePoints.length / 3 | 0}<br>` +
+      `Display limit: ${MAX_DISPLAY_POINTS.toLocaleString()} / cloud`;
+
+    document.body.classList.add('compare-ready');
+    onResize();
+  }
+
+  function refreshCloudStyle() {
+    if (!sourceCloud || !referenceCloud) return;
+    sourceCloud.material.size = Number(document.getElementById('ptSize').value);
+    referenceCloud.visible = document.getElementById('showReference').checked;
+    referenceCloud.material.opacity = Number(document.getElementById('refOpacity').value);
+  }
+
+  function applyThreshold() {
+    if (!sourceCloud || !state.distances) return;
+    const threshold = Number(document.getElementById('distThreshold').value);
+    const positions = state.sourcePoints;
+    const filtered = [];
+    const filteredColors = [];
+    const colors = computeColors(positions, state.distances, state.distanceStats);
+    for (let i = 0; i < state.distances.length; i += 1) {
+      if (state.distances[i] <= threshold) continue;
+      filtered.push(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+      filteredColors.push(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]);
+    }
+    const geometry = sourceCloud.geometry;
+    geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(filtered), 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(filteredColors), 3));
+    geometry.computeBoundingSphere();
+    els.visibleCount.textContent =
+      `${(filtered.length / 3).toLocaleString()} / ${state.distances.length.toLocaleString()}`;
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (!renderer) return;
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  async function handleFile(kind, file) {
+    if (!file) return;
+    setStatus(`Loading ${file.name}…`, 'working');
+    const points = await loadPointCloudFile(file);
+    if (kind === 'source') {
+      state.sourceName = file.name;
+      state.sourceRawCount = points.length / 3;
+      els.sourceName.textContent = file.name;
+      els.sourceZone.classList.add('ready');
+    } else {
+      state.referenceName = file.name;
+      state.referenceRawCount = points.length / 3;
+      els.referenceName.textContent = file.name;
+      els.referenceZone.classList.add('ready');
+    }
+    if (kind === 'source') state._sourceRaw = points;
+    else state._referenceRaw = points;
+    setStatus(`${kind === 'source' ? 'Source' : 'Reference'} loaded: ${file.name}`);
+    if (state._sourceRaw && state._referenceRaw) {
+      await runCompare();
+    }
+  }
+
+  async function runCompare() {
+    setStatus('Computing browser-side distances…', 'working');
+    state.warnings = [];
+    const sourceSample = randomSample(state._sourceRaw, MAX_DISPLAY_POINTS);
+    const referenceSample = randomSample(state._referenceRaw, MAX_DISPLAY_POINTS);
+    if (sourceSample.sampled) {
+      state.warnings.push(`Source downsampled ${sourceSample.from.toLocaleString()} → ${sourceSample.to.toLocaleString()}.`);
+    }
+    if (referenceSample.sampled) {
+      state.warnings.push(`Reference downsampled ${referenceSample.from.toLocaleString()} → ${referenceSample.to.toLocaleString()}.`);
+    }
+    state.sourcePoints = sourceSample.points;
+    state.referencePoints = referenceSample.points;
+
+    const sourceToRef = meanNearestDistance(state.sourcePoints, state.referencePoints, METRIC_SAMPLE_SIZE);
+    const refToSource = meanNearestDistance(state.referencePoints, state.sourcePoints, METRIC_SAMPLE_SIZE);
+    state.metricSummary = {
+      sourceToRef,
+      refToSource,
+      chamfer: (sourceToRef + refToSource) / 2,
+    };
+
+    const distancePayload = computeDistances(state.sourcePoints, state.referencePoints);
+    state.distances = distancePayload.distances;
+    state.distanceStats = distancePayload.stats;
+    renderCompare();
+  }
+
+  function resetCompare() {
+    document.body.classList.remove('compare-ready');
+    state._sourceRaw = null;
+    state._referenceRaw = null;
+    state.sourceName = '';
+    state.referenceName = '';
+    els.sourceName.textContent = 'No file yet';
+    els.referenceName.textContent = 'No file yet';
+    els.sourceZone.classList.remove('ready');
+    els.referenceZone.classList.remove('ready');
+    els.sourceInput.value = '';
+    els.referenceInput.value = '';
+    setStatus('Drop a source and reference cloud to begin.');
+  }
+
+  function wireDropZone(zone, input, kind) {
+    zone.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      zone.classList.add('dragover');
+    });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', async (event) => {
+      event.preventDefault();
+      zone.classList.remove('dragover');
+      const file = event.dataTransfer?.files?.[0];
+      try {
+        await handleFile(kind, file);
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      }
+    });
+    input.addEventListener('change', async () => {
+      try {
+        await handleFile(kind, input.files?.[0]);
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      }
+    });
+  }
+
+  wireDropZone(els.sourceZone, els.sourceInput, 'source');
+  wireDropZone(els.referenceZone, els.referenceInput, 'reference');
+  </script>
+</body>
+</html>

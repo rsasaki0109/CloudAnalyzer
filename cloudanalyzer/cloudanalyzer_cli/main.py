@@ -1627,8 +1627,13 @@ def evaluate_cmd(
 
 @app.command("traj-evaluate")
 def traj_evaluate_cmd(
-    estimated: str = typer.Argument(..., help="Estimated trajectory (.csv/.tum/.txt)"),
+    estimated: str = typer.Argument(..., help="Estimated trajectory (.csv/.tum/.txt or .bag/.mcap/.db3)"),
     reference: str = typer.Argument(..., help="Reference trajectory (.csv/.tum/.txt)"),
+    topic: Optional[str] = typer.Option(
+        None,
+        "--topic",
+        help="ROS topic when estimated (or reference) input is a bag recording",
+    ),
     max_time_delta: float = typer.Option(
         0.05, "--max-time-delta",
         help="Max timestamp gap allowed for matching/interpolation (seconds)",
@@ -1677,6 +1682,7 @@ def traj_evaluate_cmd(
         result = evaluate_trajectory(
             estimated,
             reference,
+            topic=topic,
             max_time_delta=max_time_delta,
             align_origin=align_origin,
             align_rigid=align_rigid,

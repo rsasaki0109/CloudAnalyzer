@@ -99,11 +99,18 @@ def _parse_tum_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
     return np.asarray(timestamps, dtype=float), np.asarray(positions, dtype=float)
 
 
-def load_trajectory(path: str) -> dict:
-    """Load a trajectory from CSV or TUM-style text."""
+def load_trajectory(path: str, *, topic: str | None = None) -> dict:
+    """Load a trajectory from CSV, TUM-style text, or a ROS bag recording."""
     trajectory_path = Path(path)
     if not trajectory_path.exists():
         raise FileNotFoundError(path)
+
+    from ca.experiments.bag_ingest.common import is_bag_path
+
+    if is_bag_path(trajectory_path):
+        from ca.experiments.bag_ingest.trajectory import load_trajectory_from_bag
+
+        return load_trajectory_from_bag(str(trajectory_path), topic=topic)
 
     suffix = trajectory_path.suffix.lower()
     if suffix == ".csv":
@@ -345,6 +352,7 @@ def evaluate_trajectory(
     min_coverage: float | None = None,
     max_lateral: float | None = None,
     max_longitudinal: float | None = None,
+    topic: str | None = None,
 ) -> dict:
     """Evaluate a trajectory against a reference trajectory."""
     if max_time_delta <= 0:
@@ -352,8 +360,12 @@ def evaluate_trajectory(
     if min_coverage is not None and not 0.0 <= min_coverage <= 1.0:
         raise ValueError("min_coverage must be between 0 and 1")
 
-    estimated = load_trajectory(estimated_path)
-    reference = load_trajectory(reference_path)
+    from ca.experiments.bag_ingest.common import is_bag_path
+
+    estimated_topic = topic if is_bag_path(estimated_path) else None
+    reference_topic = topic if is_bag_path(reference_path) else None
+    estimated = load_trajectory(estimated_path, topic=estimated_topic)
+    reference = load_trajectory(reference_path, topic=reference_topic)
 
     matched_times, matched_estimated_positions, matched_reference_positions, matched_time_deltas = _interpolate_matches(
         estimated["timestamps"],

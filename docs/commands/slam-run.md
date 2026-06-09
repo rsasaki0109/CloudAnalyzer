@@ -58,6 +58,7 @@ ca slam-run <input> <output_dir> [--driver kiss-icp] [options]
 | `--voxel-size 0.5` | Local-map voxel grid (meters). Driver default kept if omitted. |
 | `--deskew` | Enable KISS-ICP motion-deskew. Default off because `.bin/.pcd` dumps don't typically carry per-point timestamps. |
 | `--max-frames N` | Cap how many frames are consumed. |
+| `--pointcloud-topic /points` | Required when `<input>` is a bag with multiple `sensor_msgs/PointCloud2` topics. |
 | `--frame-period 0.1` | Fallback per-frame time spacing in seconds. |
 | `--evaluate` | After driving the SLAM, score the result against `--reference-map` and `--reference-trajectory` using `ca run-evaluate`. |
 | `--format-json` | Print the summary to stdout as JSON (artifacts still land in `<output_dir>`). |
@@ -75,6 +76,19 @@ ca slam-run /data/kitti/00/velodyne runs/seq00 \
 
 Reads `*.bin` in lex order, drops the intensity column, and writes
 `runs/seq00/{trajectory.tum,map.ply,summary.json}`.
+
+### Drive from a ROS bag recording
+
+```bash
+pip install "cloudanalyzer[ros,slam]"
+
+ca slam-run run.mcap runs/from-bag \
+    --pointcloud-topic /points \
+    --driver kiss-icp \
+    --max-range 80
+```
+
+See [bag-ingest.md](bag-ingest.md) for the full rosbag workflow.
 
 ### Drive + evaluate against a reference map / trajectory
 

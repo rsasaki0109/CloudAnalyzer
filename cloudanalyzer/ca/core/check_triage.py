@@ -31,6 +31,7 @@ _DIMENSION_GATE_KEYS = {
     "id_switches": "max_id_switches",
     "psnr": "min_psnr",
     "ssim": "min_ssim",
+    "lpips": "max_lpips",
 }
 
 _DIMENSION_LABELS = {
@@ -57,6 +58,7 @@ _DIMENSION_LABELS = {
     "id_switches": "id_switches",
     "psnr": "psnr",
     "ssim": "ssim",
+    "lpips": "lpips",
 }
 
 
@@ -267,7 +269,7 @@ def _extract_gate_payload(check: dict[str, Any]) -> tuple[dict[str, float], tupl
     result = check.get("result")
     summary = check.get("summary", {})
     gate = None
-    if check["kind"] in {"artifact", "trajectory", "detection", "tracking", "image"} and isinstance(result, dict):
+    if check["kind"] in {"artifact", "trajectory", "detection", "tracking", "image", "rendered"} and isinstance(result, dict):
         gate = result.get("quality_gate")
     elif check["kind"] == "run" and isinstance(result, dict):
         gate = result.get("overall_quality_gate")
@@ -326,6 +328,19 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
         if summary.get("ssim_mean") is not None:
             metrics["ssim"] = float(summary["ssim_mean"])
         return metrics
+    if kind == "rendered":
+        rendered_metrics: dict[str, float] = {}
+        if summary.get("psnr_mean") is not None:
+            rendered_metrics["psnr"] = float(summary["psnr_mean"])
+        if summary.get("ssim_mean") is not None:
+            rendered_metrics["ssim"] = float(summary["ssim_mean"])
+        if summary.get("lpips_mean") is not None:
+            rendered_metrics["lpips"] = float(summary["lpips_mean"])
+        if summary.get("auc") is not None:
+            rendered_metrics["auc"] = float(summary["auc"])
+        if summary.get("chamfer_distance") is not None:
+            rendered_metrics["chamfer"] = float(summary["chamfer_distance"])
+        return rendered_metrics
     if kind == "loop_closure":
         metrics = {
             "map_auc_gain": float(summary["map_auc_gain"]),

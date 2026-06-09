@@ -132,6 +132,16 @@ checks:
     gate:
       min_psnr: 28.0
       min_ssim: 0.85
+  - id: splat-qa
+    kind: rendered
+    splat: outputs/scene.ply
+    cameras: outputs/transforms.json
+    reference_dir: baselines/references/seq00
+    reference_pointcloud: baselines/map_ref.pcd
+    gate:
+      min_psnr: 28.0
+      min_ssim: 0.85
+      max_chamfer: 0.15
 ```
 
 `ca check` writes per-check reports / JSON when `report_dir` and `json_dir` are configured, and it exits with code `1` when any gated check fails.
@@ -142,6 +152,12 @@ images by filename, computes per-pair PSNR / SSIM, and gates on the aggregate
 (PSNR = +∞) are excluded from the mean and trivially satisfy `min_psnr`; a gate
 fails if zero pairs match across the two directories. PSNR / SSIM means flow into
 `ca report-pr-comment` with up/down deltas against a baseline like every other kind.
+
+The `rendered` check kind wraps `ca rendered-evaluate`: it renders a 3DGS PLY at
+the configured camera poses (`transforms.json` or COLMAP text), scores PSNR /
+SSIM / optional LPIPS against a reference image directory, and optionally gates
+geometry QA when `reference_pointcloud` is set (`min_auc`, `max_chamfer`). Requires
+`pip install "cloudanalyzer[gs]"` on the runner.
 
 ### GitHub Actions
 

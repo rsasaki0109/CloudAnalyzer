@@ -78,6 +78,28 @@ ca rendered-evaluate benchmarks/3dgs/synthetic-room/gaussians_dense.ply \
 Rendering `gaussians_dense.ply` against its own reference views should
 return SSIM ≈ 1.0 (PSNR = +∞ on identical pairs).
 
+## CI integration
+
+Add a gated check to `cloudanalyzer.yaml` (requires `cloudanalyzer[gs]` on the runner):
+
+```yaml
+checks:
+  - id: splat-qa
+    kind: rendered
+    splat: outputs/scene.ply
+    cameras: outputs/transforms.json
+    reference_dir: baselines/renders/
+    reference_pointcloud: baselines/reference.pcd
+    metrics: psnr,ssim,lpips
+    gate:
+      min_psnr: 28.0
+      min_ssim: 0.85
+      max_chamfer: 0.15
+```
+
+Photometric and geometry means flow into `ca report-pr-comment` like other check kinds.
+See [../ci.md](../ci.md).
+
 ## Related
 
 - [`ca image-evaluate`](image-evaluate.md) — score two existing image directories

@@ -25,6 +25,7 @@ from ca.report import (
     save_detection_report,
     save_ground_report,
     save_image_report,
+    save_rendered_report,
     save_run_batch_report,
     save_run_report,
     save_tracking_report,
@@ -48,6 +49,7 @@ CheckKind = Literal[
     "ground",
     "loop_closure",
     "image",
+    "rendered",
 ]
 AlignmentMode = Literal["none", "origin", "rigid"]
 
@@ -72,6 +74,9 @@ _KIND_ALIASES: dict[str, CheckKind] = {
     "image": "image",
     "image_evaluate": "image",
     "photometric": "image",
+    "rendered": "rendered",
+    "rendered_evaluate": "rendered",
+    "3dgs": "rendered",
 }
 
 _VALID_GATE_KEYS = {
@@ -98,6 +103,7 @@ _VALID_GATE_KEYS = {
     "voxel_size",
     "min_psnr",
     "min_ssim",
+    "max_lpips",
 }
 
 _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
@@ -136,6 +142,7 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "require_posegraph_ok",
     },
     "image": {"min_psnr", "min_ssim"},
+    "rendered": {"min_psnr", "min_ssim", "max_lpips", "min_auc", "max_chamfer"},
 }
 
 
@@ -471,6 +478,63 @@ def _normalize_image_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict
     }
 
 
+def _normalize_rendered_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
+    """Normalize inputs for a 3DGS render-and-score check."""
+    splat_raw = raw_check.get("splat", raw_check.get("splat_path"))
+    cameras_raw = raw_check.get("cameras", raw_check.get("cameras_path"))
+    inputs = {
+        "splat": _resolve_path(
+            config_dir,
+            _require_string(splat_raw, "check.splat"),
+        ),
+        "cameras": _resolve_path(
+            config_dir,
+            _require_string(cameras_raw, "check.cameras"),
+        ),
+        "reference_dir": _resolve_path(
+            config_dir,
+            _require_string(raw_check.get("reference_dir"), "check.reference_dir"),
+        ),
+    }
+    optional_paths = {
+        "reference_pointcloud": raw_check.get(
+            "reference_pointcloud",
+            raw_check.get("reference", raw_check.get("reference_pcd")),
+        ),
+        "rendered_dir": raw_check.get("rendered_dir"),
+    }
+    for key, value in optional_paths.items():
+        _add_optional_resolved_input(inputs, key, value, config_dir, f"check.{key}")
+
+    metrics_raw = raw_check.get("metrics")
+    if metrics_raw is not None:
+        if isinstance(metrics_raw, list):
+            metrics = ",".join(str(item).strip() for item in metrics_raw if str(item).strip())
+        else:
+            metrics = _require_string(metrics_raw, "check.metrics")
+        inputs["metrics"] = metrics
+
+    for key in ("opacity_threshold", "geometry_opacity_threshold", "geometry_voxel", "max_pairs"):
+        value = raw_check.get(key)
+        if value is not None:
+            inputs[key] = str(value)
+
+    geometry_splat_method = raw_check.get("geometry_splat_method")
+    if geometry_splat_method is not None:
+        inputs["geometry_splat_method"] = _require_string(
+            geometry_splat_method,
+            "check.geometry_splat_method",
+        )
+    geometry_splat_samples = raw_check.get("geometry_splat_samples")
+    if geometry_splat_samples is not None:
+        inputs["geometry_splat_samples"] = str(int(geometry_splat_samples))
+
+    render_device = raw_check.get("render_device")
+    if render_device is not None:
+        inputs["render_device"] = _require_string(render_device, "check.render_device")
+    return inputs
+
+
 def _add_optional_resolved_input(
     inputs: dict[str, str],
     key: str,
@@ -570,6 +634,8 @@ def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Pa
         return _normalize_loop_closure_inputs(raw_check, config_dir)
     if kind == "image":
         return _normalize_image_inputs(raw_check, config_dir)
+    if kind == "rendered":
+        return _normalize_rendered_inputs(raw_check, config_dir)
     return _normalize_run_batch_inputs(raw_check, config_dir)
 
 
@@ -1397,6 +1463,164 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
     }
 
 
+def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
+    """Run a 3DGS render → photometric (+ optional geometry) QA check."""
+    from ca.core.rendered_evaluate import (
+        RenderedEvalRequest,
+        rendered_evaluate,
+        rendered_evaluate_to_dict,
+    )
+
+    metrics_raw = spec.inputs.get("metrics", "psnr,ssim")
+    metrics = tuple(item.strip() for item in metrics_raw.split(",") if item.strip()) or (
+        "psnr",
+        "ssim",
+    )
+
+    opacity_threshold = (
+        float(spec.inputs["opacity_threshold"])
+        if "opacity_threshold" in spec.inputs
+        else None
+    )
+    geometry_opacity_threshold = (
+        float(spec.inputs["geometry_opacity_threshold"])
+        if "geometry_opacity_threshold" in spec.inputs
+        else opacity_threshold
+    )
+    geometry_voxel = (
+        float(spec.inputs["geometry_voxel"]) if "geometry_voxel" in spec.inputs else None
+    )
+    max_pairs = int(spec.inputs["max_pairs"]) if "max_pairs" in spec.inputs else None
+    geometry_splat_method = spec.inputs.get("geometry_splat_method", "centers")
+    geometry_splat_samples = int(spec.inputs.get("geometry_splat_samples", "8"))
+    render_device = spec.inputs.get("render_device")
+
+    reference_pointcloud = spec.inputs.get("reference_pointcloud")
+    keep_rendered_dir = (
+        Path(spec.inputs["rendered_dir"]) if "rendered_dir" in spec.inputs else None
+    )
+
+    result = rendered_evaluate(
+        RenderedEvalRequest(
+            splat_path=Path(spec.inputs["splat"]),
+            cameras_path=Path(spec.inputs["cameras"]),
+            reference_dir=Path(spec.inputs["reference_dir"]),
+            metrics=metrics,
+            reference_pointcloud=(
+                Path(reference_pointcloud) if reference_pointcloud is not None else None
+            ),
+            opacity_threshold=opacity_threshold,
+            geometry_opacity_threshold=geometry_opacity_threshold,
+            geometry_voxel=geometry_voxel,
+            geometry_splat_method=geometry_splat_method,
+            geometry_splat_samples=geometry_splat_samples,
+            geometry_thresholds=list(spec.thresholds) if spec.thresholds else None,
+            render_device=render_device,
+            keep_rendered_dir=keep_rendered_dir,
+            max_pairs=max_pairs,
+        )
+    )
+    result_dict = rendered_evaluate_to_dict(result)
+
+    summary = cast(dict[str, Any], result.photometric["summary"])
+    psnr_mean = cast(float | None, summary.get("psnr_mean"))
+    ssim_mean = cast(float | None, summary.get("ssim_mean"))
+    lpips_mean = cast(float | None, summary.get("lpips_mean"))
+    pairs_evaluated = int(summary["pairs_evaluated"])
+
+    min_psnr = cast(float | None, spec.gate.get("min_psnr"))
+    min_ssim = cast(float | None, spec.gate.get("min_ssim"))
+    max_lpips = cast(float | None, spec.gate.get("max_lpips"))
+    min_auc = cast(float | None, spec.gate.get("min_auc"))
+    max_chamfer = cast(float | None, spec.gate.get("max_chamfer"))
+    has_photometric_gate = (
+        min_psnr is not None or min_ssim is not None or max_lpips is not None
+    )
+    has_geometry_gate = min_auc is not None or max_chamfer is not None
+    has_gate = has_photometric_gate or has_geometry_gate
+
+    gate_reasons: list[str] = []
+    if has_photometric_gate and pairs_evaluated == 0:
+        gate_reasons.append(
+            "0 pairs evaluated (no rendered/reference filename matches)"
+        )
+    else:
+        if min_psnr is not None and psnr_mean is not None and psnr_mean < min_psnr:
+            gate_reasons.append(
+                f"PSNR mean {psnr_mean:.4f} dB < min_psnr {min_psnr:.4f} dB"
+            )
+        if min_ssim is not None and ssim_mean is not None and ssim_mean < min_ssim:
+            gate_reasons.append(
+                f"SSIM mean {ssim_mean:.4f} < min_ssim {min_ssim:.4f}"
+            )
+        if max_lpips is not None and lpips_mean is not None and lpips_mean > max_lpips:
+            gate_reasons.append(
+                f"LPIPS mean {lpips_mean:.4f} > max_lpips {max_lpips:.4f}"
+            )
+
+    geometry_summary: dict[str, Any] | None = None
+    if result.geometry is not None:
+        geometry_summary = {
+            "auc": float(result.geometry["auc"]),
+            "chamfer_distance": float(result.geometry["chamfer_distance"]),
+        }
+        geom_gate = _artifact_quality_gate(
+            geometry_summary["auc"],
+            geometry_summary["chamfer_distance"],
+            min_auc=min_auc,
+            max_chamfer=max_chamfer,
+        )
+        if geom_gate is not None:
+            gate_reasons.extend(cast(list[str], geom_gate["reasons"]))
+    elif has_geometry_gate:
+        gate_reasons.append(
+            "geometry gate requested but reference_pointcloud was not configured"
+        )
+
+    quality_gate = (
+        {
+            "passed": not gate_reasons,
+            "min_psnr": min_psnr,
+            "min_ssim": min_ssim,
+            "max_lpips": max_lpips,
+            "min_auc": min_auc,
+            "max_chamfer": max_chamfer,
+            "reasons": gate_reasons,
+        }
+        if has_gate
+        else None
+    )
+    result_dict["quality_gate"] = quality_gate
+
+    if spec.outputs.report_path:
+        save_rendered_report(result_dict, spec.outputs.report_path)
+    if spec.outputs.json_path:
+        _write_json(spec.outputs.json_path, result_dict)
+
+    check_summary: dict[str, Any] = {
+        "psnr_mean": psnr_mean,
+        "ssim_mean": ssim_mean,
+        "lpips_mean": lpips_mean,
+        "pairs_evaluated": pairs_evaluated,
+        "pairs_missing_in_reference": int(summary["pairs_missing_in_reference"]),
+        "pairs_size_mismatch": int(summary["pairs_size_mismatch"]),
+        "passed": None if quality_gate is None else quality_gate["passed"],
+    }
+    if geometry_summary is not None:
+        check_summary["auc"] = geometry_summary["auc"]
+        check_summary["chamfer_distance"] = geometry_summary["chamfer_distance"]
+
+    return {
+        "id": spec.check_id,
+        "kind": spec.kind,
+        "passed": None if quality_gate is None else quality_gate["passed"],
+        "report_path": spec.outputs.report_path,
+        "json_path": spec.outputs.json_path,
+        "summary": check_summary,
+        "result": result_dict,
+    }
+
+
 def _run_check(spec: CheckSpec) -> dict[str, Any]:
     """Dispatch one normalized check spec."""
     if spec.kind == "artifact":
@@ -1419,6 +1643,8 @@ def _run_check(spec: CheckSpec) -> dict[str, Any]:
         return _run_loop_closure_check(spec)
     if spec.kind == "image":
         return _run_image_check(spec)
+    if spec.kind == "rendered":
+        return _run_rendered_check(spec)
     return _run_run_batch_check(spec)
 
 

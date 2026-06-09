@@ -249,6 +249,8 @@ ca rendered-evaluate scene.ply references/ \
 
 Bundled demo: `benchmarks/3dgs/synthetic-room/`. Details: **[docs/commands/rendered-evaluate.md](docs/commands/rendered-evaluate.md)** · **[live demo](https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/)**.
 
+Wire into CI with `kind: rendered` in `cloudanalyzer.yaml` — see [ci.md](docs/ci.md).
+
 ## Metrics
 
 | Metric | Meaning |

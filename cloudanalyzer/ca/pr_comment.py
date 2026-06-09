@@ -95,6 +95,7 @@ _RUN_METRIC_KEYS = (
     "coverage_ratio",
 )
 _IMAGE_METRIC_KEYS = ("psnr_mean", "ssim_mean")
+_RENDERED_METRIC_KEYS = ("psnr_mean", "ssim_mean", "lpips_mean", "auc", "chamfer_distance")
 
 
 _METRIC_LABELS = {
@@ -118,6 +119,7 @@ _METRIC_LABELS = {
     "matched_poses": "Matched poses",
     "psnr_mean": "PSNR",
     "ssim_mean": "SSIM",
+    "lpips_mean": "LPIPS",
 }
 
 
@@ -128,6 +130,8 @@ def _check_metric_keys(kind: str) -> tuple[str, ...]:
         return _RUN_METRIC_KEYS
     if kind == "image":
         return _IMAGE_METRIC_KEYS
+    if kind == "rendered":
+        return _RENDERED_METRIC_KEYS
     return _ARTIFACT_METRIC_KEYS
 
 

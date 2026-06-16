@@ -1652,6 +1652,7 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
 
 def _run_check(spec: CheckSpec) -> dict[str, Any]:
     """Dispatch one normalized check spec."""
+    result: dict[str, Any]
     if spec.severity in {"skip", "not_applicable"}:
         result = {
             "quality_gate": {

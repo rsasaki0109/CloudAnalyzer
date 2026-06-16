@@ -15,6 +15,7 @@ from ca.core import (
     run_check_suite,
     summarize_baseline_evolution,
 )
+from ca.core.gate import GateMode
 from ca.baseline_history import discover_history, list_baselines, rotate_history, save_baseline
 from ca.detection import evaluate_detection
 from ca.ground_evaluate import evaluate_ground_segmentation
@@ -3329,7 +3330,7 @@ def check_cmd(
         typer.echo("Error: --warn-only and --strict are mutually exclusive", err=True)
         raise typer.Exit(code=2)
 
-    gate_mode = "strict" if strict else "warn_only" if warn_only else "default"
+    gate_mode: GateMode = "strict" if strict else "warn_only" if warn_only else "default"
 
     try:
         suite = load_check_suite(config_path)

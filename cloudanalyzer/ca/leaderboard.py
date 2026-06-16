@@ -59,6 +59,18 @@ def _float_or_none(value: Any) -> float | None:
     return None
 
 
+def _mapping_or_empty(value: Any) -> Mapping[str, Any]:
+    if isinstance(value, Mapping):
+        return value
+    return {}
+
+
+def _list_or_empty(value: Any) -> list[Any]:
+    if isinstance(value, list):
+        return value
+    return []
+
+
 def _gate_status(metrics: Mapping[str, Any]) -> tuple[str, bool | None]:
     gate = metrics.get("overall_quality_gate")
     if not isinstance(gate, Mapping):
@@ -109,37 +121,17 @@ def _extract_row(
         if (bundle_dir / "manifest.lock.yaml").is_file()
         else {}
     )
-    lock_suite = (
-        manifest_lock.get("suite")
-        if isinstance(manifest_lock.get("suite"), Mapping)
-        else {}
-    )
+    lock_suite = _mapping_or_empty(manifest_lock.get("suite"))
 
-    benchmark = metrics.get("benchmark") if isinstance(metrics.get("benchmark"), Mapping) else {}
-    map_metrics = metrics.get("map") if isinstance(metrics.get("map"), Mapping) else {}
-    traj_metrics = (
-        metrics.get("trajectory")
-        if isinstance(metrics.get("trajectory"), Mapping)
-        else {}
-    )
-    ate = traj_metrics.get("ate") if isinstance(traj_metrics.get("ate"), Mapping) else {}
-    rpe = (
-        traj_metrics.get("rpe_translation")
-        if isinstance(traj_metrics.get("rpe_translation"), Mapping)
-        else {}
-    )
-    drift = traj_metrics.get("drift") if isinstance(traj_metrics.get("drift"), Mapping) else {}
-    matching = (
-        traj_metrics.get("matching")
-        if isinstance(traj_metrics.get("matching"), Mapping)
-        else {}
-    )
+    benchmark = _mapping_or_empty(metrics.get("benchmark"))
+    map_metrics = _mapping_or_empty(metrics.get("map"))
+    traj_metrics = _mapping_or_empty(metrics.get("trajectory"))
+    ate = _mapping_or_empty(traj_metrics.get("ate"))
+    rpe = _mapping_or_empty(traj_metrics.get("rpe_translation"))
+    drift = _mapping_or_empty(traj_metrics.get("drift"))
+    matching = _mapping_or_empty(traj_metrics.get("matching"))
 
-    lock_inputs = (
-        manifest_lock.get("inputs")
-        if isinstance(manifest_lock.get("inputs"), Mapping)
-        else {}
-    )
+    lock_inputs = _mapping_or_empty(manifest_lock.get("inputs"))
     gate_status, gate_passed = _gate_status(metrics)
     rel_run = Path("runs") / run_id
     row_method = (
@@ -283,16 +275,16 @@ def render_leaderboard_html(payload: Mapping[str, Any]) -> str:
     """Render a small static HTML table for a leaderboard payload."""
     title = html.escape(str(payload.get("title", "CloudAnalyzer Leaderboard")))
     generated_at = html.escape(str(payload.get("generated_at", "")))
-    rows = payload.get("rows") if isinstance(payload.get("rows"), list) else []
-    warnings = payload.get("warnings") if isinstance(payload.get("warnings"), list) else []
-    errors = payload.get("errors") if isinstance(payload.get("errors"), list) else []
+    rows = _list_or_empty(payload.get("rows"))
+    warnings = _list_or_empty(payload.get("warnings"))
+    errors = _list_or_empty(payload.get("errors"))
 
     row_html: list[str] = []
     for row in rows:
         if not isinstance(row, Mapping):
             continue
-        metrics = row.get("metrics") if isinstance(row.get("metrics"), Mapping) else {}
-        links = row.get("links") if isinstance(row.get("links"), Mapping) else {}
+        metrics = _mapping_or_empty(row.get("metrics"))
+        links = _mapping_or_empty(row.get("links"))
         status = str(row.get("gate_status", "unknown"))
         status_class = "pass" if status == "pass" else "fail" if status == "fail" else "warn"
         row_html.append(

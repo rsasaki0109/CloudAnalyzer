@@ -82,9 +82,17 @@ def summarize_gate_policy(
     if mode == "warn_only":
         blocking_failed_ids: list[str] = []
     elif mode == "strict":
+        strict_statuses: tuple[GateStatus, ...] = (
+            "fail",
+            "warn",
+            "soft_fail",
+            "skip",
+            "not_applicable",
+            "info",
+        )
         blocking_failed_ids = [
             check_id
-            for status in ("fail", "warn", "soft_fail", "skip", "not_applicable", "info")
+            for status in strict_statuses
             for check_id in status_ids[status]
         ]
     else:

@@ -424,7 +424,7 @@ def write_benchmark_report_bundle(
     summary_path.write_text(build_pr_comment(portable_result), encoding="utf-8")
 
     report_path = out / "report.html"
-    save_run_report(portable_result, report_path)
+    save_run_report(portable_result, str(report_path))
     report_assets = sorted(
         path.name
         for path in out.iterdir()

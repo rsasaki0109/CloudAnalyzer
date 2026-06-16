@@ -18,7 +18,9 @@ PUBLIC_TEXT_EXTENSIONS = {
     ".yml",
 }
 LOCAL_PATH_PATTERNS = (
-    "",
+    REPO_ROOT.as_posix(),
+    "/home/runner/work/CloudAnalyzer/CloudAnalyzer",
+    "$HOME/workspace/CloudAnalyzer",
     "$HOME/",
     "old_~2026/CloudAnalyzer",
 )

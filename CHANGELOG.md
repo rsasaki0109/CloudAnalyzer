@@ -8,6 +8,33 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Benchmark report bundle golden path** — `ca benchmark eval --out <dir>`
+  now writes a reproducible report bundle for CI artifacts and static
+  publishing: `metrics.json`, `summary.md`, `report.html`,
+  `manifest.lock.yaml`, and `provenance.json`. The bundle records the
+  suite, gate, input hashes, CloudAnalyzer version, and portable paths so
+  a SLAM/LIO candidate map + trajectory can be reviewed without relying on
+  machine-local state. The README now leads with this "dataset/reference +
+  candidate outputs -> metrics/report/gate" workflow, and
+  `.github/workflows/slam-benchmark-smoke.yml` dogfoods the clone-after-install
+  smoke path.
+- **Static benchmark leaderboard builder** — `ca leaderboard build
+  <bundle>... --out <site>` turns one or more benchmark report bundles into
+  a self-contained `results.json` + `index.html` site. Rows include dataset,
+  sequence, method, gate result, CloudAnalyzer version, report links, artifact
+  hashes, and metric values; incomparable rows are surfaced as warnings rather
+  than silently mixed.
+- **Unified gate severity policy** — config-driven `ca check` now shares
+  a stable gate summary schema across artifact, trajectory, run,
+  loop-closure, image, and rendered checks. Check specs can use
+  `severity: fail | warn | soft_fail | skip | not_applicable`, and the CLI
+  exposes `--warn-only` and `--strict` with consistent exit-code behavior for
+  CI.
+- **SLAM driver conformance helper** — plugin authors can call
+  `run_slam_driver_conformance(MyDriver)` from `ca.testing.conformance` to
+  validate metadata, deterministic output paths, trajectory/map shapes,
+  stdout/stderr discipline, failure behavior, and writer compatibility before
+  publishing a driver adapter.
 - **`image` config check kind** (Phase 31) — wires `ca image-evaluate`
   into the config-driven QA layer so photometric quality can ride the
   same regression gate as every other artifact. A `kind: image` check
@@ -64,9 +91,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Public demo/report artifacts now scrub machine-local absolute paths and
+  escape embedded copy-command strings consistently, making checked-in HTML
+  reports safer to publish and deterministic in CI.
+- The synthetic-room 3DGS fixture check in the main `Test` workflow now uses
+  `--skip-renders`, keeping CPU GitHub runners on the geometry fixture path
+  while the rendered self-QA workflow continues to dogfood `kind: rendered`
+  with checked-in reference PNGs.
 - `ca slam-run --driver` help text now lists the three built-in drivers
   and points at the entry-point group; the validated choice set is
   computed dynamically from the registry rather than hard-coded.
+
+### Fixed
+
+- Avoided a circular import on script entry points that imported
+  `ca.batch -> ca.info -> ca.core -> ca.core.checks -> ca.batch` by loading
+  `get_info` lazily inside `batch_info`.
+- Fixed `.github/workflows/leaderboard.yml` parsing by replacing a YAML-hostile
+  shell heredoc commit message with normal `git commit -m ... -m ...` flags.
 
 ## [0.4.0] - 2026-05-24
 

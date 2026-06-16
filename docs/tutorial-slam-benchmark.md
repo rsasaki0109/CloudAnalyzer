@@ -168,6 +168,18 @@ python scripts/prepare_kitti_mini.py --help
 python scripts/prepare_newer_college_mini.py --help
 ```
 
+The static leaderboard at `docs/leaderboard/` is generated from the same kind of
+benchmark output bundle.
+
+For a small local leaderboard from finished bundles:
+
+```bash
+ca leaderboard build qa/*__synthetic-figure8 --out site/leaderboard
+```
+
+This writes `site/leaderboard/results.json`, `site/leaderboard/index.html`, and
+copies each input bundle under `site/leaderboard/runs/`.
+
 ## What Not To Put Here
 
 - Do not add a new SLAM estimator to CloudAnalyzer core.

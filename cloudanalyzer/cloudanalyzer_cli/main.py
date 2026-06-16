@@ -81,6 +81,7 @@ from ca.history import (
     render_history_json,
     render_history_markdown,
 )
+from ca.leaderboard import build_leaderboard_from_bundles
 from ca.geometry import (
     DEFAULT_MESH_SAMPLES,
     DEFAULT_SPLAT_SAMPLES,
@@ -2622,6 +2623,14 @@ bundle_app = typer.Typer(
 app.add_typer(bundle_app, name="bundle")
 
 
+leaderboard_app = typer.Typer(
+    name="leaderboard",
+    help="Build static leaderboard sites from benchmark report bundles.",
+    no_args_is_help=True,
+)
+app.add_typer(leaderboard_app, name="leaderboard")
+
+
 def _parse_notes(values: Optional[List[str]]) -> dict[str, str]:
     notes: dict[str, str] = {}
     if not values:
@@ -2640,6 +2649,44 @@ def _parse_notes(values: Optional[List[str]]) -> dict[str, str]:
             raise typer.Exit(code=1)
         notes[key] = value.strip()
     return notes
+
+
+@leaderboard_app.command("build")
+def leaderboard_build_cmd(
+    bundle_dirs: List[str] = typer.Argument(
+        ...,
+        help="One or more `ca benchmark eval --out` report bundle directories",
+    ),
+    out: str = typer.Option(
+        ...,
+        "--out",
+        help="Output directory for static leaderboard site",
+    ),
+    title: str = typer.Option(
+        "CloudAnalyzer Benchmark Leaderboard",
+        "--title",
+        help="Leaderboard title written into results.json and index.html",
+    ),
+    format_json: bool = typer.Option(False, "--format-json", help="Print results JSON to stdout"),
+) -> None:
+    """Build a static leaderboard from benchmark report bundle directories."""
+    try:
+        payload = build_leaderboard_from_bundles(bundle_dirs, out, title=title)
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+
+    if format_json:
+        typer.echo(json.dumps(payload, indent=2))
+    else:
+        typer.echo(f"Leaderboard: {out}")
+        typer.echo(f"Rows: {len(payload['rows'])}")
+        typer.echo(f"Warnings: {len(payload['warnings'])}")
+        typer.echo(f"Errors: {len(payload['errors'])}")
+        typer.echo(f"HTML: {Path(out) / 'index.html'}")
+        typer.echo(f"JSON: {Path(out) / 'results.json'}")
+
+    if payload["errors"]:
+        raise typer.Exit(code=1)
 
 
 @bundle_app.command("pack")

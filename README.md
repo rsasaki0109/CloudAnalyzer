@@ -471,7 +471,7 @@ Full per-command reference lives under **[docs/commands/](docs/commands/)**. Qui
 | Cross-representation | `geometry-evaluate`, `image-evaluate`, `rendered-evaluate` | [geometry-evaluate.md](docs/commands/geometry-evaluate.md), [image-evaluate.md](docs/commands/image-evaluate.md), [rendered-evaluate.md](docs/commands/rendered-evaluate.md) |
 | Benchmark suites | `benchmark info`, `benchmark init`, `benchmark eval` | [benchmark.md](docs/commands/benchmark.md) |
 | Config-driven gate | `check`, `init-check`, `baseline-save/list/decision` | [ci.md](docs/ci.md) |
-| Bundles & history | `bundle pack/show/unpack/diff`, `history` | [bundle.md](docs/commands/bundle.md), [history.md](docs/commands/history.md) |
+| Bundles, leaderboard & history | `bundle pack/show/unpack/diff`, `leaderboard build`, `history` | [bundle.md](docs/commands/bundle.md), [leaderboard.md](docs/commands/leaderboard.md), [history.md](docs/commands/history.md) |
 | PR comment | `report-pr-comment` | [report-pr-comment.md](docs/commands/report-pr-comment.md) |
 | Processing (all `--evaluate`-able) | `downsample`, `filter`, `sample`, `merge`, `align`, `split`, `crop`, `convert`, `normals`, `mme` | [processing.md](docs/commands/processing.md) |
 | Visualization | `web`, `web-export`, `view`, `density-map`, `heatmap3d` | [visualization.md](docs/commands/visualization.md) |

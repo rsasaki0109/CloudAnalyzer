@@ -163,6 +163,17 @@ def _orbit_c2w(angle_rad: float, radius: float = 8.0, height: float = 2.5) -> np
     return c2w
 
 
+def _round_json_floats(value):
+    if isinstance(value, float):
+        rounded = round(value, 12)
+        return 0.0 if abs(rounded) == 0.0 else rounded
+    if isinstance(value, list):
+        return [_round_json_floats(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _round_json_floats(item) for key, item in value.items()}
+    return value
+
+
 def _write_transforms_json(output_dir: Path, n_views: int = 8) -> None:
     fl_x = 0.5 * _RENDER_WIDTH / math.tan(0.5 * _RENDER_FOV_X)
     frames = []
@@ -185,7 +196,7 @@ def _write_transforms_json(output_dir: Path, n_views: int = 8) -> None:
         "frames": frames,
     }
     (output_dir / "transforms.json").write_text(
-        json.dumps(payload, indent=2) + "\n",
+        json.dumps(_round_json_floats(payload), indent=2) + "\n",
         encoding="utf-8",
     )
 

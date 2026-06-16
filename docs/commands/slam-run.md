@@ -246,6 +246,27 @@ The registry also accepts in-process registration via
 `ca.core.slam_run.register_driver(name, factory)` — useful for
 unit-testing your driver without going through `pip install`.
 
+For plugin CI, use the conformance helper shipped by CloudAnalyzer:
+
+```python
+from ca.testing.conformance import run_slam_driver_conformance
+from my_slam_pkg.my_slam_driver import MySlamDriver
+
+
+def test_my_driver_contract(tmp_path):
+    run_slam_driver_conformance(MySlamDriver, tmp_path=tmp_path)
+```
+
+The helper creates a tiny three-frame point-cloud fixture and verifies:
+
+- `SlamRunDriver` Protocol compatibility
+- `SlamRunResult` shapes and finite values
+- homogeneous pose matrices with valid rotations
+- non-empty map output and TUM / PLY artifact writer compatibility
+- deterministic poses, timestamps, and map points on the fixture
+- non-empty driver metadata for provenance
+- no stdout/stderr printing from the plugin
+
 ### Canonical working example
 
 The repo ships a complete worked example under

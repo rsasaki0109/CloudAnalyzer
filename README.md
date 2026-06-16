@@ -478,6 +478,10 @@ Full per-command reference lives under **[docs/commands/](docs/commands/)**. Qui
 | Info | `info`, `stats`, `batch` | [analysis.md](docs/commands/analysis.md) |
 | ROS bag input | `info`, `traj-evaluate`, `slam-run` on `.bag`/`.mcap` | [bag-ingest.md](docs/commands/bag-ingest.md) |
 
+Plugin authors: [SLAM Driver Plugin Contract](docs/driver-plugin.md) documents
+the `cloudanalyzer.slam_run_drivers` entry point and
+`run_slam_driver_conformance()` helper.
+
 Common patterns:
 
 ```bash

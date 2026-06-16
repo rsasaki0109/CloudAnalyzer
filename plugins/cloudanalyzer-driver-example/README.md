@@ -52,6 +52,24 @@ entry-points under `cloudanalyzer.slam_run_drivers`, imports
 See [`docs/commands/slam-run.md`][cli] in the main repo for the full
 plugin authoring guide.
 
+## Conformance test
+
+Plugin packages should add a small pytest that uses CloudAnalyzer's
+conformance helper:
+
+```python
+from ca.testing.conformance import run_slam_driver_conformance
+from cloudanalyzer_driver_example.driver import Open3DICPSlamDriver
+
+
+def test_driver_contract(tmp_path):
+    run_slam_driver_conformance(Open3DICPSlamDriver, tmp_path=tmp_path)
+```
+
+The helper runs a tiny synthetic scan sequence, validates the
+`SlamRunResult` contract, checks TUM / PLY artifact writing, rejects plugin
+`print()` output, and runs the driver twice to catch nondeterministic output.
+
 ## License
 
 MIT. Same as the rest of the CloudAnalyzer repository.

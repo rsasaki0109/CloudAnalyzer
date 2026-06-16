@@ -5,7 +5,6 @@ from pathlib import Path
 
 from ca.evaluate import evaluate
 from ca.io import SUPPORTED_EXTENSIONS, load_point_cloud
-from ca.info import get_info
 from ca.log import logger
 from ca.pareto import mark_quality_size_recommended
 from ca.trajectory import SUPPORTED_TRAJECTORY_EXTENSIONS, evaluate_trajectory
@@ -216,6 +215,8 @@ def batch_info(directory: str, recursive: bool = False) -> list[dict]:
     Returns:
         List of info dicts for each file found.
     """
+    from ca.info import get_info
+
     files = _find_point_cloud_files(directory, recursive=recursive)
     if not files:
         return []

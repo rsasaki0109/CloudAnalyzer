@@ -3,8 +3,8 @@
   "frames_processed": 200,
   "runtime_s": 1.240838075056672,
   "map_points": 2787,
-  "trajectory_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/small-gicp__synthetic-figure8/trajectory.tum",
-  "map_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/small-gicp__synthetic-figure8/map.ply",
+  "trajectory_path": "docs/leaderboard/runs/small-gicp__synthetic-figure8/trajectory.tum",
+  "map_path": "docs/leaderboard/runs/small-gicp__synthetic-figure8/map.ply",
   "driver_metadata": {
     "small_gicp": {
       "registration_type": "VGICP",

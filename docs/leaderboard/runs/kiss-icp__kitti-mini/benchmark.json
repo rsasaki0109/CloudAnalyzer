@@ -1,7 +1,7 @@
 {
   "map": {
-    "source_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply",
-    "target_path": "old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/map.pcd",
+    "source_path": "docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply",
+    "target_path": "benchmarks/slam/kitti-mini/data/sequence_00/map.pcd",
     "source_points": 2840155,
     "target_points": 3013071,
     "chamfer_distance": 133.5017693081317,
@@ -76,8 +76,8 @@
     }
   },
   "trajectory": {
-    "estimated_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum",
-    "reference_path": "old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum",
+    "estimated_path": "docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum",
+    "reference_path": "benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum",
     "alignment": {
       "mode": "none",
       "translation": [
@@ -836,23 +836,23 @@
     ]
   },
   "inspect": {
-    "run_evaluate": "ca run-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/map.pcd' 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum' --min-auc 0.85 --max-chamfer 0.5 --max-ate 5.0 --max-rpe 1.0 --max-drift 5.0 --min-coverage 0.8 --report map_and_trajectory_run_report.html",
-    "run_web": "ca web 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/map.pcd' --heatmap --trajectory 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' --trajectory-reference 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum'",
+    "run_evaluate": "ca run-evaluate 'docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply' 'benchmarks/slam/kitti-mini/data/sequence_00/map.pcd' 'docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' 'benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum' --min-auc 0.85 --max-chamfer 0.5 --max-ate 5.0 --max-rpe 1.0 --max-drift 5.0 --min-coverage 0.8 --report map_and_trajectory_run_report.html",
+    "run_web": "ca web 'docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply' 'benchmarks/slam/kitti-mini/data/sequence_00/map.pcd' --heatmap --trajectory 'docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' --trajectory-reference 'benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum'",
     "map": {
-      "web_heatmap": "ca web 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/map.pcd' --heatmap",
-      "heatmap3d": "ca heatmap3d 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/map.pcd' -o map_vs_map_heatmap.png"
+      "web_heatmap": "ca web 'docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply' 'benchmarks/slam/kitti-mini/data/sequence_00/map.pcd' --heatmap",
+      "heatmap3d": "ca heatmap3d 'docs/leaderboard/runs/kiss-icp__kitti-mini/map.ply' 'benchmarks/slam/kitti-mini/data/sequence_00/map.pcd' -o map_vs_map_heatmap.png"
     },
     "trajectory": {
-      "traj_evaluate": "ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum' --report trajectory_vs_trajectory_trajectory_report.html",
-      "traj_evaluate_aligned": "ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum' --align-origin --report trajectory_vs_trajectory_trajectory_aligned_report.html",
-      "traj_evaluate_rigid": "ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum' --align-rigid --report trajectory_vs_trajectory_trajectory_rigid_report.html"
+      "traj_evaluate": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' 'benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum' --report trajectory_vs_trajectory_trajectory_report.html",
+      "traj_evaluate_aligned": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' 'benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum' --align-origin --report trajectory_vs_trajectory_trajectory_aligned_report.html",
+      "traj_evaluate_rigid": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__kitti-mini/trajectory.tum' 'benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum' --align-rigid --report trajectory_vs_trajectory_trajectory_rigid_report.html"
     }
   },
   "benchmark": {
     "suite": "kitti-mini",
     "version": 1,
     "sequence": "sequence_00",
-    "source_path": "old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/suite.yaml",
+    "source_path": "benchmarks/slam/kitti-mini/suite.yaml",
     "gate": {
       "min_auc": 0.85,
       "max_chamfer": 0.5,
@@ -862,8 +862,8 @@
       "min_coverage": 0.8
     },
     "reference": {
-      "map": "old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/map.pcd",
-      "trajectory": "old_~2026/CloudAnalyzer/benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum"
+      "map": "benchmarks/slam/kitti-mini/data/sequence_00/map.pcd",
+      "trajectory": "benchmarks/slam/kitti-mini/data/sequence_00/trajectory.tum"
     }
   }
 }

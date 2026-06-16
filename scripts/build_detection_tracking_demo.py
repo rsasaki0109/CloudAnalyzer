@@ -21,6 +21,7 @@ if str(PACKAGE_ROOT) not in sys.path:
 from ca.detection import evaluate_detection
 from ca.tracking import evaluate_tracking
 from ca.report import save_detection_report, save_tracking_report
+from ca.report_paths import make_paths_portable
 
 OBJECT_EVAL_DIR = REPO_ROOT / "demo_assets" / "public" / "rellis3d-frame-000001" / "object_eval"
 
@@ -250,6 +251,11 @@ def main() -> None:
         iou_threshold=0.5,
         min_mota=0.5, min_recall=0.5, max_id_switches=5,
     )
+
+    det_good = make_paths_portable(det_good, roots=(REPO_ROOT,))
+    det_regressed = make_paths_portable(det_regressed, roots=(REPO_ROOT,))
+    trk_good = make_paths_portable(trk_good, roots=(REPO_ROOT,))
+    trk_regressed = make_paths_portable(trk_regressed, roots=(REPO_ROOT,))
 
     # Generate individual HTML reports
     print("Generating reports...")

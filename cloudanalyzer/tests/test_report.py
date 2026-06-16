@@ -3,6 +3,7 @@
 import json
 
 from ca.report import (
+    _html_command_block,
     make_batch_html,
     make_batch_markdown,
     make_batch_summary,
@@ -114,6 +115,13 @@ SAMPLE_GROUND_RESULT = {
         "reasons": [],
     },
 }
+
+
+def test_html_command_block_escapes_shell_quotes_inside_onclick():
+    html = _html_command_block("ca web 'docs/map.ply' 'benchmarks/ref.pcd'")
+
+    assert "<code>ca web &#x27;docs/map.ply&#x27; &#x27;benchmarks/ref.pcd&#x27;</code>" in html
+    assert "onclick='copyCommand(&quot;ca web &#x27;docs/map.ply&#x27; &#x27;benchmarks/ref.pcd&#x27;&quot;, this)'" in html
 
 
 class TestMakeJson:

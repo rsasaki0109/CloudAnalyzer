@@ -1,7 +1,7 @@
 {
   "detection_good": {
-    "estimated_path": "CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/detection_estimated_good.json",
-    "reference_path": "CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/detection_reference.json",
+    "estimated_path": "demo_assets/public/rellis3d-frame-000001/object_eval/detection_estimated_good.json",
+    "reference_path": "demo_assets/public/rellis3d-frame-000001/object_eval/detection_reference.json",
     "matching_policy": {
       "geometry": "axis_aligned_3d_boxes",
       "class_aware": true,
@@ -247,8 +247,8 @@
     }
   },
   "detection_regressed": {
-    "estimated_path": "CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/detection_estimated_regressed.json",
-    "reference_path": "CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/detection_reference.json",
+    "estimated_path": "demo_assets/public/rellis3d-frame-000001/object_eval/detection_estimated_regressed.json",
+    "reference_path": "demo_assets/public/rellis3d-frame-000001/object_eval/detection_reference.json",
     "matching_policy": {
       "geometry": "axis_aligned_3d_boxes",
       "class_aware": true,
@@ -549,8 +549,8 @@
     }
   },
   "tracking_good": {
-    "estimated_path": "CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_estimated_good.json",
-    "reference_path": "CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_reference.json",
+    "estimated_path": "demo_assets/public/rellis3d-frame-000001/object_eval/tracking_estimated_good.json",
+    "reference_path": "demo_assets/public/rellis3d-frame-000001/object_eval/tracking_reference.json",
     "matching_policy": {
       "geometry": "axis_aligned_3d_boxes",
       "class_aware": true,
@@ -578,7 +578,7 @@
       "track_fragmentations": 0,
       "mostly_tracked_ratio": 1.0,
       "mean_iou": 0.9641092533881316,
-      "mean_center_distance": 0.02595820265056033
+      "mean_center_distance": 0.025958202650560334
     },
     "per_class": {
       "bush": {
@@ -622,7 +622,7 @@
         "reference_track_id": "gt-bush",
         "estimated_track_id": "pred-bush",
         "iou": 0.9895200014217275,
-        "center_distance": 0.03605551275463912
+        "center_distance": 0.03605551275463913
       },
       {
         "frame_id": "000001",
@@ -698,8 +698,8 @@
     }
   },
   "tracking_regressed": {
-    "estimated_path": "CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_estimated_regressed.json",
-    "reference_path": "CloudAnalyzer/demo_assets/public/rellis3d-frame-000001/object_eval/tracking_reference.json",
+    "estimated_path": "demo_assets/public/rellis3d-frame-000001/object_eval/tracking_estimated_regressed.json",
+    "reference_path": "demo_assets/public/rellis3d-frame-000001/object_eval/tracking_reference.json",
     "matching_policy": {
       "geometry": "axis_aligned_3d_boxes",
       "class_aware": true,
@@ -771,7 +771,7 @@
         "reference_track_id": "gt-bush",
         "estimated_track_id": "pred-bush",
         "iou": 0.9895200014217275,
-        "center_distance": 0.03605551275463912
+        "center_distance": 0.03605551275463913
       },
       {
         "frame_id": "000001",

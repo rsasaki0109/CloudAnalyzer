@@ -114,10 +114,11 @@ def _gate_for_item(
 
 def _html_command_block(command: str) -> str:
     """Render one copyable HTML command block."""
+    onclick_command = escape(json.dumps(command), quote=True)
     return (
         "<div class=\"command-row\">"
         f"<code>{escape(command)}</code>"
-        f"<button type=\"button\" onclick='copyCommand({json.dumps(command)}, this)'>Copy</button>"
+        f"<button type=\"button\" onclick='copyCommand({onclick_command}, this)'>Copy</button>"
         "</div>"
     )
 

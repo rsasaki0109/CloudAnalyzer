@@ -40,6 +40,7 @@ from ca.core.slam_run import (  # noqa: E402
     write_tum_trajectory,
 )
 from ca.report import save_run_report  # noqa: E402
+from ca.report_paths import make_paths_portable  # noqa: E402
 from ca.web import export_static_bundle  # noqa: E402
 
 
@@ -257,6 +258,8 @@ def _run_one(
         "map_path": str(map_path),
         "driver_metadata": result.metadata,
     }
+    portable_roots = (REPO_ROOT, run_dir.parent.parent)
+    slam_summary = make_paths_portable(slam_summary, roots=portable_roots)
     (run_dir / "slam_summary.json").write_text(
         json.dumps(slam_summary, indent=2),
         encoding="utf-8",
@@ -270,6 +273,7 @@ def _run_one(
         str(trajectory_path),
         sequence=dataset.sequence,
     )
+    benchmark_result = make_paths_portable(benchmark_result, roots=portable_roots)
     (run_dir / "benchmark.json").write_text(
         json.dumps(benchmark_result, indent=2, default=str),
         encoding="utf-8",

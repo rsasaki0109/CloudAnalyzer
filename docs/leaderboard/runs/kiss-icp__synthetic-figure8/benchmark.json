@@ -1,7 +1,7 @@
 {
   "map": {
-    "source_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply",
-    "target_path": "old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd",
+    "source_path": "docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply",
+    "target_path": "benchmarks/slam/synthetic-figure8/reference/map.pcd",
     "source_points": 4239,
     "target_points": 2320,
     "chamfer_distance": 0.015832028222999863,
@@ -73,8 +73,8 @@
     }
   },
   "trajectory": {
-    "estimated_path": "old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum",
-    "reference_path": "old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum",
+    "estimated_path": "docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum",
+    "reference_path": "benchmarks/slam/synthetic-figure8/reference/trajectory.tum",
     "alignment": {
       "mode": "none",
       "translation": [
@@ -3445,23 +3445,23 @@
     "reasons": []
   },
   "inspect": {
-    "run_evaluate": "ca run-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd' 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --min-auc 0.95 --max-chamfer 0.05 --max-ate 0.3 --max-rpe 0.2 --max-drift 0.5 --min-coverage 0.9 --report map_and_trajectory_run_report.html",
-    "run_web": "ca web 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd' --heatmap --trajectory 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' --trajectory-reference 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum'",
+    "run_evaluate": "ca run-evaluate 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply' 'benchmarks/slam/synthetic-figure8/reference/map.pcd' 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' 'benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --min-auc 0.95 --max-chamfer 0.05 --max-ate 0.3 --max-rpe 0.2 --max-drift 0.5 --min-coverage 0.9 --report map_and_trajectory_run_report.html",
+    "run_web": "ca web 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply' 'benchmarks/slam/synthetic-figure8/reference/map.pcd' --heatmap --trajectory 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' --trajectory-reference 'benchmarks/slam/synthetic-figure8/reference/trajectory.tum'",
     "map": {
-      "web_heatmap": "ca web 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd' --heatmap",
-      "heatmap3d": "ca heatmap3d 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd' -o map_vs_map_heatmap.png"
+      "web_heatmap": "ca web 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply' 'benchmarks/slam/synthetic-figure8/reference/map.pcd' --heatmap",
+      "heatmap3d": "ca heatmap3d 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/map.ply' 'benchmarks/slam/synthetic-figure8/reference/map.pcd' -o map_vs_map_heatmap.png"
     },
     "trajectory": {
-      "traj_evaluate": "ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --report trajectory_vs_trajectory_trajectory_report.html",
-      "traj_evaluate_aligned": "ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --align-origin --report trajectory_vs_trajectory_trajectory_aligned_report.html",
-      "traj_evaluate_rigid": "ca traj-evaluate 'old_~2026/CloudAnalyzer/docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' 'old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --align-rigid --report trajectory_vs_trajectory_trajectory_rigid_report.html"
+      "traj_evaluate": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' 'benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --report trajectory_vs_trajectory_trajectory_report.html",
+      "traj_evaluate_aligned": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' 'benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --align-origin --report trajectory_vs_trajectory_trajectory_aligned_report.html",
+      "traj_evaluate_rigid": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__synthetic-figure8/trajectory.tum' 'benchmarks/slam/synthetic-figure8/reference/trajectory.tum' --align-rigid --report trajectory_vs_trajectory_trajectory_rigid_report.html"
     }
   },
   "benchmark": {
     "suite": "synthetic-figure8",
     "version": 1,
     "sequence": "default",
-    "source_path": "old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/suite.yaml",
+    "source_path": "benchmarks/slam/synthetic-figure8/suite.yaml",
     "gate": {
       "min_auc": 0.95,
       "max_chamfer": 0.05,
@@ -3471,8 +3471,8 @@
       "min_coverage": 0.9
     },
     "reference": {
-      "map": "old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/map.pcd",
-      "trajectory": "old_~2026/CloudAnalyzer/benchmarks/slam/synthetic-figure8/reference/trajectory.tum"
+      "map": "benchmarks/slam/synthetic-figure8/reference/map.pcd",
+      "trajectory": "benchmarks/slam/synthetic-figure8/reference/trajectory.tum"
     }
   }
 }

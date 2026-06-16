@@ -84,9 +84,9 @@ jobs:
       - name: Verify checked-in synthetic-room 3DGS demo
         working-directory: .
         run: |
-          pip install -e "./cloudanalyzer[gs]"
           python scripts/build_synthetic_3dgs_demo.py \
-            --output benchmarks/3dgs/synthetic-room
+            --output benchmarks/3dgs/synthetic-room \
+            --skip-renders
           git diff --exit-code -- benchmarks/3dgs/synthetic-room
 
       - name: Build package

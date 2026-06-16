@@ -195,8 +195,10 @@ def _parse_matrix16(matrix: Optional[str]) -> Optional[list[float]]:
     return values
 
 
-def _check_status_label(passed: bool | None) -> str:
+def _check_status_label(passed: bool | None, gate_status: str | None = None) -> str:
     """Render a compact status label for config-driven checks."""
+    if gate_status in {"warn", "soft_fail", "skip", "not_applicable"}:
+        return gate_status.upper()
     if passed is True:
         return "PASS"
     if passed is False:
@@ -211,7 +213,7 @@ def _print_check_suite_result(result: dict) -> None:
     typer.echo(f"Config:   {result['config_path']}")
     for item in result["checks"]:
         summary = item["summary"]
-        status = _check_status_label(item["passed"])
+        status = _check_status_label(item["passed"], item.get("gate_status"))
         if item["kind"] == "artifact":
             typer.echo(
                 f"[{status}] {item['id']} ({item['kind']}): "
@@ -321,6 +323,18 @@ def _print_check_suite_result(result: dict) -> None:
         f"fail={summary['failed_checks']}  "
         f"info={summary['unchecked_checks']}"
     )
+    gate_summary = result.get("gate_summary")
+    if isinstance(gate_summary, dict):
+        typer.echo(
+            "Gate: "
+            f"mode={gate_summary['mode']}  "
+            f"blocking_fail={len(gate_summary['blocking_failed_ids'])}  "
+            f"warn={gate_summary['warn_count']}  "
+            f"soft_fail={gate_summary['soft_fail_count']}  "
+            f"skip={gate_summary['skip_count']}  "
+            f"not_applicable={gate_summary['not_applicable_count']}  "
+            f"exit={gate_summary['exit_code']}"
+        )
     triage = summary.get("triage")
     if isinstance(triage, dict) and triage.get("items"):
         typer.echo("")
@@ -3246,6 +3260,16 @@ def check_cmd(
         "--output-json",
         help="Dump aggregated check summary as JSON",
     ),
+    warn_only: bool = typer.Option(
+        False,
+        "--warn-only",
+        help="Never fail the process for gate failures; record failures in gate_summary.",
+    ),
+    strict: bool = typer.Option(
+        False,
+        "--strict",
+        help="Fail on fail/warn/soft_fail/skip/not_applicable/ungated outcomes.",
+    ),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
     """Run config-driven artifact / trajectory / run QA checks."""
@@ -3254,13 +3278,24 @@ def check_cmd(
 
         logging.getLogger("ca").setLevel(logging.ERROR)
 
+    if warn_only and strict:
+        typer.echo("Error: --warn-only and --strict are mutually exclusive", err=True)
+        raise typer.Exit(code=2)
+
+    gate_mode = "strict" if strict else "warn_only" if warn_only else "default"
+
     try:
         suite = load_check_suite(config_path)
         if output_json is not None:
             suite = replace(suite, summary_output_json=str(Path(output_json).resolve()))
-        result = run_check_suite(suite)
-    except (FileNotFoundError, ValueError) as e:
-        _handle_error(e)
+        result = run_check_suite(suite, gate_mode=gate_mode)
+    except FileNotFoundError as e:
+        typer.echo(f"Error: {e}", err=True)
+        typer.echo("Hint: Check config and input file paths.", err=True)
+        raise typer.Exit(code=3)
+    except ValueError as e:
+        typer.echo(f"Error: {e}", err=True)
+        raise typer.Exit(code=2)
         return
 
     if format_json:
@@ -3270,8 +3305,10 @@ def check_cmd(
         if suite.summary_output_json:
             typer.echo(f"Summary JSON: {suite.summary_output_json}")
 
-    if result["summary"]["failed_checks"] > 0:
-        raise typer.Exit(code=1)
+    gate_summary = result.get("gate_summary", {})
+    exit_code = int(gate_summary.get("exit_code", 0) or 0)
+    if exit_code:
+        raise typer.Exit(code=exit_code)
 
 
 @app.command("init-check")

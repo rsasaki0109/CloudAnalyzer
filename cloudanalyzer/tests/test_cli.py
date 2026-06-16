@@ -1851,6 +1851,8 @@ class TestCLI:
         assert result.exit_code == 0
         data = json.loads(result.output)
         assert data["summary"]["passed"] is True
+        assert data["gate_summary"]["passed"] is True
+        assert data["gate_summary"]["exit_code"] == 0
         assert data["checks"][0]["id"] == "perception-output"
         assert summary_json.exists()
 
@@ -1881,6 +1883,110 @@ class TestCLI:
         assert "[FAIL] failing-artifact (artifact)" in result.output
         assert "Triage: severity_weighted" in result.output
         assert "1. failing-artifact (artifact)" in result.output
+
+    def test_check_warn_only_turns_hard_fail_into_exit_zero(
+        self,
+        tmp_path,
+        identical_pcd,
+        shifted_pcd,
+    ):
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        map_reference = tmp_path / "map_ref.pcd"
+        o3d.io.write_point_cloud(str(map_path), shifted_pcd)
+        o3d.io.write_point_cloud(str(map_reference), identical_pcd)
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: failing-artifact
+                kind: artifact
+                source: {map_path.name}
+                reference: {map_reference.name}
+                gate:
+                  min_auc: 0.99
+                  max_chamfer: 0.01
+            """,
+        )
+
+        result = runner.invoke(app, ["check", config, "--warn-only", "--format-json"])
+
+        assert result.exit_code == 0
+        data = json.loads(result.output)
+        assert data["checks"][0]["gate_status"] == "fail"
+        assert data["gate_summary"]["mode"] == "warn_only"
+        assert data["gate_summary"]["failed_ids"] == ["failing-artifact"]
+        assert data["gate_summary"]["blocking_failed_ids"] == []
+
+    def test_check_warn_severity_is_non_blocking_unless_strict(
+        self,
+        tmp_path,
+        identical_pcd,
+        shifted_pcd,
+    ):
+        import open3d as o3d
+
+        map_path = tmp_path / "map.pcd"
+        map_reference = tmp_path / "map_ref.pcd"
+        o3d.io.write_point_cloud(str(map_path), shifted_pcd)
+        o3d.io.write_point_cloud(str(map_reference), identical_pcd)
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: warned-artifact
+                kind: artifact
+                severity: warn
+                source: {map_path.name}
+                reference: {map_reference.name}
+                gate:
+                  min_auc: 0.99
+                  max_chamfer: 0.01
+            """,
+        )
+
+        default_result = runner.invoke(app, ["check", config])
+        strict_result = runner.invoke(app, ["check", config, "--strict", "--format-json"])
+
+        assert default_result.exit_code == 0
+        assert "[WARN] warned-artifact (artifact)" in default_result.output
+        assert "Gate: mode=default" in default_result.output
+
+        assert strict_result.exit_code == 1
+        data = json.loads(strict_result.output)
+        assert data["checks"][0]["gate_status"] == "warn"
+        assert data["gate_summary"]["mode"] == "strict"
+        assert data["gate_summary"]["blocking_failed_ids"] == ["warned-artifact"]
+
+    def test_check_rejects_warn_only_with_strict(self):
+        result = runner.invoke(app, ["check", "--warn-only", "--strict"])
+
+        assert result.exit_code == 2
+        assert "mutually exclusive" in result.output
+
+    def test_check_config_error_exits_two(self, tmp_path):
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            """
+            checks:
+              - kind: artifact
+                severity: advisory
+                source: map.pcd
+                reference: ref.pcd
+            """,
+        )
+
+        result = runner.invoke(app, ["check", config])
+
+        assert result.exit_code == 2
+        assert "check.severity" in result.output
+
+    def test_check_missing_config_exits_three(self, tmp_path):
+        result = runner.invoke(app, ["check", str(tmp_path / "missing.yaml")])
+
+        assert result.exit_code == 3
+        assert "Check config and input file paths" in result.output
 
     def test_check_runs_loop_closure_kind(self, tmp_path, identical_pcd, shifted_pcd):
         import open3d as o3d

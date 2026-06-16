@@ -340,6 +340,8 @@ Place `cloudanalyzer.yaml` in your repo to unify mapping, localization, loop-clo
 ```bash
 ca init-check --profile integrated   # emit a starter config
 ca check cloudanalyzer.yaml          # run all configured gates
+ca check --warn-only cloudanalyzer.yaml
+ca check --strict cloudanalyzer.yaml
 ```
 
 A minimal `cloudanalyzer.yaml`:
@@ -370,6 +372,11 @@ checks:
 ```
 
 Supported check kinds: `artifact`, `trajectory`, `loop_closure`, `ground`, `detection`, `tracking`, `image`, `map`, `run`, `benchmark`. Full schema and worked examples: **[docs/ci.md](docs/ci.md)** and **[docs/examples/cloudanalyzer.yaml](docs/examples/cloudanalyzer.yaml)**.
+
+Gate severity defaults to `fail`. Use `severity: warn` or `severity:
+soft_fail` for visible but non-blocking regressions; `--strict` promotes those
+outcomes to release blockers, and every `ca check` JSON includes
+`gate_summary`.
 
 ### PR Comments
 

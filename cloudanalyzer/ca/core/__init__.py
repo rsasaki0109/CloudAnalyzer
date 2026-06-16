@@ -33,6 +33,13 @@ from ca.core.check_triage import (
     rank_failed_checks,
     summarize_failed_checks,
 )
+from ca.core.gate import (
+    GATE_SEVERITIES,
+    GATE_SUMMARY_SCHEMA_VERSION,
+    gate_status_for_check,
+    normalize_gate_severity,
+    summarize_gate_policy,
+)
 from ca.core.ground_evaluate import (
     GroundEvaluateRequest,
     GroundEvaluateResult,
@@ -90,6 +97,8 @@ __all__ = [
     "GroundEvaluateRequest",
     "GroundEvaluateResult",
     "GroundEvaluateStrategy",
+    "GATE_SEVERITIES",
+    "GATE_SUMMARY_SCHEMA_VERSION",
     "DistanceShellsWebProgressiveLoadingStrategy",
     "RandomBudgetWebSamplingStrategy",
     "RankedCheckTriageItem",
@@ -114,7 +123,9 @@ __all__ = [
     "decide_baseline_evolution",
     "evaluate_ground",
     "failed_dimensions",
+    "gate_status_for_check",
     "load_check_suite",
+    "normalize_gate_severity",
     "normalized_dimension_gaps",
     "plan_progressive_loading_for_web",
     "rank_failed_checks",
@@ -126,4 +137,5 @@ __all__ = [
     "snapshot_margin_stats",
     "summarize_baseline_evolution",
     "summarize_failed_checks",
+    "summarize_gate_policy",
 ]

@@ -148,7 +148,40 @@ checks:
       max_chamfer: 0.15
 ```
 
-`ca check` writes per-check reports / JSON when `report_dir` and `json_dir` are configured, and it exits with code `1` when any gated check fails.
+`ca check` writes per-check reports / JSON when `report_dir` and `json_dir`
+are configured. By default, checks use `severity: fail`; a failed `fail` check
+exits with code `1`.
+
+Gate severity can be set either beside the check or inside `gate:`:
+
+```yaml
+checks:
+  - id: localization-drift
+    kind: trajectory
+    severity: warn
+    estimated: outputs/traj.csv
+    reference: baselines/traj_ref.csv
+    gate:
+      max_ate: 0.5
+```
+
+Severity policy:
+
+| Severity | Meaning | Default exit behavior |
+|---|---|---|
+| `fail` | Release blocker when the gate fails | exit `1` |
+| `warn` | Non-blocking regression to surface in reports | exit `0` |
+| `soft_fail` | Known failure tracked without blocking | exit `0` |
+| `skip` | Do not execute this check | exit `0` |
+| `not_applicable` | Explicitly out of scope for this run | exit `0` |
+
+`ca check --strict` treats `warn`, `soft_fail`, `skip`, `not_applicable`, and
+ungated `info` outcomes as blockers. `ca check --warn-only` records failures in
+`gate_summary` but exits `0`. Config/schema errors exit `2`; missing config or
+input files exit `3`.
+
+Every JSON summary includes `gate_summary` with `mode`, `exit_code`,
+`blocking_failed_ids`, and per-status ids/counts.
 
 The `image` check kind wraps `ca image-evaluate`: it pairs rendered and reference
 images by filename, computes per-pair PSNR / SSIM, and gates on the aggregate

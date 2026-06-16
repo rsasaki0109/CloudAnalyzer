@@ -9,6 +9,7 @@ import open3d as o3d
 import pytest
 
 from ca.core import load_check_suite, run_check_suite
+from ca.core.gate import GATE_SUMMARY_SCHEMA_VERSION
 from ca.core.check_triage import build_check_triage_request
 
 
@@ -389,6 +390,90 @@ class TestRunCheckSuite:
             "bad-artifact",
             "bad-trajectory",
         }
+
+    def test_gate_summary_tracks_warn_soft_fail_and_skip(
+        self,
+        tmp_path: Path,
+        identical_pcd,
+        shifted_pcd,
+    ):
+        bad_map = tmp_path / "bad_map.pcd"
+        ref_map = tmp_path / "ref_map.pcd"
+        o3d.io.write_point_cloud(str(bad_map), shifted_pcd)
+        o3d.io.write_point_cloud(str(ref_map), identical_pcd)
+
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            f"""
+            checks:
+              - id: warned-map
+                kind: artifact
+                severity: warn
+                source: {bad_map.relative_to(tmp_path)}
+                reference: {ref_map.relative_to(tmp_path)}
+                gate:
+                  min_auc: 0.99
+                  max_chamfer: 0.01
+              - id: soft-map
+                kind: artifact
+                source: {bad_map.relative_to(tmp_path)}
+                reference: {ref_map.relative_to(tmp_path)}
+                gate:
+                  severity: soft_fail
+                  min_auc: 0.99
+              - id: skipped-map
+                kind: artifact
+                severity: skip
+                source: {bad_map.relative_to(tmp_path)}
+                reference: {ref_map.relative_to(tmp_path)}
+                gate:
+                  min_auc: 0.99
+            """,
+        )
+
+        result = run_check_suite(load_check_suite(str(config)))
+
+        gate = result["gate_summary"]
+        assert gate["schema_version"] == GATE_SUMMARY_SCHEMA_VERSION
+        assert gate["mode"] == "default"
+        assert gate["passed"] is True
+        assert gate["exit_code"] == 0
+        assert result["summary"]["passed"] is True
+        assert result["summary"]["failed_checks"] == 2
+        assert result["summary"]["blocking_failed_checks"] == 0
+        assert gate["warning_ids"] == ["warned-map"]
+        assert gate["soft_failed_ids"] == ["soft-map"]
+        assert gate["skipped_ids"] == ["skipped-map"]
+        assert result["checks"][0]["gate_status"] == "warn"
+        assert result["checks"][1]["gate_status"] == "soft_fail"
+        assert result["checks"][2]["gate_status"] == "skip"
+
+        strict = run_check_suite(load_check_suite(str(config)), gate_mode="strict")
+        assert strict["gate_summary"]["passed"] is False
+        assert strict["gate_summary"]["exit_code"] == 1
+        assert strict["summary"]["passed"] is False
+        assert strict["summary"]["blocking_failed_checks"] == 3
+        assert strict["gate_summary"]["blocking_failed_ids"] == [
+            "warned-map",
+            "soft-map",
+            "skipped-map",
+        ]
+
+    def test_rejects_unknown_gate_severity(self, tmp_path: Path):
+        config = _write_config(
+            tmp_path / "cloudanalyzer.yaml",
+            """
+            checks:
+              - id: bad-severity
+                kind: artifact
+                severity: advisory
+                source: map.pcd
+                reference: ref.pcd
+            """,
+        )
+
+        with pytest.raises(ValueError, match="check.severity"):
+            load_check_suite(str(config))
 
     def test_runs_ground_check(self, tmp_path: Path):
         ground = [[0, 0, 0], [1, 0, 0], [2, 0, 0]]

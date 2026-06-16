@@ -322,11 +322,41 @@ checks:
 For `loop_closure`, map/trajectory gates use before/after deltas, and posegraph validation becomes a gate only with `require_posegraph_ok: true`.
 When one or more gated checks fail, `ca check` also prints a severity-first triage order. The JSON summary stores the same ranking under `summary.triage`.
 
+Gate severity defaults to `fail`. Set `severity: warn`, `soft_fail`, `skip`, or
+`not_applicable` on a check when a result should be visible but not block the
+default CI gate. The same value may also live under `gate.severity`.
+
+`ca check` JSON always includes `gate_summary`:
+
+```json
+{
+  "mode": "default",
+  "exit_code": 0,
+  "blocking_failed_ids": [],
+  "warning_ids": ["localization-drift"],
+  "soft_failed_ids": [],
+  "skipped_ids": [],
+  "not_applicable_ids": []
+}
+```
+
+Exit policy:
+
+| Mode | Command | Exit behavior |
+|---|---|---|
+| default | `ca check cloudanalyzer.yaml` | `fail` gate failures exit `1`; warnings and soft failures exit `0` |
+| warn only | `ca check --warn-only cloudanalyzer.yaml` | records failures but exits `0` |
+| strict | `ca check --strict cloudanalyzer.yaml` | any fail/warn/soft_fail/skip/not_applicable/info outcome exits `1` |
+
+Config/schema errors exit `2`; missing config or input files exit `3`.
+
 | Option | Default | Description |
 |---|---|---|
 | `CONFIG` | `cloudanalyzer.yaml` | YAML/JSON config file for unified QA |
 | `--format-json` | `false` | Print aggregated check results to stdout as JSON |
 | `--output-json` | `None` | Dump aggregated check summary as JSON |
+| `--warn-only` | `false` | Record gate failures but exit `0` |
+| `--strict` | `false` | Treat non-pass statuses as blockers |
 
 ## ca init-check
 

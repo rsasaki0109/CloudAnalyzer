@@ -12,6 +12,13 @@ from typing import Any, Literal, cast
 import yaml  # type: ignore[import-untyped]
 
 from ca.core.check_triage import summarize_failed_checks
+from ca.core.gate import (
+    GateMode,
+    GateSeverity,
+    gate_status_for_check,
+    normalize_gate_severity,
+    summarize_gate_policy,
+)
 from ca.batch import batch_evaluate, trajectory_batch_evaluate
 from ca.detection import evaluate_detection
 from ca.evaluate import evaluate
@@ -104,6 +111,7 @@ _VALID_GATE_KEYS = {
     "min_psnr",
     "min_ssim",
     "max_lpips",
+    "severity",
 }
 
 _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
@@ -166,6 +174,7 @@ class CheckSpec:
     recursive: bool = False
     alignment: AlignmentMode = "none"
     gate: dict[str, Any] = field(default_factory=dict)
+    severity: GateSeverity = "fail"
     compressed_dir: str | None = None
     baseline_dir: str | None = None
     outputs: CheckOutputs = field(default_factory=CheckOutputs)
@@ -295,6 +304,20 @@ def _normalize_gate(
         else:
             normalized[key] = float(value)
     return normalized
+
+
+def _normalize_severity(defaults: dict[str, Any], raw_check: dict[str, Any]) -> GateSeverity:
+    """Normalize check severity from defaults/check/gate blocks."""
+    defaults_gate = _as_mapping(defaults.get("gate"), "defaults.gate")
+    check_gate = _as_mapping(raw_check.get("gate"), "check.gate")
+    raw = raw_check.get(
+        "severity",
+        check_gate.get(
+            "severity",
+            defaults.get("severity", defaults_gate.get("severity")),
+        ),
+    )
+    return normalize_gate_severity(raw, "check.severity")
 
 
 def _default_output_paths(
@@ -686,6 +709,7 @@ def _normalize_check(
         recursive=recursive,
         alignment=alignment,
         gate=_normalize_gate(defaults, check, kind),
+        severity=_normalize_severity(defaults, check),
         compressed_dir=_resolve_optional_path(
             config_dir,
             check.get("compressed_dir"),
@@ -1628,34 +1652,63 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
 
 def _run_check(spec: CheckSpec) -> dict[str, Any]:
     """Dispatch one normalized check spec."""
+    if spec.severity in {"skip", "not_applicable"}:
+        result = {
+            "quality_gate": {
+                "passed": None,
+                "severity": spec.severity,
+                "reasons": [],
+            }
+        }
+        if spec.outputs.json_path:
+            _write_json(spec.outputs.json_path, result)
+        return {
+            "id": spec.check_id,
+            "kind": spec.kind,
+            "severity": spec.severity,
+            "gate_status": spec.severity,
+            "passed": None,
+            "report_path": spec.outputs.report_path,
+            "json_path": spec.outputs.json_path,
+            "summary": {
+                "passed": None,
+                "reason": spec.severity,
+            },
+            "result": result,
+        }
     if spec.kind == "artifact":
-        return _run_artifact_check(spec)
-    if spec.kind == "artifact_batch":
-        return _run_artifact_batch_check(spec)
-    if spec.kind == "trajectory":
-        return _run_trajectory_check(spec)
-    if spec.kind == "trajectory_batch":
-        return _run_trajectory_batch_check(spec)
-    if spec.kind == "detection":
-        return _run_detection_check(spec)
-    if spec.kind == "tracking":
-        return _run_tracking_check(spec)
-    if spec.kind == "run":
-        return _run_run_check(spec)
-    if spec.kind == "ground":
-        return _run_ground_check(spec)
-    if spec.kind == "loop_closure":
-        return _run_loop_closure_check(spec)
-    if spec.kind == "image":
-        return _run_image_check(spec)
-    if spec.kind == "rendered":
-        return _run_rendered_check(spec)
-    return _run_run_batch_check(spec)
+        result = _run_artifact_check(spec)
+    elif spec.kind == "artifact_batch":
+        result = _run_artifact_batch_check(spec)
+    elif spec.kind == "trajectory":
+        result = _run_trajectory_check(spec)
+    elif spec.kind == "trajectory_batch":
+        result = _run_trajectory_batch_check(spec)
+    elif spec.kind == "detection":
+        result = _run_detection_check(spec)
+    elif spec.kind == "tracking":
+        result = _run_tracking_check(spec)
+    elif spec.kind == "run":
+        result = _run_run_check(spec)
+    elif spec.kind == "ground":
+        result = _run_ground_check(spec)
+    elif spec.kind == "loop_closure":
+        result = _run_loop_closure_check(spec)
+    elif spec.kind == "image":
+        result = _run_image_check(spec)
+    elif spec.kind == "rendered":
+        result = _run_rendered_check(spec)
+    else:
+        result = _run_run_batch_check(spec)
+    result["severity"] = spec.severity
+    result["gate_status"] = gate_status_for_check(result)
+    return result
 
 
-def run_check_suite(suite: CheckSuite) -> dict[str, Any]:
+def run_check_suite(suite: CheckSuite, *, gate_mode: GateMode = "default") -> dict[str, Any]:
     """Execute every check in a normalized suite and aggregate pass/fail state."""
     executed_checks = [_run_check(spec) for spec in suite.checks]
+    gate_summary = summarize_gate_policy(executed_checks, mode=gate_mode)
     gated_checks = [item for item in executed_checks if item["passed"] is not None]
     failed_checks = [item for item in gated_checks if item["passed"] is False]
     passed_checks = [item for item in gated_checks if item["passed"] is True]
@@ -1665,14 +1718,18 @@ def run_check_suite(suite: CheckSuite) -> dict[str, Any]:
         "gated_checks": len(gated_checks),
         "passed_checks": len(passed_checks),
         "failed_checks": len(failed_checks),
+        "blocking_failed_checks": len(gate_summary["blocking_failed_ids"]),
         "unchecked_checks": len(executed_checks) - len(gated_checks),
         "failed_check_ids": [item["id"] for item in failed_checks],
-        "passed": len(failed_checks) == 0,
+        "blocking_failed_check_ids": gate_summary["blocking_failed_ids"],
+        "passed": gate_summary["passed"],
+        "gate_summary": gate_summary,
         "triage": triage,
     }
     result = {
         "config_path": suite.config_path,
         "project": suite.project,
+        "gate_summary": gate_summary,
         "summary": summary,
         "checks": executed_checks,
     }

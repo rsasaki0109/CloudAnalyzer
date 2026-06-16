@@ -1,0 +1,117 @@
+name: SLAM Benchmark Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/slam-benchmark-smoke.yml"
+      - "README.md"
+      - "docs/tutorial-slam-benchmark.md"
+      - "docs/commands/benchmark.md"
+      - "benchmarks/slam/synthetic-figure8/**"
+      - "cloudanalyzer/ca/benchmark.py"
+      - "cloudanalyzer/ca/run_evaluate.py"
+      - "cloudanalyzer/ca/report.py"
+      - "cloudanalyzer/cloudanalyzer_cli/main.py"
+      - "cloudanalyzer/tests/test_docs_golden_path.py"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/slam-benchmark-smoke.yml"
+      - "README.md"
+      - "docs/tutorial-slam-benchmark.md"
+      - "docs/commands/benchmark.md"
+      - "benchmarks/slam/synthetic-figure8/**"
+      - "cloudanalyzer/ca/benchmark.py"
+      - "cloudanalyzer/ca/run_evaluate.py"
+      - "cloudanalyzer/ca/report.py"
+      - "cloudanalyzer/cloudanalyzer_cli/main.py"
+      - "cloudanalyzer/tests/test_docs_golden_path.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.10"
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+
+      - name: Install CloudAnalyzer
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e "./cloudanalyzer"
+
+      - name: Inspect bundled suite
+        run: ca benchmark info benchmarks/slam/synthetic-figure8/suite.yaml
+
+      - name: Run README golden path
+        run: |
+          mkdir -p qa
+          xvfb-run ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
+            --map benchmarks/slam/synthetic-figure8/sample_outputs/map_pass.pcd \
+            --trajectory benchmarks/slam/synthetic-figure8/sample_outputs/trajectory_pass.tum \
+            --out qa/synthetic-figure8
+
+      - name: Verify smoke artifacts
+        run: |
+          test -s qa/synthetic-figure8/manifest.lock.yaml
+          test -s qa/synthetic-figure8/metrics.json
+          test -s qa/synthetic-figure8/provenance.json
+          test -s qa/synthetic-figure8/report.html
+          test -s qa/synthetic-figure8/report_map_f1.png
+          test -s qa/synthetic-figure8/report_trajectory_errors.png
+          test -s qa/synthetic-figure8/report_trajectory_overlay.png
+          test -s qa/synthetic-figure8/summary.md
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          metrics_path = Path("qa/synthetic-figure8/metrics.json")
+          metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+          gate = metrics.get("overall_quality_gate") or {}
+          benchmark = metrics.get("benchmark") or {}
+
+          if gate.get("passed") is not True:
+              raise SystemExit(f"expected overall_quality_gate.passed=true, got {gate!r}")
+          if benchmark.get("suite") != "synthetic-figure8":
+              raise SystemExit(f"unexpected benchmark suite: {benchmark!r}")
+
+          summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary_path:
+              Path(summary_path).write_text(
+                  "\n".join(
+                      [
+                          "## SLAM Benchmark Smoke",
+                          "",
+                          "- Suite: `synthetic-figure8`",
+                          "- Gate: `PASS`",
+                          "- Metrics: `qa/synthetic-figure8/metrics.json`",
+                          "- Report: `qa/synthetic-figure8/report.html`",
+                          "",
+                      ]
+                  ),
+                  encoding="utf-8",
+              )
+          PY
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: slam-benchmark-smoke
+          path: |
+            qa/synthetic-figure8/
+          if-no-files-found: error

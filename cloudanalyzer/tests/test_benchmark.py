@@ -8,10 +8,12 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import yaml
 from typer.testing import CliRunner
 
 from ca.benchmark import (
     GATE_KEYS,
+    REPORT_BUNDLE_SCHEMA_VERSION,
     BenchmarkSuite,
     evaluate_benchmark_run,
     load_benchmark_suite,
@@ -151,6 +153,71 @@ def test_cli_eval_pass(synthetic_suite_dir: Path) -> None:
     )
     assert result.exit_code == 0, result.output
     assert "Overall Quality Gate: PASS" in result.output
+
+
+def test_cli_eval_out_writes_report_bundle(
+    synthetic_suite_dir: Path,
+    tmp_path: Path,
+) -> None:
+    runner = CliRunner()
+    suite_yaml = synthetic_suite_dir / "suite.yaml"
+    sample_map = synthetic_suite_dir / "sample_outputs" / "map_pass.pcd"
+    sample_traj = synthetic_suite_dir / "sample_outputs" / "trajectory_pass.tum"
+    out_dir = tmp_path / "qa" / "synthetic-figure8"
+
+    result = runner.invoke(
+        app,
+        [
+            "benchmark",
+            "eval",
+            str(suite_yaml),
+            "--map",
+            str(sample_map),
+            "--trajectory",
+            str(sample_traj),
+            "--out",
+            str(out_dir),
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    assert f"Bundle: {out_dir}" in result.output
+    assert (out_dir / "metrics.json").is_file()
+    assert (out_dir / "summary.md").is_file()
+    assert (out_dir / "report.html").is_file()
+    assert (out_dir / "manifest.lock.yaml").is_file()
+    assert (out_dir / "provenance.json").is_file()
+
+    metrics = json.loads((out_dir / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["overall_quality_gate"]["passed"] is True
+    assert metrics["benchmark"]["suite"] == "synthetic-figure8"
+    assert str(tmp_path) not in json.dumps(metrics)
+
+    lock = yaml.safe_load((out_dir / "manifest.lock.yaml").read_text(encoding="utf-8"))
+    assert lock["schema_version"] == REPORT_BUNDLE_SCHEMA_VERSION
+    assert lock["outputs"] == {
+        "metrics": "metrics.json",
+        "summary": "summary.md",
+        "report": "report.html",
+        "report_assets": [
+            "report_map_f1.png",
+            "report_trajectory_errors.png",
+            "report_trajectory_overlay.png",
+        ],
+        "provenance": "provenance.json",
+        "manifest_lock": "manifest.lock.yaml",
+    }
+    assert lock["inputs"]["candidate_map"]["sha256"]
+    assert lock["inputs"]["candidate_trajectory"]["sha256"]
+
+    provenance = json.loads((out_dir / "provenance.json").read_text(encoding="utf-8"))
+    assert provenance["schema_version"] == REPORT_BUNDLE_SCHEMA_VERSION
+    assert provenance["summary_kind"] == "benchmark_run"
+    assert provenance["overall_quality_gate"]["passed"] is True
+    assert provenance["artifacts"]["report_assets"] == lock["outputs"]["report_assets"]
+
+    summary = (out_dir / "summary.md").read_text(encoding="utf-8")
+    assert "CloudAnalyzer QA" in summary
 
 
 def test_cli_eval_gate_override_fails(synthetic_suite_dir: Path) -> None:

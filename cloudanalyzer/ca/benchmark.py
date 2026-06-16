@@ -36,12 +36,16 @@ All file paths in the manifest are resolved relative to the manifest file.
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping
 
 import yaml  # type: ignore[import-untyped]
 
+import ca
+from ca.report_paths import make_paths_portable
 from ca.run_evaluate import evaluate_run
 
 
@@ -53,6 +57,8 @@ GATE_KEYS: tuple[str, ...] = (
     "max_drift",
     "min_coverage",
 )
+
+REPORT_BUNDLE_SCHEMA_VERSION = "cloudanalyzer.benchmark_report_bundle.v0.1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -287,6 +293,193 @@ def evaluate_benchmark_run(
     return result
 
 
+# ----------------------------------------------------------- report bundle
+
+
+def _sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fp:
+        for chunk in iter(lambda: fp.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def _file_provenance(path: str | Path, roots: tuple[Path, ...]) -> dict[str, Any]:
+    resolved = Path(path).resolve()
+    portable_path = make_paths_portable(str(resolved), roots)
+    return {
+        "path": portable_path,
+        "sha256": _sha256_file(resolved),
+        "size_bytes": resolved.stat().st_size,
+    }
+
+
+def _bundle_roots(
+    suite: BenchmarkSuite,
+    output_dir: Path,
+    extra_roots: tuple[Path | str, ...] = (),
+) -> tuple[Path, ...]:
+    roots: list[Path] = []
+    for candidate in (
+        Path.cwd(),
+        suite.source_path.parent,
+        output_dir.parent,
+        *extra_roots,
+    ):
+        path = Path(candidate).resolve()
+        if path not in roots:
+            roots.append(path)
+    return tuple(roots)
+
+
+def _bundle_lock_payload(
+    *,
+    suite: BenchmarkSuite,
+    sequence: BenchmarkSequence,
+    result: Mapping[str, Any],
+    output_dir: Path,
+    map_path: str | Path,
+    trajectory_path: str | Path,
+    report_assets: list[str],
+    roots: tuple[Path, ...],
+) -> dict[str, Any]:
+    benchmark = result.get("benchmark")
+    benchmark_map = benchmark if isinstance(benchmark, Mapping) else {}
+    return {
+        "schema_version": REPORT_BUNDLE_SCHEMA_VERSION,
+        "suite": {
+            "name": suite.name,
+            "version": suite.version,
+            "description": suite.description,
+            "license": suite.license,
+            "sequence": sequence.name,
+            "source_path": make_paths_portable(str(suite.source_path), roots),
+        },
+        "gate": dict(benchmark_map.get("gate", suite.gate)),
+        "inputs": {
+            "candidate_map": _file_provenance(map_path, roots),
+            "candidate_trajectory": _file_provenance(trajectory_path, roots),
+            "reference_map": _file_provenance(sequence.reference_map_path, roots),
+            "reference_trajectory": _file_provenance(
+                sequence.reference_trajectory_path,
+                roots,
+            ),
+            "suite_manifest": _file_provenance(suite.source_path, roots),
+        },
+        "outputs": {
+            "metrics": "metrics.json",
+            "summary": "summary.md",
+            "report": "report.html",
+            "report_assets": report_assets,
+            "provenance": "provenance.json",
+            "manifest_lock": "manifest.lock.yaml",
+        },
+        "bundle_path": make_paths_portable(str(output_dir), roots),
+    }
+
+
+def write_benchmark_report_bundle(
+    result: Mapping[str, Any],
+    suite: BenchmarkSuite,
+    output_dir: str | Path,
+    *,
+    map_path: str | Path,
+    trajectory_path: str | Path,
+    sequence: str | None = None,
+    extra_roots: tuple[Path | str, ...] = (),
+) -> dict[str, str]:
+    """Write the standard ``ca benchmark eval --out`` report bundle.
+
+    The bundle is a directory contract intended for CI artifacts and static
+    publishing. It is intentionally simple and inspectable:
+
+    - ``metrics.json``: portable benchmark result JSON
+    - ``summary.md``: PR-comment-ready Markdown summary
+    - ``report.html``: human report
+    - ``manifest.lock.yaml``: suite/gate/input hash lock
+    - ``provenance.json``: machine-readable bundle metadata
+    """
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    roots = _bundle_roots(suite, out.resolve(), extra_roots=extra_roots)
+    sequence_name = sequence
+    benchmark = result.get("benchmark")
+    if sequence_name is None and isinstance(benchmark, Mapping):
+        raw_sequence = benchmark.get("sequence")
+        if isinstance(raw_sequence, str):
+            sequence_name = raw_sequence
+    seq = suite.resolve_sequence(sequence_name)
+
+    portable_result = make_paths_portable(dict(result), roots)
+    metrics_path = out / "metrics.json"
+    metrics_path.write_text(
+        json.dumps(portable_result, indent=2),
+        encoding="utf-8",
+    )
+
+    from ca.pr_comment import build_pr_comment  # local import avoids cold CLI cycles
+    from ca.report import save_run_report
+
+    summary_path = out / "summary.md"
+    summary_path.write_text(build_pr_comment(portable_result), encoding="utf-8")
+
+    report_path = out / "report.html"
+    save_run_report(portable_result, report_path)
+    report_assets = sorted(
+        path.name
+        for path in out.iterdir()
+        if path.is_file()
+        and path.name
+        not in {
+            "manifest.lock.yaml",
+            "metrics.json",
+            "provenance.json",
+            "report.html",
+            "summary.md",
+        }
+    )
+
+    lock_payload = _bundle_lock_payload(
+        suite=suite,
+        sequence=seq,
+        result=portable_result,
+        output_dir=out.resolve(),
+        map_path=map_path,
+        trajectory_path=trajectory_path,
+        report_assets=report_assets,
+        roots=roots,
+    )
+    manifest_lock_path = out / "manifest.lock.yaml"
+    manifest_lock_path.write_text(
+        yaml.safe_dump(lock_payload, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    provenance = {
+        "schema_version": REPORT_BUNDLE_SCHEMA_VERSION,
+        "cloudanalyzer_version": getattr(ca, "__version__", "0.0.0"),
+        "summary_kind": "benchmark_run",
+        "benchmark": portable_result.get("benchmark"),
+        "overall_quality_gate": portable_result.get("overall_quality_gate"),
+        "artifacts": lock_payload["outputs"],
+        "inputs": lock_payload["inputs"],
+    }
+    provenance_path = out / "provenance.json"
+    provenance_path.write_text(
+        json.dumps(provenance, indent=2),
+        encoding="utf-8",
+    )
+
+    return {
+        "bundle_dir": str(out),
+        "metrics": str(metrics_path),
+        "summary": str(summary_path),
+        "report": str(report_path),
+        "manifest_lock": str(manifest_lock_path),
+        "provenance": str(provenance_path),
+    }
+
+
 # ----------------------------------------------------------- materialize
 
 
@@ -425,7 +618,9 @@ __all__: list[str] = [
     "BenchmarkSequence",
     "BenchmarkSuite",
     "GATE_KEYS",
+    "REPORT_BUNDLE_SCHEMA_VERSION",
     "evaluate_benchmark_run",
     "load_benchmark_suite",
     "materialize_suite",
+    "write_benchmark_report_bundle",
 ]

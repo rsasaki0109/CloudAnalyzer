@@ -2,7 +2,7 @@
 
 SLAM benchmark suite runner. A *benchmark suite* freezes a reference map, reference trajectory, and a quality gate so users can plug their SLAM output in for a one-command regression check.
 
-CloudAnalyzer ships one synthetic suite (`benchmarks/slam/synthetic-figure8/`) for smoke-testing; real public-data suites (Newer College, KITTI, Hilti, ...) follow the same manifest shape.
+CloudAnalyzer ships one synthetic suite (`benchmarks/slam/synthetic-figure8/`) for smoke-testing; real public-data suites (Newer College, KITTI, Hilti, ...) follow the same manifest shape. For the clone-after-install workflow, start with the [SLAM benchmark golden path tutorial](../tutorial-slam-benchmark.md).
 
 ## Subcommands
 
@@ -59,9 +59,9 @@ Evaluate one SLAM run against the suite's frozen reference + gate. Exit code is 
 
 ```bash
 ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
-  --map outputs/my_slam_map.pcd \
-  --trajectory outputs/my_slam_trajectory.tum \
-  --report qa/run_report.html
+  --map benchmarks/slam/synthetic-figure8/sample_outputs/map_pass.pcd \
+  --trajectory benchmarks/slam/synthetic-figure8/sample_outputs/trajectory_pass.tum \
+  --out qa/synthetic-figure8
 ```
 
 Useful options:
@@ -72,9 +72,22 @@ Useful options:
 | `--gate key=value` | Override the suite gate (repeatable). `key=none` disables a gate metric |
 | `--thresholds 0.1,0.2,0.5` | Override the F1/AUC distance thresholds for the map score |
 | `--align-origin` / `--align-rigid` | Trajectory alignment knobs forwarded to `run-evaluate` |
+| `--out <dir>` | Write the standard report bundle directory |
 | `--report <file>` | Write a Markdown / HTML run report |
 | `--output-json <file>` | Dump the full result dict (incl. `benchmark` block) |
 | `--format-json` | Print the result as JSON to stdout |
+
+`--out` writes the CI-grade artifact contract:
+
+```text
+qa/synthetic-figure8/
+├── manifest.lock.yaml   # suite, gate, input paths, and file hashes
+├── metrics.json         # machine-readable benchmark result
+├── provenance.json      # CloudAnalyzer version + artifact index
+├── report.html          # human report
+├── report_*.png         # plot assets referenced by report.html
+└── summary.md           # PR-comment-ready Markdown
+```
 
 ## Suite manifest schema
 
@@ -142,7 +155,7 @@ Then point `ca benchmark` at it. There is no global registry yet — suites are 
     "suite": "synthetic-figure8",
     "version": 1,
     "sequence": "default",
-    "source_path": "/abs/path/to/suite.yaml",
+    "source_path": "benchmarks/slam/synthetic-figure8/suite.yaml",
     "gate": { "min_auc": 0.95, "max_chamfer": 0.05, ... },
     "reference": { "map": "...", "trajectory": "..." }
   }

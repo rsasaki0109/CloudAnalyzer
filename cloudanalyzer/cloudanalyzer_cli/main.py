@@ -66,6 +66,7 @@ from ca.benchmark import (
     evaluate_benchmark_run,
     load_benchmark_suite,
     materialize_suite,
+    write_benchmark_report_bundle,
 )
 from ca.bundle import (
     diff_bundles,
@@ -2980,6 +2981,11 @@ def benchmark_eval_cmd(
         help="Override suite gate (repeatable): --gate min_auc=0.97 --gate max_rpe=none",
     ),
     report: Optional[str] = typer.Option(None, "--report", help="Write combined run report"),
+    out: Optional[str] = typer.Option(
+        None,
+        "--out",
+        help="Write standard report bundle directory (metrics.json, summary.md, report.html, manifest.lock.yaml, provenance.json)",
+    ),
     output_json: Optional[str] = typer.Option(
         None,
         "--output-json",
@@ -3009,6 +3015,20 @@ def benchmark_eval_cmd(
         try:
             save_run_report(result, report)
         except ValueError as exc:
+            _handle_error(exc)
+
+    bundle_paths: dict[str, str] | None = None
+    if out:
+        try:
+            bundle_paths = write_benchmark_report_bundle(
+                result,
+                suite,
+                out,
+                map_path=map_path,
+                trajectory_path=trajectory_path,
+                sequence=sequence,
+            )
+        except (FileNotFoundError, ValueError) as exc:
             _handle_error(exc)
 
     if format_json:
@@ -3041,6 +3061,10 @@ def benchmark_eval_cmd(
                 typer.echo(f"  - {reason}")
         if report:
             typer.echo(f"Report: {report}")
+        if bundle_paths is not None:
+            typer.echo(f"Bundle: {bundle_paths['bundle_dir']}")
+            typer.echo(f"Report: {bundle_paths['report']}")
+            typer.echo(f"JSON: {bundle_paths['metrics']}")
 
     if output_json:
         _dump_json(result, output_json)

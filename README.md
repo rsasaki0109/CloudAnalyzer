@@ -5,7 +5,20 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Quantify whether post-processing breaks your point clouds or trajectories in localization, mapping, and perception pipelines.**
+**Turn SLAM, mapping, perception, and reconstruction outputs into CI-grade QA evidence.**
+
+CloudAnalyzer takes candidate artifacts such as maps, trajectories, rendered images,
+and reconstruction point clouds, then produces the evidence you need to make a
+release decision:
+
+```text
+inputs:   dataset suite + baseline/reference + candidate outputs
+outputs:  metrics JSON + HTML report + pass/fail gate + leaderboard-ready result
+```
+
+The first-class workflow is a benchmark gate: freeze the reference data and gate once,
+then swap in each candidate SLAM / LIO / reconstruction output and let CloudAnalyzer
+produce deterministic metrics, report files, and CI exit codes.
 
 ▶ **Try the public browser demo**: https://rsasaki0109.github.io/CloudAnalyzer/
 
@@ -15,7 +28,44 @@
 
 ▶ **3DGS rendered evaluation demo**: https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/
 
-▶ **Try without installing** (first run may take a while — Open3D is installed on demand):
+## Golden Path: SLAM Benchmark Smoke
+
+Clone the repository, install the package, and run the bundled synthetic SLAM suite:
+
+```bash
+cd CloudAnalyzer
+pip install -e ./cloudanalyzer
+
+ca benchmark info benchmarks/slam/synthetic-figure8/suite.yaml
+ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
+  --map benchmarks/slam/synthetic-figure8/sample_outputs/map_pass.pcd \
+  --trajectory benchmarks/slam/synthetic-figure8/sample_outputs/trajectory_pass.tum \
+  --out qa/synthetic-figure8
+```
+
+That command checks a candidate map + trajectory against the suite's frozen
+reference map, reference trajectory, and gate, then writes
+`metrics.json`, `summary.md`, `report.html`, `manifest.lock.yaml`, and
+`provenance.json`. Replace the two `sample_outputs` paths with your own SLAM
+output paths to use the same gate in CI.
+
+The same clone-after-install path is enforced by
+[`.github/workflows/slam-benchmark-smoke.yml`](.github/workflows/slam-benchmark-smoke.yml).
+
+For the full "raw scans -> SLAM driver -> benchmark report" loop, install the
+SLAM extra and see [the SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md):
+
+```bash
+pip install -e './cloudanalyzer[slam]'
+ca slam-run benchmarks/slam/synthetic-figure8/scans qa/kiss-icp --driver kiss-icp
+ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
+  --map qa/kiss-icp/map.ply --trajectory qa/kiss-icp/trajectory.tum \
+  --out qa/kiss-icp-benchmark
+```
+
+## Quick Point Cloud QA
+
+For a single before/after artifact comparison, you can still run one command:
 
 ```bash
 uvx cloudanalyzer evaluate before.pcd after.pcd
@@ -467,6 +517,7 @@ plot_multi_f1(results, ["0.1m", "0.2m", "0.5m"], "comparison.png")
 - [CI / Quality Gate](docs/ci.md)
 - [Experiments](docs/experiments.md) · [Decisions](docs/decisions.md) · [Interfaces](docs/interfaces.md)
 - [Cloudini Benchmark Tutorial](docs/tutorial-cloudini-benchmark.md)
+- [SLAM Benchmark Golden Path](docs/tutorial-slam-benchmark.md)
 - [Map Quality Gate Tutorial](docs/tutorial-map-quality-gate.md)
 - [Unified Run Quality Gate Tutorial](docs/tutorial-run-quality-gate.md)
 - [Public Benchmark Packs](benchmarks/public/README.md)

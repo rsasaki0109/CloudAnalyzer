@@ -27,6 +27,6 @@ ca rendered-evaluate benchmarks/3dgs/synthetic-room/gaussians_dense.ply \
     --reference-pointcloud benchmarks/3dgs/synthetic-room/reference.pcd \
     --metrics psnr,ssim,lpips --report /tmp/rendered-report.html
 
-# CI gate (kind: rendered) — dogfooded in rendered-self-qa.yml
+# CI gate (kind: rendered) - dogfooded in rendered-self-qa.yml
 ca check benchmarks/3dgs/synthetic-room/configs/suite-rendered.cloudanalyzer.yaml
 ```

@@ -1,4 +1,4 @@
-# v0.5.0-alpha Release Preflight
+# v0.5.0-alpha.1 Release Preflight
 
 This alpha should prove that CloudAnalyzer is now a CI-grade evidence layer for
 SLAM / mapping / reconstruction artifacts, not just a collection of evaluators.
@@ -64,8 +64,8 @@ Expected outputs:
 
 ## Versioning
 
-The current package version is `0.4.0`. For a PyPI alpha, use PEP 440 form
-`0.5.0a1` in `cloudanalyzer/ca/__init__.py`; the matching Git tag can be
+The package version for this alpha is `0.5.0a1` in
+`cloudanalyzer/ca/__init__.py`; the matching Git tag can be
 `v0.5.0-alpha.1`.
 
 Do not publish this as `v0.5.0` until the benchmark/report bundle schema has

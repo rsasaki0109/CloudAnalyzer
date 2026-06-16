@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0-alpha.1] - 2026-06-17
+
 ### Added
 
 - **Benchmark report bundle golden path** — `ca benchmark eval --out <dir>`
@@ -403,6 +405,8 @@ immediately" CLI (`ca evaluate`, `ca downsample`, `ca filter`,
 `ca traj-evaluate`, `ca run-evaluate`, `ca check`, `ca web`, ...) and the
 core / experiments split documented in `docs/architecture.md`.
 
+[0.5.0-alpha.1]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.5.0-alpha.1
+[0.4.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.4.0
 [0.3.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.3.0
 [0.2.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.2.0
 [0.1.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.1.0

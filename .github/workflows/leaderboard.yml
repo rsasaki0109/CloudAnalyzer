@@ -48,11 +48,7 @@ jobs:
             echo "Leaderboard snapshot unchanged."
             exit 0
           fi
-          git commit -m "$(cat <<'EOF'
-Refresh SLAM leaderboard snapshot.
-
-Regenerate docs/leaderboard from ca slam-run + ca benchmark eval on the
-bundled synthetic suites (kiss-icp, kiss-slam, small-gicp).
-EOF
-)"
+          git commit \
+            -m "Refresh SLAM leaderboard snapshot." \
+            -m "Regenerate docs/leaderboard from ca slam-run + ca benchmark eval on the bundled synthetic suites (kiss-icp, kiss-slam, small-gicp)."
           git push

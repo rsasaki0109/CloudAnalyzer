@@ -44,7 +44,8 @@ class KissICPSlamDriver:
         max_range = (
             float(request.max_range_m) if request.max_range_m is not None else 100.0
         )
-        config = load_config(None, max_range=max_range)
+        config = load_config(None)
+        config.data.max_range = max_range
         config.data.deskew = bool(request.deskew)
         if request.voxel_size_m is not None:
             config.mapping.voxel_size = float(request.voxel_size_m)

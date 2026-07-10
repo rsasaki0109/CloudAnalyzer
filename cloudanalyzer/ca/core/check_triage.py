@@ -34,6 +34,8 @@ _DIMENSION_GATE_KEYS = {
     "lpips": "max_lpips",
     "awd": "max_awd",
     "scs": "max_scs",
+    "plane_normal_dispersion": "max_plane_normal_dispersion",
+    "coplanar_offset_rmse": "max_coplanar_offset_rmse",
 }
 
 _DIMENSION_LABELS = {
@@ -63,6 +65,8 @@ _DIMENSION_LABELS = {
     "lpips": "lpips",
     "awd": "awd",
     "scs": "scs",
+    "plane_normal_dispersion": "plane_normal_dispersion",
+    "coplanar_offset_rmse": "coplanar_offset_rmse",
 }
 
 
@@ -273,7 +277,7 @@ def _extract_gate_payload(check: dict[str, Any]) -> tuple[dict[str, float], tupl
     result = check.get("result")
     summary = check.get("summary", {})
     gate = None
-    if check["kind"] in {"artifact", "trajectory", "detection", "tracking", "image", "rendered"} and isinstance(result, dict):
+    if check["kind"] in {"artifact", "trajectory", "detection", "tracking", "image", "rendered", "structure"} and isinstance(result, dict):
         gate = result.get("quality_gate")
     elif check["kind"] == "run" and isinstance(result, dict):
         gate = result.get("overall_quality_gate")
@@ -350,6 +354,11 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
         if summary.get("chamfer_distance") is not None:
             rendered_metrics["chamfer"] = float(summary["chamfer_distance"])
         return rendered_metrics
+    if kind == "structure":
+        return {
+            "plane_normal_dispersion": float(summary["plane_normal_dispersion"]),
+            "coplanar_offset_rmse": float(summary["coplanar_offset_rmse"]),
+        }
     if kind == "loop_closure":
         metrics = {
             "map_auc_gain": float(summary["map_auc_gain"]),

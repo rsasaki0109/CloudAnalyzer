@@ -448,11 +448,6 @@ def scan_match_debug_cmd(
         "--artifact-dir",
         help="Optional directory for colored before/after scan PLY artifacts.",
     ),
-    structure_voxel_size: float = typer.Option(
-        3.0,
-        "--structure-voxel-size",
-        help="Voxel size in meters for AWD/SCS (MapEval uses 3.0 m). Set 0 to disable.",
-    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -470,7 +465,6 @@ def scan_match_debug_cmd(
             crop_margin=crop_margin,
             threshold=threshold,
             artifact_dir=artifact_dir,
-            structure_voxel_size=structure_voxel_size,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -756,6 +750,11 @@ def map_evaluate_cmd(
         "--artifact-dir",
         help="Optional output dir for visualization artifacts (colored PLY error maps).",
     ),
+    structure_voxel_size: float = typer.Option(
+        3.0,
+        "--structure-voxel-size",
+        help="Voxel size in meters for AWD/SCS (MapEval uses 3.0 m). Set 0 to disable.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -787,6 +786,7 @@ def map_evaluate_cmd(
             align_mode=align_mode,
             initial_transform_4x4=init_4x4,
             artifact_dir=artifact_dir,
+            structure_voxel_size=structure_voxel_size,
         )
         result = NNThresholdMapEvaluateStrategy().evaluate(req)
     except (FileNotFoundError, ValueError) as e:
@@ -1426,6 +1426,34 @@ def mme_cmd(
             typer.echo(f"Used:      {result['num_points_used']:,}")
         typer.echo(f"k:         {result['k_neighbors']}")
         typer.echo(f"MME:       {result['mme']:.4f}")
+    if output_json:
+        _dump_json(result, output_json)
+
+
+@app.command("plane-consistency")
+def plane_consistency_cmd(
+    path: str = typer.Argument(..., help="Point cloud file (no ground truth required)"),
+    voxel_size: float = typer.Option(1.0, "--voxel-size", help="Local patch voxel size in meters"),
+    min_points: int = typer.Option(12, "--min-points", help="Minimum points per local patch"),
+    output_json: Optional[str] = typer.Option(None, "--output-json"),
+    format_json: bool = typer.Option(False, "--format-json"),
+) -> None:
+    """Experimental PNE/CPV-inspired plane-consistency proxies."""
+    from ca.core.plane_consistency import evaluate_plane_consistency
+
+    try:
+        result = evaluate_plane_consistency(
+            path, voxel_size=voxel_size, min_points=min_points
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        typer.echo("Experimental proxy (not the published PNE/CPV metrics)")
+        typer.echo(f"Plane normal dispersion: {result['plane_normal_dispersion']:.6f}")
+        typer.echo(f"Coplanar offset RMSE:    {result['coplanar_offset_rmse']:.6f} m")
+        typer.echo(f"Plane patches:           {result['num_plane_patches']}")
     if output_json:
         _dump_json(result, output_json)
 

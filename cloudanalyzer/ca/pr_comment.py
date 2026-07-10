@@ -96,6 +96,7 @@ _RUN_METRIC_KEYS = (
 )
 _IMAGE_METRIC_KEYS = ("psnr_mean", "ssim_mean")
 _RENDERED_METRIC_KEYS = ("psnr_mean", "ssim_mean", "lpips_mean", "auc", "chamfer_distance")
+_STRUCTURE_METRIC_KEYS = ("plane_normal_dispersion", "coplanar_offset_rmse", "num_plane_patches")
 
 
 _METRIC_LABELS = {
@@ -122,6 +123,9 @@ _METRIC_LABELS = {
     "lpips_mean": "LPIPS",
     "awd_m": "AWD",
     "scs": "SCS",
+    "plane_normal_dispersion": "Plane normal dispersion",
+    "coplanar_offset_rmse": "Coplanar offset RMSE",
+    "num_plane_patches": "Plane patches",
 }
 
 
@@ -134,6 +138,8 @@ def _check_metric_keys(kind: str) -> tuple[str, ...]:
         return _IMAGE_METRIC_KEYS
     if kind == "rendered":
         return _RENDERED_METRIC_KEYS
+    if kind == "structure":
+        return _STRUCTURE_METRIC_KEYS
     return _ARTIFACT_METRIC_KEYS
 
 
@@ -142,7 +148,7 @@ def _fmt_metric_value(key: str, value: float) -> str:
         return f"{value:.1%}"
     if key == "psnr_mean":
         return f"{value:.4f} dB"
-    if key == "awd_m":
+    if key in {"awd_m", "coplanar_offset_rmse"}:
         return f"{value:.4f} m"
     return f"{value:.4f}"
 

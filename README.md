@@ -465,7 +465,7 @@ Full per-command reference lives under **[docs/commands/](docs/commands/)**. Qui
 | Group | Commands | Reference |
 |---|---|---|
 | Single-artifact QA | `evaluate`, `compare`, `diff`, `pipeline`, `scan-match-debug` | [evaluate.md](docs/commands/evaluate.md), [compare.md](docs/commands/compare.md) |
-| Map / SLAM run QA | `map-evaluate`, `run-evaluate`, `run-batch`, `loop-closure-report`, `posegraph-validate` | [analysis.md](docs/commands/analysis.md) |
+| Map / SLAM run QA | `map-evaluate`, `plane-consistency`, `run-evaluate`, `run-batch`, `loop-closure-report`, `posegraph-validate` | [analysis.md](docs/commands/analysis.md), [plane-consistency.md](docs/commands/plane-consistency.md) |
 | Trajectory QA | `traj-evaluate`, `traj-batch` | [analysis.md](docs/commands/analysis.md) |
 | Perception QA | `ground-evaluate`, `detection-evaluate`, `tracking-evaluate` | [analysis.md](docs/commands/analysis.md) |
 | Cross-representation | `geometry-evaluate`, `image-evaluate`, `rendered-evaluate` | [geometry-evaluate.md](docs/commands/geometry-evaluate.md), [image-evaluate.md](docs/commands/image-evaluate.md), [rendered-evaluate.md](docs/commands/rendered-evaluate.md) |

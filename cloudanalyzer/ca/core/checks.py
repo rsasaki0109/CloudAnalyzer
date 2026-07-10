@@ -58,6 +58,7 @@ CheckKind = Literal[
     "loop_closure",
     "image",
     "rendered",
+    "structure",
 ]
 AlignmentMode = Literal["none", "origin", "rigid"]
 
@@ -85,6 +86,8 @@ _KIND_ALIASES: dict[str, CheckKind] = {
     "rendered": "rendered",
     "rendered_evaluate": "rendered",
     "3dgs": "rendered",
+    "structure": "structure",
+    "plane_consistency": "structure",
 }
 
 _VALID_GATE_KEYS = {
@@ -114,6 +117,8 @@ _VALID_GATE_KEYS = {
     "max_lpips",
     "max_awd",
     "max_scs",
+    "max_plane_normal_dispersion",
+    "max_coplanar_offset_rmse",
     "severity",
 }
 
@@ -154,6 +159,7 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
     },
     "image": {"min_psnr", "min_ssim"},
     "rendered": {"min_psnr", "min_ssim", "max_lpips", "min_auc", "max_chamfer"},
+    "structure": {"max_plane_normal_dispersion", "max_coplanar_offset_rmse", "voxel_size"},
 }
 
 
@@ -667,6 +673,8 @@ def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Pa
         return _normalize_image_inputs(raw_check, config_dir)
     if kind == "rendered":
         return _normalize_rendered_inputs(raw_check, config_dir)
+    if kind == "structure":
+        return {"source": _resolve_path(config_dir, _require_string(raw_check.get("source", raw_check.get("path")), "check.source"))}
     return _normalize_run_batch_inputs(raw_check, config_dir)
 
 
@@ -1794,6 +1802,48 @@ def _run_check(spec: CheckSpec) -> dict[str, Any]:
         result = _run_image_check(spec)
     elif spec.kind == "rendered":
         result = _run_rendered_check(spec)
+    elif spec.kind == "structure":
+        from ca.core.plane_consistency import evaluate_plane_consistency
+
+        metrics = evaluate_plane_consistency(
+            spec.inputs["source"], voxel_size=float(spec.gate.get("voxel_size", 1.0))
+        )
+        reasons: list[str] = []
+        for metric, gate_key in (
+            ("plane_normal_dispersion", "max_plane_normal_dispersion"),
+            ("coplanar_offset_rmse", "max_coplanar_offset_rmse"),
+        ):
+            threshold = spec.gate.get(gate_key)
+            value = float(metrics[metric])
+            if threshold is not None and (not math.isfinite(value) or value > float(threshold)):
+                reasons.append(f"{metric} {value:.4f} > {gate_key} {float(threshold):.4f}")
+        gate = None if not any(k.startswith("max_") for k in spec.gate) else {
+            "passed": not reasons,
+            "max_plane_normal_dispersion": spec.gate.get("max_plane_normal_dispersion"),
+            "max_coplanar_offset_rmse": spec.gate.get("max_coplanar_offset_rmse"),
+            "reasons": reasons,
+        }
+        metrics["quality_gate"] = gate
+        if spec.outputs.report_path:
+            report = (
+                "# Experimental plane consistency\n\n"
+                "> PNE/CPV-inspired proxy; not a reproduction of the published metrics.\n\n"
+                f"- Plane normal dispersion: {metrics['plane_normal_dispersion']:.6f}\n"
+                f"- Coplanar offset RMSE: {metrics['coplanar_offset_rmse']:.6f} m\n"
+                f"- Plane patches: {metrics['num_plane_patches']}\n"
+            )
+            output = Path(spec.outputs.report_path)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(report, encoding="utf-8")
+        if spec.outputs.json_path:
+            _write_json(spec.outputs.json_path, metrics)
+        result = {
+            "id": spec.check_id, "kind": spec.kind,
+            "passed": None if gate is None else gate["passed"],
+            "report_path": spec.outputs.report_path, "json_path": spec.outputs.json_path,
+            "summary": {k: metrics[k] for k in ("plane_normal_dispersion", "coplanar_offset_rmse", "num_plane_patches")} | {"passed": None if gate is None else gate["passed"]},
+            "result": metrics,
+        }
     else:
         result = _run_run_batch_check(spec)
     result["severity"] = spec.severity

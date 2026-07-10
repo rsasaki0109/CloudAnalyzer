@@ -6,6 +6,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Experimental reference-free `ca plane-consistency` evaluation and
+  `kind: structure` CI checks. The deterministic
+  `plane_normal_dispersion` / `coplanar_offset_rmse` metrics are
+  PNE/CPV-inspired local-plane proxies, not claims of reproducing the
+  published metrics; they surface in gates, triage, JSON, and PR comments.
+
 ## [0.5.0-alpha.1] - 2026-06-17
 
 ### Added

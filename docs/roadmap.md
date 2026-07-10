@@ -74,6 +74,15 @@ This completes the strategy: photometric (Phases 30–34) and geometric
 
 ### 4. Follow-ups (in priority order)
 
+### Phase 36 — reference-free plane consistency (experimental)
+
+`ca plane-consistency` and `kind: structure` extend the existing MME surface
+with deterministic local-plane proxies: `plane_normal_dispersion` and
+`coplanar_offset_rmse`. They are inspired by the PNE/CPV topology direction in
+Ouyang et al. (2023/2025), but are explicitly not presented as faithful PNE or
+CPV reproductions because the complete 2025 equations are not publicly
+available. Both proxies are lower-is-better and require no ground-truth map.
+
 - **MS-SSIM** — deferred from Phase 32; pure numpy/scipy, no extra required. Small.
 - **v0.5.0 stable** — after alpha feedback.
 - **CI actions refresh** — resolve the Node.js 20 deprecation warnings

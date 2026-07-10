@@ -20,11 +20,6 @@ from ca.bundle import (
 from cloudanalyzer_cli.main import app
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-SUITE_REGRESSION = REPO_ROOT / "benchmarks/public/stanford-bunny-mini/expected/suite-regression.summary.json"
-SUITE_PASS = REPO_ROOT / "benchmarks/public/stanford-bunny-mini/expected/suite-pass.summary.json"
-
-
 # ---------------------------------------------------------------- helpers
 
 
@@ -225,13 +220,16 @@ def test_show_returns_metadata_and_toc(tmp_path: Path) -> None:
     assert "metadata.json" in paths
 
 
-def test_pack_real_check_summary(tmp_path: Path) -> None:
-    """Use the bundled stanford-bunny-mini summary as a realistic fixture."""
+def test_pack_real_check_summary(
+    tmp_path: Path, public_benchmark_summary_paths: tuple[Path, Path]
+) -> None:
+    """Use a realistic public-pack-shaped summary fixture."""
+    suite_pass, suite_regression = public_benchmark_summary_paths
     bundle = tmp_path / "qa.zip"
     meta = pack_bundle(
-        str(SUITE_REGRESSION),
+        str(suite_regression),
         str(bundle),
-        baseline_path=str(SUITE_PASS),
+        baseline_path=str(suite_pass),
         project="dogfood",
     )
     assert meta.summary_kind == "check_suite"
@@ -366,12 +364,15 @@ def test_diff_rejects_mismatched_summary_kind(tmp_path: Path) -> None:
         diff_bundles(str(old_bundle), str(new_bundle))
 
 
-def test_diff_real_bundles_renders_delta_table(tmp_path: Path) -> None:
+def test_diff_real_bundles_renders_delta_table(
+    tmp_path: Path, public_benchmark_summary_paths: tuple[Path, Path]
+) -> None:
     """End-to-end: pack the bundled stanford fixtures and render a diff."""
     old_bundle = tmp_path / "pass.zip"
     new_bundle = tmp_path / "regression.zip"
-    pack_bundle(str(SUITE_PASS), str(old_bundle), project="demo", git_commit="abc")
-    pack_bundle(str(SUITE_REGRESSION), str(new_bundle), project="demo", git_commit="def")
+    suite_pass, suite_regression = public_benchmark_summary_paths
+    pack_bundle(str(suite_pass), str(old_bundle), project="demo", git_commit="abc")
+    pack_bundle(str(suite_regression), str(new_bundle), project="demo", git_commit="def")
     diff = diff_bundles(str(old_bundle), str(new_bundle))
     md = render_diff_markdown(diff)
     assert "## CloudAnalyzer Bundle Diff" in md
@@ -381,11 +382,14 @@ def test_diff_real_bundles_renders_delta_table(tmp_path: Path) -> None:
     assert "AUC=0.5282 (was 1.0000 ↓)" in md
 
 
-def test_cli_bundle_diff(tmp_path: Path) -> None:
+def test_cli_bundle_diff(
+    tmp_path: Path, public_benchmark_summary_paths: tuple[Path, Path]
+) -> None:
     old_bundle = tmp_path / "old.zip"
     new_bundle = tmp_path / "new.zip"
-    pack_bundle(str(SUITE_PASS), str(old_bundle), project="p", git_commit="abc")
-    pack_bundle(str(SUITE_REGRESSION), str(new_bundle), project="p", git_commit="def")
+    suite_pass, suite_regression = public_benchmark_summary_paths
+    pack_bundle(str(suite_pass), str(old_bundle), project="p", git_commit="abc")
+    pack_bundle(str(suite_regression), str(new_bundle), project="p", git_commit="def")
 
     runner = CliRunner()
     out_file = tmp_path / "diff.md"

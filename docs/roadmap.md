@@ -74,6 +74,12 @@ This completes the strategy: photometric (Phases 30–34) and geometric
 
 ### 4. Follow-ups (in priority order)
 
+### Phase 37 — DreamSim perceptual distance
+
+`ca image-evaluate` and `ca rendered-evaluate` accept
+`dreamsim_distance`, a lower-is-better holistic perceptual metric, with
+`max_dreamsim_distance` gates for `kind: image` and `kind: rendered`.
+
 ### Phase 36 — reference-free plane consistency (experimental)
 
 `ca plane-consistency` and `kind: structure` extend the existing MME surface

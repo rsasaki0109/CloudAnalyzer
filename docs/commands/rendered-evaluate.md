@@ -46,7 +46,7 @@ layouts above.
 |---|---|
 | `--cameras PATH` | Camera bundle (required) |
 | `--reference-pointcloud PATH` | Optional reference scan for Chamfer / AUC / F1 geometry QA |
-| `--metrics psnr,ssim,lpips` | Photometric metrics (`lpips` needs `[gs]`) |
+| `--metrics psnr,ssim,lpips,dreamsim_distance` | Photometric metrics; learned metrics need `[perceptual]` (rendering itself needs `[gs]`) |
 | `--opacity-threshold 0.5` | Drop low-alpha splats before rendering |
 | `--geometry-opacity-threshold` | Separate opacity filter for geometry (defaults to render threshold) |
 | `--geometry-voxel 0.05` | Voxel-downsample before geometry QA |

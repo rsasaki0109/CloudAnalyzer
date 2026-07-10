@@ -25,7 +25,9 @@ import numpy as np
 import pytest
 
 from ca.core.image_evaluate import (
+    DREAMSIM_INSTALL_HINT,
     ImageEvalRequest,
+    dreamsim_distance,
     image_evaluate,
     psnr,
     ssim,
@@ -202,6 +204,43 @@ def test_image_evaluate_max_pairs_caps_iteration(tmp_path: Path) -> None:
         )
     )
     assert result.summary["pairs_evaluated"] == 2
+
+
+def test_dreamsim_metric_uses_injected_backend_without_model_download(tmp_path: Path) -> None:
+    rendered, reference = _build_image_pair_fixture(tmp_path, n_pairs=2)
+    calls: list[tuple[tuple[int, ...], tuple[int, ...]]] = []
+
+    def fake_dreamsim(candidate: np.ndarray, target: np.ndarray) -> float:
+        calls.append((candidate.shape, target.shape))
+        return float(np.mean(np.abs(candidate - target)))
+
+    result = image_evaluate(
+        ImageEvalRequest(
+            rendered_dir=rendered,
+            reference_dir=reference,
+            metrics=("dreamsim_distance",),
+            metric_functions={"dreamsim_distance": fake_dreamsim},
+        )
+    )
+    assert len(calls) == 2
+    assert result.summary["dreamsim_distance_mean"] is not None
+    assert all("dreamsim_distance" in pair for pair in result.pairs)
+
+
+def test_dreamsim_missing_dependency_has_actionable_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    import builtins
+
+    original_import = builtins.__import__
+
+    def reject_dreamsim(name: str, *args: object, **kwargs: object) -> object:
+        if name == "dreamsim":
+            raise ImportError("not installed")
+        return original_import(name, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "__import__", reject_dreamsim)
+    with pytest.raises(ValueError, match="cloudanalyzer\\[perceptual\\]"):
+        dreamsim_distance(np.zeros((4, 4, 3)), np.zeros((4, 4, 3)))
+    assert "downloads model weights" in DREAMSIM_INSTALL_HINT
 
 
 # ---------------------------------------------------------------------------

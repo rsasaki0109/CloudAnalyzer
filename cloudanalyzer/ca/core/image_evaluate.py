@@ -19,7 +19,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from pathlib import Path
 from statistics import fmean, median
-from typing import Any
+from typing import Any, Callable, Mapping
 
 import numpy as np
 
@@ -56,6 +56,10 @@ class ImageEvalRequest:
 
     max_pairs: int | None = None
     """Optional cap on number of pairs evaluated. ``None`` evaluates all."""
+
+    metric_functions: Mapping[str, Callable[[np.ndarray, np.ndarray], float]] | None = None
+    """Optional metric overrides for tests/integrators. This avoids importing
+    optional model packages or downloading weights in ordinary unit tests."""
 
 
 @dataclass(slots=True)
@@ -221,6 +225,10 @@ LPIPS_INSTALL_HINT = (
     "LPIPS requires optional dependencies.\n"
     'Install with: pip install "cloudanalyzer[gs]"'
 )
+DREAMSIM_INSTALL_HINT = (
+    "DreamSim requires optional dependencies and downloads model weights on first use.\n"
+    'Install with: pip install "cloudanalyzer[perceptual]"'
+)
 
 
 def lpips(rendered: np.ndarray, reference: np.ndarray) -> float:
@@ -255,10 +263,45 @@ def lpips(rendered: np.ndarray, reference: np.ndarray) -> float:
     return float(score.item())
 
 
+def dreamsim_distance(rendered: np.ndarray, reference: np.ndarray) -> float:
+    """Official DreamSim perceptual distance. Lower is more similar."""
+    if rendered.shape != reference.shape:
+        raise ValueError(
+            f"DreamSim input shape mismatch: {rendered.shape} vs {reference.shape}"
+        )
+    try:
+        import torch
+        from dreamsim import dreamsim as load_dreamsim
+        from PIL import Image
+    except ImportError as exc:
+        raise ValueError(DREAMSIM_INSTALL_HINT) from exc
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # The official API returns (model, preprocess); pretrained=True may fetch
+    # weights on first use. Keep construction cached across image pairs.
+    cache = getattr(dreamsim_distance, "_cache", {})
+    key = str(device)
+    if key not in cache:
+        model, preprocess = load_dreamsim(pretrained=True, device=device)
+        model.eval()
+        cache[key] = (model, preprocess)
+        setattr(dreamsim_distance, "_cache", cache)
+    model, preprocess = cache[key]
+
+    def prepare(image: np.ndarray) -> Any:
+        uint8 = np.rint(np.clip(image, 0.0, 1.0) * 255.0).astype(np.uint8)
+        return preprocess(Image.fromarray(uint8, mode="RGB")).to(device)
+
+    with torch.no_grad():
+        distance = model(prepare(rendered), prepare(reference))
+    return float(distance.reshape(-1)[0].item())
+
+
 _METRIC_FUNCS: dict[str, Any] = {
     "psnr": psnr,
     "ssim": ssim,
     "lpips": lpips,
+    "dreamsim_distance": dreamsim_distance,
 }
 
 
@@ -272,8 +315,9 @@ def image_evaluate(request: ImageEvalRequest) -> ImageEvalResult:
     pairs are counted in ``summary.pairs_size_mismatch`` and skipped.
     """
 
+    metric_funcs = {**_METRIC_FUNCS, **dict(request.metric_functions or {})}
     for m in request.metrics:
-        if m not in _METRIC_FUNCS:
+        if m not in metric_funcs:
             raise ValueError(
                 f"Unknown metric '{m}'. Available: {sorted(_METRIC_FUNCS)}"
             )
@@ -302,7 +346,7 @@ def image_evaluate(request: ImageEvalRequest) -> ImageEvalResult:
             "shape": list(rendered_img.shape),
         }
         for m in request.metrics:
-            fn = _METRIC_FUNCS[m]
+            fn = metric_funcs[m]
             if m == "ssim":
                 value = fn(
                     rendered_img,
@@ -350,6 +394,8 @@ __all__ = [
     "ImageEvalRequest",
     "ImageEvalResult",
     "LPIPS_INSTALL_HINT",
+    "DREAMSIM_INSTALL_HINT",
+    "dreamsim_distance",
     "image_evaluate",
     "lpips",
     "psnr",

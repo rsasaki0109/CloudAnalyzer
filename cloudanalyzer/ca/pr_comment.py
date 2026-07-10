@@ -94,8 +94,8 @@ _RUN_METRIC_KEYS = (
     "trajectory_drift_endpoint",
     "coverage_ratio",
 )
-_IMAGE_METRIC_KEYS = ("psnr_mean", "ssim_mean")
-_RENDERED_METRIC_KEYS = ("psnr_mean", "ssim_mean", "lpips_mean", "auc", "chamfer_distance")
+_IMAGE_METRIC_KEYS = ("psnr_mean", "ssim_mean", "dreamsim_distance_mean")
+_RENDERED_METRIC_KEYS = ("psnr_mean", "ssim_mean", "lpips_mean", "dreamsim_distance_mean", "auc", "chamfer_distance")
 _STRUCTURE_METRIC_KEYS = ("plane_normal_dispersion", "coplanar_offset_rmse", "num_plane_patches")
 
 
@@ -121,6 +121,7 @@ _METRIC_LABELS = {
     "psnr_mean": "PSNR",
     "ssim_mean": "SSIM",
     "lpips_mean": "LPIPS",
+    "dreamsim_distance_mean": "DreamSim distance",
     "awd_m": "AWD",
     "scs": "SCS",
     "plane_normal_dispersion": "Plane normal dispersion",

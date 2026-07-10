@@ -835,7 +835,7 @@ def image_evaluate_cmd(
     metrics: str = typer.Option(
         "psnr,ssim",
         "--metrics",
-        help="Comma-separated metrics to compute: psnr, ssim, lpips (lpips needs cloudanalyzer[gs]).",
+        help="Comma-separated metrics: psnr, ssim, lpips, dreamsim_distance (learned metrics need an optional extra).",
     ),
     extensions: str = typer.Option(
         ".png,.jpg,.jpeg",
@@ -956,7 +956,7 @@ def rendered_evaluate_cmd(
     metrics: str = typer.Option(
         "psnr,ssim",
         "--metrics",
-        help="Comma-separated photometric metrics: psnr, ssim, lpips.",
+        help="Comma-separated photometric metrics: psnr, ssim, lpips, dreamsim_distance.",
     ),
     opacity_threshold: Optional[float] = typer.Option(
         None,

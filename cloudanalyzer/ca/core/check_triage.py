@@ -32,6 +32,7 @@ _DIMENSION_GATE_KEYS = {
     "psnr": "min_psnr",
     "ssim": "min_ssim",
     "lpips": "max_lpips",
+    "dreamsim_distance": "max_dreamsim_distance",
     "awd": "max_awd",
     "scs": "max_scs",
     "plane_normal_dispersion": "max_plane_normal_dispersion",
@@ -63,6 +64,7 @@ _DIMENSION_LABELS = {
     "psnr": "psnr",
     "ssim": "ssim",
     "lpips": "lpips",
+    "dreamsim_distance": "dreamsim_distance",
     "awd": "awd",
     "scs": "scs",
     "plane_normal_dispersion": "plane_normal_dispersion",
@@ -340,6 +342,8 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
             metrics["psnr"] = float(summary["psnr_mean"])
         if summary.get("ssim_mean") is not None:
             metrics["ssim"] = float(summary["ssim_mean"])
+        if summary.get("dreamsim_distance_mean") is not None:
+            metrics["dreamsim_distance"] = float(summary["dreamsim_distance_mean"])
         return metrics
     if kind == "rendered":
         rendered_metrics: dict[str, float] = {}
@@ -349,6 +353,8 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
             rendered_metrics["ssim"] = float(summary["ssim_mean"])
         if summary.get("lpips_mean") is not None:
             rendered_metrics["lpips"] = float(summary["lpips_mean"])
+        if summary.get("dreamsim_distance_mean") is not None:
+            rendered_metrics["dreamsim_distance"] = float(summary["dreamsim_distance_mean"])
         if summary.get("auc") is not None:
             rendered_metrics["auc"] = float(summary["auc"])
         if summary.get("chamfer_distance") is not None:

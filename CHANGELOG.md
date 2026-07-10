@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Optional DreamSim perceptual distance for `image-evaluate` and
+  `rendered-evaluate`, including `max_dreamsim_distance` config gates,
+  triage, PR-comment deltas, and a `[perceptual]` dependency extra. The first
+  real invocation may download official pretrained weights.
+
 - Experimental reference-free `ca plane-consistency` evaluation and
   `kind: structure` CI checks. The deterministic
   `plane_normal_dispersion` / `coplanar_offset_rmse` metrics are

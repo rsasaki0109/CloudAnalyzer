@@ -41,7 +41,7 @@ inputs are promoted to RGB by replicating the single channel.
 
 | Option | Description |
 |---|---|
-| `--metrics psnr,ssim` | Comma-separated metric list. Defaults to both. |
+| `--metrics psnr,ssim,dreamsim_distance` | Comma-separated metric list. PSNR/SSIM are defaults; DreamSim needs `[perceptual]`. |
 | `--extensions .png,.jpg,.jpeg` | Image extensions discovered under `<rendered_dir>`. |
 | `--ssim-window 11` | Gaussian-window side length used in SSIM (Wang & Bovik 2004 use 11). |
 | `--ssim-sigma 1.5` | Gaussian-window sigma used in SSIM. |
@@ -60,6 +60,9 @@ inputs are promoted to RGB by replicating the single channel.
   (Wang, Bovik et al. 2004). Identical inputs return exactly `1.0`.
   Color inputs are scored per-channel and averaged. Implementation uses
   `scipy.ndimage.gaussian_filter` (no new dependency).
+- **DreamSim distance** — holistic learned perceptual distance; lower is
+  better. Install `cloudanalyzer[perceptual]`. The first invocation may
+  download official pretrained weights; see [DreamSim](dreamsim.md).
 
 ## Examples
 
@@ -105,6 +108,8 @@ checks:
     gate:
       min_psnr: 28.0   # dB
       min_ssim: 0.85
+      # Optional; calibrate against an accepted baseline first.
+      max_dreamsim_distance: 0.25
 ```
 
 `ca check` gates on the aggregate **mean** PSNR / SSIM, emits a per-check

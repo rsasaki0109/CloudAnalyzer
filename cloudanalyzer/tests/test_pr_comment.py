@@ -12,21 +12,14 @@ from ca.pr_comment import build_pr_comment
 from cloudanalyzer_cli.main import app
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-PASS_SUMMARY = REPO_ROOT / "benchmarks/public/stanford-bunny-mini/expected/suite-pass.summary.json"
-REGRESSION_SUMMARY = (
-    REPO_ROOT / "benchmarks/public/stanford-bunny-mini/expected/suite-regression.summary.json"
-)
+@pytest.fixture
+def pass_summary(public_benchmark_summary_paths: tuple[Path, Path]) -> dict:
+    return json.loads(public_benchmark_summary_paths[0].read_text(encoding="utf-8"))
 
 
 @pytest.fixture
-def pass_summary() -> dict:
-    return json.loads(PASS_SUMMARY.read_text(encoding="utf-8"))
-
-
-@pytest.fixture
-def regression_summary() -> dict:
-    return json.loads(REGRESSION_SUMMARY.read_text(encoding="utf-8"))
+def regression_summary(public_benchmark_summary_paths: tuple[Path, Path]) -> dict:
+    return json.loads(public_benchmark_summary_paths[1].read_text(encoding="utf-8"))
 
 
 def test_check_suite_pass(pass_summary: dict) -> None:
@@ -128,23 +121,25 @@ def test_unknown_shape_raises() -> None:
         build_pr_comment({"unrelated": True})
 
 
-def test_cli_writes_to_stdout() -> None:
+def test_cli_writes_to_stdout(public_benchmark_summary_paths: tuple[Path, Path]) -> None:
     runner = CliRunner()
-    result = runner.invoke(app, ["report-pr-comment", str(REGRESSION_SUMMARY)])
+    result = runner.invoke(app, ["report-pr-comment", str(public_benchmark_summary_paths[1])])
     assert result.exit_code == 0, result.output
     assert "## CloudAnalyzer QA: FAIL" in result.output
 
 
-def test_cli_writes_to_file(tmp_path: Path) -> None:
+def test_cli_writes_to_file(
+    tmp_path: Path, public_benchmark_summary_paths: tuple[Path, Path]
+) -> None:
     output = tmp_path / "pr.md"
     runner = CliRunner()
     result = runner.invoke(
         app,
         [
             "report-pr-comment",
-            str(REGRESSION_SUMMARY),
+            str(public_benchmark_summary_paths[1]),
             "--baseline",
-            str(PASS_SUMMARY),
+            str(public_benchmark_summary_paths[0]),
             "--output",
             str(output),
         ],

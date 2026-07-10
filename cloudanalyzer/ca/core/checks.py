@@ -115,6 +115,7 @@ _VALID_GATE_KEYS = {
     "min_psnr",
     "min_ssim",
     "max_lpips",
+    "max_dreamsim_distance",
     "max_awd",
     "max_scs",
     "max_plane_normal_dispersion",
@@ -157,8 +158,8 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_after_ate",
         "require_posegraph_ok",
     },
-    "image": {"min_psnr", "min_ssim"},
-    "rendered": {"min_psnr", "min_ssim", "max_lpips", "min_auc", "max_chamfer"},
+    "image": {"min_psnr", "min_ssim", "max_dreamsim_distance"},
+    "rendered": {"min_psnr", "min_ssim", "max_lpips", "max_dreamsim_distance", "min_auc", "max_chamfer"},
     "structure": {"max_plane_normal_dispersion", "max_coplanar_offset_rmse", "voxel_size"},
 }
 
@@ -500,7 +501,7 @@ def _normalize_ground_inputs(raw_check: dict[str, Any], config_dir: Path) -> dic
 
 def _normalize_image_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
     """Normalize inputs for a photometric (PSNR/SSIM) image check."""
-    return {
+    inputs = {
         "rendered_dir": _resolve_path(
             config_dir,
             _require_string(raw_check.get("rendered_dir"), "check.rendered_dir"),
@@ -510,6 +511,14 @@ def _normalize_image_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict
             _require_string(raw_check.get("reference_dir"), "check.reference_dir"),
         ),
     }
+    metrics_raw = raw_check.get("metrics")
+    if metrics_raw is not None:
+        inputs["metrics"] = (
+            ",".join(str(item).strip() for item in metrics_raw if str(item).strip())
+            if isinstance(metrics_raw, list)
+            else _require_string(metrics_raw, "check.metrics")
+        )
+    return inputs
 
 
 def _normalize_rendered_inputs(raw_check: dict[str, Any], config_dir: Path) -> dict[str, str]:
@@ -1520,20 +1529,27 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
     """Run a single photometric (PSNR/SSIM) image-set QA check."""
     from ca.core.image_evaluate import ImageEvalRequest, image_evaluate  # lazy import
 
+    metrics_raw = spec.inputs.get("metrics", "psnr,ssim")
+    metrics = tuple(item.strip() for item in metrics_raw.split(",") if item.strip())
+    if spec.gate.get("max_dreamsim_distance") is not None and "dreamsim_distance" not in metrics:
+        metrics = (*metrics, "dreamsim_distance")
     result = image_evaluate(
         ImageEvalRequest(
             rendered_dir=Path(spec.inputs["rendered_dir"]),
             reference_dir=Path(spec.inputs["reference_dir"]),
+            metrics=metrics,
         )
     )
     summary = result.summary
     psnr_mean = cast(float | None, summary.get("psnr_mean"))
     ssim_mean = cast(float | None, summary.get("ssim_mean"))
+    dreamsim_mean = cast(float | None, summary.get("dreamsim_distance_mean"))
     pairs_evaluated = int(summary["pairs_evaluated"])
 
     min_psnr = cast(float | None, spec.gate.get("min_psnr"))
     min_ssim = cast(float | None, spec.gate.get("min_ssim"))
-    has_gate = min_psnr is not None or min_ssim is not None
+    max_dreamsim = cast(float | None, spec.gate.get("max_dreamsim_distance"))
+    has_gate = min_psnr is not None or min_ssim is not None or max_dreamsim is not None
 
     gate_reasons: list[str] = []
     if has_gate and pairs_evaluated == 0:
@@ -1553,12 +1569,21 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
             gate_reasons.append(
                 f"SSIM mean {ssim_mean:.4f} < min_ssim {min_ssim:.4f}"
             )
+        if max_dreamsim is not None and (
+            dreamsim_mean is None or dreamsim_mean > max_dreamsim
+        ):
+            gate_reasons.append(
+                "DreamSim distance unavailable"
+                if dreamsim_mean is None
+                else f"DreamSim distance mean {dreamsim_mean:.4f} > max_dreamsim_distance {max_dreamsim:.4f}"
+            )
 
     quality_gate = (
         {
             "passed": not gate_reasons,
             "min_psnr": min_psnr,
             "min_ssim": min_ssim,
+            "max_dreamsim_distance": max_dreamsim,
             "reasons": gate_reasons,
         }
         if has_gate
@@ -1584,6 +1609,7 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
         "summary": {
             "psnr_mean": psnr_mean,
             "ssim_mean": ssim_mean,
+            "dreamsim_distance_mean": dreamsim_mean,
             "pairs_evaluated": pairs_evaluated,
             "pairs_missing_in_reference": int(summary["pairs_missing_in_reference"]),
             "pairs_size_mismatch": int(summary["pairs_size_mismatch"]),
@@ -1606,6 +1632,8 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
         "psnr",
         "ssim",
     )
+    if spec.gate.get("max_dreamsim_distance") is not None and "dreamsim_distance" not in metrics:
+        metrics = (*metrics, "dreamsim_distance")
 
     opacity_threshold = (
         float(spec.inputs["opacity_threshold"])
@@ -1658,15 +1686,17 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
     psnr_mean = cast(float | None, summary.get("psnr_mean"))
     ssim_mean = cast(float | None, summary.get("ssim_mean"))
     lpips_mean = cast(float | None, summary.get("lpips_mean"))
+    dreamsim_mean = cast(float | None, summary.get("dreamsim_distance_mean"))
     pairs_evaluated = int(summary["pairs_evaluated"])
 
     min_psnr = cast(float | None, spec.gate.get("min_psnr"))
     min_ssim = cast(float | None, spec.gate.get("min_ssim"))
     max_lpips = cast(float | None, spec.gate.get("max_lpips"))
+    max_dreamsim = cast(float | None, spec.gate.get("max_dreamsim_distance"))
     min_auc = cast(float | None, spec.gate.get("min_auc"))
     max_chamfer = cast(float | None, spec.gate.get("max_chamfer"))
     has_photometric_gate = (
-        min_psnr is not None or min_ssim is not None or max_lpips is not None
+        min_psnr is not None or min_ssim is not None or max_lpips is not None or max_dreamsim is not None
     )
     has_geometry_gate = min_auc is not None or max_chamfer is not None
     has_gate = has_photometric_gate or has_geometry_gate
@@ -1688,6 +1718,14 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
         if max_lpips is not None and lpips_mean is not None and lpips_mean > max_lpips:
             gate_reasons.append(
                 f"LPIPS mean {lpips_mean:.4f} > max_lpips {max_lpips:.4f}"
+            )
+        if max_dreamsim is not None and (
+            dreamsim_mean is None or dreamsim_mean > max_dreamsim
+        ):
+            gate_reasons.append(
+                "DreamSim distance unavailable"
+                if dreamsim_mean is None
+                else f"DreamSim distance mean {dreamsim_mean:.4f} > max_dreamsim_distance {max_dreamsim:.4f}"
             )
 
     geometry_summary: dict[str, Any] | None = None
@@ -1715,6 +1753,7 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
             "min_psnr": min_psnr,
             "min_ssim": min_ssim,
             "max_lpips": max_lpips,
+            "max_dreamsim_distance": max_dreamsim,
             "min_auc": min_auc,
             "max_chamfer": max_chamfer,
             "reasons": gate_reasons,
@@ -1733,6 +1772,7 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
         "psnr_mean": psnr_mean,
         "ssim_mean": ssim_mean,
         "lpips_mean": lpips_mean,
+        "dreamsim_distance_mean": dreamsim_mean,
         "pairs_evaluated": pairs_evaluated,
         "pairs_missing_in_reference": int(summary["pairs_missing_in_reference"]),
         "pairs_size_mismatch": int(summary["pairs_size_mismatch"]),

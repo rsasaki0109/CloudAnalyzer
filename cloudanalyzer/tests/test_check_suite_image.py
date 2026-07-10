@@ -13,6 +13,7 @@ from pathlib import Path
 from textwrap import dedent
 
 import numpy as np
+import pytest
 
 from ca.core import load_check_suite, run_check_suite
 from ca.pr_comment import build_pr_comment
@@ -187,3 +188,37 @@ def test_image_check_pr_comment_shows_psnr_delta(tmp_path: Path) -> None:
     comment = build_pr_comment(summary, baseline=baseline)
     assert "PSNR" in comment
     assert "↓" in comment  # current PSNR is below the inflated baseline
+
+
+def test_image_check_dreamsim_gate_triage_and_pr_comment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import ca.core.image_evaluate as image_module
+
+    rendered, reference = _build_image_pair_fixture(tmp_path)
+    monkeypatch.setitem(
+        image_module._METRIC_FUNCS,
+        "dreamsim_distance",
+        lambda candidate, target: 0.4,
+    )
+    config = _write_config(
+        tmp_path / "cloudanalyzer.yaml",
+        f"""
+        checks:
+          - id: perceptual
+            kind: image
+            rendered_dir: {rendered.relative_to(tmp_path)}
+            reference_dir: {reference.relative_to(tmp_path)}
+            metrics: [dreamsim_distance]
+            gate:
+              max_dreamsim_distance: 0.25
+        """,
+    )
+    result = run_check_suite(load_check_suite(str(config)))
+    check = result["checks"][0]
+    assert check["passed"] is False
+    assert check["summary"]["dreamsim_distance_mean"] == pytest.approx(0.4)
+    assert result["summary"]["triage"]["items"][0]["failed_dimensions"] == (
+        "dreamsim_distance",
+    )
+    assert "DreamSim distance=0.4000" in build_pr_comment(result)

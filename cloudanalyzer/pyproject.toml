@@ -74,6 +74,12 @@ gs = [
     "torch>=2.0.0",
     "gsplat>=1.0.0",
     "lpips>=0.1.4",
+    "dreamsim>=0.2.1",
+]
+perceptual = [
+    "torch>=2.0.0",
+    "lpips>=0.1.4",
+    "dreamsim>=0.2.1",
 ]
 
 [tool.setuptools]

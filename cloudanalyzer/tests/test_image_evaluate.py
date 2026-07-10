@@ -24,6 +24,30 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+
+def test_frequency_consistency_identical_and_artifact() -> None:
+    from ca.core.image_evaluate import frequency_consistency
+
+    reference = np.zeros((16, 16, 3), dtype=np.float64)
+    reference[4:12, 4:12] = 0.75
+    checkerboard = (np.indices((16, 16)).sum(axis=0) % 2).astype(np.float64)
+    candidate = np.repeat(checkerboard[..., None], 3, axis=2)
+
+    assert frequency_consistency(reference, reference) == pytest.approx(0.0)
+    score = frequency_consistency(candidate, reference)
+    assert 0.0 < score <= 1.0
+
+
+def test_frequency_consistency_flat_reference_policy() -> None:
+    from ca.core.image_evaluate import frequency_consistency
+
+    flat = np.zeros((12, 12, 3), dtype=np.float64)
+    nonflat = flat.copy()
+    nonflat[6, 6] = 1.0
+
+    assert frequency_consistency(flat, flat) == pytest.approx(0.0)
+    assert frequency_consistency(nonflat, flat) == pytest.approx(1.0)
+
 from ca.core.image_evaluate import (
     DREAMSIM_INSTALL_HINT,
     ImageEvalRequest,
@@ -204,6 +228,26 @@ def test_image_evaluate_max_pairs_caps_iteration(tmp_path: Path) -> None:
         )
     )
     assert result.summary["pairs_evaluated"] == 2
+
+
+def test_image_evaluate_frequency_consistency_metadata(tmp_path: Path) -> None:
+    rendered, reference = _build_image_pair_fixture(tmp_path, n_pairs=1)
+    result = image_evaluate(
+        ImageEvalRequest(
+            rendered_dir=rendered,
+            reference_dir=reference,
+            metrics=("frequency_consistency",),
+        )
+    )
+
+    assert result.summary["frequency_consistency_mean"] is not None
+    assert 0.0 <= result.pairs[0]["frequency_consistency"] <= 1.0
+    contract = result.metadata["frequency_consistency"]
+    assert contract["filter"] == "5x5 Laplacian-of-Gaussian"
+    assert contract["padding"] == "zero"
+    assert contract["flat_reference_policy"] == (
+        "both flat = 0; candidate non-flat = 1"
+    )
 
 
 def test_dreamsim_metric_uses_injected_backend_without_model_download(tmp_path: Path) -> None:

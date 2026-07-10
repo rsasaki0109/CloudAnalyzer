@@ -1458,6 +1458,7 @@ def make_image_markdown(result: dict, output_path: str) -> None:
             f"- Status: {'PASS' if gate['passed'] else 'FAIL'}",
             f"- Min PSNR: {_format_optional_float(cast(float | None, gate.get('min_psnr')))}",
             f"- Min SSIM: {_format_optional_float(cast(float | None, gate.get('min_ssim')))}",
+            f"- Max frequency consistency: {_format_optional_float(cast(float | None, gate.get('max_frequency_consistency')))}",
         ]
         if gate["reasons"]:
             lines.append("- Reasons:")
@@ -1505,6 +1506,12 @@ def make_image_html(result: dict, output_path: str) -> None:
             ("Status", "PASS" if gate["passed"] else "FAIL"),
             ("Min PSNR", _format_optional_float(cast(float | None, gate.get("min_psnr")))),
             ("Min SSIM", _format_optional_float(cast(float | None, gate.get("min_ssim")))),
+            (
+                "Max frequency consistency",
+                _format_optional_float(
+                    cast(float | None, gate.get("max_frequency_consistency"))
+                ),
+            ),
         ]
         gate_rows_html = "\n".join(
             f"<tr><th>{escape(label)}</th><td>{escape(value)}</td></tr>"
@@ -1580,6 +1587,7 @@ def make_rendered_markdown(result: dict, output_path: str) -> None:
     renderer = result.get("renderer", {})
     photometric = result.get("photometric", {})
     geometry = result.get("geometry")
+    gate = result.get("quality_gate")
 
     lines = [
         "# CloudAnalyzer Rendered 3DGS Evaluation Report",
@@ -1627,6 +1635,31 @@ def make_rendered_markdown(result: dict, output_path: str) -> None:
                 f"({rep.get('final_count')} points after filters)"
             )
 
+    if isinstance(gate, dict):
+        lines += [
+            "",
+            "## Quality Gate",
+            f"- Status: {'PASS' if gate.get('passed') else 'FAIL'}",
+            "- Min PSNR: "
+            f"{_format_optional_float(cast(float | None, gate.get('min_psnr')))}",
+            "- Min SSIM: "
+            f"{_format_optional_float(cast(float | None, gate.get('min_ssim')))}",
+            "- Max LPIPS: "
+            f"{_format_optional_float(cast(float | None, gate.get('max_lpips')))}",
+            "- Max DreamSim distance: "
+            f"{_format_optional_float(cast(float | None, gate.get('max_dreamsim_distance')))}",
+            "- Max frequency consistency: "
+            f"{_format_optional_float(cast(float | None, gate.get('max_frequency_consistency')))}",
+            "- Min AUC: "
+            f"{_format_optional_float(cast(float | None, gate.get('min_auc')))}",
+            "- Max Chamfer: "
+            f"{_format_optional_float(cast(float | None, gate.get('max_chamfer')))}",
+        ]
+        reasons = gate.get("reasons")
+        if isinstance(reasons, list) and reasons:
+            lines.append("- Reasons:")
+            lines.extend(f"  - {reason}" for reason in reasons)
+
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w") as f:
         f.write("\n".join(lines) + "\n")
@@ -1639,6 +1672,7 @@ def make_rendered_html(result: dict, output_path: str) -> None:
     renderer = result.get("renderer", {})
     photometric = result.get("photometric", {})
     geometry = result.get("geometry")
+    gate = result.get("quality_gate")
     summary = photometric.get("summary", {})
     metrics = metadata.get("metrics", ["psnr", "ssim"])
 
@@ -1689,6 +1723,46 @@ def make_rendered_html(result: dict, output_path: str) -> None:
             + "</tbody></table>"
         )
 
+    gate_html = ""
+    if isinstance(gate, dict):
+        gate_rows = [
+            ("Status", "PASS" if gate.get("passed") else "FAIL"),
+            ("Min PSNR", _format_optional_float(cast(float | None, gate.get("min_psnr")))),
+            ("Min SSIM", _format_optional_float(cast(float | None, gate.get("min_ssim")))),
+            ("Max LPIPS", _format_optional_float(cast(float | None, gate.get("max_lpips")))),
+            (
+                "Max DreamSim distance",
+                _format_optional_float(
+                    cast(float | None, gate.get("max_dreamsim_distance"))
+                ),
+            ),
+            (
+                "Max frequency consistency",
+                _format_optional_float(
+                    cast(float | None, gate.get("max_frequency_consistency"))
+                ),
+            ),
+            ("Min AUC", _format_optional_float(cast(float | None, gate.get("min_auc")))),
+            (
+                "Max Chamfer",
+                _format_optional_float(cast(float | None, gate.get("max_chamfer"))),
+            ),
+        ]
+        reasons = gate.get("reasons")
+        reasons_html = ""
+        if isinstance(reasons, list) and reasons:
+            reasons_html = "<h3>Gate Reasons</h3><ul>" + "".join(
+                f"<li>{escape(str(reason))}</li>" for reason in reasons
+            ) + "</ul>"
+        gate_html = (
+            "<h2>Quality Gate</h2><table><tbody>"
+            + "".join(
+                f"<tr><th>{escape(label)}</th><td>{escape(value)}</td></tr>"
+                for label, value in gate_rows
+            )
+            + f"</tbody></table>{reasons_html}"
+        )
+
     html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1718,6 +1792,7 @@ def make_rendered_html(result: dict, output_path: str) -> None:
   </table>
 
   {geometry_html}
+  {gate_html}
 </body>
 </html>
 """

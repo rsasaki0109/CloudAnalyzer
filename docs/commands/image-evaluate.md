@@ -41,7 +41,7 @@ inputs are promoted to RGB by replicating the single channel.
 
 | Option | Description |
 |---|---|
-| `--metrics psnr,ssim,dreamsim_distance` | Comma-separated metric list. PSNR/SSIM are defaults; DreamSim needs `[perceptual]`. |
+| `--metrics psnr,ssim,dreamsim_distance,frequency_consistency` | Comma-separated metric list. PSNR/SSIM are defaults; DreamSim needs `[perceptual]`; FCM uses NumPy/SciPy only. |
 | `--extensions .png,.jpg,.jpeg` | Image extensions discovered under `<rendered_dir>`. |
 | `--ssim-window 11` | Gaussian-window side length used in SSIM (Wang & Bovik 2004 use 11). |
 | `--ssim-sigma 1.5` | Gaussian-window sigma used in SSIM. |
@@ -63,6 +63,10 @@ inputs are promoted to RGB by replicating the single channel.
 - **DreamSim distance** — holistic learned perceptual distance; lower is
   better. Install `cloudanalyzer[perceptual]`. The first invocation may
   download official pretrained weights; see [DreamSim](dreamsim.md).
+- **Frequency consistency** — reference-based 3DGS artifact score using a
+  grayscale 5x5 LoG response and normalized Frobenius error. Lower is better;
+  see the exact definition and flat-reference rule in
+  [Frequency Consistency Metric](frequency-consistency.md).
 
 ## Examples
 
@@ -110,6 +114,7 @@ checks:
       min_ssim: 0.85
       # Optional; calibrate against an accepted baseline first.
       max_dreamsim_distance: 0.25
+      max_frequency_consistency: 0.12
 ```
 
 `ca check` gates on the aggregate **mean** PSNR / SSIM, emits a per-check

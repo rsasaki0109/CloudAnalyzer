@@ -1,7 +1,7 @@
 # `ca rendered-evaluate`
 
 Render a 3D Gaussian Splatting PLY at supplied camera poses, score the
-images photometrically (PSNR / SSIM / LPIPS), and optionally run geometry
+images photometrically (PSNR / SSIM / LPIPS / FCM), and optionally run geometry
 QA against a reference point cloud — one command for the full 3DGS
 regression gate.
 
@@ -46,7 +46,7 @@ layouts above.
 |---|---|
 | `--cameras PATH` | Camera bundle (required) |
 | `--reference-pointcloud PATH` | Optional reference scan for Chamfer / AUC / F1 geometry QA |
-| `--metrics psnr,ssim,lpips,dreamsim_distance` | Photometric metrics; learned metrics need `[perceptual]` (rendering itself needs `[gs]`) |
+| `--metrics psnr,ssim,lpips,dreamsim_distance,frequency_consistency` | Image metrics; learned metrics need `[perceptual]`, FCM uses NumPy/SciPy (rendering itself needs `[gs]`) |
 | `--opacity-threshold 0.5` | Drop low-alpha splats before rendering |
 | `--geometry-opacity-threshold` | Separate opacity filter for geometry (defaults to render threshold) |
 | `--geometry-voxel 0.05` | Voxel-downsample before geometry QA |
@@ -90,15 +90,21 @@ checks:
     cameras: outputs/transforms.json
     reference_dir: baselines/renders/
     reference_pointcloud: baselines/reference.pcd
-    metrics: psnr,ssim,lpips
+    metrics: psnr,ssim,lpips,frequency_consistency
     gate:
       min_psnr: 28.0
       min_ssim: 0.85
+      max_frequency_consistency: 0.12
       max_chamfer: 0.15
 ```
 
 Photometric and geometry means flow into `ca report-pr-comment` like other check kinds.
 See [../ci.md](../ci.md).
+
+Frequency consistency follows the paper-defined grayscale 5x5 LoG,
+zero-padding, and normalized-Frobenius formulation. See
+[Frequency Consistency Metric](frequency-consistency.md) for its exact
+`[0, 1]` range and flat-reference policy.
 
 For CPU-only CI runners (no gsplat/CUDA), set `skip_render: true` and point
 `rendered_dir` at pre-rendered PNGs; geometry QA still runs against the splat PLY.

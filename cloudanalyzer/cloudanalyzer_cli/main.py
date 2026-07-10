@@ -835,7 +835,10 @@ def image_evaluate_cmd(
     metrics: str = typer.Option(
         "psnr,ssim",
         "--metrics",
-        help="Comma-separated metrics: psnr, ssim, lpips, dreamsim_distance (learned metrics need an optional extra).",
+        help=(
+            "Comma-separated metrics: psnr, ssim, lpips, dreamsim_distance, "
+            "frequency_consistency (learned metrics need an optional extra)."
+        ),
     ),
     extensions: str = typer.Option(
         ".png,.jpg,.jpeg",
@@ -862,7 +865,7 @@ def image_evaluate_cmd(
         False, "--format-json", help="Print the result as JSON to stdout."
     ),
 ) -> None:
-    """Score rendered images against a reference set on PSNR / SSIM.
+    """Score rendered images against references, including 3DGS artifact FCM.
 
     The first photometric eval surface in CloudAnalyzer. Pairs images by
     filename across the two directories and emits per-pair metrics plus
@@ -956,7 +959,10 @@ def rendered_evaluate_cmd(
     metrics: str = typer.Option(
         "psnr,ssim",
         "--metrics",
-        help="Comma-separated photometric metrics: psnr, ssim, lpips, dreamsim_distance.",
+        help=(
+            "Comma-separated metrics: psnr, ssim, lpips, dreamsim_distance, "
+            "frequency_consistency."
+        ),
     ),
     opacity_threshold: Optional[float] = typer.Option(
         None,

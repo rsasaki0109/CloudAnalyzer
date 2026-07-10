@@ -33,13 +33,16 @@ def _write_config(path: Path, text: str) -> Path:
     return path
 
 
-def _mock_rendered_result(*, psnr: float = 40.0, ssim: float = 0.99, auc: float = 0.9) -> RenderedEvalResult:
+def _mock_rendered_result(
+    *, psnr: float = 40.0, ssim: float = 0.99, auc: float = 0.9
+) -> RenderedEvalResult:
     return RenderedEvalResult(
         photometric={
             "summary": {
                 "psnr_mean": psnr,
                 "ssim_mean": ssim,
                 "lpips_mean": None,
+                "frequency_consistency_mean": 0.1,
                 "pairs_evaluated": 4,
                 "pairs_missing_in_reference": 0,
                 "pairs_size_mismatch": 0,
@@ -184,7 +187,10 @@ def test_rendered_check_writes_report(tmp_path: Path) -> None:
     report_path = tmp_path / "qa" / "reports" / "splat.html"
     assert result["checks"][0]["report_path"] == str(report_path.resolve())
     assert report_path.exists()
-    assert "CloudAnalyzer Rendered 3DGS Evaluation Report" in report_path.read_text()
+    report = report_path.read_text()
+    assert "CloudAnalyzer Rendered 3DGS Evaluation Report" in report
+    assert "Min PSNR</th><td>20.0000" in report
+    assert "Max frequency consistency</th><td>n/a" in report
 
 
 def test_rendered_check_pr_comment_shows_psnr(tmp_path: Path) -> None:
@@ -211,6 +217,33 @@ def test_rendered_check_pr_comment_shows_psnr(tmp_path: Path) -> None:
     comment = build_pr_comment(summary)
     assert "PSNR" in comment
     assert "splat" in comment
+
+
+def test_rendered_check_frequency_consistency_gate(tmp_path: Path) -> None:
+    config = _write_config(
+        tmp_path / "cloudanalyzer.yaml",
+        """
+        checks:
+          - id: splat-frequency
+            kind: rendered
+            splat: scene.ply
+            cameras: transforms.json
+            reference_dir: refs/
+            gate:
+              max_frequency_consistency: 0.05
+        """,
+    )
+
+    with patch(
+        "ca.core.rendered_evaluate.rendered_evaluate",
+        return_value=_mock_rendered_result(),
+    ):
+        result = run_check_suite(load_check_suite(str(config)))
+
+    check = result["checks"][0]
+    assert check["passed"] is False
+    assert check["summary"]["frequency_consistency_mean"] == pytest.approx(0.1)
+    assert "Frequency consistency" in build_pr_comment(result)
 
 
 @pytest.mark.skipif(not DEMO_ROOT.is_dir(), reason="synthetic-room demo missing")

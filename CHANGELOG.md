@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Phase 39 adds the paper-faithful Frequency Consistency Metric (FCM) to
+  `image-evaluate` and `rendered-evaluate`: grayscale 5x5 LoG (`sigma=1`,
+  zero padding), normalized Frobenius error clamped to `[0, 1]`, and the
+  lower-is-better `max_frequency_consistency` gate for `kind: image` and
+  `kind: rendered`. JSON metadata records the flat-reference policy (both
+  flat = 0; candidate non-flat = 1), and reports/triage/PR comments surface
+  the aggregate mean.
+
 - `ca uncertainty-evaluate` and `kind: uncertainty` for position NEES (DoF=3),
   normalized position NEES, and chi-square coverage from GT plus validated 3x3 state
   covariance. NIS remains deferred because innovations are not available.

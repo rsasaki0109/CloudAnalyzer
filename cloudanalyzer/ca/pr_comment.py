@@ -94,8 +94,21 @@ _RUN_METRIC_KEYS = (
     "trajectory_drift_endpoint",
     "coverage_ratio",
 )
-_IMAGE_METRIC_KEYS = ("psnr_mean", "ssim_mean", "dreamsim_distance_mean")
-_RENDERED_METRIC_KEYS = ("psnr_mean", "ssim_mean", "lpips_mean", "dreamsim_distance_mean", "auc", "chamfer_distance")
+_IMAGE_METRIC_KEYS = (
+    "psnr_mean",
+    "ssim_mean",
+    "dreamsim_distance_mean",
+    "frequency_consistency_mean",
+)
+_RENDERED_METRIC_KEYS = (
+    "psnr_mean",
+    "ssim_mean",
+    "lpips_mean",
+    "dreamsim_distance_mean",
+    "frequency_consistency_mean",
+    "auc",
+    "chamfer_distance",
+)
 _STRUCTURE_METRIC_KEYS = ("plane_normal_dispersion", "coplanar_offset_rmse", "num_plane_patches")
 _UNCERTAINTY_METRIC_KEYS = ("mean_position_nees", "normalized_mean_position_nees", "coverage_95", "num_matched_states")
 
@@ -123,6 +136,7 @@ _METRIC_LABELS = {
     "ssim_mean": "SSIM",
     "lpips_mean": "LPIPS",
     "dreamsim_distance_mean": "DreamSim distance",
+    "frequency_consistency_mean": "Frequency consistency",
     "awd_m": "AWD",
     "scs": "SCS",
     "plane_normal_dispersion": "Plane normal dispersion",

@@ -119,6 +119,7 @@ _VALID_GATE_KEYS = {
     "min_ssim",
     "max_lpips",
     "max_dreamsim_distance",
+    "max_frequency_consistency",
     "max_awd",
     "max_scs",
     "max_plane_normal_dispersion",
@@ -164,8 +165,8 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_after_ate",
         "require_posegraph_ok",
     },
-    "image": {"min_psnr", "min_ssim", "max_dreamsim_distance"},
-    "rendered": {"min_psnr", "min_ssim", "max_lpips", "max_dreamsim_distance", "min_auc", "max_chamfer"},
+    "image": {"min_psnr", "min_ssim", "max_dreamsim_distance", "max_frequency_consistency"},
+    "rendered": {"min_psnr", "min_ssim", "max_lpips", "max_dreamsim_distance", "max_frequency_consistency", "min_auc", "max_chamfer"},
     "structure": {"max_plane_normal_dispersion", "max_coplanar_offset_rmse", "voxel_size"},
     "uncertainty": {"max_mean_position_nees", "min_normalized_mean_position_nees", "min_coverage_95"},
 }
@@ -1545,6 +1546,8 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
     metrics = tuple(item.strip() for item in metrics_raw.split(",") if item.strip())
     if spec.gate.get("max_dreamsim_distance") is not None and "dreamsim_distance" not in metrics:
         metrics = (*metrics, "dreamsim_distance")
+    if spec.gate.get("max_frequency_consistency") is not None and "frequency_consistency" not in metrics:
+        metrics = (*metrics, "frequency_consistency")
     result = image_evaluate(
         ImageEvalRequest(
             rendered_dir=Path(spec.inputs["rendered_dir"]),
@@ -1556,12 +1559,19 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
     psnr_mean = cast(float | None, summary.get("psnr_mean"))
     ssim_mean = cast(float | None, summary.get("ssim_mean"))
     dreamsim_mean = cast(float | None, summary.get("dreamsim_distance_mean"))
+    frequency_consistency_mean = cast(float | None, summary.get("frequency_consistency_mean"))
     pairs_evaluated = int(summary["pairs_evaluated"])
 
     min_psnr = cast(float | None, spec.gate.get("min_psnr"))
     min_ssim = cast(float | None, spec.gate.get("min_ssim"))
     max_dreamsim = cast(float | None, spec.gate.get("max_dreamsim_distance"))
-    has_gate = min_psnr is not None or min_ssim is not None or max_dreamsim is not None
+    max_frequency_consistency = cast(float | None, spec.gate.get("max_frequency_consistency"))
+    has_gate = (
+        min_psnr is not None
+        or min_ssim is not None
+        or max_dreamsim is not None
+        or max_frequency_consistency is not None
+    )
 
     gate_reasons: list[str] = []
     if has_gate and pairs_evaluated == 0:
@@ -1589,6 +1599,15 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
                 if dreamsim_mean is None
                 else f"DreamSim distance mean {dreamsim_mean:.4f} > max_dreamsim_distance {max_dreamsim:.4f}"
             )
+        if max_frequency_consistency is not None and (
+            frequency_consistency_mean is None
+            or frequency_consistency_mean > max_frequency_consistency
+        ):
+            gate_reasons.append(
+                "Frequency consistency unavailable"
+                if frequency_consistency_mean is None
+                else f"Frequency consistency mean {frequency_consistency_mean:.4f} > max_frequency_consistency {max_frequency_consistency:.4f}"
+            )
 
     quality_gate = (
         {
@@ -1596,6 +1615,7 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
             "min_psnr": min_psnr,
             "min_ssim": min_ssim,
             "max_dreamsim_distance": max_dreamsim,
+            "max_frequency_consistency": max_frequency_consistency,
             "reasons": gate_reasons,
         }
         if has_gate
@@ -1622,6 +1642,7 @@ def _run_image_check(spec: CheckSpec) -> dict[str, Any]:
             "psnr_mean": psnr_mean,
             "ssim_mean": ssim_mean,
             "dreamsim_distance_mean": dreamsim_mean,
+            "frequency_consistency_mean": frequency_consistency_mean,
             "pairs_evaluated": pairs_evaluated,
             "pairs_missing_in_reference": int(summary["pairs_missing_in_reference"]),
             "pairs_size_mismatch": int(summary["pairs_size_mismatch"]),
@@ -1646,6 +1667,8 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
     )
     if spec.gate.get("max_dreamsim_distance") is not None and "dreamsim_distance" not in metrics:
         metrics = (*metrics, "dreamsim_distance")
+    if spec.gate.get("max_frequency_consistency") is not None and "frequency_consistency" not in metrics:
+        metrics = (*metrics, "frequency_consistency")
 
     opacity_threshold = (
         float(spec.inputs["opacity_threshold"])
@@ -1699,16 +1722,22 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
     ssim_mean = cast(float | None, summary.get("ssim_mean"))
     lpips_mean = cast(float | None, summary.get("lpips_mean"))
     dreamsim_mean = cast(float | None, summary.get("dreamsim_distance_mean"))
+    frequency_consistency_mean = cast(float | None, summary.get("frequency_consistency_mean"))
     pairs_evaluated = int(summary["pairs_evaluated"])
 
     min_psnr = cast(float | None, spec.gate.get("min_psnr"))
     min_ssim = cast(float | None, spec.gate.get("min_ssim"))
     max_lpips = cast(float | None, spec.gate.get("max_lpips"))
     max_dreamsim = cast(float | None, spec.gate.get("max_dreamsim_distance"))
+    max_frequency_consistency = cast(float | None, spec.gate.get("max_frequency_consistency"))
     min_auc = cast(float | None, spec.gate.get("min_auc"))
     max_chamfer = cast(float | None, spec.gate.get("max_chamfer"))
     has_photometric_gate = (
-        min_psnr is not None or min_ssim is not None or max_lpips is not None or max_dreamsim is not None
+        min_psnr is not None
+        or min_ssim is not None
+        or max_lpips is not None
+        or max_dreamsim is not None
+        or max_frequency_consistency is not None
     )
     has_geometry_gate = min_auc is not None or max_chamfer is not None
     has_gate = has_photometric_gate or has_geometry_gate
@@ -1739,6 +1768,15 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
                 if dreamsim_mean is None
                 else f"DreamSim distance mean {dreamsim_mean:.4f} > max_dreamsim_distance {max_dreamsim:.4f}"
             )
+        if max_frequency_consistency is not None and (
+            frequency_consistency_mean is None
+            or frequency_consistency_mean > max_frequency_consistency
+        ):
+            gate_reasons.append(
+                "Frequency consistency unavailable"
+                if frequency_consistency_mean is None
+                else f"Frequency consistency mean {frequency_consistency_mean:.4f} > max_frequency_consistency {max_frequency_consistency:.4f}"
+            )
 
     geometry_summary: dict[str, Any] | None = None
     if result.geometry is not None:
@@ -1766,6 +1804,7 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
             "min_ssim": min_ssim,
             "max_lpips": max_lpips,
             "max_dreamsim_distance": max_dreamsim,
+            "max_frequency_consistency": max_frequency_consistency,
             "min_auc": min_auc,
             "max_chamfer": max_chamfer,
             "reasons": gate_reasons,
@@ -1785,6 +1824,7 @@ def _run_rendered_check(spec: CheckSpec) -> dict[str, Any]:
         "ssim_mean": ssim_mean,
         "lpips_mean": lpips_mean,
         "dreamsim_distance_mean": dreamsim_mean,
+        "frequency_consistency_mean": frequency_consistency_mean,
         "pairs_evaluated": pairs_evaluated,
         "pairs_missing_in_reference": int(summary["pairs_missing_in_reference"]),
         "pairs_size_mismatch": int(summary["pairs_size_mismatch"]),

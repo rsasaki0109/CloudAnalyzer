@@ -297,11 +297,68 @@ def dreamsim_distance(rendered: np.ndarray, reference: np.ndarray) -> float:
     return float(distance.reshape(-1)[0].item())
 
 
+def frequency_consistency(rendered: np.ndarray, reference: np.ndarray) -> float:
+    """Frequency Consistency Metric (FCM) for rendered-image artifacts.
+
+    The RGB inputs are converted to grayscale, filtered with a sampled 5x5
+    Laplacian-of-Gaussian kernel (sigma=1) using zero padding, and compared by
+    normalized Frobenius error.  The result is clamped to ``[0, 1]`` and lower
+    is better.
+
+    A flat reference has a zero denominator.  Two flat edge maps score 0;
+    a flat reference paired with a non-flat candidate scores 1.
+    """
+    if rendered.shape != reference.shape:
+        raise ValueError(
+            "Frequency consistency input shape mismatch: "
+            f"{rendered.shape} vs {reference.shape}"
+        )
+
+    from scipy.ndimage import convolve
+
+    def grayscale(image: np.ndarray) -> np.ndarray:
+        if image.ndim == 2:
+            return np.clip(image.astype(np.float64, copy=False), 0.0, 1.0)
+        if image.ndim == 3 and image.shape[-1] >= 3:
+            return np.asarray(
+                0.299 * np.clip(image[..., 0], 0.0, 1.0)
+                + 0.587 * np.clip(image[..., 1], 0.0, 1.0)
+                + 0.114 * np.clip(image[..., 2], 0.0, 1.0),
+                dtype=np.float64,
+            )
+        raise ValueError(
+            f"Unsupported image shape for frequency consistency: {image.shape}"
+        )
+
+    coordinates = np.arange(-2, 3, dtype=np.float64)
+    xx, yy = np.meshgrid(coordinates, coordinates)
+    radius_sq = xx * xx + yy * yy
+    sigma = 1.0
+    kernel = (
+        (radius_sq - 2.0 * sigma * sigma)
+        / (sigma**4)
+        * np.exp(-radius_sq / (2.0 * sigma * sigma))
+    )
+    rendered_edges = convolve(
+        grayscale(rendered), kernel, mode="constant", cval=0.0
+    )
+    reference_gray = grayscale(reference)
+    reference_edges = convolve(reference_gray, kernel, mode="constant", cval=0.0)
+    reference_norm = float(np.linalg.norm(reference_edges, ord="fro"))
+    rendered_norm = float(np.linalg.norm(rendered_edges, ord="fro"))
+    tolerance = np.finfo(np.float64).eps * max(1.0, float(reference_gray.size))
+    if reference_norm <= tolerance:
+        return 0.0 if rendered_norm <= tolerance else 1.0
+    error = float(np.linalg.norm(rendered_edges - reference_edges, ord="fro"))
+    return float(np.clip(error / reference_norm, 0.0, 1.0))
+
+
 _METRIC_FUNCS: dict[str, Any] = {
     "psnr": psnr,
     "ssim": ssim,
     "lpips": lpips,
     "dreamsim_distance": dreamsim_distance,
+    "frequency_consistency": frequency_consistency,
 }
 
 
@@ -386,6 +443,17 @@ def image_evaluate(request: ImageEvalRequest) -> ImageEvalResult:
         "reference_dir": str(request.reference_dir),
         "backend": "scipy.ndimage.gaussian_filter",
     }
+    if "frequency_consistency" in request.metrics:
+        metadata["frequency_consistency"] = {
+            "grayscale": "ITU-R BT.601 (0.299 R + 0.587 G + 0.114 B)",
+            "filter": "5x5 Laplacian-of-Gaussian",
+            "sigma": 1.0,
+            "padding": "zero",
+            "normalization": "Frobenius error / reference edge-map Frobenius norm",
+            "range": [0.0, 1.0],
+            "direction": "lower-is-better",
+            "flat_reference_policy": "both flat = 0; candidate non-flat = 1",
+        }
 
     return ImageEvalResult(pairs=pairs, summary=summary, metadata=metadata)
 
@@ -396,6 +464,7 @@ __all__ = [
     "LPIPS_INSTALL_HINT",
     "DREAMSIM_INSTALL_HINT",
     "dreamsim_distance",
+    "frequency_consistency",
     "image_evaluate",
     "lpips",
     "psnr",

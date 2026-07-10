@@ -222,3 +222,37 @@ def test_image_check_dreamsim_gate_triage_and_pr_comment(
         "dreamsim_distance",
     )
     assert "DreamSim distance=0.4000" in build_pr_comment(result)
+
+
+def test_image_check_frequency_consistency_gate_and_pr_comment(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import ca.core.image_evaluate as image_module
+
+    rendered, reference = _build_image_pair_fixture(tmp_path)
+    monkeypatch.setitem(
+        image_module._METRIC_FUNCS,
+        "frequency_consistency",
+        lambda candidate, target: 0.4,
+    )
+    config = _write_config(
+        tmp_path / "cloudanalyzer.yaml",
+        f"""
+        checks:
+          - id: frequency
+            kind: image
+            rendered_dir: {rendered.relative_to(tmp_path)}
+            reference_dir: {reference.relative_to(tmp_path)}
+            gate:
+              max_frequency_consistency: 0.25
+        """,
+    )
+
+    result = run_check_suite(load_check_suite(str(config)))
+    check = result["checks"][0]
+    assert check["passed"] is False
+    assert check["summary"]["frequency_consistency_mean"] == pytest.approx(0.4)
+    assert result["summary"]["triage"]["items"][0]["failed_dimensions"] == (
+        "frequency_consistency",
+    )
+    assert "Frequency consistency=0.4000" in build_pr_comment(result)

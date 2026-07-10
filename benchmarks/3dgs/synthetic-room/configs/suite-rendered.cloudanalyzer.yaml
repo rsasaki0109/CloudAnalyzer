@@ -12,8 +12,9 @@ checks:
     reference_dir: ../reference
     reference_pointcloud: ../reference.pcd
     skip_render: true
-    metrics: psnr,ssim
+    metrics: psnr,ssim,frequency_consistency
     max_pairs: 4
     gate:
       min_ssim: 0.99
+      max_frequency_consistency: 0.0
       max_chamfer: 0.2

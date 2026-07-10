@@ -37,6 +37,9 @@ _DIMENSION_GATE_KEYS = {
     "scs": "max_scs",
     "plane_normal_dispersion": "max_plane_normal_dispersion",
     "coplanar_offset_rmse": "max_coplanar_offset_rmse",
+    "mean_position_nees": "max_mean_position_nees",
+    "normalized_mean_position_nees": "min_normalized_mean_position_nees",
+    "coverage_95": "min_coverage_95",
 }
 
 _DIMENSION_LABELS = {
@@ -69,6 +72,9 @@ _DIMENSION_LABELS = {
     "scs": "scs",
     "plane_normal_dispersion": "plane_normal_dispersion",
     "coplanar_offset_rmse": "coplanar_offset_rmse",
+    "mean_position_nees": "mean_position_nees",
+    "normalized_mean_position_nees": "normalized_mean_position_nees",
+    "coverage_95": "coverage_95",
 }
 
 
@@ -279,7 +285,7 @@ def _extract_gate_payload(check: dict[str, Any]) -> tuple[dict[str, float], tupl
     result = check.get("result")
     summary = check.get("summary", {})
     gate = None
-    if check["kind"] in {"artifact", "trajectory", "detection", "tracking", "image", "rendered", "structure"} and isinstance(result, dict):
+    if check["kind"] in {"artifact", "trajectory", "detection", "tracking", "image", "rendered", "structure", "uncertainty"} and isinstance(result, dict):
         gate = result.get("quality_gate")
     elif check["kind"] == "run" and isinstance(result, dict):
         gate = result.get("overall_quality_gate")
@@ -364,6 +370,12 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
         return {
             "plane_normal_dispersion": float(summary["plane_normal_dispersion"]),
             "coplanar_offset_rmse": float(summary["coplanar_offset_rmse"]),
+        }
+    if kind == "uncertainty":
+        return {
+            "mean_position_nees": float(summary["mean_position_nees"]),
+            "normalized_mean_position_nees": float(summary["normalized_mean_position_nees"]),
+            "coverage_95": float(summary["coverage_95"]),
         }
     if kind == "loop_closure":
         metrics = {

@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `ca uncertainty-evaluate` and `kind: uncertainty` for position NEES (DoF=3),
+  normalized position NEES, and chi-square coverage from GT plus validated 3x3 state
+  covariance. NIS remains deferred because innovations are not available.
+
 - Optional DreamSim perceptual distance for `image-evaluate` and
   `rendered-evaluate`, including `max_dreamsim_distance` config gates,
   triage, PR-comment deltas, and a `[perceptual]` dependency extra. The first

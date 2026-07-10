@@ -59,6 +59,7 @@ CheckKind = Literal[
     "image",
     "rendered",
     "structure",
+    "uncertainty",
 ]
 AlignmentMode = Literal["none", "origin", "rigid"]
 
@@ -88,6 +89,8 @@ _KIND_ALIASES: dict[str, CheckKind] = {
     "3dgs": "rendered",
     "structure": "structure",
     "plane_consistency": "structure",
+    "uncertainty": "uncertainty",
+    "slam_uncertainty": "uncertainty",
 }
 
 _VALID_GATE_KEYS = {
@@ -120,6 +123,9 @@ _VALID_GATE_KEYS = {
     "max_scs",
     "max_plane_normal_dispersion",
     "max_coplanar_offset_rmse",
+    "max_mean_position_nees",
+    "min_normalized_mean_position_nees",
+    "min_coverage_95",
     "severity",
 }
 
@@ -161,6 +167,7 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
     "image": {"min_psnr", "min_ssim", "max_dreamsim_distance"},
     "rendered": {"min_psnr", "min_ssim", "max_lpips", "max_dreamsim_distance", "min_auc", "max_chamfer"},
     "structure": {"max_plane_normal_dispersion", "max_coplanar_offset_rmse", "voxel_size"},
+    "uncertainty": {"max_mean_position_nees", "min_normalized_mean_position_nees", "min_coverage_95"},
 }
 
 
@@ -684,6 +691,11 @@ def _normalize_inputs(kind: CheckKind, raw_check: dict[str, Any], config_dir: Pa
         return _normalize_rendered_inputs(raw_check, config_dir)
     if kind == "structure":
         return {"source": _resolve_path(config_dir, _require_string(raw_check.get("source", raw_check.get("path")), "check.source"))}
+    if kind == "uncertainty":
+        return {
+            "source": _resolve_path(config_dir, _require_string(raw_check.get("estimated", raw_check.get("source")), "check.estimated")),
+            "reference": _resolve_path(config_dir, _require_string(raw_check.get("reference"), "check.reference")),
+        }
     return _normalize_run_batch_inputs(raw_check, config_dir)
 
 
@@ -1882,6 +1894,48 @@ def _run_check(spec: CheckSpec) -> dict[str, Any]:
             "passed": None if gate is None else gate["passed"],
             "report_path": spec.outputs.report_path, "json_path": spec.outputs.json_path,
             "summary": {k: metrics[k] for k in ("plane_normal_dispersion", "coplanar_offset_rmse", "num_plane_patches")} | {"passed": None if gate is None else gate["passed"]},
+            "result": metrics,
+        }
+    elif spec.kind == "uncertainty":
+        from ca.core.uncertainty_evaluate import evaluate_uncertainty
+
+        metrics = evaluate_uncertainty(
+            spec.inputs["source"], spec.inputs["reference"],
+            max_time_delta=spec.max_time_delta, align_mode=spec.alignment,
+        )
+        max_mean_nees = spec.gate.get("max_mean_position_nees")
+        min_normalized_nees = spec.gate.get("min_normalized_mean_position_nees")
+        min_coverage_95 = spec.gate.get("min_coverage_95")
+        reasons: list[str] = []
+        if max_mean_nees is not None and metrics["mean_position_nees"] > float(max_mean_nees):
+            reasons.append(f"Mean position NEES {metrics['mean_position_nees']:.4f} > max_mean_position_nees {float(max_mean_nees):.4f}")
+        if min_normalized_nees is not None and metrics["normalized_mean_position_nees"] < float(min_normalized_nees):
+            reasons.append(f"Normalized mean position NEES {metrics['normalized_mean_position_nees']:.4f} < min_normalized_mean_position_nees {float(min_normalized_nees):.4f}")
+        if min_coverage_95 is not None and metrics["coverage_95"] < float(min_coverage_95):
+            reasons.append(f"95% coverage {metrics['coverage_95']:.1%} < min_coverage_95 {float(min_coverage_95):.1%}")
+        gate = None if max_mean_nees is None and min_normalized_nees is None and min_coverage_95 is None else {
+            "passed": not reasons, "max_mean_position_nees": max_mean_nees,
+            "min_normalized_mean_position_nees": min_normalized_nees,
+            "min_coverage_95": min_coverage_95, "reasons": reasons,
+        }
+        metrics["quality_gate"] = gate
+        if spec.outputs.json_path:
+            _write_json(spec.outputs.json_path, metrics)
+        if spec.outputs.report_path:
+            output = Path(spec.outputs.report_path)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(
+                "# SLAM uncertainty consistency\n\n"
+                f"- Mean position NEES: {metrics['mean_position_nees']:.6f}\n"
+                f"- Normalized mean position NEES: {metrics['normalized_mean_position_nees']:.6f}\n"
+                f"- 95% coverage: {metrics['coverage_95']:.1%}\n",
+                encoding="utf-8",
+            )
+        result = {
+            "id": spec.check_id, "kind": spec.kind,
+            "passed": None if gate is None else gate["passed"],
+            "report_path": spec.outputs.report_path, "json_path": spec.outputs.json_path,
+            "summary": {key: metrics[key] for key in ("mean_position_nees", "normalized_mean_position_nees", "coverage_95", "num_matched_states")} | {"passed": None if gate is None else gate["passed"]},
             "result": metrics,
         }
     else:

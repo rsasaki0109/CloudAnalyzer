@@ -2025,6 +2025,41 @@ def traj_evaluate_cmd(
         raise typer.Exit(code=1)
 
 
+@app.command("uncertainty-evaluate")
+def uncertainty_evaluate_cmd(
+    estimated: str = typer.Argument(..., help="JSON trajectory with position covariance"),
+    reference: str = typer.Argument(..., help="Ground-truth CSV/TUM trajectory"),
+    max_time_delta: float = typer.Option(0.05, "--max-time-delta"),
+    align_mode: str = typer.Option("none", "--align-mode", help="none, origin, or rigid"),
+    confidence: float = typer.Option(0.95, "--confidence"),
+    output_json: Optional[str] = typer.Option(None, "--output-json"),
+    format_json: bool = typer.Option(False, "--format-json"),
+) -> None:
+    """Evaluate position NEES and chi-square coverage against ground truth."""
+    from ca.core.uncertainty_evaluate import evaluate_uncertainty
+
+    try:
+        result = evaluate_uncertainty(
+            estimated,
+            reference,
+            max_time_delta=max_time_delta,
+            align_mode=align_mode,
+            confidence=confidence,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        _handle_error(exc)
+    if format_json:
+        typer.echo(json.dumps(result, indent=2))
+    else:
+        typer.echo(f"Matched states:       {result['num_matched_states']}")
+        typer.echo(f"Mean position NEES (DoF={result['dof']}): {result['mean_position_nees']:.4f}")
+        typer.echo(f"Normalized mean position NEES: {result['normalized_mean_position_nees']:.4f}")
+        typer.echo(f"Coverage:             {result['coverage']:.1%}")
+        typer.echo(f"Interpretation:       {result['statistical_interpretation']}")
+    if output_json:
+        _dump_json(result, output_json)
+
+
 @app.command("traj-batch")
 def traj_batch_cmd(
     directory: str = typer.Argument(..., help="Directory containing estimated trajectory files"),

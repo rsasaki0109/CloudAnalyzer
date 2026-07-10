@@ -97,6 +97,7 @@ _RUN_METRIC_KEYS = (
 _IMAGE_METRIC_KEYS = ("psnr_mean", "ssim_mean", "dreamsim_distance_mean")
 _RENDERED_METRIC_KEYS = ("psnr_mean", "ssim_mean", "lpips_mean", "dreamsim_distance_mean", "auc", "chamfer_distance")
 _STRUCTURE_METRIC_KEYS = ("plane_normal_dispersion", "coplanar_offset_rmse", "num_plane_patches")
+_UNCERTAINTY_METRIC_KEYS = ("mean_position_nees", "normalized_mean_position_nees", "coverage_95", "num_matched_states")
 
 
 _METRIC_LABELS = {
@@ -127,6 +128,10 @@ _METRIC_LABELS = {
     "plane_normal_dispersion": "Plane normal dispersion",
     "coplanar_offset_rmse": "Coplanar offset RMSE",
     "num_plane_patches": "Plane patches",
+    "mean_position_nees": "Mean position NEES",
+    "normalized_mean_position_nees": "Normalized mean position NEES",
+    "coverage_95": "95% coverage",
+    "num_matched_states": "Matched states",
 }
 
 
@@ -141,11 +146,13 @@ def _check_metric_keys(kind: str) -> tuple[str, ...]:
         return _RENDERED_METRIC_KEYS
     if kind == "structure":
         return _STRUCTURE_METRIC_KEYS
+    if kind == "uncertainty":
+        return _UNCERTAINTY_METRIC_KEYS
     return _ARTIFACT_METRIC_KEYS
 
 
 def _fmt_metric_value(key: str, value: float) -> str:
-    if key == "coverage_ratio":
+    if key in {"coverage_ratio", "coverage_95"}:
         return f"{value:.1%}"
     if key == "psnr_mean":
         return f"{value:.4f} dB"

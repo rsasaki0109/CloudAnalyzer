@@ -74,6 +74,12 @@ This completes the strategy: photometric (Phases 30–34) and geometric
 
 ### 4. Follow-ups (in priority order)
 
+### Phase 38 — SLAM state uncertainty consistency
+
+Position NEES and chi-square coverage are available through
+`ca uncertainty-evaluate` and `kind: uncertainty`. NIS is deferred until an
+innovation + innovation-covariance log contract exists.
+
 ### Phase 37 — DreamSim perceptual distance
 
 `ca image-evaluate` and `ca rendered-evaluate` accept

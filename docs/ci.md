@@ -107,6 +107,11 @@ checks:
     gate:
       min_auc: 0.95
       max_chamfer: 0.02
+      # MapEval voxel metrics are lower-is-better. Voxels require >=100
+      # points in both maps; choose a size appropriate for map density.
+      max_awd: 0.10
+      max_scs: 0.50
+      voxel_size: 3.0
   - id: localization-run
     kind: trajectory
     estimated: outputs/traj.csv

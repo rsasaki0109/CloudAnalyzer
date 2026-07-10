@@ -448,6 +448,11 @@ def scan_match_debug_cmd(
         "--artifact-dir",
         help="Optional directory for colored before/after scan PLY artifacts.",
     ),
+    structure_voxel_size: float = typer.Option(
+        3.0,
+        "--structure-voxel-size",
+        help="Voxel size in meters for AWD/SCS (MapEval uses 3.0 m). Set 0 to disable.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -465,6 +470,7 @@ def scan_match_debug_cmd(
             crop_margin=crop_margin,
             threshold=threshold,
             artifact_dir=artifact_dir,
+            structure_voxel_size=structure_voxel_size,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -803,6 +809,9 @@ def map_evaluate_cmd(
         typer.echo(f"Reference:  {reference}")
         typer.echo(f"Align:      {result.artifacts.get('align_mode')}")
         typer.echo(f"Chamfer:    {result.metrics.get('chamfer_m'):.6f} m")
+        if "awd_m" in result.metrics:
+            typer.echo(f"AWD:        {result.metrics['awd_m']:.6f} m")
+            typer.echo(f"SCS:        {result.metrics['scs']:.6f}")
         typer.echo(f"F-score:    {result.metrics.get(f'fscore@{t0:.3f}m'):.6f} @ {t0:.3f} m")
         typer.echo(f"Accuracy:   {result.metrics.get(f'accuracy@{t0:.3f}m'):.6f} @ {t0:.3f} m")
         typer.echo(f"Complete:   {result.metrics.get(f'completeness@{t0:.3f}m'):.6f} @ {t0:.3f} m")

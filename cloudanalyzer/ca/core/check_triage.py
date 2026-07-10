@@ -32,6 +32,8 @@ _DIMENSION_GATE_KEYS = {
     "psnr": "min_psnr",
     "ssim": "min_ssim",
     "lpips": "max_lpips",
+    "awd": "max_awd",
+    "scs": "max_scs",
 }
 
 _DIMENSION_LABELS = {
@@ -59,6 +61,8 @@ _DIMENSION_LABELS = {
     "psnr": "psnr",
     "ssim": "ssim",
     "lpips": "lpips",
+    "awd": "awd",
+    "scs": "scs",
 }
 
 
@@ -284,10 +288,15 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
     summary = check["summary"]
     result = check.get("result")
     if kind == "artifact":
-        return {
+        metrics = {
             "auc": float(summary["auc"]),
             "chamfer": float(summary["chamfer_distance"]),
         }
+        if summary.get("awd_m") is not None:
+            metrics["awd"] = float(summary["awd_m"])
+        if summary.get("scs") is not None:
+            metrics["scs"] = float(summary["scs"])
+        return metrics
     if kind == "artifact_batch":
         return _artifact_batch_metrics(result if isinstance(result, list) else [])
     if kind == "trajectory":

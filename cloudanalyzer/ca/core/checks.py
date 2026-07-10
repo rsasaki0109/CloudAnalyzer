@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import shlex
 from dataclasses import dataclass, field
 from html import escape
@@ -111,12 +112,14 @@ _VALID_GATE_KEYS = {
     "min_psnr",
     "min_ssim",
     "max_lpips",
+    "max_awd",
+    "max_scs",
     "severity",
 }
 
 _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
-    "artifact": {"min_auc", "max_chamfer"},
-    "artifact_batch": {"min_auc", "max_chamfer"},
+    "artifact": {"min_auc", "max_chamfer", "max_awd", "max_scs", "voxel_size"},
+    "artifact_batch": {"min_auc", "max_chamfer", "max_awd", "max_scs", "voxel_size"},
     "trajectory": {"max_ate", "max_rpe", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
     "trajectory_batch": {"max_ate", "max_rpe", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
     "detection": {"min_map", "min_precision", "min_recall", "min_f1"},
@@ -303,6 +306,8 @@ def _normalize_gate(
             normalized[key] = _optional_bool(value, f"gate.{key}")
         else:
             normalized[key] = float(value)
+            if key == "voxel_size" and normalized[key] <= 0:
+                raise ValueError("gate.voxel_size must be > 0")
     return normalized
 
 
@@ -758,24 +763,57 @@ def load_check_suite(config_path: str) -> CheckSuite:
     )
 
 
+def _artifact_map_metrics(
+    source_path: str,
+    reference_path: str,
+    *,
+    voxel_size: float,
+) -> dict[str, float]:
+    """Compute MapEval-style AWD/SCS for artifact/map checks."""
+    import numpy as np
+
+    from ca.core.map_evaluate import compute_voxel_wasserstein_metrics
+    from ca.io import load_point_cloud
+
+    est = np.asarray(load_point_cloud(source_path).points, dtype=np.float64)
+    ref = np.asarray(load_point_cloud(reference_path).points, dtype=np.float64)
+    return compute_voxel_wasserstein_metrics(est, ref, voxel_size=float(voxel_size))
+
+
 def _artifact_quality_gate(
     auc: float,
     chamfer_distance: float,
     min_auc: float | None = None,
     max_chamfer: float | None = None,
+    awd_m: float | None = None,
+    max_awd: float | None = None,
+    scs: float | None = None,
+    max_scs: float | None = None,
 ) -> dict[str, Any] | None:
     """Build optional pass/fail metadata for artifact-style checks."""
-    if min_auc is None and max_chamfer is None:
+    if min_auc is None and max_chamfer is None and max_awd is None and max_scs is None:
         return None
     reasons: list[str] = []
     if min_auc is not None and auc < min_auc:
         reasons.append(f"AUC {auc:.4f} < min_auc {min_auc:.4f}")
     if max_chamfer is not None and chamfer_distance > max_chamfer:
         reasons.append(f"Chamfer {chamfer_distance:.4f} > max_chamfer {max_chamfer:.4f}")
+    if max_awd is not None:
+        if awd_m is None or not math.isfinite(awd_m):
+            reasons.append("AWD unavailable: no voxel pair met the minimum point count")
+        elif awd_m > max_awd:
+            reasons.append(f"AWD {awd_m:.4f} m > max_awd {max_awd:.4f} m")
+    if max_scs is not None:
+        if scs is None or not math.isfinite(scs):
+            reasons.append("SCS unavailable: no evaluated voxel had an evaluated neighbor")
+        elif scs > max_scs:
+            reasons.append(f"SCS {scs:.4f} > max_scs {max_scs:.4f}")
     return {
         "passed": not reasons,
         "min_auc": min_auc,
         "max_chamfer": max_chamfer,
+        "max_awd": max_awd,
+        "max_scs": max_scs,
         "reasons": reasons,
     }
 
@@ -800,16 +838,38 @@ def _write_json(path: str, data: Any) -> None:
     output_path.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 
-def _artifact_batch_item(spec: CheckSpec, result: dict[str, Any]) -> dict[str, Any]:
+def _maybe_artifact_map_metrics(spec: CheckSpec) -> dict[str, float] | None:
+    """Compute AWD/SCS when map-style gates are configured."""
+    if spec.gate.get("max_awd") is None and spec.gate.get("max_scs") is None:
+        return None
+    voxel_size = float(spec.gate.get("voxel_size", 0.5))
+    return _artifact_map_metrics(
+        spec.inputs["source"],
+        spec.inputs["reference"],
+        voxel_size=voxel_size,
+    )
+
+
+def _artifact_batch_item(
+    spec: CheckSpec,
+    result: dict[str, Any],
+    map_metrics: dict[str, float] | None = None,
+) -> dict[str, Any]:
     """Convert a single evaluate() result into the batch/report shape."""
     best_f1 = max(result["f1_scores"], key=lambda score: score["f1"])
+    awd_m = map_metrics.get("awd_m") if map_metrics is not None else None
+    scs = map_metrics.get("scs") if map_metrics is not None else None
     gate = _artifact_quality_gate(
         result["auc"],
         result["chamfer_distance"],
         min_auc=cast(float | None, spec.gate.get("min_auc")),
         max_chamfer=cast(float | None, spec.gate.get("max_chamfer")),
+        awd_m=cast(float | None, awd_m),
+        max_awd=cast(float | None, spec.gate.get("max_awd")),
+        scs=cast(float | None, scs),
+        max_scs=cast(float | None, spec.gate.get("max_scs")),
     )
-    return {
+    item: dict[str, Any] = {
         "path": spec.inputs["source"],
         "num_points": result["source_points"],
         "reference_path": spec.inputs["reference"],
@@ -823,6 +883,12 @@ def _artifact_batch_item(spec: CheckSpec, result: dict[str, Any]) -> dict[str, A
         "inspect": _artifact_inspection_commands(spec.inputs["source"], spec.inputs["reference"]),
         "compression": None,
     }
+    if map_metrics is not None:
+        item["awd_m"] = map_metrics["awd_m"]
+        item["scs"] = map_metrics["scs"]
+        item["n_awd_voxels"] = map_metrics["n_awd_voxels"]
+        item["n_scs_voxels"] = map_metrics["n_scs_voxels"]
+    return item
 
 
 def _run_artifact_check(spec: CheckSpec) -> dict[str, Any]:
@@ -832,13 +898,16 @@ def _run_artifact_check(spec: CheckSpec) -> dict[str, Any]:
         spec.inputs["reference"],
         thresholds=list(spec.thresholds) if spec.thresholds else None,
     )
-    batch_item = _artifact_batch_item(spec, result)
+    map_metrics = _maybe_artifact_map_metrics(spec)
+    batch_item = _artifact_batch_item(spec, result, map_metrics=map_metrics)
     result_with_summary = {
         **result,
         "best_f1": batch_item["best_f1"],
         "quality_gate": batch_item["quality_gate"],
         "inspect": batch_item["inspect"],
     }
+    if map_metrics is not None:
+        result_with_summary.update(map_metrics)
     if spec.outputs.report_path:
         save_batch_report(
             [batch_item],
@@ -862,6 +931,14 @@ def _run_artifact_check(spec: CheckSpec) -> dict[str, Any]:
             "chamfer_distance": result["chamfer_distance"],
             "hausdorff_distance": result["hausdorff_distance"],
             "best_f1": batch_item["best_f1"],
+            **(
+                {
+                    "awd_m": map_metrics["awd_m"],
+                    "scs": map_metrics["scs"],
+                }
+                if map_metrics is not None
+                else {}
+            ),
             "passed": None
             if batch_item["quality_gate"] is None
             else batch_item["quality_gate"]["passed"],
@@ -882,6 +959,24 @@ def _run_artifact_batch_check(spec: CheckSpec) -> dict[str, Any]:
         compressed_dir=spec.compressed_dir,
         baseline_dir=spec.baseline_dir,
     )
+    if spec.gate.get("max_awd") is not None or spec.gate.get("max_scs") is not None:
+        for item in results:
+            map_metrics = _artifact_map_metrics(
+                str(item["path"]),
+                spec.inputs["reference"],
+                voxel_size=float(spec.gate.get("voxel_size", 0.5)),
+            )
+            item.update(map_metrics)
+            item["quality_gate"] = _artifact_quality_gate(
+                float(item["auc"]),
+                float(item["chamfer_distance"]),
+                min_auc=cast(float | None, spec.gate.get("min_auc")),
+                max_chamfer=cast(float | None, spec.gate.get("max_chamfer")),
+                awd_m=map_metrics["awd_m"],
+                max_awd=cast(float | None, spec.gate.get("max_awd")),
+                scs=map_metrics["scs"],
+                max_scs=cast(float | None, spec.gate.get("max_scs")),
+            )
     summary = make_batch_summary(
         results,
         spec.inputs["reference"],

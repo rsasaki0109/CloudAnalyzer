@@ -134,6 +134,151 @@ def ensure_artifact_dir(request: MapEvaluateRequest, subdir: str) -> Path | None
     return out
 
 
+def _regularized_covariance(sigma: np.ndarray, eps: float = 1e-6) -> np.ndarray:
+    sym = (np.asarray(sigma, dtype=np.float64) + np.asarray(sigma, dtype=np.float64).T) / 2.0
+    eigvals, eigvecs = np.linalg.eigh(sym)
+    eigvals = np.maximum(eigvals, eps)
+    return eigvecs @ np.diag(eigvals) @ eigvecs.T
+
+
+def wasserstein_distance_gaussian(
+    mu1: np.ndarray,
+    sigma1: np.ndarray,
+    mu2: np.ndarray,
+    sigma2: np.ndarray,
+) -> float:
+    """L2 Wasserstein distance between 3D Gaussians (MapEval eq. 6)."""
+    mu_diff = np.asarray(mu1, dtype=np.float64) - np.asarray(mu2, dtype=np.float64)
+    s1 = _regularized_covariance(sigma1)
+    s2 = _regularized_covariance(sigma2)
+    # The Bures term needs the *symmetric positive-semidefinite* matrix
+    # square root.  A Cholesky factor is not a matrix square root and its
+    # trace gives incorrect distances for non-diagonal covariances.
+    eigvals, eigvecs = np.linalg.eigh(s1)
+    sqrt_s1 = eigvecs @ np.diag(np.sqrt(np.maximum(eigvals, 0.0))) @ eigvecs.T
+    middle = _regularized_covariance(sqrt_s1 @ s2 @ sqrt_s1)
+    middle_eigvals = np.linalg.eigvalsh(middle)
+    trace_sqrt_middle = float(np.sqrt(np.maximum(middle_eigvals, 0.0)).sum())
+    dist_sq = float(mu_diff @ mu_diff) + float(np.trace(s1 + s2)) - 2.0 * trace_sqrt_middle
+    # Roundoff around identical distributions can leave a few ulps above zero.
+    if abs(dist_sq) <= 1e-12 * max(float(np.trace(s1 + s2)), 1.0):
+        dist_sq = 0.0
+    return float(np.sqrt(max(0.0, dist_sq)))
+
+
+@dataclass(slots=True)
+class VoxelGaussian:
+    mu: np.ndarray
+    sigma: np.ndarray
+    num_points: int
+
+
+def build_voxel_gaussians(points: np.ndarray, voxel_size: float) -> dict[tuple[int, int, int], VoxelGaussian]:
+    """Voxelize a point cloud into per-voxel Gaussian summaries."""
+    pts = _require_xyz(points, "points")
+    if voxel_size <= 0:
+        raise ValueError("voxel_size must be > 0.")
+    if pts.shape[0] == 0:
+        return {}
+    # Sort once and reduce contiguous groups.  This avoids one Python list and
+    # one small ndarray allocation per input point on million-point maps.
+    indices = np.floor(pts / voxel_size).astype(np.int64)
+    unique, inverse, counts = np.unique(indices, axis=0, return_inverse=True, return_counts=True)
+    sums = np.zeros((unique.shape[0], 3), dtype=np.float64)
+    np.add.at(sums, inverse, pts)
+    means = sums / counts[:, None]
+    centered = pts - means[inverse]
+    covariance_sums = np.zeros((unique.shape[0], 3, 3), dtype=np.float64)
+    np.add.at(covariance_sums, inverse, centered[:, :, None] * centered[:, None, :])
+    voxels: dict[tuple[int, int, int], VoxelGaussian] = {}
+    for raw_key, mu, covariance_sum, raw_count in zip(unique, means, covariance_sums, counts):
+        count = int(raw_count)
+        if count > 1:
+            sigma = covariance_sum / (count - 1)
+        else:
+            sigma = np.eye(3, dtype=np.float64) * 1e-6
+        key = tuple(int(value) for value in raw_key)
+        voxels[key] = VoxelGaussian(mu=mu, sigma=sigma, num_points=count)
+    return voxels
+
+
+def _neighbor_indices(index: tuple[int, int, int], radius: int) -> list[tuple[int, int, int]]:
+    ix, iy, iz = index
+    neighbors: list[tuple[int, int, int]] = []
+    for dx in range(-radius, radius + 1):
+        for dy in range(-radius, radius + 1):
+            for dz in range(-radius, radius + 1):
+                if dx == 0 and dy == 0 and dz == 0:
+                    continue
+                neighbors.append((ix + dx, iy + dy, iz + dz))
+    return neighbors
+
+
+def compute_voxel_wasserstein_metrics(
+    estimated_points: np.ndarray,
+    reference_points: np.ndarray,
+    *,
+    voxel_size: float,
+    min_voxel_points: int = 100,
+    neighbor_radius: int = 5,
+) -> dict[str, float]:
+    """Compute MapEval-style AWD and SCS from voxelized Gaussian summaries."""
+    if voxel_size <= 0:
+        raise ValueError("voxel_size must be > 0 for AWD/SCS.")
+    est_map = build_voxel_gaussians(estimated_points, voxel_size)
+    ref_map = build_voxel_gaussians(reference_points, voxel_size)
+
+    wasserstein_distances: dict[tuple[int, int, int], float] = {}
+    for index, est_voxel in est_map.items():
+        ref_voxel = ref_map.get(index)
+        if ref_voxel is None:
+            continue
+        if est_voxel.num_points < min_voxel_points or ref_voxel.num_points < min_voxel_points:
+            continue
+        wasserstein_distances[index] = wasserstein_distance_gaussian(
+            est_voxel.mu,
+            est_voxel.sigma,
+            ref_voxel.mu,
+            ref_voxel.sigma,
+        )
+
+    if not wasserstein_distances:
+        return {
+            "awd_m": float("nan"),
+            "scs": float("nan"),
+            "n_awd_voxels": 0.0,
+            "n_scs_voxels": 0.0,
+        }
+
+    ws_values = list(wasserstein_distances.values())
+    awd_m = float(np.mean(ws_values))
+
+    scs_terms: list[float] = []
+    for index in wasserstein_distances:
+        neighbor_ws = [
+            wasserstein_distances[neighbor]
+            for neighbor in _neighbor_indices(index, neighbor_radius)
+            if neighbor in wasserstein_distances
+        ]
+        if not neighbor_ws:
+            continue
+        mean_neighbor = float(np.mean(neighbor_ws))
+        if mean_neighbor <= np.finfo(np.float64).eps:
+            # A zero-error neighborhood is perfectly consistent.
+            scs_terms.append(0.0 if np.allclose(neighbor_ws, 0.0) else float("nan"))
+            continue
+        std_neighbor = float(np.std(neighbor_ws))
+        scs_terms.append(std_neighbor / mean_neighbor)
+
+    scs = float(np.nanmean(scs_terms)) if scs_terms else float("nan")
+    return {
+        "awd_m": awd_m,
+        "scs": scs,
+        "n_awd_voxels": float(len(wasserstein_distances)),
+        "n_scs_voxels": float(len(scs_terms)),
+    }
+
+
 def voxel_downsample(points: np.ndarray, voxel_size: float) -> np.ndarray:
     """Deterministic voxel downsample by centroid per voxel."""
     pts = _require_xyz(points, "points")
@@ -229,6 +374,26 @@ class NNThresholdMapEvaluateStrategy:
             metrics[f"accuracy@{t:.3f}m"] = float(np.mean(est_to_ref <= t)) if est_to_ref.size else 0.0
             metrics[f"completeness@{t:.3f}m"] = float(np.mean(ref_to_est <= t)) if ref_to_est.size else 0.0
 
+        structure_voxel = float(request.structure_voxel_size)
+        if structure_voxel > 0:
+            voxel_metrics = compute_voxel_wasserstein_metrics(
+                est,
+                ref,
+                voxel_size=structure_voxel,
+            )
+            # Keep the public metric mapping JSON/comparison friendly: an
+            # unavailable metric is represented by its zero support count,
+            # rather than a NaN value that is unequal to itself.
+            metrics.update(
+                {
+                    key: value
+                    for key, value in voxel_metrics.items()
+                    if not key.startswith(("awd_", "scs")) or np.isfinite(value)
+                }
+            )
+            metrics["n_awd_voxels"] = voxel_metrics["n_awd_voxels"]
+            metrics["n_scs_voxels"] = voxel_metrics["n_scs_voxels"]
+
         # One scalar summary (F-score) using the first threshold.
         t0 = thresholds[0] if thresholds else 0.2
         acc = metrics.get(f"accuracy@{t0:.3f}m", 0.0)
@@ -263,6 +428,7 @@ class NNThresholdMapEvaluateStrategy:
         mode = "voxelized" if downsample_voxel > 0 else "exact"
         sampling_policy: dict[str, object] = {
             "downsample_voxel_size_m": downsample_voxel,
+            "structure_voxel_size_m": structure_voxel,
             "thresholds_m": list(thresholds),
             "align_mode": request.align_mode,
             "nn_backend": "scipy_ckdtree",
@@ -294,9 +460,13 @@ __all__ = [
     "MapEvaluateResult",
     "MapEvaluateStrategy",
     "NNThresholdMapEvaluateStrategy",
+    "VoxelGaussian",
     "aligned_estimated_points",
     "apply_transform",
+    "build_voxel_gaussians",
+    "compute_voxel_wasserstein_metrics",
     "ensure_artifact_dir",
     "evaluate_map",
     "voxel_downsample",
+    "wasserstein_distance_gaussian",
 ]

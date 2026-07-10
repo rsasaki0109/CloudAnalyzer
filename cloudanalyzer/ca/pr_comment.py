@@ -84,7 +84,7 @@ def _index_baseline_checks(baseline: Mapping[str, Any] | None) -> dict[str, Mapp
     return out
 
 
-_ARTIFACT_METRIC_KEYS = ("auc", "chamfer_distance", "hausdorff_distance")
+_ARTIFACT_METRIC_KEYS = ("auc", "chamfer_distance", "hausdorff_distance", "awd_m", "scs")
 _TRAJECTORY_METRIC_KEYS = ("ate_rmse", "rpe_rmse", "drift_endpoint", "coverage_ratio")
 _RUN_METRIC_KEYS = (
     "map_auc",
@@ -120,6 +120,8 @@ _METRIC_LABELS = {
     "psnr_mean": "PSNR",
     "ssim_mean": "SSIM",
     "lpips_mean": "LPIPS",
+    "awd_m": "AWD",
+    "scs": "SCS",
 }
 
 
@@ -140,6 +142,8 @@ def _fmt_metric_value(key: str, value: float) -> str:
         return f"{value:.1%}"
     if key == "psnr_mean":
         return f"{value:.4f} dB"
+    if key == "awd_m":
+        return f"{value:.4f} m"
     return f"{value:.4f}"
 
 

@@ -136,7 +136,17 @@ ca map-evaluate estimated.pcd reference.pcd \
   --format-json
 ```
 
-Output: Chamfer distance plus accuracy / completeness / F-score at each configured threshold. These are per-threshold nearest-neighbor metrics. They are intentionally separate from the `ca evaluate` metrics used by `ca batch`, `ca run-evaluate`, and `ca loop-closure-report`, which report an AUC / best-F1 curve over thresholds.
+Output: Chamfer distance, accuracy / completeness / F-score at each configured
+threshold, and MapEval's voxelized Average Wasserstein Distance (AWD) and
+Spatial Consistency Score (SCS). AWD measures global geometric error; SCS is
+the mean coefficient of variation of neighboring voxel errors. Both are
+lower-is-better. Voxels need at least 100 points in both maps; a metric is
+reported as `NaN` when there is not enough support. Use a voxel size suited to
+the map density (the MapEval paper uses 3.0 m).
+
+The threshold metrics are intentionally separate from the `ca evaluate`
+metrics used by `ca batch`, `ca run-evaluate`, and `ca loop-closure-report`,
+which report an AUC / best-F1 curve over thresholds.
 
 | Option | Default | Description |
 |---|---|---|
@@ -144,6 +154,7 @@ Output: Chamfer distance plus accuracy / completeness / F-score at each configur
 | `--align-mode` | `none` | Alignment mode: `none` or `initial` |
 | `--initial-matrix` | `None` | 4x4 row-major transform applied when `--align-mode initial` is used |
 | `--artifact-dir` | `None` | Optional directory for colored PLY error-map artifacts |
+| `--structure-voxel-size` | `3.0` | Voxel size in meters for AWD/SCS; set to `0` to disable |
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON |
 

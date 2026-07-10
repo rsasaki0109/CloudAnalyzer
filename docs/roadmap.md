@@ -63,7 +63,9 @@ voxel-level Wasserstein map metrics — plus the 100–500× evaluation speedup 
 Follow the established integration pattern end to end:
 
 1. Core metrics in `ca/core/map_evaluate.py`.
-2. Gate keys (`max_awd` / `min_scs`) on the `map` check kind.
+2. Gate keys (`max_awd` / `max_scs`) on the `map` check kind (both metrics are
+   lower-is-better in MapEval; Equation 10 defines SCS as a local coefficient
+   of variation).
 3. Triage dimensions + PR-comment metric surfacing.
 4. Docs (`docs/commands/`) and tests.
 

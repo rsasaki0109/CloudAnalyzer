@@ -4,8 +4,8 @@
     "target_path": "benchmarks/slam/synthetic-oval/reference/map.pcd",
     "source_points": 6462,
     "target_points": 2320,
-    "chamfer_distance": 0.014470355655877917,
-    "hausdorff_distance": 0.04709707051518745,
+    "chamfer_distance": 0.014470355655877922,
+    "hausdorff_distance": 0.04709707051518681,
     "f1_scores": [
       {
         "threshold": 0.05,
@@ -47,16 +47,16 @@
     "auc": 1.0,
     "distance_stats": {
       "source_to_target": {
-        "mean": 0.017143878767583807,
-        "median": 0.016561403128973015,
-        "max": 0.04709707051518745,
-        "std": 0.007022501397348973
+        "mean": 0.017143878767583828,
+        "median": 0.016561403128972942,
+        "max": 0.04709707051518681,
+        "std": 0.007022501397349016
       },
       "target_to_source": {
-        "mean": 0.011796832544172027,
-        "median": 0.0113970469893876,
+        "mean": 0.011796832544172017,
+        "median": 0.011397046989387732,
         "max": 0.03413854876974755,
-        "std": 0.004710721925430412
+        "std": 0.00471072192543039
       }
     },
     "best_f1": {
@@ -2805,16 +2805,16 @@
     "reasons": []
   },
   "inspect": {
-    "run_evaluate": "ca run-evaluate 'docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply' 'benchmarks/slam/synthetic-oval/reference/map.pcd' 'docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum' 'benchmarks/slam/synthetic-oval/reference/trajectory.tum' --min-auc 0.95 --max-chamfer 0.05 --max-ate 0.3 --max-rpe 0.2 --max-drift 0.5 --min-coverage 0.9 --report map_and_trajectory_run_report.html",
-    "run_web": "ca web 'docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply' 'benchmarks/slam/synthetic-oval/reference/map.pcd' --heatmap --trajectory 'docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum' --trajectory-reference 'benchmarks/slam/synthetic-oval/reference/trajectory.tum'",
+    "run_evaluate": "ca run-evaluate docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply benchmarks/slam/synthetic-oval/reference/map.pcd docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum benchmarks/slam/synthetic-oval/reference/trajectory.tum --min-auc 0.95 --max-chamfer 0.05 --max-ate 0.3 --max-rpe 0.2 --max-drift 0.5 --min-coverage 0.9 --report map_and_trajectory_run_report.html",
+    "run_web": "ca web docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply benchmarks/slam/synthetic-oval/reference/map.pcd --heatmap --trajectory docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum --trajectory-reference benchmarks/slam/synthetic-oval/reference/trajectory.tum",
     "map": {
-      "web_heatmap": "ca web 'docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply' 'benchmarks/slam/synthetic-oval/reference/map.pcd' --heatmap",
-      "heatmap3d": "ca heatmap3d 'docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply' 'benchmarks/slam/synthetic-oval/reference/map.pcd' -o map_vs_map_heatmap.png"
+      "web_heatmap": "ca web docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply benchmarks/slam/synthetic-oval/reference/map.pcd --heatmap",
+      "heatmap3d": "ca heatmap3d docs/leaderboard/runs/kiss-icp__synthetic-oval/map.ply benchmarks/slam/synthetic-oval/reference/map.pcd -o map_vs_map_heatmap.png"
     },
     "trajectory": {
-      "traj_evaluate": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum' 'benchmarks/slam/synthetic-oval/reference/trajectory.tum' --report trajectory_vs_trajectory_trajectory_report.html",
-      "traj_evaluate_aligned": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum' 'benchmarks/slam/synthetic-oval/reference/trajectory.tum' --align-origin --report trajectory_vs_trajectory_trajectory_aligned_report.html",
-      "traj_evaluate_rigid": "ca traj-evaluate 'docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum' 'benchmarks/slam/synthetic-oval/reference/trajectory.tum' --align-rigid --report trajectory_vs_trajectory_trajectory_rigid_report.html"
+      "traj_evaluate": "ca traj-evaluate docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum benchmarks/slam/synthetic-oval/reference/trajectory.tum --report trajectory_vs_trajectory_trajectory_report.html",
+      "traj_evaluate_aligned": "ca traj-evaluate docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum benchmarks/slam/synthetic-oval/reference/trajectory.tum --align-origin --report trajectory_vs_trajectory_trajectory_aligned_report.html",
+      "traj_evaluate_rigid": "ca traj-evaluate docs/leaderboard/runs/kiss-icp__synthetic-oval/trajectory.tum benchmarks/slam/synthetic-oval/reference/trajectory.tum --align-rigid --report trajectory_vs_trajectory_trajectory_rigid_report.html"
     }
   },
   "benchmark": {

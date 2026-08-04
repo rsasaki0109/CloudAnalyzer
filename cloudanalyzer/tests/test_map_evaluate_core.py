@@ -12,9 +12,12 @@ import numpy as np
 import pytest
 
 from ca.core.map_evaluate import (
+    MapEvalProtocol,
     MapEvaluateRequest,
     MapEvaluateResult,
     NNThresholdMapEvaluateStrategy,
+    compute_voxel_wasserstein_metrics_from_chunks,
+    evaluate_map_streaming,
     evaluate_map,
     compute_voxel_wasserstein_metrics,
     voxel_downsample,
@@ -48,6 +51,25 @@ def test_core_evaluate_map_metrics_populated() -> None:
     assert "completeness@0.050m" in result.metrics
     assert "fscore@0.100m" in result.metrics
     assert result.metrics["chamfer_m"] >= 0.0
+
+
+def test_explicit_mapeval_protocol_is_serialized_and_applied() -> None:
+    request = _make_request()
+    request.map_eval_protocol = MapEvalProtocol(
+        voxel_size_m=1.0,
+        min_voxel_points=2,
+        neighbor_radius=1,
+        accuracy_level_m=(0.2, 0.1),
+    )
+
+    result = evaluate_map(request)
+
+    protocol = result.artifacts["map_eval_protocol"]
+    assert protocol["name"] == "cloudanalyzer.mapeval_awd_scs.v1"
+    assert protocol["voxel_size_m"] == pytest.approx(1.0)
+    assert protocol["min_voxel_points"] == 2
+    assert protocol["neighbor_radius"] == 1
+    assert tuple(result.sampling_policy["thresholds_m"]) == (0.2, 0.1)
 
 
 def test_core_strategy_matches_experiment_reexport() -> None:
@@ -113,6 +135,48 @@ def test_awd_scs_identical_dense_neighbor_voxels_are_zero() -> None:
     assert metrics["scs"] == pytest.approx(0.0)
     assert metrics["n_awd_voxels"] == 2
     assert metrics["n_scs_voxels"] == 2
+
+
+def test_chunked_awd_scs_matches_array_implementation() -> None:
+    rng = np.random.default_rng(9)
+    points = rng.uniform(0.05, 1.95, size=(500, 3))
+    expected = compute_voxel_wasserstein_metrics(
+        points,
+        points.copy(),
+        voxel_size=0.5,
+        min_voxel_points=1,
+        neighbor_radius=1,
+    )
+    actual = compute_voxel_wasserstein_metrics_from_chunks(
+        (points[start : start + 37] for start in range(0, len(points), 37)),
+        (points[start : start + 41] for start in range(0, len(points), 41)),
+        voxel_size=0.5,
+        min_voxel_points=1,
+        neighbor_radius=1,
+    )
+
+    assert actual["awd_m"] == pytest.approx(expected["awd_m"], abs=1e-12)
+    assert actual["scs"] == pytest.approx(expected["scs"], abs=1e-12)
+    assert actual["n_awd_voxels"] == expected["n_awd_voxels"]
+
+
+def test_streaming_map_result_has_explicit_metric_lane() -> None:
+    rng = np.random.default_rng(12)
+    points = rng.uniform(0.05, 1.95, size=(300, 3))
+    result = evaluate_map_streaming(
+        (points[start : start + 23] for start in range(0, len(points), 23)),
+        (points[start : start + 31] for start in range(0, len(points), 31)),
+        protocol=MapEvalProtocol(
+            voxel_size_m=0.5,
+            min_voxel_points=1,
+            neighbor_radius=1,
+        ),
+    )
+
+    assert result.mode == "streaming"
+    assert result.metric_family == "reference_based_mapeval_awd_scs"
+    assert result.metrics["awd_m"] == pytest.approx(0.0, abs=1e-12)
+    assert result.artifacts["map_eval_protocol"]["voxel_size_m"] == pytest.approx(0.5)
 
 
 def test_awd_scs_sparse_or_empty_inputs_are_explicitly_unavailable() -> None:

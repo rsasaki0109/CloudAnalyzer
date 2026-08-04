@@ -1,5 +1,7 @@
 """Tests for trajectory batch evaluation."""
 
+import math
+
 import pytest
 
 from ca.batch import trajectory_batch_evaluate
@@ -11,6 +13,18 @@ def _write_csv_trajectory(path, rows):
     lines.extend(f"{timestamp},{x},{y},{z}" for timestamp, x, y, z in rows)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n")
+    return str(path)
+
+
+def _write_tum_trajectory(path, rows):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join(
+            f"{timestamp} {x} {y} {z} {qx} {qy} {qz} {qw}"
+            for timestamp, x, y, z, qx, qy, qz, qw in rows
+        )
+        + "\n"
+    )
     return str(path)
 
 
@@ -176,6 +190,44 @@ class TestTrajectoryBatchEvaluate:
         assert results[0]["quality_gate"]["passed"] is False
         assert results[0]["quality_gate"]["min_coverage"] == pytest.approx(0.8)
         assert any("Coverage" in reason for reason in results[0]["quality_gate"]["reasons"])
+
+    def test_quality_gate_rotation_and_distance_rpe(self, tmp_path):
+        estimated_dir = tmp_path / "estimated"
+        reference_dir = tmp_path / "reference"
+        estimated = []
+        reference = []
+        for index, angle_deg in enumerate((0.0, 10.0, 20.0)):
+            half_angle = math.radians(angle_deg) / 2.0
+            estimated.append(
+                (
+                    float(index),
+                    float(index),
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    math.sin(half_angle),
+                    math.cos(half_angle),
+                )
+            )
+            reference.append(
+                (float(index), float(index), 0.0, 0.0, 0.0, 0.0, 0.0, 1.0)
+            )
+        _write_tum_trajectory(estimated_dir / "a.tum", estimated)
+        _write_tum_trajectory(reference_dir / "a.tum", reference)
+
+        results = trajectory_batch_evaluate(
+            str(estimated_dir),
+            str(reference_dir),
+            max_rpe_rotation_deg=1.0,
+            rpe_distances_m=[1.0],
+        )
+
+        result = results[0]
+        assert result["rpe_rotation"]["rmse"] == pytest.approx(10.0, abs=1e-6)
+        assert result["rpe_distance"][0]["delta_m"] == pytest.approx(1.0)
+        assert result["quality_gate"]["passed"] is False
+        assert any("RPE rotation" in reason for reason in result["quality_gate"]["reasons"])
 
 
 class TestTrajectoryBatchReport:

@@ -30,6 +30,12 @@ pip install "cloudanalyzer[gs]"
 → combined HTML / JSON report
 ```
 
+Every run emits an `evaluation_protocol` manifest under the JSON metadata.
+`cloudanalyzer.rendered_eval.v1` records splat/camera/reference hashes, camera
+matrices and intrinsics, filename pairing, image value range, SSIM parameters,
+background, opacity threshold, renderer backend/device, and runtime versions.
+The manifest's `sha256` is the comparison key for the protocol itself.
+
 ## Camera formats
 
 | Input | Layout |
@@ -51,6 +57,9 @@ layouts above.
 | `--geometry-opacity-threshold` | Separate opacity filter for geometry (defaults to render threshold) |
 | `--geometry-voxel 0.05` | Voxel-downsample before geometry QA |
 | `--rendered-dir PATH` | Keep rendered PNGs instead of using a temp directory |
+| `--render-device DEVICE` | Torch device for gsplat (`cuda`, `cpu`, or an explicit device) |
+| `--ssim-window-size N` | SSIM window size recorded in the protocol |
+| `--ssim-sigma X` | SSIM Gaussian sigma recorded in the protocol |
 | `--report PATH.html` | Combined photometric + geometry report |
 | `--output-json PATH` | Full result payload |
 | `--format-json` | Print JSON to stdout |
@@ -108,6 +117,8 @@ zero-padding, and normalized-Frobenius formulation. See
 
 For CPU-only CI runners (no gsplat/CUDA), set `skip_render: true` and point
 `rendered_dir` at pre-rendered PNGs; geometry QA still runs against the splat PLY.
+The protocol remains available and identifies this renderer backend as
+`pre-rendered`.
 
 ```yaml
 checks:

@@ -1,4 +1,4 @@
-"""Trajectory evaluation utilities (ATE, translational RPE, drift)."""
+"""Trajectory evaluation utilities (ATE, SE(3) RPE, and drift)."""
 
 from __future__ import annotations
 
@@ -10,6 +10,11 @@ import numpy as np
 
 _TIMESTAMP_KEYS = ("timestamp", "timestamp_sec", "time", "t")
 _POSITION_KEY_SETS = (("x", "y", "z"), ("x_m", "y_m", "z_m"))
+_ORIENTATION_KEY_SETS = (
+    ("qx", "qy", "qz", "qw"),
+    ("quat_x", "quat_y", "quat_z", "quat_w"),
+    ("quaternion_x", "quaternion_y", "quaternion_z", "quaternion_w"),
+)
 SUPPORTED_TRAJECTORY_EXTENSIONS = {".csv", ".tum", ".txt"}
 
 
@@ -26,7 +31,9 @@ def _summary_stats(values: np.ndarray) -> dict:
     }
 
 
-def _parse_csv_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
+def _parse_csv_trajectory(
+    path: Path,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
     """Load trajectory from CSV with either headers or raw columns."""
     lines = [
         line.strip()
@@ -54,9 +61,18 @@ def _parse_csv_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
         )
         if position_keys is None:
             raise ValueError("CSV trajectory must include x,y,z or x_m,y_m,z_m columns")
+        orientation_keys = next(
+            (
+                candidate
+                for candidate in _ORIENTATION_KEY_SETS
+                if all(key in field_map for key in candidate)
+            ),
+            None,
+        )
 
         timestamps = []
         positions = []
+        orientations = [] if orientation_keys is not None else None
         for row in reader:
             timestamps.append(float(row[field_map[timestamp_key]]))
             positions.append(
@@ -66,7 +82,15 @@ def _parse_csv_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
                     float(row[field_map[position_keys[2]]]),
                 ]
             )
-        return np.asarray(timestamps, dtype=float), np.asarray(positions, dtype=float)
+            if orientations is not None:
+                orientations.append(
+                    [float(row[field_map[key]]) for key in orientation_keys]
+                )
+        return (
+            np.asarray(timestamps, dtype=float),
+            np.asarray(positions, dtype=float),
+            np.asarray(orientations, dtype=float) if orientations is not None else None,
+        )
 
     timestamps = []
     positions = []
@@ -75,13 +99,17 @@ def _parse_csv_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
             raise ValueError("CSV trajectory rows must have at least 4 columns: timestamp,x,y,z")
         timestamps.append(float(csv_row[0]))
         positions.append([float(csv_row[1]), float(csv_row[2]), float(csv_row[3])])
-    return np.asarray(timestamps, dtype=float), np.asarray(positions, dtype=float)
+    return np.asarray(timestamps, dtype=float), np.asarray(positions, dtype=float), None
 
 
-def _parse_tum_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
+def _parse_tum_trajectory(
+    path: Path,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
     """Load trajectory from whitespace-separated TUM-style format."""
     timestamps = []
     positions = []
+    orientations = []
+    has_orientation: bool | None = None
     for raw_line in path.read_text().splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#"):
@@ -92,11 +120,22 @@ def _parse_tum_trajectory(path: Path) -> tuple[np.ndarray, np.ndarray]:
                 "TUM trajectory rows must have 4 columns (timestamp x y z) "
                 "or 8 columns (timestamp x y z qx qy qz qw)"
             )
+        row_has_orientation = len(parts) == 8
+        if has_orientation is None:
+            has_orientation = row_has_orientation
+        elif has_orientation != row_has_orientation:
+            raise ValueError("TUM trajectory rows must consistently include or omit orientation")
         timestamps.append(float(parts[0]))
         positions.append([float(parts[1]), float(parts[2]), float(parts[3])])
+        if row_has_orientation:
+            orientations.append([float(value) for value in parts[4:8]])
     if not timestamps:
         raise ValueError("Trajectory file is empty")
-    return np.asarray(timestamps, dtype=float), np.asarray(positions, dtype=float)
+    return (
+        np.asarray(timestamps, dtype=float),
+        np.asarray(positions, dtype=float),
+        np.asarray(orientations, dtype=float) if has_orientation else None,
+    )
 
 
 def load_trajectory(path: str, *, topic: str | None = None, frame: str | None = None) -> dict:
@@ -110,14 +149,17 @@ def load_trajectory(path: str, *, topic: str | None = None, frame: str | None = 
     if is_bag_path(trajectory_path):
         from ca.core.bag_ingest import load_trajectory_from_bag
 
-        return load_trajectory_from_bag(str(trajectory_path), topic=topic, frame=frame)
+        result = load_trajectory_from_bag(str(trajectory_path), topic=topic, frame=frame)
+        result.setdefault("orientations", None)
+        result.setdefault("pose_format", "position")
+        return result
 
     suffix = trajectory_path.suffix.lower()
     if suffix == ".csv":
-        timestamps, positions = _parse_csv_trajectory(trajectory_path)
+        timestamps, positions, orientations = _parse_csv_trajectory(trajectory_path)
         format_name = "csv"
     elif suffix in {".tum", ".txt"}:
-        timestamps, positions = _parse_tum_trajectory(trajectory_path)
+        timestamps, positions, orientations = _parse_tum_trajectory(trajectory_path)
         format_name = "tum"
     else:
         raise ValueError("Unsupported trajectory format. Use .csv, .tum, or .txt")
@@ -126,6 +168,20 @@ def load_trajectory(path: str, *, topic: str | None = None, frame: str | None = 
         raise ValueError("Trajectory must contain at least 2 poses")
     if positions.shape != (timestamps.size, 3):
         raise ValueError("Trajectory positions are malformed")
+    if orientations is not None:
+        if orientations.shape != (timestamps.size, 4):
+            raise ValueError("Trajectory orientations are malformed")
+        if not np.isfinite(orientations).all():
+            raise ValueError("Trajectory orientations must be finite")
+        norms = np.linalg.norm(orientations, axis=1)
+        if np.any(norms < 1e-12):
+            raise ValueError("Trajectory orientations must be non-zero quaternions")
+        orientations = orientations / norms[:, None]
+        # q and -q represent the same rotation. Keep adjacent signs
+        # consistent so interpolation and diagnostics are deterministic.
+        for index in range(1, orientations.shape[0]):
+            if np.dot(orientations[index - 1], orientations[index]) < 0:
+                orientations[index] *= -1.0
     if np.any(np.diff(timestamps) <= 0):
         raise ValueError("Trajectory timestamps must be strictly increasing")
 
@@ -134,8 +190,219 @@ def load_trajectory(path: str, *, topic: str | None = None, frame: str | None = 
         "format": format_name,
         "timestamps": timestamps,
         "positions": positions,
+        "orientations": orientations,
+        "pose_format": "position_quaternion" if orientations is not None else "position",
         "num_poses": int(timestamps.size),
     }
+
+
+def _slerp_quaternion(first: np.ndarray, second: np.ndarray, alpha: float) -> np.ndarray:
+    """Interpolate two normalized ``[x, y, z, w]`` quaternions."""
+    q0 = np.asarray(first, dtype=float)
+    q1 = np.asarray(second, dtype=float)
+    dot = float(np.dot(q0, q1))
+    if dot < 0.0:
+        q1 = -q1
+        dot = -dot
+    dot = float(np.clip(dot, -1.0, 1.0))
+    if dot > 0.9995:
+        result = q0 + alpha * (q1 - q0)
+        return result / np.linalg.norm(result)
+
+    theta = float(np.arccos(dot))
+    sin_theta = float(np.sin(theta))
+    first_weight = np.sin((1.0 - alpha) * theta) / sin_theta
+    second_weight = np.sin(alpha * theta) / sin_theta
+    result = first_weight * q0 + second_weight * q1
+    return result / np.linalg.norm(result)
+
+
+def _interpolate_orientation_series(
+    source_times: np.ndarray,
+    source_orientations: np.ndarray | None,
+    target_times: np.ndarray,
+    max_time_delta: float,
+) -> np.ndarray | None:
+    """Interpolate quaternion samples at already matched target timestamps."""
+    if source_orientations is None:
+        return None
+
+    interpolated: list[np.ndarray] = []
+    for target_time in target_times:
+        insert_index = int(np.searchsorted(source_times, target_time))
+        if (
+            insert_index < source_times.size
+            and abs(source_times[insert_index] - target_time) <= 1e-9
+        ):
+            interpolated.append(source_orientations[insert_index])
+            continue
+
+        if 0 < insert_index < source_times.size:
+            left_time = source_times[insert_index - 1]
+            right_time = source_times[insert_index]
+            left_delta = target_time - left_time
+            right_delta = right_time - target_time
+            if left_delta <= max_time_delta and right_delta <= max_time_delta:
+                alpha = left_delta / (right_time - left_time)
+                interpolated.append(
+                    _slerp_quaternion(
+                        source_orientations[insert_index - 1],
+                        source_orientations[insert_index],
+                        float(alpha),
+                    )
+                )
+                continue
+
+        if insert_index == 0 and abs(source_times[0] - target_time) <= max_time_delta:
+            interpolated.append(source_orientations[0])
+            continue
+        if (
+            insert_index == source_times.size
+            and abs(target_time - source_times[-1]) <= max_time_delta
+        ):
+            interpolated.append(source_orientations[-1])
+            continue
+
+        raise ValueError("Matched trajectory pose has no interpolatable orientation")
+
+    return np.asarray(interpolated, dtype=float)
+
+
+def _quaternions_to_rotation_matrices(quaternions: np.ndarray) -> np.ndarray:
+    """Convert normalized ``[x, y, z, w]`` quaternions to rotation matrices."""
+    x, y, z, w = np.asarray(quaternions, dtype=float).T
+    return np.stack(
+        (
+            1.0 - 2.0 * (y * y + z * z),
+            2.0 * (x * y - z * w),
+            2.0 * (x * z + y * w),
+            2.0 * (x * y + z * w),
+            1.0 - 2.0 * (x * x + z * z),
+            2.0 * (y * z - x * w),
+            2.0 * (x * z - y * w),
+            2.0 * (y * z + x * w),
+            1.0 - 2.0 * (x * x + y * y),
+        ),
+        axis=-1,
+    ).reshape((-1, 3, 3))
+
+
+def _rotation_errors_degrees(
+    estimated_rotations: np.ndarray,
+    reference_rotations: np.ndarray,
+) -> np.ndarray:
+    """Return geodesic rotation errors between two rotation series."""
+    relative = np.einsum(
+        "nij,njk->nik",
+        np.transpose(reference_rotations, (0, 2, 1)),
+        estimated_rotations,
+    )
+    cosine = np.clip((np.trace(relative, axis1=1, axis2=2) - 1.0) / 2.0, -1.0, 1.0)
+    return np.degrees(np.arccos(cosine))
+
+
+def _relative_rotation_series(rotations: np.ndarray) -> np.ndarray:
+    """Return body-frame relative rotations between consecutive poses."""
+    return np.einsum(
+        "nij,njk->nik",
+        np.transpose(rotations[:-1], (0, 2, 1)),
+        rotations[1:],
+    )
+
+
+def _rpe_rotation_errors_degrees(
+    estimated_rotations: np.ndarray,
+    reference_rotations: np.ndarray,
+) -> np.ndarray:
+    """Return consecutive relative-pose rotation errors in degrees."""
+    estimated_relative = _relative_rotation_series(estimated_rotations)
+    reference_relative = _relative_rotation_series(reference_rotations)
+    return _rotation_errors_degrees(estimated_relative, reference_relative)
+
+
+def _compute_distance_rpe(
+    estimated_positions: np.ndarray,
+    reference_positions: np.ndarray,
+    distances_m: tuple[float, ...],
+    estimated_rotations: np.ndarray | None = None,
+    reference_rotations: np.ndarray | None = None,
+) -> list[dict]:
+    """Compute KITTI-style first-crossing RPE for requested path distances."""
+    reference_steps = np.linalg.norm(np.diff(reference_positions, axis=0), axis=1)
+    cumulative_distance = np.concatenate(([0.0], np.cumsum(reference_steps)))
+    results = []
+
+    for distance_m in distances_m:
+        translation_errors: list[float] = []
+        translation_percent_errors: list[float] = []
+        rotation_errors: list[float] = []
+        actual_distances: list[float] = []
+        for start_index in range(len(reference_positions) - 1):
+            target_index = int(
+                np.searchsorted(
+                    cumulative_distance,
+                    cumulative_distance[start_index] + distance_m,
+                    side="left",
+                )
+            )
+            if target_index <= start_index or target_index >= len(reference_positions):
+                continue
+
+            actual_distance = float(
+                cumulative_distance[target_index] - cumulative_distance[start_index]
+            )
+            translation_error = float(
+                np.linalg.norm(
+                    (estimated_positions[target_index] - estimated_positions[start_index])
+                    - (reference_positions[target_index] - reference_positions[start_index])
+                )
+            )
+            translation_errors.append(translation_error)
+            translation_percent_errors.append(100.0 * translation_error / actual_distance)
+            actual_distances.append(actual_distance)
+
+            if estimated_rotations is not None and reference_rotations is not None:
+                estimated_relative = estimated_rotations[start_index].T @ estimated_rotations[
+                    target_index
+                ]
+                reference_relative = reference_rotations[start_index].T @ reference_rotations[
+                    target_index
+                ]
+                rotation_errors.extend(
+                    _rotation_errors_degrees(
+                        estimated_relative[None, ...],
+                        reference_relative[None, ...],
+                    ).tolist()
+                )
+
+        results.append(
+            {
+                "delta_m": float(distance_m),
+                "pairs": len(translation_errors),
+                "actual_distance_m": (
+                    _summary_stats(np.asarray(actual_distances, dtype=float))
+                    if actual_distances
+                    else None
+                ),
+                "translation": (
+                    _summary_stats(np.asarray(translation_errors, dtype=float))
+                    if translation_errors
+                    else None
+                ),
+                "translation_percent": (
+                    _summary_stats(np.asarray(translation_percent_errors, dtype=float))
+                    if translation_percent_errors
+                    else None
+                ),
+                "rotation": (
+                    _summary_stats(np.asarray(rotation_errors, dtype=float))
+                    if rotation_errors
+                    else None
+                ),
+            }
+        )
+
+    return results
 
 
 def _interpolate_matches(
@@ -235,12 +502,14 @@ def _decompose_lateral_longitudinal(
 def _quality_gate(
     ate_rmse: float,
     rpe_rmse: float,
+    rpe_rotation_rmse: float | None,
     endpoint_drift: float,
     coverage_ratio: float,
     lateral_rmse: float = 0.0,
     longitudinal_rmse: float = 0.0,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
     max_lateral: float | None = None,
@@ -249,7 +518,15 @@ def _quality_gate(
     """Build optional trajectory quality gate metadata."""
     if all(
         v is None
-        for v in (max_ate, max_rpe, max_drift, min_coverage, max_lateral, max_longitudinal)
+        for v in (
+            max_ate,
+            max_rpe,
+            max_rpe_rotation_deg,
+            max_drift,
+            min_coverage,
+            max_lateral,
+            max_longitudinal,
+        )
     ):
         return None
 
@@ -258,6 +535,14 @@ def _quality_gate(
         reasons.append(f"ATE RMSE {ate_rmse:.4f} > max_ate {max_ate:.4f}")
     if max_rpe is not None and rpe_rmse > max_rpe:
         reasons.append(f"RPE RMSE {rpe_rmse:.4f} > max_rpe {max_rpe:.4f}")
+    if max_rpe_rotation_deg is not None:
+        if rpe_rotation_rmse is None:
+            reasons.append("RPE rotation is unavailable; quaternion orientations are required")
+        elif rpe_rotation_rmse > max_rpe_rotation_deg:
+            reasons.append(
+                "RPE rotation RMSE "
+                f"{rpe_rotation_rmse:.4f} > max_rpe_rotation_deg {max_rpe_rotation_deg:.4f}"
+            )
     if max_drift is not None and endpoint_drift > max_drift:
         reasons.append(f"Endpoint Drift {endpoint_drift:.4f} > max_drift {max_drift:.4f}")
     if min_coverage is not None and coverage_ratio < min_coverage:
@@ -272,6 +557,7 @@ def _quality_gate(
         "passed": not reasons,
         "max_ate": max_ate,
         "max_rpe": max_rpe,
+        "max_rpe_rotation_deg": max_rpe_rotation_deg,
         "max_drift": max_drift,
         "min_coverage": min_coverage,
         "max_lateral": max_lateral,
@@ -348,18 +634,26 @@ def evaluate_trajectory(
     align_rigid: bool = False,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
     max_lateral: float | None = None,
     max_longitudinal: float | None = None,
     topic: str | None = None,
     frame: str | None = None,
+    rpe_distances_m: tuple[float, ...] | list[float] | None = None,
 ) -> dict:
     """Evaluate a trajectory against a reference trajectory."""
     if max_time_delta <= 0:
         raise ValueError("max_time_delta must be > 0")
     if min_coverage is not None and not 0.0 <= min_coverage <= 1.0:
         raise ValueError("min_coverage must be between 0 and 1")
+    if max_rpe_rotation_deg is not None and max_rpe_rotation_deg < 0:
+        raise ValueError("max_rpe_rotation_deg must be >= 0")
+    if rpe_distances_m is not None:
+        rpe_distances_m = tuple(sorted({float(distance) for distance in rpe_distances_m}))
+        if not rpe_distances_m or any(distance <= 0 for distance in rpe_distances_m):
+            raise ValueError("rpe_distances_m must contain positive distances")
 
     from ca.core.bag_ingest import is_bag_path
 
@@ -381,6 +675,19 @@ def evaluate_trajectory(
     if matched_times.size < 2:
         raise ValueError("Need at least 2 matched poses within max_time_delta")
 
+    matched_estimated_orientations = _interpolate_orientation_series(
+        estimated["timestamps"],
+        estimated.get("orientations"),
+        matched_times,
+        max_time_delta,
+    )
+    matched_reference_orientations = _interpolate_orientation_series(
+        reference["timestamps"],
+        reference.get("orientations"),
+        matched_times,
+        max_time_delta,
+    )
+
     aligned_estimated_positions, alignment_mode, alignment_translation, alignment_rotation = _apply_alignment(
         matched_estimated_positions,
         matched_reference_positions,
@@ -398,6 +705,32 @@ def evaluate_trajectory(
     estimated_steps = np.diff(aligned_estimated_positions, axis=0)
     reference_steps = np.diff(matched_reference_positions, axis=0)
     rpe_errors = np.linalg.norm(estimated_steps - reference_steps, axis=1)
+
+    estimated_rotations = None
+    reference_rotations = None
+    ate_rotation_errors = None
+    rpe_rotation_errors = None
+    if (
+        matched_estimated_orientations is not None
+        and matched_reference_orientations is not None
+    ):
+        estimated_rotations = _quaternions_to_rotation_matrices(
+            matched_estimated_orientations
+        )
+        reference_rotations = _quaternions_to_rotation_matrices(
+            matched_reference_orientations
+        )
+        # Rigid position alignment also changes the world frame of the
+        # estimated orientations. Origin alignment has an identity rotation.
+        estimated_rotations = np.einsum(
+            "ij,njk->nik", alignment_rotation, estimated_rotations
+        )
+        ate_rotation_errors = _rotation_errors_degrees(
+            estimated_rotations, reference_rotations
+        )
+        rpe_rotation_errors = _rpe_rotation_errors_degrees(
+            estimated_rotations, reference_rotations
+        )
 
     reference_path_length = float(np.sum(np.linalg.norm(reference_steps, axis=1)))
     estimated_path_length = float(np.sum(np.linalg.norm(estimated_steps, axis=1)))
@@ -435,8 +768,30 @@ def evaluate_trajectory(
 
     ate_stats = _summary_stats(ate_errors)
     rpe_stats = _summary_stats(rpe_errors)
+    ate_rotation_stats = (
+        _summary_stats(ate_rotation_errors)
+        if ate_rotation_errors is not None
+        else None
+    )
+    rpe_rotation_stats = (
+        _summary_stats(rpe_rotation_errors)
+        if rpe_rotation_errors is not None
+        else None
+    )
     lateral_stats = _summary_stats(lateral_errors)
     longitudinal_stats = _summary_stats(np.abs(longitudinal_errors))
+
+    distance_rpe = (
+        _compute_distance_rpe(
+            aligned_estimated_positions,
+            matched_reference_positions,
+            rpe_distances_m,
+            estimated_rotations=estimated_rotations,
+            reference_rotations=reference_rotations,
+        )
+        if rpe_distances_m is not None
+        else []
+    )
 
     return {
         "estimated_path": estimated_path,
@@ -449,6 +804,9 @@ def evaluate_trajectory(
         "matching": matching,
         "ate": ate_stats,
         "rpe_translation": rpe_stats,
+        "ate_rotation": ate_rotation_stats,
+        "rpe_rotation": rpe_rotation_stats,
+        "rpe_distance": distance_rpe,
         "lateral": lateral_stats,
         "longitudinal": longitudinal_stats,
         "drift": {
@@ -475,6 +833,11 @@ def evaluate_trajectory(
                 "start_timestamp": float(matched_times[index]),
                 "end_timestamp": float(matched_times[index + 1]),
                 "translation_error": float(rpe_errors[index]),
+                "rotation_error_deg": (
+                    float(rpe_rotation_errors[index])
+                    if rpe_rotation_errors is not None
+                    else None
+                ),
             }
             for index in worst_rpe_indices
         ],
@@ -482,7 +845,20 @@ def evaluate_trajectory(
             "timestamps": matched_times.tolist(),
             "estimated_positions": aligned_estimated_positions.tolist(),
             "reference_positions": matched_reference_positions.tolist(),
+            "estimated_orientations": (
+                matched_estimated_orientations.tolist()
+                if matched_estimated_orientations is not None
+                else None
+            ),
+            "reference_orientations": (
+                matched_reference_orientations.tolist()
+                if matched_reference_orientations is not None
+                else None
+            ),
             "ate_errors": ate_errors.tolist(),
+            "ate_rotation_errors": (
+                ate_rotation_errors.tolist() if ate_rotation_errors is not None else None
+            ),
             "lateral_errors": lateral_errors.tolist(),
             "longitudinal_errors": longitudinal_errors.tolist(),
         },
@@ -493,16 +869,21 @@ def evaluate_trajectory(
                 else []
             ),
             "rpe_translation": rpe_errors.tolist(),
+            "rpe_rotation": (
+                rpe_rotation_errors.tolist() if rpe_rotation_errors is not None else []
+            ),
         },
         "quality_gate": _quality_gate(
             ate_stats["rmse"],
             rpe_stats["rmse"],
+            rpe_rotation_stats["rmse"] if rpe_rotation_stats is not None else None,
             endpoint_drift,
             matching["coverage_ratio"],
             lateral_rmse=lateral_stats["rmse"],
             longitudinal_rmse=longitudinal_stats["rmse"],
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
             max_lateral=max_lateral,

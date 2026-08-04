@@ -1,101 +1,85 @@
 # Development Roadmap
 
-Status snapshot: 2026-07-02. Phase numbering continues the sequence used in
-[CHANGELOG.md](../CHANGELOG.md) (Phase 30 = `ca image-evaluate`).
+Status snapshot: 2026-08-04. The roadmap is organized around the product goal
+in [VISION.md](../VISION.md): reproducible, CI-ready QA for 3D perception,
+mapping, and reconstruction outputs.
 
-## Strategic Direction
+## Product thesis
 
-CloudAnalyzer's moat is the **QA / CI / regression-gate layer**, not the metrics
-themselves. Adjacent tools (nerfstudio `ns-eval` / gsplat for photometric, evo
-for trajectory, MapEval for map geometry) are all single-shot evaluators with
-no regression gates. The goal is to put photometric **and** geometric quality
-on the same config-driven regression-gate footing — see [VISION.md](../VISION.md).
+CloudAnalyzer should be the protocol and evidence layer above SLAM, Open3D,
+MapEval, evo, gsplat, and dataset-specific tooling. The highest-value work is
+making results comparable, reproducible, and scalable; adding isolated metrics
+without those properties is lower priority.
 
-## Current State
+## Implemented in the current development workspace
 
-Completed and merged to `main`:
+- Unified CI gates for point clouds, maps, trajectories, images, rendered 3DGS,
+  structure, detection, tracking, and uncertainty.
+- Headless snapshot fallback: Open3D when a display exists, deterministic
+  Matplotlib projection otherwise.
+- TUM/CSV quaternion preservation, rotational ATE/RPE, and opt-in distance RPE.
+- Explicit `cloudanalyzer.mapeval_awd_scs.v1` parameters and serialized AWD/SCS
+  protocol metadata.
+- Chunked LAS/LAZ/CSV reading, streaming voxel moments, streaming AWD/SCS, and
+  an optional PDAL-backed remote COPC adapter.
+- `cloudanalyzer.rendered_eval.v1` manifests containing input hashes, camera
+  matrices, image pairing, renderer settings, and runtime versions.
+- Versioned benchmark metrics (`cloudanalyzer.metrics.v1`) and local report-bundle
+  validation.
 
-| Phase | Deliverable |
-| ----- | ----------- |
-| 30 | `ca image-evaluate` — PSNR / SSIM scoring of rendered vs. reference image sets |
-| 31 | `kind: image` config check — photometric quality rides the CI gate (`min_psnr` / `min_ssim`) |
-| 32 | LPIPS via the optional `gs` extra (`torch` + `gsplat` + `lpips`), `max_lpips` gate key |
-| 33 | Camera-pose I/O — nerfstudio / Instant-NGP `transforms.json` + COLMAP (`ca/core/cameras.py`) |
-| 34 | `ca rendered-evaluate` — 3DGS PLY + camera poses + references → gsplat render → photometric gate (`kind: rendered`) |
+The implementation is pending commit/review. The working tree must remain
+compatible with the existing MIT license and optional CUDA/PDAL backends.
 
-Also landed (v0.5.0-alpha scope): benchmark report bundles
-(`ca benchmark eval --out`), static leaderboard (`ca leaderboard build`),
-unified gate severity policy, SLAM driver conformance helper.
+## Priority plan
 
-**v0.5.0-alpha.1 is not yet tagged.** The CHANGELOG entry (2026-06-17) and the
-[release preflight](release-v0.5.0-alpha.md) exist, and all four must-pass
-workflows (Test, Pages, SLAM Benchmark Smoke, Public Benchmark Pack) were green
-on the release-candidate commit, but git tags stop at `v0.4.0`.
+### P0 — release quality and headless CI
 
-## Plan
+- Keep no-display, Xvfb, and optional CUDA paths green.
+- Reconcile release docs and tag `v0.5.0-alpha.1` only after benchmark and
+  leaderboard smoke tests are reproducible.
+- Pin or lock supported dependency combinations and remove avoidable warnings.
 
-### 1. Fix the scheduled `SLAM Leaderboard` workflow failure — first, small
+### P1 — trajectory protocol validation
 
-The 2026-07-01 cron run failed at the "Build public SLAM leaderboard snapshot"
-step (run 28502082013; logs no longer retrievable). The 2026-06-17 manual run
-succeeded, so an environment drift (e.g. a new release of an unpinned
-dependency) is the prime suspect.
+- Rotational/distance RPE is now wired through `traj-batch`, `run-evaluate`,
+  `run-batch`, benchmark gates, and `ca check`.
+- Add golden fixtures and an evo subprocess oracle for development validation
+  only; evo remains outside the MIT runtime dependency graph.
+- Document frame, quaternion convention, timestamp association, and units.
 
-- Reproduce the snapshot build locally; identify and fix the cause.
-- If dependency-driven, consider upper-bound pins.
-- Scheduled workflows should be green before cutting the release tag.
+### P2 — MapEval parity validation
 
-### 2. Tag and publish v0.5.0-alpha.1 — small
+- Compare CloudAnalyzer's AWD/SCS outputs against official
+  [Cloud_Map_Evaluation](https://github.com/JokerJohn/Cloud_Map_Evaluation)
+  fixtures when the external implementation is available.
+- Record tolerance, voxel parameters, point-count thresholds, runtime, and peak
+  memory for every parity fixture.
+- Keep reference-free plane/MME proxies in a separate experimental metric lane.
 
-Follow the remaining steps in [release-v0.5.0-alpha.md](release-v0.5.0-alpha.md):
+### P3 — large-scale artifact validation
 
-- Run the Golden Path smoke (`ca benchmark eval` → `ca leaderboard build`).
-- `python -m build` + `twine check dist/*`.
-- Cut the `v0.5.0-alpha.1` tag and GitHub Release.
+- `PointChunkReader`, streaming reducers, and the optional PDAL COPC adapter
+  are implemented; wire them into more geometry/check paths as needed.
+- Benchmark 1M/10M/100M-point inputs and publish a memory budget.
 
-### 3. Phase 35 — MapEval AWD / SCS in `ca map-evaluate` — headline, medium–large
+### P4 — 3DGS protocol and geometry extensions
 
-Adopt AWD (Average Wasserstein Distance) and SCS (Spatial Consistency Score) —
-voxel-level Wasserstein map metrics — plus the 100–500× evaluation speedup from
-[JokerJohn/Cloud_Map_Evaluation](https://github.com/JokerJohn/Cloud_Map_Evaluation)
-(RA-L '25) into `ca map-evaluate` (`ca/core/map_evaluate.py`).
+- Renderer/camera/image conventions are now in the rendered-evaluation
+  manifest.
+- Add optional gsplat depth/hit-distance/LiDAR evaluation when the API is stable.
+- Maintain CPU pre-rendered golden tests and separate GPU integration jobs.
 
-Follow the established integration pattern end to end:
+### P5 — benchmark and release operations extensions
 
-1. Core metrics in `ca/core/map_evaluate.py`.
-2. Gate keys (`max_awd` / `max_scs`) on the `map` check kind (both metrics are
-   lower-is-better in MapEval; Equation 10 defines SCS as a local coefficient
-   of variation).
-3. Triage dimensions + PR-comment metric surfacing.
-4. Docs (`docs/commands/`) and tests.
+- Suite manifests now carry dataset source/license/preparation/hash metadata,
+  and report bundles have a versioned metrics schema plus validation.
+- Add multi-sequence baseline comparison and calibrated threshold histories.
+- Verify every bundle before publishing a static leaderboard row.
 
-This completes the strategy: photometric (Phases 30–34) and geometric
-(Phase 35) quality both gated by the same config-driven CI layer.
+## Explicitly deferred
 
-### 4. Follow-ups (in priority order)
-
-### Phase 38 — SLAM state uncertainty consistency
-
-Position NEES and chi-square coverage are available through
-`ca uncertainty-evaluate` and `kind: uncertainty`. NIS is deferred until an
-innovation + innovation-covariance log contract exists.
-
-### Phase 37 — DreamSim perceptual distance
-
-`ca image-evaluate` and `ca rendered-evaluate` accept
-`dreamsim_distance`, a lower-is-better holistic perceptual metric, with
-`max_dreamsim_distance` gates for `kind: image` and `kind: rendered`.
-
-### Phase 36 — reference-free plane consistency (experimental)
-
-`ca plane-consistency` and `kind: structure` extend the existing MME surface
-with deterministic local-plane proxies: `plane_normal_dispersion` and
-`coplanar_offset_rmse`. They are inspired by the PNE/CPV topology direction in
-Ouyang et al. (2023/2025), but are explicitly not presented as faithful PNE or
-CPV reproductions because the complete 2025 equations are not publicly
-available. Both proxies are lower-is-better and require no ground-truth map.
-
-- **MS-SSIM** — deferred from Phase 32; pure numpy/scipy, no extra required. Small.
-- **v0.5.0 stable** — after alpha feedback.
-- **CI actions refresh** — resolve the Node.js 20 deprecation warnings
-  (`actions/checkout@v4`, `actions/setup-python@v5`). Mechanical.
+- Learned metrics without model-weight/version provenance and threshold calibration.
+- A full C++ rewrite of CloudAnalyzer.
+- Reimplementing SLAM, reconstruction, training, or a general-purpose viewer.
+- Making GPL-3.0 tools such as evo or OpenVINS runtime dependencies.
+- Replacing the static report/leaderboard model with a large web platform.

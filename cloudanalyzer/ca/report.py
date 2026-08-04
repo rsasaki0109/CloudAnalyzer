@@ -2250,13 +2250,20 @@ def _trajectory_gate_for_item(
     item: dict,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> dict | None:
     """Return existing or derived trajectory quality gate metadata for one batch item."""
     if item.get("quality_gate") is not None:
         return cast(dict[str, Any], item["quality_gate"])
-    if max_ate is None and max_rpe is None and max_drift is None and min_coverage is None:
+    if (
+        max_ate is None
+        and max_rpe is None
+        and max_rpe_rotation_deg is None
+        and max_drift is None
+        and min_coverage is None
+    ):
         return None
 
     reasons = []
@@ -2264,6 +2271,15 @@ def _trajectory_gate_for_item(
         reasons.append(f"ATE RMSE {item['ate']['rmse']:.4f} > max_ate {max_ate:.4f}")
     if max_rpe is not None and item["rpe_translation"]["rmse"] > max_rpe:
         reasons.append(f"RPE RMSE {item['rpe_translation']['rmse']:.4f} > max_rpe {max_rpe:.4f}")
+    if max_rpe_rotation_deg is not None:
+        rpe_rotation = item.get("rpe_rotation")
+        if rpe_rotation is None:
+            reasons.append("RPE rotation unavailable: quaternion orientations are required")
+        elif rpe_rotation["rmse"] > max_rpe_rotation_deg:
+            reasons.append(
+                f"RPE rotation RMSE {rpe_rotation['rmse']:.4f} deg > "
+                f"max_rpe_rotation_deg {max_rpe_rotation_deg:.4f} deg"
+            )
     if max_drift is not None and item["drift"]["endpoint"] > max_drift:
         reasons.append(
             f"Endpoint Drift {item['drift']['endpoint']:.4f} > max_drift {max_drift:.4f}"
@@ -2276,6 +2292,7 @@ def _trajectory_gate_for_item(
         "passed": not reasons,
         "max_ate": max_ate,
         "max_rpe": max_rpe,
+        "max_rpe_rotation_deg": max_rpe_rotation_deg,
         "max_drift": max_drift,
         "min_coverage": min_coverage,
         "reasons": reasons,
@@ -2291,6 +2308,9 @@ def make_trajectory_markdown(result: dict, output_path: str) -> None:
     matching = result["matching"]
     ate = result["ate"]
     rpe = result["rpe_translation"]
+    ate_rotation = result.get("ate_rotation")
+    rpe_rotation = result.get("rpe_rotation")
+    distance_rpe = result.get("rpe_distance", [])
     drift = result["drift"]
     gate = result.get("quality_gate")
     overlay_plot_path = _trajectory_overlay_plot_path(output_path)
@@ -2333,6 +2353,45 @@ def make_trajectory_markdown(result: dict, output_path: str) -> None:
         f"- Min: {rpe['min']:.4f}",
         f"- Max: {rpe['max']:.4f}",
         f"- Std: {rpe['std']:.4f}",
+    ]
+
+    if ate_rotation is not None:
+        lines += [
+            "",
+            "## Absolute Trajectory Error (Rotation)",
+            f"- RMSE: {ate_rotation['rmse']:.4f} deg",
+            f"- Mean: {ate_rotation['mean']:.4f} deg",
+            f"- Max: {ate_rotation['max']:.4f} deg",
+        ]
+    if rpe_rotation is not None:
+        lines += [
+            "",
+            "## Relative Pose Error (Rotation)",
+            f"- RMSE: {rpe_rotation['rmse']:.4f} deg",
+            f"- Mean: {rpe_rotation['mean']:.4f} deg",
+            f"- Max: {rpe_rotation['max']:.4f} deg",
+        ]
+    if distance_rpe:
+        lines += [
+            "",
+            "## Distance-based Relative Pose Error",
+            "",
+            "| Distance | Pairs | Translation RMSE | Translation % RMSE | Rotation RMSE |",
+            "|---:|---:|---:|---:|---:|",
+        ]
+        for distance_result in distance_rpe:
+            translation = distance_result.get("translation")
+            translation_percent = distance_result.get("translation_percent")
+            rotation = distance_result.get("rotation")
+            lines.append(
+                "| "
+                f"{distance_result['delta_m']:.1f}m | {distance_result['pairs']} | "
+                f"{_format_optional_float(translation['rmse'] if translation else None)} | "
+                f"{_format_optional_float(translation_percent['rmse'] if translation_percent else None)} | "
+                f"{_format_optional_float(rotation['rmse'] if rotation else None)} |"
+            )
+
+    lines += [
         "",
         "## Drift",
         f"- Endpoint Drift: {drift['endpoint']:.4f}",
@@ -2355,6 +2414,7 @@ def make_trajectory_markdown(result: dict, output_path: str) -> None:
             "## Quality Gate",
             f"- Max ATE RMSE: {_format_optional_float(gate['max_ate'])}",
             f"- Max RPE RMSE: {_format_optional_float(gate['max_rpe'])}",
+            f"- Max RPE Rotation: {_format_optional_float(gate.get('max_rpe_rotation_deg'))} deg",
             f"- Max Drift: {_format_optional_float(gate['max_drift'])}",
             f"- Min Coverage: {_format_optional_ratio(gate['min_coverage'])}",
             f"- Status: {status}",
@@ -2380,12 +2440,14 @@ def make_trajectory_markdown(result: dict, output_path: str) -> None:
         "",
         "## Worst RPE Segments",
         "",
-        "| Start | End | Translation Error |",
-        "|---:|---:|---:|",
+        "| Start | End | Translation Error | Rotation Error (deg) |",
+        "|---:|---:|---:|---:|",
     ]
     for segment in result["worst_rpe_segments"]:
         lines.append(
-            f"| {segment['start_timestamp']:.4f} | {segment['end_timestamp']:.4f} | {segment['translation_error']:.4f} |"
+            f"| {segment['start_timestamp']:.4f} | {segment['end_timestamp']:.4f} | "
+            f"{segment['translation_error']:.4f} | "
+            f"{_format_optional_float(segment.get('rotation_error_deg'))} |"
         )
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -2399,6 +2461,8 @@ def make_trajectory_html(result: dict, output_path: str) -> None:
     matching = result["matching"]
     ate = result["ate"]
     rpe = result["rpe_translation"]
+    ate_rotation = result.get("ate_rotation")
+    rpe_rotation = result.get("rpe_rotation")
     drift = result["drift"]
     gate = result.get("quality_gate")
     overlay_plot_path = _trajectory_overlay_plot_path(output_path)
@@ -2437,10 +2501,18 @@ def make_trajectory_html(result: dict, output_path: str) -> None:
         ("Path Length Ratio", _format_optional_float(drift["path_length_ratio"])),
         ("Drift Ratio", _format_optional_float(drift["ratio_to_reference_path_length"])),
     ]
+    if ate_rotation is not None:
+        summary_rows.append(("ATE Rotation RMSE", f"{ate_rotation['rmse']:.4f} deg"))
+    if rpe_rotation is not None:
+        summary_rows.append(("RPE Rotation RMSE", f"{rpe_rotation['rmse']:.4f} deg"))
     if gate is not None:
         summary_rows += [
             ("Max ATE RMSE", _format_optional_float(gate["max_ate"])),
             ("Max RPE RMSE", _format_optional_float(gate["max_rpe"])),
+            (
+                "Max RPE Rotation",
+                f"{_format_optional_float(gate.get('max_rpe_rotation_deg'))} deg",
+            ),
             ("Max Drift", _format_optional_float(gate["max_drift"])),
             ("Min Coverage", _format_optional_ratio(gate["min_coverage"])),
             ("Quality Gate", gate_status or "n/a"),
@@ -2473,6 +2545,7 @@ def make_trajectory_html(result: dict, output_path: str) -> None:
             f"<td>{segment['start_timestamp']:.4f}</td>"
             f"<td>{segment['end_timestamp']:.4f}</td>"
             f"<td>{segment['translation_error']:.4f}</td>"
+            f"<td>{_format_optional_float(segment.get('rotation_error_deg'))}</td>"
             "</tr>"
         )
         for segment in result["worst_rpe_segments"]
@@ -2530,6 +2603,7 @@ def make_trajectory_html(result: dict, output_path: str) -> None:
         <th>Start</th>
         <th>End</th>
         <th>Translation Error</th>
+        <th>Rotation Error (deg)</th>
       </tr>
     </thead>
     <tbody>
@@ -2562,6 +2636,7 @@ def make_trajectory_batch_summary(
     reference_dir: str,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> dict:
@@ -2572,6 +2647,7 @@ def make_trajectory_batch_summary(
     gate_enabled = (
         max_ate is not None
         or max_rpe is not None
+        or max_rpe_rotation_deg is not None
         or max_drift is not None
         or min_coverage is not None
         or any(item.get("quality_gate") is not None for item in results)
@@ -2583,6 +2659,7 @@ def make_trajectory_batch_summary(
             quality_gate = {
                 "max_ate": max_ate,
                 "max_rpe": max_rpe,
+                "max_rpe_rotation_deg": max_rpe_rotation_deg,
                 "max_drift": max_drift,
                 "min_coverage": min_coverage,
                 "pass_count": 0,
@@ -2594,6 +2671,8 @@ def make_trajectory_batch_summary(
             "total_files": 0,
             "mean_ate_rmse": 0.0,
             "mean_rpe_rmse": 0.0,
+            "mean_rpe_rotation_rmse_deg": None,
+            "rpe_rotation_evaluable_count": 0,
             "mean_coverage_ratio": 0.0,
             "low_coverage_threshold": low_coverage_threshold,
             "low_coverage_count": 0,
@@ -2607,12 +2686,23 @@ def make_trajectory_batch_summary(
 
     if gate_enabled:
         item_gates = [
-            (item, _trajectory_gate_for_item(item, max_ate, max_rpe, max_drift, min_coverage))
+            (
+                item,
+                _trajectory_gate_for_item(
+                    item,
+                    max_ate=max_ate,
+                    max_rpe=max_rpe,
+                    max_rpe_rotation_deg=max_rpe_rotation_deg,
+                    max_drift=max_drift,
+                    min_coverage=min_coverage,
+                ),
+            )
             for item in results
         ]
         quality_gate = {
             "max_ate": max_ate,
             "max_rpe": max_rpe,
+            "max_rpe_rotation_deg": max_rpe_rotation_deg,
             "max_drift": max_drift,
             "min_coverage": min_coverage,
             "pass_count": sum(
@@ -2632,6 +2722,11 @@ def make_trajectory_batch_summary(
             ],
         }
 
+    rotation_rmses = [
+        item["rpe_rotation"]["rmse"]
+        for item in results
+        if item.get("rpe_rotation") is not None
+    ]
     return {
         "reference_dir": reference_dir,
         "total_files": len(results),
@@ -2639,6 +2734,10 @@ def make_trajectory_batch_summary(
         "mean_rpe_rmse": float(
             sum(item["rpe_translation"]["rmse"] for item in results) / len(results)
         ),
+        "mean_rpe_rotation_rmse_deg": (
+            float(sum(rotation_rmses) / len(rotation_rmses)) if rotation_rmses else None
+        ),
+        "rpe_rotation_evaluable_count": len(rotation_rmses),
         "mean_coverage_ratio": float(
             sum(item["coverage_ratio"] for item in results) / len(results)
         ),
@@ -2663,6 +2762,7 @@ def make_trajectory_batch_markdown(
     output_path: str,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> None:
@@ -2672,6 +2772,7 @@ def make_trajectory_batch_markdown(
         reference_dir,
         max_ate=max_ate,
         max_rpe=max_rpe,
+        max_rpe_rotation_deg=max_rpe_rotation_deg,
         max_drift=max_drift,
         min_coverage=min_coverage,
     )
@@ -2684,6 +2785,12 @@ def make_trajectory_batch_markdown(
         f"- Files: {summary['total_files']}",
         f"- Mean ATE RMSE: {summary['mean_ate_rmse']:.4f}",
         f"- Mean RPE RMSE: {summary['mean_rpe_rmse']:.4f}",
+        "- Mean RPE Rotation RMSE: "
+        + (
+            f"{summary['mean_rpe_rotation_rmse_deg']:.4f} deg"
+            if summary["mean_rpe_rotation_rmse_deg"] is not None
+            else "n/a (quaternion orientations unavailable)"
+        ),
         f"- Mean Coverage: {summary['mean_coverage_ratio']:.1%}",
         (
             f"- Low Coverage (<{summary['low_coverage_threshold']:.0%}): "
@@ -2706,6 +2813,7 @@ def make_trajectory_batch_markdown(
             "## Quality Gate",
             f"- Max ATE RMSE: {_format_optional_float(gate['max_ate'])}",
             f"- Max RPE RMSE: {_format_optional_float(gate['max_rpe'])}",
+            f"- Max RPE Rotation: {_format_optional_float(gate['max_rpe_rotation_deg'])} deg",
             f"- Max Drift: {_format_optional_float(gate['max_drift'])}",
             f"- Min Coverage: {_format_optional_ratio(gate['min_coverage'])}",
             f"- Pass: {gate['pass_count']}",
@@ -2716,9 +2824,10 @@ def make_trajectory_batch_markdown(
         "",
         "## Results",
         "",
-        "| Path | Matched | Coverage | ATE RMSE | RPE RMSE | Drift | Alignment |"
+        "| Path | Matched | Coverage | ATE RMSE | RPE RMSE | RPE Rot (deg) | Drift | Alignment |"
         + (" Status |" if gate is not None else ""),
-        "|---|---:|---:|---:|---:|---:|---|" + ("---|" if gate is not None else ""),
+        "|---|---:|---:|---:|---:|---:|---:|---|"
+        + ("---|" if gate is not None else ""),
     ]
 
     for item in summary["results"]:
@@ -2726,6 +2835,7 @@ def make_trajectory_batch_markdown(
             item,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -2735,6 +2845,9 @@ def make_trajectory_batch_markdown(
             f"{item['coverage_ratio']:.1%}",
             f"{item['ate']['rmse']:.4f}",
             f"{item['rpe_translation']['rmse']:.4f}",
+            _format_optional_float(
+                None if item.get("rpe_rotation") is None else item["rpe_rotation"]["rmse"]
+            ),
             f"{item['drift']['endpoint']:.4f}",
             item["alignment"]["mode"],
         ]
@@ -2768,6 +2881,7 @@ def make_trajectory_batch_html(
     output_path: str,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> None:
@@ -2777,6 +2891,7 @@ def make_trajectory_batch_html(
         reference_dir,
         max_ate=max_ate,
         max_rpe=max_rpe,
+        max_rpe_rotation_deg=max_rpe_rotation_deg,
         max_drift=max_drift,
         min_coverage=min_coverage,
     )
@@ -2791,6 +2906,14 @@ def make_trajectory_batch_html(
         ("Files", str(summary["total_files"])),
         ("Mean ATE RMSE", f"{summary['mean_ate_rmse']:.4f}"),
         ("Mean RPE RMSE", f"{summary['mean_rpe_rmse']:.4f}"),
+        (
+            "Mean RPE Rotation RMSE",
+            (
+                f"{summary['mean_rpe_rotation_rmse_deg']:.4f} deg"
+                if summary["mean_rpe_rotation_rmse_deg"] is not None
+                else "n/a (quaternion orientations unavailable)"
+            ),
+        ),
         ("Mean Coverage", f"{summary['mean_coverage_ratio']:.1%}"),
         (low_coverage_label, str(low_coverage_count)),
     ]
@@ -2805,6 +2928,10 @@ def make_trajectory_batch_html(
         summary_rows += [
             ("Max ATE RMSE", _format_optional_float(gate["max_ate"])),
             ("Max RPE RMSE", _format_optional_float(gate["max_rpe"])),
+            (
+                "Max RPE Rotation",
+                f"{_format_optional_float(gate['max_rpe_rotation_deg'])} deg",
+            ),
             ("Max Drift", _format_optional_float(gate["max_drift"])),
             ("Min Coverage", _format_optional_ratio(gate["min_coverage"])),
             ("Pass", str(gate["pass_count"])),
@@ -2851,10 +2978,15 @@ def make_trajectory_batch_html(
     inspection_row_parts = []
     for item in summary["results"]:
         low_coverage = item["coverage_ratio"] < summary["low_coverage_threshold"]
+        rotation_rmse = (
+            None if item.get("rpe_rotation") is None else item["rpe_rotation"]["rmse"]
+        )
+        rotation_data = "" if rotation_rmse is None else f"{rotation_rmse:.8f}"
         item_gate = _trajectory_gate_for_item(
             item,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -2866,6 +2998,7 @@ def make_trajectory_batch_html(
             f'data-coverage="{item["coverage_ratio"]:.8f}"',
             f'data-ate="{item["ate"]["rmse"]:.8f}"',
             f'data-rpe="{item["rpe_translation"]["rmse"]:.8f}"',
+            f'data-rpe-rotation="{rotation_data}"',
             f'data-drift="{item["drift"]["endpoint"]:.8f}"',
             f'data-low-coverage="{"true" if low_coverage else "false"}"',
         ]
@@ -2889,6 +3022,7 @@ def make_trajectory_batch_html(
             f"<td>{item['coverage_ratio']:.1%}</td>"
             f"<td>{item['ate']['rmse']:.4f}</td>"
             f"<td>{item['rpe_translation']['rmse']:.4f}</td>"
+            f"<td>{_format_optional_float(rotation_rmse)}</td>"
             f"<td>{item['drift']['endpoint']:.4f}</td>"
             f"<td>{escape(item['alignment']['mode'])}</td>"
             + (f"<td>{status}</td>" if gate is not None else "")
@@ -3041,6 +3175,7 @@ def make_trajectory_batch_html(
         <th>Coverage</th>
         <th>ATE RMSE</th>
         <th>RPE RMSE</th>
+        <th>RPE Rot (deg)</th>
         <th>Drift</th>
         <th>Alignment</th>
         {"<th>Status</th>" if gate is not None else ""}
@@ -3291,6 +3426,7 @@ def save_trajectory_batch_report(
     output_path: str,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> None:
@@ -3303,6 +3439,7 @@ def save_trajectory_batch_report(
             output_path,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -3314,6 +3451,7 @@ def save_trajectory_batch_report(
             output_path,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -3631,6 +3769,7 @@ def _run_batch_gate_for_item(
     max_chamfer: float | None = None,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> dict | None:
@@ -3642,6 +3781,7 @@ def _run_batch_gate_for_item(
         and max_chamfer is None
         and max_ate is None
         and max_rpe is None
+        and max_rpe_rotation_deg is None
         and max_drift is None
         and min_coverage is None
     ):
@@ -3655,6 +3795,7 @@ def _run_batch_gate_for_item(
     trajectory_item = {
         "ate": item["trajectory"]["ate"],
         "rpe_translation": item["trajectory"]["rpe_translation"],
+        "rpe_rotation": item["trajectory"].get("rpe_rotation"),
         "drift": item["trajectory"]["drift"],
         "coverage_ratio": item["trajectory"]["matching"]["coverage_ratio"],
         "quality_gate": item["trajectory"].get("quality_gate"),
@@ -3664,6 +3805,7 @@ def _run_batch_gate_for_item(
         trajectory_item,
         max_ate=max_ate,
         max_rpe=max_rpe,
+        max_rpe_rotation_deg=max_rpe_rotation_deg,
         max_drift=max_drift,
         min_coverage=min_coverage,
     )
@@ -3689,6 +3831,7 @@ def make_run_batch_summary(
     max_chamfer: float | None = None,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> dict:
@@ -3698,6 +3841,7 @@ def make_run_batch_summary(
         or max_chamfer is not None
         or max_ate is not None
         or max_rpe is not None
+        or max_rpe_rotation_deg is not None
         or max_drift is not None
         or min_coverage is not None
         or any(item.get("overall_quality_gate") is not None for item in results)
@@ -3711,6 +3855,7 @@ def make_run_batch_summary(
                 "max_chamfer": max_chamfer,
                 "max_ate": max_ate,
                 "max_rpe": max_rpe,
+                "max_rpe_rotation_deg": max_rpe_rotation_deg,
                 "max_drift": max_drift,
                 "min_coverage": min_coverage,
                 "map_fail_count": 0,
@@ -3727,6 +3872,7 @@ def make_run_batch_summary(
             "mean_map_chamfer": 0.0,
             "mean_traj_ate_rmse": 0.0,
             "mean_traj_rpe_rmse": 0.0,
+            "mean_traj_rpe_rotation_rmse_deg": None,
             "mean_traj_drift": 0.0,
             "mean_traj_coverage": 0.0,
             "best_map_auc": None,
@@ -3745,6 +3891,7 @@ def make_run_batch_summary(
                     max_chamfer=max_chamfer,
                     max_ate=max_ate,
                     max_rpe=max_rpe,
+                    max_rpe_rotation_deg=max_rpe_rotation_deg,
                     max_drift=max_drift,
                     min_coverage=min_coverage,
                 ),
@@ -3756,6 +3903,7 @@ def make_run_batch_summary(
             "max_chamfer": max_chamfer,
             "max_ate": max_ate,
             "max_rpe": max_rpe,
+            "max_rpe_rotation_deg": max_rpe_rotation_deg,
             "max_drift": max_drift,
             "min_coverage": min_coverage,
             "map_fail_count": sum(
@@ -3771,6 +3919,11 @@ def make_run_batch_summary(
             ],
         }
 
+    rotation_rmses = [
+        item["trajectory"]["rpe_rotation"]["rmse"]
+        for item in results
+        if item["trajectory"].get("rpe_rotation") is not None
+    ]
     return {
         "map_reference_dir": map_reference_dir,
         "trajectory_reference_dir": trajectory_reference_dir,
@@ -3784,6 +3937,9 @@ def make_run_batch_summary(
         ),
         "mean_traj_rpe_rmse": float(
             sum(item["trajectory"]["rpe_translation"]["rmse"] for item in results) / len(results)
+        ),
+        "mean_traj_rpe_rotation_rmse_deg": (
+            float(sum(rotation_rmses) / len(rotation_rmses)) if rotation_rmses else None
         ),
         "mean_traj_drift": float(
             sum(item["trajectory"]["drift"]["endpoint"] for item in results) / len(results)
@@ -3807,6 +3963,7 @@ def make_run_batch_markdown(
     max_chamfer: float | None = None,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> None:
@@ -3819,6 +3976,7 @@ def make_run_batch_markdown(
         max_chamfer=max_chamfer,
         max_ate=max_ate,
         max_rpe=max_rpe,
+        max_rpe_rotation_deg=max_rpe_rotation_deg,
         max_drift=max_drift,
         min_coverage=min_coverage,
     )
@@ -3835,6 +3993,12 @@ def make_run_batch_markdown(
         f"- Mean Map Chamfer: {summary['mean_map_chamfer']:.4f}",
         f"- Mean Trajectory ATE RMSE: {summary['mean_traj_ate_rmse']:.4f}",
         f"- Mean Trajectory RPE RMSE: {summary['mean_traj_rpe_rmse']:.4f}",
+        "- Mean Trajectory RPE Rotation RMSE: "
+        + (
+            f"{summary['mean_traj_rpe_rotation_rmse_deg']:.4f} deg"
+            if summary["mean_traj_rpe_rotation_rmse_deg"] is not None
+            else "n/a (quaternion orientations unavailable)"
+        ),
         f"- Mean Trajectory Drift: {summary['mean_traj_drift']:.4f}",
         f"- Mean Trajectory Coverage: {summary['mean_traj_coverage']:.1%}",
     ]
@@ -3854,6 +4018,7 @@ def make_run_batch_markdown(
             f"- Max Chamfer: {_format_optional_float(gate['max_chamfer'])}",
             f"- Max ATE RMSE: {_format_optional_float(gate['max_ate'])}",
             f"- Max RPE RMSE: {_format_optional_float(gate['max_rpe'])}",
+            f"- Max RPE Rotation: {_format_optional_float(gate['max_rpe_rotation_deg'])} deg",
             f"- Max Drift: {_format_optional_float(gate['max_drift'])}",
             f"- Min Coverage: {_format_optional_ratio(gate['min_coverage'])}",
             f"- Map Failures: {gate['map_fail_count']}",
@@ -3866,9 +4031,10 @@ def make_run_batch_markdown(
         "",
         "## Results",
         "",
-        "| ID | Map AUC | Map Chamfer | Traj ATE | Traj RPE | Traj Drift | Coverage |"
+        "| ID | Map AUC | Map Chamfer | Traj ATE | Traj RPE | Traj RPE Rot (deg) | Traj Drift | Coverage |"
         + (" Map Status | Trajectory Status | Overall |" if gate is not None else ""),
-        "|---|---:|---:|---:|---:|---:|---:|" + ("---|---|---|" if gate is not None else ""),
+        "|---|---:|---:|---:|---:|---:|---:|---:|"
+        + ("---|---|---|" if gate is not None else ""),
     ]
     for item in summary["results"]:
         item_gate = _run_batch_gate_for_item(
@@ -3877,6 +4043,7 @@ def make_run_batch_markdown(
             max_chamfer=max_chamfer,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -3886,6 +4053,11 @@ def make_run_batch_markdown(
             f"{item['map']['chamfer_distance']:.4f}",
             f"{item['trajectory']['ate']['rmse']:.4f}",
             f"{item['trajectory']['rpe_translation']['rmse']:.4f}",
+            _format_optional_float(
+                None
+                if item["trajectory"].get("rpe_rotation") is None
+                else item["trajectory"]["rpe_rotation"]["rmse"]
+            ),
             f"{item['trajectory']['drift']['endpoint']:.4f}",
             f"{item['trajectory']['matching']['coverage_ratio']:.1%}",
         ]
@@ -3930,6 +4102,7 @@ def make_run_batch_html(
     max_chamfer: float | None = None,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> None:
@@ -3942,6 +4115,7 @@ def make_run_batch_html(
         max_chamfer=max_chamfer,
         max_ate=max_ate,
         max_rpe=max_rpe,
+        max_rpe_rotation_deg=max_rpe_rotation_deg,
         max_drift=max_drift,
         min_coverage=min_coverage,
     )
@@ -3958,6 +4132,14 @@ def make_run_batch_html(
         ("Mean Map Chamfer", f"{summary['mean_map_chamfer']:.4f}"),
         ("Mean Trajectory ATE RMSE", f"{summary['mean_traj_ate_rmse']:.4f}"),
         ("Mean Trajectory RPE RMSE", f"{summary['mean_traj_rpe_rmse']:.4f}"),
+        (
+            "Mean Trajectory RPE Rotation RMSE",
+            (
+                f"{summary['mean_traj_rpe_rotation_rmse_deg']:.4f} deg"
+                if summary["mean_traj_rpe_rotation_rmse_deg"] is not None
+                else "n/a (quaternion orientations unavailable)"
+            ),
+        ),
         ("Mean Trajectory Drift", f"{summary['mean_traj_drift']:.4f}"),
         ("Mean Trajectory Coverage", f"{summary['mean_traj_coverage']:.1%}"),
     ]
@@ -3975,6 +4157,10 @@ def make_run_batch_html(
             ("Max Chamfer", _format_optional_float(gate["max_chamfer"])),
             ("Max ATE RMSE", _format_optional_float(gate["max_ate"])),
             ("Max RPE RMSE", _format_optional_float(gate["max_rpe"])),
+            (
+                "Max RPE Rotation",
+                f"{_format_optional_float(gate['max_rpe_rotation_deg'])} deg",
+            ),
             ("Max Drift", _format_optional_float(gate["max_drift"])),
             ("Min Coverage", _format_optional_ratio(gate["min_coverage"])),
             ("Pass", str(gate["pass_count"])),
@@ -4029,12 +4215,19 @@ def make_run_batch_html(
     result_rows_html = []
     inspection_rows_html = []
     for item in summary["results"]:
+        trajectory_rotation = item["trajectory"].get("rpe_rotation")
+        trajectory_rotation_data = (
+            ""
+            if trajectory_rotation is None
+            else f"{trajectory_rotation['rmse']:.8f}"
+        )
         item_gate = _run_batch_gate_for_item(
             item,
             min_auc=min_auc,
             max_chamfer=max_chamfer,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -4055,6 +4248,7 @@ def make_run_batch_html(
             f'data-map-chamfer="{item["map"]["chamfer_distance"]:.8f}"',
             f'data-traj-ate="{item["trajectory"]["ate"]["rmse"]:.8f}"',
             f'data-traj-rpe="{item["trajectory"]["rpe_translation"]["rmse"]:.8f}"',
+            f'data-traj-rpe-rotation="{trajectory_rotation_data}"',
             f'data-traj-drift="{item["trajectory"]["drift"]["endpoint"]:.8f}"',
             f'data-coverage="{item["trajectory"]["matching"]["coverage_ratio"]:.8f}"',
             f'data-passed="{"true" if passed else "false"}"',
@@ -4069,6 +4263,7 @@ def make_run_batch_html(
             f"<td>{item['map']['chamfer_distance']:.4f}</td>"
             f"<td>{item['trajectory']['ate']['rmse']:.4f}</td>"
             f"<td>{item['trajectory']['rpe_translation']['rmse']:.4f}</td>"
+            f"<td>{_format_optional_float(None if trajectory_rotation is None else trajectory_rotation['rmse'])}</td>"
             f"<td>{item['trajectory']['drift']['endpoint']:.4f}</td>"
             f"<td>{item['trajectory']['matching']['coverage_ratio']:.1%}</td>"
             + (
@@ -4234,6 +4429,7 @@ def make_run_batch_html(
         <th>Map Chamfer</th>
         <th>Traj ATE</th>
         <th>Traj RPE</th>
+        <th>Traj RPE Rot (deg)</th>
         <th>Traj Drift</th>
         <th>Coverage</th>
         {"<th>Map Status</th><th>Trajectory Status</th><th>Overall</th>" if gate is not None else ""}
@@ -4489,6 +4685,7 @@ def save_run_batch_report(
     max_chamfer: float | None = None,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> None:
@@ -4504,6 +4701,7 @@ def save_run_batch_report(
             max_chamfer=max_chamfer,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -4518,6 +4716,7 @@ def save_run_batch_report(
             max_chamfer=max_chamfer,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )

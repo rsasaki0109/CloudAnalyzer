@@ -38,6 +38,29 @@ def test_rendered_evaluate_missing_gs_shows_hint() -> None:
             rendered_evaluate(request)
 
 
+@pytest.mark.skipif(not DEMO_ROOT.is_dir(), reason="synthetic-room demo missing")
+def test_pre_rendered_evaluation_records_protocol_manifest() -> None:
+    from ca.core.rendered_evaluate import RenderedEvalRequest, rendered_evaluate
+
+    result = rendered_evaluate(
+        RenderedEvalRequest(
+            splat_path=DEMO_ROOT / "gaussians_dense.ply",
+            cameras_path=DEMO_ROOT / "transforms.json",
+            reference_dir=DEMO_ROOT / "reference",
+            keep_rendered_dir=DEMO_ROOT / "reference",
+            skip_render=True,
+            metrics=("psnr",),
+            max_pairs=1,
+        )
+    )
+
+    protocol = result.metadata["evaluation_protocol"]
+    assert protocol["name"] == "cloudanalyzer.rendered_eval.v1"
+    assert len(protocol["input"]["camera_manifest"]["frames"]) >= 1
+    assert len(protocol["input"]["reference_manifest"]) >= 1
+    assert result.renderer["protocol_sha256"] == protocol["sha256"]
+
+
 @pytest.mark.skipif(not _gs_available(), reason="cloudanalyzer[gs] with CUDA required")
 @pytest.mark.skipif(not DEMO_ROOT.is_dir(), reason="synthetic-room demo missing")
 def test_rendered_evaluate_self_consistency_high_psnr() -> None:

@@ -332,8 +332,10 @@ def trajectory_batch_evaluate(
     align_rigid: bool = False,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
+    rpe_distances_m: tuple[float, ...] | list[float] | None = None,
 ) -> list[dict]:
     """Evaluate all trajectory files in a directory against matched references."""
     files = _find_trajectory_files(directory, recursive=recursive)
@@ -368,8 +370,10 @@ def trajectory_batch_evaluate(
                 align_rigid=align_rigid,
                 max_ate=max_ate,
                 max_rpe=max_rpe,
+                max_rpe_rotation_deg=max_rpe_rotation_deg,
                 max_drift=max_drift,
                 min_coverage=min_coverage,
+                rpe_distances_m=rpe_distances_m,
             )
             results.append(
                 {
@@ -383,6 +387,9 @@ def trajectory_batch_evaluate(
                     "coverage_ratio": eval_result["matching"]["coverage_ratio"],
                     "ate": eval_result["ate"],
                     "rpe_translation": eval_result["rpe_translation"],
+                    "ate_rotation": eval_result["ate_rotation"],
+                    "rpe_rotation": eval_result["rpe_rotation"],
+                    "rpe_distance": eval_result["rpe_distance"],
                     "drift": eval_result["drift"],
                     "quality_gate": eval_result["quality_gate"],
                     "inspect": _trajectory_inspection_commands(str(f), str(reference_path)),

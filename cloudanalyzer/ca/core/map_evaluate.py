@@ -32,6 +32,48 @@ import numpy as np
 # ---------------------------------------------------------------- contract
 
 
+MAP_EVAL_PROTOCOL_VERSION = "cloudanalyzer.mapeval_awd_scs.v1"
+
+
+@dataclass(frozen=True, slots=True)
+class MapEvalProtocol:
+    """Explicit parameters for the MapEval AWD/SCS-compatible lane.
+
+    The upstream MapEval implementation is a separate C++/TBB project.  This
+    object makes the parameters that affect CloudAnalyzer's Python result
+    serializable and comparable, rather than relying on hidden defaults.
+    """
+
+    voxel_size_m: float = 3.0
+    min_voxel_points: int = 100
+    neighbor_radius: int = 5
+    accuracy_level_m: tuple[float, ...] = (0.2, 0.1, 0.08, 0.05, 0.01)
+    name: str = MAP_EVAL_PROTOCOL_VERSION
+
+    def __post_init__(self) -> None:
+        if self.voxel_size_m <= 0:
+            raise ValueError("MapEval voxel_size_m must be > 0")
+        if self.min_voxel_points < 1:
+            raise ValueError("MapEval min_voxel_points must be >= 1")
+        if self.neighbor_radius < 1:
+            raise ValueError("MapEval neighbor_radius must be >= 1")
+        if not self.accuracy_level_m or any(value <= 0 for value in self.accuracy_level_m):
+            raise ValueError("MapEval accuracy_level_m must contain positive values")
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return a JSON-compatible protocol description."""
+        return {
+            "name": self.name,
+            "version": MAP_EVAL_PROTOCOL_VERSION,
+            "voxel_size_m": float(self.voxel_size_m),
+            "min_voxel_points": int(self.min_voxel_points),
+            "neighbor_radius": int(self.neighbor_radius),
+            "accuracy_level_m": [float(value) for value in self.accuracy_level_m],
+            "implementation": "cloudanalyzer-python",
+            "upstream_reference": "https://github.com/JokerJohn/Cloud_Map_Evaluation",
+        }
+
+
 @dataclass(slots=True)
 class MapEvaluateRequest:
     """Compare an estimated point cloud map to a reference (optional).
@@ -53,6 +95,9 @@ class MapEvaluateRequest:
     thresholds_m: tuple[float, ...] = (0.2, 0.1, 0.08, 0.05, 0.01)
     # A coarse voxel size useful for structure-aware proxies.
     structure_voxel_size: float = 0.5
+    # Explicit MapEval-compatible AWD/SCS protocol.  ``None`` retains the
+    # historical structure_voxel_size/thresholds_m behavior.
+    map_eval_protocol: MapEvalProtocol | None = None
 
 
 @dataclass(slots=True)
@@ -202,6 +247,38 @@ def build_voxel_gaussians(points: np.ndarray, voxel_size: float) -> dict[tuple[i
     return voxels
 
 
+def build_voxel_gaussians_from_chunks(
+    chunks: Any,
+    voxel_size: float,
+) -> dict[tuple[int, int, int], VoxelGaussian]:
+    """Build voxel Gaussian summaries from an iterable of XYZ chunks."""
+    from ca.io import PointAccumulator
+
+    if voxel_size <= 0:
+        raise ValueError("voxel_size must be > 0.")
+    accumulators: dict[tuple[int, int, int], PointAccumulator] = {}
+    for chunk in chunks:
+        pts = _require_xyz(np.asarray(chunk, dtype=np.float64), "point chunk")
+        if pts.shape[0] == 0:
+            continue
+        indices = np.floor(pts / voxel_size).astype(np.int64)
+        unique, inverse = np.unique(indices, axis=0, return_inverse=True)
+        for group_index, raw_key in enumerate(unique):
+            key = tuple(int(value) for value in raw_key)
+            accumulator = accumulators.setdefault(key, PointAccumulator())
+            accumulator.update(pts[inverse == group_index])
+
+    voxels: dict[tuple[int, int, int], VoxelGaussian] = {}
+    for key, accumulator in accumulators.items():
+        summary = accumulator.finalize()
+        voxels[key] = VoxelGaussian(
+            mu=np.asarray(summary["mean"], dtype=np.float64),
+            sigma=np.asarray(summary["covariance"], dtype=np.float64),
+            num_points=int(summary["count"]),
+        )
+    return voxels
+
+
 def _neighbor_indices(index: tuple[int, int, int], radius: int) -> list[tuple[int, int, int]]:
     ix, iy, iz = index
     neighbors: list[tuple[int, int, int]] = []
@@ -214,19 +291,18 @@ def _neighbor_indices(index: tuple[int, int, int], radius: int) -> list[tuple[in
     return neighbors
 
 
-def compute_voxel_wasserstein_metrics(
-    estimated_points: np.ndarray,
-    reference_points: np.ndarray,
+def _compute_voxel_wasserstein_metrics_from_maps(
+    est_map: dict[tuple[int, int, int], VoxelGaussian],
+    ref_map: dict[tuple[int, int, int], VoxelGaussian],
     *,
-    voxel_size: float,
-    min_voxel_points: int = 100,
-    neighbor_radius: int = 5,
+    min_voxel_points: int,
+    neighbor_radius: int,
 ) -> dict[str, float]:
-    """Compute MapEval-style AWD and SCS from voxelized Gaussian summaries."""
-    if voxel_size <= 0:
-        raise ValueError("voxel_size must be > 0 for AWD/SCS.")
-    est_map = build_voxel_gaussians(estimated_points, voxel_size)
-    ref_map = build_voxel_gaussians(reference_points, voxel_size)
+    """Compute AWD/SCS from already-built voxel Gaussian maps."""
+    if min_voxel_points < 1:
+        raise ValueError("min_voxel_points must be >= 1 for AWD/SCS.")
+    if neighbor_radius < 1:
+        raise ValueError("neighbor_radius must be >= 1 for AWD/SCS.")
 
     wasserstein_distances: dict[tuple[int, int, int], float] = {}
     for index, est_voxel in est_map.items():
@@ -277,6 +353,52 @@ def compute_voxel_wasserstein_metrics(
         "n_awd_voxels": float(len(wasserstein_distances)),
         "n_scs_voxels": float(len(scs_terms)),
     }
+
+
+def compute_voxel_wasserstein_metrics(
+    estimated_points: np.ndarray,
+    reference_points: np.ndarray,
+    *,
+    voxel_size: float,
+    min_voxel_points: int = 100,
+    neighbor_radius: int = 5,
+) -> dict[str, float]:
+    """Compute MapEval-style AWD and SCS from voxelized Gaussian summaries."""
+    if voxel_size <= 0:
+        raise ValueError("voxel_size must be > 0 for AWD/SCS.")
+    if min_voxel_points < 1:
+        raise ValueError("min_voxel_points must be >= 1 for AWD/SCS.")
+    if neighbor_radius < 1:
+        raise ValueError("neighbor_radius must be >= 1 for AWD/SCS.")
+    est_map = build_voxel_gaussians(estimated_points, voxel_size)
+    ref_map = build_voxel_gaussians(reference_points, voxel_size)
+    return _compute_voxel_wasserstein_metrics_from_maps(
+        est_map,
+        ref_map,
+        min_voxel_points=min_voxel_points,
+        neighbor_radius=neighbor_radius,
+    )
+
+
+def compute_voxel_wasserstein_metrics_from_chunks(
+    estimated_chunks: Any,
+    reference_chunks: Any,
+    *,
+    voxel_size: float,
+    min_voxel_points: int = 100,
+    neighbor_radius: int = 5,
+) -> dict[str, float]:
+    """Compute AWD/SCS while retaining only per-voxel moments in memory."""
+    if voxel_size <= 0:
+        raise ValueError("voxel_size must be > 0 for AWD/SCS.")
+    est_map = build_voxel_gaussians_from_chunks(estimated_chunks, voxel_size)
+    ref_map = build_voxel_gaussians_from_chunks(reference_chunks, voxel_size)
+    return _compute_voxel_wasserstein_metrics_from_maps(
+        est_map,
+        ref_map,
+        min_voxel_points=min_voxel_points,
+        neighbor_radius=neighbor_radius,
+    )
 
 
 def voxel_downsample(points: np.ndarray, voxel_size: float) -> np.ndarray:
@@ -354,10 +476,24 @@ class NNThresholdMapEvaluateStrategy:
             raise ValueError("nn_thresholds requires reference_points (GT).")
         ref = voxel_downsample(_require_xyz(request.reference_points, "reference_points"), request.downsample_voxel_size)
 
+        structure_voxel = float(request.structure_voxel_size)
+        thresholds = tuple(float(x) for x in request.thresholds_m)
+        protocol = request.map_eval_protocol
+        if protocol is None:
+            if structure_voxel <= 0:
+                protocol = None
+            else:
+                protocol = MapEvalProtocol(
+                    voxel_size_m=structure_voxel,
+                    accuracy_level_m=thresholds,
+                )
+        if protocol is not None:
+            structure_voxel = float(protocol.voxel_size_m)
+            thresholds = tuple(float(x) for x in protocol.accuracy_level_m)
+
         est_to_ref = _min_distances_kdtree(est, ref)
         ref_to_est = _min_distances_kdtree(ref, est)
 
-        thresholds = tuple(float(x) for x in request.thresholds_m)
         metrics: dict[str, float] = {
             "n_est": float(est.shape[0]),
             "n_ref": float(ref.shape[0]),
@@ -374,12 +510,13 @@ class NNThresholdMapEvaluateStrategy:
             metrics[f"accuracy@{t:.3f}m"] = float(np.mean(est_to_ref <= t)) if est_to_ref.size else 0.0
             metrics[f"completeness@{t:.3f}m"] = float(np.mean(ref_to_est <= t)) if ref_to_est.size else 0.0
 
-        structure_voxel = float(request.structure_voxel_size)
         if structure_voxel > 0:
             voxel_metrics = compute_voxel_wasserstein_metrics(
                 est,
                 ref,
                 voxel_size=structure_voxel,
+                min_voxel_points=(protocol.min_voxel_points if protocol else 100),
+                neighbor_radius=(protocol.neighbor_radius if protocol else 5),
             )
             # Keep the public metric mapping JSON/comparison friendly: an
             # unavailable metric is represented by its zero support count,
@@ -405,6 +542,7 @@ class NNThresholdMapEvaluateStrategy:
             "thresholds_m": thresholds,
             "downsample_voxel_size": float(request.downsample_voxel_size),
             "align_mode": request.align_mode,
+            "map_eval_protocol": protocol.as_dict() if protocol is not None else None,
         }
 
         # Optional: MapEval-style raw/inlier error visualization PLYs.
@@ -432,6 +570,7 @@ class NNThresholdMapEvaluateStrategy:
             "thresholds_m": list(thresholds),
             "align_mode": request.align_mode,
             "nn_backend": "scipy_ckdtree",
+            "map_eval_protocol": protocol.as_dict() if protocol is not None else None,
         }
 
         return MapEvaluateResult(
@@ -455,18 +594,59 @@ def evaluate_map(
     return eval_strategy.evaluate(request)
 
 
+def evaluate_map_streaming(
+    estimated_chunks: Any,
+    reference_chunks: Any,
+    *,
+    protocol: MapEvalProtocol | None = None,
+) -> MapEvaluateResult:
+    """Evaluate AWD/SCS from chunk iterators without materializing all points.
+
+    This is intentionally a separate result lane: nearest-neighbor accuracy,
+    completeness, and Chamfer require a resident reference index, while AWD
+    and SCS can be reduced from per-voxel moments.
+    """
+    selected_protocol = protocol or MapEvalProtocol()
+    metrics = compute_voxel_wasserstein_metrics_from_chunks(
+        estimated_chunks,
+        reference_chunks,
+        voxel_size=selected_protocol.voxel_size_m,
+        min_voxel_points=selected_protocol.min_voxel_points,
+        neighbor_radius=selected_protocol.neighbor_radius,
+    )
+    protocol_dict = selected_protocol.as_dict()
+    return MapEvaluateResult(
+        strategy="mapeval_awd_scs_streaming",
+        design="functional",
+        metrics=metrics,
+        artifacts={"map_eval_protocol": protocol_dict},
+        metric_family="reference_based_mapeval_awd_scs",
+        reference_required=True,
+        mode="streaming",
+        sampling_policy={
+            "map_eval_protocol": protocol_dict,
+            "nn_backend": "not_applicable_streaming",
+        },
+    )
+
+
 __all__ = [
     "MapEvaluateRequest",
     "MapEvaluateResult",
     "MapEvaluateStrategy",
+    "MAP_EVAL_PROTOCOL_VERSION",
+    "MapEvalProtocol",
     "NNThresholdMapEvaluateStrategy",
     "VoxelGaussian",
     "aligned_estimated_points",
     "apply_transform",
     "build_voxel_gaussians",
+    "build_voxel_gaussians_from_chunks",
     "compute_voxel_wasserstein_metrics",
+    "compute_voxel_wasserstein_metrics_from_chunks",
     "ensure_artifact_dir",
     "evaluate_map",
+    "evaluate_map_streaming",
     "voxel_downsample",
     "wasserstein_distance_gaussian",
 ]

@@ -2,6 +2,7 @@
 
 import numpy as np
 import open3d as o3d
+import pytest
 
 from ca.visualization import colorize, save_snapshot
 
@@ -42,3 +43,15 @@ class TestSaveSnapshot:
         save_snapshot(simple_pcd, str(path))
         assert path.exists()
         assert path.stat().st_size > 0
+
+    def test_matplotlib_backend(self, monkeypatch, tmp_path, simple_pcd):
+        monkeypatch.setenv("CLOUDANALYZER_RENDER_BACKEND", "matplotlib")
+        path = tmp_path / "matplotlib-snapshot.png"
+        save_snapshot(simple_pcd, str(path))
+        assert path.exists()
+        assert path.stat().st_size > 0
+
+    def test_invalid_backend(self, monkeypatch, tmp_path, simple_pcd):
+        monkeypatch.setenv("CLOUDANALYZER_RENDER_BACKEND", "unknown")
+        with pytest.raises(ValueError, match="CLOUDANALYZER_RENDER_BACKEND"):
+            save_snapshot(simple_pcd, str(tmp_path / "snapshot.png"))

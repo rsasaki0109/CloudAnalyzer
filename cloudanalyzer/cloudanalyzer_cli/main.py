@@ -755,6 +755,26 @@ def map_evaluate_cmd(
         "--structure-voxel-size",
         help="Voxel size in meters for AWD/SCS (MapEval uses 3.0 m). Set 0 to disable.",
     ),
+    map_eval_min_voxel_points: int = typer.Option(
+        100,
+        "--map-eval-min-voxel-points",
+        help="Minimum points in each voxel for AWD/SCS.",
+    ),
+    map_eval_neighbor_radius: int = typer.Option(
+        5,
+        "--map-eval-neighbor-radius",
+        help="Voxel neighbor radius for SCS.",
+    ),
+    streaming: bool = typer.Option(
+        False,
+        "--streaming",
+        help="Use chunked AWD/SCS evaluation and avoid materializing all points; NN metrics are omitted.",
+    ),
+    chunk_size: int = typer.Option(
+        100_000,
+        "--chunk-size",
+        help="Points per input chunk when --streaming is enabled.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -764,8 +784,10 @@ def map_evaluate_cmd(
 
         from ca.io import load_point_cloud
         from ca.core.map_evaluate import (
+            MapEvalProtocol,
             MapEvaluateRequest,
             NNThresholdMapEvaluateStrategy,
+            evaluate_map_streaming,
         )
     except Exception as e:
         _handle_error(e)
@@ -776,19 +798,55 @@ def map_evaluate_cmd(
     if matrix16 is not None:
         init_4x4 = np.array(matrix16, dtype=np.float64).reshape(4, 4)
 
-    try:
-        est_pcd = load_point_cloud(estimated)
-        ref_pcd = load_point_cloud(reference)
-        req = MapEvaluateRequest(
-            estimated_points=np.asarray(est_pcd.points),
-            reference_points=np.asarray(ref_pcd.points),
-            thresholds_m=tuple(t_list) if t_list is not None else (0.2, 0.1, 0.08, 0.05, 0.01),
-            align_mode=align_mode,
-            initial_transform_4x4=init_4x4,
-            artifact_dir=artifact_dir,
-            structure_voxel_size=structure_voxel_size,
+    accuracy_levels = (
+        tuple(t_list) if t_list is not None else (0.2, 0.1, 0.08, 0.05, 0.01)
+    )
+    protocol = (
+        MapEvalProtocol(
+            voxel_size_m=structure_voxel_size,
+            min_voxel_points=map_eval_min_voxel_points,
+            neighbor_radius=map_eval_neighbor_radius,
+            accuracy_level_m=accuracy_levels,
         )
-        result = NNThresholdMapEvaluateStrategy().evaluate(req)
+        if structure_voxel_size > 0
+        else None
+    )
+
+    try:
+        if streaming:
+            if protocol is None:
+                raise ValueError("--streaming requires --structure-voxel-size > 0")
+            if align_mode != "none" or matrix16 is not None:
+                raise ValueError(
+                    "--streaming currently supports only --align-mode none; "
+                    "alignment must be applied before chunked evaluation"
+                )
+            if artifact_dir is not None:
+                raise ValueError(
+                    "--artifact-dir is not supported with --streaming; "
+                    "streaming mode emits metrics/provenance only"
+                )
+            from ca.io import PointChunkReader
+
+            result = evaluate_map_streaming(
+                PointChunkReader(estimated, chunk_size=chunk_size),
+                PointChunkReader(reference, chunk_size=chunk_size),
+                protocol=protocol,
+            )
+        else:
+            est_pcd = load_point_cloud(estimated)
+            ref_pcd = load_point_cloud(reference)
+            req = MapEvaluateRequest(
+                estimated_points=np.asarray(est_pcd.points),
+                reference_points=np.asarray(ref_pcd.points),
+                thresholds_m=accuracy_levels,
+                align_mode=align_mode,
+                initial_transform_4x4=init_4x4,
+                artifact_dir=artifact_dir,
+                structure_voxel_size=structure_voxel_size,
+                map_eval_protocol=protocol,
+            )
+            result = NNThresholdMapEvaluateStrategy().evaluate(req)
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
 
@@ -799,6 +857,10 @@ def map_evaluate_cmd(
         "design": result.design,
         "metrics": result.metrics,
         "artifacts": result.artifacts,
+        "metric_family": result.metric_family,
+        "reference_required": result.reference_required,
+        "mode": result.mode,
+        "sampling_policy": result.sampling_policy,
     }
 
     if format_json:
@@ -808,13 +870,18 @@ def map_evaluate_cmd(
         typer.echo(f"Estimated:  {estimated}")
         typer.echo(f"Reference:  {reference}")
         typer.echo(f"Align:      {result.artifacts.get('align_mode')}")
-        typer.echo(f"Chamfer:    {result.metrics.get('chamfer_m'):.6f} m")
+        if result.metrics.get("chamfer_m") is not None:
+            typer.echo(f"Chamfer:    {result.metrics['chamfer_m']:.6f} m")
         if "awd_m" in result.metrics:
             typer.echo(f"AWD:        {result.metrics['awd_m']:.6f} m")
             typer.echo(f"SCS:        {result.metrics['scs']:.6f}")
-        typer.echo(f"F-score:    {result.metrics.get(f'fscore@{t0:.3f}m'):.6f} @ {t0:.3f} m")
-        typer.echo(f"Accuracy:   {result.metrics.get(f'accuracy@{t0:.3f}m'):.6f} @ {t0:.3f} m")
-        typer.echo(f"Complete:   {result.metrics.get(f'completeness@{t0:.3f}m'):.6f} @ {t0:.3f} m")
+        fscore = result.metrics.get(f"fscore@{t0:.3f}m")
+        accuracy = result.metrics.get(f"accuracy@{t0:.3f}m")
+        completeness = result.metrics.get(f"completeness@{t0:.3f}m")
+        if fscore is not None:
+            typer.echo(f"F-score:    {fscore:.6f} @ {t0:.3f} m")
+            typer.echo(f"Accuracy:   {accuracy:.6f} @ {t0:.3f} m")
+            typer.echo(f"Complete:   {completeness:.6f} @ {t0:.3f} m")
         if "estimated_error_raw_ply" in result.artifacts:
             typer.echo(f"Artifacts:  {result.artifacts['estimated_error_raw_ply']}")
 
@@ -1004,6 +1071,16 @@ def rendered_evaluate_cmd(
         "--max-pairs",
         help="Cap on number of photometric pairs evaluated.",
     ),
+    ssim_window_size: int = typer.Option(
+        11,
+        "--ssim-window-size",
+        help="SSIM Gaussian window side length.",
+    ),
+    ssim_sigma: float = typer.Option(
+        1.5,
+        "--ssim-sigma",
+        help="SSIM Gaussian window sigma.",
+    ),
     report: Optional[str] = typer.Option(
         None,
         "--report",
@@ -1066,6 +1143,8 @@ def rendered_evaluate_cmd(
                 render_device=render_device,
                 keep_rendered_dir=Path(rendered_dir) if rendered_dir else None,
                 max_pairs=max_pairs,
+                ssim_window_size=ssim_window_size,
+                ssim_sigma=ssim_sigma,
             )
         )
     except (FileNotFoundError, ValueError) as exc:
@@ -1919,6 +1998,10 @@ def traj_evaluate_cmd(
         None, "--max-rpe",
         help="Maximum translational RPE RMSE allowed; exits with code 1 if exceeded",
     ),
+    max_rpe_rotation_deg: Optional[float] = typer.Option(
+        None, "--max-rpe-rotation-deg",
+        help="Maximum rotational RPE RMSE in degrees; requires quaternion orientations",
+    ),
     max_drift: Optional[float] = typer.Option(
         None, "--max-drift",
         help="Maximum endpoint drift allowed; exits with code 1 if exceeded",
@@ -1934,6 +2017,11 @@ def traj_evaluate_cmd(
     max_longitudinal: Optional[float] = typer.Option(
         None, "--max-longitudinal",
         help="Maximum longitudinal RMSE allowed; exits with code 1 if exceeded",
+    ),
+    rpe_distance: Optional[List[float]] = typer.Option(
+        None,
+        "--rpe-distance",
+        help="Distance window in meters for KITTI-style RPE (repeatable)",
     ),
     report: Optional[str] = typer.Option(
         None, "--report",
@@ -1954,10 +2042,12 @@ def traj_evaluate_cmd(
             align_rigid=align_rigid,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
             max_lateral=max_lateral,
             max_longitudinal=max_longitudinal,
+            rpe_distances_m=rpe_distance,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -2000,6 +2090,20 @@ def traj_evaluate_cmd(
             f"RPE RMSE:  {rpe['rmse']:.4f}  "
             f"Mean={rpe['mean']:.4f}  Max={rpe['max']:.4f}"
         )
+        if result["rpe_rotation"] is not None:
+            rotation_rpe = result["rpe_rotation"]
+            typer.echo(
+                f"RPE Rot.:  {rotation_rpe['rmse']:.4f} deg  "
+                f"Mean={rotation_rpe['mean']:.4f}  Max={rotation_rpe['max']:.4f}"
+            )
+        for distance_result in result["rpe_distance"]:
+            translation_result = distance_result["translation"]
+            if translation_result is not None:
+                typer.echo(
+                    f"RPE @{distance_result['delta_m']:.1f}m: "
+                    f"{translation_result['rmse']:.4f}m "
+                    f"({distance_result['pairs']} pairs)"
+                )
         lateral = result["lateral"]
         longitudinal = result["longitudinal"]
         typer.echo(
@@ -2094,6 +2198,10 @@ def traj_batch_cmd(
         None, "--max-rpe",
         help="Maximum translational RPE RMSE allowed; exits with code 1 if any file fails",
     ),
+    max_rpe_rotation_deg: Optional[float] = typer.Option(
+        None, "--max-rpe-rotation-deg",
+        help="Maximum rotational RPE RMSE in degrees; requires quaternion orientations",
+    ),
     max_drift: Optional[float] = typer.Option(
         None, "--max-drift",
         help="Maximum endpoint drift allowed; exits with code 1 if any file fails",
@@ -2101,6 +2209,11 @@ def traj_batch_cmd(
     min_coverage: Optional[float] = typer.Option(
         None, "--min-coverage",
         help="Minimum matched-pose coverage ratio required (0-1); exits with code 1 if any file fails",
+    ),
+    rpe_distance: Optional[List[float]] = typer.Option(
+        None,
+        "--rpe-distance",
+        help="Distance window in meters for KITTI-style RPE (repeatable)",
     ),
     report: Optional[str] = typer.Option(
         None, "--report",
@@ -2125,8 +2238,10 @@ def traj_batch_cmd(
             align_rigid=align_rigid,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
             max_drift=max_drift,
             min_coverage=min_coverage,
+            rpe_distances_m=rpe_distance,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -2139,6 +2254,7 @@ def traj_batch_cmd(
                 report,
                 max_ate=max_ate,
                 max_rpe=max_rpe,
+                max_rpe_rotation_deg=max_rpe_rotation_deg,
                 max_drift=max_drift,
                 min_coverage=min_coverage,
             )
@@ -2150,6 +2266,7 @@ def traj_batch_cmd(
         reference_dir,
         max_ate=max_ate,
         max_rpe=max_rpe,
+        max_rpe_rotation_deg=max_rpe_rotation_deg,
         max_drift=max_drift,
         min_coverage=min_coverage,
     )
@@ -2163,17 +2280,27 @@ def traj_batch_cmd(
             status = ""
             if item["quality_gate"] is not None:
                 status = "  PASS" if item["quality_gate"]["passed"] else "  FAIL"
+            rpe_rotation = item.get("rpe_rotation")
+            rpe_rotation_label = (
+                "n/a" if rpe_rotation is None else f"{rpe_rotation['rmse']:.4f}deg"
+            )
             typer.echo(
                 f"  {item['path']}: matched={item['matched_poses']}  "
                 f"coverage={item['coverage_ratio']:.1%}  "
                 f"ATE={item['ate']['rmse']:.4f}  "
                 f"RPE={item['rpe_translation']['rmse']:.4f}  "
+                f"RPErot={rpe_rotation_label}  "
                 f"Drift={item['drift']['endpoint']:.4f}  "
                 f"Align={item['alignment']['mode']}"
                 f"{status}"
             )
         typer.echo(f"Mean ATE RMSE: {summary['mean_ate_rmse']:.4f}")
         typer.echo(f"Mean RPE RMSE: {summary['mean_rpe_rmse']:.4f}")
+        mean_rpe_rotation = summary.get("mean_rpe_rotation_rmse_deg")
+        typer.echo(
+            "Mean RPE Rotation RMSE: "
+            + (f"{mean_rpe_rotation:.4f} deg" if mean_rpe_rotation is not None else "n/a")
+        )
         typer.echo(f"Mean Coverage: {summary['mean_coverage_ratio']:.1%}")
         if gate is not None:
             typer.echo(
@@ -2428,6 +2555,15 @@ def run_evaluate_cmd(
         None, "--max-rpe",
         help="Maximum trajectory translational RPE RMSE allowed; contributes to overall quality gate",
     ),
+    max_rpe_rotation_deg: Optional[float] = typer.Option(
+        None, "--max-rpe-rotation-deg",
+        help="Maximum trajectory rotational RPE RMSE in degrees; requires quaternion orientations",
+    ),
+    rpe_distance: Optional[List[float]] = typer.Option(
+        None,
+        "--rpe-distance",
+        help="Distance window in meters for KITTI-style RPE (repeatable)",
+    ),
     max_drift: Optional[float] = typer.Option(
         None, "--max-drift",
         help="Maximum trajectory endpoint drift allowed; contributes to overall quality gate",
@@ -2460,6 +2596,8 @@ def run_evaluate_cmd(
             max_chamfer=max_chamfer,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
+            rpe_distances_m=rpe_distance,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -2490,10 +2628,17 @@ def run_evaluate_cmd(
         typer.echo(
             f"  Best F1={best_f1['f1']:.4f} @ d={best_f1['threshold']:.2f}"
         )
+        trajectory_rpe_rotation = trajectory_result.get("rpe_rotation")
+        trajectory_rpe_rotation_label = (
+            "n/a"
+            if trajectory_rpe_rotation is None
+            else f"{trajectory_rpe_rotation['rmse']:.4f}deg"
+        )
         typer.echo(
             f"Trajectory: matched={matching['matched_poses']} ({matching['coverage_ratio']:.1%})  "
             f"ATE={trajectory_result['ate']['rmse']:.4f}  "
             f"RPE={trajectory_result['rpe_translation']['rmse']:.4f}  "
+            f"RPErot={trajectory_rpe_rotation_label}  "
             f"Drift={trajectory_result['drift']['endpoint']:.4f}  "
             f"Align={trajectory_result['alignment']['mode']}"
         )
@@ -2560,6 +2705,15 @@ def run_batch_cmd(
         None, "--max-rpe",
         help="Maximum trajectory translational RPE RMSE allowed; contributes to the overall quality gate",
     ),
+    max_rpe_rotation_deg: Optional[float] = typer.Option(
+        None, "--max-rpe-rotation-deg",
+        help="Maximum trajectory rotational RPE RMSE in degrees; requires quaternion orientations",
+    ),
+    rpe_distance: Optional[List[float]] = typer.Option(
+        None,
+        "--rpe-distance",
+        help="Distance window in meters for KITTI-style RPE (repeatable)",
+    ),
     max_drift: Optional[float] = typer.Option(
         None, "--max-drift",
         help="Maximum trajectory endpoint drift allowed; contributes to the overall quality gate",
@@ -2598,6 +2752,8 @@ def run_batch_cmd(
             max_chamfer=max_chamfer,
             max_ate=max_ate,
             max_rpe=max_rpe,
+            max_rpe_rotation_deg=max_rpe_rotation_deg,
+            rpe_distances_m=rpe_distance,
             max_drift=max_drift,
             min_coverage=min_coverage,
         )
@@ -2615,6 +2771,7 @@ def run_batch_cmd(
                 max_chamfer=max_chamfer,
                 max_ate=max_ate,
                 max_rpe=max_rpe,
+                max_rpe_rotation_deg=max_rpe_rotation_deg,
                 max_drift=max_drift,
                 min_coverage=min_coverage,
             )
@@ -2629,6 +2786,7 @@ def run_batch_cmd(
         max_chamfer=max_chamfer,
         max_ate=max_ate,
         max_rpe=max_rpe,
+        max_rpe_rotation_deg=max_rpe_rotation_deg,
         max_drift=max_drift,
         min_coverage=min_coverage,
     )
@@ -3032,6 +3190,8 @@ def _print_suite_info(suite: BenchmarkSuite) -> None:
     typer.echo(f"Description: {suite.description}")
     if suite.license:
         typer.echo(f"License:     {suite.license}")
+    if suite.dataset:
+        typer.echo(f"Dataset:     {json.dumps(suite.dataset, sort_keys=True)}")
     typer.echo(f"Source:      {suite.source_path}")
     typer.echo("Sequences:")
     for name, seq in suite.sequences.items():
@@ -3068,6 +3228,7 @@ def benchmark_info_cmd(
             "version": suite.version,
             "description": suite.description,
             "license": suite.license,
+            "dataset": dict(suite.dataset),
             "source_path": str(suite.source_path),
             "sequences": {
                 name: {

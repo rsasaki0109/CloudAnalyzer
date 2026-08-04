@@ -96,6 +96,11 @@ version: 1
 name: synthetic-figure8
 description: ...
 license: MIT (synthetic)
+dataset:
+  source_url: https://example.org/dataset
+  license: CC-BY-4.0
+  preparation: scripts/prepare_dataset.py
+  data_sha256: "..."
 sequences:
   default:
     description: ...
@@ -110,11 +115,12 @@ gate:
   max_chamfer: 0.05
   max_ate: 0.30
   max_rpe: 0.20
+  max_rpe_rotation_deg: 5.0
   max_drift: 0.50
   min_coverage: 0.90
 ```
 
-All paths in the manifest are resolved relative to the manifest file. Allowed gate keys are the same six accepted by `ca run-evaluate`: `min_auc`, `max_chamfer`, `max_ate`, `max_rpe`, `max_drift`, `min_coverage`.
+All paths in the manifest are resolved relative to the manifest file. Allowed gate keys are the same accepted by `ca run-evaluate`: `min_auc`, `max_chamfer`, `max_ate`, `max_rpe`, `max_rpe_rotation_deg`, `max_drift`, `min_coverage`.
 
 ## Adding your own suite
 
@@ -163,3 +169,6 @@ Then point `ca benchmark` at it. There is no global registry yet — suites are 
 ```
 
 The `benchmark` block lets downstream consumers (dashboards, PR comments, baseline history) recover which calibration produced the numbers.
+Benchmark results also carry `schema_version: cloudanalyzer.metrics.v1`, while
+`ca benchmark eval --out` validates the required report files and referenced
+report assets before returning the bundle path.

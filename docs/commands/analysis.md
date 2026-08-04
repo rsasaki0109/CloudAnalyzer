@@ -122,7 +122,9 @@ diagnosis signals when present.
 
 ## ca map-evaluate
 
-Experimental MapEval-inspired map-to-map evaluation against a reference/GT map.
+Map-to-map evaluation against a reference/GT map. The default path reports
+nearest-neighbor accuracy/completeness/Chamfer plus the explicit AWD/SCS
+protocol `cloudanalyzer.mapeval_awd_scs.v1`.
 
 ```bash
 # GT-based threshold metrics
@@ -134,15 +136,24 @@ ca map-evaluate estimated.pcd reference.pcd \
   --initial-matrix "1,0,0,-0.1,0,1,0,0,0,0,1,0,0,0,0,1" \
   --artifact-dir qa/map-evaluate \
   --format-json
+
+# Streaming AWD/SCS for large LAS/LAZ/COPC-compatible inputs
+ca map-evaluate estimated.laz reference.laz \
+  --streaming --chunk-size 100000 --format-json
 ```
 
 Output: Chamfer distance, accuracy / completeness / F-score at each configured
 threshold, and MapEval's voxelized Average Wasserstein Distance (AWD) and
 Spatial Consistency Score (SCS). AWD measures global geometric error; SCS is
 the mean coefficient of variation of neighboring voxel errors. Both are
-lower-is-better. Voxels need at least 100 points in both maps; a metric is
-reported as `NaN` when there is not enough support. Use a voxel size suited to
-the map density (the MapEval paper uses 3.0 m).
+lower-is-better. Voxels need at least 100 points in both maps; the protocol
+records support counts and an unavailable AWD/SCS value is omitted from the
+finite metric mapping. Use a voxel size suited to the map density (the MapEval
+paper uses 3.0 m).
+
+CSV and local LAS/LAZ inputs use the built-in chunk readers. HTTP(S)/S3 COPC/LAZ
+inputs require an installed PDAL runtime; PCD/PLY remain compatibility fallbacks
+that are loaded before chunk splitting.
 
 The threshold metrics are intentionally separate from the `ca evaluate`
 metrics used by `ca batch`, `ca run-evaluate`, and `ca loop-closure-report`,
@@ -155,6 +166,10 @@ which report an AUC / best-F1 curve over thresholds.
 | `--initial-matrix` | `None` | 4x4 row-major transform applied when `--align-mode initial` is used |
 | `--artifact-dir` | `None` | Optional directory for colored PLY error-map artifacts |
 | `--structure-voxel-size` | `3.0` | Voxel size in meters for AWD/SCS; set to `0` to disable |
+| `--map-eval-min-voxel-points` | `100` | Minimum points per voxel for AWD/SCS |
+| `--map-eval-neighbor-radius` | `5` | Voxel neighborhood radius for SCS |
+| `--streaming` | `false` | Use chunked AWD/SCS only; omits resident-array NN metrics |
+| `--chunk-size` | `100000` | Points per input chunk for `--streaming` |
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON |
 
@@ -610,7 +625,10 @@ ca traj-evaluate est.csv gt.csv --align-origin
 ca traj-evaluate est.csv gt.csv --align-rigid
 ```
 
-Output: matched pose coverage, ATE RMSE/mean/max, translational RPE RMSE/mean/max, endpoint drift, duration coverage. Reports also emit sibling trajectory overlay and error timeline PNGs.
+Output: matched pose coverage, translational and (when quaternion orientations
+are available) rotational ATE/RPE, optional distance-window RPE, endpoint drift,
+and duration coverage. Reports also emit sibling trajectory overlay and error
+timeline PNGs.
 
 | Option | Default | Description |
 |---|---|---|
@@ -619,11 +637,13 @@ Output: matched pose coverage, ATE RMSE/mean/max, translational RPE RMSE/mean/ma
 | `--align-rigid` | `false` | Fit a rigid transform (rotation + translation) from estimated to reference positions |
 | `--max-ate` | `None` | Maximum ATE RMSE allowed; exits with code 1 if exceeded |
 | `--max-rpe` | `None` | Maximum translational RPE RMSE allowed; exits with code 1 if exceeded |
+| `--max-rpe-rotation-deg` | `None` | Maximum rotational RPE RMSE in degrees; requires quaternion orientations |
 | `--max-drift` | `None` | Maximum endpoint drift allowed; exits with code 1 if exceeded |
 | `--min-coverage` | `None` | Minimum matched-pose coverage ratio required (0-1); exits with code 1 if not met |
 | `--report` | `None` | Write Markdown/HTML trajectory report |
 | `--format-json` | `false` | Print JSON to stdout |
 | `--output-json` | `None` | Dump result as JSON file |
+| `--rpe-distance` | repeatable | Compute KITTI-style first-crossing RPE for a distance in meters |
 
 ## ca traj-batch
 
@@ -645,7 +665,7 @@ ca traj-batch runs/ --reference-dir gt/ --align-origin
 ca traj-batch runs/ --reference-dir gt/ --align-rigid
 ```
 
-Output: one row per trajectory with matched pose count, coverage, ATE RMSE, translational RPE RMSE, endpoint drift, alignment mode, optional pass/fail, plus inspection commands that jump into per-run `traj-evaluate`. HTML reports add pass/failed/low-coverage filters and ATE/RPE/coverage sorting. When `--min-coverage` is set, the low-coverage threshold in the report follows that value.
+Output: one row per trajectory with matched pose count, coverage, ATE RMSE, translational/rotational RPE RMSE, endpoint drift, alignment mode, optional pass/fail, plus inspection commands that jump into per-run `traj-evaluate`. HTML reports add pass/failed/low-coverage filters and ATE/RPE/coverage sorting. When `--min-coverage` is set, the low-coverage threshold in the report follows that value.
 
 | Option | Default | Description |
 |---|---|---|
@@ -656,6 +676,7 @@ Output: one row per trajectory with matched pose count, coverage, ATE RMSE, tran
 | `--align-rigid` | `false` | Fit a rigid transform (rotation + translation) from each estimated trajectory to its reference |
 | `--max-ate` | `None` | Maximum ATE RMSE allowed; exits with code 1 if any file fails |
 | `--max-rpe` | `None` | Maximum translational RPE RMSE allowed; exits with code 1 if any file fails |
+| `--max-rpe-rotation-deg` | `None` | Maximum rotational RPE RMSE in degrees; requires quaternion orientations |
 | `--max-drift` | `None` | Maximum endpoint drift allowed; exits with code 1 if any file fails |
 | `--min-coverage` | `None` | Minimum matched-pose coverage ratio required (0-1); exits with code 1 if any file fails |
 | `--report` | `None` | Write Markdown/HTML trajectory batch report |
@@ -683,7 +704,7 @@ ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --align-origin
 ca run-evaluate map.pcd map_ref.pcd traj.csv traj_ref.csv --align-rigid
 ```
 
-Output: map Chamfer/Hausdorff/AUC/Best F1, trajectory matched coverage/ATE/RPE/drift/alignment, optional overall pass/fail, plus inspection commands for combined `ca web ... --trajectory ... --trajectory-reference ...`, `ca web --heatmap`, `ca heatmap3d`, and per-run `ca traj-evaluate`. Reports emit a map F1 curve together with trajectory overlay and error timeline PNGs.
+Output: map Chamfer/Hausdorff/AUC/Best F1, trajectory matched coverage/ATE/translational+rotational RPE/drift/alignment, optional overall pass/fail, plus inspection commands for combined `ca web ... --trajectory ... --trajectory-reference ...`, `ca web --heatmap`, `ca heatmap3d`, and per-run `ca traj-evaluate`. Reports emit a map F1 curve together with trajectory overlay and error timeline PNGs.
 
 | Option | Default | Description |
 |---|---|---|
@@ -695,6 +716,8 @@ Output: map Chamfer/Hausdorff/AUC/Best F1, trajectory matched coverage/ATE/RPE/d
 | `--max-chamfer` | `None` | Maximum map Chamfer distance allowed; contributes to the overall quality gate |
 | `--max-ate` | `None` | Maximum trajectory ATE RMSE allowed; contributes to the overall quality gate |
 | `--max-rpe` | `None` | Maximum trajectory translational RPE RMSE allowed; contributes to the overall quality gate |
+| `--max-rpe-rotation-deg` | `None` | Maximum trajectory rotational RPE RMSE in degrees; requires quaternion orientations |
+| `--rpe-distance` | repeatable | Compute KITTI-style first-crossing RPE for a distance in meters |
 | `--max-drift` | `None` | Maximum trajectory endpoint drift allowed; contributes to the overall quality gate |
 | `--min-coverage` | `None` | Minimum trajectory matched-pose coverage ratio required; contributes to the overall quality gate |
 | `--report` | `None` | Write Markdown/HTML combined run report |
@@ -729,7 +752,7 @@ ca run-batch maps/ \
   --align-origin
 ```
 
-Output: one row per run with map AUC/Chamfer and trajectory ATE/RPE/drift/coverage, optional overall pass/fail, plus inspection commands for a combined `ca web` run viewer, map heatmaps, and per-run `traj-evaluate`. Reports summarize mean map and trajectory quality across runs. HTML reports add pass/failed/map-issue/trajectory-issue filters and map/trajectory sorting.
+Output: one row per run with map AUC/Chamfer and trajectory ATE/translational+rotational RPE/drift/coverage, optional overall pass/fail, plus inspection commands for a combined `ca web` run viewer, map heatmaps, and per-run `traj-evaluate`. Reports summarize mean map and trajectory quality across runs. HTML reports add pass/failed/map-issue/trajectory-issue filters and map/trajectory sorting.
 When a quality gate is active, CLI/report summaries also break failures into map failures vs trajectory failures, and inspection commands include both a per-run `ca web ... --trajectory ... --trajectory-reference ...` viewer and `ca run-evaluate ...` drill-down command.
 
 | Option | Default | Description |
@@ -746,6 +769,8 @@ When a quality gate is active, CLI/report summaries also break failures into map
 | `--max-chamfer` | `None` | Maximum map Chamfer distance allowed; contributes to the overall quality gate |
 | `--max-ate` | `None` | Maximum trajectory ATE RMSE allowed; contributes to the overall quality gate |
 | `--max-rpe` | `None` | Maximum trajectory translational RPE RMSE allowed; contributes to the overall quality gate |
+| `--max-rpe-rotation-deg` | `None` | Maximum trajectory rotational RPE RMSE in degrees; requires quaternion orientations |
+| `--rpe-distance` | repeatable | Compute KITTI-style first-crossing RPE for a distance in meters |
 | `--max-drift` | `None` | Maximum trajectory endpoint drift allowed; contributes to the overall quality gate |
 | `--min-coverage` | `None` | Minimum trajectory matched-pose coverage ratio required; contributes to the overall quality gate |
 | `--report` | `None` | Write Markdown/HTML combined run-batch report |

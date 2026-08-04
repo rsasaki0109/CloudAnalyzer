@@ -4,7 +4,14 @@ import numpy as np
 import pytest
 import open3d as o3d
 
-from ca.io import load_point_cloud, save_point_cloud, SUPPORTED_EXTENSIONS
+from ca.io import (
+    PointAccumulator,
+    PointChunkReader,
+    SUPPORTED_EXTENSIONS,
+    iter_point_chunks,
+    load_point_cloud,
+    save_point_cloud,
+)
 
 
 class TestLoadPointCloud:
@@ -78,6 +85,46 @@ class TestLoadPointCloud:
         assert ".las" in SUPPORTED_EXTENSIONS
         assert ".laz" in SUPPORTED_EXTENSIONS
         assert ".csv" in SUPPORTED_EXTENSIONS
+
+
+class TestPointChunkReader:
+    def test_csv_chunks_include_first_numeric_row(self, tmp_path):
+        path = tmp_path / "points.csv"
+        path.write_text("0,1,2\n3,4,5\n6,7,8\n", encoding="utf-8")
+
+        chunks = list(iter_point_chunks(str(path), chunk_size=2))
+
+        assert [len(chunk) for chunk in chunks] == [2, 1]
+        np.testing.assert_allclose(np.vstack(chunks), [[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+
+    def test_csv_chunks_support_bounds(self, tmp_path):
+        path = tmp_path / "points.csv"
+        path.write_text("x,y,z\n0,0,0\n1,2,3\n4,5,6\n", encoding="utf-8")
+
+        chunks = list(
+            PointChunkReader(
+                str(path),
+                chunk_size=10,
+                bounds=(0, 0, 0, 2, 3, 3),
+            )
+        )
+
+        np.testing.assert_allclose(np.vstack(chunks), [[0, 0, 0], [1, 2, 3]])
+
+    def test_accumulator_matches_batch_moments(self):
+        points = np.arange(30, dtype=float).reshape(10, 3)
+        accumulator = PointAccumulator()
+        accumulator.update(points[:3]).update(points[3:7]).update(points[7:])
+
+        summary = accumulator.finalize()
+        np.testing.assert_allclose(summary["mean"], np.mean(points, axis=0))
+        np.testing.assert_allclose(summary["covariance"], np.cov(points, rowvar=False))
+        np.testing.assert_allclose(summary["minimum"], points.min(axis=0))
+        np.testing.assert_allclose(summary["maximum"], points.max(axis=0))
+
+    def test_remote_copc_reports_optional_backend(self):
+        with pytest.raises(ValueError, match="PDAL"):
+            list(iter_point_chunks("https://example.invalid/map.copc.laz"))
 
 
 class TestSavePointCloud:

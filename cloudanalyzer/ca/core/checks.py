@@ -98,6 +98,7 @@ _VALID_GATE_KEYS = {
     "max_chamfer",
     "max_ate",
     "max_rpe",
+    "max_rpe_rotation_deg",
     "max_drift",
     "min_coverage",
     "min_precision",
@@ -133,8 +134,8 @@ _VALID_GATE_KEYS = {
 _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
     "artifact": {"min_auc", "max_chamfer", "max_awd", "max_scs", "voxel_size"},
     "artifact_batch": {"min_auc", "max_chamfer", "max_awd", "max_scs", "voxel_size"},
-    "trajectory": {"max_ate", "max_rpe", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
-    "trajectory_batch": {"max_ate", "max_rpe", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
+    "trajectory": {"max_ate", "max_rpe", "max_rpe_rotation_deg", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
+    "trajectory_batch": {"max_ate", "max_rpe", "max_rpe_rotation_deg", "max_drift", "min_coverage", "max_lateral", "max_longitudinal"},
     "detection": {"min_map", "min_precision", "min_recall", "min_f1"},
     "tracking": {"min_mota", "min_recall", "max_id_switches"},
     "run": {
@@ -142,6 +143,7 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_chamfer",
         "max_ate",
         "max_rpe",
+        "max_rpe_rotation_deg",
         "max_drift",
         "min_coverage",
         "max_lateral",
@@ -152,6 +154,7 @@ _ALLOWED_GATE_KEYS: dict[CheckKind, set[str]] = {
         "max_chamfer",
         "max_ate",
         "max_rpe",
+        "max_rpe_rotation_deg",
         "max_drift",
         "min_coverage",
         "max_lateral",
@@ -1052,6 +1055,7 @@ def _run_trajectory_check(spec: CheckSpec) -> dict[str, Any]:
         align_rigid=align_rigid,
         max_ate=cast(float | None, spec.gate.get("max_ate")),
         max_rpe=cast(float | None, spec.gate.get("max_rpe")),
+        max_rpe_rotation_deg=cast(float | None, spec.gate.get("max_rpe_rotation_deg")),
         max_drift=cast(float | None, spec.gate.get("max_drift")),
         min_coverage=cast(float | None, spec.gate.get("min_coverage")),
         max_lateral=cast(float | None, spec.gate.get("max_lateral")),
@@ -1095,6 +1099,7 @@ def _run_trajectory_batch_check(spec: CheckSpec) -> dict[str, Any]:
         align_rigid=align_rigid,
         max_ate=cast(float | None, spec.gate.get("max_ate")),
         max_rpe=cast(float | None, spec.gate.get("max_rpe")),
+        max_rpe_rotation_deg=cast(float | None, spec.gate.get("max_rpe_rotation_deg")),
         max_drift=cast(float | None, spec.gate.get("max_drift")),
         min_coverage=cast(float | None, spec.gate.get("min_coverage")),
     )
@@ -1103,6 +1108,7 @@ def _run_trajectory_batch_check(spec: CheckSpec) -> dict[str, Any]:
         spec.inputs["reference_dir"],
         max_ate=cast(float | None, spec.gate.get("max_ate")),
         max_rpe=cast(float | None, spec.gate.get("max_rpe")),
+        max_rpe_rotation_deg=cast(float | None, spec.gate.get("max_rpe_rotation_deg")),
         max_drift=cast(float | None, spec.gate.get("max_drift")),
         min_coverage=cast(float | None, spec.gate.get("min_coverage")),
     )
@@ -1113,6 +1119,7 @@ def _run_trajectory_batch_check(spec: CheckSpec) -> dict[str, Any]:
             spec.outputs.report_path,
             max_ate=cast(float | None, spec.gate.get("max_ate")),
             max_rpe=cast(float | None, spec.gate.get("max_rpe")),
+            max_rpe_rotation_deg=cast(float | None, spec.gate.get("max_rpe_rotation_deg")),
             max_drift=cast(float | None, spec.gate.get("max_drift")),
             min_coverage=cast(float | None, spec.gate.get("min_coverage")),
         )
@@ -1230,6 +1237,7 @@ def _run_run_check(spec: CheckSpec) -> dict[str, Any]:
         max_chamfer=cast(float | None, spec.gate.get("max_chamfer")),
         max_ate=cast(float | None, spec.gate.get("max_ate")),
         max_rpe=cast(float | None, spec.gate.get("max_rpe")),
+        max_rpe_rotation_deg=cast(float | None, spec.gate.get("max_rpe_rotation_deg")),
         max_drift=cast(float | None, spec.gate.get("max_drift")),
         min_coverage=cast(float | None, spec.gate.get("min_coverage")),
     )
@@ -1274,6 +1282,7 @@ def _run_run_batch_check(spec: CheckSpec) -> dict[str, Any]:
         max_chamfer=cast(float | None, spec.gate.get("max_chamfer")),
         max_ate=cast(float | None, spec.gate.get("max_ate")),
         max_rpe=cast(float | None, spec.gate.get("max_rpe")),
+        max_rpe_rotation_deg=cast(float | None, spec.gate.get("max_rpe_rotation_deg")),
         max_drift=cast(float | None, spec.gate.get("max_drift")),
         min_coverage=cast(float | None, spec.gate.get("min_coverage")),
     )
@@ -1285,6 +1294,7 @@ def _run_run_batch_check(spec: CheckSpec) -> dict[str, Any]:
         max_chamfer=cast(float | None, spec.gate.get("max_chamfer")),
         max_ate=cast(float | None, spec.gate.get("max_ate")),
         max_rpe=cast(float | None, spec.gate.get("max_rpe")),
+        max_rpe_rotation_deg=cast(float | None, spec.gate.get("max_rpe_rotation_deg")),
         max_drift=cast(float | None, spec.gate.get("max_drift")),
         min_coverage=cast(float | None, spec.gate.get("min_coverage")),
     )
@@ -1298,6 +1308,7 @@ def _run_run_batch_check(spec: CheckSpec) -> dict[str, Any]:
             max_chamfer=cast(float | None, spec.gate.get("max_chamfer")),
             max_ate=cast(float | None, spec.gate.get("max_ate")),
             max_rpe=cast(float | None, spec.gate.get("max_rpe")),
+            max_rpe_rotation_deg=cast(float | None, spec.gate.get("max_rpe_rotation_deg")),
             max_drift=cast(float | None, spec.gate.get("max_drift")),
             min_coverage=cast(float | None, spec.gate.get("min_coverage")),
         )

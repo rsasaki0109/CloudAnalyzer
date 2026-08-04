@@ -1,5 +1,7 @@
 """Tests for trajectory evaluation."""
 
+import math
+
 import pytest
 
 from ca.report import save_trajectory_report
@@ -20,6 +22,18 @@ def _write_tum_trajectory(path, rows):
         f"{timestamp} {x} {y} {z} 0 0 0 1"
         for timestamp, x, y, z in rows
     ]
+    path.write_text("\n".join(lines) + "\n")
+    return str(path)
+
+
+def _write_tum_pose_trajectory(path, rows):
+    lines = []
+    for timestamp, x, y, z, yaw_deg in rows:
+        half_angle = math.radians(yaw_deg) / 2.0
+        lines.append(
+            f"{timestamp} {x} {y} {z} 0 0 "
+            f"{math.sin(half_angle)} {math.cos(half_angle)}"
+        )
     path.write_text("\n".join(lines) + "\n")
     return str(path)
 
@@ -61,6 +75,21 @@ class TestLoadTrajectory:
         assert result["format"] == "tum"
         assert result["num_poses"] == 2
         assert result["positions"].tolist() == [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]]
+
+    def test_load_tum_preserves_normalized_quaternions(self, tmp_path):
+        path = _write_tum_pose_trajectory(
+            tmp_path / "pose.tum",
+            [(0.0, 0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0, 90.0)],
+        )
+
+        result = load_trajectory(path)
+
+        assert result["pose_format"] == "position_quaternion"
+        assert result["orientations"].shape == (2, 4)
+        assert result["orientations"].tolist()[0] == pytest.approx([0.0, 0.0, 0.0, 1.0])
+        assert result["orientations"].tolist()[1] == pytest.approx(
+            [0.0, 0.0, math.sqrt(0.5), math.sqrt(0.5)]
+        )
 
     def test_rejects_non_monotonic_timestamps(self, tmp_path):
         path = _write_csv_trajectory(
@@ -311,6 +340,64 @@ class TestEvaluateTrajectory:
 
         with pytest.raises(ValueError, match="matched poses"):
             evaluate_trajectory(estimated, reference, max_time_delta=0.1)
+
+    def test_rotation_rpe_and_distance_rpe(self, tmp_path):
+        reference = _write_tum_pose_trajectory(
+            tmp_path / "ref.tum",
+            [
+                (0.0, 0.0, 0.0, 0.0, 0.0),
+                (1.0, 1.0, 0.0, 0.0, 10.0),
+                (2.0, 2.0, 0.0, 0.0, 20.0),
+                (3.0, 3.0, 0.0, 0.0, 30.0),
+            ],
+        )
+        estimated = _write_tum_pose_trajectory(
+            tmp_path / "est.tum",
+            [
+                (0.0, 0.0, 0.0, 0.0, 0.0),
+                (1.0, 1.0, 0.0, 0.0, 20.0),
+                (2.0, 2.0, 0.0, 0.0, 40.0),
+                (3.0, 3.0, 0.0, 0.0, 60.0),
+            ],
+        )
+
+        result = evaluate_trajectory(
+            estimated,
+            reference,
+            max_time_delta=0.05,
+            rpe_distances_m=[2.0],
+        )
+
+        assert result["ate_rotation"]["rmse"] == pytest.approx(
+            math.sqrt((0.0**2 + 10.0**2 + 20.0**2 + 30.0**2) / 4.0),
+            abs=1e-6,
+        )
+        assert result["rpe_rotation"]["rmse"] == pytest.approx(10.0, abs=1e-6)
+        distance_result = result["rpe_distance"][0]
+        assert distance_result["pairs"] == 2
+        assert distance_result["translation"]["rmse"] == pytest.approx(0.0, abs=1e-8)
+        assert distance_result["rotation"]["rmse"] == pytest.approx(20.0, abs=1e-6)
+
+    def test_rotation_gate_requires_orientations(self, tmp_path):
+        reference = _write_csv_trajectory(
+            tmp_path / "ref.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+        estimated = _write_csv_trajectory(
+            tmp_path / "est.csv",
+            [(0.0, 0.0, 0.0, 0.0), (1.0, 1.0, 0.0, 0.0)],
+        )
+
+        result = evaluate_trajectory(
+            estimated,
+            reference,
+            max_time_delta=0.05,
+            max_rpe_rotation_deg=1.0,
+        )
+
+        assert result["rpe_rotation"] is None
+        assert result["quality_gate"]["passed"] is False
+        assert any("quaternion orientations" in reason for reason in result["quality_gate"]["reasons"])
 
 
 class TestTrajectoryReport:

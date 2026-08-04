@@ -26,6 +26,11 @@ deterministic pass/fail gates for local development and CI.
   <img src="docs/images/readme-workflow.svg" alt="CloudAnalyzer workflow from robotics artifacts through metrics and reports to a CI pass or fail gate" width="960">
 </p>
 
+```text
+inputs:   dataset suite + baseline/reference + candidate outputs
+outputs:  metrics JSON + HTML report + pass/fail gate + leaderboard-ready result
+```
+
 ## See It in Action
 
 Every image below is a checked-in CloudAnalyzer output. Click a panel to open the

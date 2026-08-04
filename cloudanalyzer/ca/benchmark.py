@@ -283,7 +283,13 @@ def evaluate_benchmark_run(
         max_time_delta=max_time_delta,
         align_origin=align_origin,
         align_rigid=align_rigid,
-        **gate,
+        min_auc=gate.get("min_auc"),
+        max_chamfer=gate.get("max_chamfer"),
+        max_ate=gate.get("max_ate"),
+        max_rpe=gate.get("max_rpe"),
+        max_rpe_rotation_deg=gate.get("max_rpe_rotation_deg"),
+        max_drift=gate.get("max_drift"),
+        min_coverage=gate.get("min_coverage"),
     )
     result["benchmark"] = {
         "suite": suite.name,

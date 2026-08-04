@@ -345,18 +345,18 @@ def _extract_metrics(check: dict[str, Any]) -> dict[str, float]:
             "coverage": float(summary["coverage_ratio"]),
         }
     if kind == "image":
-        metrics: dict[str, float] = {}
+        image_metrics: dict[str, float] = {}
         if summary.get("psnr_mean") is not None:
-            metrics["psnr"] = float(summary["psnr_mean"])
+            image_metrics["psnr"] = float(summary["psnr_mean"])
         if summary.get("ssim_mean") is not None:
-            metrics["ssim"] = float(summary["ssim_mean"])
+            image_metrics["ssim"] = float(summary["ssim_mean"])
         if summary.get("dreamsim_distance_mean") is not None:
-            metrics["dreamsim_distance"] = float(summary["dreamsim_distance_mean"])
+            image_metrics["dreamsim_distance"] = float(summary["dreamsim_distance_mean"])
         if summary.get("frequency_consistency_mean") is not None:
-            metrics["frequency_consistency"] = float(
+            image_metrics["frequency_consistency"] = float(
                 summary["frequency_consistency_mean"]
             )
-        return metrics
+        return image_metrics
     if kind == "rendered":
         rendered_metrics: dict[str, float] = {}
         if summary.get("psnr_mean") is not None:

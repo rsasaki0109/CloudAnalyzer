@@ -129,11 +129,14 @@ def _save_snapshot_matplotlib(
 
     finite = np.isfinite(points).all(axis=1)
     points = points[finite]
-    colors = np.asarray(pcd.colors, dtype=float)
-    if colors.shape != (len(finite), 3):
+    raw_colors = np.asarray(pcd.colors, dtype=float)
+    colors: np.ndarray | None
+    if raw_colors.shape != (len(finite), 3):
         colors = None
-    elif len(colors):
-        colors = colors[finite]
+    elif len(raw_colors):
+        colors = raw_colors[finite]
+    else:
+        colors = raw_colors
 
     if len(points) > max_points:
         indices = np.linspace(0, len(points) - 1, max_points, dtype=int)

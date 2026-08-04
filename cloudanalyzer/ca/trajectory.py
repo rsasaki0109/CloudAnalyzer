@@ -72,7 +72,9 @@ def _parse_csv_trajectory(
 
         timestamps = []
         positions = []
-        orientations = [] if orientation_keys is not None else None
+        orientations: list[list[float]] | None = (
+            [] if orientation_keys is not None else None
+        )
         for row in reader:
             timestamps.append(float(row[field_map[timestamp_key]]))
             positions.append(
@@ -83,6 +85,8 @@ def _parse_csv_trajectory(
                 ]
             )
             if orientations is not None:
+                if orientation_keys is None:
+                    raise ValueError("Trajectory orientation keys are missing")
                 orientations.append(
                     [float(row[field_map[key]]) for key in orientation_keys]
                 )
@@ -207,14 +211,14 @@ def _slerp_quaternion(first: np.ndarray, second: np.ndarray, alpha: float) -> np
     dot = float(np.clip(dot, -1.0, 1.0))
     if dot > 0.9995:
         result = q0 + alpha * (q1 - q0)
-        return result / np.linalg.norm(result)
+        return np.asarray(result / np.linalg.norm(result), dtype=float)
 
     theta = float(np.arccos(dot))
     sin_theta = float(np.sin(theta))
     first_weight = np.sin((1.0 - alpha) * theta) / sin_theta
     second_weight = np.sin(alpha * theta) / sin_theta
     result = first_weight * q0 + second_weight * q1
-    return result / np.linalg.norm(result)
+    return np.asarray(result / np.linalg.norm(result), dtype=float)
 
 
 def _interpolate_orientation_series(
@@ -298,15 +302,18 @@ def _rotation_errors_degrees(
         estimated_rotations,
     )
     cosine = np.clip((np.trace(relative, axis1=1, axis2=2) - 1.0) / 2.0, -1.0, 1.0)
-    return np.degrees(np.arccos(cosine))
+    return np.asarray(np.degrees(np.arccos(cosine)), dtype=float)
 
 
 def _relative_rotation_series(rotations: np.ndarray) -> np.ndarray:
     """Return body-frame relative rotations between consecutive poses."""
-    return np.einsum(
-        "nij,njk->nik",
-        np.transpose(rotations[:-1], (0, 2, 1)),
-        rotations[1:],
+    return np.asarray(
+        np.einsum(
+            "nij,njk->nik",
+            np.transpose(rotations[:-1], (0, 2, 1)),
+            rotations[1:],
+        ),
+        dtype=float,
     )
 
 

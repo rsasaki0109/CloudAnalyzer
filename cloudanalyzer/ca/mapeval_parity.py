@@ -209,7 +209,10 @@ def sha256_file(path: str | Path) -> str:
 def _regularized_covariance(sigma: np.ndarray) -> np.ndarray:
     symmetric = (sigma + sigma.T) / 2.0
     eigenvalues, eigenvectors = np.linalg.eigh(symmetric)
-    return eigenvectors @ np.diag(np.maximum(eigenvalues, 1e-6)) @ eigenvectors.T
+    return np.asarray(
+        eigenvectors @ np.diag(np.maximum(eigenvalues, 1e-6)) @ eigenvectors.T,
+        dtype=np.float64,
+    )
 
 
 def _official_wasserstein_distance(

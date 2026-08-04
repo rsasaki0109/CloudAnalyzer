@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 import numpy as np
 
@@ -183,7 +183,7 @@ def _regularized_covariance(sigma: np.ndarray, eps: float = 1e-6) -> np.ndarray:
     sym = (np.asarray(sigma, dtype=np.float64) + np.asarray(sigma, dtype=np.float64).T) / 2.0
     eigvals, eigvecs = np.linalg.eigh(sym)
     eigvals = np.maximum(eigvals, eps)
-    return eigvecs @ np.diag(eigvals) @ eigvecs.T
+    return np.asarray(eigvecs @ np.diag(eigvals) @ eigvecs.T, dtype=np.float64)
 
 
 def wasserstein_distance_gaussian(
@@ -251,12 +251,15 @@ def build_voxel_gaussians(points: np.ndarray, voxel_size: float) -> dict[tuple[i
     np.add.at(covariance_sums, inverse, centered[:, :, None] * centered[:, None, :])
     voxels: dict[tuple[int, int, int], VoxelGaussian] = {}
     for raw_key, mu, covariance_sum, raw_count in zip(unique, means, covariance_sums, counts):
-        count = int(raw_count)
+        count = int(cast(int, raw_count))
         if count > 1:
             sigma = covariance_sum / (count - 1)
         else:
             sigma = np.eye(3, dtype=np.float64) * 1e-6
-        key = tuple(int(value) for value in raw_key)
+        key_values = tuple(int(value) for value in raw_key)
+        if len(key_values) != 3:
+            raise ValueError(f"voxel index must have three coordinates; got {key_values!r}")
+        key: tuple[int, int, int] = (key_values[0], key_values[1], key_values[2])
         voxels[key] = VoxelGaussian(mu=mu, sigma=sigma, num_points=count)
     return voxels
 
@@ -278,7 +281,10 @@ def build_voxel_gaussians_from_chunks(
         indices = np.floor(pts / voxel_size).astype(np.int64)
         unique, inverse = np.unique(indices, axis=0, return_inverse=True)
         for group_index, raw_key in enumerate(unique):
-            key = tuple(int(value) for value in raw_key)
+            key_values = tuple(int(value) for value in raw_key)
+            if len(key_values) != 3:
+                raise ValueError(f"voxel index must have three coordinates; got {key_values!r}")
+            key: tuple[int, int, int] = (key_values[0], key_values[1], key_values[2])
             accumulator = accumulators.setdefault(key, PointAccumulator())
             accumulator.update(pts[inverse == group_index])
 
@@ -286,9 +292,9 @@ def build_voxel_gaussians_from_chunks(
     for key, accumulator in accumulators.items():
         summary = accumulator.finalize()
         voxels[key] = VoxelGaussian(
-            mu=np.asarray(summary["mean"], dtype=np.float64),
-            sigma=np.asarray(summary["covariance"], dtype=np.float64),
-            num_points=int(summary["count"]),
+            mu=np.asarray(cast(np.ndarray, summary["mean"]), dtype=np.float64),
+            sigma=np.asarray(cast(np.ndarray, summary["covariance"]), dtype=np.float64),
+            num_points=cast(int, summary["count"]),
         )
     return voxels
 

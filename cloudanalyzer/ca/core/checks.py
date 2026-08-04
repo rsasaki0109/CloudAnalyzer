@@ -1957,17 +1957,17 @@ def _run_check(spec: CheckSpec) -> dict[str, Any]:
         max_mean_nees = spec.gate.get("max_mean_position_nees")
         min_normalized_nees = spec.gate.get("min_normalized_mean_position_nees")
         min_coverage_95 = spec.gate.get("min_coverage_95")
-        reasons: list[str] = []
+        uncertainty_reasons: list[str] = []
         if max_mean_nees is not None and metrics["mean_position_nees"] > float(max_mean_nees):
-            reasons.append(f"Mean position NEES {metrics['mean_position_nees']:.4f} > max_mean_position_nees {float(max_mean_nees):.4f}")
+            uncertainty_reasons.append(f"Mean position NEES {metrics['mean_position_nees']:.4f} > max_mean_position_nees {float(max_mean_nees):.4f}")
         if min_normalized_nees is not None and metrics["normalized_mean_position_nees"] < float(min_normalized_nees):
-            reasons.append(f"Normalized mean position NEES {metrics['normalized_mean_position_nees']:.4f} < min_normalized_mean_position_nees {float(min_normalized_nees):.4f}")
+            uncertainty_reasons.append(f"Normalized mean position NEES {metrics['normalized_mean_position_nees']:.4f} < min_normalized_mean_position_nees {float(min_normalized_nees):.4f}")
         if min_coverage_95 is not None and metrics["coverage_95"] < float(min_coverage_95):
-            reasons.append(f"95% coverage {metrics['coverage_95']:.1%} < min_coverage_95 {float(min_coverage_95):.1%}")
+            uncertainty_reasons.append(f"95% coverage {metrics['coverage_95']:.1%} < min_coverage_95 {float(min_coverage_95):.1%}")
         gate = None if max_mean_nees is None and min_normalized_nees is None and min_coverage_95 is None else {
-            "passed": not reasons, "max_mean_position_nees": max_mean_nees,
+            "passed": not uncertainty_reasons, "max_mean_position_nees": max_mean_nees,
             "min_normalized_mean_position_nees": min_normalized_nees,
-            "min_coverage_95": min_coverage_95, "reasons": reasons,
+            "min_coverage_95": min_coverage_95, "reasons": uncertainty_reasons,
         }
         metrics["quality_gate"] = gate
         if spec.outputs.json_path:

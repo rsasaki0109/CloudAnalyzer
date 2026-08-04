@@ -26,6 +26,9 @@ without those properties is lower priority.
   an optional PDAL-backed remote COPC adapter.
 - `cloudanalyzer.rendered_eval.v1` manifests containing input hashes, camera
   matrices, image pairing, renderer settings, and runtime versions.
+- `cloudanalyzer.protocol.v1` validation and a common `evaluation_protocol`
+  result block for point-cloud, map, trajectory, image, rendered, geometry,
+  and combined-run evaluation commands.
 - Versioned benchmark metrics (`cloudanalyzer.metrics.v1`) and local report-bundle
   validation.
 

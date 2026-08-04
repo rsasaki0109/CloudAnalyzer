@@ -20,6 +20,7 @@ from ca.benchmark import (
     materialize_suite,
     validate_benchmark_report_bundle,
 )
+from ca.protocol import PROTOCOL_SCHEMA_VERSION
 from cloudanalyzer_cli.main import app
 
 
@@ -154,6 +155,48 @@ def test_cli_eval_pass(synthetic_suite_dir: Path) -> None:
     )
     assert result.exit_code == 0, result.output
     assert "Overall Quality Gate: PASS" in result.output
+
+
+def test_cli_eval_attaches_protocol(synthetic_suite_dir: Path, tmp_path: Path) -> None:
+    runner = CliRunner()
+    suite_yaml = synthetic_suite_dir / "suite.yaml"
+    sample_map = synthetic_suite_dir / "sample_outputs" / "map_pass.pcd"
+    sample_traj = synthetic_suite_dir / "sample_outputs" / "trajectory_pass.tum"
+    protocol_path = tmp_path / "run-protocol.yaml"
+    protocol_path.write_text(
+        f"schema_version: {PROTOCOL_SCHEMA_VERSION}\n"
+        "name: synthetic-figure8-run\n"
+        "kind: run\n"
+        "conventions:\n"
+        "  coordinate_frame: world\n"
+        "  length_unit: m\n"
+        "  time_unit: s\n"
+        "  alignment: none\n"
+        "  association: timestamp_interpolation\n",
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "benchmark",
+            "eval",
+            str(suite_yaml),
+            "--map",
+            str(sample_map),
+            "--trajectory",
+            str(sample_traj),
+            "--protocol",
+            str(protocol_path),
+            "--format-json",
+        ],
+    )
+
+    assert result.exit_code == 0, result.output
+    payload = json.loads(result.output)
+    protocol = payload["evaluation_protocol"]
+    assert protocol["run"]["command"] == "ca benchmark eval"
+    assert len(protocol["run"]["inputs"]) == 5
 
 
 def test_cli_eval_out_writes_report_bundle(

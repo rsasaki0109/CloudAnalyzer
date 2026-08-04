@@ -5,11 +5,14 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-**Turn SLAM, mapping, perception, and reconstruction outputs into CI-grade QA evidence.**
+**Catch SLAM and 3D perception regressions before they ship.**
 
-CloudAnalyzer compares candidate maps, trajectories, rendered images, and point
-clouds with frozen references. It produces metrics JSON, browsable reports, and
-deterministic pass/fail gates for local development and CI.
+CloudAnalyzer is the CI-grade QA layer for teams building SLAM, LiDAR,
+perception, and 3DGS pipelines. It turns candidate maps, trajectories, rendered
+images, and point clouds into **metrics JSON, browsable reports, and deterministic
+pass/fail gates**.
+
+Turn SLAM, mapping, perception, and reconstruction outputs into CI-grade QA evidence.
 
 <!-- Regenerate with `scripts/build_readme_gif.sh` (requires vhs and `ca`). -->
 <p align="center">
@@ -17,6 +20,7 @@ deterministic pass/fail gates for local development and CI.
 </p>
 
 <p align="center">
+  <a href="#golden-path-slam-benchmark">30-second check</a> ·
   <a href="https://rsasaki0109.github.io/CloudAnalyzer/">Live demos</a> ·
   <a href="#install">Install</a> ·
   <a href="docs/commands/">Command reference</a>
@@ -30,6 +34,18 @@ deterministic pass/fail gates for local development and CI.
 inputs:   dataset suite + baseline/reference + candidate outputs
 outputs:  metrics JSON + HTML report + pass/fail gate + leaderboard-ready result
 ```
+
+## Why teams use CloudAnalyzer
+
+| The problem | The outcome |
+|---|---|
+| Regressions hide in screenshots and ad-hoc numbers | Versioned metrics and explicit quality gates |
+| Different runs are difficult to compare fairly | Frozen references, protocol metadata, and input provenance |
+| A failed CI job does not explain what changed | HTML reports, error artifacts, and copyable inspection commands |
+
+> **Proof from a checked-in benchmark run:** `PASS` · Map AUC `1.0000` ·
+> Chamfer `0.0145 m` · Trajectory ATE RMSE `0.0016 m` ·
+> [open the full report](docs/leaderboard/runs/kiss-slam__synthetic-oval/report.html).
 
 ## See It in Action
 
@@ -153,17 +169,14 @@ supported operations.
 The animated terminal walkthrough at the top is generated from the same CLI path
 shown above. It can be rebuilt locally with `scripts/build_readme_gif.sh`.
 
-## Where It Fits
+## Built for 3D robotics teams
 
-- **SLAM and localization:** map and trajectory evaluation, ATE/RPE/drift,
-  loop-closure QA, benchmark suites, and run-level reports.
-- **Mapping operations:** regression checks after downsampling, filtering,
-  registration, splitting, compression, or format conversion.
-- **Perception:** ground segmentation, 3D detection, and multi-object tracking
-  metrics with config-driven gates.
-- **Reconstruction and 3DGS:** geometry and rendered-image comparisons across
-  representations, including perceptual metrics.
-- **Automation:** machine-readable results, browser reports, baseline history,
+- **SLAM/LIO teams:** prove map quality, trajectory accuracy, drift, and loop-closure gains.
+- **Mapping and point-cloud teams:** catch regressions after filtering, registration,
+  downsampling, compression, or format conversion.
+- **Perception teams:** gate ground segmentation, 3D detection, and multi-object tracking.
+- **Reconstruction and 3DGS teams:** compare geometry and rendered images across representations.
+- **Platform and CI teams:** publish machine-readable evidence, browser reports, baselines,
   PR summaries, and CI exit codes.
 
 The distinguishing workflow is **process, evaluate, report, and gate** through one

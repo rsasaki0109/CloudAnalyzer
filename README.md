@@ -21,6 +21,10 @@ CloudAnalyzer turns SLAM, LiDAR, point-cloud, perception, and 3DGS outputs into
   <a href="docs/commands/">Docs</a>
 </p>
 
+<p align="center">
+  <img src="docs/images/readme-workflow.svg" alt="CloudAnalyzer workflow" width="900">
+</p>
+
 ## Why teams use CloudAnalyzer
 
 - Compare candidate maps, trajectories, point clouds, and renders with a frozen reference.
@@ -29,6 +33,25 @@ CloudAnalyzer turns SLAM, LiDAR, point-cloud, perception, and 3DGS outputs into
 
 > **Checked-in proof:** `PASS` · Map AUC `1.0000` · Chamfer `0.0145 m` ·
 > Trajectory ATE RMSE `0.0016 m` · [open the report](docs/leaderboard/runs/kiss-slam__synthetic-oval/report.html)
+
+## Examples
+
+<p align="center">
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/">
+    <img src="docs/images/readme-pointcloud-triptych.png" alt="Point-cloud comparison" width="1000">
+  </a>
+</p>
+
+<table>
+  <tr>
+    <td width="50%"><a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/"><img src="docs/pr/perception_summary_card.png" alt="Perception report" width="100%"></a></td>
+    <td width="50%"><a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/compare/"><img src="docs/images/density_hdl_localization_map.png" alt="Point-cloud density map" width="100%"></a></td>
+  </tr>
+  <tr>
+    <td width="50%"><a href="docs/commands/geometry-evaluate.md"><img src="docs/images/f1_hdl_localization_v0_5.png" alt="Geometry metrics" width="100%"></a></td>
+    <td width="50%"><a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/"><img src="docs/demo/3dgs/samples/view_00.png" alt="3DGS render" width="48%"><img src="docs/demo/3dgs/samples/view_04.png" alt="3DGS render" width="48%"></a></td>
+  </tr>
+</table>
 
 ## Quick start
 

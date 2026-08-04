@@ -193,6 +193,14 @@ def wasserstein_distance_gaussian(
     sigma2: np.ndarray,
 ) -> float:
     """L2 Wasserstein distance between 3D Gaussians (MapEval eq. 6)."""
+    # Chunk reducers can arrive at the same Gaussian through slightly
+    # different summation orders.  Treat that roundoff as the exact identity
+    # case before the eigendecompositions amplify it in nearly rank-deficient
+    # covariances (for example, a two-point voxel).
+    if np.allclose(mu1, mu2, rtol=1e-12, atol=1e-12) and np.allclose(
+        sigma1, sigma2, rtol=1e-12, atol=1e-12
+    ):
+        return 0.0
     mu_diff = np.asarray(mu1, dtype=np.float64) - np.asarray(mu2, dtype=np.float64)
     s1 = _regularized_covariance(sigma1)
     s2 = _regularized_covariance(sigma2)
@@ -201,7 +209,13 @@ def wasserstein_distance_gaussian(
     # trace gives incorrect distances for non-diagonal covariances.
     eigvals, eigvecs = np.linalg.eigh(s1)
     sqrt_s1 = eigvecs @ np.diag(np.sqrt(np.maximum(eigvals, 0.0))) @ eigvecs.T
-    middle = _regularized_covariance(sqrt_s1 @ s2 @ sqrt_s1)
+    # ``middle`` is already positive semidefinite up to roundoff.  Applying
+    # the absolute covariance floor here would change the Bures distance for
+    # normal small-map covariances (and can make a non-zero mean shift collapse
+    # to zero after the final ``max(0, ...)``).  Only clamp eigenvalues when
+    # taking the square root; keep the matrix itself unshifted.
+    middle = sqrt_s1 @ s2 @ sqrt_s1
+    middle = (middle + middle.T) / 2.0
     middle_eigvals = np.linalg.eigvalsh(middle)
     trace_sqrt_middle = float(np.sqrt(np.maximum(middle_eigvals, 0.0)).sum())
     dist_sq = float(mu_diff @ mu_diff) + float(np.trace(s1 + s2)) - 2.0 * trace_sqrt_middle

@@ -20,6 +20,8 @@ without those properties is lower priority.
 - TUM/CSV quaternion preservation, rotational ATE/RPE, and opt-in distance RPE.
 - Explicit `cloudanalyzer.mapeval_awd_scs.v1` parameters and serialized AWD/SCS
   protocol metadata.
+- Fixed-commit MapEval parity harness with a source-compatible comparison lane,
+  fixture hashes, tolerance/resource records, and CI-safe no-binary behavior.
 - Chunked LAS/LAZ/CSV reading, streaming voxel moments, streaming AWD/SCS, and
   an optional PDAL-backed remote COPC adapter.
 - `cloudanalyzer.rendered_eval.v1` manifests containing input hashes, camera
@@ -49,11 +51,11 @@ compatible with the existing MIT license and optional CUDA/PDAL backends.
 
 ### P2 — MapEval parity validation
 
-- Compare CloudAnalyzer's AWD/SCS outputs against official
-  [Cloud_Map_Evaluation](https://github.com/JokerJohn/Cloud_Map_Evaluation)
-  fixtures when the external implementation is available.
-- Record tolerance, voxel parameters, point-count thresholds, runtime, and peak
-  memory for every parity fixture.
+- The fixed-commit fixture, source-compatible lane, tolerance/resource report,
+  and no-binary CI smoke are implemented in
+  [`docs/commands/mapeval-parity.md`](commands/mapeval-parity.md).
+- Run the optional upstream executable comparison on a dependency-complete
+  labeled runner and retain the JSON report as release evidence.
 - Keep reference-free plane/MME proxies in a separate experimental metric lane.
 
 ### P3 — large-scale artifact validation

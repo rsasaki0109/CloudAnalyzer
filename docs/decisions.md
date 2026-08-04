@@ -154,8 +154,14 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
 
 - Keep AWD/SCS as the reference-based MapEval lane, but serialize
   `cloudanalyzer.mapeval_awd_scs.v1` parameters with every result.
-- Treat the Python implementation as compatible until it has golden parity with
-  the official C++/TBB implementation; do not claim exact upstream parity yet.
+- Pin external comparison to
+  `JokerJohn/Cloud_Map_Evaluation@5955f495df5fbf39f0a184c5d275823b3b5db31b`
+  and keep the official executable optional in Python CI because its C++ SDK
+  dependencies are not part of the normal runner.
+- Keep two explicit numerical lanes: a source-compatible port for external
+  parity and the corrected core Bures implementation. The report documents
+  the upstream covariance re-normalization and Cholesky differences instead
+  of hiding them behind a generic "compatible" label.
 - Add a separate streaming AWD/SCS result lane because NN/Chamfer metrics need a
   resident index while voxel Gaussian moments can be reduced from chunks.
 

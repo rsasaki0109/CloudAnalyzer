@@ -10,6 +10,16 @@ Every push to `main` runs:
 
 See `.github/workflows/test.yml`.
 
+### MapEval parity smoke
+
+The Test workflow also runs the dependency-light
+[MapEval parity harness](commands/mapeval-parity.md) without the upstream C++
+binary. This verifies the fixed protocol, deterministic fixture, source-level
+compatibility lane, JSON schema, and explicit `not_run` external status. A
+100k-point streaming AWD/SCS run checks the large-input path without making
+1M/10M wall-clock values a cross-runner gate. Labeled benchmark runners use the
+same scripts for 1M and 10M points and retain their JSON reports as evidence.
+
 ## Self QA (dogfood)
 
 Every pull request also runs `.github/workflows/self-qa.yml`. It builds the gitignored `benchmarks/public/stanford-bunny-mini` pack, then runs the bundled **[cloudanalyzer-action](https://github.com/rsasaki0109/cloudanalyzer-action)** (`@v1`) against `suite-pass.cloudanalyzer.yaml`. The action runs `ca check`, posts (or idempotently updates) a PR comment marked `cloudanalyzer-self-qa`, uploads QA artifacts, and fails the job when the gate fails.

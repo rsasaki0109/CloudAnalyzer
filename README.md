@@ -116,6 +116,7 @@ Run `ca --help` or open the focused references:
 
 - [Command reference](docs/commands/)
 - [Benchmark suites](docs/commands/benchmark.md)
+- [MapEval parity and scale validation](docs/commands/mapeval-parity.md)
 - [Map and trajectory analysis](docs/commands/analysis.md)
 - [Geometry evaluation](docs/commands/geometry-evaluate.md)
 - [Image and rendered evaluation](docs/commands/image-evaluate.md)

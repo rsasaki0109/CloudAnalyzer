@@ -123,6 +123,14 @@ def test_gaussian_wasserstein_is_symmetric_for_correlated_covariances() -> None:
     assert forward == pytest.approx(reverse, rel=1e-10)
 
 
+def test_gaussian_wasserstein_preserves_small_mean_shift() -> None:
+    shift = np.array([0.012, -0.006, 0.004])
+    covariance = np.diag([0.001, 0.001, 0.0004])
+    assert wasserstein_distance_gaussian(
+        np.zeros(3), covariance, shift, covariance
+    ) == pytest.approx(float(np.linalg.norm(shift)), rel=1e-8)
+
+
 def test_awd_scs_identical_dense_neighbor_voxels_are_zero() -> None:
     rng = np.random.default_rng(4)
     first = rng.uniform([0.05, 0.05, 0.05], [0.45, 0.45, 0.45], size=(120, 3))

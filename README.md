@@ -11,16 +11,63 @@ CloudAnalyzer compares candidate maps, trajectories, rendered images, and point
 clouds with frozen references. It produces metrics JSON, browsable reports, and
 deterministic pass/fail gates for local development and CI.
 
-```text
-inputs:   dataset suite + baseline/reference + candidate outputs
-outputs:  metrics JSON + HTML report + pass/fail gate + leaderboard-ready result
-```
+<!-- Regenerate with `scripts/build_readme_gif.sh` (requires vhs and `ca`). -->
+<p align="center">
+  <img src="docs/images/readme-demo.gif" alt="CloudAnalyzer terminal demo comparing a downsampled point cloud and exporting a browser viewer" width="960">
+</p>
+
+<p align="center">
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/">Live demos</a> ·
+  <a href="#install">Install</a> ·
+  <a href="docs/commands/">Command reference</a>
+</p>
+
+<p align="center">
+  <img src="docs/images/readme-workflow.svg" alt="CloudAnalyzer workflow from robotics artifacts through metrics and reports to a CI pass or fail gate" width="960">
+</p>
+
+## See It in Action
+
+Every image below is a checked-in CloudAnalyzer output. Click a panel to open the
+corresponding live demo or command guide.
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/">
+        <img src="docs/pr/perception_summary_card.png" alt="Perception comparison summary with pass and fail quality gates" width="100%">
+      </a>
+      <p><strong>Perception QA</strong><br>Batch comparisons with metrics and deterministic gates.</p>
+    </td>
+    <td width="50%" valign="top">
+      <a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/compare/">
+        <img src="docs/images/density_hdl_localization_map.png" alt="Point-cloud density map from the HDL localization sample" width="100%">
+      </a>
+      <p><strong>Point-cloud comparison</strong><br>See spatial density and map-quality changes.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/commands/geometry-evaluate.md">
+        <img src="docs/images/f1_hdl_localization_v0_5.png" alt="F1, precision, and recall curves for a point-cloud evaluation" width="100%">
+      </a>
+      <p><strong>Geometry evidence</strong><br>Chamfer, F1, AUC, and threshold curves ready for review.</p>
+    </td>
+    <td width="50%" valign="top">
+      <a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/">
+        <img src="docs/demo/3dgs/samples/view_00.png" alt="Rendered 3D Gaussian Splatting sample view" width="48%">
+        <img src="docs/demo/3dgs/samples/view_04.png" alt="Second rendered 3D Gaussian Splatting sample view" width="48%">
+      </a>
+      <p><strong>Rendered evaluation</strong><br>Photometric and geometry checks for 3DGS outputs.</p>
+    </td>
+  </tr>
+</table>
 
 It complements PCL, Open3D, CloudCompare, and SLAM/LIO stacks: those tools create
 or process 3D data; CloudAnalyzer verifies the resulting artifacts and catches
 regressions across a whole run.
 
-## Public Demos
+## Live Demos
 
 - [CloudAnalyzer demo hub](https://rsasaki0109.github.io/CloudAnalyzer/)
 - [Point-cloud comparison](https://rsasaki0109.github.io/CloudAnalyzer/demo/compare/)
@@ -90,8 +137,8 @@ F1/AUC metrics. See the [evaluation](docs/commands/evaluate.md) and
 [processing](docs/commands/processing.md) references for thresholds, plots, and
 supported operations.
 
-<!-- Regenerate with `scripts/build_readme_gif.sh` (requires vhs). -->
-![CloudAnalyzer terminal demo](docs/images/readme-demo.gif)
+The animated terminal walkthrough at the top is generated from the same CLI path
+shown above. It can be rebuilt locally with `scripts/build_readme_gif.sh`.
 
 ## Where It Fits
 

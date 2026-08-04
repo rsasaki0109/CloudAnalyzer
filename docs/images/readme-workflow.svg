@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460" role="img" aria-labelledby="title desc">
+  <title id="title">CloudAnalyzer turns robotics artifacts into CI quality gates</title>
+  <desc id="desc">SLAM, map, perception, and rendered outputs are evaluated into metrics JSON, HTML reports, provenance, and deterministic pass or fail gates.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#111d38"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff9f68"/>
+      <stop offset="1" stop-color="#ffcf70"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="14" stdDeviation="15" flood-color="#030611" flood-opacity="0.35"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#ffb46d"/>
+    </marker>
+  </defs>
+
+  <rect width="1200" height="460" rx="28" fill="url(#background)"/>
+  <circle cx="1080" cy="-20" r="230" fill="#536dfe" opacity="0.10"/>
+  <circle cx="70" cy="470" r="210" fill="#ff7043" opacity="0.08"/>
+
+  <text x="64" y="62" fill="#aab8d5" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" letter-spacing="3">CLOUDANALYZER / OUTPUT QA</text>
+  <text x="64" y="112" fill="#f6f8ff" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif" font-size="38" font-weight="800">Artifacts → evidence → quality gate</text>
+  <text x="64" y="145" fill="#aab8d5" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif" font-size="17">One reproducible path from robotics outputs to reviewable CI results.</text>
+
+  <g filter="url(#shadow)">
+    <rect x="64" y="190" width="236" height="174" rx="22" fill="#151f38" stroke="#30415f"/>
+    <rect x="328" y="190" width="236" height="174" rx="22" fill="#19253f" stroke="#ff9f68" stroke-opacity="0.75"/>
+    <rect x="592" y="190" width="236" height="174" rx="22" fill="#151f38" stroke="#30415f"/>
+    <rect x="856" y="190" width="280" height="174" rx="22" fill="#19253f" stroke="#83e6c2" stroke-opacity="0.8"/>
+  </g>
+
+  <g font-family="ui-sans-serif,system-ui,-apple-system,sans-serif">
+    <text x="88" y="226" fill="#ffbf86" font-size="13" font-weight="800" letter-spacing="2">01 / INPUTS</text>
+    <text x="88" y="263" fill="#f6f8ff" font-size="22" font-weight="800">Your artifacts</text>
+    <text x="88" y="294" fill="#aab8d5" font-size="16">SLAM runs</text>
+    <text x="88" y="319" fill="#aab8d5" font-size="16">maps · point clouds</text>
+    <text x="88" y="344" fill="#aab8d5" font-size="16">renders · perception</text>
+
+    <text x="352" y="226" fill="#ffbf86" font-size="13" font-weight="800" letter-spacing="2">02 / EVALUATE</text>
+    <text x="352" y="263" fill="#f6f8ff" font-size="22" font-weight="800">Compare</text>
+    <text x="352" y="294" fill="#ffd0ae" font-size="16">ATE / RPE · drift</text>
+    <text x="352" y="319" fill="#ffd0ae" font-size="16">Chamfer · F1 · AUC</text>
+    <text x="352" y="344" fill="#ffd0ae" font-size="16">PSNR · SSIM · LPIPS</text>
+
+    <text x="616" y="226" fill="#ffbf86" font-size="13" font-weight="800" letter-spacing="2">03 / EVIDENCE</text>
+    <text x="616" y="263" fill="#f6f8ff" font-size="22" font-weight="800">Reviewable output</text>
+    <text x="616" y="294" fill="#aab8d5" font-size="16">metrics.json</text>
+    <text x="616" y="319" fill="#aab8d5" font-size="16">report.html</text>
+    <text x="616" y="344" fill="#aab8d5" font-size="16">provenance + plots</text>
+
+    <text x="880" y="226" fill="#83e6c2" font-size="13" font-weight="800" letter-spacing="2">04 / GATE</text>
+    <text x="880" y="263" fill="#f6f8ff" font-size="22" font-weight="800">Ship with confidence</text>
+    <rect x="880" y="282" width="92" height="38" rx="19" fill="#83e6c2"/>
+    <text x="926" y="307" fill="#0c1b1a" font-size="16" font-weight="900" text-anchor="middle">PASS</text>
+    <rect x="982" y="282" width="92" height="38" rx="19" fill="#ff806d"/>
+    <text x="1028" y="307" fill="#2b1014" font-size="16" font-weight="900" text-anchor="middle">FAIL</text>
+    <text x="880" y="347" fill="#aab8d5" font-size="16">local · CI · PR summary</text>
+  </g>
+
+  <path d="M 302 277 H 318" stroke="url(#accent)" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M 566 277 H 582" stroke="url(#accent)" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M 830 277 H 846" stroke="url(#accent)" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <text x="64" y="417" fill="#7183a7" font-family="ui-sans-serif,system-ui,-apple-system,sans-serif" font-size="15">Process → evaluate → report → gate</text>
+</svg>

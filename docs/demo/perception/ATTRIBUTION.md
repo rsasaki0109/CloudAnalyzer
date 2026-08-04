@@ -12,3 +12,6 @@
 The generated artifacts in this directory are derived from the public example bundle above.
 The `deep_baseline` and `nondeep_baseline` files are deterministic demo baselines, not archived model outputs.
 Keep the upstream attribution and non-commercial / share-alike terms with these files.
+
+The README point-cloud triptych at `docs/images/readme-pointcloud-triptych.png` is generated
+from these three checked-in artifacts by `scripts/build_readme_pointcloud_figure.py`.

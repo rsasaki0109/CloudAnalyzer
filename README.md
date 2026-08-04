@@ -31,6 +31,14 @@ deterministic pass/fail gates for local development and CI.
 Every image below is a checked-in CloudAnalyzer output. Click a panel to open the
 corresponding live demo or command guide.
 
+<p align="center">
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/">
+    <img src="docs/images/readme-pointcloud-triptych.png" alt="Three-dimensional point-cloud comparison showing the RELLIS-3D reference, a passing deep baseline, and a failing non-deep baseline" width="1100">
+  </a>
+</p>
+
+<p align="center"><strong>Point-cloud QA in one glance:</strong> same reference scene, different artifact density, one deterministic gate.</p>
+
 <table>
   <tr>
     <td width="50%" valign="top">

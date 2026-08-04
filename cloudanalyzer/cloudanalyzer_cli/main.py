@@ -92,6 +92,11 @@ from ca.geometry import (
     evaluate_geometry,
 )
 from ca.pr_comment import build_pr_comment
+from ca.protocol import (
+    ProtocolValidationError,
+    attach_evaluation_protocol,
+    load_protocol,
+)
 from ca.run_evaluate import evaluate_run, evaluate_run_batch
 from ca.tracking import evaluate_tracking
 from ca.trajectory import evaluate_trajectory
@@ -106,6 +111,36 @@ app = typer.Typer(
     name="ca",
     help="CloudAnalyzer - AI-friendly CLI tool for point cloud analysis.",
 )
+
+protocol_app = typer.Typer(
+    name="protocol",
+    help="Validate and inspect versioned evaluation protocol files.",
+    no_args_is_help=True,
+)
+app.add_typer(protocol_app, name="protocol")
+
+
+@protocol_app.command("validate")
+def protocol_validate_cmd(
+    protocol_path: str = typer.Argument(..., help="JSON/YAML protocol file to validate."),
+    format_json: bool = typer.Option(False, "--format-json", help="Print normalized JSON."),
+) -> None:
+    """Validate a ``cloudanalyzer.protocol.v1`` document and show its identity."""
+
+    try:
+        document = load_protocol(protocol_path)
+    except (FileNotFoundError, ProtocolValidationError, ValueError) as exc:
+        _handle_error(exc)
+
+    if format_json:
+        typer.echo(json.dumps(document, indent=2, ensure_ascii=False))
+        return
+
+    typer.echo(f"Schema:  {document['schema_version']}")
+    typer.echo(f"Name:    {document['name']}")
+    typer.echo(f"Kind:    {document['kind']}")
+    typer.echo(f"SHA256:  {document['protocol_sha256']}")
+    typer.echo("Status:  VALID")
 
 
 def _dump_json(data, path: str) -> None:
@@ -168,6 +203,16 @@ def _handle_error(e: Exception) -> None:
         typer.echo("Hint: The file exists but contains no points. Check the file integrity.", err=True)
 
     raise typer.Exit(code=1)
+
+
+def _attach_protocol(result: dict, protocol_path: Optional[str], **kwargs: Any) -> dict:
+    """Attach a protocol and turn validation failures into normal CLI errors."""
+
+    try:
+        return attach_evaluation_protocol(result, protocol_path, **kwargs)
+    except (FileNotFoundError, ProtocolValidationError, ValueError) as exc:
+        _handle_error(exc)
+    return result
 
 
 def _parse_thresholds(thresholds: Optional[str]) -> Optional[list[float]]:
@@ -775,6 +820,11 @@ def map_evaluate_cmd(
         "--chunk-size",
         help="Points per input chunk when --streaming is enabled.",
     ),
+    protocol_path: Optional[str] = typer.Option(
+        None,
+        "--protocol",
+        help="Versioned cloudanalyzer.protocol.v1 file to attach to the result.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump full result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -862,6 +912,22 @@ def map_evaluate_cmd(
         "mode": result.mode,
         "sampling_policy": result.sampling_policy,
     }
+    _attach_protocol(
+        payload,
+        protocol_path,
+        command="ca map-evaluate",
+        kind="map",
+        inputs=(estimated, reference),
+        options={
+            "thresholds_m": list(accuracy_levels),
+            "align_mode": align_mode,
+            "structure_voxel_size_m": structure_voxel_size,
+            "map_eval_min_voxel_points": map_eval_min_voxel_points,
+            "map_eval_neighbor_radius": map_eval_neighbor_radius,
+            "streaming": streaming,
+            "chunk_size": chunk_size,
+        },
+    )
 
     if format_json:
         typer.echo(json.dumps(payload, indent=2, default=str))
@@ -928,6 +994,11 @@ def image_evaluate_cmd(
     output_json: Optional[str] = typer.Option(
         None, "--output-json", help="Write the full result (per-pair + summary) as JSON."
     ),
+    protocol_path: Optional[str] = typer.Option(
+        None,
+        "--protocol",
+        help="Versioned cloudanalyzer.protocol.v1 file to attach to the result.",
+    ),
     format_json: bool = typer.Option(
         False, "--format-json", help="Print the result as JSON to stdout."
     ),
@@ -977,6 +1048,20 @@ def image_evaluate_cmd(
         "pairs": result.pairs,
         "metadata": result.metadata,
     }
+    _attach_protocol(
+        payload,
+        protocol_path,
+        command="ca image-evaluate",
+        kind="image",
+        inputs=(rendered_dir, reference_dir),
+        options={
+            "metrics": list(metric_tuple),
+            "extensions": list(ext_tuple),
+            "ssim_window_size": ssim_window,
+            "ssim_sigma": ssim_sigma,
+            "max_pairs": max_pairs,
+        },
+    )
 
     if format_json:
         typer.echo(json.dumps(payload, indent=2, default=str))
@@ -1089,6 +1174,11 @@ def rendered_evaluate_cmd(
     output_json: Optional[str] = typer.Option(
         None, "--output-json", help="Write the full result (photometric + geometry) as JSON."
     ),
+    protocol_path: Optional[str] = typer.Option(
+        None,
+        "--protocol",
+        help="Versioned cloudanalyzer.protocol.v1 file to attach to the result.",
+    ),
     format_json: bool = typer.Option(
         False, "--format-json", help="Print the result as JSON to stdout."
     ),
@@ -1151,6 +1241,25 @@ def rendered_evaluate_cmd(
         _handle_error(exc)
 
     payload = rendered_evaluate_to_dict(result)
+    _attach_protocol(
+        payload,
+        protocol_path,
+        command="ca rendered-evaluate",
+        kind="rendered",
+        inputs=(splat_path, cameras, reference_dir, reference_pointcloud),
+        options={
+            "metrics": list(metric_tuple),
+            "opacity_threshold": opacity_threshold,
+            "geometry_opacity_threshold": geom_opacity,
+            "geometry_voxel": geometry_voxel,
+            "geometry_splat_method": geometry_splat_method,
+            "geometry_splat_samples": geometry_splat_samples,
+            "render_device": render_device,
+            "max_pairs": max_pairs,
+            "ssim_window_size": ssim_window_size,
+            "ssim_sigma": ssim_sigma,
+        },
+    )
 
     if report:
         from ca.report import save_rendered_report
@@ -1930,6 +2039,11 @@ def evaluate_cmd(
         help="Comma-separated distance thresholds (default: 0.05,0.1,0.2,0.3,0.5,1.0)",
     ),
     plot: Optional[str] = typer.Option(None, "--plot", help="Output path for F1 curve plot (png)"),
+    protocol_path: Optional[str] = typer.Option(
+        None,
+        "--protocol",
+        help="Versioned cloudanalyzer.protocol.v1 file to attach to the result.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -1940,6 +2054,15 @@ def evaluate_cmd(
         result = evaluate(source, target, thresholds=thresh_list)
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
+
+    _attach_protocol(
+        result,
+        protocol_path,
+        command="ca evaluate",
+        kind="point_cloud",
+        inputs=(source, target),
+        options={"thresholds_m": list(thresh_list) if thresh_list is not None else None},
+    )
 
     if format_json:
         typer.echo(json.dumps(result, indent=2))
@@ -2027,6 +2150,11 @@ def traj_evaluate_cmd(
         None, "--report",
         help="Write trajectory report (.md or .html)",
     ),
+    protocol_path: Optional[str] = typer.Option(
+        None,
+        "--protocol",
+        help="Versioned cloudanalyzer.protocol.v1 file to attach to the result.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -2051,6 +2179,29 @@ def traj_evaluate_cmd(
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
+
+    _attach_protocol(
+        result,
+        protocol_path,
+        command="ca traj-evaluate",
+        kind="trajectory",
+        inputs=(estimated, reference),
+        options={
+            "max_time_delta_s": max_time_delta,
+            "align_origin": align_origin,
+            "align_rigid": align_rigid,
+            "rpe_distance_m": list(rpe_distance) if rpe_distance is not None else None,
+            "max_ate": max_ate,
+            "max_rpe": max_rpe,
+            "max_rpe_rotation_deg": max_rpe_rotation_deg,
+            "max_drift": max_drift,
+            "min_coverage": min_coverage,
+            "max_lateral": max_lateral,
+            "max_longitudinal": max_longitudinal,
+            "topic": topic,
+            "frame": frame,
+        },
+    )
 
     if report:
         try:
@@ -2576,6 +2727,11 @@ def run_evaluate_cmd(
         None, "--report",
         help="Write combined run report (.md or .html)",
     ),
+    protocol_path: Optional[str] = typer.Option(
+        None,
+        "--protocol",
+        help="Versioned cloudanalyzer.protocol.v1 file to attach to the result.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -2603,6 +2759,28 @@ def run_evaluate_cmd(
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
+
+    _attach_protocol(
+        result,
+        protocol_path,
+        command="ca run-evaluate",
+        kind="run",
+        inputs=(map_path, map_reference, trajectory_path, trajectory_reference),
+        options={
+            "thresholds_m": list(thresh_list) if thresh_list is not None else None,
+            "max_time_delta_s": max_time_delta,
+            "align_origin": align_origin,
+            "align_rigid": align_rigid,
+            "min_auc": min_auc,
+            "max_chamfer": max_chamfer,
+            "max_ate": max_ate,
+            "max_rpe": max_rpe,
+            "max_rpe_rotation_deg": max_rpe_rotation_deg,
+            "rpe_distance_m": list(rpe_distance) if rpe_distance is not None else None,
+            "max_drift": max_drift,
+            "min_coverage": min_coverage,
+        },
+    )
 
     if report:
         try:
@@ -3292,6 +3470,11 @@ def benchmark_eval_cmd(
         "--output-json",
         help="Dump benchmark result as JSON",
     ),
+    protocol_path: Optional[str] = typer.Option(
+        None,
+        "--protocol",
+        help="Versioned cloudanalyzer.protocol.v1 file to attach to the result.",
+    ),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
     """Evaluate a SLAM run against a benchmark suite's fixed reference and gate."""
@@ -3311,6 +3494,29 @@ def benchmark_eval_cmd(
         )
     except (FileNotFoundError, ValueError) as exc:
         _handle_error(exc)
+
+    benchmark_reference = result.get("benchmark", {}).get("reference", {})
+    _attach_protocol(
+        result,
+        protocol_path,
+        command="ca benchmark eval",
+        kind="run",
+        inputs=(
+            suite_path,
+            map_path,
+            trajectory_path,
+            benchmark_reference.get("map"),
+            benchmark_reference.get("trajectory"),
+        ),
+        options={
+            "sequence": sequence,
+            "thresholds_m": _parse_thresholds(thresholds),
+            "max_time_delta_s": max_time_delta,
+            "align_origin": align_origin,
+            "align_rigid": align_rigid,
+            "gate_overrides": overrides,
+        },
+    )
 
     if report:
         try:
@@ -3791,6 +3997,11 @@ def geometry_evaluate_cmd(
         help="Comma-separated distance thresholds for F1/AUC evaluation",
     ),
     plot: Optional[str] = typer.Option(None, "--plot", help="Write the F1 curve to this PNG"),
+    protocol_path: Optional[str] = typer.Option(
+        None,
+        "--protocol",
+        help="Versioned cloudanalyzer.protocol.v1 file to attach to the result.",
+    ),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Dump result as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print JSON to stdout"),
 ) -> None:
@@ -3835,6 +4046,24 @@ def geometry_evaluate_cmd(
         )
     except (FileNotFoundError, ValueError) as exc:
         _handle_error(exc)
+
+    _attach_protocol(
+        result,
+        protocol_path,
+        command="ca geometry-evaluate",
+        kind="geometry",
+        inputs=(source, reference),
+        options={
+            "representation": representation,
+            "opacity_threshold": opacity_threshold,
+            "voxel_size_m": voxel,
+            "mesh_samples": mesh_samples,
+            "mesh_method": mesh_method,
+            "splat_method": splat_method,
+            "splat_samples": splat_samples,
+            "thresholds_m": _parse_thresholds(thresholds),
+        },
+    )
 
     if plot:
         try:

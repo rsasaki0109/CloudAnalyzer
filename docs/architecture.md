@@ -131,3 +131,13 @@ Input PCD/PLY/LAS/COPC
     ├─── ca.core.map_evaluate      → AWD/SCS protocol + streaming reducers
     └─── ca.core.rendered_evaluate → 3DGS render protocol + provenance manifest
 ```
+
+## Common evaluation protocol
+
+Evaluation commands can consume a `cloudanalyzer.protocol.v1` YAML/JSON file
+through `--protocol`. The validated declaration is emitted as an additive
+`evaluation_protocol` block containing the stable protocol hash plus a
+run-specific input manifest, effective options, and runtime versions. Existing
+MapEval and rendered-evaluation manifests remain available inside their
+specialized result sections; the common block is the cross-command comparison
+key.

@@ -19,6 +19,12 @@ The README point-cloud triptych is derived from the deterministic RELLIS-3D perc
 artifacts. See [perception-demo attribution](../demo/perception/ATTRIBUTION.md) for the
 upstream dataset terms.
 
+## Social Preview
+
+`social-preview.svg` is original CloudAnalyzer artwork and does not use external image assets;
+`social-preview.png` is its 1280×640 upload-ready render. Upload the PNG from the repository's
+**Settings → General → Social preview** panel when refreshing the GitHub repository card.
+
 ## Generated Files
 
 - `density_hdl_localization_map.png`

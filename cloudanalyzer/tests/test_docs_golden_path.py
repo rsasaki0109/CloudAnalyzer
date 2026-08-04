@@ -14,6 +14,11 @@ SLAM_SMOKE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "slam-benchmark-smok
 def test_readme_leads_with_ci_grade_artifact_qa():
     text = README.read_text(encoding="utf-8")
 
+    assert "Catch SLAM and 3D perception regressions before they ship." in text
+    assert "Why teams use CloudAnalyzer" in text
+    assert "Map AUC `1.0000`" in text
+    assert (REPO_ROOT / "docs/images/social-preview.svg").is_file()
+    assert (REPO_ROOT / "docs/images/social-preview.png").is_file()
     assert "CI-grade QA evidence" in text
     assert "inputs:   dataset suite + baseline/reference + candidate outputs" in text
     assert "outputs:  metrics JSON + HTML report + pass/fail gate + leaderboard-ready result" in text

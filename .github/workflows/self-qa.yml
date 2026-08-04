@@ -26,7 +26,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xvfb
+          sudo apt-get install -y libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2t64 libxi6 libxtst6 xauth xvfb
 
       - name: Install CloudAnalyzer for fixture build
         run: |
@@ -39,7 +39,7 @@ jobs:
             --output benchmarks/public/stanford-bunny-mini
 
       - name: Run CloudAnalyzer self-QA
-        uses: rsasaki0109/cloudanalyzer-action@v1
+        uses: ./cloudanalyzer-action
         with:
           config: benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
           project: cloudanalyzer-self-qa

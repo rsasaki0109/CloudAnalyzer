@@ -50,7 +50,7 @@ fi
 
 ca report-pr-comment "$SUMMARY_JSON" "${EXTRA[@]}" --output "$COMMENT_MD"
 
-read -r PASSED WORST_CHECK < <(python3 - <<'PY'
+read -r PASSED WORST_CHECK < <(python3 - "$SUMMARY_JSON" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -71,7 +71,7 @@ elif "overall_quality_gate" in data:
     passed = "true" if gate.get("passed") else "false"
 print(passed, worst)
 PY
-"$SUMMARY_JSON")
+)
 
 {
   printf '<!-- %s -->\n' "$MARKER"

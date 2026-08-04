@@ -38,6 +38,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import platform
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Mapping
@@ -54,11 +55,13 @@ GATE_KEYS: tuple[str, ...] = (
     "max_chamfer",
     "max_ate",
     "max_rpe",
+    "max_rpe_rotation_deg",
     "max_drift",
     "min_coverage",
 )
 
 REPORT_BUNDLE_SCHEMA_VERSION = "cloudanalyzer.benchmark_report_bundle.v0.1"
+METRICS_SCHEMA_VERSION = "cloudanalyzer.metrics.v1"
 
 
 @dataclass(frozen=True, slots=True)
@@ -78,6 +81,7 @@ class BenchmarkSuite:
     description: str
     license: str | None
     source_path: Path
+    dataset: dict[str, Any] = field(default_factory=dict)
     sequences: dict[str, BenchmarkSequence] = field(default_factory=dict)
     gate: dict[str, float] = field(default_factory=dict)
 
@@ -211,6 +215,7 @@ def load_benchmark_suite(path: str | Path) -> BenchmarkSuite:
     )
 
     base_dir = manifest_path.parent
+    dataset = dict(_as_mapping(config.get("dataset"), "dataset"))
     sequences = _parse_sequences(
         config.get("sequences"),
         config.get("sample_outputs"),
@@ -226,6 +231,7 @@ def load_benchmark_suite(path: str | Path) -> BenchmarkSuite:
         sequences=sequences,
         gate=gate,
         source_path=manifest_path,
+        dataset=dataset,
     )
 
 
@@ -277,18 +283,30 @@ def evaluate_benchmark_run(
         max_time_delta=max_time_delta,
         align_origin=align_origin,
         align_rigid=align_rigid,
-        **gate,
+        min_auc=gate.get("min_auc"),
+        max_chamfer=gate.get("max_chamfer"),
+        max_ate=gate.get("max_ate"),
+        max_rpe=gate.get("max_rpe"),
+        max_rpe_rotation_deg=gate.get("max_rpe_rotation_deg"),
+        max_drift=gate.get("max_drift"),
+        min_coverage=gate.get("min_coverage"),
     )
     result["benchmark"] = {
         "suite": suite.name,
         "version": suite.version,
         "sequence": seq.name,
         "source_path": str(suite.source_path),
+        "dataset": dict(suite.dataset),
         "gate": gate,
         "reference": {
             "map": str(seq.reference_map_path),
             "trajectory": str(seq.reference_trajectory_path),
         },
+    }
+    result["schema_version"] = METRICS_SCHEMA_VERSION
+    result["runtime"] = {
+        "python": platform.python_version(),
+        "cloudanalyzer": getattr(ca, "__version__", "0.0.0"),
     }
     return result
 
@@ -347,11 +365,13 @@ def _bundle_lock_payload(
     benchmark_map = benchmark if isinstance(benchmark, Mapping) else {}
     return {
         "schema_version": REPORT_BUNDLE_SCHEMA_VERSION,
+        "metrics_schema_version": METRICS_SCHEMA_VERSION,
         "suite": {
             "name": suite.name,
             "version": suite.version,
             "description": suite.description,
             "license": suite.license,
+            "dataset": dict(suite.dataset),
             "sequence": sequence.name,
             "source_path": make_paths_portable(str(suite.source_path), roots),
         },
@@ -457,6 +477,7 @@ def write_benchmark_report_bundle(
 
     provenance = {
         "schema_version": REPORT_BUNDLE_SCHEMA_VERSION,
+        "metrics_schema_version": METRICS_SCHEMA_VERSION,
         "cloudanalyzer_version": getattr(ca, "__version__", "0.0.0"),
         "summary_kind": "benchmark_run",
         "benchmark": portable_result.get("benchmark"),
@@ -477,6 +498,50 @@ def write_benchmark_report_bundle(
         "report": str(report_path),
         "manifest_lock": str(manifest_lock_path),
         "provenance": str(provenance_path),
+    }
+
+
+def validate_benchmark_report_bundle(output_dir: str | Path) -> dict[str, Any]:
+    """Validate the local shape of a benchmark report bundle.
+
+    This checks the machine-readable schema/version and referenced report
+    assets. It deliberately does not resolve portable input paths outside the
+    bundle; input hashes remain the authoritative provenance for that step.
+    """
+    root = Path(output_dir)
+    required = {
+        "metrics": root / "metrics.json",
+        "summary": root / "summary.md",
+        "report": root / "report.html",
+        "manifest_lock": root / "manifest.lock.yaml",
+        "provenance": root / "provenance.json",
+    }
+    missing = [name for name, path in required.items() if not path.is_file()]
+    if missing:
+        raise ValueError(f"Benchmark report bundle is missing: {', '.join(missing)}")
+
+    metrics = json.loads(required["metrics"].read_text(encoding="utf-8"))
+    provenance = json.loads(required["provenance"].read_text(encoding="utf-8"))
+    lock = yaml.safe_load(required["manifest_lock"].read_text(encoding="utf-8"))
+    if metrics.get("schema_version") != METRICS_SCHEMA_VERSION:
+        raise ValueError("metrics.json has an unsupported schema_version")
+    if provenance.get("metrics_schema_version") != METRICS_SCHEMA_VERSION:
+        raise ValueError("provenance.json has an unsupported metrics_schema_version")
+    if lock.get("schema_version") != REPORT_BUNDLE_SCHEMA_VERSION:
+        raise ValueError("manifest.lock.yaml has an unsupported schema_version")
+
+    report_assets = lock.get("outputs", {}).get("report_assets", [])
+    missing_assets = [name for name in report_assets if not (root / name).is_file()]
+    if missing_assets:
+        raise ValueError(
+            "Benchmark report bundle is missing report assets: "
+            + ", ".join(missing_assets)
+        )
+    return {
+        "valid": True,
+        "schema_version": REPORT_BUNDLE_SCHEMA_VERSION,
+        "metrics_schema_version": METRICS_SCHEMA_VERSION,
+        "report_assets": list(report_assets),
     }
 
 
@@ -618,9 +683,11 @@ __all__: list[str] = [
     "BenchmarkSequence",
     "BenchmarkSuite",
     "GATE_KEYS",
+    "METRICS_SCHEMA_VERSION",
     "REPORT_BUNDLE_SCHEMA_VERSION",
     "evaluate_benchmark_run",
     "load_benchmark_suite",
     "materialize_suite",
     "write_benchmark_report_bundle",
+    "validate_benchmark_report_bundle",
 ]

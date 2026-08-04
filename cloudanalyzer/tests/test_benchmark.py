@@ -18,6 +18,7 @@ from ca.benchmark import (
     evaluate_benchmark_run,
     load_benchmark_suite,
     materialize_suite,
+    validate_benchmark_report_bundle,
 )
 from cloudanalyzer_cli.main import app
 
@@ -212,12 +213,14 @@ def test_cli_eval_out_writes_report_bundle(
 
     provenance = json.loads((out_dir / "provenance.json").read_text(encoding="utf-8"))
     assert provenance["schema_version"] == REPORT_BUNDLE_SCHEMA_VERSION
+    assert metrics["schema_version"] == "cloudanalyzer.metrics.v1"
     assert provenance["summary_kind"] == "benchmark_run"
     assert provenance["overall_quality_gate"]["passed"] is True
     assert provenance["artifacts"]["report_assets"] == lock["outputs"]["report_assets"]
 
     summary = (out_dir / "summary.md").read_text(encoding="utf-8")
     assert "CloudAnalyzer QA" in summary
+    assert validate_benchmark_report_bundle(out_dir)["valid"] is True
 
 
 def test_cli_eval_gate_override_fails(synthetic_suite_dir: Path) -> None:

@@ -115,7 +115,7 @@ def _load_image_rgb(path: Path) -> np.ndarray:
     else:
         raise ValueError(f"Unsupported image shape {arr.shape} for {path}")
 
-    return np.clip(arr, 0.0, 1.0)
+    return np.asarray(np.clip(arr, 0.0, 1.0), dtype=np.float64)
 
 
 def _list_image_files(

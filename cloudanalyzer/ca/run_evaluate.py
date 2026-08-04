@@ -86,6 +86,8 @@ def _run_inspection_command(
     max_chamfer: float | None = None,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
+    rpe_distances_m: tuple[float, ...] | list[float] | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> str:
@@ -117,6 +119,10 @@ def _run_inspection_command(
         args.extend(["--max-ate", f"{max_ate}"])
     if max_rpe is not None:
         args.extend(["--max-rpe", f"{max_rpe}"])
+    if max_rpe_rotation_deg is not None:
+        args.extend(["--max-rpe-rotation-deg", f"{max_rpe_rotation_deg}"])
+    for distance in rpe_distances_m or ():
+        args.extend(["--rpe-distance", f"{distance}"])
     if max_drift is not None:
         args.extend(["--max-drift", f"{max_drift}"])
     if min_coverage is not None:
@@ -247,6 +253,8 @@ def evaluate_run(
     max_chamfer: float | None = None,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
+    rpe_distances_m: tuple[float, ...] | list[float] | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> dict:
@@ -268,6 +276,8 @@ def evaluate_run(
         align_rigid=align_rigid,
         max_ate=max_ate,
         max_rpe=max_rpe,
+        max_rpe_rotation_deg=max_rpe_rotation_deg,
+        rpe_distances_m=rpe_distances_m,
         max_drift=max_drift,
         min_coverage=min_coverage,
     )
@@ -293,6 +303,8 @@ def evaluate_run(
                 max_chamfer=max_chamfer,
                 max_ate=max_ate,
                 max_rpe=max_rpe,
+                max_rpe_rotation_deg=max_rpe_rotation_deg,
+                rpe_distances_m=rpe_distances_m,
                 max_drift=max_drift,
                 min_coverage=min_coverage,
             ),
@@ -328,6 +340,8 @@ def evaluate_run_batch(
     max_chamfer: float | None = None,
     max_ate: float | None = None,
     max_rpe: float | None = None,
+    max_rpe_rotation_deg: float | None = None,
+    rpe_distances_m: tuple[float, ...] | list[float] | None = None,
     max_drift: float | None = None,
     min_coverage: float | None = None,
 ) -> list[dict]:
@@ -399,6 +413,8 @@ def evaluate_run_batch(
                 max_chamfer=max_chamfer,
                 max_ate=max_ate,
                 max_rpe=max_rpe,
+                max_rpe_rotation_deg=max_rpe_rotation_deg,
+                rpe_distances_m=rpe_distances_m,
                 max_drift=max_drift,
                 min_coverage=min_coverage,
             )

@@ -45,6 +45,20 @@ jobs:
       - name: Run tests
         run: xvfb-run python -m pytest tests/ -v
 
+      - name: Verify MapEval parity harness smoke
+        working-directory: .
+        run: |
+          python scripts/mapeval_parity.py \
+            --output /tmp/cloudanalyzer-mapeval-parity
+
+      - name: Verify streaming MapEval scale smoke
+        working-directory: .
+        run: |
+          python scripts/benchmark_mapeval_scale.py \
+            --sizes 100000 \
+            --chunk-size 100000 \
+            --output /tmp/cloudanalyzer-mapeval-scale.json
+
       - name: Verify checked-in perception demo
         working-directory: .
         run: |

@@ -7,6 +7,10 @@ cloudanalyzer/
 ├── ca/                     # Core library
 │   ├── core/               # Stable minimal interfaces extracted after comparison
 │   │   ├── __init__.py
+│   │   ├── map_evaluate.py # NN and streaming AWD/SCS map contracts
+│   │   ├── rendered_evaluate.py # 3DGS render + provenance contract
+│   │   ├── cameras.py      # Camera bundle loading and conventions
+│   │   ├── image_evaluate.py # Photometric metric contract
 │   │   ├── web_progressive_loading.py # Stable contract for browser progressive loading
 │   │   ├── web_sampling.py # Stable contract for browser point-cloud reduction
 │   │   └── web_trajectory_sampling.py # Stable contract for browser trajectory reduction
@@ -16,13 +20,13 @@ cloudanalyzer/
 │   │   ├── web_sampling/   # Alternative point-cloud reducers + evaluator
 │   │   └── web_trajectory_sampling/ # Alternative trajectory reducers + evaluator
 │   ├── __init__.py         # __version__
-│   ├── io.py               # Point cloud I/O (pcd/ply/las)
+│   ├── io.py               # Point cloud I/O + lazy chunk readers
 │   ├── registration.py     # ICP / GICP registration
 │   ├── scan_match_debug.py # Scan-to-map matching diagnostics
 │   ├── metrics.py          # NN distance, summarize, threshold
 │   ├── evaluate.py         # F1, Chamfer, Hausdorff, AUC, plot
 │   ├── visualization.py    # Colorize, snapshot
-│   ├── report.py           # JSON / Markdown report generation
+│   ├── report.py           # JSON / Markdown / HTML report generation
 │   ├── compare.py          # Full compare pipeline
 │   ├── diff.py             # Quick diff (no registration)
 │   ├── info.py             # Point cloud metadata
@@ -56,6 +60,8 @@ cloudanalyzer/
 3. **CLI is thin** — CLI commands only parse args, call the core function, and format output
 4. **Logging on stderr** — Progress info goes to stderr via `logging`, keeping stdout clean for `--format-json` piping
 5. **No global state** — Each function is stateless and takes explicit arguments unless an experiment explicitly tests a stateful design
+6. **Protocols are data** — Metrics serialize the parameters, conventions, input hashes, backend, and runtime needed to compare two results.
+7. **Streaming is an explicit lane** — Consumers that cannot retain a complete point cloud use chunk readers and reducers and identify the resulting metric family.
 
 ## Core Promotion Checklist
 
@@ -80,7 +86,7 @@ CloudAnalyzer exposes several evaluation entry points that answer different ques
 | Command | Question | Input shape | Notes |
 |---|---|---|---|
 | `ca evaluate` | Preservation QA — did processing degrade the artifact relative to its source? | Two artifacts of the same kind | Used by `--evaluate` on processing commands; uses F1 / Chamfer / AUC curves |
-| `ca map-evaluate` | Map-quality QA — how close is a reconstructed map to a reference map? | Estimated map + reference map | MapEval-inspired accuracy/completeness@t; experimental, not yet in `ca.core` |
+| `ca map-evaluate` | Map-quality QA — how close is a reconstructed map to a reference map? | Estimated map + reference map | NN accuracy/completeness/Chamfer plus explicit AWD/SCS protocol; `--streaming` exposes the AWD/SCS-only lane |
 | `ca run-evaluate` | SLAM-run QA — is one run acceptable end-to-end (map + trajectory)? | Map pair + trajectory pair | Combines map evaluation and trajectory evaluation; emits a combined HTML report |
 | `ca check` | Gate orchestration — run all configured gates and report pass/fail with triage | `cloudanalyzer.yaml` | Chains `evaluate`, `map-evaluate`, `traj-evaluate`, `loop-closure-report`, `ground-evaluate`, perception evals; produces config-driven exit codes |
 | `ca benchmark eval` | Frozen-suite SLAM QA — does this run pass a published reference + gate? | Benchmark suite YAML + user map + user trajectory | Wraps `run-evaluate` against a suite's fixed reference + gate so swapping SLAM pipelines is one command |
@@ -101,10 +107,10 @@ Naming heuristic: `evaluate` ≈ preservation, `map-evaluate` ≈ map quality, `
 ## Data Flow
 
 ```
-Input PCD/PLY/LAS
+Input PCD/PLY/LAS/COPC
     │
     ▼
-  ca.io.load_point_cloud()
+  ca.io.load_point_cloud() or ca.io.PointChunkReader
     │
     ├─── ca.info / ca.stats        → metadata dict
     ├─── ca.filter                 → cleaned PCD
@@ -121,5 +127,7 @@ Input PCD/PLY/LAS
     ├─── ca.experiments.web_trajectory_sampling → alternative trajectory reducers + evaluator
     ├─── ca.experiments.process_docs → consolidated experiment docs
     ├─── ca.split                  → tile PCDs
-    └─── ca.pipeline              → filter → downsample → evaluate
+    ├─── ca.pipeline              → filter → downsample → evaluate
+    ├─── ca.core.map_evaluate      → AWD/SCS protocol + streaming reducers
+    └─── ca.core.rendered_evaluate → 3DGS render protocol + provenance manifest
 ```

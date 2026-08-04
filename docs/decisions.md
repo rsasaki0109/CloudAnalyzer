@@ -150,6 +150,37 @@ Reason: Best composite rank with the fastest runtime and robust voxel-level matc
 - Pick one GT-free metric (entropy / structure / MME) as the canonical lane.
 - Define a stable failure-mode contract (when does a GT-free score block CI?).
 
+### 2026-08-04 implementation decision
+
+- Keep AWD/SCS as the reference-based MapEval lane, but serialize
+  `cloudanalyzer.mapeval_awd_scs.v1` parameters with every result.
+- Pin external comparison to
+  `JokerJohn/Cloud_Map_Evaluation@5955f495df5fbf39f0a184c5d275823b3b5db31b`
+  and keep the official executable optional in Python CI because its C++ SDK
+  dependencies are not part of the normal runner.
+- Keep two explicit numerical lanes: a source-compatible port for external
+  parity and the corrected core Bures implementation. The report documents
+  the upstream covariance re-normalization and Cholesky differences instead
+  of hiding them behind a generic "compatible" label.
+- Add a separate streaming AWD/SCS result lane because NN/Chamfer metrics need a
+  resident index while voxel Gaussian moments can be reduced from chunks.
+
+## trajectory and rendering protocols
+
+### Adopted
+
+- TUM/CSV quaternion support, SO(3) geodesic ATE/RPE, and opt-in distance-window
+  RPE are implemented in the MIT-compatible core. GPL-3.0 evo remains a
+  development oracle, not a runtime dependency.
+- Rendered 3DGS evaluation emits `cloudanalyzer.rendered_eval.v1`, including
+  camera conventions, input hashes, renderer settings, image pairing, and
+  runtime versions.
+
+### Trigger To Revisit
+
+- Add new learned metrics only after model weights, versions, preprocessing, and
+  calibrated gates can be captured in the same protocol.
+
 ## slam_run
 
 ### Adopted

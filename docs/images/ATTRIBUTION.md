@@ -15,12 +15,17 @@ The repository README describes that bag as an example recorded in an outdoor en
 and the repository ships `data/map.pcd` as the sample global map used by the localization demo.
 This sample map and bag are published by AISL at Toyohashi University of Technology.
 
+The README point-cloud triptych is derived from the deterministic RELLIS-3D perception demo
+artifacts. See [perception-demo attribution](../demo/perception/ATTRIBUTION.md) for the
+upstream dataset terms.
+
 ## Generated Files
 
 - `density_hdl_localization_map.png`
 - `f1_hdl_localization_v0_2.png`
 - `f1_hdl_localization_v0_1.png`
 - `f1_hdl_localization_v0_5.png`
+- `readme-pointcloud-triptych.png`
 
 ## Regeneration Commands
 
@@ -54,6 +59,8 @@ python3 -m cloudanalyzer_cli.main downsample \
   -v 0.5 \
   --evaluate \
   --plot ../docs/images/f1_hdl_localization_v0_5.png
+
+python3 ../scripts/build_readme_pointcloud_figure.py
 ```
 
 ## Result Summary

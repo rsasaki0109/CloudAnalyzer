@@ -1,10 +1,10 @@
 {
   "title": "CloudAnalyzer SLAM Leaderboard",
-  "generated_at": "2026-08-01T07:06:00+00:00",
+  "generated_at": "2026-09-01T11:35:55+00:00",
   "cloudanalyzer_version": "0.5.0a1",
   "host": {
-    "platform": "Linux-6.17.0-1020-azure-x86_64-with-glibc2.39",
-    "python": "3.10.20"
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "python": "3.10.21"
   },
   "drivers": [
     "kiss-icp",
@@ -27,8 +27,8 @@
         "rpe_rmse_m": 0.0015024205394585678,
         "drift_m": 0.0008701091885504958,
         "map_auc": 1.0,
-        "chamfer_m": 0.015832028222999863,
-        "runtime_s": 0.5108808259999762,
+        "chamfer_m": 0.015832028222999867,
+        "runtime_s": 0.5028642890000015,
         "frames_processed": 200
       },
       "cloudanalyzer_version": "0.5.0a1",
@@ -55,7 +55,7 @@
         "drift_m": 0.0008701091885504958,
         "map_auc": 1.0,
         "chamfer_m": 0.015832028222999867,
-        "runtime_s": 0.5551381840000147,
+        "runtime_s": 0.5516382179999937,
         "frames_processed": 200
       },
       "cloudanalyzer_version": "0.5.0a1",
@@ -82,7 +82,7 @@
         "drift_m": 0.0010181772930094217,
         "map_auc": 0.9921129967902085,
         "chamfer_m": 0.024591420164473597,
-        "runtime_s": 0.8138760340000033,
+        "runtime_s": 0.8789207369999872,
         "frames_processed": 200
       },
       "cloudanalyzer_version": "0.5.0a1",
@@ -108,8 +108,8 @@
         "rpe_rmse_m": 0.001893054577982388,
         "drift_m": 0.0003157118939793063,
         "map_auc": 1.0,
-        "chamfer_m": 0.014470355655877922,
-        "runtime_s": 0.4396848129999853,
+        "chamfer_m": 0.014470355655877915,
+        "runtime_s": 0.4315328280000017,
         "frames_processed": 160
       },
       "cloudanalyzer_version": "0.5.0a1",
@@ -135,8 +135,8 @@
         "rpe_rmse_m": 0.001893054577982388,
         "drift_m": 0.0003157118939793063,
         "map_auc": 1.0,
-        "chamfer_m": 0.014470355655877919,
-        "runtime_s": 0.48015029300000833,
+        "chamfer_m": 0.014470355655877927,
+        "runtime_s": 0.4768950479999887,
         "frames_processed": 160
       },
       "cloudanalyzer_version": "0.5.0a1",
@@ -163,7 +163,7 @@
         "drift_m": 0.0025490409961395283,
         "map_auc": 0.9840972452314727,
         "chamfer_m": 0.036557411877197285,
-        "runtime_s": 0.7379508129999977,
+        "runtime_s": 0.7831089499999848,
         "frames_processed": 160
       },
       "cloudanalyzer_version": "0.5.0a1",

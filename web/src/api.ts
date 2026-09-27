@@ -110,3 +110,13 @@ export function computeM3c2(params: Omit<Extract<Request, { kind: "m3c2" }>, "ki
 export function profileCloud(params: Omit<Extract<Request, { kind: "profile" }>, "kind">): Promise<ProfileOutput> {
   return call({ kind: "profile", ...params });
 }
+
+/** One cloud from several; `fills` colors clouds without RGB when others have it. */
+export function mergeClouds(ids: number[], fills: Vec3[]): Promise<LoadedCloud> {
+  return call({ kind: "merge", ids, fills });
+}
+
+/** One new cloud per class code (or per merged source). */
+export function splitCloud(id: number, by: "classification" | "source"): Promise<LoadedCloud[]> {
+  return call({ kind: "split", id, by });
+}

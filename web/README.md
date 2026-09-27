@@ -37,6 +37,10 @@ Files never leave the browser.
 - Filters that create a new cloud: one point per voxel, random subsampling,
   statistical outlier removal (SOR), and ground extraction with the Cloth
   Simulation Filter (classified copy, ground only, or non-ground only).
+- Merge / split: merge the visible clouds into one (colors, intensity and
+  classes kept; clouds without RGB take their display color; a `source`
+  attribute remembers each point's cloud), split a cloud into one cloud per
+  classification code, or split a merged cloud back into its files.
 - Cross-section profiles: draw a polyline on the view (**Draw line**, click
   vertices, double-click or Enter to finish) and every visible cloud's points
   within the band are plotted as distance along the line against height, in

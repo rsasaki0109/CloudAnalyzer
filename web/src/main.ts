@@ -8,10 +8,12 @@ import {
   extractGround,
   filterCloud,
   loadCloud,
+  mergeClouds,
   pointAt,
   profileCloud,
   registerIcp,
   removeCloud,
+  splitCloud,
   transformCloud,
 } from "./api";
 import {
@@ -241,6 +243,7 @@ function renderList(): void {
   renderIcpSelects();
   renderClasses();
   renderFilterSelect();
+  renderMergeSplit();
   renderVolumeSelects();
 }
 
@@ -1182,6 +1185,93 @@ async function runGround(entry: Entry): Promise<void> {
     filterRun.disabled = false;
   }
 }
+
+// ---------------------------------------------------------------- merge / split
+
+const mergeRun = $<HTMLButtonElement>("merge-run");
+const splitCloudSelect = $<HTMLSelectElement>("split-cloud");
+const splitBy = $<HTMLSelectElement>("split-by");
+const splitRun = $<HTMLButtonElement>("split-run");
+
+function renderMergeSplit(): void {
+  const clouds = [...entries.values()].filter((e) => !isMesh(e));
+  mergeRun.disabled = clouds.filter((e) => e.visible).length < 2;
+  const splittable = clouds.filter((e) => e.cloud.classification || e.cloud.sources);
+  const previous = splitCloudSelect.value;
+  splitCloudSelect.replaceChildren(...splittable.map((e) => new Option(e.cloud.name, String(e.cloud.id))));
+  splitCloudSelect.value = splittable.some((e) => String(e.cloud.id) === previous)
+    ? previous
+    : String(splittable.at(-1)?.cloud.id ?? "");
+  updateSplit();
+}
+
+function updateSplit(): void {
+  const entry = entries.get(Number(splitCloudSelect.value));
+  const can = { classification: !!entry?.cloud.classification, source: !!entry?.cloud.sources };
+  for (const option of splitBy.options) option.disabled = !can[option.value as keyof typeof can];
+  if (splitBy.selectedOptions[0]?.disabled) {
+    splitBy.value = [...splitBy.options].find((o) => !o.disabled)?.value ?? splitBy.value;
+  }
+  splitRun.disabled = !entry || !can[splitBy.value as keyof typeof can];
+}
+splitCloudSelect.onchange = splitBy.onchange = updateSplit;
+
+mergeRun.onclick = async () => {
+  const sources = [...entries.values()].filter((e) => e.visible && !isMesh(e));
+  if (sources.length < 2) return;
+  mergeRun.disabled = true;
+  setStatus(`Merging ${sources.length} clouds…`);
+  try {
+    const cloud = await mergeClouds(
+      sources.map((e) => e.cloud.id),
+      sources.map((e) => e.solid),
+    );
+    addEntry(cloud);
+    for (const e of sources) {
+      e.visible = false;
+      viewer.setVisible(e.cloud.id, false);
+    }
+    renderList();
+    setStatus(
+      `${cloud.name}: ${cloud.count.toLocaleString()} points from ${sources.map((e) => e.cloud.name).join(", ")} ` +
+        `(${Math.round(cloud.timings.index)} ms)`,
+    );
+  } catch (err) {
+    setStatus(`Merge failed: ${err instanceof Error ? err.message : err}`, true);
+  } finally {
+    renderMergeSplit();
+  }
+};
+
+splitRun.onclick = async () => {
+  const entry = entries.get(Number(splitCloudSelect.value));
+  if (!entry) return;
+  const by = splitBy.value as "classification" | "source";
+  splitRun.disabled = true;
+  setStatus(`Splitting ${entry.cloud.name} by ${by}…`);
+  try {
+    const parts = await splitCloud(entry.cloud.id, by);
+    for (const cloud of parts) {
+      const added = addEntry(cloud);
+      if (by === "classification") {
+        const code = cloud.classification?.[0] ?? 0;
+        added.solid = classColor(code);
+      }
+      refreshColors(added);
+    }
+    entry.visible = false;
+    viewer.setVisible(entry.cloud.id, false);
+    renderList();
+    const names = parts.map((c) =>
+      by === "classification" ? `${className(c.classification?.[0] ?? 0)} (${c.count.toLocaleString()})` : c.name,
+    );
+    setStatus(`Split ${entry.cloud.name} into ${parts.length} clouds: ${names.join(", ")}`);
+  } catch (err) {
+    setStatus(`Split failed: ${err instanceof Error ? err.message : err}`, true);
+  } finally {
+    updateSplit();
+  }
+};
 
 // ---------------------------------------------------------------- clipping box
 

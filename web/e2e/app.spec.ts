@@ -282,3 +282,53 @@ test.describe("phone", () => {
     await expect(sheet).not.toBeInViewport();
   });
 });
+
+test("share link: reopens the sample with its C2C and view settings", async ({ page, context }) => {
+  await page.getByRole("button", { name: "Try a sample" }).click();
+  await expect(status(page)).toContainText("C2C distance computed");
+  await page.locator("#point-size").fill("5");
+  await page.locator("#share").click();
+  const link = await page.locator("#share-link").inputValue();
+  expect(link).toContain("#session=");
+
+  const other = await context.newPage();
+  await other.goto(link);
+  await expect(other.locator("#status")).toContainText("Session restored (2 clouds)");
+  await expect(other.locator(".cloud-list li")).toHaveCount(2);
+  await expect(other.locator("#c2c-stats")).toContainText("0.022061");
+  await expect(other.locator("#point-size")).toHaveValue("5");
+});
+
+test("session file: restores visibility once its files are opened", async ({ page, context }) => {
+  const files = [
+    { name: "reference.ply", buffer: ply(grid(30)) },
+    { name: "lifted.ply", buffer: ply(grid(30, 0.5)) },
+  ];
+  await open(page, files);
+  await expect(status(page)).toContainText("Loaded lifted.ply");
+  await page.locator(".cloud-list li").first().locator('input[type="checkbox"]').uncheck();
+  const download = page.waitForEvent("download");
+  await page.locator("#session-save").click();
+  const saved = await download;
+  expect(saved.suggestedFilename()).toBe("session.cloudanalyzer.json");
+  const chunks: Buffer[] = [];
+  for await (const chunk of await saved.createReadStream()) chunks.push(chunk as Buffer);
+  const session = Buffer.concat(chunks);
+
+  // The session alone asks for its files; opening them finishes the restore.
+  const other = await context.newPage();
+  await other.goto("/");
+  await open(other, [{ name: "session.cloudanalyzer.json", buffer: session }]);
+  await expect(other.locator("#status")).toContainText("Session: open reference.ply, lifted.ply");
+  await open(other, files);
+  await expect(other.locator("#status")).toContainText("Session restored (2 clouds)");
+  const boxes = other.locator('.cloud-list li input[type="checkbox"]');
+  await expect(boxes.first()).not.toBeChecked();
+  await expect(boxes.last()).toBeChecked();
+});
+
+test("?url= opens a cloud from a URL", async ({ page }) => {
+  await page.goto("/?url=samples/lidar_reference.pcd");
+  await expect(status(page)).toContainText("Loaded lidar_reference.pcd");
+  await expect(page.locator(".cloud-list li")).toHaveCount(1);
+});

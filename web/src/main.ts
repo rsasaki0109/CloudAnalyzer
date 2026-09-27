@@ -26,9 +26,13 @@ import {
 } from "./colormap";
 import { type LodNode, parseNodes } from "./lod";
 import type { C2cOutput, LoadedCloud } from "./protocol";
+import { decodeSession, encodeSession, nameFromUrl, parseSession, type Session } from "./session";
 import { Viewer } from "./viewer";
 
 type ColorMode = "rgb" | "solid" | "intensity" | "classification" | "c2c";
+
+/** Where a cloud came from: sessions can restore file and URL clouds. */
+type Origin = { kind: "file" } | { kind: "url"; url: string } | { kind: "derived" };
 
 interface Entry {
   cloud: LoadedCloud;
@@ -39,6 +43,7 @@ interface Entry {
   c2c?: C2cOutput & { referenceName: string };
   /** Transforms applied by ICP, newest last, for undo. */
   transforms: number[][];
+  origin: Origin;
 }
 
 const SOLID_COLORS: [number, number, number][] = [
@@ -293,7 +298,7 @@ async function saveCloud(entry: Entry, format: "ply" | "csv"): Promise<void> {
 // ---------------------------------------------------------------- loading
 
 /** Register a loaded cloud or mesh and draw it. */
-function addEntry(cloud: LoadedCloud): Entry {
+function addEntry(cloud: LoadedCloud, origin: Origin = { kind: "derived" }): Entry {
   const entry: Entry = {
     cloud,
     nodes: parseNodes(cloud.lodNodes, cloud.lodGrid, cloud.shift),
@@ -301,6 +306,7 @@ function addEntry(cloud: LoadedCloud): Entry {
     mode: defaultMode(cloud),
     visible: true,
     transforms: [],
+    origin,
   };
   entries.set(cloud.id, entry);
   // On a phone, get the sheet out of the way once there is something to see.
@@ -310,8 +316,17 @@ function addEntry(cloud: LoadedCloud): Entry {
   return entry;
 }
 
-async function loadFiles(files: Iterable<File>): Promise<void> {
-  for (const file of files) {
+/**
+ * Load point clouds and meshes; session files (.json) among them are applied
+ * once the others are in. `origins` tells where each file came from.
+ */
+async function loadFiles(files: File[], origins?: Origin[]): Promise<void> {
+  const sessions: File[] = [];
+  for (const [i, file] of files.entries()) {
+    if (/\.json$/i.test(file.name)) {
+      sessions.push(file);
+      continue;
+    }
     const mb = (file.size / 1e6).toFixed(file.size >= 1e7 ? 0 : 1);
     setStatus(`Loading ${file.name} (${mb} MB): reading…`);
     const start = performance.now();
@@ -320,7 +335,7 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
       const cloud = await loadCloud(file, maxPoints, (note) =>
         setStatus(`Loading ${file.name} (${mb} MB): ${note}…`),
       );
-      addEntry(cloud);
+      addEntry(cloud, origins?.[i] ?? { kind: "file" });
       if (entries.size === 1) viewer.fit();
       const [sx, sy, sz] = cloud.shift;
       $("shift").textContent =
@@ -343,27 +358,54 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
     }
     renderList();
   }
+  for (const file of sessions) {
+    try {
+      await applySession(parseSession(JSON.parse(await file.text())));
+    } catch (err) {
+      setStatus(`${file.name}: ${err instanceof Error ? err.message : err}`, true);
+    }
+  }
+  // Files a pending session was waiting for.
+  if (sessions.length === 0 && pendingSession && !applyingSession) await restorePending();
+}
+
+/** Download clouds from URLs (the server must allow cross-origin requests) and load them. */
+async function loadUrls(urls: string[]): Promise<void> {
+  const files: File[] = [];
+  const origins: Origin[] = [];
+  const failed: string[] = [];
+  for (const raw of urls) {
+    const url = new URL(raw, location.href).href;
+    const name = nameFromUrl(url);
+    setStatus(`Downloading ${name}…`);
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      files.push(new File([await response.blob()], name));
+      origins.push({ kind: "url", url });
+    } catch (err) {
+      failed.push(`${name} (${err instanceof Error ? err.message : err})`);
+    }
+  }
+  await loadFiles(files, origins);
+  if (failed.length) {
+    setStatus(`Could not download ${failed.join(", ")}; the server must allow cross-origin requests`, true);
+  }
 }
 
 $<HTMLButtonElement>("load-sample").onclick = async () => {
   const names = ["lidar_reference.pcd", "lidar_candidate.pcd"];
-  try {
-    setStatus("Downloading sample…");
-    const files = await Promise.all(
-      names.map(async (name) => {
-        const response = await fetch(`${import.meta.env.BASE_URL}samples/${name}`);
-        if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
-        return new File([await response.blob()], name);
-      }),
-    );
-    await loadFiles(files);
-    if (entries.size >= 2) runButton.click();
-  } catch (err) {
-    setStatus(`Sample: ${err instanceof Error ? err.message : err}`, true);
-  }
+  await loadUrls(names.map((name) => `${import.meta.env.BASE_URL}samples/${name}`));
+  if (entries.size >= 2) runButton.click();
+};
+
+$<HTMLButtonElement>("url-open").onclick = () => {
+  const url = $<HTMLInputElement>("url-input").value.trim();
+  if (url) void loadUrls([url]);
 };
 
 $<HTMLButtonElement>("open").onclick = () => $<HTMLInputElement>("file-input").click();
+$<HTMLButtonElement>("session-open").onclick = () => $<HTMLInputElement>("file-input").click();
 $<HTMLInputElement>("file-input").onchange = (e) => {
   const input = e.target as HTMLInputElement;
   if (input.files) void loadFiles([...input.files]);
@@ -554,14 +596,19 @@ runButton.onclick = async () => {
     return;
   }
   runButton.disabled = true;
+  try {
+    await runNearest(compared, reference, $<HTMLInputElement>("c2m-signed").checked);
+  } finally {
+    updateRunButton();
+  }
+};
+
+/** C2C (or C2M against a mesh) from `compared` to `reference`, shown on `compared`. */
+async function runNearest(compared: Entry, reference: Entry, signed: boolean): Promise<void> {
   const kind = isMesh(reference) ? "C2M" : "C2C";
   setStatus(`Computing ${kind} distance: ${compared.cloud.name} → ${reference.cloud.name}…`);
   try {
-    const result = await cloudToCloud(
-      compared.cloud.id,
-      reference.cloud.id,
-      $<HTMLInputElement>("c2m-signed").checked,
-    );
+    const result = await cloudToCloud(compared.cloud.id, reference.cloud.id, signed);
     compared.c2c = { ...result, referenceName: reference.cloud.name };
     compared.mode = "c2c";
     activeC2c = compared.cloud.id;
@@ -576,10 +623,8 @@ runButton.onclick = async () => {
     );
   } catch (err) {
     setStatus(`${kind} failed: ${err instanceof Error ? err.message : err}`, true);
-  } finally {
-    updateRunButton();
   }
-};
+}
 
 const rampSelect = $<HTMLSelectElement>("ramp");
 for (const name of Object.keys(RAMPS)) rampSelect.add(new Option(name, name));
@@ -1479,3 +1524,203 @@ window.addEventListener("keydown", (e) => {
 });
 
 renderList();
+
+// ---------------------------------------------------------------- sessions
+
+/** A session waiting for some of its clouds to be opened. */
+let pendingSession: Session | null = null;
+/** Clouds of the pending session already restored. */
+const restored = new Set<number>();
+let applyingSession = false;
+
+const pointSizeInput = $<HTMLInputElement>("point-size");
+const pointBudgetSelect = $<HTMLSelectElement>("point-budget");
+
+function captureSession(): Session {
+  const shift = globalShift();
+  const toOriginal = (v: THREE.Vector3) => [v.x + shift[0], v.y + shift[1], v.z + shift[2]] as [number, number, number];
+  const camera = viewer.getCamera();
+  let clip: Session["clip"] = null;
+  if (clipEnabled.checked) {
+    const box = clipBoxFromSliders();
+    clip = { min: toOriginal(box.min), max: toOriginal(box.max) };
+  }
+  return {
+    app: "CloudAnalyzer Web",
+    version: 1,
+    camera: entries.size ? { position: toOriginal(camera.position), target: toOriginal(camera.target) } : undefined,
+    pointSize: Number(pointSizeInput.value),
+    edl: edlToggle.checked,
+    edlStrength: Number(edlStrength.value),
+    pointBudget: Number(pointBudgetSelect.value),
+    ramp: rampName,
+    range,
+    hiddenClasses: [...hiddenClasses],
+    clip,
+    clouds: [...entries.values()]
+      .filter((e) => e.origin.kind !== "derived")
+      .map((e) => ({
+        name: e.cloud.name,
+        url: e.origin.kind === "url" ? e.origin.url : undefined,
+        visible: e.visible,
+        mode: e.mode,
+        solid: e.solid,
+        transforms: e.transforms,
+        distance:
+          e.c2c && (e.c2c.kind === "c2c" || e.c2c.kind === "c2m")
+            ? { reference: e.c2c.referenceName, signed: e.c2c.signed }
+            : undefined,
+      })),
+  };
+}
+
+/** Apply a session: settings now, URL clouds after downloading them, file clouds as they are opened. */
+async function applySession(session: Session): Promise<void> {
+  pendingSession = session;
+  restored.clear();
+  pointSizeInput.value = String(session.pointSize);
+  viewer.setPointSize(session.pointSize);
+  edlToggle.checked = session.edl;
+  edlStrength.value = String(session.edlStrength);
+  viewer.setEdl(session.edl, session.edlStrength);
+  edlStrength.disabled = !session.edl;
+  if ([...pointBudgetSelect.options].some((o) => Number(o.value) === session.pointBudget)) {
+    pointBudgetSelect.value = String(session.pointBudget);
+    viewer.setPointBudget(session.pointBudget);
+  }
+  const loaded = new Set([...entries.values()].map((e) => e.cloud.name));
+  const urls = session.clouds.filter((c) => c.url && !loaded.has(c.name)).map((c) => c.url!);
+  if (urls.length) {
+    applyingSession = true;
+    try {
+      await loadUrls(urls);
+    } finally {
+      applyingSession = false;
+    }
+  }
+  await restorePending();
+}
+
+/** Restore what the pending session can with the clouds open now. */
+async function restorePending(): Promise<void> {
+  const session = pendingSession;
+  if (!session) return;
+  const byName = (name: string, sources = true) =>
+    [...entries.values()].find((e) => e.cloud.name === name && (!sources || e.origin.kind !== "derived"));
+  const missing: string[] = [];
+  for (const saved of session.clouds) {
+    const entry = byName(saved.name);
+    if (!entry) {
+      missing.push(saved.name);
+      continue;
+    }
+    if (restored.has(entry.cloud.id)) continue;
+    restored.add(entry.cloud.id);
+    if (entry.transforms.length === 0) {
+      for (const matrix of saved.transforms) {
+        replaceCloud(entry, await transformCloud(entry.cloud.id, matrix));
+        entry.transforms.push(matrix);
+      }
+    }
+    entry.visible = saved.visible;
+    viewer.setVisible(entry.cloud.id, saved.visible);
+    entry.solid = saved.solid;
+    const available: Record<ColorMode, boolean> = {
+      rgb: entry.cloud.colors !== null,
+      intensity: entry.cloud.intensity !== null,
+      classification: entry.cloud.classification !== null,
+      solid: true,
+      c2c: false,
+    };
+    if (available[saved.mode]) entry.mode = saved.mode;
+    refreshColors(entry);
+  }
+  for (const saved of session.clouds) {
+    const entry = byName(saved.name);
+    const reference = saved.distance ? byName(saved.distance.reference, false) : undefined;
+    if (entry && reference && saved.distance && !entry.c2c) await runNearest(entry, reference, saved.distance.signed);
+  }
+  if (session.ramp in RAMPS) {
+    rampName = session.ramp as RampName;
+    rampSelect.value = rampName;
+  }
+  range = session.range;
+  applyRange();
+  hiddenClasses.clear();
+  for (const c of session.hiddenClasses) hiddenClasses.add(c);
+  renderClasses();
+  for (const entry of entries.values()) refreshColors(entry);
+  const shift = globalShift();
+  const toRender = (v: number[]) => new THREE.Vector3(v[0] - shift[0], v[1] - shift[1], v[2] - shift[2]);
+  if (session.clip && entries.size) {
+    clipEnabled.checked = true;
+    $("clip-controls").hidden = false;
+    resetClip();
+    const [lo, hi] = [toRender(session.clip.min), toRender(session.clip.max)];
+    for (let axis = 0; axis < 3; axis++) {
+      const a = clipExtent.min.getComponent(axis);
+      const size = clipExtent.max.getComponent(axis) - a || 1;
+      const at = (v: number) => String(Math.round(Math.min(1, Math.max(0, (v - a) / size)) * SLIDER_MAX));
+      slider(axis, "min").value = at(lo.getComponent(axis));
+      slider(axis, "max").value = at(hi.getComponent(axis));
+    }
+    applyClip();
+  }
+  if (session.camera && entries.size) viewer.setCamera(toRender(session.camera.position), toRender(session.camera.target));
+  renderList();
+  if (missing.length) {
+    setStatus(`Session: open ${missing.join(", ")} to finish restoring it`);
+  } else {
+    pendingSession = null;
+    restored.clear();
+    setStatus(`Session restored (${session.clouds.length} ${session.clouds.length === 1 ? "cloud" : "clouds"})`);
+  }
+}
+
+$<HTMLButtonElement>("session-save").onclick = () => {
+  const json = JSON.stringify(captureSession(), null, 2);
+  const url = URL.createObjectURL(new Blob([json], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "session.cloudanalyzer.json";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  setStatus("Saved the session; open it together with the same files to restore it");
+};
+
+$<HTMLButtonElement>("share").onclick = async () => {
+  const session = captureSession();
+  const link = `${location.origin}${location.pathname}#session=${encodeSession(session)}`;
+  const field = $<HTMLInputElement>("share-link");
+  field.value = link;
+  field.hidden = false;
+  field.select();
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(link);
+    copied = true;
+  } catch {
+    // Not allowed here: the link stays selected in the field.
+  }
+  const local = session.clouds.filter((c) => !c.url).map((c) => c.name);
+  setStatus(
+    `${copied ? "Link copied" : "Link ready"}` +
+      (local.length
+        ? `; ${local.join(", ")} ${local.length === 1 ? "is a local file" : "are local files"}, not in the link — ` +
+          "whoever opens it is asked to open them"
+        : ""),
+  );
+};
+
+/** `#session=…` restores a shared view; `?url=…` (repeatable) opens clouds. */
+async function startFromLink(): Promise<void> {
+  const encoded = new URLSearchParams(location.hash.slice(1)).get("session");
+  const urls = new URLSearchParams(location.search).getAll("url");
+  try {
+    if (encoded) await applySession(decodeSession(encoded));
+    else if (urls.length) await loadUrls(urls);
+  } catch (err) {
+    setStatus(`Link: ${err instanceof Error ? err.message : err}`, true);
+  }
+}
+void startFromLink();

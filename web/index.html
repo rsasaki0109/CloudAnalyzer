@@ -12,7 +12,7 @@
       <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.pcd,.las,.laz,.xyz,.txt,.csv,.pts,.asc,.obj,.stl" />
+        accept=".ply,.pcd,.las,.laz,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -21,6 +21,7 @@
       <button data-view="iso" title="Isometric view">Iso</button>
       <span class="sep"></span>
       <button id="measure" aria-pressed="false" title="Measure the distance between two points (M)">Measure</button>
+      <button id="share" title="Copy a link that opens this view (clouds loaded from URLs are included)">Share</button>
       <span class="sep"></span>
       <label class="inline">Point size
         <input id="point-size" type="range" min="1" max="10" step="1" value="2" />
@@ -52,7 +53,16 @@
             <option value="0">No limit</option>
           </select>
         </label>
+        <input id="share-link" type="text" readonly hidden aria-label="Share link" />
         <ul id="cloud-list" class="cloud-list"></ul>
+        <div class="url-row">
+          <input id="url-input" type="url" placeholder="https://…/cloud.laz" aria-label="Cloud URL" />
+          <button id="url-open" title="Download and open a cloud or mesh (the server must allow cross-origin requests)">Open URL</button>
+        </div>
+        <div class="button-row">
+          <button id="session-save" title="Save the view and how each cloud is shown (not the data)">Save session</button>
+          <button id="session-open" title="Open a saved session, together with its files">Open session…</button>
+        </div>
         <div id="empty-hint" class="hint">
           <p>Drop PLY, PCD, LAS/LAZ or XYZ point clouds, or OBJ/STL/PLY meshes, anywhere, or use Open…
             Files stay in your browser.</p>

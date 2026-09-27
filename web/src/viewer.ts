@@ -516,6 +516,26 @@ export class Viewer {
     this.requestRender(true);
   }
 
+  /** Camera position and orbit target (render coordinates). */
+  getCamera(): { position: THREE.Vector3; target: THREE.Vector3 } {
+    return { position: this.camera.position.clone(), target: this.controls.target.clone() };
+  }
+
+  /** Place the camera at `position` looking at (and orbiting) `target`. */
+  setCamera(position: THREE.Vector3, target: THREE.Vector3): void {
+    this.controls.target.copy(target);
+    this.camera.position.copy(position);
+    const distance = Math.max(position.distanceTo(target), 1e-6);
+    const bounds = this.contentBounds();
+    const radius = bounds.isEmpty() ? distance : bounds.getBoundingSphere(new THREE.Sphere()).radius;
+    this.camera.near = distance / 1000;
+    this.camera.far = (distance + 2 * radius) * 10;
+    this.camera.updateProjectionMatrix();
+    this.scene.getObjectByName("axes")?.scale.setScalar(Math.max(radius, 1e-3) * 0.2);
+    this.controls.update();
+    this.requestRender(true);
+  }
+
   /** Frame all visible clouds, keeping the current viewing direction. */
   fit(): void {
     const box = this.clip ? this.clip.clone() : this.contentBounds();

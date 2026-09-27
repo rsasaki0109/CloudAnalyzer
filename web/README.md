@@ -12,6 +12,9 @@ Files never leave the browser.
 - Open PLY (ascii / binary), PCD (ascii / binary / binary_compressed),
   LAS / LAZ 1.0–1.4 (point formats 0–10) and XYZ / TXT / CSV / PTS by
   drag-and-drop.
+- Level-of-detail rendering for large clouds: points are arranged in a
+  nested octree at load time and only the nodes that matter on screen are
+  drawn, up to an adjustable point budget (1M–20M).
 - Coordinates are kept in `f64`; georeferenced clouds get a shared global
   shift for rendering, like CloudCompare.
 - Cloud-to-cloud (C2C) nearest-neighbour distance with summary statistics,

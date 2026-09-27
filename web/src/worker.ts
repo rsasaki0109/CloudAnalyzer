@@ -45,6 +45,7 @@ async function handle(req: Request): Promise<{ value: unknown; transfer: Transfe
       shift ??= Array.from(cloud.suggestedShift()) as Vec3;
       const positions = cloud.positions(new Float64Array(shift));
       const colors = cloud.colors() ?? null;
+      const lodNodes = cloud.lodNodes();
       const id = nextId++;
       clouds.set(id, cloud);
       const value: LoadedCloud = {
@@ -55,8 +56,10 @@ async function handle(req: Request): Promise<{ value: unknown; transfer: Transfe
         colors,
         bounds: Array.from(cloud.bounds()),
         shift,
+        lodNodes,
+        lodGrid: cloud.lodGrid,
       };
-      const transfer: Transferable[] = [positions.buffer];
+      const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
       if (colors) transfer.push(colors.buffer);
       return { value, transfer };
     }

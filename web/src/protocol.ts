@@ -6,10 +6,13 @@ export interface LoadedCloud {
   id: number;
   name: string;
   count: number;
-  /** Interleaved xyz, already shifted by the session's global shift. */
+  /** Interleaved xyz in octree order, already shifted by the session's global shift. */
   positions: Float32Array;
-  /** Interleaved rgb, or null when the file carries no colors. */
+  /** Interleaved rgb in octree order, or null when the file carries no colors. */
   colors: Uint8Array | null;
+  /** Octree node table, see `Cloud.lodNodes()`. */
+  lodNodes: Float64Array;
+  lodGrid: number;
   /** [minX, minY, minZ, maxX, maxY, maxZ] in original coordinates. */
   bounds: number[];
   shift: Vec3;
@@ -26,6 +29,7 @@ export interface C2cStats {
 }
 
 export interface C2cOutput {
+  /** Per-point distances of the compared cloud (octree order, like its positions). */
   distances: Float32Array;
   stats: C2cStats;
   millis: number;

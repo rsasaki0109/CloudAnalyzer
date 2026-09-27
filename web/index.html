@@ -22,6 +22,7 @@
       <span class="sep"></span>
       <button id="measure" aria-pressed="false" title="Measure the distance between two points (M)">Measure</button>
       <button id="share" title="Copy a link that opens this view (clouds loaded from URLs are included)">Share</button>
+      <a class="toolbar-link" href="../guide.html" target="_blank" rel="noopener" title="User guide">Help</a>
       <span class="sep"></span>
       <label class="inline">Point size
         <input id="point-size" type="range" min="1" max="10" step="1" value="2" />
@@ -68,6 +69,13 @@
             Files stay in your browser.</p>
           <button id="load-sample">Try a sample</button>
           <p class="small">A LiDAR scene and a second scan of it; computes the cloud-to-cloud distance.</p>
+          <p class="small">More demos, each loaded and analysed for you:</p>
+          <div class="button-row demo-list">
+            <button data-demo="volume" title="A yard before and after a heap was dumped and a pit dug">Stockpile volume</button>
+            <button data-demo="ground" title="Terrain with buildings and trees">Ground extraction</button>
+            <button data-demo="m3c2" title="A slope before and after a slide">Landslide (M3C2)</button>
+          </div>
+          <p class="small"><a href="../guide.html" target="_blank" rel="noopener">User guide</a></p>
         </div>
       </section>
 

@@ -459,3 +459,12 @@ test("progress and cancel: a stalled download can be stopped; memory is shown", 
   await expect(page.locator("#task")).toBeHidden();
   await expect(page.locator("#memory")).toContainText(/WASM \d+ MB/);
 });
+
+test("demos: ?demo= loads synthetic samples and runs the analysis", async ({ page }) => {
+  await page.goto("/?demo=volume");
+  // A 4 m paraboloid heap (π r² h / 2 ≈ 402 m³) and a 45 m³ pit.
+  await expect(status(page)).toContainText(/Volume: fill 40\d\.\d+ m³, cut 4\d\.\d+ m³/);
+  await page.goto("/");
+  await page.locator('[data-demo="ground"]').click();
+  await expect(status(page)).toContainText(/town_csf: [\d,]+ of 69,200 points are ground/);
+});

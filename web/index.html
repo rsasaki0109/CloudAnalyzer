@@ -175,6 +175,19 @@
         <button id="filter-run" class="primary" disabled>Apply to a new cloud</button>
       </section>
 
+      <section id="merge-panel">
+        <h2>Merge / split</h2>
+        <button id="merge-run" disabled title="One cloud from all visible clouds; a source attribute remembers where each point came from">Merge visible clouds</button>
+        <label>Split <select id="split-cloud"></select></label>
+        <label>By
+          <select id="split-by">
+            <option value="classification">Classification (one cloud per class)</option>
+            <option value="source">Source (undo a merge)</option>
+          </select>
+        </label>
+        <button id="split-run" disabled>Split into new clouds</button>
+      </section>
+
       <section id="clip-panel">
         <h2>Clipping box</h2>
         <label class="check"><input id="clip-enabled" type="checkbox" /> Show only what is inside the box</label>

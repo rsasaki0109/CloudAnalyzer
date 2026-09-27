@@ -361,6 +361,28 @@ impl Cloud {
         })
     }
 
+    /// Distinct values of the `u8` attribute `name` (e.g. `"classification"`
+    /// or `"source"`), ascending, or `undefined` without that attribute.
+    #[wasm_bindgen(js_name = splitValues)]
+    pub fn split_values(&self, name: &str) -> Option<Vec<u8>> {
+        let groups = ca_core::merge::split_by(&self.inner, name)?;
+        Some(groups.into_iter().map(|(v, _)| v).collect())
+    }
+
+    /// An unindexed copy of the points whose attribute `name` is `value`.
+    #[wasm_bindgen(js_name = splitPart)]
+    pub fn split_part(&self, name: &str, value: u8) -> Result<Cloud, JsError> {
+        let Some(ca_core::Attribute {
+            values: AttributeValues::U8(values),
+            ..
+        }) = self.inner.attribute(name)
+        else {
+            return Err(JsError::new(&format!("no {name} attribute to split by")));
+        };
+        let keep: Vec<usize> = (0..values.len()).filter(|&i| values[i] == value).collect();
+        self.selected(&keep)
+    }
+
     /// Ground extraction (Cloth Simulation Filter) as a new cloud.
     /// `rigidness` is `"flat"`, `"relief"` or `"steep"`; `output` is
     /// `"classified"` (a copy with class 2 = ground, 1 = the rest),
@@ -1211,6 +1233,44 @@ impl SorPart {
 impl SorPart {
     fn part_point(&self, i: usize) -> [f64; 3] {
         self.part.point(i)
+    }
+}
+
+/// Builds one cloud from several (see [`ca_core::merge::Merger`]).
+#[wasm_bindgen]
+pub struct CloudMerger {
+    merger: ca_core::merge::Merger,
+}
+
+#[wasm_bindgen]
+impl CloudMerger {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> CloudMerger {
+        CloudMerger {
+            merger: ca_core::merge::Merger::new(),
+        }
+    }
+
+    /// Append a cloud; `r, g, b` colors its points if others have colors
+    /// and it has none.
+    pub fn add(&mut self, cloud: &Cloud, r: u8, g: u8, b: u8) -> Result<(), JsError> {
+        if self.merger.add(&cloud.inner, [r, g, b]) {
+            Ok(())
+        } else {
+            Err(JsError::new("at most 256 clouds can be merged"))
+        }
+    }
+
+    /// The merged cloud, not yet indexed, with a `source` attribute (the
+    /// index of the cloud each point came from).
+    pub fn finish(self) -> Cloud {
+        Cloud::unindexed(self.merger.finish())
+    }
+}
+
+impl Default for CloudMerger {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

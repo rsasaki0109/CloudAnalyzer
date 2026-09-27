@@ -5,6 +5,7 @@
 import init, {
   announcedPoints,
   Cloud,
+  CloudMerger,
   cloudToCloud,
   cloudToMesh,
   computeM3c2,
@@ -35,7 +36,15 @@ import type {
 } from "./protocol";
 
 type Item =
-  | { kind: "cloud"; cloud: Cloud; name: string; keepEvery?: number; filePoints?: number }
+  | {
+      kind: "cloud";
+      cloud: Cloud;
+      name: string;
+      keepEvery?: number;
+      filePoints?: number;
+      /** Names of the merged clouds, by `source` value. */
+      sources?: string[];
+    }
   | { kind: "mesh"; mesh: Mesh; name: string };
 
 const ready = init().then((wasm) => {
@@ -322,6 +331,7 @@ function describe(
       colors: null,
       intensity: null,
       classification: null,
+      sources: null,
       bounds: Array.from(item.mesh.bounds()),
       shift: shift!,
       lodNodes: new Float64Array(),
@@ -349,6 +359,7 @@ function describe(
     colors,
     intensity,
     classification,
+    sources: item.sources ?? null,
     bounds: Array.from(cloud.bounds()),
     shift: shift!,
     lodNodes,
@@ -534,6 +545,44 @@ async function handle(
       const suffix = { voxel: `voxel${req.a}`, random: `random${req.a}`, sor: "sor" }[req.op];
       items.set(id, { kind: "cloud", cloud: filtered, name: `${base}_${suffix}` });
       return describe(id, { parse: 0, index: performance.now() - t });
+    }
+    case "merge": {
+      const t = performance.now();
+      const merger = new CloudMerger();
+      const names: string[] = [];
+      req.ids.forEach((id, k) => {
+        merger.add(getCloud(id), ...req.fills[k]);
+        names.push(items.get(id)!.name);
+      });
+      const merged = merger.finish();
+      await buildIndex(merged);
+      const id = nextId++;
+      items.set(id, { kind: "cloud", cloud: merged, name: `merged_${names.length}`, sources: names });
+      return describe(id, { parse: 0, index: performance.now() - t });
+    }
+    case "split": {
+      const item = items.get(req.id);
+      if (item?.kind !== "cloud") throw new Error("not a point cloud");
+      const values = item.cloud.splitValues(req.by);
+      if (!values) throw new Error(`${item.name} has no ${req.by} to split by`);
+      const base = item.name.replace(/\.[^.]+$/, "");
+      const out: LoadedCloud[] = [];
+      const transfer: Transferable[] = [];
+      for (const v of values) {
+        const t = performance.now();
+        const part = item.cloud.splitPart(req.by, v);
+        await buildIndex(part);
+        const id = nextId++;
+        const name =
+          req.by === "source"
+            ? (item.sources?.[v] ?? `${base}_part${v}`)
+            : `${base}_class${v}`;
+        items.set(id, { kind: "cloud", cloud: part, name });
+        const described = describe(id, { parse: 0, index: performance.now() - t });
+        out.push(described.value);
+        transfer.push(...described.transfer);
+      }
+      return { value: out, transfer };
     }
     case "m3c2": {
       const start = performance.now();

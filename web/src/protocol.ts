@@ -21,6 +21,8 @@ export interface LoadedCloud {
   intensity: Float32Array | null;
   /** Per-point ASPRS class codes (octree order), or null. */
   classification: Uint8Array | null;
+  /** For a merged cloud, the names of the clouds its `source` attribute refers to. */
+  sources: string[] | null;
   /** Octree node table, see `Cloud.lodNodes()`. */
   lodNodes: Float64Array;
   lodGrid: number;
@@ -155,6 +157,8 @@ export type Request =
       /** Core points: one per voxel of this size (0 = every compared point). */
       coreSpacing: number;
     }
+  | { kind: "merge"; ids: number[]; fills: Vec3[] }
+  | { kind: "split"; id: number; by: "classification" | "source" }
   | { kind: "profile"; id: number; line: number[]; halfWidth: number; maxPoints: number }
   | {
       kind: "ground";

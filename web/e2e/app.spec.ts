@@ -384,3 +384,36 @@ test("profile: a line across two flat grids plots both, saves CSV and survives a
   await expect(other.locator("#profile-plot")).toBeVisible();
   await expect(other.locator("#profile-width")).toHaveValue("0.2");
 });
+
+test("merge and split: by class, and back into the merged files", async ({ page }) => {
+  const lasPoints = Array.from({ length: 100 }, (_, i) => ({
+    xyz: [i % 10, Math.floor(i / 10), 0] as [number, number, number],
+    intensity: 100,
+    cls: i < 60 ? 2 : 6,
+  }));
+  const plyPoints = Array.from({ length: 30 }, (_, i) => [i % 6, Math.floor(i / 6), 3] as [number, number, number]);
+  await open(page, [
+    { name: "a.las", buffer: las(lasPoints) },
+    { name: "b.ply", buffer: ply(plyPoints) },
+  ]);
+  await expect(status(page)).toContainText("Loaded b.ply");
+  await page.locator("#merge-run").click();
+  await expect(status(page)).toContainText("merged_2: 130 points from a.las, b.ply");
+
+  await page.locator("#split-cloud").selectOption({ label: "merged_2" });
+  await page.locator("#split-by").selectOption("classification");
+  await page.locator("#split-run").click();
+  // b.ply had no classes, so its points are class 0.
+  await expect(status(page)).toContainText("Split merged_2 into 3 clouds:");
+  await expect(status(page)).toContainText("(30)");
+  await expect(status(page)).toContainText("(60)");
+  await expect(status(page)).toContainText("(40)");
+
+  await page.locator("#split-cloud").selectOption({ label: "merged_2" });
+  await page.locator("#split-by").selectOption("source");
+  await page.locator("#split-run").click();
+  await expect(status(page)).toContainText("Split merged_2 into 2 clouds: a.las, b.ply");
+  const names = page.locator(".cloud-list li .name");
+  await expect(names.filter({ hasText: /^a\.las100 points/ })).toHaveCount(2);
+  await expect(names.filter({ hasText: /^b\.ply30 points/ })).toHaveCount(2);
+});

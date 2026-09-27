@@ -11,19 +11,17 @@ SLAM_TUTORIAL = REPO_ROOT / "docs" / "tutorial-slam-benchmark.md"
 SLAM_SMOKE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "slam-benchmark-smoke.yml"
 
 
-def test_readme_leads_with_ci_grade_artifact_qa():
+def test_readme_leads_with_the_web_viewer_and_links_the_cli():
     text = README.read_text(encoding="utf-8")
 
-    assert "Catch SLAM and 3D perception regressions before they ship." in text
-    assert "Why teams use CloudAnalyzer" in text
-    assert "Map AUC `1.0000`" in text
-    assert (REPO_ROOT / "docs/images/social-preview.svg").is_file()
+    assert "Point cloud viewer and analyzer that runs in your browser." in text
+    assert "https://rsasaki0109.github.io/CloudAnalyzer/app/" in text
+    assert (REPO_ROOT / "docs/images/web-viewer.png").is_file()
     assert (REPO_ROOT / "docs/images/social-preview.png").is_file()
-    assert "CI-grade QA evidence" in text
-    assert "inputs:   dataset suite + baseline/reference + candidate outputs" in text
-    assert "outputs:  metrics JSON + HTML report + pass/fail gate + leaderboard-ready result" in text
-    assert ".github/workflows/slam-benchmark-smoke.yml" in text
-    assert "docs/tutorial-slam-benchmark.md" in text
+    # The CI quality-gate CLI stays one click away, with its golden path.
+    assert "[`cloudanalyzer/`](cloudanalyzer/)" in text
+    cli = (REPO_ROOT / "cloudanalyzer" / "README.md").read_text(encoding="utf-8")
+    assert "docs/tutorial-slam-benchmark.md" in cli
 
 
 def test_slam_benchmark_tutorial_uses_checked_in_smoke_suite():

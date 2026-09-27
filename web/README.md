@@ -37,6 +37,15 @@ Files never leave the browser.
 - Filters that create a new cloud: one point per voxel, random subsampling,
   statistical outlier removal (SOR), and ground extraction with the Cloth
   Simulation Filter (classified copy, ground only, or non-ground only).
+- Share and sessions: **Share** copies a link that reopens the current view:
+  camera, display settings, how each cloud is shown (visibility, color mode,
+  ICP transforms, hidden classes, clipping box) and C2C / C2M distances,
+  which are recomputed. Clouds loaded from URLs (the sample, **Open URL**, or
+  `?url=https://…/cloud.laz` links, repeatable) are downloaded again; local
+  files are not uploaded anywhere, so whoever opens the link is asked to open
+  them. **Save session** writes the same state as JSON; open it together with
+  its files (or first, then the files). Remote servers must allow
+  cross-origin requests (CORS).
 - Works on phones and tablets: the view fills the screen and the panels
   open as a bottom sheet (**Panels**); drag to orbit, pinch to zoom, two
   fingers to pan, tap to pick, double-tap (or double-click) to orbit around

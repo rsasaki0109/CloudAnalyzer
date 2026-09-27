@@ -40,14 +40,15 @@ pub struct Octree {
     pub grid: u32,
 }
 
-/// Parameters for [`Octree::build`].
+/// Parameters for [`Octree::build_in_place`].
 #[derive(Debug, Clone, Copy)]
 pub struct OctreeParams {
     /// Nodes with at most this many points become leaves.
     pub max_leaf: usize,
-    /// Subsampling lattice resolution per node edge.
+    /// Subsampling lattice resolution per node edge; a power of two.
     pub grid: u32,
     /// Hard depth limit, which also bounds recursion on duplicate points.
+    /// Capped at [`MORTON_BITS`] levels.
     pub max_depth: u8,
 }
 
@@ -61,14 +62,41 @@ impl Default for OctreeParams {
     }
 }
 
+/// Quantisation bits per axis of the Morton codes used during the build.
+pub const MORTON_BITS: u32 = 21;
+
 impl Octree {
     /// Build an octree over `points`, reordering them in place into octree
     /// order (`order[i]` is the original index of the point now at `i`).
-    /// Working in place keeps every pass sequential in memory and needs no
-    /// scratch copy of the points. Returns `None` for an empty input or more
-    /// than `u32::MAX` points.
+    ///
+    /// The build works on 64-bit Morton codes of the points (quantised to
+    /// [`MORTON_BITS`] bits per axis within the root cube): octants and
+    /// lattice cells are just bit fields of the code, so no floating point is
+    /// needed per level. Points move together with their codes; the octant
+    /// partition writes eight sequential streams, which stays cache-friendly
+    /// even for randomly ordered input (a single final gather would not).
+    ///
+    /// Returns `None` for an empty input, more than `u32::MAX` points, or a
+    /// `grid` that is not a power of two.
     pub fn build_in_place(points: &mut [[f64; 3]], params: OctreeParams) -> Option<Self> {
-        if points.is_empty() || points.len() > u32::MAX as usize {
+        Self::build(points, None, params)
+    }
+
+    /// Like [`Octree::build_in_place`], reordering the cloud's colors along
+    /// with its positions.
+    pub fn build_for_cloud(cloud: &mut crate::PointCloud, params: OctreeParams) -> Option<Self> {
+        Self::build(&mut cloud.positions, cloud.colors.as_deref_mut(), params)
+    }
+
+    fn build(
+        points: &mut [[f64; 3]],
+        colors: Option<&mut [[u8; 3]]>,
+        params: OctreeParams,
+    ) -> Option<Self> {
+        if colors.as_ref().is_some_and(|c| c.len() != points.len()) {
+            return None;
+        }
+        if points.is_empty() || points.len() > u32::MAX as usize || !params.grid.is_power_of_two() {
             return None;
         }
         let (lo, hi) = bounds(points);
@@ -76,15 +104,36 @@ impl Octree {
             .map(|a| hi[a] - lo[a])
             .fold(0.0f64, f64::max)
             .max(f64::MIN_POSITIVE);
-        let len = points.len();
+        let cells = (1u64 << MORTON_BITS) as f64;
+        let scale = cells / size;
+        let quantize = |v: f64, a: usize| -> u64 {
+            (((v - lo[a]) * scale) as u64).min((1 << MORTON_BITS) - 1)
+        };
+        let codes: Vec<u64> = points
+            .iter()
+            .map(|p| {
+                spread_bits(quantize(p[0], 0))
+                    | spread_bits(quantize(p[1], 1)) << 1
+                    | spread_bits(quantize(p[2], 2)) << 2
+            })
+            .collect();
+        let grid_bits = params.grid.trailing_zeros();
+        let order = (0..points.len() as u32).collect();
         let mut builder = Builder {
-            order: (0..len as u32).collect(),
             points,
-            params,
-            stamps: vec![0; (params.grid as usize).pow(3)],
+            colors,
+            codes,
+            order,
+            params: OctreeParams {
+                max_depth: params.max_depth.min(MORTON_BITS as u8),
+                ..params
+            },
+            grid_bits,
+            stamps: vec![0; 1usize << (3 * grid_bits)],
             stamp: 0,
             nodes: Vec::new(),
         };
+        let len = builder.codes.len();
         builder.node(0, len, lo, size, 0);
         Some(Self {
             order: builder.order,
@@ -94,10 +143,25 @@ impl Octree {
     }
 }
 
+/// Insert two zero bits between each of the low 21 bits of `v`.
+fn spread_bits(v: u64) -> u64 {
+    let mut x = v & 0x1f_ffff;
+    x = (x | x << 32) & 0x1f_0000_0000_ffff;
+    x = (x | x << 16) & 0x1f_0000_ff00_00ff;
+    x = (x | x << 8) & 0x100f_00f0_0f00_f00f;
+    x = (x | x << 4) & 0x10c3_0c30_c30c_30c3;
+    x = (x | x << 2) & 0x1249_2492_4924_9249;
+    x
+}
+
 struct Builder<'a> {
     points: &'a mut [[f64; 3]],
-    params: OctreeParams,
+    colors: Option<&'a mut [[u8; 3]]>,
+    /// Morton code of each point, permuted together with `points` and `order`.
+    codes: Vec<u64>,
     order: Vec<u32>,
+    params: OctreeParams,
+    grid_bits: u32,
     /// Per-cell "last seen" marker, reused across nodes to avoid clearing.
     stamps: Vec<u32>,
     stamp: u32,
@@ -107,10 +171,14 @@ struct Builder<'a> {
 impl Builder<'_> {
     fn swap(&mut self, a: usize, b: usize) {
         self.points.swap(a, b);
+        if let Some(colors) = self.colors.as_deref_mut() {
+            colors.swap(a, b);
+        }
+        self.codes.swap(a, b);
         self.order.swap(a, b);
     }
 
-    /// Build the node for `points[lo..hi]` and return its index.
+    /// Build the node for `codes[lo..hi]` and return its index.
     fn node(&mut self, lo: usize, hi: usize, min: [f64; 3], size: f64, level: u8) -> u32 {
         let id = self.nodes.len();
         self.nodes.push(OctreeNode {
@@ -126,20 +194,21 @@ impl Builder<'_> {
         }
 
         // Keep the first point of every occupied lattice cell here, moving
-        // those points to the front of the range.
+        // those points to the front of the range. The cell is the next
+        // `grid_bits` octree levels below this node, i.e. a bit field of the
+        // code (coarser near the bottom where fewer bits remain).
         self.stamp = self.stamp.wrapping_add(1);
         if self.stamp == 0 {
             self.stamps.fill(0);
             self.stamp = 1;
         }
-        let grid = self.params.grid as usize;
-        let scale = grid as f64 / size;
+        let below = MORTON_BITS - u32::from(level);
+        let cell_levels = self.grid_bits.min(below);
+        let shift = 3 * (below - cell_levels);
+        let mask = (1u64 << (3 * cell_levels)) - 1;
         let mut kept = lo;
         for i in lo..hi {
-            let p = self.points[i];
-            let cell: [usize; 3] =
-                std::array::from_fn(|a| (((p[a] - min[a]) * scale) as usize).min(grid - 1));
-            let key = (cell[2] * grid + cell[1]) * grid + cell[0];
+            let key = ((self.codes[i] >> shift) & mask) as usize;
             if self.stamps[key] != self.stamp {
                 self.stamps[key] = self.stamp;
                 self.swap(kept, i);
@@ -149,16 +218,12 @@ impl Builder<'_> {
         self.nodes[id].count = (kept - lo) as u32;
 
         // In-place 8-way partition of the remaining points by octant
-        // (American flag sort).
-        let half = 0.5 * size;
-        let octant = |p: &[f64; 3]| -> usize {
-            (0..3)
-                .map(|a| usize::from(p[a] >= min[a] + half) << a)
-                .sum()
-        };
+        // (American flag sort) on the next three code bits.
+        let octant_shift = 3 * (below - 1);
+        let octant = |code: u64| ((code >> octant_shift) & 7) as usize;
         let mut counts = [0usize; 8];
-        for p in &self.points[kept..hi] {
-            counts[octant(p)] += 1;
+        for &code in &self.codes[kept..hi] {
+            counts[octant(code)] += 1;
         }
         let mut starts = [0usize; 8];
         let mut acc = kept;
@@ -170,7 +235,7 @@ impl Builder<'_> {
         for o in 0..8 {
             let end = starts[o] + counts[o];
             while next[o] < end {
-                let target = octant(&self.points[next[o]]);
+                let target = octant(self.codes[next[o]]);
                 if target == o {
                     next[o] += 1;
                 } else {
@@ -180,6 +245,7 @@ impl Builder<'_> {
             }
         }
 
+        let half = 0.5 * size;
         for o in 0..8 {
             if counts[o] == 0 {
                 continue;
@@ -284,6 +350,31 @@ mod tests {
         assert!(root.children.iter().any(|&c| c != NO_CHILD));
         assert!(root.count as usize <= 32 * 32 * 32);
         assert!(root.count > 0);
+    }
+
+    #[test]
+    fn colors_follow_their_points() {
+        let original = grid_points(120);
+        let mut cloud = crate::PointCloud {
+            positions: original.clone(),
+            colors: Some(
+                (0..original.len())
+                    .map(|i| [i as u8, (i >> 8) as u8, (i >> 16) as u8])
+                    .collect(),
+            ),
+        };
+        let tree = Octree::build_for_cloud(&mut cloud, params(400, 16)).unwrap();
+        let colors = cloud.colors.unwrap();
+        for (i, &o) in tree.order.iter().enumerate() {
+            assert_eq!(cloud.positions[i], original[o as usize]);
+            assert_eq!(colors[i], [o as u8, (o >> 8) as u8, (o >> 16) as u8]);
+        }
+    }
+
+    #[test]
+    fn rejects_non_power_of_two_grid() {
+        let mut points = grid_points(10);
+        assert!(Octree::build_in_place(&mut points, params(10, 100)).is_none());
     }
 
     #[test]

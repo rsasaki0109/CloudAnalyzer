@@ -13,6 +13,8 @@ export interface LoadedCloud {
   /** Octree node table, see `Cloud.lodNodes()`. */
   lodNodes: Float64Array;
   lodGrid: number;
+  /** Milliseconds spent in each loading stage inside the worker. */
+  timings: { parse: number; index: number; prepare: number };
   /** [minX, minY, minZ, maxX, maxY, maxZ] in original coordinates. */
   bounds: number[];
   shift: Vec3;
@@ -68,3 +70,8 @@ export type Request =
 export type Response =
   | { ok: true; value: unknown }
   | { ok: false; error: string };
+
+/** Worker -> UI messages: a final response, or a progress note for a request. */
+export type WorkerMessage =
+  | { seq: number; response: Response }
+  | { seq: number; progress: string };

@@ -22,10 +22,23 @@ pub struct Cloud {
 #[wasm_bindgen]
 impl Cloud {
     /// Parse a file; the format is detected from `name` and the leading bytes.
+    /// Call [`Cloud::build_index`] before using any per-point output.
     pub fn parse(name: &str, bytes: &[u8]) -> Result<Cloud, JsError> {
-        let mut inner = ca_core::read(name, bytes)?;
-        let lod = build_lod(&mut inner)?;
+        let inner = ca_core::read(name, bytes)?;
+        let lod = Octree {
+            order: Vec::new(),
+            nodes: Vec::new(),
+            grid: OctreeParams::default().grid,
+        };
         Ok(Cloud { inner, lod })
+    }
+
+    /// Build the level-of-detail octree, reordering the points (a separate
+    /// step so callers can report progress).
+    #[wasm_bindgen(js_name = buildIndex)]
+    pub fn build_index(&mut self) -> Result<(), JsError> {
+        self.lod = build_lod(&mut self.inner)?;
+        Ok(())
     }
 
     /// Apply a rigid transform (row-major 4x4) to every point and rebuild the
@@ -66,12 +79,15 @@ impl Cloud {
         let shift: [f64; 3] = shift
             .try_into()
             .map_err(|_| JsError::new("shift must have 3 components"))?;
-        Ok(self
-            .inner
-            .positions
-            .iter()
-            .flat_map(|p| (0..3).map(move |a| (p[a] - shift[a]) as f32))
-            .collect())
+        let mut out = Vec::with_capacity(self.inner.len() * 3);
+        for p in &self.inner.positions {
+            out.extend([
+                (p[0] - shift[0]) as f32,
+                (p[1] - shift[1]) as f32,
+                (p[2] - shift[2]) as f32,
+            ]);
+        }
+        Ok(out)
     }
 
     /// Exact `f64` coordinates of point `index` (octree order), or
@@ -85,7 +101,7 @@ impl Cloud {
         self.inner
             .colors
             .as_ref()
-            .map(|c| c.iter().flatten().copied().collect())
+            .map(|c| c.as_flattened().to_vec())
     }
 
     /// Octree nodes, 15 numbers each: `start, count, minX, minY, minZ, size,
@@ -117,11 +133,8 @@ impl Cloud {
 /// Reorder `cloud` in place into octree order (colors follow) and return
 /// the octree without the permutation, which the viewer does not need.
 fn build_lod(cloud: &mut PointCloud) -> Result<Octree, JsError> {
-    let mut lod = Octree::build_in_place(&mut cloud.positions, OctreeParams::default())
+    let mut lod = Octree::build_for_cloud(cloud, OctreeParams::default())
         .ok_or_else(|| JsError::new("cloud is empty or too large"))?;
-    if let Some(colors) = cloud.colors.as_mut() {
-        *colors = lod.order.iter().map(|&i| colors[i as usize]).collect();
-    }
     lod.order = Vec::new();
     Ok(lod)
 }

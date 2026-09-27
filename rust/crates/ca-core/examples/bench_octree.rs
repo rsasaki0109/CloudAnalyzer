@@ -6,9 +6,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let path = std::env::args()
         .nth(1)
         .ok_or("usage: bench_octree <file>")?;
-    let mut cloud = ca_core::read(&path, &std::fs::read(&path)?)?;
+    let bytes = std::fs::read(&path)?;
     let start = Instant::now();
-    let tree = ca_core::octree::Octree::build_in_place(&mut cloud.positions, Default::default())
+    let mut cloud = ca_core::read(&path, &bytes)?;
+    println!("parse={:.0} ms", start.elapsed().as_secs_f64() * 1e3);
+    let start = Instant::now();
+    let tree = ca_core::octree::Octree::build_for_cloud(&mut cloud, Default::default())
         .ok_or("empty cloud")?;
     let depth = tree.nodes.iter().map(|n| n.level).max().unwrap_or(0);
     println!(

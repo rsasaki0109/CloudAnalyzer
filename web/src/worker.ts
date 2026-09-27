@@ -9,7 +9,7 @@ import init, {
   summarizeDistances,
 } from "./wasm/ca_wasm.js";
 import { MIN_PARALLEL_QUERIES, poolSize, runSlices } from "./pool";
-import type { C2cOutput, IcpOutput, LoadedCloud, Request, Response, Vec3 } from "./protocol";
+import type { C2cOutput, IcpOutput, LoadedCloud, Request, Response, Vec3, WorkerMessage } from "./protocol";
 
 const ready = init();
 const clouds = new Map<number, { cloud: Cloud; name: string }>();
@@ -44,7 +44,11 @@ async function parallelCloudToCloud(
 }
 
 /** Everything the UI needs to draw a cloud; buffers are listed for transfer. */
-function describe(id: number): { value: LoadedCloud; transfer: Transferable[] } {
+function describe(
+  id: number,
+  timings: Omit<LoadedCloud["timings"], "prepare"> = { parse: 0, index: 0 },
+): { value: LoadedCloud; transfer: Transferable[] } {
+  const start = performance.now();
   const { cloud, name } = clouds.get(id)!;
   const positions = cloud.positions(new Float64Array(shift!));
   const colors = cloud.colors() ?? null;
@@ -59,6 +63,7 @@ function describe(id: number): { value: LoadedCloud; transfer: Transferable[] } 
     shift: shift!,
     lodNodes,
     lodGrid: cloud.lodGrid,
+    timings: { ...timings, prepare: performance.now() - start },
   };
   const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
   if (colors) transfer.push(colors.buffer);
@@ -71,15 +76,26 @@ function get(id: number): Cloud {
   return entry.cloud;
 }
 
-async function handle(req: Request): Promise<{ value: unknown; transfer: Transferable[] }> {
+async function handle(
+  req: Request,
+  progress: (note: string) => void,
+): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
     case "load": {
+      progress("parsing");
+      let t = performance.now();
       const cloud = Cloud.parse(req.name, new Uint8Array(req.bytes));
+      const parse = performance.now() - t;
+      progress(`indexing ${cloud.length.toLocaleString()} points`);
+      t = performance.now();
+      cloud.buildIndex();
+      const index = performance.now() - t;
       shift ??= Array.from(cloud.suggestedShift()) as Vec3;
       const id = nextId++;
       clouds.set(id, { cloud, name: req.name });
-      return describe(id);
+      progress("preparing for display");
+      return describe(id, { parse, index });
     }
     case "c2c": {
       const compared = get(req.compared);
@@ -155,8 +171,12 @@ self.onmessage = async (event: MessageEvent<{ seq: number; req: Request }>) => {
   const { seq, req } = event.data;
   let response: Response;
   let transfer: Transferable[] = [];
+  const progress = (note: string) => {
+    const message: WorkerMessage = { seq, progress: note };
+    self.postMessage(message);
+  };
   try {
-    const out = await handle(req);
+    const out = await handle(req, progress);
     response = { ok: true, value: out.value };
     transfer = out.transfer;
   } catch (err) {

@@ -1,30 +1,41 @@
 // Promise-based client for the WASM worker.
 
-import type { C2cOutput, IcpOutput, LoadedCloud, Request, Response } from "./protocol";
+import type { C2cOutput, IcpOutput, LoadedCloud, Request, WorkerMessage } from "./protocol";
 
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
-const pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
+const pending = new Map<
+  number,
+  { resolve: (v: unknown) => void; reject: (e: Error) => void; progress?: (note: string) => void }
+>();
 let seq = 0;
 
-worker.onmessage = (event: MessageEvent<{ seq: number; response: Response }>) => {
-  const { seq, response } = event.data;
-  const entry = pending.get(seq);
+worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
+  const message = event.data;
+  const entry = pending.get(message.seq);
   if (!entry) return;
-  pending.delete(seq);
-  if (response.ok) entry.resolve(response.value);
-  else entry.reject(new Error(response.error));
+  if ("progress" in message) {
+    entry.progress?.(message.progress);
+    return;
+  }
+  pending.delete(message.seq);
+  if (message.response.ok) entry.resolve(message.response.value);
+  else entry.reject(new Error(message.response.error));
 };
 
-function call<T>(req: Request, transfer: Transferable[] = []): Promise<T> {
+function call<T>(req: Request, transfer: Transferable[] = [], progress?: (note: string) => void): Promise<T> {
   const id = ++seq;
   return new Promise<T>((resolve, reject) => {
-    pending.set(id, { resolve: resolve as (v: unknown) => void, reject });
+    pending.set(id, { resolve: resolve as (v: unknown) => void, reject, progress });
     worker.postMessage({ seq: id, req }, { transfer });
   });
 }
 
-export function loadCloud(name: string, bytes: ArrayBuffer): Promise<LoadedCloud> {
-  return call({ kind: "load", name, bytes }, [bytes]);
+export function loadCloud(
+  name: string,
+  bytes: ArrayBuffer,
+  progress?: (note: string) => void,
+): Promise<LoadedCloud> {
+  return call({ kind: "load", name, bytes }, [bytes], progress);
 }
 
 export function cloudToCloud(compared: number, reference: number): Promise<C2cOutput> {

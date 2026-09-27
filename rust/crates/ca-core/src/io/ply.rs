@@ -152,16 +152,116 @@ pub(crate) fn read(bytes: &[u8]) -> Result<PointCloud, IoError> {
     }
 }
 
+/// Record size of an element without list properties.
+fn fixed_stride(element: &Element) -> Option<usize> {
+    element
+        .properties
+        .iter()
+        .map(|p| match p {
+            Property::Scalar { kind, .. } => Some(kind.size()),
+            Property::List { .. } => None,
+        })
+        .sum()
+}
+
+fn read_fixed_vertices(
+    records: &[u8],
+    stride: usize,
+    element: &Element,
+    le: bool,
+) -> Result<PointCloud, IoError> {
+    let layout = vertex_layout(element)?;
+    let mut offsets = Vec::with_capacity(element.properties.len());
+    let mut offset = 0;
+    for property in &element.properties {
+        offsets.push(offset);
+        if let Property::Scalar { kind, .. } = property {
+            offset += kind.size();
+        }
+    }
+    let field = |i: usize| match element.properties[i] {
+        Property::Scalar { kind, .. } => (offsets[i], kind),
+        Property::List { .. } => unreachable!("fixed-size element"),
+    };
+    let xyz = layout.xyz.map(field);
+    let rgb = layout.rgb.map(|(idx, _)| idx.map(field));
+    let mut cloud = layout.empty_cloud(element.count);
+    // The common little-endian float/double + uchar layouts get a
+    // monomorphic loop; everything else goes through `Scalar::decode`.
+    if le && read_common_layout(records, stride, xyz, rgb, &mut cloud) {
+        return Ok(cloud);
+    }
+    // Stride 0 would mean a vertex with no properties, which vertex_layout rejects.
+    for record in records.chunks_exact(stride) {
+        cloud
+            .positions
+            .push(xyz.map(|(at, kind)| kind.decode(&record[at..], le)));
+        if let (Some(colors), Some(rgb)) = (cloud.colors.as_mut(), rgb) {
+            colors.push(rgb.map(|(at, kind)| color_channel(kind.decode(&record[at..], le), kind)));
+        }
+    }
+    Ok(cloud)
+}
+
+/// Fast path for little-endian x/y/z that are all `float` or all `double`
+/// and colors (if any) that are all `uchar`. Returns false if not applicable.
+fn read_common_layout(
+    records: &[u8],
+    stride: usize,
+    xyz: [(usize, Scalar); 3],
+    rgb: Option<[(usize, Scalar); 3]>,
+    cloud: &mut PointCloud,
+) -> bool {
+    let kind = xyz[0].1;
+    if !xyz.iter().all(|&(_, k)| k == kind) || !matches!(kind, Scalar::F32 | Scalar::F64) {
+        return false;
+    }
+    if rgb.is_some_and(|c| c.iter().any(|&(_, k)| k != Scalar::U8)) {
+        return false;
+    }
+    let at = xyz.map(|(offset, _)| offset);
+    let size = kind.size();
+    if at.iter().any(|&a| a + size > stride) {
+        return false;
+    }
+    for record in records.chunks_exact(stride) {
+        let p = if kind == Scalar::F32 {
+            at.map(|a| f32::from_le_bytes(record[a..a + 4].try_into().unwrap()) as f64)
+        } else {
+            at.map(|a| f64::from_le_bytes(record[a..a + 8].try_into().unwrap()))
+        };
+        cloud.positions.push(p);
+    }
+    if let (Some(colors), Some(rgb)) = (cloud.colors.as_mut(), rgb) {
+        let at = rgb.map(|(offset, _)| offset);
+        colors.extend(records.chunks_exact(stride).map(|r| at.map(|a| r[a])));
+    }
+    true
+}
+
 fn read_binary(body: &[u8], elements: &[Element], le: bool) -> Result<PointCloud, IoError> {
     let mut cursor = 0usize;
-    let mut take = |n: usize| -> Result<&[u8], IoError> {
-        let slice = body
-            .get(cursor..cursor + n)
-            .ok_or(IoError::Truncated(FORMAT))?;
-        cursor += n;
-        Ok(slice)
-    };
     for element in elements {
+        // Fixed-size records (no list properties) are read field by field at
+        // known offsets, skipping everything but x/y/z and colors.
+        if let Some(stride) = fixed_stride(element) {
+            let len = stride * element.count;
+            let records = body
+                .get(cursor..cursor + len)
+                .ok_or(IoError::Truncated(FORMAT))?;
+            cursor += len;
+            if element.name == "vertex" {
+                return read_fixed_vertices(records, stride, element, le);
+            }
+            continue;
+        }
+        let mut take = |n: usize| -> Result<&[u8], IoError> {
+            let slice = body
+                .get(cursor..cursor + n)
+                .ok_or(IoError::Truncated(FORMAT))?;
+            cursor += n;
+            Ok(slice)
+        };
         let layout = if element.name == "vertex" {
             Some(vertex_layout(element)?)
         } else {
@@ -289,6 +389,62 @@ property float z\nproperty float red\nproperty float green\nproperty float blue\
         let cloud = read(&src).unwrap();
         assert_eq!(cloud.positions, vec![[1.0, -2.0, 3.5]]);
         assert_eq!(cloud.colors, Some(vec![[255, 128, 0]]));
+    }
+
+    #[test]
+    fn reads_interleaved_float_and_uchar_fields() {
+        let mut src = b"ply
+format binary_little_endian 1.0
+element vertex 2
+property uchar red
+property float x
+property ushort label
+property float y
+property float z
+property uchar green
+property uchar blue
+end_header
+"
+        .to_vec();
+        for (r, p, l, g, b) in [
+            (9u8, [1.5f32, 2.0, -3.0], 7u16, 8u8, 7u8),
+            (1, [4.0, 5.0, 6.25], 0, 2, 3),
+        ] {
+            src.push(r);
+            src.extend_from_slice(&p[0].to_le_bytes());
+            src.extend_from_slice(&l.to_le_bytes());
+            src.extend_from_slice(&p[1].to_le_bytes());
+            src.extend_from_slice(&p[2].to_le_bytes());
+            src.extend_from_slice(&[g, b]);
+        }
+        let cloud = read(&src).unwrap();
+        assert_eq!(cloud.positions, vec![[1.5, 2.0, -3.0], [4.0, 5.0, 6.25]]);
+        assert_eq!(cloud.colors, Some(vec![[9, 8, 7], [1, 2, 3]]));
+    }
+
+    #[test]
+    fn mixed_coordinate_types_use_the_general_path() {
+        let mut src = b"ply
+format binary_little_endian 1.0
+element vertex 1
+property float x
+property double y
+property int z
+property ushort red
+property ushort green
+property ushort blue
+end_header
+"
+        .to_vec();
+        src.extend_from_slice(&0.5f32.to_le_bytes());
+        src.extend_from_slice(&(-2.25f64).to_le_bytes());
+        src.extend_from_slice(&7i32.to_le_bytes());
+        for c in [65535u16, 0, 32896] {
+            src.extend_from_slice(&c.to_le_bytes());
+        }
+        let cloud = read(&src).unwrap();
+        assert_eq!(cloud.positions, vec![[0.5, -2.25, 7.0]]);
+        assert_eq!(cloud.colors, Some(vec![[255, 0, 128]]));
     }
 
     #[test]

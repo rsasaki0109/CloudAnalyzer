@@ -17,6 +17,14 @@ interface LodCloud {
   visible: boolean;
 }
 
+export interface PickHit {
+  cloudId: number;
+  /** Point index in the cloud's octree order. */
+  index: number;
+  /** Position in render (shifted) coordinates. */
+  position: THREE.Vector3;
+}
+
 export class Viewer {
   readonly scene = new THREE.Scene();
   readonly camera: THREE.PerspectiveCamera;
@@ -29,6 +37,11 @@ export class Viewer {
   private needsLod = true;
   /** Called with the number of points drawn after each LOD update. */
   onDrawn: (points: number) => void = () => {};
+  /** Called for a click that was not a camera drag. */
+  onClick: (clientX: number, clientY: number) => void = () => {};
+  /** Called after every rendered frame, e.g. to move HTML overlays. */
+  onAfterRender: () => void = () => {};
+  private readonly annotations = new THREE.Group();
 
   constructor(private readonly container: HTMLElement) {
     THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -48,6 +61,22 @@ export class Viewer {
     const axes = new THREE.AxesHelper(1);
     axes.name = "axes";
     this.scene.add(axes);
+
+    this.annotations.renderOrder = 1;
+    this.scene.add(this.annotations);
+
+    // A click is a press and release without moving the camera.
+    let down: { x: number; y: number; time: number } | null = null;
+    const canvas = this.renderer.domElement;
+    canvas.addEventListener("pointerdown", (e) => {
+      down = e.button === 0 ? { x: e.clientX, y: e.clientY, time: performance.now() } : null;
+    });
+    canvas.addEventListener("pointerup", (e) => {
+      if (!down || e.button !== 0) return;
+      const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
+      if (moved < 5 && performance.now() - down.time < 600) this.onClick(e.clientX, e.clientY);
+      down = null;
+    });
 
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
@@ -85,6 +114,7 @@ export class Viewer {
       this.updateLod();
     }
     this.renderer.render(this.scene, this.camera);
+    this.onAfterRender();
   };
 
   private updateLod(): void {
@@ -205,6 +235,114 @@ export class Viewer {
   setPointBudget(points: number): void {
     this.pointBudget = points;
     this.requestRender(true);
+  }
+
+  /**
+   * The front-most drawn point within `radiusPx` CSS pixels of a screen
+   * position, or null. Only nodes currently drawn are searched, so the
+   * result is always a point the user can see.
+   */
+  pick(clientX: number, clientY: number, radiusPx = 6): PickHit | null {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const ndc = new THREE.Vector2(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(ndc, this.camera);
+    const { origin, direction } = raycaster.ray;
+    // Allowed distance from the ray grows linearly with depth.
+    const pixelsPerUnit = rect.height / (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2));
+    const slope = radiusPx / pixelsPerUnit;
+    const slope2 = slope * slope;
+    const box = new THREE.Box3();
+    // Collect every drawn point inside the pick cone, then take the one
+    // closest to the cursor among those at (nearly) the front-most depth.
+    const candidates: { cloud: LodCloud; index: number; depth: number; perp2: number }[] = [];
+    for (const cloud of this.clouds.values()) {
+      if (!cloud.visible) continue;
+      for (const [index, object] of cloud.objects) {
+        if (!object.visible) continue;
+        const node = cloud.nodes[index];
+        const reach = node.box.distanceToPoint(origin) + node.box.max.distanceTo(node.box.min);
+        box.copy(node.box).expandByScalar(slope * reach);
+        if (!raycaster.ray.intersectsBox(box)) continue;
+        const p = cloud.positions;
+        for (let i = node.start, end = node.start + node.count; i < end; i++) {
+          const vx = p[i * 3] - origin.x;
+          const vy = p[i * 3 + 1] - origin.y;
+          const vz = p[i * 3 + 2] - origin.z;
+          const depth = vx * direction.x + vy * direction.y + vz * direction.z;
+          if (depth <= this.camera.near) continue;
+          const perp2 = vx * vx + vy * vy + vz * vz - depth * depth;
+          if (perp2 <= slope2 * depth * depth) candidates.push({ cloud, index: i, depth, perp2 });
+        }
+      }
+    }
+    if (candidates.length === 0) return null;
+    let front = Number.POSITIVE_INFINITY;
+    for (const c of candidates) front = Math.min(front, c.depth);
+    let best = candidates[0];
+    let bestScore = Number.POSITIVE_INFINITY;
+    for (const c of candidates) {
+      if (c.depth > front * 1.01) continue;
+      // Compare angular offsets so near and far candidates are judged alike.
+      const score = c.perp2 / (c.depth * c.depth);
+      if (score < bestScore) {
+        bestScore = score;
+        best = c;
+      }
+    }
+    const p = best.cloud.positions;
+    return {
+      cloudId: best.cloud.id,
+      index: best.index,
+      position: new THREE.Vector3(p[best.index * 3], p[best.index * 3 + 1], p[best.index * 3 + 2]),
+    };
+  }
+
+  /** Replace the markers and line segments drawn on top of the clouds. */
+  setAnnotations(
+    markers: { position: THREE.Vector3; color: string }[],
+    segments: [THREE.Vector3, THREE.Vector3][],
+  ): void {
+    for (const child of [...this.annotations.children]) {
+      this.annotations.remove(child);
+      const object = child as THREE.Points | THREE.LineSegments;
+      object.geometry.dispose();
+      (object.material as THREE.Material).dispose();
+    }
+    if (markers.length) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(markers.map((m) => m.position));
+      const colors = markers.flatMap((m) => new THREE.Color(m.color).toArray());
+      geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
+      const material = new THREE.PointsMaterial({
+        size: 11,
+        sizeAttenuation: false,
+        vertexColors: true,
+        depthTest: false,
+        transparent: true,
+      });
+      const points = new THREE.Points(geometry, material);
+      points.renderOrder = 2;
+      this.annotations.add(points);
+    }
+    if (segments.length) {
+      const geometry = new THREE.BufferGeometry().setFromPoints(segments.flat());
+      const material = new THREE.LineBasicMaterial({ color: 0x4fc3f7, depthTest: false, transparent: true });
+      const lines = new THREE.LineSegments(geometry, material);
+      lines.renderOrder = 1;
+      this.annotations.add(lines);
+    }
+    this.requestRender();
+  }
+
+  /** CSS pixel position of a render-space point inside the viewport, or null when behind the camera. */
+  project(position: THREE.Vector3): { x: number; y: number } | null {
+    const v = position.clone().project(this.camera);
+    if (v.z < -1 || v.z > 1) return null;
+    const { clientWidth: w, clientHeight: h } = this.renderer.domElement;
+    return { x: ((v.x + 1) / 2) * w, y: ((1 - v.y) / 2) * h };
   }
 
   /** Frame all visible clouds, keeping the current viewing direction. */

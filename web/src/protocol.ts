@@ -40,7 +40,8 @@ export interface C2cOutput {
 export type Request =
   | { kind: "load"; name: string; bytes: ArrayBuffer }
   | { kind: "c2c"; compared: number; reference: number }
-  | { kind: "remove"; id: number };
+  | { kind: "remove"; id: number }
+  | { kind: "point"; id: number; index: number };
 
 export type Response =
   | { ok: true; value: unknown }

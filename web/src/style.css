@@ -91,6 +91,29 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 .cloud-list .remove:hover { color: var(--danger); }
 .cloud-list select { grid-column: 3 / 5; font-size: 12px; }
 
+button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.viewport.measuring canvas { cursor: crosshair; }
+
+.labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.labels span {
+  position: absolute;
+  transform: translate(-50%, -150%);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgb(16 17 20 / 0.85);
+  border: 1px solid #4fc3f7;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.measure-list { margin: 0 0 8px; padding-left: 20px; font-variant-numeric: tabular-nums; }
+.measure-list li { margin-bottom: 6px; }
+.measure-list .distance { font-weight: 600; }
+.measure-list .delta { display: block; color: var(--muted); font-size: 11px; }
+.measure-list .remove { border: none; background: none; color: var(--muted); padding: 0 4px; float: right; }
+.measure-list .remove:hover { color: var(--danger); }
+
 .stats { width: 100%; border-collapse: collapse; margin: 8px 0; font-variant-numeric: tabular-nums; }
 .stats th { text-align: left; font-weight: normal; color: var(--muted); padding: 2px 0; }
 .stats td { text-align: right; padding: 2px 0; }

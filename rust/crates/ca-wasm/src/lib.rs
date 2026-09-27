@@ -65,6 +65,12 @@ impl Cloud {
             .collect())
     }
 
+    /// Exact `f64` coordinates of point `index` (octree order), or
+    /// `undefined` when out of range.
+    pub fn point(&self, index: usize) -> Option<Vec<f64>> {
+        self.inner.positions.get(index).map(|p| p.to_vec())
+    }
+
     /// Interleaved `rgb` bytes, or `undefined` when the file has no colors.
     pub fn colors(&self) -> Option<Vec<u8>> {
         self.inner

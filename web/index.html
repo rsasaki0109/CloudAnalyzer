@@ -2,13 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>CloudAnalyzer Web</title>
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <header class="toolbar">
       <span class="brand">CloudAnalyzer <em>Web</em></span>
+      <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
         accept=".ply,.pcd,.las,.laz,.xyz,.txt,.csv,.pts,.asc,.obj,.stl" />
@@ -39,7 +40,7 @@
       </label>
     </header>
 
-    <aside class="sidebar">
+    <aside id="sidebar" class="sidebar">
       <section>
         <h2>Clouds</h2>
         <label class="inline max-points" title="Larger files keep every n-th point so they fit in memory">Max points per file

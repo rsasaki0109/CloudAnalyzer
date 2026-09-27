@@ -37,6 +37,10 @@ Files never leave the browser.
 - Filters that create a new cloud: one point per voxel, random subsampling,
   statistical outlier removal (SOR), and ground extraction with the Cloth
   Simulation Filter (classified copy, ground only, or non-ground only).
+- Works on phones and tablets: the view fills the screen and the panels
+  open as a bottom sheet (**Panels**); drag to orbit, pinch to zoom, two
+  fingers to pan, tap to pick, double-tap (or double-click) to orbit around
+  a point.
 - Click a point to see its exact coordinates, color and C2C distance; press
   **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
 - Large files: LAS and binary PLY/PCD are streamed in 16 MB slices, so the

@@ -39,8 +39,10 @@ export class Viewer {
   private needsLod = true;
   /** Called with the number of points drawn after each LOD update. */
   onDrawn: (points: number) => void = () => {};
-  /** Called for a click that was not a camera drag. */
+  /** Called for a click (or tap) that was not a camera drag. */
   onClick: (clientX: number, clientY: number) => void = () => {};
+  /** Called for a double click or double tap, after both clicks. */
+  onDoubleClick: (clientX: number, clientY: number) => void = () => {};
   /** Called after every rendered frame, e.g. to move HTML overlays. */
   onAfterRender: () => void = () => {};
   private readonly annotations = new THREE.Group();
@@ -84,17 +86,41 @@ export class Viewer {
     this.annotations.renderOrder = 1;
     this.scene.add(this.annotations);
 
-    // A click is a press and release without moving the camera.
+    // A click is a press and release of a single pointer without moving
+    // the camera; a second finger (pinch, two-finger pan) cancels it.
     let down: { x: number; y: number; time: number } | null = null;
+    let last: { x: number; y: number; time: number } | null = null;
+    const active = new Set<number>();
     const canvas = this.renderer.domElement;
     canvas.addEventListener("pointerdown", (e) => {
-      down = e.button === 0 ? { x: e.clientX, y: e.clientY, time: performance.now() } : null;
+      active.add(e.pointerId);
+      down =
+        e.button === 0 && active.size === 1 ? { x: e.clientX, y: e.clientY, time: performance.now() } : null;
+    });
+    const release = (e: PointerEvent) => {
+      active.delete(e.pointerId);
+    };
+    canvas.addEventListener("pointercancel", (e) => {
+      release(e);
+      down = null;
     });
     canvas.addEventListener("pointerup", (e) => {
+      release(e);
       if (!down || e.button !== 0) return;
+      const now = performance.now();
+      // Fingers wobble more than a mouse.
+      const slop = e.pointerType === "touch" ? 12 : 5;
       const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y);
-      if (moved < 5 && performance.now() - down.time < 600) this.onClick(e.clientX, e.clientY);
+      const held = now - down.time;
       down = null;
+      if (moved >= slop || held > 600) return;
+      this.onClick(e.clientX, e.clientY);
+      if (last && now - last.time < 350 && Math.hypot(e.clientX - last.x, e.clientY - last.y) < 3 * slop) {
+        last = null;
+        this.onDoubleClick(e.clientX, e.clientY);
+      } else {
+        last = { x: e.clientX, y: e.clientY, time: now };
+      }
     });
 
     new ResizeObserver(() => this.resize()).observe(container);
@@ -479,6 +505,15 @@ export class Viewer {
       if (mesh.visible && mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox);
     }
     return box;
+  }
+
+  /** Pan so that `point` is at the centre of the view and the orbit pivot. */
+  centerOn(point: THREE.Vector3): void {
+    const offset = point.clone().sub(this.controls.target);
+    this.controls.target.add(offset);
+    this.camera.position.add(offset);
+    this.controls.update();
+    this.requestRender(true);
   }
 
   /** Frame all visible clouds, keeping the current viewing direction. */

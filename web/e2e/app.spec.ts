@@ -240,3 +240,29 @@ test("M3C2: a flat grid lifted by 0.3 m changes by 0.3 m along the normal", asyn
   expect(header).toContain("property float m3c2_distance");
   expect(header).toContain("property uchar significant");
 });
+
+test.describe("phone", () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  test("panels are a bottom sheet; tapping a point picks it, double tap centres it", async ({ page }) => {
+    const sheet = page.locator("#sidebar");
+    await expect(sheet).toBeInViewport();
+    await page.getByRole("button", { name: "Try a sample" }).click();
+    await expect(status(page)).toContainText("C2C distance computed");
+    // The sheet closes when the first cloud arrives, leaving the full view.
+    await expect(sheet).not.toBeInViewport();
+    const canvas = page.locator("#viewport canvas");
+    const box = (await canvas.boundingBox())!;
+    expect(box.height).toBeGreaterThan(600);
+
+    await canvas.tap({ position: { x: box.width / 2, y: box.height / 2 } });
+    await expect(status(page)).toContainText("Picked");
+    await canvas.tap({ position: { x: box.width / 2, y: box.height / 2 } });
+
+    await page.locator("#panels").tap();
+    await expect(sheet).toBeInViewport();
+    await expect(page.locator("#pick-panel")).toBeVisible();
+    await page.locator("#panels").tap();
+    await expect(sheet).not.toBeInViewport();
+  });
+});

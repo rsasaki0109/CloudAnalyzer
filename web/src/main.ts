@@ -303,6 +303,8 @@ function addEntry(cloud: LoadedCloud): Entry {
     transforms: [],
   };
   entries.set(cloud.id, entry);
+  // On a phone, get the sheet out of the way once there is something to see.
+  if (entries.size === 1 && narrow.matches) setPanelsOpen(false);
   if (cloud.kind === "mesh") viewer.addMesh(cloud.id, cloud.positions, cloud.indices!, entry.solid);
   else viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
   return entry;
@@ -1413,9 +1415,30 @@ viewer.onClick = async (x, y) => {
   } else {
     picked = point;
     renderPickPanel();
+    const [x, y, z] = point.exact.map(coord);
+    setStatus(`Picked ${entries.get(point.cloudId)?.cloud.name ?? "point"}: ${x}, ${y}, ${z}`);
   }
   refreshAnnotations();
 };
+
+// Double click / double tap: orbit around (and centre) the point under it.
+viewer.onDoubleClick = (x, y) => {
+  const hit = viewer.pick(x, y);
+  if (hit) viewer.centerOn(hit.position);
+};
+
+// ---------------------------------------------------------------- narrow screens
+
+// Below 720 px the sidebar is a bottom sheet toggled from the toolbar.
+const narrow = window.matchMedia("(max-width: 720px)");
+const panelsButton = $<HTMLButtonElement>("panels");
+function setPanelsOpen(open: boolean): void {
+  document.body.classList.toggle("panels-open", open);
+  panelsButton.setAttribute("aria-pressed", String(open));
+}
+panelsButton.onclick = () => setPanelsOpen(!document.body.classList.contains("panels-open"));
+// Start with the sheet open so the Open / sample hints are visible.
+setPanelsOpen(narrow.matches);
 
 // Keep distance labels at the middle of their segments.
 viewer.onAfterRender = () => {

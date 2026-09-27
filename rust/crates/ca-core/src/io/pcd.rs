@@ -2,7 +2,7 @@
 
 use super::scalar::{Scalar, unpack_rgb};
 use super::{IoError, split_header};
-use crate::PointCloud;
+use crate::{Attribute, AttributeValues, CLASSIFICATION, INTENSITY, PointCloud};
 
 const FORMAT: &str = "PCD";
 
@@ -42,6 +42,32 @@ impl Header {
 
     fn rgb(&self) -> Option<usize> {
         self.index("rgb").or_else(|| self.index("rgba"))
+    }
+
+    fn intensity(&self) -> Option<usize> {
+        self.index("intensity")
+    }
+
+    /// PCL writes semantic classes as `label`.
+    fn classification(&self) -> Option<usize> {
+        self.index("classification").or_else(|| self.index("label"))
+    }
+
+    fn empty_attributes(&self) -> Vec<Attribute> {
+        let mut out = Vec::new();
+        if self.intensity().is_some() {
+            out.push(Attribute {
+                name: INTENSITY.into(),
+                values: AttributeValues::F32(Vec::with_capacity(self.points)),
+            });
+        }
+        if self.classification().is_some() {
+            out.push(Attribute {
+                name: CLASSIFICATION.into(),
+                values: AttributeValues::U8(Vec::with_capacity(self.points)),
+            });
+        }
+        out
     }
 
     /// Byte size of one point in row-major layout.
@@ -203,7 +229,10 @@ fn read_binary<'a>(
     let mut cloud = PointCloud {
         positions: Vec::with_capacity(header.points),
         colors: rgb.map(|_| Vec::with_capacity(header.points)),
+        attributes: header.empty_attributes(),
     };
+    let intensity = header.intensity().map(|i| (i, header.fields[i].kind));
+    let classification = header.classification().map(|i| (i, header.fields[i].kind));
     for point in 0..header.points {
         let p: [f64; 3] = std::array::from_fn(|a| kinds[a].decode(at(xyz[a], point), true));
         if !p.iter().all(|v| v.is_finite()) {
@@ -213,6 +242,11 @@ fn read_binary<'a>(
         if let (Some(colors), Some(field)) = (cloud.colors.as_mut(), rgb) {
             colors.push(unpack_rgb(Scalar::bits_u32(at(field, point), true)));
         }
+        push_attributes(
+            &mut cloud,
+            intensity.map(|(f, k)| k.decode(at(f, point), true)),
+            classification.map(|(f, k)| k.decode(at(f, point), true)),
+        );
     }
     Ok(cloud)
 }
@@ -231,7 +265,10 @@ fn read_ascii(body: &[u8], header: &Header) -> Result<PointCloud, IoError> {
     let mut cloud = PointCloud {
         positions: Vec::with_capacity(header.points),
         colors: rgb.map(|_| Vec::with_capacity(header.points)),
+        attributes: header.empty_attributes(),
     };
+    let intensity = header.intensity().map(|i| columns[i]);
+    let classification = header.classification().map(|i| columns[i]);
     for row in text
         .lines()
         .filter(|l| !l.trim().is_empty())
@@ -261,8 +298,29 @@ fn read_ascii(body: &[u8], header: &Header) -> Result<PointCloud, IoError> {
             .to_bits();
             colors.push(unpack_rgb(bits));
         }
+        push_attributes(
+            &mut cloud,
+            intensity.map(|c| parse(tokens[c])).transpose()?,
+            classification.map(|c| parse(tokens[c])).transpose()?,
+        );
     }
     Ok(cloud)
+}
+
+/// Append one point's attribute values (in the order of `empty_attributes`).
+fn push_attributes(cloud: &mut PointCloud, intensity: Option<f64>, classification: Option<f64>) {
+    let mut slot = 0;
+    if let Some(v) = intensity {
+        if let AttributeValues::F32(values) = &mut cloud.attributes[slot].values {
+            values.push(v as f32);
+        }
+        slot += 1;
+    }
+    if let Some(v) = classification
+        && let AttributeValues::U8(values) = &mut cloud.attributes[slot].values
+    {
+        values.push(v.clamp(0.0, 255.0) as u8);
+    }
 }
 
 /// Decompress an LZF stream (as written by PCL) into exactly `expected` bytes.
@@ -318,6 +376,23 @@ COUNT 1 1 1 1\nWIDTH 2\nHEIGHT 1\nVIEWPOINT 0 0 0 1 0 0 0\nPOINTS 2\nDATA ascii\
     }
 
     #[test]
+    fn reads_intensity_and_label() {
+        let src =
+            b"FIELDS x y z intensity label\nSIZE 4 4 4 4 4\nTYPE F F F F U\nWIDTH 2\nHEIGHT 1\n\
+POINTS 2\nDATA ascii\n1 2 3 0.5 7\nnan nan nan 0 0\n";
+        let cloud = read(src).unwrap();
+        assert_eq!(cloud.len(), 1);
+        assert_eq!(
+            cloud.attribute(INTENSITY).unwrap().values,
+            AttributeValues::F32(vec![0.5])
+        );
+        assert_eq!(
+            cloud.attribute(CLASSIFICATION).unwrap().values,
+            AttributeValues::U8(vec![7])
+        );
+    }
+
+    #[test]
     fn reads_binary_with_extra_fields() {
         let mut src = b"FIELDS intensity x y z\nSIZE 2 4 4 8\nTYPE U F F F\nCOUNT 1 1 1 1\n\
 WIDTH 2\nHEIGHT 1\nPOINTS 2\nDATA binary\n"
@@ -331,6 +406,10 @@ WIDTH 2\nHEIGHT 1\nPOINTS 2\nDATA binary\n"
         let cloud = read(&src).unwrap();
         assert_eq!(cloud.positions, vec![[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]);
         assert!(cloud.colors.is_none());
+        assert_eq!(
+            cloud.attribute(INTENSITY).unwrap().values,
+            AttributeValues::F32(vec![0.0, 1.0])
+        );
     }
 
     #[test]

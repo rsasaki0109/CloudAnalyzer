@@ -19,5 +19,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bounds.min,
         bounds.max
     );
+    for a in &cloud.attributes {
+        let (min, max, sum) = match &a.values {
+            ca_core::AttributeValues::F32(v) => {
+                v.iter().fold((f64::MAX, f64::MIN, 0.0), |(lo, hi, s), &x| {
+                    (lo.min(x as f64), hi.max(x as f64), s + x as f64)
+                })
+            }
+            ca_core::AttributeValues::U8(v) => {
+                v.iter().fold((f64::MAX, f64::MIN, 0.0), |(lo, hi, s), &x| {
+                    (lo.min(x as f64), hi.max(x as f64), s + x as f64)
+                })
+            }
+        };
+        println!("{}: min={min} max={max} sum={sum}", a.name);
+    }
     Ok(())
 }

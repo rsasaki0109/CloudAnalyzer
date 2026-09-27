@@ -7,7 +7,7 @@
 //! intensity column in between is detected the same way.
 
 use super::IoError;
-use crate::PointCloud;
+use crate::{Attribute, AttributeValues, INTENSITY, PointCloud};
 
 const FORMAT: &str = "XYZ";
 
@@ -58,6 +58,18 @@ pub(crate) fn read(bytes: &[u8]) -> Result<PointCloud, IoError> {
             column
         });
         cloud.positions.push([values[0], values[1], values[2]]);
+        // Leica .pts: `x y z intensity r g b` (or `x y z intensity`).
+        if column == Some(4) || (column.is_none() && values.len() == 4) {
+            if cloud.attributes.is_empty() {
+                cloud.attributes.push(Attribute {
+                    name: INTENSITY.into(),
+                    values: AttributeValues::F32(Vec::new()),
+                });
+            }
+            if let AttributeValues::F32(v) = &mut cloud.attributes[0].values {
+                v.push(values[3] as f32);
+            }
+        }
         if let (Some(colors), Some(c)) = (cloud.colors.as_mut(), column) {
             let rgb = values
                 .get(c..c + 3)
@@ -91,5 +103,9 @@ mod tests {
         let cloud = read(b"2\n1 2 3 -1200 255 0 0\n4 5 6 300 0 255 0\n").unwrap();
         assert_eq!(cloud.positions, vec![[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]);
         assert_eq!(cloud.colors, Some(vec![[255, 0, 0], [0, 255, 0]]));
+        assert_eq!(
+            cloud.attribute(INTENSITY).unwrap().values,
+            AttributeValues::F32(vec![-1200.0, 300.0])
+        );
     }
 }

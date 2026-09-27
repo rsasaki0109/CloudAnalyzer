@@ -2,8 +2,8 @@
 
 use super::scalar::{Scalar, color_channel};
 use super::{IoError, split_header};
-use crate::PointCloud;
 use crate::mesh::TriangleMesh;
+use crate::{Attribute, AttributeValues, CLASSIFICATION, INTENSITY, PointCloud};
 
 const FORMAT: &str = "PLY";
 
@@ -104,6 +104,8 @@ fn parse_header(lines: &[&str]) -> Result<(Encoding, Vec<Element>), IoError> {
 struct VertexLayout {
     xyz: [usize; 3],
     rgb: Option<([usize; 3], [Scalar; 3])>,
+    intensity: Option<usize>,
+    classification: Option<usize>,
 }
 
 fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
@@ -127,12 +129,34 @@ fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
         (Some(r), Some(g), Some(b)) => Some(([r, g, b], [kind(r), kind(g), kind(b)])),
         _ => None,
     };
-    Ok(VertexLayout { xyz, rgb })
+    Ok(VertexLayout {
+        xyz,
+        rgb,
+        // CloudCompare writes scalar fields as `scalar_<name>`.
+        intensity: find(&["intensity", "scalar_intensity", "scalar_Intensity"]),
+        classification: find(&[
+            "classification",
+            "scalar_classification",
+            "scalar_Classification",
+        ]),
+    })
 }
 
 impl VertexLayout {
     fn push(&self, cloud: &mut PointCloud, values: &[f64]) {
         cloud.positions.push(self.xyz.map(|i| values[i]));
+        let mut slot = 0;
+        if let Some(i) = self.intensity {
+            if let AttributeValues::F32(v) = &mut cloud.attributes[slot].values {
+                v.push(values[i] as f32);
+            }
+            slot += 1;
+        }
+        if let Some(i) = self.classification
+            && let AttributeValues::U8(v) = &mut cloud.attributes[slot].values
+        {
+            v.push(values[i].clamp(0.0, 255.0) as u8);
+        }
         if let (Some(colors), Some((idx, kinds))) = (cloud.colors.as_mut(), self.rgb) {
             colors.push(std::array::from_fn(|c| {
                 color_channel(values[idx[c]], kinds[c])
@@ -141,9 +165,23 @@ impl VertexLayout {
     }
 
     fn empty_cloud(&self, count: usize) -> PointCloud {
+        let mut attributes = Vec::new();
+        if self.intensity.is_some() {
+            attributes.push(Attribute {
+                name: INTENSITY.into(),
+                values: AttributeValues::F32(Vec::with_capacity(count)),
+            });
+        }
+        if self.classification.is_some() {
+            attributes.push(Attribute {
+                name: CLASSIFICATION.into(),
+                values: AttributeValues::U8(Vec::with_capacity(count)),
+            });
+        }
         PointCloud {
             positions: Vec::with_capacity(count),
             colors: self.rgb.map(|_| Vec::with_capacity(count)),
+            attributes,
         }
     }
 }
@@ -327,16 +365,31 @@ fn read_fixed_vertices(
     let mut cloud = layout.empty_cloud(element.count);
     // The common little-endian float/double + uchar layouts get a
     // monomorphic loop; everything else goes through `Scalar::decode`.
-    if le && read_common_layout(records, stride, xyz, rgb, &mut cloud) {
+    let plain = layout.intensity.is_none() && layout.classification.is_none();
+    if le && plain && read_common_layout(records, stride, xyz, rgb, &mut cloud) {
         return Ok(cloud);
     }
     // Stride 0 would mean a vertex with no properties, which vertex_layout rejects.
+    let intensity = layout.intensity.map(field);
+    let classification = layout.classification.map(field);
     for record in records.chunks_exact(stride) {
         cloud
             .positions
             .push(xyz.map(|(at, kind)| kind.decode(&record[at..], le)));
         if let (Some(colors), Some(rgb)) = (cloud.colors.as_mut(), rgb) {
             colors.push(rgb.map(|(at, kind)| color_channel(kind.decode(&record[at..], le), kind)));
+        }
+        let mut slot = 0;
+        if let Some((at, kind)) = intensity {
+            if let AttributeValues::F32(v) = &mut cloud.attributes[slot].values {
+                v.push(kind.decode(&record[at..], le) as f32);
+            }
+            slot += 1;
+        }
+        if let Some((at, kind)) = classification
+            && let AttributeValues::U8(v) = &mut cloud.attributes[slot].values
+        {
+            v.push(kind.decode(&record[at..], le).clamp(0.0, 255.0) as u8);
         }
     }
     Ok(cloud)
@@ -622,6 +675,54 @@ property uchar flags\nproperty list uchar uint vertex_index\nend_header\n"
         let src = b"ply\nformat ascii 1.0\nelement vertex 1\nproperty float x\nproperty float y\n\
 property float z\nend_header\n1 2 3\n";
         assert!(read_mesh(src).unwrap().is_none());
+    }
+
+    #[test]
+    fn reads_intensity_and_classification_properties() {
+        let mut src = b"ply
+format binary_little_endian 1.0
+element vertex 2
+property float x
+property float y
+property float z
+property ushort intensity
+property uchar scalar_Classification
+end_header
+"
+        .to_vec();
+        for (p, i, c) in [([1.0f32, 2.0, 3.0], 900u16, 2u8), ([4.0, 5.0, 6.0], 15, 6)] {
+            for v in p {
+                src.extend_from_slice(&v.to_le_bytes());
+            }
+            src.extend_from_slice(&i.to_le_bytes());
+            src.push(c);
+        }
+        let cloud = read(&src).unwrap();
+        assert_eq!(cloud.positions[1], [4.0, 5.0, 6.0]);
+        assert_eq!(
+            cloud.attribute(INTENSITY).unwrap().values,
+            AttributeValues::F32(vec![900.0, 15.0])
+        );
+        assert_eq!(
+            cloud.attribute(CLASSIFICATION).unwrap().values,
+            AttributeValues::U8(vec![2, 6])
+        );
+        // ASCII goes through the general path.
+        let ascii = b"ply
+format ascii 1.0
+element vertex 1
+property float x
+property float y
+property float z
+property float intensity
+end_header
+1 2 3 0.25
+";
+        let cloud = read(ascii).unwrap();
+        assert_eq!(
+            cloud.attribute(INTENSITY).unwrap().values,
+            AttributeValues::F32(vec![0.25])
+        );
     }
 
     #[test]

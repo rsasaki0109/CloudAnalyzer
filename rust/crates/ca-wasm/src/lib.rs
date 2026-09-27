@@ -2,7 +2,9 @@
 
 use ca_core::icp::{IcpMetric, IcpParams, Rigid};
 use ca_core::octree::{NO_CHILD, Octree, OctreeNode, OctreeParams, PendingSubtree};
-use ca_core::{DistanceStats, PointCloud, TriangleMesh};
+use ca_core::{
+    AttributeValues, CLASSIFICATION, DistanceStats, INTENSITY, PointCloud, TriangleMesh,
+};
 use wasm_bindgen::prelude::*;
 
 /// Numbers per node in [`Cloud::lod_nodes`].
@@ -153,6 +155,22 @@ impl Cloud {
         .map_err(|e| JsError::new(&e))
     }
 
+    /// Per-point intensity (octree order), or `undefined` when the file has none.
+    pub fn intensity(&self) -> Option<Vec<f32>> {
+        match &self.inner.attribute(INTENSITY)?.values {
+            AttributeValues::F32(v) => Some(v.clone()),
+            AttributeValues::U8(v) => Some(v.iter().map(|&x| x as f32).collect()),
+        }
+    }
+
+    /// Per-point class codes (octree order), or `undefined` when the file has none.
+    pub fn classification(&self) -> Option<Vec<u8>> {
+        match &self.inner.attribute(CLASSIFICATION)?.values {
+            AttributeValues::U8(v) => Some(v.clone()),
+            AttributeValues::F32(v) => Some(v.iter().map(|&x| x.clamp(0.0, 255.0) as u8).collect()),
+        }
+    }
+
     /// Interleaved `rgb` bytes, or `undefined` when the file has no colors.
     pub fn colors(&self) -> Option<Vec<u8>> {
         self.inner
@@ -219,7 +237,8 @@ impl Cloud {
     }
 
     /// Store a subtree built by [`build_subtree`]: its reordered points,
-    /// colors and node table (in the [`Cloud::lod_nodes`] layout).
+    /// colors, node table (in the [`Cloud::lod_nodes`] layout) and the
+    /// permutation it applied, which reorders the attributes kept here.
     #[wasm_bindgen(js_name = finishSubtree)]
     pub fn finish_subtree(
         &mut self,
@@ -227,6 +246,7 @@ impl Cloud {
         positions: &[f64],
         colors: Option<Vec<u8>>,
         nodes: &[f64],
+        order: &[u32],
     ) -> Result<(), JsError> {
         let p = self.pending[k];
         let range = p.start as usize..p.end as usize;
@@ -235,7 +255,14 @@ impl Cloud {
         }
         self.inner.positions[range.clone()].copy_from_slice(positions.as_chunks::<3>().0);
         if let (Some(dst), Some(src)) = (self.inner.colors.as_mut(), colors) {
-            dst[range].copy_from_slice(src.as_chunks::<3>().0);
+            dst[range.clone()].copy_from_slice(src.as_chunks::<3>().0);
+        }
+        if order.len() != range.len() {
+            return Err(JsError::new("subtree order has the wrong length"));
+        }
+        // The slice is small enough to stay in cache, so this gather is cheap.
+        for attribute in &mut self.inner.attributes {
+            attribute.values.permute_range(range.clone(), order);
         }
         let subtree = Octree {
             order: Vec::new(),
@@ -305,6 +332,7 @@ fn nodes_from_flat(flat: &[f64]) -> Result<Vec<OctreeNode>, JsError> {
 pub struct Subtree {
     cloud: PointCloud,
     nodes: Vec<OctreeNode>,
+    order: Vec<u32>,
 }
 
 #[wasm_bindgen]
@@ -323,6 +351,11 @@ impl Subtree {
     /// Node table in the [`Cloud::lod_nodes`] layout, ranges relative to the subtree.
     pub fn nodes(&self) -> Vec<f64> {
         nodes_to_flat(&self.nodes)
+    }
+
+    /// `order[i]` is the input index of the point now at `i`.
+    pub fn order(&self) -> Vec<u32> {
+        self.order.clone()
     }
 }
 
@@ -348,6 +381,7 @@ pub fn build_subtree(
     let mut cloud = PointCloud {
         positions: positions.as_chunks::<3>().0.to_vec(),
         colors: colors.map(|c| c.as_chunks::<3>().0.to_vec()),
+        attributes: Vec::new(),
     };
     if cloud
         .colors
@@ -366,6 +400,7 @@ pub fn build_subtree(
     Ok(Subtree {
         cloud,
         nodes: tree.nodes,
+        order: tree.order,
     })
 }
 
@@ -492,6 +527,7 @@ fn from_flat(xyz: &[f64]) -> Result<PointCloud, JsError> {
     Ok(PointCloud {
         positions: xyz.as_chunks::<3>().0.to_vec(),
         colors: None,
+        attributes: Vec::new(),
     })
 }
 
@@ -523,6 +559,7 @@ impl Mesh {
         PointCloud {
             positions: self.inner.vertices.clone(),
             colors: None,
+            attributes: Vec::new(),
         }
     }
 

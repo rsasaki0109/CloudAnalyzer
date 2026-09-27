@@ -317,6 +317,7 @@ mod tests {
         PointCloud {
             positions: points.to_vec(),
             colors: None,
+            attributes: Vec::new(),
         }
     }
 
@@ -367,6 +368,7 @@ mod tests {
                 })
                 .collect(),
             colors: None,
+            attributes: Vec::new(),
         }
     }
 
@@ -377,6 +379,7 @@ mod tests {
             let pick = |cloud: &PointCloud, idx: &[u32]| PointCloud {
                 positions: idx.iter().map(|&i| cloud.positions[i as usize]).collect(),
                 colors: None,
+                attributes: Vec::new(),
             };
             let d = cloud_to_cloud(
                 &pick(compared, &part.queries),

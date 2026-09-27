@@ -14,6 +14,8 @@ export interface SubtreeResult {
   positions: Float64Array;
   colors: Uint8Array | null;
   nodes: Float64Array;
+  /** Permutation applied to the slice, for reordering attributes. */
+  order: Uint32Array;
 }
 
 /** What each slice kind produces. */
@@ -43,9 +45,10 @@ function run(request: SliceRequest): { value: Float64Array | SubtreeResult; tran
         positions: subtree.positions(),
         colors: subtree.colors() ?? null,
         nodes: subtree.nodes(),
+        order: subtree.order(),
       };
       subtree.free();
-      const transfer: Transferable[] = [value.positions.buffer, value.nodes.buffer];
+      const transfer: Transferable[] = [value.positions.buffer, value.nodes.buffer, value.order.buffer];
       if (value.colors) transfer.push(value.colors.buffer);
       return { value, transfer };
     }

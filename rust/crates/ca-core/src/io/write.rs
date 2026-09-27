@@ -2,7 +2,7 @@
 
 use std::fmt::Write as _;
 
-use crate::PointCloud;
+use crate::{AttributeValues, PointCloud};
 
 /// A named per-point value, e.g. a C2C distance.
 pub struct ScalarField<'a> {
@@ -28,7 +28,8 @@ fn check(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<(), String> {
 }
 
 /// Binary little-endian PLY: `double x y z`, `uchar red green blue` when the
-/// cloud has colors, then one `float` property per scalar field (named
+/// cloud has colors, the cloud's attributes (`float` or `uchar`, under their
+/// own names), then one `float` property per scalar field (named
 /// `scalar_<name>`, which CloudCompare loads as a scalar field).
 pub fn write_ply(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<Vec<u8>, String> {
     check(cloud, scalars)?;
@@ -39,12 +40,22 @@ pub fn write_ply(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<Vec<u8>,
     if cloud.colors.is_some() {
         header.push_str("property uchar red\nproperty uchar green\nproperty uchar blue\n");
     }
+    let mut attribute_bytes = 0;
+    for a in &cloud.attributes {
+        let (kind, size) = match a.values {
+            AttributeValues::F32(_) => ("float", 4),
+            AttributeValues::U8(_) => ("uchar", 1),
+        };
+        let _ = writeln!(header, "property {kind} {}", a.name);
+        attribute_bytes += size;
+    }
     for s in scalars {
         let _ = writeln!(header, "property float scalar_{}", s.name);
     }
     header.push_str("end_header\n");
 
-    let stride = 24 + if cloud.colors.is_some() { 3 } else { 0 } + 4 * scalars.len();
+    let stride =
+        24 + if cloud.colors.is_some() { 3 } else { 0 } + attribute_bytes + 4 * scalars.len();
     let mut out = Vec::with_capacity(header.len() + stride * cloud.len());
     out.extend_from_slice(header.as_bytes());
     for (i, p) in cloud.positions.iter().enumerate() {
@@ -53,6 +64,12 @@ pub fn write_ply(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<Vec<u8>,
         }
         if let Some(colors) = &cloud.colors {
             out.extend_from_slice(&colors[i]);
+        }
+        for a in &cloud.attributes {
+            match &a.values {
+                AttributeValues::F32(v) => out.extend_from_slice(&v[i].to_le_bytes()),
+                AttributeValues::U8(v) => out.push(v[i]),
+            }
         }
         for s in scalars {
             out.extend_from_slice(&s.values[i].to_le_bytes());
@@ -69,6 +86,10 @@ pub fn write_csv(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<Vec<u8>,
     if cloud.colors.is_some() {
         out.push_str(",r,g,b");
     }
+    for a in &cloud.attributes {
+        out.push(',');
+        out.push_str(&a.name);
+    }
     for s in scalars {
         out.push(',');
         out.push_str(s.name);
@@ -79,6 +100,12 @@ pub fn write_csv(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<Vec<u8>,
         if let Some(colors) = &cloud.colors {
             let [r, g, b] = colors[i];
             let _ = write!(out, ",{r},{g},{b}");
+        }
+        for a in &cloud.attributes {
+            let _ = match &a.values {
+                AttributeValues::F32(v) => write!(out, ",{}", v[i]),
+                AttributeValues::U8(v) => write!(out, ",{}", v[i]),
+            };
         }
         for s in scalars {
             let _ = write!(out, ",{}", s.values[i]);
@@ -96,6 +123,7 @@ mod tests {
         PointCloud {
             positions: vec![[368_000.125, 3_955_000.5, 40.0], [1.0, -2.0, 3.25]],
             colors: Some(vec![[255, 0, 10], [1, 2, 3]]),
+            attributes: Vec::new(),
         }
     }
 
@@ -136,6 +164,27 @@ mod tests {
             text,
             "x,y,z,r,g,b,C2M_distance\n368000.125,3955000.5,40,255,0,10,0.25\n1,-2,3.25,1,2,3,2\n"
         );
+    }
+
+    #[test]
+    fn attributes_roundtrip_through_ply_and_appear_in_csv() {
+        let mut c = cloud();
+        c.attributes = vec![
+            crate::Attribute {
+                name: crate::INTENSITY.into(),
+                values: AttributeValues::F32(vec![100.0, 7.5]),
+            },
+            crate::Attribute {
+                name: crate::CLASSIFICATION.into(),
+                values: AttributeValues::U8(vec![2, 6]),
+            },
+        ];
+        let back = super::super::ply::read(&write_ply(&c, &[]).unwrap()).unwrap();
+        assert_eq!(back.attributes, c.attributes);
+        let csv = String::from_utf8(write_csv(&c, &[]).unwrap()).unwrap();
+        assert!(csv.starts_with(
+            "x,y,z,r,g,b,intensity,classification\n368000.125,3955000.5,40,255,0,10,100,2\n"
+        ));
     }
 
     #[test]

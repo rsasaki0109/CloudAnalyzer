@@ -166,7 +166,7 @@ export class Viewer {
     );
     geometry.setAttribute(
       "color",
-      new THREE.BufferAttribute(cloud.colors.subarray(start * 3, (start + count) * 3), 3, true),
+      new THREE.BufferAttribute(cloud.colors.subarray(start * 4, (start + count) * 4), 4, true),
     );
     geometry.boundingBox = cloud.nodes[index].box.clone();
     geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new THREE.Sphere());
@@ -195,6 +195,8 @@ export class Viewer {
       size: this.pointSize,
       sizeAttenuation: false,
       vertexColors: true,
+      // Points with alpha 0 (e.g. a hidden class) are discarded.
+      alphaTest: 0.5,
       clippingPlanes: this.clip ? this.clipPlanes : null,
     });
     const group = new THREE.Group();
@@ -264,7 +266,7 @@ export class Viewer {
     this.requestRender(true);
   }
 
-  /** Replace a cloud's colors (interleaved rgb in octree order). */
+  /** Replace a cloud's colors (interleaved rgba in octree order; alpha 0 hides a point). */
   setColors(id: number, colors: Uint8Array): void {
     const cloud = this.clouds.get(id);
     if (!cloud) return;
@@ -273,7 +275,7 @@ export class Viewer {
       const { start, count } = cloud.nodes[index];
       object.geometry.setAttribute(
         "color",
-        new THREE.BufferAttribute(colors.subarray(start * 3, (start + count) * 3), 3, true),
+        new THREE.BufferAttribute(colors.subarray(start * 4, (start + count) * 4), 4, true),
       );
     }
     this.requestRender();
@@ -344,6 +346,7 @@ export class Viewer {
           if (depth <= this.camera.near) continue;
           const perp2 = vx * vx + vy * vy + vz * vz - depth * depth;
           if (perp2 > slope2 * depth * depth) continue;
+          if (cloud.colors[i * 4 + 3] === 0) continue; // hidden by a filter
           if (this.clip && !this.clip.containsPoint(tmp.set(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]))) continue;
           candidates.push({ cloud, index: i, depth, perp2 });
         }

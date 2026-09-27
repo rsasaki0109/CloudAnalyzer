@@ -59,6 +59,34 @@
         <button id="measure-clear">Clear all</button>
       </section>
 
+      <section id="icp-panel">
+        <h2>Registration (ICP)</h2>
+        <label>Aligned <select id="icp-moving"></select></label>
+        <label>Reference <select id="icp-reference"></select></label>
+        <details class="options">
+          <summary>Options</summary>
+          <label>Metric
+            <select id="icp-metric">
+              <option value="plane" selected>Point-to-plane</option>
+              <option value="point">Point-to-point</option>
+            </select>
+          </label>
+          <div class="range">
+            <label>Max iterations <input id="icp-iterations" type="number" min="1" max="500" value="50" /></label>
+            <label>Overlap % <input id="icp-overlap" type="number" min="10" max="100" value="100" /></label>
+          </div>
+          <label class="check"><input id="icp-centroids" type="checkbox" /> Match centroids first</label>
+        </details>
+        <button id="icp-run" class="primary" disabled>Align</button>
+        <div id="icp-result" hidden>
+          <table class="stats"><tbody id="icp-stats"></tbody></table>
+          <label>Transform (row-major 4×4)
+            <textarea id="icp-matrix" rows="4" readonly spellcheck="false"></textarea>
+          </label>
+          <button id="icp-undo">Undo alignment</button>
+        </div>
+      </section>
+
       <section id="c2c-panel">
         <h2>Cloud-to-cloud distance</h2>
         <label>Compared <select id="c2c-compared"></select></label>

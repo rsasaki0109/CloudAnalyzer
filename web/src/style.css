@@ -117,6 +117,21 @@ button[aria-pressed="true"] { background: var(--accent); border-color: var(--acc
 .stats { width: 100%; border-collapse: collapse; margin: 8px 0; font-variant-numeric: tabular-nums; }
 .stats th { text-align: left; font-weight: normal; color: var(--muted); padding: 2px 0; }
 .stats td { text-align: right; padding: 2px 0; }
+.options { margin-bottom: 8px; color: var(--muted); }
+.options summary { cursor: pointer; margin-bottom: 6px; }
+label.check { display: flex; align-items: center; gap: 6px; }
+textarea {
+  display: block;
+  width: 100%;
+  margin-top: 2px;
+  font: 11px/1.4 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color: var(--text);
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  resize: vertical;
+}
+
 .range { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
 .viewport { grid-area: viewport; position: relative; background: var(--viewport); min-width: 0; min-height: 0; }

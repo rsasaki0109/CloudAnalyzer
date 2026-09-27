@@ -1,6 +1,6 @@
 // Promise-based client for the WASM worker.
 
-import type { C2cOutput, LoadedCloud, Request, Response } from "./protocol";
+import type { C2cOutput, IcpOutput, LoadedCloud, Request, Response } from "./protocol";
 
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
 const pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
@@ -38,4 +38,13 @@ export function removeCloud(id: number): Promise<void> {
 /** Exact (unshifted, f64) coordinates of a point in octree order. */
 export function pointAt(id: number, index: number): Promise<[number, number, number]> {
   return call({ kind: "point", id, index });
+}
+
+export function registerIcp(params: Omit<Extract<Request, { kind: "icp" }>, "kind">): Promise<IcpOutput> {
+  return call({ kind: "icp", ...params });
+}
+
+/** Apply a row-major 4x4 rigid transform to a cloud; returns it re-described. */
+export function transformCloud(id: number, matrix: number[]): Promise<LoadedCloud> {
+  return call({ kind: "transform", id, matrix });
 }

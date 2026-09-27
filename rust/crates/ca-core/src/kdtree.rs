@@ -80,6 +80,45 @@ impl KdTree {
         best
     }
 
+    /// The `k` nearest points to `query` as `(index, squared distance)`,
+    /// closest first. Intended for small `k` (e.g. normal estimation).
+    pub fn nearest_k(&self, query: &[f64; 3], k: usize) -> Vec<(usize, f64)> {
+        let mut found: Vec<(u32, f64)> = Vec::with_capacity(k + 1);
+        if k > 0 {
+            self.search_k(0, query, k, &mut found);
+        }
+        found
+            .into_iter()
+            .map(|(slot, d)| (self.indices[slot as usize] as usize, d))
+            .collect()
+    }
+
+    fn search_k(&self, node: usize, q: &[f64; 3], k: usize, found: &mut Vec<(u32, f64)>) {
+        let n = self.nodes[node];
+        if n.axis == LEAF {
+            for i in n.start as usize..n.end as usize {
+                let d = distance_sq(&self.points[i], q);
+                if found.len() < k || d < found[found.len() - 1].1 {
+                    // Sorted insert; `found` stays at most `k` long.
+                    let at = found.partition_point(|&(_, e)| e <= d);
+                    found.insert(at, (i as u32, d));
+                    found.truncate(k);
+                }
+            }
+            return;
+        }
+        let diff = q[n.axis as usize] - n.split;
+        let (near, far) = if diff < 0.0 {
+            (node + 1, n.right as usize)
+        } else {
+            (n.right as usize, node + 1)
+        };
+        self.search_k(near, q, k, found);
+        if found.len() < k || diff * diff < found[found.len() - 1].1 {
+            self.search_k(far, q, k, found);
+        }
+    }
+
     fn search(&self, node: usize, q: &[f64; 3], best: &mut Nearest) {
         let n = self.nodes[node];
         if n.axis == LEAF {
@@ -197,6 +236,25 @@ mod tests {
         for q in pseudo_random(50, 5) {
             assert_eq!(tree.nearest(&q, Some(far)).distance_sq, brute(&points, &q));
         }
+    }
+
+    #[test]
+    fn nearest_k_matches_brute_force() {
+        let points = pseudo_random(1500, 13);
+        let tree = KdTree::new(&points).unwrap();
+        for q in pseudo_random(40, 17) {
+            let got = tree.nearest_k(&q, 7);
+            let mut all: Vec<f64> = points
+                .iter()
+                .map(|p| (0..3).map(|a| (p[a] - q[a]).powi(2)).sum())
+                .collect();
+            all.sort_by(f64::total_cmp);
+            assert_eq!(
+                got.iter().map(|g| g.1).collect::<Vec<_>>(),
+                all[..7].to_vec()
+            );
+        }
+        assert_eq!(tree.nearest_k(&[0.0; 3], 5000).len(), 1500);
     }
 
     #[test]

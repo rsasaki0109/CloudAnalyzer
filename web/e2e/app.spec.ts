@@ -165,3 +165,30 @@ test("large files keep every n-th point above the max-points setting", async ({ 
   await expect(status(page)).toContainText("Loaded big.las: 800 of 1,600 points (1 in 2)");
   await expect(page.locator(".cloud-list")).toContainText("800 points (1 in 2)");
 });
+
+test("volume: a 2 x 2 x 1 m mound over flat ground is 4 m³ of fill", async ({ page }) => {
+  const site = (mound: boolean) => {
+    const out: [number, number, number][] = [];
+    for (let j = 0; j < 60; j++) {
+      for (let i = 0; i < 60; i++) {
+        const [x, y] = [i * 0.1, j * 0.1];
+        const inside = x >= 0.95 && x < 2.95 && y >= 0.95 && y < 2.95;
+        out.push([x, y, mound && inside ? 1 : 0]);
+      }
+    }
+    return out;
+  };
+  await open(page, [
+    { name: "ground.ply", buffer: ply(site(false)) },
+    { name: "surveyed.ply", buffer: ply(site(true)) },
+  ]);
+  await expect(status(page)).toContainText("Loaded surveyed.ply");
+  await page.locator("#volume-panel summary").click();
+  await page.locator("#volume-cell").fill("0.5");
+  await page.locator("#volume-run").click();
+  await expect(status(page)).toContainText("Volume: fill 4 m³, cut 0 m³, net 4 m³");
+  await expect(page.locator("#volume-stats")).toContainText(/Fill area\s*4 m²/);
+  // The per-cell differences are added as a cloud colored by height difference.
+  await expect(page.locator(".cloud-list li")).toHaveCount(3);
+  await expect(page.locator("#colorbar-title")).toContainText("Height difference");
+});

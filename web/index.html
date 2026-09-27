@@ -81,6 +81,32 @@
         </div>
       </section>
 
+      <section id="volume-panel">
+        <h2>Volume (cut / fill)</h2>
+        <label>Before <select id="volume-before"></select></label>
+        <label id="volume-before-z-row" hidden>Before height <input id="volume-before-z" type="number" step="any" value="0" /></label>
+        <label>After <select id="volume-after"></select></label>
+        <label id="volume-after-z-row" hidden>After height <input id="volume-after-z" type="number" step="any" value="0" /></label>
+        <details class="options">
+          <summary>Options</summary>
+          <div class="range">
+            <label title="Grid cell edge length, in the clouds' units">Cell size <input id="volume-cell" type="number" min="0" step="any" /></label>
+            <label title="How a cell's height is derived from its points">Cell height
+              <select id="volume-height">
+                <option value="mean" selected>Mean</option>
+                <option value="min">Min</option>
+                <option value="max">Max</option>
+              </select>
+            </label>
+          </div>
+          <label class="check" title="Interpolate cells a surface does not cover from their neighbours">
+            <input id="volume-fill" type="checkbox" /> Fill empty cells
+          </label>
+        </details>
+        <button id="volume-run" class="primary" disabled>Compute volume</button>
+        <table class="stats" id="volume-result" hidden><tbody id="volume-stats"></tbody></table>
+      </section>
+
       <section id="filter-panel">
         <h2>Filters</h2>
         <label>Cloud <select id="filter-cloud"></select></label>

@@ -235,6 +235,97 @@ fn statistical_outliers<'py>(
     Ok(indices(py, keep))
 }
 
+/// A volume surface from Python: a float (constant height), a
+/// ``(vertices, triangles)`` tuple (mesh), or an ``(N, 3)`` array (points).
+enum PySurface {
+    Constant(f64),
+    Mesh(TriangleMesh),
+    Points(Vec<[f64; 3]>),
+}
+
+impl PySurface {
+    fn extract(value: &Bound<'_, PyAny>) -> PyResult<Self> {
+        if let Ok(z) = value.extract::<f64>() {
+            return Ok(PySurface::Constant(z));
+        }
+        if let Ok((vertices, triangles)) =
+            value.extract::<(PyReadonlyArray2<f64>, PyReadonlyArray2<u32>)>()
+        {
+            return Ok(PySurface::Mesh(mesh_from(&vertices, &triangles)?));
+        }
+        let array: PyReadonlyArray2<f64> = value.extract().map_err(|_| {
+            PyValueError::new_err(
+                "a surface is a float, a (vertices, triangles) tuple, or an (N, 3) array",
+            )
+        })?;
+        Ok(PySurface::Points(points(&array)?))
+    }
+
+    fn surface(&self) -> ca_core::volume::Surface<'_> {
+        use ca_core::volume::Surface;
+        match self {
+            PySurface::Constant(z) => Surface::Constant(*z),
+            PySurface::Mesh(m) => Surface::Mesh(m),
+            PySurface::Points(p) => Surface::Points(p),
+        }
+    }
+}
+
+/// Cut/fill volume between two surfaces on a grid of ``cell``-sized squares.
+///
+/// Each surface is a float (constant height), a ``(vertices, triangles)``
+/// tuple, or an ``(N, 3)`` array. Returns a dict with ``added`` (fill),
+/// ``removed`` (cut), ``net``, ``added_area``, ``removed_area``,
+/// ``matched_cells``, ``total_cells`` and ``difference`` (``(ny, nx)``
+/// after − before, NaN where undefined) with ``grid_min`` and ``cell``.
+#[pyfunction]
+#[pyo3(signature = (before, after, cell, height = "mean", fill_empty = false))]
+fn volume<'py>(
+    py: Python<'py>,
+    before: &Bound<'py, PyAny>,
+    after: &Bound<'py, PyAny>,
+    cell: f64,
+    height: &str,
+    fill_empty: bool,
+) -> PyResult<Bound<'py, PyDict>> {
+    use ca_core::volume::{CellHeight, VolumeParams};
+    let height = match height {
+        "mean" => CellHeight::Mean,
+        "min" => CellHeight::Min,
+        "max" => CellHeight::Max,
+        other => {
+            return Err(PyValueError::new_err(format!(
+                "height must be mean, min or max, not {other:?}"
+            )));
+        }
+    };
+    let (before, after) = (PySurface::extract(before)?, PySurface::extract(after)?);
+    let params = VolumeParams {
+        cell,
+        height,
+        fill_empty,
+    };
+    let r = py
+        .detach(|| ca_core::volume::volume(before.surface(), after.surface(), params))
+        .ok_or_else(|| {
+            PyValueError::new_err("need a positive cell size and at least one non-constant surface")
+        })?;
+    let difference =
+        Array2::from_shape_vec((r.grid.ny, r.grid.nx), r.difference()).expect("ny x nx cells");
+    let out = PyDict::new(py);
+    out.set_item("added", r.added)?;
+    out.set_item("removed", r.removed)?;
+    out.set_item("net", r.net())?;
+    out.set_item("added_area", r.added_area)?;
+    out.set_item("removed_area", r.removed_area)?;
+    out.set_item("matched_cells", r.matched_cells)?;
+    out.set_item("total_cells", r.total_cells)?;
+    out.set_item("cell", r.grid.cell)?;
+    out.set_item("grid_min", (r.grid.min[0], r.grid.min[1]))?;
+    out.set_item("difference", difference.into_pyarray(py))?;
+    Ok(out)
+}
+
 #[pymodule]
 fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
@@ -245,5 +336,6 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(icp, m)?)?;
     m.add_function(wrap_pyfunction!(voxel_subsample, m)?)?;
     m.add_function(wrap_pyfunction!(statistical_outliers, m)?)?;
+    m.add_function(wrap_pyfunction!(volume, m)?)?;
     Ok(())
 }

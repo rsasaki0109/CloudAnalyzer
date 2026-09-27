@@ -37,6 +37,155 @@ impl Cloud {
     }
 }
 
+enum OwnedSurface {
+    Points(Vec<[f64; 3]>),
+    Mesh(TriangleMesh),
+    Constant(f64),
+}
+
+/// One side of a cut/fill volume computation (see [`compute_volume`]).
+#[wasm_bindgen]
+pub struct VolumeSurface {
+    inner: OwnedSurface,
+}
+
+#[wasm_bindgen]
+impl VolumeSurface {
+    #[wasm_bindgen(js_name = fromCloud)]
+    pub fn from_cloud(cloud: &Cloud) -> VolumeSurface {
+        VolumeSurface {
+            inner: OwnedSurface::Points(cloud.inner.positions.clone()),
+        }
+    }
+
+    #[wasm_bindgen(js_name = fromMesh)]
+    pub fn from_mesh(mesh: &Mesh) -> VolumeSurface {
+        VolumeSurface {
+            inner: OwnedSurface::Mesh(mesh.inner.clone()),
+        }
+    }
+
+    /// A horizontal plane at height `z` (original coordinates).
+    pub fn constant(z: f64) -> VolumeSurface {
+        VolumeSurface {
+            inner: OwnedSurface::Constant(z),
+        }
+    }
+}
+
+impl VolumeSurface {
+    fn surface(&self) -> ca_core::volume::Surface<'_> {
+        use ca_core::volume::Surface;
+        match &self.inner {
+            OwnedSurface::Points(p) => Surface::Points(p),
+            OwnedSurface::Mesh(m) => Surface::Mesh(m),
+            OwnedSurface::Constant(z) => Surface::Constant(*z),
+        }
+    }
+}
+
+/// Result of [`compute_volume`].
+#[wasm_bindgen]
+pub struct VolumeOutput {
+    #[wasm_bindgen(readonly)]
+    pub added: f64,
+    #[wasm_bindgen(readonly)]
+    pub removed: f64,
+    #[wasm_bindgen(readonly, js_name = addedArea)]
+    pub added_area: f64,
+    #[wasm_bindgen(readonly, js_name = removedArea)]
+    pub removed_area: f64,
+    #[wasm_bindgen(readonly, js_name = matchedCells)]
+    pub matched_cells: usize,
+    #[wasm_bindgen(readonly, js_name = totalCells)]
+    pub total_cells: usize,
+    #[wasm_bindgen(readonly)]
+    pub cell: f64,
+    cells: Option<Cloud>,
+}
+
+#[wasm_bindgen]
+impl VolumeOutput {
+    /// The compared cells as an indexed cloud: one point per cell with both
+    /// heights, at the `after` height (or `before` where `after` is missing),
+    /// with the height difference in the `height_difference` attribute.
+    #[wasm_bindgen(js_name = takeCells)]
+    pub fn take_cells(&mut self) -> Result<Cloud, JsError> {
+        self.cells
+            .take()
+            .ok_or_else(|| JsError::new("cells already taken"))
+    }
+}
+
+/// Cut/fill volume between two surfaces on a grid of `cell`-sized squares.
+/// `height` is `"mean"`, `"min"` or `"max"`; `fill_empty` interpolates cells
+/// a surface does not cover.
+#[wasm_bindgen(js_name = computeVolume)]
+pub fn compute_volume(
+    before: &VolumeSurface,
+    after: &VolumeSurface,
+    cell: f64,
+    height: &str,
+    fill_empty: bool,
+) -> Result<VolumeOutput, JsError> {
+    use ca_core::volume::{CellHeight, VolumeParams};
+    let height = match height {
+        "mean" => CellHeight::Mean,
+        "min" => CellHeight::Min,
+        "max" => CellHeight::Max,
+        other => return Err(JsError::new(&format!("unknown cell height {other:?}"))),
+    };
+    let params = VolumeParams {
+        cell,
+        height,
+        fill_empty,
+    };
+    let r = ca_core::volume::volume(before.surface(), after.surface(), params)
+        .ok_or_else(|| JsError::new("need a positive cell size and at least one cloud or mesh"))?;
+    let mut positions = Vec::with_capacity(r.matched_cells);
+    let mut difference = Vec::with_capacity(r.matched_cells);
+    for j in 0..r.grid.ny {
+        for i in 0..r.grid.nx {
+            let k = j * r.grid.nx + i;
+            let d = r.after[k] - r.before[k];
+            if d.is_nan() {
+                continue;
+            }
+            let [x, y] = r.grid.center(i, j);
+            positions.push([x, y, r.after[k]]);
+            difference.push(d as f32);
+        }
+    }
+    let cells = if positions.is_empty() {
+        None
+    } else {
+        let mut inner = PointCloud {
+            positions,
+            colors: None,
+            attributes: vec![ca_core::Attribute {
+                name: "height_difference".into(),
+                values: AttributeValues::F32(difference),
+            }],
+        };
+        let lod = build_lod(&mut inner)?;
+        Some(Cloud {
+            inner,
+            lod,
+            pending: Vec::new(),
+        })
+    };
+    Ok(VolumeOutput {
+        added: r.added,
+        removed: r.removed,
+        added_area: r.added_area,
+        removed_area: r.removed_area,
+        matched_cells: r.matched_cells,
+        total_cells: r.total_cells,
+        cell: r.grid.cell,
+        cells,
+    })
+}
+
 /// Reads a point file piece by piece (see [`ca_core::io::PointStream`]), so
 /// large files never sit in memory whole.
 #[wasm_bindgen]
@@ -257,6 +406,15 @@ impl Cloud {
             other => return Err(JsError::new(&format!("unknown export format {other:?}"))),
         }
         .map_err(|e| JsError::new(&e))
+    }
+
+    /// Values of a named per-point attribute as `f32` (octree order), or
+    /// `undefined` when the cloud does not have it.
+    pub fn attribute(&self, name: &str) -> Option<Vec<f32>> {
+        match &self.inner.attribute(name)?.values {
+            AttributeValues::F32(v) => Some(v.clone()),
+            AttributeValues::U8(v) => Some(v.iter().map(|&x| x as f32).collect()),
+        }
     }
 
     /// Per-point intensity (octree order), or `undefined` when the file has none.

@@ -1,6 +1,14 @@
 // Promise-based client for the WASM worker.
 
-import type { C2cOutput, IcpOutput, LoadedCloud, Request, Vec3, WorkerMessage } from "./protocol";
+import type {
+  C2cOutput,
+  IcpOutput,
+  LoadedCloud,
+  Request,
+  Vec3,
+  VolumeOutput,
+  WorkerMessage,
+} from "./protocol";
 
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
 const pending = new Map<
@@ -79,4 +87,9 @@ export function cropCloud(id: number, min: Vec3, max: Vec3, inside: boolean): Pr
 /** A filtered copy of a cloud as a new cloud (see `Cloud.filter`). */
 export function filterCloud(id: number, op: "voxel" | "random" | "sor", a: number, b = 0): Promise<LoadedCloud> {
   return call({ kind: "filter", id, op, a, b });
+}
+
+/** Cut/fill volume between two surfaces (clouds, meshes or constant heights). */
+export function computeVolume(params: Omit<Extract<Request, { kind: "volume" }>, "kind">): Promise<VolumeOutput> {
+  return call({ kind: "volume", ...params });
 }

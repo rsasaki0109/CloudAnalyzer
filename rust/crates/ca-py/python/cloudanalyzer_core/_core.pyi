@@ -41,3 +41,21 @@ def voxel_subsample(points_: npt.NDArray[np.float64], voxel: float) -> npt.NDArr
 def statistical_outliers(
     points_: npt.NDArray[np.float64], k: int = 8, ratio: float = 1.0
 ) -> npt.NDArray[np.int64]: ...
+
+Surface = float | npt.NDArray[np.float64] | tuple[npt.NDArray[np.float64], npt.NDArray[np.uint32]]
+
+class VolumeResult(TypedDict):
+    added: float
+    removed: float
+    net: float
+    added_area: float
+    removed_area: float
+    matched_cells: int
+    total_cells: int
+    cell: float
+    grid_min: tuple[float, float]
+    difference: npt.NDArray[np.float64]
+
+def volume(
+    before: Surface, after: Surface, cell: float, height: str = "mean", fill_empty: bool = False
+) -> VolumeResult: ...

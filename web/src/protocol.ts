@@ -46,8 +46,8 @@ export interface C2cStats {
 }
 
 export interface C2cOutput {
-  /** Cloud-to-cloud or cloud-to-mesh. */
-  kind: "c2c" | "c2m";
+  /** Cloud-to-cloud, cloud-to-mesh, or a cut/fill height difference. */
+  kind: "c2c" | "c2m" | "volume";
   /** Negative distances mean "behind the mesh" (C2M only). */
   signed: boolean;
   /** Per-point distances of the compared cloud (octree order, like its positions). */
@@ -67,6 +67,24 @@ export interface IcpOutput {
   rmsFinal: number;
   iterations: number;
   converged: boolean;
+  millis: number;
+}
+
+/** A volume surface: a loaded cloud or mesh, or a horizontal plane. */
+export type VolumeSide = { id: number } | { z: number };
+
+export interface VolumeOutput {
+  added: number;
+  removed: number;
+  addedArea: number;
+  removedArea: number;
+  matchedCells: number;
+  totalCells: number;
+  cell: number;
+  /** One point per compared cell, at the "after" height. */
+  cells: LoadedCloud | null;
+  /** after − before per cell, in the cells' order. */
+  difference: Float32Array | null;
   millis: number;
 }
 
@@ -91,6 +109,14 @@ export type Request =
       pointToPlane: boolean;
     }
   | { kind: "transform"; id: number; matrix: number[] }
+  | {
+      kind: "volume";
+      before: VolumeSide;
+      after: VolumeSide;
+      cell: number;
+      height: "mean" | "min" | "max";
+      fillEmpty: boolean;
+    }
   | {
       kind: "filter";
       id: number;

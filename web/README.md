@@ -26,6 +26,11 @@ Files never leave the browser.
 - Clipping box with per-axis sliders and one-click X/Y/Z cross-sections; the
   point budget goes to what is inside, and **Crop** copies the points inside
   into new clouds.
+- M3C2 change detection (Lague et al. 2013): the distance between two
+  surveys along local surface normals, averaged over a cylinder, with a 95 %
+  level of detection per core point; the result is a new cloud of core points
+  (optionally one per voxel) with `m3c2_distance`, `lod95` and `significant`
+  attributes, grey where too few points were found.
 - Cut/fill volume (2.5D) between any two of: point clouds, meshes, or a
   constant height, on a grid with mean/min/max cell heights and optional
   filling of empty cells; the per-cell height difference is shown as a cloud.

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import {
   cloudToCloud,
+  computeM3c2,
   computeVolume,
   cropCloud,
   exportCloud,
@@ -146,6 +147,7 @@ const isMesh = (entry: Entry) => entry.cloud.kind === "mesh";
 function distanceLabel(c2c: Entry["c2c"]): string {
   if (!c2c) return "Distance";
   if (c2c.kind === "volume") return `Height difference vs ${c2c.referenceName}`;
+  if (c2c.kind === "m3c2") return `M3C2 distance from ${c2c.referenceName}`;
   return `${c2c.kind === "c2m" ? "C2M" : "C2C"} distance → ${c2c.referenceName}`;
 }
 
@@ -267,7 +269,9 @@ function findByName(name: string): Entry | undefined {
 async function saveCloud(entry: Entry, format: "ply" | "csv"): Promise<void> {
   const { cloud, c2c } = entry;
   const kind = c2c?.kind.toUpperCase();
-  const scalar = c2c && kind ? { name: `${kind}_distance`, values: c2c.distances } : undefined;
+  // M3C2 results already carry m3c2_distance / lod95 / significant attributes.
+  const scalar =
+    c2c && kind && c2c.kind !== "m3c2" ? { name: `${kind}_distance`, values: c2c.distances } : undefined;
   const base = cloud.name.replace(/\.[^.]+$/, "");
   const filename = `${base}${kind ? `_${kind}` : ""}.${format}`;
   setStatus(`Saving ${filename}…`);
@@ -454,17 +458,99 @@ function renderC2cSelects(): void {
 }
 
 function updateRunButton(): void {
-  runButton.disabled =
-    !comparedSelect.value || !referenceSelect.value || comparedSelect.value === referenceSelect.value;
   const reference = entries.get(Number(referenceSelect.value));
-  $("c2m-signed-row").hidden = !reference || !isMesh(reference);
+  const m3c2 = $<HTMLSelectElement>("distance-method").value === "m3c2";
+  runButton.disabled =
+    !comparedSelect.value ||
+    !referenceSelect.value ||
+    comparedSelect.value === referenceSelect.value ||
+    (m3c2 && !!reference && isMesh(reference));
+  $("c2m-signed-row").hidden = m3c2 || !reference || !isMesh(reference);
+  $("m3c2-options").hidden = !m3c2;
 }
+$<HTMLSelectElement>("distance-method").onchange = updateRunButton;
 comparedSelect.onchange = referenceSelect.onchange = updateRunButton;
+
+/** Summary statistics over the finite values only. */
+function finiteStats(values: Float32Array): C2cOutput["stats"] {
+  const finite = values.filter((v) => Number.isFinite(v));
+  let [lo, hi, sum, sum2] = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, 0, 0];
+  for (const v of finite) {
+    lo = Math.min(lo, v);
+    hi = Math.max(hi, v);
+    sum += v;
+    sum2 += v * v;
+  }
+  const n = finite.length || 1;
+  const mean = sum / n;
+  return {
+    count: finite.length,
+    min: finite.length ? lo : 0,
+    max: finite.length ? hi : 0,
+    mean,
+    rms: Math.sqrt(sum2 / n),
+    stdDev: Math.sqrt(Math.max(0, sum2 / n - mean * mean)),
+    median: finite.length ? quantile(finite, 0.5) : 0,
+  };
+}
+
+async function runM3c2(compared: Entry, reference: Entry): Promise<void> {
+  const num = (id: string) => Number($<HTMLInputElement>(id).value);
+  setStatus(`Computing M3C2: ${reference.cloud.name} → ${compared.cloud.name}…`);
+  const out = await computeM3c2({
+    compared: compared.cloud.id,
+    reference: reference.cloud.id,
+    normalRadius: num("m3c2-normal"),
+    projectionRadius: num("m3c2-projection"),
+    maxDepth: num("m3c2-depth"),
+    coreSpacing: num("m3c2-core"),
+  });
+  const entry = addEntry(out.cloud);
+  const stats = finiteStats(out.distance);
+  let significant = 0;
+  for (let i = 0; i < out.significant.length; i++) if (out.significant[i] > 0) significant++;
+  entry.c2c = {
+    kind: "m3c2",
+    signed: true,
+    distances: out.distance,
+    stats,
+    millis: out.millis,
+    workers: 1,
+    referenceName: reference.cloud.name,
+  };
+  entry.mode = "c2c";
+  activeC2c = entry.cloud.id;
+  const m = Math.max(Math.abs(stats.min), Math.abs(stats.max)) || 1;
+  range = { lo: -m, hi: m };
+  rampName = "Blue > White > Red";
+  refreshColors(entry);
+  compared.visible = false;
+  viewer.setVisible(compared.cloud.id, false);
+  renderList();
+  renderC2cResult();
+  const n = out.distance.length;
+  setStatus(
+    `M3C2 at ${n.toLocaleString()} core points in ${Math.round(out.millis)} ms: ` +
+      `${stats.count.toLocaleString()} measured, ${significant.toLocaleString()} significant ` +
+      `(${n ? ((100 * significant) / n).toFixed(1) : 0} %), mean ${fmt(stats.mean)}`,
+  );
+}
 
 runButton.onclick = async () => {
   const compared = entries.get(Number(comparedSelect.value));
   const reference = entries.get(Number(referenceSelect.value));
   if (!compared || !reference) return;
+  if ($<HTMLSelectElement>("distance-method").value === "m3c2") {
+    runButton.disabled = true;
+    try {
+      await runM3c2(compared, reference);
+    } catch (err) {
+      setStatus(`M3C2 failed: ${err instanceof Error ? err.message : err}`, true);
+    } finally {
+      updateRunButton();
+    }
+    return;
+  }
   runButton.disabled = true;
   const kind = isMesh(reference) ? "C2M" : "C2C";
   setStatus(`Computing ${kind} distance: ${compared.cloud.name} → ${reference.cloud.name}…`);
@@ -564,6 +650,8 @@ function renderC2cResult(): void {
   $("colorbar-title").textContent =
     c2c.kind === "volume"
       ? `Height difference (after − before) · ${entry.cloud.name}`
+      : c2c.kind === "m3c2"
+        ? `M3C2 distance · ${entry.cloud.name}`
       : `${c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C"} distance · ${entry.cloud.name}`;
   $("colorbar-ramp").style.background = gradientCss(rampName);
   $("colorbar-max").textContent = fmt(hi);
@@ -1220,7 +1308,7 @@ function renderPickPanel(): void {
   ];
   const rgb = entry?.cloud.colors?.subarray(picked.index * 3, picked.index * 3 + 3);
   if (rgb) rows.push(["RGB", Array.from(rgb).join(", ")]);
-  if (entry?.c2c) rows.push([`C2C → ${entry.c2c.referenceName}`, fmt(entry.c2c.distances[picked.index])]);
+  if (entry?.c2c) rows.push([distanceLabel(entry.c2c), fmt(entry.c2c.distances[picked.index])]);
   $("pick-info").replaceChildren(
     ...rows.map(([k, v]) => {
       const tr = document.createElement("tr");

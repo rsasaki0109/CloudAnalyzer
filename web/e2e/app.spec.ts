@@ -211,3 +211,32 @@ test("ground extraction (CSF) separates a box from flat ground", async ({ page }
   await expect(page.locator("#class-list")).toContainText("2 · Ground");
   await expect(page.locator("#class-list")).toContainText("256");
 });
+
+test("M3C2: a flat grid lifted by 0.3 m changes by 0.3 m along the normal", async ({ page }) => {
+  const flat = (lift: number) => grid(60).map(([x, y]) => [x, y, lift] as [number, number, number]);
+  await open(page, [
+    { name: "before.ply", buffer: ply(flat(0)) },
+    { name: "after.ply", buffer: ply(flat(0.3)) },
+  ]);
+  await expect(status(page)).toContainText("Loaded after.ply: 3,600 points");
+  await page.locator("#distance-method").selectOption("m3c2");
+  await page.locator("#m3c2-normal").fill("0.5");
+  await page.locator("#m3c2-projection").fill("0.25");
+  await page.locator("#m3c2-depth").fill("1");
+  await page.locator("#m3c2-core").fill("0.5");
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText(/M3C2 at [\d,]+ core points/);
+  await expect(status(page)).toContainText("(100.0 %)");
+  await expect(page.locator("#c2c-stats")).toContainText(/Mean\s*0\.3(0*)(?!\d)/);
+  await expect(page.locator(".cloud-list li")).toHaveCount(3);
+
+  const download = page.waitForEvent("download");
+  await page.locator("#export-ply").click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("after_m3c2_M3C2.ply");
+  const chunks: Buffer[] = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
+  const header = Buffer.concat(chunks).subarray(0, 400).toString("latin1");
+  expect(header).toContain("property float m3c2_distance");
+  expect(header).toContain("property uchar significant");
+});

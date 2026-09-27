@@ -66,3 +66,18 @@ def ground_csf(
     rigidness: str = "relief",
     max_iterations: int = 500,
 ) -> npt.NDArray[np.bool_]: ...
+def m3c2(
+    core: npt.NDArray[np.float64],
+    cloud1: npt.NDArray[np.float64],
+    cloud2: npt.NDArray[np.float64],
+    normal_radius: float = 1.0,
+    projection_radius: float = 0.5,
+    max_depth: float = 2.0,
+    min_points: int = 5,
+    registration_error: float = 0.0,
+) -> tuple[
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.bool_],
+    npt.NDArray[np.float64],
+]: ...

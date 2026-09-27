@@ -213,8 +213,25 @@
 
       <section id="c2c-panel">
         <h2>Distance (cloud or mesh)</h2>
+        <label>Method
+          <select id="distance-method">
+            <option value="nearest" selected>Nearest neighbour (C2C / C2M)</option>
+            <option value="m3c2">M3C2 (along normals)</option>
+          </select>
+        </label>
         <label>Compared <select id="c2c-compared"></select></label>
         <label>Reference <select id="c2c-reference"></select></label>
+        <details id="m3c2-options" class="options" hidden open>
+          <summary>M3C2 options</summary>
+          <div class="range">
+            <label title="Neighbourhood radius for fitting normals on the reference">Normal radius <input id="m3c2-normal" type="number" min="0" step="any" value="1" /></label>
+            <label title="Cylinder radius over which each cloud is averaged">Projection radius <input id="m3c2-projection" type="number" min="0" step="any" value="0.5" /></label>
+          </div>
+          <div class="range">
+            <label title="Cylinder half-length along the normal">Max depth <input id="m3c2-depth" type="number" min="0" step="any" value="2" /></label>
+            <label title="One core point per voxel of this size (0 = every compared point)">Core spacing <input id="m3c2-core" type="number" min="0" step="any" value="0" /></label>
+          </div>
+        </details>
         <label id="c2m-signed-row" class="check" hidden
           title="Negative distances for points behind the mesh (against its face normals)">
           <input id="c2m-signed" type="checkbox" checked /> Signed distance

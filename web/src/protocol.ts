@@ -47,7 +47,7 @@ export interface C2cStats {
 
 export interface C2cOutput {
   /** Cloud-to-cloud, cloud-to-mesh, or a cut/fill height difference. */
-  kind: "c2c" | "c2m" | "volume";
+  kind: "c2c" | "c2m" | "volume" | "m3c2";
   /** Negative distances mean "behind the mesh" (C2M only). */
   signed: boolean;
   /** Per-point distances of the compared cloud (octree order, like its positions). */
@@ -88,6 +88,16 @@ export interface VolumeOutput {
   millis: number;
 }
 
+export interface M3c2Output {
+  /** Core points, carrying the results as attributes. */
+  cloud: LoadedCloud;
+  /** Per core point, in the cloud's order; NaN where undefined. */
+  distance: Float32Array;
+  lod95: Float32Array;
+  significant: Float32Array;
+  millis: number;
+}
+
 export type Request =
   | {
       kind: "load";
@@ -125,6 +135,16 @@ export type Request =
       a: number;
       /** sor: standard-deviation threshold. */
       b: number;
+    }
+  | {
+      kind: "m3c2";
+      compared: number;
+      reference: number;
+      normalRadius: number;
+      projectionRadius: number;
+      maxDepth: number;
+      /** Core points: one per voxel of this size (0 = every compared point). */
+      coreSpacing: number;
     }
   | {
       kind: "ground";

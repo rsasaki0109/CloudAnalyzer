@@ -786,6 +786,66 @@ pub fn register_icp(
     })
 }
 
+/// M3C2 change from `reference` (cloud 1) to `compared` (cloud 2) at core
+/// points taken from `compared` (all points, or one per `core_spacing`
+/// voxel). Returns the core points as a new indexed cloud carrying the
+/// `m3c2_distance` and `lod95` (NaN where undefined) and `significant`
+/// (1/0) attributes.
+#[wasm_bindgen(js_name = computeM3c2)]
+pub fn compute_m3c2(
+    compared: &Cloud,
+    reference: &Cloud,
+    normal_radius: f64,
+    projection_radius: f64,
+    max_depth: f64,
+    core_spacing: f64,
+) -> Result<Cloud, JsError> {
+    use ca_core::m3c2::{M3c2Params, m3c2};
+    let core = if core_spacing > 0.0 {
+        compared.inner.select(&ca_core::filter::voxel_subsample(
+            &compared.inner,
+            core_spacing,
+        ))
+    } else {
+        compared.inner.clone()
+    };
+    let params = M3c2Params {
+        normal_radius,
+        projection_radius,
+        max_depth,
+        ..M3c2Params::default()
+    };
+    let r = m3c2(
+        &core.positions,
+        &reference.inner.positions,
+        &compared.inner.positions,
+        params,
+    )
+    .ok_or_else(|| JsError::new("M3C2 needs non-empty clouds and positive radii"))?;
+    let mut inner = core;
+    inner
+        .attributes
+        .retain(|a| !matches!(a.name.as_str(), "m3c2_distance" | "lod95" | "significant"));
+    inner.attributes.push(ca_core::Attribute {
+        name: "m3c2_distance".into(),
+        values: AttributeValues::F32(r.distance.iter().map(|&d| d as f32).collect()),
+    });
+    inner.attributes.push(ca_core::Attribute {
+        name: "lod95".into(),
+        values: AttributeValues::F32(r.lod95.iter().map(|&d| d as f32).collect()),
+    });
+    inner.attributes.push(ca_core::Attribute {
+        name: "significant".into(),
+        values: AttributeValues::U8(r.significant.iter().map(|&s| u8::from(s)).collect()),
+    });
+    let lod = build_lod(&mut inner)?;
+    Ok(Cloud {
+        inner,
+        lod,
+        pending: Vec::new(),
+    })
+}
+
 /// Result of a cloud-to-cloud distance computation.
 #[wasm_bindgen]
 pub struct C2cResult {

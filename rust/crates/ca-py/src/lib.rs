@@ -273,6 +273,54 @@ fn ground_csf<'py>(
     Ok(ground.into_pyarray(py))
 }
 
+/// M3C2 change from ``cloud1`` to ``cloud2`` at the ``core`` points
+/// (Lague et al. 2013), multi-threaded. Returns ``(distance, lod95,
+/// significant, normals)``; distance and LoD95 are NaN where a cylinder
+/// holds fewer than ``min_points`` points of either cloud.
+#[pyfunction]
+#[pyo3(signature = (core, cloud1, cloud2, normal_radius = 1.0, projection_radius = 0.5, max_depth = 2.0, min_points = 5, registration_error = 0.0))]
+#[allow(clippy::too_many_arguments, clippy::type_complexity)]
+fn m3c2<'py>(
+    py: Python<'py>,
+    core: PyReadonlyArray2<f64>,
+    cloud1: PyReadonlyArray2<f64>,
+    cloud2: PyReadonlyArray2<f64>,
+    normal_radius: f64,
+    projection_radius: f64,
+    max_depth: f64,
+    min_points: usize,
+    registration_error: f64,
+) -> PyResult<(
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray1<bool>>,
+    Bound<'py, PyArray2<f64>>,
+)> {
+    use ca_core::m3c2::{M3c2Params, m3c2_par};
+    let (core, cloud1, cloud2) = (points(&core)?, points(&cloud1)?, points(&cloud2)?);
+    let params = M3c2Params {
+        normal_radius,
+        projection_radius,
+        max_depth,
+        min_points,
+        registration_error,
+    };
+    let r = py
+        .detach(|| m3c2_par(&core, &cloud1, &cloud2, params))
+        .ok_or_else(|| PyValueError::new_err("need non-empty clouds and positive radii"))?;
+    let normals = numpy::ndarray::Array2::from_shape_vec(
+        (r.normals.len(), 3),
+        r.normals.into_iter().flatten().collect(),
+    )
+    .expect("n x 3");
+    Ok((
+        r.distance.into_pyarray(py),
+        r.lod95.into_pyarray(py),
+        r.significant.into_pyarray(py),
+        normals.into_pyarray(py),
+    ))
+}
+
 /// A volume surface from Python: a float (constant height), a
 /// ``(vertices, triangles)`` tuple (mesh), or an ``(N, 3)`` array (points).
 enum PySurface {
@@ -376,5 +424,6 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(statistical_outliers, m)?)?;
     m.add_function(wrap_pyfunction!(volume, m)?)?;
     m.add_function(wrap_pyfunction!(ground_csf, m)?)?;
+    m.add_function(wrap_pyfunction!(m3c2, m)?)?;
     Ok(())
 }

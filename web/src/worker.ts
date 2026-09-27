@@ -7,6 +7,7 @@ import init, {
   Cloud,
   cloudToCloud,
   cloudToMesh,
+  computeM3c2,
   computeVolume,
   Mesh,
   StreamLoader,
@@ -21,6 +22,7 @@ import type {
   C2cOutput,
   IcpOutput,
   LoadedCloud,
+  M3c2Output,
   Request,
   Response,
   Vec3,
@@ -406,6 +408,35 @@ async function handle(
       const suffix = { voxel: `voxel${req.a}`, random: `random${req.a}`, sor: "sor" }[req.op];
       items.set(id, { kind: "cloud", cloud: filtered, name: `${base}_${suffix}` });
       return describe(id, { parse: 0, index: performance.now() - t });
+    }
+    case "m3c2": {
+      const start = performance.now();
+      const cloud = computeM3c2(
+        getCloud(req.compared),
+        getCloud(req.reference),
+        req.normalRadius,
+        req.projectionRadius,
+        req.maxDepth,
+        req.coreSpacing,
+      );
+      const id = nextId++;
+      const base = items.get(req.compared)!.name.replace(/\.[^.]+$/, "");
+      items.set(id, { kind: "cloud", cloud, name: `${base}_m3c2` });
+      const described = describe(id);
+      const distance = cloud.attribute("m3c2_distance")!;
+      const lod95 = cloud.attribute("lod95")!;
+      const significant = cloud.attribute("significant")!;
+      const value: M3c2Output = {
+        cloud: described.value,
+        distance,
+        lod95,
+        significant,
+        millis: performance.now() - start,
+      };
+      return {
+        value,
+        transfer: [...described.transfer, distance.buffer, lod95.buffer, significant.buffer],
+      };
     }
     case "ground": {
       const source = items.get(req.id);

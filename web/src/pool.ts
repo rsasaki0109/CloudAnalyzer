@@ -33,12 +33,25 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
     const transfer: Transferable[] = [];
     if (slice.kind === "cloud") transfer.push(slice.queries.buffer, slice.reference.buffer);
     if (slice.kind === "mesh") transfer.push(slice.queries.buffer);
-    if (slice.kind === "octree") {
+    if (slice.kind === "sor-local") transfer.push(slice.points.buffer);
+    if (slice.kind === "sor-within") transfer.push(slice.queries.buffer);
+    if (slice.kind === "bucket-chunk" || slice.kind === "bucket") {
       transfer.push(slice.positions.buffer);
       if (slice.colors) transfer.push(slice.colors.buffer);
     }
     w.postMessage(request, { transfer });
   });
+}
+
+/** Run a slice on a given worker, e.g. one holding state from an earlier slice. */
+export function runOn<S extends Slice>(lane: number, slice: S): Promise<SliceResult<S>> {
+  return runSlice(worker(lane), slice);
+}
+
+/** Start every pool worker and get its kernels optimized, while idle. */
+export function warmUpPool(): Promise<unknown> {
+  const n = poolSize();
+  return n < 2 ? Promise.resolve() : Promise.all(Array.from({ length: n }, (_, i) => runSlice(worker(i), { kind: "warm-up" })));
 }
 
 /**
@@ -50,12 +63,15 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
 export async function runSlices<S extends Slice>(
   count: number,
   make: (i: number) => S,
+  /** Receives the worker ("lane") that ran each slice, for follow-ups with `runOn`. */
+  lanesUsed?: number[],
 ): Promise<SliceResult<S>[]> {
   const results: SliceResult<S>[] = new Array(count);
   let next = 0;
   const lanes = Array.from({ length: Math.min(poolSize(), count) }, async (_, lane) => {
     while (next < count) {
       const i = next++;
+      if (lanesUsed) lanesUsed[i] = lane;
       results[i] = await runSlice(worker(lane), make(i));
     }
   });

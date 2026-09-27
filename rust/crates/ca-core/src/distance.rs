@@ -301,7 +301,7 @@ fn query_region(
 
 /// Recursively reorder `items` by median splits along the widest axis and
 /// record `parts` near-equal, spatially compact ranges (offset by `offset`).
-fn split_ranges(
+pub(crate) fn split_ranges(
     items: &mut [([f64; 3], u32)],
     offset: usize,
     parts: usize,
@@ -325,7 +325,7 @@ fn split_ranges(
     split_ranges(right, offset + mid, parts - left_parts, out);
 }
 
-fn bounds<'a>(points: impl Iterator<Item = &'a [f64; 3]>) -> ([f64; 3], [f64; 3]) {
+pub(crate) fn bounds<'a>(points: impl Iterator<Item = &'a [f64; 3]>) -> ([f64; 3], [f64; 3]) {
     let mut lo = [f64::INFINITY; 3];
     let mut hi = [f64::NEG_INFINITY; 3];
     for p in points {

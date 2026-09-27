@@ -151,6 +151,22 @@ test("filters: SOR drops outliers, voxel subsampling keeps one point per voxel",
   await expect(page.locator(".cloud-list li")).toHaveCount(3);
 });
 
+test("1.2M points: octree and SOR run on the worker pool with exact results", async ({ page }) => {
+  // A flat 1100 x 1100 grid plus five far outliers.
+  const points: [number, number, number][] = [];
+  for (let j = 0; j < 1100; j++) for (let i = 0; i < 1100; i++) points.push([i * 0.1, j * 0.1, 0]);
+  points.push([300, 300, 100], [-200, 50, 40], [50, -250, -60], [400, -100, 0], [-150, -150, 150]);
+  await open(page, [{ name: "big.ply", buffer: ply(points) }]);
+  await expect(status(page)).toContainText(/Loaded big\.ply: 1,210,005 points .*index .* on \d+ workers/, {
+    timeout: 60_000,
+  });
+  await page.locator("#filter-op").selectOption("sor");
+  await page.locator("#filter-run").click();
+  await expect(status(page)).toContainText("big_sor: kept 1,210,000 of 1,210,005 points (5 removed)", {
+    timeout: 60_000,
+  });
+});
+
 test("large files keep every n-th point above the max-points setting", async ({ page }) => {
   // A tiny limit stands in for a multi-gigabyte file.
   await page.evaluate(() => {

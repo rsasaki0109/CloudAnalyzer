@@ -65,24 +65,439 @@ pub fn random_subsample(cloud: &PointCloud, count: usize, seed: u64) -> Vec<usiz
 /// `k` nearest neighbours exceeds the global mean by more than `ratio`
 /// standard deviations (PCL's `StatisticalOutlierRemoval`).
 pub fn statistical_outliers(cloud: &PointCloud, k: usize, ratio: f64) -> Vec<usize> {
+    if cloud.len() <= k || k == 0 {
+        return (0..cloud.len()).collect();
+    }
+    sor_keep(&knn_mean_distances(&cloud.positions, k), ratio)
+}
+
+/// Multi-threaded [`statistical_outliers`] (feature `parallel`); identical
+/// results.
+#[cfg(feature = "parallel")]
+pub fn statistical_outliers_par(cloud: &PointCloud, k: usize, ratio: f64) -> Vec<usize> {
+    use rayon::prelude::*;
     let n = cloud.len();
-    let Some(tree) = KdTree::new(&cloud.positions) else {
-        return Vec::new();
-    };
     if n <= k || k == 0 {
         return (0..n).collect();
     }
+    let Some(tree) = KdTree::new(&cloud.positions) else {
+        return Vec::new();
+    };
+    let order = crate::distance::morton_order(&cloud.positions);
+    let parts: Vec<Vec<(usize, f64)>> = order
+        .par_chunks(4096)
+        .map(|chunk| {
+            chunk
+                .iter()
+                .map(|&i| (i, mean_of(&tree.nearest_k(&cloud.positions[i], k + 1))))
+                .collect()
+        })
+        .collect();
+    let mut means = vec![0.0; n];
+    for (i, m) in parts.into_iter().flatten() {
+        means[i] = m;
+    }
+    sor_keep(&means, ratio)
+}
+
+/// Mean distance of every point to its `k` nearest other points (the SOR
+/// statistic). Needs more than `k` points.
+pub fn knn_mean_distances(points: &[[f64; 3]], k: usize) -> Vec<f64> {
+    let Some(tree) = KdTree::new(points) else {
+        return Vec::new();
+    };
     // Query in Morton order so consecutive searches touch the same part of
     // the tree. k + 1 because the nearest neighbour of a point is itself.
-    let mut means = vec![0.0; n];
-    for i in crate::distance::morton_order(&cloud.positions) {
-        let hits = tree.nearest_k(&cloud.positions[i], k + 1);
-        means[i] = hits.iter().skip(1).map(|&(_, d2)| d2.sqrt()).sum::<f64>() / k as f64;
+    let mut means = vec![0.0; points.len()];
+    for i in crate::distance::morton_order(points) {
+        means[i] = mean_of(&tree.nearest_k(&points[i], k + 1));
+    }
+    means
+}
+
+/// Mean of the distances after the first (the point itself), from squared
+/// distances in ascending order.
+fn mean_of(hits: &[(usize, f64)]) -> f64 {
+    let k = hits.len().saturating_sub(1).max(1);
+    hits.iter().skip(1).map(|&(_, d2)| d2.sqrt()).sum::<f64>() / k as f64
+}
+
+/// Indices whose SOR statistic is at most `ratio` standard deviations above
+/// the mean.
+pub fn sor_keep(means: &[f64], ratio: f64) -> Vec<usize> {
+    let n = means.len();
+    if n == 0 {
+        return Vec::new();
     }
     let mean = means.iter().sum::<f64>() / n as f64;
     let var = means.iter().map(|m| (m - mean).powi(2)).sum::<f64>() / n as f64;
     let limit = mean + ratio * var.sqrt();
     (0..n).filter(|&i| means[i] <= limit).collect()
+}
+
+// ---------------------------------------------------------------- SOR on workers
+//
+// For workers that share no memory, the cloud is split into spatially
+// compact parts. [`KnnPart::local`] finds each point's neighbours within its
+// own part; the result is exact when the ball reaching its (k+1)-th local
+// neighbour touches no other part's box. The other points go to
+// [`KnnPart::within`] on each part their ball touches, and [`merge_knn`]
+// combines the candidates. The statistic is bit-identical to [`knn_mean_distances`].
+
+/// Axis-aligned box as `(min, max)`.
+pub type Aabb = ([f64; 3], [f64; 3]);
+
+/// Where each part's points lie, to tell which parts a ball can reach.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Regions {
+    /// One bounding box per part.
+    Boxes(Vec<Aabb>),
+    /// A `dims`³ lattice of cubic cells of edge `cell` from `lo`, each owned
+    /// by at most one part (`u8::MAX` = none); every point of a part lies in
+    /// a cell it owns.
+    Grid {
+        lo: [f64; 3],
+        cell: f64,
+        dims: usize,
+        owner: Vec<u8>,
+    },
+}
+
+impl Regions {
+    /// Bit mask of the parts other than `own` with a region the ball of
+    /// radius `r` around `p` reaches.
+    pub fn reached(&self, p: &[f64; 3], r: f64, own: usize) -> u32 {
+        let mut mask = 0u32;
+        match self {
+            Regions::Boxes(boxes) => {
+                for (j, b) in boxes.iter().enumerate() {
+                    let d2: f64 = (0..3)
+                        .map(|a| (b.0[a] - p[a]).max(p[a] - b.1[a]).max(0.0).powi(2))
+                        .sum();
+                    if j != own && d2 <= r * r {
+                        mask |= 1 << j;
+                    }
+                }
+            }
+            Regions::Grid {
+                lo,
+                cell,
+                dims,
+                owner,
+            } => {
+                // Cells overlapping the ball's bounding box (a superset of
+                // those the ball reaches, so never misses a part), widened
+                // a little for points right on a cell face.
+                let slack = (lo.iter().fold(0.0f64, |m, v| m.max(v.abs())) + cell * *dims as f64)
+                    * 1e-12
+                    + cell * 1e-9;
+                let range = |a: usize| {
+                    let at = |v: f64| {
+                        ((v - lo[a]) / cell).floor().clamp(0.0, (*dims - 1) as f64) as usize
+                    };
+                    at(p[a] - r - slack)..=at(p[a] + r + slack)
+                };
+                for z in range(2) {
+                    for y in range(1) {
+                        for x in range(0) {
+                            let o = owner[(z * dims + y) * dims + x];
+                            if o != u8::MAX && o as usize != own {
+                                mask |= 1 << o;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        mask
+    }
+
+    /// Flat form for passing to workers: `[0, boxes...]` (six numbers each)
+    /// or `[1, loX, loY, loZ, cell, dims, owner...]`.
+    pub fn to_flat(&self) -> Vec<f64> {
+        match self {
+            Regions::Boxes(boxes) => std::iter::once(0.0)
+                .chain(
+                    boxes
+                        .iter()
+                        .flat_map(|(lo, hi)| [lo[0], lo[1], lo[2], hi[0], hi[1], hi[2]]),
+                )
+                .collect(),
+            Regions::Grid {
+                lo,
+                cell,
+                dims,
+                owner,
+            } => [1.0, lo[0], lo[1], lo[2], *cell, *dims as f64]
+                .into_iter()
+                .chain(owner.iter().map(|&o| o as f64))
+                .collect(),
+        }
+    }
+
+    pub fn from_flat(flat: &[f64]) -> Option<Self> {
+        match flat.split_first()? {
+            (&0.0, rest) if rest.len().is_multiple_of(6) => Some(Regions::Boxes(
+                rest.as_chunks::<6>()
+                    .0
+                    .iter()
+                    .map(|b| ([b[0], b[1], b[2]], [b[3], b[4], b[5]]))
+                    .collect(),
+            )),
+            (&1.0, [x, y, z, cell, dims, owner @ ..]) => {
+                let dims = *dims as usize;
+                (dims > 0 && owner.len() == dims * dims * dims && *cell > 0.0).then(|| {
+                    Regions::Grid {
+                        lo: [*x, *y, *z],
+                        cell: *cell,
+                        dims,
+                        owner: owner.iter().map(|&o| o as u8).collect(),
+                    }
+                })
+            }
+            _ => None,
+        }
+    }
+}
+
+/// Spatially compact parts of a cloud (at most 32) and where they lie.
+#[derive(Debug, Clone, PartialEq)]
+pub struct KnnSplit {
+    pub parts: Vec<Vec<u32>>,
+    pub regions: Regions,
+}
+
+/// Split `points` into up to `parts` (at most 32) compact parts by median
+/// cuts.
+pub fn split_for_knn(points: &[[f64; 3]], parts: usize) -> KnnSplit {
+    let mut items: Vec<([f64; 3], u32)> = points.iter().zip(0..).map(|(&p, i)| (p, i)).collect();
+    let mut ranges = Vec::new();
+    crate::distance::split_ranges(&mut items, 0, parts.clamp(1, 32), &mut ranges);
+    let mut out = Vec::with_capacity(ranges.len());
+    let mut boxes = Vec::with_capacity(ranges.len());
+    for range in ranges {
+        let slice = &items[range];
+        boxes.push(crate::distance::bounds(slice.iter().map(|(p, _)| p)));
+        out.push(slice.iter().map(|&(_, i)| i).collect());
+    }
+    KnnSplit {
+        parts: out,
+        regions: Regions::Boxes(boxes),
+    }
+}
+
+/// Split a cloud in octree order (see [`crate::octree::Octree`]) into up to
+/// `parts` (at most 32) compact parts without sorting: subtrees at `level`
+/// (or leaves above it) are whole units, taken in depth-first order and
+/// grouped to about equal size; the points kept by nodes above `level` join
+/// the part owning their lattice cell.
+pub fn split_octree_for_knn(
+    positions: &[[f64; 3]],
+    nodes: &[crate::octree::OctreeNode],
+    parts: usize,
+    level: u8,
+) -> KnnSplit {
+    use crate::octree::NO_CHILD;
+    let parts = parts.clamp(1, 32);
+    let Some(root) = nodes.first() else {
+        return split_for_knn(positions, parts);
+    };
+    let dims = 1usize << level.min(6);
+    let cell = root.size / dims as f64;
+    let lo = root.min;
+    let n = positions.len();
+    // End of each node's subtree range (children come after their parent).
+    let mut end = vec![0u32; nodes.len()];
+    for id in (0..nodes.len()).rev() {
+        let node = &nodes[id];
+        end[id] = node
+            .children
+            .iter()
+            .filter(|&&c| c != NO_CHILD)
+            .map(|&c| end[c as usize])
+            .fold(node.start + node.count, u32::max);
+    }
+    // Units in depth-first order; coarse nodes' own points are set aside.
+    let mut units: Vec<usize> = Vec::new();
+    let mut coarse: Vec<usize> = Vec::new();
+    let mut stack = vec![0usize];
+    while let Some(id) = stack.pop() {
+        let node = &nodes[id];
+        let leaf = node.children.iter().all(|&c| c == NO_CHILD);
+        if node.level >= level || leaf {
+            units.push(id);
+        } else {
+            coarse.push(id);
+            stack.extend(
+                node.children
+                    .iter()
+                    .rev()
+                    .filter(|&&c| c != NO_CHILD)
+                    .map(|&c| c as usize),
+            );
+        }
+    }
+    // Each unit goes to the part its middle point falls in, by count.
+    let unit_points: usize = units
+        .iter()
+        .map(|&id| (end[id] - nodes[id].start) as usize)
+        .sum();
+    let mut out: Vec<Vec<u32>> = vec![Vec::new(); parts];
+    let mut owner = vec![u8::MAX; dims * dims * dims];
+    let cell_of = |p: &[f64; 3]| -> [usize; 3] {
+        std::array::from_fn(|a| {
+            ((p[a] - lo[a]) / cell)
+                .floor()
+                .clamp(0.0, (dims - 1) as f64) as usize
+        })
+    };
+    let index = |c: [usize; 3]| (c[2] * dims + c[1]) * dims + c[0];
+    let mut before = 0usize;
+    for &id in &units {
+        let node = &nodes[id];
+        let size = (end[id] - node.start) as usize;
+        let j = ((before + size / 2) * parts / unit_points.max(1)).min(parts - 1);
+        before += size;
+        out[j].extend(node.start..end[id]);
+        // Claim every cell of the unit's cube (one cell at `level`).
+        let (c0, c1) = (
+            cell_of(&node.min.map(|v| v + 0.25 * cell)),
+            cell_of(&node.min.map(|v| v + node.size - 0.25 * cell)),
+        );
+        for z in c0[2]..=c1[2] {
+            for y in c0[1]..=c1[1] {
+                for x in c0[0]..=c1[0] {
+                    owner[index([x, y, z])] = j as u8;
+                }
+            }
+        }
+    }
+    // Coarse points join their cell's owner; an unowned cell goes to the
+    // part of the first point that lands in it.
+    for &id in &coarse {
+        let node = &nodes[id];
+        for i in node.start..node.start + node.count {
+            let c = index(cell_of(&positions[i as usize]));
+            if owner[c] == u8::MAX {
+                let fewest = (0..parts).min_by_key(|&j| out[j].len()).unwrap_or(0);
+                owner[c] = fewest as u8;
+            }
+            out[owner[c] as usize].push(i);
+        }
+    }
+    out.retain(|p| !p.is_empty());
+    // Renumber owners after dropping empty parts.
+    let mut map = [u8::MAX; 32];
+    let mut next = 0u8;
+    for (j, slot) in map.iter_mut().enumerate().take(parts) {
+        if owner.contains(&(j as u8)) {
+            *slot = next;
+            next += 1;
+        }
+    }
+    let owner = owner
+        .into_iter()
+        .map(|o| if o == u8::MAX { o } else { map[o as usize] })
+        .collect();
+    debug_assert_eq!(out.iter().map(Vec::len).sum::<usize>(), n);
+    KnnSplit {
+        parts: out,
+        regions: Regions::Grid {
+            lo,
+            cell,
+            dims,
+            owner,
+        },
+    }
+}
+
+/// Result of [`KnnPart::local`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct LocalKnn {
+    /// The statistic per point of the part, NaN where not yet exact.
+    pub means: Vec<f64>,
+    /// Part-local indices of the points still open.
+    pub open: Vec<u32>,
+    /// Their `k + 1` nearest squared distances within the part, ascending,
+    /// padded with infinity.
+    pub candidates: Vec<f64>,
+    /// Per open point, the bit mask of the other parts to ask.
+    pub reach: Vec<u32>,
+}
+
+/// One part of a split SOR job with its k-d tree, kept by a worker between
+/// step 1 ([`KnnPart::local`]) and step 2 ([`KnnPart::within`]).
+pub struct KnnPart {
+    points: Vec<[f64; 3]>,
+    tree: Option<KdTree>,
+}
+
+impl KnnPart {
+    pub fn new(points: Vec<[f64; 3]>) -> Self {
+        let tree = KdTree::new(&points);
+        Self { points, tree }
+    }
+
+    /// Point `i` of the part.
+    pub fn point(&self, i: usize) -> [f64; 3] {
+        self.points[i]
+    }
+
+    /// Step 1 on part `own`, given where every part lies.
+    pub fn local(&self, k: usize, own: usize, regions: &Regions) -> LocalKnn {
+        let points = &self.points;
+        let mut out = LocalKnn {
+            means: vec![f64::NAN; points.len()],
+            open: Vec::new(),
+            candidates: Vec::new(),
+            reach: Vec::new(),
+        };
+        let Some(tree) = &self.tree else {
+            return out;
+        };
+        for i in crate::distance::morton_order(points) {
+            let hits = tree.nearest_k(&points[i], k + 1);
+            let radius = hits.get(k).map_or(f64::INFINITY, |h| h.1.sqrt());
+            let reach = regions.reached(&points[i], radius, own);
+            if reach == 0 {
+                out.means[i] = mean_of(&hits);
+            } else {
+                out.open.push(i as u32);
+                out.reach.push(reach);
+                out.candidates.extend(hits.iter().map(|h| h.1));
+                out.candidates
+                    .extend(std::iter::repeat_n(f64::INFINITY, k + 1 - hits.len()));
+            }
+        }
+        out
+    }
+
+    /// Step 2: for each query (an open point of another part), its `k + 1`
+    /// nearest squared distances among this part's points, ascending,
+    /// padded with infinity.
+    pub fn within(&self, queries: &[[f64; 3]], k: usize) -> Vec<f64> {
+        let mut out = Vec::with_capacity(queries.len() * (k + 1));
+        for q in queries {
+            let hits = self
+                .tree
+                .as_ref()
+                .map(|t| t.nearest_k(q, k + 1))
+                .unwrap_or_default();
+            out.extend(hits.iter().map(|h| h.1));
+            out.extend(std::iter::repeat_n(f64::INFINITY, k + 1 - hits.len()));
+        }
+        out
+    }
+}
+
+/// The statistic of an open point from its candidate lists (`k + 1`
+/// squared distances each, from its own part and every part it reached).
+pub fn merge_knn<'a>(lists: impl IntoIterator<Item = &'a [f64]>, k: usize) -> f64 {
+    let mut all: Vec<f64> = lists.into_iter().flatten().copied().collect();
+    all.sort_by(f64::total_cmp);
+    all.truncate(k + 1);
+    let hits: Vec<(usize, f64)> = all.into_iter().map(|d| (0, d)).collect();
+    mean_of(&hits)
 }
 
 #[cfg(test)]
@@ -140,6 +555,88 @@ mod tests {
         let keep = statistical_outliers(&c, 8, 1.0);
         assert_eq!(keep.len(), 40 * 40, "only the three far points go");
         assert!(keep.iter().all(|&i| i < 1600));
+    }
+
+    /// Run the worker protocol here and compare with the plain statistic.
+    #[test]
+    fn split_knn_matches_the_plain_statistic() {
+        let mut positions = grid(90, 0.1);
+        let mut s = 7u64;
+        for p in positions.iter_mut() {
+            s ^= s << 13;
+            s ^= s >> 7;
+            s ^= s << 17;
+            p[2] = (s % 1000) as f64 * 1e-4;
+        }
+        positions.extend([[20.0, 20.0, 3.0], [-5.0, 1.0, 0.0], [4.5, 4.5, 0.2]]);
+        let k = 8;
+        // In octree order, so the octree split applies too.
+        let tree = crate::octree::Octree::build_in_place(
+            &mut positions,
+            crate::octree::OctreeParams {
+                max_leaf: 300,
+                grid: 8,
+                max_depth: 20,
+            },
+        )
+        .unwrap();
+        let plain = knn_mean_distances(&positions, k);
+        let splits = [1, 2, 5, 8].into_iter().flat_map(|parts| {
+            [
+                (format!("median {parts}"), split_for_knn(&positions, parts)),
+                (
+                    format!("octree {parts}"),
+                    split_octree_for_knn(&positions, &tree.nodes, parts, 3),
+                ),
+            ]
+        });
+        for (name, split) in splits {
+            let mut covered: Vec<u32> = split.parts.concat();
+            covered.sort_unstable();
+            assert_eq!(
+                covered,
+                (0..positions.len() as u32).collect::<Vec<_>>(),
+                "{name}"
+            );
+            let mut means = vec![f64::NAN; positions.len()];
+            let part_points: Vec<Vec<[f64; 3]>> = split
+                .parts
+                .iter()
+                .map(|idx| idx.iter().map(|&i| positions[i as usize]).collect())
+                .collect();
+            for (own, idx) in split.parts.iter().enumerate() {
+                let local = KnnPart::new(part_points[own].clone()).local(k, own, &split.regions);
+                for (j, &m) in local.means.iter().enumerate() {
+                    if !m.is_nan() {
+                        means[idx[j] as usize] = m;
+                    }
+                }
+                for (o, &j) in local.open.iter().enumerate() {
+                    let p = part_points[own][j as usize];
+                    let mut lists = vec![local.candidates[o * (k + 1)..(o + 1) * (k + 1)].to_vec()];
+                    for (other, pts) in part_points.iter().enumerate() {
+                        if local.reach[o] >> other & 1 == 1 {
+                            lists.push(KnnPart::new(pts.clone()).within(&[p], k));
+                        }
+                    }
+                    means[idx[j as usize] as usize] =
+                        merge_knn(lists.iter().map(|l| l.as_slice()), k);
+                }
+            }
+            assert_eq!(means, plain, "{name}");
+        }
+    }
+
+    #[cfg(feature = "parallel")]
+    #[test]
+    fn parallel_sor_matches_serial() {
+        let mut positions = grid(120, 0.1);
+        positions.extend([[20.0, 20.0, 3.0], [-5.0, 1.0, 0.0]]);
+        let c = cloud(positions);
+        assert_eq!(
+            statistical_outliers_par(&c, 8, 1.0),
+            statistical_outliers(&c, 8, 1.0)
+        );
     }
 
     #[test]

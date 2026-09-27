@@ -231,7 +231,7 @@ fn statistical_outliers<'py>(
     ratio: f64,
 ) -> PyResult<Bound<'py, PyArray1<i64>>> {
     let cloud = cloud_of(points(&points_)?);
-    let keep = py.detach(|| ca_core::filter::statistical_outliers(&cloud, k, ratio));
+    let keep = py.detach(|| ca_core::filter::statistical_outliers_par(&cloud, k, ratio));
     Ok(indices(py, keep))
 }
 

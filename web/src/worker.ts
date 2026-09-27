@@ -12,12 +12,14 @@ import init, {
   Mesh,
   StreamLoader,
   planCloudToCloud,
+  planSor,
   registerIcp,
   summarizeDistances,
   VolumeSurface,
+  warmUp,
 } from "./wasm/ca_wasm.js";
 import type { Slice } from "./c2c-worker";
-import { MIN_PARALLEL_QUERIES, poolSize, runSlices } from "./pool";
+import { MIN_PARALLEL_QUERIES, poolSize, runOn, runSlices, warmUpPool } from "./pool";
 import type {
   C2cOutput,
   IcpOutput,
@@ -35,7 +37,13 @@ type Item =
   | { kind: "cloud"; cloud: Cloud; name: string; keepEvery?: number; filePoints?: number }
   | { kind: "mesh"; mesh: Mesh; name: string };
 
-const ready = init();
+const ready = init().then((wasm) => {
+  // Optimize the heavy kernels here and on the pool before the first file
+  // arrives (see `warmUp`); requests wait for this one.
+  warmUp();
+  void warmUpPool();
+  return wasm;
+});
 const items = new Map<number, Item>();
 let nextId = 1;
 // Like CloudCompare's global shift: chosen from the first file, shared by all.
@@ -95,6 +103,83 @@ async function parallelCloudToMesh(
   return { distances, workers: parts };
 }
 
+let sorJobs = 0;
+
+/**
+ * SOR on the worker pool (see `planSor`): each part settles most of its
+ * points on its own; points whose neighbourhood reaches into other parts
+ * are completed by the workers still holding those parts. Returns the
+ * statistic per point, identical to the single-threaded one, or null when
+ * the job is too small to split.
+ */
+async function parallelSorMeans(cloud: Cloud, k: number): Promise<Float64Array | null> {
+  const n = cloud.length;
+  // One part per worker: each keeps its part indexed for step 2.
+  const parts = Math.min(poolSize(), Math.floor(n / MIN_PARALLEL_QUERIES));
+  if (parts < 2 || n <= k) return null;
+  const job = ++sorJobs;
+  const plan = planSor(cloud, parts);
+  const m = plan.length;
+  const regions = plan.regions();
+  const indices = Array.from({ length: m }, (_, j) => plan.indices(j));
+  const lanes: number[] = [];
+  try {
+    const local = await runSlices(
+      m,
+      (j) => ({ kind: "sor-local" as const, job, points: plan.points(cloud, j), k, own: j, regions: regions.slice() }),
+      lanes,
+    );
+    const means = new Float64Array(n);
+    // Candidate lists per open point, and the queries each part must answer.
+    const lists: Float64Array[][] = [];
+    const openIndex: number[] = [];
+    const asked: { query: number; at: [number, number, number] }[][] = Array.from({ length: m }, () => []);
+    local.forEach((part, i) => {
+      const idx = indices[i];
+      for (let j = 0; j < part.means.length; j++) if (!Number.isNaN(part.means[j])) means[idx[j]] = part.means[j];
+      for (let o = 0; o < part.open.length; o++) {
+        const q = lists.length;
+        lists.push([part.candidates.subarray(o * (k + 1), (o + 1) * (k + 1))]);
+        openIndex.push(idx[part.open[o]]);
+        const [x, y, z] = part.openPoints.subarray(o * 3, o * 3 + 3);
+        for (let j = 0; j < m; j++) if ((part.reach[o] >>> j) & 1) asked[j].push({ query: q, at: [x, y, z] });
+      }
+    });
+    const answers = await Promise.all(
+      asked.map((a, j) =>
+        a.length === 0
+          ? null
+          : runOn(lanes[j], {
+              kind: "sor-within" as const,
+              job,
+              queries: Float64Array.from(a.flatMap((x) => x.at)),
+              k,
+            }),
+      ),
+    );
+    answers.forEach((d, j) => {
+      if (d) asked[j].forEach((a, row) => lists[a.query].push(d.subarray(row * (k + 1), (row + 1) * (k + 1))));
+    });
+    // Same arithmetic as the core: the k + 1 smallest, skip the point itself.
+    lists.forEach((candidates, q) => {
+      const all = new Float64Array(candidates.reduce((s, c) => s + c.length, 0));
+      let at = 0;
+      for (const c of candidates) {
+        all.set(c, at);
+        at += c.length;
+      }
+      all.sort();
+      let sum = 0;
+      for (let j = 1; j <= k; j++) sum += Math.sqrt(all[j]);
+      means[openIndex[q]] = sum / k;
+    });
+    return means;
+  } finally {
+    plan.free();
+    await Promise.all([...new Set(lanes)].map((lane) => runOn(lane, { kind: "sor-release" as const, job })));
+  }
+}
+
 /** Bytes read per slice when streaming a file. */
 const STREAM_CHUNK = 16 << 20;
 
@@ -145,37 +230,73 @@ async function readPoints(file: File, maxPoints: number, progress: (note: string
 
 /** Clouds at least this large build their octree on the worker pool. */
 const MIN_PARALLEL_INDEX = 1_000_000;
-/** The top levels built here; each node below becomes a pool job (up to 8^2). */
-const INDEX_SPLIT_LEVEL = 2;
+const BUCKETS = 64;
 
 /**
- * Build the octree: the top levels here, the subtrees below them on the
- * worker pool (largest first, so the slowest job starts early).
+ * Build the octree on the worker pool, in the three steps of
+ * `Cloud.indexCube`: sort slices of the cloud by bucket, build each bucket
+ * (largest first, so the slowest job starts early), then place them.
  */
 async function buildIndex(cloud: Cloud): Promise<number> {
-  if (cloud.length < MIN_PARALLEL_INDEX || poolSize() < 2) {
+  const n = cloud.length;
+  if (n < MIN_PARALLEL_INDEX || poolSize() < 2) {
     cloud.buildIndex();
     return 1;
   }
-  const jobs = cloud.startIndex(INDEX_SPLIT_LEVEL);
-  const count = jobs.length / 7;
-  const order = Array.from({ length: count }, (_, k) => k).sort(
-    (a, b) => jobs[b * 7 + 1] - jobs[b * 7] - (jobs[a * 7 + 1] - jobs[a * 7]),
-  );
-  const results = await runSlices(count, (i) => {
-    const k = order[i];
-    return {
-      kind: "octree" as const,
-      positions: cloud.subtreePositions(k),
-      colors: cloud.subtreeColors(k) ?? null,
-      job: jobs.slice(k * 7, k * 7 + 7),
-    };
+  const cube = new Float64Array(cloud.indexCube());
+  const parts = poolSize();
+  const per = Math.ceil(n / parts);
+  const chunks = await runSlices(parts, (k) => ({
+    kind: "bucket-chunk" as const,
+    positions: cloud.positionsRange(k * per, (k + 1) * per),
+    colors: cloud.colorsRange(k * per, (k + 1) * per) ?? null,
+    cube: cube.slice(),
+  }));
+  const hasColors = chunks[0].colors !== null;
+  // Where bucket b starts within chunk k.
+  const starts = chunks.map((c) => {
+    const s = new Uint32Array(BUCKETS + 1);
+    for (let b = 0; b < BUCKETS; b++) s[b + 1] = s[b] + c.counts[b];
+    return s;
   });
-  results.forEach((subtree, i) =>
-    cloud.finishSubtree(order[i], subtree.positions, subtree.colors, subtree.nodes, subtree.order),
-  );
-  cloud.endIndex();
-  return Math.min(poolSize(), count);
+  const sizes = new Uint32Array(BUCKETS);
+  for (const c of chunks) for (let b = 0; b < BUCKETS; b++) sizes[b] += c.counts[b];
+  const keys = Array.from({ length: BUCKETS }, (_, b) => b)
+    .filter((b) => sizes[b] > 0)
+    .sort((a, b) => sizes[b] - sizes[a]);
+  // Cloud index of each bucket's points, in bucket order.
+  const origins = new Map<number, Uint32Array>();
+  const results = await runSlices(keys.length, (i) => {
+    const b = keys[i];
+    const positions = new Float64Array(sizes[b] * 3);
+    const colors = hasColors ? new Uint8Array(sizes[b] * 3) : null;
+    const origin = new Uint32Array(sizes[b]);
+    let at = 0;
+    chunks.forEach((c, k) => {
+      const [from, to] = [starts[k][b], starts[k][b + 1]];
+      positions.set(c.positions.subarray(from * 3, to * 3), at * 3);
+      if (colors && c.colors) colors.set(c.colors.subarray(from * 3, to * 3), at * 3);
+      for (let j = from; j < to; j++) origin[at + j - from] = c.order[j] + k * per;
+      at += to - from;
+    });
+    origins.set(b, origin);
+    return { kind: "bucket" as const, positions, colors, cube: cube.slice(), key: b };
+  });
+  const rootKept = new Uint32Array(BUCKETS);
+  const level1Kept = new Uint32Array(BUCKETS);
+  results.forEach((r, i) => {
+    rootKept[keys[i]] = r.counts[0];
+    level1Kept[keys[i]] = r.counts[1];
+  });
+  cloud.beginBuckets(cube, sizes, rootKept, level1Kept);
+  results.forEach((r, i) => {
+    const origin = origins.get(keys[i])!;
+    const order = new Uint32Array(r.order.length);
+    for (let j = 0; j < order.length; j++) order[j] = origin[r.order[j]];
+    cloud.putBucket(keys[i], r.positions, r.colors ?? undefined, order, r.nodes);
+  });
+  cloud.finishBuckets();
+  return Math.min(poolSize(), keys.length);
 }
 
 /** Everything the UI needs to draw an item; buffers are listed for transfer. */
@@ -402,7 +523,11 @@ async function handle(
     case "filter": {
       const source = items.get(req.id);
       const t = performance.now();
-      const filtered = getCloud(req.id).filter(req.op, req.a, req.b);
+      const cloud = getCloud(req.id);
+      const k = Math.max(1, Math.floor(req.a));
+      const means = req.op === "sor" ? await parallelSorMeans(cloud, k) : null;
+      const filtered = means ? cloud.filterSor(means, req.b) : cloud.filter(req.op, req.a, req.b);
+      await buildIndex(filtered);
       const id = nextId++;
       const base = source!.name.replace(/\.[^.]+$/, "");
       const suffix = { voxel: `voxel${req.a}`, random: `random${req.a}`, sor: "sor" }[req.op];

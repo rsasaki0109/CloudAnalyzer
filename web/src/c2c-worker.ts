@@ -1,35 +1,90 @@
 // Pool worker: one slice of a data-parallel job. Distances for part of the
-// compared cloud (against a reference cloud or a mesh), or one subtree of an
-// octree index build. Each pool worker owns a separate WASM instance, so no
+// compared cloud (against a reference cloud or a mesh), or one step of a
+// parallel octree index build. Each pool worker owns a separate WASM instance, so no
 // SharedArrayBuffer (and no COOP/COEP headers) is needed.
 
-import init, { buildSubtree, meshDistances, nearestDistances } from "./wasm/ca_wasm.js";
+import init, {
+  bucketChunk,
+  buildBucket,
+  meshDistances,
+  nearestDistances,
+  type Reordered,
+  SorPart,
+  warmUp,
+} from "./wasm/ca_wasm.js";
 
 export type Slice =
   | { kind: "cloud"; reference: Float64Array; queries: Float64Array }
   | { kind: "mesh"; vertices: Float64Array; indices: Uint32Array; queries: Float64Array; signed: boolean }
-  | { kind: "octree"; positions: Float64Array; colors: Uint8Array | null; job: Float64Array };
+  /** Index step 1: sort a slice of the cloud by bucket. */
+  | { kind: "bucket-chunk"; positions: Float64Array; colors: Uint8Array | null; cube: Float64Array }
+  /** Index step 2: build one bucket. */
+  | { kind: "bucket"; positions: Float64Array; colors: Uint8Array | null; cube: Float64Array; key: number }
+  /**
+   * SOR step 1: the statistic of one part, where its own points settle it.
+   * The part stays indexed on this worker under `job` for step 2.
+   */
+  | { kind: "sor-local"; job: number; points: Float64Array; k: number; own: number; regions: Float64Array }
+  /** SOR step 2 on this worker's part of `job`: nearest squared distances from queries. */
+  | { kind: "sor-within"; job: number; queries: Float64Array; k: number }
+  /** Drop this worker's part of `job`. */
+  | { kind: "sor-release"; job: number }
+  /** Run every kernel once so the browser optimizes them (see `warmUp`). */
+  | { kind: "warm-up" };
 
-export interface SubtreeResult {
+/** Reordered points; see `Reordered` in the WASM API for `counts`/`nodes`. */
+export interface ReorderedResult {
   positions: Float64Array;
   colors: Uint8Array | null;
-  nodes: Float64Array;
-  /** Permutation applied to the slice, for reordering attributes. */
+  /** `order[i]` is the input index of the point now at `i`. */
   order: Uint32Array;
+  counts: Uint32Array;
+  nodes: Float64Array;
+}
+
+export interface SorLocalResult {
+  means: Float64Array;
+  open: Uint32Array;
+  openPoints: Float64Array;
+  candidates: Float64Array;
+  /** Per open point, the bit mask of the other parts to ask. */
+  reach: Uint32Array;
 }
 
 /** What each slice kind produces. */
-export type SliceResult<S extends Slice> = S extends { kind: "octree" } ? SubtreeResult : Float64Array;
+export type SliceResult<S extends Slice> = S extends { kind: "bucket-chunk" | "bucket" }
+  ? ReorderedResult
+  : S extends { kind: "sor-local" }
+    ? SorLocalResult
+    : Float64Array;
 
 export type SliceRequest = Slice & { seq: number };
 
 export type SliceResponse =
-  | { seq: number; ok: true; value: Float64Array | SubtreeResult }
+  | { seq: number; ok: true; value: Value }
   | { seq: number; ok: false; error: string };
 
 const ready = init();
+/** SOR parts indexed in step 1, by job, until released. */
+const sorParts = new Map<number, SorPart>();
 
-function run(request: SliceRequest): { value: Float64Array | SubtreeResult; transfer: Transferable[] } {
+function unpack(r: Reordered): { value: ReorderedResult; transfer: Transferable[] } {
+  const value: ReorderedResult = {
+    positions: r.positions(),
+    colors: r.colors() ?? null,
+    order: r.order(),
+    counts: r.counts(),
+    nodes: r.nodes(),
+  };
+  r.free();
+  const transfer: Transferable[] = [value.positions.buffer, value.order.buffer, value.nodes.buffer];
+  if (value.colors) transfer.push(value.colors.buffer);
+  return { value, transfer };
+}
+
+type Value = Float64Array | ReorderedResult | SorLocalResult;
+
+function run(request: SliceRequest): { value: Value; transfer: Transferable[] } {
   switch (request.kind) {
     case "cloud": {
       const d = nearestDistances(request.reference, request.queries);
@@ -39,19 +94,47 @@ function run(request: SliceRequest): { value: Float64Array | SubtreeResult; tran
       const d = meshDistances(request.vertices, request.indices, request.queries, request.signed);
       return { value: d, transfer: [d.buffer] };
     }
-    case "octree": {
-      const subtree = buildSubtree(request.positions, request.colors, request.job);
-      const value: SubtreeResult = {
-        positions: subtree.positions(),
-        colors: subtree.colors() ?? null,
-        nodes: subtree.nodes(),
-        order: subtree.order(),
+    case "bucket-chunk":
+      return unpack(bucketChunk(request.positions, request.colors, request.cube));
+    case "bucket":
+      return unpack(buildBucket(request.positions, request.colors, request.cube, request.key));
+    case "sor-local": {
+      sorParts.get(request.job)?.free();
+      const part = new SorPart(request.points);
+      sorParts.set(request.job, part);
+      const r = part.local(request.k, request.own, request.regions);
+      const value: SorLocalResult = {
+        means: r.means(),
+        open: r.open(),
+        openPoints: r.openPoints(),
+        candidates: r.candidates(),
+        reach: r.reach(),
       };
-      subtree.free();
-      const transfer: Transferable[] = [value.positions.buffer, value.nodes.buffer, value.order.buffer];
-      if (value.colors) transfer.push(value.colors.buffer);
-      return { value, transfer };
+      r.free();
+      return {
+        value,
+        transfer: [
+          value.means.buffer,
+          value.open.buffer,
+          value.openPoints.buffer,
+          value.candidates.buffer,
+          value.reach.buffer,
+        ],
+      };
     }
+    case "sor-within": {
+      const part = sorParts.get(request.job);
+      if (!part) throw new Error("SOR part is gone");
+      const d = part.within(request.queries, request.k);
+      return { value: d, transfer: [d.buffer] };
+    }
+    case "sor-release":
+      sorParts.get(request.job)?.free();
+      sorParts.delete(request.job);
+      return { value: new Float64Array(0), transfer: [] };
+    case "warm-up":
+      warmUp();
+      return { value: new Float64Array(0), transfer: [] };
   }
 }
 

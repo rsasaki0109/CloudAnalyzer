@@ -21,7 +21,7 @@ export interface LoadedCloud {
   lodNodes: Float64Array;
   lodGrid: number;
   /** Milliseconds spent in each loading stage inside the worker. */
-  timings: { parse: number; index: number; prepare: number };
+  timings: { parse: number; index: number; prepare: number; workers?: number };
   /** [minX, minY, minZ, maxX, maxY, maxZ] in original coordinates. */
   bounds: number[];
   shift: Vec3;

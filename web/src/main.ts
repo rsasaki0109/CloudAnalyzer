@@ -255,7 +255,7 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
       const [sx, sy, sz] = cloud.shift;
       $("shift").textContent =
         sx || sy || sz ? `Global shift: (${-sx}, ${-sy}, ${-sz})` : "";
-      const { parse, index, prepare } = cloud.timings;
+      const { parse, index, prepare, workers } = cloud.timings;
       const s = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`);
       const size =
         cloud.kind === "mesh"
@@ -263,7 +263,8 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
           : `${cloud.count.toLocaleString()} points`;
       setStatus(
         `Loaded ${file.name}: ${size} in ${s(performance.now() - start)} ` +
-          `(read ${s(read)} · parse ${s(parse)} · index ${s(index)} · prepare ${s(prepare)})`,
+          `(read ${s(read)} · parse ${s(parse)} · index ${s(index)}` +
+          `${workers && workers > 1 ? ` on ${workers} workers` : ""} · prepare ${s(prepare)})`,
       );
     } catch (err) {
       setStatus(`${file.name}: ${err instanceof Error ? err.message : err}`, true);

@@ -93,17 +93,110 @@ impl Octree {
         colors: Option<&mut [[u8; 3]]>,
         params: OctreeParams,
     ) -> Option<Self> {
+        let (lo, hi) = bounds(points);
+        let size = (0..3)
+            .map(|a| hi[a] - lo[a])
+            .fold(0.0f64, f64::max)
+            .max(f64::MIN_POSITIVE);
+        Self::build_cube(points, colors, lo, size, 0, None, params).map(|(tree, _)| tree)
+    }
+
+    /// Build only the levels above `split_level`, leaving every node at that
+    /// level which would still be split as a [`PendingSubtree`]. Finish each
+    /// with [`Octree::build_subtree`] (possibly in parallel, on the pending
+    /// point range) and attach it with [`Octree::graft`]. Points and colors
+    /// are reordered in place as far as the partial build goes.
+    pub fn build_partial(
+        cloud: &mut crate::PointCloud,
+        params: OctreeParams,
+        split_level: u8,
+    ) -> Option<(Self, Vec<PendingSubtree>)> {
+        let (lo, hi) = bounds(&cloud.positions);
+        let size = (0..3)
+            .map(|a| hi[a] - lo[a])
+            .fold(0.0f64, f64::max)
+            .max(f64::MIN_POSITIVE);
+        Self::build_cube(
+            &mut cloud.positions,
+            cloud.colors.as_deref_mut(),
+            lo,
+            size,
+            0,
+            Some(split_level),
+            params,
+        )
+    }
+
+    /// Build the octree of one pending subtree over its own points (the
+    /// slice `start..end` of the partially built cloud). Node ranges and
+    /// `order` are relative to the slice.
+    pub fn build_subtree(
+        points: &mut [[f64; 3]],
+        colors: Option<&mut [[u8; 3]]>,
+        pending: &PendingSubtree,
+        params: OctreeParams,
+    ) -> Option<Self> {
+        Self::build_cube(
+            points,
+            colors,
+            pending.min,
+            pending.size,
+            pending.level,
+            None,
+            params,
+        )
+        .map(|(tree, _)| tree)
+    }
+
+    /// Replace the placeholder node of `pending` with `subtree` (built by
+    /// [`Octree::build_subtree`]), rebasing its point ranges and node indices.
+    /// The caller writes the subtree's reordered points back into
+    /// `pending.start..pending.end`.
+    pub fn graft(&mut self, pending: &PendingSubtree, subtree: Octree) {
+        let base = self.nodes.len() as u32;
+        let map = |k: u32| {
+            if k == NO_CHILD {
+                NO_CHILD
+            } else if k == 0 {
+                pending.node
+            } else {
+                base + k - 1
+            }
+        };
+        let rebase = |mut n: OctreeNode| {
+            n.start += pending.start;
+            n.children = n.children.map(map);
+            n
+        };
+        let mut nodes = subtree.nodes.into_iter();
+        if let Some(root) = nodes.next() {
+            self.nodes[pending.node as usize] = rebase(root);
+        }
+        self.nodes.extend(nodes.map(rebase));
+        let range = pending.start as usize..pending.end as usize;
+        let slice: Vec<u32> = self.order[range.clone()].to_vec();
+        for (dst, &i) in self.order[range].iter_mut().zip(&subtree.order) {
+            *dst = slice[i as usize];
+        }
+    }
+
+    /// Build over a given cube starting at `level`, optionally stopping at
+    /// `split_level` with pending subtrees.
+    fn build_cube(
+        points: &mut [[f64; 3]],
+        colors: Option<&mut [[u8; 3]]>,
+        lo: [f64; 3],
+        size: f64,
+        level: u8,
+        split_level: Option<u8>,
+        params: OctreeParams,
+    ) -> Option<(Self, Vec<PendingSubtree>)> {
         if colors.as_ref().is_some_and(|c| c.len() != points.len()) {
             return None;
         }
         if points.is_empty() || points.len() > u32::MAX as usize || !params.grid.is_power_of_two() {
             return None;
         }
-        let (lo, hi) = bounds(points);
-        let size = (0..3)
-            .map(|a| hi[a] - lo[a])
-            .fold(0.0f64, f64::max)
-            .max(f64::MIN_POSITIVE);
         let cells = (1u64 << MORTON_BITS) as f64;
         let scale = cells / size;
         let quantize = |v: f64, a: usize| -> u64 {
@@ -125,22 +218,44 @@ impl Octree {
             codes,
             order,
             params: OctreeParams {
-                max_depth: params.max_depth.min(MORTON_BITS as u8),
+                // The codes resolve MORTON_BITS levels below the build cube.
+                max_depth: params
+                    .max_depth
+                    .min(level.saturating_add(MORTON_BITS as u8)),
                 ..params
             },
+            base_level: level,
+            split_level,
+            pending: Vec::new(),
             grid_bits,
             stamps: vec![0; 1usize << (3 * grid_bits)],
             stamp: 0,
             nodes: Vec::new(),
         };
         let len = builder.codes.len();
-        builder.node(0, len, lo, size, 0);
-        Some(Self {
-            order: builder.order,
-            nodes: builder.nodes,
-            grid: params.grid,
-        })
+        builder.node(0, len, lo, size, level);
+        Some((
+            Self {
+                order: builder.order,
+                nodes: builder.nodes,
+                grid: params.grid,
+            },
+            builder.pending,
+        ))
     }
+}
+
+/// A node left unbuilt by [`Octree::build_partial`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PendingSubtree {
+    /// Placeholder node to replace.
+    pub node: u32,
+    /// Point range of the whole subtree.
+    pub start: u32,
+    pub end: u32,
+    pub min: [f64; 3],
+    pub size: f64,
+    pub level: u8,
 }
 
 /// Insert two zero bits between each of the low 21 bits of `v`.
@@ -161,6 +276,10 @@ struct Builder<'a> {
     codes: Vec<u64>,
     order: Vec<u32>,
     params: OctreeParams,
+    /// Level of the build cube; code bits are relative to it.
+    base_level: u8,
+    split_level: Option<u8>,
+    pending: Vec<PendingSubtree>,
     grid_bits: u32,
     /// Per-cell "last seen" marker, reused across nodes to avoid clearing.
     stamps: Vec<u32>,
@@ -192,6 +311,17 @@ impl Builder<'_> {
         if hi - lo <= self.params.max_leaf || level >= self.params.max_depth {
             return id as u32;
         }
+        if self.split_level == Some(level) {
+            self.pending.push(PendingSubtree {
+                node: id as u32,
+                start: lo as u32,
+                end: hi as u32,
+                min,
+                size,
+                level,
+            });
+            return id as u32;
+        }
 
         // Keep the first point of every occupied lattice cell here, moving
         // those points to the front of the range. The cell is the next
@@ -202,7 +332,7 @@ impl Builder<'_> {
             self.stamps.fill(0);
             self.stamp = 1;
         }
-        let below = MORTON_BITS - u32::from(level);
+        let below = MORTON_BITS - u32::from(level - self.base_level);
         let cell_levels = self.grid_bits.min(below);
         let shift = 3 * (below - cell_levels);
         let mask = (1u64 << (3 * cell_levels)) - 1;
@@ -350,6 +480,62 @@ mod tests {
         assert!(root.children.iter().any(|&c| c != NO_CHILD));
         assert!(root.count as usize <= 32 * 32 * 32);
         assert!(root.count > 0);
+    }
+
+    #[test]
+    fn partial_build_plus_subtrees_is_a_valid_octree() {
+        let original = grid_points(250);
+        let mut cloud = crate::PointCloud {
+            positions: original.clone(),
+            colors: Some(
+                (0..original.len())
+                    .map(|i| [i as u8, (i >> 8) as u8, (i >> 16) as u8])
+                    .collect(),
+            ),
+        };
+        let p = params(300, 16);
+        let (mut tree, pending) = Octree::build_partial(&mut cloud, p, 2).unwrap();
+        assert!(pending.len() > 4, "{}", pending.len());
+        for job in &pending {
+            let range = job.start as usize..job.end as usize;
+            let colors = cloud.colors.as_mut().unwrap();
+            let sub = Octree::build_subtree(
+                &mut cloud.positions[range.clone()],
+                Some(&mut colors[range]),
+                job,
+                p,
+            )
+            .unwrap();
+            tree.graft(job, sub);
+        }
+        // Every point exactly once, positions and colors consistent with order.
+        let colors = cloud.colors.unwrap();
+        let mut seen = tree.order.clone();
+        seen.sort_unstable();
+        assert_eq!(seen, (0..original.len() as u32).collect::<Vec<_>>());
+        for (i, &o) in tree.order.iter().enumerate() {
+            assert_eq!(cloud.positions[i], original[o as usize]);
+            assert_eq!(colors[i], [o as u8, (o >> 8) as u8, (o >> 16) as u8]);
+        }
+        let total: u32 = tree.nodes.iter().map(|n| n.count).sum();
+        assert_eq!(total as usize, original.len());
+        // Every node's points lie in its cube; every child lies in its parent.
+        for node in &tree.nodes {
+            for p in &cloud.positions[node.start as usize..(node.start + node.count) as usize] {
+                for (a, &v) in p.iter().enumerate() {
+                    assert!(v >= node.min[a] - 1e-9 && v <= node.min[a] + node.size + 1e-9);
+                }
+            }
+            for &c in node.children.iter().filter(|&&c| c != NO_CHILD) {
+                let child = &tree.nodes[c as usize];
+                assert_eq!(child.level, node.level + 1);
+                assert!((child.size - node.size / 2.0).abs() < 1e-12);
+            }
+        }
+        // A plain build of the same cloud has a similar shape.
+        let mut again = original.clone();
+        let plain = Octree::build_in_place(&mut again, p).unwrap();
+        assert_eq!(plain.nodes[0].count, tree.nodes[0].count);
     }
 
     #[test]

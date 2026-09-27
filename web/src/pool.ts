@@ -1,8 +1,8 @@
-// A pool of WASM workers for data-parallel nearest-neighbour queries.
+// A pool of WASM workers for data-parallel jobs.
 
-import type { Slice, SliceRequest, SliceResponse } from "./c2c-worker";
+import type { Slice, SliceRequest, SliceResponse, SliceResult } from "./c2c-worker";
 
-/** Below this many queries, splitting the job costs more than it saves. */
+/** Below this many queries, splitting a distance job costs more than it saves. */
 export const MIN_PARALLEL_QUERIES = 100_000;
 const MAX_WORKERS = 8;
 
@@ -18,25 +18,47 @@ function worker(i: number): Worker {
   return workers[i];
 }
 
-function runSlice(w: Worker, slice: Slice): Promise<Float64Array> {
+function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>> {
   const id = ++seq;
   return new Promise((resolve, reject) => {
     const onMessage = (event: MessageEvent<SliceResponse>) => {
       if (event.data.seq !== id) return;
       w.removeEventListener("message", onMessage);
-      if (event.data.ok) resolve(event.data.distances);
+      if (event.data.ok) resolve(event.data.value as SliceResult<S>);
       else reject(new Error(event.data.error));
     };
     w.addEventListener("message", onMessage);
     const request: SliceRequest = { ...slice, seq: id };
     // Per-slice buffers are transferred; a mesh shared by all slices is copied.
-    const transfer: Transferable[] = [slice.queries.buffer];
-    if (slice.kind === "cloud") transfer.push(slice.reference.buffer);
+    const transfer: Transferable[] = [];
+    if (slice.kind === "cloud") transfer.push(slice.queries.buffer, slice.reference.buffer);
+    if (slice.kind === "mesh") transfer.push(slice.queries.buffer);
+    if (slice.kind === "octree") {
+      transfer.push(slice.positions.buffer);
+      if (slice.colors) transfer.push(slice.colors.buffer);
+    }
     w.postMessage(request, { transfer });
   });
 }
 
-/** Run each slice on its own pool worker; resolves to per-slice distances. */
-export function runSlices(slices: Slice[]): Promise<Float64Array[]> {
-  return Promise.all(slices.map((s, i) => runSlice(worker(i % poolSize()), s)));
+/**
+ * Run slices on the pool, each idle worker taking the next slice, so uneven
+ * slices still keep every worker busy. Resolves to results in slice order.
+ * `make(i)` creates slice `i` just before it is sent, so large buffers are
+ * not all copied out at once.
+ */
+export async function runSlices<S extends Slice>(
+  count: number,
+  make: (i: number) => S,
+): Promise<SliceResult<S>[]> {
+  const results: SliceResult<S>[] = new Array(count);
+  let next = 0;
+  const lanes = Array.from({ length: Math.min(poolSize(), count) }, async (_, lane) => {
+    while (next < count) {
+      const i = next++;
+      results[i] = await runSlice(worker(lane), make(i));
+    }
+  });
+  await Promise.all(lanes);
+  return results;
 }

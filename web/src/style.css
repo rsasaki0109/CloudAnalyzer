@@ -73,6 +73,8 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 .sidebar label { display: block; margin-bottom: 8px; color: var(--muted); }
 .sidebar label select { margin-top: 2px; }
 .hint { color: var(--muted); margin: 0; }
+.hint p { margin: 0 0 8px; }
+.hint .small { font-size: 11px; margin: 6px 0 0; }
 
 .cloud-list { list-style: none; margin: 0; padding: 0; }
 .cloud-list li {

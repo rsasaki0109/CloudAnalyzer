@@ -108,7 +108,93 @@ impl C2cResult {
 pub fn cloud_to_cloud(compared: &Cloud, reference: &Cloud) -> Result<C2cResult, JsError> {
     let distances = ca_core::cloud_to_cloud(&compared.inner, &reference.inner)
         .ok_or_else(|| JsError::new("reference cloud is empty"))?;
-    let stats = DistanceStats::from_distances(&distances)
+    summarize_distances(&distances)
+}
+
+fn from_flat(xyz: &[f64]) -> Result<PointCloud, JsError> {
+    if !xyz.len().is_multiple_of(3) {
+        return Err(JsError::new("positions length must be a multiple of 3"));
+    }
+    Ok(PointCloud {
+        positions: xyz.chunks_exact(3).map(|p| [p[0], p[1], p[2]]).collect(),
+        colors: None,
+    })
+}
+
+/// Nearest-neighbour distances for a batch of interleaved `xyz` queries.
+/// Used by the worker pool, where each worker handles one slice of the
+/// compared cloud against its own copy of the reference.
+#[wasm_bindgen(js_name = nearestDistances)]
+pub fn nearest_distances(reference: &[f64], queries: &[f64]) -> Result<Vec<f64>, JsError> {
+    ca_core::cloud_to_cloud(&from_flat(queries)?, &from_flat(reference)?)
+        .ok_or_else(|| JsError::new("reference cloud is empty"))
+}
+
+/// A C2C job split into independent, spatially compact parts
+/// (see [`ca_core::partition_c2c`]). Each part can run on its own worker via
+/// [`nearest_distances`], and its results belong at [`C2cPlan::take_query_indices`].
+#[wasm_bindgen]
+pub struct C2cPlan {
+    parts: Vec<(Vec<u32>, Vec<f64>, Vec<f64>)>,
+}
+
+#[wasm_bindgen]
+impl C2cPlan {
+    #[wasm_bindgen(getter)]
+    pub fn length(&self) -> usize {
+        self.parts.len()
+    }
+
+    // The getters below hand the buffers over instead of copying them, so
+    // each may be called once per part.
+
+    /// Indices into the compared cloud for part `k`.
+    #[wasm_bindgen(js_name = takeQueryIndices)]
+    pub fn take_query_indices(&mut self, k: usize) -> Vec<u32> {
+        std::mem::take(&mut self.parts[k].0)
+    }
+
+    /// Interleaved `xyz` of the compared points of part `k`.
+    #[wasm_bindgen(js_name = takeQueries)]
+    pub fn take_queries(&mut self, k: usize) -> Vec<f64> {
+        std::mem::take(&mut self.parts[k].1)
+    }
+
+    /// Interleaved `xyz` of the reference points part `k` needs.
+    #[wasm_bindgen(js_name = takeReference)]
+    pub fn take_reference(&mut self, k: usize) -> Vec<f64> {
+        std::mem::take(&mut self.parts[k].2)
+    }
+}
+
+/// Split a C2C job into up to `parts` pieces for parallel workers.
+#[wasm_bindgen(js_name = planCloudToCloud)]
+pub fn plan_cloud_to_cloud(
+    compared: &Cloud,
+    reference: &Cloud,
+    parts: usize,
+) -> Result<C2cPlan, JsError> {
+    let gather = |cloud: &PointCloud, idx: &[u32]| -> Vec<f64> {
+        idx.iter()
+            .flat_map(|&i| cloud.positions[i as usize])
+            .collect()
+    };
+    let parts = ca_core::partition_c2c(&compared.inner, &reference.inner, parts)
+        .ok_or_else(|| JsError::new("reference cloud is empty"))?
+        .into_iter()
+        .map(|part| {
+            let queries = gather(&compared.inner, &part.queries);
+            let reference = gather(&reference.inner, &part.reference);
+            (part.queries, queries, reference)
+        })
+        .collect();
+    Ok(C2cPlan { parts })
+}
+
+/// Summary statistics (and `f32` copies for coloring) of per-point distances.
+#[wasm_bindgen(js_name = summarizeDistances)]
+pub fn summarize_distances(distances: &[f64]) -> Result<C2cResult, JsError> {
+    let stats = DistanceStats::from_distances(distances)
         .ok_or_else(|| JsError::new("compared cloud is empty"))?;
     Ok(C2cResult {
         distances: distances.iter().map(|&d| d as f32).collect(),

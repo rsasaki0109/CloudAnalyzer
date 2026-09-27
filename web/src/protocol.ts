@@ -29,6 +29,8 @@ export interface C2cOutput {
   distances: Float32Array;
   stats: C2cStats;
   millis: number;
+  /** Number of WASM workers the computation was split across. */
+  workers: number;
 }
 
 export type Request =

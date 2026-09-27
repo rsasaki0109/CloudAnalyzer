@@ -6,8 +6,9 @@
 
 pub mod distance;
 pub mod io;
+pub mod kdtree;
 
-pub use distance::{DistanceStats, cloud_to_cloud};
+pub use distance::{C2cPart, DistanceStats, cloud_to_cloud, partition_c2c};
 pub use io::{Format, IoError, read};
 
 /// An unordered set of 3D points with optional per-point RGB colors.

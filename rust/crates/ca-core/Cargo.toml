@@ -7,5 +7,4 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-kiddo = { version = "6.3.0", default-features = false }
 thiserror = "2.0.21"

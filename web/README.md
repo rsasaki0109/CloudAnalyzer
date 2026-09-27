@@ -5,6 +5,8 @@ The analysis core is Rust ([`rust/crates/ca-core`](../rust/crates/ca-core)),
 compiled to WebAssembly and run in a Web Worker; rendering uses three.js.
 Files never leave the browser.
 
+**Try it:** https://rsasaki0109.github.io/CloudAnalyzer/app/
+
 ## Features
 
 - Open PLY (ascii / binary), PCD (ascii / binary / binary_compressed),
@@ -13,6 +15,10 @@ Files never leave the browser.
   shift for rendering, like CloudCompare.
 - Cloud-to-cloud (C2C) nearest-neighbour distance with summary statistics,
   color ramps, an adjustable display range and a colorbar.
+- Large C2C jobs are split into spatially compact parts that run on a pool of
+  WASM workers (no SharedArrayBuffer, so it works on static hosting such as
+  GitHub Pages). Results are exact: each part receives every reference point
+  that can be nearest to its queries.
 
 ## Development
 

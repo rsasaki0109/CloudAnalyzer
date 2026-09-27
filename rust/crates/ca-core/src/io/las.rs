@@ -43,6 +43,7 @@ fn rgb_offset(format: u8) -> Option<usize> {
 }
 
 /// What the LAS header says about the point records.
+#[derive(Debug, Clone)]
 pub(crate) struct LasHeader {
     pub data_offset: usize,
     pub record_len: usize,
@@ -100,7 +101,6 @@ pub(crate) struct LasDecoder {
     /// LAS stores 16-bit color, but many writers only fill the low byte, so
     /// the scaling is decided once all colors are known.
     wide_colors: Vec<[u16; 3]>,
-    max_channel: u16,
     intensity: Vec<f32>,
     classification: Vec<u8>,
 }
@@ -121,7 +121,6 @@ impl LasDecoder {
             class_mask,
             positions: Vec::with_capacity(capacity),
             wide_colors: Vec::with_capacity(if rgb.is_some() { capacity } else { 0 }),
-            max_channel: 0,
             intensity: Vec::with_capacity(capacity),
             classification: Vec::with_capacity(capacity),
             header,
@@ -146,7 +145,7 @@ impl RecordDecoder for LasDecoder {
 }
 
 impl LasDecoder {
-    fn decode(&mut self, record: &[u8]) {
+    pub(crate) fn decode(&mut self, record: &[u8]) {
         let h = &self.header;
         self.positions.push(std::array::from_fn(|i| {
             let v = i32::from_le_bytes(record[4 * i..4 * i + 4].try_into().unwrap());
@@ -160,19 +159,70 @@ impl LasDecoder {
             let c: [u16; 3] = std::array::from_fn(|k| {
                 u16::from_le_bytes([record[o + 2 * k], record[o + 2 * k + 1]])
             });
-            self.max_channel = self.max_channel.max(c[0]).max(c[1]).max(c[2]);
             self.wide_colors.push(c);
         }
     }
 
+    /// The decoded points with colors still 16-bit.
+    pub(crate) fn into_raw(self) -> RawLasPoints {
+        RawLasPoints {
+            positions: self.positions,
+            colors: self.rgb.map(|_| self.wide_colors),
+            intensity: self.intensity,
+            classification: self.classification,
+        }
+    }
+
     fn finish_cloud(self) -> PointCloud {
-        let shift = if self.max_channel > 255 { 8 } else { 0 };
-        let colors = self.rgb.map(|_| {
-            self.wide_colors
-                .iter()
-                .map(|c| c.map(|v| (v >> shift) as u8))
-                .collect()
-        });
+        self.into_raw().into_cloud()
+    }
+}
+
+/// Decoded LAS points before colors are narrowed to 8 bits, which depends
+/// on all of them (see [`RawLasPoints::into_cloud`]).
+#[derive(Debug, Clone, Default)]
+pub struct RawLasPoints {
+    pub positions: Vec<[f64; 3]>,
+    pub colors: Option<Vec<[u16; 3]>>,
+    pub intensity: Vec<f32>,
+    pub classification: Vec<u8>,
+}
+
+impl RawLasPoints {
+    pub fn len(&self) -> usize {
+        self.positions.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.positions.is_empty()
+    }
+
+    /// Append `other` (from the same file).
+    pub fn extend(&mut self, other: RawLasPoints) {
+        self.positions.extend(other.positions);
+        match (&mut self.colors, other.colors) {
+            (Some(a), Some(b)) => a.extend(b),
+            (None, Some(b)) if self.intensity.is_empty() => self.colors = Some(b),
+            _ => {}
+        }
+        self.intensity.extend(other.intensity);
+        self.classification.extend(other.classification);
+    }
+
+    /// The cloud, with 16-bit colors scaled to 8 bits unless every channel
+    /// fits 8 bits already (many writers only fill the low byte).
+    pub fn into_cloud(self) -> PointCloud {
+        let max_channel = self
+            .colors
+            .iter()
+            .flatten()
+            .flat_map(|c| c.iter().copied())
+            .max()
+            .unwrap_or(0);
+        let shift = if max_channel > 255 { 8 } else { 0 };
+        let colors = self
+            .colors
+            .map(|c| c.iter().map(|c| c.map(|v| (v >> shift) as u8)).collect());
         PointCloud {
             positions: self.positions,
             colors,
@@ -246,7 +296,7 @@ pub(crate) fn read(b: &[u8], keep_every: usize) -> Result<PointCloud, IoError> {
 }
 
 /// Payload of the LASzip VLR (user id `laszip encoded`, record id 22204).
-fn laszip_vlr(b: &[u8]) -> Result<&[u8], IoError> {
+pub(crate) fn laszip_vlr(b: &[u8]) -> Result<&[u8], IoError> {
     const HEADER: usize = 54;
     let mut at = u16_at(b, 94)? as usize;
     for _ in 0..u32_at(b, 100)? {

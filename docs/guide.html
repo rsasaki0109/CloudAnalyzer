@@ -106,6 +106,9 @@
       <li>RGB, intensity and classification are read when the file has them, and so are normals
         (<code>nx ny nz</code>) in PLY.</li>
       <li><b>Open URL</b> downloads a file from a web server. The server must allow cross-origin requests (CORS).</li>
+      <li>COPC files (<code>.copc.laz</code>) are not downloaded whole: the viewer reads every octree level that fits
+        <b>Max points per file</b> with range requests, so large public datasets open in seconds. Try
+        <a href="./app/?url=https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz">a 10.6M-point tile</a>.</li>
       <li>Georeferenced clouds (UTM, ECEF) keep full precision. A shared <i>global shift</i>, taken from the first
         file, is applied for display only and shown in the status bar.</li>
     </ul>

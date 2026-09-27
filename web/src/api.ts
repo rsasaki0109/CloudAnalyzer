@@ -66,6 +66,17 @@ export function loadCloud(
   return call({ kind: "load", file, maxPoints }, [], progress, signal);
 }
 
+/** Read a remote COPC file node by node, down to the levels that fit `maxPoints`. */
+export function loadCopcUrl(
+  url: string,
+  name: string,
+  maxPoints: number,
+  progress?: (p: Progress) => void,
+  signal?: AbortSignal,
+): Promise<LoadedCloud> {
+  return call({ kind: "load-copc", url, name, maxPoints }, [], progress, signal);
+}
+
 /** C2C, or C2M when `reference` is a mesh (`signed` then applies). */
 export function cloudToCloud(compared: number, reference: number, signed = true): Promise<C2cOutput> {
   return call({ kind: "c2c", compared, reference, signed });

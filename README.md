@@ -15,7 +15,8 @@ Rust + WebAssembly. Your files stay on your machine.
 
 ## Features
 
-- **Open** PLY, PCD, LAS/LAZ, XYZ and OBJ/STL meshes, including tens of millions of points.
+- **Open** PLY, PCD, LAS/LAZ, XYZ and OBJ/STL meshes, including tens of millions of points,
+  and COPC files straight from a URL (only the levels you need are downloaded).
 - **Compare**: cloud-to-cloud and cloud-to-mesh distance, M3C2 change detection, cut/fill volume.
 - **Process**: ICP alignment, subsampling, outlier removal, ground extraction (CSF), normals, merge/split.
 - **Inspect**: clipping box, cross-section profiles, picking and measuring.

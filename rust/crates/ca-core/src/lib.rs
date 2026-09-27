@@ -8,10 +8,12 @@ pub mod distance;
 pub mod icp;
 pub mod io;
 pub mod kdtree;
+pub mod mesh;
 pub mod octree;
 
-pub use distance::{C2cPart, DistanceStats, cloud_to_cloud, partition_c2c};
-pub use io::{Format, IoError, read};
+pub use distance::{C2cPart, DistanceStats, cloud_to_cloud, cloud_to_mesh, partition_c2c};
+pub use io::{Format, IoError, read, read_mesh};
+pub use mesh::TriangleMesh;
 
 /// An unordered set of 3D points with optional per-point RGB colors.
 #[derive(Debug, Clone, Default, PartialEq)]

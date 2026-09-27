@@ -1,12 +1,15 @@
 //! Point cloud file readers.
 
 mod las;
+mod obj;
 mod pcd;
 mod ply;
 mod scalar;
+mod stl;
 mod xyz;
 
 use crate::PointCloud;
+use crate::mesh::TriangleMesh;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Format {
@@ -87,6 +90,25 @@ pub fn read(name: &str, bytes: &[u8]) -> Result<PointCloud, IoError> {
         return Err(IoError::Empty);
     }
     Ok(cloud)
+}
+
+/// Read a triangle mesh (PLY with faces, OBJ, STL). Returns `Ok(None)` when
+/// the file is not a mesh (a PLY without faces, or another point format).
+pub fn read_mesh(name: &str, bytes: &[u8]) -> Result<Option<TriangleMesh>, IoError> {
+    let ext = name.rsplit_once('.').map(|(_, e)| e.to_ascii_lowercase());
+    let mesh = match ext.as_deref() {
+        Some("stl") => stl::read(bytes)?,
+        Some("obj") => obj::read(bytes)?,
+        _ if Format::detect(name, bytes) == Format::Ply => match ply::read_mesh(bytes)? {
+            Some(mesh) => mesh,
+            None => return Ok(None),
+        },
+        _ => return Ok(None),
+    };
+    if mesh.triangles.is_empty() {
+        return Err(IoError::Unsupported(format!("{name}: mesh has no faces")));
+    }
+    Ok(Some(mesh))
 }
 
 /// Split `bytes` at the end of the line that satisfies `is_last`, returning

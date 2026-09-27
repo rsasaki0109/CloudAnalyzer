@@ -69,7 +69,16 @@ function colorsFor(entry: Entry): Uint8Array {
 }
 
 function refreshColors(entry: Entry): void {
-  viewer.setColors(entry.cloud.id, colorsFor(entry));
+  if (entry.cloud.kind === "mesh") viewer.setMeshColor(entry.cloud.id, entry.solid);
+  else viewer.setColors(entry.cloud.id, colorsFor(entry));
+}
+
+const isMesh = (entry: Entry) => entry.cloud.kind === "mesh";
+
+/** Label for a distance result, e.g. "C2M distance → part.stl". */
+function distanceLabel(c2c: Entry["c2c"]): string {
+  if (!c2c) return "Distance";
+  return `${c2c.kind === "c2m" ? "C2M" : "C2C"} distance → ${c2c.referenceName}`;
 }
 
 // ---------------------------------------------------------------- cloud list
@@ -101,7 +110,10 @@ function renderList(): void {
     name.textContent = cloud.name;
     const meta = document.createElement("span");
     meta.className = "meta";
-    meta.textContent = `${cloud.count.toLocaleString()} points${cloud.colors ? " · RGB" : ""}`;
+    meta.textContent =
+      cloud.kind === "mesh"
+        ? `${cloud.triangles.toLocaleString()} triangles · mesh`
+        : `${cloud.count.toLocaleString()} points${cloud.colors ? " · RGB" : ""}`;
     name.append(meta);
 
     const remove = document.createElement("button");
@@ -115,7 +127,7 @@ function renderList(): void {
     const options: [ColorMode, string, boolean][] = [
       ["rgb", "RGB", cloud.colors !== null],
       ["solid", "Solid color", true],
-      ["c2c", entry.c2c ? `C2C distance → ${entry.c2c.referenceName}` : "C2C distance", !!entry.c2c],
+      ["c2c", distanceLabel(entry.c2c), !!entry.c2c],
     ];
     for (const [value, label, enabled] of options) {
       if (!enabled) continue;
@@ -129,7 +141,9 @@ function renderList(): void {
       renderC2cResult();
     };
 
-    li.append(visible, swatch, name, remove, mode);
+    // Meshes are drawn in their solid color only.
+    if (isMesh(entry)) li.append(visible, swatch, name, remove);
+    else li.append(visible, swatch, name, remove, mode);
     list.append(li);
   }
   renderC2cSelects();
@@ -183,15 +197,20 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
         transforms: [],
       };
       entries.set(cloud.id, entry);
-      viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
+      if (cloud.kind === "mesh") viewer.addMesh(cloud.id, cloud.positions, cloud.indices!, entry.solid);
+      else viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
       if (entries.size === 1) viewer.fit();
       const [sx, sy, sz] = cloud.shift;
       $("shift").textContent =
         sx || sy || sz ? `Global shift: (${-sx}, ${-sy}, ${-sz})` : "";
       const { parse, index, prepare } = cloud.timings;
       const s = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`);
+      const size =
+        cloud.kind === "mesh"
+          ? `${cloud.triangles.toLocaleString()} triangles`
+          : `${cloud.count.toLocaleString()} points`;
       setStatus(
-        `Loaded ${file.name}: ${cloud.count.toLocaleString()} points in ${s(performance.now() - start)} ` +
+        `Loaded ${file.name}: ${size} in ${s(performance.now() - start)} ` +
           `(read ${s(read)} · parse ${s(parse)} · index ${s(index)} · prepare ${s(prepare)})`,
       );
     } catch (err) {
@@ -269,7 +288,10 @@ function compact(n: number): string {
   return n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n);
 }
 viewer.onDrawn = (points) => {
-  const total = [...entries.values()].reduce((sum, e) => sum + (e.visible ? e.cloud.count : 0), 0);
+  const total = [...entries.values()].reduce(
+    (sum, e) => sum + (e.visible && !isMesh(e) ? e.cloud.count : 0),
+    0,
+  );
   $("drawn").textContent = total ? `Drawing ${compact(points)} of ${compact(total)} points` : "";
 };
 window.addEventListener("keydown", (e) => {
@@ -284,25 +306,33 @@ const referenceSelect = $<HTMLSelectElement>("c2c-reference");
 const runButton = $<HTMLButtonElement>("c2c-run");
 
 function renderC2cSelects(): void {
-  const ids = [...entries.keys()].map(String);
+  // Only point clouds can be compared; the reference may also be a mesh.
+  const clouds = [...entries.values()].filter((e) => !isMesh(e)).map((e) => String(e.cloud.id));
+  const all = [...entries.keys()].map(String);
   let [compared, reference] = [comparedSelect.value, referenceSelect.value];
-  const valid = ids.includes(compared) && ids.includes(reference) && compared !== reference;
+  const valid = clouds.includes(compared) && all.includes(reference) && compared !== reference;
   if (!valid) {
-    // Default: the newest cloud is compared against the first one.
-    [compared, reference] = [ids.at(-1) ?? "", ids[0] ?? ""];
+    // Default: the newest cloud against a mesh if there is one, else the first cloud.
+    compared = clouds.at(-1) ?? "";
+    const mesh = [...entries.values()].find(isMesh);
+    reference = mesh ? String(mesh.cloud.id) : (all.find((id) => id !== compared) ?? "");
   }
-  for (const [select, value] of [
-    [comparedSelect, compared],
-    [referenceSelect, reference],
-  ] as const) {
-    select.replaceChildren(...ids.map((id) => new Option(entries.get(Number(id))!.cloud.name, id)));
-    select.value = value;
-  }
+  const option = (id: string) => {
+    const entry = entries.get(Number(id))!;
+    return new Option(isMesh(entry) ? `${entry.cloud.name} (mesh)` : entry.cloud.name, id);
+  };
+  comparedSelect.replaceChildren(...clouds.map(option));
+  comparedSelect.value = compared;
+  referenceSelect.replaceChildren(...all.map(option));
+  referenceSelect.value = reference;
   updateRunButton();
 }
 
 function updateRunButton(): void {
-  runButton.disabled = entries.size < 2 || comparedSelect.value === referenceSelect.value;
+  runButton.disabled =
+    !comparedSelect.value || !referenceSelect.value || comparedSelect.value === referenceSelect.value;
+  const reference = entries.get(Number(referenceSelect.value));
+  $("c2m-signed-row").hidden = !reference || !isMesh(reference);
 }
 comparedSelect.onchange = referenceSelect.onchange = updateRunButton;
 
@@ -311,9 +341,14 @@ runButton.onclick = async () => {
   const reference = entries.get(Number(referenceSelect.value));
   if (!compared || !reference) return;
   runButton.disabled = true;
-  setStatus(`Computing C2C distance: ${compared.cloud.name} → ${reference.cloud.name}…`);
+  const kind = isMesh(reference) ? "C2M" : "C2C";
+  setStatus(`Computing ${kind} distance: ${compared.cloud.name} → ${reference.cloud.name}…`);
   try {
-    const result = await cloudToCloud(compared.cloud.id, reference.cloud.id);
+    const result = await cloudToCloud(
+      compared.cloud.id,
+      reference.cloud.id,
+      $<HTMLInputElement>("c2m-signed").checked,
+    );
     compared.c2c = { ...result, referenceName: reference.cloud.name };
     compared.mode = "c2c";
     activeC2c = compared.cloud.id;
@@ -323,11 +358,11 @@ runButton.onclick = async () => {
     renderC2cResult();
     renderPickPanel();
     setStatus(
-      `C2C distance computed for ${result.stats.count.toLocaleString()} points in ${Math.round(result.millis)} ms` +
+      `${kind} distance computed for ${result.stats.count.toLocaleString()} points in ${Math.round(result.millis)} ms` +
         (result.workers > 1 ? ` on ${result.workers} workers` : ""),
     );
   } catch (err) {
-    setStatus(`C2C failed: ${err instanceof Error ? err.message : err}`, true);
+    setStatus(`${kind} failed: ${err instanceof Error ? err.message : err}`, true);
   } finally {
     updateRunButton();
   }
@@ -394,7 +429,7 @@ function renderC2cResult(): void {
   minInput.value = fmt(lo);
   maxInput.value = fmt(hi);
   rampSelect.value = rampName;
-  $("colorbar-title").textContent = `C2C distance · ${entry.cloud.name}`;
+  $("colorbar-title").textContent = `${c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C"} distance · ${entry.cloud.name}`;
   $("colorbar-ramp").style.background = gradientCss(rampName);
   $("colorbar-max").textContent = fmt(hi);
   $("colorbar-mid").textContent = fmt((lo + hi) / 2);
@@ -409,7 +444,7 @@ const icpButton = $<HTMLButtonElement>("icp-run");
 let lastIcp: number | null = null;
 
 function renderIcpSelects(): void {
-  const ids = [...entries.keys()].map(String);
+  const ids = [...entries.values()].filter((e) => !isMesh(e)).map((e) => String(e.cloud.id));
   let [moving, reference] = [icpMoving.value, icpReference.value];
   if (!(ids.includes(moving) && ids.includes(reference) && moving !== reference)) {
     // Default: align the newest cloud to the first one.
@@ -427,7 +462,7 @@ function renderIcpSelects(): void {
 }
 
 function updateIcpButton(): void {
-  icpButton.disabled = entries.size < 2 || icpMoving.value === icpReference.value;
+  icpButton.disabled = !icpMoving.value || !icpReference.value || icpMoving.value === icpReference.value;
 }
 icpMoving.onchange = icpReference.onchange = updateIcpButton;
 

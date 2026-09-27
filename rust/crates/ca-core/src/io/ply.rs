@@ -3,6 +3,7 @@
 use super::scalar::{Scalar, color_channel};
 use super::{IoError, split_header};
 use crate::PointCloud;
+use crate::mesh::TriangleMesh;
 
 const FORMAT: &str = "PLY";
 
@@ -15,8 +16,15 @@ enum Encoding {
 
 #[derive(Debug)]
 enum Property {
-    Scalar { name: String, kind: Scalar },
-    List { count: Scalar, item: Scalar },
+    Scalar {
+        name: String,
+        kind: Scalar,
+    },
+    List {
+        name: String,
+        count: Scalar,
+        item: Scalar,
+    },
 }
 
 #[derive(Debug)]
@@ -66,11 +74,12 @@ fn parse_header(lines: &[&str]) -> Result<(Encoding, Vec<Element>), IoError> {
                     .map_err(|_| IoError::header(FORMAT, format!("bad element count {count:?}")))?,
                 properties: Vec::new(),
             }),
-            ["property", "list", count, item, _name] => {
+            ["property", "list", count, item, name] => {
                 let element = elements
                     .last_mut()
                     .ok_or_else(|| IoError::header(FORMAT, "property before element"))?;
                 element.properties.push(Property::List {
+                    name: (*name).to_owned(),
                     count: parse_scalar(count)?,
                     item: parse_scalar(item)?,
                 });
@@ -135,6 +144,136 @@ impl VertexLayout {
         PointCloud {
             positions: Vec::with_capacity(count),
             colors: self.rgb.map(|_| Vec::with_capacity(count)),
+        }
+    }
+}
+
+/// Index of the face element's vertex index list, if the file has faces.
+fn face_list(elements: &[Element]) -> Option<(usize, usize)> {
+    elements.iter().enumerate().find_map(|(e, element)| {
+        if element.name != "face" || element.count == 0 {
+            return None;
+        }
+        element
+            .properties
+            .iter()
+            .position(|p| {
+                matches!(p, Property::List { name, .. } if name == "vertex_indices" || name == "vertex_index")
+            })
+            .map(|p| (e, p))
+    })
+}
+
+/// Read a PLY with faces as a triangle mesh (polygons are fan-triangulated).
+/// Returns `Ok(None)` for a PLY without faces.
+pub(crate) fn read_mesh(bytes: &[u8]) -> Result<Option<TriangleMesh>, IoError> {
+    let (lines, body) = split_header(bytes, FORMAT, |l| l.trim() == "end_header")?;
+    let (encoding, elements) = parse_header(&lines)?;
+    let Some((face_element, face_property)) = face_list(&elements) else {
+        return Ok(None);
+    };
+    let mut mesh = TriangleMesh::default();
+    let mut vertex_xyz = None;
+    let mut values = Vec::new();
+    let mut polygon: Vec<u32> = Vec::new();
+    let mut rows = RowReader::new(body, encoding)?;
+    for (e, element) in elements.iter().enumerate() {
+        if element.name == "vertex" {
+            vertex_xyz = Some(vertex_layout(element)?.xyz);
+        }
+        for _ in 0..element.count {
+            values.clear();
+            polygon.clear();
+            rows.start_row()?;
+            for (i, property) in element.properties.iter().enumerate() {
+                match property {
+                    Property::Scalar { kind, .. } => values.push(rows.scalar(*kind)?),
+                    Property::List { count, item, .. } => {
+                        values.push(0.0);
+                        let n = rows.scalar(*count)? as usize;
+                        for _ in 0..n {
+                            let v = rows.scalar(*item)?;
+                            if e == face_element && i == face_property {
+                                polygon.push(v as u32);
+                            }
+                        }
+                    }
+                }
+            }
+            if element.name == "vertex" {
+                let xyz = vertex_xyz.expect("set above");
+                mesh.vertices.push(xyz.map(|i| values[i]));
+            } else if e == face_element {
+                for k in 1..polygon.len().saturating_sub(1) {
+                    mesh.triangles
+                        .push([polygon[0], polygon[k], polygon[k + 1]]);
+                }
+            }
+        }
+    }
+    mesh.validate();
+    Ok(Some(mesh))
+}
+
+/// Sequential scalar reader over a PLY body in any encoding.
+enum RowReader<'a> {
+    Binary {
+        body: &'a [u8],
+        cursor: usize,
+        le: bool,
+    },
+    Ascii {
+        lines: std::str::Lines<'a>,
+        tokens: std::str::SplitWhitespace<'a>,
+    },
+}
+
+impl<'a> RowReader<'a> {
+    fn new(body: &'a [u8], encoding: Encoding) -> Result<Self, IoError> {
+        Ok(match encoding {
+            Encoding::BinaryLe | Encoding::BinaryBe => Self::Binary {
+                body,
+                cursor: 0,
+                le: encoding == Encoding::BinaryLe,
+            },
+            Encoding::Ascii => {
+                let text = std::str::from_utf8(body)
+                    .map_err(|_| IoError::parse(FORMAT, "non-UTF-8 body"))?;
+                Self::Ascii {
+                    lines: text.lines(),
+                    tokens: "".split_whitespace(),
+                }
+            }
+        })
+    }
+
+    /// ASCII rows are one line each; binary rows have no delimiter.
+    fn start_row(&mut self) -> Result<(), IoError> {
+        if let Self::Ascii { lines, tokens } = self {
+            let line = loop {
+                let line = lines.next().ok_or(IoError::Truncated(FORMAT))?;
+                if !line.trim().is_empty() {
+                    break line;
+                }
+            };
+            *tokens = line.split_whitespace();
+        }
+        Ok(())
+    }
+
+    fn scalar(&mut self, kind: Scalar) -> Result<f64, IoError> {
+        match self {
+            Self::Binary { body, cursor, le } => {
+                let bytes = body
+                    .get(*cursor..*cursor + kind.size())
+                    .ok_or(IoError::Truncated(FORMAT))?;
+                *cursor += kind.size();
+                Ok(kind.decode(bytes, *le))
+            }
+            Self::Ascii { tokens, .. } => {
+                let token = tokens.next().ok_or(IoError::Truncated(FORMAT))?;
+                token.parse().map_err(|_| IoError::parse(FORMAT, token))
+            }
         }
     }
 }
@@ -278,7 +417,7 @@ fn read_binary(body: &[u8], elements: &[Element], le: bool) -> Result<PointCloud
                     Property::Scalar { kind, .. } => {
                         values[i] = kind.decode(take(kind.size())?, le);
                     }
-                    Property::List { count, item } => {
+                    Property::List { count, item, .. } => {
                         let n = count.decode(take(count.size())?, le) as usize;
                         take(n * item.size())?;
                     }
@@ -445,6 +584,44 @@ end_header
         let cloud = read(&src).unwrap();
         assert_eq!(cloud.positions, vec![[0.5, -2.25, 7.0]]);
         assert_eq!(cloud.colors, Some(vec![[255, 0, 128]]));
+    }
+
+    #[test]
+    fn reads_ascii_mesh_with_quads() {
+        let src = b"ply\nformat ascii 1.0\nelement vertex 4\nproperty float x\nproperty float y\n\
+property float z\nelement face 2\nproperty list uchar int vertex_indices\nend_header\n\
+0 0 0\n1 0 0\n1 1 0\n0 1 0\n4 0 1 2 3\n3 0 2 9\n";
+        let mesh = read_mesh(src).unwrap().unwrap();
+        assert_eq!(mesh.vertices.len(), 4);
+        // The quad becomes two triangles; the face with a bad index is dropped.
+        assert_eq!(mesh.triangles, vec![[0, 1, 2], [0, 2, 3]]);
+    }
+
+    #[test]
+    fn reads_binary_mesh_and_ignores_face_extras() {
+        let mut src = b"ply\nformat binary_little_endian 1.0\nelement vertex 3\n\
+property double x\nproperty double y\nproperty double z\nelement face 1\n\
+property uchar flags\nproperty list uchar uint vertex_index\nend_header\n"
+            .to_vec();
+        for v in [[0.0f64, 0.0, 0.0], [2.0, 0.0, 0.0], [0.0, 2.0, 1.0]] {
+            for c in v {
+                src.extend_from_slice(&c.to_le_bytes());
+            }
+        }
+        src.extend_from_slice(&[7, 3]);
+        for i in [0u32, 1, 2] {
+            src.extend_from_slice(&i.to_le_bytes());
+        }
+        let mesh = read_mesh(&src).unwrap().unwrap();
+        assert_eq!(mesh.vertices[2], [0.0, 2.0, 1.0]);
+        assert_eq!(mesh.triangles, vec![[0, 1, 2]]);
+    }
+
+    #[test]
+    fn point_cloud_ply_is_not_a_mesh() {
+        let src = b"ply\nformat ascii 1.0\nelement vertex 1\nproperty float x\nproperty float y\n\
+property float z\nend_header\n1 2 3\n";
+        assert!(read_mesh(src).unwrap().is_none());
     }
 
     #[test]

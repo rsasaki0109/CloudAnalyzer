@@ -2,7 +2,7 @@
 
 use ca_core::icp::{IcpMetric, IcpParams, Rigid};
 use ca_core::octree::{NO_CHILD, Octree, OctreeParams};
-use ca_core::{DistanceStats, PointCloud};
+use ca_core::{DistanceStats, PointCloud, TriangleMesh};
 use wasm_bindgen::prelude::*;
 
 /// Numbers per node in [`Cloud::lod_nodes`].
@@ -94,6 +94,13 @@ impl Cloud {
     /// `undefined` when out of range.
     pub fn point(&self, index: usize) -> Option<Vec<f64>> {
         self.inner.positions.get(index).map(|p| p.to_vec())
+    }
+
+    /// Interleaved `xyz` at full `f64` precision (octree order), e.g. to
+    /// split a C2M job across workers.
+    #[wasm_bindgen(js_name = rawPositions)]
+    pub fn raw_positions(&self) -> Vec<f64> {
+        self.inner.positions.as_flattened().to_vec()
     }
 
     /// Interleaved `rgb` bytes, or `undefined` when the file has no colors.
@@ -254,6 +261,109 @@ fn from_flat(xyz: &[f64]) -> Result<PointCloud, JsError> {
         positions: xyz.as_chunks::<3>().0.to_vec(),
         colors: None,
     })
+}
+
+/// A triangle mesh (PLY with faces, OBJ, STL), used as a C2M reference.
+#[wasm_bindgen]
+pub struct Mesh {
+    inner: TriangleMesh,
+}
+
+#[wasm_bindgen]
+impl Mesh {
+    /// Parse a mesh file, or return `undefined` when the file is a point
+    /// cloud (e.g. a PLY without faces).
+    pub fn parse(name: &str, bytes: &[u8]) -> Result<Option<Mesh>, JsError> {
+        Ok(ca_core::read_mesh(name, bytes)?.map(|inner| Mesh { inner }))
+    }
+
+    #[wasm_bindgen(getter, js_name = vertexCount)]
+    pub fn vertex_count(&self) -> usize {
+        self.inner.vertices.len()
+    }
+
+    #[wasm_bindgen(getter, js_name = triangleCount)]
+    pub fn triangle_count(&self) -> usize {
+        self.inner.triangles.len()
+    }
+
+    fn as_cloud(&self) -> PointCloud {
+        PointCloud {
+            positions: self.inner.vertices.clone(),
+            colors: None,
+        }
+    }
+
+    /// `[minX, minY, minZ, maxX, maxY, maxZ]`.
+    pub fn bounds(&self) -> Vec<f64> {
+        self.as_cloud()
+            .bounds()
+            .map(|b| b.min.into_iter().chain(b.max).collect())
+            .unwrap_or_default()
+    }
+
+    #[wasm_bindgen(js_name = suggestedShift)]
+    pub fn suggested_shift(&self) -> Vec<f64> {
+        self.as_cloud().suggested_shift().to_vec()
+    }
+
+    /// Interleaved vertex `xyz` minus `shift`, narrowed to `f32` for rendering.
+    pub fn positions(&self, shift: &[f64]) -> Result<Vec<f32>, JsError> {
+        let shift: [f64; 3] = shift
+            .try_into()
+            .map_err(|_| JsError::new("shift must have 3 components"))?;
+        let mut out = Vec::with_capacity(self.inner.vertices.len() * 3);
+        for p in &self.inner.vertices {
+            out.extend([
+                (p[0] - shift[0]) as f32,
+                (p[1] - shift[1]) as f32,
+                (p[2] - shift[2]) as f32,
+            ]);
+        }
+        Ok(out)
+    }
+
+    /// Triangle vertex indices, three per triangle.
+    pub fn indices(&self) -> Vec<u32> {
+        self.inner.triangles.as_flattened().to_vec()
+    }
+
+    /// Interleaved vertex `xyz` at full precision, for [`mesh_distances`].
+    #[wasm_bindgen(js_name = rawVertices)]
+    pub fn raw_vertices(&self) -> Vec<f64> {
+        self.inner.vertices.as_flattened().to_vec()
+    }
+}
+
+/// Distance from every point of `compared` to `mesh` (C2M); negative behind
+/// the closest triangle when `signed`.
+#[wasm_bindgen(js_name = cloudToMesh)]
+pub fn cloud_to_mesh(compared: &Cloud, mesh: &Mesh, signed: bool) -> Result<C2cResult, JsError> {
+    let distances = ca_core::cloud_to_mesh(&compared.inner.positions, &mesh.inner, signed)
+        .ok_or_else(|| JsError::new("mesh has no triangles"))?;
+    summarize_distances(&distances)
+}
+
+/// C2M distances for a batch of interleaved `xyz` queries against a mesh
+/// given as raw vertices and triangle indices. Used by the worker pool.
+#[wasm_bindgen(js_name = meshDistances)]
+pub fn mesh_distances(
+    vertices: &[f64],
+    indices: &[u32],
+    queries: &[f64],
+    signed: bool,
+) -> Result<Vec<f64>, JsError> {
+    if !vertices.len().is_multiple_of(3) || !indices.len().is_multiple_of(3) {
+        return Err(JsError::new("vertices and indices must come in triples"));
+    }
+    let mut mesh = TriangleMesh {
+        vertices: vertices.as_chunks::<3>().0.to_vec(),
+        triangles: indices.as_chunks::<3>().0.to_vec(),
+    };
+    mesh.validate();
+    let points = from_flat(queries)?.positions;
+    ca_core::cloud_to_mesh(&points, &mesh, signed)
+        .ok_or_else(|| JsError::new("mesh has no triangles"))
 }
 
 /// Nearest-neighbour distances for a batch of interleaved `xyz` queries.

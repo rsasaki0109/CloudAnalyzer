@@ -31,6 +31,7 @@ export class Viewer {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly controls: OrbitControls;
   private readonly clouds = new Map<number, LodCloud>();
+  private readonly meshes = new Map<number, THREE.Mesh>();
   private pointSize = 2;
   private pointBudget = 3_000_000;
   private needsRender = true;
@@ -57,6 +58,14 @@ export class Viewer {
     this.controls.enableDamping = true;
     this.controls.screenSpacePanning = true;
     this.controls.addEventListener("change", () => this.requestRender(true));
+
+    // Soft ambient light plus a headlight that follows the camera, so meshes
+    // are always lit from the viewing direction.
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x445566, 1.2));
+    const headlight = new THREE.DirectionalLight(0xffffff, 1.6);
+    headlight.position.set(0, 0, 1);
+    this.camera.add(headlight);
+    this.scene.add(this.camera);
 
     const axes = new THREE.AxesHelper(1);
     axes.name = "axes";
@@ -193,7 +202,48 @@ export class Viewer {
     this.requestRender(true);
   }
 
+  /** Add a triangle mesh (positions in render coordinates) with a solid color. */
+  addMesh(id: number, positions: Float32Array, indices: Uint32Array, color: [number, number, number]): void {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    geometry.computeVertexNormals();
+    geometry.computeBoundingBox();
+    geometry.computeBoundingSphere();
+    const material = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(...color.map((c) => c / 255)),
+      roughness: 0.85,
+      metalness: 0,
+      side: THREE.DoubleSide,
+      flatShading: true,
+      // Push the surface back a little so points lying on it stay visible.
+      polygonOffset: true,
+      polygonOffsetFactor: 1,
+      polygonOffsetUnits: 1,
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    this.meshes.set(id, mesh);
+    this.scene.add(mesh);
+    this.requestRender();
+  }
+
+  setMeshColor(id: number, color: [number, number, number]): void {
+    const mesh = this.meshes.get(id);
+    if (!mesh) return;
+    (mesh.material as THREE.MeshStandardMaterial).color.setRGB(...(color.map((c) => c / 255) as [number, number, number]));
+    this.requestRender();
+  }
+
   remove(id: number): void {
+    const mesh = this.meshes.get(id);
+    if (mesh) {
+      this.scene.remove(mesh);
+      mesh.geometry.dispose();
+      (mesh.material as THREE.Material).dispose();
+      this.meshes.delete(id);
+      this.requestRender();
+      return;
+    }
     const cloud = this.clouds.get(id);
     if (!cloud) return;
     this.scene.remove(cloud.group);
@@ -219,6 +269,12 @@ export class Viewer {
   }
 
   setVisible(id: number, visible: boolean): void {
+    const mesh = this.meshes.get(id);
+    if (mesh) {
+      mesh.visible = visible;
+      this.requestRender();
+      return;
+    }
     const cloud = this.clouds.get(id);
     if (!cloud) return;
     cloud.visible = visible;
@@ -350,6 +406,9 @@ export class Viewer {
     const box = new THREE.Box3();
     for (const cloud of this.clouds.values()) {
       if (cloud.visible && cloud.nodes[0]) box.union(tightBox(cloud));
+    }
+    for (const mesh of this.meshes.values()) {
+      if (mesh.visible && mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox);
     }
     if (box.isEmpty()) return;
     const sphere = box.getBoundingSphere(new THREE.Sphere());

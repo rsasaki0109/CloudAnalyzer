@@ -21,6 +21,8 @@ Files never leave the browser.
   **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
 - Coordinates are kept in `f64`; georeferenced clouds get a shared global
   shift for rendering, like CloudCompare.
+- Cloud-to-mesh (C2M) distance against OBJ / STL / PLY meshes, optionally
+  signed by the mesh's face normals (points behind the surface are negative).
 - Cloud-to-cloud (C2C) nearest-neighbour distance with summary statistics,
   color ramps, an adjustable display range and a colorbar.
 - Large C2C jobs are split into spatially compact parts that run on a pool of

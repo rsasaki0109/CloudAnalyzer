@@ -3,9 +3,16 @@
 export type Vec3 = [number, number, number];
 
 export interface LoadedCloud {
+  /** Point clouds get octree LOD; meshes are drawn as triangles. */
+  kind: "cloud" | "mesh";
   id: number;
   name: string;
+  /** Points, or vertices for a mesh. */
   count: number;
+  /** Triangle count (0 for a point cloud). */
+  triangles: number;
+  /** Triangle vertex indices for a mesh, null for a point cloud. */
+  indices: Uint32Array | null;
   /** Interleaved xyz in octree order, already shifted by the session's global shift. */
   positions: Float32Array;
   /** Interleaved rgb in octree order, or null when the file carries no colors. */
@@ -31,6 +38,10 @@ export interface C2cStats {
 }
 
 export interface C2cOutput {
+  /** Cloud-to-cloud or cloud-to-mesh. */
+  kind: "c2c" | "c2m";
+  /** Negative distances mean "behind the mesh" (C2M only). */
+  signed: boolean;
   /** Per-point distances of the compared cloud (octree order, like its positions). */
   distances: Float32Array;
   stats: C2cStats;
@@ -53,7 +64,7 @@ export interface IcpOutput {
 
 export type Request =
   | { kind: "load"; name: string; bytes: ArrayBuffer }
-  | { kind: "c2c"; compared: number; reference: number }
+  | { kind: "c2c"; compared: number; reference: number; signed: boolean }
   | { kind: "remove"; id: number }
   | { kind: "point"; id: number; index: number }
   | {

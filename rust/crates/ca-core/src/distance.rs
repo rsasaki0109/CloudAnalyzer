@@ -2,6 +2,7 @@
 
 use crate::PointCloud;
 use crate::kdtree::KdTree;
+use crate::mesh::{MeshBvh, TriangleMesh, dot};
 
 /// Summary statistics over a set of distances.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -50,6 +51,35 @@ impl DistanceStats {
             median,
         })
     }
+}
+
+/// For every point of `points`, the distance to the closest point of `mesh`
+/// (cloud-to-mesh, C2M). With `signed`, points on the back side of the
+/// closest triangle (against its right-hand normal) get negative distances.
+/// Returns `None` when the mesh has no triangles.
+pub fn cloud_to_mesh(points: &[[f64; 3]], mesh: &TriangleMesh, signed: bool) -> Option<Vec<f64>> {
+    let bvh = MeshBvh::new(mesh)?;
+    let mut distances = vec![0.0; points.len()];
+    let mut guess = None;
+    let mut stack = Vec::new();
+    for i in morton_order(points) {
+        let p = points[i];
+        let hit = bvh.nearest_with(p, guess, &mut stack);
+        guess = Some(hit.triangle);
+        let mut d = hit.distance_sq.sqrt();
+        if signed {
+            let offset = [
+                p[0] - hit.point[0],
+                p[1] - hit.point[1],
+                p[2] - hit.point[2],
+            ];
+            if dot(offset, mesh.normal(hit.triangle)) < 0.0 {
+                d = -d;
+            }
+        }
+        distances[i] = d;
+    }
+    Some(distances)
 }
 
 /// For every point of `compared`, the Euclidean distance to its nearest
@@ -390,6 +420,38 @@ mod tests {
         let parts = partition_c2c(&compared, &reference, 8).unwrap();
         let total: usize = parts.iter().map(|p| p.reference.len()).sum();
         assert!(total * 2 < 3 * reference.len(), "reference copies: {total}");
+    }
+
+    #[test]
+    fn cloud_to_mesh_on_a_square() {
+        // Two triangles covering [0, 10]^2 at z = 0, normal +z.
+        let mesh = TriangleMesh {
+            vertices: vec![
+                [0.0, 0.0, 0.0],
+                [10.0, 0.0, 0.0],
+                [10.0, 10.0, 0.0],
+                [0.0, 10.0, 0.0],
+            ],
+            triangles: vec![[0, 1, 2], [0, 2, 3]],
+        };
+        let points = [
+            [3.0, 4.0, 2.0],
+            [7.0, 1.0, -0.5],
+            [13.0, 14.0, 0.0],
+            [5.0, 5.0, 0.0],
+        ];
+        let signed = cloud_to_mesh(&points, &mesh, true).unwrap();
+        let unsigned = cloud_to_mesh(&points, &mesh, false).unwrap();
+        let expected = [2.0, -0.5, 5.0, 0.0];
+        for i in 0..points.len() {
+            assert!(
+                (signed[i] - expected[i]).abs() < 1e-12,
+                "{i}: {}",
+                signed[i]
+            );
+            assert!((unsigned[i] - expected[i].abs()).abs() < 1e-12);
+        }
+        assert!(cloud_to_mesh(&points, &TriangleMesh::default(), false).is_none());
     }
 
     #[test]

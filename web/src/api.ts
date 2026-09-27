@@ -38,8 +38,9 @@ export function loadCloud(
   return call({ kind: "load", name, bytes }, [bytes], progress);
 }
 
-export function cloudToCloud(compared: number, reference: number): Promise<C2cOutput> {
-  return call({ kind: "c2c", compared, reference });
+/** C2C, or C2M when `reference` is a mesh (`signed` then applies). */
+export function cloudToCloud(compared: number, reference: number, signed = true): Promise<C2cOutput> {
+  return call({ kind: "c2c", compared, reference, signed });
 }
 
 export function removeCloud(id: number): Promise<void> {

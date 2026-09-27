@@ -20,6 +20,7 @@ import init, {
   warmUp,
 } from "./wasm/ca_wasm.js";
 import type { Slice } from "./c2c-worker";
+import { CANCELLED } from "./protocol";
 import { MIN_PARALLEL_QUERIES, poolSize, runOn, runSlices, warmUpPool } from "./pool";
 import type {
   C2cOutput,
@@ -27,6 +28,8 @@ import type {
   LoadedCloud,
   M3c2Output,
   ProfileOutput,
+  Progress,
+  UiMessage,
   Request,
   Response,
   Vec3,
@@ -233,7 +236,12 @@ type Loaded =
  * slice so they are never held whole; read anything else (LAZ, meshes, text)
  * at once. Clouds larger than `maxPoints` keep every n-th point.
  */
-async function readPoints(file: File, maxPoints: number, progress: (note: string) => void): Promise<Loaded> {
+async function readPoints(
+  file: File,
+  maxPoints: number,
+  progress: (note: string, fraction?: number) => void,
+  check: () => void,
+): Promise<Loaded> {
   const name = file.name;
   const thinning = (points: number) => (points > maxPoints ? Math.ceil(points / maxPoints) : 1);
   progress("reading header");
@@ -249,10 +257,20 @@ async function readPoints(file: File, maxPoints: number, progress: (note: string
     const keepEvery = thinning(filePoints);
     loader.setKeepEvery(keepEvery);
     const start = loader.dataOffset;
-    for (let at = start; at < file.size; at += STREAM_CHUNK) {
-      const percent = Math.round(((at - start) / Math.max(1, file.size - start)) * 100);
-      progress(`reading ${percent}%${keepEvery > 1 ? ` (keeping 1 in ${keepEvery})` : ""}`);
-      loader.push(new Uint8Array(await file.slice(at, at + STREAM_CHUNK).arrayBuffer()));
+    try {
+      for (let at = start; at < file.size; at += STREAM_CHUNK) {
+        const fraction = (at - start) / Math.max(1, file.size - start);
+        progress(
+          `reading ${Math.round(fraction * 100)}%${keepEvery > 1 ? ` (keeping 1 in ${keepEvery})` : ""}`,
+          fraction,
+        );
+        const chunk = new Uint8Array(await file.slice(at, at + STREAM_CHUNK).arrayBuffer());
+        check();
+        loader.push(chunk);
+      }
+    } catch (err) {
+      loader.free();
+      throw err;
     }
     const cloud = loader.finish();
     loader.free();
@@ -260,6 +278,7 @@ async function readPoints(file: File, maxPoints: number, progress: (note: string
   }
   progress("reading");
   const bytes = new Uint8Array(await file.arrayBuffer());
+  check();
   progress("parsing");
   const mesh = Mesh.parse(name, bytes);
   if (mesh) return { kind: "mesh", mesh };
@@ -444,7 +463,8 @@ function output(
 
 async function handle(
   req: Request,
-  progress: (note: string) => void,
+  progress: (note: string, fraction?: number) => void,
+  check: () => void,
 ): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
@@ -452,8 +472,14 @@ async function handle(
       const { file, maxPoints } = req;
       const name = file.name;
       let t = performance.now();
-      const loaded = await readPoints(file, maxPoints, progress);
+      const loaded = await readPoints(file, maxPoints, progress, check);
       const parse = performance.now() - t;
+      try {
+        check();
+      } catch (err) {
+        (loaded.kind === "mesh" ? loaded.mesh : loaded.cloud).free();
+        throw err;
+      }
       if (loaded.kind === "mesh") {
         shift ??= Array.from(loaded.mesh.suggestedShift()) as Vec3;
         const id = nextId++;
@@ -465,6 +491,12 @@ async function handle(
       t = performance.now();
       const workers = await buildIndex(cloud);
       const index = performance.now() - t;
+      try {
+        check();
+      } catch (err) {
+        cloud.free();
+        throw err;
+      }
       shift ??= Array.from(cloud.suggestedShift()) as Vec3;
       const id = nextId++;
       items.set(id, { kind: "cloud", cloud, name, keepEvery: loaded.keepEvery, filePoints: loaded.filePoints });
@@ -693,16 +725,27 @@ async function handle(
   }
 }
 
-self.onmessage = async (event: MessageEvent<{ seq: number; req: Request }>) => {
+/** Requests asked to stop; they check between steps. */
+const cancelled = new Set<number>();
+
+self.onmessage = async (event: MessageEvent<UiMessage>) => {
+  if ("cancel" in event.data) {
+    cancelled.add(event.data.cancel);
+    return;
+  }
   const { seq, req } = event.data;
   let response: Response;
   let transfer: Transferable[] = [];
-  const progress = (note: string) => {
-    const message: WorkerMessage = { seq, progress: note };
+  const progress = (note: string, fraction?: number) => {
+    const update: Progress = { note, fraction };
+    const message: WorkerMessage = { seq, progress: update };
     self.postMessage(message);
   };
+  const check = () => {
+    if (cancelled.has(seq)) throw new Error(CANCELLED);
+  };
   try {
-    const out = await handle(req, progress);
+    const out = await handle(req, progress, check);
     response = { ok: true, value: out.value };
     transfer = out.transfer;
   } catch (err) {
@@ -712,5 +755,8 @@ self.onmessage = async (event: MessageEvent<{ seq: number; req: Request }>) => {
     }
     response = { ok: false, error };
   }
-  self.postMessage({ seq, response }, { transfer });
+  cancelled.delete(seq);
+  const memory = (await ready).memory.buffer.byteLength;
+  const message: WorkerMessage = { seq, response, memory };
+  self.postMessage(message, { transfer });
 };

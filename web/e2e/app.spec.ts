@@ -441,3 +441,21 @@ test("normals: estimated, shaded, saved to PLY and read back", async ({ page }) 
   await expect(again.locator('option[value="normal"]')).toHaveCount(1);
   await again.selectOption("normal");
 });
+
+test("progress and cancel: a stalled download can be stopped; memory is shown", async ({ page }) => {
+  // A server that never finishes answering.
+  await page.route("**/stalled/slow.ply", () => new Promise(() => {}));
+  await page.locator("#url-input").fill("/stalled/slow.ply");
+  await page.locator("#url-open").click();
+  await expect(page.locator("#task")).toBeVisible();
+  await expect(status(page)).toContainText("Downloading slow.ply");
+  await page.locator("#task-cancel").click();
+  await expect(status(page)).toContainText("Stopped downloading slow.ply");
+  await expect(page.locator("#task")).toBeHidden();
+
+  // A normal load hides the bar again and reports the worker's memory.
+  await open(page, [{ name: "small.ply", buffer: ply(grid(20)) }]);
+  await expect(status(page)).toContainText("Loaded small.ply");
+  await expect(page.locator("#task")).toBeHidden();
+  await expect(page.locator("#memory")).toContainText(/WASM \d+ MB/);
+});

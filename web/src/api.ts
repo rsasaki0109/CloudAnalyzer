@@ -6,7 +6,9 @@ import type {
   LoadedCloud,
   M3c2Output,
   ProfileOutput,
+  Progress,
   Request,
+  UiMessage,
   Vec3,
   VolumeOutput,
   WorkerMessage,
@@ -15,9 +17,15 @@ import type {
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
 const pending = new Map<
   number,
-  { resolve: (v: unknown) => void; reject: (e: Error) => void; progress?: (note: string) => void }
+  { resolve: (v: unknown) => void; reject: (e: Error) => void; progress?: (p: Progress) => void }
 >();
 let seq = 0;
+
+/** Called with the size of the worker's WASM memory after every request. */
+let onMemory: (bytes: number) => void = () => {};
+export function setMemoryListener(listener: (bytes: number) => void): void {
+  onMemory = listener;
+}
 
 worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
   const message = event.data;
@@ -28,24 +36,34 @@ worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
     return;
   }
   pending.delete(message.seq);
+  onMemory(message.memory);
   if (message.response.ok) entry.resolve(message.response.value);
   else entry.reject(new Error(message.response.error));
 };
 
-function call<T>(req: Request, transfer: Transferable[] = [], progress?: (note: string) => void): Promise<T> {
+function call<T>(
+  req: Request,
+  transfer: Transferable[] = [],
+  progress?: (p: Progress) => void,
+  signal?: AbortSignal,
+): Promise<T> {
   const id = ++seq;
   return new Promise<T>((resolve, reject) => {
     pending.set(id, { resolve: resolve as (v: unknown) => void, reject, progress });
-    worker.postMessage({ seq: id, req }, { transfer });
+    const message: UiMessage = { seq: id, req };
+    worker.postMessage(message, { transfer });
+    signal?.addEventListener("abort", () => worker.postMessage({ cancel: id } satisfies UiMessage), { once: true });
   });
 }
 
+/** Load a file; `signal` stops it between steps (rejecting with `CANCELLED`). */
 export function loadCloud(
   file: File,
   maxPoints: number,
-  progress?: (note: string) => void,
+  progress?: (p: Progress) => void,
+  signal?: AbortSignal,
 ): Promise<LoadedCloud> {
-  return call({ kind: "load", file, maxPoints }, [], progress);
+  return call({ kind: "load", file, maxPoints }, [], progress, signal);
 }
 
 /** C2C, or C2M when `reference` is a mesh (`signed` then applies). */

@@ -12,6 +12,7 @@ import {
   mergeClouds,
   pointAt,
   profileCloud,
+  setMemoryListener,
   registerIcp,
   removeCloud,
   splitCloud,
@@ -29,7 +30,7 @@ import {
   toRgba,
 } from "./colormap";
 import { type LodNode, parseNodes } from "./lod";
-import type { C2cOutput, LoadedCloud } from "./protocol";
+import { CANCELLED, type C2cOutput, type LoadedCloud, type Progress } from "./protocol";
 import { decodeSession, encodeSession, nameFromUrl, parseSession, type Session } from "./session";
 import { Viewer } from "./viewer";
 
@@ -82,6 +83,38 @@ function fmt(v: number): string {
   const a = Math.abs(v);
   return a >= 1e4 || a < 1e-3 ? v.toExponential(3) : v.toPrecision(5).replace(/\.?0+$/, "");
 }
+
+// ---------------------------------------------------------------- tasks
+
+/** A cancellable long operation shown with a progress bar in the status bar. */
+let task: AbortController | null = null;
+
+function startTask(): AbortSignal {
+  task = new AbortController();
+  $("task").hidden = false;
+  showProgress({ note: "" });
+  return task.signal;
+}
+
+function showProgress(p: Progress): void {
+  const bar = $("progress-bar");
+  const known = p.fraction !== undefined;
+  bar.parentElement!.classList.toggle("indeterminate", !known);
+  bar.style.width = known ? `${Math.round(p.fraction! * 100)}%` : "";
+}
+
+/** Hide the progress bar, unless a newer task has taken it over. */
+function endTask(signal: AbortSignal): void {
+  if (task?.signal !== signal) return;
+  task = null;
+  $("task").hidden = true;
+}
+
+$<HTMLButtonElement>("task-cancel").onclick = () => task?.abort();
+
+setMemoryListener((bytes) => {
+  $("memory").textContent = bytes >= 1e9 ? `WASM ${(bytes / 1e9).toFixed(2)} GB` : `WASM ${Math.round(bytes / 1e6)} MB`;
+});
 
 // ---------------------------------------------------------------- colors
 
@@ -357,7 +390,9 @@ function addEntry(cloud: LoadedCloud, origin: Origin = { kind: "derived" }): Ent
  */
 async function loadFiles(files: File[], origins?: Origin[]): Promise<void> {
   const sessions: File[] = [];
+  const signal = startTask();
   for (const [i, file] of files.entries()) {
+    if (signal.aborted) break;
     if (/\.json$/i.test(file.name)) {
       sessions.push(file);
       continue;
@@ -367,8 +402,14 @@ async function loadFiles(files: File[], origins?: Origin[]): Promise<void> {
     const start = performance.now();
     try {
       const maxPoints = Number($<HTMLSelectElement>("max-points").value) || Number.POSITIVE_INFINITY;
-      const cloud = await loadCloud(file, maxPoints, (note) =>
-        setStatus(`Loading ${file.name} (${mb} MB): ${note}…`),
+      const cloud = await loadCloud(
+        file,
+        maxPoints,
+        (p) => {
+          showProgress(p);
+          setStatus(`Loading ${file.name} (${mb} MB): ${p.note}…`);
+        },
+        signal,
       );
       addEntry(cloud, origins?.[i] ?? { kind: "file" });
       if (entries.size === 1) viewer.fit();
@@ -389,10 +430,17 @@ async function loadFiles(files: File[], origins?: Origin[]): Promise<void> {
           `${workers && workers > 1 ? ` on ${workers} workers` : ""} · prepare ${s(prepare)})`,
       );
     } catch (err) {
-      setStatus(`${file.name}: ${err instanceof Error ? err.message : err}`, true);
+      if (err instanceof Error && err.message === CANCELLED) {
+        const rest = files.length - i - 1;
+        setStatus(`Stopped loading ${file.name}${rest > 0 ? ` (and ${rest} more)` : ""}`);
+      } else {
+        setStatus(`${file.name}: ${err instanceof Error ? err.message : err}`, true);
+      }
     }
     renderList();
   }
+  endTask(signal);
+  if (signal.aborted) return;
   for (const file of sessions) {
     try {
       await applySession(parseSession(JSON.parse(await file.text())));
@@ -409,23 +457,48 @@ async function loadUrls(urls: string[]): Promise<void> {
   const files: File[] = [];
   const origins: Origin[] = [];
   const failed: string[] = [];
+  const signal = startTask();
   for (const raw of urls) {
     const url = new URL(raw, location.href).href;
     const name = nameFromUrl(url);
     setStatus(`Downloading ${name}…`);
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { signal });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      files.push(new File([await response.blob()], name));
+      files.push(new File([await readWithProgress(response, name)], name));
       origins.push({ kind: "url", url });
     } catch (err) {
+      if (signal.aborted) {
+        endTask(signal);
+        setStatus(`Stopped downloading ${name}`);
+        return;
+      }
       failed.push(`${name} (${err instanceof Error ? err.message : err})`);
     }
   }
+  endTask(signal);
   await loadFiles(files, origins);
   if (failed.length) {
     setStatus(`Could not download ${failed.join(", ")}; the server must allow cross-origin requests`, true);
   }
+}
+
+/** The body of a download, reporting progress when its size is known. */
+async function readWithProgress(response: Response, name: string): Promise<Blob> {
+  const total = Number(response.headers.get("content-length")) || 0;
+  if (!response.body || !total) return response.blob();
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let received = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    received += value.length;
+    showProgress({ note: "", fraction: Math.min(1, received / total) });
+    setStatus(`Downloading ${name}: ${Math.round((received / total) * 100)}% of ${(total / 1e6).toFixed(1)} MB…`);
+  }
+  return new Blob(chunks as BlobPart[]);
 }
 
 $<HTMLButtonElement>("load-sample").onclick = async () => {

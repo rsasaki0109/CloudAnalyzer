@@ -137,6 +137,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Fixed oriented 3D box IoU (`ca detection-evaluate` /
   `ca tracking-evaluate`) on NumPy 2.x, which rejects 2D inputs to
   `np.cross`; polygon clipping now uses an explicit 2D cross product.
+- Capped `open3d<0.20`: open3d 0.20.0 requires `libusb-1.0` at import time
+  and ships stubs that reject `str` paths.
 
 ## [0.4.0] - 2026-05-24
 

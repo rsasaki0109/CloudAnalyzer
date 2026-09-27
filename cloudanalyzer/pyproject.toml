@@ -35,7 +35,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
-    "open3d>=0.17.0",
+    "open3d>=0.17.0,<0.20",
     "numpy>=1.24.0",
     "typer>=0.9.0",
     "matplotlib>=3.7.0",
@@ -97,11 +97,6 @@ python_version = "3.10"
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-# open3d 0.20 ships stubs that reject str paths accepted at runtime.
-module = ["open3d", "open3d.*"]
-follow_imports = "skip"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

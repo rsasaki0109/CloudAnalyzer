@@ -249,6 +249,14 @@ async function handle(
       getCloud(req.id).transform(new Float64Array(req.matrix));
       return describe(req.id);
     }
+    case "crop": {
+      const source = items.get(req.id);
+      const cropped = getCloud(req.id).crop(new Float64Array(req.min), new Float64Array(req.max), req.inside);
+      const id = nextId++;
+      const base = source!.name.replace(/\.[^.]+$/, "");
+      items.set(id, { kind: "cloud", cloud: cropped, name: `${base}_${req.inside ? "crop" : "rest"}` });
+      return describe(id);
+    }
     case "export": {
       const bytes = getCloud(req.id).export(req.format, req.scalar?.name, req.scalar?.values);
       return { value: bytes, transfer: [bytes.buffer] };

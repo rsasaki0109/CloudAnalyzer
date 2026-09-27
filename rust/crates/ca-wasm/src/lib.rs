@@ -41,6 +41,23 @@ impl Cloud {
         Ok(())
     }
 
+    /// A new cloud with the points inside (or outside) the box `[min, max]`,
+    /// given in original coordinates. Returns an error if nothing is kept.
+    pub fn crop(&self, min: &[f64], max: &[f64], inside: bool) -> Result<Cloud, JsError> {
+        let (min, max): ([f64; 3], [f64; 3]) = (
+            min.try_into()
+                .map_err(|_| JsError::new("min must have 3 components"))?,
+            max.try_into()
+                .map_err(|_| JsError::new("max must have 3 components"))?,
+        );
+        let mut inner = self.inner.crop(min, max, inside);
+        if inner.is_empty() {
+            return Err(JsError::new("no points in the selection"));
+        }
+        let lod = build_lod(&mut inner)?;
+        Ok(Cloud { inner, lod })
+    }
+
     /// Apply a rigid transform (row-major 4x4) to every point and rebuild the
     /// octree, which also changes the point order.
     pub fn transform(&mut self, matrix: &[f64]) -> Result<(), JsError> {

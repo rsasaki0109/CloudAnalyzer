@@ -43,11 +43,16 @@ export class Viewer {
   /** Called after every rendered frame, e.g. to move HTML overlays. */
   onAfterRender: () => void = () => {};
   private readonly annotations = new THREE.Group();
+  /** Clipping box in render coordinates, or null when clipping is off. */
+  private clip: THREE.Box3 | null = null;
+  private readonly clipPlanes = Array.from({ length: 6 }, () => new THREE.Plane());
+  private readonly clipHelper = new THREE.Box3Helper(new THREE.Box3(), 0xffd54f);
 
   constructor(private readonly container: HTMLElement) {
     THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
     this.renderer = new THREE.WebGLRenderer({ antialias: false });
     this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.localClippingEnabled = true;
     container.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(50, 1, 0.01, 1e6);
@@ -71,6 +76,8 @@ export class Viewer {
     axes.name = "axes";
     this.scene.add(axes);
 
+    this.clipHelper.visible = false;
+    this.scene.add(this.clipHelper);
     this.annotations.renderOrder = 1;
     this.scene.add(this.annotations);
 
@@ -134,6 +141,8 @@ export class Viewer {
       this.camera,
       this.renderer.domElement.height,
       this.pointBudget,
+      1,
+      this.clip,
     );
     for (const cloud of this.clouds.values()) {
       const wanted = new Set(selection.nodes.get(cloud.id) ?? []);
@@ -186,6 +195,7 @@ export class Viewer {
       size: this.pointSize,
       sizeAttenuation: false,
       vertexColors: true,
+      clippingPlanes: this.clip ? this.clipPlanes : null,
     });
     const group = new THREE.Group();
     this.scene.add(group);
@@ -220,6 +230,7 @@ export class Viewer {
       polygonOffset: true,
       polygonOffsetFactor: 1,
       polygonOffsetUnits: 1,
+      clippingPlanes: this.clip ? this.clipPlanes : null,
     });
     const mesh = new THREE.Mesh(geometry, material);
     this.meshes.set(id, mesh);
@@ -315,6 +326,7 @@ export class Viewer {
     // Collect every drawn point inside the pick cone, then take the one
     // closest to the cursor among those at (nearly) the front-most depth.
     const candidates: { cloud: LodCloud; index: number; depth: number; perp2: number }[] = [];
+    const tmp = new THREE.Vector3();
     for (const cloud of this.clouds.values()) {
       if (!cloud.visible) continue;
       for (const [index, object] of cloud.objects) {
@@ -331,7 +343,9 @@ export class Viewer {
           const depth = vx * direction.x + vy * direction.y + vz * direction.z;
           if (depth <= this.camera.near) continue;
           const perp2 = vx * vx + vy * vy + vz * vz - depth * depth;
-          if (perp2 <= slope2 * depth * depth) candidates.push({ cloud, index: i, depth, perp2 });
+          if (perp2 > slope2 * depth * depth) continue;
+          if (this.clip && !this.clip.containsPoint(tmp.set(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]))) continue;
+          candidates.push({ cloud, index: i, depth, perp2 });
         }
       }
     }
@@ -401,8 +415,46 @@ export class Viewer {
     return { x: ((v.x + 1) / 2) * w, y: ((1 - v.y) / 2) * h };
   }
 
-  /** Frame all visible clouds, keeping the current viewing direction. */
-  fit(): void {
+  /**
+   * Show only what lies inside `box` (render coordinates), or everything
+   * when `box` is null. Drawn with GPU clipping planes; octree nodes outside
+   * the box are skipped so the point budget goes to what remains.
+   */
+  setClipBox(box: THREE.Box3 | null): void {
+    this.clip = box ? box.clone() : null;
+    if (box) {
+      const normals = [
+        [1, 0, 0],
+        [-1, 0, 0],
+        [0, 1, 0],
+        [0, -1, 0],
+        [0, 0, 1],
+        [0, 0, -1],
+      ];
+      normals.forEach(([x, y, z], i) => {
+        const normal = new THREE.Vector3(x, y, z);
+        // A plane keeps the side its normal points to: n.p + c >= 0.
+        const corner = i % 2 === 0 ? box.min : box.max;
+        this.clipPlanes[i].setFromNormalAndCoplanarPoint(normal, corner);
+      });
+      this.clipHelper.box.copy(box);
+    }
+    this.clipHelper.visible = !!box;
+    const planes = box ? this.clipPlanes : null;
+    for (const cloud of this.clouds.values()) {
+      cloud.material.clippingPlanes = planes;
+      cloud.material.needsUpdate = true;
+    }
+    for (const mesh of this.meshes.values()) {
+      const material = mesh.material as THREE.Material;
+      material.clippingPlanes = planes;
+      material.needsUpdate = true;
+    }
+    this.requestRender(true);
+  }
+
+  /** Bounding box of all visible clouds and meshes (render coordinates). */
+  contentBounds(): THREE.Box3 {
     const box = new THREE.Box3();
     for (const cloud of this.clouds.values()) {
       if (cloud.visible && cloud.nodes[0]) box.union(tightBox(cloud));
@@ -410,6 +462,12 @@ export class Viewer {
     for (const mesh of this.meshes.values()) {
       if (mesh.visible && mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox);
     }
+    return box;
+  }
+
+  /** Frame all visible clouds, keeping the current viewing direction. */
+  fit(): void {
+    const box = this.clip ? this.clip.clone() : this.contentBounds();
     if (box.isEmpty()) return;
     const sphere = box.getBoundingSphere(new THREE.Sphere());
     const radius = Math.max(sphere.radius, 1e-3);

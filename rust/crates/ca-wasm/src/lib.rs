@@ -1,7 +1,7 @@
 //! WebAssembly bindings for the CloudAnalyzer Web viewer.
 
 use ca_core::icp::{IcpMetric, IcpParams, Rigid};
-use ca_core::octree::{NO_CHILD, Octree, OctreeParams};
+use ca_core::octree::{NO_CHILD, Octree, OctreeNode, OctreeParams, PendingSubtree};
 use ca_core::{DistanceStats, PointCloud, TriangleMesh};
 use wasm_bindgen::prelude::*;
 
@@ -17,6 +17,8 @@ const NODE_STRIDE: usize = 15;
 pub struct Cloud {
     inner: PointCloud,
     lod: Octree,
+    /// Subtrees still to be built during a parallel index build.
+    pending: Vec<PendingSubtree>,
 }
 
 #[wasm_bindgen]
@@ -30,7 +32,11 @@ impl Cloud {
             nodes: Vec::new(),
             grid: OctreeParams::default().grid,
         };
-        Ok(Cloud { inner, lod })
+        Ok(Cloud {
+            inner,
+            lod,
+            pending: Vec::new(),
+        })
     }
 
     /// Build the level-of-detail octree, reordering the points (a separate
@@ -55,7 +61,11 @@ impl Cloud {
             return Err(JsError::new("no points in the selection"));
         }
         let lod = build_lod(&mut inner)?;
-        Ok(Cloud { inner, lod })
+        Ok(Cloud {
+            inner,
+            lod,
+            pending: Vec::new(),
+        })
     }
 
     /// Apply a rigid transform (row-major 4x4) to every point and rebuild the
@@ -156,17 +166,91 @@ impl Cloud {
     /// original coordinates; subtract the shift used for `positions`.
     #[wasm_bindgen(js_name = lodNodes)]
     pub fn lod_nodes(&self) -> Vec<f64> {
-        let mut out = Vec::with_capacity(self.lod.nodes.len() * NODE_STRIDE);
-        for n in &self.lod.nodes {
-            out.extend([n.start as f64, n.count as f64]);
-            out.extend(n.min);
-            out.extend([n.size, n.level as f64]);
-            out.extend(
-                n.children
-                    .map(|c| if c == NO_CHILD { -1.0 } else { c as f64 }),
-            );
+        nodes_to_flat(&self.lod.nodes)
+    }
+
+    /// Start a parallel index build: build the octree levels above
+    /// `split_level` here and return the remaining subtrees, 7 numbers each
+    /// (`start, end, minX, minY, minZ, size, level`). Build each with
+    /// [`build_subtree`] on [`Cloud::subtree_positions`] /
+    /// [`Cloud::subtree_colors`], hand it back with [`Cloud::finish_subtree`],
+    /// then call [`Cloud::end_index`].
+    #[wasm_bindgen(js_name = startIndex)]
+    pub fn start_index(&mut self, split_level: u8) -> Result<Vec<f64>, JsError> {
+        let (lod, pending) =
+            Octree::build_partial(&mut self.inner, OctreeParams::default(), split_level)
+                .ok_or_else(|| JsError::new("cloud is empty or too large"))?;
+        self.lod = lod;
+        self.pending = pending;
+        Ok(self
+            .pending
+            .iter()
+            .flat_map(|p| {
+                [
+                    p.start as f64,
+                    p.end as f64,
+                    p.min[0],
+                    p.min[1],
+                    p.min[2],
+                    p.size,
+                    p.level as f64,
+                ]
+            })
+            .collect())
+    }
+
+    /// Interleaved `xyz` of pending subtree `k` (a copy).
+    #[wasm_bindgen(js_name = subtreePositions)]
+    pub fn subtree_positions(&self, k: usize) -> Vec<f64> {
+        let p = &self.pending[k];
+        self.inner.positions[p.start as usize..p.end as usize]
+            .as_flattened()
+            .to_vec()
+    }
+
+    /// Interleaved `rgb` of pending subtree `k`, if the cloud has colors.
+    #[wasm_bindgen(js_name = subtreeColors)]
+    pub fn subtree_colors(&self, k: usize) -> Option<Vec<u8>> {
+        let p = &self.pending[k];
+        self.inner
+            .colors
+            .as_ref()
+            .map(|c| c[p.start as usize..p.end as usize].as_flattened().to_vec())
+    }
+
+    /// Store a subtree built by [`build_subtree`]: its reordered points,
+    /// colors and node table (in the [`Cloud::lod_nodes`] layout).
+    #[wasm_bindgen(js_name = finishSubtree)]
+    pub fn finish_subtree(
+        &mut self,
+        k: usize,
+        positions: &[f64],
+        colors: Option<Vec<u8>>,
+        nodes: &[f64],
+    ) -> Result<(), JsError> {
+        let p = self.pending[k];
+        let range = p.start as usize..p.end as usize;
+        if positions.len() != 3 * range.len() {
+            return Err(JsError::new("subtree has the wrong number of points"));
         }
-        out
+        self.inner.positions[range.clone()].copy_from_slice(positions.as_chunks::<3>().0);
+        if let (Some(dst), Some(src)) = (self.inner.colors.as_mut(), colors) {
+            dst[range].copy_from_slice(src.as_chunks::<3>().0);
+        }
+        let subtree = Octree {
+            order: Vec::new(),
+            nodes: nodes_from_flat(nodes)?,
+            grid: self.lod.grid,
+        };
+        self.lod.graft(&p, subtree);
+        Ok(())
+    }
+
+    /// Finish a parallel index build started with [`Cloud::start_index`].
+    #[wasm_bindgen(js_name = endIndex)]
+    pub fn end_index(&mut self) {
+        self.pending.clear();
+        self.lod.order = Vec::new();
     }
 
     /// Subsampling lattice resolution per node edge; a node's point spacing is
@@ -175,6 +259,114 @@ impl Cloud {
     pub fn lod_grid(&self) -> u32 {
         self.lod.grid
     }
+}
+
+fn nodes_to_flat(nodes: &[OctreeNode]) -> Vec<f64> {
+    let mut out = Vec::with_capacity(nodes.len() * NODE_STRIDE);
+    for n in nodes {
+        out.extend([n.start as f64, n.count as f64]);
+        out.extend(n.min);
+        out.extend([n.size, n.level as f64]);
+        out.extend(
+            n.children
+                .map(|c| if c == NO_CHILD { -1.0 } else { c as f64 }),
+        );
+    }
+    out
+}
+
+fn nodes_from_flat(flat: &[f64]) -> Result<Vec<OctreeNode>, JsError> {
+    if !flat.len().is_multiple_of(NODE_STRIDE) {
+        return Err(JsError::new("node table has the wrong length"));
+    }
+    Ok(flat
+        .as_chunks::<NODE_STRIDE>()
+        .0
+        .iter()
+        .map(|n| OctreeNode {
+            start: n[0] as u32,
+            count: n[1] as u32,
+            min: [n[2], n[3], n[4]],
+            size: n[5],
+            level: n[6] as u8,
+            children: std::array::from_fn(|c| {
+                if n[7 + c] < 0.0 {
+                    NO_CHILD
+                } else {
+                    n[7 + c] as u32
+                }
+            }),
+        })
+        .collect())
+}
+
+/// A subtree built off the main worker: reordered points, colors and nodes.
+#[wasm_bindgen]
+pub struct Subtree {
+    cloud: PointCloud,
+    nodes: Vec<OctreeNode>,
+}
+
+#[wasm_bindgen]
+impl Subtree {
+    pub fn positions(&self) -> Vec<f64> {
+        self.cloud.positions.as_flattened().to_vec()
+    }
+
+    pub fn colors(&self) -> Option<Vec<u8>> {
+        self.cloud
+            .colors
+            .as_ref()
+            .map(|c| c.as_flattened().to_vec())
+    }
+
+    /// Node table in the [`Cloud::lod_nodes`] layout, ranges relative to the subtree.
+    pub fn nodes(&self) -> Vec<f64> {
+        nodes_to_flat(&self.nodes)
+    }
+}
+
+/// Build one pending subtree (see [`Cloud::start_index`]) on a pool worker.
+/// `job` is the subtree's 7-number description.
+#[wasm_bindgen(js_name = buildSubtree)]
+pub fn build_subtree(
+    positions: &[f64],
+    colors: Option<Vec<u8>>,
+    job: &[f64],
+) -> Result<Subtree, JsError> {
+    let job: &[f64; 7] = job
+        .try_into()
+        .map_err(|_| JsError::new("subtree job must have 7 numbers"))?;
+    let pending = PendingSubtree {
+        node: 0,
+        start: job[0] as u32,
+        end: job[1] as u32,
+        min: [job[2], job[3], job[4]],
+        size: job[5],
+        level: job[6] as u8,
+    };
+    let mut cloud = PointCloud {
+        positions: positions.as_chunks::<3>().0.to_vec(),
+        colors: colors.map(|c| c.as_chunks::<3>().0.to_vec()),
+    };
+    if cloud
+        .colors
+        .as_ref()
+        .is_some_and(|c| c.len() != cloud.positions.len())
+    {
+        return Err(JsError::new("colors do not match positions"));
+    }
+    let tree = Octree::build_subtree(
+        &mut cloud.positions,
+        cloud.colors.as_deref_mut(),
+        &pending,
+        OctreeParams::default(),
+    )
+    .ok_or_else(|| JsError::new("empty subtree"))?;
+    Ok(Subtree {
+        cloud,
+        nodes: tree.nodes,
+    })
 }
 
 /// Reorder `cloud` in place into octree order (colors follow) and return

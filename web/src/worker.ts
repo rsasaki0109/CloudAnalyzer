@@ -34,14 +34,14 @@ async function parallelCloudToCloud(
   const parts = Math.min(poolSize(), Math.floor(compared.length / MIN_PARALLEL_QUERIES));
   if (parts < 2) return null;
   const plan = planCloudToCloud(compared, reference, parts);
-  const slices: Slice[] = Array.from({ length: plan.length }, (_, k) => ({
+  const slices: Extract<Slice, { kind: "cloud" }>[] = Array.from({ length: plan.length }, (_, k) => ({
     kind: "cloud",
     reference: plan.takeReference(k),
     queries: plan.takeQueries(k),
   }));
   const indices = Array.from({ length: plan.length }, (_, k) => plan.takeQueryIndices(k));
   plan.free();
-  const results = await runSlices(slices);
+  const results = await runSlices(slices.length, (k) => slices[k]);
   const distances = new Float64Array(compared.length);
   results.forEach((part, k) => {
     const idx = indices[k];
@@ -65,17 +65,49 @@ async function parallelCloudToMesh(
   const vertices = mesh.rawVertices();
   const indices = mesh.indices();
   const per = Math.ceil(compared.length / parts);
-  const slices: Slice[] = Array.from({ length: parts }, (_, k) => ({
-    kind: "mesh",
+  const results = await runSlices(parts, (k) => ({
+    kind: "mesh" as const,
     vertices,
     indices,
     queries: positions.slice(k * per * 3, Math.min(compared.length, (k + 1) * per) * 3),
     signed,
   }));
-  const results = await runSlices(slices);
   const distances = new Float64Array(compared.length);
   results.forEach((part, k) => distances.set(part, k * per));
   return { distances, workers: parts };
+}
+
+/** Clouds at least this large build their octree on the worker pool. */
+const MIN_PARALLEL_INDEX = 1_000_000;
+/** The top levels built here; each node below becomes a pool job (up to 8^2). */
+const INDEX_SPLIT_LEVEL = 2;
+
+/**
+ * Build the octree: the top levels here, the subtrees below them on the
+ * worker pool (largest first, so the slowest job starts early).
+ */
+async function buildIndex(cloud: Cloud): Promise<number> {
+  if (cloud.length < MIN_PARALLEL_INDEX || poolSize() < 2) {
+    cloud.buildIndex();
+    return 1;
+  }
+  const jobs = cloud.startIndex(INDEX_SPLIT_LEVEL);
+  const count = jobs.length / 7;
+  const order = Array.from({ length: count }, (_, k) => k).sort(
+    (a, b) => jobs[b * 7 + 1] - jobs[b * 7] - (jobs[a * 7 + 1] - jobs[a * 7]),
+  );
+  const results = await runSlices(count, (i) => {
+    const k = order[i];
+    return {
+      kind: "octree" as const,
+      positions: cloud.subtreePositions(k),
+      colors: cloud.subtreeColors(k) ?? null,
+      job: jobs.slice(k * 7, k * 7 + 7),
+    };
+  });
+  results.forEach((subtree, i) => cloud.finishSubtree(order[i], subtree.positions, subtree.colors, subtree.nodes));
+  cloud.endIndex();
+  return Math.min(poolSize(), count);
 }
 
 /** Everything the UI needs to draw an item; buffers are listed for transfer. */
@@ -187,13 +219,13 @@ async function handle(
       const parse = performance.now() - t;
       progress(`indexing ${cloud.length.toLocaleString()} points`);
       t = performance.now();
-      cloud.buildIndex();
+      const workers = await buildIndex(cloud);
       const index = performance.now() - t;
       shift ??= Array.from(cloud.suggestedShift()) as Vec3;
       const id = nextId++;
       items.set(id, { kind: "cloud", cloud, name: req.name });
       progress("preparing for display");
-      return describe(id, { parse, index });
+      return describe(id, { parse, index, workers });
     }
     case "c2c": {
       const compared = getCloud(req.compared);

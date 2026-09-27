@@ -165,10 +165,15 @@ function findByName(name: string): Entry | undefined {
 
 async function loadFiles(files: Iterable<File>): Promise<void> {
   for (const file of files) {
-    setStatus(`Loading ${file.name}…`);
+    const mb = (file.size / 1e6).toFixed(file.size >= 1e7 ? 0 : 1);
+    setStatus(`Loading ${file.name} (${mb} MB): reading…`);
     const start = performance.now();
     try {
-      const cloud = await loadCloud(file.name, await file.arrayBuffer());
+      const bytes = await file.arrayBuffer();
+      const read = performance.now() - start;
+      const cloud = await loadCloud(file.name, bytes, (note) =>
+        setStatus(`Loading ${file.name} (${mb} MB): ${note}…`),
+      );
       const entry: Entry = {
         cloud,
         nodes: parseNodes(cloud.lodNodes, cloud.lodGrid, cloud.shift),
@@ -183,8 +188,11 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
       const [sx, sy, sz] = cloud.shift;
       $("shift").textContent =
         sx || sy || sz ? `Global shift: (${-sx}, ${-sy}, ${-sz})` : "";
+      const { parse, index, prepare } = cloud.timings;
+      const s = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`);
       setStatus(
-        `Loaded ${file.name}: ${cloud.count.toLocaleString()} points in ${Math.round(performance.now() - start)} ms`,
+        `Loaded ${file.name}: ${cloud.count.toLocaleString()} points in ${s(performance.now() - start)} ` +
+          `(read ${s(read)} · parse ${s(parse)} · index ${s(index)} · prepare ${s(prepare)})`,
       );
     } catch (err) {
       setStatus(`${file.name}: ${err instanceof Error ? err.message : err}`, true);

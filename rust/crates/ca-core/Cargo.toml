@@ -8,4 +8,10 @@ repository.workspace = true
 
 [dependencies]
 laz = { version = "0.13.0", default-features = false }
+rayon = { version = "1.12.0", optional = true }
 thiserror = "2.0.21"
+
+[features]
+# Multi-threaded variants of the heavy queries (native builds only; WASM
+# uses its own worker pool).
+parallel = ["dep:rayon"]

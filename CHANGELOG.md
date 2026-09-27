@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Optional Rust acceleration: `pip install "cloudanalyzer[fast]"` installs
+  `cloudanalyzer-core` (the web viewer's Rust core as a Python extension).
+  When present, nearest-neighbour distances (`ca.metrics.compute_nn_distance`,
+  used by `ca compare` and friends) run multi-threaded with results identical
+  to Open3D, and LAS/LAZ loading no longer needs laspy. Set
+  `CA_DISABLE_RUST_CORE=1` to force the previous implementations.
+
 ## [0.5.0] - 2026-09-27
 
 ### Added

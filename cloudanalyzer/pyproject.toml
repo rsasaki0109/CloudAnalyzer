@@ -62,6 +62,9 @@ dev = [
     "pytest",
     "twine>=6.0.0",
 ]
+fast = [
+    "cloudanalyzer-core>=0.1",
+]
 slam = [
     "kiss-icp>=1.2.0",
     "kiss-slam>=0.0.2",

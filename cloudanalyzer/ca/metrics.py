@@ -3,6 +3,8 @@
 import numpy as np
 import open3d as o3d
 
+from ca._rust import core
+
 
 def compute_nn_distance(
     source: o3d.geometry.PointCloud,
@@ -10,7 +12,9 @@ def compute_nn_distance(
 ) -> np.ndarray:
     """Compute nearest neighbor distances from source to target.
 
-    Uses Open3D's vectorized compute_point_cloud_distance for performance.
+    Uses the multi-threaded Rust core when ``cloudanalyzer_core`` is installed
+    (exact nearest neighbours, identical results), otherwise Open3D's
+    vectorized compute_point_cloud_distance.
 
     Args:
         source: Source point cloud.
@@ -19,6 +23,11 @@ def compute_nn_distance(
     Returns:
         Numpy array of nearest neighbor distances for each source point.
     """
+    rust = core()
+    if rust is not None and not target.is_empty():
+        return np.asarray(
+            rust.nearest_distances(np.asarray(source.points), np.asarray(target.points))
+        )
     distances = np.asarray(source.compute_point_cloud_distance(target))
     return distances
 

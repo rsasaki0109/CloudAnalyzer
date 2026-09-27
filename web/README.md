@@ -51,6 +51,14 @@ npm run dev    # add `-- --host` to open it from other devices on the LAN
 npm run build  # static site in dist/
 ```
 
+End-to-end tests drive the production build in headless Chromium
+(sample C2C, PLY/LAS/OBJ loading, classes, clipping, export):
+
+```sh
+npx playwright install chromium   # once
+npm run build && npm run test:e2e
+```
+
 The Rust core is tested natively:
 
 ```sh

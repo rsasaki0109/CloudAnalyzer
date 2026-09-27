@@ -100,3 +100,18 @@ def test_filters_return_indices():
     keep = cloudanalyzer_core.statistical_outliers(points, k=8, ratio=1.0)
     assert len(keep) == 1600 and keep.max() < 1600
     assert len(cloudanalyzer_core.voxel_subsample(points[:1600], 0.5)) == 64
+
+
+def test_volume_against_constant_and_mesh():
+    x, y = (a.ravel() for a in np.meshgrid(np.arange(60) * 0.1, np.arange(60) * 0.1))
+    mound = (x >= 0.95) & (x < 2.95) & (y >= 0.95) & (y < 2.95)
+    after = np.c_[x, y, np.where(mound, 1.0, 0.0)]
+    flat = cloudanalyzer_core.volume(0.0, after, cell=0.5)
+    assert flat["added"] == pytest.approx(4.0)
+    assert flat["removed"] == 0.0
+    assert flat["difference"].shape == (12, 12)
+    plane = (
+        np.array([[0, 0, 0], [6, 0, 0], [6, 6, 0], [0, 6, 0]], dtype=float),
+        np.array([[0, 1, 2], [0, 2, 3]], dtype=np.uint32),
+    )
+    assert cloudanalyzer_core.volume(plane, after, cell=0.5)["added"] == pytest.approx(4.0)

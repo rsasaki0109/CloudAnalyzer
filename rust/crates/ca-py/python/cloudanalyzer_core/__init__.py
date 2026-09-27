@@ -12,6 +12,7 @@ from ._core import (
     read,
     read_mesh,
     statistical_outliers,
+    volume,
     voxel_subsample,
 )
 
@@ -23,5 +24,6 @@ __all__ = [
     "read",
     "read_mesh",
     "statistical_outliers",
+    "volume",
     "voxel_subsample",
 ]

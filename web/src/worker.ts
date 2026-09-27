@@ -7,15 +7,27 @@ import init, {
   Cloud,
   cloudToCloud,
   cloudToMesh,
+  computeVolume,
   Mesh,
   StreamLoader,
   planCloudToCloud,
   registerIcp,
   summarizeDistances,
+  VolumeSurface,
 } from "./wasm/ca_wasm.js";
 import type { Slice } from "./c2c-worker";
 import { MIN_PARALLEL_QUERIES, poolSize, runSlices } from "./pool";
-import type { C2cOutput, IcpOutput, LoadedCloud, Request, Response, Vec3, WorkerMessage } from "./protocol";
+import type {
+  C2cOutput,
+  IcpOutput,
+  LoadedCloud,
+  Request,
+  Response,
+  Vec3,
+  VolumeOutput,
+  VolumeSide,
+  WorkerMessage,
+} from "./protocol";
 
 type Item =
   | { kind: "cloud"; cloud: Cloud; name: string; keepEvery?: number; filePoints?: number }
@@ -343,6 +355,47 @@ async function handle(
     case "transform": {
       getCloud(req.id).transform(new Float64Array(req.matrix));
       return describe(req.id);
+    }
+    case "volume": {
+      const start = performance.now();
+      const surface = (side: VolumeSide) => {
+        if ("z" in side) return VolumeSurface.constant(side.z);
+        const item = items.get(side.id);
+        if (!item) throw new Error("surface not found");
+        return item.kind === "mesh" ? VolumeSurface.fromMesh(item.mesh) : VolumeSurface.fromCloud(item.cloud);
+      };
+      const label = (side: VolumeSide) => ("z" in side ? `z${side.z}` : items.get(side.id)!.name.replace(/\.[^.]+$/, ""));
+      const before = surface(req.before);
+      const after = surface(req.after);
+      const out = computeVolume(before, after, req.cell, req.height, req.fillEmpty);
+      before.free();
+      after.free();
+      const value: VolumeOutput = {
+        added: out.added,
+        removed: out.removed,
+        addedArea: out.addedArea,
+        removedArea: out.removedArea,
+        matchedCells: out.matchedCells,
+        totalCells: out.totalCells,
+        cell: out.cell,
+        cells: null,
+        difference: null,
+        millis: 0,
+      };
+      const transfer: Transferable[] = [];
+      if (out.matchedCells > 0) {
+        const cells = out.takeCells();
+        const id = nextId++;
+        items.set(id, { kind: "cloud", cloud: cells, name: `volume_${label(req.before)}_${label(req.after)}` });
+        const described = describe(id);
+        value.cells = described.value;
+        value.difference = cells.attribute("height_difference") ?? null;
+        transfer.push(...described.transfer);
+        if (value.difference) transfer.push(value.difference.buffer);
+      }
+      out.free();
+      value.millis = performance.now() - start;
+      return { value, transfer };
     }
     case "filter": {
       const source = items.get(req.id);

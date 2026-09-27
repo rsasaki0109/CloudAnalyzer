@@ -11,6 +11,7 @@ pub mod io;
 pub mod kdtree;
 pub mod mesh;
 pub mod octree;
+pub mod volume;
 
 pub use distance::{C2cPart, DistanceStats, cloud_to_cloud, cloud_to_mesh, partition_c2c};
 pub use io::{Format, IoError, read, read_mesh};

@@ -6,9 +6,11 @@ mod pcd;
 mod ply;
 mod scalar;
 mod stl;
+mod stream;
 mod write;
 mod xyz;
 
+pub use stream::PointStream;
 pub use write::{ScalarField, write_csv, write_ply};
 
 use crate::PointCloud;
@@ -83,16 +85,49 @@ impl IoError {
 
 /// Read a point cloud from an in-memory file.
 pub fn read(name: &str, bytes: &[u8]) -> Result<PointCloud, IoError> {
-    let cloud = match Format::detect(name, bytes) {
+    read_thinned(name, bytes, 1)
+}
+
+/// Read a point cloud keeping every `keep_every`-th point. LAS/LAZ thin
+/// while decoding (so a large LAZ never holds all its points); other formats
+/// are thinned after reading.
+pub fn read_thinned(name: &str, bytes: &[u8], keep_every: usize) -> Result<PointCloud, IoError> {
+    let keep_every = keep_every.max(1);
+    let mut cloud = match Format::detect(name, bytes) {
         Format::Ply => ply::read(bytes)?,
         Format::Pcd => pcd::read(bytes)?,
-        Format::Las => las::read(bytes)?,
+        Format::Las => las::read(bytes, keep_every)?,
         Format::Xyz => xyz::read(bytes)?,
     };
+    if keep_every > 1 && Format::detect(name, bytes) != Format::Las {
+        let keep: Vec<usize> = (0..cloud.len()).step_by(keep_every).collect();
+        cloud = cloud.select(&keep);
+    }
     if cloud.is_empty() {
         return Err(IoError::Empty);
     }
     Ok(cloud)
+}
+
+/// Number of points a file header announces (LAS, PLY, PCD), to decide on
+/// thinning before reading. `None` when the header does not say.
+pub fn announced_points(name: &str, head: &[u8]) -> Option<u64> {
+    match Format::detect(name, head) {
+        Format::Las => las::LasHeader::parse(head).ok().map(|h| h.count as u64),
+        Format::Ply | Format::Pcd => {
+            let len = PointStream::header_len(name, head)?;
+            let text = std::str::from_utf8(&head[..len]).ok()?;
+            text.lines().find_map(|line| {
+                let mut t = line.split_whitespace();
+                match (t.next()?, t.next()?, t.next()) {
+                    ("element", "vertex", Some(n)) => n.parse().ok(),
+                    ("POINTS", n, None) => n.parse().ok(),
+                    _ => None,
+                }
+            })
+        }
+        Format::Xyz => None,
+    }
 }
 
 /// Read a triangle mesh (PLY with faces, OBJ, STL). Returns `Ok(None)` when

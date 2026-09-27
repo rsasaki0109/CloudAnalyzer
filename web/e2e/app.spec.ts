@@ -150,3 +150,18 @@ test("filters: SOR drops outliers, voxel subsampling keeps one point per voxel",
   await expect(status(page)).toContainText("kept 144 of 3,600 points");
   await expect(page.locator(".cloud-list li")).toHaveCount(3);
 });
+
+test("large files keep every n-th point above the max-points setting", async ({ page }) => {
+  // A tiny limit stands in for a multi-gigabyte file.
+  await page.evaluate(() => {
+    const select = document.getElementById("max-points") as HTMLSelectElement;
+    select.add(new Option("1k", "1000"));
+    select.value = "1000";
+  });
+  await open(page, [{ name: "big.ply", buffer: ply(grid(60)) }]);
+  await expect(status(page)).toContainText("Loaded big.ply: 900 of 3,600 points (1 in 4)");
+  const points = grid(40).map((xyz) => ({ xyz, intensity: 7, cls: 2 }));
+  await open(page, [{ name: "big.las", buffer: las(points) }]);
+  await expect(status(page)).toContainText("Loaded big.las: 800 of 1,600 points (1 in 2)");
+  await expect(page.locator(".cloud-list")).toContainText("800 points (1 in 2)");
+});

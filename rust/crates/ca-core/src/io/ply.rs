@@ -1,6 +1,7 @@
 //! PLY reader (ascii, binary_little_endian, binary_big_endian).
 
 use super::scalar::{Scalar, color_channel};
+use super::stream::RecordDecoder;
 use super::{IoError, split_header};
 use crate::mesh::TriangleMesh;
 use crate::{Attribute, AttributeValues, CLASSIFICATION, INTENSITY, PointCloud};
@@ -14,7 +15,7 @@ enum Encoding {
     BinaryBe,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum Property {
     Scalar {
         name: String,
@@ -27,7 +28,7 @@ enum Property {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Element {
     name: String,
     count: usize,
@@ -347,6 +348,20 @@ fn read_fixed_vertices(
     element: &Element,
     le: bool,
 ) -> Result<PointCloud, IoError> {
+    let mut cloud = vertex_layout(element)?.empty_cloud(element.count);
+    append_fixed_vertices(records, stride, element, le, &mut cloud)?;
+    Ok(cloud)
+}
+
+/// Decode fixed-size vertex records and append them to `cloud` (created by
+/// the element's `empty_cloud`).
+fn append_fixed_vertices(
+    records: &[u8],
+    stride: usize,
+    element: &Element,
+    le: bool,
+    cloud: &mut PointCloud,
+) -> Result<(), IoError> {
     let layout = vertex_layout(element)?;
     let mut offsets = Vec::with_capacity(element.properties.len());
     let mut offset = 0;
@@ -362,12 +377,11 @@ fn read_fixed_vertices(
     };
     let xyz = layout.xyz.map(field);
     let rgb = layout.rgb.map(|(idx, _)| idx.map(field));
-    let mut cloud = layout.empty_cloud(element.count);
     // The common little-endian float/double + uchar layouts get a
     // monomorphic loop; everything else goes through `Scalar::decode`.
     let plain = layout.intensity.is_none() && layout.classification.is_none();
-    if le && plain && read_common_layout(records, stride, xyz, rgb, &mut cloud) {
-        return Ok(cloud);
+    if le && plain && read_common_layout(records, stride, xyz, rgb, cloud) {
+        return Ok(());
     }
     // Stride 0 would mean a vertex with no properties, which vertex_layout rejects.
     let intensity = layout.intensity.map(field);
@@ -392,7 +406,66 @@ fn read_fixed_vertices(
             v.push(kind.decode(&record[at..], le).clamp(0.0, 255.0) as u8);
         }
     }
-    Ok(cloud)
+    Ok(())
+}
+
+/// Streaming decoder for a binary PLY whose first element is a fixed-size
+/// vertex element and which has no faces. `None` otherwise.
+#[allow(clippy::type_complexity)]
+pub(crate) fn stream(head: &[u8]) -> Result<Option<(Box<dyn RecordDecoder>, usize, u64)>, IoError> {
+    let (lines, body) = split_header(head, FORMAT, |l| l.trim() == "end_header")?;
+    let (encoding, elements) = parse_header(&lines)?;
+    let le = match encoding {
+        Encoding::Ascii => return Ok(None),
+        Encoding::BinaryLe => true,
+        Encoding::BinaryBe => false,
+    };
+    let Some(vertex) = elements.first().filter(|e| e.name == "vertex") else {
+        return Ok(None);
+    };
+    if face_list(&elements).is_some() {
+        return Ok(None); // a mesh
+    }
+    let Some(stride) = fixed_stride(vertex) else {
+        return Ok(None);
+    };
+    let cloud = vertex_layout(vertex)?.empty_cloud(0);
+    let decoder = PlyVertexDecoder {
+        element: vertex.clone(),
+        stride,
+        le,
+        cloud,
+    };
+    let data_offset = head.len() - body.len();
+    Ok(Some((Box::new(decoder), data_offset, vertex.count as u64)))
+}
+
+struct PlyVertexDecoder {
+    element: Element,
+    stride: usize,
+    le: bool,
+    cloud: PointCloud,
+}
+
+impl RecordDecoder for PlyVertexDecoder {
+    fn record_len(&self) -> usize {
+        self.stride
+    }
+
+    fn decode_block(&mut self, records: &[u8]) {
+        append_fixed_vertices(
+            records,
+            self.stride,
+            &self.element,
+            self.le,
+            &mut self.cloud,
+        )
+        .expect("layout validated when the stream was opened");
+    }
+
+    fn finish(self: Box<Self>) -> PointCloud {
+        self.cloud
+    }
 }
 
 /// Fast path for little-endian x/y/z that are all `float` or all `double`

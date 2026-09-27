@@ -24,6 +24,10 @@ export interface LoadedCloud {
   /** Octree node table, see `Cloud.lodNodes()`. */
   lodNodes: Float64Array;
   lodGrid: number;
+  /** 1 when every point was loaded; n when only every n-th point was kept. */
+  keepEvery: number;
+  /** Points in the file (before thinning). */
+  filePoints: number;
   /** Milliseconds spent in each loading stage inside the worker. */
   timings: { parse: number; index: number; prepare: number; workers?: number };
   /** [minX, minY, minZ, maxX, maxY, maxZ] in original coordinates. */
@@ -67,7 +71,13 @@ export interface IcpOutput {
 }
 
 export type Request =
-  | { kind: "load"; name: string; bytes: ArrayBuffer }
+  | {
+      kind: "load";
+      /** Read by the worker in slices, so large files are never held whole. */
+      file: File;
+      /** Thin to at most this many points (every n-th point is kept). */
+      maxPoints: number;
+    }
   | { kind: "c2c"; compared: number; reference: number; signed: boolean }
   | { kind: "remove"; id: number }
   | { kind: "point"; id: number; index: number }

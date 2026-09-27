@@ -30,6 +30,10 @@ Files never leave the browser.
   and statistical outlier removal (SOR).
 - Click a point to see its exact coordinates, color and C2C distance; press
   **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
+- Large files: LAS and binary PLY/PCD are streamed in 16 MB slices, so the
+  file is never held in memory whole; files above the "Max points per file"
+  setting (50M by default) keep every n-th point. LAZ is thinned while it is
+  decompressed.
 - Coordinates are kept in `f64`; georeferenced clouds get a shared global
   shift for rendering, like CloudCompare.
 - Cloud-to-mesh (C2M) distance against OBJ / STL / PLY meshes, optionally

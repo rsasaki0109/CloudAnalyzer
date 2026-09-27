@@ -3,10 +3,12 @@
 // forth.
 
 import init, {
+  announcedPoints,
   Cloud,
   cloudToCloud,
   cloudToMesh,
   Mesh,
+  StreamLoader,
   planCloudToCloud,
   registerIcp,
   summarizeDistances,
@@ -15,7 +17,9 @@ import type { Slice } from "./c2c-worker";
 import { MIN_PARALLEL_QUERIES, poolSize, runSlices } from "./pool";
 import type { C2cOutput, IcpOutput, LoadedCloud, Request, Response, Vec3, WorkerMessage } from "./protocol";
 
-type Item = { kind: "cloud"; cloud: Cloud; name: string } | { kind: "mesh"; mesh: Mesh; name: string };
+type Item =
+  | { kind: "cloud"; cloud: Cloud; name: string; keepEvery?: number; filePoints?: number }
+  | { kind: "mesh"; mesh: Mesh; name: string };
 
 const ready = init();
 const items = new Map<number, Item>();
@@ -75,6 +79,54 @@ async function parallelCloudToMesh(
   const distances = new Float64Array(compared.length);
   results.forEach((part, k) => distances.set(part, k * per));
   return { distances, workers: parts };
+}
+
+/** Bytes read per slice when streaming a file. */
+const STREAM_CHUNK = 16 << 20;
+
+type Loaded =
+  | { kind: "mesh"; mesh: Mesh }
+  | { kind: "cloud"; cloud: Cloud; keepEvery: number; filePoints: number };
+
+/**
+ * Read a file: stream fixed-record formats (LAS, binary PLY/PCD) slice by
+ * slice so they are never held whole; read anything else (LAZ, meshes, text)
+ * at once. Clouds larger than `maxPoints` keep every n-th point.
+ */
+async function readPoints(file: File, maxPoints: number, progress: (note: string) => void): Promise<Loaded> {
+  const name = file.name;
+  const thinning = (points: number) => (points > maxPoints ? Math.ceil(points / maxPoints) : 1);
+  progress("reading header");
+  let head = new Uint8Array(await file.slice(0, 1 << 16).arrayBuffer());
+  let headerLength = StreamLoader.headerLength(name, head);
+  if (headerLength === undefined && file.size > head.length) {
+    head = new Uint8Array(await file.slice(0, 1 << 22).arrayBuffer());
+    headerLength = StreamLoader.headerLength(name, head);
+  }
+  const loader = headerLength !== undefined ? StreamLoader.open(name, head.subarray(0, headerLength)) : undefined;
+  if (loader) {
+    const filePoints = loader.totalPoints;
+    const keepEvery = thinning(filePoints);
+    loader.setKeepEvery(keepEvery);
+    const start = loader.dataOffset;
+    for (let at = start; at < file.size; at += STREAM_CHUNK) {
+      const percent = Math.round(((at - start) / Math.max(1, file.size - start)) * 100);
+      progress(`reading ${percent}%${keepEvery > 1 ? ` (keeping 1 in ${keepEvery})` : ""}`);
+      loader.push(new Uint8Array(await file.slice(at, at + STREAM_CHUNK).arrayBuffer()));
+    }
+    const cloud = loader.finish();
+    loader.free();
+    return { kind: "cloud", cloud, keepEvery, filePoints };
+  }
+  progress("reading");
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  progress("parsing");
+  const mesh = Mesh.parse(name, bytes);
+  if (mesh) return { kind: "mesh", mesh };
+  const announced = announcedPoints(name, bytes);
+  const keepEvery = announced === undefined ? 1 : thinning(announced);
+  const cloud = Cloud.parseThinned(name, bytes, keepEvery);
+  return { kind: "cloud", cloud, keepEvery, filePoints: announced ?? cloud.length };
 }
 
 /** Clouds at least this large build their octree on the worker pool. */
@@ -138,6 +190,8 @@ function describe(
       shift: shift!,
       lodNodes: new Float64Array(),
       lodGrid: 0,
+      keepEvery: 1,
+      filePoints: item.mesh.vertexCount,
       timings: { ...timings, prepare: performance.now() - start },
     };
     return { value, transfer: [positions.buffer, indices.buffer] };
@@ -163,6 +217,8 @@ function describe(
     shift: shift!,
     lodNodes,
     lodGrid: cloud.lodGrid,
+    keepEvery: item.keepEvery ?? 1,
+    filePoints: item.filePoints ?? cloud.length,
     timings: { ...timings, prepare: performance.now() - start },
   };
   const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
@@ -212,26 +268,25 @@ async function handle(
   await ready;
   switch (req.kind) {
     case "load": {
-      progress("parsing");
+      const { file, maxPoints } = req;
+      const name = file.name;
       let t = performance.now();
-      const bytes = new Uint8Array(req.bytes);
-      const mesh = Mesh.parse(req.name, bytes);
-      if (mesh) {
-        const parse = performance.now() - t;
-        shift ??= Array.from(mesh.suggestedShift()) as Vec3;
+      const loaded = await readPoints(file, maxPoints, progress);
+      const parse = performance.now() - t;
+      if (loaded.kind === "mesh") {
+        shift ??= Array.from(loaded.mesh.suggestedShift()) as Vec3;
         const id = nextId++;
-        items.set(id, { kind: "mesh", mesh, name: req.name });
+        items.set(id, { kind: "mesh", mesh: loaded.mesh, name });
         return describe(id, { parse, index: 0 });
       }
-      const cloud = Cloud.parse(req.name, bytes);
-      const parse = performance.now() - t;
+      const { cloud } = loaded;
       progress(`indexing ${cloud.length.toLocaleString()} points`);
       t = performance.now();
       const workers = await buildIndex(cloud);
       const index = performance.now() - t;
       shift ??= Array.from(cloud.suggestedShift()) as Vec3;
       const id = nextId++;
-      items.set(id, { kind: "cloud", cloud, name: req.name });
+      items.set(id, { kind: "cloud", cloud, name, keepEvery: loaded.keepEvery, filePoints: loaded.filePoints });
       progress("preparing for display");
       return describe(id, { parse, index, workers });
     }
@@ -335,7 +390,11 @@ self.onmessage = async (event: MessageEvent<{ seq: number; req: Request }>) => {
     response = { ok: true, value: out.value };
     transfer = out.transfer;
   } catch (err) {
-    response = { ok: false, error: err instanceof Error ? err.message : String(err) };
+    let error = err instanceof Error ? err.message : String(err);
+    if (/memory|allocation|unreachable/i.test(error)) {
+      error = `out of memory (${error}); lower "Max points" and load the file again`;
+    }
+    response = { ok: false, error };
   }
   self.postMessage({ seq, response }, { transfer });
 };

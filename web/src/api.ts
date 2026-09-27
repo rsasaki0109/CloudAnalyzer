@@ -31,11 +31,11 @@ function call<T>(req: Request, transfer: Transferable[] = [], progress?: (note: 
 }
 
 export function loadCloud(
-  name: string,
-  bytes: ArrayBuffer,
+  file: File,
+  maxPoints: number,
   progress?: (note: string) => void,
 ): Promise<LoadedCloud> {
-  return call({ kind: "load", name, bytes }, [bytes], progress);
+  return call({ kind: "load", file, maxPoints }, [], progress);
 }
 
 /** C2C, or C2M when `reference` is a mesh (`signed` then applies). */

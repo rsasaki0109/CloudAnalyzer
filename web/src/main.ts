@@ -184,6 +184,24 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
   }
 }
 
+$<HTMLButtonElement>("load-sample").onclick = async () => {
+  const names = ["lidar_reference.pcd", "lidar_candidate.pcd"];
+  try {
+    setStatus("Downloading sample…");
+    const files = await Promise.all(
+      names.map(async (name) => {
+        const response = await fetch(`${import.meta.env.BASE_URL}samples/${name}`);
+        if (!response.ok) throw new Error(`${name}: HTTP ${response.status}`);
+        return new File([await response.blob()], name);
+      }),
+    );
+    await loadFiles(files);
+    if (entries.size >= 2) runButton.click();
+  } catch (err) {
+    setStatus(`Sample: ${err instanceof Error ? err.message : err}`, true);
+  }
+};
+
 $<HTMLButtonElement>("open").onclick = () => $<HTMLInputElement>("file-input").click();
 $<HTMLInputElement>("file-input").onchange = (e) => {
   const input = e.target as HTMLInputElement;
@@ -277,7 +295,8 @@ runButton.onclick = async () => {
     renderList();
     renderC2cResult();
     setStatus(
-      `C2C distance computed for ${result.stats.count.toLocaleString()} points in ${Math.round(result.millis)} ms`,
+      `C2C distance computed for ${result.stats.count.toLocaleString()} points in ${Math.round(result.millis)} ms` +
+        (result.workers > 1 ? ` on ${result.workers} workers` : ""),
     );
   } catch (err) {
     setStatus(`C2C failed: ${err instanceof Error ? err.message : err}`, true);

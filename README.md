@@ -18,6 +18,7 @@ CloudAnalyzer turns SLAM, LiDAR, point-cloud, perception, and 3DGS outputs into
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="https://rsasaki0109.github.io/CloudAnalyzer/">Live demos</a> ·
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/">Web viewer (beta)</a> ·
   <a href="docs/commands/">Docs</a>
 </p>
 
@@ -90,6 +91,7 @@ and is explained in the [SLAM tutorial](docs/tutorial-slam-benchmark.md).
 ## Live demos
 
 - [Demo hub](https://rsasaki0109.github.io/CloudAnalyzer/)
+- [Web viewer (beta)](https://rsasaki0109.github.io/CloudAnalyzer/app/): Rust/WASM point cloud viewer with cloud-to-cloud distance, in your browser ([source](web/))
 - [Point-cloud comparison](https://rsasaki0109.github.io/CloudAnalyzer/demo/compare/)
 - [SLAM leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/)
 - [3DGS evaluation](https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/)

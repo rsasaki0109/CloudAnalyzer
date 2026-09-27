@@ -1,8 +1,7 @@
 //! Cloud-to-cloud (C2C) nearest-neighbour distances.
 
-use kiddo::{ImmutableKdTree, SquaredEuclidean};
-
 use crate::PointCloud;
+use crate::kdtree::KdTree;
 
 /// Summary statistics over a set of distances.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -59,19 +58,182 @@ pub fn cloud_to_cloud(compared: &PointCloud, reference: &PointCloud) -> Option<V
     if reference.is_empty() {
         return None;
     }
-    let tree = ImmutableKdTree::<f64, 3>::new_from_slice(&reference.positions).ok()?;
+    let tree = KdTree::new(&reference.positions)?;
     let mut distances = vec![0.0; compared.len()];
-    // Querying in spatial order keeps the tree's hot path in cache; on
-    // unordered inputs this is several times faster than file order.
+    // Querying in spatial order keeps the tree's hot path in cache, and the
+    // previous hit is an excellent starting guess for the next query.
+    let mut guess = None;
     for i in morton_order(&compared.positions) {
-        distances[i] = tree
-            .query(&compared.positions[i])
-            .nearest_one::<SquaredEuclidean<f64>>()
-            .execute()
-            .distance
-            .sqrt();
+        let hit = tree.nearest(&compared.positions[i], guess);
+        distances[i] = hit.distance_sq.sqrt();
+        guess = Some(hit);
     }
     Some(distances)
+}
+
+/// One independent slice of a C2C job: `cloud_to_cloud` on these compared
+/// points against these reference points gives exactly the same distances as
+/// running it on the full clouds.
+#[derive(Debug, Clone, PartialEq)]
+pub struct C2cPart {
+    /// Indices into the compared cloud.
+    pub queries: Vec<u32>,
+    /// Indices into the reference cloud that can be nearest to any query.
+    pub reference: Vec<u32>,
+}
+
+/// Split a C2C job into up to `parts` spatially compact pieces for parallel
+/// workers, so that each worker only builds a tree over nearby reference
+/// points.
+///
+/// The reference subset for a group of queries is found without the full
+/// tree: for a block of queries with bounding box `B` (center `c`,
+/// half-diagonal `h`) and any reference point `s`, every query in `B` has its
+/// nearest neighbour within `h + |c - s|`. Using the nearest point of a
+/// reference subsample as `s` gives a tight, always-valid margin.
+pub fn partition_c2c(
+    compared: &PointCloud,
+    reference: &PointCloud,
+    parts: usize,
+) -> Option<Vec<C2cPart>> {
+    const SAMPLE: usize = 1 << 16;
+    const PER_CELL: usize = 16;
+    if reference.is_empty() || reference.len() > u32::MAX as usize {
+        return None;
+    }
+    let stride = reference.len().div_ceil(SAMPLE);
+    let sample: Vec<[f64; 3]> = reference
+        .positions
+        .iter()
+        .step_by(stride)
+        .copied()
+        .collect();
+    let sample_tree = KdTree::new(&sample)?;
+
+    // Work on (point, index) pairs so the median splits stream through
+    // contiguous memory instead of chasing indices.
+    let mut items: Vec<([f64; 3], u32)> = compared
+        .positions
+        .iter()
+        .zip(0..)
+        .map(|(&p, i)| (p, i))
+        .collect();
+    let mut groups = Vec::new();
+    split_ranges(&mut items, 0, parts.max(1), &mut groups);
+
+    let mut result: Vec<C2cPart> = Vec::with_capacity(groups.len());
+    let mut regions = Vec::with_capacity(groups.len());
+    for group in groups {
+        let slice = &items[group];
+        let region = query_region(slice, &sample_tree, PER_CELL);
+        regions.push(region);
+        result.push(C2cPart {
+            queries: slice.iter().map(|&(_, i)| i).collect(),
+            reference: Vec::new(),
+        });
+    }
+    for (i, p) in reference.positions.iter().enumerate() {
+        for (part, (lo, hi)) in result.iter_mut().zip(&regions) {
+            if (0..3).all(|a| p[a] >= lo[a] && p[a] <= hi[a]) {
+                part.reference.push(i as u32);
+            }
+        }
+    }
+    Some(result)
+}
+
+/// Bounding box that contains the nearest reference point of every query in
+/// `items`. Queries are binned into a uniform grid of roughly `per_cell`
+/// points per cell; each occupied cell contributes its box expanded by
+/// `half diagonal + distance(cell center, nearest sample point)`.
+fn query_region(
+    items: &[([f64; 3], u32)],
+    sample_tree: &KdTree,
+    per_cell: usize,
+) -> ([f64; 3], [f64; 3]) {
+    let (lo, hi) = bounds(items.iter().map(|(p, _)| p));
+    let extent: [f64; 3] = std::array::from_fn(|a| hi[a] - lo[a]);
+    // Cell edge: whichever of the 1D/2D/3D density estimates is coarsest, so
+    // lines, surfaces and volumes all get about `per_cell` points per cell.
+    let cells = (items.len() / per_cell).max(1) as f64;
+    let mut sorted = extent;
+    sorted.sort_unstable_by(|a, b| b.total_cmp(a));
+    let edge = (sorted[0] / cells)
+        .max((sorted[0] * sorted[1] / cells).sqrt())
+        .max((sorted[0] * sorted[1] * sorted[2] / cells).cbrt());
+    let edge = if edge > 0.0 { edge } else { 1.0 };
+    let dims: [usize; 3] = std::array::from_fn(|a| (extent[a] / edge) as usize + 1);
+    let cell_of = |p: &[f64; 3]| -> usize {
+        let c: [usize; 3] =
+            std::array::from_fn(|a| (((p[a] - lo[a]) / edge) as usize).min(dims[a] - 1));
+        (c[2] * dims[1] + c[1]) * dims[0] + c[0]
+    };
+    let mut occupied = vec![false; dims[0] * dims[1] * dims[2]];
+    for (p, _) in items {
+        occupied[cell_of(p)] = true;
+    }
+
+    // Absorb rounding in the cell arithmetic, even for ECEF-sized coordinates.
+    let magnitude = lo.iter().chain(&hi).fold(0.0f64, |m, v| m.max(v.abs()));
+    let slack = magnitude * 1e-12 + 1e-9;
+    let half_diagonal = 0.5 * edge * 3f64.sqrt();
+    let mut region = ([f64::INFINITY; 3], [f64::NEG_INFINITY; 3]);
+    let mut guess = None;
+    for index in (0..occupied.len()).filter(|&i| occupied[i]) {
+        let cell = [
+            index % dims[0],
+            index / dims[0] % dims[1],
+            index / (dims[0] * dims[1]),
+        ];
+        let cell_lo: [f64; 3] = std::array::from_fn(|a| lo[a] + cell[a] as f64 * edge);
+        let center: [f64; 3] = std::array::from_fn(|a| cell_lo[a] + 0.5 * edge);
+        let hit = sample_tree.nearest(&center, guess);
+        guess = Some(hit);
+        let margin = half_diagonal + hit.distance_sq.sqrt() + slack;
+        for (a, &l) in cell_lo.iter().enumerate() {
+            region.0[a] = region.0[a].min(l - margin);
+            region.1[a] = region.1[a].max(l + edge + margin);
+        }
+    }
+    region
+}
+
+/// Recursively reorder `items` by median splits along the widest axis and
+/// record `parts` near-equal, spatially compact ranges (offset by `offset`).
+fn split_ranges(
+    items: &mut [([f64; 3], u32)],
+    offset: usize,
+    parts: usize,
+    out: &mut Vec<std::ops::Range<usize>>,
+) {
+    if parts <= 1 || items.len() < 2 {
+        if !items.is_empty() {
+            out.push(offset..offset + items.len());
+        }
+        return;
+    }
+    let (lo, hi) = bounds(items.iter().map(|(p, _)| p));
+    let axis = (0..3)
+        .max_by(|&a, &b| (hi[a] - lo[a]).total_cmp(&(hi[b] - lo[b])))
+        .unwrap();
+    let left_parts = parts / 2;
+    let mid = items.len() * left_parts / parts;
+    items.select_nth_unstable_by(mid, |a, b| a.0[axis].total_cmp(&b.0[axis]));
+    let (left, right) = items.split_at_mut(mid);
+    split_ranges(left, offset, left_parts, out);
+    split_ranges(right, offset + mid, parts - left_parts, out);
+}
+
+fn bounds<'a>(points: impl Iterator<Item = &'a [f64; 3]>) -> ([f64; 3], [f64; 3]) {
+    let mut lo = [f64::INFINITY; 3];
+    let mut hi = [f64::NEG_INFINITY; 3];
+    for p in points {
+        for a in 0..3 {
+            lo[a] = lo[a].min(p[a]);
+            hi[a] = hi[a].max(p[a]);
+        }
+    }
+    (lo, hi)
 }
 
 /// Indices of `points` sorted along a Z-order (Morton) curve.
@@ -157,6 +319,77 @@ mod tests {
         let mut order = morton_order(&points);
         order.sort_unstable();
         assert_eq!(order, (0..100).collect::<Vec<_>>());
+    }
+
+    fn pseudo_random(n: usize, seed: u64, offset: [f64; 3]) -> PointCloud {
+        let mut s = seed;
+        let mut next = move || {
+            s ^= s << 13;
+            s ^= s >> 7;
+            s ^= s << 17;
+            (s >> 11) as f64 / (1u64 << 53) as f64
+        };
+        PointCloud {
+            positions: (0..n)
+                .map(|_| {
+                    let (x, y) = (next() * 50.0, next() * 20.0);
+                    [x + offset[0], y + offset[1], (x / 5.0).sin() + offset[2]]
+                })
+                .collect(),
+            colors: None,
+        }
+    }
+
+    /// Run every part independently and scatter the results back.
+    fn partitioned(compared: &PointCloud, reference: &PointCloud, parts: usize) -> Vec<f64> {
+        let mut out = vec![f64::NAN; compared.len()];
+        for part in partition_c2c(compared, reference, parts).unwrap() {
+            let pick = |cloud: &PointCloud, idx: &[u32]| PointCloud {
+                positions: idx.iter().map(|&i| cloud.positions[i as usize]).collect(),
+                colors: None,
+            };
+            let d = cloud_to_cloud(
+                &pick(compared, &part.queries),
+                &pick(reference, &part.reference),
+            )
+            .unwrap();
+            for (&i, d) in part.queries.iter().zip(d) {
+                assert!(out[i as usize].is_nan(), "query {i} in two parts");
+                out[i as usize] = d;
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn partitioned_c2c_is_exact() {
+        let reference = pseudo_random(20_000, 1, [0.0; 3]);
+        let compared = pseudo_random(15_000, 2, [0.0, 0.0, 0.05]);
+        let full = cloud_to_cloud(&compared, &reference).unwrap();
+        for parts in [1, 3, 8] {
+            assert_eq!(
+                partitioned(&compared, &reference, parts),
+                full,
+                "parts={parts}"
+            );
+        }
+    }
+
+    #[test]
+    fn partitioned_c2c_is_exact_for_distant_clouds() {
+        let reference = pseudo_random(5_000, 3, [0.0; 3]);
+        let compared = pseudo_random(4_000, 4, [300.0, -40.0, 10.0]);
+        let full = cloud_to_cloud(&compared, &reference).unwrap();
+        assert_eq!(partitioned(&compared, &reference, 6), full);
+    }
+
+    #[test]
+    fn partitions_keep_reference_subsets_small() {
+        let reference = pseudo_random(40_000, 5, [0.0; 3]);
+        let compared = pseudo_random(40_000, 6, [0.0; 3]);
+        let parts = partition_c2c(&compared, &reference, 8).unwrap();
+        let total: usize = parts.iter().map(|p| p.reference.len()).sum();
+        assert!(total * 2 < 3 * reference.len(), "reference copies: {total}");
     }
 
     #[test]

@@ -1,7 +1,8 @@
 // Runs the Rust/WASM core off the UI thread. All clouds live here so that
 // analyses can use full f64 coordinates without copying them back and forth.
 
-import init, { Cloud, cloudToCloud } from "./wasm/ca_wasm.js";
+import init, { Cloud, cloudToCloud, planCloudToCloud, summarizeDistances } from "./wasm/ca_wasm.js";
+import { MIN_PARALLEL_QUERIES, poolSize, runSlices } from "./pool";
 import type { C2cOutput, LoadedCloud, Request, Response, Vec3 } from "./protocol";
 
 const ready = init();
@@ -9,6 +10,32 @@ const clouds = new Map<number, Cloud>();
 let nextId = 1;
 // Like CloudCompare's global shift: chosen from the first cloud, shared by all.
 let shift: Vec3 | null = null;
+
+/**
+ * Split the job into spatially compact parts and run them on the worker pool.
+ * Returns null when the job is too small for the split to pay off.
+ */
+async function parallelCloudToCloud(
+  compared: Cloud,
+  reference: Cloud,
+): Promise<{ distances: Float64Array; workers: number } | null> {
+  const parts = Math.min(poolSize(), Math.floor(compared.length / MIN_PARALLEL_QUERIES));
+  if (parts < 2) return null;
+  const plan = planCloudToCloud(compared, reference, parts);
+  const slices = Array.from({ length: plan.length }, (_, k) => ({
+    reference: plan.takeReference(k),
+    queries: plan.takeQueries(k),
+  }));
+  const indices = Array.from({ length: plan.length }, (_, k) => plan.takeQueryIndices(k));
+  plan.free();
+  const results = await runSlices(slices);
+  const distances = new Float64Array(compared.length);
+  results.forEach((part, k) => {
+    const idx = indices[k];
+    for (let i = 0; i < idx.length; i++) distances[idx[i]] = part[i];
+  });
+  return { distances, workers: results.length };
+}
 
 async function handle(req: Request): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
@@ -38,7 +65,10 @@ async function handle(req: Request): Promise<{ value: unknown; transfer: Transfe
       const reference = clouds.get(req.reference);
       if (!compared || !reference) throw new Error("cloud not found");
       const start = performance.now();
-      const result = cloudToCloud(compared, reference);
+      const parallel = await parallelCloudToCloud(compared, reference);
+      const result = parallel
+        ? summarizeDistances(parallel.distances)
+        : cloudToCloud(compared, reference);
       const distances = result.distances();
       const value: C2cOutput = {
         distances,
@@ -52,6 +82,7 @@ async function handle(req: Request): Promise<{ value: unknown; transfer: Transfe
           median: result.median,
         },
         millis: performance.now() - start,
+        workers: parallel?.workers ?? 1,
       };
       result.free();
       return { value, transfer: [distances.buffer] };

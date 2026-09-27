@@ -160,14 +160,16 @@ fn grid_for(surfaces: &[Surface], cell: f64) -> Option<Grid> {
     if !(lo[0].is_finite() && lo[1].is_finite()) {
         return None;
     }
-    let count = |a: usize| (((hi[a] - lo[a]) / cell).floor() as usize + 1).max(1);
+    // As CloudCompare: the lowest corner of the data is the centre of the
+    // first cell, so a point goes to the cell whose centre is nearest.
+    let count = |a: usize| ((hi[a] - lo[a]) / cell + 0.5).floor() as usize + 1;
     let (nx, ny) = (count(0), count(1));
     // Refuse absurd grids rather than exhausting memory.
     if nx.checked_mul(ny)? > 200_000_000 {
         return None;
     }
     Some(Grid {
-        min: lo,
+        min: [lo[0] - 0.5 * cell, lo[1] - 0.5 * cell],
         cell,
         nx,
         ny,
@@ -329,7 +331,9 @@ mod tests {
     use super::*;
 
     /// Points on a regular grid with spacing `step` over `[0, size)^2`,
-    /// lifted by `height(x, y)`.
+    /// lifted by `height(x, y)`. With `step` equal to the cell size there is
+    /// one point at the centre of each cell (as CloudCompare, the grid puts
+    /// the lowest point at a cell centre), so volumes come out exact.
     fn surface(size: f64, step: f64, height: impl Fn(f64, f64) -> f64) -> Vec<[f64; 3]> {
         let n = (size / step).round() as usize;
         let mut out = Vec::new();
@@ -353,7 +357,7 @@ mod tests {
     #[test]
     fn mound_over_a_flat_constant() {
         // A 10 x 10 m block 2 m high on a 40 x 40 m site: 200 m3 of fill.
-        let after = surface(40.0, 0.25, |x, y| {
+        let after = surface(40.0, 1.0, |x, y| {
             if (10.0..20.0).contains(&x) && (10.0..20.0).contains(&y) {
                 2.0
             } else {
@@ -369,8 +373,8 @@ mod tests {
 
     #[test]
     fn pit_and_mound_between_two_clouds() {
-        let before = surface(30.0, 0.5, |_, _| 5.0);
-        let after = surface(30.0, 0.5, |x, _| {
+        let before = surface(30.0, 1.0, |_, _| 5.0);
+        let after = surface(30.0, 1.0, |x, _| {
             if x < 10.0 {
                 4.0
             } else if x >= 20.0 {
@@ -396,17 +400,20 @@ mod tests {
 
     #[test]
     fn mesh_surface_equals_the_plane_it_describes() {
-        // Tilted plane z = 0.1 x as a two-triangle mesh vs the same plane sampled by points.
+        // Tilted plane z = 0.1 x as a two-triangle mesh vs the same plane
+        // sampled by points. The mesh reaches half a cell past the points so
+        // the points sit at cell centres.
+        let (lo, hi) = (-0.25, 20.25);
         let mesh = TriangleMesh {
             vertices: vec![
-                [0.0, 0.0, 0.0],
-                [20.0, 0.0, 2.0],
-                [20.0, 20.0, 2.0],
-                [0.0, 20.0, 0.0],
+                [lo, lo, 0.1 * lo],
+                [hi, lo, 0.1 * hi],
+                [hi, hi, 0.1 * hi],
+                [lo, hi, 0.1 * lo],
             ],
             triangles: vec![[0, 1, 2], [0, 2, 3]],
         };
-        let points = surface(20.0, 0.1, |x, _| 0.1 * x + 1.0);
+        let points = surface(20.0, 0.5, |x, _| 0.1 * x + 1.0);
         let r = volume(Surface::Mesh(&mesh), Surface::Points(&points), params(0.5)).unwrap();
         // 1 m above the plane everywhere: 20 x 20 m -> 400 m3.
         assert!((r.added - 400.0).abs() < 1e-6, "{}", r.added);
@@ -416,7 +423,7 @@ mod tests {
     #[test]
     fn empty_cells_are_skipped_or_filled() {
         // A 10 x 10 site with a 4 x 4 hole in the after-survey.
-        let after: Vec<[f64; 3]> = surface(10.0, 0.25, |_, _| 1.0)
+        let after: Vec<[f64; 3]> = surface(10.0, 1.0, |_, _| 1.0)
             .into_iter()
             .filter(|p| !((3.0..7.0).contains(&p[0]) && (3.0..7.0).contains(&p[1])))
             .collect();
@@ -437,7 +444,8 @@ mod tests {
 
     #[test]
     fn min_and_max_cell_heights() {
-        let pts = [[0.2, 0.2, 1.0], [0.7, 0.7, 3.0]];
+        // Both within half a cell of the first point, i.e. in one cell.
+        let pts = [[0.2, 0.2, 1.0], [0.6, 0.6, 3.0]];
         let run = |height| {
             volume(
                 Surface::Constant(0.0),

@@ -239,12 +239,17 @@ def main() -> None:
 
     theirs_added, theirs_removed = number("Added volume"), number("Removed volume")
     ours = cc.volume(ref, cmp, cell=step)
+    # Cell edges lie half a step from the grid origin (the data's lowest corner).
+    low = np.minimum(ref.min(0), cmp.min(0))[:2]
+    offset = np.mod(np.r_[ref, cmp][:, :2] - low + step / 2, step)
+    edge_points = int((np.minimum(offset, step - offset) < 1e-6).any(axis=1).sum())
     rows.append((
         "Cut / fill volume",
         f"{step:g} ft grid, mean height per cell",
         f"fill {ours['added']:,.0f} vs {theirs_added:,.0f} ft³ ({ours['added'] / theirs_added - 1:+.1%}), "
         f"cut {ours['removed']:,.0f} vs {theirs_removed:,.0f} ft³ ({ours['removed'] / theirs_removed - 1:+.1%})",
-        "Cells are placed differently (CloudCompare centres them on the grid origin).",
+        f"Same grid as CloudCompare; {edge_points:,} points of this tile lie exactly on cell edges, and "
+        "float32 (CloudCompare) vs float64 (ours) puts some of them in the other cell.",
     ))
 
     changelog = Path(exe).with_name("CHANGELOG.md")
@@ -268,6 +273,12 @@ def main() -> None:
         "| Analysis | Settings | Result (ours vs CloudCompare) | Note |",
         "|---|---|---|---|",
         *[f"| {a} | {b} | {c} | {d} |" for a, b, c, d in rows],
+        "",
+        "CloudCompare's ICP samples points at random, so its error varies from run to run.",
+        "",
+        "The same comparisons also run in CI, on two synthetic surveys whose CloudCompare results are "
+        "recorded in [`rust/crates/ca-core/tests/cloudcompare/`](../rust/crates/ca-core/tests/cloudcompare/) "
+        "(SOR and CSF identical; C2C, M3C2 and volume within float32).",
         "",
     ]
     args.out.write_text("\n".join(lines), encoding="utf-8")

@@ -22,6 +22,15 @@
       <label class="inline">Point size
         <input id="point-size" type="range" min="1" max="10" step="1" value="2" />
       </label>
+      <label class="inline" title="Maximum number of points drawn at once">Point budget
+        <select id="point-budget">
+          <option value="1000000">1M</option>
+          <option value="3000000" selected>3M</option>
+          <option value="5000000">5M</option>
+          <option value="10000000">10M</option>
+          <option value="20000000">20M</option>
+        </select>
+      </label>
     </header>
 
     <aside class="sidebar">
@@ -64,7 +73,10 @@
       </div>
     </main>
 
-    <footer class="statusbar"><span id="status">Ready</span><span id="shift"></span></footer>
+    <footer class="statusbar">
+      <span id="status">Ready</span>
+      <span class="status-right"><span id="drawn"></span><span id="shift"></span></span>
+    </footer>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

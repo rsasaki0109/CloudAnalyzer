@@ -1,5 +1,6 @@
 import { cloudToCloud, loadCloud, removeCloud } from "./api";
 import { RAMPS, colorize, gradientCss, lut, type RampName } from "./colormap";
+import { type LodNode, parseNodes } from "./lod";
 import type { C2cOutput, LoadedCloud } from "./protocol";
 import { Viewer } from "./viewer";
 
@@ -7,6 +8,7 @@ type ColorMode = "rgb" | "solid" | "c2c";
 
 interface Entry {
   cloud: LoadedCloud;
+  nodes: LodNode[];
   solid: [number, number, number];
   mode: ColorMode;
   visible: boolean;
@@ -164,12 +166,13 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
       const cloud = await loadCloud(file.name, await file.arrayBuffer());
       const entry: Entry = {
         cloud,
+        nodes: parseNodes(cloud.lodNodes, cloud.lodGrid, cloud.shift),
         solid: SOLID_COLORS[entries.size % SOLID_COLORS.length],
         mode: cloud.colors ? "rgb" : "solid",
         visible: true,
       };
       entries.set(cloud.id, entry);
-      viewer.add(cloud.id, cloud.positions, colorsFor(entry));
+      viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
       if (entries.size === 1) viewer.fit();
       const [sx, sy, sz] = cloud.shift;
       $("shift").textContent =
@@ -245,6 +248,16 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("[data-view]")
 }
 $<HTMLInputElement>("point-size").oninput = (e) =>
   viewer.setPointSize(Number((e.target as HTMLInputElement).value));
+$<HTMLSelectElement>("point-budget").onchange = (e) =>
+  viewer.setPointBudget(Number((e.target as HTMLSelectElement).value));
+
+function compact(n: number): string {
+  return n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n);
+}
+viewer.onDrawn = (points) => {
+  const total = [...entries.values()].reduce((sum, e) => sum + (e.visible ? e.cloud.count : 0), 0);
+  $("drawn").textContent = total ? `Drawing ${compact(points)} of ${compact(total)} points` : "";
+};
 window.addEventListener("keydown", (e) => {
   if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
   if (e.key === "f" || e.key === "F") viewer.fit();

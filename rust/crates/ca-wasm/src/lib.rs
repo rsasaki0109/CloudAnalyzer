@@ -1,21 +1,36 @@
 //! WebAssembly bindings for the CloudAnalyzer Web viewer.
 
+use ca_core::octree::{NO_CHILD, Octree, OctreeParams};
 use ca_core::{DistanceStats, PointCloud};
 use wasm_bindgen::prelude::*;
 
+/// Numbers per node in [`Cloud::lod_nodes`].
+const NODE_STRIDE: usize = 15;
+
 /// A loaded point cloud. Coordinates stay in `f64` on the Rust side.
+///
+/// Points are reordered at load time into the order of a level-of-detail
+/// octree, where each node's points are contiguous. Everything this type
+/// returns per point (positions, colors, C2C distances) uses that order.
 #[wasm_bindgen]
 pub struct Cloud {
     inner: PointCloud,
+    lod: Octree,
 }
 
 #[wasm_bindgen]
 impl Cloud {
     /// Parse a file; the format is detected from `name` and the leading bytes.
     pub fn parse(name: &str, bytes: &[u8]) -> Result<Cloud, JsError> {
-        Ok(Cloud {
-            inner: ca_core::read(name, bytes)?,
-        })
+        let mut inner = ca_core::read(name, bytes)?;
+        let mut lod = Octree::build_in_place(&mut inner.positions, OctreeParams::default())
+            .ok_or_else(|| JsError::new("cloud is empty or too large"))?;
+        if let Some(colors) = inner.colors.as_mut() {
+            *colors = lod.order.iter().map(|&i| colors[i as usize]).collect();
+        }
+        // File order is not needed by the viewer; drop the permutation.
+        lod.order = Vec::new();
+        Ok(Cloud { inner, lod })
     }
 
     #[wasm_bindgen(getter)]
@@ -46,7 +61,7 @@ impl Cloud {
             .inner
             .positions
             .iter()
-            .flat_map(|p| (0..3).map(move |i| (p[i] - shift[i]) as f32))
+            .flat_map(|p| (0..3).map(move |a| (p[a] - shift[a]) as f32))
             .collect())
     }
 
@@ -56,6 +71,31 @@ impl Cloud {
             .colors
             .as_ref()
             .map(|c| c.iter().flatten().copied().collect())
+    }
+
+    /// Octree nodes, 15 numbers each: `start, count, minX, minY, minZ, size,
+    /// level, child0..child7` (children are node indices or -1). `min` is in
+    /// original coordinates; subtract the shift used for `positions`.
+    #[wasm_bindgen(js_name = lodNodes)]
+    pub fn lod_nodes(&self) -> Vec<f64> {
+        let mut out = Vec::with_capacity(self.lod.nodes.len() * NODE_STRIDE);
+        for n in &self.lod.nodes {
+            out.extend([n.start as f64, n.count as f64]);
+            out.extend(n.min);
+            out.extend([n.size, n.level as f64]);
+            out.extend(
+                n.children
+                    .map(|c| if c == NO_CHILD { -1.0 } else { c as f64 }),
+            );
+        }
+        out
+    }
+
+    /// Subsampling lattice resolution per node edge; a node's point spacing is
+    /// about `size / lodGrid`.
+    #[wasm_bindgen(getter, js_name = lodGrid)]
+    pub fn lod_grid(&self) -> u32 {
+        self.lod.grid
     }
 }
 

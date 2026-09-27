@@ -144,6 +144,8 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
   font-size: 12px;
 }
 .statusbar .error { color: var(--danger); }
+.status-right { display: flex; gap: 16px; font-variant-numeric: tabular-nums; }
+label.inline select { width: auto; }
 
 @media (max-width: 720px) {
   body {

@@ -7,6 +7,7 @@
 pub mod distance;
 pub mod io;
 pub mod kdtree;
+pub mod octree;
 
 pub use distance::{C2cPart, DistanceStats, cloud_to_cloud, partition_c2c};
 pub use io::{Format, IoError, read};

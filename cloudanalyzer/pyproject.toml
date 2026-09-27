@@ -98,5 +98,10 @@ warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+# open3d 0.20 ships stubs that reject str paths accepted at runtime.
+module = ["open3d", "open3d.*"]
+follow_imports = "skip"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

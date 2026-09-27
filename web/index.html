@@ -19,6 +19,8 @@
       <button data-view="side" title="Side view">Side</button>
       <button data-view="iso" title="Isometric view">Iso</button>
       <span class="sep"></span>
+      <button id="measure" aria-pressed="false" title="Measure the distance between two points (M)">Measure</button>
+      <span class="sep"></span>
       <label class="inline">Point size
         <input id="point-size" type="range" min="1" max="10" step="1" value="2" />
       </label>
@@ -45,6 +47,18 @@
         </div>
       </section>
 
+      <section id="pick-panel" hidden>
+        <h2>Picked point</h2>
+        <table class="stats"><tbody id="pick-info"></tbody></table>
+      </section>
+
+      <section id="measure-panel" hidden>
+        <h2>Measurements</h2>
+        <p id="measure-hint" class="hint"></p>
+        <ol id="measure-list" class="measure-list"></ol>
+        <button id="measure-clear">Clear all</button>
+      </section>
+
       <section id="c2c-panel">
         <h2>Cloud-to-cloud distance</h2>
         <label>Compared <select id="c2c-compared"></select></label>
@@ -64,6 +78,7 @@
 
     <main id="viewport" class="viewport">
       <div id="drop-overlay" class="drop-overlay" hidden>Drop to load</div>
+      <div id="labels" class="labels"></div>
       <div id="colorbar" class="colorbar" hidden>
         <span id="colorbar-title" class="colorbar-title"></span>
         <div class="colorbar-body">

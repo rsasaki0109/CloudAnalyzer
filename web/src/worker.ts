@@ -90,6 +90,11 @@ async function handle(req: Request): Promise<{ value: unknown; transfer: Transfe
       result.free();
       return { value, transfer: [distances.buffer] };
     }
+    case "point": {
+      const xyz = clouds.get(req.id)?.point(req.index);
+      if (!xyz) throw new Error("point not found");
+      return { value: Array.from(xyz), transfer: [] };
+    }
     case "remove": {
       clouds.get(req.id)?.free();
       clouds.delete(req.id);

@@ -34,3 +34,8 @@ export function cloudToCloud(compared: number, reference: number): Promise<C2cOu
 export function removeCloud(id: number): Promise<void> {
   return call({ kind: "remove", id });
 }
+
+/** Exact (unshifted, f64) coordinates of a point in octree order. */
+export function pointAt(id: number, index: number): Promise<[number, number, number]> {
+  return call({ kind: "point", id, index });
+}

@@ -15,6 +15,8 @@ Files never leave the browser.
 - Level-of-detail rendering for large clouds: points are arranged in a
   nested octree at load time and only the nodes that matter on screen are
   drawn, up to an adjustable point budget (1M–20M).
+- Click a point to see its exact coordinates, color and C2C distance; press
+  **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
 - Coordinates are kept in `f64`; georeferenced clouds get a shared global
   shift for rendering, like CloudCompare.
 - Cloud-to-cloud (C2C) nearest-neighbour distance with summary statistics,

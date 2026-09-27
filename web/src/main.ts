@@ -1,4 +1,5 @@
-import { cloudToCloud, loadCloud, removeCloud } from "./api";
+import * as THREE from "three";
+import { cloudToCloud, loadCloud, pointAt, removeCloud } from "./api";
 import { RAMPS, colorize, gradientCss, lut, type RampName } from "./colormap";
 import { type LodNode, parseNodes } from "./lod";
 import type { C2cOutput, LoadedCloud } from "./protocol";
@@ -135,6 +136,7 @@ function renderList(): void {
 async function removeEntry(id: number): Promise<void> {
   entries.delete(id);
   viewer.remove(id);
+  forgetPoints(id);
   await removeCloud(id);
   if (activeC2c === id) activeC2c = null;
   // Distances computed against the removed cloud are no longer meaningful to keep around.
@@ -307,6 +309,7 @@ runButton.onclick = async () => {
     refreshColors(compared);
     renderList();
     renderC2cResult();
+    renderPickPanel();
     setStatus(
       `C2C distance computed for ${result.stats.count.toLocaleString()} points in ${Math.round(result.millis)} ms` +
         (result.workers > 1 ? ` on ${result.workers} workers` : ""),
@@ -385,5 +388,211 @@ function renderC2cResult(): void {
   $("colorbar-mid").textContent = fmt((lo + hi) / 2);
   $("colorbar-min").textContent = fmt(lo);
 }
+
+// ---------------------------------------------------------------- picking & measuring
+
+interface PickedPoint {
+  cloudId: number;
+  index: number;
+  /** Render (shifted) position, for drawing. */
+  render: THREE.Vector3;
+  /** Exact original coordinates. */
+  exact: [number, number, number];
+}
+
+interface Measurement {
+  a: PickedPoint;
+  b: PickedPoint;
+  label: HTMLSpanElement;
+}
+
+const PICK_COLOR = "#ffd54f";
+const MEASURE_COLOR = "#4fc3f7";
+let picked: PickedPoint | null = null;
+let measuring = false;
+let pending: PickedPoint | null = null;
+const measurements: Measurement[] = [];
+const measureButton = $<HTMLButtonElement>("measure");
+
+function coord(v: number): string {
+  return v.toFixed(Math.abs(v) >= 1e5 ? 3 : 4);
+}
+
+function distance(a: PickedPoint, b: PickedPoint): { d: number; delta: number[] } {
+  const delta = a.exact.map((v, i) => b.exact[i] - v);
+  return { d: Math.hypot(...delta), delta };
+}
+
+function refreshAnnotations(): void {
+  const markers: { position: THREE.Vector3; color: string }[] = [];
+  if (picked) markers.push({ position: picked.render, color: PICK_COLOR });
+  for (const m of measurements) {
+    markers.push({ position: m.a.render, color: MEASURE_COLOR }, { position: m.b.render, color: MEASURE_COLOR });
+  }
+  if (pending) markers.push({ position: pending.render, color: MEASURE_COLOR });
+  viewer.setAnnotations(
+    markers,
+    measurements.map((m) => [m.a.render, m.b.render]),
+  );
+}
+
+function renderPickPanel(): void {
+  $("pick-panel").hidden = !picked;
+  if (!picked) return;
+  const entry = entries.get(picked.cloudId);
+  const rows: [string, string][] = [
+    ["Cloud", entry?.cloud.name ?? "?"],
+    ["X", coord(picked.exact[0])],
+    ["Y", coord(picked.exact[1])],
+    ["Z", coord(picked.exact[2])],
+  ];
+  const rgb = entry?.cloud.colors?.subarray(picked.index * 3, picked.index * 3 + 3);
+  if (rgb) rows.push(["RGB", Array.from(rgb).join(", ")]);
+  if (entry?.c2c) rows.push([`C2C → ${entry.c2c.referenceName}`, fmt(entry.c2c.distances[picked.index])]);
+  $("pick-info").replaceChildren(
+    ...rows.map(([k, v]) => {
+      const tr = document.createElement("tr");
+      const th = document.createElement("th");
+      th.textContent = k;
+      const td = document.createElement("td");
+      td.textContent = v;
+      tr.append(th, td);
+      return tr;
+    }),
+  );
+}
+
+function renderMeasurements(): void {
+  $("measure-panel").hidden = !measuring && measurements.length === 0;
+  $("measure-hint").textContent = measuring
+    ? pending
+      ? "Click the second point. Esc cancels."
+      : "Click the first point."
+    : "";
+  $("measure-clear").hidden = measurements.length === 0;
+  $("measure-list").replaceChildren(
+    ...measurements.map((m, i) => {
+      const { d, delta } = distance(m.a, m.b);
+      const li = document.createElement("li");
+      const value = document.createElement("span");
+      value.className = "distance";
+      value.textContent = fmt(d);
+      const remove = document.createElement("button");
+      remove.className = "remove";
+      remove.textContent = "✕";
+      remove.title = "Remove";
+      remove.onclick = () => {
+        measurements.splice(i, 1);
+        m.label.remove();
+        refreshAnnotations();
+        renderMeasurements();
+      };
+      const deltas = document.createElement("span");
+      deltas.className = "delta";
+      deltas.textContent = `ΔX ${fmt(delta[0])}  ΔY ${fmt(delta[1])}  ΔZ ${fmt(delta[2])}`;
+      li.append(remove, value, deltas);
+      return li;
+    }),
+  );
+}
+
+function setMeasuring(on: boolean): void {
+  measuring = on;
+  pending = null;
+  measureButton.setAttribute("aria-pressed", String(on));
+  $("viewport").classList.toggle("measuring", on);
+  refreshAnnotations();
+  renderMeasurements();
+}
+
+/** Drop picks and measurements that refer to a removed cloud. */
+function forgetPoints(cloudId: number): void {
+  if (picked?.cloudId === cloudId) picked = null;
+  if (pending?.cloudId === cloudId) pending = null;
+  for (let i = measurements.length - 1; i >= 0; i--) {
+    const m = measurements[i];
+    if (m.a.cloudId === cloudId || m.b.cloudId === cloudId) {
+      m.label.remove();
+      measurements.splice(i, 1);
+    }
+  }
+  refreshAnnotations();
+  renderPickPanel();
+  renderMeasurements();
+}
+
+viewer.onClick = async (x, y) => {
+  const hit = viewer.pick(x, y);
+  if (!hit) {
+    if (!measuring && picked) {
+      picked = null;
+      refreshAnnotations();
+      renderPickPanel();
+    }
+    return;
+  }
+  let exact: [number, number, number];
+  try {
+    exact = await pointAt(hit.cloudId, hit.index);
+  } catch {
+    return; // the cloud was removed while we were asking
+  }
+  const point: PickedPoint = { cloudId: hit.cloudId, index: hit.index, render: hit.position, exact };
+  if (measuring) {
+    if (!pending) {
+      pending = point;
+    } else {
+      const label = document.createElement("span");
+      $("labels").append(label);
+      measurements.push({ a: pending, b: point, label });
+      pending = null;
+      const { d } = distance(measurements.at(-1)!.a, point);
+      setStatus(`Distance: ${fmt(d)}`);
+    }
+    renderMeasurements();
+  } else {
+    picked = point;
+    renderPickPanel();
+  }
+  refreshAnnotations();
+};
+
+// Keep distance labels at the middle of their segments.
+viewer.onAfterRender = () => {
+  for (const m of measurements) {
+    const mid = m.a.render.clone().add(m.b.render).multiplyScalar(0.5);
+    const at = viewer.project(mid);
+    m.label.hidden = !at;
+    if (!at) continue;
+    m.label.textContent = fmt(distance(m.a, m.b).d);
+    m.label.style.left = `${at.x}px`;
+    m.label.style.top = `${at.y}px`;
+  }
+};
+
+measureButton.onclick = () => setMeasuring(!measuring);
+$<HTMLButtonElement>("measure-clear").onclick = () => {
+  for (const m of measurements) m.label.remove();
+  measurements.length = 0;
+  refreshAnnotations();
+  renderMeasurements();
+};
+window.addEventListener("keydown", (e) => {
+  if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+  if (e.key === "m" || e.key === "M") setMeasuring(!measuring);
+  if (e.key === "Escape") {
+    if (pending) {
+      pending = null;
+      refreshAnnotations();
+      renderMeasurements();
+    } else if (measuring) {
+      setMeasuring(false);
+    } else if (picked) {
+      picked = null;
+      refreshAnnotations();
+      renderPickPanel();
+    }
+  }
+});
 
 renderList();

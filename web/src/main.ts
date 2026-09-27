@@ -3,6 +3,7 @@ import {
   cloudToCloud,
   cropCloud,
   exportCloud,
+  filterCloud,
   loadCloud,
   pointAt,
   registerIcp,
@@ -227,6 +228,7 @@ function renderList(): void {
   renderC2cSelects();
   renderIcpSelects();
   renderClasses();
+  renderFilterSelect();
 }
 
 async function removeEntry(id: number): Promise<void> {
@@ -765,6 +767,79 @@ for (const [id, show] of [
     renderClasses();
   };
 }
+
+// ---------------------------------------------------------------- filters
+
+const filterCloudSelect = $<HTMLSelectElement>("filter-cloud");
+const filterOp = $<HTMLSelectElement>("filter-op");
+const filterRun = $<HTMLButtonElement>("filter-run");
+const voxelInput = $<HTMLInputElement>("filter-voxel");
+
+function renderFilterSelect(): void {
+  const clouds = [...entries.values()].filter((e) => !isMesh(e));
+  const previous = filterCloudSelect.value;
+  filterCloudSelect.replaceChildren(...clouds.map((e) => new Option(e.cloud.name, String(e.cloud.id))));
+  filterCloudSelect.value = clouds.some((e) => String(e.cloud.id) === previous)
+    ? previous
+    : String(clouds.at(-1)?.cloud.id ?? "");
+  filterRun.disabled = clouds.length === 0;
+  suggestVoxel();
+}
+
+/** Default voxel: about 1/200 of the cloud's largest extent, rounded. */
+function suggestVoxel(): void {
+  const entry = entries.get(Number(filterCloudSelect.value));
+  if (!entry || voxelInput.dataset.cloud === filterCloudSelect.value) return;
+  const b = entry.cloud.bounds;
+  const extent = Math.max(b[3] - b[0], b[4] - b[1], b[5] - b[2]);
+  const raw = extent / 200;
+  const pow = 10 ** Math.floor(Math.log10(raw || 1));
+  voxelInput.value = String(Number((Math.ceil(raw / pow) * pow).toPrecision(2)));
+  voxelInput.dataset.cloud = filterCloudSelect.value;
+}
+
+filterCloudSelect.onchange = suggestVoxel;
+filterOp.onchange = () => {
+  for (const group of document.querySelectorAll<HTMLElement>("#filter-panel [data-op]")) {
+    group.hidden = group.dataset.op !== filterOp.value;
+  }
+};
+
+filterRun.onclick = async () => {
+  const entry = entries.get(Number(filterCloudSelect.value));
+  if (!entry) return;
+  const op = filterOp.value as "voxel" | "random" | "sor";
+  let a = 0;
+  let b = 0;
+  if (op === "voxel") a = Number(voxelInput.value);
+  if (op === "random") a = Math.round((entry.cloud.count * Number($<HTMLInputElement>("filter-percent").value)) / 100);
+  if (op === "sor") {
+    a = Number($<HTMLInputElement>("filter-k").value);
+    b = Number($<HTMLInputElement>("filter-ratio").value);
+  }
+  if (!(a > 0)) {
+    setStatus("Enter a positive value", true);
+    return;
+  }
+  filterRun.disabled = true;
+  setStatus(`Filtering ${entry.cloud.name}…`);
+  try {
+    const cloud = await filterCloud(entry.cloud.id, op, a, b);
+    addEntry(cloud);
+    entry.visible = false;
+    viewer.setVisible(entry.cloud.id, false);
+    renderList();
+    const removed = entry.cloud.count - cloud.count;
+    setStatus(
+      `${cloud.name}: kept ${cloud.count.toLocaleString()} of ${entry.cloud.count.toLocaleString()} points ` +
+        `(${removed.toLocaleString()} removed) in ${Math.round(cloud.timings.index)} ms`,
+    );
+  } catch (err) {
+    setStatus(`Filter failed: ${err instanceof Error ? err.message : err}`, true);
+  } finally {
+    filterRun.disabled = false;
+  }
+};
 
 // ---------------------------------------------------------------- clipping box
 

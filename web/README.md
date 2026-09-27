@@ -26,6 +26,8 @@ Files never leave the browser.
 - Clipping box with per-axis sliders and one-click X/Y/Z cross-sections; the
   point budget goes to what is inside, and **Crop** copies the points inside
   into new clouds.
+- Filters that create a new cloud: one point per voxel, random subsampling,
+  and statistical outlier removal (SOR).
 - Click a point to see its exact coordinates, color and C2C distance; press
   **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
 - Coordinates are kept in `f64`; georeferenced clouds get a shared global

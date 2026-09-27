@@ -289,6 +289,16 @@ async function handle(
       getCloud(req.id).transform(new Float64Array(req.matrix));
       return describe(req.id);
     }
+    case "filter": {
+      const source = items.get(req.id);
+      const t = performance.now();
+      const filtered = getCloud(req.id).filter(req.op, req.a, req.b);
+      const id = nextId++;
+      const base = source!.name.replace(/\.[^.]+$/, "");
+      const suffix = { voxel: `voxel${req.a}`, random: `random${req.a}`, sor: "sor" }[req.op];
+      items.set(id, { kind: "cloud", cloud: filtered, name: `${base}_${suffix}` });
+      return describe(id, { parse: 0, index: performance.now() - t });
+    }
     case "crop": {
       const source = items.get(req.id);
       const cropped = getCloud(req.id).crop(new Float64Array(req.min), new Float64Array(req.max), req.inside);

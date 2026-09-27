@@ -83,6 +83,19 @@
         <button id="measure-clear">Clear all</button>
       </section>
 
+      <section id="profile-panel">
+        <h2>Profile (cross-section)</h2>
+        <p id="profile-hint" class="hint"></p>
+        <label title="Points this close to the line (either side counts half) are in the profile">Band width
+          <input id="profile-width" type="number" min="0" step="any" placeholder="auto" />
+        </label>
+        <div class="button-row">
+          <button id="profile-draw" aria-pressed="false" title="Click points on the view to draw the line">Draw line</button>
+          <button id="profile-clear">Clear</button>
+          <button id="profile-csv" disabled title="Distance along the line and x, y, z of every plotted point">Save CSV</button>
+        </div>
+      </section>
+
       <section id="class-panel" hidden>
         <h2>Classes</h2>
         <ul id="class-list" class="class-list"></ul>
@@ -267,6 +280,15 @@
     <main id="viewport" class="viewport">
       <div id="drop-overlay" class="drop-overlay" hidden>Drop to load</div>
       <div id="labels" class="labels"></div>
+      <div id="profile-plot" class="profile-plot" hidden>
+        <div class="profile-head">
+          <span id="profile-legend" class="profile-legend"></span>
+          <span id="profile-readout" class="profile-readout"></span>
+          <label class="check" title="Same scale on both axes"><input id="profile-equal" type="checkbox" /> 1:1</label>
+          <button id="profile-close" title="Close the profile">✕</button>
+        </div>
+        <canvas></canvas>
+      </div>
       <div id="colorbar" class="colorbar" hidden>
         <span id="colorbar-title" class="colorbar-title"></span>
         <div class="colorbar-body">

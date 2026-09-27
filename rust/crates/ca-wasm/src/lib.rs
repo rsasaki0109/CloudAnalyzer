@@ -335,6 +335,32 @@ impl Cloud {
         self.selected(&ca_core::filter::sor_keep(means, ratio))
     }
 
+    /// Cross-section: the points within `half_width` (horizontally) of the
+    /// polyline `line` (`x, y` pairs in original coordinates) with their
+    /// distance along it; beyond about `max_points`, every n-th of them.
+    pub fn profile(
+        &self,
+        line: &[f64],
+        half_width: f64,
+        max_points: usize,
+    ) -> Result<ProfileHits, JsError> {
+        if !line.len().is_multiple_of(2) {
+            return Err(JsError::new("the line needs x, y pairs"));
+        }
+        let hits =
+            ca_core::profile::profile(&self.inner.positions, line.as_chunks::<2>().0, half_width);
+        let step = hits.len().div_ceil(max_points.max(1)).max(1);
+        let kept: Vec<_> = hits.iter().step_by(step).collect();
+        Ok(ProfileHits {
+            along: kept.iter().map(|h| h.1).collect(),
+            positions: kept
+                .iter()
+                .flat_map(|h| self.inner.positions[h.0 as usize])
+                .collect(),
+            total: hits.len(),
+        })
+    }
+
     /// Ground extraction (Cloth Simulation Filter) as a new cloud.
     /// `rigidness` is `"flat"`, `"relief"` or `"steep"`; `output` is
     /// `"classified"` (a copy with class 2 = ground, 1 = the rest),
@@ -1185,6 +1211,29 @@ impl SorPart {
 impl SorPart {
     fn part_point(&self, i: usize) -> [f64; 3] {
         self.part.point(i)
+    }
+}
+
+/// Points of a cross-section (see [`Cloud::profile`]).
+#[wasm_bindgen]
+pub struct ProfileHits {
+    along: Vec<f64>,
+    positions: Vec<f64>,
+    /// Points in the band before thinning.
+    #[wasm_bindgen(readonly)]
+    pub total: usize,
+}
+
+#[wasm_bindgen]
+impl ProfileHits {
+    /// Distance of each kept point along the line.
+    pub fn along(&self) -> Vec<f64> {
+        self.along.clone()
+    }
+
+    /// Interleaved `xyz` of the kept points, in original coordinates.
+    pub fn positions(&self) -> Vec<f64> {
+        self.positions.clone()
     }
 }
 

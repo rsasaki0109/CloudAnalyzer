@@ -46,6 +46,7 @@ export class Viewer {
   /** Called after every rendered frame, e.g. to move HTML overlays. */
   onAfterRender: () => void = () => {};
   private readonly annotations = new THREE.Group();
+  private readonly profileGroup = new THREE.Group();
   /** Clipping box in render coordinates, or null when clipping is off. */
   private clip: THREE.Box3 | null = null;
   private readonly clipPlanes = Array.from({ length: 6 }, () => new THREE.Plane());
@@ -85,6 +86,8 @@ export class Viewer {
     this.scene.add(this.clipHelper);
     this.annotations.renderOrder = 1;
     this.scene.add(this.annotations);
+    this.profileGroup.renderOrder = 1;
+    this.scene.add(this.profileGroup);
 
     // A click is a press and release of a single pointer without moving
     // the camera; a second finger (pinch, two-finger pan) cancels it.
@@ -445,6 +448,55 @@ export class Viewer {
       const lines = new THREE.LineSegments(geometry, material);
       lines.renderOrder = 1;
       this.annotations.add(lines);
+    }
+    this.requestRender();
+  }
+
+  /** Where the ray under a CSS pixel meets the horizontal plane at height `z`. */
+  groundPoint(clientX: number, clientY: number, z: number): THREE.Vector3 | null {
+    const rect = this.renderer.domElement.getBoundingClientRect();
+    const ndc = new THREE.Vector2(
+      ((clientX - rect.left) / rect.width) * 2 - 1,
+      -((clientY - rect.top) / rect.height) * 2 + 1,
+    );
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(ndc, this.camera);
+    return raycaster.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 0, 1), -z), new THREE.Vector3());
+  }
+
+  /** Draw a profile polyline and the outline of its band (render coordinates). */
+  setProfile(vertices: THREE.Vector3[], halfWidth: number): void {
+    for (const child of [...this.profileGroup.children]) {
+      this.profileGroup.remove(child);
+      const object = child as THREE.Line;
+      object.geometry.dispose();
+      (object.material as THREE.Material).dispose();
+    }
+    const material = () =>
+      new THREE.LineBasicMaterial({ color: 0xffb74d, depthTest: false, transparent: true });
+    if (vertices.length >= 2) {
+      this.profileGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(vertices), material()));
+      // Band edges: each segment offset sideways, plus the two ends.
+      const edges: THREE.Vector3[] = [];
+      for (let i = 1; i < vertices.length; i++) {
+        const [a, b] = [vertices[i - 1], vertices[i]];
+        const side = new THREE.Vector3(a.y - b.y, b.x - a.x, 0);
+        if (side.lengthSq() === 0) continue;
+        side.setLength(halfWidth);
+        for (const s of [1, -1]) edges.push(a.clone().addScaledVector(side, s), b.clone().addScaledVector(side, s));
+        if (i === 1) edges.push(a.clone().add(side), a.clone().sub(side));
+        if (i === vertices.length - 1) edges.push(b.clone().add(side), b.clone().sub(side));
+      }
+      const band = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(edges), material());
+      (band.material as THREE.LineBasicMaterial).opacity = 0.5;
+      this.profileGroup.add(band);
+    }
+    if (vertices.length) {
+      const dots = new THREE.Points(
+        new THREE.BufferGeometry().setFromPoints(vertices),
+        new THREE.PointsMaterial({ color: 0xffb74d, size: 8, sizeAttenuation: false, depthTest: false, transparent: true }),
+      );
+      this.profileGroup.add(dots);
     }
     this.requestRender();
   }

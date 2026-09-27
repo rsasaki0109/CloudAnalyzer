@@ -7,6 +7,7 @@ arrays; heavy calls release the GIL and use all cores.
 
 ```python
 import cloudanalyzer_core as cc
+import numpy as np
 
 scan = cc.read("scan.laz")                 # {"positions", "colors"?, "intensity"?, "classification"?}
 ref = cc.read("reference.pcd")["positions"]
@@ -18,6 +19,9 @@ signed = cc.cloud_to_mesh(scan["positions"], vertices, triangles)  # C2M
 result = cc.icp(scan["positions"], ref)    # {"transformation": 4x4, "rms_final", ...}
 keep = cc.statistical_outliers(scan["positions"], k=8, ratio=1.0)  # multi-threaded
 ground = cc.ground_csf(scan["positions"], cloth_resolution=1.0)  # bool per point
+
+# Cross-section: points within 0.25 of a polyline, and their distance along it
+idx, along = cc.profile(scan["positions"], np.array([[0.0, 0.0], [50.0, 20.0]]), half_width=0.25)
 
 # M3C2 change from ref to scan at core points (multi-threaded; NaN = no data)
 distance, lod95, significant, normals = cc.m3c2(scan["positions"][::10], ref, scan["positions"],

@@ -267,7 +267,7 @@ test.describe("phone", () => {
     await expect(status(page)).toContainText("C2C distance computed");
     // The sheet closes when the first cloud arrives, leaving the full view.
     await expect(sheet).not.toBeInViewport();
-    const canvas = page.locator("#viewport canvas");
+    const canvas = page.locator("#viewport > canvas");
     const box = (await canvas.boundingBox())!;
     expect(box.height).toBeGreaterThan(600);
 
@@ -331,4 +331,56 @@ test("?url= opens a cloud from a URL", async ({ page }) => {
   await page.goto("/?url=samples/lidar_reference.pcd");
   await expect(status(page)).toContainText("Loaded lidar_reference.pcd");
   await expect(page.locator(".cloud-list li")).toHaveCount(1);
+});
+
+test("profile: a line across two flat grids plots both, saves CSV and survives a share link", async ({
+  page,
+  context,
+}) => {
+  const flat = (z: number) => grid(60).map(([x, y]) => [x, y, z] as [number, number, number]);
+  await open(page, [
+    { name: "low.ply", buffer: ply(flat(0)) },
+    { name: "high.ply", buffer: ply(flat(1)) },
+  ]);
+  await expect(status(page)).toContainText("Loaded high.ply");
+  await page.locator('[data-view="top"]').click();
+  await page.locator("#fit").click();
+  await page.locator("#profile-width").fill("0.2");
+  await page.locator("#profile-draw").click();
+  const canvas = page.locator("#viewport > canvas");
+  const box = (await canvas.boundingBox())!;
+  await canvas.click({ position: { x: box.width * 0.35, y: box.height / 2 } });
+  await canvas.click({ position: { x: box.width * 0.65, y: box.height / 2 } });
+  await page.keyboard.press("Enter");
+  await expect(status(page)).toContainText(/Profile: [\d,]+ points from 2 clouds within 0\.2/);
+  await expect(page.locator("#profile-plot")).toBeVisible();
+  await expect(page.locator("#profile-legend")).toContainText("low.ply");
+
+  const download = page.waitForEvent("download");
+  await page.locator("#profile-csv").click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("profile.csv");
+  const chunks: Buffer[] = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
+  const csv = Buffer.concat(chunks).toString("utf8").trim().split("\n");
+  expect(csv[0]).toBe("cloud,distance,x,y,z");
+  // Every point of "high" is at z = 1, every point of "low" at z = 0.
+  for (const row of csv.slice(1)) {
+    const [name, , , , z] = row.split(",");
+    expect(Number(z)).toBeCloseTo(name === "high.ply" ? 1 : 0, 5);
+  }
+
+  // A share link carries the line (these local files are then asked for).
+  await page.locator("#share").click();
+  const link = await page.locator("#share-link").inputValue();
+  const other = await context.newPage();
+  await other.goto(link);
+  await expect(other.locator("#status")).toContainText("Session: open low.ply, high.ply");
+  await open(other, [
+    { name: "low.ply", buffer: ply(flat(0)) },
+    { name: "high.ply", buffer: ply(flat(1)) },
+  ]);
+  await expect(other.locator("#status")).toContainText("Session restored");
+  await expect(other.locator("#profile-plot")).toBeVisible();
+  await expect(other.locator("#profile-width")).toHaveValue("0.2");
 });

@@ -30,7 +30,8 @@ Files never leave the browser.
   constant height, on a grid with mean/min/max cell heights and optional
   filling of empty cells; the per-cell height difference is shown as a cloud.
 - Filters that create a new cloud: one point per voxel, random subsampling,
-  and statistical outlier removal (SOR).
+  statistical outlier removal (SOR), and ground extraction with the Cloth
+  Simulation Filter (classified copy, ground only, or non-ground only).
 - Click a point to see its exact coordinates, color and C2C distance; press
   **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
 - Large files: LAS and binary PLY/PCD are streamed in 16 MB slices, so the

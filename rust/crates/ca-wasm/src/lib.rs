@@ -323,6 +323,62 @@ impl Cloud {
         })
     }
 
+    /// Ground extraction (Cloth Simulation Filter) as a new cloud.
+    /// `rigidness` is `"flat"`, `"relief"` or `"steep"`; `output` is
+    /// `"classified"` (a copy with class 2 = ground, 1 = the rest),
+    /// `"ground"` or `"objects"`.
+    #[wasm_bindgen(js_name = extractGround)]
+    pub fn extract_ground(
+        &self,
+        cloth_resolution: f64,
+        class_threshold: f64,
+        rigidness: &str,
+        output: &str,
+    ) -> Result<Cloud, JsError> {
+        use ca_core::ground::{CsfParams, Rigidness, csf};
+        let rigidness = match rigidness {
+            "flat" => Rigidness::Flat,
+            "relief" => Rigidness::Relief,
+            "steep" => Rigidness::Steep,
+            other => return Err(JsError::new(&format!("unknown rigidness {other:?}"))),
+        };
+        let params = CsfParams {
+            cloth_resolution,
+            class_threshold,
+            rigidness,
+            ..CsfParams::default()
+        };
+        let ground = csf(&self.inner, params)
+            .ok_or_else(|| JsError::new("the cloth resolution is too fine or not positive"))?;
+        let mut inner = match output {
+            "classified" => {
+                let mut copy = self.inner.clone();
+                let classes: Vec<u8> = ground.iter().map(|&g| if g { 2 } else { 1 }).collect();
+                copy.attributes.retain(|a| a.name != CLASSIFICATION);
+                copy.attributes.push(ca_core::Attribute {
+                    name: CLASSIFICATION.into(),
+                    values: AttributeValues::U8(classes),
+                });
+                copy
+            }
+            "ground" | "objects" => {
+                let want = output == "ground";
+                let keep: Vec<usize> = (0..ground.len()).filter(|&i| ground[i] == want).collect();
+                self.inner.select(&keep)
+            }
+            other => return Err(JsError::new(&format!("unknown output {other:?}"))),
+        };
+        if inner.is_empty() {
+            return Err(JsError::new("no points in the requested output"));
+        }
+        let lod = build_lod(&mut inner)?;
+        Ok(Cloud {
+            inner,
+            lod,
+            pending: Vec::new(),
+        })
+    }
+
     /// Apply a rigid transform (row-major 4x4) to every point and rebuild the
     /// octree, which also changes the point order.
     pub fn transform(&mut self, matrix: &[f64]) -> Result<(), JsError> {

@@ -115,6 +115,7 @@
             <option value="voxel">Subsample: one point per voxel</option>
             <option value="random">Subsample: random points</option>
             <option value="sor">Remove outliers (SOR)</option>
+            <option value="ground">Extract ground (CSF)</option>
           </select>
         </label>
         <div class="range" data-op="voxel">
@@ -126,6 +127,26 @@
         <div class="range" data-op="sor" hidden>
           <label title="Neighbours used for the mean distance">Neighbours <input id="filter-k" type="number" min="1" max="100" value="8" /></label>
           <label title="Standard deviations above the mean that count as outliers">Std. ratio <input id="filter-ratio" type="number" min="0" step="0.1" value="1" /></label>
+        </div>
+        <div data-op="ground" hidden>
+          <div class="range">
+            <label title="Spacing of the simulated cloth; about the point spacing to a few times it">Cloth resolution <input id="csf-resolution" type="number" min="0" step="any" value="1" /></label>
+            <label title="Points this close to the cloth (vertically) are ground">Threshold <input id="csf-threshold" type="number" min="0" step="any" value="0.5" /></label>
+          </div>
+          <label>Terrain
+            <select id="csf-rigidness">
+              <option value="flat">Flat (large buildings)</option>
+              <option value="relief" selected>Gentle relief</option>
+              <option value="steep">Steep slopes</option>
+            </select>
+          </label>
+          <label>Output
+            <select id="csf-output">
+              <option value="classified" selected>Copy classified as ground / other</option>
+              <option value="ground">Ground points only</option>
+              <option value="objects">Non-ground points only</option>
+            </select>
+          </label>
         </div>
         <button id="filter-run" class="primary" disabled>Apply to a new cloud</button>
       </section>

@@ -17,6 +17,7 @@ signed = cc.cloud_to_mesh(scan["positions"], vertices, triangles)  # C2M
 
 result = cc.icp(scan["positions"], ref)    # {"transformation": 4x4, "rms_final", ...}
 keep = cc.statistical_outliers(scan["positions"], k=8, ratio=1.0)
+ground = cc.ground_csf(scan["positions"], cloth_resolution=1.0)  # bool per point
 
 v = cc.volume(0.0, scan["positions"], cell=0.5)   # cut/fill vs a z = 0 plane
 print(v["added"], v["removed"], v["net"])

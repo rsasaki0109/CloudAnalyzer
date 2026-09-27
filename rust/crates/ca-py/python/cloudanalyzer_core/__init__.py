@@ -7,6 +7,7 @@ and use all cores.
 from ._core import (
     __version__,
     cloud_to_mesh,
+    ground_csf,
     icp,
     nearest_distances,
     read,
@@ -19,6 +20,7 @@ from ._core import (
 __all__ = [
     "__version__",
     "cloud_to_mesh",
+    "ground_csf",
     "icp",
     "nearest_distances",
     "read",

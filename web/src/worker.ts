@@ -407,6 +407,16 @@ async function handle(
       items.set(id, { kind: "cloud", cloud: filtered, name: `${base}_${suffix}` });
       return describe(id, { parse: 0, index: performance.now() - t });
     }
+    case "ground": {
+      const source = items.get(req.id);
+      const t = performance.now();
+      const cloud = getCloud(req.id).extractGround(req.clothResolution, req.classThreshold, req.rigidness, req.output);
+      const id = nextId++;
+      const base = source!.name.replace(/\.[^.]+$/, "");
+      const suffix = { classified: "csf", ground: "ground", objects: "objects" }[req.output];
+      items.set(id, { kind: "cloud", cloud, name: `${base}_${suffix}` });
+      return describe(id, { parse: 0, index: performance.now() - t });
+    }
     case "crop": {
       const source = items.get(req.id);
       const cropped = getCloud(req.id).crop(new Float64Array(req.min), new Float64Array(req.max), req.inside);

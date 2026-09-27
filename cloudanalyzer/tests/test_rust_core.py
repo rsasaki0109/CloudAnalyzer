@@ -115,3 +115,12 @@ def test_volume_against_constant_and_mesh():
         np.array([[0, 1, 2], [0, 2, 3]], dtype=np.uint32),
     )
     assert cloudanalyzer_core.volume(plane, after, cell=0.5)["added"] == pytest.approx(4.0)
+
+
+def test_ground_csf_separates_a_box():
+    x, y = (a.ravel() for a in np.meshgrid(np.arange(80) * 0.25, np.arange(80) * 0.25))
+    box = (x >= 8) & (x < 12) & (y >= 8) & (y < 12)
+    points = np.c_[x, y, np.where(box, 3.0, 0.0)]
+    ground = cloudanalyzer_core.ground_csf(points)
+    assert ground.dtype == bool
+    np.testing.assert_array_equal(ground, ~box)

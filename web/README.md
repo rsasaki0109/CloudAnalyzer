@@ -14,6 +14,8 @@ Files never leave the browser.
   drag-and-drop.
 - Intensity and ASPRS classification from LAS/LAZ (also PLY, PCD and PTS):
   color by either, and show or hide individual classes.
+- Eye-Dome Lighting (on by default, adjustable strength) so the shape of
+  unlit clouds is easy to read.
 - Level-of-detail rendering for large clouds: points are arranged in a
   nested octree at load time and only the nodes that matter on screen are
   drawn, up to an adjustable point budget (1M–20M).

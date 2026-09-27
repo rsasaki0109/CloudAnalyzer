@@ -11,7 +11,7 @@
       <span class="brand">CloudAnalyzer <em>Web</em></span>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.pcd,.las,.xyz,.txt,.csv,.pts,.asc" />
+        accept=".ply,.pcd,.las,.laz,.xyz,.txt,.csv,.pts,.asc" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -29,7 +29,7 @@
         <h2>Clouds</h2>
         <ul id="cloud-list" class="cloud-list"></ul>
         <div id="empty-hint" class="hint">
-          <p>Drop PLY, PCD, LAS or XYZ files anywhere, or use Open…
+          <p>Drop PLY, PCD, LAS/LAZ or XYZ files anywhere, or use Open…
             Files stay in your browser.</p>
           <button id="load-sample">Try a sample</button>
           <p class="small">A LiDAR scene and a second scan of it; computes the cloud-to-cloud distance.</p>

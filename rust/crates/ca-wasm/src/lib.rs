@@ -116,7 +116,7 @@ fn from_flat(xyz: &[f64]) -> Result<PointCloud, JsError> {
         return Err(JsError::new("positions length must be a multiple of 3"));
     }
     Ok(PointCloud {
-        positions: xyz.chunks_exact(3).map(|p| [p[0], p[1], p[2]]).collect(),
+        positions: xyz.as_chunks::<3>().0.to_vec(),
         colors: None,
     })
 }

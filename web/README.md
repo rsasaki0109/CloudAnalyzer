@@ -10,7 +10,8 @@ Files never leave the browser.
 ## Features
 
 - Open PLY (ascii / binary), PCD (ascii / binary / binary_compressed),
-  uncompressed LAS 1.0–1.4 and XYZ / TXT / CSV / PTS by drag-and-drop.
+  LAS / LAZ 1.0–1.4 (point formats 0–10) and XYZ / TXT / CSV / PTS by
+  drag-and-drop.
 - Coordinates are kept in `f64`; georeferenced clouds get a shared global
   shift for rendering, like CloudCompare.
 - Cloud-to-cloud (C2C) nearest-neighbour distance with summary statistics,

@@ -4,6 +4,7 @@ import type {
   C2cOutput,
   IcpOutput,
   LoadedCloud,
+  M3c2Output,
   Request,
   Vec3,
   VolumeOutput,
@@ -97,4 +98,9 @@ export function computeVolume(params: Omit<Extract<Request, { kind: "volume" }>,
 /** Ground extraction (Cloth Simulation Filter) as a new cloud. */
 export function extractGround(params: Omit<Extract<Request, { kind: "ground" }>, "kind">): Promise<LoadedCloud> {
   return call({ kind: "ground", ...params });
+}
+
+/** M3C2 change between two clouds, at core points from `compared`. */
+export function computeM3c2(params: Omit<Extract<Request, { kind: "m3c2" }>, "kind">): Promise<M3c2Output> {
+  return call({ kind: "m3c2", ...params });
 }

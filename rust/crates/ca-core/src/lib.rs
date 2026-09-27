@@ -10,6 +10,7 @@ pub mod ground;
 pub mod icp;
 pub mod io;
 pub mod kdtree;
+pub mod m3c2;
 pub mod mesh;
 pub mod octree;
 pub mod volume;

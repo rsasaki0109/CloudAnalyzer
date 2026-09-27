@@ -80,6 +80,36 @@ impl KdTree {
         best
     }
 
+    /// Indices of all points within `radius` of `query` (unordered).
+    pub fn within(&self, query: &[f64; 3], radius: f64, out: &mut Vec<usize>) {
+        out.clear();
+        if radius >= 0.0 {
+            self.search_within(0, query, radius * radius, out);
+        }
+    }
+
+    fn search_within(&self, node: usize, q: &[f64; 3], r2: f64, out: &mut Vec<usize>) {
+        let n = self.nodes[node];
+        if n.axis == LEAF {
+            for i in n.start as usize..n.end as usize {
+                if distance_sq(&self.points[i], q) <= r2 {
+                    out.push(self.indices[i] as usize);
+                }
+            }
+            return;
+        }
+        let diff = q[n.axis as usize] - n.split;
+        let (near, far) = if diff < 0.0 {
+            (node + 1, n.right as usize)
+        } else {
+            (n.right as usize, node + 1)
+        };
+        self.search_within(near, q, r2, out);
+        if diff * diff <= r2 {
+            self.search_within(far, q, r2, out);
+        }
+    }
+
     /// The `k` nearest points to `query` as `(index, squared distance)`,
     /// closest first. Intended for small `k` (e.g. normal estimation).
     pub fn nearest_k(&self, query: &[f64; 3], k: usize) -> Vec<(usize, f64)> {
@@ -255,6 +285,23 @@ mod tests {
             );
         }
         assert_eq!(tree.nearest_k(&[0.0; 3], 5000).len(), 1500);
+    }
+
+    #[test]
+    fn within_matches_brute_force() {
+        let points = pseudo_random(2000, 21);
+        let tree = KdTree::new(&points).unwrap();
+        let mut found = Vec::new();
+        for q in pseudo_random(30, 23) {
+            tree.within(&q, 1.3, &mut found);
+            found.sort_unstable();
+            let expected: Vec<usize> = (0..points.len())
+                .filter(|&i| {
+                    (0..3).map(|a| (points[i][a] - q[a]).powi(2)).sum::<f64>() <= 1.3 * 1.3
+                })
+                .collect();
+            assert_eq!(found, expected);
+        }
     }
 
     #[test]

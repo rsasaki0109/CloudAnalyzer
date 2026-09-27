@@ -124,3 +124,16 @@ def test_ground_csf_separates_a_box():
     ground = cloudanalyzer_core.ground_csf(points)
     assert ground.dtype == bool
     np.testing.assert_array_equal(ground, ~box)
+
+
+def test_m3c2_measures_a_rise():
+    x, y = (a.ravel() for a in np.meshgrid(np.arange(100) * 0.1, np.arange(100) * 0.1))
+    rng = np.random.default_rng(0)
+    before = np.c_[x, y, 0.01 * rng.standard_normal(x.size)]
+    after = np.c_[x, y, 0.25 + 0.01 * rng.standard_normal(x.size)]
+    core = np.array([[5.0, 5.0, 0.0], [2.0, 7.0, 0.0], [50.0, 50.0, 0.0]])
+    distance, lod95, significant, normals = cloudanalyzer_core.m3c2(core, before, after)
+    np.testing.assert_allclose(distance[:2], 0.25, atol=0.01)
+    assert np.all(lod95[:2] < 0.02) and significant[:2].all()
+    np.testing.assert_allclose(normals[:2], [[0, 0, 1]] * 2, atol=0.01)
+    assert np.isnan(distance[2]) and not significant[2]

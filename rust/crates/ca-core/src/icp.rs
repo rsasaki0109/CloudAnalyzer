@@ -448,6 +448,11 @@ fn horn(pairs: &[Pair]) -> Rigid {
     }
 }
 
+/// Eigen-decomposition of a symmetric 3x3 matrix (see [`jacobi`]).
+pub(crate) fn symmetric_eigen(m: [[f64; 3]; 3]) -> ([f64; 3], [[f64; 3]; 3]) {
+    jacobi(m)
+}
+
 /// Eigen-decomposition of a symmetric matrix by cyclic Jacobi rotations:
 /// eigenvalues and the matrix whose columns are the eigenvectors.
 fn jacobi<const N: usize>(mut a: [[f64; N]; N]) -> ([f64; N], [[f64; N]; N]) {

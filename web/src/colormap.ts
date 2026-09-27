@@ -52,6 +52,11 @@ export function colorize(values: Float32Array, lo: number, hi: number, table: Ui
   const out = new Uint8Array(values.length * 4);
   const scale = hi > lo ? 255 / (hi - lo) : 0;
   for (let i = 0; i < values.length; i++) {
+    if (!Number.isFinite(values[i])) {
+      // No value (e.g. M3C2 without enough points): neutral grey.
+      out.set([128, 128, 128, 255], i * 4);
+      continue;
+    }
     const idx = Math.min(255, Math.max(0, Math.round((values[i] - lo) * scale))) * 3;
     out[i * 4] = table[idx];
     out[i * 4 + 1] = table[idx + 1];

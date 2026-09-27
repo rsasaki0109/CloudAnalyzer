@@ -109,7 +109,8 @@ def test_volume_against_constant_and_mesh():
     flat = cloudanalyzer_core.volume(0.0, after, cell=0.5)
     assert flat["added"] == pytest.approx(4.0)
     assert flat["removed"] == 0.0
-    assert flat["difference"].shape == (12, 12)
+    # As CloudCompare, the first point is a cell centre: 0..5.9 m in 0.5 m cells is 13 cells.
+    assert flat["difference"].shape == (13, 13)
     plane = (
         np.array([[0, 0, 0], [6, 0, 0], [6, 6, 0], [0, 6, 0]], dtype=float),
         np.array([[0, 1, 2], [0, 2, 3]], dtype=np.uint32),

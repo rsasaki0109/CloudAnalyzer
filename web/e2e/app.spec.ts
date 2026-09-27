@@ -188,7 +188,9 @@ test("volume: a 2 x 2 x 1 m mound over flat ground is 4 m³ of fill", async ({ p
     for (let j = 0; j < 60; j++) {
       for (let i = 0; i < 60; i++) {
         const [x, y] = [i * 0.1, j * 0.1];
-        const inside = x >= 0.95 && x < 2.95 && y >= 0.95 && y < 2.95;
+        // Cells are centred on multiples of 0.5 (the first point is a cell
+        // centre), so their edges are at 0.25 + 0.5 k.
+        const inside = x >= 1.25 && x < 3.25 && y >= 1.25 && y < 3.25;
         out.push([x, y, mound && inside ? 1 : 0]);
       }
     }

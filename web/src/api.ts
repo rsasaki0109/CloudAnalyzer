@@ -75,3 +75,8 @@ export function exportCloud(
 export function cropCloud(id: number, min: Vec3, max: Vec3, inside: boolean): Promise<LoadedCloud> {
   return call({ kind: "crop", id, min, max, inside });
 }
+
+/** A filtered copy of a cloud as a new cloud (see `Cloud.filter`). */
+export function filterCloud(id: number, op: "voxel" | "random" | "sor", a: number, b = 0): Promise<LoadedCloud> {
+  return call({ kind: "filter", id, op, a, b });
+}

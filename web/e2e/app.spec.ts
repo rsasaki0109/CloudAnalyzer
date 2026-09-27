@@ -133,3 +133,20 @@ test("mesh: signed C2M against an OBJ plane", async ({ page }) => {
   await expect(status(page)).toContainText("C2M distance computed for 400 points");
   await expect(page.locator("#c2c-stats")).toContainText(/Mean\s*0\.25(?!\d)/);
 });
+
+test("filters: SOR drops outliers, voxel subsampling keeps one point per voxel", async ({ page }) => {
+  const noisy = [...grid(60), [50, 50, 20], [-30, 10, 5], [10, -40, 8]] as [number, number, number][];
+  await open(page, [{ name: "noisy.ply", buffer: ply(noisy) }]);
+  await expect(status(page)).toContainText("Loaded noisy.ply: 3,603 points");
+  await page.locator("#filter-op").selectOption("sor");
+  await page.locator("#filter-run").click();
+  await expect(status(page)).toContainText("noisy_sor: kept 3,600 of 3,603 points (3 removed)");
+
+  // Voxel subsample the cleaned cloud: 60 x 60 points at 0.1 spacing, 0.5 voxels.
+  await page.locator("#filter-cloud").selectOption({ label: "noisy_sor" });
+  await page.locator("#filter-op").selectOption("voxel");
+  await page.locator("#filter-voxel").fill("0.5");
+  await page.locator("#filter-run").click();
+  await expect(status(page)).toContainText("kept 144 of 3,600 points");
+  await expect(page.locator(".cloud-list li")).toHaveCount(3);
+});

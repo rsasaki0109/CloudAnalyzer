@@ -82,6 +82,15 @@ export type Request =
     }
   | { kind: "transform"; id: number; matrix: number[] }
   | {
+      kind: "filter";
+      id: number;
+      op: "voxel" | "random" | "sor";
+      /** voxel: edge length; random: point count; sor: neighbours. */
+      a: number;
+      /** sor: standard-deviation threshold. */
+      b: number;
+    }
+  | {
       kind: "crop";
       id: number;
       /** Box corners in original (unshifted) coordinates. */

@@ -70,6 +70,30 @@ impl Cloud {
         })
     }
 
+    /// A filtered copy of the cloud (with colors and attributes):
+    /// `"voxel"` keeps one point per voxel of edge `a`; `"random"` keeps `a`
+    /// random points; `"sor"` drops statistical outliers with `a` neighbours
+    /// and a `b` standard-deviation threshold.
+    pub fn filter(&self, op: &str, a: f64, b: f64) -> Result<Cloud, JsError> {
+        use ca_core::filter;
+        let keep = match op {
+            "voxel" => filter::voxel_subsample(&self.inner, a),
+            "random" => filter::random_subsample(&self.inner, a.max(0.0) as usize, 0x5eed),
+            "sor" => filter::statistical_outliers(&self.inner, a.max(1.0) as usize, b),
+            other => return Err(JsError::new(&format!("unknown filter {other:?}"))),
+        };
+        let mut inner = self.inner.select(&keep);
+        if inner.is_empty() {
+            return Err(JsError::new("the filter removed every point"));
+        }
+        let lod = build_lod(&mut inner)?;
+        Ok(Cloud {
+            inner,
+            lod,
+            pending: Vec::new(),
+        })
+    }
+
     /// Apply a rigid transform (row-major 4x4) to every point and rebuild the
     /// octree, which also changes the point order.
     pub fn transform(&mut self, matrix: &[f64]) -> Result<(), JsError> {

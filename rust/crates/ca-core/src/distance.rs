@@ -267,7 +267,7 @@ fn bounds<'a>(points: impl Iterator<Item = &'a [f64; 3]>) -> ([f64; 3], [f64; 3]
 }
 
 /// Indices of `points` sorted along a Z-order (Morton) curve.
-fn morton_order(points: &[[f64; 3]]) -> Vec<usize> {
+pub(crate) fn morton_order(points: &[[f64; 3]]) -> Vec<usize> {
     let Some(first) = points.first() else {
         return Vec::new();
     };

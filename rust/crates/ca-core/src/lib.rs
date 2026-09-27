@@ -5,6 +5,7 @@
 //! narrowing to `f32`.
 
 pub mod distance;
+pub mod filter;
 pub mod icp;
 pub mod io;
 pub mod kdtree;
@@ -142,6 +143,11 @@ impl PointCloud {
                 (0..3).all(|a| p[a] >= min[a] && p[a] <= max[a]) == inside
             })
             .collect();
+        self.select(&keep)
+    }
+
+    /// The points at `indices` (in that order), with their colors and attributes.
+    pub fn select(&self, keep: &[usize]) -> PointCloud {
         PointCloud {
             positions: keep.iter().map(|&i| self.positions[i]).collect(),
             colors: self
@@ -153,7 +159,7 @@ impl PointCloud {
                 .iter()
                 .map(|a| Attribute {
                     name: a.name.clone(),
-                    values: a.values.select(&keep),
+                    values: a.values.select(keep),
                 })
                 .collect(),
         }

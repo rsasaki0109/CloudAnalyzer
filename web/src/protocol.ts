@@ -191,7 +191,22 @@ export type Response =
   | { ok: true; value: unknown }
   | { ok: false; error: string };
 
-/** Worker -> UI messages: a final response, or a progress note for a request. */
+/** How far a request is: a note, and the done fraction when it is known. */
+export interface Progress {
+  note: string;
+  fraction?: number;
+}
+
+/**
+ * Worker -> UI messages: a final response (with the size of the worker's
+ * WASM memory), or progress on a request.
+ */
 export type WorkerMessage =
-  | { seq: number; response: Response }
-  | { seq: number; progress: string };
+  | { seq: number; response: Response; memory: number }
+  | { seq: number; progress: Progress };
+
+/** UI -> worker messages: a request, or asking to stop one (loads stop between steps). */
+export type UiMessage = { seq: number; req: Request } | { cancel: number };
+
+/** Error message of a request stopped by `cancel`. */
+export const CANCELLED = "Cancelled";

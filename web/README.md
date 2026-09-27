@@ -67,6 +67,9 @@ Files never leave the browser.
   a point.
 - Click a point to see its exact coordinates, color and C2C distance; press
   **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
+- Long loads and downloads show a progress bar with **Cancel** (a load stops
+  between 16 MB slices); the status bar also shows the main worker's
+  WebAssembly memory.
 - Large files: LAS and binary PLY/PCD are streamed in 16 MB slices, so the
   file is never held in memory whole; files above the "Max points per file"
   setting (50M by default) keep every n-th point. LAZ is thinned while it is

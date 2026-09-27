@@ -328,8 +328,17 @@
     </main>
 
     <footer class="statusbar">
-      <span id="status">Ready</span>
-      <span class="status-right"><span id="drawn"></span><span id="shift"></span></span>
+      <span class="status-left">
+        <span id="task" class="task" hidden>
+          <span class="progress"><span id="progress-bar"></span></span>
+          <button id="task-cancel" title="Stop loading">Cancel</button>
+        </span>
+        <span id="status">Ready</span>
+      </span>
+      <span class="status-right">
+        <span id="drawn"></span><span id="shift"></span>
+        <span id="memory" title="Memory used by the main WebAssembly worker (it grows but is not returned until the page is reloaded)"></span>
+      </span>
     </footer>
 
     <script type="module" src="/src/main.ts"></script>

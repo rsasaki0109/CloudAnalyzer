@@ -35,7 +35,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 dependencies = [
-    "open3d>=0.17.0",
+    "open3d>=0.17.0,<0.20",
     "numpy>=1.24.0",
     "typer>=0.9.0",
     "matplotlib>=3.7.0",

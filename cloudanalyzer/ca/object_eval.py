@@ -215,6 +215,11 @@ def _rotated_corners_2d(center_xy: np.ndarray, size_xy: np.ndarray, yaw: float) 
     return np.asarray((corners_local @ rotation.T) + center_xy)
 
 
+def _cross_2d(a: np.ndarray, b: np.ndarray) -> float:
+    """Return the z component of the cross product of two 2D vectors."""
+    return float(a[0] * b[1] - a[1] * b[0])
+
+
 def _sutherland_hodgman_clip(subject: np.ndarray, clip: np.ndarray) -> np.ndarray:
     """Clip a convex polygon (subject) against another convex polygon (clip)."""
     output = subject.copy()
@@ -229,8 +234,8 @@ def _sutherland_hodgman_clip(subject: np.ndarray, clip: np.ndarray) -> np.ndarra
         for j in range(len(output)):
             current = output[j]
             previous = output[j - 1]
-            cross_current = float(np.cross(edge_vec, current - edge_start))
-            cross_previous = float(np.cross(edge_vec, previous - edge_start))
+            cross_current = _cross_2d(edge_vec, current - edge_start)
+            cross_previous = _cross_2d(edge_vec, previous - edge_start)
             if cross_current >= 0.0:
                 if cross_previous < 0.0:
                     denom = cross_current - cross_previous

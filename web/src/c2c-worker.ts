@@ -3,8 +3,10 @@
 // parallel octree index build. Each pool worker owns a separate WASM instance, so no
 // SharedArrayBuffer (and no COOP/COEP headers) is needed.
 
+import { type ByteSource, readRange } from "./bytes";
 import init, {
   bucketChunk,
+  decodeCopcNodes,
   buildBucket,
   meshDistances,
   nearestDistances,
@@ -30,6 +32,8 @@ export type Slice =
   | { kind: "sor-within"; job: number; queries: Float64Array; k: number }
   /** Normals of one part of a cloud, from its own points. */
   | { kind: "normals"; points: Float64Array; k: number; orientation: Float64Array }
+  /** Fetch and decode COPC nodes (`offset, size, points` triples). */
+  | { kind: "copc-nodes"; source: ByteSource; head: Uint8Array; nodes: Float64Array }
   /** Drop this worker's part of `job`. */
   | { kind: "sor-release"; job: number }
   /** Run every kernel once so the browser optimizes them (see `warmUp`). */
@@ -43,6 +47,14 @@ export interface ReorderedResult {
   order: Uint32Array;
   counts: Uint32Array;
   nodes: Float64Array;
+}
+
+export interface CopcNodesResult {
+  positions: Float64Array;
+  /** 16-bit RGB, or null. */
+  colors: Uint16Array | null;
+  intensity: Float32Array;
+  classification: Uint8Array;
 }
 
 export interface SorLocalResult {
@@ -59,6 +71,8 @@ export type SliceResult<S extends Slice> = S extends { kind: "bucket-chunk" | "b
   ? ReorderedResult
   : S extends { kind: "sor-local" }
     ? SorLocalResult
+    : S extends { kind: "copc-nodes" }
+      ? CopcNodesResult
     : S extends { kind: "normals" }
       ? Float32Array
       : Float64Array;
@@ -87,9 +101,9 @@ function unpack(r: Reordered): { value: ReorderedResult; transfer: Transferable[
   return { value, transfer };
 }
 
-type Value = Float64Array | Float32Array | ReorderedResult | SorLocalResult;
+type Value = Float64Array | Float32Array | ReorderedResult | SorLocalResult | CopcNodesResult;
 
-function run(request: SliceRequest): { value: Value; transfer: Transferable[] } {
+async function run(request: SliceRequest): Promise<{ value: Value; transfer: Transferable[] }> {
   switch (request.kind) {
     case "cloud": {
       const d = nearestDistances(request.reference, request.queries);
@@ -137,6 +151,40 @@ function run(request: SliceRequest): { value: Value; transfer: Transferable[] } 
       const n = normalsOf(request.points, request.k, request.orientation);
       return { value: n, transfer: [n.buffer] };
     }
+    case "copc-nodes": {
+      const count = request.nodes.length / 3;
+      const offsets = Array.from({ length: count }, (_, k) => request.nodes[k * 3]);
+      const sizes = Uint32Array.from({ length: count }, (_, k) => request.nodes[k * 3 + 1]);
+      const counts = Uint32Array.from({ length: count }, (_, k) => request.nodes[k * 3 + 2]);
+      // One request per run of nodes lying (nearly) back to back in the file.
+      const runs: { start: number; end: number }[] = [];
+      for (const k of offsets.map((_, k) => k).sort((a, b) => offsets[a] - offsets[b])) {
+        const last = runs.at(-1);
+        const end = offsets[k] + sizes[k];
+        if (last && offsets[k] <= last.end + (64 << 10)) last.end = Math.max(last.end, end);
+        else runs.push({ start: offsets[k], end });
+      }
+      const data = await Promise.all(runs.map((r) => readRange(request.source, r.start, r.end - r.start)));
+      const joined = new Uint8Array(sizes.reduce((a, b) => a + b, 0));
+      let at = 0;
+      for (let k = 0; k < count; k++) {
+        const r = runs.findIndex((run) => offsets[k] >= run.start && offsets[k] + sizes[k] <= run.end);
+        const from = offsets[k] - runs[r].start;
+        joined.set(data[r].subarray(from, from + sizes[k]), at);
+        at += sizes[k];
+      }
+      const decoded = decodeCopcNodes(request.head, joined, sizes, counts);
+      const value: CopcNodesResult = {
+        positions: decoded.positions(),
+        colors: decoded.colors() ?? null,
+        intensity: decoded.intensity(),
+        classification: decoded.classification(),
+      };
+      decoded.free();
+      const transfer: Transferable[] = [value.positions.buffer, value.intensity.buffer, value.classification.buffer];
+      if (value.colors) transfer.push(value.colors.buffer);
+      return { value, transfer };
+    }
     case "sor-release":
       sorParts.get(request.job)?.free();
       sorParts.delete(request.job);
@@ -151,7 +199,7 @@ self.onmessage = async (event: MessageEvent<SliceRequest>) => {
   const request = event.data;
   try {
     await ready;
-    const { value, transfer } = run(request);
+    const { value, transfer } = await run(request);
     const response: SliceResponse = { seq: request.seq, ok: true, value };
     self.postMessage(response, { transfer });
   } catch (err) {

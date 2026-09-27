@@ -6,6 +6,7 @@ import init, {
   announcedPoints,
   Cloud,
   CloudMerger,
+  CopcReader,
   cloudToCloud,
   cloudToMesh,
   computeM3c2,
@@ -19,6 +20,7 @@ import init, {
   VolumeSurface,
   warmUp,
 } from "./wasm/ca_wasm.js";
+import { type ByteSource, readRange } from "./bytes";
 import type { Slice } from "./c2c-worker";
 import { CANCELLED } from "./protocol";
 import { MIN_PARALLEL_QUERIES, poolSize, runOn, runSlices, warmUpPool } from "./pool";
@@ -47,6 +49,7 @@ type Item =
       filePoints?: number;
       /** Names of the merged clouds, by `source` value. */
       sources?: string[];
+      copcLevels?: number;
     }
   | { kind: "mesh"; mesh: Mesh; name: string };
 
@@ -229,7 +232,78 @@ const STREAM_CHUNK = 16 << 20;
 
 type Loaded =
   | { kind: "mesh"; mesh: Mesh }
-  | { kind: "cloud"; cloud: Cloud; keepEvery: number; filePoints: number };
+  | { kind: "cloud"; cloud: Cloud; keepEvery: number; filePoints: number; copcLevels?: number };
+
+/** COPC nodes decoded per pool job. */
+const COPC_JOB_POINTS = 500_000;
+
+/**
+ * Read a COPC file: every octree level while the points so far fit
+ * `maxPoints` (at least the root level), so the density stays even. The
+ * nodes are fetched and decoded on the worker pool.
+ */
+async function readCopc(
+  source: ByteSource,
+  size: number,
+  maxPoints: number,
+  progress: (note: string, fraction?: number) => void,
+  check: () => void,
+): Promise<Loaded> {
+  progress("reading the COPC header");
+  let head = await readRange(source, 0, Math.min(size, 1 << 16));
+  const needed = CopcReader.headerLength(head) ?? head.length;
+  head = needed > head.length ? await readRange(source, 0, needed) : head.slice(0, needed);
+  const reader = CopcReader.open(head);
+  try {
+    let level = 0;
+    let chosen = 0;
+    for (;;) {
+      progress(`reading the hierarchy (level ${level})`);
+      const pages = reader.pagesFor(level);
+      const ranges = Array.from({ length: pages.length / 2 }, (_, k) => [pages[2 * k], pages[2 * k + 1]]);
+      const bytes = await Promise.all(ranges.map(([o, s]) => readRange(source, o, s)));
+      ranges.forEach(([o], k) => reader.addPage(o, bytes[k]));
+      check();
+      const points = reader.levelPoints(level);
+      if (points === 0 || (level > 0 && chosen + points > maxPoints)) break;
+      chosen += points;
+      level++;
+      if (!reader.deeperThan(level - 1)) break;
+    }
+    const found = reader.nodesTo(level - 1);
+    // In file order, so each job reads a few contiguous ranges.
+    const order = Array.from({ length: found.length / 3 }, (_, k) => k).sort((a, b) => found[3 * a] - found[3 * b]);
+    const nodes = order.flatMap((k) => [found[3 * k], found[3 * k + 1], found[3 * k + 2]]);
+    // Group nodes into jobs of about COPC_JOB_POINTS points.
+    const jobs: number[][] = [];
+    let current: number[] = [];
+    let inJob = 0;
+    for (let k = 0; k < nodes.length; k += 3) {
+      current.push(nodes[k], nodes[k + 1], nodes[k + 2]);
+      inJob += nodes[k + 2];
+      if (inJob >= COPC_JOB_POINTS) {
+        jobs.push(current);
+        [current, inJob] = [[], 0];
+      }
+    }
+    if (current.length) jobs.push(current);
+    progress(`reading ${chosen.toLocaleString()} points (levels 0–${level - 1})`);
+    const results = await runSlices(jobs.length, (j) => ({
+      kind: "copc-nodes" as const,
+      source,
+      head: head.slice(),
+      nodes: Float64Array.from(jobs[j]),
+    }));
+    check();
+    for (const r of results) reader.addDecoded(r.positions, r.colors ?? undefined, r.intensity, r.classification);
+    const filePoints = reader.totalPoints;
+    const cloud = reader.finish();
+    return { kind: "cloud", cloud, keepEvery: 1, filePoints, copcLevels: level };
+  } catch (err) {
+    reader.free();
+    throw err;
+  }
+}
 
 /**
  * Read a file: stream fixed-record formats (LAS, binary PLY/PCD) slice by
@@ -251,6 +325,7 @@ async function readPoints(
     head = new Uint8Array(await file.slice(0, 1 << 22).arrayBuffer());
     headerLength = StreamLoader.headerLength(name, head);
   }
+  if (CopcReader.isCopc(head)) return readCopc({ file }, file.size, maxPoints, progress, check);
   const loader = headerLength !== undefined ? StreamLoader.open(name, head.subarray(0, headerLength)) : undefined;
   if (loader) {
     const filePoints = loader.totalPoints;
@@ -389,6 +464,7 @@ function describe(
       lodGrid: 0,
       keepEvery: 1,
       filePoints: item.mesh.vertexCount,
+      copcLevels: null,
       timings: { ...timings, prepare: performance.now() - start },
     };
     return { value, transfer: [positions.buffer, indices.buffer] };
@@ -419,6 +495,7 @@ function describe(
     lodGrid: cloud.lodGrid,
     keepEvery: item.keepEvery ?? 1,
     filePoints: item.filePoints ?? cloud.length,
+    copcLevels: item.copcLevels ?? null,
     timings: { ...timings, prepare: performance.now() - start },
   };
   const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
@@ -468,11 +545,15 @@ async function handle(
 ): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
-    case "load": {
-      const { file, maxPoints } = req;
-      const name = file.name;
+    case "load":
+    case "load-copc": {
+      const { maxPoints } = req;
+      const name = req.kind === "load" ? req.file.name : req.name;
       let t = performance.now();
-      const loaded = await readPoints(file, maxPoints, progress, check);
+      const loaded =
+        req.kind === "load"
+          ? await readPoints(req.file, maxPoints, progress, check)
+          : await readCopc({ url: req.url }, Number.POSITIVE_INFINITY, maxPoints, progress, check);
       const parse = performance.now() - t;
       try {
         check();
@@ -499,7 +580,14 @@ async function handle(
       }
       shift ??= Array.from(cloud.suggestedShift()) as Vec3;
       const id = nextId++;
-      items.set(id, { kind: "cloud", cloud, name, keepEvery: loaded.keepEvery, filePoints: loaded.filePoints });
+      items.set(id, {
+        kind: "cloud",
+        cloud,
+        name,
+        keepEvery: loaded.keepEvery,
+        filePoints: loaded.filePoints,
+        copcLevels: loaded.copcLevels,
+      });
       progress("preparing for display");
       return describe(id, { parse, index, workers });
     }

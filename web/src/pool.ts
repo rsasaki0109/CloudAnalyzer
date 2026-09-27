@@ -35,6 +35,7 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
     if (slice.kind === "mesh") transfer.push(slice.queries.buffer);
     if (slice.kind === "sor-local" || slice.kind === "normals") transfer.push(slice.points.buffer);
     if (slice.kind === "sor-within") transfer.push(slice.queries.buffer);
+    if (slice.kind === "copc-nodes") transfer.push(slice.head.buffer, slice.nodes.buffer);
     if (slice.kind === "bucket-chunk" || slice.kind === "bucket") {
       transfer.push(slice.positions.buffer);
       if (slice.colors) transfer.push(slice.colors.buffer);

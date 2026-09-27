@@ -1343,6 +1343,173 @@ impl Default for CloudMerger {
     }
 }
 
+/// Reads a COPC file node by node (see [`ca_core::io::copc`]): open it from
+/// its first bytes, feed it the hierarchy pages it asks for, then the
+/// decoded nodes, and finish into a cloud.
+#[wasm_bindgen]
+pub struct CopcReader {
+    header: ca_core::io::copc::CopcHeader,
+    selector: ca_core::io::copc::NodeSelector,
+    points: ca_core::io::copc::CopcPoints,
+}
+
+#[wasm_bindgen]
+impl CopcReader {
+    /// Whether these first bytes (at least 400) are a COPC file.
+    #[wasm_bindgen(js_name = isCopc)]
+    pub fn is_copc(head: &[u8]) -> bool {
+        ca_core::io::copc::CopcHeader::is_copc(head)
+    }
+
+    /// Bytes from the start needed by [`CopcReader::open`].
+    #[wasm_bindgen(js_name = headerLength)]
+    pub fn header_length(head: &[u8]) -> Option<usize> {
+        ca_core::io::copc::CopcHeader::needed(head)
+    }
+
+    pub fn open(head: &[u8]) -> Result<CopcReader, JsError> {
+        let header =
+            ca_core::io::copc::CopcHeader::parse(head).map_err(|e| JsError::new(&e.to_string()))?;
+        Ok(CopcReader {
+            selector: ca_core::io::copc::NodeSelector::new(header.root_page),
+            header,
+            points: Default::default(),
+        })
+    }
+
+    #[wasm_bindgen(getter, js_name = totalPoints)]
+    pub fn total_points(&self) -> f64 {
+        self.header.total_points as f64
+    }
+
+    /// Hierarchy pages still needed to know every node down to `level`, as
+    /// `offset, size` pairs.
+    #[wasm_bindgen(js_name = pagesFor)]
+    pub fn pages_for(&self, level: i32) -> Vec<f64> {
+        self.selector
+            .pages_for(level)
+            .into_iter()
+            .flat_map(|(o, s)| [o as f64, s as f64])
+            .collect()
+    }
+
+    #[wasm_bindgen(js_name = addPage)]
+    pub fn add_page(&mut self, offset: f64, bytes: &[u8]) {
+        self.selector.add_page(offset as u64, bytes);
+    }
+
+    /// Points in the nodes at `level` (once its pages are added).
+    #[wasm_bindgen(js_name = levelPoints)]
+    pub fn level_points(&self, level: i32) -> f64 {
+        self.selector.level_points(level) as f64
+    }
+
+    #[wasm_bindgen(js_name = deeperThan)]
+    pub fn deeper_than(&self, level: i32) -> bool {
+        self.selector.deeper_than(level)
+    }
+
+    /// Nodes down to `level`, largest first, as `offset, size, points` triples.
+    #[wasm_bindgen(js_name = nodesTo)]
+    pub fn nodes_to(&self, level: i32) -> Vec<f64> {
+        self.selector
+            .nodes_to(level)
+            .into_iter()
+            .flat_map(|e| [e.offset as f64, e.byte_size as f64, e.point_count as f64])
+            .collect()
+    }
+
+    /// Add nodes decoded by [`decode_copc_nodes`] (its arrays).
+    #[wasm_bindgen(js_name = addDecoded)]
+    pub fn add_decoded(
+        &mut self,
+        positions: &[f64],
+        colors: Option<Vec<u16>>,
+        intensity: Vec<f32>,
+        classification: Vec<u8>,
+    ) -> Result<(), JsError> {
+        let positions = positions.as_chunks::<3>().0.to_vec();
+        let n = positions.len();
+        if intensity.len() != n
+            || classification.len() != n
+            || colors.as_ref().is_some_and(|c| c.len() != 3 * n)
+        {
+            return Err(JsError::new("decoded COPC arrays differ in length"));
+        }
+        self.points.extend(ca_core::io::copc::CopcPoints {
+            positions,
+            colors: colors.map(|c| c.as_chunks::<3>().0.to_vec()),
+            intensity,
+            classification,
+        });
+        Ok(())
+    }
+
+    /// The cloud (not yet indexed).
+    pub fn finish(self) -> Result<Cloud, JsError> {
+        if self.points.is_empty() {
+            return Err(JsError::new("no points were read"));
+        }
+        Ok(Cloud::unindexed(self.points.into_cloud()))
+    }
+}
+
+/// Points decoded from COPC nodes on a pool worker.
+#[wasm_bindgen]
+pub struct DecodedCopc {
+    points: ca_core::io::copc::CopcPoints,
+}
+
+#[wasm_bindgen]
+impl DecodedCopc {
+    pub fn positions(&self) -> Vec<f64> {
+        self.points.positions.as_flattened().to_vec()
+    }
+
+    /// 16-bit RGB, if the file has colors.
+    pub fn colors(&self) -> Option<Vec<u16>> {
+        self.points
+            .colors
+            .as_ref()
+            .map(|c| c.as_flattened().to_vec())
+    }
+
+    pub fn intensity(&self) -> Vec<f32> {
+        self.points.intensity.clone()
+    }
+
+    pub fn classification(&self) -> Vec<u8> {
+        self.points.classification.clone()
+    }
+}
+
+/// Decode COPC nodes: `chunks` is their compressed data back to back and
+/// `counts` their point counts; `head` the file's first bytes.
+#[wasm_bindgen(js_name = decodeCopcNodes)]
+pub fn decode_copc_nodes(
+    head: &[u8],
+    chunks: &[u8],
+    sizes: &[u32],
+    counts: &[u32],
+) -> Result<DecodedCopc, JsError> {
+    let header =
+        ca_core::io::copc::CopcHeader::parse(head).map_err(|e| JsError::new(&e.to_string()))?;
+    let mut points = ca_core::io::copc::CopcPoints::default();
+    let mut at = 0usize;
+    for (&size, &count) in sizes.iter().zip(counts) {
+        let chunk = chunks
+            .get(at..at + size as usize)
+            .ok_or_else(|| JsError::new("COPC chunk out of range"))?;
+        points.extend(
+            header
+                .decode_node(chunk, count as usize)
+                .map_err(|e| JsError::new(&e.to_string()))?,
+        );
+        at += size as usize;
+    }
+    Ok(DecodedCopc { points })
+}
+
 /// Points of a cross-section (see [`Cloud::profile`]).
 #[wasm_bindgen]
 pub struct ProfileHits {

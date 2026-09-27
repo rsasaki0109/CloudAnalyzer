@@ -1,5 +1,6 @@
 //! Point cloud file readers.
 
+pub mod copc;
 mod las;
 mod obj;
 mod pcd;

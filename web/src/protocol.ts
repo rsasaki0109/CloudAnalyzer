@@ -32,6 +32,8 @@ export interface LoadedCloud {
   keepEvery: number;
   /** Points in the file (before thinning). */
   filePoints: number;
+  /** For a COPC file read to a budget: how many octree levels were read. */
+  copcLevels: number | null;
   /** Milliseconds spent in each loading stage inside the worker. */
   timings: { parse: number; index: number; prepare: number; workers?: number };
   /** [minX, minY, minZ, maxX, maxY, maxZ] in original coordinates. */
@@ -116,7 +118,15 @@ export type Request =
       kind: "load";
       /** Read by the worker in slices, so large files are never held whole. */
       file: File;
-      /** Thin to at most this many points (every n-th point is kept). */
+      /** Thin to at most this many points (every n-th point is kept; for COPC, whole levels). */
+      maxPoints: number;
+    }
+  | {
+      /** A remote COPC file, read node by node with range requests. */
+      kind: "load-copc";
+      url: string;
+      name: string;
+      /** Read octree levels while their points fit this. */
       maxPoints: number;
     }
   | { kind: "c2c"; compared: number; reference: number; signed: boolean }

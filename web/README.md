@@ -67,6 +67,12 @@ Files never leave the browser.
   a point.
 - Click a point to see its exact coordinates, color and C2C distance; press
   **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
+- COPC (Cloud Optimized Point Cloud) files are read node by node: every
+  octree level that fits "Max points per file" is loaded, so the density
+  stays even and the rest of the file is never read. From a URL this uses
+  HTTP range requests (adjacent nodes merged into one request), so a large
+  public COPC opens without downloading it; nodes are decoded on the worker
+  pool. Local COPC files are read the same way.
 - Long loads and downloads show a progress bar with **Cancel** (a load stops
   between 16 MB slices); the status bar also shows the main worker's
   WebAssembly memory.

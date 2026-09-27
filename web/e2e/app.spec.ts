@@ -1,4 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
+import { readFileSync } from "node:fs";
 
 /** A binary little-endian PLY with float x/y/z. */
 function ply(points: [number, number, number][]): Buffer {
@@ -469,4 +470,35 @@ test("demos: ?demo= loads synthetic samples and runs the analysis", async ({ pag
   await page.goto("/");
   await page.locator('[data-demo="ground"]').click();
   await expect(status(page)).toContainText(/town_csf: [\d,]+ of 69,200 points are ground/);
+});
+
+test.describe("COPC", () => {
+  const copc = readFileSync(new URL("./fixtures/small.copc.laz", import.meta.url));
+
+  test("a local COPC file loads its octree levels", async ({ page }) => {
+    await open(page, [{ name: "small.copc.laz", buffer: copc }]);
+    await expect(status(page)).toContainText("Loaded small.copc.laz: 42,000 of 42,000 points (COPC levels 0–2)");
+    await expect(page.locator("#class-panel")).toBeVisible();
+  });
+
+  test("a remote COPC file is read with range requests", async ({ page }) => {
+    const ranges: string[] = [];
+    await page.route((url) => url.pathname === "/remote/small.copc.laz", (route) => {
+      const range = route.request().headers().range;
+      ranges.push(range ?? "none");
+      const match = /bytes=(\d+)-(\d+)/.exec(range ?? "");
+      if (!match) return route.fulfill({ status: 200, body: copc });
+      const [start, end] = [Number(match[1]), Math.min(Number(match[2]), copc.length - 1)];
+      return route.fulfill({
+        status: 206,
+        headers: { "content-range": `bytes ${start}-${end}/${copc.length}`, "accept-ranges": "bytes" },
+        body: copc.subarray(start, end + 1),
+      });
+    });
+    await page.goto("/?url=/remote/small.copc.laz");
+    await expect(status(page)).toContainText("Loaded small.copc.laz: 42,000 of 42,000 points (COPC levels 0–2)");
+    // Never the whole file at once.
+    expect(ranges.every((r) => r.startsWith("bytes="))).toBe(true);
+    expect(ranges.length).toBeGreaterThan(2);
+  });
 });

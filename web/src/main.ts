@@ -9,6 +9,7 @@ import {
   filterCloud,
   estimateNormals,
   loadCloud,
+  loadCopcUrl,
   mergeClouds,
   pointAt,
   profileCloud,
@@ -384,33 +385,38 @@ function addEntry(cloud: LoadedCloud, origin: Origin = { kind: "derived" }): Ent
   return entry;
 }
 
+/** A COPC file on a server, read node by node instead of downloaded. */
+interface RemoteCopc {
+  url: string;
+  name: string;
+}
+
 /**
  * Load point clouds and meshes; session files (.json) among them are applied
  * once the others are in. `origins` tells where each file came from.
  */
-async function loadFiles(files: File[], origins?: Origin[]): Promise<void> {
+async function loadFiles(files: (File | RemoteCopc)[], origins?: Origin[]): Promise<void> {
   const sessions: File[] = [];
   const signal = startTask();
   for (const [i, file] of files.entries()) {
     if (signal.aborted) break;
-    if (/\.json$/i.test(file.name)) {
+    if (file instanceof File && /\.json$/i.test(file.name)) {
       sessions.push(file);
       continue;
     }
-    const mb = (file.size / 1e6).toFixed(file.size >= 1e7 ? 0 : 1);
-    setStatus(`Loading ${file.name} (${mb} MB): reading…`);
+    const mb = file instanceof File ? `${(file.size / 1e6).toFixed(file.size >= 1e7 ? 0 : 1)} MB` : "COPC";
+    setStatus(`Loading ${file.name} (${mb}): reading…`);
     const start = performance.now();
     try {
       const maxPoints = Number($<HTMLSelectElement>("max-points").value) || Number.POSITIVE_INFINITY;
-      const cloud = await loadCloud(
-        file,
-        maxPoints,
-        (p) => {
-          showProgress(p);
-          setStatus(`Loading ${file.name} (${mb} MB): ${p.note}…`);
-        },
-        signal,
-      );
+      const onProgress = (p: Progress) => {
+        showProgress(p);
+        setStatus(`Loading ${file.name} (${mb}): ${p.note}…`);
+      };
+      const cloud =
+        file instanceof File
+          ? await loadCloud(file, maxPoints, onProgress, signal)
+          : await loadCopcUrl(file.url, file.name, maxPoints, onProgress, signal);
       addEntry(cloud, origins?.[i] ?? { kind: "file" });
       if (entries.size === 1) viewer.fit();
       const [sx, sy, sz] = cloud.shift;
@@ -421,9 +427,12 @@ async function loadFiles(files: File[], origins?: Origin[]): Promise<void> {
       const size =
         cloud.kind === "mesh"
           ? `${cloud.triangles.toLocaleString()} triangles`
-          : cloud.keepEvery > 1
-            ? `${cloud.count.toLocaleString()} of ${cloud.filePoints.toLocaleString()} points (1 in ${cloud.keepEvery})`
-            : `${cloud.count.toLocaleString()} points`;
+          : cloud.copcLevels !== null
+            ? `${cloud.count.toLocaleString()} of ${cloud.filePoints.toLocaleString()} points ` +
+              `(COPC levels 0–${cloud.copcLevels - 1})`
+            : cloud.keepEvery > 1
+              ? `${cloud.count.toLocaleString()} of ${cloud.filePoints.toLocaleString()} points (1 in ${cloud.keepEvery})`
+              : `${cloud.count.toLocaleString()} points`;
       setStatus(
         `Loaded ${file.name}: ${size} in ${s(performance.now() - start)} ` +
           `(read ${s(parse)} · index ${s(index)}` +
@@ -442,6 +451,7 @@ async function loadFiles(files: File[], origins?: Origin[]): Promise<void> {
   endTask(signal);
   if (signal.aborted) return;
   for (const file of sessions) {
+    if (!(file instanceof File)) continue;
     try {
       await applySession(parseSession(JSON.parse(await file.text())));
     } catch (err) {
@@ -454,7 +464,7 @@ async function loadFiles(files: File[], origins?: Origin[]): Promise<void> {
 
 /** Download clouds from URLs (the server must allow cross-origin requests) and load them. */
 async function loadUrls(urls: string[]): Promise<void> {
-  const files: File[] = [];
+  const files: (File | RemoteCopc)[] = [];
   const origins: Origin[] = [];
   const failed: string[] = [];
   const signal = startTask();
@@ -463,9 +473,24 @@ async function loadUrls(urls: string[]): Promise<void> {
     const name = nameFromUrl(url);
     setStatus(`Downloading ${name}…`);
     try {
-      const response = await fetch(url, { signal });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      files.push(new File([await readWithProgress(response, name)], name));
+      // Ask for the first bytes: a COPC file is then read node by node; a
+      // server that ignores the range sends the whole file right away. Not
+      // cached: Chrome can otherwise splice this partial response into a
+      // later full download of the same URL.
+      const probe = await fetch(url, { signal, cache: "no-store", headers: { Range: "bytes=0-1023" } });
+      if (!probe.ok) throw new Error(`HTTP ${probe.status}`);
+      if (probe.status === 206) {
+        const head = new Uint8Array(await probe.arrayBuffer());
+        if (isCopcHead(head)) {
+          files.push({ url, name });
+        } else {
+          const response = await fetch(url, { signal });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          files.push(new File([await readWithProgress(response, name)], name));
+        }
+      } else {
+        files.push(new File([await readWithProgress(probe, name)], name));
+      }
       origins.push({ kind: "url", url });
     } catch (err) {
       if (signal.aborted) {
@@ -481,6 +506,12 @@ async function loadUrls(urls: string[]): Promise<void> {
   if (failed.length) {
     setStatus(`Could not download ${failed.join(", ")}; the server must allow cross-origin requests`, true);
   }
+}
+
+/** Whether these first bytes are a COPC file: LAS 1.4 whose first VLR is "copc". */
+function isCopcHead(head: Uint8Array): boolean {
+  const text = (at: number, n: number) => String.fromCharCode(...head.subarray(at, at + n));
+  return head.length >= 400 && text(0, 4) === "LASF" && head[24] === 1 && head[25] === 4 && text(377, 5) === "copc\0";
 }
 
 /** The body of a download, reporting progress when its size is known. */

@@ -7,4 +7,5 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+laz = { version = "0.13.0", default-features = false }
 thiserror = "2.0.21"

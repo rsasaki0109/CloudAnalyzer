@@ -1,4 +1,4 @@
-//! Uncompressed LAS 1.0–1.4 reader (point formats 0–10). LAZ is rejected.
+//! LAS 1.0–1.4 and LAZ reader (point formats 0–10).
 
 use super::IoError;
 use crate::PointCloud;
@@ -52,11 +52,8 @@ pub(crate) fn read(b: &[u8]) -> Result<PointCloud, IoError> {
     let minor = u8_at(b, 25)?;
     let data_offset = u32_at(b, 96)? as usize;
     let raw_format = u8_at(b, 104)?;
-    if raw_format & 0xc0 != 0 {
-        return Err(IoError::Unsupported(
-            "LAZ (compressed LAS) is not supported yet".into(),
-        ));
-    }
+    // LASzip marks compressed files by setting the high bits of the format id.
+    let compressed = raw_format & 0xc0 != 0;
     let format = raw_format & 0x3f;
     if format > 10 {
         return Err(IoError::header(
@@ -77,9 +74,14 @@ pub(crate) fn read(b: &[u8]) -> Result<PointCloud, IoError> {
     if record_len < rgb.map_or(12, |o| o + 6) {
         return Err(IoError::header(FORMAT, "point record too short"));
     }
-    let records = b
-        .get(data_offset..data_offset + record_len * count)
-        .ok_or(IoError::Truncated(FORMAT))?;
+    let decompressed;
+    let records = if compressed {
+        decompressed = decompress(b, data_offset, record_len * count)?;
+        &decompressed[..]
+    } else {
+        b.get(data_offset..data_offset + record_len * count)
+            .ok_or(IoError::Truncated(FORMAT))?
+    };
 
     let mut cloud = PointCloud {
         positions: Vec::with_capacity(count),
@@ -107,6 +109,43 @@ pub(crate) fn read(b: &[u8]) -> Result<PointCloud, IoError> {
         colors.extend(wide_colors.iter().map(|c| c.map(|v| (v >> shift) as u8)));
     }
     Ok(cloud)
+}
+
+/// Decompress `len` bytes of LAZ point records starting at `data_offset`.
+fn decompress(b: &[u8], data_offset: usize, len: usize) -> Result<Vec<u8>, IoError> {
+    let vlr = laszip_vlr(b)?;
+    let vlr = laz::LazVlr::from_buffer(vlr)
+        .map_err(|e| IoError::header(FORMAT, format!("bad LASzip VLR: {e}")))?;
+    let mut source = std::io::Cursor::new(b);
+    source.set_position(data_offset as u64);
+    let mut decompressor = laz::LasZipDecompressor::new(source, vlr)
+        .map_err(|e| IoError::Unsupported(format!("LAZ: {e}")))?;
+    let mut out = vec![0u8; len];
+    decompressor
+        .decompress_many(&mut out)
+        .map_err(|e| IoError::Unsupported(format!("LAZ: {e}")))?;
+    Ok(out)
+}
+
+/// Payload of the LASzip VLR (user id `laszip encoded`, record id 22204).
+fn laszip_vlr(b: &[u8]) -> Result<&[u8], IoError> {
+    const HEADER: usize = 54;
+    let mut at = u16_at(b, 94)? as usize;
+    for _ in 0..u32_at(b, 100)? {
+        let user_id = b.get(at + 2..at + 18).ok_or(IoError::Truncated(FORMAT))?;
+        let record_id = u16_at(b, at + 18)?;
+        let len = u16_at(b, at + 20)? as usize;
+        if user_id.starts_with(b"laszip encoded") && record_id == 22204 {
+            return b
+                .get(at + HEADER..at + HEADER + len)
+                .ok_or(IoError::Truncated(FORMAT));
+        }
+        at += HEADER + len;
+    }
+    Err(IoError::header(
+        FORMAT,
+        "compressed file without a LASzip VLR",
+    ))
 }
 
 #[cfg(test)]
@@ -174,8 +213,54 @@ mod tests {
     }
 
     #[test]
-    fn rejects_laz() {
-        let src = las(0x80 | 3, 34, &[]);
-        assert!(matches!(read(&src), Err(IoError::Unsupported(_))));
+    fn reads_laz_roundtrip() {
+        use laz::{LasZipCompressor, LazItemRecordBuilder, LazVlrBuilder};
+
+        let records: Vec<Vec<u8>> = (0..5000)
+            .map(|i| {
+                record(
+                    [i * 7, -i, i % 100],
+                    26,
+                    Some((20, [i as u16 * 13, 0, 65535])),
+                )
+            })
+            .collect();
+        let vlr =
+            LazVlrBuilder::new(LazItemRecordBuilder::default_for_point_format_id(2, 0).unwrap())
+                .build();
+        let mut vlr_payload = Vec::new();
+        vlr.write_to(&mut vlr_payload).unwrap();
+
+        // Header + one VLR, then the compressed points.
+        let mut file = las(0x80 | 2, 26, &[]);
+        let header_len = file.len();
+        let mut vlr_header = vec![0u8; 54];
+        vlr_header[2..16].copy_from_slice(b"laszip encoded");
+        vlr_header[18..20].copy_from_slice(&22204u16.to_le_bytes());
+        vlr_header[20..22].copy_from_slice(&(vlr_payload.len() as u16).to_le_bytes());
+        file.extend_from_slice(&vlr_header);
+        file.extend_from_slice(&vlr_payload);
+        let data_offset = file.len() as u32;
+        file[96..100].copy_from_slice(&data_offset.to_le_bytes());
+        file[100..104].copy_from_slice(&1u32.to_le_bytes());
+        file[107..111].copy_from_slice(&(records.len() as u32).to_le_bytes());
+        assert_eq!(header_len, 227);
+
+        let mut cursor = std::io::Cursor::new(file);
+        cursor.set_position(data_offset as u64);
+        {
+            let mut compressor = LasZipCompressor::new(&mut cursor, vlr).unwrap();
+            compressor.compress_many(&records.concat()).unwrap();
+            compressor.done().unwrap();
+        }
+        let file = cursor.into_inner();
+
+        let cloud = read(&file).unwrap();
+        assert_eq!(cloud.len(), 5000);
+        let p = cloud.positions[4999];
+        assert!((p[0] - (500000.0 + 4999.0 * 7.0 * 0.01)).abs() < 1e-6);
+        assert!((p[1] - (4000000.0 - 49.99)).abs() < 1e-6);
+        assert!((p[2] - 0.099).abs() < 1e-9);
+        assert_eq!(cloud.colors.unwrap()[1], [0, 0, 255]);
     }
 }

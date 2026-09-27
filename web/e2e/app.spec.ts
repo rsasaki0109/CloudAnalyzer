@@ -1,0 +1,135 @@
+import { expect, type Page, test } from "@playwright/test";
+
+/** A binary little-endian PLY with float x/y/z. */
+function ply(points: [number, number, number][]): Buffer {
+  const header =
+    "ply\nformat binary_little_endian 1.0\n" +
+    `element vertex ${points.length}\n` +
+    "property float x\nproperty float y\nproperty float z\nend_header\n";
+  const body = Buffer.alloc(points.length * 12);
+  points.forEach((p, i) => p.forEach((v, a) => body.writeFloatLE(v, i * 12 + a * 4)));
+  return Buffer.concat([Buffer.from(header), body]);
+}
+
+/** An uncompressed LAS 1.2 file (point format 1) with intensity and classes. */
+function las(points: { xyz: [number, number, number]; intensity: number; cls: number }[]): Buffer {
+  const header = Buffer.alloc(227);
+  header.write("LASF", 0);
+  header[24] = 1;
+  header[25] = 2;
+  header.writeUInt16LE(227, 94);
+  header.writeUInt32LE(227, 96);
+  header[104] = 1;
+  header.writeUInt16LE(28, 105);
+  header.writeUInt32LE(points.length, 107);
+  for (let a = 0; a < 3; a++) header.writeDoubleLE(0.001, 131 + 8 * a);
+  const body = Buffer.alloc(points.length * 28);
+  points.forEach((p, i) => {
+    const o = i * 28;
+    p.xyz.forEach((v, a) => body.writeInt32LE(Math.round(v / 0.001), o + 4 * a));
+    body.writeUInt16LE(p.intensity, o + 12);
+    body[o + 15] = p.cls;
+  });
+  return Buffer.concat([header, body]);
+}
+
+/** A wavy grid of `n` x `n` points, optionally lifted. */
+function grid(n: number, lift = 0): [number, number, number][] {
+  const out: [number, number, number][] = [];
+  for (let j = 0; j < n; j++) {
+    for (let i = 0; i < n; i++) out.push([i * 0.1, j * 0.1, Math.sin(i / 7) * 0.2 + lift]);
+  }
+  return out;
+}
+
+async function open(page: Page, files: { name: string; buffer: Buffer }[]): Promise<void> {
+  await page
+    .locator("#file-input")
+    .setInputFiles(files.map((f) => ({ name: f.name, mimeType: "application/octet-stream", buffer: f.buffer })));
+}
+
+const status = (page: Page) => page.locator("#status");
+
+test.beforeEach(async ({ page }) => {
+  page.on("pageerror", (err) => {
+    throw err;
+  });
+  await page.goto("/");
+});
+
+test("sample: loads two LiDAR scans and computes C2C", async ({ page }) => {
+  await page.getByRole("button", { name: "Try a sample" }).click();
+  await expect(status(page)).toContainText("C2C distance computed for 34,370 points");
+  await expect(page.locator("#c2c-stats")).toContainText("0.022061");
+  await expect(page.locator("#colorbar")).toBeVisible();
+  await expect(page.locator(".cloud-list li")).toHaveCount(2);
+});
+
+test("PLY: C2C between a grid and a lifted copy, then export", async ({ page }) => {
+  await open(page, [
+    { name: "reference.ply", buffer: ply(grid(60)) },
+    { name: "lifted.ply", buffer: ply(grid(60, 0.5)) },
+  ]);
+  await expect(status(page)).toContainText("Loaded lifted.ply: 3,600 points");
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("C2C distance computed for 3,600 points");
+  // Each lifted point is 0.5 above its twin; on the wavy grid a neighbour can
+  // be slightly closer, so 0.5 is the maximum.
+  await expect(page.locator("#c2c-stats")).toContainText(/Max\s*0\.5(?!\d)/);
+
+  const download = page.waitForEvent("download");
+  await page.locator("#export-ply").click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("lifted_C2C.ply");
+  const stream = await file.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(chunk as Buffer);
+  const header = Buffer.concat(chunks).subarray(0, 300).toString("latin1");
+  expect(header).toContain("element vertex 3600");
+  expect(header).toContain("property float scalar_C2C_distance");
+});
+
+test("LAS: intensity and classification with a class filter", async ({ page }) => {
+  const points = grid(40).map((xyz, i) => ({ xyz, intensity: 100 + (i % 50), cls: i % 10 === 0 ? 6 : 2 }));
+  await open(page, [{ name: "classes.las", buffer: las(points) }]);
+  await expect(status(page)).toContainText("Loaded classes.las: 1,600 points");
+  // No RGB, so the cloud starts colored by intensity.
+  await expect(page.locator(".cloud-list select")).toHaveValue("intensity");
+  const classes = page.locator("#class-list");
+  await expect(classes).toContainText("2 · Ground");
+  await expect(classes).toContainText("1,440");
+  await expect(classes).toContainText("6 · Building");
+  await expect(classes).toContainText("160");
+  await classes.locator("input").first().uncheck();
+  await expect(classes.locator("input").first()).not.toBeChecked();
+});
+
+test("clipping box crops a cloud", async ({ page }) => {
+  await open(page, [{ name: "grid.ply", buffer: ply(grid(50)) }]);
+  await expect(status(page)).toContainText("Loaded grid.ply: 2,500 points");
+  await page.locator("#clip-enabled").check();
+  const x = page.locator('.clip-axis[data-axis="0"] input');
+  await x.nth(0).fill("0");
+  await x.nth(1).fill("500");
+  await page.locator("#clip-crop").click();
+  await expect(status(page)).toContainText("Cropped: grid_crop");
+  // Half of the 50 columns (x = 0.0 … 2.4), within one column of rounding.
+  const meta = await page.locator(".cloud-list li").nth(1).locator(".meta").textContent();
+  const kept = Number(meta?.match(/([\d,]+) points/)?.[1].replace(/,/g, ""));
+  expect(kept).toBeGreaterThanOrEqual(1200);
+  expect(kept).toBeLessThanOrEqual(1300);
+});
+
+test("mesh: signed C2M against an OBJ plane", async ({ page }) => {
+  const obj = Buffer.from("v -1 -1 0\nv 10 -1 0\nv 10 10 0\nv -1 10 0\nf 1 2 3 4\n");
+  const above = grid(20, 0.25).map(([x, y]) => [x, y, 0.25] as [number, number, number]);
+  await open(page, [
+    { name: "plane.obj", buffer: obj },
+    { name: "above.ply", buffer: ply(above) },
+  ]);
+  await expect(status(page)).toContainText("Loaded above.ply");
+  await expect(page.locator("#c2c-reference")).toHaveValue(/.+/);
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("C2M distance computed for 400 points");
+  await expect(page.locator("#c2c-stats")).toContainText(/Mean\s*0\.25(?!\d)/);
+});

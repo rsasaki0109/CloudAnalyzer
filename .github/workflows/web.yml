@@ -50,6 +50,16 @@ jobs:
           npm ci
           npm run wasm
           npm run build
+      - name: End-to-end tests
+        working-directory: web
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-traces
+          path: web/test-results
       - uses: actions/upload-artifact@v4
         with:
           name: cloudanalyzer-web

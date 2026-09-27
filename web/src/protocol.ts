@@ -37,11 +37,33 @@ export interface C2cOutput {
   workers: number;
 }
 
+export interface IcpOutput {
+  /** The moving cloud after the transform (new point order and octree). */
+  cloud: LoadedCloud;
+  /** Row-major 4x4 transform applied to the moving cloud. */
+  matrix: number[];
+  rmsInitial: number;
+  rmsFinal: number;
+  iterations: number;
+  converged: boolean;
+  millis: number;
+}
+
 export type Request =
   | { kind: "load"; name: string; bytes: ArrayBuffer }
   | { kind: "c2c"; compared: number; reference: number }
   | { kind: "remove"; id: number }
-  | { kind: "point"; id: number; index: number };
+  | { kind: "point"; id: number; index: number }
+  | {
+      kind: "icp";
+      moving: number;
+      reference: number;
+      maxIterations: number;
+      overlap: number;
+      matchCentroids: boolean;
+      pointToPlane: boolean;
+    }
+  | { kind: "transform"; id: number; matrix: number[] };
 
 export type Response =
   | { ok: true; value: unknown }

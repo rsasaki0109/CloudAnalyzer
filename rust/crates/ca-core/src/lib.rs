@@ -5,6 +5,7 @@
 //! narrowing to `f32`.
 
 pub mod distance;
+pub mod icp;
 pub mod io;
 pub mod kdtree;
 pub mod octree;

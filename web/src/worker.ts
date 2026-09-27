@@ -1,12 +1,18 @@
 // Runs the Rust/WASM core off the UI thread. All clouds live here so that
 // analyses can use full f64 coordinates without copying them back and forth.
 
-import init, { Cloud, cloudToCloud, planCloudToCloud, summarizeDistances } from "./wasm/ca_wasm.js";
+import init, {
+  Cloud,
+  cloudToCloud,
+  planCloudToCloud,
+  registerIcp,
+  summarizeDistances,
+} from "./wasm/ca_wasm.js";
 import { MIN_PARALLEL_QUERIES, poolSize, runSlices } from "./pool";
-import type { C2cOutput, LoadedCloud, Request, Response, Vec3 } from "./protocol";
+import type { C2cOutput, IcpOutput, LoadedCloud, Request, Response, Vec3 } from "./protocol";
 
 const ready = init();
-const clouds = new Map<number, Cloud>();
+const clouds = new Map<number, { cloud: Cloud; name: string }>();
 let nextId = 1;
 // Like CloudCompare's global shift: chosen from the first cloud, shared by all.
 let shift: Vec3 | null = null;
@@ -37,36 +43,47 @@ async function parallelCloudToCloud(
   return { distances, workers: results.length };
 }
 
+/** Everything the UI needs to draw a cloud; buffers are listed for transfer. */
+function describe(id: number): { value: LoadedCloud; transfer: Transferable[] } {
+  const { cloud, name } = clouds.get(id)!;
+  const positions = cloud.positions(new Float64Array(shift!));
+  const colors = cloud.colors() ?? null;
+  const lodNodes = cloud.lodNodes();
+  const value: LoadedCloud = {
+    id,
+    name,
+    count: cloud.length,
+    positions,
+    colors,
+    bounds: Array.from(cloud.bounds()),
+    shift: shift!,
+    lodNodes,
+    lodGrid: cloud.lodGrid,
+  };
+  const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
+  if (colors) transfer.push(colors.buffer);
+  return { value, transfer };
+}
+
+function get(id: number): Cloud {
+  const entry = clouds.get(id);
+  if (!entry) throw new Error("cloud not found");
+  return entry.cloud;
+}
+
 async function handle(req: Request): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
     case "load": {
       const cloud = Cloud.parse(req.name, new Uint8Array(req.bytes));
       shift ??= Array.from(cloud.suggestedShift()) as Vec3;
-      const positions = cloud.positions(new Float64Array(shift));
-      const colors = cloud.colors() ?? null;
-      const lodNodes = cloud.lodNodes();
       const id = nextId++;
-      clouds.set(id, cloud);
-      const value: LoadedCloud = {
-        id,
-        name: req.name,
-        count: cloud.length,
-        positions,
-        colors,
-        bounds: Array.from(cloud.bounds()),
-        shift,
-        lodNodes,
-        lodGrid: cloud.lodGrid,
-      };
-      const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
-      if (colors) transfer.push(colors.buffer);
-      return { value, transfer };
+      clouds.set(id, { cloud, name: req.name });
+      return describe(id);
     }
     case "c2c": {
-      const compared = clouds.get(req.compared);
-      const reference = clouds.get(req.reference);
-      if (!compared || !reference) throw new Error("cloud not found");
+      const compared = get(req.compared);
+      const reference = get(req.reference);
       const start = performance.now();
       const parallel = await parallelCloudToCloud(compared, reference);
       const result = parallel
@@ -91,12 +108,42 @@ async function handle(req: Request): Promise<{ value: unknown; transfer: Transfe
       return { value, transfer: [distances.buffer] };
     }
     case "point": {
-      const xyz = clouds.get(req.id)?.point(req.index);
+      const xyz = clouds.get(req.id)?.cloud.point(req.index);
       if (!xyz) throw new Error("point not found");
       return { value: Array.from(xyz), transfer: [] };
     }
+    case "icp": {
+      const moving = get(req.moving);
+      const start = performance.now();
+      const outcome = registerIcp(
+        moving,
+        get(req.reference),
+        req.maxIterations,
+        req.overlap,
+        req.matchCentroids,
+        req.pointToPlane,
+      );
+      const matrix = Array.from(outcome.matrix());
+      moving.transform(new Float64Array(matrix));
+      const described = describe(req.moving);
+      const value: IcpOutput = {
+        cloud: described.value,
+        matrix,
+        rmsInitial: outcome.rmsInitial,
+        rmsFinal: outcome.rmsFinal,
+        iterations: outcome.iterations,
+        converged: outcome.converged,
+        millis: performance.now() - start,
+      };
+      outcome.free();
+      return { value, transfer: described.transfer };
+    }
+    case "transform": {
+      get(req.id).transform(new Float64Array(req.matrix));
+      return describe(req.id);
+    }
     case "remove": {
-      clouds.get(req.id)?.free();
+      clouds.get(req.id)?.cloud.free();
       clouds.delete(req.id);
       if (clouds.size === 0) shift = null;
       return { value: null, transfer: [] };

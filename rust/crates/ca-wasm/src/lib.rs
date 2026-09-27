@@ -1,5 +1,6 @@
 //! WebAssembly bindings for the CloudAnalyzer Web viewer.
 
+use ca_core::icp::{IcpMetric, IcpParams, Rigid};
 use ca_core::octree::{NO_CHILD, Octree, OctreeParams};
 use ca_core::{DistanceStats, PointCloud};
 use wasm_bindgen::prelude::*;
@@ -23,14 +24,22 @@ impl Cloud {
     /// Parse a file; the format is detected from `name` and the leading bytes.
     pub fn parse(name: &str, bytes: &[u8]) -> Result<Cloud, JsError> {
         let mut inner = ca_core::read(name, bytes)?;
-        let mut lod = Octree::build_in_place(&mut inner.positions, OctreeParams::default())
-            .ok_or_else(|| JsError::new("cloud is empty or too large"))?;
-        if let Some(colors) = inner.colors.as_mut() {
-            *colors = lod.order.iter().map(|&i| colors[i as usize]).collect();
-        }
-        // File order is not needed by the viewer; drop the permutation.
-        lod.order = Vec::new();
+        let lod = build_lod(&mut inner)?;
         Ok(Cloud { inner, lod })
+    }
+
+    /// Apply a rigid transform (row-major 4x4) to every point and rebuild the
+    /// octree, which also changes the point order.
+    pub fn transform(&mut self, matrix: &[f64]) -> Result<(), JsError> {
+        let matrix: &[f64; 16] = matrix
+            .try_into()
+            .map_err(|_| JsError::new("matrix must have 16 entries"))?;
+        let rigid = Rigid::from_matrix(matrix);
+        for p in &mut self.inner.positions {
+            *p = rigid.apply(p);
+        }
+        self.lod = build_lod(&mut self.inner)?;
+        Ok(())
     }
 
     #[wasm_bindgen(getter)]
@@ -103,6 +112,73 @@ impl Cloud {
     pub fn lod_grid(&self) -> u32 {
         self.lod.grid
     }
+}
+
+/// Reorder `cloud` in place into octree order (colors follow) and return
+/// the octree without the permutation, which the viewer does not need.
+fn build_lod(cloud: &mut PointCloud) -> Result<Octree, JsError> {
+    let mut lod = Octree::build_in_place(&mut cloud.positions, OctreeParams::default())
+        .ok_or_else(|| JsError::new("cloud is empty or too large"))?;
+    if let Some(colors) = cloud.colors.as_mut() {
+        *colors = lod.order.iter().map(|&i| colors[i as usize]).collect();
+    }
+    lod.order = Vec::new();
+    Ok(lod)
+}
+
+/// Outcome of [`register_icp`].
+#[wasm_bindgen]
+pub struct IcpOutcome {
+    matrix: [f64; 16],
+    #[wasm_bindgen(readonly, js_name = rmsInitial)]
+    pub rms_initial: f64,
+    #[wasm_bindgen(readonly, js_name = rmsFinal)]
+    pub rms_final: f64,
+    #[wasm_bindgen(readonly)]
+    pub iterations: usize,
+    #[wasm_bindgen(readonly)]
+    pub converged: bool,
+}
+
+#[wasm_bindgen]
+impl IcpOutcome {
+    /// Row-major 4x4 transform taking the moving cloud onto the reference.
+    pub fn matrix(&self) -> Vec<f64> {
+        self.matrix.to_vec()
+    }
+}
+
+/// Register `moving` onto `reference` with ICP. The clouds are not changed;
+/// apply the result with [`Cloud::transform`].
+#[wasm_bindgen(js_name = registerIcp)]
+pub fn register_icp(
+    moving: &Cloud,
+    reference: &Cloud,
+    max_iterations: usize,
+    overlap: f64,
+    match_centroids: bool,
+    point_to_plane: bool,
+) -> Result<IcpOutcome, JsError> {
+    let params = IcpParams {
+        metric: if point_to_plane {
+            IcpMetric::PointToPlane
+        } else {
+            IcpMetric::PointToPoint
+        },
+        max_iterations,
+        overlap,
+        match_centroids,
+        ..IcpParams::default()
+    };
+    let result = ca_core::icp::icp(&moving.inner, &reference.inner, params)
+        .ok_or_else(|| JsError::new("ICP needs non-empty clouds and at least 3 pairs"))?;
+    Ok(IcpOutcome {
+        matrix: result.transform.to_matrix(),
+        rms_initial: result.rms_initial,
+        rms_final: result.rms_final,
+        iterations: result.iterations,
+        converged: result.converged,
+    })
 }
 
 /// Result of a cloud-to-cloud distance computation.

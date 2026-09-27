@@ -94,6 +94,11 @@ Files never leave the browser.
   loads, so the browser has optimized them before the first real file
   (one long call would otherwise run unoptimized throughout).
 
+## Validation
+
+The core is compared with CloudCompare on a public LiDAR tile by
+`scripts/validate_cloudcompare.py`; see [docs/validation.md](../docs/validation.md).
+
 ## Demos and guide
 
 The empty viewer offers demos that load sample data and run an analysis; they

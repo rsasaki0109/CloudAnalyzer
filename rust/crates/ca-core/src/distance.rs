@@ -112,6 +112,77 @@ pub struct C2cPart {
     pub reference: Vec<u32>,
 }
 
+/// Multi-threaded [`cloud_to_cloud`] over plain point slices (feature
+/// `parallel`). Queries are taken in Morton order and split into chunks, each
+/// seeded by its own previous hit, so results are identical to the serial
+/// version.
+#[cfg(feature = "parallel")]
+pub fn cloud_to_cloud_par(compared: &[[f64; 3]], reference: &[[f64; 3]]) -> Option<Vec<f64>> {
+    let tree = KdTree::new(reference)?;
+    Some(par_in_morton_order(
+        compared,
+        |p, guess: &mut Option<crate::kdtree::Nearest>| {
+            let hit = tree.nearest(p, *guess);
+            *guess = Some(hit);
+            hit.distance_sq.sqrt()
+        },
+    ))
+}
+
+/// Multi-threaded [`cloud_to_mesh`] (feature `parallel`).
+#[cfg(feature = "parallel")]
+pub fn cloud_to_mesh_par(
+    points: &[[f64; 3]],
+    mesh: &TriangleMesh,
+    signed: bool,
+) -> Option<Vec<f64>> {
+    let bvh = MeshBvh::new(mesh)?;
+    Some(par_in_morton_order(
+        points,
+        |p, guess: &mut Option<usize>| {
+            let hit = bvh.nearest(*p, *guess);
+            *guess = Some(hit.triangle);
+            let d = hit.distance_sq.sqrt();
+            let offset = [
+                p[0] - hit.point[0],
+                p[1] - hit.point[1],
+                p[2] - hit.point[2],
+            ];
+            if signed && dot(offset, mesh.normal(hit.triangle)) < 0.0 {
+                -d
+            } else {
+                d
+            }
+        },
+    ))
+}
+
+/// Evaluate `query` for every point on the rayon pool, in Morton-ordered
+/// chunks that each carry their own warm-start state.
+#[cfg(feature = "parallel")]
+fn par_in_morton_order<S: Default + Send>(
+    points: &[[f64; 3]],
+    query: impl Fn(&[f64; 3], &mut S) -> f64 + Sync,
+) -> Vec<f64> {
+    use rayon::prelude::*;
+    let order = morton_order(points);
+    let parts: Vec<Vec<(usize, f64)>> = order
+        .par_chunks(4096)
+        .map(|chunk| {
+            let mut state = S::default();
+            chunk
+                .iter()
+                .map(|&i| (i, query(&points[i], &mut state)))
+                .collect()
+        })
+        .collect();
+    let mut out = vec![0.0; points.len()];
+    for (i, d) in parts.into_iter().flatten() {
+        out[i] = d;
+    }
+    out
+}
+
 /// Split a C2C job into up to `parts` spatially compact pieces for parallel
 /// workers, so that each worker only builds a tree over nearby reference
 /// points.
@@ -455,6 +526,30 @@ mod tests {
             assert!((unsigned[i] - expected[i].abs()).abs() < 1e-12);
         }
         assert!(cloud_to_mesh(&points, &TriangleMesh::default(), false).is_none());
+    }
+
+    #[cfg(feature = "parallel")]
+    #[test]
+    fn parallel_versions_match_serial() {
+        let reference = pseudo_random(20_000, 1, [0.0; 3]);
+        let compared = pseudo_random(15_000, 2, [0.0, 0.0, 0.05]);
+        assert_eq!(
+            cloud_to_cloud_par(&compared.positions, &reference.positions).unwrap(),
+            cloud_to_cloud(&compared, &reference).unwrap()
+        );
+        let mesh = TriangleMesh {
+            vertices: vec![
+                [0.0, 0.0, 0.0],
+                [60.0, 0.0, 0.0],
+                [60.0, 30.0, 0.0],
+                [0.0, 30.0, 0.0],
+            ],
+            triangles: vec![[0, 1, 2], [0, 2, 3]],
+        };
+        assert_eq!(
+            cloud_to_mesh_par(&compared.positions, &mesh, true).unwrap(),
+            cloud_to_mesh(&compared.positions, &mesh, true).unwrap()
+        );
     }
 
     #[test]

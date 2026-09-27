@@ -11,6 +11,8 @@ from urllib.parse import urlparse
 import numpy as np
 import open3d as o3d
 
+from ca._rust import core
+
 
 SUPPORTED_EXTENSIONS = {".pcd", ".ply", ".las", ".laz", ".csv"}
 
@@ -385,9 +387,14 @@ def load_point_cloud(path: str) -> o3d.geometry.PointCloud:
     if ext == ".csv":
         pcd = _load_csv_point_cloud(p)
     elif ext in {".las", ".laz"}:
-        import laspy
-        las = laspy.read(str(p))
-        xyz = np.vstack([las.x, las.y, las.z]).T
+        rust = core()
+        if rust is not None:
+            # Same scaled coordinates as laspy, without needing laspy/lazrs.
+            xyz = rust.read(str(p))["positions"]
+        else:
+            import laspy
+            las = laspy.read(str(p))
+            xyz = np.vstack([las.x, las.y, las.z]).T
         pcd = o3d.geometry.PointCloud()
         pcd.points = o3d.utility.Vector3dVector(xyz)
     else:

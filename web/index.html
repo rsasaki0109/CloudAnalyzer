@@ -24,6 +24,10 @@
       <label class="inline">Point size
         <input id="point-size" type="range" min="1" max="10" step="1" value="2" />
       </label>
+      <label class="inline" title="Eye-Dome Lighting: shade by depth so the shape of a cloud is easier to read">
+        <input id="edl" type="checkbox" checked /> EDL
+        <input id="edl-strength" type="range" min="0.2" max="3" step="0.1" value="1" aria-label="EDL strength" />
+      </label>
       <label class="inline" title="Maximum number of points drawn at once">Point budget
         <select id="point-budget">
           <option value="1000000">1M</option>

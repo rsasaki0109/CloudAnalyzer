@@ -392,6 +392,12 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("[data-view]")
 }
 $<HTMLInputElement>("point-size").oninput = (e) =>
   viewer.setPointSize(Number((e.target as HTMLInputElement).value));
+const edlToggle = $<HTMLInputElement>("edl");
+const edlStrength = $<HTMLInputElement>("edl-strength");
+edlToggle.onchange = edlStrength.oninput = () => {
+  viewer.setEdl(edlToggle.checked, Number(edlStrength.value));
+  edlStrength.disabled = !edlToggle.checked;
+};
 $<HTMLSelectElement>("point-budget").onchange = (e) =>
   viewer.setPointBudget(Number((e.target as HTMLSelectElement).value));
 

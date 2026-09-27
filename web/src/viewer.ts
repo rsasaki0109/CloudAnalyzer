@@ -2,6 +2,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { EdlPass } from "./edl";
 import { type LodNode, selectNodes } from "./lod";
 
 interface LodCloud {
@@ -47,6 +48,8 @@ export class Viewer {
   private clip: THREE.Box3 | null = null;
   private readonly clipPlanes = Array.from({ length: 6 }, () => new THREE.Plane());
   private readonly clipHelper = new THREE.Box3Helper(new THREE.Box3(), 0xffd54f);
+  private readonly edl = new EdlPass();
+  private edlEnabled = true;
 
   constructor(private readonly container: HTMLElement) {
     THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -114,6 +117,8 @@ export class Viewer {
     const { clientWidth: w, clientHeight: h } = this.container;
     if (w === 0 || h === 0) return;
     this.renderer.setSize(w, h, false);
+    const size = this.renderer.getDrawingBufferSize(new THREE.Vector2());
+    this.edl.setSize(size.x, size.y);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.requestRender(true);
@@ -129,7 +134,8 @@ export class Viewer {
       this.needsLod = false;
       this.updateLod();
     }
-    this.renderer.render(this.scene, this.camera);
+    if (this.edlEnabled) this.edl.render(this.renderer, this.scene, this.camera);
+    else this.renderer.render(this.scene, this.camera);
     this.onAfterRender();
   };
 
@@ -298,6 +304,13 @@ export class Viewer {
   setPointSize(size: number): void {
     this.pointSize = size;
     for (const cloud of this.clouds.values()) cloud.material.size = size;
+    this.requestRender();
+  }
+
+  /** Eye-Dome Lighting on/off and strength (1 is the default look). */
+  setEdl(enabled: boolean, strength = 1): void {
+    this.edlEnabled = enabled;
+    this.edl.strength = strength;
     this.requestRender();
   }
 

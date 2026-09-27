@@ -344,6 +344,40 @@ fn profile<'py>(
     Ok((indices.into_pyarray(py), along.into_pyarray(py)))
 }
 
+/// Unit normals from the ``k`` nearest neighbours of each point (PCA),
+/// multi-threaded. ``orientation`` is ``"up"`` (+z) or ``"outward"`` (away
+/// from the bounding box centre). Rows are zero where no plane fits.
+#[pyfunction]
+#[pyo3(signature = (points_, k = 12, orientation = "up"))]
+fn normals<'py>(
+    py: Python<'py>,
+    points_: PyReadonlyArray2<f64>,
+    k: usize,
+    orientation: &str,
+) -> PyResult<Bound<'py, PyArray2<f32>>> {
+    use ca_core::normals::{Orientation, estimate_normals_par};
+    let points = points(&points_)?;
+    let orientation = match orientation {
+        "up" => Orientation::Up,
+        "outward" => {
+            let cloud = cloud_of(points.clone());
+            let b = cloud
+                .bounds()
+                .ok_or_else(|| PyValueError::new_err("no points"))?;
+            Orientation::Away(b.center())
+        }
+        other => {
+            return Err(PyValueError::new_err(format!(
+                "orientation must be up or outward, not {other:?}"
+            )));
+        }
+    };
+    let n = py.detach(|| estimate_normals_par(&points, k, orientation));
+    let array =
+        numpy::ndarray::Array2::from_shape_vec((n.len(), 3), n.into_flattened()).expect("n x 3");
+    Ok(array.into_pyarray(py))
+}
+
 /// A volume surface from Python: a float (constant height), a
 /// ``(vertices, triangles)`` tuple (mesh), or an ``(N, 3)`` array (points).
 enum PySurface {
@@ -449,5 +483,6 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(ground_csf, m)?)?;
     m.add_function(wrap_pyfunction!(m3c2, m)?)?;
     m.add_function(wrap_pyfunction!(profile, m)?)?;
+    m.add_function(wrap_pyfunction!(normals, m)?)?;
     Ok(())
 }

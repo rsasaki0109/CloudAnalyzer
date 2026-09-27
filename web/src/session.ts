@@ -9,7 +9,7 @@ export interface SessionCloud {
   /** Where the cloud was loaded from, if it came from a URL. */
   url?: string;
   visible: boolean;
-  mode: "rgb" | "solid" | "intensity" | "classification" | "c2c";
+  mode: "rgb" | "solid" | "intensity" | "classification" | "c2c" | "normal" | "shade";
   solid: Vec3;
   /** ICP transforms applied to it, oldest first (row-major 4x4). */
   transforms: number[][];
@@ -36,7 +36,7 @@ export interface Session {
   clouds: SessionCloud[];
 }
 
-const MODES = ["rgb", "solid", "intensity", "classification", "c2c"] as const;
+const MODES = ["rgb", "solid", "intensity", "classification", "c2c", "normal", "shade"] as const;
 
 function fail(what: string): never {
   throw new Error(`Not a CloudAnalyzer session: ${what}`);

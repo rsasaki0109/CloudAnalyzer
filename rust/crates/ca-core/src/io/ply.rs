@@ -107,6 +107,7 @@ struct VertexLayout {
     rgb: Option<([usize; 3], [Scalar; 3])>,
     intensity: Option<usize>,
     classification: Option<usize>,
+    normals: Option<[usize; 3]>,
 }
 
 fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
@@ -140,6 +141,10 @@ fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
             "scalar_classification",
             "scalar_Classification",
         ]),
+        normals: match (find(&["nx"]), find(&["ny"]), find(&["nz"])) {
+            (Some(x), Some(y), Some(z)) => Some([x, y, z]),
+            _ => None,
+        },
     })
 }
 
@@ -153,10 +158,18 @@ impl VertexLayout {
             }
             slot += 1;
         }
-        if let Some(i) = self.classification
-            && let AttributeValues::U8(v) = &mut cloud.attributes[slot].values
-        {
-            v.push(values[i].clamp(0.0, 255.0) as u8);
+        if let Some(i) = self.classification {
+            if let AttributeValues::U8(v) = &mut cloud.attributes[slot].values {
+                v.push(values[i].clamp(0.0, 255.0) as u8);
+            }
+            slot += 1;
+        }
+        if let Some(idx) = self.normals {
+            for (c, &i) in idx.iter().enumerate() {
+                if let AttributeValues::F32(v) = &mut cloud.attributes[slot + c].values {
+                    v.push(values[i] as f32);
+                }
+            }
         }
         if let (Some(colors), Some((idx, kinds))) = (cloud.colors.as_mut(), self.rgb) {
             colors.push(std::array::from_fn(|c| {
@@ -178,6 +191,14 @@ impl VertexLayout {
                 name: CLASSIFICATION.into(),
                 values: AttributeValues::U8(Vec::with_capacity(count)),
             });
+        }
+        if self.normals.is_some() {
+            for name in crate::normals::NORMAL_NAMES {
+                attributes.push(Attribute {
+                    name: name.into(),
+                    values: AttributeValues::F32(Vec::with_capacity(count)),
+                });
+            }
         }
         PointCloud {
             positions: Vec::with_capacity(count),
@@ -379,13 +400,15 @@ fn append_fixed_vertices(
     let rgb = layout.rgb.map(|(idx, _)| idx.map(field));
     // The common little-endian float/double + uchar layouts get a
     // monomorphic loop; everything else goes through `Scalar::decode`.
-    let plain = layout.intensity.is_none() && layout.classification.is_none();
+    let plain =
+        layout.intensity.is_none() && layout.classification.is_none() && layout.normals.is_none();
     if le && plain && read_common_layout(records, stride, xyz, rgb, cloud) {
         return Ok(());
     }
     // Stride 0 would mean a vertex with no properties, which vertex_layout rejects.
     let intensity = layout.intensity.map(field);
     let classification = layout.classification.map(field);
+    let normals = layout.normals.map(|idx| idx.map(field));
     for record in records.chunks_exact(stride) {
         cloud
             .positions
@@ -400,10 +423,18 @@ fn append_fixed_vertices(
             }
             slot += 1;
         }
-        if let Some((at, kind)) = classification
-            && let AttributeValues::U8(v) = &mut cloud.attributes[slot].values
-        {
-            v.push(kind.decode(&record[at..], le).clamp(0.0, 255.0) as u8);
+        if let Some((at, kind)) = classification {
+            if let AttributeValues::U8(v) = &mut cloud.attributes[slot].values {
+                v.push(kind.decode(&record[at..], le).clamp(0.0, 255.0) as u8);
+            }
+            slot += 1;
+        }
+        if let Some(fields) = normals {
+            for (c, (at, kind)) in fields.into_iter().enumerate() {
+                if let AttributeValues::F32(v) = &mut cloud.attributes[slot + c].values {
+                    v.push(kind.decode(&record[at..], le) as f32);
+                }
+            }
         }
     }
     Ok(())
@@ -748,6 +779,35 @@ property uchar flags\nproperty list uchar uint vertex_index\nend_header\n"
         let src = b"ply\nformat ascii 1.0\nelement vertex 1\nproperty float x\nproperty float y\n\
 property float z\nend_header\n1 2 3\n";
         assert!(read_mesh(src).unwrap().is_none());
+    }
+
+    #[test]
+    fn reads_normals() {
+        let header = "ply\nformat ascii 1.0\nelement vertex 2\nproperty float x\nproperty float y\n\
+property float z\nproperty float nx\nproperty float ny\nproperty float nz\nend_header\n";
+        let text = format!("{header}0 0 0 0 0 1\n1 2 3 1 0 0\n");
+        let cloud = read(text.as_bytes()).unwrap();
+        assert_eq!(
+            crate::normals::normals(&cloud).unwrap(),
+            vec![[0.0, 0.0, 1.0], [1.0, 0.0, 0.0]]
+        );
+        // Binary, through the fixed-record path.
+        let mut bytes =
+            b"ply\nformat binary_little_endian 1.0\nelement vertex 1\nproperty double x\n\
+property double y\nproperty double z\nproperty float nx\nproperty float ny\nproperty float nz\n\
+end_header\n"
+                .to_vec();
+        for v in [1.0f64, 2.0, 3.0] {
+            bytes.extend(v.to_le_bytes());
+        }
+        for v in [0.0f32, 1.0, 0.0] {
+            bytes.extend(v.to_le_bytes());
+        }
+        let cloud = read(&bytes).unwrap();
+        assert_eq!(
+            crate::normals::normals(&cloud).unwrap(),
+            vec![[0.0, 1.0, 0.0]]
+        );
     }
 
     #[test]

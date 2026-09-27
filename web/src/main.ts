@@ -7,6 +7,7 @@ import {
   exportCloud,
   extractGround,
   filterCloud,
+  estimateNormals,
   loadCloud,
   mergeClouds,
   pointAt,
@@ -32,7 +33,7 @@ import type { C2cOutput, LoadedCloud } from "./protocol";
 import { decodeSession, encodeSession, nameFromUrl, parseSession, type Session } from "./session";
 import { Viewer } from "./viewer";
 
-type ColorMode = "rgb" | "solid" | "intensity" | "classification" | "c2c";
+type ColorMode = "rgb" | "solid" | "intensity" | "classification" | "c2c" | "normal" | "shade";
 
 /** Where a cloud came from: sessions can restore file and URL clouds. */
 type Origin = { kind: "file" } | { kind: "url"; url: string } | { kind: "derived" };
@@ -110,6 +111,31 @@ function classificationColors(classes: Uint8Array): Uint8Array {
   return out;
 }
 
+/**
+ * Colors from normals: their direction as RGB, or a grey hillshade lit
+ * from the north-west at 45 degrees. Points without a normal are grey.
+ */
+function normalColors(normals: Float32Array, shade: boolean): Uint8Array {
+  const out = new Uint8Array((normals.length / 3) * 4);
+  const light = [-0.5, 0.5, Math.SQRT1_2];
+  for (let i = 0; i < normals.length / 3; i++) {
+    const [x, y, z] = [normals[i * 3], normals[i * 3 + 1], normals[i * 3 + 2]];
+    const o = i * 4;
+    out[o + 3] = 255;
+    if (x === 0 && y === 0 && z === 0) {
+      out.fill(128, o, o + 3);
+    } else if (shade) {
+      const lit = Math.max(0, x * light[0] + y * light[1] + z * light[2]);
+      out.fill(Math.round(35 + 220 * lit), o, o + 3);
+    } else {
+      out[o] = Math.round((x + 1) * 127.5);
+      out[o + 1] = Math.round((y + 1) * 127.5);
+      out[o + 2] = Math.round((z + 1) * 127.5);
+    }
+  }
+  return out;
+}
+
 /** Interleaved rgba for the entry's color mode, with hidden classes at alpha 0. */
 function colorsFor(entry: Entry): Uint8Array {
   const { cloud } = entry;
@@ -124,6 +150,8 @@ function colorsFor(entry: Entry): Uint8Array {
     out = colorize(cloud.intensity, lo, hi > lo ? hi : lo + 1, lut("Grey"));
   } else if (entry.mode === "classification" && cloud.classification) {
     out = classificationColors(cloud.classification);
+  } else if ((entry.mode === "normal" || entry.mode === "shade") && cloud.normals) {
+    out = normalColors(cloud.normals, entry.mode === "shade");
   } else if (entry.mode === "c2c" && entry.c2c) {
     const { lo, hi } = range ?? { lo: entry.c2c.stats.min, hi: entry.c2c.stats.max };
     out = colorize(entry.c2c.distances, lo, hi, lut(rampName));
@@ -221,6 +249,8 @@ function renderList(): void {
       ["classification", "Classification", cloud.classification !== null],
       ["solid", "Solid color", true],
       ["c2c", distanceLabel(entry.c2c), !!entry.c2c],
+      ["normal", "Normals", cloud.normals !== null],
+      ["shade", "Hillshade", cloud.normals !== null],
     ];
     for (const [value, label, enabled] of options) {
       if (!enabled) continue;
@@ -244,6 +274,7 @@ function renderList(): void {
   renderClasses();
   renderFilterSelect();
   renderMergeSplit();
+  renderNormalsSelect();
   renderVolumeSelects();
 }
 
@@ -1273,6 +1304,45 @@ splitRun.onclick = async () => {
   }
 };
 
+// ---------------------------------------------------------------- normals
+
+const normalsCloud = $<HTMLSelectElement>("normals-cloud");
+const normalsRun = $<HTMLButtonElement>("normals-run");
+
+function renderNormalsSelect(): void {
+  const clouds = [...entries.values()].filter((e) => !isMesh(e));
+  const previous = normalsCloud.value;
+  normalsCloud.replaceChildren(...clouds.map((e) => new Option(e.cloud.name, String(e.cloud.id))));
+  normalsCloud.value = clouds.some((e) => String(e.cloud.id) === previous)
+    ? previous
+    : String(clouds.at(-1)?.cloud.id ?? "");
+  normalsRun.disabled = clouds.length === 0;
+}
+
+normalsRun.onclick = async () => {
+  const entry = entries.get(Number(normalsCloud.value));
+  if (!entry) return;
+  normalsRun.disabled = true;
+  setStatus(`Estimating normals of ${entry.cloud.name}…`);
+  const start = performance.now();
+  try {
+    const k = Math.max(3, Number($<HTMLInputElement>("normals-k").value) || 12);
+    const orientation = $<HTMLSelectElement>("normals-orient").value as "up" | "outward";
+    entry.cloud.normals = await estimateNormals(entry.cloud.id, k, orientation);
+    entry.mode = "shade";
+    refreshColors(entry);
+    renderList();
+    setStatus(
+      `Normals of ${entry.cloud.count.toLocaleString()} points in ${Math.round(performance.now() - start)} ms ` +
+        `(${k} neighbours, facing ${orientation === "up" ? "up" : "away from the centre"})`,
+    );
+  } catch (err) {
+    setStatus(`Normals failed: ${err instanceof Error ? err.message : err}`, true);
+  } finally {
+    normalsRun.disabled = false;
+  }
+};
+
 // ---------------------------------------------------------------- clipping box
 
 const clipEnabled = $<HTMLInputElement>("clip-enabled");
@@ -2026,6 +2096,8 @@ async function restorePending(): Promise<void> {
       classification: entry.cloud.classification !== null,
       solid: true,
       c2c: false,
+      normal: entry.cloud.normals !== null,
+      shade: entry.cloud.normals !== null,
     };
     if (available[saved.mode]) entry.mode = saved.mode;
     refreshColors(entry);

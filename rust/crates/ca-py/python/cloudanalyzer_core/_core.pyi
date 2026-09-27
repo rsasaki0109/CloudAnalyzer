@@ -86,3 +86,8 @@ def profile(
     line: npt.NDArray[np.float64],
     half_width: float,
 ) -> tuple[npt.NDArray[np.int64], npt.NDArray[np.float64]]: ...
+def normals(
+    points_: npt.NDArray[np.float64],
+    k: int = 12,
+    orientation: str = "up",
+) -> npt.NDArray[np.float32]: ...

@@ -13,6 +13,7 @@ pub mod kdtree;
 pub mod m3c2;
 pub mod merge;
 pub mod mesh;
+pub mod normals;
 pub mod octree;
 pub mod profile;
 pub mod volume;

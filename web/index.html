@@ -188,6 +188,22 @@
         <button id="split-run" disabled>Split into new clouds</button>
       </section>
 
+      <section id="normals-panel">
+        <h2>Normals</h2>
+        <label>Cloud <select id="normals-cloud"></select></label>
+        <div class="range">
+          <label title="Neighbours fitted by a plane at each point">Neighbours <input id="normals-k" type="number" min="3" max="100" value="12" /></label>
+          <label>Facing
+            <select id="normals-orient">
+              <option value="up" selected>Up (+Z)</option>
+              <option value="outward">Away from centre</option>
+            </select>
+          </label>
+        </div>
+        <button id="normals-run" disabled>Compute normals</button>
+        <p class="hint small">Shown with the Normals and Hillshade color modes; saved as nx, ny, nz in PLY.</p>
+      </section>
+
       <section id="clip-panel">
         <h2>Clipping box</h2>
         <label class="check"><input id="clip-enabled" type="checkbox" /> Show only what is inside the box</label>

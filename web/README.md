@@ -41,6 +41,11 @@ Files never leave the browser.
   classes kept; clouds without RGB take their display color; a `source`
   attribute remembers each point's cloud), split a cloud into one cloud per
   classification code, or split a merged cloud back into its files.
+- Normals from the k nearest neighbours of each point (PCA), facing up or
+  away from the centre, shown as direction colors or a hillshade and saved as
+  `nx`, `ny`, `nz` in PLY (normals in PLY files are read too). Large clouds
+  are split along the octree over the worker pool; points near a part's
+  border use neighbours from their own part.
 - Cross-section profiles: draw a polyline on the view (**Draw line**, click
   vertices, double-click or Enter to finish) and every visible cloud's points
   within the band are plotted as distance along the line against height, in

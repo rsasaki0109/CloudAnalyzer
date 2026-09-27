@@ -24,6 +24,21 @@ pub struct Cloud {
 }
 
 impl Cloud {
+    fn orientation(&self, name: &str) -> Result<ca_core::normals::Orientation, JsError> {
+        use ca_core::normals::Orientation;
+        match name {
+            "up" => Ok(Orientation::Up),
+            "outward" => {
+                let b = self
+                    .inner
+                    .bounds()
+                    .ok_or_else(|| JsError::new("empty cloud"))?;
+                Ok(Orientation::Away(b.center()))
+            }
+            other => Err(JsError::new(&format!("unknown orientation {other:?}"))),
+        }
+    }
+
     /// An unindexed copy of the points at `keep`.
     fn selected(&self, keep: &[usize]) -> Result<Cloud, JsError> {
         let inner = self.inner.select(keep);
@@ -359,6 +374,44 @@ impl Cloud {
                 .collect(),
             total: hits.len(),
         })
+    }
+
+    /// Interleaved unit normals (octree order), or `undefined` without
+    /// `nx`/`ny`/`nz` attributes.
+    pub fn normals(&self) -> Option<Vec<f32>> {
+        ca_core::normals::normals(&self.inner).map(|n| n.into_flattened())
+    }
+
+    /// Estimate normals from the `k` nearest neighbours of each point here,
+    /// oriented `"up"` (+z) or `"outward"` (away from the bounding box
+    /// centre), and store them as attributes.
+    #[wasm_bindgen(js_name = estimateNormals)]
+    pub fn estimate_normals(&mut self, k: usize, orientation: &str) -> Result<(), JsError> {
+        let orientation = self.orientation(orientation)?;
+        let normals = ca_core::normals::estimate_normals(&self.inner.positions, k, orientation);
+        ca_core::normals::set_normals(&mut self.inner, &normals);
+        Ok(())
+    }
+
+    /// Orientation for [`normals_of`]: `[mode, cx, cy, cz]` with mode 0 = up,
+    /// 1 = away from the bounding box centre `c`.
+    #[wasm_bindgen(js_name = normalsOrientation)]
+    pub fn normals_orientation(&self, orientation: &str) -> Result<Vec<f64>, JsError> {
+        Ok(match self.orientation(orientation)? {
+            ca_core::normals::Orientation::Up => vec![0.0, 0.0, 0.0, 0.0],
+            ca_core::normals::Orientation::Away(c) => vec![1.0, c[0], c[1], c[2]],
+        })
+    }
+
+    /// Store normals computed elsewhere (interleaved, octree order).
+    #[wasm_bindgen(js_name = setNormals)]
+    pub fn set_normals(&mut self, normals: &[f32]) -> Result<(), JsError> {
+        if !ca_core::normals::set_normals(&mut self.inner, normals.as_chunks::<3>().0)
+            || !normals.len().is_multiple_of(3)
+        {
+            return Err(JsError::new("one normal per point is needed"));
+        }
+        Ok(())
     }
 
     /// Distinct values of the `u8` attribute `name` (e.g. `"classification"`
@@ -1236,6 +1289,22 @@ impl SorPart {
     }
 }
 
+/// Normals of one part of a cloud on a pool worker, from that part's own
+/// points (see [`Cloud::normals_orientation`] for `orientation`).
+#[wasm_bindgen(js_name = normalsOf)]
+pub fn normals_of(points: &[f64], k: usize, orientation: &[f64]) -> Result<Vec<f32>, JsError> {
+    use ca_core::normals::Orientation;
+    let orientation = match orientation {
+        [0.0, ..] => Orientation::Up,
+        &[1.0, x, y, z] => Orientation::Away([x, y, z]),
+        _ => return Err(JsError::new("invalid orientation")),
+    };
+    Ok(
+        ca_core::normals::estimate_normals(points.as_chunks::<3>().0, k, orientation)
+            .into_flattened(),
+    )
+}
+
 /// Builds one cloud from several (see [`ca_core::merge::Merger`]).
 #[wasm_bindgen]
 pub struct CloudMerger {
@@ -1356,6 +1425,11 @@ pub fn warm_up() {
     let local = part.local(8, 0, &split.regions);
     let _ = part.within(&queries[..2_000], 8);
     let _ = ca_core::filter::sor_keep(&local.means, 1.0);
+    let _ = ca_core::normals::estimate_normals(
+        &positions[..20_000],
+        12,
+        ca_core::normals::Orientation::Up,
+    );
 }
 
 #[wasm_bindgen(js_name = nearestDistances)]

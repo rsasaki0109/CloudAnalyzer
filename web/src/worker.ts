@@ -105,7 +105,9 @@ async function buildIndex(cloud: Cloud): Promise<number> {
       job: jobs.slice(k * 7, k * 7 + 7),
     };
   });
-  results.forEach((subtree, i) => cloud.finishSubtree(order[i], subtree.positions, subtree.colors, subtree.nodes));
+  results.forEach((subtree, i) =>
+    cloud.finishSubtree(order[i], subtree.positions, subtree.colors, subtree.nodes, subtree.order),
+  );
   cloud.endIndex();
   return Math.min(poolSize(), count);
 }
@@ -130,6 +132,8 @@ function describe(
       positions,
       indices,
       colors: null,
+      intensity: null,
+      classification: null,
       bounds: Array.from(item.mesh.bounds()),
       shift: shift!,
       lodNodes: new Float64Array(),
@@ -141,6 +145,8 @@ function describe(
   const { cloud } = item;
   const positions = cloud.positions(s);
   const colors = cloud.colors() ?? null;
+  const intensity = cloud.intensity() ?? null;
+  const classification = cloud.classification() ?? null;
   const lodNodes = cloud.lodNodes();
   const value: LoadedCloud = {
     kind: "cloud",
@@ -151,6 +157,8 @@ function describe(
     positions,
     indices: null,
     colors,
+    intensity,
+    classification,
     bounds: Array.from(cloud.bounds()),
     shift: shift!,
     lodNodes,
@@ -158,7 +166,7 @@ function describe(
     timings: { ...timings, prepare: performance.now() - start },
   };
   const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
-  if (colors) transfer.push(colors.buffer);
+  for (const buffer of [colors, intensity, classification]) if (buffer) transfer.push(buffer.buffer);
   return { value, transfer };
 }
 

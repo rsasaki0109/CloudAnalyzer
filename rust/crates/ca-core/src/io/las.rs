@@ -1,7 +1,7 @@
 //! LAS 1.0–1.4 and LAZ reader (point formats 0–10).
 
 use super::IoError;
-use crate::PointCloud;
+use crate::{Attribute, AttributeValues, CLASSIFICATION, INTENSITY, PointCloud};
 
 const FORMAT: &str = "LAS";
 
@@ -86,14 +86,22 @@ pub(crate) fn read(b: &[u8]) -> Result<PointCloud, IoError> {
     let mut cloud = PointCloud {
         positions: Vec::with_capacity(count),
         colors: rgb.map(|_| Vec::with_capacity(count)),
+        attributes: Vec::new(),
     };
     // LAS stores 16-bit color, but many writers only fill the low byte.
     let mut max_channel = 0u16;
     let mut wide_colors: Vec<[u16; 3]> = Vec::new();
+    // Legacy formats pack the class into the low 5 bits of byte 15; the
+    // 1.4 formats (6-10) give it the whole of byte 16.
+    let (class_at, class_mask) = if format >= 6 { (16, 0xff) } else { (15, 0x1f) };
+    let mut intensity = Vec::with_capacity(count);
+    let mut classification = Vec::with_capacity(count);
     for record in records.chunks_exact(record_len) {
         let p: [f64; 3] =
             std::array::from_fn(|i| i32_at(record, 4 * i).unwrap() as f64 * scale[i] + offset[i]);
         cloud.positions.push(p);
+        intensity.push(u16_at(record, 12)? as f32);
+        classification.push(u8_at(record, class_at)? & class_mask);
         if let Some(o) = rgb {
             let c = [
                 u16_at(record, o)?,
@@ -108,6 +116,16 @@ pub(crate) fn read(b: &[u8]) -> Result<PointCloud, IoError> {
         let shift = if max_channel > 255 { 8 } else { 0 };
         colors.extend(wide_colors.iter().map(|c| c.map(|v| (v >> shift) as u8)));
     }
+    cloud.attributes = vec![
+        Attribute {
+            name: INTENSITY.into(),
+            values: AttributeValues::F32(intensity),
+        },
+        Attribute {
+            name: CLASSIFICATION.into(),
+            values: AttributeValues::U8(classification),
+        },
+    ];
     Ok(cloud)
 }
 
@@ -196,6 +214,32 @@ mod tests {
         assert!((p[1] - 3999997.5).abs() < 1e-9);
         assert!((p[2] - 1.5).abs() < 1e-9);
         assert!(cloud.colors.is_none());
+    }
+
+    #[test]
+    fn reads_intensity_and_classification() {
+        // Format 1 (legacy class byte 15, flags in the high bits) and format 6 (byte 16).
+        let mut r0 = record([0, 0, 0], 28, None);
+        r0[12..14].copy_from_slice(&1234u16.to_le_bytes());
+        r0[15] = 0b1110_0010; // synthetic/key-point/withheld flags + class 2
+        let cloud = read(&las(1, 28, &[r0])).unwrap();
+        assert_eq!(
+            cloud.attribute(INTENSITY).unwrap().values,
+            AttributeValues::F32(vec![1234.0])
+        );
+        assert_eq!(
+            cloud.attribute(CLASSIFICATION).unwrap().values,
+            AttributeValues::U8(vec![2])
+        );
+
+        let mut r6 = record([0, 0, 0], 30, None);
+        r6[12..14].copy_from_slice(&7u16.to_le_bytes());
+        r6[16] = 45;
+        let cloud = read(&las(6, 30, &[r6])).unwrap();
+        assert_eq!(
+            cloud.attribute(CLASSIFICATION).unwrap().values,
+            AttributeValues::U8(vec![45])
+        );
     }
 
     #[test]

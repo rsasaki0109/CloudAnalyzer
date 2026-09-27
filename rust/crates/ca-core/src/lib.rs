@@ -15,11 +15,74 @@ pub use distance::{C2cPart, DistanceStats, cloud_to_cloud, cloud_to_mesh, partit
 pub use io::{Format, IoError, read, read_mesh};
 pub use mesh::TriangleMesh;
 
-/// An unordered set of 3D points with optional per-point RGB colors.
+/// Name of the LiDAR return-strength attribute.
+pub const INTENSITY: &str = "intensity";
+/// Name of the (ASPRS) class-code attribute.
+pub const CLASSIFICATION: &str = "classification";
+
+/// Values of a per-point attribute.
+#[derive(Debug, Clone, PartialEq)]
+pub enum AttributeValues {
+    F32(Vec<f32>),
+    U8(Vec<u8>),
+}
+
+impl AttributeValues {
+    pub fn len(&self) -> usize {
+        match self {
+            Self::F32(v) => v.len(),
+            Self::U8(v) => v.len(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// The values at `indices`, in that order.
+    pub fn select(&self, indices: &[usize]) -> Self {
+        match self {
+            Self::F32(v) => Self::F32(indices.iter().map(|&i| v[i]).collect()),
+            Self::U8(v) => Self::U8(indices.iter().map(|&i| v[i]).collect()),
+        }
+    }
+
+    /// Reorder `range` so that position `i` holds the old `range.start + order[i]`.
+    pub fn permute_range(&mut self, range: std::ops::Range<usize>, order: &[u32]) {
+        fn go<T: Copy>(v: &mut [T], order: &[u32]) {
+            let old = v.to_vec();
+            for (dst, &o) in v.iter_mut().zip(order) {
+                *dst = old[o as usize];
+            }
+        }
+        match self {
+            Self::F32(v) => go(&mut v[range], order),
+            Self::U8(v) => go(&mut v[range], order),
+        }
+    }
+
+    pub(crate) fn swap(&mut self, a: usize, b: usize) {
+        match self {
+            Self::F32(v) => v.swap(a, b),
+            Self::U8(v) => v.swap(a, b),
+        }
+    }
+}
+
+/// A named per-point value carried alongside positions (e.g. intensity).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Attribute {
+    pub name: String,
+    pub values: AttributeValues,
+}
+
+/// An unordered set of 3D points with optional per-point RGB colors and
+/// attributes (every attribute has one value per point).
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct PointCloud {
     pub positions: Vec<[f64; 3]>,
     pub colors: Option<Vec<[u8; 3]>>,
+    pub attributes: Vec<Attribute>,
 }
 
 /// Axis-aligned bounding box.
@@ -49,6 +112,10 @@ impl PointCloud {
 
     pub fn is_empty(&self) -> bool {
         self.positions.is_empty()
+    }
+
+    pub fn attribute(&self, name: &str) -> Option<&Attribute> {
+        self.attributes.iter().find(|a| a.name == name)
     }
 
     pub fn bounds(&self) -> Option<Aabb> {
@@ -81,6 +148,14 @@ impl PointCloud {
                 .colors
                 .as_ref()
                 .map(|c| keep.iter().map(|&i| c[i]).collect()),
+            attributes: self
+                .attributes
+                .iter()
+                .map(|a| Attribute {
+                    name: a.name.clone(),
+                    values: a.values.select(&keep),
+                })
+                .collect(),
         }
     }
 
@@ -108,6 +183,23 @@ mod tests {
     use super::*;
 
     #[test]
+    fn crop_keeps_attributes() {
+        let cloud = PointCloud {
+            positions: vec![[0.0; 3], [5.0; 3], [0.5; 3]],
+            colors: None,
+            attributes: vec![Attribute {
+                name: CLASSIFICATION.into(),
+                values: AttributeValues::U8(vec![2, 6, 9]),
+            }],
+        };
+        let inside = cloud.crop([0.0; 3], [1.0; 3], true);
+        assert_eq!(
+            inside.attribute(CLASSIFICATION).unwrap().values,
+            AttributeValues::U8(vec![2, 9])
+        );
+    }
+
+    #[test]
     fn crop_keeps_points_and_colors_inside_the_box() {
         let cloud = PointCloud {
             positions: vec![
@@ -117,6 +209,7 @@ mod tests {
                 [0.5, 0.5, 3.0],
             ],
             colors: Some(vec![[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]]),
+            attributes: Vec::new(),
         };
         let inside = cloud.crop([0.0; 3], [1.0; 3], true);
         assert_eq!(inside.positions, vec![[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]);

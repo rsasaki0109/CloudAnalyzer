@@ -85,7 +85,19 @@ impl Octree {
     /// Like [`Octree::build_in_place`], reordering the cloud's colors along
     /// with its positions.
     pub fn build_for_cloud(cloud: &mut crate::PointCloud, params: OctreeParams) -> Option<Self> {
-        Self::build(&mut cloud.positions, cloud.colors.as_deref_mut(), params)
+        let (lo, size) = cube(&cloud.positions);
+        let attributes = cloud.attributes.iter_mut().map(|a| &mut a.values).collect();
+        Self::build_cube(
+            &mut cloud.positions,
+            cloud.colors.as_deref_mut(),
+            attributes,
+            lo,
+            size,
+            0,
+            None,
+            params,
+        )
+        .map(|(tree, _)| tree)
     }
 
     fn build(
@@ -93,12 +105,9 @@ impl Octree {
         colors: Option<&mut [[u8; 3]]>,
         params: OctreeParams,
     ) -> Option<Self> {
-        let (lo, hi) = bounds(points);
-        let size = (0..3)
-            .map(|a| hi[a] - lo[a])
-            .fold(0.0f64, f64::max)
-            .max(f64::MIN_POSITIVE);
-        Self::build_cube(points, colors, lo, size, 0, None, params).map(|(tree, _)| tree)
+        let (lo, size) = cube(points);
+        Self::build_cube(points, colors, Vec::new(), lo, size, 0, None, params)
+            .map(|(tree, _)| tree)
     }
 
     /// Build only the levels above `split_level`, leaving every node at that
@@ -111,14 +120,12 @@ impl Octree {
         params: OctreeParams,
         split_level: u8,
     ) -> Option<(Self, Vec<PendingSubtree>)> {
-        let (lo, hi) = bounds(&cloud.positions);
-        let size = (0..3)
-            .map(|a| hi[a] - lo[a])
-            .fold(0.0f64, f64::max)
-            .max(f64::MIN_POSITIVE);
+        let (lo, size) = cube(&cloud.positions);
+        let attributes = cloud.attributes.iter_mut().map(|a| &mut a.values).collect();
         Self::build_cube(
             &mut cloud.positions,
             cloud.colors.as_deref_mut(),
+            attributes,
             lo,
             size,
             0,
@@ -139,6 +146,7 @@ impl Octree {
         Self::build_cube(
             points,
             colors,
+            Vec::new(),
             pending.min,
             pending.size,
             pending.level,
@@ -181,17 +189,22 @@ impl Octree {
     }
 
     /// Build over a given cube starting at `level`, optionally stopping at
-    /// `split_level` with pending subtrees.
+    /// `split_level` with pending subtrees. Colors and attributes are
+    /// reordered together with the points.
+    #[allow(clippy::too_many_arguments)]
     fn build_cube(
         points: &mut [[f64; 3]],
         colors: Option<&mut [[u8; 3]]>,
+        attributes: Vec<&mut crate::AttributeValues>,
         lo: [f64; 3],
         size: f64,
         level: u8,
         split_level: Option<u8>,
         params: OctreeParams,
     ) -> Option<(Self, Vec<PendingSubtree>)> {
-        if colors.as_ref().is_some_and(|c| c.len() != points.len()) {
+        if colors.as_ref().is_some_and(|c| c.len() != points.len())
+            || attributes.iter().any(|a| a.len() != points.len())
+        {
             return None;
         }
         if points.is_empty() || points.len() > u32::MAX as usize || !params.grid.is_power_of_two() {
@@ -215,6 +228,7 @@ impl Octree {
         let mut builder = Builder {
             points,
             colors,
+            attributes,
             codes,
             order,
             params: OctreeParams {
@@ -272,6 +286,7 @@ fn spread_bits(v: u64) -> u64 {
 struct Builder<'a> {
     points: &'a mut [[f64; 3]],
     colors: Option<&'a mut [[u8; 3]]>,
+    attributes: Vec<&'a mut crate::AttributeValues>,
     /// Morton code of each point, permuted together with `points` and `order`.
     codes: Vec<u64>,
     order: Vec<u32>,
@@ -292,6 +307,9 @@ impl Builder<'_> {
         self.points.swap(a, b);
         if let Some(colors) = self.colors.as_deref_mut() {
             colors.swap(a, b);
+        }
+        for values in &mut self.attributes {
+            values.swap(a, b);
         }
         self.codes.swap(a, b);
         self.order.swap(a, b);
@@ -387,6 +405,16 @@ impl Builder<'_> {
         }
         id as u32
     }
+}
+
+/// Minimum corner and edge length of the cube enclosing `points`.
+fn cube(points: &[[f64; 3]]) -> ([f64; 3], f64) {
+    let (lo, hi) = bounds(points);
+    let size = (0..3)
+        .map(|a| hi[a] - lo[a])
+        .fold(0.0f64, f64::max)
+        .max(f64::MIN_POSITIVE);
+    (lo, size)
 }
 
 fn bounds(points: &[[f64; 3]]) -> ([f64; 3], [f64; 3]) {
@@ -492,6 +520,7 @@ mod tests {
                     .map(|i| [i as u8, (i >> 8) as u8, (i >> 16) as u8])
                     .collect(),
             ),
+            attributes: Vec::new(),
         };
         let p = params(300, 16);
         let (mut tree, pending) = Octree::build_partial(&mut cloud, p, 2).unwrap();
@@ -539,6 +568,38 @@ mod tests {
     }
 
     #[test]
+    fn attributes_follow_their_points() {
+        let original = grid_points(80);
+        let n = original.len();
+        let mut cloud = crate::PointCloud {
+            positions: original.clone(),
+            colors: None,
+            attributes: vec![
+                crate::Attribute {
+                    name: crate::INTENSITY.into(),
+                    values: crate::AttributeValues::F32((0..n).map(|i| i as f32).collect()),
+                },
+                crate::Attribute {
+                    name: crate::CLASSIFICATION.into(),
+                    values: crate::AttributeValues::U8((0..n).map(|i| (i % 251) as u8).collect()),
+                },
+            ],
+        };
+        let tree = Octree::build_for_cloud(&mut cloud, params(200, 8)).unwrap();
+        let crate::AttributeValues::F32(intensity) = &cloud.attributes[0].values else {
+            panic!()
+        };
+        let crate::AttributeValues::U8(class) = &cloud.attributes[1].values else {
+            panic!()
+        };
+        for (i, &o) in tree.order.iter().enumerate() {
+            assert_eq!(cloud.positions[i], original[o as usize]);
+            assert_eq!(intensity[i], o as f32);
+            assert_eq!(class[i], (o % 251) as u8);
+        }
+    }
+
+    #[test]
     fn colors_follow_their_points() {
         let original = grid_points(120);
         let mut cloud = crate::PointCloud {
@@ -548,6 +609,7 @@ mod tests {
                     .map(|i| [i as u8, (i >> 8) as u8, (i >> 16) as u8])
                     .collect(),
             ),
+            attributes: Vec::new(),
         };
         let tree = Octree::build_for_cloud(&mut cloud, params(400, 16)).unwrap();
         let colors = cloud.colors.unwrap();

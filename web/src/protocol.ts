@@ -17,6 +17,10 @@ export interface LoadedCloud {
   positions: Float32Array;
   /** Interleaved rgb in octree order, or null when the file carries no colors. */
   colors: Uint8Array | null;
+  /** Per-point intensity (octree order), or null. */
+  intensity: Float32Array | null;
+  /** Per-point ASPRS class codes (octree order), or null. */
+  classification: Uint8Array | null;
   /** Octree node table, see `Cloud.lodNodes()`. */
   lodNodes: Float64Array;
   lodGrid: number;

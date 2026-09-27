@@ -543,6 +543,7 @@ mod tests {
         PointCloud {
             positions,
             colors: None,
+            attributes: Vec::new(),
         }
     }
 

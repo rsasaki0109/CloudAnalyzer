@@ -31,6 +31,7 @@ fn surface(rng: &mut Rng, n: usize, bump: f64) -> PointCloud {
     PointCloud {
         positions,
         colors: None,
+        attributes: Vec::new(),
     }
 }
 
@@ -60,6 +61,7 @@ fn main() {
         let pick = |cloud: &PointCloud, idx: &[u32]| PointCloud {
             positions: idx.iter().map(|&i| cloud.positions[i as usize]).collect(),
             colors: None,
+            attributes: Vec::new(),
         };
         let mut slowest = 0.0f64;
         let mut copies = 0;

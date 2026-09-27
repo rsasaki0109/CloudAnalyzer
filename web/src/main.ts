@@ -9,12 +9,22 @@ import {
   removeCloud,
   transformCloud,
 } from "./api";
-import { RAMPS, colorize, gradientCss, lut, type RampName } from "./colormap";
+import {
+  RAMPS,
+  classColor,
+  className,
+  colorize,
+  gradientCss,
+  lut,
+  quantile,
+  type RampName,
+  toRgba,
+} from "./colormap";
 import { type LodNode, parseNodes } from "./lod";
 import type { C2cOutput, LoadedCloud } from "./protocol";
 import { Viewer } from "./viewer";
 
-type ColorMode = "rgb" | "solid" | "c2c";
+type ColorMode = "rgb" | "solid" | "intensity" | "classification" | "c2c";
 
 interface Entry {
   cloud: LoadedCloud;
@@ -63,18 +73,63 @@ function fmt(v: number): string {
 // ---------------------------------------------------------------- colors
 
 function solidColors(entry: Entry): Uint8Array {
-  const out = new Uint8Array(entry.cloud.count * 3);
-  for (let i = 0; i < out.length; i += 3) out.set(entry.solid, i);
+  const out = new Uint8Array(entry.cloud.count * 4);
+  const [r, g, b] = entry.solid;
+  for (let i = 0; i < out.length; i += 4) {
+    out[i] = r;
+    out[i + 1] = g;
+    out[i + 2] = b;
+    out[i + 3] = 255;
+  }
   return out;
 }
 
-function colorsFor(entry: Entry): Uint8Array {
-  if (entry.mode === "rgb" && entry.cloud.colors) return entry.cloud.colors;
-  if (entry.mode === "c2c" && entry.c2c) {
-    const { lo, hi } = range ?? { lo: entry.c2c.stats.min, hi: entry.c2c.stats.max };
-    return colorize(entry.c2c.distances, lo, hi, lut(rampName));
+function classificationColors(classes: Uint8Array): Uint8Array {
+  const table = new Uint8Array(256 * 3);
+  for (let c = 0; c < 256; c++) table.set(classColor(c), c * 3);
+  const out = new Uint8Array(classes.length * 4);
+  for (let i = 0; i < classes.length; i++) {
+    const t = classes[i] * 3;
+    out[i * 4] = table[t];
+    out[i * 4 + 1] = table[t + 1];
+    out[i * 4 + 2] = table[t + 2];
+    out[i * 4 + 3] = 255;
   }
-  return solidColors(entry);
+  return out;
+}
+
+/** Interleaved rgba for the entry's color mode, with hidden classes at alpha 0. */
+function colorsFor(entry: Entry): Uint8Array {
+  const { cloud } = entry;
+  let out: Uint8Array;
+  if (entry.mode === "rgb" && cloud.colors) {
+    out = toRgba(cloud.colors);
+  } else if (entry.mode === "intensity" && cloud.intensity) {
+    // Stretch between the 2nd and 98th percentile so a few bright returns
+    // do not wash everything out.
+    const lo = quantile(cloud.intensity, 0.02);
+    const hi = quantile(cloud.intensity, 0.98);
+    out = colorize(cloud.intensity, lo, hi > lo ? hi : lo + 1, lut("Grey"));
+  } else if (entry.mode === "classification" && cloud.classification) {
+    out = classificationColors(cloud.classification);
+  } else if (entry.mode === "c2c" && entry.c2c) {
+    const { lo, hi } = range ?? { lo: entry.c2c.stats.min, hi: entry.c2c.stats.max };
+    out = colorize(entry.c2c.distances, lo, hi, lut(rampName));
+  } else {
+    out = solidColors(entry);
+  }
+  if (cloud.classification && hiddenClasses.size > 0) {
+    const classes = cloud.classification;
+    for (let i = 0; i < classes.length; i++) if (hiddenClasses.has(classes[i])) out[i * 4 + 3] = 0;
+  }
+  return out;
+}
+
+/** The color mode a newly loaded cloud starts with. */
+function defaultMode(cloud: LoadedCloud): ColorMode {
+  if (cloud.colors) return "rgb";
+  if (cloud.intensity) return "intensity";
+  return "solid";
 }
 
 function refreshColors(entry: Entry): void {
@@ -147,6 +202,8 @@ function renderList(): void {
     mode.title = "Color by";
     const options: [ColorMode, string, boolean][] = [
       ["rgb", "RGB", cloud.colors !== null],
+      ["intensity", "Intensity", cloud.intensity !== null],
+      ["classification", "Classification", cloud.classification !== null],
       ["solid", "Solid color", true],
       ["c2c", distanceLabel(entry.c2c), !!entry.c2c],
     ];
@@ -169,6 +226,7 @@ function renderList(): void {
   }
   renderC2cSelects();
   renderIcpSelects();
+  renderClasses();
 }
 
 async function removeEntry(id: number): Promise<void> {
@@ -182,7 +240,7 @@ async function removeEntry(id: number): Promise<void> {
     if (entry.c2c && !findByName(entry.c2c.referenceName)) {
       entry.c2c = undefined;
       if (entry.mode === "c2c") {
-        entry.mode = entry.cloud.colors ? "rgb" : "solid";
+        entry.mode = defaultMode(entry.cloud);
         refreshColors(entry);
       }
     }
@@ -229,7 +287,7 @@ function addEntry(cloud: LoadedCloud): Entry {
     cloud,
     nodes: parseNodes(cloud.lodNodes, cloud.lodGrid, cloud.shift),
     solid: SOLID_COLORS[entries.size % SOLID_COLORS.length],
-    mode: cloud.colors ? "rgb" : "solid",
+    mode: defaultMode(cloud),
     visible: true,
     transforms: [],
   };
@@ -535,7 +593,7 @@ function replaceCloud(entry: Entry, cloud: LoadedCloud): void {
   for (const other of entries.values()) {
     if (other.c2c && (other === entry || other.c2c.referenceName === name)) {
       other.c2c = undefined;
-      if (other.mode === "c2c") other.mode = other.cloud.colors ? "rgb" : "solid";
+      if (other.mode === "c2c") other.mode = defaultMode(other.cloud);
       if (activeC2c === other.cloud.id) activeC2c = null;
       if (other !== entry) refreshColors(other);
     }
@@ -645,6 +703,62 @@ $<HTMLButtonElement>("icp-undo").onclick = async () => {
     setStatus(`Undo failed: ${err instanceof Error ? err.message : err}`, true);
   }
 };
+
+// ---------------------------------------------------------------- classes
+
+/** ASPRS class codes currently hidden in every cloud. */
+const hiddenClasses = new Set<number>();
+
+function renderClasses(): void {
+  const counts = new Map<number, number>();
+  for (const entry of entries.values()) {
+    const classes = entry.cloud.classification;
+    if (!classes) continue;
+    const local = new Uint32Array(256);
+    for (let i = 0; i < classes.length; i++) local[classes[i]]++;
+    local.forEach((n, code) => n && counts.set(code, (counts.get(code) ?? 0) + n));
+  }
+  $("class-panel").hidden = counts.size === 0;
+  $("class-list").replaceChildren(
+    ...[...counts.entries()]
+      .sort(([a], [b]) => a - b)
+      .map(([code, n]) => {
+        const li = document.createElement("li");
+        const box = document.createElement("input");
+        box.type = "checkbox";
+        box.checked = !hiddenClasses.has(code);
+        box.onchange = () => {
+          if (box.checked) hiddenClasses.delete(code);
+          else hiddenClasses.add(code);
+          for (const entry of entries.values()) if (entry.cloud.classification) refreshColors(entry);
+        };
+        const swatch = document.createElement("span");
+        swatch.className = "swatch";
+        swatch.style.background = `rgb(${classColor(code).join(" ")})`;
+        const label = document.createElement("span");
+        label.textContent = `${code} · ${className(code)}`;
+        const count = document.createElement("span");
+        count.className = "meta";
+        count.textContent = n.toLocaleString();
+        const row = document.createElement("label");
+        row.append(box, swatch, label, count);
+        li.append(row);
+        return li;
+      }),
+  );
+}
+
+for (const [id, show] of [
+  ["class-all", true],
+  ["class-none", false],
+] as const) {
+  $<HTMLButtonElement>(id).onclick = () => {
+    hiddenClasses.clear();
+    if (!show) for (let c = 0; c < 256; c++) hiddenClasses.add(c);
+    for (const entry of entries.values()) if (entry.cloud.classification) refreshColors(entry);
+    renderClasses();
+  };
+}
 
 // ---------------------------------------------------------------- clipping box
 

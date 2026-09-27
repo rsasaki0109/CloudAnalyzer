@@ -6,6 +6,7 @@ When the ``cloudanalyzer_core`` extension is installed, hot paths use it; set
 
 from __future__ import annotations
 
+import importlib
 import os
 from functools import lru_cache
 from types import ModuleType
@@ -16,10 +17,10 @@ def _load() -> ModuleType | None:
     if os.environ.get("CA_DISABLE_RUST_CORE", "").strip() not in {"", "0"}:
         return None
     try:
-        import cloudanalyzer_core
+        module: ModuleType = importlib.import_module("cloudanalyzer_core")
     except ImportError:
         return None
-    return cloudanalyzer_core
+    return module
 
 
 def core() -> ModuleType | None:

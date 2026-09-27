@@ -1,3 +1,3 @@
 """CloudAnalyzer - AI-friendly CLI tool for point cloud analysis."""
 
-__version__ = "0.5.0a1"
+__version__ = "0.5.0"

@@ -6,6 +6,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-27
+
 ### Added
 
 - Phase 39 adds the paper-faithful Frequency Consistency Metric (FCM) to
@@ -30,10 +32,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `plane_normal_dispersion` / `coplanar_offset_rmse` metrics are
   PNE/CPV-inspired local-plane proxies, not claims of reproducing the
   published metrics; they surface in gates, triage, JSON, and PR comments.
-
-## [0.5.0-alpha.1] - 2026-06-17
-
-### Added
 
 - **Benchmark report bundle golden path** — `ca benchmark eval --out <dir>`
   now writes a reproducible report bundle for CI artifacts and static
@@ -136,6 +134,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `get_info` lazily inside `batch_info`.
 - Fixed `.github/workflows/leaderboard.yml` parsing by replacing a YAML-hostile
   shell heredoc commit message with normal `git commit -m ... -m ...` flags.
+- Fixed oriented 3D box IoU (`ca detection-evaluate` /
+  `ca tracking-evaluate`) on NumPy 2.x, which rejects 2D inputs to
+  `np.cross`; polygon clipping now uses an explicit 2D cross product.
 
 ## [0.4.0] - 2026-05-24
 
@@ -430,7 +431,7 @@ immediately" CLI (`ca evaluate`, `ca downsample`, `ca filter`,
 `ca traj-evaluate`, `ca run-evaluate`, `ca check`, `ca web`, ...) and the
 core / experiments split documented in `docs/architecture.md`.
 
-[0.5.0-alpha.1]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.5.0-alpha.1
+[0.5.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.5.0
 [0.4.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.4.0
 [0.3.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.3.0
 [0.2.0]: https://github.com/rsasaki0109/CloudAnalyzer/releases/tag/v0.2.0

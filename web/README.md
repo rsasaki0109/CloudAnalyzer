@@ -12,6 +12,8 @@ Files never leave the browser.
 - Open PLY (ascii / binary), PCD (ascii / binary / binary_compressed),
   LAS / LAZ 1.0–1.4 (point formats 0–10) and XYZ / TXT / CSV / PTS by
   drag-and-drop.
+- Intensity and ASPRS classification from LAS/LAZ (also PLY, PCD and PTS):
+  color by either, and show or hide individual classes.
 - Level-of-detail rendering for large clouds: points are arranged in a
   nested octree at load time and only the nodes that matter on screen are
   drawn, up to an adjustable point budget (1M–20M).

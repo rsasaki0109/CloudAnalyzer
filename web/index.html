@@ -42,6 +42,15 @@
     <aside class="sidebar">
       <section>
         <h2>Clouds</h2>
+        <label class="inline max-points" title="Larger files keep every n-th point so they fit in memory">Max points per file
+          <select id="max-points">
+            <option value="10000000">10M</option>
+            <option value="25000000">25M</option>
+            <option value="50000000" selected>50M</option>
+            <option value="100000000">100M</option>
+            <option value="0">No limit</option>
+          </select>
+        </label>
         <ul id="cloud-list" class="cloud-list"></ul>
         <div id="empty-hint" class="hint">
           <p>Drop PLY, PCD, LAS/LAZ or XYZ point clouds, or OBJ/STL/PLY meshes, anywhere, or use Open…

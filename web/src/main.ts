@@ -178,7 +178,8 @@ function renderList(): void {
     meta.textContent =
       cloud.kind === "mesh"
         ? `${cloud.triangles.toLocaleString()} triangles · mesh`
-        : `${cloud.count.toLocaleString()} points${cloud.colors ? " · RGB" : ""}`;
+        : `${cloud.count.toLocaleString()} points${cloud.keepEvery > 1 ? ` (1 in ${cloud.keepEvery})` : ""}` +
+          `${cloud.colors ? " · RGB" : ""}`;
     name.append(meta);
 
     const remove = document.createElement("button");
@@ -305,9 +306,8 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
     setStatus(`Loading ${file.name} (${mb} MB): reading…`);
     const start = performance.now();
     try {
-      const bytes = await file.arrayBuffer();
-      const read = performance.now() - start;
-      const cloud = await loadCloud(file.name, bytes, (note) =>
+      const maxPoints = Number($<HTMLSelectElement>("max-points").value) || Number.POSITIVE_INFINITY;
+      const cloud = await loadCloud(file, maxPoints, (note) =>
         setStatus(`Loading ${file.name} (${mb} MB): ${note}…`),
       );
       addEntry(cloud);
@@ -320,10 +320,12 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
       const size =
         cloud.kind === "mesh"
           ? `${cloud.triangles.toLocaleString()} triangles`
-          : `${cloud.count.toLocaleString()} points`;
+          : cloud.keepEvery > 1
+            ? `${cloud.count.toLocaleString()} of ${cloud.filePoints.toLocaleString()} points (1 in ${cloud.keepEvery})`
+            : `${cloud.count.toLocaleString()} points`;
       setStatus(
         `Loaded ${file.name}: ${size} in ${s(performance.now() - start)} ` +
-          `(read ${s(read)} · parse ${s(parse)} · index ${s(index)}` +
+          `(read ${s(parse)} · index ${s(index)}` +
           `${workers && workers > 1 ? ` on ${workers} workers` : ""} · prepare ${s(prepare)})`,
       );
     } catch (err) {

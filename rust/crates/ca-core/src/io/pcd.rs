@@ -1,6 +1,7 @@
 //! PCD reader (ascii, binary, binary_compressed).
 
 use super::scalar::{Scalar, unpack_rgb};
+use super::stream::RecordDecoder;
 use super::{IoError, split_header};
 use crate::{Attribute, AttributeValues, CLASSIFICATION, INTENSITY, PointCloud};
 
@@ -13,14 +14,14 @@ enum Data {
     BinaryCompressed,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Field {
     name: String,
     kind: Scalar,
     count: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Header {
     fields: Vec<Field>,
     points: usize,
@@ -68,6 +69,25 @@ impl Header {
             });
         }
         out
+    }
+
+    /// Byte offset of each field within a row-major record.
+    fn offsets(&self) -> Vec<usize> {
+        let mut offsets = Vec::with_capacity(self.fields.len());
+        let mut offset = 0;
+        for f in &self.fields {
+            offsets.push(offset);
+            offset += f.kind.size() * f.count;
+        }
+        offsets
+    }
+
+    fn empty_cloud(&self, capacity: usize) -> PointCloud {
+        PointCloud {
+            positions: Vec::with_capacity(capacity),
+            colors: self.rgb().map(|_| Vec::with_capacity(capacity)),
+            attributes: self.empty_attributes(),
+        }
     }
 
     /// Byte size of one point in row-major layout.
@@ -180,13 +200,8 @@ pub(crate) fn read(bytes: &[u8]) -> Result<PointCloud, IoError> {
             let body = body
                 .get(..stride * header.points)
                 .ok_or(IoError::Truncated(FORMAT))?;
-            let mut offsets = Vec::with_capacity(header.fields.len());
-            let mut offset = 0;
-            for f in &header.fields {
-                offsets.push(offset);
-                offset += f.kind.size() * f.count;
-            }
-            read_binary(&header, |field, point| {
+            let offsets = header.offsets();
+            read_binary(&header, header.points, |field, point| {
                 &body[point * stride + offsets[field]..]
             })
         }
@@ -211,7 +226,7 @@ pub(crate) fn read(bytes: &[u8]) -> Result<PointCloud, IoError> {
                 starts.push(offset);
                 offset += f.kind.size() * f.count * header.points;
             }
-            read_binary(&header, |field, point| {
+            read_binary(&header, header.points, |field, point| {
                 let f = &header.fields[field];
                 &data[starts[field] + point * f.kind.size() * f.count..]
             })
@@ -221,19 +236,28 @@ pub(crate) fn read(bytes: &[u8]) -> Result<PointCloud, IoError> {
 
 fn read_binary<'a>(
     header: &Header,
+    points: usize,
     at: impl Fn(usize, usize) -> &'a [u8],
 ) -> Result<PointCloud, IoError> {
+    let mut cloud = header.empty_cloud(points);
+    append_binary(header, points, at, &mut cloud)?;
+    Ok(cloud)
+}
+
+/// Decode `points` points (`at(field, point)` gives a field's bytes) and
+/// append them to `cloud`, skipping NaN points.
+fn append_binary<'a>(
+    header: &Header,
+    points: usize,
+    at: impl Fn(usize, usize) -> &'a [u8],
+    cloud: &mut PointCloud,
+) -> Result<(), IoError> {
     let xyz = header.xyz()?;
     let kinds = xyz.map(|i| header.fields[i].kind);
     let rgb = header.rgb();
-    let mut cloud = PointCloud {
-        positions: Vec::with_capacity(header.points),
-        colors: rgb.map(|_| Vec::with_capacity(header.points)),
-        attributes: header.empty_attributes(),
-    };
     let intensity = header.intensity().map(|i| (i, header.fields[i].kind));
     let classification = header.classification().map(|i| (i, header.fields[i].kind));
-    for point in 0..header.points {
+    for point in 0..points {
         let p: [f64; 3] = std::array::from_fn(|a| kinds[a].decode(at(xyz[a], point), true));
         if !p.iter().all(|v| v.is_finite()) {
             continue; // organized clouds mark invalid points with NaN
@@ -243,12 +267,62 @@ fn read_binary<'a>(
             colors.push(unpack_rgb(Scalar::bits_u32(at(field, point), true)));
         }
         push_attributes(
-            &mut cloud,
+            cloud,
             intensity.map(|(f, k)| k.decode(at(f, point), true)),
             classification.map(|(f, k)| k.decode(at(f, point), true)),
         );
     }
-    Ok(cloud)
+    Ok(())
+}
+
+/// Streaming decoder for row-major binary PCD. `None` for ASCII and
+/// compressed (column-major) PCD.
+#[allow(clippy::type_complexity)]
+pub(crate) fn stream(head: &[u8]) -> Result<Option<(Box<dyn RecordDecoder>, usize, u64)>, IoError> {
+    let (lines, body) = split_header(head, FORMAT, |l| {
+        l.trim_start().to_ascii_uppercase().starts_with("DATA")
+    })?;
+    let header = parse_header(&lines)?;
+    if header.data != Data::Binary {
+        return Ok(None);
+    }
+    header.xyz()?;
+    let decoder = PcdDecoder {
+        offsets: header.offsets(),
+        stride: header.stride(),
+        cloud: header.empty_cloud(0),
+        header,
+    };
+    let points = decoder.header.points as u64;
+    Ok(Some((Box::new(decoder), head.len() - body.len(), points)))
+}
+
+struct PcdDecoder {
+    header: Header,
+    offsets: Vec<usize>,
+    stride: usize,
+    cloud: PointCloud,
+}
+
+impl RecordDecoder for PcdDecoder {
+    fn record_len(&self) -> usize {
+        self.stride
+    }
+
+    fn decode_block(&mut self, records: &[u8]) {
+        let (stride, offsets) = (self.stride, &self.offsets);
+        append_binary(
+            &self.header,
+            records.len() / stride,
+            |field, point| &records[point * stride + offsets[field]..],
+            &mut self.cloud,
+        )
+        .expect("layout validated when the stream was opened");
+    }
+
+    fn finish(self: Box<Self>) -> PointCloud {
+        self.cloud
+    }
 }
 
 fn read_ascii(body: &[u8], header: &Header) -> Result<PointCloud, IoError> {
@@ -410,6 +484,29 @@ WIDTH 2\nHEIGHT 1\nPOINTS 2\nDATA binary\n"
             cloud.attribute(INTENSITY).unwrap().values,
             AttributeValues::F32(vec![0.0, 1.0])
         );
+    }
+
+    #[test]
+    fn streamed_binary_pcd_matches_whole_read() {
+        let mut src = b"FIELDS x y z intensity\nSIZE 4 4 4 4\nTYPE F F F F\nWIDTH 300\nHEIGHT 1\n\
+POINTS 300\nDATA binary\n"
+            .to_vec();
+        for i in 0..300 {
+            let z = if i == 17 { f32::NAN } else { i as f32 * 0.5 };
+            for v in [i as f32, 1.0, z, 2.0 * i as f32] {
+                src.extend_from_slice(&v.to_le_bytes());
+            }
+        }
+        let whole = read(&src).unwrap();
+        assert_eq!(whole.len(), 299);
+        let head = crate::io::PointStream::header_len("a.pcd", &src).unwrap();
+        let mut s = crate::io::PointStream::open("a.pcd", &src[..head])
+            .unwrap()
+            .unwrap();
+        for piece in src[s.data_offset() as usize..].chunks(37) {
+            s.push(piece);
+        }
+        assert_eq!(s.finish().unwrap(), whole);
     }
 
     #[test]

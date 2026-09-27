@@ -1,6 +1,7 @@
 //! LAS 1.0–1.4 and LAZ reader (point formats 0–10).
 
 use super::IoError;
+use super::stream::{RecordDecoder, decode_records};
 use crate::{Attribute, AttributeValues, CLASSIFICATION, INTENSITY, PointCloud};
 
 const FORMAT: &str = "LAS";
@@ -31,10 +32,6 @@ fn f64_at(b: &[u8], at: usize) -> Result<f64, IoError> {
     bytes_at(b, at).map(f64::from_le_bytes)
 }
 
-fn i32_at(b: &[u8], at: usize) -> Result<i32, IoError> {
-    bytes_at(b, at).map(i32::from_le_bytes)
-}
-
 /// Byte offset of the RGB triple within a point record, if the format has one.
 fn rgb_offset(format: u8) -> Option<usize> {
     match format {
@@ -45,104 +42,207 @@ fn rgb_offset(format: u8) -> Option<usize> {
     }
 }
 
-pub(crate) fn read(b: &[u8]) -> Result<PointCloud, IoError> {
-    if !b.starts_with(b"LASF") {
-        return Err(IoError::header(FORMAT, "missing 'LASF' signature"));
-    }
-    let minor = u8_at(b, 25)?;
-    let data_offset = u32_at(b, 96)? as usize;
-    let raw_format = u8_at(b, 104)?;
-    // LASzip marks compressed files by setting the high bits of the format id.
-    let compressed = raw_format & 0xc0 != 0;
-    let format = raw_format & 0x3f;
-    if format > 10 {
-        return Err(IoError::header(
-            FORMAT,
-            format!("unknown point format {format}"),
-        ));
-    }
-    let record_len = u16_at(b, 105)? as usize;
-    let legacy_count = u32_at(b, 107)? as u64;
-    let count = if minor >= 4 && legacy_count == 0 {
-        u64_at(b, 247)?
-    } else {
-        legacy_count
-    } as usize;
-    let scale = [f64_at(b, 131)?, f64_at(b, 139)?, f64_at(b, 147)?];
-    let offset = [f64_at(b, 155)?, f64_at(b, 163)?, f64_at(b, 171)?];
-    let rgb = rgb_offset(format);
-    if record_len < rgb.map_or(12, |o| o + 6) {
-        return Err(IoError::header(FORMAT, "point record too short"));
-    }
-    let decompressed;
-    let records = if compressed {
-        decompressed = decompress(b, data_offset, record_len * count)?;
-        &decompressed[..]
-    } else {
-        b.get(data_offset..data_offset + record_len * count)
-            .ok_or(IoError::Truncated(FORMAT))?
-    };
-
-    let mut cloud = PointCloud {
-        positions: Vec::with_capacity(count),
-        colors: rgb.map(|_| Vec::with_capacity(count)),
-        attributes: Vec::new(),
-    };
-    // LAS stores 16-bit color, but many writers only fill the low byte.
-    let mut max_channel = 0u16;
-    let mut wide_colors: Vec<[u16; 3]> = Vec::new();
-    // Legacy formats pack the class into the low 5 bits of byte 15; the
-    // 1.4 formats (6-10) give it the whole of byte 16.
-    let (class_at, class_mask) = if format >= 6 { (16, 0xff) } else { (15, 0x1f) };
-    let mut intensity = Vec::with_capacity(count);
-    let mut classification = Vec::with_capacity(count);
-    for record in records.chunks_exact(record_len) {
-        let p: [f64; 3] =
-            std::array::from_fn(|i| i32_at(record, 4 * i).unwrap() as f64 * scale[i] + offset[i]);
-        cloud.positions.push(p);
-        intensity.push(u16_at(record, 12)? as f32);
-        classification.push(u8_at(record, class_at)? & class_mask);
-        if let Some(o) = rgb {
-            let c = [
-                u16_at(record, o)?,
-                u16_at(record, o + 2)?,
-                u16_at(record, o + 4)?,
-            ];
-            max_channel = max_channel.max(c[0]).max(c[1]).max(c[2]);
-            wide_colors.push(c);
-        }
-    }
-    if let Some(colors) = cloud.colors.as_mut() {
-        let shift = if max_channel > 255 { 8 } else { 0 };
-        colors.extend(wide_colors.iter().map(|c| c.map(|v| (v >> shift) as u8)));
-    }
-    cloud.attributes = vec![
-        Attribute {
-            name: INTENSITY.into(),
-            values: AttributeValues::F32(intensity),
-        },
-        Attribute {
-            name: CLASSIFICATION.into(),
-            values: AttributeValues::U8(classification),
-        },
-    ];
-    Ok(cloud)
+/// What the LAS header says about the point records.
+pub(crate) struct LasHeader {
+    pub data_offset: usize,
+    pub record_len: usize,
+    pub count: usize,
+    pub compressed: bool,
+    format: u8,
+    scale: [f64; 3],
+    offset: [f64; 3],
 }
 
-/// Decompress `len` bytes of LAZ point records starting at `data_offset`.
-fn decompress(b: &[u8], data_offset: usize, len: usize) -> Result<Vec<u8>, IoError> {
-    let vlr = laszip_vlr(b)?;
-    let vlr = laz::LazVlr::from_buffer(vlr)
-        .map_err(|e| IoError::header(FORMAT, format!("bad LASzip VLR: {e}")))?;
-    let mut source = std::io::Cursor::new(b);
-    source.set_position(data_offset as u64);
-    let mut decompressor = laz::LasZipDecompressor::new(source, vlr)
-        .map_err(|e| IoError::Unsupported(format!("LAZ: {e}")))?;
-    let mut out = vec![0u8; len];
-    decompressor
-        .decompress_many(&mut out)
-        .map_err(|e| IoError::Unsupported(format!("LAZ: {e}")))?;
-    Ok(out)
+impl LasHeader {
+    pub fn parse(b: &[u8]) -> Result<Self, IoError> {
+        if !b.starts_with(b"LASF") {
+            return Err(IoError::header(FORMAT, "missing 'LASF' signature"));
+        }
+        let minor = u8_at(b, 25)?;
+        let raw_format = u8_at(b, 104)?;
+        let format = raw_format & 0x3f;
+        if format > 10 {
+            return Err(IoError::header(
+                FORMAT,
+                format!("unknown point format {format}"),
+            ));
+        }
+        let record_len = u16_at(b, 105)? as usize;
+        let legacy_count = u32_at(b, 107)? as u64;
+        let count = if minor >= 4 && legacy_count == 0 {
+            u64_at(b, 247)?
+        } else {
+            legacy_count
+        } as usize;
+        if record_len < rgb_offset(format).map_or(20, |o| o + 6) {
+            return Err(IoError::header(FORMAT, "point record too short"));
+        }
+        Ok(Self {
+            data_offset: u32_at(b, 96)? as usize,
+            record_len,
+            count,
+            // LASzip marks compressed files by setting the high bits of the format id.
+            compressed: raw_format & 0xc0 != 0,
+            format,
+            scale: [f64_at(b, 131)?, f64_at(b, 139)?, f64_at(b, 147)?],
+            offset: [f64_at(b, 155)?, f64_at(b, 163)?, f64_at(b, 171)?],
+        })
+    }
+}
+
+/// Turns LAS point records into points, colors, intensity and classes.
+pub(crate) struct LasDecoder {
+    header: LasHeader,
+    rgb: Option<usize>,
+    class_at: usize,
+    class_mask: u8,
+    positions: Vec<[f64; 3]>,
+    /// LAS stores 16-bit color, but many writers only fill the low byte, so
+    /// the scaling is decided once all colors are known.
+    wide_colors: Vec<[u16; 3]>,
+    max_channel: u16,
+    intensity: Vec<f32>,
+    classification: Vec<u8>,
+}
+
+impl LasDecoder {
+    pub fn new(header: LasHeader, capacity: usize) -> Self {
+        // Legacy formats pack the class into the low 5 bits of byte 15; the
+        // 1.4 formats (6-10) give it the whole of byte 16.
+        let (class_at, class_mask) = if header.format >= 6 {
+            (16, 0xff)
+        } else {
+            (15, 0x1f)
+        };
+        let rgb = rgb_offset(header.format);
+        Self {
+            rgb,
+            class_at,
+            class_mask,
+            positions: Vec::with_capacity(capacity),
+            wide_colors: Vec::with_capacity(if rgb.is_some() { capacity } else { 0 }),
+            max_channel: 0,
+            intensity: Vec::with_capacity(capacity),
+            classification: Vec::with_capacity(capacity),
+            header,
+        }
+    }
+}
+
+impl RecordDecoder for LasDecoder {
+    fn record_len(&self) -> usize {
+        self.header.record_len
+    }
+
+    fn decode_block(&mut self, records: &[u8]) {
+        for record in records.chunks_exact(self.header.record_len) {
+            self.decode(record);
+        }
+    }
+
+    fn finish(self: Box<Self>) -> PointCloud {
+        self.finish_cloud()
+    }
+}
+
+impl LasDecoder {
+    fn decode(&mut self, record: &[u8]) {
+        let h = &self.header;
+        self.positions.push(std::array::from_fn(|i| {
+            let v = i32::from_le_bytes(record[4 * i..4 * i + 4].try_into().unwrap());
+            v as f64 * h.scale[i] + h.offset[i]
+        }));
+        self.intensity
+            .push(u16::from_le_bytes([record[12], record[13]]) as f32);
+        self.classification
+            .push(record[self.class_at] & self.class_mask);
+        if let Some(o) = self.rgb {
+            let c: [u16; 3] = std::array::from_fn(|k| {
+                u16::from_le_bytes([record[o + 2 * k], record[o + 2 * k + 1]])
+            });
+            self.max_channel = self.max_channel.max(c[0]).max(c[1]).max(c[2]);
+            self.wide_colors.push(c);
+        }
+    }
+
+    fn finish_cloud(self) -> PointCloud {
+        let shift = if self.max_channel > 255 { 8 } else { 0 };
+        let colors = self.rgb.map(|_| {
+            self.wide_colors
+                .iter()
+                .map(|c| c.map(|v| (v >> shift) as u8))
+                .collect()
+        });
+        PointCloud {
+            positions: self.positions,
+            colors,
+            attributes: vec![
+                Attribute {
+                    name: INTENSITY.into(),
+                    values: AttributeValues::F32(self.intensity),
+                },
+                Attribute {
+                    name: CLASSIFICATION.into(),
+                    values: AttributeValues::U8(self.classification),
+                },
+            ],
+        }
+    }
+}
+
+/// Streaming decoder for an uncompressed LAS file: decoder, record offset
+/// and point count. `None` for LAZ.
+#[allow(clippy::type_complexity)]
+pub(crate) fn stream(head: &[u8]) -> Result<Option<(Box<dyn RecordDecoder>, usize, u64)>, IoError> {
+    let header = LasHeader::parse(head)?;
+    if header.compressed {
+        return Ok(None);
+    }
+    let (offset, count) = (header.data_offset, header.count as u64);
+    Ok(Some((Box::new(LasDecoder::new(header, 0)), offset, count)))
+}
+
+/// Read a whole LAS/LAZ file, keeping every `keep_every`-th point. LAZ is
+/// decompressed in blocks so that only the kept points are held in memory.
+pub(crate) fn read(b: &[u8], keep_every: usize) -> Result<PointCloud, IoError> {
+    let header = LasHeader::parse(b)?;
+    let (data_offset, record_len, count, compressed) = (
+        header.data_offset,
+        header.record_len,
+        header.count,
+        header.compressed,
+    );
+    let keep_every = keep_every.max(1);
+    let mut decoder: Box<dyn RecordDecoder> =
+        Box::new(LasDecoder::new(header, count.div_ceil(keep_every)));
+    let mut index = 0u64;
+    if compressed {
+        let vlr = laszip_vlr(b)?;
+        let vlr = laz::LazVlr::from_buffer(vlr)
+            .map_err(|e| IoError::header(FORMAT, format!("bad LASzip VLR: {e}")))?;
+        let mut source = std::io::Cursor::new(b);
+        source.set_position(data_offset as u64);
+        let mut decompressor = laz::LasZipDecompressor::new(source, vlr)
+            .map_err(|e| IoError::Unsupported(format!("LAZ: {e}")))?;
+        const BLOCK: usize = 50_000;
+        let mut buffer = vec![0u8; BLOCK * record_len];
+        let mut left = count;
+        while left > 0 {
+            let n = left.min(BLOCK);
+            let block = &mut buffer[..n * record_len];
+            decompressor
+                .decompress_many(block)
+                .map_err(|e| IoError::Unsupported(format!("LAZ: {e}")))?;
+            decode_records(decoder.as_mut(), block, keep_every as u64, &mut index);
+            left -= n;
+        }
+    } else {
+        let records = b
+            .get(data_offset..data_offset + record_len * count)
+            .ok_or(IoError::Truncated(FORMAT))?;
+        decode_records(decoder.as_mut(), records, keep_every as u64, &mut index);
+    }
+    Ok(decoder.finish())
 }
 
 /// Payload of the LASzip VLR (user id `laszip encoded`, record id 22204).
@@ -208,7 +308,7 @@ mod tests {
     #[test]
     fn reads_format_0_with_scale_and_offset() {
         let src = las(0, 20, &[record([100, -250, 1500], 20, None)]);
-        let cloud = read(&src).unwrap();
+        let cloud = read(&src, 1).unwrap();
         let p = cloud.positions[0];
         assert!((p[0] - 500001.0).abs() < 1e-9);
         assert!((p[1] - 3999997.5).abs() < 1e-9);
@@ -222,7 +322,7 @@ mod tests {
         let mut r0 = record([0, 0, 0], 28, None);
         r0[12..14].copy_from_slice(&1234u16.to_le_bytes());
         r0[15] = 0b1110_0010; // synthetic/key-point/withheld flags + class 2
-        let cloud = read(&las(1, 28, &[r0])).unwrap();
+        let cloud = read(&las(1, 28, &[r0]), 1).unwrap();
         assert_eq!(
             cloud.attribute(INTENSITY).unwrap().values,
             AttributeValues::F32(vec![1234.0])
@@ -235,7 +335,7 @@ mod tests {
         let mut r6 = record([0, 0, 0], 30, None);
         r6[12..14].copy_from_slice(&7u16.to_le_bytes());
         r6[16] = 45;
-        let cloud = read(&las(6, 30, &[r6])).unwrap();
+        let cloud = read(&las(6, 30, &[r6]), 1).unwrap();
         assert_eq!(
             cloud.attribute(CLASSIFICATION).unwrap().values,
             AttributeValues::U8(vec![45])
@@ -252,7 +352,7 @@ mod tests {
                 record([1, 1, 1], 26, Some((20, [256, 0, 512]))),
             ],
         );
-        let cloud = read(&src).unwrap();
+        let cloud = read(&src, 1).unwrap();
         assert_eq!(cloud.colors, Some(vec![[255, 128, 0], [1, 0, 2]]));
     }
 
@@ -299,7 +399,7 @@ mod tests {
         }
         let file = cursor.into_inner();
 
-        let cloud = read(&file).unwrap();
+        let cloud = read(&file, 1).unwrap();
         assert_eq!(cloud.len(), 5000);
         let p = cloud.positions[4999];
         assert!((p[0] - (500000.0 + 4999.0 * 7.0 * 0.01)).abs() < 1e-6);

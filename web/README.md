@@ -1,0 +1,35 @@
+# CloudAnalyzer Web
+
+A browser-based point cloud viewer and analyzer in the spirit of CloudCompare.
+The analysis core is Rust ([`rust/crates/ca-core`](../rust/crates/ca-core)),
+compiled to WebAssembly and run in a Web Worker; rendering uses three.js.
+Files never leave the browser.
+
+## Features
+
+- Open PLY (ascii / binary), PCD (ascii / binary / binary_compressed),
+  uncompressed LAS 1.0–1.4 and XYZ / TXT / CSV / PTS by drag-and-drop.
+- Coordinates are kept in `f64`; georeferenced clouds get a shared global
+  shift for rendering, like CloudCompare.
+- Cloud-to-cloud (C2C) nearest-neighbour distance with summary statistics,
+  color ramps, an adjustable display range and a colorbar.
+
+## Development
+
+Requires Rust with the `wasm32-unknown-unknown` target, `wasm-pack` and Node 22+.
+
+```sh
+cd web
+npm install
+npm run wasm   # build rust/crates/ca-wasm into src/wasm
+npm run dev    # add `-- --host` to open it from other devices on the LAN
+npm run build  # static site in dist/
+```
+
+The Rust core is tested natively:
+
+```sh
+cd rust
+cargo test --workspace
+cargo run --release -p ca-core --example c2c -- compared.ply reference.pcd
+```

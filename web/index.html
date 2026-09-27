@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CloudAnalyzer Web</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header class="toolbar">
+      <span class="brand">CloudAnalyzer <em>Web</em></span>
+      <button id="open" class="primary" title="Open point cloud files">Open…</button>
+      <input id="file-input" type="file" multiple hidden
+        accept=".ply,.pcd,.las,.xyz,.txt,.csv,.pts,.asc" />
+      <span class="sep"></span>
+      <button id="fit" title="Fit all (F)">Fit</button>
+      <button data-view="top" title="Top view">Top</button>
+      <button data-view="front" title="Front view">Front</button>
+      <button data-view="side" title="Side view">Side</button>
+      <button data-view="iso" title="Isometric view">Iso</button>
+      <span class="sep"></span>
+      <label class="inline">Point size
+        <input id="point-size" type="range" min="1" max="10" step="1" value="2" />
+      </label>
+    </header>
+
+    <aside class="sidebar">
+      <section>
+        <h2>Clouds</h2>
+        <ul id="cloud-list" class="cloud-list"></ul>
+        <p id="empty-hint" class="hint">Drop PLY, PCD, LAS or XYZ files anywhere, or use Open…</p>
+      </section>
+
+      <section id="c2c-panel">
+        <h2>Cloud-to-cloud distance</h2>
+        <label>Compared <select id="c2c-compared"></select></label>
+        <label>Reference <select id="c2c-reference"></select></label>
+        <button id="c2c-run" class="primary" disabled>Compute</button>
+        <div id="c2c-result" hidden>
+          <table class="stats"><tbody id="c2c-stats"></tbody></table>
+          <label>Color ramp <select id="ramp"></select></label>
+          <div class="range">
+            <label>Min <input id="range-min" type="number" step="any" /></label>
+            <label>Max <input id="range-max" type="number" step="any" /></label>
+          </div>
+          <button id="range-reset">Reset range</button>
+        </div>
+      </section>
+    </aside>
+
+    <main id="viewport" class="viewport">
+      <div id="drop-overlay" class="drop-overlay" hidden>Drop to load</div>
+      <div id="colorbar" class="colorbar" hidden>
+        <span id="colorbar-title" class="colorbar-title"></span>
+        <div class="colorbar-body">
+          <div id="colorbar-ramp" class="colorbar-ramp"></div>
+          <div class="colorbar-ticks"><span id="colorbar-max"></span><span id="colorbar-mid"></span><span id="colorbar-min"></span></div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="statusbar"><span id="status">Ready</span><span id="shift"></span></footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

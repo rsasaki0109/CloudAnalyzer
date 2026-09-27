@@ -4,6 +4,7 @@ import {
   computeVolume,
   cropCloud,
   exportCloud,
+  extractGround,
   filterCloud,
   loadCloud,
   pointAt,
@@ -970,6 +971,10 @@ filterOp.onchange = () => {
 filterRun.onclick = async () => {
   const entry = entries.get(Number(filterCloudSelect.value));
   if (!entry) return;
+  if (filterOp.value === "ground") {
+    await runGround(entry);
+    return;
+  }
   const op = filterOp.value as "voxel" | "random" | "sor";
   let a = 0;
   let b = 0;
@@ -1002,6 +1007,45 @@ filterRun.onclick = async () => {
     filterRun.disabled = false;
   }
 };
+
+async function runGround(entry: Entry): Promise<void> {
+  const clothResolution = Number($<HTMLInputElement>("csf-resolution").value);
+  const classThreshold = Number($<HTMLInputElement>("csf-threshold").value);
+  if (!(clothResolution > 0) || !(classThreshold > 0)) {
+    setStatus("Enter a positive cloth resolution and threshold", true);
+    return;
+  }
+  const output = $<HTMLSelectElement>("csf-output").value as "classified" | "ground" | "objects";
+  filterRun.disabled = true;
+  setStatus(`Extracting ground from ${entry.cloud.name}…`);
+  try {
+    const cloud = await extractGround({
+      id: entry.cloud.id,
+      clothResolution,
+      classThreshold,
+      rigidness: $<HTMLSelectElement>("csf-rigidness").value as "flat" | "relief" | "steep",
+      output,
+    });
+    const added = addEntry(cloud);
+    if (output === "classified") {
+      added.mode = "classification";
+      refreshColors(added);
+    }
+    entry.visible = false;
+    viewer.setVisible(entry.cloud.id, false);
+    renderList();
+    let detail = `${cloud.count.toLocaleString()} points`;
+    if (output === "classified" && cloud.classification) {
+      const ground = cloud.classification.reduce((n, c) => n + (c === 2 ? 1 : 0), 0);
+      detail = `${ground.toLocaleString()} of ${cloud.count.toLocaleString()} points are ground`;
+    }
+    setStatus(`${cloud.name}: ${detail} (${Math.round(cloud.timings.index)} ms)`);
+  } catch (err) {
+    setStatus(`Ground extraction failed: ${err instanceof Error ? err.message : err}`, true);
+  } finally {
+    filterRun.disabled = false;
+  }
+}
 
 // ---------------------------------------------------------------- clipping box
 

@@ -127,6 +127,14 @@ export type Request =
       b: number;
     }
   | {
+      kind: "ground";
+      id: number;
+      clothResolution: number;
+      classThreshold: number;
+      rigidness: "flat" | "relief" | "steep";
+      output: "classified" | "ground" | "objects";
+    }
+  | {
       kind: "crop";
       id: number;
       /** Box corners in original (unshifted) coordinates. */

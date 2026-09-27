@@ -93,3 +93,8 @@ export function filterCloud(id: number, op: "voxel" | "random" | "sor", a: numbe
 export function computeVolume(params: Omit<Extract<Request, { kind: "volume" }>, "kind">): Promise<VolumeOutput> {
   return call({ kind: "volume", ...params });
 }
+
+/** Ground extraction (Cloth Simulation Filter) as a new cloud. */
+export function extractGround(params: Omit<Extract<Request, { kind: "ground" }>, "kind">): Promise<LoadedCloud> {
+  return call({ kind: "ground", ...params });
+}

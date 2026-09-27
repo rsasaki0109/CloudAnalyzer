@@ -235,6 +235,44 @@ fn statistical_outliers<'py>(
     Ok(indices(py, keep))
 }
 
+/// Ground extraction with the Cloth Simulation Filter. Returns a boolean
+/// array: ``True`` for ground points. ``rigidness`` is ``"flat"``,
+/// ``"relief"`` or ``"steep"``; distances are in the cloud's units.
+#[pyfunction]
+#[pyo3(signature = (points_, cloth_resolution = 1.0, class_threshold = 0.5, rigidness = "relief", max_iterations = 500))]
+fn ground_csf<'py>(
+    py: Python<'py>,
+    points_: PyReadonlyArray2<f64>,
+    cloth_resolution: f64,
+    class_threshold: f64,
+    rigidness: &str,
+    max_iterations: usize,
+) -> PyResult<Bound<'py, PyArray1<bool>>> {
+    use ca_core::ground::{CsfParams, Rigidness, csf};
+    let rigidness = match rigidness {
+        "flat" => Rigidness::Flat,
+        "relief" => Rigidness::Relief,
+        "steep" => Rigidness::Steep,
+        other => {
+            return Err(PyValueError::new_err(format!(
+                "rigidness must be flat, relief or steep, not {other:?}"
+            )));
+        }
+    };
+    let cloud = cloud_of(points(&points_)?);
+    let params = CsfParams {
+        cloth_resolution,
+        class_threshold,
+        rigidness,
+        max_iterations,
+        ..CsfParams::default()
+    };
+    let ground = py.detach(|| csf(&cloud, params)).ok_or_else(|| {
+        PyValueError::new_err("need points and a positive, not too fine cloth resolution")
+    })?;
+    Ok(ground.into_pyarray(py))
+}
+
 /// A volume surface from Python: a float (constant height), a
 /// ``(vertices, triangles)`` tuple (mesh), or an ``(N, 3)`` array (points).
 enum PySurface {
@@ -337,5 +375,6 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(voxel_subsample, m)?)?;
     m.add_function(wrap_pyfunction!(statistical_outliers, m)?)?;
     m.add_function(wrap_pyfunction!(volume, m)?)?;
+    m.add_function(wrap_pyfunction!(ground_csf, m)?)?;
     Ok(())
 }

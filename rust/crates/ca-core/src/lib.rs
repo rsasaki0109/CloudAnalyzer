@@ -6,6 +6,7 @@
 
 pub mod distance;
 pub mod filter;
+pub mod ground;
 pub mod icp;
 pub mod io;
 pub mod kdtree;

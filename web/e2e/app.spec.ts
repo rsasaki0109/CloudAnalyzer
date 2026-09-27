@@ -192,3 +192,22 @@ test("volume: a 2 x 2 x 1 m mound over flat ground is 4 m³ of fill", async ({ p
   await expect(page.locator(".cloud-list li")).toHaveCount(3);
   await expect(page.locator("#colorbar-title")).toContainText("Height difference");
 });
+
+test("ground extraction (CSF) separates a box from flat ground", async ({ page }) => {
+  const scene: [number, number, number][] = [];
+  for (let j = 0; j < 80; j++) {
+    for (let i = 0; i < 80; i++) {
+      const [x, y] = [i * 0.25, j * 0.25];
+      const box = x >= 8 && x < 12 && y >= 8 && y < 12;
+      scene.push([x, y, box ? 3 : 0]);
+    }
+  }
+  await open(page, [{ name: "site.ply", buffer: ply(scene) }]);
+  await expect(status(page)).toContainText("Loaded site.ply: 6,400 points");
+  await page.locator("#filter-op").selectOption("ground");
+  await page.locator("#filter-run").click();
+  await expect(status(page)).toContainText("site_csf: 6,144 of 6,400 points are ground");
+  // The classified copy is shown by class, with ground and "other" in the class panel.
+  await expect(page.locator("#class-list")).toContainText("2 · Ground");
+  await expect(page.locator("#class-list")).toContainText("256");
+});

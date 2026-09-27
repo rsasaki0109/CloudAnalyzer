@@ -59,3 +59,10 @@ class VolumeResult(TypedDict):
 def volume(
     before: Surface, after: Surface, cell: float, height: str = "mean", fill_empty: bool = False
 ) -> VolumeResult: ...
+def ground_csf(
+    points_: npt.NDArray[np.float64],
+    cloth_resolution: float = 1.0,
+    class_threshold: float = 0.5,
+    rigidness: str = "relief",
+    max_iterations: int = 500,
+) -> npt.NDArray[np.bool_]: ...

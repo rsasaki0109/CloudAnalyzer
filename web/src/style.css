@@ -18,6 +18,7 @@
 body {
   margin: 0;
   height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-columns: 280px 1fr;
   grid-template-rows: auto 1fr auto;
@@ -219,11 +220,54 @@ textarea {
 .status-right { display: flex; gap: 16px; font-variant-numeric: tabular-nums; }
 label.inline select { width: auto; }
 
+.mobile-only { display: none; }
+
+/* Phones: the view fills the screen; the panels are a bottom sheet. */
 @media (max-width: 720px) {
   body {
     grid-template-columns: 1fr;
-    grid-template-rows: auto 55vh 1fr auto;
-    grid-template-areas: "toolbar" "viewport" "sidebar" "status";
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas: "toolbar" "viewport" "status";
   }
-  .sidebar { border-right: none; border-top: 1px solid var(--border); }
+  .mobile-only { display: inline-block; }
+  .toolbar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+  .toolbar > * { flex: none; }
+  .brand { display: none; }
+  .sidebar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    max-height: 60dvh;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -8px 24px rgb(0 0 0 / 0.4);
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateY(100%);
+    visibility: hidden;
+    transition: transform 0.2s ease, visibility 0.2s;
+  }
+  body.panels-open .sidebar { transform: none; visibility: visible; }
+  .statusbar { flex-wrap: wrap; padding-bottom: max(3px, env(safe-area-inset-bottom)); }
+  .colorbar { right: 8px; top: 8px; padding: 6px 8px; max-width: 45vw; }
+  .colorbar-title { font-size: 10px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .colorbar-body { height: 100px; }
+  .colorbar-ticks { font-size: 10px; }
+}
+
+/* Touch screens: larger targets, and 16 px inputs so iOS does not zoom. */
+@media (pointer: coarse) {
+  button { min-height: 36px; }
+  select, input[type="number"], input[type="text"] { min-height: 36px; font-size: 16px; }
+  input[type="checkbox"] { width: 20px; height: 20px; }
+  input[type="range"] { min-height: 28px; }
+  .cloud-list .remove, .cloud-list .icon, .measure-list .remove { min-width: 36px; }
 }

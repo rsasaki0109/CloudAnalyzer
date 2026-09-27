@@ -1,7 +1,7 @@
 //! WebAssembly bindings for the CloudAnalyzer Web viewer.
 
 use ca_core::icp::{IcpMetric, IcpParams, Rigid};
-use ca_core::octree::{NO_CHILD, Octree, OctreeNode, OctreeParams, PendingSubtree};
+use ca_core::octree::{BUCKETS, BucketLayout, NO_CHILD, Octree, OctreeNode, OctreeParams};
 use ca_core::{
     AttributeValues, CLASSIFICATION, DistanceStats, INTENSITY, PointCloud, TriangleMesh,
 };
@@ -19,11 +19,20 @@ const NODE_STRIDE: usize = 15;
 pub struct Cloud {
     inner: PointCloud,
     lod: Octree,
-    /// Subtrees still to be built during a parallel index build.
-    pending: Vec<PendingSubtree>,
+    /// Placement of the buckets during a parallel index build.
+    layout: Option<BucketLayout>,
 }
 
 impl Cloud {
+    /// An unindexed copy of the points at `keep`.
+    fn selected(&self, keep: &[usize]) -> Result<Cloud, JsError> {
+        let inner = self.inner.select(keep);
+        if inner.is_empty() {
+            return Err(JsError::new("the filter removed every point"));
+        }
+        Ok(Cloud::unindexed(inner))
+    }
+
     fn unindexed(inner: PointCloud) -> Cloud {
         Cloud {
             inner,
@@ -32,7 +41,7 @@ impl Cloud {
                 nodes: Vec::new(),
                 grid: OctreeParams::default().grid,
             },
-            pending: Vec::new(),
+            layout: None,
         }
     }
 }
@@ -171,7 +180,7 @@ pub fn compute_volume(
         Some(Cloud {
             inner,
             lod,
-            pending: Vec::new(),
+            layout: None,
         })
     };
     Ok(VolumeOutput {
@@ -295,11 +304,12 @@ impl Cloud {
         Ok(Cloud {
             inner,
             lod,
-            pending: Vec::new(),
+            layout: None,
         })
     }
 
-    /// A filtered copy of the cloud (with colors and attributes):
+    /// A filtered copy of the cloud (with colors and attributes), not yet
+    /// indexed (call [`Cloud::build_index`] or build it on the pool):
     /// `"voxel"` keeps one point per voxel of edge `a`; `"random"` keeps `a`
     /// random points; `"sor"` drops statistical outliers with `a` neighbours
     /// and a `b` standard-deviation threshold.
@@ -311,16 +321,18 @@ impl Cloud {
             "sor" => filter::statistical_outliers(&self.inner, a.max(1.0) as usize, b),
             other => return Err(JsError::new(&format!("unknown filter {other:?}"))),
         };
-        let mut inner = self.inner.select(&keep);
-        if inner.is_empty() {
-            return Err(JsError::new("the filter removed every point"));
+        self.selected(&keep)
+    }
+
+    /// SOR from the statistic computed on the pool (see [`plan_sor`]): an
+    /// unindexed copy without the points more than `ratio` standard
+    /// deviations above the mean.
+    #[wasm_bindgen(js_name = filterSor)]
+    pub fn filter_sor(&self, means: &[f64], ratio: f64) -> Result<Cloud, JsError> {
+        if means.len() != self.inner.len() {
+            return Err(JsError::new("one statistic per point is needed"));
         }
-        let lod = build_lod(&mut inner)?;
-        Ok(Cloud {
-            inner,
-            lod,
-            pending: Vec::new(),
-        })
+        self.selected(&ca_core::filter::sor_keep(means, ratio))
     }
 
     /// Ground extraction (Cloth Simulation Filter) as a new cloud.
@@ -375,7 +387,7 @@ impl Cloud {
         Ok(Cloud {
             inner,
             lod,
-            pending: Vec::new(),
+            layout: None,
         })
     }
 
@@ -505,97 +517,108 @@ impl Cloud {
         nodes_to_flat(&self.lod.nodes)
     }
 
-    /// Start a parallel index build: build the octree levels above
-    /// `split_level` here and return the remaining subtrees, 7 numbers each
-    /// (`start, end, minX, minY, minZ, size, level`). Build each with
-    /// [`build_subtree`] on [`Cloud::subtree_positions`] /
-    /// [`Cloud::subtree_colors`], hand it back with [`Cloud::finish_subtree`],
-    /// then call [`Cloud::end_index`].
-    #[wasm_bindgen(js_name = startIndex)]
-    pub fn start_index(&mut self, split_level: u8) -> Result<Vec<f64>, JsError> {
-        let (lod, pending) =
-            Octree::build_partial(&mut self.inner, OctreeParams::default(), split_level)
-                .ok_or_else(|| JsError::new("cloud is empty or too large"))?;
-        self.lod = lod;
-        self.pending = pending;
-        Ok(self
-            .pending
-            .iter()
-            .flat_map(|p| {
-                [
-                    p.start as f64,
-                    p.end as f64,
-                    p.min[0],
-                    p.min[1],
-                    p.min[2],
-                    p.size,
-                    p.level as f64,
-                ]
-            })
-            .collect())
+    /// Root cube of a parallel index build: `[minX, minY, minZ, size]`.
+    /// Build it in three steps: [`bucket_chunk`] on contiguous slices from
+    /// [`Cloud::positions_range`] / [`Cloud::colors_range`]; [`build_bucket`]
+    /// on each bucket's pieces concatenated in slice order; then
+    /// [`Cloud::begin_buckets`], [`Cloud::put_bucket`] for each and
+    /// [`Cloud::finish_buckets`].
+    #[wasm_bindgen(js_name = indexCube)]
+    pub fn index_cube(&self) -> Vec<f64> {
+        let (lo, size) = ca_core::octree::root_cube(&self.inner.positions);
+        vec![lo[0], lo[1], lo[2], size]
     }
 
-    /// Interleaved `xyz` of pending subtree `k` (a copy).
-    #[wasm_bindgen(js_name = subtreePositions)]
-    pub fn subtree_positions(&self, k: usize) -> Vec<f64> {
-        let p = &self.pending[k];
-        self.inner.positions[p.start as usize..p.end as usize]
+    /// Interleaved `xyz` of points `start..end` (a copy).
+    #[wasm_bindgen(js_name = positionsRange)]
+    pub fn positions_range(&self, start: usize, end: usize) -> Vec<f64> {
+        let end = end.min(self.inner.len());
+        self.inner.positions[start.min(end)..end]
             .as_flattened()
             .to_vec()
     }
 
-    /// Interleaved `rgb` of pending subtree `k`, if the cloud has colors.
-    #[wasm_bindgen(js_name = subtreeColors)]
-    pub fn subtree_colors(&self, k: usize) -> Option<Vec<u8>> {
-        let p = &self.pending[k];
+    /// Interleaved `rgb` of points `start..end`, if the cloud has colors.
+    #[wasm_bindgen(js_name = colorsRange)]
+    pub fn colors_range(&self, start: usize, end: usize) -> Option<Vec<u8>> {
+        let end = end.min(self.inner.len());
         self.inner
             .colors
             .as_ref()
-            .map(|c| c[p.start as usize..p.end as usize].as_flattened().to_vec())
+            .map(|c| c[start.min(end)..end].as_flattened().to_vec())
     }
 
-    /// Store a subtree built by [`build_subtree`]: its reordered points,
-    /// colors, node table (in the [`Cloud::lod_nodes`] layout) and the
-    /// permutation it applied, which reorders the attributes kept here.
-    #[wasm_bindgen(js_name = finishSubtree)]
-    pub fn finish_subtree(
+    /// Start placing built buckets; per bucket, its size and the counts
+    /// returned by [`build_bucket`].
+    #[wasm_bindgen(js_name = beginBuckets)]
+    pub fn begin_buckets(
         &mut self,
-        k: usize,
-        positions: &[f64],
-        colors: Option<Vec<u8>>,
-        nodes: &[f64],
-        order: &[u32],
+        cube: &[f64],
+        sizes: &[u32],
+        root_kept: &[u32],
+        level1_kept: &[u32],
     ) -> Result<(), JsError> {
-        let p = self.pending[k];
-        let range = p.start as usize..p.end as usize;
-        if positions.len() != 3 * range.len() {
-            return Err(JsError::new("subtree has the wrong number of points"));
-        }
-        self.inner.positions[range.clone()].copy_from_slice(positions.as_chunks::<3>().0);
-        if let (Some(dst), Some(src)) = (self.inner.colors.as_mut(), colors) {
-            dst[range.clone()].copy_from_slice(src.as_chunks::<3>().0);
-        }
-        if order.len() != range.len() {
-            return Err(JsError::new("subtree order has the wrong length"));
-        }
-        // The slice is small enough to stay in cache, so this gather is cheap.
-        for attribute in &mut self.inner.attributes {
-            attribute.values.permute_range(range.clone(), order);
-        }
-        let subtree = Octree {
-            order: Vec::new(),
-            nodes: nodes_from_flat(nodes)?,
-            grid: self.lod.grid,
+        let (lo, size) = cube_of(cube)?;
+        let arr = |v: &[u32]| -> Result<[u32; BUCKETS], JsError> {
+            v.try_into()
+                .map_err(|_| JsError::new("expected one count per bucket"))
         };
-        self.lod.graft(&p, subtree);
+        let layout = BucketLayout::new(
+            lo,
+            size,
+            OctreeParams::default(),
+            arr(sizes)?,
+            arr(root_kept)?,
+            arr(level1_kept)?,
+        )
+        .filter(|l| l.len() == self.inner.len())
+        .ok_or_else(|| JsError::new("bucket counts do not match the cloud"))?;
+        self.layout = Some(layout);
         Ok(())
     }
 
-    /// Finish a parallel index build started with [`Cloud::start_index`].
-    #[wasm_bindgen(js_name = endIndex)]
-    pub fn end_index(&mut self) {
-        self.pending.clear();
-        self.lod.order = Vec::new();
+    /// Place bucket `key` as returned by [`build_bucket`]; `order` gives the
+    /// cloud index of each of its points.
+    #[wasm_bindgen(js_name = putBucket)]
+    pub fn put_bucket(
+        &mut self,
+        key: usize,
+        positions: &[f64],
+        colors: Option<Vec<u8>>,
+        order: &[u32],
+        nodes: &[f64],
+    ) -> Result<(), JsError> {
+        let nodes = nodes_from_flat(nodes)?;
+        let layout = self
+            .layout
+            .as_mut()
+            .ok_or_else(|| JsError::new("beginBuckets was not called"))?;
+        layout
+            .put(
+                key,
+                &mut self.inner.positions,
+                self.inner.colors.as_deref_mut(),
+                positions.as_chunks::<3>().0,
+                colors.as_ref().map(|c| c.as_chunks::<3>().0),
+                order,
+                nodes,
+            )
+            .ok_or_else(|| JsError::new("bucket does not match its counts"))
+    }
+
+    /// Finish a parallel index build once every bucket was placed.
+    #[wasm_bindgen(js_name = finishBuckets)]
+    pub fn finish_buckets(&mut self) -> Result<(), JsError> {
+        let layout = self
+            .layout
+            .take()
+            .ok_or_else(|| JsError::new("beginBuckets was not called"))?;
+        let mut lod = layout
+            .finish(&mut self.inner.attributes)
+            .ok_or_else(|| JsError::new("a bucket is missing"))?;
+        lod.order = Vec::new();
+        self.lod = lod;
+        Ok(())
     }
 
     /// Subsampling lattice resolution per node edge; a node's point spacing is
@@ -645,80 +668,106 @@ fn nodes_from_flat(flat: &[f64]) -> Result<Vec<OctreeNode>, JsError> {
         .collect())
 }
 
-/// A subtree built off the main worker: reordered points, colors and nodes.
+fn cube_of(cube: &[f64]) -> Result<([f64; 3], f64), JsError> {
+    match cube {
+        &[x, y, z, size] if size > 0.0 => Ok(([x, y, z], size)),
+        _ => Err(JsError::new("cube must be [minX, minY, minZ, size]")),
+    }
+}
+
+fn colors_of(colors: Option<Vec<u8>>, points: usize) -> Result<Option<Vec<[u8; 3]>>, JsError> {
+    match colors {
+        Some(c) if c.len() != 3 * points => Err(JsError::new("colors do not match positions")),
+        c => Ok(c.map(|c| c.as_chunks::<3>().0.to_vec())),
+    }
+}
+
+/// Points reordered off the main worker, with what the reordering produced.
 #[wasm_bindgen]
-pub struct Subtree {
-    cloud: PointCloud,
-    nodes: Vec<OctreeNode>,
+pub struct Reordered {
+    positions: Vec<[f64; 3]>,
+    colors: Option<Vec<[u8; 3]>>,
     order: Vec<u32>,
+    counts: Vec<u32>,
+    nodes: Vec<OctreeNode>,
 }
 
 #[wasm_bindgen]
-impl Subtree {
+impl Reordered {
     pub fn positions(&self) -> Vec<f64> {
-        self.cloud.positions.as_flattened().to_vec()
+        self.positions.as_flattened().to_vec()
     }
 
     pub fn colors(&self) -> Option<Vec<u8>> {
-        self.cloud
-            .colors
-            .as_ref()
-            .map(|c| c.as_flattened().to_vec())
-    }
-
-    /// Node table in the [`Cloud::lod_nodes`] layout, ranges relative to the subtree.
-    pub fn nodes(&self) -> Vec<f64> {
-        nodes_to_flat(&self.nodes)
+        self.colors.as_ref().map(|c| c.as_flattened().to_vec())
     }
 
     /// `order[i]` is the input index of the point now at `i`.
     pub fn order(&self) -> Vec<u32> {
         self.order.clone()
     }
+
+    /// [`bucket_chunk`]: points per bucket. [`build_bucket`]: the root's and
+    /// the level-1 node's share of the bucket.
+    pub fn counts(&self) -> Vec<u32> {
+        self.counts.clone()
+    }
+
+    /// [`build_bucket`]: the subtree's node table (see [`Cloud::lod_nodes`]),
+    /// ranges relative to the subtree.
+    pub fn nodes(&self) -> Vec<f64> {
+        nodes_to_flat(&self.nodes)
+    }
 }
 
-/// Build one pending subtree (see [`Cloud::start_index`]) on a pool worker.
-/// `job` is the subtree's 7-number description.
-#[wasm_bindgen(js_name = buildSubtree)]
-pub fn build_subtree(
+/// Step 1 of a parallel index build (see [`Cloud::index_cube`]): sort a
+/// slice of the cloud by bucket, keeping the order within each bucket.
+#[wasm_bindgen(js_name = bucketChunk)]
+pub fn bucket_chunk(
     positions: &[f64],
     colors: Option<Vec<u8>>,
-    job: &[f64],
-) -> Result<Subtree, JsError> {
-    let job: &[f64; 7] = job
-        .try_into()
-        .map_err(|_| JsError::new("subtree job must have 7 numbers"))?;
-    let pending = PendingSubtree {
-        node: 0,
-        start: job[0] as u32,
-        end: job[1] as u32,
-        min: [job[2], job[3], job[4]],
-        size: job[5],
-        level: job[6] as u8,
-    };
-    let mut cloud = PointCloud {
-        positions: positions.as_chunks::<3>().0.to_vec(),
-        colors: colors.map(|c| c.as_chunks::<3>().0.to_vec()),
-        attributes: Vec::new(),
-    };
-    if cloud
-        .colors
-        .as_ref()
-        .is_some_and(|c| c.len() != cloud.positions.len())
-    {
-        return Err(JsError::new("colors do not match positions"));
-    }
-    let tree = Octree::build_subtree(
-        &mut cloud.positions,
-        cloud.colors.as_deref_mut(),
-        &pending,
+    cube: &[f64],
+) -> Result<Reordered, JsError> {
+    let (lo, size) = cube_of(cube)?;
+    let points = positions.as_chunks::<3>().0;
+    let colors = colors_of(colors, points.len())?;
+    let (order, counts) = ca_core::octree::bucket_order(points, lo, size);
+    Ok(Reordered {
+        positions: order.iter().map(|&i| points[i as usize]).collect(),
+        colors: colors.map(|c| order.iter().map(|&i| c[i as usize]).collect()),
+        order,
+        counts: counts.to_vec(),
+        nodes: Vec::new(),
+    })
+}
+
+/// Step 2 of a parallel index build: one bucket's points (concatenated from
+/// every slice in order) reordered into `[root's | level-1 node's | subtree]`.
+#[wasm_bindgen(js_name = buildBucket)]
+pub fn build_bucket(
+    positions: &[f64],
+    colors: Option<Vec<u8>>,
+    cube: &[f64],
+    key: usize,
+) -> Result<Reordered, JsError> {
+    let (lo, size) = cube_of(cube)?;
+    let mut points = positions.as_chunks::<3>().0.to_vec();
+    let mut colors = colors_of(colors, points.len())?;
+    let bucket = ca_core::octree::build_bucket(
+        &mut points,
+        colors.as_deref_mut(),
+        lo,
+        size,
+        key,
         OctreeParams::default(),
     )
-    .ok_or_else(|| JsError::new("empty subtree"))?;
-    Ok(Subtree {
-        cloud,
-        nodes: tree.nodes,
-        order: tree.order,
+    .ok_or_else(|| JsError::new("invalid bucket"))?;
+    Ok(Reordered {
+        positions: points,
+        colors,
+        order: bucket.order,
+        counts: vec![bucket.root_kept as u32, bucket.level1_kept as u32],
+        nodes: bucket.nodes,
     })
 }
 
@@ -842,7 +891,7 @@ pub fn compute_m3c2(
     Ok(Cloud {
         inner,
         lod,
-        pending: Vec::new(),
+        layout: None,
     })
 }
 
@@ -1016,6 +1065,190 @@ pub fn mesh_distances(
 /// Nearest-neighbour distances for a batch of interleaved `xyz` queries.
 /// Used by the worker pool, where each worker handles one slice of the
 /// compared cloud against its own copy of the reference.
+/// SOR split into spatially compact parts for the worker pool; see
+/// [`ca_core::filter::local_knn`].
+#[wasm_bindgen]
+pub struct SorPlan {
+    split: ca_core::filter::KnnSplit,
+}
+
+#[wasm_bindgen]
+impl SorPlan {
+    #[wasm_bindgen(getter)]
+    pub fn length(&self) -> usize {
+        self.split.parts.len()
+    }
+
+    /// Cloud indices of part `k`.
+    pub fn indices(&self, k: usize) -> Vec<u32> {
+        self.split.parts[k].clone()
+    }
+
+    /// Interleaved `xyz` of part `k`'s points (a copy).
+    pub fn points(&self, cloud: &Cloud, k: usize) -> Vec<f64> {
+        self.split.parts[k]
+            .iter()
+            .flat_map(|&i| cloud.inner.positions[i as usize])
+            .collect()
+    }
+
+    /// Where the parts lie, for [`SorPart::local`].
+    pub fn regions(&self) -> Vec<f64> {
+        self.split.regions.to_flat()
+    }
+}
+
+#[wasm_bindgen(js_name = planSor)]
+pub fn plan_sor(cloud: &Cloud, parts: usize) -> SorPlan {
+    // The octree order already groups nearby points: split along it when
+    // the cloud is indexed, instead of sorting.
+    let split = if cloud.lod.nodes.is_empty() {
+        ca_core::filter::split_for_knn(&cloud.inner.positions, parts)
+    } else {
+        ca_core::filter::split_octree_for_knn(&cloud.inner.positions, &cloud.lod.nodes, parts, 4)
+    };
+    SorPlan { split }
+}
+
+/// One part of a split SOR job, kept on a pool worker between its two steps.
+#[wasm_bindgen]
+pub struct SorPart {
+    part: ca_core::filter::KnnPart,
+}
+
+/// Outcome of [`SorPart::local`].
+#[wasm_bindgen]
+pub struct SorLocal {
+    local: ca_core::filter::LocalKnn,
+    open_points: Vec<f64>,
+}
+
+#[wasm_bindgen]
+impl SorLocal {
+    /// The statistic per point of the part, NaN where still open.
+    pub fn means(&self) -> Vec<f64> {
+        self.local.means.clone()
+    }
+
+    /// Part-local indices of the open points.
+    pub fn open(&self) -> Vec<u32> {
+        self.local.open.clone()
+    }
+
+    /// Interleaved `xyz` of the open points.
+    #[wasm_bindgen(js_name = openPoints)]
+    pub fn open_points(&self) -> Vec<f64> {
+        self.open_points.clone()
+    }
+
+    /// `k + 1` ascending squared distances per open point.
+    pub fn candidates(&self) -> Vec<f64> {
+        self.local.candidates.clone()
+    }
+
+    /// Per open point, the bit mask of the other parts to ask.
+    pub fn reach(&self) -> Vec<u32> {
+        self.local.reach.clone()
+    }
+}
+
+#[wasm_bindgen]
+impl SorPart {
+    /// Index the points of one part (see [`plan_sor`]).
+    #[wasm_bindgen(constructor)]
+    pub fn new(points: &[f64]) -> SorPart {
+        SorPart {
+            part: ca_core::filter::KnnPart::new(points.as_chunks::<3>().0.to_vec()),
+        }
+    }
+
+    /// Step 1: the statistic where this part's own points settle it.
+    pub fn local(&self, k: usize, own: usize, regions: &[f64]) -> Result<SorLocal, JsError> {
+        let regions = ca_core::filter::Regions::from_flat(regions)
+            .ok_or_else(|| JsError::new("invalid SOR regions"))?;
+        let local = self.part.local(k, own, &regions);
+        let open_points = local
+            .open
+            .iter()
+            .flat_map(|&i| self.part_point(i as usize))
+            .collect();
+        Ok(SorLocal { local, open_points })
+    }
+
+    /// Step 2: `k + 1` ascending squared distances from each query to this
+    /// part's points.
+    pub fn within(&self, queries: &[f64], k: usize) -> Vec<f64> {
+        self.part.within(queries.as_chunks::<3>().0, k)
+    }
+}
+
+impl SorPart {
+    fn part_point(&self, i: usize) -> [f64; 3] {
+        self.part.point(i)
+    }
+}
+
+/// Run the heavy kernels once on a small synthetic cloud. Browsers first
+/// run WebAssembly with a baseline compiler and optimize a function only
+/// after it has been busy, and never in the middle of a call; one long call
+/// on a large cloud would run unoptimized from start to end. Calling this
+/// when the page is idle gets the optimized code compiled beforehand.
+#[wasm_bindgen(js_name = warmUp)]
+pub fn warm_up() {
+    let n = 60_000;
+    let positions: Vec<[f64; 3]> = (0..n)
+        .map(|i| {
+            let (x, y) = ((i % 250) as f64 * 0.1, (i / 250) as f64 * 0.1);
+            [x, y, (x * 0.7).sin() + (y * 0.3).cos()]
+        })
+        .collect();
+    let mut cloud = PointCloud {
+        positions: positions.clone(),
+        colors: Some(vec![[1, 2, 3]; n]),
+        attributes: Vec::new(),
+    };
+    let params = OctreeParams {
+        max_leaf: 2_000,
+        ..OctreeParams::default()
+    };
+    let _ = Octree::build_bucketed(&mut cloud, params);
+    let _ = Octree::build_for_cloud(&mut cloud.clone(), params);
+    let queries: Vec<[f64; 3]> = positions
+        .iter()
+        .step_by(3)
+        .map(|p| [p[0] + 0.03, p[1], p[2] + 0.1])
+        .collect();
+    let _ = ca_core::cloud_to_cloud(
+        &PointCloud {
+            positions: queries.clone(),
+            colors: None,
+            attributes: Vec::new(),
+        },
+        &cloud,
+    );
+    let mesh = TriangleMesh {
+        vertices: positions[..2_500].to_vec(),
+        triangles: (0..9u32)
+            .flat_map(|j| {
+                (0..249u32).flat_map(move |i| {
+                    let k = j * 250 + i;
+                    [[k, k + 1, k + 250], [k + 1, k + 251, k + 250]]
+                })
+            })
+            .collect(),
+    };
+    let _ = ca_core::cloud_to_mesh(&queries[..5_000], &mesh, true);
+    let split = ca_core::filter::split_for_knn(&positions, 2);
+    let part: Vec<[f64; 3]> = split.parts[0]
+        .iter()
+        .map(|&i| positions[i as usize])
+        .collect();
+    let part = ca_core::filter::KnnPart::new(part);
+    let local = part.local(8, 0, &split.regions);
+    let _ = part.within(&queries[..2_000], 8);
+    let _ = ca_core::filter::sor_keep(&local.means, 1.0);
+}
+
 #[wasm_bindgen(js_name = nearestDistances)]
 pub fn nearest_distances(reference: &[f64], queries: &[f64]) -> Result<Vec<f64>, JsError> {
     ca_core::cloud_to_cloud(&from_flat(queries)?, &from_flat(reference)?)

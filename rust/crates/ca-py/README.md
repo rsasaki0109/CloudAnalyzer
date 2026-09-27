@@ -16,7 +16,7 @@ vertices, triangles = cc.read_mesh("design.stl")
 signed = cc.cloud_to_mesh(scan["positions"], vertices, triangles)  # C2M
 
 result = cc.icp(scan["positions"], ref)    # {"transformation": 4x4, "rms_final", ...}
-keep = cc.statistical_outliers(scan["positions"], k=8, ratio=1.0)
+keep = cc.statistical_outliers(scan["positions"], k=8, ratio=1.0)  # multi-threaded
 ground = cc.ground_csf(scan["positions"], cloth_resolution=1.0)  # bool per point
 
 # M3C2 change from ref to scan at core points (multi-threaded; NaN = no data)

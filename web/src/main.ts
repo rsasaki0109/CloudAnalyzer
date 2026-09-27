@@ -1,5 +1,13 @@
 import * as THREE from "three";
-import { cloudToCloud, loadCloud, pointAt, registerIcp, removeCloud, transformCloud } from "./api";
+import {
+  cloudToCloud,
+  exportCloud,
+  loadCloud,
+  pointAt,
+  registerIcp,
+  removeCloud,
+  transformCloud,
+} from "./api";
 import { RAMPS, colorize, gradientCss, lut, type RampName } from "./colormap";
 import { type LodNode, parseNodes } from "./lod";
 import type { C2cOutput, LoadedCloud } from "./protocol";
@@ -122,6 +130,18 @@ function renderList(): void {
     remove.title = "Remove";
     remove.onclick = () => void removeEntry(cloud.id);
 
+    const actions = document.createElement("span");
+    actions.className = "actions";
+    if (!isMesh(entry)) {
+      const save = document.createElement("button");
+      save.className = "icon";
+      save.textContent = "⤓";
+      save.title = entry.c2c ? "Save as PLY with distances" : "Save as PLY";
+      save.onclick = () => void saveCloud(entry, "ply");
+      actions.append(save);
+    }
+    actions.append(remove);
+
     const mode = document.createElement("select");
     mode.title = "Color by";
     const options: [ColorMode, string, boolean][] = [
@@ -142,8 +162,8 @@ function renderList(): void {
     };
 
     // Meshes are drawn in their solid color only.
-    if (isMesh(entry)) li.append(visible, swatch, name, remove);
-    else li.append(visible, swatch, name, remove, mode);
+    if (isMesh(entry)) li.append(visible, swatch, name, actions);
+    else li.append(visible, swatch, name, actions, mode);
     list.append(li);
   }
   renderC2cSelects();
@@ -173,6 +193,31 @@ async function removeEntry(id: number): Promise<void> {
 
 function findByName(name: string): Entry | undefined {
   return [...entries.values()].find((e) => e.cloud.name === name);
+}
+
+// ---------------------------------------------------------------- export
+
+/** Download a cloud as PLY or CSV, including its distances if computed. */
+async function saveCloud(entry: Entry, format: "ply" | "csv"): Promise<void> {
+  const { cloud, c2c } = entry;
+  const kind = c2c?.kind.toUpperCase();
+  const scalar = c2c && kind ? { name: `${kind}_distance`, values: c2c.distances } : undefined;
+  const base = cloud.name.replace(/\.[^.]+$/, "");
+  const filename = `${base}${kind ? `_${kind}` : ""}.${format}`;
+  setStatus(`Saving ${filename}…`);
+  try {
+    const bytes = await exportCloud(cloud.id, format, scalar);
+    const url = URL.createObjectURL(new Blob([bytes as BlobPart]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.click();
+    // Give the browser a moment to start the download before revoking.
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    setStatus(`Saved ${filename} (${(bytes.byteLength / 1e6).toFixed(1)} MB)`);
+  } catch (err) {
+    setStatus(`Save failed: ${err instanceof Error ? err.message : err}`, true);
+  }
 }
 
 // ---------------------------------------------------------------- loading
@@ -385,6 +430,13 @@ minInput.onchange = maxInput.onchange = () => {
     applyRange();
   }
 };
+for (const format of ["ply", "csv"] as const) {
+  $<HTMLButtonElement>(`export-${format}`).onclick = () => {
+    const entry = activeC2c !== null ? entries.get(activeC2c) : undefined;
+    if (entry) void saveCloud(entry, format);
+  };
+}
+
 $<HTMLButtonElement>("range-reset").onclick = () => {
   range = null;
   applyRange();

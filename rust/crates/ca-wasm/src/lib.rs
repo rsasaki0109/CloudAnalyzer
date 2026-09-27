@@ -103,6 +103,29 @@ impl Cloud {
         self.inner.positions.as_flattened().to_vec()
     }
 
+    /// Serialize the cloud as `"ply"` (binary) or `"csv"`, with an optional
+    /// scalar field (one value per point, in the cloud's order). Points are
+    /// written in octree order, not the original file order.
+    pub fn export(
+        &self,
+        format: &str,
+        scalar_name: Option<String>,
+        scalar: Option<Vec<f32>>,
+    ) -> Result<Vec<u8>, JsError> {
+        let field = match (&scalar_name, &scalar) {
+            (Some(name), Some(values)) => Some(ca_core::io::ScalarField { name, values }),
+            (None, None) => None,
+            _ => return Err(JsError::new("scalar name and values go together")),
+        };
+        let fields = field.as_slice();
+        match format {
+            "ply" => ca_core::io::write_ply(&self.inner, fields),
+            "csv" => ca_core::io::write_csv(&self.inner, fields),
+            other => return Err(JsError::new(&format!("unknown export format {other:?}"))),
+        }
+        .map_err(|e| JsError::new(&e))
+    }
+
     /// Interleaved `rgb` bytes, or `undefined` when the file has no colors.
     pub fn colors(&self) -> Option<Vec<u8>> {
         self.inner

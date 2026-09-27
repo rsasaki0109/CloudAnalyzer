@@ -6,7 +6,10 @@ mod pcd;
 mod ply;
 mod scalar;
 mod stl;
+mod write;
 mod xyz;
+
+pub use write::{ScalarField, write_csv, write_ply};
 
 use crate::PointCloud;
 use crate::mesh::TriangleMesh;

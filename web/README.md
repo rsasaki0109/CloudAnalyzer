@@ -17,6 +17,8 @@ Files never leave the browser.
   drawn, up to an adjustable point budget (1M–20M).
 - ICP registration (point-to-plane or point-to-point, overlap trimming,
   optional centroid pre-alignment) with the resulting 4×4 transform and undo.
+- Save any cloud as binary PLY or CSV, including its C2C/C2M distances as a
+  scalar field (`scalar_C2C_distance`, which CloudCompare loads directly).
 - Click a point to see its exact coordinates, color and C2C distance; press
   **Measure** (or `M`) and click two points for their distance and ΔX/ΔY/ΔZ.
 - Coordinates are kept in `f64`; georeferenced clouds get a shared global

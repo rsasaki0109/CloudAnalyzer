@@ -249,6 +249,10 @@ async function handle(
       getCloud(req.id).transform(new Float64Array(req.matrix));
       return describe(req.id);
     }
+    case "export": {
+      const bytes = getCloud(req.id).export(req.format, req.scalar?.name, req.scalar?.values);
+      return { value: bytes, transfer: [bytes.buffer] };
+    }
     case "remove": {
       const item = items.get(req.id);
       if (item?.kind === "cloud") item.cloud.free();

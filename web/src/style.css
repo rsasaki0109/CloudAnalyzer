@@ -87,7 +87,10 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 .cloud-list .swatch { width: 10px; height: 10px; border-radius: 2px; }
 .cloud-list .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cloud-list .meta { display: block; color: var(--muted); font-size: 11px; }
-.cloud-list .remove { border: none; background: none; color: var(--muted); padding: 0 4px; }
+.cloud-list .actions { display: inline-flex; gap: 2px; }
+.cloud-list .remove,
+.cloud-list .icon { border: none; background: none; color: var(--muted); padding: 0 4px; }
+.cloud-list .icon:hover { color: var(--accent); }
 .cloud-list .remove:hover { color: var(--danger); }
 .cloud-list select { grid-column: 3 / 5; font-size: 12px; }
 
@@ -131,6 +134,8 @@ textarea {
   border-radius: 4px;
   resize: vertical;
 }
+
+.export-row { display: flex; gap: 8px; margin-top: 8px; }
 
 .range { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 

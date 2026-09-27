@@ -24,7 +24,7 @@ fn read_binary(records: &[u8], count: usize) -> TriangleMesh {
         vertices: Vec::with_capacity(3 * count),
         triangles: Vec::with_capacity(count),
     };
-    for record in records.chunks_exact(50) {
+    for record in records.as_chunks::<50>().0 {
         let base = mesh.vertices.len() as u32;
         for corner in 0..3 {
             let at = 12 + 12 * corner;

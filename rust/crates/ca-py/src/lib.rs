@@ -321,6 +321,29 @@ fn m3c2<'py>(
     ))
 }
 
+/// Cross-section: the points within ``half_width`` (horizontally) of the
+/// polyline ``line`` (an ``(M, 2)`` array of x, y vertices). Returns
+/// ``(indices, distance_along)``.
+#[pyfunction]
+#[allow(clippy::type_complexity)]
+fn profile<'py>(
+    py: Python<'py>,
+    points_: PyReadonlyArray2<f64>,
+    line: PyReadonlyArray2<f64>,
+    half_width: f64,
+) -> PyResult<(Bound<'py, PyArray1<i64>>, Bound<'py, PyArray1<f64>>)> {
+    let points = points(&points_)?;
+    let line = line.as_array();
+    if line.ncols() != 2 {
+        return Err(PyValueError::new_err("line must be an (M, 2) array"));
+    }
+    let line: Vec<[f64; 2]> = line.rows().into_iter().map(|r| [r[0], r[1]]).collect();
+    let hits = py.detach(|| ca_core::profile::profile(&points, &line, half_width));
+    let indices: Vec<i64> = hits.iter().map(|h| h.0 as i64).collect();
+    let along: Vec<f64> = hits.iter().map(|h| h.1).collect();
+    Ok((indices.into_pyarray(py), along.into_pyarray(py)))
+}
+
 /// A volume surface from Python: a float (constant height), a
 /// ``(vertices, triangles)`` tuple (mesh), or an ``(N, 3)`` array (points).
 enum PySurface {
@@ -425,5 +448,6 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(volume, m)?)?;
     m.add_function(wrap_pyfunction!(ground_csf, m)?)?;
     m.add_function(wrap_pyfunction!(m3c2, m)?)?;
+    m.add_function(wrap_pyfunction!(profile, m)?)?;
     Ok(())
 }

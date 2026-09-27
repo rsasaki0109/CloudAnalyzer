@@ -5,6 +5,7 @@ import type {
   IcpOutput,
   LoadedCloud,
   M3c2Output,
+  ProfileOutput,
   Request,
   Vec3,
   VolumeOutput,
@@ -103,4 +104,9 @@ export function extractGround(params: Omit<Extract<Request, { kind: "ground" }>,
 /** M3C2 change between two clouds, at core points from `compared`. */
 export function computeM3c2(params: Omit<Extract<Request, { kind: "m3c2" }>, "kind">): Promise<M3c2Output> {
   return call({ kind: "m3c2", ...params });
+}
+
+/** Cross-section of a cloud along a polyline (x, y pairs, original coordinates). */
+export function profileCloud(params: Omit<Extract<Request, { kind: "profile" }>, "kind">): Promise<ProfileOutput> {
+  return call({ kind: "profile", ...params });
 }

@@ -25,6 +25,7 @@ import type {
   IcpOutput,
   LoadedCloud,
   M3c2Output,
+  ProfileOutput,
   Request,
   Response,
   Vec3,
@@ -562,6 +563,12 @@ async function handle(
         value,
         transfer: [...described.transfer, distance.buffer, lod95.buffer, significant.buffer],
       };
+    }
+    case "profile": {
+      const hits = getCloud(req.id).profile(new Float64Array(req.line), req.halfWidth, req.maxPoints);
+      const value: ProfileOutput = { along: hits.along(), positions: hits.positions(), total: hits.total };
+      hits.free();
+      return { value, transfer: [value.along.buffer, value.positions.buffer] };
     }
     case "ground": {
       const source = items.get(req.id);

@@ -97,7 +97,7 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 .cloud-list select { grid-column: 3 / 5; font-size: 12px; }
 
 button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
-.viewport.measuring canvas { cursor: crosshair; }
+.viewport.measuring > canvas { cursor: crosshair; }
 
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .labels span {
@@ -169,11 +169,31 @@ textarea {
 
 .range { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .url-row { display: flex; gap: 6px; margin-top: 8px; }
+.profile-plot {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  height: 38%;
+  min-height: 160px;
+  display: flex;
+  flex-direction: column;
+  background: rgb(22 24 29 / 0.92);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.profile-head { display: flex; align-items: center; gap: 12px; padding: 4px 8px; font-size: 12px; }
+.profile-legend { display: flex; flex-wrap: wrap; gap: 10px; flex: 1; min-width: 0; }
+.profile-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
+.profile-readout { color: var(--muted); font-variant-numeric: tabular-nums; }
+.profile-head label.check { margin: 0; color: var(--muted); }
+.profile-head button { border: none; background: none; color: var(--muted); }
+.profile-plot canvas { flex: 1; min-height: 0; width: 100%; }
 .url-row input { flex: 1; min-width: 0; padding: 3px 6px; }
 #share-link { width: 100%; margin-bottom: 8px; padding: 3px 6px; font-size: 11px; }
 
 .viewport { grid-area: viewport; position: relative; background: var(--viewport); min-width: 0; min-height: 0; }
-.viewport canvas { display: block; width: 100%; height: 100%; }
+.viewport > canvas { display: block; width: 100%; height: 100%; }
 .drop-overlay {
   position: absolute;
   inset: 12px;

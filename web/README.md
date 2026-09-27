@@ -37,6 +37,12 @@ Files never leave the browser.
 - Filters that create a new cloud: one point per voxel, random subsampling,
   statistical outlier removal (SOR), and ground extraction with the Cloth
   Simulation Filter (classified copy, ground only, or non-ground only).
+- Cross-section profiles: draw a polyline on the view (**Draw line**, click
+  vertices, double-click or Enter to finish) and every visible cloud's points
+  within the band are plotted as distance along the line against height, in
+  the cloud's color, with a cursor readout, an optional 1:1 scale and CSV
+  export (distance, x, y, z). Handy for comparing surveys; the line is part of
+  shared links and sessions.
 - Share and sessions: **Share** copies a link that reopens the current view:
   camera, display settings, how each cloud is shown (visibility, color mode,
   ICP transforms, hidden classes, clipping box) and C2C / C2M distances,

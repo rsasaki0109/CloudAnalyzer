@@ -81,3 +81,8 @@ def m3c2(
     npt.NDArray[np.bool_],
     npt.NDArray[np.float64],
 ]: ...
+def profile(
+    points_: npt.NDArray[np.float64],
+    line: npt.NDArray[np.float64],
+    half_width: float,
+) -> tuple[npt.NDArray[np.int64], npt.NDArray[np.float64]]: ...

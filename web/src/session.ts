@@ -31,6 +31,8 @@ export interface Session {
   hiddenClasses: number[];
   /** Clipping box in original coordinates, if clipping is on. */
   clip: { min: Vec3; max: Vec3 } | null;
+  /** Cross-section line (x, y in original coordinates) and half its band width. */
+  profile?: { line: [number, number][]; halfWidth: number } | null;
   clouds: SessionCloud[];
 }
 
@@ -49,6 +51,16 @@ function vec3(v: unknown, what: string): Vec3 {
 
 function number(v: unknown, fallback: number): number {
   return isNumber(v) ? v : fallback;
+}
+
+function parseProfile(v: unknown): Session["profile"] {
+  if (typeof v !== "object" || v === null) return null;
+  const p = v as Record<string, unknown>;
+  if (!Array.isArray(p.line) || !isNumber(p.halfWidth) || p.halfWidth <= 0) return null;
+  const line = p.line.filter(
+    (xy): xy is [number, number] => Array.isArray(xy) && xy.length === 2 && xy.every(isNumber),
+  );
+  return line.length >= 2 ? { line, halfWidth: p.halfWidth } : null;
 }
 
 /** Check a parsed JSON value and fill in defaults. */
@@ -75,6 +87,7 @@ export function parseSession(json: unknown): Session {
       ? o.hiddenClasses.filter((c): c is number => Number.isInteger(c) && c >= 0 && c < 256)
       : [],
     clip: clip ? { min: vec3(clip.min, "clip"), max: vec3(clip.max, "clip") } : null,
+    profile: parseProfile(o.profile),
     clouds: o.clouds.map((c: unknown) => {
       if (typeof c !== "object" || c === null) fail("cloud");
       const r = c as Record<string, unknown>;

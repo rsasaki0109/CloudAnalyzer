@@ -98,6 +98,15 @@ export interface M3c2Output {
   millis: number;
 }
 
+export interface ProfileOutput {
+  /** Distance of each point along the line. */
+  along: Float64Array;
+  /** Interleaved xyz in original coordinates. */
+  positions: Float64Array;
+  /** Points in the band before thinning to `maxPoints`. */
+  total: number;
+}
+
 export type Request =
   | {
       kind: "load";
@@ -146,6 +155,7 @@ export type Request =
       /** Core points: one per voxel of this size (0 = every compared point). */
       coreSpacing: number;
     }
+  | { kind: "profile"; id: number; line: number[]; halfWidth: number; maxPoints: number }
   | {
       kind: "ground";
       id: number;

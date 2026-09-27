@@ -137,3 +137,12 @@ def test_m3c2_measures_a_rise():
     assert np.all(lod95[:2] < 0.02) and significant[:2].all()
     np.testing.assert_allclose(normals[:2], [[0, 0, 1]] * 2, atol=0.01)
     assert np.isnan(distance[2]) and not significant[2]
+
+
+def test_profile_along_a_polyline():
+    x, y = (a.ravel() for a in np.meshgrid(np.arange(100) * 0.1, np.arange(100) * 0.1))
+    points = np.c_[x, y, np.zeros_like(x)]
+    idx, along = cloudanalyzer_core.profile(points, np.array([[1.0, 1.0], [5.0, 1.0], [5.0, 4.0]]), 0.01)
+    assert len(idx) == 71
+    assert along.max() == pytest.approx(7.0)
+    np.testing.assert_allclose(points[idx, 1][along < 4 - 1e-9], 1.0, atol=1e-9)

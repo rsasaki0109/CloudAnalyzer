@@ -578,8 +578,8 @@ async function runDemo(name: string): Promise<void> {
   if (!demo.files.every((f) => idOf(f))) return;
   if (name !== "c2c") {
     // The synthetic samples are dense grids: bigger points close the gaps.
-    $<HTMLInputElement>("point-size").value = "3";
-    viewer.setPointSize(3);
+    $<HTMLInputElement>("point-size").value = "5";
+    viewer.setPointSize(5);
   }
   demo.run();
 }

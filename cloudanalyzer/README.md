@@ -2,7 +2,10 @@
 
 AI-friendly CLI tool for point cloud analysis and evaluation.
 
-For the full product overview, demos, and tutorials, see the [repository root README](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/README.md).
+Docs: [command reference](https://github.com/rsasaki0109/CloudAnalyzer/tree/main/docs/commands),
+[SLAM benchmark tutorial](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/tutorial-slam-benchmark.md),
+[CI and quality gates](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/ci.md).
+The repository also hosts a [browser point cloud viewer](https://rsasaki0109.github.io/CloudAnalyzer/app/).
 
 ## Install
 

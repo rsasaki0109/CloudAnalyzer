@@ -1,112 +1,55 @@
 # CloudAnalyzer
 
-[![Test](https://github.com/rsasaki0109/CloudAnalyzer/actions/workflows/test.yml/badge.svg)](https://github.com/rsasaki0109/CloudAnalyzer/actions/workflows/test.yml)
-[![Self QA](https://github.com/rsasaki0109/CloudAnalyzer/actions/workflows/self-qa.yml/badge.svg)](https://github.com/rsasaki0109/CloudAnalyzer/actions/workflows/self-qa.yml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+Point cloud viewer and analyzer that runs in your browser.
+Rust + WebAssembly. Your files stay on your machine.
 
-**Catch SLAM and 3D perception regressions before they ship.**
-
-CloudAnalyzer turns SLAM, LiDAR, point-cloud, perception, and 3DGS outputs into
-**CI-grade QA evidence**: metrics, reports, and pass/fail gates.
-
-<!-- Regenerate with `scripts/build_readme_gif.sh` (requires vhs and `ca`). -->
-<p align="center">
-  <img src="docs/images/readme-demo.gif" alt="CloudAnalyzer terminal demo" width="800">
-</p>
+**[Open the viewer](https://rsasaki0109.github.io/CloudAnalyzer/app/)** ·
+[Guide](https://rsasaki0109.github.io/CloudAnalyzer/guide.html) ·
+[Demos](#try-it)
 
 <p align="center">
-  <a href="#quick-start">Quick start</a> ·
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/">Live demos</a> ·
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/">Web viewer (beta)</a> ·
-  <a href="docs/commands/">Docs</a>
-</p>
-
-<p align="center">
-  <img src="docs/images/readme-workflow.svg" alt="CloudAnalyzer workflow" width="900">
-</p>
-
-## Why teams use CloudAnalyzer
-
-- Compare candidate maps, trajectories, point clouds, and renders with a frozen reference.
-- Export metrics JSON, an HTML report, and a deterministic CI gate.
-- Keep provenance so every result can be reviewed and reproduced.
-
-> **Checked-in proof:** `PASS` · Map AUC `1.0000` · Chamfer `0.0145 m` ·
-> Trajectory ATE RMSE `0.0016 m` · [open the report](docs/leaderboard/runs/kiss-slam__synthetic-oval/report.html)
-
-## Examples
-
-<p align="center">
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/">
-    <img src="docs/images/readme-pointcloud-triptych.png" alt="Point-cloud comparison" width="1000">
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=ground">
+    <img src="docs/images/web-viewer.png" alt="CloudAnalyzer web viewer: ground extraction on a small town" width="900">
   </a>
 </p>
 
-<table>
-  <tr>
-    <td width="50%"><a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/"><img src="docs/pr/perception_summary_card.png" alt="Perception report" width="100%"></a></td>
-    <td width="50%"><a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/compare/"><img src="docs/images/density_hdl_localization_map.png" alt="Point-cloud density map" width="100%"></a></td>
-  </tr>
-  <tr>
-    <td width="50%"><a href="docs/commands/geometry-evaluate.md"><img src="docs/images/f1_hdl_localization_v0_5.png" alt="Geometry metrics" width="100%"></a></td>
-    <td width="50%"><a href="https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/"><img src="docs/demo/3dgs/samples/view_00.png" alt="3DGS render" width="48%"><img src="docs/demo/3dgs/samples/view_04.png" alt="3DGS render" width="48%"></a></td>
-  </tr>
-</table>
+## Features
 
-## Quick start
+- **Open** PLY, PCD, LAS/LAZ, XYZ and OBJ/STL meshes, including tens of millions of points.
+- **Compare**: cloud-to-cloud and cloud-to-mesh distance, M3C2 change detection, cut/fill volume.
+- **Process**: ICP alignment, subsampling, outlier removal, ground extraction (CSF), normals, merge/split.
+- **Inspect**: clipping box, cross-section profiles, picking and measuring.
+- **Share**: links and session files that restore the view; export PLY/CSV for CloudCompare.
+- Works on phones and tablets.
 
-```bash
-pip install cloudanalyzer
-ca evaluate candidate.pcd reference.pcd
+## Try it
+
+| Demo | What it shows |
+|---|---|
+| [Two LiDAR scans](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=c2c) | Cloud-to-cloud distance |
+| [Stockpile](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=volume) | Cut / fill volume |
+| [Town](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=ground) | Ground extraction |
+| [Landslide](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=m3c2) | M3C2 change detection |
+
+## What's inside
+
+| Path | |
+|---|---|
+| [`web/`](web/) | The browser app (TypeScript, three.js) |
+| [`rust/`](rust/) | The Rust core, its WebAssembly bindings and Python bindings (`cloudanalyzer_core`) |
+| [`cloudanalyzer/`](cloudanalyzer/) | `ca`, a Python CLI for SLAM and point-cloud quality gates in CI (`pip install cloudanalyzer`) |
+
+## Develop
+
+```sh
+cd web
+npm install
+npm run wasm   # build the Rust core to WebAssembly
+npm run dev    # http://localhost:5173
 ```
 
-From this repository:
-
-```bash
-pip install -e ./cloudanalyzer
-```
-
-## Golden path: SLAM benchmark
-
-The bundled synthetic Figure-8 suite checks a map and trajectory against frozen
-references:
-
-```text
-inputs:   dataset suite + baseline/reference + candidate outputs
-outputs:  metrics JSON + HTML report + pass/fail gate + leaderboard-ready result
-```
-
-```bash
-ca benchmark info benchmarks/slam/synthetic-figure8/suite.yaml
-ca benchmark eval benchmarks/slam/synthetic-figure8/suite.yaml \
-  --map benchmarks/slam/synthetic-figure8/sample_outputs/map_pass.pcd \
-  --trajectory benchmarks/slam/synthetic-figure8/sample_outputs/trajectory_pass.tum \
-  --out qa/synthetic-figure8
-```
-
-The same path runs in the [SLAM benchmark smoke workflow](.github/workflows/slam-benchmark-smoke.yml)
-and is explained in the [SLAM tutorial](docs/tutorial-slam-benchmark.md).
-
-## Live demos
-
-- [Demo hub](https://rsasaki0109.github.io/CloudAnalyzer/)
-- [Web viewer (beta)](https://rsasaki0109.github.io/CloudAnalyzer/app/): Rust/WASM point cloud viewer with cloud-to-cloud distance, in your browser ([source](web/))
-- [Point-cloud comparison](https://rsasaki0109.github.io/CloudAnalyzer/demo/compare/)
-- [SLAM leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/)
-- [3DGS evaluation](https://rsasaki0109.github.io/CloudAnalyzer/demo/3dgs/)
-- [Perception report](https://rsasaki0109.github.io/CloudAnalyzer/demo/perception/)
-
-## Docs
-
-- [Command reference](docs/commands/)
-- [CI and quality gates](docs/ci.md)
-- [Map quality-gate tutorial](docs/tutorial-map-quality-gate.md)
-- [Unified run quality-gate tutorial](docs/tutorial-run-quality-gate.md)
-- [Public benchmark packs](benchmarks/public/README.md)
-- [Architecture](docs/architecture.md)
+Tests: `cargo test` in `rust/`, `npx playwright test` in `web/`.
 
 ## License
 
-CloudAnalyzer source code is under the [MIT License](LICENSE). Public demo data
-and derived images retain their upstream terms; see [image attribution](docs/images/ATTRIBUTION.md).
+[MIT](LICENSE). Sample data keeps its upstream terms; see [attribution](web/public/samples/ATTRIBUTION.md).

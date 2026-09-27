@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloudAnalyzer guide</title>
+  <meta name="description" content="How to use the CloudAnalyzer web viewer: loading, navigation, analyses, filters, sharing.">
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #16181d;
+      --muted: #5f6673;
+      --line: #e3e6eb;
+      --panel: #f5f6f8;
+      --accent: #2f6fe4;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16181d;
+        --text: #e4e7ee;
+        --muted: #8b93a5;
+        --line: #2b303a;
+        --panel: #1e2128;
+        --accent: #4f8cff;
+        color-scheme: dark;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    main { max-width: 760px; margin: 0 auto; padding: 56px 20px 48px; }
+    h1 { margin: 0; font-size: 2rem; letter-spacing: -0.02em; }
+    .lead { margin: 8px 0 24px; color: var(--muted); }
+    h2 { margin: 48px 0 8px; font-size: 1.3rem; padding-top: 8px; border-top: 1px solid var(--line); }
+    h3 { margin: 24px 0 4px; font-size: 1.05rem; }
+    p, ul, ol { margin: 8px 0; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 3px 0; }
+    a { color: var(--accent); }
+    code, kbd {
+      font: 0.88em ui-monospace, "Cascadia Mono", Consolas, monospace;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+    nav.toc { columns: 2; column-gap: 32px; margin: 16px 0 0; padding: 12px 16px; background: var(--panel); border-radius: 8px; }
+    nav.toc a { display: block; text-decoration: none; padding: 2px 0; }
+    nav.toc a:hover { text-decoration: underline; }
+    .try {
+      display: inline-block;
+      margin: 4px 0;
+      padding: 4px 12px;
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.95rem; }
+    th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-weight: 600; }
+    footer { margin-top: 56px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+    @media (max-width: 560px) { nav.toc { columns: 1; } }
+  </style>
+</head>
+<body>
+  <main>
+    <p><a href="./">← CloudAnalyzer</a></p>
+    <h1>User guide</h1>
+    <p class="lead">
+      The <a href="./app/">web viewer</a> opens and analyses point clouds in your browser. Files are read
+      locally and never uploaded. Each section links to a demo that loads sample data and runs the analysis.
+    </p>
+
+    <nav class="toc" aria-label="Contents">
+      <a href="#open">Opening data</a>
+      <a href="#navigate">Moving around</a>
+      <a href="#color">Coloring and classes</a>
+      <a href="#distance">Distances (C2C, C2M)</a>
+      <a href="#m3c2">Change detection (M3C2)</a>
+      <a href="#volume">Cut / fill volume</a>
+      <a href="#icp">Alignment (ICP)</a>
+      <a href="#filters">Filters and ground extraction</a>
+      <a href="#normals">Normals</a>
+      <a href="#merge">Merge and split</a>
+      <a href="#clip">Clipping and cropping</a>
+      <a href="#profile">Cross-section profiles</a>
+      <a href="#measure">Picking and measuring</a>
+      <a href="#export">Saving results</a>
+      <a href="#share">Sharing and sessions</a>
+      <a href="#large">Large files</a>
+      <a href="#python">Python</a>
+    </nav>
+
+    <h2 id="open">Opening data</h2>
+    <ul>
+      <li>Drop files anywhere on the page, or use <b>Open…</b>. Several files can be opened at once.</li>
+      <li>Point clouds: PLY, PCD, LAS/LAZ and XYZ-style text (<code>.xyz .txt .csv .pts .asc</code>).
+        Meshes: OBJ, STL and PLY with faces.</li>
+      <li>RGB, intensity and classification are read when the file has them, and so are normals
+        (<code>nx ny nz</code>) in PLY.</li>
+      <li><b>Open URL</b> downloads a file from a web server. The server must allow cross-origin requests (CORS).</li>
+      <li>Georeferenced clouds (UTM, ECEF) keep full precision. A shared <i>global shift</i>, taken from the first
+        file, is applied for display only and shown in the status bar.</li>
+    </ul>
+
+    <h2 id="navigate">Moving around</h2>
+    <table>
+      <tr><th>Mouse</th><th>Touch</th><th>Action</th></tr>
+      <tr><td>Left drag</td><td>One finger</td><td>Orbit</td></tr>
+      <tr><td>Right drag</td><td>Two fingers</td><td>Pan</td></tr>
+      <tr><td>Wheel</td><td>Pinch</td><td>Zoom</td></tr>
+      <tr><td>Click</td><td>Tap</td><td>Pick a point</td></tr>
+      <tr><td>Double-click</td><td>Double tap</td><td>Orbit around that point</td></tr>
+    </table>
+    <p>
+      Use <b>Fit</b> (<kbd>F</kbd>) and the Top, Front, Side and Iso views to reset the camera.
+      <b>Point size</b>, <b>EDL</b> (depth shading) and <b>Point budget</b> (points drawn at once) are in the toolbar.
+      On a phone, <b>Panels</b> opens the side panels as a sheet.
+    </p>
+
+    <h2 id="color">Coloring and classes</h2>
+    <p>
+      Each cloud in the list has a color mode: RGB, intensity, classification, solid color, distances,
+      normals or hillshade. When a cloud has ASPRS classes, the <b>Classes</b> panel shows or hides each class
+      in every cloud.
+    </p>
+
+    <h2 id="distance">Distances (C2C, C2M)</h2>
+    <p>
+      In <b>Distance</b>, pick the <i>compared</i> cloud and the <i>reference</i>, then press <b>Compute</b>:
+    </p>
+    <ul>
+      <li>Against a cloud (C2C), each point gets the distance to its nearest reference point.</li>
+      <li>Against a mesh (C2M), each point gets the distance to the surface. With <i>signed</i>, points behind
+        the surface are negative.</li>
+    </ul>
+    <p>
+      The result is shown with a color ramp, an adjustable range, a colorbar and summary statistics
+      (mean, RMS, percentiles).
+    </p>
+    <a class="try" href="./app/?demo=c2c">Try: two LiDAR scans</a>
+
+    <h2 id="m3c2">Change detection (M3C2)</h2>
+    <p>
+      Choose <b>Method: M3C2</b> in the Distance panel. At each <i>core point</i>, a normal is fitted to the
+      reference within the <i>normal radius</i>. Both clouds are then averaged in a cylinder of the
+      <i>projection radius</i> along that normal, up to the <i>max depth</i>. The result is a new cloud with:
+    </p>
+    <ul>
+      <li><code>m3c2_distance</code>, the change along the normal;</li>
+      <li><code>lod95</code>, the 95 % level of detection;</li>
+      <li><code>significant</code>, which is 1 where the change exceeds the level of detection.</li>
+    </ul>
+    <p>Core points where either cylinder has too few points are grey.</p>
+    <a class="try" href="./app/?demo=m3c2">Try: a landslide</a>
+
+    <h2 id="volume">Cut / fill volume</h2>
+    <p>
+      In <b>Volume</b>, pick a <i>before</i> and an <i>after</i> surface. Each can be a cloud, a mesh or a constant
+      height. Both are rasterized on a grid of the chosen cell size, using the mean, lowest or highest point per
+      cell. <i>Fill empty cells</i> interpolates holes.
+    </p>
+    <p>
+      The result gives the added (fill), removed (cut) and net volume and the areas, with the height difference
+      of each cell shown as a cloud.
+    </p>
+    <a class="try" href="./app/?demo=volume">Try: a stockpile</a>
+
+    <h2 id="icp">Alignment (ICP)</h2>
+    <p>
+      In <b>Registration (ICP)</b>, <b>Align</b> moves one cloud onto a reference, point-to-plane or point-to-point. It can pre-align
+      the centroids and trim non-overlapping points. The panel shows the RMS before and after and the 4×4
+      transform, and <b>Undo alignment</b> reverts it.
+    </p>
+
+    <h2 id="filters">Filters and ground extraction</h2>
+    <p>Each filter creates a new cloud and keeps the original:</p>
+    <ul>
+      <li><b>Voxel subsampling</b> keeps one point per cube of the given edge.</li>
+      <li><b>Random subsampling</b> keeps a given number of points.</li>
+      <li><b>Remove outliers (SOR)</b> drops points whose mean distance to their <i>k</i> neighbours is more
+        than <i>ratio</i> standard deviations above average.</li>
+      <li><b>Extract ground (CSF)</b> drops a simulated cloth onto the upside-down cloud. Points close to the cloth
+        are ground. Output is a copy classified ground / other, or only one of the two.</li>
+    </ul>
+    <a class="try" href="./app/?demo=ground">Try: ground extraction</a>
+
+    <h2 id="normals">Normals</h2>
+    <p>
+      <b>Compute normals</b> fits a plane to the <i>k</i> nearest neighbours of each point. The normals face up,
+      or away from the cloud's centre. They are shown by the <i>Normals</i> color mode (direction as RGB) and
+      the <i>Hillshade</i> mode (lit from the north-west). They are saved in PLY as <code>nx ny nz</code>.
+    </p>
+
+    <h2 id="merge">Merge and split</h2>
+    <ul>
+      <li><b>Merge visible clouds</b> builds one cloud. Colors and attributes are kept, clouds without RGB take
+        their display color, and a <code>source</code> attribute records each point's cloud.</li>
+      <li><b>Split</b> makes one cloud per classification code, or turns a merged cloud back into its files.</li>
+    </ul>
+
+    <h2 id="clip">Clipping and cropping</h2>
+    <p>
+      <b>Clipping box</b> limits the view to a box set with per-axis sliders. The X, Y and Z buttons cut a thin
+      section and look straight at it. <b>Crop</b> copies the points inside the box into new clouds.
+    </p>
+
+    <h2 id="profile">Cross-section profiles</h2>
+    <p>
+      Press <b>Draw line</b> and click points on the view (a top view works best). Finish with a double-click
+      or <kbd>Enter</kbd>. Every visible cloud's points within the <i>band width</i> are plotted as distance along
+      the line against height, in the cloud's color.
+    </p>
+    <p>
+      Hover over the plot to read values. <i>1:1</i> uses the same scale on both axes, and <b>Save CSV</b> writes
+      <code>cloud, distance, x, y, z</code>. Drawing a profile across two surveys compares them directly.
+    </p>
+
+    <h2 id="measure">Picking and measuring</h2>
+    <p>
+      Click a point to see its exact coordinates, color and distance value. <b>Measure</b> (<kbd>M</kbd>) takes two
+      clicks and shows their distance and ΔX / ΔY / ΔZ. <kbd>Esc</kbd> cancels.
+    </p>
+
+    <h2 id="export">Saving results</h2>
+    <p>
+      The <b>⤓</b> button next to a cloud saves it as binary PLY, and the Distance panel also saves CSV. The file
+      includes colors and all attributes: intensity, classification, normals, M3C2 fields and distances as
+      <code>scalar_C2C_distance</code>. CloudCompare reads these as scalar fields.
+    </p>
+
+    <h2 id="share">Sharing and sessions</h2>
+    <ul>
+      <li><b>Share</b> copies a link to the current view. It includes the camera, display settings, each cloud's
+        visibility, color mode and ICP transform, recomputed distances, hidden classes, the clipping box and the
+        profile line.</li>
+      <li>Clouds opened from a URL, and the demos, are downloaded again by whoever opens the link. Local files are
+        not uploaded, so the link asks for them by name.</li>
+      <li><b>Save session</b> writes the same state to a JSON file. Open it together with its files, or first.</li>
+      <li>A link like <code>…/app/?url=https://example.com/scan.laz</code> opens a remote file directly (the
+        server must allow CORS). <code>?demo=volume</code> starts a demo.</li>
+    </ul>
+
+    <h2 id="large">Large files</h2>
+    <ul>
+      <li>LAS and binary PLY/PCD are streamed in 16 MB slices. The progress bar shows how far a load is, and
+        <b>Cancel</b> stops it.</li>
+      <li>Files above <b>Max points per file</b> (50M by default) keep every n-th point.</li>
+      <li>Only the octree nodes that matter on screen are drawn, up to the <b>point budget</b>.</li>
+      <li>Heavy steps run on a pool of workers: indexing, C2C/C2M, SOR and normals.</li>
+      <li>The status bar shows the viewer's WebAssembly memory. Reload the page to free it after closing big
+        clouds.</li>
+    </ul>
+
+    <h2 id="python">Python</h2>
+    <p>
+      The same Rust core is available to Python as <code>cloudanalyzer_core</code>, multi-threaded. It covers
+      reading, C2C/C2M, ICP, filters, CSF, volume, M3C2, profiles and normals. It is not on PyPI yet;
+      build it from <code>rust/crates/ca-py</code> with maturin, as the
+      <a href="https://github.com/rsasaki0109/CloudAnalyzer/tree/main/rust/crates/ca-py">README</a> explains.
+    </p>
+
+    <footer>
+      The demo clouds (stockpile, town, landslide) are synthetic and generated by
+      <code>web/scripts/make-samples.mjs</code>. The two LiDAR scans derive from the public RELLIS-3D example
+      (CC BY-NC-SA 3.0).
+    </footer>
+  </main>
+</body>
+</html>

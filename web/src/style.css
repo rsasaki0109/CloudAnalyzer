@@ -56,6 +56,9 @@ input[type="range"] { accent-color: var(--accent); vertical-align: middle; }
 .brand em { color: var(--accent); font-style: normal; }
 .sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
 label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); }
+.toolbar-link { color: var(--muted); text-decoration: none; padding: 4px 6px; }
+.toolbar-link:hover { color: var(--accent); }
+.hint a { color: var(--accent); }
 
 .sidebar {
   grid-area: sidebar;

@@ -146,3 +146,11 @@ def test_profile_along_a_polyline():
     assert len(idx) == 71
     assert along.max() == pytest.approx(7.0)
     np.testing.assert_allclose(points[idx, 1][along < 4 - 1e-9], 1.0, atol=1e-9)
+
+
+def test_normals_of_a_tilted_plane():
+    x, y = (a.ravel() for a in np.meshgrid(np.arange(50) * 0.1, np.arange(50) * 0.1))
+    points = np.c_[x, y, 0.5 * x]
+    normals = cloudanalyzer_core.normals(points, k=10)
+    assert normals.shape == (2500, 3) and normals.dtype == np.float32
+    np.testing.assert_allclose(normals, np.tile([-0.5, 0, 1] / np.sqrt(1.25), (2500, 1)), atol=1e-4)

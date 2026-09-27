@@ -417,3 +417,27 @@ test("merge and split: by class, and back into the merged files", async ({ page 
   await expect(names.filter({ hasText: /^a\.las100 points/ })).toHaveCount(2);
   await expect(names.filter({ hasText: /^b\.ply30 points/ })).toHaveCount(2);
 });
+
+test("normals: estimated, shaded, saved to PLY and read back", async ({ page }) => {
+  await open(page, [{ name: "wave.ply", buffer: ply(grid(60)) }]);
+  await expect(status(page)).toContainText("Loaded wave.ply");
+  await page.locator("#normals-run").click();
+  await expect(status(page)).toContainText("Normals of 3,600 points");
+  const mode = page.locator(".cloud-list li").first().locator("select");
+  await expect(mode).toHaveValue("shade");
+
+  const download = page.waitForEvent("download");
+  await page.locator(".cloud-list li").first().locator("button.icon").click();
+  const file = await download;
+  const chunks: Buffer[] = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
+  const saved = Buffer.concat(chunks);
+  const header = saved.subarray(0, 400).toString("latin1");
+  for (const n of ["nx", "ny", "nz"]) expect(header).toContain(`property float ${n}`);
+
+  await open(page, [{ name: "again.ply", buffer: saved }]);
+  await expect(status(page)).toContainText("Loaded again.ply");
+  const again = page.locator(".cloud-list li").last().locator("select");
+  await expect(again.locator('option[value="normal"]')).toHaveCount(1);
+  await again.selectOption("normal");
+});

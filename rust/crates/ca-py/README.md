@@ -20,6 +20,8 @@ result = cc.icp(scan["positions"], ref)    # {"transformation": 4x4, "rms_final"
 keep = cc.statistical_outliers(scan["positions"], k=8, ratio=1.0)  # multi-threaded
 ground = cc.ground_csf(scan["positions"], cloth_resolution=1.0)  # bool per point
 
+normals = cc.normals(scan["positions"], k=12)  # (N, 3) float32, facing +z
+
 # Cross-section: points within 0.25 of a polyline, and their distance along it
 idx, along = cc.profile(scan["positions"], np.array([[0.0, 0.0], [50.0, 20.0]]), half_width=0.25)
 

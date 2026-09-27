@@ -8,6 +8,7 @@ import init, {
   buildBucket,
   meshDistances,
   nearestDistances,
+  normalsOf,
   type Reordered,
   SorPart,
   warmUp,
@@ -27,6 +28,8 @@ export type Slice =
   | { kind: "sor-local"; job: number; points: Float64Array; k: number; own: number; regions: Float64Array }
   /** SOR step 2 on this worker's part of `job`: nearest squared distances from queries. */
   | { kind: "sor-within"; job: number; queries: Float64Array; k: number }
+  /** Normals of one part of a cloud, from its own points. */
+  | { kind: "normals"; points: Float64Array; k: number; orientation: Float64Array }
   /** Drop this worker's part of `job`. */
   | { kind: "sor-release"; job: number }
   /** Run every kernel once so the browser optimizes them (see `warmUp`). */
@@ -56,7 +59,9 @@ export type SliceResult<S extends Slice> = S extends { kind: "bucket-chunk" | "b
   ? ReorderedResult
   : S extends { kind: "sor-local" }
     ? SorLocalResult
-    : Float64Array;
+    : S extends { kind: "normals" }
+      ? Float32Array
+      : Float64Array;
 
 export type SliceRequest = Slice & { seq: number };
 
@@ -82,7 +87,7 @@ function unpack(r: Reordered): { value: ReorderedResult; transfer: Transferable[
   return { value, transfer };
 }
 
-type Value = Float64Array | ReorderedResult | SorLocalResult;
+type Value = Float64Array | Float32Array | ReorderedResult | SorLocalResult;
 
 function run(request: SliceRequest): { value: Value; transfer: Transferable[] } {
   switch (request.kind) {
@@ -127,6 +132,10 @@ function run(request: SliceRequest): { value: Value; transfer: Transferable[] } 
       if (!part) throw new Error("SOR part is gone");
       const d = part.within(request.queries, request.k);
       return { value: d, transfer: [d.buffer] };
+    }
+    case "normals": {
+      const n = normalsOf(request.points, request.k, request.orientation);
+      return { value: n, transfer: [n.buffer] };
     }
     case "sor-release":
       sorParts.get(request.job)?.free();

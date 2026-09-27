@@ -190,6 +190,37 @@ async function parallelSorMeans(cloud: Cloud, k: number): Promise<Float64Array |
   }
 }
 
+/**
+ * Normals on the worker pool: the cloud is split along its octree and each
+ * part is done from its own points (near a part's border, neighbours from
+ * across it are not used). Returns false when the cloud is too small to split.
+ */
+async function parallelNormals(cloud: Cloud, k: number, orientation: "up" | "outward"): Promise<boolean> {
+  const n = cloud.length;
+  const parts = Math.min(poolSize(), Math.floor(n / MIN_PARALLEL_QUERIES));
+  if (parts < 2) return false;
+  const plan = planSor(cloud, parts);
+  try {
+    const how = new Float64Array(cloud.normalsOrientation(orientation));
+    const indices = Array.from({ length: plan.length }, (_, j) => plan.indices(j));
+    const results = await runSlices(plan.length, (j) => ({
+      kind: "normals" as const,
+      points: plan.points(cloud, j),
+      k,
+      orientation: how.slice(),
+    }));
+    const normals = new Float32Array(n * 3);
+    results.forEach((part, j) => {
+      const idx = indices[j];
+      for (let i = 0; i < idx.length; i++) normals.set(part.subarray(i * 3, i * 3 + 3), idx[i] * 3);
+    });
+    cloud.setNormals(normals);
+    return true;
+  } finally {
+    plan.free();
+  }
+}
+
 /** Bytes read per slice when streaming a file. */
 const STREAM_CHUNK = 16 << 20;
 
@@ -331,6 +362,7 @@ function describe(
       colors: null,
       intensity: null,
       classification: null,
+      normals: null,
       sources: null,
       bounds: Array.from(item.mesh.bounds()),
       shift: shift!,
@@ -347,6 +379,7 @@ function describe(
   const colors = cloud.colors() ?? null;
   const intensity = cloud.intensity() ?? null;
   const classification = cloud.classification() ?? null;
+  const normals = cloud.normals() ?? null;
   const lodNodes = cloud.lodNodes();
   const value: LoadedCloud = {
     kind: "cloud",
@@ -359,6 +392,7 @@ function describe(
     colors,
     intensity,
     classification,
+    normals,
     sources: item.sources ?? null,
     bounds: Array.from(cloud.bounds()),
     shift: shift!,
@@ -369,7 +403,7 @@ function describe(
     timings: { ...timings, prepare: performance.now() - start },
   };
   const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
-  for (const buffer of [colors, intensity, classification]) if (buffer) transfer.push(buffer.buffer);
+  for (const buffer of [colors, intensity, classification, normals]) if (buffer) transfer.push(buffer.buffer);
   return { value, transfer };
 }
 
@@ -545,6 +579,13 @@ async function handle(
       const suffix = { voxel: `voxel${req.a}`, random: `random${req.a}`, sor: "sor" }[req.op];
       items.set(id, { kind: "cloud", cloud: filtered, name: `${base}_${suffix}` });
       return describe(id, { parse: 0, index: performance.now() - t });
+    }
+    case "normals": {
+      const cloud = getCloud(req.id);
+      const k = Math.max(3, Math.floor(req.k));
+      if (!(await parallelNormals(cloud, k, req.orientation))) cloud.estimateNormals(k, req.orientation);
+      const normals = cloud.normals()!;
+      return { value: normals, transfer: [normals.buffer] };
     }
     case "merge": {
       const t = performance.now();

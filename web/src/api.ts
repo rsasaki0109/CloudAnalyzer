@@ -120,3 +120,8 @@ export function mergeClouds(ids: number[], fills: Vec3[]): Promise<LoadedCloud> 
 export function splitCloud(id: number, by: "classification" | "source"): Promise<LoadedCloud[]> {
   return call({ kind: "split", id, by });
 }
+
+/** Estimate normals (stored on the cloud); resolves to them, interleaved in octree order. */
+export function estimateNormals(id: number, k: number, orientation: "up" | "outward"): Promise<Float32Array> {
+  return call({ kind: "normals", id, k, orientation });
+}

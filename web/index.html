@@ -59,6 +59,38 @@
         <button id="measure-clear">Clear all</button>
       </section>
 
+      <section id="clip-panel">
+        <h2>Clipping box</h2>
+        <label class="check"><input id="clip-enabled" type="checkbox" /> Show only what is inside the box</label>
+        <div id="clip-controls" hidden>
+          <div class="clip-axis" data-axis="0">
+            <span class="axis">X</span>
+            <input type="range" min="0" max="1000" value="0" data-end="min" aria-label="X minimum" />
+            <input type="range" min="0" max="1000" value="1000" data-end="max" aria-label="X maximum" />
+            <span class="clip-values"></span>
+          </div>
+          <div class="clip-axis" data-axis="1">
+            <span class="axis">Y</span>
+            <input type="range" min="0" max="1000" value="0" data-end="min" aria-label="Y minimum" />
+            <input type="range" min="0" max="1000" value="1000" data-end="max" aria-label="Y maximum" />
+            <span class="clip-values"></span>
+          </div>
+          <div class="clip-axis" data-axis="2">
+            <span class="axis">Z</span>
+            <input type="range" min="0" max="1000" value="0" data-end="min" aria-label="Z minimum" />
+            <input type="range" min="0" max="1000" value="1000" data-end="max" aria-label="Z maximum" />
+            <span class="clip-values"></span>
+          </div>
+          <div class="button-row">
+            <button data-slice="0" title="Thin cross-section across X">Slice X</button>
+            <button data-slice="1" title="Thin cross-section across Y">Slice Y</button>
+            <button data-slice="2" title="Thin cross-section across Z">Slice Z</button>
+            <button id="clip-reset" title="Box around everything visible">Reset</button>
+          </div>
+          <button id="clip-crop" class="primary" title="Copy the points inside the box of each visible cloud into new clouds">Crop to new clouds</button>
+        </div>
+      </section>
+
       <section id="icp-panel">
         <h2>Registration (ICP)</h2>
         <label>Aligned <select id="icp-moving"></select></label>

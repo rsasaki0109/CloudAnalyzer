@@ -78,6 +78,14 @@ export type Request =
     }
   | { kind: "transform"; id: number; matrix: number[] }
   | {
+      kind: "crop";
+      id: number;
+      /** Box corners in original (unshifted) coordinates. */
+      min: Vec3;
+      max: Vec3;
+      inside: boolean;
+    }
+  | {
       kind: "export";
       id: number;
       format: "ply" | "csv";

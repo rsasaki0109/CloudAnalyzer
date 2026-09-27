@@ -136,6 +136,22 @@ textarea {
 }
 
 .export-row { display: flex; gap: 8px; margin-top: 8px; }
+.button-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.clip-axis {
+  display: grid;
+  grid-template-columns: 14px 1fr 1fr;
+  align-items: center;
+  column-gap: 6px;
+}
+.clip-axis .axis { font-weight: 600; color: var(--muted); }
+.clip-axis input[type="range"] { width: 100%; }
+.clip-values {
+  grid-column: 2 / 4;
+  margin: -2px 0 6px;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
 
 .range { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 

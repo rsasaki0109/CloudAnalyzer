@@ -62,10 +62,14 @@ export function selectNodes(
   viewportHeight: number,
   budget: number,
   minSpacingPx = 1,
+  clip: THREE.Box3 | null = null,
 ): Selection {
   const frustum = new THREE.Frustum().setFromProjectionMatrix(
     new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse),
   );
+  // Nodes outside the clipping box are never drawn, so skip them and spend
+  // the budget on what remains visible.
+  const wanted = (box: THREE.Box3) => frustum.intersectsBox(box) && (!clip || clip.intersectsBox(box));
   const pixelsPerUnit = viewportHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
   const eye = camera.position;
   const spacingPx = (node: LodNode) =>
@@ -74,7 +78,7 @@ export function selectNodes(
   const heap = new MaxHeap<{ source: LodSource; node: number }>();
   for (const source of sources) {
     const root = source.nodes[0];
-    if (root && frustum.intersectsBox(root.box)) {
+    if (root && wanted(root.box)) {
       // Roots always go first so every visible cloud shows at least a coarse view.
       heap.push({ source, node: 0 }, Number.POSITIVE_INFINITY);
     }
@@ -92,7 +96,7 @@ export function selectNodes(
     if (spacingPx(n) < minSpacingPx) continue;
     for (const child of n.children) {
       const c = source.nodes[child];
-      if (frustum.intersectsBox(c.box)) heap.push({ source, node: child }, spacingPx(c));
+      if (wanted(c.box)) heap.push({ source, node: child }, spacingPx(c));
     }
   }
   return { nodes: selected, points };

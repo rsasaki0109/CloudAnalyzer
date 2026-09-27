@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import {
   cloudToCloud,
+  cropCloud,
   exportCloud,
   loadCloud,
   pointAt,
@@ -222,6 +223,22 @@ async function saveCloud(entry: Entry, format: "ply" | "csv"): Promise<void> {
 
 // ---------------------------------------------------------------- loading
 
+/** Register a loaded cloud or mesh and draw it. */
+function addEntry(cloud: LoadedCloud): Entry {
+  const entry: Entry = {
+    cloud,
+    nodes: parseNodes(cloud.lodNodes, cloud.lodGrid, cloud.shift),
+    solid: SOLID_COLORS[entries.size % SOLID_COLORS.length],
+    mode: cloud.colors ? "rgb" : "solid",
+    visible: true,
+    transforms: [],
+  };
+  entries.set(cloud.id, entry);
+  if (cloud.kind === "mesh") viewer.addMesh(cloud.id, cloud.positions, cloud.indices!, entry.solid);
+  else viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
+  return entry;
+}
+
 async function loadFiles(files: Iterable<File>): Promise<void> {
   for (const file of files) {
     const mb = (file.size / 1e6).toFixed(file.size >= 1e7 ? 0 : 1);
@@ -233,17 +250,7 @@ async function loadFiles(files: Iterable<File>): Promise<void> {
       const cloud = await loadCloud(file.name, bytes, (note) =>
         setStatus(`Loading ${file.name} (${mb} MB): ${note}…`),
       );
-      const entry: Entry = {
-        cloud,
-        nodes: parseNodes(cloud.lodNodes, cloud.lodGrid, cloud.shift),
-        solid: SOLID_COLORS[entries.size % SOLID_COLORS.length],
-        mode: cloud.colors ? "rgb" : "solid",
-        visible: true,
-        transforms: [],
-      };
-      entries.set(cloud.id, entry);
-      if (cloud.kind === "mesh") viewer.addMesh(cloud.id, cloud.positions, cloud.indices!, entry.solid);
-      else viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
+      addEntry(cloud);
       if (entries.size === 1) viewer.fit();
       const [sx, sy, sz] = cloud.shift;
       $("shift").textContent =
@@ -636,6 +643,120 @@ $<HTMLButtonElement>("icp-undo").onclick = async () => {
     entry.transforms.push(matrix);
     setStatus(`Undo failed: ${err instanceof Error ? err.message : err}`, true);
   }
+};
+
+// ---------------------------------------------------------------- clipping box
+
+const clipEnabled = $<HTMLInputElement>("clip-enabled");
+/** Box the sliders span (render coordinates), captured when clipping starts. */
+let clipExtent = new THREE.Box3();
+const SLIDER_MAX = 1000;
+const clipRows = [...document.querySelectorAll<HTMLDivElement>(".clip-axis")];
+const slider = (axis: number, end: "min" | "max") =>
+  clipRows[axis].querySelector<HTMLInputElement>(`input[data-end="${end}"]`)!;
+
+function globalShift(): [number, number, number] {
+  return [...entries.values()][0]?.cloud.shift ?? [0, 0, 0];
+}
+
+/** The clipping box described by the sliders, in render coordinates. */
+function clipBoxFromSliders(): THREE.Box3 {
+  const min = new THREE.Vector3();
+  const max = new THREE.Vector3();
+  for (let axis = 0; axis < 3; axis++) {
+    let lo = Number(slider(axis, "min").value) / SLIDER_MAX;
+    let hi = Number(slider(axis, "max").value) / SLIDER_MAX;
+    if (lo > hi) [lo, hi] = [hi, lo];
+    const a = clipExtent.min.getComponent(axis);
+    const size = clipExtent.max.getComponent(axis) - a;
+    min.setComponent(axis, a + lo * size);
+    max.setComponent(axis, a + hi * size);
+  }
+  return new THREE.Box3(min, max);
+}
+
+function applyClip(): void {
+  if (!clipEnabled.checked) {
+    viewer.setClipBox(null);
+    return;
+  }
+  const box = clipBoxFromSliders();
+  viewer.setClipBox(box);
+  const shift = globalShift();
+  clipRows.forEach((row, axis) => {
+    const lo = box.min.getComponent(axis) + shift[axis];
+    const hi = box.max.getComponent(axis) + shift[axis];
+    row.querySelector(".clip-values")!.textContent = `${fmt(lo)} … ${fmt(hi)}`;
+  });
+}
+
+function resetClip(): void {
+  clipExtent = viewer.contentBounds();
+  if (clipExtent.isEmpty()) clipExtent.set(new THREE.Vector3(), new THREE.Vector3(1, 1, 1));
+  // A little margin so points on the bounds are not clipped by rounding.
+  clipExtent.expandByScalar(Math.max(1e-6, clipExtent.getSize(new THREE.Vector3()).length() * 1e-6));
+  for (let axis = 0; axis < 3; axis++) {
+    slider(axis, "min").value = "0";
+    slider(axis, "max").value = String(SLIDER_MAX);
+  }
+  applyClip();
+}
+
+clipEnabled.onchange = () => {
+  $("clip-controls").hidden = !clipEnabled.checked;
+  if (clipEnabled.checked) resetClip();
+  else applyClip();
+};
+for (const input of document.querySelectorAll<HTMLInputElement>(".clip-axis input")) {
+  input.oninput = applyClip;
+}
+$<HTMLButtonElement>("clip-reset").onclick = resetClip;
+
+/** A thin slab across `axis` through the middle of the current box. */
+for (const button of document.querySelectorAll<HTMLButtonElement>("[data-slice]")) {
+  button.onclick = () => {
+    const axis = Number(button.dataset.slice);
+    for (let other = 0; other < 3; other++) {
+      slider(other, "min").value = "0";
+      slider(other, "max").value = String(SLIDER_MAX);
+    }
+    const half = 10; // 2% of the extent
+    slider(axis, "min").value = String(SLIDER_MAX / 2 - half);
+    slider(axis, "max").value = String(SLIDER_MAX / 2 + half);
+    applyClip();
+    // Look straight at the section.
+    const direction = [0, 0, 0];
+    direction[axis] = 1;
+    viewer.view({ x: direction[0], y: direction[1] - (axis === 2 ? 1e-3 : 0), z: direction[2] });
+    viewer.fit();
+  };
+}
+
+$<HTMLButtonElement>("clip-crop").onclick = async () => {
+  const sources = [...entries.values()].filter((e) => e.visible && !isMesh(e));
+  if (!clipEnabled.checked || sources.length === 0) return;
+  const box = clipBoxFromSliders();
+  const shift = globalShift();
+  const min = [0, 1, 2].map((a) => box.min.getComponent(a) + shift[a]) as [number, number, number];
+  const max = [0, 1, 2].map((a) => box.max.getComponent(a) + shift[a]) as [number, number, number];
+  const created: string[] = [];
+  for (const source of sources) {
+    try {
+      const cloud = await cropCloud(source.cloud.id, min, max, true);
+      addEntry(cloud);
+      created.push(`${cloud.name} (${cloud.count.toLocaleString()} points)`);
+      source.visible = false;
+      viewer.setVisible(source.cloud.id, false);
+    } catch (err) {
+      created.push(`${source.cloud.name}: ${err instanceof Error ? err.message : err}`);
+    }
+  }
+  clipEnabled.checked = false;
+  $("clip-controls").hidden = true;
+  applyClip();
+  renderList();
+  viewer.fit();
+  setStatus(`Cropped: ${created.join(", ")}`);
 };
 
 // ---------------------------------------------------------------- picking & measuring

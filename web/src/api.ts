@@ -1,6 +1,6 @@
 // Promise-based client for the WASM worker.
 
-import type { C2cOutput, IcpOutput, LoadedCloud, Request, WorkerMessage } from "./protocol";
+import type { C2cOutput, IcpOutput, LoadedCloud, Request, Vec3, WorkerMessage } from "./protocol";
 
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
 const pending = new Map<
@@ -69,4 +69,9 @@ export function exportCloud(
 ): Promise<Uint8Array> {
   // The scalar is copied, not transferred, so the UI keeps its distances.
   return call({ kind: "export", id, format, scalar });
+}
+
+/** Extract the points inside (or outside) a box, in original coordinates, as a new cloud. */
+export function cropCloud(id: number, min: Vec3, max: Vec3, inside: boolean): Promise<LoadedCloud> {
+  return call({ kind: "crop", id, min, max, inside });
 }

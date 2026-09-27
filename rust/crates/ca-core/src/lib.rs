@@ -66,6 +66,24 @@ impl PointCloud {
         Some(aabb)
     }
 
+    /// Points inside (or, with `inside == false`, outside) the axis-aligned
+    /// box `[min, max]`, with their colors. Boundary points count as inside.
+    pub fn crop(&self, min: [f64; 3], max: [f64; 3], inside: bool) -> PointCloud {
+        let keep: Vec<usize> = (0..self.len())
+            .filter(|&i| {
+                let p = self.positions[i];
+                (0..3).all(|a| p[a] >= min[a] && p[a] <= max[a]) == inside
+            })
+            .collect();
+        PointCloud {
+            positions: keep.iter().map(|&i| self.positions[i]).collect(),
+            colors: self
+                .colors
+                .as_ref()
+                .map(|c| keep.iter().map(|&i| c[i]).collect()),
+        }
+    }
+
     /// A shift that brings the cloud near the origin, rounded so that shifted
     /// coordinates stay readable. Zero when the cloud is already small.
     pub fn suggested_shift(&self) -> [f64; 3] {
@@ -82,5 +100,28 @@ impl PointCloud {
             return [0.0; 3];
         }
         aabb.center().map(|c| (c / 100.0).round() * 100.0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn crop_keeps_points_and_colors_inside_the_box() {
+        let cloud = PointCloud {
+            positions: vec![
+                [0.0, 0.0, 0.0],
+                [1.0, 1.0, 1.0],
+                [2.0, 0.5, 0.5],
+                [0.5, 0.5, 3.0],
+            ],
+            colors: Some(vec![[1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]]),
+        };
+        let inside = cloud.crop([0.0; 3], [1.0; 3], true);
+        assert_eq!(inside.positions, vec![[0.0, 0.0, 0.0], [1.0, 1.0, 1.0]]);
+        assert_eq!(inside.colors, Some(vec![[1, 1, 1], [2, 2, 2]]));
+        let outside = cloud.crop([0.0; 3], [1.0; 3], false);
+        assert_eq!(outside.colors, Some(vec![[3, 3, 3], [4, 4, 4]]));
     }
 }

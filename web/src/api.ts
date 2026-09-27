@@ -60,3 +60,13 @@ export function registerIcp(params: Omit<Extract<Request, { kind: "icp" }>, "kin
 export function transformCloud(id: number, matrix: number[]): Promise<LoadedCloud> {
   return call({ kind: "transform", id, matrix });
 }
+
+/** Serialize a cloud (octree order) as binary PLY or CSV. */
+export function exportCloud(
+  id: number,
+  format: "ply" | "csv",
+  scalar?: { name: string; values: Float32Array },
+): Promise<Uint8Array> {
+  // The scalar is copied, not transferred, so the UI keeps its distances.
+  return call({ kind: "export", id, format, scalar });
+}

@@ -76,7 +76,14 @@ export type Request =
       matchCentroids: boolean;
       pointToPlane: boolean;
     }
-  | { kind: "transform"; id: number; matrix: number[] };
+  | { kind: "transform"; id: number; matrix: number[] }
+  | {
+      kind: "export";
+      id: number;
+      format: "ply" | "csv";
+      /** Optional scalar field, one value per point in the cloud's order. */
+      scalar?: { name: string; values: Float32Array };
+    };
 
 export type Response =
   | { ok: true; value: unknown }

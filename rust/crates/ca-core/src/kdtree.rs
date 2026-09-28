@@ -129,10 +129,20 @@ impl KdTree {
             for i in n.start as usize..n.end as usize {
                 let d = distance_sq(&self.points[i], q);
                 if found.len() < k || d < found[found.len() - 1].1 {
-                    // Sorted insert; `found` stays at most `k` long.
-                    let at = found.partition_point(|&(_, e)| e <= d);
-                    found.insert(at, (i as u32, d));
-                    found.truncate(k);
+                    // Sorted insert after equal distances; a full list drops
+                    // its last entry. Shifting from the back beats a binary
+                    // search (fewer mispredicted branches) since new entries
+                    // mostly land near the end.
+                    if found.len() < k {
+                        found.push((i as u32, d));
+                    } else {
+                        found[k - 1] = (i as u32, d);
+                    }
+                    let mut j = found.len() - 1;
+                    while j > 0 && found[j - 1].1 > d {
+                        found.swap(j - 1, j);
+                        j -= 1;
+                    }
                 }
             }
             return;

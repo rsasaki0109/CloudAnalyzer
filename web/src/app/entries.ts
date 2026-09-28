@@ -222,6 +222,7 @@ export function renderList(): void {
       ["c2c", distanceLabel(entry.c2c), !!entry.c2c],
       ["normal", "Normals", cloud.normals !== null],
       ["shade", "Hillshade", cloud.normals !== null],
+      ["opacity", "Opacity", cloud.opacity !== null],
     ];
     for (const [value, label, enabled] of options) {
       if (!enabled) continue;

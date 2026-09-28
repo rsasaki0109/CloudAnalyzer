@@ -487,13 +487,16 @@ impl Cloud {
     /// indexed (call [`Cloud::build_index`] or build it on the pool):
     /// `"voxel"` keeps one point per voxel of edge `a`; `"random"` keeps `a`
     /// random points; `"sor"` drops statistical outliers with `a` neighbours
-    /// and a `b` standard-deviation threshold.
+    /// and a `b` standard-deviation threshold; `"splat"` keeps Gaussian
+    /// splats with opacity at least `a` and size at most `b`.
     pub fn filter(&self, op: &str, a: f64, b: f64) -> Result<Cloud, JsError> {
         use ca_core::filter;
         let keep = match op {
             "voxel" => filter::voxel_subsample(&self.inner, a),
             "random" => filter::random_subsample(&self.inner, a.max(0.0) as usize, 0x5eed),
             "sor" => filter::statistical_outliers(&self.inner, a.max(1.0) as usize, b),
+            "splat" => filter::splat_cleanup(&self.inner, a, b)
+                .ok_or_else(|| JsError::new("not Gaussian splats (no opacity and size)"))?,
             other => return Err(JsError::new(&format!("unknown filter {other:?}"))),
         };
         self.selected(&keep)

@@ -12,7 +12,7 @@
       <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti" />
+        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -229,6 +229,7 @@
             <option value="voxel">Subsample: one point per voxel</option>
             <option value="random">Subsample: random points</option>
             <option value="sor">Remove outliers (SOR)</option>
+            <option value="splat" hidden>Splat cleanup (faint / huge Gaussians)</option>
             <option value="ground">Extract ground (CSF)</option>
           </select>
         </label>
@@ -241,6 +242,10 @@
         <div class="range" data-op="sor" hidden>
           <label title="Neighbours used for the mean distance">Neighbours <input id="filter-k" type="number" min="1" max="100" value="8" /></label>
           <label title="Standard deviations above the mean that count as outliers">Std. ratio <input id="filter-ratio" type="number" min="0" step="0.1" value="1" /></label>
+        </div>
+        <div class="range" data-op="splat" hidden>
+          <label title="Drop Gaussians more transparent than this (0–1)">Min opacity <input id="filter-opacity" type="number" min="0" max="1" step="0.05" value="0.1" /></label>
+          <label title="Drop Gaussians larger than this (standard deviation along the longest axis, in the cloud's units)">Max size <input id="filter-size" type="number" min="0" step="any" /></label>
         </div>
         <div data-op="ground" hidden>
           <div class="range">

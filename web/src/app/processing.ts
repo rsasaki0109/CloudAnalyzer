@@ -23,29 +23,43 @@ const filterCloudSelect = $<HTMLSelectElement>("filter-cloud");
 const filterOp = $<HTMLSelectElement>("filter-op");
 const filterRun = $<HTMLButtonElement>("filter-run");
 const voxelInput = $<HTMLInputElement>("filter-voxel");
+const splatOption = filterOp.querySelector<HTMLOptionElement>('option[value="splat"]')!;
 
 listChanged.add(() => {
   const options = clouds();
   fillCloudSelect(filterCloudSelect, options);
   filterRun.disabled = options.length === 0;
-  suggestVoxel();
+  suggestDefaults();
 });
 
-/** Default voxel: about 1/200 of the cloud's largest extent, rounded. */
-function suggestVoxel(): void {
+/**
+ * Defaults for the chosen cloud: a voxel of about 1/200 of its largest
+ * extent and, for Gaussian splats, a maximum size of 1/50 of it. The splat
+ * cleanup is only offered for splats.
+ */
+function suggestDefaults(): void {
   const entry = entries.get(Number(filterCloudSelect.value));
+  splatOption.hidden = !entry?.cloud.opacity;
+  if (splatOption.hidden && filterOp.value === "splat") {
+    filterOp.value = "voxel";
+    showOpInputs();
+  }
   if (!entry || voxelInput.dataset.cloud === filterCloudSelect.value) return;
   const b = entry.cloud.bounds;
-  voxelInput.value = String(roundUp(Math.max(b[3] - b[0], b[4] - b[1], b[5] - b[2]) / 200));
+  const extent = Math.max(b[3] - b[0], b[4] - b[1], b[5] - b[2]);
+  voxelInput.value = String(roundUp(extent / 200));
+  $<HTMLInputElement>("filter-size").value = String(roundUp(extent / 50));
   voxelInput.dataset.cloud = filterCloudSelect.value;
 }
 
-filterCloudSelect.onchange = suggestVoxel;
-filterOp.onchange = () => {
+function showOpInputs(): void {
   for (const group of document.querySelectorAll<HTMLElement>("#filter-panel [data-op]")) {
     group.hidden = group.dataset.op !== filterOp.value;
   }
-};
+}
+
+filterCloudSelect.onchange = suggestDefaults;
+filterOp.onchange = showOpInputs;
 
 filterRun.onclick = async () => {
   const entry = entries.get(Number(filterCloudSelect.value));
@@ -54,7 +68,7 @@ filterRun.onclick = async () => {
     await runGround(entry);
     return;
   }
-  const op = filterOp.value as "voxel" | "random" | "sor";
+  const op = filterOp.value as "voxel" | "random" | "sor" | "splat";
   let a = 0;
   let b = 0;
   if (op === "voxel") a = Number(voxelInput.value);
@@ -63,7 +77,14 @@ filterRun.onclick = async () => {
     a = Number($<HTMLInputElement>("filter-k").value);
     b = Number($<HTMLInputElement>("filter-ratio").value);
   }
-  if (!(a > 0)) {
+  if (op === "splat") {
+    a = Number($<HTMLInputElement>("filter-opacity").value);
+    b = Number($<HTMLInputElement>("filter-size").value);
+    if (!(a >= 0 && b > 0)) {
+      setStatus("Enter an opacity of 0 or more and a positive size", true);
+      return;
+    }
+  } else if (!(a > 0)) {
     setStatus("Enter a positive value", true);
     return;
   }
@@ -71,7 +92,12 @@ filterRun.onclick = async () => {
   setStatus(`Filtering ${entry.cloud.name}…`);
   try {
     const cloud = await filterCloud(entry.cloud.id, op, a, b);
-    const label = { voxel: "the voxel filter", random: "the random subsampling", sor: "the outlier filter" }[op];
+    const label = {
+      voxel: "the voxel filter",
+      random: "the random subsampling",
+      sor: "the outlier filter",
+      splat: "the splat cleanup",
+    }[op];
     record({ label, added: [addEntry(cloud)], hide: [entry] });
     renderList();
     const removed = entry.cloud.count - cloud.count;

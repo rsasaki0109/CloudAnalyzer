@@ -33,6 +33,11 @@ pub use mesh::TriangleMesh;
 pub const INTENSITY: &str = "intensity";
 /// Name of the (ASPRS) class-code attribute.
 pub const CLASSIFICATION: &str = "classification";
+/// Name of the Gaussian-splat opacity attribute (0..1).
+pub const OPACITY: &str = "opacity";
+/// Name of the Gaussian-splat extent attribute: the standard deviation along
+/// the Gaussian's longest axis, in cloud units.
+pub const SPLAT_SIZE: &str = "size";
 
 /// Values of a per-point attribute.
 #[derive(Debug, Clone, PartialEq)]

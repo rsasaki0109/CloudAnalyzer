@@ -71,6 +71,8 @@ export function colorsFor(entry: Entry): Uint8Array {
     out = classificationColors(cloud.classification);
   } else if ((entry.mode === "normal" || entry.mode === "shade") && cloud.normals) {
     out = normalColors(cloud.normals, entry.mode === "shade");
+  } else if (entry.mode === "opacity" && cloud.opacity) {
+    out = colorize(cloud.opacity, 0, 1, lut("Grey"));
   } else if (entry.mode === "c2c" && entry.c2c) {
     const { lo, hi } = display.range ?? { lo: entry.c2c.stats.min, hi: entry.c2c.stats.max };
     out = colorize(entry.c2c.distances, lo, hi, lut(display.ramp));
@@ -102,6 +104,7 @@ export function availableModes(entry: Entry): Record<ColorMode, boolean> {
     c2c: !!entry.c2c,
     normal: cloud.normals !== null,
     shade: cloud.normals !== null,
+    opacity: cloud.opacity !== null,
   };
 }
 

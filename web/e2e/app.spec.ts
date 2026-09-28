@@ -269,6 +269,67 @@ test("filters: SOR drops outliers, voxel subsampling keeps one point per voxel",
   await expect(page.locator(".cloud-list li")).toHaveCount(3);
 });
 
+/**
+ * A 3D Gaussian Splatting PLY (as INRIA's trainer writes it, SH degree 0):
+ * one Gaussian per point with the given opacity logit and log scale.
+ */
+function splatPly(splats: { xyz: [number, number, number]; opacity: number; scale: number }[]): Buffer {
+  const names = "x y z nx ny nz f_dc_0 f_dc_1 f_dc_2 opacity scale_0 scale_1 scale_2 rot_0 rot_1 rot_2 rot_3".split(" ");
+  const header =
+    "ply\nformat binary_little_endian 1.0\n" +
+    `element vertex ${splats.length}\n` +
+    names.map((n) => `property float ${n}\n`).join("") +
+    "end_header\n";
+  const body = Buffer.alloc(splats.length * names.length * 4);
+  splats.forEach((s, i) => {
+    const v = [...s.xyz, 0, 0, 0, 1, 0, -1, s.opacity, s.scale, s.scale - 1, s.scale - 2, 1, 0, 0, 0];
+    v.forEach((x, k) => body.writeFloatLE(x, (i * names.length + k) * 4));
+  });
+  return Buffer.concat([Buffer.from(header), body]);
+}
+
+test("Gaussian splats: read as points, cleaned up, compared with C2C", async ({ page }) => {
+  // 100 Gaussians on the grid: 20 nearly transparent, 5 huge floaters.
+  const splats = grid(10).map((xyz, i) => ({
+    xyz,
+    opacity: i % 5 === 0 ? -4 : 3,
+    scale: i % 20 === 1 ? 3 : -4,
+  }));
+  await open(page, [
+    { name: "reference.ply", buffer: ply(grid(10)) },
+    { name: "scene.ply", buffer: splatPly(splats) },
+  ]);
+  await expect(status(page)).toContainText("Loaded scene.ply: 100 points (Gaussian splat centers)");
+  const mode = page.locator(".cloud-list li", { hasText: "scene.ply" }).getByTitle("Color by");
+  await expect(mode).toHaveValue("rgb");
+  await mode.selectOption("opacity");
+
+  await page.locator("#filter-cloud").selectOption({ label: "scene.ply" });
+  await page.locator("#filter-op").selectOption("splat");
+  await page.locator("#filter-opacity").fill("0.1");
+  await page.locator("#filter-size").fill("1");
+  await page.locator("#filter-run").click();
+  await expect(status(page)).toContainText("scene_clean: kept 75 of 100 points (25 removed)");
+  // The cleanup is not offered for an ordinary cloud.
+  await page.locator("#filter-cloud").selectOption({ label: "reference.ply" });
+  await expect(page.locator('#filter-op option[value="splat"]')).toHaveJSProperty("hidden", true);
+  await expect(page.locator("#filter-op")).toHaveValue("voxel");
+
+  // The splat centres are an ordinary cloud: they lie on the reference grid.
+  await page.locator("#c2c-compared").selectOption({ label: "scene_clean" });
+  await page.locator("#c2c-reference").selectOption({ label: "reference.ply" });
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("C2C distance computed for 75 points");
+  await expect(page.locator("#c2c-stats")).toContainText(/Max\s*0(?!\.0*[1-9])/);
+
+  // The headerless .splat format: 32 bytes per Gaussian.
+  const records = Buffer.alloc(64);
+  records.writeFloatLE(5, 32);
+  records.writeUInt32LE(0xff0000ff, 56); // rgba = ff 00 00 ff (red, opaque)
+  await open(page, [{ name: "tiny.splat", buffer: records }]);
+  await expect(status(page)).toContainText("Loaded tiny.splat: 2 points (Gaussian splat centers)");
+});
+
 test("1.2M points: octree and SOR run on the worker pool with exact results", async ({ page }) => {
   // A flat 1100 x 1100 grid plus five far outliers.
   const points: [number, number, number][] = [];

@@ -112,6 +112,10 @@
         Meshes: OBJ, STL and PLY with faces.</li>
       <li>RGB, intensity and classification are read when the file has them, and so are normals
         (<code>nx ny nz</code>) in PLY.</li>
+      <li>Gaussian Splatting output (the PLY of INRIA's trainer or nerfstudio, or a <code>.splat</code> file) opens
+        as one point per Gaussian, at its center. The color comes from the SH DC term; <b>opacity</b> (0–1) and
+        <b>size</b> (the standard deviation along the longest axis) are kept, so you can color by opacity, clean up
+        with the filter below and compare the result with LiDAR or a mesh like any cloud.</li>
       <li><b>Open URL</b> downloads a file from a web server. The server must allow cross-origin requests (CORS).</li>
       <li>COPC files (<code>.copc.laz</code>) are not downloaded whole: the viewer reads every octree level that fits
         <b>Max points per file</b> with range requests, so large public datasets open in seconds. Try
@@ -247,6 +251,8 @@
       <li><b>Random subsampling</b> keeps a given number of points.</li>
       <li><b>Remove outliers (SOR)</b> drops points whose mean distance to their <i>k</i> neighbours is more
         than <i>ratio</i> standard deviations above average.</li>
+      <li><b>Splat cleanup</b> (Gaussian splats only) drops nearly transparent Gaussians and huge "floaters":
+        it keeps those with at least the given opacity and at most the given size.</li>
       <li><b>Extract ground (CSF)</b> drops a simulated cloth onto the upside-down cloud. Points close to the cloth
         are ground. Output is a copy classified ground / other, or only one of the two.</li>
     </ul>

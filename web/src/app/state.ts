@@ -7,7 +7,7 @@ import type { C2cOutput, LoadedCloud, Vec3 } from "../protocol";
 import { Viewer } from "../viewer";
 import { $ } from "./dom";
 
-export type ColorMode = "rgb" | "solid" | "intensity" | "classification" | "c2c" | "normal" | "shade";
+export type ColorMode = "rgb" | "solid" | "intensity" | "classification" | "c2c" | "normal" | "shade" | "opacity";
 
 /** Where a cloud came from: sessions can restore file and URL clouds. */
 export type Origin = { kind: "file" } | { kind: "url"; url: string } | { kind: "derived" };

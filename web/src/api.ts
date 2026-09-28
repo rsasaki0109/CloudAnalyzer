@@ -160,7 +160,7 @@ export async function alignPairs(
 }
 
 /** A filtered copy of a cloud as a new cloud (see `Cloud.filter`). */
-export function filterCloud(id: number, op: "voxel" | "random" | "sor", a: number, b = 0): Promise<LoadedCloud> {
+export function filterCloud(id: number, op: "voxel" | "random" | "sor" | "splat", a: number, b = 0): Promise<LoadedCloud> {
   return call({ kind: "filter", id, op, a, b });
 }
 

@@ -60,7 +60,7 @@ impl PointStream {
             Format::Las => Some(375.min(head.len())),
             Format::Ply => find_line_end(head, b"end_header"),
             Format::Pcd => find_data_line_end(head),
-            Format::Xyz | Format::E57 => None,
+            Format::Xyz | Format::E57 | Format::Splat => None,
         }
     }
 
@@ -71,7 +71,7 @@ impl PointStream {
             Format::Las => super::las::stream(head)?,
             Format::Ply => super::ply::stream(head)?,
             Format::Pcd => super::pcd::stream(head)?,
-            Format::Xyz | Format::E57 => None,
+            Format::Xyz | Format::E57 | Format::Splat => None,
         };
         Ok(opened.map(|(decoder, data_offset, total_points)| {
             let remaining = total_points * decoder.record_len() as u64;

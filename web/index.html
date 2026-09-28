@@ -271,6 +271,33 @@
         <p class="hint small">Shown with the Normals and Hillshade color modes; saved as nx, ny, nz in PLY.</p>
       </section>
 
+      <section id="shapes-panel">
+        <h2>Shapes &amp; clusters</h2>
+        <label>Cloud <select id="shapes-cloud"></select></label>
+        <label>Find
+          <select id="shapes-method">
+            <option value="plane" selected>Planes (RANSAC)</option>
+            <option value="cylinder">Cylinders (RANSAC)</option>
+            <option value="sphere">Spheres (RANSAC)</option>
+            <option value="cluster">Clusters (connected components)</option>
+          </select>
+        </label>
+        <div class="range">
+          <label id="shapes-distance-label" title="Shapes: largest distance from a point to its shape. Clusters: points this close are linked">Max. distance <input id="shapes-distance" type="number" min="0" step="any" /></label>
+          <label title="Fewest points of a shape or cluster; smaller clusters are noise">Min. points <input id="shapes-min" type="number" min="1" step="1" /></label>
+          <label id="shapes-max-row" title="Stop after this many shapes">Max. shapes <input id="shapes-max" type="number" min="1" max="255" value="10" /></label>
+        </div>
+        <label>Output
+          <select id="shapes-output">
+            <option value="one" selected>One cloud colored by segment</option>
+            <option value="split">A cloud per segment</option>
+          </select>
+        </label>
+        <button id="shapes-run" class="primary" disabled>Find</button>
+        <table class="stats segment-table" id="shapes-result" hidden><tbody id="shapes-stats"></tbody></table>
+        <p class="hint small">For a scene, find planes first, then cylinders in the rest. The segment is kept as the source, so Merge / split can split it later.</p>
+      </section>
+
       <section id="clip-panel">
         <h2>Clipping box</h2>
         <label class="check"><input id="clip-enabled" type="checkbox" /> Show only what is inside the box</label>

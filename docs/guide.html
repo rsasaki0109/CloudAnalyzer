@@ -89,6 +89,7 @@
       <a href="#raster">Rasterize (DEM / DSM)</a>
       <a href="#normals">Normals</a>
       <a href="#merge">Merge and split</a>
+      <a href="#shapes">Shapes and clusters</a>
       <a href="#clip">Clipping and cropping</a>
       <a href="#segment">Lasso segmentation and undo</a>
       <a href="#profile">Cross-section profiles</a>
@@ -226,6 +227,16 @@
         their display color, and a <code>source</code> attribute records each point's cloud.</li>
       <li><b>Split</b> makes one cloud per classification code, or turns a merged cloud back into its files.</li>
     </ul>
+
+    <h2 id="shapes">Shapes and clusters</h2>
+    <p>
+      <b>Shapes &amp; clusters</b> finds planes, cylinders or spheres with RANSAC (points within the distance of
+      a shape, at least the minimum number of them), or groups points into clusters: points closer than the
+      link distance belong together, and clusters smaller than the minimum are noise. The result is one cloud
+      colored by segment, or a cloud per segment; the table lists each shape's parameters and fit (RMS).
+      Normals are estimated first if the cloud has none. In a building, find the planes first, then look for
+      cylinders in what is left.
+    </p>
 
     <h2 id="clip">Clipping and cropping</h2>
     <p>

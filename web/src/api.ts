@@ -11,6 +11,7 @@ import type {
   RasterGrid,
   RasterOutput,
   Request,
+  SegmentOutput,
   UiMessage,
   Vec3,
   VolumeOutput,
@@ -172,4 +173,9 @@ export function splitCloud(id: number, by: "classification" | "source"): Promise
 /** Estimate normals (stored on the cloud); resolves to them, interleaved in octree order. */
 export function estimateNormals(id: number, k: number, orientation: "up" | "outward"): Promise<Float32Array> {
   return call({ kind: "normals", id, k, orientation });
+}
+
+/** RANSAC shapes or Euclidean clusters of a cloud, as new clouds with a table. */
+export function findShapes(params: Omit<Extract<Request, { kind: "shapes" }>, "kind">): Promise<SegmentOutput> {
+  return call({ kind: "shapes", ...params });
 }

@@ -142,6 +142,9 @@ button[aria-pressed="true"] { background: var(--accent); border-color: var(--acc
 .stats { width: 100%; border-collapse: collapse; margin: 8px 0; font-variant-numeric: tabular-nums; }
 .stats th { text-align: left; font-weight: normal; color: var(--muted); padding: 2px 0; }
 .stats td { text-align: right; padding: 2px 0; }
+.segment-table th { white-space: nowrap; padding-right: 8px; vertical-align: top; }
+.segment-table td { font-size: 11px; overflow-wrap: anywhere; }
+.segment-table .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
 .options { margin-bottom: 8px; color: var(--muted); }
 .options summary { cursor: pointer; margin-bottom: 6px; }
 label.check { display: flex; align-items: center; gap: 6px; }

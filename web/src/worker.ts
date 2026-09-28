@@ -3,6 +3,7 @@
 // forth.
 
 import init, {
+  alignPairs,
   announcedPoints,
   Cloud,
   CloudMerger,
@@ -1025,6 +1026,10 @@ async function handle(
         transfer.push(...described.transfer);
       }
       return { value: out, transfer };
+    }
+    case "align-pairs": {
+      const values = alignPairs(new Float64Array(req.moving), new Float64Array(req.reference));
+      return { value: values, transfer: [values.buffer] };
     }
     case "export": {
       const bytes = getCloud(req.id).export(req.format, req.scalar?.name, req.scalar?.values);

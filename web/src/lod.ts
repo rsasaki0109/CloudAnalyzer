@@ -43,6 +43,8 @@ export function parseNodes(flat: Float64Array, grid: number, shift: [number, num
 export interface LodSource {
   id: number;
   nodes: LodNode[];
+  /** Where the cloud is drawn when it is being moved (render coordinates), else absent. */
+  matrix?: THREE.Matrix4;
 }
 
 export interface Selection {
@@ -69,16 +71,21 @@ export function selectNodes(
   );
   // Nodes outside the clipping box are never drawn, so skip them and spend
   // the budget on what remains visible.
-  const wanted = (box: THREE.Box3) => frustum.intersectsBox(box) && (!clip || clip.intersectsBox(box));
+  const placed = (source: LodSource, node: LodNode) =>
+    source.matrix ? node.box.clone().applyMatrix4(source.matrix) : node.box;
+  const wanted = (source: LodSource, node: LodNode) => {
+    const box = placed(source, node);
+    return frustum.intersectsBox(box) && (!clip || clip.intersectsBox(box));
+  };
   const pixelsPerUnit = viewportHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
   const eye = camera.position;
-  const spacingPx = (node: LodNode) =>
-    (node.spacing * pixelsPerUnit) / Math.max(node.box.distanceToPoint(eye), camera.near);
+  const spacingPx = (source: LodSource, node: LodNode) =>
+    (node.spacing * pixelsPerUnit) / Math.max(placed(source, node).distanceToPoint(eye), camera.near);
 
   const heap = new MaxHeap<{ source: LodSource; node: number }>();
   for (const source of sources) {
     const root = source.nodes[0];
-    if (root && wanted(root.box)) {
+    if (root && wanted(source, root)) {
       // Roots always go first so every visible cloud shows at least a coarse view.
       heap.push({ source, node: 0 }, Number.POSITIVE_INFINITY);
     }
@@ -93,10 +100,10 @@ export function selectNodes(
     let list = selected.get(source.id);
     if (!list) selected.set(source.id, (list = []));
     list.push(node);
-    if (spacingPx(n) < minSpacingPx) continue;
+    if (spacingPx(source, n) < minSpacingPx) continue;
     for (const child of n.children) {
       const c = source.nodes[child];
-      if (wanted(c.box)) heap.push({ source, node: child }, spacingPx(c));
+      if (wanted(source, c)) heap.push({ source, node: child }, spacingPx(source, c));
     }
   }
   return { nodes: selected, points };

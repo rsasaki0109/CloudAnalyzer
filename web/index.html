@@ -330,6 +330,32 @@
         </div>
       </section>
 
+      <section id="align-panel">
+        <h2>Manual alignment</h2>
+        <label>Moved <select id="align-moving"></select></label>
+        <label>Reference <select id="align-reference"></select></label>
+        <p id="align-hint" class="hint"></p>
+        <div class="button-row">
+          <button id="align-pick" aria-pressed="false" title="Click a point on the moved cloud, then the same spot on the reference; repeat (P)">Pick pairs</button>
+          <button id="align-run" class="primary" disabled title="Move the cloud so the pairs meet (least squares)">Align</button>
+          <button id="align-clear" disabled>Clear</button>
+        </div>
+        <ol id="align-pairs" class="measure-list"></ol>
+        <details class="options">
+          <summary>Move by hand</summary>
+          <div class="button-row">
+            <button id="gizmo-translate" aria-pressed="false" title="Drag the arrows to move the cloud">Move</button>
+            <button id="gizmo-rotate" aria-pressed="false" title="Drag the rings to rotate the cloud about its centre">Rotate</button>
+            <button id="gizmo-apply" disabled>Apply</button>
+            <button id="gizmo-cancel" disabled>Cancel</button>
+          </div>
+          <label>Transform (row-major 4×4)
+            <textarea id="align-matrix" rows="4" spellcheck="false" placeholder="1 0 0 0&#10;0 1 0 0&#10;0 0 1 0&#10;0 0 0 1"></textarea>
+          </label>
+          <button id="align-apply-matrix" title="Apply this matrix to the moved cloud (original coordinates)">Apply matrix</button>
+        </details>
+      </section>
+
       <section id="icp-panel">
         <h2>Registration (ICP)</h2>
         <label>Aligned <select id="icp-moving"></select></label>

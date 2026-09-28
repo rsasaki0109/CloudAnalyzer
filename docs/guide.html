@@ -84,6 +84,7 @@
       <a href="#distance">Distances (C2C, C2M)</a>
       <a href="#m3c2">Change detection (M3C2)</a>
       <a href="#volume">Cut / fill volume</a>
+      <a href="#manual-align">Manual alignment</a>
       <a href="#icp">Alignment (ICP)</a>
       <a href="#trajectory">Trajectories (ATE / RPE)</a>
       <a href="#filters">Filters and ground extraction</a>
@@ -185,6 +186,20 @@
       of each cell shown as a cloud.
     </p>
     <a class="try" href="./app/?demo=volume">Try: a stockpile</a>
+
+    <h2 id="manual-align">Manual alignment</h2>
+    <p>
+      <b>Pick pairs</b> (<kbd>P</kbd>): click a point on the moved cloud, then the same spot on the reference, and
+      repeat for at least three pairs spread over the scene (hide the other cloud if it is in the way;
+      <kbd>Backspace</kbd> takes the last pick back). <b>Align</b> moves the cloud so the pairs meet in the
+      least-squares sense and lists the residual of each pair. It is a good start for ICP when the clouds are far
+      apart.
+    </p>
+    <p>
+      Under <i>Move by hand</i>, <b>Move</b> and <b>Rotate</b> show a gizmo on the moved cloud (rotating about its
+      centre); drag it, then <b>Apply</b>. <b>Apply matrix</b> applies a typed row-major 4×4 rigid transform, for
+      example one from CloudCompare. Every alignment can be undone.
+    </p>
 
     <h2 id="icp">Alignment (ICP)</h2>
     <p>

@@ -85,6 +85,13 @@ export function invertRigid(m: number[]): number[] {
   ];
 }
 
+/** Apply a rigid transform (row-major 4x4, original coordinates) to a cloud as an undoable step. */
+export async function moveCloud(entry: Entry, matrix: number[], label: string): Promise<void> {
+  await move(entry, matrix);
+  entry.transforms.push(matrix);
+  record({ label, moved: { entry, matrix } });
+}
+
 export async function undo(): Promise<void> {
   const step = done.at(-1);
   if (!step || busy) return;

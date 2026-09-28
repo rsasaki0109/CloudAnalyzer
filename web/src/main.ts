@@ -4,6 +4,7 @@ import "./app/layout";
 import "./app/display";
 import "./app/picking";
 import "./app/distance";
+import "./app/align";
 import "./app/icp";
 import "./app/classes";
 import "./app/volume";

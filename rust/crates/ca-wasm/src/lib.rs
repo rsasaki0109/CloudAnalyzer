@@ -2016,6 +2016,20 @@ impl Segmentation {
 /// after it has been busy, and never in the middle of a call; one long call
 /// on a large cloud would run unoptimized from start to end. Calling this
 /// when the page is idle gets the optimized code compiled beforehand.
+/// The rigid motion taking picked `moving` points onto their `reference`
+/// points (flat xyz triples, pair i in both): the row-major 4x4 matrix, the
+/// RMS, then each pair's residual distance.
+#[wasm_bindgen(js_name = alignPairs)]
+pub fn align_pairs(moving: &[f64], reference: &[f64]) -> Result<Vec<f64>, JsError> {
+    let triples = |v: &[f64]| -> Vec<[f64; 3]> { v.as_chunks::<3>().0.to_vec() };
+    let out = ca_core::icp::align_pairs(&triples(moving), &triples(reference))
+        .ok_or_else(|| JsError::new("need at least three pairs, not all on one line"))?;
+    let mut values = out.transform.to_matrix().to_vec();
+    values.push(out.rms);
+    values.extend(out.residuals);
+    Ok(values)
+}
+
 #[wasm_bindgen(js_name = warmUp)]
 pub fn warm_up() {
     let n = 60_000;

@@ -217,6 +217,41 @@ test("mesh: signed C2M against an OBJ plane", async ({ page }) => {
   await expect(page.locator("#c2c-stats")).toContainText(/Mean\s*0\.25(?!\d)/);
 });
 
+test("mesh: a grid meshed by 2.5D Delaunay, saved as OBJ, and used for C2M", async ({ page }) => {
+  await open(page, [
+    { name: "wave.ply", buffer: ply(grid(30)) },
+    { name: "lifted.ply", buffer: ply(grid(30, 0.5)) },
+  ]);
+  await expect(status(page)).toContainText("Loaded lifted.ply");
+  await page.locator("#mesh-cloud").selectOption({ label: "wave.ply" });
+  await page.locator("#mesh-run").click();
+  // A 30 x 30 grid has 29 x 29 cells of two triangles each.
+  await expect(status(page)).toContainText(/wave_mesh: 1,682 triangles from 900 points, 0 longer than 0\.4\d* removed/);
+  const mesh = page.locator(".cloud-list li").last();
+  await expect(mesh.locator(".meta")).toHaveText("1,682 triangles · mesh");
+
+  const download = page.waitForEvent("download");
+  await mesh.locator("button.icon").click();
+  await mesh.locator(".save-formats").getByRole("button", { name: "OBJ" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("wave_mesh.obj");
+  const lines = (await bytesOf(file)).toString("utf8").split("\n");
+  expect(lines.filter((l) => l.startsWith("v ")).length).toBe(900);
+  expect(lines.filter((l) => l.startsWith("f ")).length).toBe(1682);
+
+  // Every lifted point is 0.5 above a vertex; the wavy surface slopes a
+  // little, so the distance along its normal is a little less. Normals face up.
+  await page.locator("#c2c-compared").selectOption({ label: "lifted.ply" });
+  await page.locator("#c2c-reference").selectOption({ label: "wave_mesh (mesh)" });
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("C2M distance computed for 900 points");
+  const stats = (await page.locator("#c2c-stats").textContent()) ?? "";
+  const stat = (name: string) => Number(stats.match(new RegExp(`${name}\\s*(-?[\\d.]+)`))?.[1]);
+  expect(stat("Min")).toBeGreaterThan(0.45);
+  expect(stat("Max")).toBeLessThanOrEqual(0.5 + 1e-6);
+  expect(stat("Mean")).toBeCloseTo(0.49, 1);
+});
+
 test("filters: SOR drops outliers, voxel subsampling keeps one point per voxel", async ({ page }) => {
   const noisy = [...grid(60), [50, 50, 20], [-30, 10, 5], [10, -40, 8]] as [number, number, number][];
   await open(page, [{ name: "noisy.ply", buffer: ply(noisy) }]);

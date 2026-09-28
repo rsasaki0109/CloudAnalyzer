@@ -1,8 +1,8 @@
-/** The cloud list: adding, replacing, removing and saving clouds. */
+/** The cloud list: adding, replacing, removing and saving clouds and meshes. */
 
-import { exportCloud, removeCloud } from "../api";
+import { exportCloud, exportMesh, removeCloud } from "../api";
 import { parseNodes } from "../lod";
-import type { ExportFormat, LoadedCloud, Vec3 } from "../protocol";
+import type { ExportFormat, LoadedCloud, MeshFormat, Vec3 } from "../protocol";
 import { colorsFor, defaultMode, distanceLabel, refreshColors } from "./colors";
 import { $, download, errorText, removeButton, setStatus } from "./dom";
 import { narrow, setPanelsOpen } from "./layout";
@@ -103,6 +103,25 @@ const SAVE_FORMATS: [ExportFormat, string][] = [
   ["e57", "E57: XYZ, intensity, colors"],
 ];
 
+/** Offered by a mesh's ⤓ button. */
+const MESH_FORMATS: [MeshFormat, string][] = [
+  ["ply", "Binary PLY"],
+  ["obj", "Wavefront OBJ (text)"],
+];
+
+/** Download a mesh. */
+async function saveMesh(entry: Entry, format: MeshFormat): Promise<void> {
+  const filename = `${entry.cloud.name.replace(/\.[^.]+$/, "")}.${format}`;
+  setStatus(`Saving ${filename}…`);
+  try {
+    const bytes = await exportMesh(entry.cloud.id, format);
+    download(bytes, filename);
+    setStatus(`Saved ${filename} (${(bytes.byteLength / 1e6).toFixed(1)} MB)`);
+  } catch (err) {
+    setStatus(`Save failed: ${errorText(err)}`, true);
+  }
+}
+
 /** Download a cloud, including its distances if computed (not in E57). */
 export async function saveCloud(entry: Entry, format: ExportFormat): Promise<void> {
   const { cloud } = entry;
@@ -168,30 +187,30 @@ export function renderList(): void {
     const formats = document.createElement("span");
     formats.className = "save-formats";
     formats.hidden = true;
-    if (!isMesh(entry)) {
-      const save = document.createElement("button");
-      save.className = "icon";
-      save.textContent = "⤓";
-      save.title = entry.c2c ? "Save with distances…" : "Save as…";
-      save.ariaExpanded = "false";
-      save.onclick = () => {
-        formats.hidden = !formats.hidden;
-        save.ariaExpanded = String(!formats.hidden);
+    const save = document.createElement("button");
+    save.className = "icon";
+    save.textContent = "⤓";
+    save.title = entry.c2c ? "Save with distances…" : "Save as…";
+    save.ariaExpanded = "false";
+    save.onclick = () => {
+      formats.hidden = !formats.hidden;
+      save.ariaExpanded = String(!formats.hidden);
+    };
+    const choices: [string, string, () => Promise<void>][] = isMesh(entry)
+      ? MESH_FORMATS.map(([format, title]) => [format, title, () => saveMesh(entry, format)])
+      : SAVE_FORMATS.map(([format, title]) => [format, title, () => saveCloud(entry, format)]);
+    for (const [format, title, run] of choices) {
+      const button = document.createElement("button");
+      button.textContent = format.toUpperCase();
+      button.title = title;
+      button.onclick = () => {
+        formats.hidden = true;
+        save.ariaExpanded = "false";
+        void run();
       };
-      for (const [format, title] of SAVE_FORMATS) {
-        const button = document.createElement("button");
-        button.textContent = format.toUpperCase();
-        button.title = title;
-        button.onclick = () => {
-          formats.hidden = true;
-          save.ariaExpanded = "false";
-          void saveCloud(entry, format);
-        };
-        formats.append(button);
-      }
-      actions.append(save);
+      formats.append(button);
     }
-    actions.append(remove);
+    actions.append(save, remove);
 
     const mode = document.createElement("select");
     mode.title = "Color by";
@@ -217,7 +236,7 @@ export function renderList(): void {
     };
 
     // Meshes are drawn in their solid color only.
-    if (isMesh(entry)) li.append(visible, swatch, name, actions);
+    if (isMesh(entry)) li.append(visible, swatch, name, actions, formats);
     else li.append(visible, swatch, name, actions, mode, formats);
     list.append(li);
   }

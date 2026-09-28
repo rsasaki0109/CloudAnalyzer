@@ -1,7 +1,9 @@
-//! Point cloud writers (binary PLY and CSV) with optional scalar fields.
+//! Point cloud writers (binary PLY and CSV) with optional scalar fields, and
+//! mesh writers (binary PLY and OBJ).
 
 use std::fmt::Write as _;
 
+use crate::mesh::TriangleMesh;
 use crate::{AttributeValues, PointCloud};
 
 /// A named per-point value, e.g. a C2C distance.
@@ -115,6 +117,59 @@ pub fn write_csv(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<Vec<u8>,
     Ok(out.into_bytes())
 }
 
+/// Binary little-endian PLY mesh: `double x y z` vertices and
+/// `vertex_indices` faces (`uchar` count, `int` indices), as CloudCompare
+/// and MeshLab read them.
+pub fn write_mesh_ply(mesh: &TriangleMesh) -> Vec<u8> {
+    let mut header = String::from(
+        "ply
+format binary_little_endian 1.0
+comment CloudAnalyzer Web
+",
+    );
+    let _ = writeln!(header, "element vertex {}", mesh.vertices.len());
+    header.push_str(
+        "property double x
+property double y
+property double z
+",
+    );
+    let _ = writeln!(header, "element face {}", mesh.triangles.len());
+    header.push_str(
+        "property list uchar int vertex_indices
+end_header
+",
+    );
+    let mut out =
+        Vec::with_capacity(header.len() + 24 * mesh.vertices.len() + 13 * mesh.triangles.len());
+    out.extend_from_slice(header.as_bytes());
+    for v in mesh.vertices.iter().flatten() {
+        out.extend_from_slice(&v.to_le_bytes());
+    }
+    for t in &mesh.triangles {
+        out.push(3);
+        for &v in t {
+            out.extend_from_slice(&(v as i32).to_le_bytes());
+        }
+    }
+    out
+}
+
+/// Wavefront OBJ: `v` lines with coordinates that round-trip, then 1-based `f` lines.
+pub fn write_obj(mesh: &TriangleMesh) -> Vec<u8> {
+    let mut out = String::from(
+        "# CloudAnalyzer Web
+",
+    );
+    for [x, y, z] in &mesh.vertices {
+        let _ = writeln!(out, "v {x} {y} {z}");
+    }
+    for [a, b, c] in &mesh.triangles {
+        let _ = writeln!(out, "f {} {} {}", a + 1, b + 1, c + 1);
+    }
+    out.into_bytes()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -205,5 +260,22 @@ mod tests {
             }],
         );
         assert!(err.is_err());
+    }
+
+    #[test]
+    fn meshes_roundtrip_through_ply_and_obj() {
+        let mesh = TriangleMesh {
+            vertices: vec![
+                [368_000.125, 3_955_000.5, 40.0],
+                [368_001.0, 3_955_000.5, 40.5],
+                [368_000.125, 3_955_001.75, 41.0],
+                [368_001.0, 3_955_001.75, 39.0],
+            ],
+            triangles: vec![[0, 1, 2], [1, 3, 2]],
+        };
+        let ply = write_mesh_ply(&mesh);
+        assert_eq!(crate::read_mesh("m.ply", &ply).unwrap(), Some(mesh.clone()));
+        let obj = write_obj(&mesh);
+        assert_eq!(crate::read_mesh("m.obj", &obj).unwrap(), Some(mesh));
     }
 }

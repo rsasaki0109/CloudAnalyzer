@@ -198,6 +198,15 @@
         </div>
       </section>
 
+      <section id="mesh-panel">
+        <h2>Mesh (Delaunay 2.5D)</h2>
+        <label>Cloud <select id="mesh-cloud"></select></label>
+        <label title="Triangles with a longer horizontal edge are dropped, so gaps and concave outlines are not bridged. Empty: 4 × the median edge; 0: keep all">Max edge length
+          <input id="mesh-max-edge" type="number" min="0" step="any" placeholder="auto" />
+        </label>
+        <button id="mesh-run" class="primary" disabled title="Triangulate the points seen from above, keeping their heights">Mesh</button>
+      </section>
+
       <section id="filter-panel">
         <h2>Filters</h2>
         <label>Cloud <select id="filter-cloud"></select></label>

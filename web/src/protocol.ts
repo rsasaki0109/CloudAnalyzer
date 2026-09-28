@@ -126,6 +126,19 @@ export interface M3c2Output {
   millis: number;
 }
 
+export interface MeshOutput {
+  mesh: LoadedCloud;
+  /** Points triangulated (fewer than the cloud's when it was thinned). */
+  points: number;
+  /** Voxel size the cloud was thinned with, 0 when it was not. */
+  voxel: number;
+  /** Longest horizontal edge kept (Infinity when all were kept). */
+  maxEdge: number;
+  /** Triangles dropped for a longer edge. */
+  removed: number;
+  millis: number;
+}
+
 export interface ProfileOutput {
   /** Distance of each point along the line. */
   along: Float64Array;
@@ -137,6 +150,9 @@ export interface ProfileOutput {
 
 /** File formats a cloud can be saved in. */
 export type ExportFormat = "ply" | "las" | "laz" | "csv" | "e57";
+
+/** File formats a mesh can be saved in. */
+export type MeshFormat = "ply" | "obj";
 
 /** What `segment` looks for. */
 export type SegmentMethod = "plane" | "sphere" | "cylinder" | "cluster";
@@ -348,9 +364,17 @@ export type Request =
       reference: number[];
     }
   | {
+      /** 2.5D Delaunay mesh of a cloud's XY positions. */
+      kind: "mesh";
+      id: number;
+      /** Drop triangles with a longer horizontal edge; null: automatic, 0: keep all. */
+      maxEdge: number | null;
+    }
+  | {
       kind: "export";
       id: number;
-      format: ExportFormat;
+      /** A cloud's format, or a mesh's. */
+      format: ExportFormat | MeshFormat;
       /** Optional scalar field, one value per point in the cloud's order. */
       scalar?: { name: string; values: Float32Array };
     };

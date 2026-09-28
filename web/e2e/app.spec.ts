@@ -1,5 +1,6 @@
 import { type Download, expect, type Page, test } from "@playwright/test";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { poseGraphDemoTruth } from "../src/app/posegraph-demo";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -1776,4 +1777,25 @@ test("pose graph: a node moved with the gizmo, fixed, optimised and undone", asy
   const restored = await saved();
   expect(shift(restored[5], before[5])).toBeLessThan(1e-9);
   await expect(page.locator("#pg-fix")).toHaveText("Fix A");
+});
+
+test("pose graph demo: a drifting drive round a block, closed, levelled and compared with the truth", async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.goto("/?demo=posegraph");
+  await expect(status(page)).toContainText(/poses_map is colored by how far each point moved/, { timeout: 90_000 });
+  await expect(page.locator("#pg-stats")).toContainText("141 (141 with scans)");
+  await expect(page.locator("#pg-stats")).toContainText("Gravity");
+  await expect(page.locator("#pg-loop-list li").first()).toBeVisible();
+  const download = page.waitForEvent("download");
+  await page.locator("#pg-save-kitti").click();
+  const got = (await bytesOf(await download))
+    .toString()
+    .trim()
+    .split("\n")
+    .map((l) => l.split(" ").map(Number));
+  const truth = poseGraphDemoTruth().map((l) => l.split(" ").map(Number));
+  const errors = got.map((m, k) => Math.hypot(m[3] - truth[k][3], m[7] - truth[k][7], m[11] - truth[k][11]));
+  const rmse = Math.sqrt(errors.reduce((sum, e) => sum + e * e, 0) / errors.length);
+  // The drift left the end 12.8 m off; closed and levelled, the drive is within a few metres.
+  expect(rmse).toBeLessThan(2.5);
 });

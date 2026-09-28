@@ -1484,10 +1484,15 @@ fn sub3(a: &[f64; 3], b: &[f64; 3]) -> [f64; 3] {
     [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
 }
 
-/// Fraction of `to_scan`'s points (up to a few thousand, evenly spread)
-/// that land within `max_distance` of a `from_scan` point once moved by
-/// `measurement` (the pose of `to` in the frame of `from`). A loop whose
-/// registration converged into the wrong place overlaps little.
+/// Fraction of `to_scan`'s structure (up to a few thousand points, evenly
+/// spread) that lands within `max_distance` of a `from_scan` point once
+/// moved by `measurement` (the pose of `to` in the frame of `from`). A loop
+/// whose registration converged into the wrong place overlaps little.
+///
+/// Points of the floor under `to_scan` (a plane under the sensor, up +z)
+/// do not count: open ground overlaps wherever two scans are put on it, so
+/// with it a registration a street length off could pass. Without a floor,
+/// or with too little else, every point counts.
 pub fn overlap_fitness(
     from_scan: &PointCloud,
     to_scan: &PointCloud,
@@ -1495,13 +1500,23 @@ pub fn overlap_fitness(
     max_distance: f64,
 ) -> f64 {
     const SAMPLE: usize = 5000;
+    const FLOOR_BAND: f64 = 0.3;
+    const MIN_STRUCTURE: usize = 100;
     let Some(tree) = KdTree::new(&from_scan.positions) else {
         return 0.0;
     };
-    let step = to_scan.len().div_ceil(SAMPLE).max(1);
+    let floor = detect_floor(to_scan, [0.0, 0.0, 1.0], 20f64.to_radians(), 0.15, 100);
+    let off_floor = |p: &&[f64; 3]| {
+        floor.is_none_or(|f| (f[0] * p[0] + f[1] * p[1] + f[2] * p[2] + f[3]).abs() > FLOOR_BAND)
+    };
+    let mut points: Vec<&[f64; 3]> = to_scan.positions.iter().filter(off_floor).collect();
+    if points.len() < MIN_STRUCTURE {
+        points = to_scan.positions.iter().collect();
+    }
+    let step = points.len().div_ceil(SAMPLE).max(1);
     let mut guess = None;
     let (mut inside, mut total) = (0usize, 0usize);
-    for p in to_scan.positions.iter().step_by(step) {
+    for p in points.into_iter().step_by(step) {
         let hit = tree.nearest(&measurement.apply(p), guess);
         guess = Some(hit);
         total += 1;

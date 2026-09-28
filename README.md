@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=c2c">
-    <img src="docs/images/web/demo.gif" alt="CloudAnalyzer in the browser: C2C distance, M3C2, cut/fill volume and ground extraction" width="720">
+    <img src="docs/images/web/demo.gif" alt="CloudAnalyzer in the browser: C2C distance, M3C2, cut/fill volume, ground extraction and SLAM loop closure" width="720">
   </a>
 </p>
 
@@ -50,6 +50,12 @@
     <td><img src="docs/images/web/align.jpg" alt="Manual alignment gizmo"><br><b>Alignment</b>: point pairs, a gizmo, ICP</td>
   </tr>
 </table>
+
+<p align="center">
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph"><img src="docs/images/web/posegraph.jpg" alt="SLAM pose graph: loop closure, IMU gravity and each point's correction" width="640"></a><br>
+  <b>SLAM pose graph</b> (like interactive_slam): close loops with ICP by hand or automatically, tie keyframes to IMU gravity,
+  and see how far the correction moved every point of the map
+</p>
 
 <p align="center">
   <img src="docs/images/web/report.jpg" alt="QA report with pass / fail gates" width="640"><br>

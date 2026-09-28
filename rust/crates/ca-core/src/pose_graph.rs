@@ -1275,6 +1275,11 @@ pub fn register_with_yaw_search(
     const COARSE_ITERATIONS: usize = 15;
     const REFINED: usize = 2;
     let steps = yaw_steps.max(1);
+    // The same scan is scored at every start: find its floor once.
+    let floor = scan_floor(to_scan);
+    let fitness = |measurement: &Rigid| {
+        overlap_fitness_above(from_scan, to_scan, measurement, inlier_distance, floor)
+    };
     let coarse = IcpParams {
         sample: params.sample.min(COARSE_SAMPLE),
         max_iterations: params.max_iterations.min(COARSE_ITERATIONS),
@@ -1288,10 +1293,7 @@ pub fn register_with_yaw_search(
                 translation: [0.0; 3],
             });
             let (measurement, _) = register_loop(from_scan, to_scan, &start, coarse)?;
-            Some((
-                measurement,
-                overlap_fitness(from_scan, to_scan, &measurement, inlier_distance),
-            ))
+            Some((measurement, fitness(&measurement)))
         })
         .collect();
     starts.sort_by(|a, b| b.1.total_cmp(&a.1));
@@ -1300,8 +1302,7 @@ pub fn register_with_yaw_search(
         .take(REFINED)
         .filter_map(|(start, _)| {
             let (measurement, result) = register_loop(from_scan, to_scan, &start, params)?;
-            let fitness = overlap_fitness(from_scan, to_scan, &measurement, inlier_distance);
-            Some((measurement, fitness, result))
+            Some((measurement, fitness(&measurement), result))
         })
         .max_by(|a, b| a.1.total_cmp(&b.1))
 }
@@ -1499,13 +1500,35 @@ pub fn overlap_fitness(
     measurement: &Rigid,
     max_distance: f64,
 ) -> f64 {
+    overlap_fitness_above(
+        from_scan,
+        to_scan,
+        measurement,
+        max_distance,
+        scan_floor(to_scan),
+    )
+}
+
+/// The floor [`overlap_fitness`] leaves out of a scan, if it has one.
+pub fn scan_floor(scan: &PointCloud) -> Option<[f64; 4]> {
+    detect_floor(scan, [0.0, 0.0, 1.0], 20f64.to_radians(), 0.15, 100)
+}
+
+/// [`overlap_fitness`] with `to_scan`'s floor already found (see
+/// [`scan_floor`]), for scoring the same scan many times.
+pub fn overlap_fitness_above(
+    from_scan: &PointCloud,
+    to_scan: &PointCloud,
+    measurement: &Rigid,
+    max_distance: f64,
+    floor: Option<[f64; 4]>,
+) -> f64 {
     const SAMPLE: usize = 5000;
     const FLOOR_BAND: f64 = 0.3;
     const MIN_STRUCTURE: usize = 100;
     let Some(tree) = KdTree::new(&from_scan.positions) else {
         return 0.0;
     };
-    let floor = detect_floor(to_scan, [0.0, 0.0, 1.0], 20f64.to_radians(), 0.15, 100);
     let off_floor = |p: &&[f64; 3]| {
         floor.is_none_or(|f| (f[0] * p[0] + f[1] * p[1] + f[2] * p[2] + f[3]).abs() > FLOOR_BAND)
     };

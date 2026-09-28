@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "media": "playwright test --config playwright.media.config.ts && node scripts/readme-gif.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"

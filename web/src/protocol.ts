@@ -282,6 +282,8 @@ export interface PoseGraphState {
   /** Plane landmarks (e.g. the floor), and node-to-plane edges. */
   planes: number;
   planeEdges: number;
+  /** Nodes tied to gravity (an IMU's up direction). */
+  gravityEdges: number;
 }
 
 /** A floor tied to the keyframes that see it (see `pg-floor`). */
@@ -462,6 +464,16 @@ export type Request =
       loopKernel: number;
     }
   | { kind: "pg-remove-plane"; index: number }
+  | {
+      /** Tie nodes to the up direction each measured (in its frame, e.g. from an IMU), then optimise. */
+      kind: "pg-gravity";
+      nodes: number[];
+      /** Three per node. */
+      ups: Float64Array;
+      sigmaDeg: number;
+      loopKernel: number;
+    }
+  | { kind: "pg-clear-gravity" }
   | {
       /** Put a node at `pose` (row-major 4x4); with `carry`, the nodes after it move along. */
       kind: "pg-set-node-pose";

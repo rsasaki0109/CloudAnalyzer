@@ -86,12 +86,108 @@ pub struct PlaneEdge {
     pub information: [[f64; 3]; 3],
 }
 
+/// A keyframe's measured up direction (a unit vector in its frame), e.g.
+/// from an IMU's roll and pitch, with a 2x2 information on its tilt.
+#[derive(Debug, Clone, PartialEq)]
+pub struct GravityEdge {
+    pub node: usize,
+    pub up: [f64; 3],
+    pub information: [[f64; 2]; 2],
+}
+
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct PoseGraph {
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,
     pub planes: Vec<Plane>,
     pub plane_edges: Vec<PlaneEdge>,
+    /// Up in world coordinates (a unit vector), for the gravity edges.
+    pub gravity: [f64; 3],
+    pub gravity_edges: Vec<GravityEdge>,
+}
+
+/// Information for an up direction measured with standard deviation
+/// `sigma` (radians, per tilt axis).
+pub fn gravity_information(sigma: f64) -> [[f64; 2]; 2] {
+    let a = 1.0 / (sigma * sigma);
+    [[a, 0.0], [0.0, a]]
+}
+
+/// Residual of a gravity edge, padded to six entries: the predicted up
+/// direction (world up seen from `x`) along the measured one's tangent basis.
+fn gravity_residual(x: &Rigid, world_up: &[f64; 3], measured: &[f64; 3]) -> Vec6 {
+    let r = &x.rotation;
+    let predicted: [f64; 3] = std::array::from_fn(|i| (0..3).map(|k| r[k][i] * world_up[k]).sum());
+    let (u, v) = tangent_basis(measured);
+    [
+        dot3(&u, &predicted),
+        dot3(&v, &predicted),
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    ]
+}
+
+fn gravity_weight(information: &[[f64; 2]; 2]) -> Mat6 {
+    std::array::from_fn(|i| {
+        std::array::from_fn(|j| {
+            if i < 2 && j < 2 {
+                information[i][j]
+            } else {
+                0.0
+            }
+        })
+    })
+}
+
+fn gravity_jacobian(x: &Rigid, world_up: &[f64; 3], measured: &[f64; 3]) -> Mat6 {
+    const H: f64 = 1e-6;
+    let mut j = ZERO6;
+    for c in 0..6 {
+        let mut d = [0.0; 6];
+        d[c] = H;
+        let plus = gravity_residual(&retract(x, &d), world_up, measured);
+        d[c] = -H;
+        let minus = gravity_residual(&retract(x, &d), world_up, measured);
+        for r in 0..6 {
+            j[r][c] = (plus[r] - minus[r]) / (2.0 * H);
+        }
+    }
+    j
+}
+
+/// Tie keyframes to gravity from the up direction each measured (`ups`:
+/// node index and up in its frame, e.g. from an IMU's roll and pitch).
+/// World up is taken as the mean of the first `reference` measurements
+/// seen through their poses, where odometry has drifted least. Unlike a
+/// floor, this assumes nothing about the ground, so hills stay hills while
+/// tilt drift, and the height drift it causes, go.
+pub fn tie_to_gravity(
+    graph: &mut PoseGraph,
+    ups: &[(usize, [f64; 3])],
+    information: [[f64; 2]; 2],
+    reference: usize,
+) -> bool {
+    let mut sum = [0.0; 3];
+    for &(node, up) in ups.iter().take(reference.max(1)) {
+        let r = &graph.nodes[node].pose.rotation;
+        for i in 0..3 {
+            sum[i] += (0..3).map(|k| r[i][k] * up[k]).sum::<f64>();
+        }
+    }
+    if ups.is_empty() || dot3(&sum, &sum) == 0.0 {
+        return false;
+    }
+    graph.gravity = unit3(sum);
+    graph
+        .gravity_edges
+        .extend(ups.iter().map(|&(node, up)| GravityEdge {
+            node,
+            up: unit3(up),
+            information,
+        }));
+    true
 }
 
 /// Information for a plane seen with standard deviations `sigma_angle`
@@ -581,6 +677,17 @@ impl PoseGraph {
         self.planes.len() - 1
     }
 
+    /// Squared error of every gravity edge.
+    pub fn gravity_edge_errors(&self) -> Vec<f64> {
+        self.gravity_edges
+            .iter()
+            .map(|e| {
+                let r = gravity_residual(&self.nodes[e.node].pose, &self.gravity, &e.up);
+                quadratic(&r, &gravity_weight(&e.information))
+            })
+            .collect()
+    }
+
     /// Squared error of every plane edge.
     pub fn plane_edge_errors(&self) -> Vec<f64> {
         self.plane_edges
@@ -699,7 +806,9 @@ impl PoseGraph {
             .zip(&self.edges)
             .map(|(&chi2, e)| robust(chi2, params.kernel(e.kind)).0)
             .sum();
-        poses + self.plane_edge_errors().iter().sum::<f64>()
+        poses
+            + self.plane_edge_errors().iter().sum::<f64>()
+            + self.gravity_edge_errors().iter().sum::<f64>()
     }
 }
 
@@ -1026,7 +1135,18 @@ pub fn optimize(graph: &mut PoseGraph, params: &OptimizeParams) -> Option<Optimi
                 [(variable[e.node], jx), (plane_variable[e.plane], jp)],
             )
         });
-        for (r, w, ends) in pose_terms.chain(plane_terms) {
+        let gravity_terms = graph.gravity_edges.iter().map(|e| {
+            let x = &graph.nodes[e.node].pose;
+            (
+                gravity_residual(x, &graph.gravity, &e.up),
+                gravity_weight(&e.information),
+                [
+                    (variable[e.node], gravity_jacobian(x, &graph.gravity, &e.up)),
+                    (usize::MAX, ZERO6),
+                ],
+            )
+        });
+        for (r, w, ends) in pose_terms.chain(plane_terms).chain(gravity_terms) {
             for &(a, ref ja) in &ends {
                 if a == usize::MAX {
                     continue;
@@ -1224,6 +1344,18 @@ impl PoseGraph {
                 plane: e.plane + plane_offset,
                 ..e.clone()
             }));
+        if !other.gravity_edges.is_empty() {
+            if self.gravity_edges.is_empty() {
+                let r = &transform.rotation;
+                self.gravity =
+                    std::array::from_fn(|i| (0..3).map(|k| r[i][k] * other.gravity[k]).sum());
+            }
+            self.gravity_edges
+                .extend(other.gravity_edges.iter().map(|e| GravityEdge {
+                    node: e.node + offset,
+                    ..e.clone()
+                }));
+        }
         offset
     }
 }
@@ -2152,5 +2284,68 @@ FIX 1
             .fold(0.0, f64::max);
         assert!(off < 0.5, "{off}");
         assert!(tie_to_floor(&mut graph, &[], plane_information(0.01, 0.01)).is_none());
+    }
+
+    #[test]
+    fn gravity_takes_out_tilt_drift_and_keeps_hills() {
+        // Height 5 sin(s / 60) over 300 m; the vehicle pitches with the road.
+        let truth: Vec<Rigid> = (0..300)
+            .map(|k| {
+                let s = k as f64;
+                let slope = (5.0 / 60.0 * (s / 60.0).cos()).atan();
+                pose([s, 0.0, 5.0 * (s / 60.0).sin()], [0.0, -slope, 0.0])
+            })
+            .collect();
+        let mut graph = PoseGraph::from_poses(&truth, isotropic_information(0.05, 0.004));
+        // Odometry that pitches up 0.05 degrees too much every metre.
+        for e in &mut graph.edges {
+            e.measurement = e
+                .measurement
+                .compose(&pose([0.0; 3], [0.0, -0.000_873, 0.0]));
+        }
+        for i in 1..graph.nodes.len() {
+            graph.nodes[i].pose = graph.nodes[i - 1]
+                .pose
+                .compose(&graph.edges[i - 1].measurement);
+        }
+        let worst = |g: &PoseGraph| {
+            g.nodes
+                .iter()
+                .zip(&truth)
+                .map(|(n, t)| (n.pose.translation[2] - t.translation[2]).abs())
+                .fold(0.0, f64::max)
+        };
+        let drifted = worst(&graph);
+        assert!(drifted > 20.0, "{drifted}");
+        // An IMU sees true up in each body frame.
+        let ups: Vec<(usize, [f64; 3])> = truth
+            .iter()
+            .enumerate()
+            .map(|(i, t)| (i, std::array::from_fn(|k| t.rotation[2][k])))
+            .collect();
+        assert!(tie_to_gravity(
+            &mut graph,
+            &ups,
+            gravity_information(0.002),
+            5
+        ));
+        assert!((graph.gravity[2] - 1.0).abs() < 1e-4, "{:?}", graph.gravity);
+        let report = optimize(&mut graph, &OptimizeParams::default()).unwrap();
+        assert!(report.converged, "{report:?}");
+        let corrected = worst(&graph);
+        assert!(corrected < 1.0, "{drifted} -> {corrected}");
+        // The hills are kept: the top is still about 5 m up.
+        let top = graph
+            .nodes
+            .iter()
+            .map(|n| n.pose.translation[2])
+            .fold(f64::MIN, f64::max);
+        assert!((top - 5.0).abs() < 1.0, "{top}");
+        assert!(!tie_to_gravity(
+            &mut graph,
+            &[],
+            gravity_information(0.01),
+            5
+        ));
     }
 }

@@ -515,6 +515,50 @@ impl PoseGraphSession {
         Ok(())
     }
 
+    #[wasm_bindgen(getter, js_name = gravityEdgeCount)]
+    pub fn gravity_edge_count(&self) -> usize {
+        self.graph.gravity_edges.len()
+    }
+
+    /// Tie nodes to gravity: `nodes[i]` measured `ups[3i..3i+3]` as its up
+    /// direction (in its frame, e.g. from an IMU's roll and pitch), with
+    /// standard deviation `sigma_deg` (see
+    /// `ca_core::pose_graph::tie_to_gravity`). Replaces earlier gravity
+    /// edges. Returns the edges added.
+    #[wasm_bindgen(js_name = setGravity)]
+    pub fn set_gravity(
+        &mut self,
+        nodes: &[u32],
+        ups: &[f64],
+        sigma_deg: f64,
+    ) -> Result<usize, JsError> {
+        if ups.len() != 3 * nodes.len() {
+            return Err(JsError::new("one up vector per node expected"));
+        }
+        let n = self.graph.nodes.len();
+        let measured: Vec<(usize, [f64; 3])> = nodes
+            .iter()
+            .zip(ups.as_chunks::<3>().0)
+            .filter(|&(&i, _)| (i as usize) < n)
+            .map(|(&i, up)| (i as usize, *up))
+            .collect();
+        self.graph.gravity_edges.clear();
+        let information = pose_graph::gravity_information(sigma_deg.to_radians());
+        // World up from the first 1 % of the measurements (1 to 10), where
+        // odometry has drifted least.
+        let reference = (measured.len() / 100).clamp(1, 10);
+        if !pose_graph::tie_to_gravity(&mut self.graph, &measured, information, reference) {
+            return Err(JsError::new("no usable up directions"));
+        }
+        Ok(measured.len())
+    }
+
+    /// Remove every gravity edge.
+    #[wasm_bindgen(js_name = clearGravity)]
+    pub fn clear_gravity(&mut self) {
+        self.graph.gravity_edges.clear();
+    }
+
     #[wasm_bindgen(getter, js_name = planeCount)]
     pub fn plane_count(&self) -> usize {
         self.graph.planes.len()

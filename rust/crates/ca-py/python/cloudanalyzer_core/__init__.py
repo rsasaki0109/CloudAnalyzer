@@ -19,6 +19,7 @@ from ._core import (
     volume,
     voxel_subsample,
 )
+from ._copc import read_copc
 
 __all__ = [
     "__version__",
@@ -30,6 +31,7 @@ __all__ = [
     "normals",
     "profile",
     "read",
+    "read_copc",
     "read_mesh",
     "statistical_outliers",
     "volume",

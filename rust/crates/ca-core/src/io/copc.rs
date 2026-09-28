@@ -99,6 +99,24 @@ impl CopcHeader {
     }
 }
 
+#[cfg(feature = "parallel")]
+impl CopcHeader {
+    /// [`CopcHeader::decode_node`] for many nodes (`(chunk, count)`) on the
+    /// rayon pool, merged in the given order.
+    pub fn decode_nodes_par(&self, nodes: &[(&[u8], usize)]) -> Result<CopcPoints, IoError> {
+        use rayon::prelude::*;
+        let parts: Vec<CopcPoints> = nodes
+            .par_iter()
+            .map(|&(chunk, count)| self.decode_node(chunk, count))
+            .collect::<Result<_, _>>()?;
+        let mut out = CopcPoints::default();
+        for p in parts {
+            out.extend(p);
+        }
+        Ok(out)
+    }
+}
+
 /// Decoded points of one or more nodes, colors still 16-bit (the 8-bit
 /// scaling is decided once all are in).
 pub use super::las::RawLasPoints as CopcPoints;

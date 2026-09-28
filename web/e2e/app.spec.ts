@@ -1615,3 +1615,94 @@ test("pose graph: a floor constraint levels a drive that drifted in pitch", asyn
   await expect(page.locator("#pg-stats")).not.toContainText("keyframe views");
   expect(await heights()).toBeGreaterThan(0.5);
 });
+
+test("pose graph: a node moved with the gizmo, fixed, optimised and undone", async ({ page }) => {
+  const { truth, scan } = courtyard();
+  const poses = truth.slice(0, 12);
+  await page
+    .locator("#pg-files-input")
+    .setInputFiles([
+      { name: "poses.txt", mimeType: "text/plain", buffer: Buffer.from(`${poses.map(kittiLine).join("\n")}\n`) },
+      ...scanFiles(poses, scan),
+    ]);
+  await expect(status(page)).toContainText("Opened poses.txt: 12 poses");
+  const saved = async () => {
+    const download = page.waitForEvent("download");
+    await page.locator("#pg-save-kitti").click();
+    return (await bytesOf(await download))
+      .toString()
+      .trim()
+      .split("\n")
+      .map((row) => row.split(" ").map(Number));
+  };
+  const before = await saved();
+
+  await page.locator("#pg-a").fill("5");
+  await page.locator("#pg-fix").click();
+  await expect(status(page)).toContainText("Node 5 is held in place");
+  await expect(page.locator("#pg-fix")).toHaveText("Free A");
+
+  // Seen from the top, drag the gizmo (at node A's yellow marker) sideways.
+  await page.locator("[data-view=top]").click();
+  await page.locator("#pg-show-scans").uncheck();
+  // Find the marker before the gizmo covers it.
+  const canvas = page.locator("#viewport > canvas");
+  const box = (await canvas.boundingBox())!;
+  const shot = (await canvas.screenshot()).toString("base64");
+  const marker = await page.evaluate(async (png) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${png}`;
+    await image.decode();
+    const c = document.createElement("canvas");
+    [c.width, c.height] = [image.width, image.height];
+    const g = c.getContext("2d")!;
+    g.drawImage(image, 0, 0);
+    const { data } = g.getImageData(0, 0, c.width, c.height);
+    let [sx, sy, n] = [0, 0, 0];
+    for (let i = 0; i < data.length; i += 4) {
+      // Node A's marker: #ffeb3b.
+      if (data[i] > 240 && data[i + 1] > 215 && data[i + 1] < 250 && data[i + 2] < 90) {
+        const p = i / 4;
+        sx += p % c.width;
+        sy += Math.floor(p / c.width);
+        n++;
+      }
+    }
+    return n ? { x: sx / n, y: sy / n, scale: c.width } : null;
+  }, shot);
+  expect(marker).not.toBeNull();
+  await page.locator("#pg-move").click();
+  await expect(page.locator("#pg-move")).toHaveAttribute("aria-pressed", "true");
+  const k = box.width / marker!.scale;
+  const [x, y] = [box.x + marker!.x * k, box.y + marker!.y * k];
+  // Grab the red X arrow's shaft (the centre handle is ambiguous seen head-on).
+  await page.mouse.move(x + 50, y);
+  await page.mouse.down();
+  for (let i = 1; i <= 10; i++) await page.mouse.move(x + 50 + i * 6, y);
+  await page.mouse.up();
+  await expect(status(page)).toContainText("Moved node 5: add a loop from here");
+
+  const moved = await saved();
+  const shift = (a: number[], b: number[]) => Math.hypot(a[3] - b[3], a[7] - b[7]);
+  expect(shift(moved[5], before[5])).toBeGreaterThan(0.3);
+  expect(Math.abs(moved[5][11] - before[5][11])).toBeLessThan(1e-9);
+  expect(shift(moved[4], before[4])).toBeLessThan(1e-6);
+  expect(shift(moved[6], before[6])).toBeLessThan(1e-6);
+
+  // Optimising keeps the fixed node where it was put; its neighbours follow.
+  await page.locator("#pg-move").click();
+  await page.locator("#pg-optimize").click();
+  await expect(status(page)).toContainText("Optimised");
+  const optimised = await saved();
+  expect(shift(optimised[5], moved[5])).toBeLessThan(1e-9);
+  expect(shift(optimised[6], before[6])).toBeGreaterThan(0.05);
+
+  // Undo: the optimisation, the move, then the fix.
+  for (const message of ["Undid the optimisation", "Undid the optimisation", "Undid the fix"]) {
+    await page.locator("#pg-undo").click();
+    await expect(status(page)).toContainText(message);
+  }
+  const restored = await saved();
+  expect(shift(restored[5], before[5])).toBeLessThan(1e-9);
+  await expect(page.locator("#pg-fix")).toHaveText("Fix A");
+});

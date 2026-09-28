@@ -326,6 +326,55 @@ impl PoseGraphSession {
         Ok(vec![fitness, result.rms_final, edge as f64, offset as f64])
     }
 
+    /// Per node, 1 when the optimiser holds it in place.
+    #[wasm_bindgen(js_name = fixedNodes)]
+    pub fn fixed_nodes(&self) -> Vec<u8> {
+        self.graph.nodes.iter().map(|n| u8::from(n.fixed)).collect()
+    }
+
+    #[wasm_bindgen(js_name = setFixed)]
+    pub fn set_fixed(&mut self, index: usize, fixed: bool) -> Result<(), JsError> {
+        let node = self
+            .graph
+            .nodes
+            .get_mut(index)
+            .ok_or_else(|| JsError::new("no such node"))?;
+        node.fixed = fixed;
+        Ok(())
+    }
+
+    /// Put node `index` at `pose` (row-major 4x4). With `carry`, the nodes
+    /// after it (in order) make the same motion, so a whole stretch moves.
+    #[wasm_bindgen(js_name = setNodePose)]
+    pub fn set_node_pose(
+        &mut self,
+        index: usize,
+        pose: &[f64],
+        carry: bool,
+    ) -> Result<(), JsError> {
+        let m: &[f64; 16] = pose
+            .try_into()
+            .map_err(|_| JsError::new("pose must have 16 entries"))?;
+        let old = self
+            .graph
+            .nodes
+            .get(index)
+            .ok_or_else(|| JsError::new("no such node"))?
+            .pose;
+        let new = Rigid::from_matrix(m);
+        // The motion in world coordinates: new = motion * old.
+        let motion = new.compose(&pose_graph::inverse(&old));
+        let end = if carry {
+            self.graph.nodes.len()
+        } else {
+            index + 1
+        };
+        for node in &mut self.graph.nodes[index..end] {
+            node.pose = motion.compose(&node.pose);
+        }
+        Ok(())
+    }
+
     #[wasm_bindgen(getter, js_name = planeCount)]
     pub fn plane_count(&self) -> usize {
         self.graph.planes.len()

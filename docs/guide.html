@@ -257,6 +257,12 @@
       wrong loop bends the map less. <b>Undo</b> takes back the last loop, removal or optimisation.
     </p>
     <p>
+      <b>Move A</b> puts a gizmo on Node A: drag its arrows to move it (or turn it, with <i>Rotate</i>); <b>With the
+      nodes after it</b> moves the rest of the path along, to put a broken stretch roughly in place before adding a
+      loop there. <b>Fix A</b> holds a node in place when optimising (it turns red); the first node of a trajectory
+      is fixed from the start. Each drag and each fix can be undone.
+    </p>
+    <p>
       <b>Find loops automatically</b> proposes node pairs at most <b>Radius</b> metres apart (as the graph has them
       now) but at least <b>Min travel</b> metres apart along the path, not already joined, at most one every
       <b>Spacing</b> metres. Each is registered with ICP and kept when at least <b>Min overlap</b> percent of B's
@@ -270,7 +276,8 @@
       tilt</b> from the <b>Up axis</b> and below the sensor (<i>Auto</i> tries +Z for LiDAR, −Y for scans moved into
       KITTI's camera frame, and +Y). The keyframes that see it are tied to one floor plane (a g2o
       <code>VERTEX_PLANE</code> with <code>EDGE_SE3_PLANE</code> edges, weighted by <b>σ tilt</b> and <b>σ
-      height</b>), and the graph is optimised. Undo removes the floor again.
+      height</b>), and the graph is optimised. Undo removes the floor again. One plane suits sites that are
+      flat overall; on a long route over hills it pulls the ends onto the same level.
     </p>
     <p>
       <b>Join another graph</b> adds a second session of the same place, recorded in its own frame: give a node of
@@ -293,6 +300,12 @@
       <b>Save g2o</b> writes the graph with its edges; <b>KITTI</b> and <b>TUM</b> write the optimised poses.
       <b>Build map cloud</b> adds every scan at its optimised pose to the cloud list, thinned to <b>Map voxel</b>,
       for measuring, comparing or exporting like any other cloud.
+    </p>
+
+    <p class="small">
+      Tried on KITTI odometry sequence 07 (1,101 Velodyne scans, 2.1 GB) with KISS-ICP odometry: the folder opens in
+      about 20 s, Find loops adds 5 loops in 2 s and brings the end back from 2.04 m to 0.14 m off the ground truth
+      (ATE RMSE 2.14 → 1.36 m), and the floor constraint lowers it to 1.20 m.
     </p>
 
     <h2 id="trajectory">Trajectories (ATE / RPE)</h2>

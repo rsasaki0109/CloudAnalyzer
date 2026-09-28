@@ -16,27 +16,20 @@ pub fn voxel_subsample(cloud: &PointCloud, voxel: f64) -> Vec<usize> {
         return (0..cloud.len()).collect();
     }
     let lo = cloud.bounds().map(|b| b.min).unwrap_or([0.0; 3]);
-    let mut keyed: Vec<(u64, u32)> = cloud
+    // One pass in cloud order: a point is kept when its voxel is new. A
+    // hash set of voxel keys is linear where sorting the keys was not.
+    let mut seen: std::collections::HashSet<u64, BuildCellHasher> =
+        std::collections::HashSet::with_capacity_and_hasher(cloud.len() / 4, BuildCellHasher);
+    cloud
         .positions
         .iter()
-        .zip(0u32..)
-        .map(|(p, i)| {
+        .enumerate()
+        .filter(|(_, p)| {
             let cell = |a: usize| (((p[a] - lo[a]) / voxel) as u64).min((1 << 21) - 1);
-            (cell(0) | cell(1) << 21 | cell(2) << 42, i)
+            seen.insert(cell(0) | cell(1) << 21 | cell(2) << 42)
         })
-        .collect();
-    // Stable sort keeps the first point of each voxel first.
-    keyed.sort_by_key(|&(key, _)| key);
-    let mut keep: Vec<usize> = Vec::new();
-    let mut previous = None;
-    for &(key, i) in &keyed {
-        if previous != Some(key) {
-            keep.push(i as usize);
-            previous = Some(key);
-        }
-    }
-    keep.sort_unstable();
-    keep
+        .map(|(i, _)| i)
+        .collect()
 }
 
 /// Keep points so that no two kept points are closer than `distance`
@@ -150,6 +143,9 @@ impl std::hash::Hasher for CellHasher {
     }
     fn write_i64(&mut self, v: i64) {
         self.0 = self.0.rotate_left(21) ^ (v as u64);
+    }
+    fn write_u64(&mut self, v: u64) {
+        self.0 = self.0.rotate_left(21) ^ v;
     }
 }
 

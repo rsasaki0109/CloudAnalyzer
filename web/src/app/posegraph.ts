@@ -23,6 +23,8 @@ import {
   poseGraphMap,
   removePoseGraphEdges,
   removePoseGraphPlane,
+  setPoseGraphFixed,
+  setPoseGraphNodePose,
   setPoseGraphPoses,
 } from "../api";
 import { colorize, gradientCss, lut } from "../colormap";
@@ -49,6 +51,8 @@ interface Step {
   removed?: RemovedEdge[];
   /** A plane the step added (with its edges). */
   plane?: number;
+  /** A node whose fixed flag the step flipped. */
+  flipped?: number;
 }
 
 /** Scan files (the poses are g2o, TUM or KITTI text). */
@@ -104,7 +108,10 @@ const heightMaterial = new THREE.ShaderMaterial({
     }`,
 });
 // The graph is drawn over the scans, so it stays visible when they pile up.
-const nodeMaterial = new THREE.PointsMaterial({ size: 5, sizeAttenuation: false, color: 0xffffff, depthTest: false });
+const nodeMaterial = new THREE.PointsMaterial({ size: 5, sizeAttenuation: false, vertexColors: true, depthTest: false });
+const NODE_COLOR = new THREE.Color(0xffffff);
+/** Nodes the optimiser holds in place. */
+const FIXED_COLOR = new THREE.Color(0xff5252);
 const selectedMaterial = new THREE.PointsMaterial({
   size: 12,
   sizeAttenuation: false,
@@ -226,9 +233,16 @@ function update(state: PoseGraphState): void {
   const placed = new THREE.Vector3(origin.x - sx, origin.y - sy, origin.z - sz);
 
   const nodePositions = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) local(i).toArray(nodePositions, i * 3);
+  const nodeColors = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) {
+    local(i).toArray(nodePositions, i * 3);
+    (state.fixed[i] ? FIXED_COLOR : NODE_COLOR).toArray(nodeColors, i * 3);
+  }
+  // Dense graphs (thousands of keyframes) get smaller dots, or they hide the scans.
+  nodeMaterial.size = n > 2000 ? 2 : n > 300 ? 3 : 5;
   const nodes = new THREE.Points(new THREE.BufferGeometry(), nodeMaterial);
   nodes.geometry.setAttribute("position", new THREE.BufferAttribute(nodePositions, 3));
+  nodes.geometry.setAttribute("color", new THREE.BufferAttribute(nodeColors, 3));
   nodes.name = "nodes";
   nodes.renderOrder = 2;
 
@@ -328,6 +342,8 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-find").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-merge").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-floor").disabled = busy || withScans === 0;
+  const a = nodeA();
+  $<HTMLButtonElement>("pg-fix").textContent = a !== null && state.fixed[a] ? "Free A" : "Fix A";
   $<HTMLButtonElement>("pg-prune").disabled = busy || loops === 0;
   $("pg-legend").hidden = !errorColors();
   $("pg-legend-bar").style.background = gradientCss(display.ramp, "to right");
@@ -410,7 +426,10 @@ function readSelection(): void {
   if (selection.length === 2 && selection[0] === selection[1]) selection.pop();
   update(graph.state);
 }
-fieldA.oninput = fieldB.oninput = readSelection;
+fieldA.oninput = fieldB.oninput = () => {
+  stopMoving();
+  readSelection();
+};
 
 function setSelection(nodes: number[]): void {
   const ids = graph?.state.nodeIds;
@@ -725,6 +744,129 @@ $<HTMLButtonElement>("pg-floor").onclick = () =>
     );
   });
 
+// --- Moving and fixing nodes -------------------------------------------------
+
+/** The node a gizmo moves: Node A. */
+function nodeA(): number | null {
+  return selection.length ? selection[0] : null;
+}
+
+let gizmo: {
+  node: number;
+  pivot: THREE.Object3D;
+  /** The pivot's matrix when the gizmo appeared, and the poses then. */
+  start: THREE.Matrix4;
+  poses: Float64Array;
+  handle: ReturnType<typeof viewer.attachGizmo>;
+} | null = null;
+
+const carry = () => $<HTMLInputElement>("pg-move-carry").checked;
+const gizmoMode = () => $<HTMLSelectElement>("pg-move-mode").value as "translate" | "rotate";
+
+/** Node `i`'s pose as a render-space matrix. */
+function renderMatrix(poses: Float64Array, i: number): THREE.Matrix4 {
+  const [sx, sy, sz] = globalShift();
+  const m = poses.subarray(i * 16, i * 16 + 16);
+  return new THREE.Matrix4().set(
+    m[0], m[1], m[2], m[3] - sx,
+    m[4], m[5], m[6], m[7] - sy,
+    m[8], m[9], m[10], m[11] - sz,
+    0, 0, 0, 1,
+  );
+}
+
+/** `poses` with the gizmo's motion so far applied to the moved nodes. */
+function movedPoses(): Float64Array {
+  const g = gizmo!;
+  g.pivot.updateMatrix();
+  const motion = g.pivot.matrix.clone().multiply(g.start.clone().invert());
+  const [sx, sy, sz] = globalShift();
+  const poses = g.poses.slice();
+  const end = carry() ? poses.length / 16 : g.node + 1;
+  for (let i = g.node; i < end; i++) {
+    const moved = motion.clone().multiply(renderMatrix(g.poses, i));
+    const e = moved.elements; // column-major
+    const row = [e[0], e[4], e[8], e[12] + sx, e[1], e[5], e[9], e[13] + sy, e[2], e[6], e[10], e[14] + sz];
+    poses.set(row, i * 16);
+  }
+  return poses;
+}
+
+function stopMoving(): void {
+  if (!gizmo) return;
+  gizmo.handle.detach();
+  viewer.overlay.remove(gizmo.pivot);
+  gizmo = null;
+  $("pg-move").setAttribute("aria-pressed", "false");
+}
+
+function startMoving(): void {
+  const node = nodeA();
+  if (!graph || node === null) {
+    setStatus("Pick or type Node A first: the node to move", true);
+    return;
+  }
+  stopMoving();
+  const pivot = new THREE.Object3D();
+  renderMatrix(graph.state.poses, node).decompose(pivot.position, pivot.quaternion, pivot.scale);
+  viewer.overlay.add(pivot);
+  pivot.updateMatrix();
+  gizmo = {
+    node,
+    pivot,
+    start: pivot.matrix.clone(),
+    poses: graph.state.poses.slice(),
+    handle: viewer.attachGizmo(
+      pivot,
+      gizmoMode(),
+      // While dragging, only the drawing moves.
+      () => graph && gizmo && update({ ...graph.state, poses: movedPoses() }),
+      () => void commitMove(),
+    ),
+  };
+  $("pg-move").setAttribute("aria-pressed", "true");
+  setStatus(`Drag the gizmo to move node ${graph.state.nodeIds[node]}${carry() ? " and the nodes after it" : ""}`);
+}
+
+/** Send a finished drag to the worker (one undo step per drag). */
+async function commitMove(): Promise<void> {
+  if (!graph || !gizmo) return;
+  const g = gizmo;
+  const poses = movedPoses();
+  const moved = poses.subarray(g.node * 16, g.node * 16 + 16);
+  const before = g.poses;
+  await run("Moving the node", async () => {
+    const state = await setPoseGraphNodePose(g.node, Array.from(moved), carry());
+    steps.push({ poses: before });
+    update(state);
+    // Further drags start from here.
+    g.pivot.updateMatrix();
+    g.start = g.pivot.matrix.clone();
+    g.poses = state.poses.slice();
+    setStatus(
+      `Moved node ${state.nodeIds[g.node]}${carry() ? " and the nodes after it" : ""}: ` +
+        "add a loop from here, fix it, or optimise",
+    );
+  });
+}
+
+$<HTMLButtonElement>("pg-move").onclick = () => (gizmo ? stopMoving() : startMoving());
+$<HTMLSelectElement>("pg-move-mode").onchange = () => gizmo?.handle.setMode(gizmoMode());
+
+$<HTMLButtonElement>("pg-fix").onclick = () =>
+  run("Fixing", async () => {
+    const node = nodeA();
+    if (node === null) {
+      setStatus("Pick or type Node A first: the node to fix or free", true);
+      return;
+    }
+    const fixed = !graph!.state.fixed[node];
+    const state = await setPoseGraphFixed(node, fixed);
+    steps.push({ poses: graph!.state.poses.slice(), flipped: node });
+    update(state);
+    setStatus(`Node ${state.nodeIds[node]} ${fixed ? "is held in place by the optimiser (red)" : "is free again"}`);
+  });
+
 const kernel = () => ($<HTMLInputElement>("pg-robust").checked ? Math.max(0, num("pg-kernel")) : 0);
 
 async function optimize(): Promise<string> {
@@ -773,6 +915,7 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
     if (!step) return;
     if (step.added) await removePoseGraphEdges(step.added, null);
     if (step.plane !== undefined) await removePoseGraphPlane(step.plane);
+    if (step.flipped !== undefined) await setPoseGraphFixed(step.flipped, !graph!.state.fixed[step.flipped]);
     if (step.removed) await insertPoseGraphEdges(step.removed);
     update(await setPoseGraphPoses(step.poses));
     const plural = (n: number) => (n === 1 ? "" : "s");
@@ -783,6 +926,8 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
           : `Removed the ${step.added.length} loop${plural(step.added.length)} found`
         : step.plane !== undefined
           ? "Removed the floor"
+          : step.flipped !== undefined
+          ? "Undid the fix"
           : step.removed
           ? `Put back ${step.removed.length} removed edge${step.removed.length === 1 ? "" : "s"}`
           : "Undid the optimisation",
@@ -812,6 +957,7 @@ $<HTMLButtonElement>("pg-map").onclick = () =>
 $<HTMLButtonElement>("pg-close").onclick = async () => {
   if (busy) return;
   setTool(null);
+  stopMoving();
   await closePoseGraph();
   graph = null;
   fieldA.value = fieldB.value = "";

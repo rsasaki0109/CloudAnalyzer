@@ -37,6 +37,8 @@ export function setPointSize(size: number): void {
   viewer.setPointSize(size);
 }
 pointSizeInput.oninput = () => viewer.setPointSize(Number(pointSizeInput.value));
+const roundToggle = $<HTMLInputElement>("round-points");
+roundToggle.onchange = () => viewer.setRoundPoints(roundToggle.checked);
 
 edlToggle.onchange = edlStrength.oninput = () => {
   viewer.setEdl(edlToggle.checked, Number(edlStrength.value));
@@ -84,6 +86,7 @@ export interface DisplaySettings {
   pointSizeMode?: "fixed" | "adaptive";
   views?: SavedView[];
   fullDetail?: boolean;
+  roundPoints?: boolean;
 }
 
 export function captureDisplay(): Required<DisplaySettings> {
@@ -96,6 +99,7 @@ export function captureDisplay(): Required<DisplaySettings> {
     pointSizeMode: pointSizeMode.value as "fixed" | "adaptive",
     views: savedViews,
     fullDetail: fullDetailToggle.checked,
+    roundPoints: roundToggle.checked,
   };
 }
 
@@ -108,6 +112,8 @@ export function applyDisplay(settings: DisplaySettings): void {
   pointSizeMode.value = settings.pointSizeMode ?? "fixed";
   applyPointSizeMode();
   fullDetailToggle.checked = settings.fullDetail ?? true;
+  roundToggle.checked = settings.roundPoints ?? false;
+  viewer.setRoundPoints(roundToggle.checked);
   viewer.setFullDetail(fullDetailToggle.checked);
   savedViews.splice(0, savedViews.length, ...(settings.views ?? []));
   renderViews();

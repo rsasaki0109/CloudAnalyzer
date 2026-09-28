@@ -3,6 +3,9 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
+import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
+import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 import { EdlPass } from "./edl";
 import { type LodNode, selectNodes } from "./lod";
 
@@ -86,7 +89,13 @@ export class Viewer {
   private readonly clouds = new Map<number, LodCloud>();
   private readonly meshes = new Map<number, THREE.Mesh>();
   /** Polylines (e.g. trajectories), by their owner's id. */
-  private readonly lines = new Map<number, THREE.Line>();
+  private readonly lines = new Map<number, Line2>();
+  /** Draw points as discs instead of squares. */
+  private roundPoints = false;
+  /** Point materials of other modules that follow the point shape. */
+  private readonly pointMaterials = new Set<THREE.Material>();
+  /** Wide-line materials whose pixel width needs the drawing size. */
+  private readonly lineMaterials = new Set<LineMaterial>();
   private pointSize = 2;
   /** Fixed: every point `pointSize` pixels. Adaptive: as large as the local point spacing, in world units. */
   private sizeMode: "fixed" | "adaptive" = "fixed";
@@ -216,6 +225,7 @@ export class Viewer {
     this.renderer.setSize(w, h, false);
     const size = this.renderer.getDrawingBufferSize(new THREE.Vector2());
     this.edl.setSize(size.x, size.y);
+    for (const material of this.lineMaterials) material.resolution.set(size.x, size.y);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
     this.requestRender(true);
@@ -471,7 +481,7 @@ export class Viewer {
   private sizedMaterial(cloud: LodCloud, spacing: number): THREE.PointsMaterial {
     let material = cloud.sized.get(spacing);
     if (!material) {
-      material = cloud.material.clone();
+      material = this.shaped(roundable(cloud.material.clone()));
       material.sizeAttenuation = true;
       cloud.sized.set(spacing, material);
     }
@@ -536,14 +546,18 @@ export class Viewer {
    * than the float32 vertices, so a far-away cloud stays precise.
    */
   add(id: number, positions: Float32Array, colors: Uint8Array, nodes: LodNode[], offset: THREE.Vector3): void {
-    const material = new THREE.PointsMaterial({
-      size: this.pointSize,
-      sizeAttenuation: false,
-      vertexColors: true,
-      // Points with alpha 0 (e.g. a hidden class) are discarded.
-      alphaTest: 0.5,
-      clippingPlanes: this.clip ? this.clipPlanes : null,
-    });
+    const material = this.shaped(
+      roundable(
+        new THREE.PointsMaterial({
+          size: this.pointSize,
+          sizeAttenuation: false,
+          vertexColors: true,
+          // Points with alpha 0 (e.g. a hidden class) are discarded.
+          alphaTest: 0.5,
+          clippingPlanes: this.clip ? this.clipPlanes : null,
+        }),
+      ),
+    );
     const group = new THREE.Group();
     group.position.copy(offset);
     this.scene.add(group);
@@ -767,6 +781,48 @@ export class Viewer {
     this.requestRender();
   }
 
+  /** `material` with the current point shape. */
+  private shaped<M extends THREE.Material>(material: M): M {
+    material.defines = { ...material.defines };
+    if (this.roundPoints) material.defines.ROUND_POINTS = "";
+    else delete material.defines.ROUND_POINTS;
+    material.needsUpdate = true;
+    return material;
+  }
+
+  /** Draw every point as a disc (like iridescence) or as a square. */
+  setRoundPoints(round: boolean): void {
+    this.roundPoints = round;
+    for (const cloud of this.clouds.values()) for (const material of this.materials(cloud)) this.shaped(material);
+    for (const material of this.pointMaterials) this.shaped(material);
+    this.requestRender();
+  }
+
+  /**
+   * Let another module's point material follow the point shape. A built-in
+   * material is made {@link roundable}; a shader material must test
+   * `ROUND_POINTS` itself.
+   */
+  registerPointMaterial(material: THREE.Material): void {
+    if (!(material instanceof THREE.ShaderMaterial)) roundable(material);
+    this.pointMaterials.add(this.shaped(material));
+  }
+
+  /** A wide-line material (width in pixels) that follows the drawing size. */
+  lineMaterial(parameters: ConstructorParameters<typeof LineMaterial>[0]): LineMaterial {
+    const material = new LineMaterial(parameters);
+    const size = this.renderer.getDrawingBufferSize(new THREE.Vector2());
+    material.resolution.set(size.x, size.y);
+    this.lineMaterials.add(material);
+    return material;
+  }
+
+  /** Stop resizing a line material made by {@link lineMaterial}, and free it. */
+  disposeLineMaterial(material: LineMaterial): void {
+    this.lineMaterials.delete(material);
+    material.dispose();
+  }
+
   /** Eye-Dome Lighting on/off and strength (1 is the default look). */
   setEdl(enabled: boolean, strength = 1): void {
     this.edlEnabled = enabled;
@@ -899,19 +955,27 @@ export class Viewer {
     const origin = new THREE.Vector3().fromArray(positions);
     const local = new Float32Array(positions.length);
     for (let i = 0; i < positions.length; i++) local[i] = positions[i] - origin.getComponent(i % 3);
-    const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(local, 3));
-    if (colors) geometry.setAttribute("color", new THREE.BufferAttribute(colors, 4, true));
+    const geometry = new LineGeometry();
+    geometry.setPositions(local);
+    if (colors) {
+      const rgb = new Float32Array((colors.length / 4) * 3);
+      for (let i = 0; i < colors.length / 4; i++) {
+        for (let c = 0; c < 3; c++) rgb[i * 3 + c] = colors[i * 4 + c] / 255;
+      }
+      geometry.setColors(rgb);
+    }
     geometry.computeBoundingBox();
     geometry.computeBoundingSphere();
-    // Without depth writes EDL does not outline (and so blacken) the thin
-    // line; drawn after the clouds, it is still hidden by points in front.
-    const material = new THREE.LineBasicMaterial({
-      color: colors ? 0xffffff : color,
+    // A 2-pixel wide line (like iridescence's trajectories). Without depth
+    // writes EDL does not outline (and so blacken) it; drawn after the
+    // clouds, it is still hidden by points in front.
+    const material = this.lineMaterial({
+      color: colors ? 0xffffff : new THREE.Color(color).getHex(),
       vertexColors: !!colors,
+      linewidth: 2,
       depthWrite: false,
     });
-    const line = new THREE.Line(geometry, material);
+    const line = new Line2(geometry, material);
     line.position.copy(origin);
     line.renderOrder = 1;
     this.lines.set(id, line);
@@ -924,7 +988,7 @@ export class Viewer {
     if (!line) return;
     this.scene.remove(line);
     line.geometry.dispose();
-    (line.material as THREE.Material).dispose();
+    this.disposeLineMaterial(line.material);
     this.lines.delete(id);
     this.requestRender();
   }
@@ -1144,4 +1208,19 @@ function localGeometry(points: THREE.Vector3[]): { geometry: THREE.BufferGeometr
   const origin = points[0]?.clone() ?? new THREE.Vector3();
   const geometry = new THREE.BufferGeometry().setFromPoints(points.map((p) => p.clone().sub(origin)));
   return { geometry, origin };
+}
+
+/**
+ * Let a built-in points material draw discs when `ROUND_POINTS` is defined
+ * (see `Viewer.setRoundPoints`): fragments outside the inscribed circle of
+ * each point's square are discarded.
+ */
+export function roundable<M extends THREE.Material>(material: M): M {
+  material.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <clipping_planes_fragment>",
+      "#include <clipping_planes_fragment>\n#ifdef ROUND_POINTS\nif (length(gl_PointCoord - 0.5) > 0.5) discard;\n#endif",
+    );
+  };
+  return material;
 }

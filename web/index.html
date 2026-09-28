@@ -36,6 +36,7 @@
           <option value="adaptive">Adaptive</option>
         </select>
       </label>
+      <label class="inline" title="Draw points as discs instead of squares"><input id="round-points" type="checkbox" /> Round</label>
       <label class="inline" title="Background colour">
         <input id="background" type="color" value="#101114" aria-label="Background colour" />
       </label>
@@ -487,7 +488,10 @@
             <label class="check" title="Color every edge by its error (√χ², in standard deviations) instead of odometry blue / loop orange">
               <input id="pg-edge-errors" type="checkbox" checked /> Edges by error</label>
           </div>
-          <label class="check" title="Hide the scans to see the graph alone"><input id="pg-show-scans" type="checkbox" checked /> Show scans</label>
+          <div class="range">
+            <label class="check" title="Hide the scans to see the graph alone"><input id="pg-show-scans" type="checkbox" checked /> Show scans</label>
+            <label class="check" title="Each keyframe's axes: x red, y green, z blue"><input id="pg-axes" type="checkbox" /> Pose axes</label>
+          </div>
           <div id="pg-legend" class="ramp-legend" title="Edge error, √χ² (standard deviations)">
             <span>0</span><span id="pg-legend-bar" class="ramp-legend-bar"></span><span id="pg-legend-max"></span>
           </div>

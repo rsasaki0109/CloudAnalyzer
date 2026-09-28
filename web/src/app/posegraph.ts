@@ -10,6 +10,8 @@
  */
 
 import * as THREE from "three";
+import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
+import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 import {
   addPoseGraphFloor,
   addPoseGraphLoop,
@@ -105,6 +107,9 @@ const heightMaterial = new THREE.ShaderMaterial({
     uniform sampler2D ramp;
     varying float t;
     void main() {
+      #ifdef ROUND_POINTS
+      if (length(gl_PointCoord - 0.5) > 0.5) discard;
+      #endif
       gl_FragColor = vec4(texture2D(ramp, vec2(t, 0.5)).rgb, 1.0);
     }`,
 });
@@ -119,7 +124,9 @@ const selectedMaterial = new THREE.PointsMaterial({
   vertexColors: true,
   depthTest: false,
 });
-const edgeMaterial = new THREE.LineBasicMaterial({ vertexColors: true, depthTest: false });
+// 2-pixel edges and pose axes, drawn over the scans.
+const edgeMaterial = viewer.lineMaterial({ vertexColors: true, linewidth: 2, depthTest: false });
+for (const material of [...scanMaterials, heightMaterial, nodeMaterial]) viewer.registerPointMaterial(material);
 const ODOMETRY_COLOR = [0.45, 0.6, 0.8];
 const LOOP_COLOR = [1, 0.6, 0.15];
 const SELECTED_COLORS = [new THREE.Color(0xffeb3b), new THREE.Color(0x00e5ff)];
@@ -146,7 +153,7 @@ const num = (id: string) => Number($<HTMLInputElement>(id).value);
 function clearGroup(): void {
   for (const child of [...group.children]) {
     group.remove(child);
-    if (child instanceof THREE.Points || child instanceof THREE.LineSegments) child.geometry.dispose();
+    if (child instanceof THREE.Points || child instanceof LineSegments2) child.geometry.dispose();
   }
   scanObjects = [];
   scanHeights = [];
@@ -222,8 +229,8 @@ function update(state: PoseGraphState): void {
     hi = Math.max(hi, m[i * 16 + 11] - sz + range[1]);
   });
   if (lo < hi) [heightMaterial.uniforms.lo.value, heightMaterial.uniforms.hi.value] = [lo, hi];
-  for (const name of ["nodes", "edges", "selected"]) {
-    const old = group.getObjectByName(name) as THREE.Points | THREE.LineSegments | undefined;
+  for (const name of ["nodes", "edges", "selected", "axes"]) {
+    const old = group.getObjectByName(name) as THREE.Points | LineSegments2 | undefined;
     if (old) {
       group.remove(old);
       old.geometry.dispose();
@@ -262,9 +269,10 @@ function update(state: PoseGraphState): void {
     edgeColors.set(color, k * 6);
     edgeColors.set(color, k * 6 + 3);
   }
-  const edges = new THREE.LineSegments(new THREE.BufferGeometry(), edgeMaterial);
-  edges.geometry.setAttribute("position", new THREE.BufferAttribute(edgePositions, 3));
-  edges.geometry.setAttribute("color", new THREE.BufferAttribute(edgeColors, 3));
+  const edgeGeometry = new LineSegmentsGeometry();
+  edgeGeometry.setPositions(edgePositions);
+  edgeGeometry.setColors(edgeColors);
+  const edges = new LineSegments2(edgeGeometry, edgeMaterial);
   edges.name = "edges";
   edges.renderOrder = 1;
 
@@ -280,7 +288,8 @@ function update(state: PoseGraphState): void {
   selected.name = "selected";
   selected.renderOrder = 3;
 
-  for (const object of [nodes, edges, selected]) {
+  const axes = showAxes() ? poseAxes(state, local) : null;
+  for (const object of [nodes, edges, selected, ...(axes ? [axes] : [])]) {
     object.position.copy(placed);
     object.geometry.computeBoundingSphere();
     group.add(object);
@@ -299,6 +308,48 @@ function edgeErrors(state: PoseGraphState): Float32Array {
 /** Top of the error color scale: the largest edge error, at least 1. */
 function errorScale(state: PoseGraphState): number {
   return Math.max(1, ...edgeErrors(state));
+}
+
+const showAxes = () => $<HTMLInputElement>("pg-axes").checked;
+/** Pose axes drawn at most. */
+const MAX_AXES = 1500;
+
+/**
+ * Each keyframe's axes (x red, y green, z blue), like iridescence's
+ * coordinate frames, three times the median step between keyframes long
+ * (at least 1 m); on large graphs every n-th keyframe.
+ */
+function poseAxes(state: PoseGraphState, local: (i: number) => THREE.Vector3): LineSegments2 {
+  const m = state.poses;
+  const n = m.length / 16;
+  const steps: number[] = [];
+  for (let i = 1; i < n; i++) steps.push(local(i).distanceTo(local(i - 1)));
+  steps.sort((a, b) => a - b);
+  const length = Math.max(1, 3 * (steps[Math.floor(steps.length / 2)] ?? 1));
+  const every = Math.max(1, Math.ceil(n / MAX_AXES));
+  const positions: number[] = [];
+  const colors: number[] = [];
+  const rgb = [
+    [1, 0.3, 0.3],
+    [0.3, 1, 0.3],
+    [0.35, 0.55, 1],
+  ];
+  for (let i = 0; i < n; i += every) {
+    const o = local(i);
+    for (let axis = 0; axis < 3; axis++) {
+      // Column `axis` of the rotation: that body axis in world coordinates.
+      const d = new THREE.Vector3(m[i * 16 + axis], m[i * 16 + 4 + axis], m[i * 16 + 8 + axis]).multiplyScalar(length);
+      positions.push(o.x, o.y, o.z, o.x + d.x, o.y + d.y, o.z + d.z);
+      colors.push(...rgb[axis], ...rgb[axis]);
+    }
+  }
+  const geometry = new LineSegmentsGeometry();
+  geometry.setPositions(positions);
+  geometry.setColors(colors);
+  const axes = new LineSegments2(geometry, edgeMaterial);
+  axes.name = "axes";
+  axes.renderOrder = 1;
+  return axes;
 }
 
 /** Frame the graph's nodes. */
@@ -1007,6 +1058,7 @@ $<HTMLInputElement>("pg-show-scans").onchange = () => {
   viewer.requestRender();
 };
 $<HTMLInputElement>("pg-edge-errors").onchange = () => graph && update(graph.state);
+$<HTMLInputElement>("pg-axes").onchange = () => graph && update(graph.state);
 $<HTMLSelectElement>("pg-colors").onchange = () => {
   scanObjects.forEach((object, i) => {
     if (object) object.material = byHeight() ? heightMaterial : scanMaterials[i % HUES];

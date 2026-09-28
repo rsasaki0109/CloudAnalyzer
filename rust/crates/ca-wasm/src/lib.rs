@@ -1012,6 +1012,51 @@ impl Cloud {
         }
     }
 
+    /// Names of the attributes that make sense as scalar fields: every
+    /// float attribute except the normal components, plus intensity.
+    #[wasm_bindgen(js_name = scalarNames)]
+    pub fn scalar_names(&self) -> Vec<String> {
+        self.inner
+            .attributes
+            .iter()
+            .filter(|a| {
+                a.name == INTENSITY
+                    || (matches!(a.values, AttributeValues::F32(_))
+                        && !ca_core::normals::NORMAL_NAMES.contains(&a.name.as_str()))
+            })
+            .map(|a| a.name.clone())
+            .collect()
+    }
+
+    /// Store `values` (one per point, octree order) as a float attribute,
+    /// replacing one of the same name, so exports carry it.
+    #[wasm_bindgen(js_name = setAttribute)]
+    pub fn set_attribute(&mut self, name: &str, values: Vec<f32>) -> Result<(), JsError> {
+        if values.len() != self.inner.len() {
+            return Err(JsError::new("need one value per point"));
+        }
+        if name.is_empty()
+            || name == CLASSIFICATION
+            || ca_core::normals::NORMAL_NAMES.contains(&name)
+        {
+            return Err(JsError::new(&format!(
+                "{name:?} cannot be used as a field name"
+            )));
+        }
+        self.inner.attributes.retain(|a| a.name != name);
+        self.inner.attributes.push(ca_core::Attribute {
+            name: name.into(),
+            values: AttributeValues::F32(values),
+        });
+        Ok(())
+    }
+
+    /// Z of every point as `f32` (octree order).
+    #[wasm_bindgen(js_name = heights)]
+    pub fn heights(&self) -> Vec<f32> {
+        self.inner.positions.iter().map(|p| p[2] as f32).collect()
+    }
+
     /// Per-point intensity (octree order), or `undefined` when the file has none.
     pub fn intensity(&self) -> Option<Vec<f32>> {
         match &self.inner.attribute(INTENSITY)?.values {

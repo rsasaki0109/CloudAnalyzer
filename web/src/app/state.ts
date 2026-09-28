@@ -7,7 +7,16 @@ import type { C2cOutput, LoadedCloud, Vec3 } from "../protocol";
 import { Viewer } from "../viewer";
 import { $ } from "./dom";
 
-export type ColorMode = "rgb" | "solid" | "intensity" | "classification" | "c2c" | "normal" | "shade" | "opacity";
+export type ColorMode =
+  | "rgb"
+  | "solid"
+  | "intensity"
+  | "classification"
+  | "c2c"
+  | "normal"
+  | "shade"
+  | "opacity"
+  | "scalar";
 
 /** Where a cloud came from: sessions can restore file and URL clouds. */
 export type Origin = { kind: "file" } | { kind: "url"; url: string } | { kind: "derived" };
@@ -19,6 +28,10 @@ export interface Entry {
   mode: ColorMode;
   visible: boolean;
   c2c?: C2cOutput & { referenceName: string };
+  /** Scalar fields fetched or computed so far, by name. */
+  fields: Map<string, Float32Array>;
+  /** The field the "scalar" color mode shows. */
+  field?: { name: string; values: Float32Array; stats: C2cOutput["stats"] };
   /** Transforms applied by ICP, newest last, for undo. */
   transforms: number[][];
   origin: Origin;

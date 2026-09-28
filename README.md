@@ -23,6 +23,7 @@ Rust + WebAssembly. Your files stay on your machine.
 - **Process**: ICP and manual alignment (point pairs, gizmo, matrix), subsampling, outlier removal, ground extraction (CSF), normals, merge/split,
   rasterize to a DEM / DSM (GeoTIFF or colored PNG), RANSAC shape detection (planes, cylinders, spheres)
   and Euclidean clustering, mesh a cloud (2.5D Delaunay).
+- **Scalar fields**: color by any per-point value, histograms, range filters and a field calculator.
 - **Inspect**: clipping box, lasso segmentation with undo/redo, cross-section profiles, picking, measuring and labels; save the view as a PNG.
 - **Report**: pass / fail gates on any result, saved as an HTML QA report or JSON in the `ca check` gate format.
 - **Share**: links and session files that restore the view; export PLY, LAS/LAZ (distances as extra bytes), E57 or CSV,

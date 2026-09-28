@@ -1182,3 +1182,59 @@ test("large coordinates: a UTM cloud opened after a local one picks, measures an
   await page.keyboard.press("Enter");
   await expect(status(page)).toContainText("Segmented: utm_segmented (9)");
 });
+
+test("scalar fields: histogram, color by field, range filter and a calculator field saved to PLY", async ({ page }) => {
+  // 400 points; intensity 0..399 so a range keeps an exact count.
+  const points = grid(20).map((xyz, i) => ({ xyz, intensity: i, cls: 1 }));
+  await open(page, [
+    { name: "scan.las", buffer: las(points) },
+    { name: "lifted.ply", buffer: ply(grid(20, 0.25)) },
+  ]);
+  await expect(status(page)).toContainText("Loaded lifted.ply");
+  await page.locator("#c2c-compared").selectOption({ label: "scan.las" });
+  await page.locator("#c2c-reference").selectOption({ label: "lifted.ply" });
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("C2C distance computed");
+
+  await page.locator("#field-cloud").selectOption({ label: "scan.las" });
+  await expect(page.locator("#field-name option")).toHaveText(["C2C distance", "intensity", "Z"]);
+  await page.locator("#field-name").selectOption("intensity");
+  await expect(page.locator("#field-stats tr", { hasText: "Max" }).locator("td")).toHaveText("399");
+  await expect(page.locator("#field-histogram canvas")).toBeVisible();
+
+  await page.locator("#field-name").selectOption("Z");
+  await page.locator("#field-color").click();
+  await expect(page.locator("#colorbar-title")).toHaveText("Z · scan.las");
+
+  // Keep intensity 100..199: exactly 100 points.
+  await page.locator("#field-name").selectOption("intensity");
+  await page.locator("#field-lo").fill("100");
+  await page.locator("#field-hi").fill("199");
+  await page.locator("#field-keep").click();
+  await expect(status(page)).toContainText("scan_in: 100 of 400 points with intensity within 100 … 199");
+  await page.keyboard.press("Control+z");
+  await expect(status(page)).toContainText("Undid the intensity filter");
+
+  // Calculator: the distance in millimetres, colored and exported.
+  await page.locator("#field-cloud").selectOption({ label: "scan.las" });
+  await page.locator("#field-panel summary").click();
+  await page.locator("#field-calc-name").fill("mm");
+  await page.locator("#field-expr").fill("abs([C2C distance]) * 1000");
+  await page.locator("#field-calc").click();
+  await expect(status(page)).toContainText("Computed mm = abs([C2C distance]) * 1000 for 400 points");
+  await expect(page.locator("#colorbar-title")).toHaveText("mm · scan.las");
+  await expect(page.locator("#field-stats tr", { hasText: "Mean" }).locator("td")).toHaveText(/^2\d\d/);
+  await page.locator("#field-expr").fill("abs(");
+  await page.locator("#field-calc").click();
+  await expect(status(page)).toContainText("Calculator: unexpected end");
+
+  const row = page.locator(".cloud-list li", { hasText: "scan.las" });
+  await expect(row.locator("select").first().locator("option", { hasText: "mm" })).toHaveCount(1);
+  const download = page.waitForEvent("download");
+  await row.locator("button.icon").click();
+  await row.locator(".save-formats").getByRole("button", { name: "PLY" }).click();
+  const chunks: Buffer[] = [];
+  for await (const chunk of await (await download).createReadStream()) chunks.push(chunk as Buffer);
+  const header = Buffer.concat(chunks).subarray(0, 600).toString("latin1");
+  expect(header).toMatch(/property float mm/);
+});

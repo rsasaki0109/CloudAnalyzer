@@ -13,6 +13,7 @@ import { renderList, replaceCloud } from "./entries";
 import { loadUrls } from "./loading";
 import { savedNotes, setNotes } from "./picking";
 import { savedGates, setGates } from "./report";
+import { colorByField, fieldNames } from "./scalars";
 import { restoreProfile, savedProfile } from "./profile";
 import { display, entries, hiddenClasses, viewer } from "./state";
 
@@ -44,6 +45,7 @@ export function captureSession(): Session {
         url: e.origin.kind === "url" ? e.origin.url : undefined,
         visible: e.visible,
         mode: e.mode,
+        field: e.mode === "scalar" ? e.field?.name : undefined,
         solid: e.solid,
         transforms: e.transforms,
         distance:
@@ -101,14 +103,17 @@ async function restorePending(): Promise<void> {
     entry.visible = saved.visible;
     viewer.setVisible(entry.cloud.id, saved.visible);
     entry.solid = saved.solid;
-    // Distances are recomputed below, which also colors by them.
-    if (saved.mode !== "c2c" && availableModes(entry)[saved.mode]) entry.mode = saved.mode;
+    // Distances are recomputed below, which also colors by them; so are fields.
+    if (saved.mode !== "c2c" && saved.mode !== "scalar" && availableModes(entry)[saved.mode]) entry.mode = saved.mode;
     refreshColors(entry);
   }
   for (const saved of session.clouds) {
     const entry = byName(saved.name);
     const reference = saved.distance ? byName(saved.distance.reference, false) : undefined;
     if (entry && reference && saved.distance && !entry.c2c) await runNearest(entry, reference, saved.distance.signed);
+    if (entry && saved.mode === "scalar" && saved.field && fieldNames(entry).includes(saved.field)) {
+      await colorByField(entry, saved.field).catch(() => {});
+    }
   }
   if (session.ramp in RAMPS) display.ramp = session.ramp as RampName;
   display.range = session.range;

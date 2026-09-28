@@ -8,7 +8,7 @@ use ca_core::{
 use wasm_bindgen::prelude::*;
 
 mod pose_graph;
-pub use pose_graph::PoseGraphSession;
+pub use pose_graph::{PoseGraphSession, register_scans};
 
 /// Numbers per node in [`Cloud::lod_nodes`].
 const NODE_STRIDE: usize = 15;

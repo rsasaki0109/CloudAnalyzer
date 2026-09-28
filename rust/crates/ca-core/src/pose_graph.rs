@@ -1138,8 +1138,9 @@ pub fn register_loop(
 
 /// A registration without a usable initial guess, as when joining two
 /// graphs recorded separately: `to_scan` starts at `guess` turned about the
-/// vertical axis in `yaw_steps` equal steps, each start is refined with ICP,
-/// and the result that overlaps most (see [`overlap_fitness`]) wins.
+/// vertical axis in `yaw_steps` equal steps. Each start is first refined by
+/// a quick ICP on a subsample; the two that overlap most (see
+/// [`overlap_fitness`]) are refined in full, and the better one wins.
 /// Returns the measurement (pose of `to` in the frame of `from`), its
 /// fitness and the ICP outcome.
 pub fn register_with_yaw_search(
@@ -1150,14 +1151,34 @@ pub fn register_with_yaw_search(
     params: IcpParams,
     inlier_distance: f64,
 ) -> Option<(Rigid, f64, IcpResult)> {
+    const COARSE_SAMPLE: usize = 1500;
+    const COARSE_ITERATIONS: usize = 15;
+    const REFINED: usize = 2;
     let steps = yaw_steps.max(1);
-    (0..steps)
+    let coarse = IcpParams {
+        sample: params.sample.min(COARSE_SAMPLE),
+        max_iterations: params.max_iterations.min(COARSE_ITERATIONS),
+        ..params
+    };
+    let mut starts: Vec<(Rigid, f64)> = (0..steps)
         .filter_map(|k| {
             let yaw = std::f64::consts::TAU * k as f64 / steps as f64;
             let start = guess.compose(&Rigid {
                 rotation: exp_so3(&[0.0, 0.0, yaw]),
                 translation: [0.0; 3],
             });
+            let (measurement, _) = register_loop(from_scan, to_scan, &start, coarse)?;
+            Some((
+                measurement,
+                overlap_fitness(from_scan, to_scan, &measurement, inlier_distance),
+            ))
+        })
+        .collect();
+    starts.sort_by(|a, b| b.1.total_cmp(&a.1));
+    starts
+        .into_iter()
+        .take(REFINED)
+        .filter_map(|(start, _)| {
             let (measurement, result) = register_loop(from_scan, to_scan, &start, params)?;
             let fitness = overlap_fitness(from_scan, to_scan, &measurement, inlier_distance);
             Some((measurement, fitness, result))

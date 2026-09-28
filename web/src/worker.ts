@@ -1155,20 +1155,65 @@ async function handle(
       const added: PoseGraphFound["added"] = [];
       const edges: number[] = [];
       let implausible = 0;
-      for (let k = 0; k < candidates; k++) {
-        check();
-        progress(`checking candidate ${k + 1} of ${candidates} (${added.length} loops so far)`, k / candidates);
-        const [from, to, travel] = [found[3 * k], found[3 * k + 1], found[3 * k + 2]];
+      // Register the candidates on the pool (each needs only its two scans),
+      // then keep those that overlap and sit where drift allows, in order.
+      const retryFor = (travel: number) =>
         // Only a long way round can leave the graph's guess too far off for ICP;
         // along a short stretch, "the same place" would only match a corridor to itself.
-        const retry = req.drift * travel >= RETRY_MIN_DRIFT ? req.retryHeadings : 0;
-        let r: Float64Array;
+        req.drift * travel >= RETRY_MIN_DRIFT ? req.retryHeadings : 0;
+      const results: (Float64Array | null)[] = new Array(candidates).fill(null);
+      let checked = 0;
+      const report = () =>
+        progress(`checked ${checked} of ${candidates} candidates`, checked / Math.max(1, candidates));
+      if (poolSize() >= 2 && candidates > 1) {
+        await eachSlice(
+          candidates,
+          (k) => ({
+            kind: "loop" as const,
+            from: session.scanXyz(found[3 * k]),
+            to: session.scanXyz(found[3 * k + 1]),
+            guess: Array.from(session.relativePose(found[3 * k], found[3 * k + 1])),
+            maxIterations: req.maxIterations,
+            overlap: req.overlap,
+            inlierDistance: req.inlierDistance,
+            retryBelow: req.minFitness,
+            retryHeadings: retryFor(found[3 * k + 2]),
+          }),
+          (k, r) => {
+            check();
+            results[k] = r;
+            checked++;
+            report();
+          },
+        ).catch((err) => {
+          // A node without a scan or too few matching points only rules out its pair.
+          if (err instanceof Error && err.message === CANCELLED) throw err;
+        });
+      }
+      for (let k = 0; k < candidates; k++) {
+        if (results[k]) continue;
+        check();
         try {
-          r = session.registerLoop(from, to, req.maxIterations, req.overlap, true, req.inlierDistance, req.minFitness, retry);
+          results[k] = session.registerLoop(
+            found[3 * k],
+            found[3 * k + 1],
+            req.maxIterations,
+            req.overlap,
+            true,
+            req.inlierDistance,
+            req.minFitness,
+            retryFor(found[3 * k + 2]),
+          );
         } catch {
-          continue; // a node without a scan, or too few matching points
+          // a node without a scan, or too few matching points
         }
-        if (!(r[4] >= req.minFitness)) continue;
+        checked++;
+        report();
+      }
+      for (let k = 0; k < candidates; k++) {
+        const r = results[k];
+        const [from, to, travel] = [found[3 * k], found[3 * k + 1], found[3 * k + 2]];
+        if (!r || !(r[4] >= req.minFitness)) continue;
         if (r[22] > req.maxDistance + req.drift * travel) {
           implausible++;
           continue;

@@ -28,6 +28,13 @@
       <span class="sep"></span>
       <label class="inline">Point size
         <input id="point-size" type="range" min="1" max="10" step="1" value="2" />
+        <select id="point-size-mode" aria-label="Point size mode" title="Fixed: in pixels. Adaptive: as large as the local point spacing, so near surfaces close up">
+          <option value="fixed" selected>Fixed</option>
+          <option value="adaptive">Adaptive</option>
+        </select>
+      </label>
+      <label class="inline" title="Background colour">
+        <input id="background" type="color" value="#101114" aria-label="Background colour" />
       </label>
       <label class="inline" title="Eye-Dome Lighting: shade by depth so the shape of a cloud is easier to read">
         <input id="edl" type="checkbox" checked /> EDL
@@ -91,6 +98,12 @@
         <p id="measure-hint" class="hint"></p>
         <ol id="measure-list" class="measure-list"></ol>
         <button id="measure-clear">Clear all</button>
+      </section>
+
+      <section id="views-panel">
+        <h2>Views</h2>
+        <ol id="view-list" class="note-list"></ol>
+        <button id="view-save" title="Remember the camera; saved views are kept in share links and sessions">Save view</button>
       </section>
 
       <section id="note-panel" hidden>

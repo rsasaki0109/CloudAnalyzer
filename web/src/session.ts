@@ -35,6 +35,11 @@ export interface Session {
   profile?: { line: [number, number][]; halfWidth: number } | null;
   /** Text labels at points (original coordinates). */
   labels?: { position: Vec3; text: string }[];
+  /** Viewport background colour (#rrggbb). */
+  background?: string;
+  pointSizeMode?: "fixed" | "adaptive";
+  /** Saved camera views, in original coordinates. */
+  views?: { name: string; position: Vec3; target: Vec3 }[];
   clouds: SessionCloud[];
 }
 
@@ -90,6 +95,16 @@ export function parseSession(json: unknown): Session {
       : [],
     clip: clip ? { min: vec3(clip.min, "clip"), max: vec3(clip.max, "clip") } : null,
     profile: parseProfile(o.profile),
+    background: typeof o.background === "string" && /^#[0-9a-f]{6}$/i.test(o.background) ? o.background : undefined,
+    pointSizeMode: o.pointSizeMode === "adaptive" ? "adaptive" : "fixed",
+    views: Array.isArray(o.views)
+      ? o.views.flatMap((v: unknown) => {
+          const r = (v ?? {}) as Record<string, unknown>;
+          return typeof r.name === "string"
+            ? [{ name: r.name, position: vec3(r.position, "view"), target: vec3(r.target, "view") }]
+            : [];
+        })
+      : [],
     labels: Array.isArray(o.labels)
       ? o.labels.flatMap((l: unknown) => {
           const r = (l ?? {}) as Record<string, unknown>;

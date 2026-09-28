@@ -537,3 +537,32 @@ test("labels: added by clicking, edited, saved in a PNG and restored from a shar
   await expect(other.locator("#note-list input")).toHaveValue("Tree trunk");
   await expect(other.locator("#labels span.note")).toHaveText("Tree trunk");
 });
+
+test("display: adaptive point size, background colour and saved views survive a share link", async ({ page, context }) => {
+  await page.getByRole("button", { name: "Try a sample" }).click();
+  await expect(status(page)).toContainText("C2C distance computed");
+  await page.locator("#point-size-mode").selectOption("adaptive");
+  await expect(page.locator("#edl")).toBeDisabled();
+  await page.locator("#background").evaluate((el: HTMLInputElement) => {
+    el.value = "#ffffff";
+    el.dispatchEvent(new Event("input"));
+  });
+
+  await page.locator('[data-view="top"]').click();
+  await page.locator("#view-save").click();
+  await page.locator("#view-list input").first().fill("From above");
+  await page.locator('[data-view="side"]').click();
+  await page.locator("#view-save").click();
+  await expect(page.locator("#view-list li")).toHaveCount(2);
+
+  await page.locator("#share").click();
+  const link = await page.locator("#share-link").inputValue();
+  const other = await context.newPage();
+  await other.goto(link);
+  await expect(other.locator("#status")).toContainText("Session restored");
+  await expect(other.locator("#point-size-mode")).toHaveValue("adaptive");
+  await expect(other.locator("#edl")).toBeDisabled();
+  await expect(other.locator("#background")).toHaveValue("#ffffff");
+  await expect(other.locator("#view-list input").first()).toHaveValue("From above");
+  await other.locator("#view-list li").first().getByRole("button", { name: "Go" }).click();
+});

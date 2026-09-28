@@ -270,6 +270,7 @@ textarea {
 .task button { padding: 0 8px; font-size: 11px; }
 .status-right { display: flex; gap: 16px; font-variant-numeric: tabular-nums; }
 label.inline select { width: auto; }
+label.inline input[type="color"] { width: 28px; height: 22px; padding: 0 2px; }
 
 .mobile-only { display: none; }
 

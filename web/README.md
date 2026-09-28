@@ -64,6 +64,9 @@ Files never leave the browser.
   them. **Save session** writes the same state as JSON; open it together with
   its files (or first, then the files). Remote servers must allow
   cross-origin requests (CORS).
+- Display: fixed (pixels) or adaptive point size (as wide as the local point
+  spacing, per drawn octree node, so near surfaces close up), background
+  colour, and named camera views; all kept in share links and sessions.
 - Works on phones and tablets: the view fills the screen and the panels
   open as a bottom sheet (**Panels**); drag to orbit, pinch to zoom, two
   fingers to pan, tap to pick, double-tap (or double-click) to orbit around

@@ -408,10 +408,19 @@
 
     <h2 id="large">Large files</h2>
     <ul>
-      <li>LAS and binary PLY/PCD are streamed in 16 MB slices. The progress bar shows how far a load is, and
-        <b>Cancel</b> stops it.</li>
-      <li>Files above <b>Max points per file</b> (50M by default) keep every n-th point.</li>
-      <li>Only the octree nodes that matter on screen are drawn, up to the <b>point budget</b>.</li>
+      <li>LAS and LAZ are read in chunks of about 50,000 points on a pool of workers, and binary PLY/PCD in 16 MB
+        slices, so a file never has to fit in memory. The progress bar shows how far a load is, and
+        <b>Cancel</b> stops it. A LAS/LAZ from <b>Open URL</b> is read the same way, with range requests.</li>
+      <li>Files above <b>Max points per file</b> (50M by default) keep every n-th point. Every analysis uses
+        these points.</li>
+      <li><b>Full detail</b>: zoomed in on a thinned LAS/LAZ file, the viewer draws every point of the file there,
+        decoded from the file chunk by chunk as needed (like COPC, but for any LAS/LAZ, without converting it).
+        The status bar counts the file's points and shows how many chunks are drawn at full density. It works in
+        RGB, intensity, class and solid colors; for distances and other results, which only the loaded points
+        have, the loaded points are drawn alone. Picking and measuring use the loaded points. Moving a cloud
+        (ICP, alignment) turns full detail off for it. Untick <b>Full detail</b> in the toolbar to draw only the
+        loaded points.</li>
+      <li>Only the octree nodes and chunks that matter on screen are drawn, up to the <b>point budget</b>.</li>
       <li>Heavy steps run on a pool of workers: indexing, C2C/C2M, SOR and normals.</li>
       <li>The status bar shows the viewer's WebAssembly memory. Reload the page to free it after closing big
         clouds.</li>

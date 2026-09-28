@@ -36,6 +36,7 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
     if (slice.kind === "sor-local" || slice.kind === "normals") transfer.push(slice.points.buffer);
     if (slice.kind === "sor-within") transfer.push(slice.queries.buffer);
     if (slice.kind === "copc-nodes") transfer.push(slice.head.buffer, slice.nodes.buffer);
+    if (slice.kind === "las-chunks") transfer.push(slice.head.buffer, slice.chunks.buffer);
     if (slice.kind === "bucket-chunk" || slice.kind === "bucket") {
       transfer.push(slice.positions.buffer);
       if (slice.colors) transfer.push(slice.colors.buffer);
@@ -68,14 +69,42 @@ export async function runSlices<S extends Slice>(
   lanesUsed?: number[],
 ): Promise<SliceResult<S>[]> {
   const results: SliceResult<S>[] = new Array(count);
+  await eachSlice(count, make, (i, r) => (results[i] = r), lanesUsed);
+  return results;
+}
+
+/**
+ * Like {@link runSlices}, but hands each result to `done` as it arrives
+ * instead of keeping them all. The first error (also one thrown by `done`)
+ * stops handing out slices.
+ */
+export async function eachSlice<S extends Slice>(
+  count: number,
+  make: (i: number) => S,
+  done: (i: number, result: SliceResult<S>) => void,
+  lanesUsed?: number[],
+): Promise<void> {
   let next = 0;
+  let failed = false;
   const lanes = Array.from({ length: Math.min(poolSize(), count) }, async (_, lane) => {
-    while (next < count) {
-      const i = next++;
-      if (lanesUsed) lanesUsed[i] = lane;
-      results[i] = await runSlice(worker(lane), make(i));
+    try {
+      while (!failed && next < count) {
+        const i = next++;
+        if (lanesUsed) lanesUsed[i] = lane;
+        done(i, await runSlice(worker(lane), make(i)));
+      }
+    } catch (err) {
+      failed = true;
+      throw err;
     }
   });
   await Promise.all(lanes);
-  return results;
+}
+
+let nextLane = 0;
+
+/** Run one slice on the pool, taking the workers in turn. */
+export function runAny<S extends Slice>(slice: S): Promise<SliceResult<S>> {
+  nextLane = (nextLane + 1) % poolSize();
+  return runSlice(worker(nextLane), slice);
 }

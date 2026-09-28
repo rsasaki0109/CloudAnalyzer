@@ -3,6 +3,7 @@
 pub mod copc;
 mod e57;
 mod las;
+pub mod las_chunks;
 mod las_write;
 mod obj;
 mod pcd;
@@ -15,6 +16,7 @@ mod write;
 mod xyz;
 
 pub use e57::{scan_names as e57_scan_names, write_e57};
+pub use las::RawLasPoints;
 pub use las_write::write_las;
 pub use stream::PointStream;
 pub use write::{ScalarField, write_csv, write_mesh_ply, write_obj, write_ply};

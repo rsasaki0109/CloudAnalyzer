@@ -38,6 +38,12 @@ export interface LoadedCloud {
   filePoints: number;
   /** For a COPC file read to a budget: how many octree levels were read. */
   copcLevels: number | null;
+  /**
+   * For a thinned LAS/LAZ file: its chunks, which the worker can decode at
+   * full density on demand (see `DetailChunk`), as `minX, minY, minZ, maxX,
+   * maxY, maxZ, points` per chunk in original coordinates. Null otherwise.
+   */
+  detailChunks: Float64Array | null;
   /** Milliseconds spent in each loading stage inside the worker. */
   timings: { parse: number; index: number; prepare: number; workers?: number };
   /** [minX, minY, minZ, maxX, maxY, maxZ] in original coordinates. */
@@ -47,6 +53,23 @@ export interface LoadedCloud {
    * stay precise whatever else is open; the UI places it in the scene.
    */
   shift: Vec3;
+}
+
+/** Every point of one chunk of a thinned cloud's file. */
+export interface DetailChunk {
+  /** Interleaved xyz minus the requested shift. */
+  positions: Float32Array;
+  /** Interleaved rgb narrowed like the cloud's colors, or null. */
+  colors: Uint8Array | null;
+  intensity: Float32Array;
+  classification: Uint8Array;
+  /**
+   * The points come in slices along the chunk's longest side, so a chunk
+   * shaped like a long strip (airborne files are in flight-line order) is
+   * drawn only where it is in view: `count, minX, minY, minZ, maxX, maxY,
+   * maxZ` per slice, relative to the shift, in point order.
+   */
+  pieces: Float64Array;
 }
 
 export interface C2cStats {
@@ -264,12 +287,25 @@ export type Request =
       maxPoints: number;
     }
   | {
-      /** A remote COPC file, read node by node with range requests. */
-      kind: "load-copc";
+      /**
+       * A remote file read with range requests: COPC node by node, other
+       * LAS/LAZ chunk by chunk; anything else is downloaded whole.
+       */
+      kind: "load-url";
       url: string;
       name: string;
-      /** Read octree levels while their points fit this. */
+      /** File size in bytes. */
+      size: number;
+      /** As for `load`. */
       maxPoints: number;
+    }
+  | {
+      /** One chunk of a thinned LAS/LAZ cloud's file at full density (see `LoadedCloud.detailChunks`). */
+      kind: "detail";
+      id: number;
+      chunk: number;
+      /** Positions come back relative to this (the cloud's `shift`). */
+      shift: Vec3;
     }
   | { kind: "c2c"; compared: number; reference: number; signed: boolean }
   | { kind: "remove"; id: number }

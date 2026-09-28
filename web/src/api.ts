@@ -2,6 +2,7 @@
 
 import type {
   C2cOutput,
+  DetailChunk,
   ExportFormat,
   FilterOp,
   IcpOutput,
@@ -75,15 +76,24 @@ export function loadCloud(
   return call({ kind: "load", file, maxPoints }, [], progress, signal);
 }
 
-/** Read a remote COPC file node by node, down to the levels that fit `maxPoints`. */
-export function loadCopcUrl(
+/**
+ * Read a remote file of `size` bytes with range requests: COPC down to the
+ * levels that fit `maxPoints`, other LAS/LAZ chunk by chunk (as for a local file).
+ */
+export function loadUrl(
   url: string,
   name: string,
+  size: number,
   maxPoints: number,
   progress?: (p: Progress) => void,
   signal?: AbortSignal,
 ): Promise<LoadedCloud> {
-  return call({ kind: "load-copc", url, name, maxPoints }, [], progress, signal);
+  return call({ kind: "load-url", url, name, size, maxPoints }, [], progress, signal);
+}
+
+/** Every point of one chunk of a thinned LAS/LAZ cloud's file, relative to `shift`. */
+export function readDetail(id: number, chunk: number, shift: Vec3): Promise<DetailChunk> {
+  return call({ kind: "detail", id, chunk, shift });
 }
 
 /** A trajectory file's poses (TUM, KITTI or CSV), or null when the file is not a trajectory. */

@@ -14,6 +14,7 @@ import init, {
   computeVolume,
   e57ScanNames,
   evaluateTrajectory,
+  LasReader,
   Mesh,
   StreamLoader,
   planCloudToCloud,
@@ -26,11 +27,12 @@ import init, {
   warmUp,
 } from "./wasm/ca_wasm.js";
 import { type ByteSource, readRange } from "./bytes";
-import type { Slice } from "./c2c-worker";
+import type { LasChunksResult, Slice } from "./c2c-worker";
 import { CANCELLED } from "./protocol";
-import { MIN_PARALLEL_QUERIES, poolSize, runOn, runSlices, warmUpPool } from "./pool";
+import { eachSlice, MIN_PARALLEL_QUERIES, poolSize, runAny, runOn, runSlices, warmUpPool } from "./pool";
 import type {
   C2cOutput,
+  DetailChunk,
   IcpOutput,
   LoadedCloud,
   M3c2Output,
@@ -61,8 +63,25 @@ type Item =
       /** Names of the merged clouds, by `source` value. */
       sources?: string[];
       copcLevels?: number;
+      detail?: Detail;
     }
   | { kind: "mesh"; mesh: Mesh; name: string };
+
+/**
+ * Where a thinned LAS/LAZ cloud's file can be read again at full density,
+ * chunk by chunk (see `LasReader`). Dropped once the points are moved.
+ */
+interface Detail {
+  source: ByteSource;
+  /** The file up to its point data (what `decodeLasChunks` needs). */
+  head: Uint8Array;
+  /** `offset, size, count, first` per chunk. */
+  chunks: Float64Array;
+  /** `min, max` corners per chunk. */
+  bounds: Float64Array;
+  /** How the file's 16-bit colors were narrowed to 8 bits. */
+  colorShift: number;
+}
 
 const ready = init().then((wasm) => {
   // Optimize the heavy kernels here and on the pool before the first file
@@ -251,6 +270,7 @@ type Loaded =
       copcLevels?: number;
       /** Scan names of a multi-scan E57, by `source` value. */
       sources?: string[];
+      detail?: Detail;
     };
 
 /** COPC nodes decoded per pool job. */
@@ -324,27 +344,114 @@ async function readCopc(
   }
 }
 
+/** LAS/LAZ chunks decoded per pool job. */
+const LAS_JOB_POINTS = 500_000;
+
 /**
- * Read a file: stream fixed-record formats (LAS, binary PLY/PCD) slice by
- * slice so they are never held whole; read anything else (LAZ, meshes, text)
- * at once. Clouds larger than `maxPoints` keep every n-th point.
+ * Read a plain LAS/LAZ file chunk by chunk on the worker pool (see
+ * `LasReader`), keeping every n-th point above `maxPoints`. Records each
+ * chunk's bounds on the way, so a thinned cloud can later show any part of
+ * the file at full density. Returns null when the file cannot be read in
+ * chunks (not LAS, or LAZ without a chunk table).
+ */
+async function readLas(
+  source: ByteSource,
+  size: number,
+  head: Uint8Array,
+  maxPoints: number,
+  progress: (note: string, fraction?: number) => void,
+  check: () => void,
+): Promise<Loaded | null> {
+  const reader = LasReader.open(head, size);
+  if (!reader) return null;
+  let chunks: Float64Array;
+  try {
+    for (let need = reader.needs(); need.length; need = reader.needs()) {
+      reader.supply(await readRange(source, need[0], need[1]));
+    }
+    chunks = reader.chunks();
+  } catch {
+    // E.g. LAZ whose writer left no chunk table: read it whole.
+    reader.free();
+    return null;
+  }
+  try {
+    const filePoints = reader.totalPoints;
+    const keepEvery = filePoints > maxPoints ? Math.ceil(filePoints / maxPoints) : 1;
+    const n = chunks.length / 4;
+    // Jobs of consecutive chunks, so each reads one range.
+    const jobs: [number, number][] = [];
+    for (let k = 0, points = 0; k < n; k++) {
+      if (points === 0) jobs.push([k, k + 1]);
+      else jobs[jobs.length - 1][1] = k + 1;
+      points += chunks[k * 4 + 2];
+      if (points >= LAS_JOB_POINTS) points = 0;
+    }
+    const dataHead = head.slice(0, reader.dataOffset);
+    const bounds = new Float64Array(n * 6);
+    // Results arrive out of order; add them to the cloud in file order.
+    const waiting = new Map<number, LasChunksResult>();
+    let added = 0;
+    let read = 0;
+    const note = keepEvery > 1 ? ` (keeping 1 in ${keepEvery})` : "";
+    progress(`reading 0%${note}`, 0);
+    await eachSlice(
+      jobs.length,
+      (j) => ({
+        kind: "las-chunks" as const,
+        source,
+        head: dataHead.slice(),
+        chunks: chunks.slice(jobs[j][0] * 4, jobs[j][1] * 4),
+        keepEvery,
+      }),
+      (j, result) => {
+        check();
+        bounds.set(result.bounds, jobs[j][0] * 6);
+        waiting.set(j, result);
+        for (let r = waiting.get(added); r; r = waiting.get(added)) {
+          reader.addDecoded(r.positions, r.colors ?? undefined, r.intensity, r.classification);
+          waiting.delete(added++);
+        }
+        for (let k = jobs[j][0]; k < jobs[j][1]; k++) read += chunks[k * 4 + 2];
+        const fraction = read / Math.max(1, filePoints);
+        progress(`reading ${Math.round(fraction * 100)}%${note}`, fraction);
+      },
+    );
+    const detail =
+      keepEvery > 1 ? { source, head: dataHead, chunks, bounds, colorShift: reader.colorShift } : undefined;
+    const cloud = reader.finish();
+    return { kind: "cloud", cloud, keepEvery, filePoints, detail };
+  } catch (err) {
+    reader.free();
+    throw err;
+  }
+}
+
+/**
+ * Read a file: plain LAS/LAZ chunk by chunk on the pool and other
+ * fixed-record formats (binary PLY/PCD) slice by slice, so they are never
+ * held whole; read anything else (meshes, text, E57) at once. Clouds larger
+ * than `maxPoints` keep every n-th point.
  */
 async function readPoints(
-  file: File,
+  source: ByteSource,
+  name: string,
+  size: number,
   maxPoints: number,
   progress: (note: string, fraction?: number) => void,
   check: () => void,
 ): Promise<Loaded> {
-  const name = file.name;
   const thinning = (points: number) => (points > maxPoints ? Math.ceil(points / maxPoints) : 1);
   progress("reading header");
-  let head = new Uint8Array(await file.slice(0, 1 << 16).arrayBuffer());
-  let headerLength = StreamLoader.headerLength(name, head);
-  if (headerLength === undefined && file.size > head.length) {
-    head = new Uint8Array(await file.slice(0, 1 << 22).arrayBuffer());
-    headerLength = StreamLoader.headerLength(name, head);
+  let head = await readRange(source, 0, Math.min(size, 1 << 16));
+  const want = LasReader.headerLength(head) ?? StreamLoader.headerLength(name, head);
+  if (size > head.length && (want === undefined || want > head.length)) {
+    head = await readRange(source, 0, Math.min(size, Math.max(1 << 22, want ?? 0)));
   }
-  if (CopcReader.isCopc(head)) return readCopc({ file }, file.size, maxPoints, progress, check);
+  if (CopcReader.isCopc(head)) return readCopc(source, size, maxPoints, progress, check);
+  const las = await readLas(source, size, head, maxPoints, progress, check);
+  if (las) return las;
+  const headerLength = StreamLoader.headerLength(name, head);
   const loader = headerLength !== undefined ? StreamLoader.open(name, head.subarray(0, headerLength)) : undefined;
   if (loader) {
     const filePoints = loader.totalPoints;
@@ -352,13 +459,13 @@ async function readPoints(
     loader.setKeepEvery(keepEvery);
     const start = loader.dataOffset;
     try {
-      for (let at = start; at < file.size; at += STREAM_CHUNK) {
-        const fraction = (at - start) / Math.max(1, file.size - start);
+      for (let at = start; at < size; at += STREAM_CHUNK) {
+        const fraction = (at - start) / Math.max(1, size - start);
         progress(
           `reading ${Math.round(fraction * 100)}%${keepEvery > 1 ? ` (keeping 1 in ${keepEvery})` : ""}`,
           fraction,
         );
-        const chunk = new Uint8Array(await file.slice(at, at + STREAM_CHUNK).arrayBuffer());
+        const chunk = await readRange(source, at, Math.min(STREAM_CHUNK, size - at));
         check();
         loader.push(chunk);
       }
@@ -371,7 +478,7 @@ async function readPoints(
     return { kind: "cloud", cloud, keepEvery, filePoints };
   }
   progress("reading");
-  const bytes = new Uint8Array(await file.arrayBuffer());
+  const bytes = await readRange(source, 0, size);
   check();
   progress("parsing");
   const mesh = Mesh.parse(name, bytes);
@@ -495,6 +602,7 @@ function describe(
       keepEvery: 1,
       filePoints: item.mesh.vertexCount,
       copcLevels: null,
+      detailChunks: null,
       timings: { ...timings, prepare: performance.now() - start },
     };
     return { value, transfer: [positions.buffer, indices.buffer] };
@@ -507,6 +615,16 @@ function describe(
   const normals = cloud.normals() ?? null;
   const opacity = cloud.attribute("opacity") ?? null;
   const lodNodes = cloud.lodNodes();
+  let detailChunks: Float64Array | null = null;
+  if (item.detail) {
+    const { bounds, chunks } = item.detail;
+    const n = chunks.length / 4;
+    detailChunks = new Float64Array(n * 7);
+    for (let k = 0; k < n; k++) {
+      detailChunks.set(bounds.subarray(k * 6, k * 6 + 6), k * 7);
+      detailChunks[k * 7 + 6] = chunks[k * 4 + 2];
+    }
+  }
   const value: LoadedCloud = {
     kind: "cloud",
     id,
@@ -529,9 +647,11 @@ function describe(
     keepEvery: item.keepEvery ?? 1,
     filePoints: item.filePoints ?? cloud.length,
     copcLevels: item.copcLevels ?? null,
+    detailChunks,
     timings: { ...timings, prepare: performance.now() - start },
   };
   const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
+  if (detailChunks) transfer.push(detailChunks.buffer);
   for (const buffer of [colors, intensity, classification, normals, opacity]) if (buffer) transfer.push(buffer.buffer);
   return { value, transfer };
 }
@@ -719,6 +839,79 @@ function evaluate(req: Extract<Request, { kind: "trajectory-eval" }>): Trajector
   }
 }
 
+/** The file no longer matches a cloud whose points moved. */
+function dropDetail(id: number): void {
+  const item = items.get(id);
+  if (item?.kind === "cloud") item.detail = undefined;
+}
+
+/** Decode one chunk of a thinned cloud's file at full density, on the pool. */
+async function readDetail(
+  req: Extract<Request, { kind: "detail" }>,
+): Promise<{ value: DetailChunk; transfer: Transferable[] }> {
+  const item = items.get(req.id);
+  const detail = item?.kind === "cloud" ? item.detail : undefined;
+  if (!detail) throw new Error("no full-density file for this cloud");
+  const k = req.chunk;
+  const r = await runAny({
+    kind: "las-chunks",
+    source: detail.source,
+    head: detail.head.slice(),
+    chunks: detail.chunks.slice(k * 4, k * 4 + 4),
+    keepEvery: 1,
+  });
+  const n = r.intensity.length;
+  const [sx, sy, sz] = req.shift;
+  const bounds = detail.bounds.subarray(k * 6, k * 6 + 6);
+  // Slices along the longer horizontal side, about as many as it is longer
+  // than the shorter one: a flight-line strip becomes squarish pieces.
+  const axis = bounds[3] - bounds[0] >= bounds[4] - bounds[1] ? 0 : 1;
+  const long = bounds[3 + axis] - bounds[axis];
+  const short = bounds[4 - axis] - bounds[1 - axis];
+  const slices = Math.max(1, Math.min(MAX_SLICES, Math.round(long / Math.max(short, long / MAX_SLICES, 1e-9))));
+  const slice = (i: number) => Math.min(slices - 1, Math.floor(((r.positions[i * 3 + axis] - bounds[axis]) / long) * slices) || 0);
+  const starts = new Uint32Array(slices + 1);
+  for (let i = 0; i < n; i++) starts[slice(i) + 1]++;
+  for (let s = 0; s < slices; s++) starts[s + 1] += starts[s];
+  const next = starts.slice(0, slices);
+  const positions = new Float32Array(n * 3);
+  const colors = r.colors ? new Uint8Array(n * 3) : null;
+  const intensity = new Float32Array(n);
+  const classification = new Uint8Array(n);
+  const pieces = new Float64Array(slices * 7);
+  for (let s = 0; s < slices; s++) pieces.set([0, Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity], s * 7);
+  for (let i = 0; i < n; i++) {
+    const s = slice(i);
+    const j = next[s]++;
+    const xyz = [r.positions[i * 3] - sx, r.positions[i * 3 + 1] - sy, r.positions[i * 3 + 2] - sz];
+    positions.set(xyz, j * 3);
+    const piece = s * 7;
+    pieces[piece]++;
+    for (let a = 0; a < 3; a++) {
+      pieces[piece + 1 + a] = Math.min(pieces[piece + 1 + a], xyz[a]);
+      pieces[piece + 4 + a] = Math.max(pieces[piece + 4 + a], xyz[a]);
+    }
+    if (colors && r.colors) {
+      for (let c = 0; c < 3; c++) colors[j * 3 + c] = r.colors[i * 3 + c] >> detail.colorShift;
+    }
+    intensity[j] = r.intensity[i];
+    classification[j] = r.classification[i];
+  }
+  const value: DetailChunk = {
+    positions,
+    colors,
+    intensity,
+    classification,
+    pieces: pieces.filter((_, i) => pieces[i - (i % 7)] > 0),
+  };
+  const transfer: Transferable[] = [positions.buffer, intensity.buffer, classification.buffer, value.pieces.buffer];
+  if (colors) transfer.push(colors.buffer);
+  return { value, transfer };
+}
+
+/** Most slices a full-density chunk is cut into (see `readDetail`). */
+const MAX_SLICES = 16;
+
 async function handle(
   req: Request,
   progress: (note: string, fraction?: number) => void,
@@ -731,14 +924,14 @@ async function handle(
     case "trajectory-eval":
       return { value: evaluate(req), transfer: [] };
     case "load":
-    case "load-copc": {
+    case "load-url": {
       const { maxPoints } = req;
       const name = req.kind === "load" ? req.file.name : req.name;
       let t = performance.now();
       const loaded =
         req.kind === "load"
-          ? await readPoints(req.file, maxPoints, progress, check)
-          : await readCopc({ url: req.url }, Number.POSITIVE_INFINITY, maxPoints, progress, check);
+          ? await readPoints({ file: req.file }, name, req.file.size, maxPoints, progress, check)
+          : await readPoints({ url: req.url }, name, req.size, maxPoints, progress, check);
       const parse = performance.now() - t;
       try {
         check();
@@ -771,6 +964,7 @@ async function handle(
         filePoints: loaded.filePoints,
         copcLevels: loaded.copcLevels,
         sources: loaded.sources,
+        detail: loaded.detail,
       });
       progress("preparing for display");
       return describe(id, { parse, index, workers });
@@ -793,6 +987,8 @@ async function handle(
         : cloudToCloud(compared, reference.cloud);
       return output(result, start, parallel?.workers ?? 1, "c2c", false);
     }
+    case "detail":
+      return readDetail(req);
     case "point": {
       const item = items.get(req.id);
       const xyz = item?.kind === "cloud" ? item.cloud.point(req.index) : undefined;
@@ -812,6 +1008,7 @@ async function handle(
       );
       const matrix = Array.from(outcome.matrix());
       moving.transform(new Float64Array(matrix));
+      dropDetail(req.moving);
       const described = describe(req.moving);
       const value: IcpOutput = {
         cloud: described.value,
@@ -827,6 +1024,7 @@ async function handle(
     }
     case "transform": {
       getCloud(req.id).transform(new Float64Array(req.matrix));
+      dropDetail(req.id);
       return describe(req.id);
     }
     case "volume": {

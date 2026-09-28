@@ -1,8 +1,10 @@
 /** Display settings, camera shortcuts and saved views. */
 
 import type { Vec3 } from "../protocol";
+import { detailShown } from "./colors";
+import { detailLoading } from "./detail";
 import { $, compact, removeButton, typing } from "./dom";
-import { entries, isMesh, toOriginal, toRender, viewer } from "./state";
+import { type Entry, entries, isMesh, toOriginal, toRender, viewer } from "./state";
 
 const backgroundInput = $<HTMLInputElement>("background");
 const pointSizeInput = $<HTMLInputElement>("point-size");
@@ -10,6 +12,7 @@ const pointSizeMode = $<HTMLSelectElement>("point-size-mode");
 const pointBudgetSelect = $<HTMLSelectElement>("point-budget");
 const edlToggle = $<HTMLInputElement>("edl");
 const edlStrength = $<HTMLInputElement>("edl-strength");
+const fullDetailToggle = $<HTMLInputElement>("full-detail");
 
 backgroundInput.value = getComputedStyle(document.documentElement).getPropertyValue("--viewport").trim();
 viewer.setBackground(backgroundInput.value);
@@ -52,10 +55,19 @@ function applyPointSizeMode(): void {
 }
 pointSizeMode.onchange = applyPointSizeMode;
 pointBudgetSelect.onchange = () => viewer.setPointBudget(Number(pointBudgetSelect.value));
+fullDetailToggle.onchange = () => viewer.setFullDetail(fullDetailToggle.checked);
 
-viewer.onDrawn = (points) => {
-  const total = [...entries.values()].reduce((sum, e) => sum + (e.visible && !isMesh(e) ? e.cloud.count : 0), 0);
-  $("drawn").textContent = total ? `Drawing ${compact(points)} of ${compact(total)} points` : "";
+viewer.onDrawn = (points, detail) => {
+  // A thinned file whose chunks can be drawn counts with all of its points.
+  const full = (e: Entry) =>
+    fullDetailToggle.checked && e.cloud.detailChunks && detailShown(e) ? e.cloud.filePoints : e.cloud.count;
+  const total = [...entries.values()].reduce((sum, e) => sum + (e.visible && !isMesh(e) ? full(e) : 0), 0);
+  const loading = detailLoading();
+  const chunks =
+    detail.chunks || loading
+      ? ` · full detail: ${detail.chunks} chunk${detail.chunks === 1 ? "" : "s"}${loading ? ` (${loading} loading)` : ""}`
+      : "";
+  $("drawn").textContent = total ? `Drawing ${compact(points)} of ${compact(total)} points${chunks}` : "";
 };
 window.addEventListener("keydown", (e) => {
   if (typing(e)) return;
@@ -71,6 +83,7 @@ export interface DisplaySettings {
   background?: string;
   pointSizeMode?: "fixed" | "adaptive";
   views?: SavedView[];
+  fullDetail?: boolean;
 }
 
 export function captureDisplay(): Required<DisplaySettings> {
@@ -82,6 +95,7 @@ export function captureDisplay(): Required<DisplaySettings> {
     background: backgroundInput.value,
     pointSizeMode: pointSizeMode.value as "fixed" | "adaptive",
     views: savedViews,
+    fullDetail: fullDetailToggle.checked,
   };
 }
 
@@ -93,6 +107,8 @@ export function applyDisplay(settings: DisplaySettings): void {
   }
   pointSizeMode.value = settings.pointSizeMode ?? "fixed";
   applyPointSizeMode();
+  fullDetailToggle.checked = settings.fullDetail ?? true;
+  viewer.setFullDetail(fullDetailToggle.checked);
   savedViews.splice(0, savedViews.length, ...(settings.views ?? []));
   renderViews();
   edlToggle.checked = settings.edl;

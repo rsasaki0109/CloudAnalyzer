@@ -89,6 +89,7 @@
       <a href="#normals">Normals</a>
       <a href="#merge">Merge and split</a>
       <a href="#clip">Clipping and cropping</a>
+      <a href="#segment">Lasso segmentation and undo</a>
       <a href="#profile">Cross-section profiles</a>
       <a href="#measure">Picking and measuring</a>
       <a href="#export">Saving results</a>
@@ -219,6 +220,19 @@
     <p>
       <b>Clipping box</b> limits the view to a box set with per-axis sliders. The X, Y and Z buttons cut a thin
       section and look straight at it. <b>Crop</b> copies the points inside the box into new clouds.
+    </p>
+
+    <h2 id="segment">Lasso segmentation and undo</h2>
+    <p>
+      <b>Segment</b> (<kbd>S</kbd>) draws a lasso: click around the points to cut out (<kbd>Backspace</kbd> removes
+      the last vertex), then <b>Keep inside</b> (<kbd>Enter</kbd>), <b>Remove inside</b> (<kbd>Delete</kbd>) or
+      <b>Split</b> into both parts. It cuts every visible cloud through the depth of the view, and skips points
+      hidden by the clipping box or a hidden class.
+    </p>
+    <p>
+      <b>↶</b> / <b>↷</b> (<kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>) undo and redo
+      segmentation, cropping, filters, ground extraction, merge, split, M3C2, volume and ICP. Removing a cloud with
+      ✕ is not undone: it frees the memory right away.
     </p>
 
     <h2 id="profile">Cross-section profiles</h2>

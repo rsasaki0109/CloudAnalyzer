@@ -5,7 +5,9 @@ import { cropCloud } from "../api";
 import type { Vec3 } from "../protocol";
 import { $, errorText, fmt, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
-import { clouds, globalShift, hideEntry, viewer } from "./state";
+import { record } from "./history";
+import type { Entry } from "./state";
+import { clouds, globalShift, viewer } from "./state";
 
 const clipEnabled = $<HTMLInputElement>("clip-enabled");
 /** Box the sliders span (render coordinates), captured when clipping starts. */
@@ -122,16 +124,19 @@ $<HTMLButtonElement>("clip-crop").onclick = async () => {
   const box = clipBox();
   if (!box || sources.length === 0) return;
   const created: string[] = [];
+  const added: Entry[] = [];
+  const cropped: Entry[] = [];
   for (const source of sources) {
     try {
       const cloud = await cropCloud(source.cloud.id, box.min, box.max, true);
-      addEntry(cloud);
+      added.push(addEntry(cloud));
+      cropped.push(source);
       created.push(`${cloud.name} (${cloud.count.toLocaleString()} points)`);
-      hideEntry(source);
     } catch (err) {
       created.push(`${source.cloud.name}: ${errorText(err)}`);
     }
   }
+  if (added.length) record({ label: "the crop", added, hide: cropped });
   setClipEnabled(false);
   applyClip();
   renderList();

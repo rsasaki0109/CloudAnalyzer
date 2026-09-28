@@ -115,6 +115,11 @@ export function cropCloud(id: number, min: Vec3, max: Vec3, inside: boolean): Pr
   return call({ kind: "crop", id, min, max, inside });
 }
 
+/** Split a cloud by a screen-space lasso: the selected points, the rest, or both (in that order). */
+export function segmentCloud(params: Omit<Extract<Request, { kind: "segment" }>, "kind">): Promise<LoadedCloud[]> {
+  return call({ kind: "segment", ...params });
+}
+
 /** A filtered copy of a cloud as a new cloud (see `Cloud.filter`). */
 export function filterCloud(id: number, op: "voxel" | "random" | "sor", a: number, b = 0): Promise<LoadedCloud> {
   return call({ kind: "filter", id, op, a, b });

@@ -102,6 +102,14 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .viewport.measuring > canvas { cursor: crosshair; }
 
+.lasso { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.lasso polygon { fill: rgb(79 195 247 / 0.12); stroke: #4fc3f7; stroke-width: 1.5; stroke-dasharray: 5 3; }
+.segment-bar {
+  position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px; max-width: calc(100% - 20px);
+  padding: 6px 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--border);
+}
+.segment-bar .hint { font-size: 12px; }
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .labels span {
   position: absolute;

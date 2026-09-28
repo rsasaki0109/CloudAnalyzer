@@ -6,7 +6,8 @@ import type { C2cOutput } from "../protocol";
 import { refreshColors } from "./colors";
 import { $, errorText, fillTable, fmt, setStatus } from "./dom";
 import { addEntry, renderList, saveCloud } from "./entries";
-import { display, distanceChanged, type Entry, entries, hideEntry, isMesh, listChanged } from "./state";
+import { record } from "./history";
+import { display, distanceChanged, type Entry, entries, isMesh, listChanged } from "./state";
 
 const comparedSelect = $<HTMLSelectElement>("c2c-compared");
 const referenceSelect = $<HTMLSelectElement>("c2c-reference");
@@ -102,7 +103,7 @@ async function runM3c2(compared: Entry, reference: Entry): Promise<void> {
   const stats = finiteStats(out.distance);
   let significant = 0;
   for (let i = 0; i < out.significant.length; i++) if (out.significant[i] > 0) significant++;
-  hideEntry(compared);
+  record({ label: "M3C2", added: [entry], hide: [compared] });
   showSigned(entry, {
     kind: "m3c2",
     signed: true,

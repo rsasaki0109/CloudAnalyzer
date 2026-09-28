@@ -190,6 +190,18 @@ export type Request =
       inside: boolean;
     }
   | {
+      kind: "segment";
+      id: number;
+      /** Row-major 4x4 matrix from original coordinates to clip space. */
+      matrix: number[];
+      /** Lasso vertices in normalized device coordinates, as x, y pairs. */
+      polygon: number[];
+      /** Only points in this box (original coordinates) are selected. */
+      clip: { min: Vec3; max: Vec3 } | null;
+      hiddenClasses: number[];
+      keep: "inside" | "outside" | "both";
+    }
+  | {
       kind: "export";
       id: number;
       format: "ply" | "csv";

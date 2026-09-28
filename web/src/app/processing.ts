@@ -5,7 +5,8 @@ import { classColor, className } from "../colormap";
 import { refreshColors } from "./colors";
 import { $, errorText, roundUp, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
-import { clouds, type Entry, entries, hideEntry, listChanged } from "./state";
+import { record } from "./history";
+import { clouds, type Entry, entries, listChanged } from "./state";
 
 /** Refill a cloud picker, keeping its choice if still there, else the newest cloud. */
 export function fillCloudSelect(select: HTMLSelectElement, options: Entry[]): void {
@@ -70,8 +71,8 @@ filterRun.onclick = async () => {
   setStatus(`Filtering ${entry.cloud.name}…`);
   try {
     const cloud = await filterCloud(entry.cloud.id, op, a, b);
-    addEntry(cloud);
-    hideEntry(entry);
+    const label = { voxel: "the voxel filter", random: "the random subsampling", sor: "the outlier filter" }[op];
+    record({ label, added: [addEntry(cloud)], hide: [entry] });
     renderList();
     const removed = entry.cloud.count - cloud.count;
     setStatus(
@@ -108,7 +109,7 @@ async function runGround(entry: Entry): Promise<void> {
       added.mode = "classification";
       refreshColors(added);
     }
-    hideEntry(entry);
+    record({ label: "the ground extraction", added: [added], hide: [entry] });
     renderList();
     let detail = `${cloud.count.toLocaleString()} points`;
     if (output === "classified" && cloud.classification) {
@@ -161,8 +162,7 @@ mergeRun.onclick = async () => {
       sources.map((e) => e.cloud.id),
       sources.map((e) => e.solid),
     );
-    addEntry(cloud);
-    for (const e of sources) hideEntry(e);
+    record({ label: "the merge", added: [addEntry(cloud)], hide: sources });
     renderList();
     setStatus(
       `${cloud.name}: ${cloud.count.toLocaleString()} points from ${sources.map((e) => e.cloud.name).join(", ")} ` +
@@ -183,12 +183,13 @@ splitRun.onclick = async () => {
   setStatus(`Splitting ${entry.cloud.name} by ${by}…`);
   try {
     const parts = await splitCloud(entry.cloud.id, by);
-    for (const cloud of parts) {
-      const added = addEntry(cloud);
-      if (by === "classification") added.solid = classColor(cloud.classification?.[0] ?? 0);
-      refreshColors(added);
-    }
-    hideEntry(entry);
+    const added = parts.map((cloud) => {
+      const part = addEntry(cloud);
+      if (by === "classification") part.solid = classColor(cloud.classification?.[0] ?? 0);
+      refreshColors(part);
+      return part;
+    });
+    record({ label: "the split", added, hide: [entry] });
     renderList();
     const names = parts.map((c) =>
       by === "classification" ? `${className(c.classification?.[0] ?? 0)} (${c.count.toLocaleString()})` : c.name,

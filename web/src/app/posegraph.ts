@@ -14,6 +14,7 @@ import {
   addPoseGraphLoop,
   closePoseGraph,
   exportPoseGraph,
+  findPoseGraphLoops,
   openPoseGraph,
   optimizePoseGraph,
   insertPoseGraphEdges,
@@ -40,7 +41,8 @@ interface Graph {
 /** Undo information: the poses before the step, and the edges it added or removed. */
 interface Step {
   poses: Float64Array;
-  addedEdge?: number;
+  /** Loop edges the step added (the last ones of the graph). */
+  added?: number[];
   removed?: RemovedEdge[];
 }
 
@@ -315,6 +317,7 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-optimize").disabled = busy;
   $<HTMLButtonElement>("pg-undo").disabled = busy || steps.length === 0;
   $<HTMLButtonElement>("pg-map").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-find").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-prune").disabled = busy || loops === 0;
   $("pg-legend").hidden = !errorColors();
   $("pg-legend-bar").style.background = gradientCss(display.ramp, "to right");
@@ -548,6 +551,48 @@ async function run(label: string, action: () => Promise<void>): Promise<void> {
   }
 }
 
+const inlierDistance = () => Math.max(0.01, num("pg-inlier") || 0.5);
+
+$<HTMLButtonElement>("pg-find").onclick = () =>
+  run("Finding loops", async () => {
+    const poses = graph!.state.poses.slice();
+    const signal = startTask();
+    try {
+      const found = await findPoseGraphLoops(
+        {
+          maxDistance: Math.max(0, num("pg-find-radius")),
+          minTravel: Math.max(0, num("pg-find-travel")),
+          spacing: Math.max(0, num("pg-find-spacing")),
+          minFitness: Math.min(100, Math.max(0, num("pg-find-fitness"))) / 100,
+          inlierDistance: inlierDistance(),
+          maxIterations: Math.max(1, num("pg-icp-iterations") || 50),
+          overlap: Math.min(100, Math.max(10, num("pg-icp-overlap") || 80)) / 100,
+          sigmaT: num("pg-loop-sigma-t") || 0.1,
+          sigmaRDeg: num("pg-loop-sigma-r") || 1,
+          loopKernel: kernel(),
+        },
+        (p: Progress) => {
+          showProgress(p);
+          setStatus(`Finding loops: ${p.note}…`);
+        },
+        signal,
+      );
+      if (found.added.length) steps.push({ poses, added: found.edges });
+      update(found.state);
+      const { optimized } = found;
+      setStatus(
+        found.candidates === 0
+          ? "No loop candidates: raise the search radius or lower the minimum travel"
+          : `Added ${found.added.length} of ${found.candidates} candidate loop${found.candidates === 1 ? "" : "s"}` +
+              (optimized
+                ? `; χ² ${fmt(optimized.initialCost)} → ${fmt(optimized.finalCost)} in ${optimized.iterations} iterations`
+                : " (none overlapped enough)"),
+      );
+    } finally {
+      endTask(signal);
+    }
+  });
+
 const kernel = () => ($<HTMLInputElement>("pg-robust").checked ? Math.max(0, num("pg-kernel")) : 0);
 
 async function optimize(): Promise<string> {
@@ -575,13 +620,15 @@ $<HTMLButtonElement>("pg-loop").onclick = () =>
       maxIterations: Math.max(1, num("pg-icp-iterations") || 50),
       overlap: Math.min(100, Math.max(10, num("pg-icp-overlap") || 80)) / 100,
       pointToPlane: true,
+      inlierDistance: inlierDistance(),
       sigmaT: num("pg-loop-sigma-t") || 0.1,
       sigmaRDeg: num("pg-loop-sigma-r") || 1,
     });
-    steps.push({ poses, addedEdge: loop.edge });
+    steps.push({ poses, added: [loop.edge] });
     update(loop.state);
     const icp =
-      `ICP RMS ${fmt(loop.rmsInitial)} → ${fmt(loop.rmsFinal)}` + (loop.converged ? "" : " (not converged)");
+      `ICP RMS ${fmt(loop.rmsInitial)} → ${fmt(loop.rmsFinal)}, overlap ${Math.round(loop.fitness * 100)} %` +
+      (loop.converged ? "" : " (not converged)");
     setStatus(`Loop ${ids[from]} – ${ids[to]} added (${icp}); optimising…`);
     const optimized = await optimize();
     setSelection([]);
@@ -592,12 +639,15 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
   run("Undo", async () => {
     const step = steps.pop();
     if (!step) return;
-    if (step.addedEdge !== undefined) await removePoseGraphEdges([step.addedEdge], null);
+    if (step.added) await removePoseGraphEdges(step.added, null);
     if (step.removed) await insertPoseGraphEdges(step.removed);
     update(await setPoseGraphPoses(step.poses));
+    const plural = (n: number) => (n === 1 ? "" : "s");
     setStatus(
-      step.addedEdge !== undefined
-        ? "Removed the last loop"
+      step.added
+        ? step.added.length === 1
+          ? "Removed the last loop"
+          : `Removed the ${step.added.length} loop${plural(step.added.length)} found`
         : step.removed
           ? `Put back ${step.removed.length} removed edge${step.removed.length === 1 ? "" : "s"}`
           : "Undid the optimisation",

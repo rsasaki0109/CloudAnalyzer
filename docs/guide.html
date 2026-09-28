@@ -257,6 +257,14 @@
       wrong loop bends the map less. <b>Undo</b> takes back the last loop, removal or optimisation.
     </p>
     <p>
+      <b>Find loops automatically</b> proposes node pairs at most <b>Radius</b> metres apart (as the graph has them
+      now) but at least <b>Min travel</b> metres apart along the path, not already joined, at most one every
+      <b>Spacing</b> metres. Each is registered with ICP and kept when at least <b>Min overlap</b> percent of B's
+      points lie within the <b>Inlier distance</b> of A's; then the graph is optimised. With a large drift, raise the
+      radius; turn on <b>Robust loops</b> to soften any wrong loop that slips through, and check the list below.
+      Undo removes all the loops found at once.
+    </p>
+    <p>
       <b>Edges by error</b> colors every edge by how far it disagrees with the optimised graph (√χ², in standard
       deviations) in the color ramp, and <b>Loops, worst first</b> lists the loop edges by that error: a wrong loop
       shows up at the top. Click one to select its two nodes, <b>✕</b> to remove it and optimise again, or remove

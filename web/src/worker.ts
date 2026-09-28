@@ -38,6 +38,7 @@ import type {
   LoadedCloud,
   M3c2Output,
   MeshOutput,
+  PoseGraphFound,
   PoseGraphOpened,
   PoseGraphState,
   ProfileOutput,
@@ -1032,17 +1033,41 @@ async function handle(
       return openPoseGraph(req, progress, check);
     case "pg-loop": {
       const session = openGraph();
-      const [edge, rmsInitial, rmsFinal, iterations, converged] = session.addLoop(
-        req.from,
-        req.to,
-        req.maxIterations,
-        req.overlap,
-        req.pointToPlane,
-        req.sigmaT,
-        req.sigmaRDeg,
-      );
+      const r = session.registerLoop(req.from, req.to, req.maxIterations, req.overlap, req.pointToPlane, req.inlierDistance);
+      const edge = session.addLoopEdge(req.from, req.to, r.subarray(5), req.sigmaT, req.sigmaRDeg);
       const state = graphState(session);
-      const value = { state, edge, rmsInitial, rmsFinal, iterations, converged: converged === 1 };
+      const [rmsInitial, rmsFinal, iterations, converged, fitness] = r;
+      const value = { state, edge, rmsInitial, rmsFinal, iterations, converged: converged === 1, fitness };
+      return { value, transfer: stateTransfer(state) };
+    }
+    case "pg-find-loops": {
+      const session = openGraph();
+      const pairs = session.loopCandidates(req.maxDistance, req.minTravel, req.spacing);
+      const candidates = pairs.length / 2;
+      const added: PoseGraphFound["added"] = [];
+      const edges: number[] = [];
+      for (let k = 0; k < candidates; k++) {
+        check();
+        progress(`checking candidate ${k + 1} of ${candidates} (${added.length} loops so far)`, k / candidates);
+        const [from, to] = [pairs[2 * k], pairs[2 * k + 1]];
+        let r: Float64Array;
+        try {
+          r = session.registerLoop(from, to, req.maxIterations, req.overlap, true, req.inlierDistance);
+        } catch {
+          continue; // a node without a scan, or too few matching points
+        }
+        if (!(r[4] >= req.minFitness)) continue;
+        edges.push(session.addLoopEdge(from, to, r.subarray(5), req.sigmaT, req.sigmaRDeg));
+        added.push({ from, to, fitness: r[4] });
+      }
+      let optimized: PoseGraphFound["optimized"] = null;
+      if (added.length) {
+        progress("optimising");
+        const [initialCost, finalCost, iterations] = session.optimize(req.loopKernel);
+        optimized = { initialCost, finalCost, iterations };
+      }
+      const state = graphState(session);
+      const value: PoseGraphFound = { state, candidates, added, edges, optimized };
       return { value, transfer: stateTransfer(state) };
     }
     case "pg-optimize": {

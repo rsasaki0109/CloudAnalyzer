@@ -1386,7 +1386,7 @@ function scanFiles(poses: Pose2[], scan: (p: Pose2) => Buffer) {
   }));
 }
 
-test("pose graph: a drifted loop closed with ICP, optimised, undone and turned into a map", async ({ page }) => {
+test("pose graph: a drifted loop closed with ICP, by hand and found automatically, undone and turned into a map", async ({ page }) => {
   const { truth, drifted, scan } = courtyard();
   await page
     .locator("#pg-files-input")
@@ -1425,6 +1425,16 @@ test("pose graph: a drifted loop closed with ICP, optimised, undone and turned i
   await expect(status(page)).toContainText("Removed the last loop");
   await expect(stats).toContainText("23 odometry, 0 loops");
   expect(await saveError()).toBeGreaterThan(1);
+
+  // Found automatically: the last poses come back near the first ones.
+  await page.locator("#pose-graph-panel summary", { hasText: "Find loops automatically" }).click();
+  await page.locator("#pg-find").click();
+  await expect(status(page)).toContainText(/Added [1-9]\d* of \d+ candidate loops?; χ²/);
+  expect(await saveError()).toBeLessThan(0.3);
+  await expect(page.locator("#pg-loop-list li").first()).toBeVisible();
+  await page.locator("#pg-undo").click();
+  await expect(status(page)).toContainText(/Removed the (last loop|\d+ loops found)/);
+  await expect(stats).toContainText("23 odometry, 0 loops");
 
   await page.locator("#pg-map").click();
   await expect(status(page)).toContainText(/Added poses_map: [\d,]+ points/);

@@ -2,6 +2,7 @@
 
 pub mod copc;
 mod las;
+mod las_write;
 mod obj;
 mod pcd;
 mod ply;
@@ -11,6 +12,7 @@ mod stream;
 mod write;
 mod xyz;
 
+pub use las_write::write_las;
 pub use stream::PointStream;
 pub use write::{ScalarField, write_csv, write_ply};
 

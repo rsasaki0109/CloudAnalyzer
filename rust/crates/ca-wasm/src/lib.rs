@@ -730,9 +730,9 @@ impl Cloud {
         self.inner.positions.as_flattened().to_vec()
     }
 
-    /// Serialize the cloud as `"ply"` (binary) or `"csv"`, with an optional
-    /// scalar field (one value per point, in the cloud's order). Points are
-    /// written in octree order, not the original file order.
+    /// Serialize the cloud as `"ply"` (binary), `"las"`, `"laz"` or `"csv"`,
+    /// with an optional scalar field (one value per point, in the cloud's
+    /// order). Points are written in octree order, not the original file order.
     pub fn export(
         &self,
         format: &str,
@@ -747,6 +747,8 @@ impl Cloud {
         let fields = field.as_slice();
         match format {
             "ply" => ca_core::io::write_ply(&self.inner, fields),
+            "las" => ca_core::io::write_las(&self.inner, fields, false),
+            "laz" => ca_core::io::write_las(&self.inner, fields, true),
             "csv" => ca_core::io::write_csv(&self.inner, fields),
             other => return Err(JsError::new(&format!("unknown export format {other:?}"))),
         }
@@ -1734,6 +1736,7 @@ pub fn warm_up() {
     };
     let _ = Octree::build_bucketed(&mut cloud, params);
     let _ = Octree::build_for_cloud(&mut cloud.clone(), params);
+    let _ = ca_core::io::write_las(&cloud, &[], true);
     let queries: Vec<[f64; 3]> = positions
         .iter()
         .step_by(3)

@@ -10,7 +10,7 @@ pub struct ScalarField<'a> {
     pub values: &'a [f32],
 }
 
-fn check(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<(), String> {
+pub(super) fn check(cloud: &PointCloud, scalars: &[ScalarField]) -> Result<(), String> {
     for s in scalars {
         if s.values.len() != cloud.len() {
             return Err(format!(

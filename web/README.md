@@ -21,8 +21,9 @@ Files never leave the browser.
   drawn, up to an adjustable point budget (1M–20M).
 - ICP registration (point-to-plane or point-to-point, overlap trimming,
   optional centroid pre-alignment) with the resulting 4×4 transform and undo.
-- Save any cloud as binary PLY or CSV, including its C2C/C2M distances as a
-  scalar field (`scalar_C2C_distance`, which CloudCompare loads directly).
+- Save any cloud as binary PLY, LAS 1.4, LAZ or CSV, including its C2C/C2M
+  distances as a scalar field (`scalar_C2C_distance` in PLY, a `float` extra
+  byte field in LAS/LAZ; CloudCompare loads both directly).
 - Clipping box with per-axis sliders and one-click X/Y/Z cross-sections; the
   point budget goes to what is inside, and **Crop** copies the points inside
   into new clouds.

@@ -180,7 +180,7 @@ minInput.onchange = maxInput.onchange = () => {
 
 const activeEntry = () => (display.activeC2c !== null ? entries.get(display.activeC2c) : undefined);
 
-for (const format of ["ply", "csv"] as const) {
+for (const format of ["ply", "las", "laz", "csv"] as const) {
   $<HTMLButtonElement>(`export-${format}`).onclick = () => {
     const entry = activeEntry();
     if (entry) void saveCloud(entry, format);

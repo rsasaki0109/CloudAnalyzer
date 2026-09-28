@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { type Download, expect, type Page, test } from "@playwright/test";
 import { readFileSync } from "node:fs";
 
 /** A binary little-endian PLY with float x/y/z. */
@@ -12,8 +12,11 @@ function ply(points: [number, number, number][]): Buffer {
   return Buffer.concat([Buffer.from(header), body]);
 }
 
-/** An uncompressed LAS 1.2 file (point format 1) with intensity and classes. */
-function las(points: { xyz: [number, number, number]; intensity: number; cls: number }[]): Buffer {
+/** An uncompressed LAS 1.2 file (point format 1, 1 mm scale) with intensity and classes. */
+function las(
+  points: { xyz: [number, number, number]; intensity: number; cls: number }[],
+  offset: [number, number, number] = [0, 0, 0],
+): Buffer {
   const header = Buffer.alloc(227);
   header.write("LASF", 0);
   header[24] = 1;
@@ -23,11 +26,14 @@ function las(points: { xyz: [number, number, number]; intensity: number; cls: nu
   header[104] = 1;
   header.writeUInt16LE(28, 105);
   header.writeUInt32LE(points.length, 107);
-  for (let a = 0; a < 3; a++) header.writeDoubleLE(0.001, 131 + 8 * a);
+  for (let a = 0; a < 3; a++) {
+    header.writeDoubleLE(0.001, 131 + 8 * a);
+    header.writeDoubleLE(offset[a], 155 + 8 * a);
+  }
   const body = Buffer.alloc(points.length * 28);
   points.forEach((p, i) => {
     const o = i * 28;
-    p.xyz.forEach((v, a) => body.writeInt32LE(Math.round(v / 0.001), o + 4 * a));
+    p.xyz.forEach((v, a) => body.writeInt32LE(Math.round((v - offset[a]) / 0.001), o + 4 * a));
     body.writeUInt16LE(p.intensity, o + 12);
     body[o + 15] = p.cls;
   });
@@ -50,6 +56,12 @@ async function open(page: Page, files: { name: string; buffer: Buffer }[]): Prom
 }
 
 const status = (page: Page) => page.locator("#status");
+
+async function bytesOf(download: Download): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of await download.createReadStream()) chunks.push(chunk as Buffer);
+  return Buffer.concat(chunks);
+}
 
 test.beforeEach(async ({ page }) => {
   page.on("pageerror", (err) => {
@@ -88,6 +100,76 @@ test("PLY: C2C between a grid and a lifted copy, then export", async ({ page }) 
   const header = Buffer.concat(chunks).subarray(0, 300).toString("latin1");
   expect(header).toContain("element vertex 3600");
   expect(header).toContain("property float scalar_C2C_distance");
+});
+
+test("LAS export: UTM points, intensity, classes and C2C saved to LAS / LAZ and read back", async ({ page }) => {
+  // Georeferenced coordinates on the fixture's 1 mm grid.
+  const utm = (lift: number) =>
+    grid(60, lift).map((p, i) => ({
+      xyz: [368_000 + p[0], 3_955_000 + p[1], 40 + p[2]] as [number, number, number],
+      intensity: 100 + (i % 50),
+      cls: i % 10 === 0 ? 6 : 2,
+    }));
+  const lifted = utm(0.5);
+  const utmOffset: [number, number, number] = [368_000, 3_955_000, 0];
+  await open(page, [
+    { name: "reference.las", buffer: las(utm(0), utmOffset) },
+    { name: "lifted.las", buffer: las(lifted, utmOffset) },
+  ]);
+  await expect(status(page)).toContainText("Loaded lifted.las: 3,600 points");
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("C2C distance computed for 3,600 points");
+
+  // Save from the cloud's ⤓ menu.
+  const download = page.waitForEvent("download");
+  await page.locator(".cloud-list li").nth(1).locator("button.icon").click();
+  await page.locator(".cloud-list .save-formats").getByRole("button", { name: "LAS" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("lifted_C2C.las");
+  const saved = await bytesOf(file);
+  expect(saved.subarray(0, 4).toString("latin1")).toBe("LASF");
+  expect([saved[24], saved[25], saved[104]]).toEqual([1, 4, 6]);
+  const recordLen = saved.readUInt16LE(105);
+  expect(recordLen).toBe(34); // format 6 + one float extra byte
+  expect(saved.toString("latin1", 375 + 54 + 4, 375 + 54 + 16)).toBe("C2C_distance");
+  expect(saved.readDoubleLE(147)).toBe(0.001);
+
+  // Every point comes back (in octree order) on the 1 mm grid, with its attributes.
+  const expected = new Map(lifted.map((p) => [p.xyz.map((v) => Math.round(v * 1000)).join(","), p]));
+  const count = Number(saved.readBigUInt64LE(247));
+  expect(count).toBe(3600);
+  const data = saved.readUInt32LE(96);
+  const bad: number[] = [];
+  for (let i = 0; i < count; i++) {
+    const o = data + i * recordLen;
+    const xyz = [0, 1, 2].map((a) => saved.readInt32LE(o + 4 * a) * saved.readDoubleLE(131 + 8 * a) + saved.readDoubleLE(155 + 8 * a));
+    const p = expected.get(xyz.map((v) => Math.round(v * 1000)).join(","));
+    const distance = saved.readFloatLE(o + 30);
+    const ok =
+      p !== undefined &&
+      xyz.every((v, a) => Math.abs(v - Math.round(p.xyz[a] * 1000) / 1000) < 1e-6) &&
+      saved.readUInt16LE(o + 12) === p.intensity &&
+      saved[o + 16] === p.cls &&
+      distance >= 0 &&
+      distance <= 0.5001;
+    if (!ok) bad.push(i);
+  }
+  expect(bad).toEqual([]);
+
+  await open(page, [{ name: "again.las", buffer: saved }]);
+  await expect(status(page)).toContainText("Loaded again.las: 3,600 points");
+  // The class list counts all three clouds: 3 × 3,240 ground points.
+  await expect(page.locator("#class-list")).toContainText("2 · Ground9,720");
+
+  // The distance panel's LAZ export compresses the same records.
+  await page.locator(".cloud-list li").nth(1).locator("select").selectOption("c2c");
+  const lazDownload = page.waitForEvent("download");
+  await page.locator("#export-laz").click();
+  const laz = await bytesOf(await lazDownload);
+  expect(laz[104]).toBe(0x86);
+  expect(laz.length).toBeLessThan(saved.length / 2);
+  await open(page, [{ name: "again.laz", buffer: laz }]);
+  await expect(status(page)).toContainText("Loaded again.laz: 3,600 points");
 });
 
 test("LAS: intensity and classification with a class filter", async ({ page }) => {
@@ -483,6 +565,7 @@ test("normals: estimated, shaded, saved to PLY and read back", async ({ page }) 
 
   const download = page.waitForEvent("download");
   await page.locator(".cloud-list li").first().locator("button.icon").click();
+  await page.locator(".cloud-list .save-formats").getByRole("button", { name: "PLY" }).click();
   const file = await download;
   const chunks: Buffer[] = [];
   for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);

@@ -2,14 +2,14 @@
 
 import { rasterGeotiff, rasterizeCloud } from "../api";
 import { className, colorize, lut } from "../colormap";
-import type { RasterGrid } from "../protocol";
+import type { RasterGrid, RasterOutput } from "../protocol";
 import { refreshColors } from "./colors";
 import { finiteStats } from "./distance";
 import { $, download, errorText, roundUp, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
 import { addReportSection } from "./report";
-import { clouds, display, distanceChanged, entries, listChanged } from "./state";
+import { clouds, display, distanceChanged, type Entry, entries, listChanged } from "./state";
 
 const cloudSelect = $<HTMLSelectElement>("raster-cloud");
 const classSelect = $<HTMLSelectElement>("raster-class");
@@ -78,6 +78,41 @@ function updateForm(): void {
 }
 cloudSelect.onchange = heightSelect.onchange = updateForm;
 
+/** Add a raster's cells to the list, colored by height in the ramp, and make it the one to save. */
+export function showRaster(source: Entry, out: RasterOutput): Entry {
+  const entry = addEntry(out.cells);
+  // Color the cells by height in the current ramp.
+  entry.c2c = {
+    kind: "raster",
+    signed: false,
+    distances: out.cellHeights,
+    stats: finiteStats(out.cellHeights),
+    millis: out.millis,
+    workers: 1,
+    referenceName: source.cloud.name,
+  };
+  entry.mode = "c2c";
+  display.activeC2c = entry.cloud.id;
+  display.range = null;
+  refreshColors(entry);
+  record({ label: "the raster", added: [entry], hide: [source] });
+  renderList();
+  distanceChanged.emit();
+  lastStats = { source: source.cloud.name, nx: out.nx, ny: out.ny, cell: out.cell, populated: out.populatedCells, filled: out.cells.count - out.populatedCells, heights: entry.c2c.stats };
+  const { nx, ny, minX, minY, heights } = out;
+  last = { grid: { nx, ny, minX, minY, cell: out.cell, heights }, name: out.cells.name, id: entry.cloud.id };
+  tiffButton.disabled = pngButton.disabled = false;
+  const total = out.nx * out.ny;
+  const filled = out.cells.count - out.populatedCells;
+  setStatus(
+    `Raster: ${out.nx.toLocaleString()} × ${out.ny.toLocaleString()} cells, ` +
+      `${out.populatedCells.toLocaleString()} with points (${((100 * out.populatedCells) / total).toFixed(1)} %)` +
+      (filled > 0 ? `, ${filled.toLocaleString()} filled` : "") +
+      ` in ${Math.round(out.millis)} ms`,
+  );
+  return entry;
+}
+
 runButton.onclick = async () => {
   const source = entries.get(Number(cloudSelect.value));
   const cell = Number(cellInput.value);
@@ -97,36 +132,7 @@ runButton.onclick = async () => {
       fillEmpty: $<HTMLInputElement>("raster-fill").checked,
       class: classSelect.value === ALL || $("raster-class-row").hidden ? null : Number(classSelect.value),
     });
-    const entry = addEntry(out.cells);
-    // Color the cells by height in the current ramp.
-    entry.c2c = {
-      kind: "raster",
-      signed: false,
-      distances: out.cellHeights,
-      stats: finiteStats(out.cellHeights),
-      millis: out.millis,
-      workers: 1,
-      referenceName: source.cloud.name,
-    };
-    entry.mode = "c2c";
-    display.activeC2c = entry.cloud.id;
-    display.range = null;
-    refreshColors(entry);
-    record({ label: "the raster", added: [entry], hide: [source] });
-    renderList();
-    distanceChanged.emit();
-    lastStats = { source: source.cloud.name, nx: out.nx, ny: out.ny, cell: out.cell, populated: out.populatedCells, filled: out.cells.count - out.populatedCells, heights: entry.c2c.stats };
-    const { nx, ny, minX, minY, heights } = out;
-    last = { grid: { nx, ny, minX, minY, cell: out.cell, heights }, name: out.cells.name, id: entry.cloud.id };
-    tiffButton.disabled = pngButton.disabled = false;
-    const total = out.nx * out.ny;
-    const filled = out.cells.count - out.populatedCells;
-    setStatus(
-      `Raster: ${out.nx.toLocaleString()} × ${out.ny.toLocaleString()} cells, ` +
-        `${out.populatedCells.toLocaleString()} with points (${((100 * out.populatedCells) / total).toFixed(1)} %)` +
-        (filled > 0 ? `, ${filled.toLocaleString()} filled` : "") +
-        ` in ${Math.round(out.millis)} ms`,
-    );
+    showRaster(source, out);
   } catch (err) {
     setStatus(`Rasterize failed: ${errorText(err)}`, true);
   } finally {

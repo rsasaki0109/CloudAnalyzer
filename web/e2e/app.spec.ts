@@ -1570,6 +1570,15 @@ test("pose graph: a second session in another frame is joined at a shared place"
   await page.locator("#pg-save-g2o").click();
   // B's ids were shifted past A's.
   expect((await bytesOf(await g2o)).toString()).toContain("VERTEX_SE3:QUAT 23 ");
+
+  // The two sessions' maps, by M3C2 (the split defaults to where B starts): the same courtyard, no change.
+  await expect(page.locator("#pg-split")).toHaveValue("12");
+  await page.locator("#pg-parts").click();
+  await expect(status(page)).toContainText(/M3C2 at [\d,]+ core points/);
+  await expect(page.locator("#cloud-list li")).toHaveCount(3);
+  // And a terrain model of the joined map.
+  await page.locator("#pg-dem").click();
+  await expect(status(page)).toContainText(/DEM of [\d,]+ ground points of [\d,]+: \d+ × \d+ cells of 1 m/);
 });
 
 test("pose graph: a floor constraint levels a drive that drifted in pitch", async ({ page }) => {

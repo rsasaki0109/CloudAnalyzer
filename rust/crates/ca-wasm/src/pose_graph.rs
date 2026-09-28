@@ -747,28 +747,44 @@ impl PoseGraphSession {
     /// pose as loaded; call [`Cloud::build_index`] before drawing it. With
     /// `correction`, each point carries how far it moved from its place as
     /// loaded (the `correction` attribute, metres).
-    pub fn map(&self, initial: bool, correction: bool) -> Result<Cloud, JsError> {
-        let map = if initial {
-            let mut graph = self.graph.clone();
-            for (node, pose) in graph.nodes.iter_mut().zip(&self.initial) {
+    pub fn map(
+        &self,
+        initial: bool,
+        correction: bool,
+        first: usize,
+        count: usize,
+    ) -> Result<Cloud, JsError> {
+        // Only nodes `first..first + count` (all with `count` 0): a part of
+        // the path, e.g. one of two joined sessions.
+        let n = self.graph.nodes.len();
+        let first = first.min(n);
+        let end = if count == 0 {
+            n
+        } else {
+            (first + count).min(n)
+        };
+        let now = PoseGraph {
+            nodes: self.graph.nodes[first..end].to_vec(),
+            ..PoseGraph::default()
+        };
+        let scans = &self.scans[first..end];
+        let loaded = &self.initial[first..end];
+        let mut map = if initial {
+            let mut then = now.clone();
+            for (node, pose) in then.nodes.iter_mut().zip(loaded) {
                 node.pose = *pose;
             }
-            pose_graph::assemble(&graph, &self.scans)
+            pose_graph::assemble(&then, scans)
         } else {
-            pose_graph::assemble(&self.graph, &self.scans)
+            pose_graph::assemble(&now, scans)
         };
         if map.is_empty() {
-            return Err(JsError::new("no scans are loaded"));
+            return Err(JsError::new("no scans are loaded there"));
         }
-        let mut map = map;
         if correction {
             map.attributes.push(ca_core::Attribute {
                 name: "correction".into(),
-                values: ca_core::AttributeValues::F32(pose_graph::correction(
-                    &self.graph,
-                    &self.scans,
-                    &self.initial,
-                )),
+                values: ca_core::AttributeValues::F32(pose_graph::correction(&now, scans, loaded)),
             });
         }
         Ok(Cloud::unindexed(map))

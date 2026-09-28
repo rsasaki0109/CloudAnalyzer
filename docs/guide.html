@@ -290,6 +290,16 @@
       still asserts a flat stretch; on hills use <b>IMU gravity</b> instead.
     </p>
     <p>
+      <b>Analyse the map</b> hands the corrected map to the analysis tools. <b>Ground &amp; DEM</b> builds the map,
+      keeps its ground points (the Cloth Simulation Filter) and rasterizes them into a terrain model of <b>DEM cell</b>
+      metres, colored between the 2nd and 98th percentile of its heights (save it from the Rasterize panel).
+      <b>Compare parts (M3C2)</b> builds the map of the path before <b>Split at node</b> and of the path from it, and
+      runs M3C2 between them: for two joined sessions (the split then defaults to where the second starts) what
+      changed between them, and for one drive that passes a place twice how well the passes agree. On KITTI 07 split
+      at node 1000, where the drive comes back to its start, the mean M3C2 distance between the passes went from
+      0.17 m with the odometry alone to 0.02 m after Find loops and IMU gravity.
+    </p>
+    <p>
       <b>IMU gravity</b> is the constraint for hills. <b>Add gravity…</b> takes a KITTI <code>oxts</code> folder (roll and
       pitch of each frame, turned into the Velodyne frame by <code>calib_imu_to_velo.txt</code> when it is there, and by
       the scan → pose matrix the scans were opened with) or a text file of <code>frame ux uy uz</code> lines (up in scan

@@ -305,6 +305,20 @@ export function setPoseGraphFixed(index: number, fixed: boolean): Promise<PoseGr
   return call({ kind: "pg-set-fixed", index, fixed });
 }
 
+/** Tie nodes to gravity (replacing earlier ties) and optimise. */
+export function setPoseGraphGravity(
+  nodes: number[],
+  ups: Float64Array,
+  sigmaDeg: number,
+  loopKernel: number,
+): Promise<{ state: PoseGraphState; tied: number; initialCost: number; finalCost: number; iterations: number }> {
+  return call({ kind: "pg-gravity", nodes, ups, sigmaDeg, loopKernel });
+}
+
+export function clearPoseGraphGravity(): Promise<PoseGraphState> {
+  return call({ kind: "pg-clear-gravity" });
+}
+
 export function removePoseGraphPlane(index: number): Promise<PoseGraphState> {
   return call({ kind: "pg-remove-plane", index });
 }

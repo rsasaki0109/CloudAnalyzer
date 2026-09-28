@@ -937,6 +937,7 @@ function graphState(session: PoseGraphSession): PoseGraphState {
     fixed: session.fixedNodes(),
     planes: session.planeCount,
     planeEdges: session.planeEdgeCount,
+    gravityEdges: session.gravityEdgeCount,
   };
 }
 
@@ -1261,6 +1262,19 @@ async function handle(
     case "pg-set-fixed": {
       const session = openGraph();
       session.setFixed(req.index, req.fixed);
+      const state = graphState(session);
+      return { value: state, transfer: stateTransfer(state) };
+    }
+    case "pg-gravity": {
+      const session = openGraph();
+      const tied = session.setGravity(new Uint32Array(req.nodes), req.ups, req.sigmaDeg);
+      const [initialCost, finalCost, iterations] = session.optimize(req.loopKernel);
+      const state = graphState(session);
+      return { value: { state, tied, initialCost, finalCost, iterations }, transfer: stateTransfer(state) };
+    }
+    case "pg-clear-gravity": {
+      const session = openGraph();
+      session.clearGravity();
       const state = graphState(session);
       return { value: state, transfer: stateTransfer(state) };
     }

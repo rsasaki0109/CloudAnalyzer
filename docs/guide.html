@@ -284,8 +284,16 @@
       height</b>), and the graph is optimised. Undo removes the floor again. Use it on sites that are flat
       overall (a car park, a floor of a building): it asserts that the ground does not bend, and on hills it
       flattens the path. Planes per stretch of path were tried and do the same, a little at a time, since each
-      still asserts a flat stretch; without an absolute reference such as an IMU, height drift on hills is for
-      loops to fix.
+      still asserts a flat stretch; on hills use <b>IMU gravity</b> instead.
+    </p>
+    <p>
+      <b>IMU gravity</b> is the constraint for hills. <b>Add gravity…</b> takes a KITTI <code>oxts</code> folder (roll and
+      pitch of each frame, turned into the Velodyne frame by <code>calib_imu_to_velo.txt</code> when it is there, and by
+      the scan → pose matrix the scans were opened with) or a text file of <code>frame ux uy uz</code> lines (up in scan
+      coordinates). Each keyframe is held to its measured up direction (<b>σ tilt</b>); world up is taken from the
+      first keyframes, where odometry has drifted least. It assumes nothing about the ground, so the path loses its
+      tilt drift, and the height drift that follows, while hills stay hills. On KITTI 09 after Find loops it took
+      the height RMSE from 5.9 to 1.8 m and the ATE RMSE from 6.3 to 2.7 m. Gravity ties are not written to g2o.
     </p>
     <p>
       <b>Join another graph</b> adds a second session of the same place, recorded in its own frame: give a node of

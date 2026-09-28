@@ -548,6 +548,16 @@
             <button id="pg-find" class="primary" title="Register every candidate pair with ICP, keep those that overlap, then optimise">Find loops</button>
           </details>
           <details class="options">
+            <summary>IMU gravity</summary>
+            <p class="hint small">An IMU's roll and pitch give each keyframe's up direction. Tied to it, the path
+              loses its tilt drift, and the height drift that follows, while hills stay hills. Pick a KITTI
+              <code>oxts</code> folder (with <code>calib_imu_to_velo.txt</code> next to its files) or a text file of
+              <code>frame ux uy uz</code> lines (up in scan coordinates).</p>
+            <label title="Standard deviation of the measured up direction (degrees)">σ tilt ° <input id="pg-gravity-sigma" type="number" min="0" step="any" value="0.1" /></label>
+            <button id="pg-gravity" title="Open the IMU data and tie the keyframes to gravity, then optimise">Add gravity…</button>
+            <input id="pg-gravity-input" type="file" webkitdirectory multiple hidden />
+          </details>
+          <details class="options">
             <summary>Floor constraint</summary>
             <p class="hint small">Keyframes are tied to one floor plane, which removes the tilt and height drift of
               odometry on flat sites (a car park, a floor of a building). On hills it flattens the path: leave it

@@ -25,6 +25,8 @@ import {
   poseGraphMap,
   removePoseGraphEdges,
   removePoseGraphPlane,
+  setPoseGraphGravity,
+  clearPoseGraphGravity,
   setPoseGraphFixed,
   setPoseGraphNodePose,
   setPoseGraphPoses,
@@ -56,6 +58,8 @@ interface Step {
   planes?: { first: number; count: number };
   /** A node whose fixed flag the step flipped. */
   flipped?: number;
+  /** The step tied the nodes to gravity. */
+  gravity?: boolean;
 }
 
 /** Scan files (the poses are g2o, TUM or KITTI text). */
@@ -385,6 +389,9 @@ function renderInfo(): void {
     ...(state.planes
       ? [["Planes", `${state.planes} (${state.planeEdges.toLocaleString()} keyframe views)`] as [string, string]]
       : []),
+    ...(state.gravityEdges
+      ? [["Gravity", `${state.gravityEdges.toLocaleString()} keyframes`] as [string, string]]
+      : []),
     ["Total error (χ²)", fmt(errors)],
   ]);
   $<HTMLButtonElement>("pg-loop").disabled = busy || selection.length !== 2;
@@ -395,6 +402,7 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-find").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-merge").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-floor").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-gravity").disabled = busy;
   const a = nodeA();
   $<HTMLButtonElement>("pg-fix").textContent = a !== null && state.fixed[a] ? "Free A" : "Fix A";
   $<HTMLButtonElement>("pg-prune").disabled = busy || loops === 0;
@@ -573,6 +581,7 @@ async function graphFiles(
     extrinsic = await kittiExtrinsic(files);
     if (extrinsic) note = " (scans moved by calib.txt's Tr)";
   }
+  lastExtrinsic = extrinsic;
   const shown = (graph?.scans.length ?? 0) + scans.length;
   return {
     files: {
@@ -927,6 +936,95 @@ $<HTMLButtonElement>("pg-fix").onclick = () =>
     setStatus(`Node ${state.nodeIds[node]} ${fixed ? "is held in place by the optimiser (red)" : "is free again"}`);
   });
 
+// --- Gravity from an IMU ---------------------------------------------------------
+
+/** The scan-to-pose matrix the scans were opened with (up vectors turn with it). */
+let lastExtrinsic: number[] | null = null;
+
+/** Numbers in a text. */
+const numbers = (text: string) => text.trim().split(/\s+/).map(Number);
+
+/**
+ * Up directions in scan coordinates by frame number, from a KITTI OXTS
+ * folder (`oxts/data/0000000042.txt`: roll and pitch are fields 4 and 5;
+ * `calib_imu_to_velo.txt` turns them into the Velodyne frame) or from a
+ * text file of `frame ux uy uz` lines.
+ */
+async function readUps(files: File[]): Promise<Map<number, [number, number, number]>> {
+  const ups = new Map<number, [number, number, number]>();
+  const calib = files.find((f) => /^calib_imu_to_velo\.txt$/i.test(f.name));
+  let rotation = [1, 0, 0, 0, 1, 0, 0, 0, 1];
+  if (calib) {
+    const line = (await calib.text()).split("\n").find((l) => l.startsWith("R:"));
+    if (line) rotation = numbers(line.slice(2));
+  }
+  for (const file of files) {
+    if (!/\.txt$/i.test(file.name) || /^calib/i.test(file.name)) continue;
+    const text = await file.text();
+    const frame = /^(\d+)\.txt$/.exec(file.name);
+    const values = numbers(text);
+    if (frame && values.length >= 30) {
+      // OXTS: the IMU is turned by Rz(yaw) Ry(pitch) Rx(roll), so up in its frame is that matrix's last row.
+      const [roll, pitch] = [values[3], values[4]];
+      const imu = [-Math.sin(pitch), Math.cos(pitch) * Math.sin(roll), Math.cos(pitch) * Math.cos(roll)];
+      const r = rotation;
+      ups.set(Number(frame[1]), [
+        r[0] * imu[0] + r[1] * imu[1] + r[2] * imu[2],
+        r[3] * imu[0] + r[4] * imu[1] + r[5] * imu[2],
+        r[6] * imu[0] + r[7] * imu[1] + r[8] * imu[2],
+      ]);
+      continue;
+    }
+    for (const line of text.split("\n")) {
+      const v = numbers(line);
+      if (v.length === 4 && v.every(Number.isFinite)) ups.set(v[0], [v[1], v[2], v[3]]);
+    }
+  }
+  return ups;
+}
+
+async function addGravity(files: File[]): Promise<void> {
+  await run("Adding gravity", async () => {
+    const byFrame = await readUps(files);
+    const state = graph!.state;
+    const e = lastExtrinsic;
+    const nodes: number[] = [];
+    const ups: number[] = [];
+    state.nodeIds.forEach((id, i) => {
+      const up = byFrame.get(id);
+      if (!up) return;
+      // Into the pose frame, as the scans were.
+      const [x, y, z] = up;
+      nodes.push(i);
+      ups.push(
+        ...(e
+          ? [e[0] * x + e[1] * y + e[2] * z, e[4] * x + e[5] * y + e[6] * z, e[8] * x + e[9] * y + e[10] * z]
+          : up),
+      );
+    });
+    if (nodes.length === 0) {
+      setStatus("No up directions matched a node: pick an OXTS folder (or frame ux uy uz lines) named by frame", true);
+      return;
+    }
+    const poses = state.poses.slice();
+    const out = await setPoseGraphGravity(nodes, new Float64Array(ups), num("pg-gravity-sigma") || 0.1, kernel());
+    steps.push({ poses, gravity: true });
+    update(out.state);
+    setStatus(
+      `Gravity tied to ${out.tied.toLocaleString()} of ${(state.poses.length / 16).toLocaleString()} keyframes; ` +
+        `χ² ${fmt(out.initialCost)} → ${fmt(out.finalCost)} in ${out.iterations} iterations`,
+    );
+  });
+}
+
+$<HTMLButtonElement>("pg-gravity").onclick = () => $<HTMLInputElement>("pg-gravity-input").click();
+$<HTMLInputElement>("pg-gravity-input").onchange = (event) => {
+  const target = event.target as HTMLInputElement;
+  const files = [...(target.files ?? [])];
+  target.value = "";
+  if (files.length) void addGravity(files);
+};
+
 const kernel = () => ($<HTMLInputElement>("pg-robust").checked ? Math.max(0, num("pg-kernel")) : 0);
 
 async function optimize(): Promise<string> {
@@ -979,6 +1077,7 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
     // Later planes move down as each goes: removing `first` repeatedly takes them all.
     for (let k = 0; k < (step.planes?.count ?? 0); k++) await removePoseGraphPlane(step.planes!.first);
     if (step.flipped !== undefined) await setPoseGraphFixed(step.flipped, !graph!.state.fixed[step.flipped]);
+    if (step.gravity) await clearPoseGraphGravity();
     if (step.removed) await insertPoseGraphEdges(step.removed);
     update(await setPoseGraphPoses(step.poses));
     const plural = (n: number) => (n === 1 ? "" : "s");
@@ -989,6 +1088,8 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
           : `Removed the ${step.added.length} loop${plural(step.added.length)} found`
         : step.planes
           ? "Removed the floor"
+          : step.gravity
+          ? "Removed the gravity ties"
           : step.flipped !== undefined
           ? "Undid the fix"
           : step.removed

@@ -499,6 +499,8 @@ export type Request =
       voxel: number;
       /** The scans at their poses as loaded, instead of now. */
       initial: boolean;
+      /** Give each point a `correction` field: how far it moved from its place as loaded. */
+      correction: boolean;
     }
   | { kind: "pg-close" }
   | { kind: "trajectory"; file: File }

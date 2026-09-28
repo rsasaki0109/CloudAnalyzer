@@ -349,9 +349,12 @@ export function exportPoseGraph(format: PoseFormat): Promise<string> {
   return call({ kind: "pg-export", format });
 }
 
-/** Every scan at its optimised pose (or, with `initial`, its pose as loaded), as a new cloud. */
-export function poseGraphMap(voxel: number, initial = false): Promise<LoadedCloud> {
-  return call({ kind: "pg-map", voxel, initial });
+/**
+ * Every scan at its optimised pose (or, with `initial`, its pose as loaded),
+ * as a new cloud; with `correction`, each point carries how far it moved.
+ */
+export function poseGraphMap(voxel: number, initial = false, correction = false): Promise<LoadedCloud> {
+  return call({ kind: "pg-map", voxel, initial, correction });
 }
 
 export function closePoseGraph(): Promise<void> {

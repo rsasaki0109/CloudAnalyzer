@@ -317,10 +317,9 @@
       <b>Save g2o</b> writes the graph with its edges; <b>KITTI</b> and <b>TUM</b> write the optimised poses.
       <b>Build map cloud</b> adds every scan at its optimised pose to the cloud list, thinned to <b>Map voxel</b>,
       for measuring, comparing or exporting like any other cloud.
-      <b>Compare with the start</b> builds the map twice, from the poses as loaded and as they are now, and colors
-      the current one by its cloud-to-cloud distance to the first (the start map is hidden): where the loops,
-      floor and moves shifted the map, and by how much. It is the distance to the nearest point, so a stretch
-      that slid along a wall shows less than it moved.
+      <b>Compare with the start</b> builds the map with a <code>correction</code> field on every point: how far it
+      moved from its place as loaded, and colors the map by it (a scalar field like any other, with its histogram
+      and range filter): where the loops, floor, gravity and moves shifted the map, and by how much.
     </p>
 
     <p class="small">

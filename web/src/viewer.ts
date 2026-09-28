@@ -22,7 +22,47 @@ interface LodCloud {
   /** Node index -> drawable, created on first use. */
   objects: Map<number, THREE.Points>;
   visible: boolean;
+  /** The file behind a thinned cloud, drawn at full density near the camera (see `setDetail`). */
+  detail: Detail | null;
 }
+
+/** A chunk of the file behind a thinned cloud. */
+interface DetailPart {
+  /** Box of all of its points, render coordinates. */
+  box: THREE.Box3;
+  count: number;
+  /** Rough distance between neighbouring points at full density. */
+  spacing: number;
+  /**
+   * Drawables once the points arrived (see `addDetail`), one per slice of
+   * the chunk, so a strip-shaped chunk is drawn and counted only where it is
+   * in view; with what the app needs to recolor them.
+   */
+  pieces: DetailPiece[] | null;
+  data: unknown;
+  /** Frame it was last drawn in, for least-recently-used eviction. */
+  used: number;
+}
+
+interface DetailPiece {
+  object: THREE.Points;
+  /** Render coordinates. */
+  box: THREE.Box3;
+  /** Its points in the chunk's arrays. */
+  start: number;
+  count: number;
+}
+
+interface Detail {
+  parts: DetailPart[];
+  /** The loaded cloud keeps 1 in `keepEvery` points of the file. */
+  keepEvery: number;
+  /** Off when the colors come from data that only the loaded points have (e.g. distances). */
+  active: boolean;
+}
+
+/** A full-density chunk is wanted once the loaded points would be this many pixels apart. */
+const DETAIL_PX = 1.5;
 
 export interface PickHit {
   cloudId: number;
@@ -47,8 +87,15 @@ export class Viewer {
   private pointBudget = 3_000_000;
   private needsRender = true;
   private needsLod = true;
-  /** Called with the number of points drawn after each LOD update. */
-  onDrawn: (points: number) => void = () => {};
+  /** Called after each LOD update with the points drawn and how many of them are full-density chunks. */
+  onDrawn: (points: number, detail: { chunks: number; points: number }) => void = () => {};
+  /**
+   * Called after each LOD update with the full-density chunks wanted but not
+   * yet given with {@link addDetail}, most needed first; replaces earlier lists.
+   */
+  onDetailWanted: (wanted: { id: number; chunk: number }[]) => void = () => {};
+  private fullDetail = true;
+  private frame = 0;
   /** Called for a click (or tap) that was not a camera drag. */
   onClick: (clientX: number, clientY: number) => void = () => {};
   /** Called for a double click or double tap, after both clicks. */
@@ -205,9 +252,171 @@ export class Viewer {
         if (!cloud.objects.has(index)) this.createNode(cloud, index);
       }
       this.evict(cloud, wanted);
-      this.assignSizes(cloud, wanted);
     }
-    this.onDrawn(selection.points);
+    const detail = this.updateDetail(this.pointBudget - selection.points);
+    for (const cloud of this.clouds.values()) this.assignSizes(cloud, new Set(selection.nodes.get(cloud.id) ?? []));
+    this.onDrawn(selection.points + detail.points, detail);
+  }
+
+  /**
+   * Show full-density chunks of thinned clouds: those in view where the
+   * loaded points would be more than {@link DETAIL_PX} apart on screen,
+   * coarsest first, within what the octree LOD left of the point budget.
+   * Chunks not loaded yet are asked for with {@link onDetailWanted}.
+   */
+  private updateDetail(budget: number): { chunks: number; points: number } {
+    this.frame++;
+    const camera = this.camera;
+    const frustum = new THREE.Frustum().setFromProjectionMatrix(
+      new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse),
+    );
+    const pixelsPerUnit =
+      this.renderer.domElement.height / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+    const inView = (box: THREE.Box3) => frustum.intersectsBox(box) && (!this.clip || this.clip.intersectsBox(box));
+    const candidates: { cloud: LodCloud; part: DetailPart; index: number; px: number; matrix: THREE.Matrix4 | null }[] = [];
+    for (const cloud of this.clouds.values()) {
+      const detail = cloud.detail;
+      if (!detail || !detail.active || !cloud.visible || !this.fullDetail) continue;
+      const matrix = this.gizmo?.id === cloud.id ? this.gizmoMatrix() : null;
+      const thinned = Math.sqrt(detail.keepEvery);
+      detail.parts.forEach((part, index) => {
+        const box = matrix ? part.box.clone().applyMatrix4(matrix) : part.box;
+        if (!inView(box)) return;
+        const px = (part.spacing * thinned * pixelsPerUnit) / Math.max(box.distanceToPoint(camera.position), camera.near);
+        if (px >= DETAIL_PX) candidates.push({ cloud, part, index, px, matrix });
+      });
+    }
+    candidates.sort((a, b) => b.px - a.px);
+    const shown = new Set<DetailPiece>();
+    const wanted: { id: number; chunk: number }[] = [];
+    let reserved = 0;
+    const drawn = { chunks: 0, points: 0 };
+    for (const { cloud, part, index, matrix } of candidates) {
+      // A chunk still loading keeps room for all of its points; a loaded one
+      // counts only its slices in view.
+      const pieces = part.pieces?.filter((p) => inView(matrix ? p.box.clone().applyMatrix4(matrix) : p.box));
+      const points = pieces ? pieces.reduce((sum, p) => sum + p.count, 0) : part.count;
+      if (reserved + points > budget) break;
+      reserved += points;
+      if (!pieces) {
+        wanted.push({ id: cloud.id, chunk: index });
+        continue;
+      }
+      for (const piece of pieces) shown.add(piece);
+      part.used = this.frame;
+      drawn.chunks++;
+      drawn.points += points;
+    }
+    let resident = 0;
+    const idle: { cloud: LodCloud; part: DetailPart }[] = [];
+    for (const cloud of this.clouds.values()) {
+      for (const part of cloud.detail?.parts ?? []) {
+        if (!part.pieces) continue;
+        for (const piece of part.pieces) piece.object.visible = shown.has(piece);
+        resident += part.count;
+        if (part.used !== this.frame) idle.push({ cloud, part });
+      }
+    }
+    // Free the least recently drawn chunks once much more than the budget is held.
+    if (resident > 2 * this.pointBudget) {
+      idle.sort((a, b) => a.part.used - b.part.used);
+      for (const { cloud, part } of idle) {
+        if (resident <= this.pointBudget) break;
+        this.freeDetail(cloud, part);
+        resident -= part.count;
+      }
+    }
+    this.onDetailWanted(wanted);
+    return drawn;
+  }
+
+  /**
+   * Chunks of the file behind a thinned cloud that loaded 1 in `keepEvery`
+   * points: their boxes (render coordinates) and point counts. The viewer
+   * asks for the ones it wants (see {@link onDetailWanted}).
+   */
+  setDetail(id: number, chunks: { box: THREE.Box3; count: number }[], keepEvery: number): void {
+    const cloud = this.clouds.get(id);
+    if (!cloud) return;
+    this.dropDetail(cloud);
+    const parts = chunks.map(({ box, count }) => {
+      // Airborne data is 2.5D: spread the points over the two longest sides.
+      const [a, b, c] = box.getSize(new THREE.Vector3()).toArray().sort((x, y) => y - x);
+      const area = b > 0 ? a * b : a * Math.max(c, a / Math.max(1, count));
+      return { box, count, spacing: Math.sqrt(area / Math.max(1, count)), pieces: null, data: null, used: 0 };
+    });
+    cloud.detail = { parts, keepEvery, active: true };
+    this.requestRender(true);
+  }
+
+  /** Turn a cloud's full-density chunks on or off (e.g. while colored by data only its loaded points have). */
+  setDetailActive(id: number, active: boolean): void {
+    const detail = this.clouds.get(id)?.detail;
+    if (!detail || detail.active === active) return;
+    detail.active = active;
+    this.requestRender(true);
+  }
+
+  /** Full-density chunks on or off for every cloud. */
+  setFullDetail(enabled: boolean): void {
+    this.fullDetail = enabled;
+    this.requestRender(true);
+  }
+
+  /**
+   * The points of a chunk asked for with {@link onDetailWanted}: xyz relative
+   * to the cloud's offset, rgba colors and its slices (`count` and box
+   * relative to the offset, 7 numbers each, see `DetailChunk.pieces`);
+   * `data` comes back to {@link recolorDetail}.
+   */
+  addDetail(id: number, chunk: number, positions: Float32Array, colors: Uint8Array, slices: Float64Array, data: unknown): void {
+    const cloud = this.clouds.get(id);
+    const part = cloud?.detail?.parts[chunk];
+    if (!cloud || !part || part.pieces) return;
+    part.pieces = [];
+    for (let s = 0, start = 0; s < slices.length; s += 7) {
+      const count = slices[s];
+      const local = new THREE.Box3().setFromArray(slices.subarray(s + 1, s + 7));
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions.subarray(start * 3, (start + count) * 3), 3));
+      geometry.setAttribute("color", new THREE.BufferAttribute(colors.subarray(start * 4, (start + count) * 4), 4, true));
+      geometry.boundingBox = local.clone();
+      geometry.boundingSphere = local.getBoundingSphere(new THREE.Sphere());
+      const object = new THREE.Points(geometry, cloud.material);
+      object.visible = false;
+      cloud.group.add(object);
+      part.pieces.push({ object, box: local.translate(cloud.offset), start, count });
+      start += count;
+    }
+    part.data = data;
+    part.used = this.frame;
+    this.requestRender(true);
+  }
+
+  /** New rgba colors for every full-density chunk held for a cloud, from the `data` given with each. */
+  recolorDetail(id: number, colorize: (data: unknown) => Uint8Array): void {
+    for (const part of this.clouds.get(id)?.detail?.parts ?? []) {
+      if (!part.pieces) continue;
+      const colors = colorize(part.data);
+      for (const { object, start, count } of part.pieces) {
+        object.geometry.setAttribute("color", new THREE.BufferAttribute(colors.subarray(start * 4, (start + count) * 4), 4, true));
+      }
+    }
+    this.requestRender();
+  }
+
+  private freeDetail(cloud: LodCloud, part: DetailPart): void {
+    for (const { object } of part.pieces ?? []) {
+      cloud.group.remove(object);
+      object.geometry.dispose();
+    }
+    part.pieces = null;
+    part.data = null;
+  }
+
+  private dropDetail(cloud: LodCloud): void {
+    for (const part of cloud.detail?.parts ?? []) this.freeDetail(cloud, part);
+    cloud.detail = null;
   }
 
   /**
@@ -216,9 +425,16 @@ export class Viewer {
    * ancestors do not paint over finer detail.
    */
   private assignSizes(cloud: LodCloud, wanted: Set<number>): void {
+    const parts = cloud.detail?.parts ?? [];
     if (this.sizeMode === "fixed") {
       for (const object of cloud.objects.values()) object.material = cloud.material;
+      for (const part of parts) for (const { object } of part.pieces ?? []) object.material = cloud.material;
       return;
+    }
+    // Spacings rounded to half powers of two, so chunks share a few materials.
+    for (const part of parts) {
+      const material = this.sizedMaterial(cloud, 2 ** (Math.round(Math.log2(part.spacing) * 2) / 2));
+      for (const { object } of part.pieces ?? []) object.material = material;
     }
     const finest = (index: number): number => {
       const node = cloud.nodes[index];
@@ -327,6 +543,7 @@ export class Viewer {
       group,
       objects: new Map(),
       visible: true,
+      detail: null,
     });
     this.requestRender(true);
   }
@@ -386,6 +603,7 @@ export class Viewer {
     if (!cloud) return;
     this.scene.remove(cloud.group);
     for (const object of cloud.objects.values()) object.geometry.dispose();
+    this.dropDetail(cloud);
     for (const material of this.materials(cloud)) material.dispose();
     this.clouds.delete(id);
     this.requestRender(true);

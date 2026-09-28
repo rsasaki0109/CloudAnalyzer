@@ -1,11 +1,11 @@
 /** Point colors for each color mode. */
 
 import { classColor, colorize, lut, quantile, toRgba } from "../colormap";
-import type { LoadedCloud } from "../protocol";
+import type { DetailChunk, LoadedCloud } from "../protocol";
 import { type ColorMode, display, type Entry, hiddenClasses, viewer } from "./state";
 
-function solidColors(entry: Entry): Uint8Array {
-  const out = new Uint8Array(entry.cloud.count * 4);
+function solidColors(entry: Entry, count = entry.cloud.count): Uint8Array {
+  const out = new Uint8Array(count * 4);
   const [r, g, b] = entry.solid;
   for (let i = 0; i < out.length; i += 4) {
     out[i] = r;
@@ -55,6 +55,51 @@ function normalColors(normals: Float32Array, shade: boolean): Uint8Array {
   return out;
 }
 
+const intensityRanges = new WeakMap<Float32Array, [number, number]>();
+
+/**
+ * Intensity is stretched between the 2nd and 98th percentile of the loaded
+ * points, so a few bright returns do not wash everything out.
+ */
+function intensityRange(intensity: Float32Array): [number, number] {
+  let range = intensityRanges.get(intensity);
+  if (!range) {
+    const lo = quantile(intensity, 0.02);
+    const hi = quantile(intensity, 0.98);
+    range = [lo, hi > lo ? hi : lo + 1];
+    intensityRanges.set(intensity, range);
+  }
+  return range;
+}
+
+/** Color modes that full-density chunks of the file can be drawn in (the others use data only the loaded points have). */
+export function detailShown(entry: Entry): boolean {
+  return ["rgb", "intensity", "classification", "solid"].includes(entry.mode);
+}
+
+/** Interleaved rgba for a full-density chunk, colored like the entry's loaded points. */
+export function detailColors(entry: Entry, chunk: DetailChunk): Uint8Array {
+  const { cloud } = entry;
+  const count = chunk.intensity.length;
+  let out: Uint8Array;
+  if (entry.mode === "rgb" && chunk.colors) {
+    out = toRgba(chunk.colors);
+  } else if (entry.mode === "intensity" && cloud.intensity) {
+    out = colorize(chunk.intensity, ...intensityRange(cloud.intensity), lut("Grey"));
+  } else if (entry.mode === "classification") {
+    out = classificationColors(chunk.classification);
+  } else {
+    out = solidColors(entry, count);
+  }
+  hideClasses(out, chunk.classification);
+  return out;
+}
+
+function hideClasses(out: Uint8Array, classes: Uint8Array | null): void {
+  if (!classes || hiddenClasses.size === 0) return;
+  for (let i = 0; i < classes.length; i++) if (hiddenClasses.has(classes[i])) out[i * 4 + 3] = 0;
+}
+
 /** Interleaved rgba for the entry's color mode, with hidden classes at alpha 0. */
 export function colorsFor(entry: Entry): Uint8Array {
   const { cloud } = entry;
@@ -62,11 +107,7 @@ export function colorsFor(entry: Entry): Uint8Array {
   if (entry.mode === "rgb" && cloud.colors) {
     out = toRgba(cloud.colors);
   } else if (entry.mode === "intensity" && cloud.intensity) {
-    // Stretch between the 2nd and 98th percentile so a few bright returns
-    // do not wash everything out.
-    const lo = quantile(cloud.intensity, 0.02);
-    const hi = quantile(cloud.intensity, 0.98);
-    out = colorize(cloud.intensity, lo, hi > lo ? hi : lo + 1, lut("Grey"));
+    out = colorize(cloud.intensity, ...intensityRange(cloud.intensity), lut("Grey"));
   } else if (entry.mode === "classification" && cloud.classification) {
     out = classificationColors(cloud.classification);
   } else if ((entry.mode === "normal" || entry.mode === "shade") && cloud.normals) {
@@ -83,10 +124,7 @@ export function colorsFor(entry: Entry): Uint8Array {
   } else {
     out = solidColors(entry);
   }
-  if (cloud.classification && hiddenClasses.size > 0) {
-    const classes = cloud.classification;
-    for (let i = 0; i < classes.length; i++) if (hiddenClasses.has(classes[i])) out[i * 4 + 3] = 0;
-  }
+  hideClasses(out, cloud.classification);
   return out;
 }
 
@@ -114,8 +152,14 @@ export function availableModes(entry: Entry): Record<ColorMode, boolean> {
 }
 
 export function refreshColors(entry: Entry): void {
-  if (entry.cloud.kind === "mesh") viewer.setMeshColor(entry.cloud.id, entry.solid);
-  else viewer.setColors(entry.cloud.id, colorsFor(entry));
+  const { id } = entry.cloud;
+  if (entry.cloud.kind === "mesh") {
+    viewer.setMeshColor(id, entry.solid);
+    return;
+  }
+  viewer.setColors(id, colorsFor(entry));
+  viewer.setDetailActive(id, detailShown(entry));
+  if (detailShown(entry)) viewer.recolorDetail(id, (chunk) => detailColors(entry, chunk as DetailChunk));
 }
 
 /** Label for a distance result, e.g. "C2M distance → part.stl". */

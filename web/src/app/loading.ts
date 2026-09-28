@@ -1,6 +1,6 @@
 /** Opening clouds from files, drops and URLs. */
 
-import { loadCloud, loadCopcUrl, loadTrajectory } from "../api";
+import { loadCloud, loadTrajectory, loadUrl } from "../api";
 import { CANCELLED, type Progress } from "../protocol";
 import { nameFromUrl, parseSession } from "../session";
 import { $, errorText, setStatus } from "./dom";
@@ -10,10 +10,11 @@ import { entries, globalShift, type Origin, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { addTrajectory } from "./trajectory";
 
-/** A COPC file on a server, read node by node instead of downloaded. */
-interface RemoteCopc {
+/** A LAS/LAZ or COPC file on a server, read with range requests instead of downloaded. */
+interface RemoteFile {
   url: string;
   name: string;
+  size: number;
 }
 
 /** Extensions a trajectory can have; `.txt` and `.csv` may also be point clouds (the worker tells). */
@@ -25,7 +26,7 @@ const seconds = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `$
  * Load point clouds and meshes; session files (.json) among them are applied
  * once the others are in. `origins` tells where each file came from.
  */
-export async function loadFiles(files: (File | RemoteCopc)[], origins?: Origin[]): Promise<void> {
+export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]): Promise<void> {
   const sessions: File[] = [];
   const signal = startTask();
   for (const [i, file] of files.entries()) {
@@ -34,7 +35,8 @@ export async function loadFiles(files: (File | RemoteCopc)[], origins?: Origin[]
       sessions.push(file);
       continue;
     }
-    const mb = file instanceof File ? `${(file.size / 1e6).toFixed(file.size >= 1e7 ? 0 : 1)} MB` : "COPC";
+    const size = file.size;
+    const mb = `${(size / 1e6).toFixed(size >= 1e7 ? 0 : 1)} MB${file instanceof File ? "" : " on the server"}`;
     setStatus(`Loading ${file.name} (${mb}): reading…`);
     const start = performance.now();
     try {
@@ -55,7 +57,7 @@ export async function loadFiles(files: (File | RemoteCopc)[], origins?: Origin[]
       const cloud =
         file instanceof File
           ? await loadCloud(file, maxPoints, onProgress, signal)
-          : await loadCopcUrl(file.url, file.name, maxPoints, onProgress, signal);
+          : await loadUrl(file.url, file.name, file.size, maxPoints, onProgress, signal);
       addEntry(cloud, origins?.[i] ?? { kind: "file" });
       if (entries.size === 1) viewer.fit();
       const [sx, sy, sz] = globalShift();
@@ -101,7 +103,7 @@ export async function loadFiles(files: (File | RemoteCopc)[], origins?: Origin[]
 
 /** Download clouds from URLs (the server must allow cross-origin requests) and load them. */
 export async function loadUrls(urls: string[]): Promise<void> {
-  const files: (File | RemoteCopc)[] = [];
+  const files: (File | RemoteFile)[] = [];
   const origins: Origin[] = [];
   const failed: string[] = [];
   const signal = startTask();
@@ -110,16 +112,17 @@ export async function loadUrls(urls: string[]): Promise<void> {
     const name = nameFromUrl(url);
     setStatus(`Downloading ${name}…`);
     try {
-      // Ask for the first bytes: a COPC file is then read node by node; a
-      // server that ignores the range sends the whole file right away. Not
-      // cached: Chrome can otherwise splice this partial response into a
-      // later full download of the same URL.
+      // Ask for the first bytes: a LAS/LAZ or COPC file is then read piece
+      // by piece; a server that ignores the range sends the whole file right
+      // away. Not cached: Chrome can otherwise splice this partial response
+      // into a later full download of the same URL.
       const probe = await fetch(url, { signal, cache: "no-store", headers: { Range: "bytes=0-1023" } });
       if (!probe.ok) throw new Error(`HTTP ${probe.status}`);
       if (probe.status === 206) {
         const head = new Uint8Array(await probe.arrayBuffer());
-        if (isCopcHead(head)) {
-          files.push({ url, name });
+        const size = Number(/\/(\d+)$/.exec(probe.headers.get("content-range") ?? "")?.[1]);
+        if (isLasHead(head) && size > 0) {
+          files.push({ url, name, size });
         } else {
           const response = await fetch(url, { signal });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -145,10 +148,9 @@ export async function loadUrls(urls: string[]): Promise<void> {
   }
 }
 
-/** Whether these first bytes are a COPC file: LAS 1.4 whose first VLR is "copc". */
-function isCopcHead(head: Uint8Array): boolean {
-  const text = (at: number, n: number) => String.fromCharCode(...head.subarray(at, at + n));
-  return head.length >= 400 && text(0, 4) === "LASF" && head[24] === 1 && head[25] === 4 && text(377, 5) === "copc\0";
+/** Whether these first bytes are LAS/LAZ (COPC included), which the worker reads in pieces. */
+function isLasHead(head: Uint8Array): boolean {
+  return String.fromCharCode(...head.subarray(0, 4)) === "LASF";
 }
 
 /** The body of a download, reporting progress when its size is known. */

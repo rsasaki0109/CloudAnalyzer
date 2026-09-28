@@ -4,6 +4,7 @@ import { exportCloud, exportMesh, removeCloud } from "../api";
 import { parseNodes } from "../lod";
 import type { ExportFormat, LoadedCloud, MeshFormat, Vec3 } from "../protocol";
 import { colorsFor, defaultMode, distanceLabel, refreshColors } from "./colors";
+import { drawDetail } from "./detail";
 import { $, download, errorText, removeButton, setStatus } from "./dom";
 import { colorByField, distanceField, fieldNames } from "./scalars";
 import { narrow, setPanelsOpen } from "./layout";
@@ -58,7 +59,10 @@ export function drawEntry(entry: Entry): void {
   entry.nodes = parseNodes(cloud.lodNodes, cloud.lodGrid, globalShift());
   const offset = toRender(cloud.shift);
   if (cloud.kind === "mesh") viewer.addMesh(cloud.id, cloud.positions, cloud.indices!, entry.solid, offset);
-  else viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes, offset);
+  else {
+    viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes, offset);
+    drawDetail(entry);
+  }
   viewer.setVisible(cloud.id, entry.visible);
 }
 

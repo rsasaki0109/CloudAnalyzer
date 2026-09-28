@@ -7,6 +7,7 @@ import { type ByteSource, readRange } from "./bytes";
 import init, {
   bucketChunk,
   decodeCopcNodes,
+  decodeLasChunks,
   buildBucket,
   meshDistances,
   nearestDistances,
@@ -34,6 +35,12 @@ export type Slice =
   | { kind: "normals"; points: Float64Array; k: number; orientation: Float64Array }
   /** Fetch and decode COPC nodes (`offset, size, points` triples). */
   | { kind: "copc-nodes"; source: ByteSource; head: Uint8Array; nodes: Float64Array }
+  /**
+   * Decode consecutive LAS/LAZ chunks (`offset, size, count, first` each),
+   * keeping every `keepEvery`-th point of the file; `head` is the file's
+   * start up to its point data.
+   */
+  | { kind: "las-chunks"; source: ByteSource; head: Uint8Array; chunks: Float64Array; keepEvery: number }
   /** Drop this worker's part of `job`. */
   | { kind: "sor-release"; job: number }
   /** Run every kernel once so the browser optimizes them (see `warmUp`). */
@@ -57,6 +64,11 @@ export interface CopcNodesResult {
   classification: Uint8Array;
 }
 
+export interface LasChunksResult extends CopcNodesResult {
+  /** `min, max` corners per chunk, over all of its points. */
+  bounds: Float64Array;
+}
+
 export interface SorLocalResult {
   means: Float64Array;
   open: Uint32Array;
@@ -73,6 +85,8 @@ export type SliceResult<S extends Slice> = S extends { kind: "bucket-chunk" | "b
     ? SorLocalResult
     : S extends { kind: "copc-nodes" }
       ? CopcNodesResult
+    : S extends { kind: "las-chunks" }
+      ? LasChunksResult
     : S extends { kind: "normals" }
       ? Float32Array
       : Float64Array;
@@ -101,7 +115,7 @@ function unpack(r: Reordered): { value: ReorderedResult; transfer: Transferable[
   return { value, transfer };
 }
 
-type Value = Float64Array | Float32Array | ReorderedResult | SorLocalResult | CopcNodesResult;
+type Value = Float64Array | Float32Array | ReorderedResult | SorLocalResult | CopcNodesResult | LasChunksResult;
 
 async function run(request: SliceRequest): Promise<{ value: Value; transfer: Transferable[] }> {
   switch (request.kind) {
@@ -182,6 +196,30 @@ async function run(request: SliceRequest): Promise<{ value: Value; transfer: Tra
       };
       decoded.free();
       const transfer: Transferable[] = [value.positions.buffer, value.intensity.buffer, value.classification.buffer];
+      if (value.colors) transfer.push(value.colors.buffer);
+      return { value, transfer };
+    }
+    case "las-chunks": {
+      const { chunks } = request;
+      const n = chunks.length / 4;
+      // Chunks follow each other in the file: one read for all.
+      const start = chunks[0];
+      const bytes = await readRange(request.source, start, chunks[(n - 1) * 4] + chunks[(n - 1) * 4 + 1] - start);
+      const decoded = decodeLasChunks(request.head, bytes, chunks, request.keepEvery);
+      const value: LasChunksResult = {
+        positions: decoded.positions(),
+        colors: decoded.colors() ?? null,
+        intensity: decoded.intensity(),
+        classification: decoded.classification(),
+        bounds: decoded.bounds(),
+      };
+      decoded.free();
+      const transfer: Transferable[] = [
+        value.positions.buffer,
+        value.intensity.buffer,
+        value.classification.buffer,
+        value.bounds.buffer,
+      ];
       if (value.colors) transfer.push(value.colors.buffer);
       return { value, transfer };
     }

@@ -50,8 +50,8 @@ pub(crate) struct LasHeader {
     pub count: usize,
     pub compressed: bool,
     format: u8,
-    scale: [f64; 3],
-    offset: [f64; 3],
+    pub scale: [f64; 3],
+    pub offset: [f64; 3],
 }
 
 impl LasHeader {
@@ -209,9 +209,9 @@ impl RawLasPoints {
         self.classification.extend(other.classification);
     }
 
-    /// The cloud, with 16-bit colors scaled to 8 bits unless every channel
-    /// fits 8 bits already (many writers only fill the low byte).
-    pub fn into_cloud(self) -> PointCloud {
+    /// How far to shift 16-bit colors right to get 8 bits: 8, or 0 when
+    /// every channel fits 8 bits already (many writers only fill the low byte).
+    pub fn color_shift(&self) -> u32 {
         let max_channel = self
             .colors
             .iter()
@@ -219,7 +219,12 @@ impl RawLasPoints {
             .flat_map(|c| c.iter().copied())
             .max()
             .unwrap_or(0);
-        let shift = if max_channel > 255 { 8 } else { 0 };
+        if max_channel > 255 { 8 } else { 0 }
+    }
+
+    /// The cloud, with colors narrowed by [`RawLasPoints::color_shift`].
+    pub fn into_cloud(self) -> PointCloud {
+        let shift = self.color_shift();
         let colors = self
             .colors
             .map(|c| c.iter().map(|c| c.map(|v| (v >> shift) as u8)).collect());

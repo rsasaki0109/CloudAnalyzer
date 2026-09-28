@@ -361,6 +361,65 @@ test("large files keep every n-th point above the max-points setting", async ({ 
   await expect(page.locator(".cloud-list")).toContainText("800 points (1 in 2)");
 });
 
+test("full detail: a thinned LAS / LAZ shows every point of the file where zoomed in", async ({ page }) => {
+  // 200,000 points in rows, as a scanner writes them; the limit keeps 1 in 4.
+  const points: { xyz: [number, number, number]; intensity: number; cls: number }[] = [];
+  for (let j = 0; j < 400; j++) {
+    for (let i = 0; i < 500; i++) points.push({ xyz: [i * 0.1, j * 0.1, Math.sin(i / 7) * 0.2], intensity: i % 50, cls: 2 });
+  }
+  const setMaxPoints = (value: string) =>
+    page.evaluate((value) => {
+      const select = document.getElementById("max-points") as HTMLSelectElement;
+      if (![...select.options].some((o) => o.value === value)) select.add(new Option(value, value));
+      select.value = value;
+    }, value);
+  const drawn = page.locator("#drawn");
+  const drawnPoints = async () => {
+    const [, n, unit] = /Drawing ([\d.]+)([kM]?) of/.exec((await drawn.textContent()) ?? "")!;
+    return Number(n) * ({ k: 1e3, M: 1e6 }[unit] ?? 1);
+  };
+  const zoomIn = async () => {
+    await page.locator('[data-view="top"]').click();
+    await page.locator("#fit").click();
+    const box = (await page.locator("#viewport > canvas").boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    for (let k = 0; k < 6; k++) await page.mouse.wheel(0, -300);
+  };
+
+  // A LAZ made by the app from the whole file (octree order, 50,000-point chunks).
+  await setMaxPoints("0");
+  await open(page, [{ name: "all.las", buffer: las(points) }]);
+  await expect(status(page)).toContainText("Loaded all.las: 200,000 points");
+  await expect(drawn).not.toContainText("full detail");
+  const download = page.waitForEvent("download");
+  await page.locator(".cloud-list li").first().locator("button.icon").click();
+  await page.locator(".cloud-list .save-formats").getByRole("button", { name: "LAZ" }).click();
+  const laz = await bytesOf(await download);
+
+  for (const file of [
+    { name: "big.las", buffer: las(points) },
+    { name: "big.laz", buffer: laz },
+  ]) {
+    await page.goto("/");
+    await setMaxPoints("50000");
+    await open(page, [file]);
+    await expect(status(page)).toContainText(`Loaded ${file.name}: 50,000 of 200,000 points (1 in 4)`);
+    await zoomIn();
+    await expect(drawn).toContainText(/of 200k points · full detail: [1-9]\d* chunks?$/);
+    // More than every loaded point: the view comes from the file.
+    expect(await drawnPoints()).toBeGreaterThan(50_000);
+
+    // Colored by class, the chunks follow; switched off, only the loaded points are drawn.
+    await page.locator(".cloud-list li select").selectOption("classification");
+    await expect(drawn).toContainText("full detail");
+    await page.locator("#full-detail").uncheck();
+    await expect(drawn).toContainText(/Drawing [\d.]+k? of 50k points$/);
+    expect(await drawnPoints()).toBeLessThanOrEqual(50_000);
+    await page.locator("#full-detail").check();
+    await expect(drawn).toContainText("full detail");
+  }
+});
+
 test("volume: a 2 x 2 x 1 m mound over flat ground is 4 m³ of fill", async ({ page }) => {
   const site = (mound: boolean) => {
     const out: [number, number, number][] = [];

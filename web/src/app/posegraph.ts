@@ -30,9 +30,10 @@ import {
 import { colorize, gradientCss, lut } from "../colormap";
 import { CANCELLED, type PoseFormat, type PoseGraphFiles, type PoseGraphState, type Progress, type RemovedEdge } from "../protocol";
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
+import { runNearest } from "./distance";
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
-import { display, distanceChanged, globalShift, listChanged, viewer } from "./state";
+import { display, distanceChanged, globalShift, hideEntry, listChanged, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { setTool, toggleTool, type Tool } from "./tools";
 
@@ -339,6 +340,7 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-optimize").disabled = busy;
   $<HTMLButtonElement>("pg-undo").disabled = busy || steps.length === 0;
   $<HTMLButtonElement>("pg-map").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-compare").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-find").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-merge").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-floor").disabled = busy || withScans === 0;
@@ -962,6 +964,28 @@ $<HTMLButtonElement>("pg-map").onclick = () =>
     record({ label: "the map cloud", added: [addEntry(cloud)] });
     renderList();
     setStatus(`Added ${cloud.name}: ${cloud.count.toLocaleString()} points`);
+  });
+
+/**
+ * The map as loaded and as it is now, as two clouds, the current one
+ * colored by its distance to the first: where the correction moved the map,
+ * and by how much.
+ */
+$<HTMLButtonElement>("pg-compare").onclick = () =>
+  run("Comparing", async () => {
+    const voxel = Math.max(0, num("pg-map-voxel") || 0);
+    setStatus("Building the map as loaded…");
+    const start = addEntry(await poseGraphMap(voxel, true));
+    setStatus("Building the map as it is now…");
+    const now = addEntry(await poseGraphMap(voxel));
+    record({ label: "the map comparison", added: [start, now] });
+    hideEntry(start);
+    renderList();
+    await runNearest(now, start, false);
+    setStatus(
+      `${now.cloud.name} is colored by its distance to ${start.cloud.name} (the scans at their poses as loaded): ` +
+        "where the corrections moved the map",
+    );
   });
 
 $<HTMLButtonElement>("pg-close").onclick = async () => {

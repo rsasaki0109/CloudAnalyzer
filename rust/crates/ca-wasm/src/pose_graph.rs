@@ -14,6 +14,8 @@ pub struct PoseGraphSession {
     scans: Vec<Option<PointCloud>>,
     /// Per node, from a TUM trajectory (else empty).
     timestamps: Vec<f64>,
+    /// Per node, its pose as loaded (for comparing maps before and after).
+    initial: Vec<Rigid>,
 }
 
 /// ICP moves at most this many points of a loop's second scan: as accurate
@@ -151,6 +153,7 @@ impl PoseGraphSession {
     fn new(graph: PoseGraph, timestamps: Vec<f64>) -> PoseGraphSession {
         PoseGraphSession {
             scans: vec![None; graph.nodes.len()],
+            initial: graph.nodes.iter().map(|n| n.pose).collect(),
             graph,
             timestamps,
         }
@@ -445,6 +448,9 @@ impl PoseGraphSession {
         let target = self.graph.nodes[a].pose.compose(&measurement);
         let transform = target.compose(&pose_graph::inverse(&other.graph.nodes[b].pose));
         let offset = self.graph.append(&other.graph, &transform);
+        // The other graph as loaded, placed the same way.
+        self.initial
+            .extend(other.initial.iter().map(|pose| transform.compose(pose)));
         let edge = self.graph.add_loop(
             a,
             offset + b,
@@ -693,10 +699,18 @@ impl PoseGraphSession {
         }
     }
 
-    /// Every scan at its node's pose as one cloud; call
-    /// [`Cloud::build_index`] before drawing it.
-    pub fn map(&self) -> Result<Cloud, JsError> {
-        let map = pose_graph::assemble(&self.graph, &self.scans);
+    /// Every scan at its node's pose as one cloud, or with `initial` at its
+    /// pose as loaded; call [`Cloud::build_index`] before drawing it.
+    pub fn map(&self, initial: bool) -> Result<Cloud, JsError> {
+        let map = if initial {
+            let mut graph = self.graph.clone();
+            for (node, pose) in graph.nodes.iter_mut().zip(&self.initial) {
+                node.pose = *pose;
+            }
+            pose_graph::assemble(&graph, &self.scans)
+        } else {
+            pose_graph::assemble(&self.graph, &self.scans)
+        };
         if map.is_empty() {
             return Err(JsError::new("no scans are loaded"));
         }

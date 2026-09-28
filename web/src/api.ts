@@ -2,6 +2,7 @@
 
 import type {
   C2cOutput,
+  ExportFormat,
   IcpOutput,
   LoadedCloud,
   M3c2Output,
@@ -102,10 +103,10 @@ export function transformCloud(id: number, matrix: number[]): Promise<LoadedClou
   return call({ kind: "transform", id, matrix });
 }
 
-/** Serialize a cloud (octree order) as binary PLY or CSV. */
+/** Serialize a cloud (octree order) as binary PLY, LAS, LAZ or CSV. */
 export function exportCloud(
   id: number,
-  format: "ply" | "csv",
+  format: ExportFormat,
   scalar?: { name: string; values: Float32Array },
 ): Promise<Uint8Array> {
   // The scalar is copied, not transferred, so the UI keeps its distances.

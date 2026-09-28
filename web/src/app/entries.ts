@@ -2,7 +2,7 @@
 
 import { exportCloud, removeCloud } from "../api";
 import { parseNodes } from "../lod";
-import type { LoadedCloud, Vec3 } from "../protocol";
+import type { ExportFormat, LoadedCloud, Vec3 } from "../protocol";
 import { colorsFor, defaultMode, distanceLabel, refreshColors } from "./colors";
 import { $, download, errorText, removeButton, setStatus } from "./dom";
 import { narrow, setPanelsOpen } from "./layout";
@@ -94,8 +94,16 @@ export function replaceCloud(entry: Entry, cloud: LoadedCloud): void {
   distanceChanged.emit();
 }
 
-/** Download a cloud as PLY or CSV, including its distances if computed. */
-export async function saveCloud(entry: Entry, format: "ply" | "csv"): Promise<void> {
+/** Offered by a cloud's ⤓ button, with what each keeps. */
+const SAVE_FORMATS: [ExportFormat, string][] = [
+  ["ply", "Binary PLY with every attribute"],
+  ["las", "LAS 1.4: intensity, classes, colors; other fields as extra bytes"],
+  ["laz", "Compressed LAS"],
+  ["csv", "Text table"],
+];
+
+/** Download a cloud, including its distances if computed. */
+export async function saveCloud(entry: Entry, format: ExportFormat): Promise<void> {
   const { cloud, c2c } = entry;
   const kind = c2c?.kind.toUpperCase();
   // M3C2 results already carry m3c2_distance / lod95 / significant
@@ -154,12 +162,31 @@ export function renderList(): void {
 
     const actions = document.createElement("span");
     actions.className = "actions";
+    // ⤓ opens a row of format buttons under the cloud.
+    const formats = document.createElement("span");
+    formats.className = "save-formats";
+    formats.hidden = true;
     if (!isMesh(entry)) {
       const save = document.createElement("button");
       save.className = "icon";
       save.textContent = "⤓";
-      save.title = entry.c2c ? "Save as PLY with distances" : "Save as PLY";
-      save.onclick = () => void saveCloud(entry, "ply");
+      save.title = entry.c2c ? "Save with distances…" : "Save as…";
+      save.ariaExpanded = "false";
+      save.onclick = () => {
+        formats.hidden = !formats.hidden;
+        save.ariaExpanded = String(!formats.hidden);
+      };
+      for (const [format, title] of SAVE_FORMATS) {
+        const button = document.createElement("button");
+        button.textContent = format.toUpperCase();
+        button.title = title;
+        button.onclick = () => {
+          formats.hidden = true;
+          save.ariaExpanded = "false";
+          void saveCloud(entry, format);
+        };
+        formats.append(button);
+      }
       actions.append(save);
     }
     actions.append(remove);
@@ -189,7 +216,7 @@ export function renderList(): void {
 
     // Meshes are drawn in their solid color only.
     if (isMesh(entry)) li.append(visible, swatch, name, actions);
-    else li.append(visible, swatch, name, actions, mode);
+    else li.append(visible, swatch, name, actions, mode, formats);
     list.append(li);
   }
   listChanged.emit();

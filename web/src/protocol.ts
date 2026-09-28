@@ -135,6 +135,9 @@ export interface ProfileOutput {
   total: number;
 }
 
+/** File formats a cloud can be saved in. */
+export type ExportFormat = "ply" | "las" | "laz" | "csv";
+
 export type Request =
   | {
       kind: "load";
@@ -238,7 +241,7 @@ export type Request =
   | {
       kind: "export";
       id: number;
-      format: "ply" | "csv";
+      format: ExportFormat;
       /** Optional scalar field, one value per point in the cloud's order. */
       scalar?: { name: string; values: Float32Array };
     };

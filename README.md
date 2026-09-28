@@ -21,7 +21,7 @@ Rust + WebAssembly. Your files stay on your machine.
 - **Process**: ICP alignment, subsampling, outlier removal, ground extraction (CSF), normals, merge/split,
   rasterize to a DEM / DSM (GeoTIFF or colored PNG).
 - **Inspect**: clipping box, lasso segmentation with undo/redo, cross-section profiles, picking, measuring and labels; save the view as a PNG.
-- **Share**: links and session files that restore the view; export PLY/CSV for CloudCompare.
+- **Share**: links and session files that restore the view; export PLY, LAS/LAZ (distances as extra bytes) or CSV.
 - Works on phones and tablets.
 
 ## Try it

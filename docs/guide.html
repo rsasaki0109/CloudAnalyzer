@@ -270,9 +270,15 @@
 
     <h2 id="export">Saving results</h2>
     <p>
-      The <b>⤓</b> button next to a cloud saves it as binary PLY, and the Distance panel also saves CSV. The file
-      includes colors and all attributes: intensity, classification, normals, M3C2 fields and distances as
-      <code>scalar_C2C_distance</code>. CloudCompare reads these as scalar fields.
+      The <b>⤓</b> button next to a cloud offers PLY, LAS, LAZ and CSV; the Distance panel saves the cloud whose
+      distances are shown. A PLY file includes colors and all attributes: intensity, classification, normals,
+      M3C2 fields and distances as <code>scalar_C2C_distance</code>. CloudCompare reads these as scalar fields.
+    </p>
+    <p>
+      LAS and LAZ files are LAS 1.4 (point format 6, or 7 with colors) with intensity and classification; distances,
+      normals and M3C2 fields are stored as <code>float</code> extra bytes, which CloudCompare, PDAL and LAStools
+      load as scalar fields. Coordinates keep their precision: a cloud read from LAS is written on its original
+      grid (e.g. 1 cm), and other clouds at the finest power of ten that fits (down to 0.1 µm).
     </p>
 
     <h2 id="share">Sharing and sessions</h2>

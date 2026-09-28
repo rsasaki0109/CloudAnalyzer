@@ -98,6 +98,9 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 .cloud-list .icon:hover { color: var(--accent); }
 .cloud-list .remove:hover { color: var(--danger); }
 .cloud-list select { grid-column: 3 / 5; font-size: 12px; }
+.cloud-list .save-formats { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 4px; }
+.cloud-list .save-formats[hidden] { display: none; }
+.cloud-list .save-formats button { padding: 2px 8px; font-size: 12px; }
 
 button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
 .viewport.measuring > canvas { cursor: crosshair; }
@@ -154,7 +157,7 @@ textarea {
   resize: vertical;
 }
 
-.export-row { display: flex; gap: 8px; margin-top: 8px; }
+.export-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
 .class-list { list-style: none; margin: 0; padding: 0; }
 .class-list label {
   display: grid;

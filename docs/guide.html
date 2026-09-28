@@ -265,6 +265,15 @@
       Undo removes all the loops found at once.
     </p>
     <p>
+      <b>Join another graph</b> adds a second session of the same place, recorded in its own frame: give a node of
+      this graph (<b>Node here</b>; empty takes Node A) and a node of the other one standing near it (<b>Node
+      there</b>; empty takes its first node), then <b>Join folder…</b> and pick the other session's folder (poses and
+      scans, read with the same loading options). The two scans are registered with ICP from several
+      <b>Headings</b>; the best overlap (at least <b>Min overlap</b>) places the whole second graph, becomes a loop
+      edge between the two, and the joined graph is optimised. Its ids are shifted past this graph's when they
+      clash. <b>Find loops</b> then ties the two sessions together wherever they meet. A join cannot be undone.
+    </p>
+    <p>
       <b>Edges by error</b> colors every edge by how far it disagrees with the optimised graph (√χ², in standard
       deviations) in the color ramp, and <b>Loops, worst first</b> lists the loop edges by that error: a wrong loop
       shows up at the top. Click one to select its two nodes, <b>✕</b> to remove it and optimise again, or remove

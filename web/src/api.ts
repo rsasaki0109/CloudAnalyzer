@@ -13,6 +13,7 @@ import type {
   PoseFormat,
   PoseGraphFound,
   PoseGraphLoop,
+  PoseGraphMerged,
   PoseGraphOpened,
   PoseGraphOptimized,
   PoseGraphState,
@@ -263,6 +264,15 @@ export function openPoseGraph(
   signal?: AbortSignal,
 ): Promise<PoseGraphOpened> {
   return call({ kind: "pg-open", ...params }, [], progress, signal);
+}
+
+/** Join a second graph (with its scans) to the open one. */
+export function mergePoseGraph(
+  params: Omit<Extract<Request, { kind: "pg-merge" }>, "kind">,
+  progress?: (p: Progress) => void,
+  signal?: AbortSignal,
+): Promise<PoseGraphMerged> {
+  return call({ kind: "pg-merge", ...params }, [], progress, signal);
 }
 
 /** Add a loop edge between two nodes, measured by ICP of their scans. */

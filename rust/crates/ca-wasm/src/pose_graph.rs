@@ -256,6 +256,76 @@ impl PoseGraphSession {
         ))
     }
 
+    /// Join `other` (a graph recorded separately, with its scans) to this
+    /// one. Node `b` of `other` is taken to stand near node `a` of this
+    /// graph: its scan is registered onto `a`'s with a yaw search, which
+    /// places the whole of `other`, and the registration becomes a loop
+    /// edge between them. Fails, leaving this graph unchanged, when the
+    /// best overlap is below `min_fitness`. Returns `[fitness, rms, edge
+    /// index, index of other's first node]`.
+    #[allow(clippy::too_many_arguments)]
+    pub fn merge(
+        &mut self,
+        other: &PoseGraphSession,
+        a: usize,
+        b: usize,
+        yaw_steps: usize,
+        max_iterations: usize,
+        overlap: f64,
+        inlier_distance: f64,
+        min_fitness: f64,
+        sigma_t: f64,
+        sigma_r_deg: f64,
+    ) -> Result<Vec<f64>, JsError> {
+        let a_scan = self
+            .scans
+            .get(a)
+            .and_then(Option::as_ref)
+            .ok_or_else(|| JsError::new("the node picked here has no scan"))?;
+        let b_scan = other
+            .scans
+            .get(b)
+            .and_then(Option::as_ref)
+            .ok_or_else(|| JsError::new("the node picked in the other graph has no scan"))?;
+        let params = IcpParams {
+            max_iterations,
+            overlap,
+            ..IcpParams::default()
+        };
+        let (measurement, fitness, result) = pose_graph::register_with_yaw_search(
+            a_scan,
+            b_scan,
+            &Rigid::IDENTITY,
+            yaw_steps,
+            params,
+            inlier_distance,
+        )
+        .ok_or_else(|| JsError::new("ICP found too few matching points"))?;
+        if fitness < min_fitness {
+            return Err(JsError::new(&format!(
+                "the two scans overlap only {:.0} % at best: pick nodes at the same place",
+                fitness * 100.0
+            )));
+        }
+        // Place other so that its node b sits at a's pose times the measurement.
+        let target = self.graph.nodes[a].pose.compose(&measurement);
+        let transform = target.compose(&pose_graph::inverse(&other.graph.nodes[b].pose));
+        let offset = self.graph.append(&other.graph, &transform);
+        let edge = self.graph.add_loop(
+            a,
+            offset + b,
+            measurement,
+            information(sigma_t, sigma_r_deg),
+        );
+        self.scans.extend(other.scans.iter().cloned());
+        if self.timestamps.is_empty() || other.timestamps.is_empty() {
+            self.timestamps.clear();
+        } else {
+            self.timestamps.extend(&other.timestamps);
+        }
+        Ok(vec![fitness, result.rms_final, edge as f64, offset as f64])
+    }
+
     /// Loop candidates as `earlier, later` node index pairs (see
     /// `ca_core::pose_graph::loop_candidates`).
     #[wasm_bindgen(js_name = loopCandidates)]

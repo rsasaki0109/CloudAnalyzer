@@ -1,5 +1,7 @@
 import { type Download, expect, type Page, test } from "@playwright/test";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 /** A binary little-endian PLY with float x/y/z. */
 function ply(points: [number, number, number][]): Buffer {
@@ -1508,4 +1510,48 @@ test("pose graph: a wrong loop in a g2o file shows as the worst edge and is remo
   await page.locator("#pg-save-g2o").click();
   const saved = (await bytesOf(await download)).toString();
   expect(saved.match(/^EDGE_SE3:QUAT/gm)).toHaveLength(24);
+});
+
+test("pose graph: a second session in another frame is joined at a shared place", async ({ page }) => {
+  const { truth, scan } = courtyard();
+  // Session A: the first half, in the true frame. Session B: the second
+  // half, recorded in its own frame (turned 120° and shifted).
+  const [a, b] = [truth.slice(0, 12), truth.slice(12)];
+  const turn = (2 * Math.PI) / 3;
+  const inB = (p: Pose2): Pose2 => ({
+    x: Math.cos(turn) * p.x - Math.sin(turn) * p.y + 50,
+    y: Math.sin(turn) * p.x + Math.cos(turn) * p.y - 7,
+    yaw: p.yaw + turn,
+  });
+  await page
+    .locator("#pg-files-input")
+    .setInputFiles([
+      { name: "a.txt", mimeType: "text/plain", buffer: Buffer.from(`${a.map(kittiLine).join("\n")}\n`) },
+      ...scanFiles(a, scan),
+    ]);
+  await expect(status(page)).toContainText("Opened a.txt: 12 poses");
+
+  // The other session as a folder; its scans are numbered from 0 too.
+  const dir = mkdtempSync(join(tmpdir(), "pg-merge-"));
+  writeFileSync(join(dir, "b.txt"), `${b.map(inB).map(kittiLine).join("\n")}\n`);
+  for (const f of scanFiles(b, scan)) writeFileSync(join(dir, f.name), f.buffer);
+  await page.locator("#pose-graph-panel summary", { hasText: "Join another graph" }).click();
+  await page.locator("#pg-merge-here").fill("11");
+  await page.locator("#pg-merge-input").setInputFiles(dir);
+  await expect(status(page)).toContainText(/Joined b\.txt \(12 poses\) at node 11: overlap \d+ %/);
+  await expect(page.locator("#pg-stats")).toContainText("24 (24 with scans)");
+  await expect(page.locator("#pg-stats")).toContainText("22 odometry, 1 loops");
+
+  const download = page.waitForEvent("download");
+  await page.locator("#pg-save-kitti").click();
+  const rows = (await bytesOf(await download)).toString().trim().split("\n");
+  expect(rows).toHaveLength(24);
+  rows.forEach((row, k) => {
+    const m = row.split(" ").map(Number);
+    expect(Math.hypot(m[3] - truth[k].x, m[7] - truth[k].y)).toBeLessThan(0.05);
+  });
+  const g2o = page.waitForEvent("download");
+  await page.locator("#pg-save-g2o").click();
+  // B's ids were shifted past A's.
+  expect((await bytesOf(await g2o)).toString()).toContain("VERTEX_SE3:QUAT 23 ");
 });

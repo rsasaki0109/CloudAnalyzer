@@ -821,6 +821,66 @@ pub fn register_loop(
     Some((result.transform.compose(guess), result))
 }
 
+/// A registration without a usable initial guess, as when joining two
+/// graphs recorded separately: `to_scan` starts at `guess` turned about the
+/// vertical axis in `yaw_steps` equal steps, each start is refined with ICP,
+/// and the result that overlaps most (see [`overlap_fitness`]) wins.
+/// Returns the measurement (pose of `to` in the frame of `from`), its
+/// fitness and the ICP outcome.
+pub fn register_with_yaw_search(
+    from_scan: &PointCloud,
+    to_scan: &PointCloud,
+    guess: &Rigid,
+    yaw_steps: usize,
+    params: IcpParams,
+    inlier_distance: f64,
+) -> Option<(Rigid, f64, IcpResult)> {
+    let steps = yaw_steps.max(1);
+    (0..steps)
+        .filter_map(|k| {
+            let yaw = std::f64::consts::TAU * k as f64 / steps as f64;
+            let start = guess.compose(&Rigid {
+                rotation: exp_so3(&[0.0, 0.0, yaw]),
+                translation: [0.0; 3],
+            });
+            let (measurement, result) = register_loop(from_scan, to_scan, &start, params)?;
+            let fitness = overlap_fitness(from_scan, to_scan, &measurement, inlier_distance);
+            Some((measurement, fitness, result))
+        })
+        .max_by(|a, b| a.1.total_cmp(&b.1))
+}
+
+impl PoseGraph {
+    /// Add `other`'s nodes and edges, its poses moved by `transform` (into
+    /// this graph's frame). Its ids are shifted past this graph's when they
+    /// would clash, and its fixed nodes are freed (this graph keeps the
+    /// gauge). Returns the index of its first node here.
+    pub fn append(&mut self, other: &PoseGraph, transform: &Rigid) -> usize {
+        let offset = self.nodes.len();
+        let max_id = self.nodes.iter().map(|n| n.id).max();
+        let min_other = other.nodes.iter().map(|n| n.id).min().unwrap_or(0);
+        let clash = other
+            .nodes
+            .iter()
+            .any(|n| self.nodes.iter().any(|m| m.id == n.id));
+        let shift = match max_id {
+            Some(max) if clash => max + 1 - min_other,
+            _ => 0,
+        };
+        self.nodes.extend(other.nodes.iter().map(|n| Node {
+            id: n.id + shift,
+            pose: transform.compose(&n.pose),
+            fixed: false,
+        }));
+        self.edges.extend(other.edges.iter().map(|e| Edge {
+            from: e.from + offset,
+            to: e.to + offset,
+            ..e.clone()
+        }));
+        offset
+    }
+}
+
 /// Fraction of `to_scan`'s points (up to a few thousand, evenly spread)
 /// that land within `max_distance` of a `from_scan` point once moved by
 /// `measurement` (the pose of `to` in the frame of `from`). A loop whose
@@ -1328,5 +1388,54 @@ FIX 1
         assert!(overlap_fitness(&from_scan, &to_scan, &truth, 0.05) > 0.99);
         let wrong = pose([0.0, 3.0, 0.0], [0.0; 3]).compose(&truth);
         assert!(overlap_fitness(&from_scan, &to_scan, &wrong, 0.05) < 0.5);
+    }
+
+    #[test]
+    fn yaw_search_registers_without_a_guess() {
+        let truth = pose([1.5, -0.8, 0.0], [0.0, 0.0, 1.9]);
+        let from_scan = room();
+        let to_scan = transformed(&from_scan, &inverse(&truth));
+        // From the identity, plain ICP cannot turn 109 degrees.
+        let (plain, _) =
+            register_loop(&from_scan, &to_scan, &Rigid::IDENTITY, IcpParams::default()).unwrap();
+        assert!(!close(&plain, &truth, 1e-2));
+        let (measured, fitness, _) = register_with_yaw_search(
+            &from_scan,
+            &to_scan,
+            &Rigid::IDENTITY,
+            8,
+            IcpParams::default(),
+            0.05,
+        )
+        .unwrap();
+        assert!(fitness > 0.99, "{fitness}");
+        assert!(close(&measured, &truth, 1e-3));
+    }
+
+    #[test]
+    fn append_moves_and_renumbers_the_other_graph() {
+        let info = isotropic_information(1.0, 1.0);
+        let mut a =
+            PoseGraph::from_poses(&[Rigid::IDENTITY, pose([1.0, 0.0, 0.0], [0.0; 3])], info);
+        let mut b =
+            PoseGraph::from_poses(&[Rigid::IDENTITY, pose([0.0, 2.0, 0.0], [0.0; 3])], info);
+        b.nodes[0].fixed = true;
+        let t = pose([10.0, 0.0, 0.0], [0.0, 0.0, std::f64::consts::FRAC_PI_2]);
+        let offset = a.append(&b, &t);
+        assert_eq!(offset, 2);
+        assert_eq!(
+            a.nodes.iter().map(|n| n.id).collect::<Vec<_>>(),
+            [0, 1, 2, 3]
+        );
+        assert!(a.nodes[0].fixed && !a.nodes[2].fixed);
+        assert!(close(&a.nodes[3].pose, &t.compose(&b.nodes[1].pose), 1e-12));
+        assert_eq!((a.edges[1].from, a.edges[1].to), (2, 3));
+        // Moving both ends by the same transform keeps the edge satisfied.
+        assert!(a.edge_errors()[1] < 1e-20);
+        // Ids that do not clash are kept.
+        let mut c = PoseGraph::from_poses(&[Rigid::IDENTITY], info);
+        c.nodes[0].id = 100;
+        a.append(&c, &Rigid::IDENTITY);
+        assert_eq!(a.nodes[4].id, 100);
     }
 }

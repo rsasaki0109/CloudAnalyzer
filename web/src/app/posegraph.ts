@@ -15,6 +15,7 @@ import {
   closePoseGraph,
   exportPoseGraph,
   findPoseGraphLoops,
+  mergePoseGraph,
   openPoseGraph,
   optimizePoseGraph,
   insertPoseGraphEdges,
@@ -23,7 +24,7 @@ import {
   setPoseGraphPoses,
 } from "../api";
 import { colorize, gradientCss, lut } from "../colormap";
-import { CANCELLED, type PoseFormat, type PoseGraphState, type Progress, type RemovedEdge } from "../protocol";
+import { CANCELLED, type PoseFormat, type PoseGraphFiles, type PoseGraphState, type Progress, type RemovedEdge } from "../protocol";
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
@@ -318,6 +319,7 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-undo").disabled = busy || steps.length === 0;
   $<HTMLButtonElement>("pg-map").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-find").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-merge").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-prune").disabled = busy || loops === 0;
   $("pg-legend").hidden = !errorColors();
   $("pg-legend-bar").style.background = gradientCss(display.ramp, "to right");
@@ -451,51 +453,77 @@ function posesFile(files: File[]): File | undefined {
   );
 }
 
-async function open(files: File[]): Promise<void> {
+/**
+ * The poses file, scans and loading options for picked files, with a note on
+ * the scan transform used; null (with a status message) when they do not
+ * make a graph. Scans picked without poses wait for them when `pending`.
+ */
+async function graphFiles(
+  files: File[],
+  pending: boolean,
+): Promise<{ files: PoseGraphFiles; note: string } | null> {
   let scans = files.filter((f) => SCAN_FILE.test(f.name));
   const poses = posesFile(files);
   if (!poses) {
     if (scans.length === 0) {
       setStatus("No poses file (.g2o, .txt, .tum, .kitti) or scans among the files", true);
-      return;
+    } else if (pending) {
+      pendingScans = scans;
+      setStatus(`${scans.length.toLocaleString()} scans found but no poses: now open the poses file (Open files…)`);
+    } else {
+      setStatus("No poses file (.g2o, .txt, .tum, .kitti) next to the scans", true);
     }
-    pendingScans = scans;
-    setStatus(`${scans.length.toLocaleString()} scans found but no poses: now open the poses file (Open files…)`);
-    return;
+    return null;
   }
-  if (scans.length === 0) scans = pendingScans;
+  if (scans.length === 0 && pending) scans = pendingScans;
   pendingScans = [];
   if (scans.length === 0) {
     setStatus(`No scans next to ${poses.name}: open a folder holding both, or the scans first`, true);
-    return;
+    return null;
   }
   let extrinsic: number[] | null;
   try {
     extrinsic = parseMatrix($<HTMLTextAreaElement>("pg-extrinsic").value);
   } catch (err) {
     setStatus(errorText(err), true);
-    return;
+    return null;
   }
-  let extrinsicNote = "";
+  let note = "";
   if (!extrinsic) {
     extrinsic = await kittiExtrinsic(files);
-    if (extrinsic) extrinsicNote = " (scans moved by calib.txt's Tr)";
+    if (extrinsic) note = " (scans moved by calib.txt's Tr)";
   }
+  const shown = (graph?.scans.length ?? 0) + scans.length;
+  return {
+    files: {
+      graph: poses,
+      scans,
+      voxel: Math.max(0, num("pg-voxel") || 0),
+      displayPoints: Math.max(100, Math.min(num("pg-display") || 5000, Math.floor(DISPLAY_BUDGET / shown))),
+      extrinsic,
+      sigmaT: num("pg-sigma-t") || 0.1,
+      sigmaRDeg: num("pg-sigma-r") || 1,
+    },
+    note,
+  };
+}
+
+async function open(picked: File[]): Promise<void> {
+  // Opening replaces the graph: its scans do not count against the display budget.
+  const current = graph;
+  graph = null;
+  const found = await graphFiles(picked, true);
+  graph = current;
+  if (!found) return;
+  const { files, note: extrinsicNote } = found;
+  const poses = files.graph;
   setTool(null);
   const signal = startTask();
   busy = true;
-  setStatus(`Opening ${poses.name} with ${scans.length.toLocaleString()} scans…`);
+  setStatus(`Opening ${poses.name} with ${files.scans.length.toLocaleString()} scans…`);
   try {
     const opened = await openPoseGraph(
-      {
-        graph: poses,
-        scans,
-        voxel: Math.max(0, num("pg-voxel") || 0),
-        displayPoints: Math.max(100, Math.min(num("pg-display") || 5000, Math.floor(DISPLAY_BUDGET / scans.length))),
-        extrinsic,
-        sigmaT: num("pg-sigma-t") || 0.1,
-        sigmaRDeg: num("pg-sigma-r") || 1,
-      },
+      files,
       (p: Progress) => {
         showProgress(p);
         setStatus(`Opening ${poses.name}: ${p.note}…`);
@@ -535,6 +563,75 @@ for (const [button, input] of [
     if (files.length) void open(files);
   };
 }
+
+/** Join a second graph, placed by registering the scans of a node in each. */
+async function merge(picked: File[]): Promise<void> {
+  if (!graph || busy) return;
+  const found = await graphFiles(picked, false);
+  if (!found) return;
+  const { files, note } = found;
+  const ids = graph.state.nodeIds;
+  const here = $<HTMLInputElement>("pg-merge-here").value;
+  const nodeA = here === "" ? (selection[0] ?? 0) : ids.indexOf(Number(here));
+  if (nodeA < 0) {
+    setStatus(`This graph has no node ${here}`, true);
+    return;
+  }
+  const there = $<HTMLInputElement>("pg-merge-there").value;
+  setTool(null);
+  await run("Joining", async () => {
+    const signal = startTask();
+    try {
+      const merged = await mergePoseGraph(
+        {
+          files,
+          nodeA,
+          nodeB: there === "" ? null : Number(there),
+          yawSteps: Math.max(1, Math.round(num("pg-merge-yaw") || 8)),
+          maxIterations: Math.max(1, num("pg-icp-iterations") || 50),
+          overlap: Math.min(100, Math.max(10, num("pg-icp-overlap") || 80)) / 100,
+          inlierDistance: inlierDistance(),
+          minFitness: Math.min(100, Math.max(0, num("pg-find-fitness"))) / 100,
+          sigmaT: num("pg-loop-sigma-t") || 0.1,
+          sigmaRDeg: num("pg-loop-sigma-r") || 1,
+          loopKernel: kernel(),
+        },
+        (p: Progress) => {
+          showProgress(p);
+          setStatus(`Joining ${files.graph.name}: ${p.note}…`);
+        },
+        signal,
+      );
+      const g = graph!;
+      g.name = `${g.name} + ${merged.name}`;
+      g.scans = [...g.scans, ...merged.scans];
+      g.scanPoints += merged.scanPoints;
+      // Undo restores poses and edges of one graph; the join changed the graph itself.
+      steps.length = 0;
+      g.state = merged.state;
+      setSelection([]);
+      build(g);
+      fitGraph(merged.state);
+      const unmatched = merged.unmatched.length ? `; ${merged.unmatched.length} scans matched no pose` : "";
+      setStatus(
+        `Joined ${merged.name} (${merged.scans.length.toLocaleString()} poses${note}${unmatched}) at node ` +
+          `${ids[nodeA]}: overlap ${Math.round(merged.fitness * 100)} %, ICP RMS ${fmt(merged.rms)}; ` +
+          `χ² ${fmt(merged.optimized.initialCost)} → ${fmt(merged.optimized.finalCost)}. ` +
+          "Find loops links the two further; the join cannot be undone.",
+      );
+    } finally {
+      endTask(signal);
+    }
+  });
+}
+
+$<HTMLButtonElement>("pg-merge").onclick = () => $<HTMLInputElement>("pg-merge-input").click();
+$<HTMLInputElement>("pg-merge-input").onchange = (e) => {
+  const target = e.target as HTMLInputElement;
+  const files = [...(target.files ?? [])];
+  target.value = "";
+  if (files.length) void merge(files);
+};
 
 /** Run a graph operation with the buttons disabled. */
 async function run(label: string, action: () => Promise<void>): Promise<void> {

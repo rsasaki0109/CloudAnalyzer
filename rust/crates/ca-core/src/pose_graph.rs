@@ -14,8 +14,9 @@
 use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap, HashMap};
 
-use crate::icp::Rigid;
+use crate::icp::{IcpParams, IcpResult, Rigid, icp};
 use crate::trajectory::{quaternion, rotation_matrix};
+use crate::{Attribute, AttributeValues, INTENSITY, PointCloud};
 
 type Mat3 = [[f64; 3]; 3];
 type Vec6 = [f64; 6];
@@ -80,7 +81,8 @@ pub fn isotropic_information(sigma_t: f64, sigma_r: f64) -> Mat6 {
 
 // --- SE(3) helpers ----------------------------------------------------------
 
-fn inverse(x: &Rigid) -> Rigid {
+/// The inverse rigid transform.
+pub fn inverse(x: &Rigid) -> Rigid {
     let r = &x.rotation;
     let rotation: Mat3 = std::array::from_fn(|i| std::array::from_fn(|j| r[j][i]));
     let t = &x.translation;
@@ -358,6 +360,51 @@ impl PoseGraph {
     /// currently has it.
     pub fn relative(&self, from: usize, to: usize) -> Rigid {
         inverse(&self.nodes[from].pose).compose(&self.nodes[to].pose)
+    }
+
+    /// Add a loop edge measuring `to` in the frame of `from`; returns its index.
+    pub fn add_loop(
+        &mut self,
+        from: usize,
+        to: usize,
+        measurement: Rigid,
+        information: Mat6,
+    ) -> usize {
+        self.edges.push(Edge {
+            from,
+            to,
+            measurement,
+            information,
+            kind: EdgeKind::Loop,
+        });
+        self.edges.len() - 1
+    }
+
+    /// The poses as a KITTI file: a row-major 3x4 matrix per line.
+    pub fn to_kitti(&self) -> String {
+        let mut out = String::new();
+        for node in &self.nodes {
+            let m = node.pose.to_matrix();
+            let row: Vec<String> = m[..12].iter().map(f64::to_string).collect();
+            out += &row.join(" ");
+            out.push('\n');
+        }
+        out
+    }
+
+    /// The poses as a TUM file, with `timestamps` (one per node) or, when
+    /// they do not match, the node ids as times.
+    pub fn to_tum(&self, timestamps: &[f64]) -> String {
+        let mut out = String::new();
+        for (i, node) in self.nodes.iter().enumerate() {
+            let time = if timestamps.len() == self.nodes.len() {
+                timestamps[i]
+            } else {
+                node.id as f64
+            };
+            out += &format!("{time} {}\n", pose_text(&node.pose));
+        }
+        out
     }
 
     /// Squared error `e^T W e` of every edge (before any robust kernel).
@@ -749,6 +796,63 @@ pub fn optimize(graph: &mut PoseGraph, params: &OptimizeParams) -> Option<Optimi
     })
 }
 
+// --- Scans ------------------------------------------------------------------
+
+/// `cloud` with every point moved by `x`.
+fn transformed(cloud: &PointCloud, x: &Rigid) -> PointCloud {
+    PointCloud {
+        positions: cloud.positions.iter().map(|p| x.apply(p)).collect(),
+        ..cloud.clone()
+    }
+}
+
+/// Register the scan of the loop's `to` node onto the scan of its `from`
+/// node (each in its own frame), starting from `guess`, the pose of `to`
+/// in the frame of `from` (usually [`PoseGraph::relative`]). Returns the
+/// refined measurement for [`PoseGraph::add_loop`] and the ICP outcome.
+pub fn register_loop(
+    from_scan: &PointCloud,
+    to_scan: &PointCloud,
+    guess: &Rigid,
+    params: IcpParams,
+) -> Option<(Rigid, IcpResult)> {
+    let result = icp(&transformed(to_scan, guess), from_scan, params)?;
+    Some((result.transform.compose(guess), result))
+}
+
+/// Every scan placed at its node's pose, in one cloud. `scans[i]` belongs
+/// to node `i` (in that node's frame); nodes without a scan add nothing.
+/// Intensity is kept when every scan has it.
+pub fn assemble(graph: &PoseGraph, scans: &[Option<PointCloud>]) -> PointCloud {
+    let present: Vec<(&Node, &PointCloud)> = graph
+        .nodes
+        .iter()
+        .zip(scans)
+        .filter_map(|(n, s)| Some((n, s.as_ref()?)))
+        .collect();
+    let intensity = |s: &PointCloud| match s.attribute(INTENSITY).map(|a| &a.values) {
+        Some(AttributeValues::F32(v)) => Some(v.clone()),
+        _ => None,
+    };
+    let with_intensity = present.iter().all(|(_, s)| intensity(s).is_some());
+    let mut out = PointCloud::default();
+    let mut values = Vec::new();
+    for (node, scan) in present {
+        out.positions
+            .extend(scan.positions.iter().map(|p| node.pose.apply(p)));
+        if with_intensity {
+            values.extend(intensity(scan).unwrap_or_default());
+        }
+    }
+    if with_intensity && !values.is_empty() {
+        out.attributes.push(Attribute {
+            name: INTENSITY.into(),
+            values: AttributeValues::F32(values),
+        });
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1020,5 +1124,99 @@ FIX 1
         }
         assert!(PoseGraph::from_g2o("EDGE_SE3:QUAT 0 1").is_err());
         assert!(PoseGraph::from_g2o("VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1\nEDGE_SE3:QUAT 0 5 0 0 0 0 0 0 1 1 0 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1").is_err());
+    }
+
+    /// Points on three walls and a floor of a room, in the room's frame.
+    fn room() -> PointCloud {
+        let mut positions = Vec::new();
+        for a in 0..40 {
+            for b in 0..40 {
+                let (u, v) = (a as f64 * 0.25, b as f64 * 0.1);
+                positions.push([u, 0.0, v]);
+                positions.push([0.0, u * 0.8, v]);
+                positions.push([u, 8.0, v * 1.2]);
+                positions.push([u, u * 0.2 + v, 0.0]);
+            }
+        }
+        PointCloud {
+            positions,
+            ..PointCloud::default()
+        }
+    }
+
+    #[test]
+    fn register_loop_refines_a_rough_guess() {
+        let truth = pose([0.8, -0.4, 0.1], [0.02, -0.01, 0.2]);
+        let from_scan = room();
+        // Seen from `to`, the room is the `from` scan moved by truth^-1.
+        let to_scan = transformed(&from_scan, &inverse(&truth));
+        let guess = truth.compose(&pose([0.15, 0.1, 0.0], [0.0, 0.0, 0.03]));
+        let (measured, result) =
+            register_loop(&from_scan, &to_scan, &guess, IcpParams::default()).unwrap();
+        assert!(result.rms_final < 1e-3, "{result:?}");
+        assert!(close(&measured, &truth, 1e-3));
+    }
+
+    #[test]
+    fn assemble_places_scans_at_their_poses() {
+        let poses = [
+            pose([0.0; 3], [0.0; 3]),
+            pose([10.0, 0.0, 0.0], [0.0, 0.0, 1.0]),
+        ];
+        let graph = PoseGraph::from_poses(&poses, isotropic_information(1.0, 1.0));
+        let scan = |i: f32| PointCloud {
+            positions: vec![[1.0, 0.0, 0.0]],
+            colors: None,
+            attributes: vec![Attribute {
+                name: INTENSITY.into(),
+                values: AttributeValues::F32(vec![i]),
+            }],
+        };
+        let map = assemble(&graph, &[Some(scan(1.0)), Some(scan(2.0))]);
+        assert_eq!(map.len(), 2);
+        let p = map.positions[1];
+        assert!((p[0] - (10.0 + 1f64.cos())).abs() < 1e-12 && (p[1] - 1f64.sin()).abs() < 1e-12);
+        assert_eq!(
+            map.attribute(INTENSITY).unwrap().values,
+            AttributeValues::F32(vec![1.0, 2.0])
+        );
+        // A scan without intensity drops the attribute; a missing scan adds nothing.
+        let bare = PointCloud {
+            positions: vec![[0.0; 3]],
+            ..PointCloud::default()
+        };
+        let map = assemble(&graph, &[Some(bare), None]);
+        assert_eq!(map.len(), 1);
+        assert!(map.attribute(INTENSITY).is_none());
+    }
+
+    #[test]
+    fn kitti_and_tum_text() {
+        let poses = [
+            pose([1.0, 2.0, 3.0], [0.0; 3]),
+            pose([0.0; 3], [0.0, 0.0, 0.5]),
+        ];
+        let graph = PoseGraph::from_poses(&poses, isotropic_information(1.0, 1.0));
+        let kitti = graph.to_kitti();
+        assert_eq!(kitti.lines().next().unwrap(), "1 0 0 1 0 1 0 2 0 0 1 3");
+        let tum = graph.to_tum(&[10.5, 11.5]);
+        assert!(
+            tum.starts_with(
+                "10.5 1 2 3 0 0 0 1
+"
+            ),
+            "{tum}"
+        );
+        assert!(
+            graph
+                .to_tum(&[])
+                .lines()
+                .nth(1)
+                .unwrap()
+                .starts_with("1 0 0 0 0 0 ")
+        );
+        use crate::trajectory::{Format, parse};
+        let back = parse(&kitti, Format::Kitti).unwrap();
+        assert_eq!(back.positions[0], [1.0, 2.0, 3.0]);
     }
 }

@@ -87,6 +87,7 @@
       <a href="#volume">Cut / fill volume</a>
       <a href="#manual-align">Manual alignment</a>
       <a href="#icp">Alignment (ICP)</a>
+      <a href="#pose-graph">Pose graph (SLAM)</a>
       <a href="#trajectory">Trajectories (ATE / RPE)</a>
       <a href="#filters">Filters and ground extraction</a>
       <a href="#raster">Rasterize (DEM / DSM)</a>
@@ -230,6 +231,35 @@
       In <b>Registration (ICP)</b>, <b>Align</b> moves one cloud onto a reference, point-to-plane or point-to-point. It can pre-align
       the centroids and trim non-overlapping points. The panel shows the RMS before and after and the 4×4
       transform, and <b>Undo alignment</b> reverts it.
+    </p>
+
+    <h2 id="pose-graph">Pose graph (SLAM)</h2>
+    <p>
+      Fix a SLAM map by closing loops by hand, in the spirit of interactive_slam. In <b>Pose graph (SLAM)</b>,
+      <b>Open folder…</b> takes a folder holding the poses and one scan per pose; <b>Open files…</b> takes the same
+      files picked one by one (or the poses file alone, after a folder of scans without one).
+    </p>
+    <ul>
+      <li><b>Poses</b>: a g2o graph (<code>VERTEX_SE3:QUAT</code>, <code>EDGE_SE3:QUAT</code>, <code>FIX</code>), or a
+        TUM / KITTI trajectory, which becomes a chain of odometry edges (<b>σ odom.</b> sets their weight).</li>
+      <li><b>Scans</b>: PCD, PLY, LAS/LAZ, XYZ or KITTI Velodyne <code>.bin</code>, in the pose's frame, named by
+        frame number or vertex id (<code>000042.pcd</code>); without numbers they are matched in name order, one per
+        pose. A <b>Scan → pose frame</b> matrix moves them first; a KITTI <code>calib.txt</code> in the folder
+        supplies its <code>Tr</code> (Velodyne to camera) when that box is empty.</li>
+      <li>Scans are thinned to one point per <b>Voxel</b> (0.4 m by default) for registration and the map, and
+        <b>Shown</b> points per scan are drawn, each scan in its own color at its node.</li>
+    </ul>
+    <p>
+      Nodes are white dots, odometry edges blue lines and loop edges orange. Type two node ids in <b>Node A</b> and
+      <b>Node B</b>, or use <b>Pick nodes</b> and click two dots. <b>Add loop</b> registers B's scan onto A's with
+      ICP, starting from their current relative pose, adds the result as a loop edge (weighted by <b>σ loop</b>)
+      and optimises the graph (Levenberg–Marquardt). <b>Robust loops</b> puts a Huber kernel on loop edges, so a
+      wrong loop bends the map less. <b>Undo</b> removes the last loop or optimisation.
+    </p>
+    <p>
+      <b>Save g2o</b> writes the graph with its edges; <b>KITTI</b> and <b>TUM</b> write the optimised poses.
+      <b>Build map cloud</b> adds every scan at its optimised pose to the cloud list, thinned to <b>Map voxel</b>,
+      for measuring, comparing or exporting like any other cloud.
     </p>
 
     <h2 id="trajectory">Trajectories (ATE / RPE)</h2>

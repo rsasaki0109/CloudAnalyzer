@@ -2,6 +2,7 @@
 
 pub mod copc;
 mod e57;
+mod kitti;
 mod las;
 pub mod las_chunks;
 mod las_write;
@@ -33,6 +34,8 @@ pub enum Format {
     E57,
     /// Headerless Gaussian splats (`.splat`), recognised by extension only.
     Splat,
+    /// KITTI Velodyne `.bin` scans, recognised by extension only.
+    KittiBin,
 }
 
 impl Format {
@@ -46,6 +49,7 @@ impl Format {
             Some("xyz" | "txt" | "csv" | "pts" | "asc") => return Self::Xyz,
             Some("e57") => return Self::E57,
             Some("splat") => return Self::Splat,
+            Some("bin") => return Self::KittiBin,
             _ => {}
         }
         if bytes.starts_with(b"ply") {
@@ -116,6 +120,7 @@ pub fn read_thinned(name: &str, bytes: &[u8], keep_every: usize) -> Result<Point
         Format::Xyz => xyz::read(bytes)?,
         Format::E57 => e57::read(bytes, keep_every)?,
         Format::Splat => splat::read(bytes)?,
+        Format::KittiBin => kitti::read(bytes)?,
     };
     if keep_every > 1 && !matches!(format, Format::Las | Format::E57) {
         let keep: Vec<usize> = (0..cloud.len()).step_by(keep_every).collect();
@@ -149,6 +154,7 @@ pub fn announced_points(name: &str, head: &[u8]) -> Option<u64> {
         Format::Xyz => None,
         Format::E57 => e57::announced_points(head),
         Format::Splat => Some(head.len() as u64 / 32),
+        Format::KittiBin => None,
     }
 }
 

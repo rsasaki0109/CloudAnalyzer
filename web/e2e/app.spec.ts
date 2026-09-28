@@ -1317,3 +1317,99 @@ test("subsampling: minimum distance and octree level", async ({ page }) => {
   expect(kept).toBeGreaterThanOrEqual(22 * 22);
   expect(kept).toBeLessThan(32 * 32);
 });
+
+test("pose graph: a drifted loop closed with ICP, optimised, undone and turned into a map", async ({ page }) => {
+  // A courtyard with pillars, scanned from 24 poses around a 20 m square.
+  const world: number[][] = [];
+  for (let a = -20; a <= 20; a += 0.5) {
+    for (let z = 0; z <= 4; z += 0.5) world.push([a, -20, z], [a, 20, z], [-20, a, z], [20, a, z]);
+  }
+  for (const [cx, cy] of [[8, 8], [-8, 8], [8, -8], [-8, -8], [0, 12], [5, -3]]) {
+    for (let k = 0; k < 16; k++) {
+      const t = (k / 16) * 2 * Math.PI;
+      for (let z = 0; z <= 4; z += 0.5) world.push([cx + 0.5 * Math.cos(t), cy + 0.5 * Math.sin(t), z]);
+    }
+  }
+  for (let x = -20; x <= 20; x += 1) for (let y = -20; y <= 20; y += 1) world.push([x, y, 0.1 * Math.sin(x / 3)]);
+
+  type Pose = { x: number; y: number; yaw: number };
+  const truth: Pose[] = [];
+  for (let k = 0; k < 24; k++) {
+    const s = (k * 80) / 24;
+    const side = Math.floor(s / 20);
+    const d = s - side * 20;
+    const [x, y] = [[-10 + d, -10], [10, -10 + d], [10 - d, 10], [-10, 10 - d]][side];
+    truth.push({ x, y, yaw: (side * Math.PI) / 2 });
+  }
+  // Odometry with a steady yaw bias and 1 % scale error, dead-reckoned.
+  const drifted: Pose[] = [truth[0]];
+  for (let k = 1; k < 24; k++) {
+    const [a, b, prev] = [truth[k - 1], truth[k], drifted[k - 1]];
+    const [dx, dy] = [b.x - a.x, b.y - a.y];
+    const [lx, ly] = [Math.cos(a.yaw) * dx + Math.sin(a.yaw) * dy, -Math.sin(a.yaw) * dx + Math.cos(a.yaw) * dy];
+    const yaw = prev.yaw + (b.yaw - a.yaw) + 0.004;
+    drifted.push({
+      x: prev.x + 1.01 * (Math.cos(prev.yaw) * lx - Math.sin(prev.yaw) * ly),
+      y: prev.y + 1.01 * (Math.sin(prev.yaw) * lx + Math.cos(prev.yaw) * ly),
+      yaw,
+    });
+  }
+  const kitti = (p: Pose) => {
+    const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
+    return `${c} ${-s} 0 ${p.x} ${s} ${c} 0 ${p.y} 0 0 1 0`;
+  };
+  const scan = (p: Pose) => {
+    const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
+    const body = Buffer.alloc(world.length * 16);
+    world.forEach(([x, y, z], i) => {
+      const [dx, dy] = [x - p.x, y - p.y];
+      [c * dx + s * dy, -s * dx + c * dy, z, 0.5].forEach((v, a) => body.writeFloatLE(v, i * 16 + a * 4));
+    });
+    return body;
+  };
+  await page
+    .locator("#pg-files-input")
+    .setInputFiles([
+      { name: "poses.txt", mimeType: "text/plain", buffer: Buffer.from(`${drifted.map(kitti).join("\n")}\n`) },
+      ...truth.map((p, k) => ({
+        name: `${String(k).padStart(6, "0")}.bin`,
+        mimeType: "application/octet-stream",
+        buffer: scan(p),
+      })),
+    ]);
+  await expect(status(page)).toContainText("Opened poses.txt: 24 poses");
+  const stats = page.locator("#pg-stats");
+  await expect(stats).toContainText("24 (24 with scans)");
+  await expect(stats).toContainText("23 odometry, 0 loops");
+
+  /** Largest distance of the saved KITTI poses from the truth. */
+  const saveError = async () => {
+    const download = page.waitForEvent("download");
+    await page.locator("#pg-save-kitti").click();
+    const rows = (await bytesOf(await download)).toString().trim().split("\n");
+    expect(rows).toHaveLength(24);
+    return Math.max(
+      ...rows.map((row, k) => {
+        const m = row.split(" ").map(Number);
+        return Math.hypot(m[3] - truth[k].x, m[7] - truth[k].y);
+      }),
+    );
+  };
+  expect(await saveError()).toBeGreaterThan(1);
+
+  await page.locator("#pg-a").fill("0");
+  await page.locator("#pg-b").fill("23");
+  await page.locator("#pg-loop").click();
+  await expect(status(page)).toContainText(/Loop 0 – 23 added .*χ²/);
+  await expect(stats).toContainText("23 odometry, 1 loops");
+  expect(await saveError()).toBeLessThan(0.3);
+
+  await page.locator("#pg-undo").click();
+  await expect(status(page)).toContainText("Removed the last loop");
+  await expect(stats).toContainText("23 odometry, 0 loops");
+  expect(await saveError()).toBeGreaterThan(1);
+
+  await page.locator("#pg-map").click();
+  await expect(status(page)).toContainText(/Added poses_map: [\d,]+ points/);
+  await expect(page.locator("#cloud-list li")).toHaveCount(1);
+});

@@ -69,6 +69,8 @@
 - **Process**: ICP and manual alignment (point pairs, gizmo, matrix), subsampling (voxel, minimum distance, octree level, random), outlier removal, ground extraction (CSF), normals, merge/split,
   rasterize to a DEM / DSM (GeoTIFF or colored PNG), RANSAC shape detection (planes, cylinders, spheres)
   and Euclidean clustering, mesh a cloud (2.5D Delaunay).
+- **Fix SLAM maps** (like interactive_slam): open a g2o pose graph or a TUM / KITTI trajectory with its scans,
+  close loops between two picked keyframes with ICP, optimise the graph and export the poses and the map.
 - **Scalar fields**: color by any per-point value, histograms, range filters and a field calculator.
 - **Inspect**: clipping box, lasso segmentation with undo/redo, cross-section profiles, picking, measuring and labels; save the view as a PNG.
 - **Report**: pass / fail gates on any result, saved as an HTML QA report or JSON in the `ca check` gate format.

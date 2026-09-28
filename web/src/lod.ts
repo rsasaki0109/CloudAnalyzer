@@ -43,7 +43,7 @@ export function parseNodes(flat: Float64Array, grid: number, shift: [number, num
 export interface LodSource {
   id: number;
   nodes: LodNode[];
-  /** Where the cloud is drawn when it is being moved (render coordinates), else absent. */
+  /** How the cloud is moved from its place while it is being moved (render coordinates), else absent. */
   matrix?: THREE.Matrix4;
 }
 

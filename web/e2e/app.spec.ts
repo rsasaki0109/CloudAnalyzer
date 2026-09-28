@@ -1127,3 +1127,58 @@ test("QA report: gates on the latest results pass or fail the HTML and JSON repo
   await expect(other.locator("#gate-list li")).toHaveCount(2);
   await expect(other.locator("#gate-list li").first().locator("input")).toHaveValue("0.1");
 });
+
+test("large coordinates: a UTM cloud opened after a local one picks, measures and cuts exactly", async ({ page }) => {
+  // The local cloud comes first, so the global shift is zero and the UTM
+  // cloud must be drawn relative to its own shift (float32 would round y
+  // to 0.25 m here).
+  await open(page, [{ name: "grid.ply", buffer: ply(grid(20)) }]);
+  await expect(status(page)).toContainText("Loaded grid.ply");
+  const utm: { xyz: [number, number, number]; intensity: number; cls: number }[] = [];
+  for (let j = 0; j <= 10; j++) {
+    for (let i = 0; i <= 10; i++) {
+      utm.push({ xyz: [368000 + i * 0.01, 3955000 + j * 0.01, 50.123], intensity: 0, cls: 2 });
+    }
+  }
+  await open(page, [{ name: "utm.las", buffer: las(utm, [368000, 3955000, 0]) }]);
+  await expect(status(page)).toContainText("Loaded utm.las: 121 points");
+  await expect(page.locator("#shift")).toHaveText("");
+  const rows = page.locator("#cloud-list li");
+  await rows.nth(0).locator("input[type=checkbox]").uncheck();
+  await page.locator("[data-view=top]").click();
+  await page.locator("#fit").click();
+
+  // Fit frames the 10 cm square's bounding sphere: at the target, half the
+  // view height spans radius / cos(25°) (50° field of view).
+  const canvas = page.locator("#viewport > canvas");
+  const box = (await canvas.boundingBox())!;
+  const halfSpan = Math.hypot(0.05, 0.05) / Math.cos((25 * Math.PI) / 180);
+  const at = (dx: number, dy: number) => ({
+    x: box.width / 2 + (dx / halfSpan) * (box.height / 2),
+    y: box.height / 2 - (dy / halfSpan) * (box.height / 2),
+  });
+
+  await canvas.click({ position: at(0, 0) });
+  const info = page.locator("#pick-info");
+  await expect(info).toContainText("368000.050");
+  await expect(info).toContainText("3955000.050");
+  await expect(info).toContainText("50.123");
+
+  await page.keyboard.press("m");
+  await canvas.click({ position: at(-0.02, -0.01) });
+  await expect(page.locator("#measure-hint")).toHaveText(/second point/);
+  await canvas.click({ position: at(0.01, 0.03) });
+  const measured = page.locator("#measure-list li");
+  await expect(measured).toHaveCount(1);
+  await expect(measured.locator(".distance")).toHaveText("0.05");
+  await expect(measured.locator(".delta")).toHaveText("ΔX 0.03  ΔY 0.04  ΔZ 0");
+  await page.keyboard.press("Escape");
+
+  // A lasso around the 3 x 3 points 2-4 cm from the corner.
+  await page.keyboard.press("s");
+  for (const [dx, dy] of [[-0.035, -0.035], [-0.005, -0.035], [-0.005, -0.005], [-0.035, -0.005]]) {
+    await canvas.click({ position: at(dx, dy) });
+  }
+  await page.keyboard.press("Enter");
+  await expect(status(page)).toContainText("Segmented: utm_segmented (9)");
+});

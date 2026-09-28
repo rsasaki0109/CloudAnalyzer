@@ -8,7 +8,10 @@ import { type LodNode, selectNodes } from "./lod";
 
 interface LodCloud {
   id: number;
+  /** Octree nodes, boxes in render coordinates. */
   nodes: LodNode[];
+  /** Where `positions` are relative to, in render coordinates (the group's position). */
+  offset: THREE.Vector3;
   /** Interleaved xyz / rgb in octree order; node objects are views into these. */
   positions: Float32Array;
   colors: Uint8Array;
@@ -184,7 +187,7 @@ export class Viewer {
     this.camera.updateMatrixWorld();
     const sources = [...this.clouds.values()]
       .filter((c) => c.visible)
-      .map((c) => (c.group.matrixAutoUpdate ? c : { ...c, matrix: c.group.matrix }));
+      .map((c) => (this.gizmo?.id === c.id ? { ...c, matrix: this.gizmoMatrix()! } : c));
     const selection = selectNodes(
       sources,
       this.camera,
@@ -274,7 +277,7 @@ export class Viewer {
       "color",
       new THREE.BufferAttribute(cloud.colors.subarray(start * 4, (start + count) * 4), 4, true),
     );
-    geometry.boundingBox = cloud.nodes[index].box.clone();
+    geometry.boundingBox = cloud.nodes[index].box.clone().translate(cloud.offset.clone().negate());
     geometry.boundingSphere = geometry.boundingBox.getBoundingSphere(new THREE.Sphere());
     const points = new THREE.Points(geometry, cloud.material);
     cloud.objects.set(index, points);
@@ -296,7 +299,12 @@ export class Viewer {
     }
   }
 
-  add(id: number, positions: Float32Array, colors: Uint8Array, nodes: LodNode[]): void {
+  /**
+   * Add a cloud whose `positions` are relative to `offset` (render
+   * coordinates). The offset goes into the object's float64 matrix rather
+   * than the float32 vertices, so a far-away cloud stays precise.
+   */
+  add(id: number, positions: Float32Array, colors: Uint8Array, nodes: LodNode[], offset: THREE.Vector3): void {
     const material = new THREE.PointsMaterial({
       size: this.pointSize,
       sizeAttenuation: false,
@@ -306,10 +314,12 @@ export class Viewer {
       clippingPlanes: this.clip ? this.clipPlanes : null,
     });
     const group = new THREE.Group();
+    group.position.copy(offset);
     this.scene.add(group);
     this.clouds.set(id, {
       id,
       nodes,
+      offset: offset.clone(),
       positions,
       colors,
       material,
@@ -321,8 +331,14 @@ export class Viewer {
     this.requestRender(true);
   }
 
-  /** Add a triangle mesh (positions in render coordinates) with a solid color. */
-  addMesh(id: number, positions: Float32Array, indices: Uint32Array, color: [number, number, number]): void {
+  /** Add a triangle mesh with a solid color; `positions` are relative to `offset`, as in {@link add}. */
+  addMesh(
+    id: number,
+    positions: Float32Array,
+    indices: Uint32Array,
+    color: [number, number, number],
+    offset: THREE.Vector3,
+  ): void {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geometry.setIndex(new THREE.BufferAttribute(indices, 1));
@@ -342,6 +358,7 @@ export class Viewer {
       clippingPlanes: this.clip ? this.clipPlanes : null,
     });
     const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.copy(offset);
     this.meshes.set(id, mesh);
     this.scene.add(mesh);
     this.requestRender();
@@ -398,8 +415,9 @@ export class Viewer {
       this.controls.enabled = !e.value;
     });
     controls.addEventListener("objectChange", () => {
+      // The object sits at its offset (see `add`); the motion comes on top.
       object.matrixAutoUpdate = false;
-      object.matrix.copy(this.gizmoMatrix()!);
+      object.matrix.copy(this.gizmoMatrix()!).multiply(new THREE.Matrix4().makeTranslation(object.position));
       object.matrixWorldNeedsUpdate = true;
       this.onGizmoChange();
       this.requestRender(true);
@@ -515,6 +533,8 @@ export class Viewer {
     const tmp = new THREE.Vector3();
     for (const cloud of this.clouds.values()) {
       if (!cloud.visible) continue;
+      // The eye relative to the cloud's positions.
+      const eye = origin.clone().sub(cloud.offset);
       for (const [index, object] of cloud.objects) {
         if (!object.visible) continue;
         const node = cloud.nodes[index];
@@ -523,15 +543,17 @@ export class Viewer {
         if (!raycaster.ray.intersectsBox(box)) continue;
         const p = cloud.positions;
         for (let i = node.start, end = node.start + node.count; i < end; i++) {
-          const vx = p[i * 3] - origin.x;
-          const vy = p[i * 3 + 1] - origin.y;
-          const vz = p[i * 3 + 2] - origin.z;
+          const vx = p[i * 3] - eye.x;
+          const vy = p[i * 3 + 1] - eye.y;
+          const vz = p[i * 3 + 2] - eye.z;
           const depth = vx * direction.x + vy * direction.y + vz * direction.z;
           if (depth <= this.camera.near) continue;
           const perp2 = vx * vx + vy * vy + vz * vz - depth * depth;
           if (perp2 > slope2 * depth * depth) continue;
           if (cloud.colors[i * 4 + 3] === 0) continue; // hidden by a filter
-          if (this.clip && !this.clip.containsPoint(tmp.set(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]))) continue;
+          if (this.clip && !this.clip.containsPoint(tmp.set(p[i * 3], p[i * 3 + 1], p[i * 3 + 2]).add(cloud.offset))) {
+            continue;
+          }
           candidates.push({ cloud, index: i, depth, perp2 });
         }
       }
@@ -554,7 +576,7 @@ export class Viewer {
     return {
       cloudId: best.cloud.id,
       index: best.index,
-      position: new THREE.Vector3(p[best.index * 3], p[best.index * 3 + 1], p[best.index * 3 + 2]),
+      position: new THREE.Vector3(p[best.index * 3], p[best.index * 3 + 1], p[best.index * 3 + 2]).add(best.cloud.offset),
     };
   }
 
@@ -570,7 +592,7 @@ export class Viewer {
       (object.material as THREE.Material).dispose();
     }
     if (markers.length) {
-      const geometry = new THREE.BufferGeometry().setFromPoints(markers.map((m) => m.position));
+      const { geometry, origin } = localGeometry(markers.map((m) => m.position));
       const colors = markers.flatMap((m) => new THREE.Color(m.color).toArray());
       geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
       const material = new THREE.PointsMaterial({
@@ -581,13 +603,15 @@ export class Viewer {
         transparent: true,
       });
       const points = new THREE.Points(geometry, material);
+      points.position.copy(origin);
       points.renderOrder = 2;
       this.annotations.add(points);
     }
     if (segments.length) {
-      const geometry = new THREE.BufferGeometry().setFromPoints(segments.flat());
+      const { geometry, origin } = localGeometry(segments.flat());
       const material = new THREE.LineBasicMaterial({ color: 0x4fc3f7, depthTest: false, transparent: true });
       const lines = new THREE.LineSegments(geometry, material);
+      lines.position.copy(origin);
       lines.renderOrder = 1;
       this.annotations.add(lines);
     }
@@ -598,10 +622,14 @@ export class Viewer {
    * Add or replace a polyline (interleaved xyz in render coordinates), in
    * one color or, with `colors` (interleaved rgba), one per vertex.
    */
-  setLine(id: number, positions: Float32Array, color: string, colors?: Uint8Array): void {
+  setLine(id: number, positions: Float64Array, color: string, colors?: Uint8Array): void {
     this.removeLine(id);
+    // Stored relative to the first vertex, like `localGeometry`.
+    const origin = new THREE.Vector3().fromArray(positions);
+    const local = new Float32Array(positions.length);
+    for (let i = 0; i < positions.length; i++) local[i] = positions[i] - origin.getComponent(i % 3);
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute("position", new THREE.BufferAttribute(local, 3));
     if (colors) geometry.setAttribute("color", new THREE.BufferAttribute(colors, 4, true));
     geometry.computeBoundingBox();
     geometry.computeBoundingSphere();
@@ -613,6 +641,7 @@ export class Viewer {
       depthWrite: false,
     });
     const line = new THREE.Line(geometry, material);
+    line.position.copy(origin);
     line.renderOrder = 1;
     this.lines.set(id, line);
     this.scene.add(line);
@@ -658,8 +687,12 @@ export class Viewer {
     }
     const material = () =>
       new THREE.LineBasicMaterial({ color: 0xffb74d, depthTest: false, transparent: true });
+    // Everything relative to the first vertex, like `localGeometry`.
+    this.profileGroup.position.copy(vertices[0] ?? new THREE.Vector3());
+    const local = (points: THREE.Vector3[]) =>
+      new THREE.BufferGeometry().setFromPoints(points.map((p) => p.clone().sub(this.profileGroup.position)));
     if (vertices.length >= 2) {
-      this.profileGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(vertices), material()));
+      this.profileGroup.add(new THREE.Line(local(vertices), material()));
       // Band edges: each segment offset sideways, plus the two ends.
       const edges: THREE.Vector3[] = [];
       for (let i = 1; i < vertices.length; i++) {
@@ -671,13 +704,13 @@ export class Viewer {
         if (i === 1) edges.push(a.clone().add(side), a.clone().sub(side));
         if (i === vertices.length - 1) edges.push(b.clone().add(side), b.clone().sub(side));
       }
-      const band = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(edges), material());
+      const band = new THREE.LineSegments(local(edges), material());
       (band.material as THREE.LineBasicMaterial).opacity = 0.5;
       this.profileGroup.add(band);
     }
     if (vertices.length) {
       const dots = new THREE.Points(
-        new THREE.BufferGeometry().setFromPoints(vertices),
+        local(vertices),
         new THREE.PointsMaterial({ color: 0xffb74d, size: 8, sizeAttenuation: false, depthTest: false, transparent: true }),
       );
       this.profileGroup.add(dots);
@@ -740,7 +773,9 @@ export class Viewer {
       if (cloud.visible && cloud.nodes[0]) box.union(tightBox(cloud));
     }
     for (const object of [...this.meshes.values(), ...this.lines.values()]) {
-      if (object.visible && object.geometry.boundingBox) box.union(object.geometry.boundingBox);
+      if (object.visible && object.geometry.boundingBox) {
+        box.union(object.geometry.boundingBox.clone().translate(object.position));
+      }
     }
     return box;
   }
@@ -823,8 +858,20 @@ const tightBoxes = new WeakMap<LodCloud, THREE.Box3>();
 function tightBox(cloud: LodCloud): THREE.Box3 {
   let box = tightBoxes.get(cloud);
   if (!box) {
-    box = new THREE.Box3().setFromArray(cloud.positions);
+    box = new THREE.Box3().setFromArray(cloud.positions).translate(cloud.offset);
     tightBoxes.set(cloud, box);
   }
   return box;
+}
+
+/**
+ * Geometry for points in render coordinates, stored relative to the first
+ * one (returned as `origin`, where to place the object): float32 vertices
+ * would round render coordinates far from the global shift, e.g. on a UTM
+ * cloud opened after a local one.
+ */
+function localGeometry(points: THREE.Vector3[]): { geometry: THREE.BufferGeometry; origin: THREE.Vector3 } {
+  const origin = points[0]?.clone() ?? new THREE.Vector3();
+  const geometry = new THREE.BufferGeometry().setFromPoints(points.map((p) => p.clone().sub(origin)));
+  return { geometry, origin };
 }

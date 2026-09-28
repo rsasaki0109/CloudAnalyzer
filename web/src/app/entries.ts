@@ -13,10 +13,13 @@ import {
   type Entry,
   entries,
   findByName,
+  globalShift,
   isMesh,
   listChanged,
   type Origin,
   pointsInvalidated,
+  putEntry,
+  toRender,
   viewer,
 } from "./state";
 
@@ -33,19 +36,28 @@ const SOLID_COLORS: Vec3[] = [
 export function addEntry(cloud: LoadedCloud, origin: Origin = { kind: "derived" }): Entry {
   const entry: Entry = {
     cloud,
-    nodes: parseNodes(cloud.lodNodes, cloud.lodGrid, cloud.shift),
+    nodes: [],
     solid: SOLID_COLORS[entries.size % SOLID_COLORS.length],
     mode: defaultMode(cloud),
     visible: true,
     transforms: [],
     origin,
   };
-  entries.set(cloud.id, entry);
+  putEntry(entry);
   // On a phone, get the sheet out of the way once there is something to see.
   if (entries.size === 1 && narrow.matches) setPanelsOpen(false);
-  if (cloud.kind === "mesh") viewer.addMesh(cloud.id, cloud.positions, cloud.indices!, entry.solid);
-  else viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
+  drawEntry(entry);
   return entry;
+}
+
+/** Draw a listed entry's cloud or mesh at its place in render coordinates. */
+export function drawEntry(entry: Entry): void {
+  const { cloud } = entry;
+  entry.nodes = parseNodes(cloud.lodNodes, cloud.lodGrid, globalShift());
+  const offset = toRender(cloud.shift);
+  if (cloud.kind === "mesh") viewer.addMesh(cloud.id, cloud.positions, cloud.indices!, entry.solid, offset);
+  else viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes, offset);
+  viewer.setVisible(cloud.id, entry.visible);
 }
 
 /** Drop a distance result, falling back to the default colors. */
@@ -78,7 +90,6 @@ export async function removeEntry(id: number): Promise<void> {
 export function replaceCloud(entry: Entry, cloud: LoadedCloud): void {
   const name = entry.cloud.name;
   entry.cloud = cloud;
-  entry.nodes = parseNodes(cloud.lodNodes, cloud.lodGrid, cloud.shift);
   // Distances involving the moved cloud no longer describe the data.
   for (const other of entries.values()) {
     if (other.c2c && (other === entry || other.c2c.referenceName === name)) {
@@ -87,8 +98,7 @@ export function replaceCloud(entry: Entry, cloud: LoadedCloud): void {
     }
   }
   viewer.remove(cloud.id);
-  viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
-  viewer.setVisible(cloud.id, entry.visible);
+  drawEntry(entry);
   pointsInvalidated.emit(cloud.id);
   renderList();
   distanceChanged.emit();

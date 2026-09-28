@@ -13,7 +13,7 @@ export interface LoadedCloud {
   triangles: number;
   /** Triangle vertex indices for a mesh, null for a point cloud. */
   indices: Uint32Array | null;
-  /** Interleaved xyz in octree order, already shifted by the session's global shift. */
+  /** Interleaved xyz in octree order, minus `shift`. */
   positions: Float32Array;
   /** Interleaved rgb in octree order, or null when the file carries no colors. */
   colors: Uint8Array | null;
@@ -40,6 +40,10 @@ export interface LoadedCloud {
   timings: { parse: number; index: number; prepare: number; workers?: number };
   /** [minX, minY, minZ, maxX, maxY, maxZ] in original coordinates. */
   bounds: number[];
+  /**
+   * This item's own offset (its suggested shift), so that float32 positions
+   * stay precise whatever else is open; the UI places it in the scene.
+   */
   shift: Vec3;
 }
 

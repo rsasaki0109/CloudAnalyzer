@@ -75,8 +75,6 @@ const ready = init().then((wasm) => {
 const MESH_MAX_POINTS = 5_000_000;
 const items = new Map<number, Item>();
 let nextId = 1;
-// Like CloudCompare's global shift: chosen from the first file, shared by all.
-let shift: Vec3 | null = null;
 
 /**
  * Split a C2C job into spatially compact parts and run them on the worker
@@ -468,7 +466,10 @@ function describe(
 ): { value: LoadedCloud; transfer: Transferable[] } {
   const start = performance.now();
   const item = items.get(id)!;
-  const s = new Float64Array(shift!);
+  // Each item gets its own shift: one shared shift taken from the first file
+  // would leave a UTM cloud opened after a local one in float32 metres.
+  const shift = Array.from((item.kind === "mesh" ? item.mesh : item.cloud).suggestedShift()) as Vec3;
+  const s = new Float64Array(shift);
   if (item.kind === "mesh") {
     const positions = item.mesh.positions(s);
     const indices = item.mesh.indices();
@@ -487,7 +488,7 @@ function describe(
       opacity: null,
       sources: null,
       bounds: Array.from(item.mesh.bounds()),
-      shift: shift!,
+      shift,
       lodNodes: new Float64Array(),
       lodGrid: 0,
       keepEvery: 1,
@@ -520,7 +521,7 @@ function describe(
     opacity,
     sources: item.sources ?? null,
     bounds: Array.from(cloud.bounds()),
-    shift: shift!,
+    shift,
     lodNodes,
     lodGrid: cloud.lodGrid,
     keepEvery: item.keepEvery ?? 1,
@@ -744,7 +745,6 @@ async function handle(
         throw err;
       }
       if (loaded.kind === "mesh") {
-        shift ??= Array.from(loaded.mesh.suggestedShift()) as Vec3;
         const id = nextId++;
         items.set(id, { kind: "mesh", mesh: loaded.mesh, name });
         return describe(id, { parse, index: 0 });
@@ -760,7 +760,6 @@ async function handle(
         cloud.free();
         throw err;
       }
-      shift ??= Array.from(cloud.suggestedShift()) as Vec3;
       const id = nextId++;
       items.set(id, {
         kind: "cloud",
@@ -1068,7 +1067,6 @@ async function handle(
       if (item?.kind === "cloud") item.cloud.free();
       if (item?.kind === "mesh") item.mesh.free();
       items.delete(req.id);
-      if (items.size === 0) shift = null;
       return { value: null, transfer: [] };
     }
   }

@@ -287,8 +287,8 @@ export interface PoseGraphState {
 /** A floor tied to the keyframes that see it (see `pg-floor`). */
 export interface PoseGraphFloor {
   state: PoseGraphState;
-  /** The new plane's index, for undo. */
-  plane: number;
+  /** The new planes (indices `first` on), for undo. */
+  planes: { first: number; count: number };
   /** Keyframes whose scan shows the floor. */
   tied: number;
   /** The up axis used, in scan coordinates. */
@@ -315,6 +315,8 @@ export interface PoseGraphLoop {
   converged: boolean;
   /** Fraction of B's points within the inlier distance of A's once registered. */
   fitness: number;
+  /** The registration that counted came from the same-place retry. */
+  retried: boolean;
 }
 
 /** A second graph joined to the open one (see `pg-merge`). */
@@ -353,10 +355,12 @@ export interface PoseGraphFiles {
 export interface PoseGraphFound {
   state: PoseGraphState;
   candidates: number;
-  /** Accepted loops, as node indices, with their fitness. */
-  added: { from: number; to: number; fitness: number }[];
+  /** Accepted loops, as node indices, with their fitness and whether the same-place retry found them. */
+  added: { from: number; to: number; fitness: number; retried: boolean }[];
   /** Their edge indices, for undo. */
   edges: number[];
+  /** Candidates that overlapped but were placed further from where the graph has them than drift allows. */
+  implausible: number;
   /** Graph cost before and after the optimisation that followed, if any loop was added. */
   optimized: { initialCost: number; finalCost: number; iterations: number } | null;
 }
@@ -416,6 +420,8 @@ export type Request =
       pointToPlane: boolean;
       /** For the reported fitness (metres). */
       inlierDistance: number;
+      /** Below half overlap, register again as if both scans were taken at the same place, from this many headings (0: no retry). */
+      retryHeadings: number;
       sigmaT: number;
       sigmaRDeg: number;
     }
@@ -427,11 +433,15 @@ export type Request =
        */
       kind: "pg-find-loops";
       maxDistance: number;
+      /** Odometry drift (a fraction): the search, and the check of a loop, widen by this share of the path between its nodes. */
+      drift: number;
       minTravel: number;
       spacing: number;
       /** 0..1: fraction of points within `inlierDistance` after registration. */
       minFitness: number;
       inlierDistance: number;
+      /** Below `minFitness`, register again as if both scans were taken at the same place, from this many headings (0: no retry). */
+      retryHeadings: number;
       maxIterations: number;
       overlap: number;
       sigmaT: number;

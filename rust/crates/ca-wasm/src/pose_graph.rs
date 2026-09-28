@@ -182,8 +182,16 @@ impl PoseGraphSession {
     /// after, iterations, converged, fitness, 16 matrix entries]`: the
     /// matrix (row-major) is the measured pose of `to` in the frame of
     /// `from`, and the fitness the fraction of `to`'s points within
-    /// `inlier_distance` of `from`'s once placed by it.
+    /// `inlier_distance` of `from`'s once placed by it. Two entries follow:
+    /// 1 when the result came from the retry, and how far (metres) the
+    /// measured position of `to` lies from where the graph has it. The
+    /// retry: when the fitness is below
+    /// `retry_below`, the scans are registered again as if taken at the
+    /// same place, from `retry_headings` headings (0: no retry). After a
+    /// long drift the graph's relative pose of a revisit can be tens of
+    /// metres off, while the two scans were taken a few metres apart.
     #[wasm_bindgen(js_name = registerLoop)]
+    #[allow(clippy::too_many_arguments)]
     pub fn register_loop(
         &self,
         from: usize,
@@ -192,6 +200,8 @@ impl PoseGraphSession {
         overlap: f64,
         point_to_plane: bool,
         inlier_distance: f64,
+        retry_below: f64,
+        retry_headings: usize,
     ) -> Result<Vec<f64>, JsError> {
         let n = self.graph.nodes.len();
         if from >= n || to >= n || from == to {
@@ -214,11 +224,27 @@ impl PoseGraphSession {
         };
         let (from_scan, to_scan) = (scan(from)?, scan(to)?);
         let guess = self.graph.relative(from, to);
-        let (measurement, result) =
+        let (mut measurement, mut result) =
             pose_graph::register_loop(from_scan, to_scan, &guess, params)
                 .ok_or_else(|| JsError::new("ICP found too few matching points"))?;
-        let fitness =
+        let mut fitness =
             pose_graph::overlap_fitness(from_scan, to_scan, &measurement, inlier_distance);
+        let mut retried = false;
+        let retry = (fitness < retry_below && retry_headings > 0)
+            .then(|| {
+                pose_graph::register_with_yaw_search(
+                    from_scan,
+                    to_scan,
+                    &Rigid::IDENTITY,
+                    retry_headings,
+                    params,
+                    inlier_distance,
+                )
+            })
+            .flatten();
+        if let Some((m, f, r)) = retry.filter(|&(_, f, _)| f > fitness) {
+            (measurement, fitness, result, retried) = (m, f, r, true);
+        }
         let mut out = vec![
             result.rms_initial,
             result.rms_final,
@@ -227,6 +253,10 @@ impl PoseGraphSession {
             fitness,
         ];
         out.extend(measurement.to_matrix());
+        out.push(f64::from(u8::from(retried)));
+        let d: [f64; 3] =
+            std::array::from_fn(|k| measurement.translation[k] - guess.translation[k]);
+        out.push((d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt());
         Ok(out)
     }
 
@@ -386,10 +416,10 @@ impl PoseGraphSession {
     }
 
     /// Tie every keyframe whose scan shows a floor to one new floor plane
-    /// (see `ca_core::pose_graph::detect_floor`). `up` is the scans' up
+    /// (see `ca_core::pose_graph::detect_floor` and `tie_to_floor`). `up` is the scans' up
     /// direction, or empty to pick the axis (+z, -y, +y) under which most
-    /// of the first scans show a floor. Returns `[plane index, keyframes
-    /// tied, up x, up y, up z]`; fails when no scan shows a floor.
+    /// of the first scans show a floor. Returns `[first new plane, planes,
+    /// keyframes tied, up x, up y, up z]`; fails when no scan shows a floor.
     #[wasm_bindgen(js_name = addFloor)]
     pub fn add_floor(
         &mut self,
@@ -425,23 +455,22 @@ impl PoseGraphSession {
             .iter()
             .filter_map(|&(i, s)| Some((i, floor(s, up)?)))
             .collect();
-        let Some(&(first, measurement)) = seen.first() else {
+        if seen.is_empty() {
             return Err(JsError::new(
                 "no scan shows a floor: check the up axis and the tilt limit",
             ));
-        };
-        let world = pose_graph::plane_in_world(&measurement, &self.graph.nodes[first].pose);
-        let plane = self.graph.add_plane(world);
-        let information = pose_graph::plane_information(sigma_angle_deg.to_radians(), sigma_offset);
-        for &(node, measurement) in &seen {
-            self.graph.plane_edges.push(pose_graph::PlaneEdge {
-                node,
-                plane,
-                measurement,
-                information,
-            });
         }
-        Ok(vec![plane as f64, seen.len() as f64, up[0], up[1], up[2]])
+        let information = pose_graph::plane_information(sigma_angle_deg.to_radians(), sigma_offset);
+        let plane = pose_graph::tie_to_floor(&mut self.graph, &seen, information)
+            .ok_or_else(|| JsError::new("no scan shows a floor"))?;
+        Ok(vec![
+            plane as f64,
+            1.0,
+            seen.len() as f64,
+            up[0],
+            up[1],
+            up[2],
+        ])
     }
 
     /// Remove plane `index` and every edge to it.
@@ -460,13 +489,19 @@ impl PoseGraphSession {
         Ok(())
     }
 
-    /// Loop candidates as `earlier, later` node index pairs (see
-    /// `ca_core::pose_graph::loop_candidates`).
+    /// Loop candidates as `earlier, later, path length between` triples
+    /// (see `ca_core::pose_graph::loop_candidates`).
     #[wasm_bindgen(js_name = loopCandidates)]
-    pub fn loop_candidates(&self, max_distance: f64, min_travel: f64, spacing: f64) -> Vec<u32> {
-        pose_graph::loop_candidates(&self.graph, max_distance, min_travel, spacing)
+    pub fn loop_candidates(
+        &self,
+        max_distance: f64,
+        drift: f64,
+        min_travel: f64,
+        spacing: f64,
+    ) -> Vec<f64> {
+        pose_graph::loop_candidates(&self.graph, max_distance, drift, min_travel, spacing)
             .into_iter()
-            .flat_map(|(a, b)| [a as u32, b as u32])
+            .flat_map(|c| [c.from as f64, c.to as f64, c.travel])
             .collect()
     }
 

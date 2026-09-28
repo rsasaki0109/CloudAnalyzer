@@ -1207,6 +1207,31 @@ impl PoseGraph {
     }
 }
 
+/// Tie keyframes to one floor plane from what each sees (`seen`: node
+/// index and floor in its frame). This removes tilt and height drift where
+/// the ground is flat overall. It asserts that the ground does not bend, so
+/// on hills it flattens the path: odometry cannot hold a hill against it,
+/// and neither can planes per stretch of path, which still assert zero
+/// curvature within each (tried on KITTI 09). Returns the new plane's index,
+/// or `None` when nothing is seen.
+pub fn tie_to_floor(
+    graph: &mut PoseGraph,
+    seen: &[(usize, [f64; 4])],
+    information: [[f64; 3]; 3],
+) -> Option<usize> {
+    let &(first, measurement) = seen.first()?;
+    let plane = graph.add_plane(plane_in_world(&measurement, &graph.nodes[first].pose));
+    graph
+        .plane_edges
+        .extend(seen.iter().map(|&(node, measurement)| PlaneEdge {
+            node,
+            plane,
+            measurement,
+            information,
+        }));
+    Some(plane)
+}
+
 /// The floor under a scan (in its frame): the plane with the most points
 /// within `threshold` whose normal is at most `max_tilt` (radians) from `up`
 /// and that lies below the sensor, refined by a least-squares fit to those
@@ -1336,17 +1361,36 @@ pub fn overlap_fitness(
     }
 }
 
-/// Node pairs `(earlier, later)` worth checking for a loop: at most
-/// `max_distance` apart as the graph has them now, at least `min_travel`
-/// apart along the path through the nodes (in order), and not joined by an
-/// edge yet. Each node proposes its nearest such earlier node, and along
-/// the path at most one proposal is kept every `spacing` metres.
+/// How far apart (metres) the graph may put two nodes that are really at
+/// the same place: `max_distance`, plus `drift` (a fraction, e.g. 0.03 for
+/// odometry that drifts 3 %) of the path travelled between them.
+pub fn drift_budget(max_distance: f64, drift: f64, travel_between: f64) -> f64 {
+    max_distance + drift * travel_between
+}
+
+/// A node pair worth checking for a loop.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LoopCandidate {
+    pub from: usize,
+    pub to: usize,
+    /// Path length between them, through the nodes in order.
+    pub travel: f64,
+}
+
+/// Node pairs `(earlier, later)` worth checking for a loop: at least
+/// `min_travel` apart along the path through the nodes (in order), within
+/// the [`drift_budget`] of each other as the graph has them now, and not
+/// joined by an edge yet. A long way round may have drifted far, so a
+/// revisit after a long path is looked for further away. Each node proposes
+/// its most plausible earlier node (the smallest distance for its budget),
+/// and along the path at most one proposal is kept every `spacing` metres.
 pub fn loop_candidates(
     graph: &PoseGraph,
     max_distance: f64,
+    drift: f64,
     min_travel: f64,
     spacing: f64,
-) -> Vec<(usize, usize)> {
+) -> Vec<LoopCandidate> {
     let positions: Vec<[f64; 3]> = graph.nodes.iter().map(|n| n.pose.translation).collect();
     let Some(tree) = KdTree::new(&positions) else {
         return Vec::new();
@@ -1354,8 +1398,7 @@ pub fn loop_candidates(
     let mut travel = vec![0.0; positions.len()];
     for i in 1..positions.len() {
         let (a, b) = (positions[i - 1], positions[i]);
-        let step = ((b[0] - a[0]).powi(2) + (b[1] - a[1]).powi(2) + (b[2] - a[2]).powi(2)).sqrt();
-        travel[i] = travel[i - 1] + step;
+        travel[i] = travel[i - 1] + dot3(&sub3(&b, &a), &sub3(&b, &a)).sqrt();
     }
     let joined: std::collections::HashSet<(usize, usize)> = graph
         .edges
@@ -1370,19 +1413,32 @@ pub fn loop_candidates(
             continue;
         }
         near.clear();
-        tree.within(&positions[i], max_distance, &mut near);
-        let distance_sq = |j: usize| {
-            (0..3)
-                .map(|a| (positions[i][a] - positions[j][a]).powi(2))
-                .sum::<f64>()
+        // Nothing earlier can be further than the budget for the whole path so far.
+        tree.within(
+            &positions[i],
+            drift_budget(max_distance, drift, travel[i]),
+            &mut near,
+        );
+        let plausibility = |j: usize| {
+            let d = sub3(&positions[i], &positions[j]);
+            dot3(&d, &d).sqrt() / drift_budget(max_distance, drift, travel[i] - travel[j])
         };
         let best = near
             .iter()
             .copied()
-            .filter(|&j| j < i && travel[i] - travel[j] >= min_travel && !joined.contains(&(j, i)))
-            .min_by(|&a, &b| distance_sq(a).total_cmp(&distance_sq(b)));
+            .filter(|&j| {
+                j < i
+                    && travel[i] - travel[j] >= min_travel
+                    && !joined.contains(&(j, i))
+                    && plausibility(j) <= 1.0
+            })
+            .min_by(|&a, &b| plausibility(a).total_cmp(&plausibility(b)));
         if let Some(j) = best {
-            out.push((j, i));
+            out.push(LoopCandidate {
+                from: j,
+                to: i,
+                travel: travel[i] - travel[j],
+            });
             last_kept = travel[i];
         }
     }
@@ -1793,16 +1849,50 @@ FIX 1
     fn loop_candidates_pair_the_ends_of_a_loop() {
         let (_, truth) = loop_graph(0.0);
         let mut graph = PoseGraph::from_poses(&truth, isotropic_information(0.1, 0.1));
-        let candidates = loop_candidates(&graph, 3.0, 20.0, 5.0);
+        let candidates = loop_candidates(&graph, 3.0, 0.0, 20.0, 5.0);
         assert!(!candidates.is_empty());
-        for &(j, i) in &candidates {
-            assert!(j < 3 && i >= 36, "{candidates:?}");
+        for c in &candidates {
+            assert!(
+                c.from < 3 && c.to >= 36 && c.travel > 30.0,
+                "{candidates:?}"
+            );
         }
         // Joined pairs are not proposed again; a short path is never a loop.
-        let (j, i) = candidates[0];
-        graph.add_loop(j, i, graph.relative(j, i), isotropic_information(0.1, 0.1));
-        assert!(!loop_candidates(&graph, 3.0, 20.0, 5.0).contains(&(j, i)));
-        assert!(loop_candidates(&graph, 3.0, 100.0, 5.0).is_empty());
+        let c = candidates[0];
+        graph.add_loop(
+            c.from,
+            c.to,
+            graph.relative(c.from, c.to),
+            isotropic_information(0.1, 0.1),
+        );
+        let again = loop_candidates(&graph, 3.0, 0.0, 20.0, 5.0);
+        assert!(!again.iter().any(|d| (d.from, d.to) == (c.from, c.to)));
+        assert!(loop_candidates(&graph, 3.0, 0.0, 100.0, 5.0).is_empty());
+    }
+
+    #[test]
+    fn the_search_widens_with_the_path_travelled() {
+        // The end of a drifted loop is a few metres from the start after about 40 m.
+        let (graph, _) = loop_graph(0.05);
+        let end = graph.nodes.len() - 1;
+        let apart = (0..3)
+            .map(|j| {
+                let d = sub3(
+                    &graph.nodes[end].pose.translation,
+                    &graph.nodes[j].pose.translation,
+                );
+                dot3(&d, &d).sqrt()
+            })
+            .fold(f64::INFINITY, f64::min);
+        assert!(apart > 1.0, "{apart}");
+        let reaches_start = |c: &[LoopCandidate]| c.iter().any(|c| c.from < 8 && c.to == end);
+        assert!(!reaches_start(&loop_candidates(
+            &graph, 1.0, 0.0, 20.0, 0.0
+        )));
+        // Drift of 20 % over the ~39 m path allows 1 + 7.8 m.
+        assert!(apart < drift_budget(1.0, 0.2, 38.0), "{apart}");
+        assert!(reaches_start(&loop_candidates(&graph, 1.0, 0.2, 20.0, 0.0)));
+        assert!((drift_budget(3.0, 0.2, 40.0) - 11.0).abs() < 1e-12);
     }
 
     #[test]
@@ -1985,5 +2075,61 @@ FIX 1
         assert!((other.planes[0].coefficients[3] - (1.5 - 2.0)).abs() < 1e-12);
         assert_eq!(other.plane_edges[0].node, 2);
         assert!(other.plane_edge_errors()[0] < 1e-20);
+    }
+
+    #[test]
+    fn one_tilted_plane_fits_a_constant_grade() {
+        let grade = 0.1f64.atan();
+        let truth: Vec<Rigid> = (0..40)
+            .map(|k| {
+                let s = k as f64;
+                pose([s * grade.cos(), 0.0, s * grade.sin()], [0.0, -grade, 0.0])
+            })
+            .collect();
+        let seen: Vec<(usize, [f64; 4])> = (0..truth.len())
+            .map(|i| (i, [0.0, 0.0, 1.0, 1.8]))
+            .collect();
+        let mut graph = PoseGraph::from_poses(&truth, isotropic_information(0.05, 0.005));
+        let before = graph.cost(&OptimizeParams::default());
+        tie_to_floor(&mut graph, &seen, plane_information(0.005, 0.02)).unwrap();
+        let errors = graph.plane_edge_errors();
+        let worst = errors.iter().copied().fold(0.0, f64::max);
+        assert!(
+            before < 1e-12 && worst < 1e-12,
+            "{before} {worst} {:?}",
+            graph.planes
+        );
+        optimize(&mut graph, &OptimizeParams::default()).unwrap();
+        for (n, t) in graph.nodes.iter().zip(&truth) {
+            assert!((n.pose.translation[2] - t.translation[2]).abs() < 1e-6);
+        }
+    }
+
+    #[test]
+    fn one_floor_flattens_hills() {
+        // Height 5 sin(s / 60) over 300 m; the vehicle pitches with the road.
+        let truth: Vec<Rigid> = (0..300)
+            .map(|k| {
+                let s = k as f64;
+                let slope = (5.0 / 60.0 * (s / 60.0).cos()).atan();
+                pose([s, 0.0, 5.0 * (s / 60.0).sin()], [0.0, -slope, 0.0])
+            })
+            .collect();
+        let seen: Vec<(usize, [f64; 4])> = (0..truth.len())
+            .map(|i| (i, [0.0, 0.0, 1.0, 1.8]))
+            .collect();
+        let mut graph = PoseGraph::from_poses(&truth, isotropic_information(0.1, 0.0175));
+        let plane = tie_to_floor(&mut graph, &seen, plane_information(0.0087, 0.05)).unwrap();
+        optimize(&mut graph, &OptimizeParams::default()).unwrap();
+        // What the guide warns about: every pose ends up 1.8 m above one
+        // plane, so the 10 m of hills are gone.
+        let c = graph.planes[plane].coefficients;
+        let off = graph
+            .nodes
+            .iter()
+            .map(|n| (dot3(&[c[0], c[1], c[2]], &n.pose.translation) + c[3] - 1.8).abs())
+            .fold(0.0, f64::max);
+        assert!(off < 0.5, "{off}");
+        assert!(tie_to_floor(&mut graph, &[], plane_information(0.01, 0.01)).is_none());
     }
 }

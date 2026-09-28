@@ -981,6 +981,12 @@ interface LoadedGraph {
   unmatched: string[];
 }
 
+/**
+ * Metres of possible drift between a candidate loop's nodes from which a
+ * failed registration is retried as if both scans were taken at the same place.
+ */
+const RETRY_MIN_DRIFT = 5;
+
 /** Scan files read at once while loading a pose graph. */
 const READ_AHEAD = 8;
 
@@ -1117,32 +1123,58 @@ async function handle(
       return mergePoseGraph(req, progress, check);
     case "pg-loop": {
       const session = openGraph();
-      const r = session.registerLoop(req.from, req.to, req.maxIterations, req.overlap, req.pointToPlane, req.inlierDistance);
-      const edge = session.addLoopEdge(req.from, req.to, r.subarray(5), req.sigmaT, req.sigmaRDeg);
+      const r = session.registerLoop(
+        req.from,
+        req.to,
+        req.maxIterations,
+        req.overlap,
+        req.pointToPlane,
+        req.inlierDistance,
+        0.5,
+        req.retryHeadings,
+      );
+      const edge = session.addLoopEdge(req.from, req.to, r.subarray(5, 21), req.sigmaT, req.sigmaRDeg);
       const state = graphState(session);
       const [rmsInitial, rmsFinal, iterations, converged, fitness] = r;
-      const value = { state, edge, rmsInitial, rmsFinal, iterations, converged: converged === 1, fitness };
+      const value = {
+        state,
+        edge,
+        rmsInitial,
+        rmsFinal,
+        iterations,
+        converged: converged === 1,
+        fitness,
+        retried: r[21] === 1,
+      };
       return { value, transfer: stateTransfer(state) };
     }
     case "pg-find-loops": {
       const session = openGraph();
-      const pairs = session.loopCandidates(req.maxDistance, req.minTravel, req.spacing);
-      const candidates = pairs.length / 2;
+      const found = session.loopCandidates(req.maxDistance, req.drift, req.minTravel, req.spacing);
+      const candidates = found.length / 3;
       const added: PoseGraphFound["added"] = [];
       const edges: number[] = [];
+      let implausible = 0;
       for (let k = 0; k < candidates; k++) {
         check();
         progress(`checking candidate ${k + 1} of ${candidates} (${added.length} loops so far)`, k / candidates);
-        const [from, to] = [pairs[2 * k], pairs[2 * k + 1]];
+        const [from, to, travel] = [found[3 * k], found[3 * k + 1], found[3 * k + 2]];
+        // Only a long way round can leave the graph's guess too far off for ICP;
+        // along a short stretch, "the same place" would only match a corridor to itself.
+        const retry = req.drift * travel >= RETRY_MIN_DRIFT ? req.retryHeadings : 0;
         let r: Float64Array;
         try {
-          r = session.registerLoop(from, to, req.maxIterations, req.overlap, true, req.inlierDistance);
+          r = session.registerLoop(from, to, req.maxIterations, req.overlap, true, req.inlierDistance, req.minFitness, retry);
         } catch {
           continue; // a node without a scan, or too few matching points
         }
         if (!(r[4] >= req.minFitness)) continue;
-        edges.push(session.addLoopEdge(from, to, r.subarray(5), req.sigmaT, req.sigmaRDeg));
-        added.push({ from, to, fitness: r[4] });
+        if (r[22] > req.maxDistance + req.drift * travel) {
+          implausible++;
+          continue;
+        }
+        edges.push(session.addLoopEdge(from, to, r.subarray(5, 21), req.sigmaT, req.sigmaRDeg));
+        added.push({ from, to, fitness: r[4], retried: r[21] === 1 });
       }
       let optimized: PoseGraphFound["optimized"] = null;
       if (added.length) {
@@ -1151,12 +1183,12 @@ async function handle(
         optimized = { initialCost, finalCost, iterations };
       }
       const state = graphState(session);
-      const value: PoseGraphFound = { state, candidates, added, edges, optimized };
+      const value: PoseGraphFound = { state, candidates, added, edges, implausible, optimized };
       return { value, transfer: stateTransfer(state) };
     }
     case "pg-floor": {
       const session = openGraph();
-      const [plane, tied, ...up] = session.addFloor(
+      const [first, count, tied, ...up] = session.addFloor(
         new Float64Array(req.up ?? []),
         req.maxTiltDeg,
         req.threshold,
@@ -1166,7 +1198,13 @@ async function handle(
       );
       const [initialCost, finalCost, iterations] = session.optimize(req.loopKernel);
       const state = graphState(session);
-      const value: PoseGraphFloor = { state, plane, tied, up, optimized: { initialCost, finalCost, iterations } };
+      const value: PoseGraphFloor = {
+        state,
+        planes: { first, count },
+        tied,
+        up,
+        optimized: { initialCost, finalCost, iterations },
+      };
       return { value, transfer: stateTransfer(state) };
     }
     case "pg-set-node-pose": {

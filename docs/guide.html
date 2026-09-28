@@ -266,6 +266,10 @@
     <p>Each filter creates a new cloud and keeps the original:</p>
     <ul>
       <li><b>Voxel subsampling</b> keeps one point per cube of the given edge.</li>
+      <li><b>Minimum distance</b> keeps points so that no two are closer than the given distance, which gives an
+        even density (CloudCompare's "space" subsampling).</li>
+      <li><b>Octree level</b> keeps the point nearest the centre of each cell of that octree level: level 10
+        splits the cloud's bounding cube 1,024 times along each axis.</li>
       <li><b>Random subsampling</b> keeps a given number of points.</li>
       <li><b>Remove outliers (SOR)</b> drops points whose mean distance to their <i>k</i> neighbours is more
         than <i>ratio</i> standard deviations above average.</li>

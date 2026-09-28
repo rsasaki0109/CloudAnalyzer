@@ -494,6 +494,8 @@ impl Cloud {
         let keep = match op {
             "voxel" => filter::voxel_subsample(&self.inner, a),
             "random" => filter::random_subsample(&self.inner, a.max(0.0) as usize, 0x5eed),
+            "spatial" => filter::spatial_subsample(&self.inner, a),
+            "octree" => filter::octree_subsample(&self.inner, a.max(0.0) as u32),
             "sor" => filter::statistical_outliers(&self.inner, a.max(1.0) as usize, b),
             "splat" => filter::splat_cleanup(&self.inner, a, b)
                 .ok_or_else(|| JsError::new("not Gaussian splats (no opacity and size)"))?,
@@ -2208,6 +2210,8 @@ pub fn warm_up() {
     let local = part.local(8, 0, &split.regions);
     let _ = part.within(&queries[..2_000], 8);
     let _ = ca_core::filter::sor_keep(&local.means, 1.0);
+    let _ = ca_core::filter::spatial_subsample(&cloud, 0.05);
+    let _ = ca_core::filter::octree_subsample(&cloud, 6);
     let _ = ca_core::raster::rasterize(
         &cloud,
         ca_core::raster::RasterParams {

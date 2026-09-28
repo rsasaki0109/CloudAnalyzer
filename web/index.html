@@ -254,6 +254,8 @@
         <label>Operation
           <select id="filter-op">
             <option value="voxel">Subsample: one point per voxel</option>
+            <option value="spatial">Subsample: minimum distance</option>
+            <option value="octree">Subsample: octree level</option>
             <option value="random">Subsample: random points</option>
             <option value="sor">Remove outliers (SOR)</option>
             <option value="splat" hidden>Splat cleanup (faint / huge Gaussians)</option>
@@ -262,6 +264,13 @@
         </label>
         <div class="range" data-op="voxel">
           <label title="Voxel edge length, in the cloud's units">Voxel size <input id="filter-voxel" type="number" min="0" step="any" /></label>
+        </div>
+        <div class="range" data-op="spatial" hidden>
+          <label title="No two kept points are closer than this, in the cloud's units">Min. distance <input id="filter-spacing" type="number" min="0" step="any" /></label>
+        </div>
+        <div data-op="octree" hidden>
+          <label title="Keep the point nearest the centre of each cell of this octree level">Octree level <input id="filter-level" type="number" min="1" max="21" step="1" value="8" /></label>
+          <p id="filter-level-hint" class="hint"></p>
         </div>
         <div class="range" data-op="random" hidden>
           <label>Keep % <input id="filter-percent" type="number" min="0.1" max="100" step="any" value="10" /></label>

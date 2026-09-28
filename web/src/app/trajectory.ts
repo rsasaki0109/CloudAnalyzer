@@ -5,7 +5,7 @@
 
 import { evaluateTrajectory, transformCloud } from "../api";
 import { colorize, gradientCss, lut } from "../colormap";
-import type { TrajectoryAlignment, TrajectoryEvaluation, TrajectoryPoses, Vec3 } from "../protocol";
+import type { TrajectoryAlignment, TrajectoryEvaluation, TrajectoryPoses } from "../protocol";
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
 import { replaceCloud } from "./entries";
 import { record } from "./history";
@@ -67,22 +67,13 @@ const applyButton = $<HTMLButtonElement>("trajectory-apply");
 
 const baseName = (name: string) => name.replace(/\.[^.]+$/, "");
 
-/**
- * Render offset: the clouds' global shift, or without clouds one that keeps
- * georeferenced trajectories precise in float32.
- */
-function shift(): Vec3 {
-  if (entries.size) return globalShift();
-  const p = [...trajectories.values()][0]?.poses.positions;
-  if (!p || Math.max(Math.abs(p[0]), Math.abs(p[1]), Math.abs(p[2])) <= 1e4) return [0, 0, 0];
-  return [0, 1, 2].map((a) => Math.round(p[a] / 100) * 100) as Vec3;
-}
+/** The global shift the lines were drawn with (they move with it). */
 let drawnShift = "";
 
 function draw(t: Trajectory): void {
-  const [sx, sy, sz] = shift();
+  const [sx, sy, sz] = globalShift();
   const p = t.poses.positions;
-  const positions = new Float32Array(p.length);
+  const positions = new Float64Array(p.length);
   for (let i = 0; i < p.length; i += 3) {
     positions[i] = p[i] - sx;
     positions[i + 1] = p[i + 1] - sy;
@@ -100,7 +91,7 @@ function errorRange(errors: Float64Array): [number, number] {
 }
 
 function drawAll(): void {
-  drawnShift = shift().join();
+  drawnShift = globalShift().join();
   for (const t of trajectories.values()) draw(t);
 }
 
@@ -109,8 +100,7 @@ export function addTrajectory(name: string, poses: TrajectoryPoses, errors?: Flo
   const color = COLORS[trajectories.size % COLORS.length];
   const t: Trajectory = { id: nextId++, name, poses, color, visible: true, errors };
   trajectories.set(t.id, t);
-  // The first trajectory can change the shift used without clouds.
-  if (shift().join() !== drawnShift) drawAll();
+  if (globalShift().join() !== drawnShift) drawAll();
   else draw(t);
   if (entries.size === 0 && trajectories.size === 1) viewer.fit();
   renderList();
@@ -124,7 +114,6 @@ function removeTrajectory(id: number): void {
     last = null;
     $("trajectory-result").hidden = true;
   }
-  if (shift().join() !== drawnShift) drawAll();
   renderList();
 }
 
@@ -204,7 +193,7 @@ listChanged.add(() => {
   applySelect.value = current;
   updateButtons();
   // Lines follow the clouds' global shift.
-  if (shift().join() !== drawnShift) drawAll();
+  if (globalShift().join() !== drawnShift) drawAll();
 });
 
 // The color ramp may have changed.

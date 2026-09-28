@@ -6,7 +6,7 @@ import { nameFromUrl, parseSession } from "../session";
 import { $, errorText, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { applySession, restorePendingAfterLoad } from "./session";
-import { entries, type Origin, viewer } from "./state";
+import { entries, globalShift, type Origin, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { addTrajectory } from "./trajectory";
 
@@ -58,7 +58,7 @@ export async function loadFiles(files: (File | RemoteCopc)[], origins?: Origin[]
           : await loadCopcUrl(file.url, file.name, maxPoints, onProgress, signal);
       addEntry(cloud, origins?.[i] ?? { kind: "file" });
       if (entries.size === 1) viewer.fit();
-      const [sx, sy, sz] = cloud.shift;
+      const [sx, sy, sz] = globalShift();
       $("shift").textContent = sx || sy || sz ? `Global shift: (${-sx}, ${-sy}, ${-sz})` : "";
       const { parse, index, prepare, workers } = cloud.timings;
       const size =

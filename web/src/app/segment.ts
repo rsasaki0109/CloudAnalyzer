@@ -7,7 +7,7 @@ import { refreshColors } from "./colors";
 import { $, errorText, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
-import { clouds, type Entry, hiddenClasses, viewer } from "./state";
+import { clouds, type Entry, globalShift, hiddenClasses, viewer } from "./state";
 import { activeTool, setTool, shortcut, type Tool, toggleTool } from "./tools";
 
 type Keep = "inside" | "outside" | "both";
@@ -68,8 +68,9 @@ const segmentTool: Tool = {
   },
 };
 
-/** Row-major matrix from a cloud's original coordinates to clip space. */
-function clipFromWorld(shift: readonly number[]): number[] {
+/** Row-major matrix from original coordinates to clip space. */
+function clipFromWorld(): number[] {
+  const shift = globalShift();
   const { camera } = viewer;
   camera.updateMatrixWorld();
   const m = new THREE.Matrix4()
@@ -96,7 +97,7 @@ async function apply(keep: Keep): Promise<void> {
     try {
       const parts = await segmentCloud({
         id: source.cloud.id,
-        matrix: clipFromWorld(source.cloud.shift),
+        matrix: clipFromWorld(),
         polygon,
         clip: clipBox(),
         hiddenClasses: [...hiddenClasses],

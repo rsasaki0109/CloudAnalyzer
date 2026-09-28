@@ -6,10 +6,9 @@
  */
 
 import { removeCloud, transformCloud } from "../api";
-import { colorsFor } from "./colors";
 import { $, errorText, setStatus, typing } from "./dom";
-import { renderList, replaceCloud } from "./entries";
-import { type Entry, entries, hideEntry, pointsInvalidated, viewer } from "./state";
+import { drawEntry, renderList, replaceCloud } from "./entries";
+import { type Entry, entries, hideEntry, pointsInvalidated, putEntry, viewer } from "./state";
 
 interface Step {
   label: string;
@@ -30,11 +29,8 @@ const redoButton = $<HTMLButtonElement>("redo");
 
 /** Put a detached entry back in the list and the view. */
 function attach(entry: Entry): void {
-  entries.set(entry.cloud.id, entry);
-  const { cloud } = entry;
-  if (cloud.kind === "mesh") viewer.addMesh(cloud.id, cloud.positions, cloud.indices!, entry.solid);
-  else viewer.add(cloud.id, cloud.positions, colorsFor(entry), entry.nodes);
-  viewer.setVisible(cloud.id, entry.visible);
+  putEntry(entry);
+  drawEntry(entry);
 }
 
 /** Take an entry out of the list and the view, keeping its data in the worker. */

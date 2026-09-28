@@ -7,7 +7,7 @@ import { $, errorText, fmt, removeButton, setStatus } from "./dom";
 import { moveCloud } from "./history";
 import { addReportSection } from "./report";
 import { addMarkers, refreshAnnotations } from "./picking";
-import { clouds, entries, listChanged, pointsInvalidated, viewer } from "./state";
+import { clouds, entries, globalShift, listChanged, pointsInvalidated, toRender, viewer } from "./state";
 import { activeTool, type PickedPoint, pickPoint, setTool, shortcut, type Tool, toggleTool } from "./tools";
 
 const MOVING_COLOR = "#ffb000";
@@ -170,12 +170,10 @@ runButton.onclick = async () => {
     $<HTMLTextAreaElement>("align-matrix").value = matrixText(out.matrix);
     // Show the moved picks where they are now, with their residuals.
     const m = out.matrix;
-    const [sx, sy, sz] = entry.cloud.shift;
     pairs = used.map(({ moving, reference }) => {
       const [x, y, z] = moving.exact;
       const exact = [0, 1, 2].map((r) => m[r * 4] * x + m[r * 4 + 1] * y + m[r * 4 + 2] * z + m[r * 4 + 3]) as Vec3;
-      const render = new THREE.Vector3(exact[0] - sx, exact[1] - sy, exact[2] - sz);
-      return { moving: { ...moving, index: -1, exact, render }, reference };
+      return { moving: { ...moving, index: -1, exact, render: toRender(exact) }, reference };
     });
     residuals = out.residuals;
     lastAlignment = {
@@ -250,12 +248,7 @@ for (const [mode, button] of Object.entries(gizmoButtons) as ["translate" | "rot
       viewer.setGizmoMode(mode);
     } else {
       const b = entry.cloud.bounds;
-      const shift = entry.cloud.shift;
-      const center = new THREE.Vector3(
-        (b[0] + b[3]) / 2 - shift[0],
-        (b[1] + b[4]) / 2 - shift[1],
-        (b[2] + b[5]) / 2 - shift[2],
-      );
+      const center = toRender([0, 1, 2].map((a) => (b[a] + b[a + 3]) / 2));
       if (activeTool()) setTool(null);
       viewer.startGizmo(entry.cloud.id, center, mode);
       gizmoCloud = entry.cloud.id;
@@ -270,7 +263,7 @@ gizmoApply.onclick = async () => {
   const motion = viewer.gizmoMatrix();
   if (!entry || !motion) return stopGizmo();
   // The gizmo moved render coordinates; express the motion in original ones.
-  const [sx, sy, sz] = entry.cloud.shift;
+  const [sx, sy, sz] = globalShift();
   const original = new THREE.Matrix4()
     .makeTranslation(sx, sy, sz)
     .multiply(motion)

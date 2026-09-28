@@ -46,9 +46,24 @@ export function findByName(name: string): Entry | undefined {
   return [...entries.values()].find((e) => e.cloud.name === name);
 }
 
-/** Offset between original and render coordinates (that of the first cloud). */
+let sceneShift: Vec3 | null = null;
+
+/**
+ * Offset between original and render coordinates: the shift of the first
+ * cloud opened, kept until the list is empty so drawn things never move.
+ * Each cloud is drawn relative to its own shift and placed at
+ * `toRender(cloud.shift)`; three.js combines that (float64) placement with
+ * the camera on the CPU, so far-apart clouds all stay precise.
+ */
 export function globalShift(): Vec3 {
-  return [...entries.values()][0]?.cloud.shift ?? [0, 0, 0];
+  if (entries.size === 0) sceneShift = null;
+  return sceneShift ?? [0, 0, 0];
+}
+
+/** Add an entry to the list; the first one sets the global shift. */
+export function putEntry(entry: Entry): void {
+  if (entries.size === 0) sceneShift = entry.cloud.shift;
+  entries.set(entry.cloud.id, entry);
 }
 
 /** Original coordinates to render coordinates. */

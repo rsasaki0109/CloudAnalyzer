@@ -120,8 +120,10 @@
       <li>COPC files (<code>.copc.laz</code>) are not downloaded whole: the viewer reads every octree level that fits
         <b>Max points per file</b> with range requests, so large public datasets open in seconds. Try
         <a href="./app/?url=https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz">a 10.6M-point tile</a>.</li>
-      <li>Georeferenced clouds (UTM, ECEF) keep full precision. A shared <i>global shift</i>, taken from the first
-        file, is applied for display only and shown in the status bar.</li>
+      <li>Georeferenced clouds (UTM, ECEF) keep full precision, in any order and mixed with local clouds: each
+        cloud is drawn relative to its own centre. Picked coordinates, measurements and saved files always use the
+        original coordinates; the <i>global shift</i> in the status bar (from the first file) is only the origin of
+        the view.</li>
     </ul>
 
     <h2 id="navigate">Moving around</h2>

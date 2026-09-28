@@ -14,6 +14,7 @@ import "./app/clip";
 import "./app/profile";
 import "./app/image";
 import "./app/shapes";
+import "./app/trajectory";
 import { runDemo } from "./app/demos";
 import { errorText, setStatus } from "./app/dom";
 import { renderList } from "./app/entries";

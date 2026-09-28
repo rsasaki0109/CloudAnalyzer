@@ -394,6 +394,55 @@ test("M3C2: a flat grid lifted by 0.3 m changes by 0.3 m along the normal", asyn
   expect(header).toContain("property uchar significant");
 });
 
+test("trajectories: TUM files are drawn and give the Python module's ATE", async ({ page }) => {
+  // The Rust parity fixture (see rust/crates/ca-core/tests/trajectory.rs).
+  const fixture = (name: string) =>
+    readFileSync(new URL(`../../rust/crates/ca-core/tests/trajectory/${name}`, import.meta.url));
+  await open(page, [
+    { name: "reference.tum", buffer: fixture("reference.tum") },
+    { name: "estimate.tum", buffer: fixture("estimate.tum") },
+    // A .txt point cloud still opens as a cloud.
+    { name: "points.txt", buffer: Buffer.from("0 0 0\n1 0 0\n0 1 0\n1 1 1\n") },
+  ]);
+  await expect(status(page)).toContainText("Loaded points.txt: 4 points");
+  const rows = page.locator("#trajectory-list li");
+  await expect(rows).toHaveCount(2);
+  await expect(rows.nth(1)).toContainText("39 poses · TUM");
+  await expect(page.locator("#cloud-list li")).toHaveCount(1);
+
+  // Defaults: the newest trajectory against the first, SE(3) alignment.
+  await page.locator("#trajectory-run").click();
+  const stats = page.locator("#trajectory-stats");
+  // Python's evaluate_trajectory(align_rigid=True) on these files: ATE RMSE 0.0388736953.
+  await expect(stats).toContainText(/ATE RMSE\s*0\.038874(?!\d)/);
+  await expect(stats).toContainText(/Matched poses\s*20 of 20/);
+  await expect(rows).toHaveCount(3);
+  await expect(rows.nth(2)).toContainText("estimate_ate");
+  await expect(rows.nth(1).locator("input[type=checkbox]")).not.toBeChecked();
+  // The alignment can move a cloud (e.g. a map built from the estimate), undoably.
+  await page.locator("#trajectory-apply").click();
+  await expect(status(page)).toContainText("Moved points.txt with the SE(3) alignment");
+  await page.keyboard.press("Control+z");
+  await expect(status(page)).toContainText("Undid the trajectory alignment");
+
+  const download = page.waitForEvent("download");
+  await page.locator("#trajectory-csv").click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("estimate_ate.csv");
+  const chunks: Buffer[] = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
+  const lines = Buffer.concat(chunks).toString("utf8").trim().split("\n");
+  expect(lines[0]).toBe("timestamp,x,y,z,reference_x,reference_y,reference_z,ate,ate_rotation_deg");
+  expect(lines).toHaveLength(21);
+
+  // Sim(3) fits the fixture's scale; the result replaces the previous one.
+  await page.locator("#trajectory-align").selectOption("sim3");
+  await page.locator("#trajectory-run").click();
+  await expect(stats).toContainText(/Sim\(3\), scale 1\.03/);
+  await expect(rows).toHaveCount(3);
+  await expect(page.locator("#trajectory-apply")).toBeDisabled();
+});
+
 test.describe("phone", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 

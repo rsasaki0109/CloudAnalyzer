@@ -167,7 +167,68 @@ export interface SegmentOutput {
   millis: number;
 }
 
+/** Timed poses from a trajectory file, in original coordinates. */
+export interface TrajectoryPoses {
+  format: "tum" | "kitti" | "csv";
+  /** Seconds; KITTI poses get their index. */
+  timestamps: Float64Array;
+  /** Interleaved xyz. */
+  positions: Float64Array;
+  /** Interleaved unit quaternions [x, y, z, w], or null without orientations. */
+  orientations: Float64Array | null;
+}
+
+/** Summary of an error series (`std` is the population deviation, as in the Python CLI). */
+export interface ErrorStats {
+  count: number;
+  rmse: number;
+  mean: number;
+  median: number;
+  std: number;
+  min: number;
+  max: number;
+}
+
+export type TrajectoryAlignment = "none" | "origin" | "se3" | "sim3";
+
+export interface TrajectoryEvaluation {
+  /** Times of the matched reference poses. */
+  timestamps: Float64Array;
+  /** Matched estimate after alignment, and the reference, interleaved xyz. */
+  estimate: Float64Array;
+  reference: Float64Array;
+  /** Position error per matched pose. */
+  ate: Float64Array;
+  /** Degrees, when both trajectories have orientations. */
+  ateRotation: Float64Array | null;
+  stats: {
+    ate: ErrorStats;
+    ateRotation: ErrorStats | null;
+    /** Null when no pose pair is `delta` apart. */
+    rpe: ErrorStats | null;
+    rpeRotation: ErrorStats | null;
+    /** Translation error in % of the distance travelled (metre deltas). */
+    rpePercent: ErrorStats | null;
+  };
+  /** Row-major 4x4 transform taking the estimate onto the reference (scale included). */
+  matrix: number[];
+  scale: number;
+  endpointDrift: number;
+  referenceLength: number;
+  estimateLength: number;
+}
+
 export type Request =
+  | { kind: "trajectory"; file: File }
+  | {
+      kind: "trajectory-eval";
+      estimate: TrajectoryPoses;
+      reference: TrajectoryPoses;
+      maxTimeDelta: number;
+      alignment: TrajectoryAlignment;
+      delta: number;
+      deltaUnit: "frames" | "m";
+    }
   | {
       kind: "load";
       /** Read by the worker in slices, so large files are never held whole. */

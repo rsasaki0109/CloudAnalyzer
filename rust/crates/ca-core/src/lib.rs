@@ -21,6 +21,7 @@ pub mod profile;
 pub mod raster;
 pub mod segment;
 pub mod shapes;
+pub mod trajectory;
 pub mod volume;
 
 pub use distance::{C2cPart, DistanceStats, cloud_to_cloud, cloud_to_mesh, partition_c2c};

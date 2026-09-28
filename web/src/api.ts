@@ -12,6 +12,8 @@ import type {
   RasterOutput,
   Request,
   SegmentOutput,
+  TrajectoryEvaluation,
+  TrajectoryPoses,
   UiMessage,
   Vec3,
   VolumeOutput,
@@ -79,6 +81,18 @@ export function loadCopcUrl(
   signal?: AbortSignal,
 ): Promise<LoadedCloud> {
   return call({ kind: "load-copc", url, name, maxPoints }, [], progress, signal);
+}
+
+/** A trajectory file's poses (TUM, KITTI or CSV), or null when the file is not a trajectory. */
+export function loadTrajectory(file: File): Promise<TrajectoryPoses | null> {
+  return call({ kind: "trajectory", file });
+}
+
+/** ATE / RPE of an estimated trajectory against a reference. */
+export function evaluateTrajectory(
+  params: Omit<Extract<Request, { kind: "trajectory-eval" }>, "kind">,
+): Promise<TrajectoryEvaluation> {
+  return call({ kind: "trajectory-eval", ...params });
 }
 
 /** C2C, or C2M when `reference` is a mesh (`signed` then applies). */

@@ -1,6 +1,6 @@
 /** Opening clouds from files, drops and URLs. */
 
-import { loadCloud, loadCopcUrl } from "../api";
+import { loadCloud, loadCopcUrl, loadTrajectory } from "../api";
 import { CANCELLED, type Progress } from "../protocol";
 import { nameFromUrl, parseSession } from "../session";
 import { $, errorText, setStatus } from "./dom";
@@ -8,12 +8,16 @@ import { addEntry, renderList } from "./entries";
 import { applySession, restorePendingAfterLoad } from "./session";
 import { entries, type Origin, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
+import { addTrajectory } from "./trajectory";
 
 /** A COPC file on a server, read node by node instead of downloaded. */
 interface RemoteCopc {
   url: string;
   name: string;
 }
+
+/** Extensions a trajectory can have; `.txt` and `.csv` may also be point clouds (the worker tells). */
+const TRAJECTORY_FILE = /\.(tum|kitti|txt|csv)$/i;
 
 const seconds = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `${Math.round(ms)} ms`);
 
@@ -35,6 +39,15 @@ export async function loadFiles(files: (File | RemoteCopc)[], origins?: Origin[]
     const start = performance.now();
     try {
       const maxPoints = Number($<HTMLSelectElement>("max-points").value) || Number.POSITIVE_INFINITY;
+      if (file instanceof File && TRAJECTORY_FILE.test(file.name)) {
+        const poses = await loadTrajectory(file);
+        if (poses) {
+          addTrajectory(file.name, poses);
+          const n = poses.timestamps.length;
+          setStatus(`Loaded ${file.name}: trajectory of ${n.toLocaleString()} poses (${poses.format.toUpperCase()})`);
+          continue;
+        }
+      }
       const onProgress = (p: Progress) => {
         showProgress(p);
         setStatus(`Loading ${file.name} (${mb}): ${p.note}…`);

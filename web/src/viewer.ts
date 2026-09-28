@@ -35,6 +35,8 @@ export class Viewer {
   private readonly controls: OrbitControls;
   private readonly clouds = new Map<number, LodCloud>();
   private readonly meshes = new Map<number, THREE.Mesh>();
+  /** Polylines (e.g. trajectories), by their owner's id. */
+  private readonly lines = new Map<number, THREE.Line>();
   private pointSize = 2;
   /** Fixed: every point `pointSize` pixels. Adaptive: as large as the local point spacing, in world units. */
   private sizeMode: "fixed" | "adaptive" = "fixed";
@@ -517,6 +519,48 @@ export class Viewer {
     this.requestRender();
   }
 
+  /**
+   * Add or replace a polyline (interleaved xyz in render coordinates), in
+   * one color or, with `colors` (interleaved rgba), one per vertex.
+   */
+  setLine(id: number, positions: Float32Array, color: string, colors?: Uint8Array): void {
+    this.removeLine(id);
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    if (colors) geometry.setAttribute("color", new THREE.BufferAttribute(colors, 4, true));
+    geometry.computeBoundingBox();
+    geometry.computeBoundingSphere();
+    // Without depth writes EDL does not outline (and so blacken) the thin
+    // line; drawn after the clouds, it is still hidden by points in front.
+    const material = new THREE.LineBasicMaterial({
+      color: colors ? 0xffffff : color,
+      vertexColors: !!colors,
+      depthWrite: false,
+    });
+    const line = new THREE.Line(geometry, material);
+    line.renderOrder = 1;
+    this.lines.set(id, line);
+    this.scene.add(line);
+    this.requestRender();
+  }
+
+  removeLine(id: number): void {
+    const line = this.lines.get(id);
+    if (!line) return;
+    this.scene.remove(line);
+    line.geometry.dispose();
+    (line.material as THREE.Material).dispose();
+    this.lines.delete(id);
+    this.requestRender();
+  }
+
+  setLineVisible(id: number, visible: boolean): void {
+    const line = this.lines.get(id);
+    if (!line) return;
+    line.visible = visible;
+    this.requestRender();
+  }
+
   /** Where the ray under a CSS pixel meets the horizontal plane at height `z`. */
   groundPoint(clientX: number, clientY: number, z: number): THREE.Vector3 | null {
     const rect = this.renderer.domElement.getBoundingClientRect();
@@ -614,14 +658,14 @@ export class Viewer {
     this.requestRender(true);
   }
 
-  /** Bounding box of all visible clouds and meshes (render coordinates). */
+  /** Bounding box of all visible clouds, meshes and lines (render coordinates). */
   contentBounds(): THREE.Box3 {
     const box = new THREE.Box3();
     for (const cloud of this.clouds.values()) {
       if (cloud.visible && cloud.nodes[0]) box.union(tightBox(cloud));
     }
-    for (const mesh of this.meshes.values()) {
-      if (mesh.visible && mesh.geometry.boundingBox) box.union(mesh.geometry.boundingBox);
+    for (const object of [...this.meshes.values(), ...this.lines.values()]) {
+      if (object.visible && object.geometry.boundingBox) box.union(object.geometry.boundingBox);
     }
     return box;
   }

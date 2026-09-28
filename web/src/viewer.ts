@@ -568,6 +568,19 @@ export class Viewer {
     this.requestRender(true);
   }
 
+  /** The current view rendered into a new 2D canvas (device pixels). */
+  snapshot(): HTMLCanvasElement {
+    // Draw now and copy straight away, while the WebGL buffer still holds it.
+    if (this.edlEnabled) this.edl.render(this.renderer, this.scene, this.camera);
+    else this.renderer.render(this.scene, this.camera);
+    const source = this.renderer.domElement;
+    const out = document.createElement("canvas");
+    out.width = source.width;
+    out.height = source.height;
+    out.getContext("2d")!.drawImage(source, 0, 0);
+    return out;
+  }
+
   /** Camera position and orbit target (render coordinates). */
   getCamera(): { position: THREE.Vector3; target: THREE.Vector3 } {
     return { position: this.camera.position.clone(), target: this.controls.target.clone() };

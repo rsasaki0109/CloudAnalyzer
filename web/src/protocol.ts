@@ -265,10 +265,86 @@ export interface TrajectoryEvaluation {
   estimateLength: number;
 }
 
+/** A pose graph as the worker holds it (see `PoseGraphSession`). */
+export interface PoseGraphState {
+  /** Node ids from the file (frame numbers for a trajectory). */
+  nodeIds: Float64Array;
+  /** Row-major 4x4 pose per node, original coordinates. */
+  poses: Float64Array;
+  /** `from, to` node indices per edge. */
+  edges: Uint32Array;
+  /** 0 odometry, 1 loop, per edge. */
+  edgeKinds: Uint8Array;
+  /** Squared (information-weighted) error per edge. */
+  edgeErrors: Float64Array;
+}
+
+export interface PoseGraphOpened extends PoseGraphState {
+  name: string;
+  /** Per node: a thinned copy of its scan in the node's frame, or null. */
+  scans: (Float32Array | null)[];
+  /** Points kept for registration, over all scans. */
+  scanPoints: number;
+  /** Scan files that matched no node. */
+  unmatched: string[];
+}
+
+export interface PoseGraphLoop {
+  state: PoseGraphState;
+  edge: number;
+  rmsInitial: number;
+  rmsFinal: number;
+  iterations: number;
+  converged: boolean;
+}
+
+export interface PoseGraphOptimized {
+  state: PoseGraphState;
+  initialCost: number;
+  finalCost: number;
+  iterations: number;
+  converged: boolean;
+  millis: number;
+}
+
+export type PoseFormat = "g2o" | "kitti" | "tum";
+
 /** Filters that keep a subset of a cloud's points (see `Cloud.filter`). */
 export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
 
 export type Request =
+  | {
+      /** Open a pose graph (g2o, or a TUM / KITTI trajectory as an odometry chain) with a scan per node. */
+      kind: "pg-open";
+      graph: File;
+      scans: File[];
+      /** Voxel size scans are thinned to (0 keeps every point). */
+      voxel: number;
+      /** Points per scan sent back for display. */
+      displayPoints: number;
+      /** Row-major 4x4 from scan to pose frame, or null. */
+      extrinsic: number[] | null;
+      /** Odometry standard deviations for a trajectory (metres, degrees). */
+      sigmaT: number;
+      sigmaRDeg: number;
+    }
+  | {
+      /** Register node `to`'s scan onto node `from`'s and add a loop edge. */
+      kind: "pg-loop";
+      from: number;
+      to: number;
+      maxIterations: number;
+      overlap: number;
+      pointToPlane: boolean;
+      sigmaT: number;
+      sigmaRDeg: number;
+    }
+  | { kind: "pg-optimize"; /** Huber threshold for loops, 0 for none. */ loopKernel: number }
+  | { kind: "pg-remove-edge"; index: number }
+  | { kind: "pg-set-poses"; poses: Float64Array }
+  | { kind: "pg-export"; format: PoseFormat }
+  | { kind: "pg-map"; /** Voxel size of the map, 0 for none. */ voxel: number }
+  | { kind: "pg-close" }
   | { kind: "trajectory"; file: File }
   | {
       kind: "trajectory-eval";

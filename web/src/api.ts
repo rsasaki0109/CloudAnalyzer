@@ -10,6 +10,11 @@ import type {
   M3c2Output,
   MeshFormat,
   MeshOutput,
+  PoseFormat,
+  PoseGraphLoop,
+  PoseGraphOpened,
+  PoseGraphOptimized,
+  PoseGraphState,
   ProfileOutput,
   Progress,
   RasterGrid,
@@ -247,4 +252,44 @@ export function estimateNormals(id: number, k: number, orientation: "up" | "outw
 /** RANSAC shapes or Euclidean clusters of a cloud, as new clouds with a table. */
 export function findShapes(params: Omit<Extract<Request, { kind: "shapes" }>, "kind">): Promise<SegmentOutput> {
   return call({ kind: "shapes", ...params });
+}
+
+/** Open a pose graph with its scans (replacing any open one). */
+export function openPoseGraph(
+  params: Omit<Extract<Request, { kind: "pg-open" }>, "kind">,
+  progress?: (p: Progress) => void,
+  signal?: AbortSignal,
+): Promise<PoseGraphOpened> {
+  return call({ kind: "pg-open", ...params }, [], progress, signal);
+}
+
+/** Add a loop edge between two nodes, measured by ICP of their scans. */
+export function addPoseGraphLoop(params: Omit<Extract<Request, { kind: "pg-loop" }>, "kind">): Promise<PoseGraphLoop> {
+  return call({ kind: "pg-loop", ...params });
+}
+
+export function optimizePoseGraph(loopKernel: number): Promise<PoseGraphOptimized> {
+  return call({ kind: "pg-optimize", loopKernel });
+}
+
+export function removePoseGraphEdge(index: number): Promise<PoseGraphState> {
+  return call({ kind: "pg-remove-edge", index });
+}
+
+export function setPoseGraphPoses(poses: Float64Array): Promise<PoseGraphState> {
+  return call({ kind: "pg-set-poses", poses });
+}
+
+/** The graph (g2o) or its poses (KITTI, TUM) as text. */
+export function exportPoseGraph(format: PoseFormat): Promise<string> {
+  return call({ kind: "pg-export", format });
+}
+
+/** Every scan at its optimised pose, as a new cloud. */
+export function poseGraphMap(voxel: number): Promise<LoadedCloud> {
+  return call({ kind: "pg-map", voxel });
+}
+
+export function closePoseGraph(): Promise<void> {
+  return call({ kind: "pg-close" });
 }

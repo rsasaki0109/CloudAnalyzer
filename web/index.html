@@ -451,6 +451,71 @@
         </div>
       </section>
 
+      <section id="pose-graph-panel">
+        <h2>Pose graph (SLAM)</h2>
+        <p id="pg-hint" class="hint small">Open a folder with poses (a g2o graph, or a TUM / KITTI trajectory) and one
+          scan per pose, named by frame number (<code>000042.pcd</code>, KITTI <code>.bin</code>, PLY, LAS…). Pick two
+          nodes to close a loop with ICP, then optimise.</p>
+        <div class="button-row">
+          <button id="pg-open-folder" class="primary" title="A folder with the poses and the scans">Open folder…</button>
+          <button id="pg-open-files" title="The poses file and the scans">Open files…</button>
+          <button id="pg-close" hidden title="Close the pose graph">Close</button>
+        </div>
+        <input id="pg-folder-input" type="file" webkitdirectory multiple hidden />
+        <input id="pg-files-input" type="file" multiple hidden />
+        <details class="options">
+          <summary>Loading options</summary>
+          <div class="range">
+            <label title="Scans are thinned to one point per voxel of this size (metres) for registration and the map; 0 keeps every point">Voxel <input id="pg-voxel" type="number" min="0" step="any" value="0.4" /></label>
+            <label title="Points drawn per scan">Shown <input id="pg-display" type="number" min="100" step="100" value="5000" /></label>
+          </div>
+          <div class="range">
+            <label title="Odometry standard deviation for a trajectory (metres)">σ odom. m <input id="pg-sigma-t" type="number" min="0" step="any" value="0.1" /></label>
+            <label title="Odometry standard deviation for a trajectory (degrees)">σ odom. ° <input id="pg-sigma-r" type="number" min="0" step="any" value="1" /></label>
+          </div>
+          <label title="Optional 3x4 or 4x4 row-major matrix taking scan coordinates to the pose frame, e.g. KITTI's Tr (velodyne to camera)">Scan → pose frame
+            <textarea id="pg-extrinsic" rows="3" placeholder="identity"></textarea></label>
+        </details>
+        <div id="pg-body" hidden>
+          <table class="stats"><tbody id="pg-stats"></tbody></table>
+          <div class="range">
+            <label title="The loop's first node (its id or frame number); its scan is the reference">Node A <input id="pg-a" type="number" step="1" /></label>
+            <label title="The loop's second node; its scan is registered onto A's">Node B <input id="pg-b" type="number" step="1" /></label>
+          </div>
+          <button id="pg-pick" aria-pressed="false" title="Click two nodes in the view (the white dots) to fill A and B">Pick nodes</button>
+          <details class="options">
+            <summary>Loop options</summary>
+            <div class="range">
+              <label title="ICP iterations">Iterations <input id="pg-icp-iterations" type="number" min="1" value="50" /></label>
+              <label title="Percentage of closest pairs kept each ICP iteration">Overlap % <input id="pg-icp-overlap" type="number" min="10" max="100" value="80" /></label>
+            </div>
+            <div class="range">
+              <label title="Loop standard deviation (metres)">σ loop m <input id="pg-loop-sigma-t" type="number" min="0" step="any" value="0.1" /></label>
+              <label title="Loop standard deviation (degrees)">σ loop ° <input id="pg-loop-sigma-r" type="number" min="0" step="any" value="1" /></label>
+            </div>
+            <div class="range">
+              <label class="check" title="A Huber kernel on loop edges, so a wrong loop bends the graph less">
+                <input id="pg-robust" type="checkbox" /> Robust loops</label>
+              <label title="Huber threshold on the loop error (in standard deviations)">Huber δ <input id="pg-kernel" type="number" min="0" step="any" value="3" /></label>
+            </div>
+          </details>
+          <div class="button-row">
+            <button id="pg-loop" class="primary" disabled title="Align the second node's scan to the first's with ICP and add a loop edge, then optimise">Add loop</button>
+            <button id="pg-optimize" title="Optimise the graph">Optimise</button>
+            <button id="pg-undo" disabled title="Undo the last loop or optimisation">Undo</button>
+          </div>
+          <div class="button-row">
+            <button id="pg-save-g2o" title="The graph with its edges">Save g2o</button>
+            <button id="pg-save-kitti" title="Poses as KITTI (3x4 per line)">KITTI</button>
+            <button id="pg-save-tum" title="Poses as TUM (time x y z qx qy qz qw)">TUM</button>
+          </div>
+          <div class="range">
+            <label title="Thin the map to one point per voxel of this size (metres); 0 keeps every scan point">Map voxel <input id="pg-map-voxel" type="number" min="0" step="any" value="0" /></label>
+            <button id="pg-map" title="Every scan at its optimised pose, as a new cloud in the list (to measure, export…)">Build map cloud</button>
+          </div>
+        </div>
+      </section>
+
       <section id="trajectory-panel">
         <h2>Trajectories (ATE / RPE)</h2>
         <ul id="trajectory-list" class="trajectory-list"></ul>

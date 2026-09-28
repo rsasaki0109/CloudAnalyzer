@@ -18,6 +18,7 @@ import "./app/image";
 import "./app/report";
 import "./app/scalars";
 import "./app/shapes";
+import "./app/posegraph";
 import "./app/trajectory";
 import { runDemo } from "./app/demos";
 import { errorText, setStatus } from "./app/dom";

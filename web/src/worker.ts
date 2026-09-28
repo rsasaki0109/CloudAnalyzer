@@ -19,6 +19,7 @@ import init, {
   StreamLoader,
   planCloudToCloud,
   planSor,
+  PoseGraphSession,
   rasterGeotiff,
   registerIcp,
   summarizeDistances,
@@ -37,6 +38,8 @@ import type {
   LoadedCloud,
   M3c2Output,
   MeshOutput,
+  PoseGraphOpened,
+  PoseGraphState,
   ProfileOutput,
   Progress,
   RasterOutput,
@@ -912,6 +915,112 @@ async function readDetail(
 /** Most slices a full-density chunk is cut into (see `readDetail`). */
 const MAX_SLICES = 16;
 
+/** The open pose graph, if any (one at a time). */
+let poseGraph: { session: PoseGraphSession; name: string } | null = null;
+
+function openGraph(): PoseGraphSession {
+  if (!poseGraph) throw new Error("no pose graph is open");
+  return poseGraph.session;
+}
+
+function graphState(session: PoseGraphSession): PoseGraphState {
+  return {
+    nodeIds: session.nodeIds(),
+    poses: session.poses(),
+    edges: session.edgeEnds(),
+    edgeKinds: session.edgeKinds(),
+    edgeErrors: session.edgeErrors(),
+  };
+}
+
+const stateTransfer = (s: PoseGraphState): Transferable[] =>
+  [s.nodeIds, s.poses, s.edges, s.edgeKinds, s.edgeErrors].map((a) => a.buffer);
+
+/** The last run of digits in a file's base name (`000123.pcd` -> 123). */
+function frameNumber(name: string): number | null {
+  const digits = name.replace(/\.[^.]+$/, "").match(/\d+(?!.*\d)/);
+  return digits ? Number(digits[0]) : null;
+}
+
+/**
+ * Node index per scan file: by the number in the file name when that names
+ * a node id for most files, else in name order when there is one scan per
+ * node. Null entries match no node.
+ */
+function matchScans(files: File[], nodeIds: Float64Array): (number | null)[] {
+  const byId = new Map<number, number>();
+  nodeIds.forEach((id, i) => byId.set(id, i));
+  const numbered = files.map((f) => {
+    const n = frameNumber(f.name);
+    return n === null ? undefined : byId.get(n);
+  });
+  const hits = numbered.filter((i) => i !== undefined).length;
+  if (hits > 0 && hits >= files.length / 2) return numbered.map((i) => i ?? null);
+  if (files.length === nodeIds.length) {
+    const order = files.map((_, k) => k).sort((a, b) => files[a].name.localeCompare(files[b].name, undefined, { numeric: true }));
+    const out: (number | null)[] = new Array(files.length).fill(null);
+    order.forEach((k, i) => (out[k] = i));
+    return out;
+  }
+  throw new Error(
+    `cannot match ${files.length} scans to ${nodeIds.length} poses: name the scans by frame number (e.g. 000042.pcd) or give one scan per pose`,
+  );
+}
+
+async function openPoseGraph(
+  req: Extract<Request, { kind: "pg-open" }>,
+  progress: (note: string, fraction?: number) => void,
+  check: () => void,
+): Promise<{ value: PoseGraphOpened; transfer: Transferable[] }> {
+  const text = await req.graph.text();
+  let session: PoseGraphSession;
+  if (/\.g2o$/i.test(req.graph.name)) {
+    session = PoseGraphSession.fromG2o(text);
+  } else {
+    const format = TrajectoryData.detect(req.graph.name, text.slice(0, 4096));
+    if (!format) throw new Error(`${req.graph.name} is neither a g2o file nor a TUM / KITTI trajectory`);
+    const trajectory = TrajectoryData.parse(text, format);
+    try {
+      session = PoseGraphSession.fromTrajectory(trajectory, req.sigmaT, req.sigmaRDeg);
+    } finally {
+      trajectory.free();
+    }
+  }
+  try {
+    const nodeIds = session.nodeIds();
+    const nodes = matchScans(req.scans, nodeIds);
+    const extrinsic = new Float64Array(req.extrinsic ?? []);
+    const scans: (Float32Array | null)[] = new Array(nodeIds.length).fill(null);
+    const unmatched: string[] = [];
+    let scanPoints = 0;
+    for (const [k, file] of req.scans.entries()) {
+      check();
+      progress(`scan ${k + 1} of ${req.scans.length}`, k / req.scans.length);
+      const node = nodes[k];
+      if (node === null) {
+        unmatched.push(file.name);
+        continue;
+      }
+      const cloud = Cloud.parse(file.name, new Uint8Array(await file.arrayBuffer()));
+      try {
+        scanPoints += session.setScan(node, cloud, req.voxel, extrinsic);
+      } finally {
+        cloud.free();
+      }
+      scans[node] = session.scanPositions(node, req.displayPoints);
+    }
+    poseGraph?.session.free();
+    poseGraph = { session, name: req.graph.name.replace(/\.[^.]+$/, "") };
+    const value: PoseGraphOpened = { ...graphState(session), name: req.graph.name, scans, scanPoints, unmatched };
+    const transfer = stateTransfer(value);
+    for (const scan of scans) if (scan) transfer.push(scan.buffer);
+    return { value, transfer };
+  } catch (err) {
+    session.free();
+    throw err;
+  }
+}
+
 async function handle(
   req: Request,
   progress: (note: string, fraction?: number) => void,
@@ -919,6 +1028,63 @@ async function handle(
 ): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
+    case "pg-open":
+      return openPoseGraph(req, progress, check);
+    case "pg-loop": {
+      const session = openGraph();
+      const [edge, rmsInitial, rmsFinal, iterations, converged] = session.addLoop(
+        req.from,
+        req.to,
+        req.maxIterations,
+        req.overlap,
+        req.pointToPlane,
+        req.sigmaT,
+        req.sigmaRDeg,
+      );
+      const state = graphState(session);
+      const value = { state, edge, rmsInitial, rmsFinal, iterations, converged: converged === 1 };
+      return { value, transfer: stateTransfer(state) };
+    }
+    case "pg-optimize": {
+      const session = openGraph();
+      const start = performance.now();
+      const [initialCost, finalCost, iterations, converged] = session.optimize(req.loopKernel);
+      const millis = performance.now() - start;
+      const state = graphState(session);
+      const value = { state, initialCost, finalCost, iterations, converged: converged === 1, millis };
+      return { value, transfer: stateTransfer(state) };
+    }
+    case "pg-remove-edge": {
+      const session = openGraph();
+      session.removeEdge(req.index);
+      const state = graphState(session);
+      return { value: state, transfer: stateTransfer(state) };
+    }
+    case "pg-set-poses": {
+      const session = openGraph();
+      session.setPoses(req.poses);
+      const state = graphState(session);
+      return { value: state, transfer: stateTransfer(state) };
+    }
+    case "pg-export":
+      return { value: openGraph().export(req.format), transfer: [] };
+    case "pg-map": {
+      const t = performance.now();
+      let cloud = openGraph().map();
+      if (req.voxel > 0) {
+        const thinned = cloud.filter("voxel", req.voxel, 0);
+        cloud.free();
+        cloud = thinned;
+      }
+      await buildIndex(cloud);
+      const id = nextId++;
+      items.set(id, { kind: "cloud", cloud, name: `${poseGraph!.name}_map` });
+      return describe(id, { parse: 0, index: performance.now() - t });
+    }
+    case "pg-close":
+      poseGraph?.session.free();
+      poseGraph = null;
+      return { value: null, transfer: [] };
     case "trajectory":
       return { value: await readTrajectory(req.file), transfer: [] };
     case "trajectory-eval":

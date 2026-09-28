@@ -470,8 +470,8 @@
             <label title="Points drawn per scan">Shown <input id="pg-display" type="number" min="100" step="100" value="5000" /></label>
           </div>
           <div class="range">
-            <label title="Odometry standard deviation for a trajectory (metres)">σ odom. m <input id="pg-sigma-t" type="number" min="0" step="any" value="0.1" /></label>
-            <label title="Odometry standard deviation for a trajectory (degrees)">σ odom. ° <input id="pg-sigma-r" type="number" min="0" step="any" value="1" /></label>
+            <label title="Odometry standard deviation for a trajectory (metres)">σ odom. m <input id="pg-sigma-t" type="number" min="0" step="any" value="0.05" /></label>
+            <label title="Odometry standard deviation for a trajectory (degrees)">σ odom. ° <input id="pg-sigma-r" type="number" min="0" step="any" value="0.25" /></label>
           </div>
           <label title="Optional 3x4 or 4x4 row-major matrix taking scan coordinates to the pose frame, e.g. KITTI's Tr (velodyne to camera)">Scan → pose frame
             <textarea id="pg-extrinsic" rows="3" placeholder="identity"></textarea></label>
@@ -529,20 +529,25 @@
           <details class="options">
             <summary>Find loops automatically</summary>
             <div class="range">
-              <label title="Pairs of nodes at most this far apart, as the graph has them now (metres)">Radius m <input id="pg-find-radius" type="number" min="0" step="any" value="10" /></label>
-              <label title="…and at least this far apart along the path (metres)">Min travel m <input id="pg-find-travel" type="number" min="0" step="any" value="30" /></label>
+              <label title="Pairs of nodes at most this far apart, as the graph has them now (metres), plus the drift allowance">Radius m <input id="pg-find-radius" type="number" min="0" step="any" value="10" /></label>
+              <label title="How much the odometry may drift, in % of the path travelled: after a long way round, a revisit is looked for (and accepted) this much further away">Drift % <input id="pg-find-drift" type="number" min="0" step="any" value="3" /></label>
             </div>
+            <label title="…and at least this far apart along the path (metres)">Min travel m <input id="pg-find-travel" type="number" min="0" step="any" value="30" /></label>
             <div class="range">
               <label title="At most one candidate every this many metres along the path">Spacing m <input id="pg-find-spacing" type="number" min="0" step="any" value="5" /></label>
               <label title="Keep a loop when at least this percentage of B's points lies within the inlier distance of A's after ICP">Min overlap % <input id="pg-find-fitness" type="number" min="0" max="100" value="50" /></label>
             </div>
-            <label title="Points closer than this (metres) count as overlapping; for the overlap reported by Add loop too">Inlier distance m <input id="pg-inlier" type="number" min="0" step="any" value="0.5" /></label>
+            <div class="range">
+              <label title="Points closer than this (metres) count as overlapping; for the overlap reported by Add loop too">Inlier distance m <input id="pg-inlier" type="number" min="0" step="any" value="0.5" /></label>
+              <label title="When a pair overlaps too little from the graph's relative pose (after a long drift it can be far off), register it again as if both scans were taken at the same place, from this many headings; 0 turns the retry off. Also used by Add loop.">Retry headings <input id="pg-retry-headings" type="number" min="0" max="36" step="1" value="8" /></label>
+            </div>
             <button id="pg-find" class="primary" title="Register every candidate pair with ICP, keep those that overlap, then optimise">Find loops</button>
           </details>
           <details class="options">
             <summary>Floor constraint</summary>
-            <p class="hint small">Keyframes that see the same floor are tied to one floor plane, which removes the
-              tilt and height drift of odometry.</p>
+            <p class="hint small">Keyframes are tied to one floor plane, which removes the tilt and height drift of
+              odometry on flat sites (a car park, a floor of a building). On hills it flattens the path: leave it
+              off there.</p>
             <div class="range">
               <label title="Up in the scans' coordinates; Auto tries +Z, −Y and +Y on the first scans">Up axis
                 <select id="pg-floor-up">
@@ -561,7 +566,7 @@
               <label title="Standard deviation of the floor's tilt as seen from a keyframe (degrees)">σ tilt ° <input id="pg-floor-sigma-r" type="number" min="0" step="any" value="0.5" /></label>
               <label title="Standard deviation of the keyframe's height above the floor (metres)">σ height m <input id="pg-floor-sigma-t" type="number" min="0" step="any" value="0.05" /></label>
             </div>
-            <button id="pg-floor" title="Find the floor under every keyframe, tie them to one plane and optimise">Add floor</button>
+            <button id="pg-floor" title="Find the floor under every keyframe, tie them to floor planes and optimise">Add floor</button>
           </details>
           <details class="options">
             <summary>Join another graph</summary>

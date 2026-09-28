@@ -263,12 +263,16 @@
       is fixed from the start. Each drag and each fix can be undone.
     </p>
     <p>
-      <b>Find loops automatically</b> proposes node pairs at most <b>Radius</b> metres apart (as the graph has them
-      now) but at least <b>Min travel</b> metres apart along the path, not already joined, at most one every
-      <b>Spacing</b> metres. Each is registered with ICP and kept when at least <b>Min overlap</b> percent of B's
-      points lie within the <b>Inlier distance</b> of A's; then the graph is optimised. With a large drift, raise the
-      radius; turn on <b>Robust loops</b> to soften any wrong loop that slips through, and check the list below.
-      Undo removes all the loops found at once.
+      <b>Find loops automatically</b> proposes node pairs at least <b>Min travel</b> metres apart along the path,
+      not already joined, at most one every <b>Spacing</b> metres, that the graph puts within <b>Radius</b> metres
+      of each other plus <b>Drift %</b> of the path between them: odometry drifts with distance, so after a long
+      way round a revisit is looked for further away (with 3 %, 60 m after 1.7 km). Each is registered with ICP
+      from the graph's relative pose. When that overlaps too little and the drift allowance is large (5 m or
+      more), it is registered again as if both scans were taken at the same place, from <b>Retry headings</b>
+      headings. A pair is kept when at least <b>Min overlap</b> percent of B's points lie within the <b>Inlier
+      distance</b> of A's and the registration puts B no further from where the graph has it than the drift
+      allows; then the graph is optimised. Turn on <b>Robust loops</b> to soften any wrong loop that slips
+      through, and check the list below. Undo removes all the loops found at once.
     </p>
     <p>
       <b>Floor constraint</b> removes the tilt and height drift that odometry leaves. <b>Add floor</b> looks for the
@@ -276,8 +280,11 @@
       tilt</b> from the <b>Up axis</b> and below the sensor (<i>Auto</i> tries +Z for LiDAR, −Y for scans moved into
       KITTI's camera frame, and +Y). The keyframes that see it are tied to one floor plane (a g2o
       <code>VERTEX_PLANE</code> with <code>EDGE_SE3_PLANE</code> edges, weighted by <b>σ tilt</b> and <b>σ
-      height</b>), and the graph is optimised. Undo removes the floor again. One plane suits sites that are
-      flat overall; on a long route over hills it pulls the ends onto the same level.
+      height</b>), and the graph is optimised. Undo removes the floor again. Use it on sites that are flat
+      overall (a car park, a floor of a building): it asserts that the ground does not bend, and on hills it
+      flattens the path. Planes per stretch of path were tried and do the same, a little at a time, since each
+      still asserts a flat stretch; without an absolute reference such as an IMU, height drift on hills is for
+      loops to fix.
     </p>
     <p>
       <b>Join another graph</b> adds a second session of the same place, recorded in its own frame: give a node of
@@ -303,9 +310,12 @@
     </p>
 
     <p class="small">
-      Tried on KITTI odometry sequence 07 (1,101 Velodyne scans, 2.1 GB) with KISS-ICP odometry: the folder opens in
-      about 20 s, Find loops adds 5 loops in 2 s and brings the end back from 2.04 m to 0.14 m off the ground truth
-      (ATE RMSE 2.14 → 1.36 m), and the floor constraint lowers it to 1.20 m.
+      Tried on KITTI odometry sequences with real Velodyne scans and KISS-ICP odometry, against the ground truth,
+      all with the default settings. Sequence 07 (1,101 scans, 2.1 GB) opens in about 20 s; Find loops brings the
+      end back from 2.04 m to 0.14 m off (ATE RMSE 2.14 → 1.28 m). Sequence 09 (1,591 scans, 1.7 km over 38 m of
+      hills) drifts 25 m by the time it returns to its start; Find loops finds that revisit (registered as the same
+      place) and takes the end error to 4.0 m and the ATE RMSE from 16.4 to 6.5 m (SE(3)-aligned 7.3 → 1.8 m).
+      The floor constraint made sequence 09 worse, as said above.
     </p>
 
     <h2 id="trajectory">Trajectories (ATE / RPE)</h2>

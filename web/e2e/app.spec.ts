@@ -1389,8 +1389,16 @@ function scanFiles(poses: Pose2[], scan: (p: Pose2) => Buffer) {
   }));
 }
 
+/** Odometry as poor as the synthetic drifts: looser than the defaults, which suit LiDAR odometry. */
+async function looseOdometry(page: Page): Promise<void> {
+  await page.locator("#pose-graph-panel summary", { hasText: "Loading options" }).click();
+  await page.locator("#pg-sigma-t").fill("0.1");
+  await page.locator("#pg-sigma-r").fill("1");
+}
+
 test("pose graph: a drifted loop closed with ICP, by hand and found automatically, undone and turned into a map", async ({ page }) => {
   const { truth, drifted, scan } = courtyard();
+  await looseOdometry(page);
   await page
     .locator("#pg-files-input")
     .setInputFiles([
@@ -1581,6 +1589,7 @@ test("pose graph: a floor constraint levels a drive that drifted in pitch", asyn
     drifted.push(mul(mul(drifted[k - 1], step), pitch(0.01)));
   }
   const text = drifted.map((m) => m.slice(0, 12).join(" ")).join("\n");
+  await looseOdometry(page);
   await page
     .locator("#pg-files-input")
     .setInputFiles([

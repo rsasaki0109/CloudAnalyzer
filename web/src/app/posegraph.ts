@@ -49,8 +49,8 @@ interface Step {
   /** Loop edges the step added (the last ones of the graph). */
   added?: number[];
   removed?: RemovedEdge[];
-  /** A plane the step added (with its edges). */
-  plane?: number;
+  /** Planes the step added (with their edges). */
+  planes?: { first: number; count: number };
   /** A node whose fixed flag the step flipped. */
   flipped?: number;
 }
@@ -528,8 +528,8 @@ async function graphFiles(
       voxel: Math.max(0, num("pg-voxel") || 0),
       displayPoints: Math.max(100, Math.min(num("pg-display") || 5000, Math.floor(DISPLAY_BUDGET / shown))),
       extrinsic,
-      sigmaT: num("pg-sigma-t") || 0.1,
-      sigmaRDeg: num("pg-sigma-r") || 1,
+      sigmaT: num("pg-sigma-t") || 0.05,
+      sigmaRDeg: num("pg-sigma-r") || 0.25,
     },
     note,
   };
@@ -676,6 +676,7 @@ async function run(label: string, action: () => Promise<void>): Promise<void> {
 }
 
 const inlierDistance = () => Math.max(0.01, num("pg-inlier") || 0.5);
+const retryHeadings = () => Math.max(0, Math.round(num("pg-retry-headings")));
 
 $<HTMLButtonElement>("pg-find").onclick = () =>
   run("Finding loops", async () => {
@@ -685,10 +686,12 @@ $<HTMLButtonElement>("pg-find").onclick = () =>
       const found = await findPoseGraphLoops(
         {
           maxDistance: Math.max(0, num("pg-find-radius")),
+          drift: Math.max(0, num("pg-find-drift")) / 100,
           minTravel: Math.max(0, num("pg-find-travel")),
           spacing: Math.max(0, num("pg-find-spacing")),
           minFitness: Math.min(100, Math.max(0, num("pg-find-fitness"))) / 100,
           inlierDistance: inlierDistance(),
+          retryHeadings: retryHeadings(),
           maxIterations: Math.max(1, num("pg-icp-iterations") || 50),
           overlap: Math.min(100, Math.max(10, num("pg-icp-overlap") || 80)) / 100,
           sigmaT: num("pg-loop-sigma-t") || 0.1,
@@ -708,6 +711,10 @@ $<HTMLButtonElement>("pg-find").onclick = () =>
         found.candidates === 0
           ? "No loop candidates: raise the search radius or lower the minimum travel"
           : `Added ${found.added.length} of ${found.candidates} candidate loop${found.candidates === 1 ? "" : "s"}` +
+              (found.added.some((a) => a.retried)
+                ? ` (${found.added.filter((a) => a.retried).length} registered as the same place)`
+                : "") +
+              (found.implausible ? `, ${found.implausible} rejected as further off than drift allows` : "") +
               (optimized
                 ? `; χ² ${fmt(optimized.initialCost)} → ${fmt(optimized.finalCost)} in ${optimized.iterations} iterations`
                 : " (none overlapped enough)"),
@@ -734,7 +741,7 @@ $<HTMLButtonElement>("pg-floor").onclick = () =>
       sigmaOffset: num("pg-floor-sigma-t") || 0.05,
       loopKernel: kernel(),
     });
-    steps.push({ poses, plane: floor.plane });
+    steps.push({ poses, planes: floor.planes });
     update(floor.state);
     const withScans = graph!.scans.filter((s) => s).length;
     const { optimized } = floor;
@@ -895,6 +902,7 @@ $<HTMLButtonElement>("pg-loop").onclick = () =>
       overlap: Math.min(100, Math.max(10, num("pg-icp-overlap") || 80)) / 100,
       pointToPlane: true,
       inlierDistance: inlierDistance(),
+      retryHeadings: retryHeadings(),
       sigmaT: num("pg-loop-sigma-t") || 0.1,
       sigmaRDeg: num("pg-loop-sigma-r") || 1,
     });
@@ -902,6 +910,7 @@ $<HTMLButtonElement>("pg-loop").onclick = () =>
     update(loop.state);
     const icp =
       `ICP RMS ${fmt(loop.rmsInitial)} → ${fmt(loop.rmsFinal)}, overlap ${Math.round(loop.fitness * 100)} %` +
+      (loop.retried ? ", registered as the same place" : "") +
       (loop.converged ? "" : " (not converged)");
     setStatus(`Loop ${ids[from]} – ${ids[to]} added (${icp}); optimising…`);
     const optimized = await optimize();
@@ -914,7 +923,8 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
     const step = steps.pop();
     if (!step) return;
     if (step.added) await removePoseGraphEdges(step.added, null);
-    if (step.plane !== undefined) await removePoseGraphPlane(step.plane);
+    // Later planes move down as each goes: removing `first` repeatedly takes them all.
+    for (let k = 0; k < (step.planes?.count ?? 0); k++) await removePoseGraphPlane(step.planes!.first);
     if (step.flipped !== undefined) await setPoseGraphFixed(step.flipped, !graph!.state.fixed[step.flipped]);
     if (step.removed) await insertPoseGraphEdges(step.removed);
     update(await setPoseGraphPoses(step.poses));
@@ -924,7 +934,7 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
         ? step.added.length === 1
           ? "Removed the last loop"
           : `Removed the ${step.added.length} loop${plural(step.added.length)} found`
-        : step.plane !== undefined
+        : step.planes
           ? "Removed the floor"
           : step.flipped !== undefined
           ? "Undid the fix"

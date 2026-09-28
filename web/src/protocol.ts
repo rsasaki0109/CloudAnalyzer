@@ -138,6 +138,35 @@ export interface ProfileOutput {
 /** File formats a cloud can be saved in. */
 export type ExportFormat = "ply" | "las" | "laz" | "csv" | "e57";
 
+/** What `segment` looks for. */
+export type SegmentMethod = "plane" | "sphere" | "cylinder" | "cluster";
+
+/** One shape, cluster or the rest, as a row of the result table. */
+export interface Segment {
+  kind: "plane" | "sphere" | "cylinder" | "cluster" | "other clusters" | "rest";
+  count: number;
+  /**
+   * Original coordinates. Plane: unit normal, d (n · p + d = 0); sphere:
+   * centre, radius; cylinder: axis midpoint, unit axis, radius, length;
+   * clusters: centroid, extent.
+   */
+  params: number[];
+  /** RMS distance to the shape (NaN if not a shape). */
+  rms: number;
+  color: Vec3;
+}
+
+export interface SegmentOutput {
+  /** One segmented cloud (its `source` is the segment), or a cloud per segment; none if nothing was found. */
+  clouds: LoadedCloud[];
+  segments: Segment[];
+  /** Shapes or clusters found. */
+  found: number;
+  /** Normals estimated for the source cloud (interleaved, octree order), or null if it had them. */
+  normals: Float32Array | null;
+  millis: number;
+}
+
 export type Request =
   | {
       kind: "load";
@@ -209,6 +238,19 @@ export type Request =
   | { kind: "merge"; ids: number[]; fills: Vec3[] }
   | { kind: "normals"; id: number; k: number; orientation: "up" | "outward" }
   | { kind: "split"; id: number; by: "classification" | "source" }
+  | {
+      kind: "shapes";
+      id: number;
+      method: SegmentMethod;
+      /** Shapes: largest distance to the shape; clusters: linking distance. */
+      distance: number;
+      /** Fewest points of a shape or cluster. */
+      minPoints: number;
+      /** Shapes only. */
+      maxShapes: number;
+      /** A cloud per segment instead of one segmented cloud. */
+      split: boolean;
+    }
   | { kind: "profile"; id: number; line: number[]; halfWidth: number; maxPoints: number }
   | {
       kind: "ground";

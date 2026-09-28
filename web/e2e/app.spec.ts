@@ -555,6 +555,53 @@ test("merge and split: by class, and back into the merged files", async ({ page 
   await expect(names.filter({ hasText: /^b\.ply30 points/ })).toHaveCount(2);
 });
 
+test("shapes: RANSAC finds a floor and a wall, and the result splits by segment", async ({ page }) => {
+  // A 6 x 6 m floor, a wall at x = 2 from 1 m up, and three stray points.
+  const scene: [number, number, number][] = [];
+  for (let j = 0; j < 60; j++) for (let i = 0; i < 60; i++) scene.push([i * 0.1, j * 0.1, 0]);
+  for (let j = 0; j < 30; j++) for (let i = 0; i < 60; i++) scene.push([2, i * 0.1, 1 + j * 0.1]);
+  scene.push([5, 5, 3], [0.5, 4, 2], [4, 1, 1.5]);
+  await open(page, [{ name: "room.ply", buffer: ply(scene) }]);
+  await expect(status(page)).toContainText("Loaded room.ply: 5,403 points");
+  await page.locator("#shapes-distance").fill("0.02");
+  await page.locator("#shapes-min").fill("500");
+  await page.locator("#shapes-run").click();
+  await expect(status(page)).toContainText("2 planes in room.ply: 5,400 of 5,403 points, 3 left");
+  const table = page.locator("#shapes-stats");
+  await expect(table.locator("tr")).toHaveCount(3);
+  await expect(table.locator("tr").nth(0)).toContainText("plane 1 (3,600)");
+  await expect(table.locator("tr").nth(0)).toContainText("normal (0.000, 0.000, 1.000), d 0");
+  await expect(table.locator("tr").nth(1)).toContainText("plane 2 (1,800)");
+  await expect(table.locator("tr").nth(1)).toContainText("normal (1.000, 0.000, 0.000), d -2");
+  await expect(table.locator("tr").nth(2)).toContainText("rest (3)");
+
+  // The segment is the cloud's source, so Merge / split takes it apart.
+  await page.locator("#split-cloud").selectOption({ label: "room_planes" });
+  await page.locator("#split-by").selectOption("source");
+  await page.locator("#split-run").click();
+  await expect(status(page)).toContainText("Split room_planes into 3 clouds: room_plane1, room_plane2, room_rest");
+});
+
+test("clusters: two separated grids and stray points, a cloud per cluster", async ({ page }) => {
+  const blobs = [...grid(20), ...grid(20).map(([x, y, z]) => [x + 10, y, z] as [number, number, number])];
+  blobs.push([5, 0, 0], [5, 1.5, 1], [-4, 1, 0]);
+  await open(page, [{ name: "blobs.ply", buffer: ply(blobs) }]);
+  await expect(status(page)).toContainText("Loaded blobs.ply: 803 points");
+  await page.locator("#shapes-method").selectOption("cluster");
+  // Defaults: three times the point spacing, at least 10 points.
+  await expect(page.locator("#shapes-min")).toHaveValue("10");
+  await page.locator("#shapes-output").selectOption("split");
+  await page.locator("#shapes-run").click();
+  await expect(status(page)).toContainText("2 clusters in blobs.ply: 800 of 803 points, 3 noise");
+  await expect(page.locator("#shapes-stats")).toContainText("cluster 1 (400)");
+  await expect(page.locator("#shapes-stats")).toContainText("noise (3)");
+  const names = page.locator(".cloud-list li .name");
+  await expect(names).toHaveCount(4);
+  await expect(names.filter({ hasText: /^blobs_cluster1400 points/ })).toHaveCount(1);
+  await expect(names.filter({ hasText: /^blobs_cluster2400 points/ })).toHaveCount(1);
+  await expect(names.filter({ hasText: /^blobs_noise3 points/ })).toHaveCount(1);
+});
+
 test("normals: estimated, shaded, saved to PLY and read back", async ({ page }) => {
   await open(page, [{ name: "wave.ply", buffer: ply(grid(60)) }]);
   await expect(status(page)).toContainText("Loaded wave.ply");

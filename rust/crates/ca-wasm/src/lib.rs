@@ -48,6 +48,23 @@ impl Cloud {
         Ok(Cloud::unindexed(inner))
     }
 
+    /// An unindexed copy with `segment` as its `source` attribute (see
+    /// [`Segmentation`]) and, if given, `colors` as its RGB.
+    fn segmented(&self, segment: Vec<u8>, colors: Option<Vec<[u8; 3]>>) -> Cloud {
+        let mut inner = self.inner.clone();
+        inner
+            .attributes
+            .retain(|a| a.name != ca_core::merge::SOURCE);
+        inner.attributes.push(ca_core::Attribute {
+            name: ca_core::merge::SOURCE.into(),
+            values: AttributeValues::U8(segment),
+        });
+        if colors.is_some() {
+            inner.colors = colors;
+        }
+        Cloud::unindexed(inner)
+    }
+
     fn unindexed(inner: PointCloud) -> Cloud {
         Cloud {
             inner,
@@ -674,6 +691,158 @@ impl Cloud {
                 layout: None,
             }),
         })
+    }
+
+    /// RANSAC shape detection: up to `max_shapes` `"plane"`s, `"sphere"`s
+    /// or `"cylinder"`s with at least `min_support` points within
+    /// `threshold`, using the cloud's normals (estimated here if it has
+    /// none). The result's cloud is an unindexed copy whose `source`
+    /// attribute is the segment of each point (the shapes, then the rest);
+    /// with `recolor`, its RGB colors show the segments.
+    #[wasm_bindgen(js_name = detectShapes)]
+    pub fn detect_shapes(
+        &self,
+        primitive: &str,
+        threshold: f64,
+        min_support: usize,
+        max_shapes: usize,
+        recolor: bool,
+    ) -> Result<Segmentation, JsError> {
+        use ca_core::shapes::{Primitive, RansacParams, Shape};
+        let (primitive, kind) = match primitive {
+            "plane" => (Primitive::Plane, SEGMENT_PLANE),
+            "sphere" => (Primitive::Sphere, SEGMENT_SPHERE),
+            "cylinder" => (Primitive::Cylinder, SEGMENT_CYLINDER),
+            other => return Err(JsError::new(&format!("unknown shape {other:?}"))),
+        };
+        if threshold.is_nan() || threshold <= 0.0 {
+            return Err(JsError::new("the distance threshold must be positive"));
+        }
+        let normals = ca_core::normals::normals(&self.inner).unwrap_or_else(|| {
+            ca_core::normals::estimate_normals(
+                &self.inner.positions,
+                12,
+                ca_core::normals::Orientation::Up,
+            )
+        });
+        let params = RansacParams {
+            primitive,
+            threshold,
+            min_support,
+            // Segment numbers are bytes, and the rest takes one.
+            max_shapes: max_shapes.min(u8::MAX as usize),
+            ..RansacParams::default()
+        };
+        let found = ca_core::shapes::detect_shapes(&self.inner.positions, &normals, &params);
+        let mut out = Segmentation::new(found.len());
+        let mut segment = vec![found.len() as u8; self.inner.len()];
+        for (k, d) in found.iter().enumerate() {
+            for &i in &d.indices {
+                segment[i] = k as u8;
+            }
+            let params = match d.shape {
+                Shape::Plane { normal, d } => {
+                    [normal[0], normal[1], normal[2], d, 0.0, 0.0, 0.0, 0.0]
+                }
+                Shape::Sphere { center, radius } => {
+                    [center[0], center[1], center[2], radius, 0.0, 0.0, 0.0, 0.0]
+                }
+                Shape::Cylinder {
+                    point,
+                    axis,
+                    radius,
+                    length,
+                } => [
+                    point[0], point[1], point[2], axis[0], axis[1], axis[2], radius, length,
+                ],
+            };
+            out.push(kind, d.indices.len(), params, d.rms, segment_color(k));
+        }
+        let rest = self.inner.len() - found.iter().map(|d| d.indices.len()).sum::<usize>();
+        if rest > 0 {
+            out.push(SEGMENT_REST, rest, [0.0; 8], f64::NAN, REST_COLOR);
+        }
+        let colors = recolor.then(|| segment.iter().map(|&s| out.color(s as usize)).collect());
+        out.cloud = Some(self.segmented(segment, colors));
+        Ok(out)
+    }
+
+    /// Euclidean clustering: points within `epsilon` of each other form a
+    /// cluster, and clusters under `min_size` points are noise. Like
+    /// [`Cloud::detect_shapes`], the segments are the clusters (largest
+    /// first; past 254 of them the rest are one segment), then the noise;
+    /// `recolor` colors every cluster on its own.
+    pub fn clusters(
+        &self,
+        epsilon: f64,
+        min_size: usize,
+        recolor: bool,
+    ) -> Result<Segmentation, JsError> {
+        use ca_core::cluster::{NOISE, euclidean_clusters};
+        if epsilon.is_nan() || epsilon <= 0.0 {
+            return Err(JsError::new("the cluster distance must be positive"));
+        }
+        let positions = &self.inner.positions;
+        let clusters = euclidean_clusters(positions, epsilon, min_size);
+        let own = clusters.sizes.len().min(u8::MAX as usize - 1);
+        let others = own < clusters.sizes.len();
+        let noise = own as u8 + others as u8;
+        let segment: Vec<u8> = clusters
+            .labels
+            .iter()
+            .map(|&l| match l {
+                NOISE => noise,
+                l if (l as usize) < own => l as u8,
+                _ => own as u8,
+            })
+            .collect();
+        // Centroid and extent of each segment.
+        let segments = noise as usize + 1;
+        let mut sum = vec![[0.0f64; 3]; segments];
+        let mut lo = vec![[f64::INFINITY; 3]; segments];
+        let mut hi = vec![[f64::NEG_INFINITY; 3]; segments];
+        let mut count = vec![0usize; segments];
+        for (p, &s) in positions.iter().zip(&segment) {
+            let s = s as usize;
+            count[s] += 1;
+            for a in 0..3 {
+                sum[s][a] += p[a];
+                lo[s][a] = lo[s][a].min(p[a]);
+                hi[s][a] = hi[s][a].max(p[a]);
+            }
+        }
+        let mut out = Segmentation::new(clusters.sizes.len());
+        for s in (0..segments).filter(|&s| count[s] > 0) {
+            let m = count[s] as f64;
+            let params = [
+                sum[s][0] / m,
+                sum[s][1] / m,
+                sum[s][2] / m,
+                hi[s][0] - lo[s][0],
+                hi[s][1] - lo[s][1],
+                hi[s][2] - lo[s][2],
+                0.0,
+                0.0,
+            ];
+            let (kind, color) = match s {
+                s if s < own => (SEGMENT_CLUSTER, segment_color(s)),
+                s if s == own && others => (SEGMENT_OTHER_CLUSTERS, OTHER_COLOR),
+                _ => (SEGMENT_REST, REST_COLOR),
+            };
+            out.push(kind, count[s], params, f64::NAN, color);
+        }
+        let colors = recolor.then(|| {
+            clusters
+                .labels
+                .iter()
+                .map(|&l| match l {
+                    NOISE => REST_COLOR,
+                    l => segment_color(l as usize),
+                })
+                .collect()
+        });
+        out.cloud = Some(self.segmented(segment, colors));
+        Ok(out)
     }
 
     /// Apply a rigid transform (row-major 4x4) to every point and rebuild the
@@ -1721,6 +1890,127 @@ impl ProfileHits {
     }
 }
 
+/// Kinds of segment in a [`Segmentation`].
+const SEGMENT_PLANE: u8 = 0;
+const SEGMENT_SPHERE: u8 = 1;
+const SEGMENT_CYLINDER: u8 = 2;
+const SEGMENT_CLUSTER: u8 = 3;
+/// The clusters past the 254 largest, together.
+const SEGMENT_OTHER_CLUSTERS: u8 = 4;
+/// Points in no shape, or cluster noise.
+const SEGMENT_REST: u8 = 5;
+/// Numbers per segment in [`Segmentation::params`].
+const SEGMENT_PARAMS: usize = 8;
+const REST_COLOR: [u8; 3] = [128, 128, 128];
+const OTHER_COLOR: [u8; 3] = [200, 200, 200];
+
+/// A distinct color for segment `k`: hues a golden angle apart.
+fn segment_color(k: usize) -> [u8; 3] {
+    let h = (0.08 + k as f64 * 0.618_033_988_749_895).fract() * 6.0;
+    let (s, v) = (0.7, 0.95);
+    let f = h.fract();
+    let (p, q, t) = (v * (1.0 - s), v * (1.0 - s * f), v * (1.0 - s * (1.0 - f)));
+    let rgb = match h as u32 {
+        0 => [v, t, p],
+        1 => [q, v, p],
+        2 => [p, v, t],
+        3 => [p, q, v],
+        4 => [t, p, v],
+        _ => [v, p, q],
+    };
+    rgb.map(|c| (c * 255.0).round() as u8)
+}
+
+/// Shapes or clusters found in a cloud (see [`Cloud::detect_shapes`] and
+/// [`Cloud::clusters`]): a copy of the cloud whose `source` attribute is
+/// each point's segment, and a table with one row per segment, in segment
+/// order.
+#[wasm_bindgen]
+pub struct Segmentation {
+    cloud: Option<Cloud>,
+    kinds: Vec<u8>,
+    counts: Vec<u32>,
+    params: Vec<f64>,
+    rms: Vec<f64>,
+    colors: Vec<u8>,
+    /// Shapes or clusters found (all clusters, also those past 254).
+    #[wasm_bindgen(readonly)]
+    pub found: usize,
+}
+
+impl Segmentation {
+    fn new(found: usize) -> Self {
+        Self {
+            cloud: None,
+            kinds: Vec::new(),
+            counts: Vec::new(),
+            params: Vec::new(),
+            rms: Vec::new(),
+            colors: Vec::new(),
+            found,
+        }
+    }
+
+    fn push(
+        &mut self,
+        kind: u8,
+        count: usize,
+        params: [f64; SEGMENT_PARAMS],
+        rms: f64,
+        color: [u8; 3],
+    ) {
+        self.kinds.push(kind);
+        self.counts.push(count as u32);
+        self.params.extend(params);
+        self.rms.push(rms);
+        self.colors.extend(color);
+    }
+
+    fn color(&self, segment: usize) -> [u8; 3] {
+        std::array::from_fn(|c| self.colors[segment * 3 + c])
+    }
+}
+
+#[wasm_bindgen]
+impl Segmentation {
+    /// The segmented copy (unindexed); can be taken once.
+    #[wasm_bindgen(js_name = takeCloud)]
+    pub fn take_cloud(&mut self) -> Result<Cloud, JsError> {
+        self.cloud
+            .take()
+            .ok_or_else(|| JsError::new("cloud already taken"))
+    }
+
+    /// Kind of each segment: 0 plane, 1 sphere, 2 cylinder, 3 cluster, 4 the
+    /// clusters past the 254 largest, 5 the rest (or noise).
+    pub fn kinds(&self) -> Vec<u8> {
+        self.kinds.clone()
+    }
+
+    /// Points in each segment.
+    pub fn counts(&self) -> Vec<u32> {
+        self.counts.clone()
+    }
+
+    /// Eight numbers per segment, in original coordinates. Plane: unit
+    /// normal and `d` (`n · p + d = 0`); sphere: centre and radius;
+    /// cylinder: axis midpoint, unit axis, radius and length; clusters:
+    /// centroid and extent.
+    pub fn params(&self) -> Vec<f64> {
+        self.params.clone()
+    }
+
+    /// RMS distance of each shape's points to it (NaN for other segments).
+    pub fn rms(&self) -> Vec<f64> {
+        self.rms.clone()
+    }
+
+    /// Display color of each segment, interleaved RGB.
+    pub fn colors(&self) -> Vec<u8> {
+        self.colors.clone()
+    }
+}
+
 /// Run the heavy kernels once on a small synthetic cloud. Browsers first
 /// run WebAssembly with a baseline compiler and optimize a function only
 /// after it has been busy, and never in the middle of a call; one long call
@@ -1790,11 +2080,26 @@ pub fn warm_up() {
             class: None,
         },
     );
-    let _ = ca_core::normals::estimate_normals(
+    let normals = ca_core::normals::estimate_normals(
         &positions[..20_000],
         12,
         ca_core::normals::Orientation::Up,
     );
+    for primitive in [
+        ca_core::shapes::Primitive::Plane,
+        ca_core::shapes::Primitive::Cylinder,
+    ] {
+        let params = ca_core::shapes::RansacParams {
+            primitive,
+            threshold: 0.05,
+            min_support: 2_000,
+            max_shapes: 2,
+            candidates: 100,
+            ..Default::default()
+        };
+        let _ = ca_core::shapes::detect_shapes(&positions[..20_000], &normals, &params);
+    }
+    let _ = ca_core::cluster::euclidean_clusters(&positions[..20_000], 0.15, 10);
 }
 
 #[wasm_bindgen(js_name = nearestDistances)]

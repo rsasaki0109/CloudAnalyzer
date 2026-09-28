@@ -237,6 +237,58 @@ impl PoseGraphSession {
         Ok(())
     }
 
+    /// Edge `index` as `[from, to, kind (0 odometry, 1 loop), 16 matrix
+    /// entries (row-major), 36 information entries]`, for [`Self::insert_edge`].
+    #[wasm_bindgen(js_name = edgeData)]
+    pub fn edge_data(&self, index: usize) -> Result<Vec<f64>, JsError> {
+        let e = self
+            .graph
+            .edges
+            .get(index)
+            .ok_or_else(|| JsError::new("no such edge"))?;
+        let mut out = vec![
+            e.from as f64,
+            e.to as f64,
+            f64::from(u8::from(e.kind == EdgeKind::Loop)),
+        ];
+        out.extend(e.measurement.to_matrix());
+        out.extend(e.information.iter().flatten());
+        Ok(out)
+    }
+
+    /// Put an edge from [`Self::edge_data`] back at `index`.
+    #[wasm_bindgen(js_name = insertEdge)]
+    pub fn insert_edge(&mut self, index: usize, data: &[f64]) -> Result<(), JsError> {
+        let n = self.graph.nodes.len();
+        let (from, to) = (data.first().copied(), data.get(1).copied());
+        let (Some(from), Some(to)) = (from, to) else {
+            return Err(JsError::new("bad edge data"));
+        };
+        if data.len() != 3 + 16 + 36 || from as usize >= n || to as usize >= n {
+            return Err(JsError::new("bad edge data"));
+        }
+        if index > self.graph.edges.len() {
+            return Err(JsError::new("no such edge position"));
+        }
+        let matrix: &[f64; 16] = data[3..19].try_into().expect("16 entries");
+        let information = std::array::from_fn(|i| std::array::from_fn(|j| data[19 + i * 6 + j]));
+        self.graph.edges.insert(
+            index,
+            ca_core::pose_graph::Edge {
+                from: from as usize,
+                to: to as usize,
+                measurement: Rigid::from_matrix(matrix),
+                information,
+                kind: if data[2] == 1.0 {
+                    EdgeKind::Loop
+                } else {
+                    EdgeKind::Odometry
+                },
+            },
+        );
+        Ok(())
+    }
+
     /// Replace every pose (row-major 4x4 each), e.g. to undo an optimisation.
     #[wasm_bindgen(js_name = setPoses)]
     pub fn set_poses(&mut self, poses: &[f64]) -> Result<(), JsError> {

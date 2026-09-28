@@ -4,7 +4,9 @@
  * scan is drawn at its node's pose, so optimising only moves matrices. Pick
  * two nodes to close a loop: ICP registers their scans from the current
  * relative pose, the result becomes a loop edge and the graph is optimised.
- * The scans at their final poses become an ordinary cloud for the other tools.
+ * Edges can be colored by their error, and the loops listed worst first to
+ * remove wrong ones. The scans at their final poses become an ordinary cloud
+ * for the other tools.
  */
 
 import * as THREE from "three";
@@ -14,15 +16,17 @@ import {
   exportPoseGraph,
   openPoseGraph,
   optimizePoseGraph,
+  insertPoseGraphEdges,
   poseGraphMap,
-  removePoseGraphEdge,
+  removePoseGraphEdges,
   setPoseGraphPoses,
 } from "../api";
-import { CANCELLED, type PoseFormat, type PoseGraphState, type Progress } from "../protocol";
-import { $, download, errorText, fillTable, fmt, setStatus } from "./dom";
+import { colorize, gradientCss, lut } from "../colormap";
+import { CANCELLED, type PoseFormat, type PoseGraphState, type Progress, type RemovedEdge } from "../protocol";
+import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
-import { globalShift, listChanged, viewer } from "./state";
+import { display, distanceChanged, globalShift, listChanged, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { setTool, toggleTool, type Tool } from "./tools";
 
@@ -33,10 +37,11 @@ interface Graph {
   scanPoints: number;
 }
 
-/** Undo information: the poses before the step, and the loop edge it added. */
+/** Undo information: the poses before the step, and the edges it added or removed. */
 interface Step {
   poses: Float64Array;
   addedEdge?: number;
+  removed?: RemovedEdge[];
 }
 
 /** Scan files (the poses are g2o, TUM or KITTI text). */
@@ -47,25 +52,59 @@ const NOT_POSES = /^(calib|times)\.txt$/i;
 /** Draw at most this many scan points overall. */
 const DISPLAY_BUDGET = 6_000_000;
 const PICK_RADIUS_PX = 12;
+/** Loops listed at most. */
+const LIST_LIMIT = 100;
 
 const HUES = 12;
 const scanMaterials = Array.from(
   { length: HUES },
   (_, k) =>
     new THREE.PointsMaterial({
-      size: 2,
+      size: 3,
       sizeAttenuation: false,
       color: new THREE.Color().setHSL(k / HUES, 0.65, 0.6),
     }),
 );
-const nodeMaterial = new THREE.PointsMaterial({ size: 5, sizeAttenuation: false, color: 0xffffff });
+/** The color ramp as a 256 x 1 texture. */
+function rampTexture(): THREE.DataTexture {
+  const rgb = lut(display.ramp);
+  const rgba = new Uint8Array(256 * 4);
+  for (let i = 0; i < 256; i++) rgba.set([rgb[i * 3], rgb[i * 3 + 1], rgb[i * 3 + 2], 255], i * 4);
+  const texture = new THREE.DataTexture(rgba, 256, 1);
+  texture.needsUpdate = true;
+  return texture;
+}
+
+/** Scans colored by height (render z) in the color ramp, like iridescence's "rainbow" mode. */
+const heightMaterial = new THREE.ShaderMaterial({
+  uniforms: { lo: { value: 0 }, hi: { value: 1 }, size: { value: 3 }, ramp: { value: rampTexture() } },
+  vertexShader: `
+    uniform float lo;
+    uniform float hi;
+    uniform float size;
+    varying float t;
+    void main() {
+      float z = (modelMatrix * vec4(position, 1.0)).z;
+      t = clamp((z - lo) / max(hi - lo, 1e-6), 0.0, 1.0);
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      gl_PointSize = size;
+    }`,
+  fragmentShader: `
+    uniform sampler2D ramp;
+    varying float t;
+    void main() {
+      gl_FragColor = vec4(texture2D(ramp, vec2(t, 0.5)).rgb, 1.0);
+    }`,
+});
+// The graph is drawn over the scans, so it stays visible when they pile up.
+const nodeMaterial = new THREE.PointsMaterial({ size: 5, sizeAttenuation: false, color: 0xffffff, depthTest: false });
 const selectedMaterial = new THREE.PointsMaterial({
   size: 12,
   sizeAttenuation: false,
   vertexColors: true,
   depthTest: false,
 });
-const edgeMaterial = new THREE.LineBasicMaterial({ vertexColors: true, depthWrite: false });
+const edgeMaterial = new THREE.LineBasicMaterial({ vertexColors: true, depthTest: false });
 const ODOMETRY_COLOR = [0.45, 0.6, 0.8];
 const LOOP_COLOR = [1, 0.6, 0.15];
 const SELECTED_COLORS = [new THREE.Color(0xffeb3b), new THREE.Color(0x00e5ff)];
@@ -73,8 +112,10 @@ const SELECTED_COLORS = [new THREE.Color(0xffeb3b), new THREE.Color(0x00e5ff)];
 let graph: Graph | null = null;
 const group = new THREE.Group();
 group.name = "pose-graph";
-viewer.scene.add(group);
+viewer.overlay.add(group);
 let scanObjects: (THREE.Points | null)[] = [];
+/** Per scan, the 5th and 95th percentile of its local z (for the height colors). */
+let scanHeights: ([number, number] | null)[] = [];
 /** Node markers and edges are drawn relative to this (original coordinates), for float32 precision. */
 let origin = new THREE.Vector3();
 let drawnShift = "";
@@ -93,7 +134,21 @@ function clearGroup(): void {
     if (child instanceof THREE.Points || child instanceof THREE.LineSegments) child.geometry.dispose();
   }
   scanObjects = [];
+  scanHeights = [];
 }
+
+/** 5th and 95th percentile of the z of interleaved points (from a sample). */
+function heightRange(positions: Float32Array): [number, number] {
+  const n = positions.length / 3;
+  const step = Math.max(1, Math.floor(n / 1000));
+  const z: number[] = [];
+  for (let i = 0; i < n; i += step) z.push(positions[i * 3 + 2]);
+  z.sort((a, b) => a - b);
+  return [z[Math.floor(z.length * 0.05)], z[Math.floor(z.length * 0.95)]];
+}
+
+const showScans = () => $<HTMLInputElement>("pg-show-scans").checked;
+const byHeight = () => $<HTMLSelectElement>("pg-colors").value === "height";
 
 /** Translation of node `i`'s pose (original coordinates). */
 function nodePosition(state: PoseGraphState, i: number): THREE.Vector3 {
@@ -115,11 +170,13 @@ function build(g: Graph): void {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geometry.computeBoundingSphere();
-    const points = new THREE.Points(geometry, scanMaterials[i % HUES]);
+    const points = new THREE.Points(geometry, byHeight() ? heightMaterial : scanMaterials[i % HUES]);
     points.matrixAutoUpdate = false;
+    points.visible = showScans();
     group.add(points);
     return points;
   });
+  scanHeights = g.scans.map((positions) => (positions?.length ? heightRange(positions) : null));
   origin = g.state.poses.length ? nodePosition(g.state, 0).round() : new THREE.Vector3();
   update(g.state);
 }
@@ -142,6 +199,14 @@ function update(state: PoseGraphState): void {
     );
     object.matrixWorldNeedsUpdate = true;
   });
+  // Height colors span the scans' typical heights at their current poses.
+  let [lo, hi] = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
+  scanHeights.forEach((range, i) => {
+    if (!range) return;
+    lo = Math.min(lo, m[i * 16 + 11] - sz + range[0]);
+    hi = Math.max(hi, m[i * 16 + 11] - sz + range[1]);
+  });
+  if (lo < hi) [heightMaterial.uniforms.lo.value, heightMaterial.uniforms.hi.value] = [lo, hi];
   for (const name of ["nodes", "edges", "selected"]) {
     const old = group.getObjectByName(name) as THREE.Points | THREE.LineSegments | undefined;
     if (old) {
@@ -158,14 +223,20 @@ function update(state: PoseGraphState): void {
   const nodes = new THREE.Points(new THREE.BufferGeometry(), nodeMaterial);
   nodes.geometry.setAttribute("position", new THREE.BufferAttribute(nodePositions, 3));
   nodes.name = "nodes";
+  nodes.renderOrder = 2;
 
   const e = state.edges.length / 2;
   const edgePositions = new Float32Array(e * 6);
   const edgeColors = new Float32Array(e * 6);
+  const byError = errorColors() ? colorize(edgeErrors(state), 0, errorScale(state), lut(display.ramp)) : null;
   for (let k = 0; k < e; k++) {
     local(state.edges[2 * k]).toArray(edgePositions, k * 6);
     local(state.edges[2 * k + 1]).toArray(edgePositions, k * 6 + 3);
-    const color = state.edgeKinds[k] ? LOOP_COLOR : ODOMETRY_COLOR;
+    const color = byError
+      ? [byError[k * 4] / 255, byError[k * 4 + 1] / 255, byError[k * 4 + 2] / 255]
+      : state.edgeKinds[k]
+        ? LOOP_COLOR
+        : ODOMETRY_COLOR;
     edgeColors.set(color, k * 6);
     edgeColors.set(color, k * 6 + 3);
   }
@@ -185,7 +256,7 @@ function update(state: PoseGraphState): void {
   selected.geometry.setAttribute("position", new THREE.BufferAttribute(selectedPositions, 3));
   selected.geometry.setAttribute("color", new THREE.BufferAttribute(selectedColors, 3));
   selected.name = "selected";
-  selected.renderOrder = 2;
+  selected.renderOrder = 3;
 
   for (const object of [nodes, edges, selected]) {
     object.position.copy(placed);
@@ -194,6 +265,18 @@ function update(state: PoseGraphState): void {
   }
   viewer.requestRender();
   renderInfo();
+}
+
+const errorColors = () => $<HTMLInputElement>("pg-edge-errors").checked;
+
+/** Per edge, the square root of its χ²: how far it disagrees with the graph, in standard deviations. */
+function edgeErrors(state: PoseGraphState): Float32Array {
+  return Float32Array.from(state.edgeErrors, Math.sqrt);
+}
+
+/** Top of the error color scale: the largest edge error, at least 1. */
+function errorScale(state: PoseGraphState): number {
+  return Math.max(1, ...edgeErrors(state));
 }
 
 /** Frame the graph's nodes. */
@@ -232,7 +315,60 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-optimize").disabled = busy;
   $<HTMLButtonElement>("pg-undo").disabled = busy || steps.length === 0;
   $<HTMLButtonElement>("pg-map").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-prune").disabled = busy || loops === 0;
+  $("pg-legend").hidden = !errorColors();
+  $("pg-legend-bar").style.background = gradientCss(display.ramp, "to right");
+  $("pg-legend-max").textContent = fmt(errorScale(state));
+  renderLoops(state);
 }
+
+/** The loop edges, worst first, each with a button to select its nodes and one to remove it. */
+function renderLoops(state: PoseGraphState): void {
+  const errors = edgeErrors(state);
+  const loops = [...state.edgeKinds.keys()].filter((k) => state.edgeKinds[k]).sort((a, b) => errors[b] - errors[a]);
+  const ids = state.nodeIds;
+  $("pg-loops-hint").hidden = loops.length > 0;
+  $("pg-loop-list").replaceChildren(
+    ...loops.slice(0, LIST_LIMIT).map((k) => {
+      const [from, to] = [state.edges[2 * k], state.edges[2 * k + 1]];
+      const li = document.createElement("li");
+      const name = document.createElement("button");
+      name.className = "name link";
+      name.textContent = `${ids[from]} – ${ids[to]}`;
+      name.title = "Select its two nodes";
+      name.onclick = () => setSelection([from, to]);
+      const error = document.createElement("span");
+      error.className = "meta";
+      error.textContent = `error ${fmt(errors[k])}`;
+      li.append(name, error, removeButton(() => void removeEdges([k], `loop ${ids[from]} – ${ids[to]}`)));
+      return li;
+    }),
+  );
+}
+
+/** Remove edges and optimise again (one undo step). */
+function removeEdges(indices: number[], what: string): Promise<void> {
+  return run("Removing", async () => {
+    const poses = graph!.state.poses.slice();
+    const out = await removePoseGraphEdges(indices, kernel());
+    steps.push({ poses, removed: out.removed });
+    update(out.state);
+    setStatus(`Removed ${what} and optimised`);
+  });
+}
+
+$<HTMLButtonElement>("pg-prune").onclick = () => {
+  if (!graph) return;
+  const { state } = graph;
+  const limit = num("pg-prune-limit");
+  const errors = edgeErrors(state);
+  const worse = [...state.edgeKinds.keys()].filter((k) => state.edgeKinds[k] && errors[k] > limit);
+  if (worse.length === 0) {
+    setStatus(`No loop has an error above ${fmt(limit)}`);
+    return;
+  }
+  void removeEdges(worse, `${worse.length} loop${worse.length === 1 ? "" : "s"} with an error above ${fmt(limit)}`);
+};
 
 /** The nearest node within the pick radius of a click, or null. */
 function nodeAt(clientX: number, clientY: number): number | null {
@@ -456,9 +592,16 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
   run("Undo", async () => {
     const step = steps.pop();
     if (!step) return;
-    if (step.addedEdge !== undefined) await removePoseGraphEdge(step.addedEdge);
+    if (step.addedEdge !== undefined) await removePoseGraphEdges([step.addedEdge], null);
+    if (step.removed) await insertPoseGraphEdges(step.removed);
     update(await setPoseGraphPoses(step.poses));
-    setStatus(step.addedEdge !== undefined ? "Removed the last loop" : "Undid the optimisation");
+    setStatus(
+      step.addedEdge !== undefined
+        ? "Removed the last loop"
+        : step.removed
+          ? `Put back ${step.removed.length} removed edge${step.removed.length === 1 ? "" : "s"}`
+          : "Undid the optimisation",
+    );
   });
 
 for (const format of ["g2o", "kitti", "tum"] as PoseFormat[]) {
@@ -493,6 +636,37 @@ $<HTMLButtonElement>("pg-close").onclick = async () => {
   viewer.requestRender();
   renderInfo();
 };
+
+$<HTMLInputElement>("pg-show-scans").onchange = () => {
+  for (const object of scanObjects) if (object) object.visible = showScans();
+  viewer.requestRender();
+};
+$<HTMLInputElement>("pg-edge-errors").onchange = () => graph && update(graph.state);
+$<HTMLSelectElement>("pg-colors").onchange = () => {
+  scanObjects.forEach((object, i) => {
+    if (object) object.material = byHeight() ? heightMaterial : scanMaterials[i % HUES];
+  });
+  viewer.requestRender();
+};
+
+// Thinned scans are sparse: draw them a pixel larger than the clouds, or
+// EDL (which darkens points next to background) turns them black.
+const pointSizeInput = $<HTMLInputElement>("point-size");
+function applyPointSize(): void {
+  const size = Number(pointSizeInput.value) + 1;
+  for (const material of scanMaterials) material.size = size;
+  heightMaterial.uniforms.size.value = size;
+  viewer.requestRender();
+}
+pointSizeInput.addEventListener("input", applyPointSize);
+applyPointSize();
+
+// The color ramp may have changed.
+distanceChanged.add(() => {
+  heightMaterial.uniforms.ramp.value.dispose();
+  heightMaterial.uniforms.ramp.value = rampTexture();
+  if (graph) update(graph.state);
+});
 
 // The graph follows the clouds' global shift.
 listChanged.add(() => {

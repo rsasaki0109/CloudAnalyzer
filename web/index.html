@@ -479,6 +479,19 @@
         <div id="pg-body" hidden>
           <table class="stats"><tbody id="pg-stats"></tbody></table>
           <div class="range">
+            <label title="Scans in a color per keyframe, or colored by height in the color ramp">Scan colors
+              <select id="pg-colors">
+                <option value="keyframe" selected>By keyframe</option>
+                <option value="height">By height</option>
+              </select></label>
+            <label class="check" title="Color every edge by its error (√χ², in standard deviations) instead of odometry blue / loop orange">
+              <input id="pg-edge-errors" type="checkbox" checked /> Edges by error</label>
+          </div>
+          <label class="check" title="Hide the scans to see the graph alone"><input id="pg-show-scans" type="checkbox" checked /> Show scans</label>
+          <div id="pg-legend" class="ramp-legend" title="Edge error, √χ² (standard deviations)">
+            <span>0</span><span id="pg-legend-bar" class="ramp-legend-bar"></span><span id="pg-legend-max"></span>
+          </div>
+          <div class="range">
             <label title="The loop's first node (its id or frame number); its scan is the reference">Node A <input id="pg-a" type="number" step="1" /></label>
             <label title="The loop's second node; its scan is registered onto A's">Node B <input id="pg-b" type="number" step="1" /></label>
           </div>
@@ -502,7 +515,14 @@
           <div class="button-row">
             <button id="pg-loop" class="primary" disabled title="Align the second node's scan to the first's with ICP and add a loop edge, then optimise">Add loop</button>
             <button id="pg-optimize" title="Optimise the graph">Optimise</button>
-            <button id="pg-undo" disabled title="Undo the last loop or optimisation">Undo</button>
+            <button id="pg-undo" disabled title="Undo the last loop, removal or optimisation">Undo</button>
+          </div>
+          <h3>Loops, worst first</h3>
+          <p id="pg-loops-hint" class="hint small">No loop edges yet.</p>
+          <ol id="pg-loop-list" class="loop-list"></ol>
+          <div class="range">
+            <label title="Remove every loop whose error (√χ²) is above this, then optimise">Error above <input id="pg-prune-limit" type="number" min="0" step="any" value="3" /></label>
+            <button id="pg-prune" title="Remove the loops with a larger error and optimise">Remove loops</button>
           </div>
           <div class="button-row">
             <button id="pg-save-g2o" title="The graph with its edges">Save g2o</button>

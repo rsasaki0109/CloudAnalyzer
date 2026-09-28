@@ -1054,9 +1054,23 @@ async function handle(
       const value = { state, initialCost, finalCost, iterations, converged: converged === 1, millis };
       return { value, transfer: stateTransfer(state) };
     }
-    case "pg-remove-edge": {
+    case "pg-remove-edges": {
       const session = openGraph();
-      session.removeEdge(req.index);
+      const removed = [...new Set(req.indices)]
+        .sort((a, b) => b - a)
+        .map((index) => {
+          const data = session.edgeData(index);
+          session.removeEdge(index);
+          return { index, data };
+        })
+        .reverse();
+      if (req.loopKernel !== null) session.optimize(req.loopKernel);
+      const state = graphState(session);
+      return { value: { state, removed }, transfer: stateTransfer(state) };
+    }
+    case "pg-insert-edges": {
+      const session = openGraph();
+      for (const edge of req.edges) session.insertEdge(edge.index, edge.data);
       const state = graphState(session);
       return { value: state, transfer: stateTransfer(state) };
     }

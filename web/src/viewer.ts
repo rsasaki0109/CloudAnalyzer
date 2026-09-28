@@ -74,6 +74,12 @@ export interface PickHit {
 
 export class Viewer {
   readonly scene = new THREE.Scene();
+  /**
+   * Drawn after the scene, without EDL (which darkens sparse points next to
+   * background): the pose graph's thinned scans. With EDL on, it is drawn
+   * over the clouds rather than hidden behind them.
+   */
+  readonly overlay = new THREE.Scene();
   readonly camera: THREE.PerspectiveCamera;
   private readonly renderer: THREE.WebGLRenderer;
   private readonly controls: OrbitControls;
@@ -225,10 +231,19 @@ export class Viewer {
       this.needsLod = false;
       this.updateLod();
     }
-    if (this.useEdl()) this.edl.render(this.renderer, this.scene, this.camera);
-    else this.renderer.render(this.scene, this.camera);
+    this.draw();
     this.onAfterRender();
   };
+
+  private draw(): void {
+    if (this.useEdl()) this.edl.render(this.renderer, this.scene, this.camera);
+    else this.renderer.render(this.scene, this.camera);
+    if (this.overlay.children.length === 0) return;
+    const autoClear = this.renderer.autoClear;
+    this.renderer.autoClear = false;
+    this.renderer.render(this.overlay, this.camera);
+    this.renderer.autoClear = autoClear;
+  }
 
   private updateLod(): void {
     this.camera.updateMatrixWorld();
@@ -1010,8 +1025,7 @@ export class Viewer {
   /** The current view rendered into a new 2D canvas (device pixels). */
   snapshot(): HTMLCanvasElement {
     // Draw now and copy straight away, while the WebGL buffer still holds it.
-    if (this.useEdl()) this.edl.render(this.renderer, this.scene, this.camera);
-    else this.renderer.render(this.scene, this.camera);
+    this.draw();
     const source = this.renderer.domElement;
     const out = document.createElement("canvas");
     out.width = source.width;

@@ -254,7 +254,15 @@
       <b>Node B</b>, or use <b>Pick nodes</b> and click two dots. <b>Add loop</b> registers B's scan onto A's with
       ICP, starting from their current relative pose, adds the result as a loop edge (weighted by <b>σ loop</b>)
       and optimises the graph (Levenberg–Marquardt). <b>Robust loops</b> puts a Huber kernel on loop edges, so a
-      wrong loop bends the map less. <b>Undo</b> removes the last loop or optimisation.
+      wrong loop bends the map less. <b>Undo</b> takes back the last loop, removal or optimisation.
+    </p>
+    <p>
+      <b>Edges by error</b> colors every edge by how far it disagrees with the optimised graph (√χ², in standard
+      deviations) in the color ramp, and <b>Loops, worst first</b> lists the loop edges by that error: a wrong loop
+      shows up at the top. Click one to select its two nodes, <b>✕</b> to remove it and optimise again, or remove
+      every loop with an error above a threshold with <b>Remove loops</b>. <b>Scan colors</b> shows a color per
+      keyframe or colors by height; <b>Show scans</b> hides them to see the graph alone. The scans are drawn
+      without Eye-Dome Lighting, which would darken such thinned points, and the graph on top of them.
     </p>
     <p>
       <b>Save g2o</b> writes the graph with its edges; <b>KITTI</b> and <b>TUM</b> write the optimised poses.

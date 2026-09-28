@@ -16,6 +16,7 @@ import type {
   PoseGraphOptimized,
   PoseGraphState,
   ProfileOutput,
+  RemovedEdge,
   Progress,
   RasterGrid,
   RasterOutput,
@@ -272,8 +273,17 @@ export function optimizePoseGraph(loopKernel: number): Promise<PoseGraphOptimize
   return call({ kind: "pg-optimize", loopKernel });
 }
 
-export function removePoseGraphEdge(index: number): Promise<PoseGraphState> {
-  return call({ kind: "pg-remove-edge", index });
+/** Remove edges and, unless `loopKernel` is null, optimise. */
+export function removePoseGraphEdges(
+  indices: number[],
+  loopKernel: number | null,
+): Promise<{ state: PoseGraphState; removed: RemovedEdge[] }> {
+  return call({ kind: "pg-remove-edges", indices, loopKernel });
+}
+
+/** Put removed edges back. */
+export function insertPoseGraphEdges(edges: RemovedEdge[]): Promise<PoseGraphState> {
+  return call({ kind: "pg-insert-edges", edges });
 }
 
 export function setPoseGraphPoses(poses: Float64Array): Promise<PoseGraphState> {

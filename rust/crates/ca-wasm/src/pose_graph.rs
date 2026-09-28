@@ -16,11 +16,138 @@ pub struct PoseGraphSession {
     timestamps: Vec<f64>,
 }
 
+/// ICP moves at most this many points of a loop's second scan: as accurate
+/// (within a centimetre on KITTI scans) and two to three times faster.
+const LOOP_SAMPLE: usize = 8000;
+
+struct LoopSettings {
+    max_iterations: usize,
+    overlap: f64,
+    point_to_plane: bool,
+    inlier_distance: f64,
+    retry_below: f64,
+    retry_headings: usize,
+}
+
+/// Register `to_scan` onto `from_scan` from `guess` (the pose of `to` in
+/// the frame of `from`). Returns `[rms before, rms after, iterations,
+/// converged, fitness, 16 matrix entries, retried, discrepancy]`: the matrix
+/// (row-major) is the measured pose of `to` in the frame of `from`, the
+/// fitness the fraction of `to`'s points within the inlier distance of
+/// `from`'s once placed by it, `retried` 1 when the result came from the
+/// retry, and the discrepancy how far (metres) the measured position of
+/// `to` lies from the guess. The retry: when the fitness is below
+/// `retry_below`, the scans are registered again as if taken at the same
+/// place, from `retry_headings` headings (0: no retry). After a long drift
+/// the graph's relative pose of a revisit can be tens of metres off, while
+/// the two scans were taken a few metres apart.
+fn registration(
+    from_scan: &PointCloud,
+    to_scan: &PointCloud,
+    guess: &Rigid,
+    settings: &LoopSettings,
+) -> Result<Vec<f64>, JsError> {
+    let params = IcpParams {
+        metric: if settings.point_to_plane {
+            IcpMetric::PointToPlane
+        } else {
+            IcpMetric::PointToPoint
+        },
+        max_iterations: settings.max_iterations,
+        overlap: settings.overlap,
+        sample: LOOP_SAMPLE,
+        ..IcpParams::default()
+    };
+    let (mut measurement, mut result) =
+        pose_graph::register_loop(from_scan, to_scan, guess, params)
+            .ok_or_else(|| JsError::new("ICP found too few matching points"))?;
+    let inlier = settings.inlier_distance;
+    let mut fitness = pose_graph::overlap_fitness(from_scan, to_scan, &measurement, inlier);
+    let mut retried = false;
+    let retry = (fitness < settings.retry_below && settings.retry_headings > 0)
+        .then(|| {
+            pose_graph::register_with_yaw_search(
+                from_scan,
+                to_scan,
+                &Rigid::IDENTITY,
+                settings.retry_headings,
+                params,
+                inlier,
+            )
+        })
+        .flatten();
+    if let Some((m, f, r)) = retry.filter(|&(_, f, _)| f > fitness) {
+        (measurement, fitness, result, retried) = (m, f, r, true);
+    }
+    let mut out = vec![
+        result.rms_initial,
+        result.rms_final,
+        result.iterations as f64,
+        f64::from(u8::from(result.converged)),
+        fitness,
+    ];
+    out.extend(measurement.to_matrix());
+    out.push(f64::from(u8::from(retried)));
+    let d: [f64; 3] = std::array::from_fn(|k| measurement.translation[k] - guess.translation[k]);
+    out.push((d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt());
+    Ok(out)
+}
+
+fn cloud_of(xyz: &[f64]) -> PointCloud {
+    PointCloud {
+        positions: xyz.as_chunks::<3>().0.to_vec(),
+        ..PointCloud::default()
+    }
+}
+
+/// [`PoseGraphSession::register_loop`] for scans sent to a pool worker:
+/// `from` and `to` are interleaved xyz, `guess` a row-major 4x4.
+#[wasm_bindgen(js_name = registerScans)]
+#[allow(clippy::too_many_arguments)]
+pub fn register_scans(
+    from: &[f64],
+    to: &[f64],
+    guess: &[f64],
+    max_iterations: usize,
+    overlap: f64,
+    inlier_distance: f64,
+    retry_below: f64,
+    retry_headings: usize,
+) -> Result<Vec<f64>, JsError> {
+    let guess: &[f64; 16] = guess
+        .try_into()
+        .map_err(|_| JsError::new("guess must have 16 entries"))?;
+    let settings = LoopSettings {
+        max_iterations,
+        overlap,
+        point_to_plane: true,
+        inlier_distance,
+        retry_below,
+        retry_headings,
+    };
+    registration(
+        &cloud_of(from),
+        &cloud_of(to),
+        &Rigid::from_matrix(guess),
+        &settings,
+    )
+}
+
 fn information(sigma_t: f64, sigma_r_deg: f64) -> [[f64; 6]; 6] {
     pose_graph::isotropic_information(sigma_t, sigma_r_deg.to_radians())
 }
 
 impl PoseGraphSession {
+    fn scan(&self, index: usize) -> Result<&PointCloud, JsError> {
+        self.scans
+            .get(index)
+            .and_then(Option::as_ref)
+            .ok_or_else(|| {
+                let id = self.graph.nodes.get(index).map_or(index as i64, |n| n.id);
+                JsError::new(&format!("node {id} has no scan"))
+            })
+    }
+
     fn new(graph: PoseGraph, timestamps: Vec<f64>) -> PoseGraphSession {
         PoseGraphSession {
             scans: vec![None; graph.nodes.len()],
@@ -178,18 +305,8 @@ impl PoseGraphSession {
     }
 
     /// Register node `to`'s scan onto node `from`'s from their current
-    /// relative pose, without changing the graph. Returns `[rms before, rms
-    /// after, iterations, converged, fitness, 16 matrix entries]`: the
-    /// matrix (row-major) is the measured pose of `to` in the frame of
-    /// `from`, and the fitness the fraction of `to`'s points within
-    /// `inlier_distance` of `from`'s once placed by it. Two entries follow:
-    /// 1 when the result came from the retry, and how far (metres) the
-    /// measured position of `to` lies from where the graph has it. The
-    /// retry: when the fitness is below
-    /// `retry_below`, the scans are registered again as if taken at the
-    /// same place, from `retry_headings` headings (0: no retry). After a
-    /// long drift the graph's relative pose of a revisit can be tens of
-    /// metres off, while the two scans were taken a few metres apart.
+    /// relative pose, without changing the graph (see [`register_scans`]
+    /// for the result and the retry).
     #[wasm_bindgen(js_name = registerLoop)]
     #[allow(clippy::too_many_arguments)]
     pub fn register_loop(
@@ -207,57 +324,43 @@ impl PoseGraphSession {
         if from >= n || to >= n || from == to {
             return Err(JsError::new("pick two different nodes"));
         }
-        let scan = |i: usize| {
-            self.scans[i].as_ref().ok_or_else(|| {
-                JsError::new(&format!("node {} has no scan", self.graph.nodes[i].id))
-            })
-        };
-        let params = IcpParams {
-            metric: if point_to_plane {
-                IcpMetric::PointToPlane
-            } else {
-                IcpMetric::PointToPoint
-            },
+        let settings = LoopSettings {
             max_iterations,
             overlap,
-            ..IcpParams::default()
+            point_to_plane,
+            inlier_distance,
+            retry_below,
+            retry_headings,
         };
-        let (from_scan, to_scan) = (scan(from)?, scan(to)?);
-        let guess = self.graph.relative(from, to);
-        let (mut measurement, mut result) =
-            pose_graph::register_loop(from_scan, to_scan, &guess, params)
-                .ok_or_else(|| JsError::new("ICP found too few matching points"))?;
-        let mut fitness =
-            pose_graph::overlap_fitness(from_scan, to_scan, &measurement, inlier_distance);
-        let mut retried = false;
-        let retry = (fitness < retry_below && retry_headings > 0)
-            .then(|| {
-                pose_graph::register_with_yaw_search(
-                    from_scan,
-                    to_scan,
-                    &Rigid::IDENTITY,
-                    retry_headings,
-                    params,
-                    inlier_distance,
-                )
-            })
-            .flatten();
-        if let Some((m, f, r)) = retry.filter(|&(_, f, _)| f > fitness) {
-            (measurement, fitness, result, retried) = (m, f, r, true);
+        registration(
+            self.scan(from)?,
+            self.scan(to)?,
+            &self.graph.relative(from, to),
+            &settings,
+        )
+    }
+
+    /// Node `index`'s scan (in its frame) as interleaved xyz, to register it
+    /// on another worker with [`register_scans`].
+    #[wasm_bindgen(js_name = scanXyz)]
+    pub fn scan_xyz(&self, index: usize) -> Result<Vec<f64>, JsError> {
+        Ok(self
+            .scan(index)?
+            .positions
+            .iter()
+            .flatten()
+            .copied()
+            .collect())
+    }
+
+    /// The pose of node `to` in the frame of node `from` (row-major 4x4).
+    #[wasm_bindgen(js_name = relativePose)]
+    pub fn relative_pose(&self, from: usize, to: usize) -> Result<Vec<f64>, JsError> {
+        let n = self.graph.nodes.len();
+        if from >= n || to >= n {
+            return Err(JsError::new("no such node"));
         }
-        let mut out = vec![
-            result.rms_initial,
-            result.rms_final,
-            result.iterations as f64,
-            f64::from(u8::from(result.converged)),
-            fitness,
-        ];
-        out.extend(measurement.to_matrix());
-        out.push(f64::from(u8::from(retried)));
-        let d: [f64; 3] =
-            std::array::from_fn(|k| measurement.translation[k] - guess.translation[k]);
-        out.push((d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt());
-        Ok(out)
+        Ok(self.graph.relative(from, to).to_matrix().to_vec())
     }
 
     /// Add a loop edge measuring `to` in the frame of `from` (row-major
@@ -320,6 +423,7 @@ impl PoseGraphSession {
         let params = IcpParams {
             max_iterations,
             overlap,
+            sample: LOOP_SAMPLE,
             ..IcpParams::default()
         };
         let (measurement, fitness, result) = pose_graph::register_with_yaw_search(

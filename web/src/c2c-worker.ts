@@ -13,6 +13,7 @@ import init, {
   nearestDistances,
   normalsOf,
   type Reordered,
+  registerScans,
   SorPart,
   warmUp,
 } from "./wasm/ca_wasm.js";
@@ -43,6 +44,21 @@ export type Slice =
   | { kind: "las-chunks"; source: ByteSource; head: Uint8Array; chunks: Float64Array; keepEvery: number }
   /** Drop this worker's part of `job`. */
   | { kind: "sor-release"; job: number }
+  /**
+   * Register a candidate loop's scans (interleaved xyz, each in its node's
+   * frame) from `guess`, as `PoseGraphSession.registerLoop` does.
+   */
+  | {
+      kind: "loop";
+      from: Float64Array;
+      to: Float64Array;
+      guess: number[];
+      maxIterations: number;
+      overlap: number;
+      inlierDistance: number;
+      retryBelow: number;
+      retryHeadings: number;
+    }
   /** Run every kernel once so the browser optimizes them (see `warmUp`). */
   | { kind: "warm-up" };
 
@@ -222,6 +238,19 @@ async function run(request: SliceRequest): Promise<{ value: Value; transfer: Tra
       ];
       if (value.colors) transfer.push(value.colors.buffer);
       return { value, transfer };
+    }
+    case "loop": {
+      const r = registerScans(
+        request.from,
+        request.to,
+        new Float64Array(request.guess),
+        request.maxIterations,
+        request.overlap,
+        request.inlierDistance,
+        request.retryBelow,
+        request.retryHeadings,
+      );
+      return { value: r, transfer: [r.buffer] };
     }
     case "sor-release":
       sorParts.get(request.job)?.free();

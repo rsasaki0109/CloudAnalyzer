@@ -1519,6 +1519,12 @@ test("pose graph: a wrong loop in a g2o file shows as the worst edge and is remo
   await page.locator("#pg-save-g2o").click();
   const saved = (await bytesOf(await download)).toString();
   expect(saved.match(/^EDGE_SE3:QUAT/gm)).toHaveLength(24);
+
+  // The map as loaded (the true poses) against now: the correction moved nothing for good.
+  await page.locator("#pg-compare").click();
+  await expect(status(page)).toContainText("graph_map is colored by its distance to graph_map_start");
+  await expect(page.locator("#cloud-list li")).toHaveCount(2);
+  await expect(page.locator("#colorbar")).toBeVisible();
 });
 
 test("pose graph: a second session in another frame is joined at a shared place", async ({ page }) => {

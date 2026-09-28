@@ -596,6 +596,9 @@
             <label title="Thin the map to one point per voxel of this size (metres); 0 keeps every scan point">Map voxel <input id="pg-map-voxel" type="number" min="0" step="any" value="0" /></label>
             <button id="pg-map" title="Every scan at its optimised pose, as a new cloud in the list (to measure, export…)">Build map cloud</button>
           </div>
+          <div class="button-row">
+            <button id="pg-compare" title="The map as loaded and as it is now, the second colored by its distance to the first (cloud-to-cloud): where the corrections moved the map">Compare with the start</button>
+          </div>
         </div>
       </section>
 

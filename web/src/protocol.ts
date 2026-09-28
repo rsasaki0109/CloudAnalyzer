@@ -481,7 +481,13 @@ export type Request =
   | { kind: "pg-insert-edges"; /** In ascending index order. */ edges: RemovedEdge[] }
   | { kind: "pg-set-poses"; poses: Float64Array }
   | { kind: "pg-export"; format: PoseFormat }
-  | { kind: "pg-map"; /** Voxel size of the map, 0 for none. */ voxel: number }
+  | {
+      kind: "pg-map";
+      /** Voxel size of the map, 0 for none. */
+      voxel: number;
+      /** The scans at their poses as loaded, instead of now. */
+      initial: boolean;
+    }
   | { kind: "pg-close" }
   | { kind: "trajectory"; file: File }
   | {

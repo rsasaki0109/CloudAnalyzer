@@ -12,7 +12,7 @@
       <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.pcd,.las,.laz,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json" />
+        accept=".ply,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -77,7 +77,7 @@
           <button id="session-open" title="Open a saved session, together with its files">Open session…</button>
         </div>
         <div id="empty-hint" class="hint">
-          <p>Drop PLY, PCD, LAS/LAZ or XYZ point clouds, or OBJ/STL/PLY meshes, anywhere, or use Open…
+          <p>Drop PLY, PCD, LAS/LAZ, E57 or XYZ point clouds, or OBJ/STL/PLY meshes, anywhere, or use Open…
             Files stay in your browser.</p>
           <button id="load-sample">Try a sample</button>
           <p class="small">A LiDAR scene and a second scan of it; computes the cloud-to-cloud distance.</p>

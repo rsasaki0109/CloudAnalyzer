@@ -638,6 +638,31 @@ test.describe("COPC", () => {
   });
 });
 
+test("E57: scans are merged, split back per scan, and saved as E57", async ({ page }) => {
+  const e57 = readFileSync(new URL("./fixtures/scans.e57", import.meta.url));
+  await open(page, [{ name: "scans.e57", buffer: e57 }]);
+  await expect(status(page)).toContainText("Loaded scans.e57: 3,000 points");
+  await expect(page.locator(".cloud-list li .meta")).toContainText("· RGB");
+
+  await page.locator("#split-cloud").selectOption({ label: "scans.e57" });
+  await page.locator("#split-by").selectOption("source");
+  await page.locator("#split-run").click();
+  await expect(status(page)).toContainText("Split scans.e57 into 2 clouds: station1, station2");
+
+  const download = page.waitForEvent("download");
+  const station2 = page.locator(".cloud-list li", { hasText: "station2" });
+  await station2.locator("button.icon").click();
+  await station2.locator(".save-formats").getByRole("button", { name: "E57" }).click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("station2.e57");
+  const chunks: Buffer[] = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
+  const saved = Buffer.concat(chunks);
+  expect(saved.subarray(0, 8).toString("latin1")).toBe("ASTM-E57");
+  await open(page, [{ name: "saved.e57", buffer: saved }]);
+  await expect(status(page)).toContainText("Loaded saved.e57: 1,500 points");
+});
+
 test("labels: added by clicking, edited, saved in a PNG and restored from a share link", async ({ page, context }) => {
   await page.getByRole("button", { name: "Try a sample" }).click();
   await expect(status(page)).toContainText("C2C distance computed");

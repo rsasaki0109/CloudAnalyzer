@@ -136,7 +136,7 @@ export interface ProfileOutput {
 }
 
 /** File formats a cloud can be saved in. */
-export type ExportFormat = "ply" | "las" | "laz" | "csv";
+export type ExportFormat = "ply" | "las" | "laz" | "csv" | "e57";
 
 export type Request =
   | {

@@ -103,7 +103,7 @@ export function transformCloud(id: number, matrix: number[]): Promise<LoadedClou
   return call({ kind: "transform", id, matrix });
 }
 
-/** Serialize a cloud (octree order) as binary PLY, LAS, LAZ or CSV. */
+/** Serialize a cloud (octree order) as binary PLY, LAS, LAZ, CSV or E57. */
 export function exportCloud(
   id: number,
   format: ExportFormat,

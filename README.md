@@ -15,13 +15,13 @@ Rust + WebAssembly. Your files stay on your machine.
 
 ## Features
 
-- **Open** PLY, PCD, LAS/LAZ, XYZ and OBJ/STL meshes, including tens of millions of points,
+- **Open** PLY, PCD, LAS/LAZ, E57 (all scans, posed), XYZ and OBJ/STL meshes, including tens of millions of points,
   and COPC files straight from a URL (only the levels you need are downloaded).
 - **Compare**: cloud-to-cloud and cloud-to-mesh distance, M3C2 change detection, cut/fill volume.
 - **Process**: ICP alignment, subsampling, outlier removal, ground extraction (CSF), normals, merge/split,
   rasterize to a DEM / DSM (GeoTIFF or colored PNG).
 - **Inspect**: clipping box, lasso segmentation with undo/redo, cross-section profiles, picking, measuring and labels; save the view as a PNG.
-- **Share**: links and session files that restore the view; export PLY, LAS/LAZ (distances as extra bytes) or CSV.
+- **Share**: links and session files that restore the view; export PLY, LAS/LAZ (distances as extra bytes), E57 or CSV.
 - Works on phones and tablets.
 
 ## Try it

@@ -11,6 +11,7 @@ import init, {
   cloudToMesh,
   computeM3c2,
   computeVolume,
+  e57ScanNames,
   Mesh,
   StreamLoader,
   planCloudToCloud,
@@ -234,7 +235,15 @@ const STREAM_CHUNK = 16 << 20;
 
 type Loaded =
   | { kind: "mesh"; mesh: Mesh }
-  | { kind: "cloud"; cloud: Cloud; keepEvery: number; filePoints: number; copcLevels?: number };
+  | {
+      kind: "cloud";
+      cloud: Cloud;
+      keepEvery: number;
+      filePoints: number;
+      copcLevels?: number;
+      /** Scan names of a multi-scan E57, by `source` value. */
+      sources?: string[];
+    };
 
 /** COPC nodes decoded per pool job. */
 const COPC_JOB_POINTS = 500_000;
@@ -362,7 +371,13 @@ async function readPoints(
   const announced = announcedPoints(name, bytes);
   const keepEvery = announced === undefined ? 1 : thinning(announced);
   const cloud = Cloud.parseThinned(name, bytes, keepEvery);
-  return { kind: "cloud", cloud, keepEvery, filePoints: announced ?? cloud.length };
+  // Each E57 scan is a `source`, so the cloud splits back into its scans.
+  let sources: string[] | undefined;
+  if (/\.e57$/i.test(name) && cloud.splitValues("source")) {
+    const base = name.replace(/\.[^.]+$/, "");
+    sources = e57ScanNames(bytes).map((scan, k) => scan || `${base}_scan${k + 1}`);
+  }
+  return { kind: "cloud", cloud, keepEvery, filePoints: announced ?? cloud.length, sources };
 }
 
 /** Clouds at least this large build their octree on the worker pool. */
@@ -589,6 +604,7 @@ async function handle(
         keepEvery: loaded.keepEvery,
         filePoints: loaded.filePoints,
         copcLevels: loaded.copcLevels,
+        sources: loaded.sources,
       });
       progress("preparing for display");
       return describe(id, { parse, index, workers });

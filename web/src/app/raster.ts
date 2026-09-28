@@ -8,6 +8,7 @@ import { finiteStats } from "./distance";
 import { $, download, errorText, roundUp, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
+import { addReportSection } from "./report";
 import { clouds, display, distanceChanged, entries, listChanged } from "./state";
 
 const cloudSelect = $<HTMLSelectElement>("raster-cloud");
@@ -21,6 +22,32 @@ const ALL = "all";
 
 /** The latest raster, kept for saving; `id` is its cell cloud. */
 let last: { grid: RasterGrid; name: string; id: number } | null = null;
+let lastStats: {
+  source: string;
+  nx: number;
+  ny: number;
+  cell: number;
+  populated: number;
+  filled: number;
+  heights: { min: number; max: number; mean: number };
+} | null = null;
+
+addReportSection("raster", () =>
+  lastStats
+    ? {
+        title: `Raster of ${lastStats.source}`,
+        metrics: {
+          cells: { label: "Cells", value: lastStats.nx * lastStats.ny },
+          coverage: { label: "Cells with points", value: (100 * lastStats.populated) / (lastStats.nx * lastStats.ny), unit: "%" },
+          filled: { label: "Cells filled", value: lastStats.filled },
+          min: { label: "Lowest cell", value: lastStats.heights.min },
+          max: { label: "Highest cell", value: lastStats.heights.max },
+          mean: { label: "Mean height", value: lastStats.heights.mean },
+        },
+        notes: [`${lastStats.nx} × ${lastStats.ny} cells of ${lastStats.cell}`],
+      }
+    : null,
+);
 
 function renderSelects(): void {
   const ids = clouds().map((e) => String(e.cloud.id));
@@ -88,6 +115,7 @@ runButton.onclick = async () => {
     record({ label: "the raster", added: [entry], hide: [source] });
     renderList();
     distanceChanged.emit();
+    lastStats = { source: source.cloud.name, nx: out.nx, ny: out.ny, cell: out.cell, populated: out.populatedCells, filled: out.cells.count - out.populatedCells, heights: entry.c2c.stats };
     const { nx, ny, minX, minY, heights } = out;
     last = { grid: { nx, ny, minX, minY, cell: out.cell, heights }, name: out.cells.name, id: entry.cloud.id };
     tiffButton.disabled = pngButton.disabled = false;

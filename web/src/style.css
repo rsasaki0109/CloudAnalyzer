@@ -125,6 +125,16 @@ button[aria-pressed="true"] { background: var(--accent); border-color: var(--acc
   padding: 6px 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--border);
 }
 .segment-bar .hint { font-size: 12px; }
+.gate-list { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 6px; }
+.gate-list li {
+  display: grid; grid-template-columns: auto minmax(4em, 1fr) auto auto auto; gap: 4px; align-items: center;
+  padding-bottom: 6px; border-bottom: 1px solid var(--border);
+}
+.gate-list li select:first-child { grid-column: 1 / -1; min-width: 0; }
+.badge { font-size: 11px; padding: 1px 6px; border-radius: 4px; white-space: nowrap; background: var(--panel-2); color: var(--muted); }
+.badge.pass { color: #7ee2a0; background: rgb(46 160 90 / 0.18); }
+.badge.fail { color: #ff9a9a; background: rgb(255 107 107 / 0.16); }
+.badge.warn { color: #ffd27a; background: rgb(255 176 0 / 0.16); }
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 .labels span {
   position: absolute;

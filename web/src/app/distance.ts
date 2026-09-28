@@ -7,6 +7,7 @@ import { refreshColors } from "./colors";
 import { $, errorText, fillTable, fmt, setStatus } from "./dom";
 import { addEntry, renderList, saveCloud } from "./entries";
 import { record } from "./history";
+import { addReportSection, type ReportSection } from "./report";
 import { display, distanceChanged, type Entry, entries, isMesh, listChanged } from "./state";
 
 const comparedSelect = $<HTMLSelectElement>("c2c-compared");
@@ -235,6 +236,41 @@ function renderResult(): void {
   $("colorbar-min").textContent = fmt(lo);
 }
 distanceChanged.add(renderResult);
+
+/** 95th percentile of |d|, cached per result (a quantile of millions of values is not free). */
+const p95Cache = new WeakMap<Float32Array, number>();
+function p95(distances: Float32Array): number {
+  let v = p95Cache.get(distances);
+  if (v === undefined) {
+    v = quantile(distances.filter(Number.isFinite).map(Math.abs), 0.95);
+    p95Cache.set(distances, v);
+  }
+  return v;
+}
+
+addReportSection("distance", () => {
+  const out = new Map<string, ReportSection>();
+  for (const entry of entries.values()) {
+    const c2c = entry.c2c;
+    if (!c2c || c2c.kind === "volume" || c2c.kind === "raster") continue;
+    const kind = c2c.kind === "m3c2" ? "M3C2" : c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C";
+    const { stats } = c2c;
+    out.set(entry.cloud.name, {
+      title: `${kind} ${entry.cloud.name} → ${c2c.referenceName}`,
+      metrics: {
+        count: { label: "Points", value: stats.count },
+        mean: { label: "Mean", value: stats.mean },
+        median: { label: "Median", value: stats.median },
+        rms: { label: "RMS", value: stats.rms },
+        std: { label: "Std. dev.", value: stats.stdDev },
+        min: { label: "Min", value: stats.min },
+        max: { label: "Max", value: stats.max },
+        p95: { label: "95th percentile |d|", value: p95(c2c.distances) },
+      },
+    });
+  }
+  return out;
+});
 
 /** Draw the colorbar's ramp into an exported image. */
 export function rampColor(t: number): string {

@@ -1,10 +1,12 @@
 /** 2.5D cut / fill volume panel. */
 
 import { computeVolume } from "../api";
+import type { VolumeOutput } from "../protocol";
 import { finiteStats, showSigned } from "./distance";
 import { $, errorText, fillTable, fmt, roundUp, setStatus } from "./dom";
 import { addEntry } from "./entries";
 import { record } from "./history";
+import { addReportSection } from "./report";
 import { entries, isMesh, listChanged } from "./state";
 
 const volumeBefore = $<HTMLSelectElement>("volume-before");
@@ -12,6 +14,28 @@ const volumeAfter = $<HTMLSelectElement>("volume-after");
 const volumeCell = $<HTMLInputElement>("volume-cell");
 const volumeRun = $<HTMLButtonElement>("volume-run");
 const CONSTANT = "constant";
+let last: { out: VolumeOutput; before: string; after: string } | null = null;
+
+addReportSection("volume", () =>
+  last
+    ? {
+        title: `Volume ${last.after} vs ${last.before}`,
+        metrics: {
+          fill: { label: "Fill (added)", value: last.out.added, unit: "m³" },
+          cut: { label: "Cut (removed)", value: last.out.removed, unit: "m³" },
+          net: { label: "Net", value: last.out.added - last.out.removed, unit: "m³" },
+          fill_area: { label: "Fill area", value: last.out.addedArea, unit: "m²" },
+          cut_area: { label: "Cut area", value: last.out.removedArea, unit: "m²" },
+          coverage: {
+            label: "Cells compared",
+            value: last.out.totalCells ? (100 * last.out.matchedCells) / last.out.totalCells : 0,
+            unit: "%",
+          },
+        },
+        notes: [`Cell size ${fmt(last.out.cell)}`],
+      }
+    : null,
+);
 
 function renderSelects(): void {
   const ids = [...entries.keys()].map(String);
@@ -85,6 +109,11 @@ volumeRun.onclick = async () => {
       fillEmpty: $<HTMLInputElement>("volume-fill").checked,
     });
     const coverage = out.totalCells ? (100 * out.matchedCells) / out.totalCells : 0;
+    last = {
+      out,
+      before: volumeBefore.selectedOptions[0]?.text ?? "before",
+      after: volumeAfter.selectedOptions[0]?.text ?? "after",
+    };
     $("volume-result").hidden = false;
     fillTable($("volume-stats"), [
       ["Fill (added)", unit(out.added, 3)],

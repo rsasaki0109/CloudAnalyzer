@@ -103,6 +103,20 @@
         <button id="measure-clear">Clear all</button>
       </section>
 
+      <section id="report-panel">
+        <h2>QA report</h2>
+        <p id="report-hint" class="hint"></p>
+        <ol id="gate-list" class="gate-list"></ol>
+        <div class="button-row">
+          <button id="gate-add" title="Pass or fail the report on a metric of the latest results">Add gate</button>
+          <button id="gate-refresh" title="Update the gates with the latest results">Refresh</button>
+        </div>
+        <div class="button-row">
+          <button id="report-html" class="primary" title="A self-contained page: gates, results and the view">Save report</button>
+          <button id="report-json" title="Metrics and a gate summary in the format of ca check">Save JSON</button>
+        </div>
+      </section>
+
       <section id="views-panel">
         <h2>Views</h2>
         <ol id="view-list" class="note-list"></ol>

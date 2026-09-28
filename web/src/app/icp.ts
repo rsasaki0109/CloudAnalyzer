@@ -4,6 +4,7 @@ import { registerIcp } from "../api";
 import { $, errorText, fillTable, fmt, setStatus } from "./dom";
 import { replaceCloud } from "./entries";
 import { lastStep, record, undo } from "./history";
+import { addReportSection } from "./report";
 import { clouds, entries, listChanged } from "./state";
 
 const icpMoving = $<HTMLSelectElement>("icp-moving");
@@ -20,6 +21,20 @@ interface IcpSummary {
   millis: number;
 }
 let icpSummary: IcpSummary | null = null;
+
+addReportSection("icp", () => {
+  const entry = icpSummary ? entries.get(icpSummary.cloudId) : undefined;
+  if (!icpSummary || !entry) return null;
+  return {
+    title: `ICP ${entry.cloud.name} → ${icpReference.selectedOptions[0]?.text ?? "reference"}`,
+    metrics: {
+      rms_initial: { label: "RMS before", value: icpSummary.rmsInitial },
+      rms_final: { label: "RMS after", value: icpSummary.rmsFinal },
+      iterations: { label: "Iterations", value: icpSummary.iterations },
+      converged: { label: "Converged (1 = yes)", value: icpSummary.converged ? 1 : 0 },
+    },
+  };
+});
 
 function renderSelects(): void {
   const ids = clouds().map((e) => String(e.cloud.id));

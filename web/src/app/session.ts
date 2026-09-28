@@ -12,6 +12,7 @@ import { $, download, setStatus } from "./dom";
 import { renderList, replaceCloud } from "./entries";
 import { loadUrls } from "./loading";
 import { savedNotes, setNotes } from "./picking";
+import { savedGates, setGates } from "./report";
 import { restoreProfile, savedProfile } from "./profile";
 import { display, entries, hiddenClasses, viewer } from "./state";
 
@@ -35,6 +36,7 @@ export function captureSession(): Session {
     profile: savedProfile(),
     views,
     labels: savedNotes(),
+    gates: savedGates(),
     clouds: [...entries.values()]
       .filter((e) => e.origin.kind !== "derived")
       .map((e) => ({
@@ -116,6 +118,7 @@ async function restorePending(): Promise<void> {
   if (session.clip && entries.size) setClipBox(session.clip);
   if (session.camera && entries.size) goToView(session.camera);
   if (session.labels && entries.size) setNotes(session.labels);
+  if (session.gates) setGates(session.gates);
   if (session.profile && entries.size) await restoreProfile(session.profile);
   renderList();
   if (missing.length) {

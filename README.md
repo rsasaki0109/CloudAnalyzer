@@ -19,7 +19,7 @@ Rust + WebAssembly. Your files stay on your machine.
   and COPC files straight from a URL (only the levels you need are downloaded).
 - **Compare**: cloud-to-cloud and cloud-to-mesh distance, M3C2 change detection, cut/fill volume.
 - **Process**: ICP alignment, subsampling, outlier removal, ground extraction (CSF), normals, merge/split.
-- **Inspect**: clipping box, cross-section profiles, picking, measuring and labels; save the view as a PNG.
+- **Inspect**: clipping box, lasso segmentation with undo/redo, cross-section profiles, picking, measuring and labels; save the view as a PNG.
 - **Share**: links and session files that restore the view; export PLY/CSV for CloudCompare.
 - Works on phones and tablets.
 

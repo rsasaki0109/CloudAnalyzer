@@ -11,6 +11,7 @@ import "./app/processing";
 import "./app/clip";
 import "./app/profile";
 import "./app/image";
+import "./app/segment";
 import { runDemo } from "./app/demos";
 import { errorText, setStatus } from "./app/dom";
 import { renderList } from "./app/entries";

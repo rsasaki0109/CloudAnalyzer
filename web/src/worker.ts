@@ -798,6 +798,37 @@ async function handle(
       items.set(id, { kind: "cloud", cloud: cropped, name: `${base}_${req.inside ? "crop" : "rest"}` });
       return describe(id);
     }
+    case "segment": {
+      const source = items.get(req.id);
+      const t = performance.now();
+      const cloud = getCloud(req.id);
+      const clip = req.clip ? new Float64Array([...req.clip.min, ...req.clip.max]) : new Float64Array();
+      const mask = cloud.lassoMask(
+        new Float64Array(req.matrix),
+        new Float64Array(req.polygon),
+        clip,
+        new Uint8Array(req.hiddenClasses),
+      );
+      const selected = mask.reduce((n, v) => n + v, 0);
+      if (req.keep !== "outside" && selected === 0) throw new Error("the lasso selected no points");
+      if (req.keep !== "inside" && selected === mask.length) throw new Error("the lasso selected every point");
+      const base = source!.name.replace(/\.[^.]+$/, "");
+      const parts: [number, string][] = [];
+      if (req.keep !== "outside") parts.push([1, "segmented"]);
+      if (req.keep !== "inside") parts.push([0, "remaining"]);
+      const out: LoadedCloud[] = [];
+      const transfer: Transferable[] = [];
+      for (const [value, suffix] of parts) {
+        const part = cloud.selectMask(mask, value);
+        await buildIndex(part);
+        const id = nextId++;
+        items.set(id, { kind: "cloud", cloud: part, name: `${base}_${suffix}` });
+        const described = describe(id, { parse: 0, index: performance.now() - t });
+        out.push(described.value);
+        transfer.push(...described.transfer);
+      }
+      return { value: out, transfer };
+    }
     case "export": {
       const bytes = getCloud(req.id).export(req.format, req.scalar?.name, req.scalar?.values);
       return { value: bytes, transfer: [bytes.buffer] };

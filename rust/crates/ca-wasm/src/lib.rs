@@ -323,6 +323,53 @@ impl Cloud {
         })
     }
 
+    /// Which points a screen-space lasso selects (1) or not (0).
+    /// `clip_from_world` is a row-major 4x4 matrix from original coordinates
+    /// to clip space, `polygon` flat x, y pairs in normalized device
+    /// coordinates, `clip_box` empty or min then max (original coordinates).
+    #[wasm_bindgen(js_name = lassoMask)]
+    pub fn lasso_mask(
+        &self,
+        clip_from_world: &[f64],
+        polygon: &[f64],
+        clip_box: &[f64],
+        hidden_classes: &[u8],
+    ) -> Result<Vec<u8>, JsError> {
+        let clip_from_world: [f64; 16] = clip_from_world
+            .try_into()
+            .map_err(|_| JsError::new("the matrix must have 16 values"))?;
+        let polygon: Vec<[f64; 2]> = polygon.as_chunks::<2>().0.to_vec();
+        let clip_box = match clip_box {
+            [] => None,
+            [a, b, c, d, e, f] => Some(([*a, *b, *c], [*d, *e, *f])),
+            _ => return Err(JsError::new("the clip box must have 6 values")),
+        };
+        let lasso = ca_core::segment::Lasso {
+            clip_from_world,
+            polygon: &polygon,
+            clip_box,
+            hidden_classes,
+        };
+        Ok(ca_core::segment::lasso_mask(&self.inner, &lasso)
+            .into_iter()
+            .map(u8::from)
+            .collect())
+    }
+
+    /// A copy of the points whose `mask` entry equals `value`, not yet
+    /// indexed. Errors if there are none.
+    #[wasm_bindgen(js_name = selectMask)]
+    pub fn select_mask(&self, mask: &[u8], value: u8) -> Result<Cloud, JsError> {
+        if mask.len() != self.inner.len() {
+            return Err(JsError::new("the mask does not match the cloud"));
+        }
+        let keep: Vec<usize> = (0..mask.len()).filter(|&i| mask[i] == value).collect();
+        if keep.is_empty() {
+            return Err(JsError::new("no points in the selection"));
+        }
+        Ok(Cloud::unindexed(self.inner.select(&keep)))
+    }
+
     /// A filtered copy of the cloud (with colors and attributes), not yet
     /// indexed (call [`Cloud::build_index`] or build it on the pool):
     /// `"voxel"` keeps one point per voxel of edge `a`; `"random"` keeps `a`

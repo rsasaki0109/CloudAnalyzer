@@ -601,3 +601,57 @@ test("tools: measuring, labeling and drawing a profile take turns; Esc leaves th
   await expect(page.locator("#viewport")).not.toHaveClass(/measuring/);
   await expect(page.locator("#measure-list li")).toHaveCount(1);
 });
+
+test("segment: a lasso keeps or splits points; undo and redo restore the list", async ({ page }) => {
+  await open(page, [{ name: "grid.ply", buffer: ply(grid(60)) }]);
+  await expect(status(page)).toContainText("Loaded grid.ply");
+  await page.locator("[data-view=top]").click();
+  const canvas = page.locator("#viewport > canvas");
+  const box = (await canvas.boundingBox())!;
+  const lasso = async () => {
+    await page.keyboard.press("s");
+    await expect(page.locator("#segment-bar")).toBeVisible();
+    for (const [fx, fy] of [[0.45, 0.45], [0.55, 0.45], [0.55, 0.55], [0.45, 0.55]]) {
+      await canvas.click({ position: { x: box.width * fx, y: box.height * fy } });
+    }
+  };
+  const rows = page.locator("#cloud-list li");
+  const count = async (i: number) =>
+    Number((await rows.nth(i).locator(".meta").textContent())!.match(/^([\d,]+) points/)![1].replace(/,/g, ""));
+
+  await lasso();
+  await page.keyboard.press("Enter");
+  await expect(status(page)).toContainText(/Segmented: grid_segmented \([\d,]+\)/);
+  await expect(page.locator("#segment-bar")).toBeHidden();
+  await expect(rows).toHaveCount(2);
+  const inside = await count(1);
+  expect(inside).toBeGreaterThan(0);
+  expect(inside).toBeLessThan(3600);
+  await expect(rows.nth(0).locator("input[type=checkbox]")).not.toBeChecked();
+
+  await page.keyboard.press("Control+z");
+  await expect(status(page)).toContainText("Undid the lasso cut");
+  await expect(rows).toHaveCount(1);
+  await expect(rows.nth(0).locator("input[type=checkbox]")).toBeChecked();
+  await page.keyboard.press("Control+Shift+z");
+  await expect(status(page)).toContainText("Redid the lasso cut");
+  await expect(rows).toHaveCount(2);
+  expect(await count(1)).toBe(inside);
+  await page.locator("#undo").click();
+  await expect(rows).toHaveCount(1);
+
+  // Split: both parts, together every point.
+  await lasso();
+  await page.locator('[data-keep="both"]').click();
+  await expect(rows).toHaveCount(3);
+  expect((await count(1)) + (await count(2))).toBe(3600);
+  expect(await count(1)).toBe(inside);
+  // A new step drops the redo history.
+  await page.locator("#undo").click();
+  await expect(page.locator("#redo")).toBeEnabled();
+  await lasso();
+  await page.locator('[data-keep="outside"]').click();
+  await expect(status(page)).toContainText("grid_remaining");
+  expect(await count(1)).toBe(3600 - inside);
+  await expect(page.locator("#redo")).toBeDisabled();
+});

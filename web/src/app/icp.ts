@@ -1,8 +1,9 @@
 /** ICP registration panel. */
 
-import { registerIcp, transformCloud } from "../api";
+import { registerIcp } from "../api";
 import { $, errorText, fillTable, fmt, setStatus } from "./dom";
 import { replaceCloud } from "./entries";
+import { lastStep, record, undo } from "./history";
 import { clouds, entries, listChanged } from "./state";
 
 const icpMoving = $<HTMLSelectElement>("icp-moving");
@@ -43,20 +44,6 @@ function updateButton(): void {
   icpButton.disabled = !icpMoving.value || !icpReference.value || icpMoving.value === icpReference.value;
 }
 icpMoving.onchange = icpReference.onchange = updateButton;
-
-/** Inverse of a row-major 4x4 rigid transform. */
-export function invertRigid(m: number[]): number[] {
-  const r = [m[0], m[1], m[2], m[4], m[5], m[6], m[8], m[9], m[10]];
-  const t = [m[3], m[7], m[11]];
-  const rt = (i: number, j: number) => r[j * 3 + i]; // transpose
-  const ti = [0, 1, 2].map((i) => -(rt(i, 0) * t[0] + rt(i, 1) * t[1] + rt(i, 2) * t[2]));
-  return [
-    rt(0, 0), rt(0, 1), rt(0, 2), ti[0],
-    rt(1, 0), rt(1, 1), rt(1, 2), ti[1],
-    rt(2, 0), rt(2, 1), rt(2, 2), ti[2],
-    0, 0, 0, 1,
-  ];
-}
 
 /** A row-major 4x4 matrix as four lines of text. */
 export function matrixText(matrix: number[]): string {
@@ -99,6 +86,7 @@ icpButton.onclick = async () => {
     lastIcp = moving.cloud.id;
     icpSummary = { cloudId: moving.cloud.id, ...out };
     replaceCloud(moving, out.cloud);
+    record({ label: "the ICP alignment", moved: { entry: moving, matrix: out.matrix } });
     setStatus(
       `Aligned in ${out.iterations} iterations (${Math.round(out.millis)} ms): RMS ${fmt(out.rmsInitial)} → ${fmt(out.rmsFinal)}` +
         (out.converged ? "" : " — not converged, try more iterations"),
@@ -110,17 +98,13 @@ icpButton.onclick = async () => {
   }
 };
 
+/** Undo the last alignment of the shown cloud, if it is the last step. */
 $<HTMLButtonElement>("icp-undo").onclick = async () => {
   const entry = lastIcp !== null ? entries.get(lastIcp) : undefined;
-  const matrix = entry?.transforms.pop();
-  if (!entry || !matrix) return;
-  try {
-    const cloud = await transformCloud(entry.cloud.id, invertRigid(matrix));
-    icpSummary = null;
-    replaceCloud(entry, cloud);
-    setStatus(`Undid the alignment of ${entry.cloud.name}`);
-  } catch (err) {
-    entry.transforms.push(matrix);
-    setStatus(`Undo failed: ${errorText(err)}`, true);
+  if (!entry || lastStep()?.moved?.entry !== entry) {
+    setStatus("Other steps came after this alignment; undo those first (Ctrl+Z)", true);
+    return;
   }
+  icpSummary = null;
+  await undo();
 };

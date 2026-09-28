@@ -4,6 +4,7 @@ import { computeVolume } from "../api";
 import { finiteStats, showSigned } from "./distance";
 import { $, errorText, fillTable, fmt, roundUp, setStatus } from "./dom";
 import { addEntry } from "./entries";
+import { record } from "./history";
 import { entries, isMesh, listChanged } from "./state";
 
 const volumeBefore = $<HTMLSelectElement>("volume-before");
@@ -95,8 +96,10 @@ volumeRun.onclick = async () => {
       ["Cell size", fmt(out.cell)],
     ]);
     if (out.cells && out.difference) {
+      const cells = addEntry(out.cells);
+      record({ label: "the volume", added: [cells] });
       // Blue = cut, red = fill.
-      showSigned(addEntry(out.cells), {
+      showSigned(cells, {
         kind: "volume",
         signed: true,
         distances: out.difference,

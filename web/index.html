@@ -22,6 +22,9 @@
       <span class="sep"></span>
       <button id="measure" aria-pressed="false" title="Measure the distance between two points (M)">Measure</button>
       <button id="label" aria-pressed="false" title="Label a point (L)">Label</button>
+      <button id="segment" aria-pressed="false" title="Cut points out with a lasso (S)">Segment</button>
+      <button id="undo" disabled aria-label="Undo">↶</button>
+      <button id="redo" disabled aria-label="Redo">↷</button>
       <button id="save-image" title="Save the view, with labels and the colorbar, as a PNG">Image</button>
       <button id="share" title="Copy a link that opens this view (clouds loaded from URLs are included)">Share</button>
       <a class="toolbar-link" href="../guide.html" target="_blank" rel="noopener" title="User guide">Help</a>
@@ -339,6 +342,14 @@
     <main id="viewport" class="viewport">
       <div id="drop-overlay" class="drop-overlay" hidden>Drop to load</div>
       <div id="labels" class="labels"></div>
+      <svg id="lasso" class="lasso" hidden><polygon points="" /></svg>
+      <div id="segment-bar" class="segment-bar" hidden>
+        <span id="segment-hint" class="hint"></span>
+        <button data-keep="inside" title="Keep the points inside the lasso (Enter)">Keep inside</button>
+        <button data-keep="outside" title="Remove the points inside the lasso (Delete)">Remove inside</button>
+        <button data-keep="both" title="Split into the points inside and the rest">Split</button>
+        <button id="segment-cancel" title="Stop segmenting (Esc)">Cancel</button>
+      </div>
       <div id="profile-plot" class="profile-plot" hidden>
         <div class="profile-head">
           <span id="profile-legend" class="profile-legend"></span>

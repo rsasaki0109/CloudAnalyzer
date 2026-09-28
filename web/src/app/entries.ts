@@ -5,6 +5,7 @@ import { parseNodes } from "../lod";
 import type { ExportFormat, LoadedCloud, MeshFormat, Vec3 } from "../protocol";
 import { colorsFor, defaultMode, distanceLabel, refreshColors } from "./colors";
 import { $, download, errorText, removeButton, setStatus } from "./dom";
+import { colorByField, distanceField, fieldNames } from "./scalars";
 import { narrow, setPanelsOpen } from "./layout";
 import {
   type ColorMode,
@@ -41,6 +42,7 @@ export function addEntry(cloud: LoadedCloud, origin: Origin = { kind: "derived" 
     mode: defaultMode(cloud),
     visible: true,
     transforms: [],
+    fields: new Map(),
     origin,
   };
   putEntry(entry);
@@ -90,6 +92,12 @@ export async function removeEntry(id: number): Promise<void> {
 export function replaceCloud(entry: Entry, cloud: LoadedCloud): void {
   const name = entry.cloud.name;
   entry.cloud = cloud;
+  // Fields follow the old point order: fetch them again when needed.
+  entry.fields.clear();
+  if (entry.field) {
+    entry.field = undefined;
+    if (entry.mode === "scalar") entry.mode = defaultMode(cloud);
+  }
   // Distances involving the moved cloud no longer describe the data.
   for (const other of entries.values()) {
     if (other.c2c && (other === entry || other.c2c.referenceName === name)) {
@@ -238,7 +246,21 @@ export function renderList(): void {
       if (!enabled) continue;
       mode.add(new Option(label, value, false, value === entry.mode));
     }
+    // Other scalar fields (the distance and intensity have their own entries above).
+    const fields = fieldNames(entry).filter((f) => f !== distanceField(entry) && f !== "intensity" && f !== "opacity");
+    if (fields.length) {
+      const group = document.createElement("optgroup");
+      group.label = "Scalar field";
+      for (const f of fields) {
+        group.append(new Option(f, `field:${f}`, false, entry.mode === "scalar" && entry.field?.name === f));
+      }
+      mode.add(group);
+    }
     mode.onchange = () => {
+      if (mode.value.startsWith("field:")) {
+        void colorByField(entry, mode.value.slice(6)).catch((err) => setStatus(errorText(err), true));
+        return;
+      }
       entry.mode = mode.value as ColorMode;
       refreshColors(entry);
       if (entry.mode === "c2c") display.activeC2c = cloud.id;

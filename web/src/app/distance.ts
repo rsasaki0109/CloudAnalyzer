@@ -203,8 +203,14 @@ export function applyRange(): void {
 function renderResult(): void {
   const entry = activeEntry();
   const c2c = entry?.mode === "c2c" ? entry.c2c : undefined;
+  // A scalar field shows the colorbar too; its statistics are in the Scalar fields panel.
+  const scalar = entry?.mode === "scalar" ? entry.field : undefined;
   $("c2c-result").hidden = !c2c;
-  $("colorbar").hidden = !c2c;
+  $("colorbar").hidden = !c2c && !scalar;
+  if (entry && scalar) {
+    renderColorbar(`${scalar.name} · ${entry.cloud.name}`, scalar.stats);
+    return;
+  }
   if (!entry || !c2c) return;
 
   const { stats } = c2c;
@@ -218,18 +224,24 @@ function renderResult(): void {
     ["Max", fmt(stats.max)],
   ]);
 
-  const { lo, hi } = display.range ?? { lo: stats.min, hi: stats.max };
-  minInput.value = fmt(lo);
-  maxInput.value = fmt(hi);
-  rampSelect.value = display.ramp;
-  $("colorbar-title").textContent =
+  renderColorbar(
     c2c.kind === "volume"
       ? `Height difference (after − before) · ${entry.cloud.name}`
       : c2c.kind === "m3c2"
         ? `M3C2 distance · ${entry.cloud.name}`
         : c2c.kind === "raster"
           ? `Height · ${entry.cloud.name}`
-          : `${c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C"} distance · ${entry.cloud.name}`;
+          : `${c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C"} distance · ${entry.cloud.name}`,
+    stats,
+  );
+}
+
+function renderColorbar(title: string, stats: { min: number; max: number }): void {
+  const { lo, hi } = display.range ?? { lo: stats.min, hi: stats.max };
+  minInput.value = fmt(lo);
+  maxInput.value = fmt(hi);
+  rampSelect.value = display.ramp;
+  $("colorbar-title").textContent = title;
   $("colorbar-ramp").style.background = gradientCss(display.ramp);
   $("colorbar-max").textContent = fmt(hi);
   $("colorbar-mid").textContent = fmt((lo + hi) / 2);

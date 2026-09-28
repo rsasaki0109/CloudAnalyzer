@@ -16,6 +16,7 @@ import "./app/clip";
 import "./app/profile";
 import "./app/image";
 import "./app/report";
+import "./app/scalars";
 import "./app/shapes";
 import "./app/trajectory";
 import { runDemo } from "./app/demos";

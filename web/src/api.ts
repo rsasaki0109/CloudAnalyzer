@@ -150,6 +150,29 @@ export function segmentCloud(params: Omit<Extract<Request, { kind: "segment" }>,
   return call({ kind: "segment", ...params });
 }
 
+/** A scalar field of a cloud ("Z" for heights), one value per point in octree order. */
+export function fieldValues(id: number, name: string): Promise<Float32Array> {
+  return call({ kind: "field", id, name });
+}
+
+/** Store a computed field on a cloud so exports carry it (the values are copied). */
+export function setField(id: number, name: string, values: Float32Array): Promise<void> {
+  const copy = values.slice();
+  return call({ kind: "set-field", id, name, values: copy }, [copy.buffer]);
+}
+
+/** A new cloud with the points whose field value is within (or outside) [lo, hi]. */
+export function filterByField(
+  id: number,
+  values: Float32Array,
+  lo: number,
+  hi: number,
+  inside: boolean,
+): Promise<LoadedCloud> {
+  const copy = values.slice();
+  return call({ kind: "filter-field", id, values: copy, lo, hi, inside }, [copy.buffer]);
+}
+
 /** The rigid transform (row-major 4x4) taking picked points onto their partners, with the residuals. */
 export async function alignPairs(
   moving: number[],

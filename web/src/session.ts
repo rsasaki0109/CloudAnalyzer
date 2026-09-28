@@ -9,7 +9,9 @@ export interface SessionCloud {
   /** Where the cloud was loaded from, if it came from a URL. */
   url?: string;
   visible: boolean;
-  mode: "rgb" | "solid" | "intensity" | "classification" | "c2c" | "normal" | "shade" | "opacity";
+  mode: "rgb" | "solid" | "intensity" | "classification" | "c2c" | "normal" | "shade" | "opacity" | "scalar";
+  /** The scalar field shown in "scalar" mode. */
+  field?: string;
   solid: Vec3;
   /** ICP transforms applied to it, oldest first (row-major 4x4). */
   transforms: number[][];
@@ -45,7 +47,7 @@ export interface Session {
   clouds: SessionCloud[];
 }
 
-const MODES = ["rgb", "solid", "intensity", "classification", "c2c", "normal", "shade", "opacity"] as const;
+const MODES = ["rgb", "solid", "intensity", "classification", "c2c", "normal", "shade", "opacity", "scalar"] as const;
 
 function fail(what: string): never {
   throw new Error(`Not a CloudAnalyzer session: ${what}`);
@@ -138,6 +140,7 @@ export function parseSession(json: unknown): Session {
         url: typeof r.url === "string" ? r.url : undefined,
         visible: r.visible !== false,
         mode: MODES.includes(r.mode as (typeof MODES)[number]) ? (r.mode as SessionCloud["mode"]) : "solid",
+        field: typeof r.field === "string" ? r.field : undefined,
         solid: Array.isArray(r.solid) ? vec3(r.solid, "color") : [235, 235, 235],
         transforms: Array.isArray(r.transforms)
           ? r.transforms.map((m: unknown) => {

@@ -103,6 +103,33 @@
         <button id="measure-clear">Clear all</button>
       </section>
 
+      <section id="field-panel">
+        <h2>Scalar fields</h2>
+        <label>Cloud <select id="field-cloud"></select></label>
+        <label>Field <select id="field-name"></select></label>
+        <div id="field-result" hidden>
+          <div id="field-histogram" class="histogram"><canvas></canvas></div>
+          <table class="stats"><tbody id="field-stats"></tbody></table>
+        </div>
+        <button id="field-color" disabled title="Color the cloud by this field with the colorbar's ramp">Color by field</button>
+        <div class="range">
+          <label>Min <input id="field-lo" type="number" step="any" /></label>
+          <label>Max <input id="field-hi" type="number" step="any" /></label>
+        </div>
+        <div class="button-row">
+          <button id="field-keep" disabled title="A new cloud with the points in this range">Keep range</button>
+          <button id="field-remove" disabled title="A new cloud without the points in this range">Remove range</button>
+        </div>
+        <details class="options">
+          <summary>Calculator</summary>
+          <label>New field <input id="field-calc-name" type="text" value="result" spellcheck="false" /></label>
+          <label title="Fields by name, or [any name]; + - * / % ^, comparisons, and / or / not, abs sqrt log exp min max clamp if…">Expression
+            <input id="field-expr" type="text" spellcheck="false" placeholder="abs([C2C distance]) * 1000" />
+          </label>
+          <button id="field-calc" disabled>Compute</button>
+        </details>
+      </section>
+
       <section id="report-panel">
         <h2>QA report</h2>
         <p id="report-hint" class="hint"></p>

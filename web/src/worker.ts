@@ -487,6 +487,7 @@ function describe(
       normals: null,
       opacity: null,
       sources: null,
+      scalarNames: [],
       bounds: Array.from(item.mesh.bounds()),
       shift,
       lodNodes: new Float64Array(),
@@ -520,6 +521,7 @@ function describe(
     normals,
     opacity,
     sources: item.sources ?? null,
+    scalarNames: cloud.scalarNames(),
     bounds: Array.from(cloud.bounds()),
     shift,
     lodNodes,
@@ -1031,6 +1033,29 @@ async function handle(
         transfer.push(...described.transfer);
       }
       return { value: out, transfer };
+    }
+    case "field": {
+      const cloud = getCloud(req.id);
+      const values = req.name === "Z" ? cloud.heights() : cloud.attribute(req.name);
+      if (!values) throw new Error(`no field "${req.name}"`);
+      return { value: values, transfer: [values.buffer] };
+    }
+    case "set-field": {
+      getCloud(req.id).setAttribute(req.name, req.values);
+      return { value: null, transfer: [] };
+    }
+    case "filter-field": {
+      const source = items.get(req.id);
+      const t = performance.now();
+      const { values, lo, hi, inside } = req;
+      const mask = new Uint8Array(values.length);
+      for (let i = 0; i < values.length; i++) mask[i] = +(values[i] >= lo && values[i] <= hi);
+      const part = getCloud(req.id).selectMask(mask, inside ? 1 : 0);
+      await buildIndex(part);
+      const id = nextId++;
+      const base = source!.name.replace(/\.[^.]+$/, "");
+      items.set(id, { kind: "cloud", cloud: part, name: `${base}_${inside ? "in" : "out"}` });
+      return describe(id, { parse: 0, index: performance.now() - t });
     }
     case "align-pairs": {
       const values = alignPairs(new Float64Array(req.moving), new Float64Array(req.reference));

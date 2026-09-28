@@ -27,6 +27,8 @@ export interface LoadedCloud {
   opacity: Float32Array | null;
   /** For a merged cloud, the names of the clouds its `source` attribute refers to. */
   sources: string[] | null;
+  /** Float attributes usable as scalar fields (values fetched on demand). */
+  scalarNames: string[];
   /** Octree node table, see `Cloud.lodNodes()`. */
   lodNodes: Float64Array;
   lodGrid: number;
@@ -362,6 +364,18 @@ export type Request =
       clip: { min: Vec3; max: Vec3 } | null;
       hiddenClasses: number[];
       keep: "inside" | "outside" | "both";
+    }
+  | { kind: "field"; id: number; name: string }
+  | { kind: "set-field"; id: number; name: string; values: Float32Array }
+  | {
+      kind: "filter-field";
+      id: number;
+      /** One value per point (octree order); NaN never matches. */
+      values: Float32Array;
+      lo: number;
+      hi: number;
+      /** Keep the points within [lo, hi] (true) or the others. */
+      inside: boolean;
     }
   | {
       kind: "align-pairs";

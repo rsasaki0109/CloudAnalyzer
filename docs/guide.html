@@ -81,6 +81,7 @@
       <a href="#open">Opening data</a>
       <a href="#navigate">Moving around</a>
       <a href="#color">Coloring and classes</a>
+      <a href="#fields">Scalar fields</a>
       <a href="#distance">Distances (C2C, C2M)</a>
       <a href="#m3c2">Change detection (M3C2)</a>
       <a href="#volume">Cut / fill volume</a>
@@ -152,6 +153,21 @@
       Each cloud in the list has a color mode: RGB, intensity, classification, solid color, distances,
       normals or hillshade. When a cloud has ASPRS classes, the <b>Classes</b> panel shows or hides each class
       in every cloud.
+    </p>
+
+    <h2 id="fields">Scalar fields</h2>
+    <p>
+      Every per-point value is a <b>scalar field</b>: intensity, Z, computed distances and M3C2 results, splat
+      opacity and size, raster heights, and fields you compute. Pick one in a cloud's color menu, or in the
+      <b>Scalar fields</b> panel, which shows its histogram and statistics (percentiles included) and colors the
+      cloud with the colorbar's ramp and range. <b>Keep range</b> / <b>Remove range</b> cut the points by value
+      into a new cloud.
+    </p>
+    <p>
+      The <b>Calculator</b> makes a new field from an expression such as <code>abs([C2C distance]) * 1000</code>
+      or <code>intensity &gt; 200 and Z &lt; 5</code>: fields by name (in brackets when the name has spaces),
+      <code>+ - * / % ^</code>, comparisons, <code>and or not</code>, and <code>abs sqrt exp log log10 sin cos tan
+      floor ceil round min max atan2 clamp if</code>. New fields are saved with the cloud in PLY and LAS.
     </p>
 
     <h2 id="distance">Distances (C2C, C2M)</h2>

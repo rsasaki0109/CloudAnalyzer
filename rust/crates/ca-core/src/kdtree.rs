@@ -194,14 +194,7 @@ fn build(items: &mut [([f64; 3], u32)], offset: usize, nodes: &mut Vec<Node>) ->
     if items.len() <= LEAF_SIZE {
         return id;
     }
-    let mut lo = [f64::INFINITY; 3];
-    let mut hi = [f64::NEG_INFINITY; 3];
-    for (p, _) in items.iter() {
-        for a in 0..3 {
-            lo[a] = lo[a].min(p[a]);
-            hi[a] = hi[a].max(p[a]);
-        }
-    }
+    let (lo, hi) = crate::distance::bounds(items.iter().map(|(p, _)| p));
     let axis = (0..3)
         .max_by(|&a, &b| (hi[a] - lo[a]).total_cmp(&(hi[b] - lo[b])))
         .unwrap();

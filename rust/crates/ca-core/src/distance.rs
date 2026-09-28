@@ -325,13 +325,47 @@ pub(crate) fn split_ranges(
     split_ranges(right, offset + mid, parts - left_parts, out);
 }
 
+/// Bounding box of `points`, ignoring NaN coordinates (infinite when empty).
+///
+/// The k-d tree build runs this once per level over all points. It compares
+/// instead of calling `f64::min`/`max`, whose NaN rule costs extra
+/// instructions around WASM's `f64.min`; with SIMD, x and y share one `f64x2`
+/// register (`pmin(a, b)` is `b < a ? b : a`, so NaN is skipped the same way).
+#[cfg(all(target_arch = "wasm32", target_feature = "simd128"))]
+pub(crate) fn bounds<'a>(points: impl Iterator<Item = &'a [f64; 3]>) -> ([f64; 3], [f64; 3]) {
+    use core::arch::wasm32::*;
+    let mut lo_xy = f64x2_splat(f64::INFINITY);
+    let mut hi_xy = f64x2_splat(f64::NEG_INFINITY);
+    let (mut lo_z, mut hi_z) = (f64::INFINITY, f64::NEG_INFINITY);
+    for p in points {
+        // SAFETY: `p` holds three f64s; v128_load allows unaligned addresses.
+        let xy = unsafe { v128_load(p.as_ptr().cast()) };
+        lo_xy = f64x2_pmin(lo_xy, xy);
+        hi_xy = f64x2_pmax(hi_xy, xy);
+        if p[2] < lo_z {
+            lo_z = p[2];
+        }
+        if p[2] > hi_z {
+            hi_z = p[2];
+        }
+    }
+    let xyz = |xy, z| [f64x2_extract_lane::<0>(xy), f64x2_extract_lane::<1>(xy), z];
+    (xyz(lo_xy, lo_z), xyz(hi_xy, hi_z))
+}
+
+/// Bounding box of `points`, ignoring NaN coordinates (infinite when empty).
+#[cfg(not(all(target_arch = "wasm32", target_feature = "simd128")))]
 pub(crate) fn bounds<'a>(points: impl Iterator<Item = &'a [f64; 3]>) -> ([f64; 3], [f64; 3]) {
     let mut lo = [f64::INFINITY; 3];
     let mut hi = [f64::NEG_INFINITY; 3];
     for p in points {
         for a in 0..3 {
-            lo[a] = lo[a].min(p[a]);
-            hi[a] = hi[a].max(p[a]);
+            if p[a] < lo[a] {
+                lo[a] = p[a];
+            }
+            if p[a] > hi[a] {
+                hi[a] = p[a];
+            }
         }
     }
     (lo, hi)
@@ -408,6 +442,23 @@ mod tests {
         assert_eq!(spread_bits(0b1), 0b1);
         assert_eq!(spread_bits(0b11), 0b1001);
         assert_eq!(spread_bits(0x1f_ffff), 0x1249_2492_4924_9249);
+    }
+
+    #[test]
+    fn bounds_skip_nan_like_f64_min() {
+        let points = [
+            [f64::NAN, 2.0, -1.0],
+            [3.0, f64::NAN, 5.0],
+            [-4.0, 7.5, f64::NAN],
+            [0.5, -6.0, 2.0],
+        ];
+        let (lo, hi) = bounds(points.iter());
+        for a in 0..3 {
+            let v = points.iter().map(|p| p[a]);
+            assert_eq!(lo[a], v.clone().fold(f64::INFINITY, f64::min));
+            assert_eq!(hi[a], v.fold(f64::NEG_INFINITY, f64::max));
+        }
+        assert_eq!(bounds([].iter()).0, [f64::INFINITY; 3]);
     }
 
     #[test]

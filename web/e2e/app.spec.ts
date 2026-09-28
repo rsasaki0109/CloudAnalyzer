@@ -1011,3 +1011,58 @@ test("manual alignment: a typed matrix, point pairs and the gizmo, all undoable"
   await expect(status(page)).toContainText("Moved moved.ply");
   await expect(page.locator("#undo")).toHaveAttribute("title", /Undo the manual move/);
 });
+
+test("QA report: gates on the latest results pass or fail the HTML and JSON report", async ({ page, context }) => {
+  await open(page, [
+    { name: "reference.ply", buffer: ply(grid(40)) },
+    { name: "lifted.ply", buffer: ply(grid(40, 0.05)) },
+  ]);
+  await expect(status(page)).toContainText("Loaded lifted.ply");
+  await expect(page.locator("#gate-add")).toBeDisabled();
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("C2C distance computed");
+
+  // Two gates on the C2C result: the mean passes, the max fails.
+  await page.locator("#gate-add").click();
+  await page.locator("#gate-add").click();
+  const gates = page.locator("#gate-list li");
+  await expect(gates).toHaveCount(2);
+  const setGate = async (i: number, metric: string, op: string, threshold: string) => {
+    const row = gates.nth(i);
+    await row.locator("select").first().selectOption({ label: metric });
+    await row.locator("select").nth(1).selectOption(op);
+    await row.locator("input").fill(threshold);
+    await row.locator("input").blur();
+  };
+  await setGate(0, "C2C lifted.ply → reference.ply · Mean", "<=", "0.1");
+  await setGate(1, "C2C lifted.ply → reference.ply · Max", "<=", "0.01");
+  await expect(gates.nth(0).locator(".badge")).toHaveText(/^pass · 0\.05/);
+  await expect(gates.nth(1).locator(".badge")).toHaveText(/^fail · 0\.05/);
+
+  const html = page.waitForEvent("download");
+  await page.locator("#report-html").click();
+  const htmlFile = await html;
+  expect(htmlFile.suggestedFilename()).toBe("cloudanalyzer-report.html");
+  const htmlText = await new Response(await htmlFile.createReadStream() as unknown as ReadableStream).text();
+  expect(htmlText).toContain("FAIL · 1 passed, 1 failed");
+  expect(htmlText).toContain("C2C lifted.ply → reference.ply");
+  expect(htmlText).toContain("data:image/png;base64,");
+  await expect(status(page)).toContainText("FAIL (1 of 2 gates passed)");
+
+  const json = page.waitForEvent("download");
+  await page.locator("#report-json").click();
+  const report = JSON.parse(await new Response(await (await json).createReadStream() as unknown as ReadableStream).text());
+  expect(report.schema_version).toBe("cloudanalyzer.web_report.v0.1");
+  expect(report.gate_summary.schema_version).toBe("cloudanalyzer.gate_summary.v0.1");
+  expect(report.gate_summary).toMatchObject({ passed: false, exit_code: 1, pass_count: 1, fail_count: 1 });
+  expect(report.checks.map((c: { status: string }) => c.status)).toEqual(["pass", "fail"]);
+  expect(report.sections["distance:lifted.ply"].metrics.mean.value).toBeCloseTo(0.05, 4);
+  expect(report.clouds).toHaveLength(2);
+
+  // Gates travel in share links.
+  await page.locator("#share").click();
+  const other = await context.newPage();
+  await other.goto(await page.locator("#share-link").inputValue());
+  await expect(other.locator("#gate-list li")).toHaveCount(2);
+  await expect(other.locator("#gate-list li").first().locator("input")).toHaveValue("0.1");
+});

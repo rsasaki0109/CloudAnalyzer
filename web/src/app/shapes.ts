@@ -6,8 +6,24 @@ import { refreshColors } from "./colors";
 import { $, errorText, fmt, roundUp, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
+import { addReportSection } from "./report";
 import { fillCloudSelect } from "./processing";
 import { clouds, entries, listChanged } from "./state";
+
+let lastShapes: { title: string; found: number; assigned: number; worstRms: number | null } | null = null;
+
+addReportSection("shapes", () =>
+  lastShapes
+    ? {
+        title: lastShapes.title,
+        metrics: {
+          found: { label: "Found", value: lastShapes.found },
+          assigned: { label: "Points assigned", value: lastShapes.assigned, unit: "%" },
+          ...(lastShapes.worstRms !== null ? { worst_rms: { label: "Worst shape RMS", value: lastShapes.worstRms } } : {}),
+        },
+      }
+    : null,
+);
 
 const segmentCloudSelect = $<HTMLSelectElement>("shapes-cloud");
 const segmentMethod = $<HTMLSelectElement>("shapes-method");
@@ -139,6 +155,13 @@ segmentRun.onclick = async () => {
       return part;
     });
     record({ label: `the ${what} search`, added, hide: [entry] });
+    const shapes = out.segments.filter((s) => Number.isFinite(s.rms));
+    lastShapes = {
+      title: `${what[0].toUpperCase()}${what.slice(1)} in ${entry.cloud.name}`,
+      found: out.found,
+      assigned: (100 * (entry.cloud.count - (out.segments.at(-1)?.kind === "rest" ? out.segments.at(-1)!.count : 0))) / entry.cloud.count,
+      worstRms: shapes.length ? Math.max(...shapes.map((s) => s.rms)) : null,
+    };
     renderList();
     const rest = out.segments.at(-1)?.kind === "rest" ? out.segments.at(-1)!.count : 0;
     const assigned = entry.cloud.count - rest;

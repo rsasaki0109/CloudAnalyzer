@@ -40,6 +40,8 @@ export interface Session {
   pointSizeMode?: "fixed" | "adaptive";
   /** Saved camera views, in original coordinates. */
   views?: { name: string; position: Vec3; target: Vec3 }[];
+  /** QA report gates: `metric` is "<section>/<metric>" as the report names them. */
+  gates?: { metric: string; op: "<=" | ">="; threshold: number; severity: "fail" | "warn" }[];
   clouds: SessionCloud[];
 }
 
@@ -102,6 +104,21 @@ export function parseSession(json: unknown): Session {
           const r = (v ?? {}) as Record<string, unknown>;
           return typeof r.name === "string"
             ? [{ name: r.name, position: vec3(r.position, "view"), target: vec3(r.target, "view") }]
+            : [];
+        })
+      : [],
+    gates: Array.isArray(o.gates)
+      ? o.gates.flatMap((g: unknown) => {
+          const r = (g ?? {}) as Record<string, unknown>;
+          return typeof r.metric === "string" && isNumber(r.threshold)
+            ? [
+                {
+                  metric: r.metric,
+                  op: r.op === ">=" ? (">=" as const) : ("<=" as const),
+                  threshold: r.threshold,
+                  severity: r.severity === "warn" ? ("warn" as const) : ("fail" as const),
+                },
+              ]
             : [];
         })
       : [],

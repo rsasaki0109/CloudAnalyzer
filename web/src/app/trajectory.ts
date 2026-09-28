@@ -9,6 +9,7 @@ import type { TrajectoryAlignment, TrajectoryEvaluation, TrajectoryPoses, Vec3 }
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
 import { replaceCloud } from "./entries";
 import { record } from "./history";
+import { addReportSection, type Metric } from "./report";
 import { clouds, display, distanceChanged, entries, globalShift, listChanged, viewer } from "./state";
 
 interface Trajectory {
@@ -33,6 +34,30 @@ const trajectories = new Map<number, Trajectory>();
 let nextId = 1;
 /** The latest evaluation, for the CSV and applying its alignment; `id` is its result line. */
 let last: { result: TrajectoryEvaluation; alignment: TrajectoryAlignment; name: string; id: number } | null = null;
+/** Names of the last evaluation's inputs, for the report. */
+let lastPair = { estimate: "", reference: "" };
+
+addReportSection("trajectory", () => {
+  if (!last) return null;
+  const { stats } = last.result;
+  const metrics: Record<string, Metric> = {
+    matched: { label: "Matched poses", value: stats.ate.count },
+    ate_rmse: { label: "ATE RMSE", value: stats.ate.rmse, unit: "m" },
+    ate_mean: { label: "ATE mean", value: stats.ate.mean, unit: "m" },
+    ate_median: { label: "ATE median", value: stats.ate.median, unit: "m" },
+    ate_max: { label: "ATE max", value: stats.ate.max, unit: "m" },
+    drift: { label: "Endpoint drift", value: last.result.endpointDrift, unit: "m" },
+  };
+  if (stats.ateRotation) metrics.ate_rot_rmse = { label: "ATE rotation RMSE", value: stats.ateRotation.rmse, unit: "°" };
+  if (stats.rpe) metrics.rpe_rmse = { label: "RPE RMSE", value: stats.rpe.rmse, unit: "m" };
+  if (stats.rpeRotation) metrics.rpe_rot_rmse = { label: "RPE rotation RMSE", value: stats.rpeRotation.rmse, unit: "°" };
+  if (stats.rpePercent) metrics.rpe_percent = { label: "RPE", value: stats.rpePercent.rmse, unit: "%" };
+  return {
+    title: `Trajectory ${lastPair.estimate} vs ${lastPair.reference}`,
+    metrics,
+    notes: [`Alignment: ${last.alignment}${last.alignment === "sim3" ? ` (scale ${fmt(last.result.scale)})` : ""}`],
+  };
+});
 
 const estimateSelect = $<HTMLSelectElement>("trajectory-estimate");
 const referenceSelect = $<HTMLSelectElement>("trajectory-reference");
@@ -262,6 +287,7 @@ runButton.onclick = async () => {
     estimate.visible = false;
     viewer.setLineVisible(estimate.id, false);
     last = { result, alignment, name, id: shown.id };
+    lastPair = { estimate: estimate.name, reference: reference.name };
     renderList();
     renderResult(result, alignment, reference.poses.timestamps.length);
     setStatus(

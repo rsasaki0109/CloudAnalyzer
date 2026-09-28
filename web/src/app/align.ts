@@ -5,6 +5,7 @@ import { alignPairs } from "../api";
 import type { Vec3 } from "../protocol";
 import { $, errorText, fmt, removeButton, setStatus } from "./dom";
 import { moveCloud } from "./history";
+import { addReportSection } from "./report";
 import { addMarkers, refreshAnnotations } from "./picking";
 import { clouds, entries, listChanged, pointsInvalidated, viewer } from "./state";
 import { activeTool, type PickedPoint, pickPoint, setTool, shortcut, type Tool, toggleTool } from "./tools";
@@ -24,6 +25,21 @@ let pairs: { moving: PickedPoint; reference?: PickedPoint }[] = [];
 let residuals: number[] = [];
 /** While our own alignment replaces the cloud, its picks are moved rather than dropped. */
 let aligning = false;
+/** The last point-pair alignment, for the report. */
+let lastAlignment: { name: string; reference: string; rms: number; residuals: number[] } | null = null;
+
+addReportSection("pairs", () =>
+  lastAlignment
+    ? {
+        title: `Point-pair alignment ${lastAlignment.name} → ${lastAlignment.reference}`,
+        metrics: {
+          pairs: { label: "Pairs", value: lastAlignment.residuals.length },
+          rms: { label: "RMS residual", value: lastAlignment.rms },
+          max: { label: "Largest residual", value: Math.max(...lastAlignment.residuals) },
+        },
+      }
+    : null,
+);
 
 const moving = () => entries.get(Number(movingSelect.value));
 const reference = () => entries.get(Number(referenceSelect.value));
@@ -162,6 +178,12 @@ runButton.onclick = async () => {
       return { moving: { ...moving, index: -1, exact, render }, reference };
     });
     residuals = out.residuals;
+    lastAlignment = {
+      name: entry.cloud.name,
+      reference: reference()?.cloud.name ?? "reference",
+      rms: out.rms,
+      residuals: out.residuals,
+    };
     setStatus(
       `Aligned ${entry.cloud.name} with ${used.length} pairs: RMS ${fmt(out.rms)}, ` +
         `largest residual ${fmt(Math.max(...out.residuals))}`,

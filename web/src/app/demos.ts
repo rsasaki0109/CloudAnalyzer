@@ -5,7 +5,9 @@ import { runButton } from "./distance";
 import { $, choose, setStatus } from "./dom";
 import { renderList } from "./entries";
 import { loadUrls } from "./loading";
-import { entries, hideEntry } from "./state";
+import { addGravity, compareWithStart, findLoops, open as openPoseGraph } from "./posegraph";
+import { poseGraphDemoFiles } from "./posegraph-demo";
+import { entries, hideEntry, viewer } from "./state";
 
 const idOf = (name: string) => String([...entries.values()].find((e) => e.cloud.name === name)?.cloud.id ?? "");
 
@@ -58,11 +60,33 @@ const DEMOS: Record<string, { files: string[]; run: () => void }> = {
   },
 };
 
+/**
+ * A drive round a city block, made in the browser: open its drifting pose
+ * graph, close the loop, tie it to the IMU's gravity, and show how far the
+ * corrections moved each point of the map.
+ */
+async function poseGraphDemo(): Promise<void> {
+  setStatus("Making a drive round a city block…");
+  const { scans, poses, gravity } = poseGraphDemoFiles();
+  await openPoseGraph([poses, ...scans]);
+  await findLoops();
+  await addGravity([gravity]);
+  $<HTMLInputElement>("pg-show-scans").click();
+  await compareWithStart();
+  $("pose-graph-panel").scrollIntoView({ block: "start" });
+  viewer.view({ x: 0.4, y: -1, z: 1.1 });
+  viewer.fit();
+}
+
 /** Load a demo's sample files, then run its analysis. */
 export async function runDemo(name: string): Promise<void> {
+  if (name === "posegraph") {
+    await poseGraphDemo();
+    return;
+  }
   const demo = DEMOS[name];
   if (!demo) {
-    setStatus(`Unknown demo "${name}" (try ${Object.keys(DEMOS).join(", ")})`, true);
+    setStatus(`Unknown demo "${name}" (try ${[...Object.keys(DEMOS), "posegraph"].join(", ")})`, true);
     return;
   }
   const missing = demo.files.filter((f) => !idOf(f));

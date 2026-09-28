@@ -597,7 +597,7 @@ async function graphFiles(
   };
 }
 
-async function open(picked: File[]): Promise<void> {
+export async function open(picked: File[]): Promise<void> {
   // Opening replaces the graph: its scans do not count against the display budget.
   const current = graph;
   graph = null;
@@ -740,7 +740,8 @@ async function run(label: string, action: () => Promise<void>): Promise<void> {
 const inlierDistance = () => Math.max(0.01, num("pg-inlier") || 0.5);
 const retryHeadings = () => Math.max(0, Math.round(num("pg-retry-headings")));
 
-$<HTMLButtonElement>("pg-find").onclick = () =>
+/** Find, register and add loops automatically, then optimise (the panel's settings). */
+export const findLoops = (): Promise<void> =>
   run("Finding loops", async () => {
     const poses = graph!.state.poses.slice();
     const signal = startTask();
@@ -785,6 +786,7 @@ $<HTMLButtonElement>("pg-find").onclick = () =>
       endTask(signal);
     }
   });
+$<HTMLButtonElement>("pg-find").onclick = () => void findLoops();
 
 const AXES: Record<string, number[] | null> = { auto: null, "+z": [0, 0, 1], "-y": [0, -1, 0], "+y": [0, 1, 0] };
 const axisName = (up: number[]) =>
@@ -983,7 +985,7 @@ async function readUps(files: File[]): Promise<Map<number, [number, number, numb
   return ups;
 }
 
-async function addGravity(files: File[]): Promise<void> {
+export async function addGravity(files: File[]): Promise<void> {
   await run("Adding gravity", async () => {
     const byFrame = await readUps(files);
     const state = graph!.state;
@@ -1122,7 +1124,7 @@ $<HTMLButtonElement>("pg-map").onclick = () =>
  * The map as it is now, colored by how far each point moved from its place
  * as loaded: where the corrections moved the map, and by how much.
  */
-$<HTMLButtonElement>("pg-compare").onclick = () =>
+export const compareWithStart = (): Promise<void> =>
   run("Comparing", async () => {
     setStatus("Building the map with each point's correction…");
     const map = addEntry(await poseGraphMap(Math.max(0, num("pg-map-voxel") || 0), false, true));
@@ -1137,6 +1139,7 @@ $<HTMLButtonElement>("pg-compare").onclick = () =>
         `(mean ${fmt(sum / values.length)} m, max ${fmt(max)} m)`,
     );
   });
+$<HTMLButtonElement>("pg-compare").onclick = () => void compareWithStart();
 
 $<HTMLButtonElement>("pg-close").onclick = async () => {
   if (busy) return;

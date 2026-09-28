@@ -116,6 +116,11 @@ test("distance, volume, ground and M3C2 demos, with orbit frames for the GIF", a
   await demo(page, "ground", "are ground");
   await shot(page, "ground");
   await orbitFrames(page, "d-ground", 24, 12);
+
+  await demo(page, "posegraph", "colored by how far");
+  await page.locator("#round-points").check();
+  await shot(page, "posegraph");
+  await orbitFrames(page, "e-posegraph", 24, 12);
 });
 
 test("lasso segmentation and a cross-section profile on the town", async ({ page }) => {

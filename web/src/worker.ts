@@ -39,6 +39,8 @@ import type {
   M3c2Output,
   MeshOutput,
   PoseGraphFound,
+  PoseGraphFiles,
+  PoseGraphMerged,
   PoseGraphOpened,
   PoseGraphState,
   ProfileOutput,
@@ -968,11 +970,19 @@ function matchScans(files: File[], nodeIds: Float64Array): (number | null)[] {
   );
 }
 
-async function openPoseGraph(
-  req: Extract<Request, { kind: "pg-open" }>,
+interface LoadedGraph {
+  session: PoseGraphSession;
+  scans: (Float32Array | null)[];
+  scanPoints: number;
+  unmatched: string[];
+}
+
+/** Read a graph and its scans into a new session (freed again on failure). */
+async function loadGraph(
+  req: PoseGraphFiles,
   progress: (note: string, fraction?: number) => void,
   check: () => void,
-): Promise<{ value: PoseGraphOpened; transfer: Transferable[] }> {
+): Promise<LoadedGraph> {
   const text = await req.graph.text();
   let session: PoseGraphSession;
   if (/\.g2o$/i.test(req.graph.name)) {
@@ -1010,15 +1020,70 @@ async function openPoseGraph(
       }
       scans[node] = session.scanPositions(node, req.displayPoints);
     }
-    poseGraph?.session.free();
-    poseGraph = { session, name: req.graph.name.replace(/\.[^.]+$/, "") };
-    const value: PoseGraphOpened = { ...graphState(session), name: req.graph.name, scans, scanPoints, unmatched };
-    const transfer = stateTransfer(value);
-    for (const scan of scans) if (scan) transfer.push(scan.buffer);
-    return { value, transfer };
+    return { session, scans, scanPoints, unmatched };
   } catch (err) {
     session.free();
     throw err;
+  }
+}
+
+async function openPoseGraph(
+  req: PoseGraphFiles,
+  progress: (note: string, fraction?: number) => void,
+  check: () => void,
+): Promise<{ value: PoseGraphOpened; transfer: Transferable[] }> {
+  const { session, scans, scanPoints, unmatched } = await loadGraph(req, progress, check);
+  poseGraph?.session.free();
+  poseGraph = { session, name: req.graph.name.replace(/\.[^.]+$/, "") };
+  const value: PoseGraphOpened = { ...graphState(session), name: req.graph.name, scans, scanPoints, unmatched };
+  const transfer = stateTransfer(value);
+  for (const scan of scans) if (scan) transfer.push(scan.buffer);
+  return { value, transfer };
+}
+
+async function mergePoseGraph(
+  req: Extract<Request, { kind: "pg-merge" }>,
+  progress: (note: string, fraction?: number) => void,
+  check: () => void,
+): Promise<{ value: PoseGraphMerged; transfer: Transferable[] }> {
+  const session = openGraph();
+  const other = await loadGraph(req.files, progress, check);
+  try {
+    const ids = other.session.nodeIds();
+    const b = req.nodeB === null ? 0 : ids.indexOf(req.nodeB);
+    if (b < 0) throw new Error(`${req.files.graph.name} has no node ${req.nodeB}`);
+    progress("registering the two graphs");
+    const [fitness, rms, , offset] = session.merge(
+      other.session,
+      req.nodeA,
+      b,
+      req.yawSteps,
+      req.maxIterations,
+      req.overlap,
+      req.inlierDistance,
+      req.minFitness,
+      req.sigmaT,
+      req.sigmaRDeg,
+    );
+    progress("optimising");
+    const [initialCost, finalCost, iterations] = session.optimize(req.loopKernel);
+    const state = graphState(session);
+    const value: PoseGraphMerged = {
+      state,
+      name: req.files.graph.name,
+      scans: other.scans,
+      scanPoints: other.scanPoints,
+      unmatched: other.unmatched,
+      offset,
+      fitness,
+      rms,
+      optimized: { initialCost, finalCost, iterations },
+    };
+    const transfer = stateTransfer(state);
+    for (const scan of other.scans) if (scan) transfer.push(scan.buffer);
+    return { value, transfer };
+  } finally {
+    other.session.free();
   }
 }
 
@@ -1031,6 +1096,8 @@ async function handle(
   switch (req.kind) {
     case "pg-open":
       return openPoseGraph(req, progress, check);
+    case "pg-merge":
+      return mergePoseGraph(req, progress, check);
     case "pg-loop": {
       const session = openGraph();
       const r = session.registerLoop(req.from, req.to, req.maxIterations, req.overlap, req.pointToPlane, req.inlierDistance);

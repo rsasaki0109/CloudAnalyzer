@@ -300,6 +300,38 @@ export interface PoseGraphLoop {
   fitness: number;
 }
 
+/** A second graph joined to the open one (see `pg-merge`). */
+export interface PoseGraphMerged {
+  state: PoseGraphState;
+  /** The joined graph's file name. */
+  name: string;
+  /** Display copies of its scans, for its nodes from `offset` on. */
+  scans: (Float32Array | null)[];
+  scanPoints: number;
+  unmatched: string[];
+  /** Index of its first node in the joined graph. */
+  offset: number;
+  /** Overlap and ICP RMS of the registration that placed it. */
+  fitness: number;
+  rms: number;
+  optimized: { initialCost: number; finalCost: number; iterations: number };
+}
+
+/** A pose graph's files and how to read them (see `pg-open`). */
+export interface PoseGraphFiles {
+  graph: File;
+  scans: File[];
+  /** Voxel size scans are thinned to (0 keeps every point). */
+  voxel: number;
+  /** Points per scan sent back for display. */
+  displayPoints: number;
+  /** Row-major 4x4 from scan to pose frame, or null. */
+  extrinsic: number[] | null;
+  /** Odometry standard deviations for a trajectory (metres, degrees). */
+  sigmaT: number;
+  sigmaRDeg: number;
+}
+
 /** Loops found automatically (see `pg-find-loops`). */
 export interface PoseGraphFound {
   state: PoseGraphState;
@@ -333,20 +365,29 @@ export interface RemovedEdge {
 export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
 
 export type Request =
-  | {
+  | ({
       /** Open a pose graph (g2o, or a TUM / KITTI trajectory as an odometry chain) with a scan per node. */
       kind: "pg-open";
-      graph: File;
-      scans: File[];
-      /** Voxel size scans are thinned to (0 keeps every point). */
-      voxel: number;
-      /** Points per scan sent back for display. */
-      displayPoints: number;
-      /** Row-major 4x4 from scan to pose frame, or null. */
-      extrinsic: number[] | null;
-      /** Odometry standard deviations for a trajectory (metres, degrees). */
+    } & PoseGraphFiles)
+  | {
+      /**
+       * Join a second graph: its node `nodeB` (an id; null for its first
+       * node) stands near the open graph's node `nodeA` (an index). Their
+       * scans are registered with a yaw search, which places the second
+       * graph; the registration becomes a loop edge; then optimise.
+       */
+      kind: "pg-merge";
+      files: PoseGraphFiles;
+      nodeA: number;
+      nodeB: number | null;
+      yawSteps: number;
+      maxIterations: number;
+      overlap: number;
+      inlierDistance: number;
+      minFitness: number;
       sigmaT: number;
       sigmaRDeg: number;
+      loopKernel: number;
     }
   | {
       /** Register node `to`'s scan onto node `from`'s and add a loop edge. */

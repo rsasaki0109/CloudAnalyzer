@@ -530,6 +530,18 @@
             <label title="Points closer than this (metres) count as overlapping; for the overlap reported by Add loop too">Inlier distance m <input id="pg-inlier" type="number" min="0" step="any" value="0.5" /></label>
             <button id="pg-find" class="primary" title="Register every candidate pair with ICP, keep those that overlap, then optimise">Find loops</button>
           </details>
+          <details class="options">
+            <summary>Join another graph</summary>
+            <p class="hint small">A second session of the same place: a node of it that stands near a node of
+              this graph places the whole of it. Their scans are registered with ICP from several headings.</p>
+            <div class="range">
+              <label title="A node of this graph (empty: Node A, else the first node)">Node here <input id="pg-merge-here" type="number" step="1" /></label>
+              <label title="A node of the other graph at about the same place (empty: its first node)">Node there <input id="pg-merge-there" type="number" step="1" /></label>
+            </div>
+            <label title="Headings tried as ICP starts (8: every 45°)">Headings <input id="pg-merge-yaw" type="number" min="1" max="36" value="8" /></label>
+            <button id="pg-merge" title="Open the other graph's folder (poses and scans) and join it">Join folder…</button>
+            <input id="pg-merge-input" type="file" webkitdirectory multiple hidden />
+          </details>
           <h3>Loops, worst first</h3>
           <p id="pg-loops-hint" class="hint small">No loop edges yet.</p>
           <ol id="pg-loop-list" class="loop-list"></ol>

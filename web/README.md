@@ -46,6 +46,9 @@ Files never leave the browser.
   `nx`, `ny`, `nz` in PLY (normals in PLY files are read too). Large clouds
   are split along the octree over the worker pool; points near a part's
   border use neighbours from their own part.
+- Labels and images: **Label** (`L`) pins editable text to a picked point
+  (kept in share links and sessions); **Image** saves the view as a PNG with
+  labels, measurements, the colorbar and the profile plot drawn on it.
 - Cross-section profiles: draw a polyline on the view (**Draw line**, click
   vertices, double-click or Enter to finish) and every visible cloud's points
   within the band are plotted as distance along the line against height, in

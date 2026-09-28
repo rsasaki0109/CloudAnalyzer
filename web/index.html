@@ -21,6 +21,8 @@
       <button data-view="iso" title="Isometric view">Iso</button>
       <span class="sep"></span>
       <button id="measure" aria-pressed="false" title="Measure the distance between two points (M)">Measure</button>
+      <button id="label" aria-pressed="false" title="Label a point (L)">Label</button>
+      <button id="save-image" title="Save the view, with labels and the colorbar, as a PNG">Image</button>
       <button id="share" title="Copy a link that opens this view (clouds loaded from URLs are included)">Share</button>
       <a class="toolbar-link" href="../guide.html" target="_blank" rel="noopener" title="User guide">Help</a>
       <span class="sep"></span>
@@ -89,6 +91,13 @@
         <p id="measure-hint" class="hint"></p>
         <ol id="measure-list" class="measure-list"></ol>
         <button id="measure-clear">Clear all</button>
+      </section>
+
+      <section id="note-panel" hidden>
+        <h2>Labels</h2>
+        <p id="note-hint" class="hint"></p>
+        <ol id="note-list" class="note-list"></ol>
+        <button id="note-clear">Clear all</button>
       </section>
 
       <section id="profile-panel">

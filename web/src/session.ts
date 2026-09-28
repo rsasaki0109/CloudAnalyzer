@@ -33,6 +33,8 @@ export interface Session {
   clip: { min: Vec3; max: Vec3 } | null;
   /** Cross-section line (x, y in original coordinates) and half its band width. */
   profile?: { line: [number, number][]; halfWidth: number } | null;
+  /** Text labels at points (original coordinates). */
+  labels?: { position: Vec3; text: string }[];
   clouds: SessionCloud[];
 }
 
@@ -88,6 +90,12 @@ export function parseSession(json: unknown): Session {
       : [],
     clip: clip ? { min: vec3(clip.min, "clip"), max: vec3(clip.max, "clip") } : null,
     profile: parseProfile(o.profile),
+    labels: Array.isArray(o.labels)
+      ? o.labels.flatMap((l: unknown) => {
+          const r = (l ?? {}) as Record<string, unknown>;
+          return typeof r.text === "string" ? [{ position: vec3(r.position, "label"), text: r.text }] : [];
+        })
+      : [],
     clouds: o.clouds.map((c: unknown) => {
       if (typeof c !== "object" || c === null) fail("cloud");
       const r = c as Record<string, unknown>;

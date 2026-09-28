@@ -121,6 +121,12 @@ button[aria-pressed="true"] { background: var(--accent); border-color: var(--acc
 .measure-list .delta { display: block; color: var(--muted); font-size: 11px; }
 .measure-list .remove { border: none; background: none; color: var(--muted); padding: 0 4px; float: right; }
 .measure-list .remove:hover { color: var(--danger); }
+.labels span.note { border-color: #ff8a65; }
+.note-list { margin: 0 0 8px; padding-left: 20px; }
+.note-list li { display: flex; gap: 4px; margin-bottom: 6px; }
+.note-list input { flex: 1; min-width: 0; padding: 2px 6px; }
+.note-list .remove { border: none; background: none; color: var(--muted); padding: 0 4px; }
+.note-list .remove:hover { color: var(--danger); }
 
 .stats { width: 100%; border-collapse: collapse; margin: 8px 0; font-variant-numeric: tabular-nums; }
 .stats th { text-align: left; font-weight: normal; color: var(--muted); padding: 2px 0; }

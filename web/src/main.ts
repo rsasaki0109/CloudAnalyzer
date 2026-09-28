@@ -1684,6 +1684,7 @@ function refreshAnnotations(): void {
     markers.push({ position: m.a.render, color: MEASURE_COLOR }, { position: m.b.render, color: MEASURE_COLOR });
   }
   if (pending) markers.push({ position: pending.render, color: MEASURE_COLOR });
+  for (const n of notes) markers.push({ position: n.point.render, color: NOTE_COLOR });
   viewer.setAnnotations(
     markers,
     measurements.map((m) => [m.a.render, m.b.render]),
@@ -1752,6 +1753,7 @@ function renderMeasurements(): void {
 
 function setMeasuring(on: boolean): void {
   measuring = on;
+  if (on && labeling) setLabeling(false);
   pending = null;
   measureButton.setAttribute("aria-pressed", String(on));
   $("viewport").classList.toggle("measuring", on);
@@ -1770,6 +1772,13 @@ function forgetPoints(cloudId: number): void {
       measurements.splice(i, 1);
     }
   }
+  for (let i = notes.length - 1; i >= 0; i--) {
+    if (notes[i].point.cloudId === cloudId) {
+      notes[i].label.remove();
+      notes.splice(i, 1);
+    }
+  }
+  renderNotes();
   refreshAnnotations();
   renderPickPanel();
   renderMeasurements();
@@ -1792,6 +1801,12 @@ viewer.onClick = async (x, y) => {
     return; // the cloud was removed while we were asking
   }
   const point: PickedPoint = { cloudId: hit.cloudId, index: hit.index, render: hit.position, exact };
+  if (labeling) {
+    addNote(point, `Z ${coord(exact[2])}`);
+    renderNotes();
+    setStatus("Label added; edit its text in the Labels panel");
+    return;
+  }
   if (measuring) {
     if (!pending) {
       pending = point;
@@ -1834,6 +1849,14 @@ setPanelsOpen(narrow.matches);
 
 // Keep distance labels at the middle of their segments.
 viewer.onAfterRender = () => {
+  for (const n of notes) {
+    const at = viewer.project(n.point.render);
+    n.label.hidden = !at || !n.text;
+    if (!at) continue;
+    n.label.textContent = n.text;
+    n.label.style.left = `${at.x}px`;
+    n.label.style.top = `${at.y}px`;
+  }
   for (const m of measurements) {
     const mid = m.a.render.clone().add(m.b.render).multiplyScalar(0.5);
     const at = viewer.project(mid);
@@ -1855,6 +1878,8 @@ $<HTMLButtonElement>("measure-clear").onclick = () => {
 window.addEventListener("keydown", (e) => {
   if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
   if (e.key === "m" || e.key === "M") setMeasuring(!measuring);
+  if (e.key === "l" || e.key === "L") setLabeling(!labeling);
+  if (e.key === "Escape" && labeling) setLabeling(false);
   if (e.key === "Escape") {
     if (pending) {
       pending = null;
@@ -2175,6 +2200,159 @@ window.addEventListener("keydown", (e) => {
 });
 renderProfileHint();
 
+// ---------------------------------------------------------------- labels
+
+interface Note {
+  point: PickedPoint;
+  text: string;
+  label: HTMLSpanElement;
+}
+
+const NOTE_COLOR = "#ff8a65";
+const notes: Note[] = [];
+let labeling = false;
+const labelButton = $<HTMLButtonElement>("label");
+
+function addNote(point: PickedPoint, text: string): Note {
+  const label = document.createElement("span");
+  label.className = "note";
+  $("labels").append(label);
+  const note = { point, text, label };
+  notes.push(note);
+  return note;
+}
+
+function renderNotes(): void {
+  $("note-panel").hidden = !labeling && notes.length === 0;
+  $("note-hint").textContent = labeling ? "Click a point to label it; edit the text below." : "";
+  $("note-list").replaceChildren(
+    ...notes.map((note, i) => {
+      const li = document.createElement("li");
+      const input = document.createElement("input");
+      input.type = "text";
+      input.value = note.text;
+      input.setAttribute("aria-label", `Label ${i + 1}`);
+      input.oninput = () => {
+        note.text = input.value;
+        viewer.requestRender();
+      };
+      const remove = document.createElement("button");
+      remove.className = "remove";
+      remove.textContent = "✕";
+      remove.title = "Remove";
+      remove.onclick = () => {
+        notes.splice(i, 1);
+        note.label.remove();
+        refreshAnnotations();
+        renderNotes();
+      };
+      li.append(input, remove);
+      return li;
+    }),
+  );
+  refreshAnnotations();
+}
+
+function setLabeling(on: boolean): void {
+  labeling = on;
+  if (on && measuring) setMeasuring(false);
+  labelButton.setAttribute("aria-pressed", String(on));
+  $("viewport").classList.toggle("measuring", on || measuring);
+  renderNotes();
+}
+
+labelButton.onclick = () => setLabeling(!labeling);
+$<HTMLButtonElement>("note-clear").onclick = () => {
+  for (const n of notes) n.label.remove();
+  notes.length = 0;
+  renderNotes();
+};
+
+// ---------------------------------------------------------------- image
+
+/** Draw an HTML overlay box (background, border, radius) onto the image. */
+function drawBox(ctx: CanvasRenderingContext2D, el: HTMLElement, origin: DOMRect): void {
+  const style = getComputedStyle(el);
+  const r = el.getBoundingClientRect();
+  const [x, y, w, h] = [r.left - origin.left, r.top - origin.top, r.width, r.height];
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, Number.parseFloat(style.borderTopLeftRadius) || 0);
+  ctx.fillStyle = style.backgroundColor;
+  ctx.fill();
+  const border = Number.parseFloat(style.borderTopWidth) || 0;
+  if (border > 0) {
+    ctx.lineWidth = border;
+    ctx.strokeStyle = style.borderTopColor;
+    ctx.stroke();
+  }
+}
+
+/** Draw an element's text where it is laid out. */
+function drawText(ctx: CanvasRenderingContext2D, el: HTMLElement, origin: DOMRect): void {
+  const text = el.textContent?.trim();
+  if (!text || el.hidden) return;
+  const style = getComputedStyle(el);
+  const r = el.getBoundingClientRect();
+  ctx.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+  ctx.fillStyle = style.color;
+  ctx.textBaseline = "middle";
+  const padding = Number.parseFloat(style.paddingLeft) || 0;
+  ctx.fillText(text, r.left - origin.left + padding, r.top - origin.top + r.height / 2);
+}
+
+/** The view as a PNG: the 3D render with labels, the colorbar and the profile plot on top. */
+async function viewImage(): Promise<Blob> {
+  const shot = viewer.snapshot();
+  const origin = $("viewport").getBoundingClientRect();
+  const scale = shot.width / origin.width;
+  const ctx = shot.getContext("2d")!;
+  ctx.scale(scale, scale);
+  for (const el of $("labels").querySelectorAll<HTMLElement>("span")) {
+    if (el.hidden) continue;
+    drawBox(ctx, el, origin);
+    drawText(ctx, el, origin);
+  }
+  const colorbar = $("colorbar");
+  if (!colorbar.hidden) {
+    drawBox(ctx, colorbar, origin);
+    drawText(ctx, $("colorbar-title"), origin);
+    const ramp = $("colorbar-ramp").getBoundingClientRect();
+    const table = lut(rampName);
+    for (let i = 0; i < ramp.height; i++) {
+      const k = Math.round((1 - i / Math.max(1, ramp.height - 1)) * 255) * 3;
+      ctx.fillStyle = `rgb(${table[k]} ${table[k + 1]} ${table[k + 2]})`;
+      ctx.fillRect(ramp.left - origin.left, ramp.top - origin.top + i, ramp.width, 1.5);
+    }
+    for (const id of ["colorbar-max", "colorbar-mid", "colorbar-min"]) drawText(ctx, $(id), origin);
+  }
+  if (!profilePlot.hidden) {
+    drawBox(ctx, profilePlot, origin);
+    for (const el of profilePlot.querySelectorAll<HTMLElement>(".profile-legend span, #profile-readout")) {
+      drawText(ctx, el, origin);
+    }
+    const r = profileCanvas.getBoundingClientRect();
+    ctx.drawImage(profileCanvas, r.left - origin.left, r.top - origin.top, r.width, r.height);
+  }
+  return new Promise((resolve, reject) =>
+    shot.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("could not encode the image"))), "image/png"),
+  );
+}
+
+$<HTMLButtonElement>("save-image").onclick = async () => {
+  try {
+    const blob = await viewImage();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "cloudanalyzer-view.png";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+    setStatus(`Saved cloudanalyzer-view.png (${(blob.size / 1e6).toFixed(1)} MB)`);
+  } catch (err) {
+    setStatus(`Image failed: ${err instanceof Error ? err.message : err}`, true);
+  }
+};
+
 // ---------------------------------------------------------------- sessions
 
 /** A session waiting for some of its clouds to be opened. */
@@ -2208,6 +2386,7 @@ function captureSession(): Session {
     hiddenClasses: [...hiddenClasses],
     clip,
     profile: profileLine.length >= 2 ? { line: profileLine, halfWidth: profileHalfWidth() } : null,
+    labels: notes.map((n) => ({ position: n.point.exact, text: n.text })),
     clouds: [...entries.values()]
       .filter((e) => e.origin.kind !== "derived")
       .map((e) => ({
@@ -2320,7 +2499,15 @@ async function restorePending(): Promise<void> {
     applyClip();
   }
   if (session.camera && entries.size) viewer.setCamera(toRender(session.camera.position), toRender(session.camera.target));
-  if (session.profile && entries.size) {
+  if (session.labels && entries.size) {
+    for (const n of notes) n.label.remove();
+    notes.length = 0;
+    for (const l of session.labels) {
+      addNote({ cloudId: -1, index: -1, render: toRender(l.position), exact: l.position }, l.text);
+    }
+    renderNotes();
+  }
+    if (session.profile && entries.size) {
     profileLine = session.profile.line;
     profileWidth.value = String(session.profile.halfWidth * 2);
     profileZ = viewer.getCamera().target.z;

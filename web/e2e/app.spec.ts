@@ -502,3 +502,38 @@ test.describe("COPC", () => {
     expect(ranges.length).toBeGreaterThan(2);
   });
 });
+
+test("labels: added by clicking, edited, saved in a PNG and restored from a share link", async ({ page, context }) => {
+  await page.getByRole("button", { name: "Try a sample" }).click();
+  await expect(status(page)).toContainText("C2C distance computed");
+  await page.locator("#label").click();
+  const canvas = page.locator("#viewport > canvas");
+  const box = (await canvas.boundingBox())!;
+  // Try a few spots until one hits a point.
+  for (const [fx, fy] of [[0.5, 0.5], [0.45, 0.5], [0.5, 0.45], [0.55, 0.52]]) {
+    await canvas.click({ position: { x: box.width * fx, y: box.height * fy } });
+    if ((await page.locator("#note-list li").count()) > 0) break;
+  }
+  const input = page.locator("#note-list input").first();
+  await expect(input).toHaveValue(/^Z -?\d/);
+  await input.fill("Tree trunk");
+  await expect(page.locator("#labels span.note")).toHaveText("Tree trunk");
+
+  const download = page.waitForEvent("download");
+  await page.locator("#save-image").click();
+  const file = await download;
+  expect(file.suggestedFilename()).toBe("cloudanalyzer-view.png");
+  const chunks: Buffer[] = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
+  const png = Buffer.concat(chunks);
+  expect(png.subarray(1, 4).toString("latin1")).toBe("PNG");
+  expect(png.length).toBeGreaterThan(10_000);
+
+  await page.locator("#share").click();
+  const link = await page.locator("#share-link").inputValue();
+  const other = await context.newPage();
+  await other.goto(link);
+  await expect(other.locator("#status")).toContainText("Session restored");
+  await expect(other.locator("#note-list input")).toHaveValue("Tree trunk");
+  await expect(other.locator("#labels span.note")).toHaveText("Tree trunk");
+});

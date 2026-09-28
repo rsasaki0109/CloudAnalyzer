@@ -1,6 +1,7 @@
 //! Point cloud file readers.
 
 pub mod copc;
+mod e57;
 mod las;
 mod las_write;
 mod obj;
@@ -12,6 +13,7 @@ mod stream;
 mod write;
 mod xyz;
 
+pub use e57::{scan_names as e57_scan_names, write_e57};
 pub use las_write::write_las;
 pub use stream::PointStream;
 pub use write::{ScalarField, write_csv, write_ply};
@@ -25,6 +27,7 @@ pub enum Format {
     Pcd,
     Las,
     Xyz,
+    E57,
 }
 
 impl Format {
@@ -36,12 +39,15 @@ impl Format {
             Some("pcd") => return Self::Pcd,
             Some("las") | Some("laz") => return Self::Las,
             Some("xyz" | "txt" | "csv" | "pts" | "asc") => return Self::Xyz,
+            Some("e57") => return Self::E57,
             _ => {}
         }
         if bytes.starts_with(b"ply") {
             Self::Ply
         } else if bytes.starts_with(b"LASF") {
             Self::Las
+        } else if bytes.starts_with(b"ASTM-E57") {
+            Self::E57
         } else if bytes.starts_with(b"# .PCD")
             || bytes.starts_with(b"VERSION")
             || bytes.starts_with(b"FIELDS")
@@ -91,18 +97,20 @@ pub fn read(name: &str, bytes: &[u8]) -> Result<PointCloud, IoError> {
     read_thinned(name, bytes, 1)
 }
 
-/// Read a point cloud keeping every `keep_every`-th point. LAS/LAZ thin
-/// while decoding (so a large LAZ never holds all its points); other formats
-/// are thinned after reading.
+/// Read a point cloud keeping every `keep_every`-th point. LAS/LAZ and E57
+/// thin while decoding (so a large file never holds all its points); other
+/// formats are thinned after reading.
 pub fn read_thinned(name: &str, bytes: &[u8], keep_every: usize) -> Result<PointCloud, IoError> {
     let keep_every = keep_every.max(1);
-    let mut cloud = match Format::detect(name, bytes) {
+    let format = Format::detect(name, bytes);
+    let mut cloud = match format {
         Format::Ply => ply::read(bytes)?,
         Format::Pcd => pcd::read(bytes)?,
         Format::Las => las::read(bytes, keep_every)?,
         Format::Xyz => xyz::read(bytes)?,
+        Format::E57 => e57::read(bytes, keep_every)?,
     };
-    if keep_every > 1 && Format::detect(name, bytes) != Format::Las {
+    if keep_every > 1 && !matches!(format, Format::Las | Format::E57) {
         let keep: Vec<usize> = (0..cloud.len()).step_by(keep_every).collect();
         cloud = cloud.select(&keep);
     }
@@ -112,8 +120,9 @@ pub fn read_thinned(name: &str, bytes: &[u8], keep_every: usize) -> Result<Point
     Ok(cloud)
 }
 
-/// Number of points a file header announces (LAS, PLY, PCD), to decide on
-/// thinning before reading. `None` when the header does not say.
+/// Number of points a file header announces (LAS, PLY, PCD; E57 given the
+/// whole file, as its XML comes last), to decide on thinning before reading.
+/// `None` when the header does not say.
 pub fn announced_points(name: &str, head: &[u8]) -> Option<u64> {
     match Format::detect(name, head) {
         Format::Las => las::LasHeader::parse(head).ok().map(|h| h.count as u64),
@@ -130,6 +139,7 @@ pub fn announced_points(name: &str, head: &[u8]) -> Option<u64> {
             })
         }
         Format::Xyz => None,
+        Format::E57 => e57::announced_points(head),
     }
 }
 
@@ -189,6 +199,8 @@ mod tests {
         assert_eq!(Format::detect("blob", b"ply\n"), Format::Ply);
         assert_eq!(Format::detect("blob", b"LASF"), Format::Las);
         assert_eq!(Format::detect("blob", b"# .PCD v0.7"), Format::Pcd);
+        assert_eq!(Format::detect("scan.E57", b""), Format::E57);
+        assert_eq!(Format::detect("blob", b"ASTM-E57"), Format::E57);
         assert_eq!(Format::detect("blob", b"1 2 3"), Format::Xyz);
     }
 }

@@ -338,6 +338,14 @@ pub fn announced_points(name: &str, head: &[u8]) -> Option<f64> {
     ca_core::io::announced_points(name, head).map(|n| n as f64)
 }
 
+/// Name of every scan in an E57 file, in the order of its `source` values
+/// (an empty string for an unnamed scan).
+#[wasm_bindgen(js_name = e57ScanNames)]
+pub fn e57_scan_names(bytes: &[u8]) -> Result<Vec<String>, JsError> {
+    let names = ca_core::io::e57_scan_names(bytes)?;
+    Ok(names.into_iter().map(Option::unwrap_or_default).collect())
+}
+
 #[wasm_bindgen]
 impl Cloud {
     /// Parse a file; the format is detected from `name` and the leading bytes.
@@ -730,9 +738,10 @@ impl Cloud {
         self.inner.positions.as_flattened().to_vec()
     }
 
-    /// Serialize the cloud as `"ply"` (binary), `"las"`, `"laz"` or `"csv"`,
-    /// with an optional scalar field (one value per point, in the cloud's
-    /// order). Points are written in octree order, not the original file order.
+    /// Serialize the cloud as `"ply"` (binary), `"las"`, `"laz"`, `"csv"` or
+    /// `"e57"`, with an optional scalar field (one value per point, in the
+    /// cloud's order; E57 keeps only XYZ, intensity and RGB). Points are
+    /// written in octree order, not the original file order.
     pub fn export(
         &self,
         format: &str,
@@ -750,6 +759,7 @@ impl Cloud {
             "las" => ca_core::io::write_las(&self.inner, fields, false),
             "laz" => ca_core::io::write_las(&self.inner, fields, true),
             "csv" => ca_core::io::write_csv(&self.inner, fields),
+            "e57" => ca_core::io::write_e57(&self.inner),
             other => return Err(JsError::new(&format!("unknown export format {other:?}"))),
         }
         .map_err(|e| JsError::new(&e))

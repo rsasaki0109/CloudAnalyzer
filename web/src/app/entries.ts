@@ -100,11 +100,13 @@ const SAVE_FORMATS: [ExportFormat, string][] = [
   ["las", "LAS 1.4: intensity, classes, colors; other fields as extra bytes"],
   ["laz", "Compressed LAS"],
   ["csv", "Text table"],
+  ["e57", "E57: XYZ, intensity, colors"],
 ];
 
-/** Download a cloud, including its distances if computed. */
+/** Download a cloud, including its distances if computed (not in E57). */
 export async function saveCloud(entry: Entry, format: ExportFormat): Promise<void> {
-  const { cloud, c2c } = entry;
+  const { cloud } = entry;
+  const c2c = format === "e57" ? undefined : entry.c2c;
   const kind = c2c?.kind.toUpperCase();
   // M3C2 results already carry m3c2_distance / lod95 / significant
   // attributes, and raster cells their height.

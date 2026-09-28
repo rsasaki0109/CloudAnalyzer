@@ -210,6 +210,66 @@ pub fn compute_volume(
     })
 }
 
+/// Result of [`Cloud::rasterize`]: the height grid and its cells as a cloud.
+#[wasm_bindgen]
+pub struct RasterOutput {
+    #[wasm_bindgen(readonly)]
+    pub nx: usize,
+    #[wasm_bindgen(readonly)]
+    pub ny: usize,
+    /// Lower-left corner of the grid (original coordinates).
+    #[wasm_bindgen(readonly, js_name = minX)]
+    pub min_x: f64,
+    #[wasm_bindgen(readonly, js_name = minY)]
+    pub min_y: f64,
+    #[wasm_bindgen(readonly)]
+    pub cell: f64,
+    #[wasm_bindgen(readonly, js_name = populatedCells)]
+    pub populated_cells: usize,
+    heights: Vec<f32>,
+    cells: Option<Cloud>,
+}
+
+#[wasm_bindgen]
+impl RasterOutput {
+    /// Per-cell heights, row-major from the lowest y; NaN where empty.
+    #[wasm_bindgen(js_name = takeHeights)]
+    pub fn take_heights(&mut self) -> Vec<f32> {
+        std::mem::take(&mut self.heights)
+    }
+
+    /// One point per non-empty cell at its height, as an indexed cloud with
+    /// the height in the `height` attribute (for coloring).
+    #[wasm_bindgen(js_name = takeCells)]
+    pub fn take_cells(&mut self) -> Result<Cloud, JsError> {
+        self.cells
+            .take()
+            .ok_or_else(|| JsError::new("cells already taken"))
+    }
+}
+
+/// A raster (see [`RasterOutput`]) as a single-band Float32 GeoTIFF.
+#[wasm_bindgen(js_name = rasterGeotiff)]
+pub fn raster_geotiff(
+    heights: &[f32],
+    nx: usize,
+    ny: usize,
+    min_x: f64,
+    min_y: f64,
+    cell: f64,
+) -> Result<Vec<u8>, JsError> {
+    if nx.checked_mul(ny) != Some(heights.len()) || cell.is_nan() || cell <= 0.0 {
+        return Err(JsError::new("the heights do not match the grid"));
+    }
+    let grid = ca_core::volume::Grid {
+        min: [min_x, min_y],
+        cell,
+        nx,
+        ny,
+    };
+    Ok(ca_core::geotiff::write_geotiff(&grid, heights))
+}
+
 /// Reads a point file piece by piece (see [`ca_core::io::PointStream`]), so
 /// large files never sit in memory whole.
 #[wasm_bindgen]
@@ -536,6 +596,75 @@ impl Cloud {
             inner,
             lod,
             layout: None,
+        })
+    }
+
+    /// Rasterize into a height grid of `cell`-sized squares (a DEM / DSM).
+    /// `height` is `"mean"`, `"min"`, `"max"` or `"percentile"` (of
+    /// `percentile`, 0-100); `class` restricts to one class code.
+    pub fn rasterize(
+        &self,
+        cell: f64,
+        height: &str,
+        percentile: f64,
+        fill_empty: bool,
+        class: Option<u8>,
+    ) -> Result<RasterOutput, JsError> {
+        use ca_core::raster::{RasterHeight, RasterParams};
+        let height = match height {
+            "mean" => RasterHeight::Mean,
+            "min" => RasterHeight::Min,
+            "max" => RasterHeight::Max,
+            "percentile" => RasterHeight::Percentile(percentile),
+            other => return Err(JsError::new(&format!("unknown cell height {other:?}"))),
+        };
+        let params = RasterParams {
+            cell,
+            height,
+            fill_empty,
+            class,
+        };
+        let r = ca_core::raster::rasterize(&self.inner, params).ok_or_else(|| {
+            JsError::new(match class {
+                Some(_) => "no points of that class, or the cell size is not positive",
+                None => "need a positive cell size (and percentile within 0-100)",
+            })
+        })?;
+        let g = r.grid;
+        let mut positions = Vec::new();
+        let mut values = Vec::new();
+        for j in 0..g.ny {
+            for i in 0..g.nx {
+                let h = r.heights[j * g.nx + i];
+                if !h.is_nan() {
+                    let [x, y] = g.center(i, j);
+                    positions.push([x, y, h]);
+                    values.push(h as f32);
+                }
+            }
+        }
+        let mut inner = PointCloud {
+            positions,
+            colors: None,
+            attributes: vec![ca_core::Attribute {
+                name: "height".into(),
+                values: AttributeValues::F32(values),
+            }],
+        };
+        let lod = build_lod(&mut inner)?;
+        Ok(RasterOutput {
+            nx: g.nx,
+            ny: g.ny,
+            min_x: g.min[0],
+            min_y: g.min[1],
+            cell: g.cell,
+            populated_cells: r.populated_cells,
+            heights: r.heights.iter().map(|&h| h as f32).collect(),
+            cells: Some(Cloud {
+                inner,
+                lod,
+                layout: None,
+            }),
         })
     }
 
@@ -1639,6 +1768,15 @@ pub fn warm_up() {
     let local = part.local(8, 0, &split.regions);
     let _ = part.within(&queries[..2_000], 8);
     let _ = ca_core::filter::sor_keep(&local.means, 1.0);
+    let _ = ca_core::raster::rasterize(
+        &cloud,
+        ca_core::raster::RasterParams {
+            cell: 0.25,
+            height: ca_core::raster::RasterHeight::Percentile(50.0),
+            fill_empty: true,
+            class: None,
+        },
+    );
     let _ = ca_core::normals::estimate_normals(
         &positions[..20_000],
         12,

@@ -50,7 +50,7 @@ impl Grid {
         ]
     }
 
-    fn index(&self, x: f64, y: f64) -> Option<usize> {
+    pub(crate) fn index(&self, x: f64, y: f64) -> Option<usize> {
         let i = ((x - self.min[0]) / self.cell).floor();
         let j = ((y - self.min[1]) / self.cell).floor();
         if i < 0.0 || j < 0.0 {
@@ -142,7 +142,7 @@ pub fn volume(before: Surface, after: Surface, params: VolumeParams) -> Option<V
     })
 }
 
-fn grid_for(surfaces: &[Surface], cell: f64) -> Option<Grid> {
+pub(crate) fn grid_for(surfaces: &[Surface], cell: f64) -> Option<Grid> {
     let (mut lo, mut hi) = ([f64::INFINITY; 2], [f64::NEG_INFINITY; 2]);
     let mut extend = |p: &[f64; 3]| {
         for a in 0..2 {
@@ -177,7 +177,7 @@ fn grid_for(surfaces: &[Surface], cell: f64) -> Option<Grid> {
 }
 
 /// Height of `surface` per grid cell (NaN where it has no data).
-fn rasterize(surface: Surface, grid: &Grid, mode: CellHeight) -> Vec<f64> {
+pub(crate) fn rasterize(surface: Surface, grid: &Grid, mode: CellHeight) -> Vec<f64> {
     let n = grid.nx * grid.ny;
     match surface {
         Surface::Constant(z) => vec![z; n],
@@ -288,7 +288,7 @@ impl Accumulator {
 /// Fill NaN cells with the mean of their defined 8-neighbours, growing
 /// inward from the data until nothing changes. Cells that cannot be reached
 /// (no data at all) stay NaN.
-fn fill_empty(h: &mut [f64], grid: &Grid) {
+pub(crate) fn fill_empty(h: &mut [f64], grid: &Grid) {
     let (nx, ny) = (grid.nx as isize, grid.ny as isize);
     loop {
         let mut updates = Vec::new();

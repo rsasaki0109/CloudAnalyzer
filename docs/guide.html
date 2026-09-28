@@ -86,6 +86,7 @@
       <a href="#volume">Cut / fill volume</a>
       <a href="#icp">Alignment (ICP)</a>
       <a href="#filters">Filters and ground extraction</a>
+      <a href="#raster">Rasterize (DEM / DSM)</a>
       <a href="#normals">Normals</a>
       <a href="#merge">Merge and split</a>
       <a href="#clip">Clipping and cropping</a>
@@ -201,6 +202,16 @@
         are ground. Output is a copy classified ground / other, or only one of the two.</li>
     </ul>
     <a class="try" href="./app/?demo=ground">Try: ground extraction</a>
+
+    <h2 id="raster">Rasterize (DEM / DSM)</h2>
+    <p>
+      <b>Rasterize</b> grids a cloud in XY: each cell takes the mean, minimum, maximum or a percentile of the
+      heights in it, and empty cells can be filled from their neighbours. With a classified cloud, pick
+      <i>Ground</i> for a terrain model (DTM) or all classes for a surface model (DSM); both use the same grid.
+      The raster appears as a cloud colored by height. <b>Save GeoTIFF</b> writes a Float32 GeoTIFF placed by
+      its pixel size and corner (no coordinate system is set: assign it in your GIS); <b>Save PNG</b> writes it in
+      the current color ramp, optionally hillshaded.
+    </p>
 
     <h2 id="normals">Normals</h2>
     <p>

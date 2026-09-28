@@ -115,5 +115,6 @@ export function distanceLabel(c2c: Entry["c2c"]): string {
   if (!c2c) return "Distance";
   if (c2c.kind === "volume") return `Height difference vs ${c2c.referenceName}`;
   if (c2c.kind === "m3c2") return `M3C2 distance from ${c2c.referenceName}`;
+  if (c2c.kind === "raster") return `Height (raster of ${c2c.referenceName})`;
   return `${c2c.kind === "c2m" ? "C2M" : "C2C"} distance → ${c2c.referenceName}`;
 }

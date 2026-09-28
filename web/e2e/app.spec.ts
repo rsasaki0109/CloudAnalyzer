@@ -212,6 +212,58 @@ test("volume: a 2 x 2 x 1 m mound over flat ground is 4 m³ of fill", async ({ p
   await expect(page.locator("#colorbar-title")).toContainText("Height difference");
 });
 
+test("rasterize: a sloped plane saves as a GeoTIFF and a PNG", async ({ page }) => {
+  // z = 0.5 x over 4 x 4 m. With 0.5 m cells centred on multiples of 0.5,
+  // the top-left cell holds x = 0, 0.1, 0.2: mean height 0.05.
+  const points: [number, number, number][] = [];
+  for (let j = 0; j < 40; j++) for (let i = 0; i < 40; i++) points.push([i * 0.1, j * 0.1, i * 0.05]);
+  await open(page, [{ name: "slope.ply", buffer: ply(points) }]);
+  await expect(status(page)).toContainText("Loaded slope.ply");
+  await page.locator("#raster-panel summary").click();
+  await page.locator("#raster-cell").fill("0.5");
+  await page.locator("#raster-run").click();
+  await expect(status(page)).toContainText(/Raster: 9 × 9 cells, 81 with points \(100\.0 %\) in \d+ ms/);
+  await expect(page.locator(".cloud-list li")).toHaveCount(2);
+  await expect(page.locator("#colorbar-title")).toContainText("Height · slope_raster0.5");
+
+  const tiff = page.waitForEvent("download");
+  await page.locator("#raster-tiff").click();
+  const file = await tiff;
+  expect(file.suggestedFilename()).toBe("slope_raster0.5.tif");
+  const chunks: Buffer[] = [];
+  for await (const chunk of await file.createReadStream()) chunks.push(chunk as Buffer);
+  const bytes = Buffer.concat(chunks);
+  expect(bytes.subarray(0, 4).toString("latin1")).toBe("II*\0");
+  // Header, 15 tags and their values take 296 bytes; then 81 Float32 cells.
+  expect(bytes.length).toBe(296 + 81 * 4);
+  expect(bytes.readFloatLE(296)).toBeCloseTo(0.05, 5);
+
+  const png = page.waitForEvent("download");
+  await page.locator("#raster-png").click();
+  expect((await png).suggestedFilename()).toBe("slope_raster0.5.png");
+  await expect(status(page)).toContainText("Saved slope_raster0.5.png (9 × 9 px)");
+});
+
+test("rasterize: ground points only give a terrain model with the roof filled in", async ({ page }) => {
+  const points: { xyz: [number, number, number]; intensity: number; cls: number }[] = [];
+  for (let j = 0; j < 10; j++) {
+    for (let i = 0; i < 10; i++) {
+      const roof = i >= 3 && i < 7 && j >= 3 && j < 7;
+      points.push({ xyz: [i, j, roof ? 5 : 0], intensity: 1, cls: roof ? 6 : 2 });
+    }
+  }
+  await open(page, [{ name: "site.las", buffer: las(points) }]);
+  await expect(status(page)).toContainText("Loaded site.las");
+  await expect(page.locator("#raster-class-row")).toBeVisible();
+  await page.locator("#raster-class").selectOption("2");
+  await page.locator("#raster-panel summary").click();
+  await page.locator("#raster-cell").fill("1");
+  await page.locator("#raster-fill").check();
+  await page.locator("#raster-run").click();
+  await expect(status(page)).toContainText("Raster: 10 × 10 cells, 84 with points (84.0 %), 16 filled");
+  await expect(page.locator("#c2c-stats")).toContainText(/Max\s*0(?!\.)/);
+});
+
 test("ground extraction (CSF) separates a box from flat ground", async ({ page }) => {
   const scene: [number, number, number][] = [];
   for (let j = 0; j < 80; j++) {

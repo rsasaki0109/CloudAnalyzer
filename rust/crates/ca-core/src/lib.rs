@@ -6,6 +6,7 @@
 
 pub mod distance;
 pub mod filter;
+pub mod geotiff;
 pub mod ground;
 pub mod icp;
 pub mod io;
@@ -16,6 +17,7 @@ pub mod mesh;
 pub mod normals;
 pub mod octree;
 pub mod profile;
+pub mod raster;
 pub mod segment;
 pub mod volume;
 

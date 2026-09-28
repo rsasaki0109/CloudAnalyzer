@@ -52,8 +52,8 @@ export interface C2cStats {
 }
 
 export interface C2cOutput {
-  /** Cloud-to-cloud, cloud-to-mesh, or a cut/fill height difference. */
-  kind: "c2c" | "c2m" | "volume" | "m3c2";
+  /** Cloud-to-cloud, cloud-to-mesh, a cut/fill height difference, or raster heights. */
+  kind: "c2c" | "c2m" | "volume" | "m3c2" | "raster";
   /** Negative distances mean "behind the mesh" (C2M only). */
   signed: boolean;
   /** Per-point distances of the compared cloud (octree order, like its positions). */
@@ -91,6 +91,28 @@ export interface VolumeOutput {
   cells: LoadedCloud | null;
   /** after − before per cell, in the cells' order. */
   difference: Float32Array | null;
+  millis: number;
+}
+
+/** A height grid (DEM / DSM). */
+export interface RasterGrid {
+  nx: number;
+  ny: number;
+  /** Lower-left corner of the grid, original coordinates. */
+  minX: number;
+  minY: number;
+  cell: number;
+  /** Per-cell heights, row-major from the lowest y; NaN where empty. */
+  heights: Float32Array;
+}
+
+export interface RasterOutput extends RasterGrid {
+  /** Cells that had points, before filling. */
+  populatedCells: number;
+  /** One point per non-empty cell at its height. */
+  cells: LoadedCloud;
+  /** The height of each cell point, in the cells' order. */
+  cellHeights: Float32Array;
   millis: number;
 }
 
@@ -150,6 +172,18 @@ export type Request =
       height: "mean" | "min" | "max";
       fillEmpty: boolean;
     }
+  | {
+      kind: "rasterize";
+      id: number;
+      cell: number;
+      height: "mean" | "min" | "max" | "percentile";
+      /** 0-100, for `height: "percentile"`. */
+      percentile: number;
+      fillEmpty: boolean;
+      /** Only points of this class code. */
+      class: number | null;
+    }
+  | { kind: "geotiff"; raster: RasterGrid }
   | {
       kind: "filter";
       id: number;

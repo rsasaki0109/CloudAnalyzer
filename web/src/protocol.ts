@@ -277,6 +277,21 @@ export interface PoseGraphState {
   edgeKinds: Uint8Array;
   /** Squared (information-weighted) error per edge. */
   edgeErrors: Float64Array;
+  /** Plane landmarks (e.g. the floor), and node-to-plane edges. */
+  planes: number;
+  planeEdges: number;
+}
+
+/** A floor tied to the keyframes that see it (see `pg-floor`). */
+export interface PoseGraphFloor {
+  state: PoseGraphState;
+  /** The new plane's index, for undo. */
+  plane: number;
+  /** Keyframes whose scan shows the floor. */
+  tied: number;
+  /** The up axis used, in scan coordinates. */
+  up: number[];
+  optimized: { initialCost: number; finalCost: number; iterations: number };
 }
 
 export interface PoseGraphOpened extends PoseGraphState {
@@ -421,6 +436,20 @@ export type Request =
       sigmaRDeg: number;
       loopKernel: number;
     }
+  | {
+      /** Find the floor under each keyframe, tie them to one floor plane, optimise. */
+      kind: "pg-floor";
+      /** Up in scan coordinates, or null to pick +z, -y or +y automatically. */
+      up: number[] | null;
+      maxTiltDeg: number;
+      /** Largest distance of a floor point from the plane (metres). */
+      threshold: number;
+      minPoints: number;
+      sigmaAngleDeg: number;
+      sigmaOffset: number;
+      loopKernel: number;
+    }
+  | { kind: "pg-remove-plane"; index: number }
   | { kind: "pg-optimize"; /** Huber threshold for loops, 0 for none. */ loopKernel: number }
   | {
       /** Remove edges (the removed ones come back for undo), then optimise if `loopKernel` is given. */

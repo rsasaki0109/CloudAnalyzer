@@ -10,6 +10,11 @@
 //! the graph less. The normal equations are solved with a block-sparse
 //! Cholesky factorisation in minimum-degree order, which keeps the fill of
 //! chain-plus-loops graphs small; no dependencies beyond `std`.
+//!
+//! Plane landmarks (e.g. the floor, seen from many keyframes) are optional
+//! extra variables: an edge from a node to a plane says where the node sees
+//! it, as `n · x + d = 0` in the node's frame. Tying keyframes to one floor
+//! removes the tilt and height drift odometry leaves.
 
 use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap, HashMap};
@@ -62,10 +67,152 @@ pub struct Edge {
     pub kind: EdgeKind,
 }
 
+/// A plane landmark `n · x + d = 0` in world coordinates, `n` a unit vector.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Plane {
+    /// Its vertex id in g2o files (distinct from the node ids).
+    pub id: i64,
+    pub coefficients: [f64; 4],
+    pub fixed: bool,
+}
+
+/// A node's view of a plane: its coefficients in the node's frame, with a
+/// 3x3 information on (normal tilt about two axes, offset).
+#[derive(Debug, Clone, PartialEq)]
+pub struct PlaneEdge {
+    pub node: usize,
+    pub plane: usize,
+    pub measurement: [f64; 4],
+    pub information: [[f64; 3]; 3],
+}
+
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct PoseGraph {
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,
+    pub planes: Vec<Plane>,
+    pub plane_edges: Vec<PlaneEdge>,
+}
+
+/// Information for a plane seen with standard deviations `sigma_angle`
+/// (radians, per tilt axis) and `sigma_offset` (metres).
+pub fn plane_information(sigma_angle: f64, sigma_offset: f64) -> [[f64; 3]; 3] {
+    let a = 1.0 / (sigma_angle * sigma_angle);
+    [
+        [a, 0.0, 0.0],
+        [0.0, a, 0.0],
+        [0.0, 0.0, 1.0 / (sigma_offset * sigma_offset)],
+    ]
+}
+
+fn dot3(a: &[f64; 3], b: &[f64; 3]) -> f64 {
+    a[0] * b[0] + a[1] * b[1] + a[2] * b[2]
+}
+
+fn cross3(a: &[f64; 3], b: &[f64; 3]) -> [f64; 3] {
+    [
+        a[1] * b[2] - a[2] * b[1],
+        a[2] * b[0] - a[0] * b[2],
+        a[0] * b[1] - a[1] * b[0],
+    ]
+}
+
+fn unit3(v: [f64; 3]) -> [f64; 3] {
+    let n = dot3(&v, &v).sqrt();
+    v.map(|x| x / n)
+}
+
+/// Two unit vectors orthogonal to the unit vector `n` and to each other.
+fn tangent_basis(n: &[f64; 3]) -> ([f64; 3], [f64; 3]) {
+    let helper = if n[0].abs() < 0.9 {
+        [1.0, 0.0, 0.0]
+    } else {
+        [0.0, 1.0, 0.0]
+    };
+    let u = unit3(cross3(n, &helper));
+    (u, cross3(n, &u))
+}
+
+/// A world plane as seen from pose `x` (its coefficients in `x`'s frame).
+pub fn plane_in_frame(plane: &[f64; 4], x: &Rigid) -> [f64; 4] {
+    let n = [plane[0], plane[1], plane[2]];
+    let r = &x.rotation;
+    let local: [f64; 3] = std::array::from_fn(|i| (0..3).map(|k| r[k][i] * n[k]).sum());
+    [
+        local[0],
+        local[1],
+        local[2],
+        dot3(&n, &x.translation) + plane[3],
+    ]
+}
+
+/// A plane seen from pose `x` in world coordinates (the inverse of [`plane_in_frame`]).
+pub fn plane_in_world(local: &[f64; 4], x: &Rigid) -> [f64; 4] {
+    let l = [local[0], local[1], local[2]];
+    let r = &x.rotation;
+    let n: [f64; 3] = std::array::from_fn(|i| (0..3).map(|k| r[i][k] * l[k]).sum());
+    [n[0], n[1], n[2], local[3] - dot3(&n, &x.translation)]
+}
+
+/// The plane moved by `d = [tilt u, tilt v, offset]` (tilts about its own tangent basis).
+fn retract_plane(plane: &[f64; 4], d: &Vec6) -> [f64; 4] {
+    let n = [plane[0], plane[1], plane[2]];
+    let (u, v) = tangent_basis(&n);
+    let moved = unit3(std::array::from_fn(|i| n[i] + d[0] * u[i] + d[1] * v[i]));
+    [moved[0], moved[1], moved[2], plane[3] + d[2]]
+}
+
+/// Residual of a plane edge, padded to six entries: the predicted normal's
+/// components along the measured normal's tangent basis, and the offset
+/// difference.
+fn plane_residual(x: &Rigid, plane: &[f64; 4], measurement: &[f64; 4]) -> Vec6 {
+    let predicted = plane_in_frame(plane, x);
+    let m = [measurement[0], measurement[1], measurement[2]];
+    let (u, v) = tangent_basis(&m);
+    let n = [predicted[0], predicted[1], predicted[2]];
+    [
+        dot3(&u, &n),
+        dot3(&v, &n),
+        predicted[3] - measurement[3],
+        0.0,
+        0.0,
+        0.0,
+    ]
+}
+
+/// A plane edge's 3x3 information padded to 6x6.
+fn plane_weight(information: &[[f64; 3]; 3]) -> Mat6 {
+    std::array::from_fn(|i| {
+        std::array::from_fn(|j| {
+            if i < 3 && j < 3 {
+                information[i][j]
+            } else {
+                0.0
+            }
+        })
+    })
+}
+
+fn plane_jacobians(x: &Rigid, plane: &[f64; 4], measurement: &[f64; 4]) -> (Mat6, Mat6) {
+    const H: f64 = 1e-6;
+    let mut jx = ZERO6;
+    let mut jp = ZERO6;
+    for c in 0..6 {
+        let mut d = [0.0; 6];
+        d[c] = H;
+        let plus_x = plane_residual(&retract(x, &d), plane, measurement);
+        let plus_p = (c < 3).then(|| plane_residual(x, &retract_plane(plane, &d), measurement));
+        d[c] = -H;
+        let minus_x = plane_residual(&retract(x, &d), plane, measurement);
+        let minus_p = (c < 3).then(|| plane_residual(x, &retract_plane(plane, &d), measurement));
+        for r in 0..6 {
+            jx[r][c] = (plus_x[r] - minus_x[r]) / (2.0 * H);
+            if let (Some(p), Some(m)) = (plus_p, minus_p) {
+                jp[r][c] = (p[r] - m[r]) / (2.0 * H);
+            }
+        }
+    }
+    (jx, jp)
 }
 
 /// Information for standard deviations `sigma_t` (metres, per axis) and
@@ -214,13 +361,15 @@ fn pose_text(x: &Rigid) -> String {
 }
 
 impl PoseGraph {
-    /// Read `VERTEX_SE3:QUAT`, `EDGE_SE3:QUAT` and `FIX` lines; other
-    /// element types are skipped. Edges between consecutive ids are
-    /// odometry, the rest loops.
+    /// Read `VERTEX_SE3:QUAT`, `EDGE_SE3:QUAT`, `VERTEX_PLANE`,
+    /// `EDGE_SE3_PLANE` and `FIX` lines; other element types are skipped.
+    /// Edges between consecutive ids are odometry, the rest loops.
     pub fn from_g2o(text: &str) -> Result<PoseGraph, PoseGraphError> {
         let mut graph = PoseGraph::default();
         let mut index = HashMap::new();
+        let mut plane_index = HashMap::new();
         let mut edges = Vec::new();
+        let mut plane_edges = Vec::new();
         let mut fixed = Vec::new();
         for (n, line) in text.lines().enumerate() {
             let mut fields = line.split_whitespace();
@@ -268,6 +417,51 @@ impl PoseGraph {
                     }
                     edges.push((n + 1, a, b, pose_from(&values), information));
                 }
+                "VERTEX_PLANE" => {
+                    let v = id(fields.next())?;
+                    let values = fields.map(parse).collect::<Result<Vec<_>, _>>()?;
+                    if values.len() < 4 {
+                        return fail(format!("line {}: a plane needs 4 numbers", n + 1));
+                    }
+                    let norm = dot3(
+                        &[values[0], values[1], values[2]],
+                        &[values[0], values[1], values[2]],
+                    )
+                    .sqrt();
+                    plane_index.insert(v, graph.planes.len());
+                    graph.planes.push(Plane {
+                        id: v,
+                        coefficients: [values[0], values[1], values[2], values[3]]
+                            .map(|c| c / norm),
+                        fixed: false,
+                    });
+                }
+                "EDGE_SE3_PLANE" => {
+                    let a = id(fields.next())?;
+                    let b = id(fields.next())?;
+                    let values = fields.map(parse).collect::<Result<Vec<_>, _>>()?;
+                    if values.len() < 10 {
+                        return fail(format!(
+                            "line {}: a plane edge needs 4 numbers and 6 information entries",
+                            n + 1
+                        ));
+                    }
+                    let mut information = [[0.0; 3]; 3];
+                    let mut upper = values[4..].iter();
+                    for (i, j) in (0..3).flat_map(|i| (i..3).map(move |j| (i, j))) {
+                        let x = *upper.next().unwrap_or(&0.0);
+                        information[i][j] = x;
+                        information[j][i] = x;
+                    }
+                    let norm = dot3(
+                        &[values[0], values[1], values[2]],
+                        &[values[0], values[1], values[2]],
+                    )
+                    .sqrt();
+                    let measurement =
+                        [values[0], values[1], values[2], values[3]].map(|c| c / norm);
+                    plane_edges.push((n + 1, a, b, measurement, information));
+                }
                 "FIX" => {
                     for f in fields {
                         fixed.push(id(Some(f))?);
@@ -298,9 +492,24 @@ impl PoseGraph {
                 },
             });
         }
+        for (line, a, b, measurement, information) in plane_edges {
+            let plane = plane_index
+                .get(&b)
+                .copied()
+                .ok_or_else(|| PoseGraphError(format!("line {line}: no plane {b}")))?;
+            graph.plane_edges.push(PlaneEdge {
+                node: lookup(line, a)?,
+                plane,
+                measurement,
+                information,
+            });
+        }
         for v in fixed {
             if let Some(&i) = index.get(&v) {
                 graph.nodes[i].fixed = true;
+            }
+            if let Some(&p) = plane_index.get(&v) {
+                graph.planes[p].fixed = true;
             }
         }
         Ok(graph)
@@ -311,8 +520,18 @@ impl PoseGraph {
         for node in &self.nodes {
             out += &format!("VERTEX_SE3:QUAT {} {}\n", node.id, pose_text(&node.pose));
         }
+        for plane in &self.planes {
+            let c = plane.coefficients;
+            out += &format!(
+                "VERTEX_PLANE {} {} {} {} {}\n",
+                plane.id, c[0], c[1], c[2], c[3]
+            );
+        }
         for node in self.nodes.iter().filter(|n| n.fixed) {
             out += &format!("FIX {}\n", node.id);
+        }
+        for plane in self.planes.iter().filter(|p| p.fixed) {
+            out += &format!("FIX {}\n", plane.id);
         }
         for edge in &self.edges {
             out += &format!(
@@ -328,7 +547,53 @@ impl PoseGraph {
             }
             out.push('\n');
         }
+        for edge in &self.plane_edges {
+            let m = edge.measurement;
+            out += &format!(
+                "EDGE_SE3_PLANE {} {} {} {} {} {}",
+                self.nodes[edge.node].id, self.planes[edge.plane].id, m[0], m[1], m[2], m[3]
+            );
+            for i in 0..3 {
+                for j in i..3 {
+                    out += &format!(" {}", edge.information[i][j]);
+                }
+            }
+            out.push('\n');
+        }
         out
+    }
+
+    /// A new plane landmark at `coefficients` (world), with an id past every
+    /// node and plane id; returns its index.
+    pub fn add_plane(&mut self, coefficients: [f64; 4]) -> usize {
+        let top = self
+            .nodes
+            .iter()
+            .map(|n| n.id)
+            .chain(self.planes.iter().map(|p| p.id))
+            .max()
+            .unwrap_or(-1);
+        self.planes.push(Plane {
+            id: top + 1,
+            coefficients,
+            fixed: false,
+        });
+        self.planes.len() - 1
+    }
+
+    /// Squared error of every plane edge.
+    pub fn plane_edge_errors(&self) -> Vec<f64> {
+        self.plane_edges
+            .iter()
+            .map(|e| {
+                let r = plane_residual(
+                    &self.nodes[e.node].pose,
+                    &self.planes[e.plane].coefficients,
+                    &e.measurement,
+                );
+                quadratic(&r, &plane_weight(&e.information))
+            })
+            .collect()
     }
 
     /// A chain of odometry edges through `poses`, measured from the poses
@@ -354,7 +619,11 @@ impl PoseGraph {
                 kind: EdgeKind::Odometry,
             })
             .collect();
-        PoseGraph { nodes, edges }
+        PoseGraph {
+            nodes,
+            edges,
+            ..PoseGraph::default()
+        }
     }
 
     /// Relative pose of node `to` in the frame of node `from`, as the graph
@@ -424,11 +693,13 @@ impl PoseGraph {
     }
 
     fn cost(&self, params: &OptimizeParams) -> f64 {
-        self.edge_errors()
+        let poses: f64 = self
+            .edge_errors()
             .iter()
             .zip(&self.edges)
             .map(|(&chi2, e)| robust(chi2, params.kernel(e.kind)).0)
-            .sum()
+            .sum();
+        poses + self.plane_edge_errors().iter().sum::<f64>()
     }
 }
 
@@ -680,12 +951,29 @@ pub fn optimize(graph: &mut PoseGraph, params: &OptimizeParams) -> Option<Optimi
             variables += 1;
         }
     }
+    // Planes follow the poses; their blocks use three of the six entries.
+    let mut plane_variable = vec![usize::MAX; graph.planes.len()];
+    for (p, plane) in graph.planes.iter().enumerate() {
+        if !plane.fixed {
+            plane_variable[p] = variables;
+            variables += 1;
+        }
+    }
     if variables == 0 {
         return None;
     }
     let mut adjacency = vec![BTreeSet::new(); variables];
-    for e in &graph.edges {
-        let (a, b) = (variable[e.from], variable[e.to]);
+    let pairs = graph
+        .edges
+        .iter()
+        .map(|e| (variable[e.from], variable[e.to]))
+        .chain(
+            graph
+                .plane_edges
+                .iter()
+                .map(|e| (variable[e.node], plane_variable[e.plane])),
+        );
+    for (a, b) in pairs {
         if a != usize::MAX && b != usize::MAX && a != b {
             adjacency[a].insert(b);
             adjacency[b].insert(a);
@@ -709,7 +997,13 @@ pub fn optimize(graph: &mut PoseGraph, params: &OptimizeParams) -> Option<Optimi
                 .collect(),
         };
         let mut g = vec![[0.0; 6]; variables];
-        for e in &graph.edges {
+        // The unused entries of plane blocks get a unit diagonal (their step stays zero).
+        for &p in plane_variable.iter().filter(|&&p| p != usize::MAX) {
+            for i in 3..6 {
+                h.diagonal[position[p]][i][i] = 1.0;
+            }
+        }
+        let pose_terms = graph.edges.iter().map(|e| {
             let (xi, xj) = (&graph.nodes[e.from].pose, &graph.nodes[e.to].pose);
             let z_inv = inverse(&e.measurement);
             let r = residual(xi, xj, &z_inv);
@@ -717,8 +1011,23 @@ pub fn optimize(graph: &mut PoseGraph, params: &OptimizeParams) -> Option<Optimi
             let s = robust(quadratic(&r, &w), params.kernel(e.kind)).1;
             w = w.map(|row| row.map(|x| x * s));
             let (ji, jj) = jacobians(xi, xj, &z_inv);
-            let ends = [(variable[e.from], &ji), (variable[e.to], &jj)];
-            for &(a, ja) in &ends {
+            (r, w, [(variable[e.from], ji), (variable[e.to], jj)])
+        });
+        let plane_terms = graph.plane_edges.iter().map(|e| {
+            let (x, plane) = (
+                &graph.nodes[e.node].pose,
+                &graph.planes[e.plane].coefficients,
+            );
+            let r = plane_residual(x, plane, &e.measurement);
+            let (jx, jp) = plane_jacobians(x, plane, &e.measurement);
+            (
+                r,
+                plane_weight(&e.information),
+                [(variable[e.node], jx), (plane_variable[e.plane], jp)],
+            )
+        });
+        for (r, w, ends) in pose_terms.chain(plane_terms) {
+            for &(a, ref ja) in &ends {
                 if a == usize::MAX {
                     continue;
                 }
@@ -727,7 +1036,7 @@ pub fn optimize(graph: &mut PoseGraph, params: &OptimizeParams) -> Option<Optimi
                 for i in 0..6 {
                     g[pa][i] += ga[i];
                 }
-                for &(b, jb) in &ends {
+                for &(b, ref jb) in &ends {
                     if b == usize::MAX || position[b] > pa {
                         continue;
                     }
@@ -768,6 +1077,12 @@ pub fn optimize(graph: &mut PoseGraph, params: &OptimizeParams) -> Option<Optimi
             for (i, node) in trial.nodes.iter_mut().enumerate() {
                 if variable[i] != usize::MAX {
                     node.pose = retract(&node.pose, &step[position[variable[i]]]);
+                }
+            }
+            for (p, plane) in trial.planes.iter_mut().enumerate() {
+                if plane_variable[p] != usize::MAX {
+                    plane.coefficients =
+                        retract_plane(&plane.coefficients, &step[position[plane_variable[p]]]);
                 }
             }
             let trial_cost = trial.cost(params);
@@ -877,8 +1192,118 @@ impl PoseGraph {
             to: e.to + offset,
             ..e.clone()
         }));
+        let plane_offset = self.planes.len();
+        for plane in &other.planes {
+            let index = self.add_plane(plane_in_world(&plane.coefficients, transform));
+            self.planes[index].fixed = false;
+        }
+        self.plane_edges
+            .extend(other.plane_edges.iter().map(|e| PlaneEdge {
+                node: e.node + offset,
+                plane: e.plane + plane_offset,
+                ..e.clone()
+            }));
         offset
     }
+}
+
+/// The floor under a scan (in its frame): the plane with the most points
+/// within `threshold` whose normal is at most `max_tilt` (radians) from `up`
+/// and that lies below the sensor, refined by a least-squares fit to those
+/// points. `None` when fewer than `min_points` support it. The normal points
+/// up, so the offset is the sensor's height above the floor.
+pub fn detect_floor(
+    scan: &PointCloud,
+    up: [f64; 3],
+    max_tilt: f64,
+    threshold: f64,
+    min_points: usize,
+) -> Option<[f64; 4]> {
+    const SAMPLE: usize = 4000;
+    const TRIALS: usize = 300;
+    let up = unit3(up);
+    let step = scan.len().div_ceil(SAMPLE).max(1);
+    let points: Vec<[f64; 3]> = scan.positions.iter().step_by(step).copied().collect();
+    if points.len() < 3 {
+        return None;
+    }
+    let cos_max = max_tilt.cos();
+    let mut seed: u64 = 0x9e37_79b9_7f4a_7c15;
+    let mut next = |n: usize| {
+        seed ^= seed << 13;
+        seed ^= seed >> 7;
+        seed ^= seed << 17;
+        (seed % n as u64) as usize
+    };
+    let count = |n: &[f64; 3], d: f64| {
+        points
+            .iter()
+            .filter(|p| (dot3(n, p) + d).abs() <= threshold)
+            .count()
+    };
+    let mut best: Option<([f64; 3], f64, usize)> = None;
+    for _ in 0..TRIALS {
+        let (a, b, c) = (
+            points[next(points.len())],
+            points[next(points.len())],
+            points[next(points.len())],
+        );
+        let normal = cross3(&sub3(&b, &a), &sub3(&c, &a));
+        let length = dot3(&normal, &normal).sqrt();
+        if length < 1e-12 {
+            continue;
+        }
+        let mut n = normal.map(|x| x / length);
+        if dot3(&n, &up) < 0.0 {
+            n = n.map(|x| -x);
+        }
+        let d = -dot3(&n, &a);
+        // Tilted too far, or above the sensor.
+        if dot3(&n, &up) < cos_max || d <= 0.0 {
+            continue;
+        }
+        let support = count(&n, d);
+        if best.is_none_or(|(_, _, s)| support > s) {
+            best = Some((n, d, support));
+        }
+    }
+    let (n, d, _) = best?;
+    // Least-squares refit: the direction of least spread of the inliers.
+    let inliers: Vec<&[f64; 3]> = scan
+        .positions
+        .iter()
+        .filter(|p| (dot3(&n, p) + d).abs() <= threshold)
+        .collect();
+    if inliers.len() < min_points {
+        return None;
+    }
+    let k = inliers.len() as f64;
+    let mean: [f64; 3] = std::array::from_fn(|i| inliers.iter().map(|p| p[i]).sum::<f64>() / k);
+    let mut cov = [[0.0; 3]; 3];
+    for p in &inliers {
+        let q = sub3(p, &mean);
+        for i in 0..3 {
+            for j in 0..3 {
+                cov[i][j] += q[i] * q[j] / k;
+            }
+        }
+    }
+    let (values, vectors) = crate::icp::symmetric_eigen(cov);
+    let smallest = (0..3).min_by(|&a, &b| values[a].total_cmp(&values[b]))?;
+    let mut fitted = [
+        vectors[0][smallest],
+        vectors[1][smallest],
+        vectors[2][smallest],
+    ];
+    if dot3(&fitted, &n) < 0.0 {
+        fitted = fitted.map(|x| -x);
+    }
+    let fitted = unit3(fitted);
+    Some([fitted[0], fitted[1], fitted[2], -dot3(&fitted, &mean)])
+}
+
+fn sub3(a: &[f64; 3], b: &[f64; 3]) -> [f64; 3] {
+    [a[0] - b[0], a[1] - b[1], a[2] - b[2]]
 }
 
 /// Fraction of `to_scan`'s points (up to a few thousand, evenly spread)
@@ -1437,5 +1862,128 @@ FIX 1
         c.nodes[0].id = 100;
         a.append(&c, &Rigid::IDENTITY);
         assert_eq!(a.nodes[4].id, 100);
+    }
+
+    #[test]
+    fn planes_move_between_frames() {
+        let x = pose([1.0, -2.0, 0.5], [0.2, -0.1, 0.7]);
+        let world = [0.0, 0.6, 0.8, -3.0];
+        let local = plane_in_frame(&world, &x);
+        let back = plane_in_world(&local, &x);
+        for i in 0..4 {
+            assert!((back[i] - world[i]).abs() < 1e-12);
+        }
+        // A point on the plane stays on it in the pose's frame.
+        let on_world = [2.0, 0.0, 3.75];
+        let on_local = inverse(&x).apply(&on_world);
+        assert!(
+            (local[0] * on_local[0] + local[1] * on_local[1] + local[2] * on_local[2] + local[3])
+                .abs()
+                < 1e-12
+        );
+    }
+
+    #[test]
+    fn detect_floor_finds_the_ground_under_the_sensor() {
+        // A slightly tilted floor 1.8 m below the sensor, a wall and a ceiling.
+        let mut positions = Vec::new();
+        for a in -30..=30 {
+            for b in -30..=30 {
+                let (x, y) = (a as f64 * 0.3, b as f64 * 0.3);
+                positions.push([x, y, -1.8 + 0.02 * x]);
+                positions.push([x, 6.0, 1.0 + b as f64 * 0.05]);
+                positions.push([x, y, 1.2]);
+            }
+        }
+        let scan = PointCloud {
+            positions,
+            ..PointCloud::default()
+        };
+        let floor = detect_floor(&scan, [0.0, 0.0, 1.0], 0.5, 0.05, 100).unwrap();
+        let n = unit3([-0.02, 0.0, 1.0]);
+        for i in 0..3 {
+            assert!((floor[i] - n[i]).abs() < 1e-6, "{floor:?}");
+        }
+        assert!((floor[3] - 1.8 * n[2]).abs() < 1e-6, "{floor:?}");
+        // Looking for a floor along another axis finds none below the sensor.
+        assert!(detect_floor(&scan, [1.0, 0.0, 0.0], 0.3, 0.05, 100).is_none());
+    }
+
+    #[test]
+    fn a_shared_floor_removes_height_drift() {
+        // A straight 30-pose drive on flat ground; odometry pitches down a little each step.
+        let truth: Vec<Rigid> = (0..30)
+            .map(|k| pose([k as f64, 0.0, 0.0], [0.0; 3]))
+            .collect();
+        let info = isotropic_information(0.05, 0.01);
+        let mut graph = PoseGraph::from_poses(&truth, info);
+        for e in &mut graph.edges {
+            e.measurement = e.measurement.compose(&pose([0.0; 3], [0.0, 0.004, 0.0]));
+        }
+        for i in 1..graph.nodes.len() {
+            graph.nodes[i].pose = graph.nodes[i - 1]
+                .pose
+                .compose(&graph.edges[i - 1].measurement);
+        }
+        let height = |g: &PoseGraph| {
+            g.nodes
+                .iter()
+                .map(|n| n.pose.translation[2].abs())
+                .fold(0.0, f64::max)
+        };
+        assert!(height(&graph) > 1.0, "{}", height(&graph));
+        // Every pose sees the floor 1.8 m below it.
+        let floor = [0.0, 0.0, 1.0, 1.8];
+        let seen: Vec<[f64; 4]> = truth.iter().map(|x| plane_in_frame(&floor, x)).collect();
+        let plane = graph.add_plane(plane_in_world(&seen[0], &graph.nodes[0].pose));
+        for (node, measurement) in seen.iter().enumerate() {
+            graph.plane_edges.push(PlaneEdge {
+                node,
+                plane,
+                measurement: *measurement,
+                information: plane_information(0.01, 0.02),
+            });
+        }
+        let report = optimize(&mut graph, &OptimizeParams::default()).unwrap();
+        assert!(report.converged, "{report:?}");
+        // What is left is the compromise with the biased odometry.
+        assert!(height(&graph) < 0.1, "{}", height(&graph));
+        let c = graph.planes[plane].coefficients;
+        assert!(
+            (c[2] - 1.0).abs() < 1e-4 && (c[3] - 1.8).abs() < 0.05,
+            "{c:?}"
+        );
+    }
+
+    #[test]
+    fn planes_round_trip_through_g2o_and_append() {
+        let info = isotropic_information(1.0, 1.0);
+        let mut graph =
+            PoseGraph::from_poses(&[Rigid::IDENTITY, pose([1.0, 0.0, 0.0], [0.0; 3])], info);
+        let plane = graph.add_plane([0.0, 0.0, 1.0, 1.5]);
+        assert_eq!(graph.planes[plane].id, 2);
+        graph.plane_edges.push(PlaneEdge {
+            node: 1,
+            plane,
+            measurement: [0.0, 0.0, 1.0, 1.5],
+            information: plane_information(0.01, 0.02),
+        });
+        let text = graph.to_g2o();
+        assert!(text.contains("VERTEX_PLANE 2 0 0 1 1.5"), "{text}");
+        let back = PoseGraph::from_g2o(&text).unwrap();
+        assert_eq!(back.planes, graph.planes);
+        assert_eq!(back.plane_edges.len(), 1);
+        assert_eq!(back.plane_edges[0].node, 1);
+        assert!((back.plane_edges[0].information[2][2] - 2500.0).abs() < 1e-9);
+        assert!(back.plane_edge_errors()[0] < 1e-20);
+
+        // Appended somewhere else, the plane moves with its graph.
+        let mut other = PoseGraph::from_poses(&[Rigid::IDENTITY], info);
+        let t = pose([5.0, 0.0, 2.0], [0.0; 3]);
+        other.append(&back, &t);
+        assert_eq!(other.planes.len(), 1);
+        assert!((other.planes[0].coefficients[3] - (1.5 - 2.0)).abs() < 1e-12);
+        assert_eq!(other.plane_edges[0].node, 2);
+        assert!(other.plane_edge_errors()[0] < 1e-20);
     }
 }

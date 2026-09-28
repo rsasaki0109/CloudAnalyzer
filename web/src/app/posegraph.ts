@@ -11,6 +11,7 @@
 
 import * as THREE from "three";
 import {
+  addPoseGraphFloor,
   addPoseGraphLoop,
   closePoseGraph,
   exportPoseGraph,
@@ -21,6 +22,7 @@ import {
   insertPoseGraphEdges,
   poseGraphMap,
   removePoseGraphEdges,
+  removePoseGraphPlane,
   setPoseGraphPoses,
 } from "../api";
 import { colorize, gradientCss, lut } from "../colormap";
@@ -45,6 +47,8 @@ interface Step {
   /** Loop edges the step added (the last ones of the graph). */
   added?: number[];
   removed?: RemovedEdge[];
+  /** A plane the step added (with its edges). */
+  plane?: number;
 }
 
 /** Scan files (the poses are g2o, TUM or KITTI text). */
@@ -312,6 +316,9 @@ function renderInfo(): void {
     ["Nodes", `${(state.poses.length / 16).toLocaleString()} (${withScans.toLocaleString()} with scans)`],
     ["Edges", `${(state.edgeKinds.length - loops).toLocaleString()} odometry, ${loops.toLocaleString()} loops`],
     ["Scan points", g.scanPoints.toLocaleString()],
+    ...(state.planes
+      ? [["Planes", `${state.planes} (${state.planeEdges.toLocaleString()} keyframe views)`] as [string, string]]
+      : []),
     ["Total error (χ²)", fmt(errors)],
   ]);
   $<HTMLButtonElement>("pg-loop").disabled = busy || selection.length !== 2;
@@ -320,6 +327,7 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-map").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-find").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-merge").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-floor").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-prune").disabled = busy || loops === 0;
   $("pg-legend").hidden = !errorColors();
   $("pg-legend-bar").style.background = gradientCss(display.ramp, "to right");
@@ -690,6 +698,33 @@ $<HTMLButtonElement>("pg-find").onclick = () =>
     }
   });
 
+const AXES: Record<string, number[] | null> = { auto: null, "+z": [0, 0, 1], "-y": [0, -1, 0], "+y": [0, 1, 0] };
+const axisName = (up: number[]) =>
+  Object.entries(AXES).find(([, v]) => v && v.every((x, i) => x === up[i]))?.[0].toUpperCase() ?? up.join(", ");
+
+$<HTMLButtonElement>("pg-floor").onclick = () =>
+  run("Adding the floor", async () => {
+    const poses = graph!.state.poses.slice();
+    setStatus("Looking for the floor under every keyframe…");
+    const floor = await addPoseGraphFloor({
+      up: AXES[$<HTMLSelectElement>("pg-floor-up").value] ?? null,
+      maxTiltDeg: Math.max(0, num("pg-floor-tilt") || 20),
+      threshold: Math.max(0.001, num("pg-floor-threshold") || 0.1),
+      minPoints: Math.max(3, Math.round(num("pg-floor-points") || 200)),
+      sigmaAngleDeg: num("pg-floor-sigma-r") || 0.5,
+      sigmaOffset: num("pg-floor-sigma-t") || 0.05,
+      loopKernel: kernel(),
+    });
+    steps.push({ poses, plane: floor.plane });
+    update(floor.state);
+    const withScans = graph!.scans.filter((s) => s).length;
+    const { optimized } = floor;
+    setStatus(
+      `Floor found under ${floor.tied.toLocaleString()} of ${withScans.toLocaleString()} keyframes (up ${axisName(floor.up)}); ` +
+        `χ² ${fmt(optimized.initialCost)} → ${fmt(optimized.finalCost)} in ${optimized.iterations} iterations`,
+    );
+  });
+
 const kernel = () => ($<HTMLInputElement>("pg-robust").checked ? Math.max(0, num("pg-kernel")) : 0);
 
 async function optimize(): Promise<string> {
@@ -737,6 +772,7 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
     const step = steps.pop();
     if (!step) return;
     if (step.added) await removePoseGraphEdges(step.added, null);
+    if (step.plane !== undefined) await removePoseGraphPlane(step.plane);
     if (step.removed) await insertPoseGraphEdges(step.removed);
     update(await setPoseGraphPoses(step.poses));
     const plural = (n: number) => (n === 1 ? "" : "s");
@@ -745,7 +781,9 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
         ? step.added.length === 1
           ? "Removed the last loop"
           : `Removed the ${step.added.length} loop${plural(step.added.length)} found`
-        : step.removed
+        : step.plane !== undefined
+          ? "Removed the floor"
+          : step.removed
           ? `Put back ${step.removed.length} removed edge${step.removed.length === 1 ? "" : "s"}`
           : "Undid the optimisation",
     );

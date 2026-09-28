@@ -1,6 +1,7 @@
 """The optional Rust core must agree exactly with the Open3D implementations."""
 
 import os
+from pathlib import Path
 
 import numpy as np
 import open3d as o3d
@@ -155,3 +156,19 @@ def test_normals_of_a_tilted_plane():
     normals = cloudanalyzer_core.normals(points, k=10)
     assert normals.shape == (2500, 3) and normals.dtype == np.float32
     np.testing.assert_allclose(normals, np.tile([-0.5, 0, 1] / np.sqrt(1.25), (2500, 1)), atol=1e-4)
+
+
+COPC_FIXTURE = Path(__file__).resolve().parents[2] / "web" / "e2e" / "fixtures" / "small.copc.laz"
+
+
+@pytest.mark.skipif(not COPC_FIXTURE.is_file(), reason="needs the repository's COPC fixture")
+def test_read_copc_levels_within_budget():
+    # 3 levels of 2,000-point nodes: 1 + 4 + 16 nodes.
+    full = cloudanalyzer_core.read_copc(COPC_FIXTURE)
+    assert full["total_points"] == 42_000 and full["levels"] == 3
+    assert full["positions"].shape == (42_000, 3)
+    assert set(np.unique(full["classification"])) == {2, 3}
+    two = cloudanalyzer_core.read_copc(COPC_FIXTURE, max_points=15_000)
+    assert two["levels"] == 2 and len(two["positions"]) == 10_000
+    root = cloudanalyzer_core.read_copc(COPC_FIXTURE, max_points=1)
+    assert root["levels"] == 1 and len(root["positions"]) == 2_000

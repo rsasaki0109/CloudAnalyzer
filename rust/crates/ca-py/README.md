@@ -9,7 +9,9 @@ arrays; heavy calls release the GIL and use all cores.
 import cloudanalyzer_core as cc
 import numpy as np
 
-scan = cc.read("scan.laz")                 # {"positions", "colors"?, "intensity"?, "classification"?}
+scan = cc.read("scan.laz")
+# COPC, local or remote: only the octree levels that fit max_points are read
+tile = cc.read_copc("https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz", max_points=3_000_000)                 # {"positions", "colors"?, "intensity"?, "classification"?}
 ref = cc.read("reference.pcd")["positions"]
 d = cc.nearest_distances(scan["positions"], ref)   # C2C, one distance per point
 

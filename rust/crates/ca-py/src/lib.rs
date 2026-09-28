@@ -58,6 +58,11 @@ fn read<'py>(py: Python<'py>, path: &str, keep_every: usize) -> PyResult<Bound<'
     let cloud: PointCloud = py
         .detach(|| ca_core::io::read_thinned(path, &bytes, keep_every))
         .map_err(io_err)?;
+    cloud_dict(py, cloud)
+}
+
+/// A cloud as ``{"positions", "colors"?, "intensity"?, "classification"?}``.
+fn cloud_dict(py: Python<'_>, cloud: PointCloud) -> PyResult<Bound<'_, PyDict>> {
     let out = PyDict::new(py);
     let PointCloud {
         positions,
@@ -378,6 +383,88 @@ fn normals<'py>(
     Ok(array.into_pyarray(py))
 }
 
+/// Node-by-node COPC reader; ``cloudanalyzer_core.read_copc`` drives it,
+/// reading the byte ranges it asks for from a file or a URL.
+#[pyclass(module = "cloudanalyzer_core._core")]
+struct CopcReader {
+    header: ca_core::io::copc::CopcHeader,
+    selector: ca_core::io::copc::NodeSelector,
+}
+
+#[pymethods]
+impl CopcReader {
+    /// Whether these first bytes (at least 400) are a COPC file.
+    #[staticmethod]
+    fn is_copc(head: &[u8]) -> bool {
+        ca_core::io::copc::CopcHeader::is_copc(head)
+    }
+
+    /// Bytes from the start of the file the reader needs.
+    #[staticmethod]
+    fn header_length(head: &[u8]) -> Option<usize> {
+        ca_core::io::copc::CopcHeader::needed(head)
+    }
+
+    #[new]
+    fn new(head: &[u8]) -> PyResult<Self> {
+        let header = ca_core::io::copc::CopcHeader::parse(head).map_err(io_err)?;
+        Ok(Self {
+            selector: ca_core::io::copc::NodeSelector::new(header.root_page),
+            header,
+        })
+    }
+
+    #[getter]
+    fn total_points(&self) -> u64 {
+        self.header.total_points
+    }
+
+    /// Hierarchy pages still needed down to ``level``: ``(offset, size)``.
+    fn pages_for(&self, level: i32) -> Vec<(u64, u64)> {
+        self.selector.pages_for(level)
+    }
+
+    fn add_page(&mut self, offset: u64, page: &[u8]) {
+        self.selector.add_page(offset, page);
+    }
+
+    /// Points in the nodes at ``level`` (once its pages are added).
+    fn level_points(&self, level: i32) -> u64 {
+        self.selector.level_points(level)
+    }
+
+    fn deeper_than(&self, level: i32) -> bool {
+        self.selector.deeper_than(level)
+    }
+
+    /// Nodes down to ``level``: ``(offset, size, points)``.
+    fn nodes_to(&self, level: i32) -> Vec<(u64, u64, u64)> {
+        self.selector
+            .nodes_to(level)
+            .into_iter()
+            .map(|e| (e.offset, e.byte_size as u64, e.point_count as u64))
+            .collect()
+    }
+
+    /// Decode nodes (their compressed chunks and point counts) on all cores,
+    /// as a dictionary like ``read``'s.
+    fn decode<'py>(
+        &self,
+        py: Python<'py>,
+        chunks: Vec<Vec<u8>>,
+        counts: Vec<usize>,
+    ) -> PyResult<Bound<'py, PyDict>> {
+        if chunks.len() != counts.len() {
+            return Err(PyValueError::new_err("one point count per chunk is needed"));
+        }
+        let nodes: Vec<(&[u8], usize)> = chunks.iter().map(|c| c.as_slice()).zip(counts).collect();
+        let points = py
+            .detach(|| self.header.decode_nodes_par(&nodes))
+            .map_err(io_err)?;
+        cloud_dict(py, points.into_cloud())
+    }
+}
+
 /// A volume surface from Python: a float (constant height), a
 /// ``(vertices, triangles)`` tuple (mesh), or an ``(N, 3)`` array (points).
 enum PySurface {
@@ -484,5 +571,6 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(m3c2, m)?)?;
     m.add_function(wrap_pyfunction!(profile, m)?)?;
     m.add_function(wrap_pyfunction!(normals, m)?)?;
+    m.add_class::<CopcReader>()?;
     Ok(())
 }

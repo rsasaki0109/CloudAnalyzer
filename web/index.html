@@ -164,6 +164,40 @@
         <table class="stats" id="volume-result" hidden><tbody id="volume-stats"></tbody></table>
       </section>
 
+      <section id="raster-panel">
+        <h2>Rasterize (DEM / DSM)</h2>
+        <label>Cloud <select id="raster-cloud"></select></label>
+        <label id="raster-class-row" hidden title="Only these points; ground gives a terrain model (DTM)">Points
+          <select id="raster-class"></select>
+        </label>
+        <details class="options">
+          <summary>Options</summary>
+          <div class="range">
+            <label title="Grid cell edge length, in the cloud's units">Cell size <input id="raster-cell" type="number" min="0" step="any" /></label>
+            <label title="How a cell's height is derived from its points">Cell height
+              <select id="raster-height">
+                <option value="mean" selected>Mean</option>
+                <option value="min">Min</option>
+                <option value="max">Max</option>
+                <option value="percentile">Percentile…</option>
+              </select>
+            </label>
+          </div>
+          <label id="raster-percentile-row" hidden>Percentile <input id="raster-percentile" type="number" min="0" max="100" step="any" value="50" /></label>
+          <label class="check" title="Interpolate cells without points from their neighbours">
+            <input id="raster-fill" type="checkbox" /> Fill empty cells
+          </label>
+          <label class="check" title="Shade the PNG as if lit from the north-west">
+            <input id="raster-hillshade" type="checkbox" checked /> Hillshade the PNG
+          </label>
+        </details>
+        <button id="raster-run" class="primary" disabled>Rasterize</button>
+        <div class="button-row">
+          <button id="raster-tiff" disabled title="Single-band Float32 heights, NoData −9999, no coordinate system">Save GeoTIFF</button>
+          <button id="raster-png" disabled title="The heights in the current color ramp">Save PNG</button>
+        </div>
+      </section>
+
       <section id="filter-panel">
         <h2>Filters</h2>
         <label>Cloud <select id="filter-cloud"></select></label>

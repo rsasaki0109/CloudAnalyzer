@@ -226,7 +226,9 @@ function renderResult(): void {
       ? `Height difference (after − before) · ${entry.cloud.name}`
       : c2c.kind === "m3c2"
         ? `M3C2 distance · ${entry.cloud.name}`
-        : `${c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C"} distance · ${entry.cloud.name}`;
+        : c2c.kind === "raster"
+          ? `Height · ${entry.cloud.name}`
+          : `${c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C"} distance · ${entry.cloud.name}`;
   $("colorbar-ramp").style.background = gradientCss(display.ramp);
   $("colorbar-max").textContent = fmt(hi);
   $("colorbar-mid").textContent = fmt((lo + hi) / 2);

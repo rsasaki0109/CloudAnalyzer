@@ -7,6 +7,8 @@ import type {
   M3c2Output,
   ProfileOutput,
   Progress,
+  RasterGrid,
+  RasterOutput,
   Request,
   UiMessage,
   Vec3,
@@ -128,6 +130,17 @@ export function filterCloud(id: number, op: "voxel" | "random" | "sor", a: numbe
 /** Cut/fill volume between two surfaces (clouds, meshes or constant heights). */
 export function computeVolume(params: Omit<Extract<Request, { kind: "volume" }>, "kind">): Promise<VolumeOutput> {
   return call({ kind: "volume", ...params });
+}
+
+/** Rasterize a cloud into a height grid (DEM / DSM); its cells come back as a new cloud. */
+export function rasterizeCloud(params: Omit<Extract<Request, { kind: "rasterize" }>, "kind">): Promise<RasterOutput> {
+  return call({ kind: "rasterize", ...params });
+}
+
+/** A raster as a single-band Float32 GeoTIFF. */
+export function rasterGeotiff(raster: RasterGrid): Promise<Uint8Array> {
+  // The heights are copied, not transferred, so the UI keeps them.
+  return call({ kind: "geotiff", raster });
 }
 
 /** Ground extraction (Cloth Simulation Filter) as a new cloud. */

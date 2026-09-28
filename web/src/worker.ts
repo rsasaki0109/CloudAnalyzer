@@ -15,6 +15,7 @@ import init, {
   StreamLoader,
   planCloudToCloud,
   planSor,
+  rasterGeotiff,
   registerIcp,
   summarizeDistances,
   VolumeSurface,
@@ -31,6 +32,7 @@ import type {
   M3c2Output,
   ProfileOutput,
   Progress,
+  RasterOutput,
   UiMessage,
   Request,
   Response,
@@ -685,6 +687,44 @@ async function handle(
       out.free();
       value.millis = performance.now() - start;
       return { value, transfer };
+    }
+    case "rasterize": {
+      const start = performance.now();
+      const source = items.get(req.id);
+      const out = getCloud(req.id).rasterize(
+        req.cell,
+        req.height,
+        req.percentile,
+        req.fillEmpty,
+        req.class ?? undefined,
+      );
+      const heights = out.takeHeights();
+      const id = nextId++;
+      const base = source!.name.replace(/\.[^.]+$/, "");
+      const cells = out.takeCells();
+      items.set(id, { kind: "cloud", cloud: cells, name: `${base}_raster${req.cell}` });
+      const described = describe(id);
+      const cellHeights = cells.attribute("height")!;
+      const value: RasterOutput = {
+        nx: out.nx,
+        ny: out.ny,
+        minX: out.minX,
+        minY: out.minY,
+        cell: out.cell,
+        heights,
+        populatedCells: out.populatedCells,
+        cells: described.value,
+        cellHeights,
+        millis: 0,
+      };
+      out.free();
+      value.millis = performance.now() - start;
+      return { value, transfer: [...described.transfer, heights.buffer, cellHeights.buffer] };
+    }
+    case "geotiff": {
+      const r = req.raster;
+      const bytes = rasterGeotiff(r.heights, r.nx, r.ny, r.minX, r.minY, r.cell);
+      return { value: bytes, transfer: [bytes.buffer] };
     }
     case "filter": {
       const source = items.get(req.id);

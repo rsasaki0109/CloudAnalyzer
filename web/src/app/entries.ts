@@ -98,9 +98,12 @@ export function replaceCloud(entry: Entry, cloud: LoadedCloud): void {
 export async function saveCloud(entry: Entry, format: "ply" | "csv"): Promise<void> {
   const { cloud, c2c } = entry;
   const kind = c2c?.kind.toUpperCase();
-  // M3C2 results already carry m3c2_distance / lod95 / significant attributes.
+  // M3C2 results already carry m3c2_distance / lod95 / significant
+  // attributes, and raster cells their height.
   const scalar =
-    c2c && kind && c2c.kind !== "m3c2" ? { name: `${kind}_distance`, values: c2c.distances } : undefined;
+    c2c && kind && c2c.kind !== "m3c2" && c2c.kind !== "raster"
+      ? { name: `${kind}_distance`, values: c2c.distances }
+      : undefined;
   const base = cloud.name.replace(/\.[^.]+$/, "");
   const filename = `${base}${kind ? `_${kind}` : ""}.${format}`;
   setStatus(`Saving ${filename}…`);

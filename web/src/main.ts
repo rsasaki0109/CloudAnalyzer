@@ -7,6 +7,7 @@ import "./app/distance";
 import "./app/icp";
 import "./app/classes";
 import "./app/volume";
+import "./app/raster";
 import "./app/processing";
 import "./app/clip";
 import "./app/profile";

@@ -1,0 +1,87 @@
+/** State shared by the panels: the viewer, the open clouds and the distance display. */
+
+import * as THREE from "three";
+import type { RampName } from "../colormap";
+import type { LodNode } from "../lod";
+import type { C2cOutput, LoadedCloud, Vec3 } from "../protocol";
+import { Viewer } from "../viewer";
+import { $ } from "./dom";
+
+export type ColorMode = "rgb" | "solid" | "intensity" | "classification" | "c2c" | "normal" | "shade";
+
+/** Where a cloud came from: sessions can restore file and URL clouds. */
+export type Origin = { kind: "file" } | { kind: "url"; url: string } | { kind: "derived" };
+
+export interface Entry {
+  cloud: LoadedCloud;
+  nodes: LodNode[];
+  solid: Vec3;
+  mode: ColorMode;
+  visible: boolean;
+  c2c?: C2cOutput & { referenceName: string };
+  /** Transforms applied by ICP, newest last, for undo. */
+  transforms: number[][];
+  origin: Origin;
+}
+
+export const viewer = new Viewer($("viewport"));
+
+export const entries = new Map<number, Entry>();
+
+/** How distances are colored, and which cloud's distances the colorbar shows. */
+export const display: {
+  ramp: RampName;
+  range: { lo: number; hi: number } | null;
+  activeC2c: number | null;
+} = { ramp: "Blue > Green > Yellow > Red", range: null, activeC2c: null };
+
+/** ASPRS class codes currently hidden in every cloud. */
+export const hiddenClasses = new Set<number>();
+
+export const isMesh = (entry: Entry) => entry.cloud.kind === "mesh";
+
+export const clouds = () => [...entries.values()].filter((e) => !isMesh(e));
+
+export function findByName(name: string): Entry | undefined {
+  return [...entries.values()].find((e) => e.cloud.name === name);
+}
+
+/** Offset between original and render coordinates (that of the first cloud). */
+export function globalShift(): Vec3 {
+  return [...entries.values()][0]?.cloud.shift ?? [0, 0, 0];
+}
+
+/** Original coordinates to render coordinates. */
+export function toRender(v: readonly number[]): THREE.Vector3 {
+  const shift = globalShift();
+  return new THREE.Vector3(v[0] - shift[0], v[1] - shift[1], v[2] - shift[2]);
+}
+
+/** Render coordinates to original coordinates. */
+export function toOriginal(v: THREE.Vector3): Vec3 {
+  const shift = globalShift();
+  return [v.x + shift[0], v.y + shift[1], v.z + shift[2]];
+}
+
+export function hideEntry(entry: Entry): void {
+  entry.visible = false;
+  viewer.setVisible(entry.cloud.id, false);
+}
+
+/** A list of listeners. */
+export class Signal<A extends unknown[] = []> {
+  private listeners: ((...args: A) => void)[] = [];
+  add(listener: (...args: A) => void): void {
+    this.listeners.push(listener);
+  }
+  emit(...args: A): void {
+    for (const listener of this.listeners) listener(...args);
+  }
+}
+
+/** The cloud list changed: panels refresh their cloud pickers. */
+export const listChanged = new Signal();
+/** A cloud was removed or its points replaced: point references to it are stale. */
+export const pointsInvalidated = new Signal<[cloudId: number]>();
+/** The shown distance result or its colors changed. */
+export const distanceChanged = new Signal();

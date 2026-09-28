@@ -566,3 +566,38 @@ test("display: adaptive point size, background colour and saved views survive a 
   await expect(other.locator("#view-list input").first()).toHaveValue("From above");
   await other.locator("#view-list li").first().getByRole("button", { name: "Go" }).click();
 });
+
+test("tools: measuring, labeling and drawing a profile take turns; Esc leaves them", async ({ page }) => {
+  await open(page, [{ name: "grid.ply", buffer: ply(grid(60)) }]);
+  await expect(status(page)).toContainText("Loaded grid.ply");
+  await page.locator("[data-view=top]").click();
+  const measure = page.locator("#measure");
+  const label = page.locator("#label");
+  const draw = page.locator("#profile-draw");
+
+  await page.keyboard.press("m");
+  await expect(measure).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#measure-hint")).toHaveText("Click the first point.");
+  const canvas = page.locator("#viewport > canvas");
+  const box = (await canvas.boundingBox())!;
+  for (const fx of [0.4, 0.6]) {
+    await canvas.click({ position: { x: box.width * fx, y: box.height * 0.5 } });
+    if (fx === 0.4) await expect(page.locator("#measure-hint")).toHaveText(/second point/);
+  }
+  await expect(page.locator("#measure-list li")).toHaveCount(1);
+  await expect(status(page)).toContainText("Distance:");
+
+  // Another tool replaces it.
+  await label.click();
+  await expect(label).toHaveAttribute("aria-pressed", "true");
+  await expect(measure).toHaveAttribute("aria-pressed", "false");
+  await draw.click();
+  await expect(draw).toHaveText("Finish line");
+  await expect(label).toHaveAttribute("aria-pressed", "false");
+
+  // Esc cancels the line and leaves the tool; a second Esc does nothing more.
+  await page.keyboard.press("Escape");
+  await expect(draw).toHaveText("Draw line");
+  await expect(page.locator("#viewport")).not.toHaveClass(/measuring/);
+  await expect(page.locator("#measure-list li")).toHaveCount(1);
+});

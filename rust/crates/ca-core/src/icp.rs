@@ -382,19 +382,27 @@ fn centroid(points: &[[f64; 3]]) -> [f64; 3] {
 /// Least-squares rigid motion taking each moving point onto its reference
 /// point (Horn 1987).
 fn horn(pairs: &[Pair]) -> Rigid {
-    let n = pairs.len() as f64;
+    rigid_fit(pairs.iter().map(|pair| (pair.moving, pair.reference)))
+}
+
+/// Least-squares rigid motion taking each `p` onto its `q` in `(p, q)`
+/// pairs, always a proper rotation (Horn's closed form, as [`horn`]).
+pub(crate) fn rigid_fit<I>(pairs: I) -> Rigid
+where
+    I: Iterator<Item = ([f64; 3], [f64; 3])> + Clone,
+{
+    let n = pairs.clone().count() as f64;
     let mut mp = [0.0; 3];
     let mut mq = [0.0; 3];
-    for pair in pairs {
+    for (p, q) in pairs.clone() {
         for a in 0..3 {
-            mp[a] += pair.moving[a] / n;
-            mq[a] += pair.reference[a] / n;
+            mp[a] += p[a] / n;
+            mq[a] += q[a] / n;
         }
     }
     // Cross-covariance S[i][j] = sum (p_i - mp_i)(q_j - mq_j).
     let mut s = [[0.0; 3]; 3];
-    for pair in pairs {
-        let (p, q) = (&pair.moving, &pair.reference);
+    for (p, q) in pairs {
         for i in 0..3 {
             for j in 0..3 {
                 s[i][j] += (p[i] - mp[i]) * (q[j] - mq[j]);

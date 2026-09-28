@@ -17,7 +17,8 @@ Rust + WebAssembly. Your files stay on your machine.
 
 - **Open** PLY, PCD, LAS/LAZ, E57 (all scans, posed), XYZ and OBJ/STL meshes, including tens of millions of points,
   and COPC files straight from a URL (only the levels you need are downloaded).
-- **Compare**: cloud-to-cloud and cloud-to-mesh distance, M3C2 change detection, cut/fill volume.
+- **Compare**: cloud-to-cloud and cloud-to-mesh distance, M3C2 change detection, cut/fill volume,
+  trajectory ATE / RPE (TUM, KITTI, CSV; SE(3) / Sim(3) alignment, same numbers as the Python CLI).
 - **Process**: ICP alignment, subsampling, outlier removal, ground extraction (CSF), normals, merge/split,
   rasterize to a DEM / DSM (GeoTIFF or colored PNG), RANSAC shape detection (planes, cylinders, spheres)
   and Euclidean clustering.

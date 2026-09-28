@@ -12,7 +12,7 @@
       <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json" />
+        accept=".ply,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -77,7 +77,7 @@
           <button id="session-open" title="Open a saved session, together with its files">Open session…</button>
         </div>
         <div id="empty-hint" class="hint">
-          <p>Drop PLY, PCD, LAS/LAZ, E57 or XYZ point clouds, or OBJ/STL/PLY meshes, anywhere, or use Open…
+          <p>Drop PLY, PCD, LAS/LAZ, E57 or XYZ point clouds, OBJ/STL/PLY meshes, or TUM/KITTI/CSV trajectories, anywhere, or use Open…
             Files stay in your browser.</p>
           <button id="load-sample">Try a sample</button>
           <p class="small">A LiDAR scene and a second scan of it; computes the cloud-to-cloud distance.</p>
@@ -355,6 +355,46 @@
             <textarea id="icp-matrix" rows="4" readonly spellcheck="false"></textarea>
           </label>
           <button id="icp-undo">Undo alignment</button>
+        </div>
+      </section>
+
+      <section id="trajectory-panel">
+        <h2>Trajectories (ATE / RPE)</h2>
+        <ul id="trajectory-list" class="trajectory-list"></ul>
+        <p id="trajectory-hint" class="hint small">Open or drop TUM (.tum, .txt), KITTI (.kitti, .txt) or CSV
+          trajectories to draw them and compare an estimate with a reference.</p>
+        <label>Estimate <select id="trajectory-estimate"></select></label>
+        <label>Reference <select id="trajectory-reference"></select></label>
+        <label>Alignment
+          <select id="trajectory-align">
+            <option value="none">None</option>
+            <option value="origin">Origin (first pose)</option>
+            <option value="se3" selected>SE(3) (rigid)</option>
+            <option value="sim3">Sim(3) (rigid + scale)</option>
+          </select>
+        </label>
+        <details class="options">
+          <summary>Options</summary>
+          <div class="range">
+            <label title="A reference pose is matched when estimate poses lie this close in time (seconds); between two, it is interpolated">Max time diff. <input id="trajectory-dt" type="number" min="0" step="any" value="0.05" /></label>
+            <label title="RPE compares pose pairs this far apart">RPE delta <input id="trajectory-delta" type="number" min="0" step="any" value="1" /></label>
+          </div>
+          <label>RPE delta in
+            <select id="trajectory-delta-unit">
+              <option value="frames" selected>Frames (matched poses)</option>
+              <option value="m">Metres along the reference</option>
+            </select>
+          </label>
+        </details>
+        <button id="trajectory-run" class="primary" disabled>Evaluate</button>
+        <div id="trajectory-result" hidden>
+          <table class="stats"><tbody id="trajectory-stats"></tbody></table>
+          <div class="ramp-legend" title="ATE of each matched pose, as drawn on the estimate">
+            <span id="trajectory-legend-min"></span><span id="trajectory-legend-bar" class="ramp-legend-bar"></span><span id="trajectory-legend-max"></span>
+          </div>
+          <button id="trajectory-csv" title="Time, aligned estimate, reference and errors of every matched pose">Save CSV</button>
+          <label>Apply the alignment to <select id="trajectory-apply-cloud"></select></label>
+          <button id="trajectory-apply" disabled>Move cloud</button>
         </div>
       </section>
 

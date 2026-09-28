@@ -85,6 +85,7 @@
       <a href="#m3c2">Change detection (M3C2)</a>
       <a href="#volume">Cut / fill volume</a>
       <a href="#icp">Alignment (ICP)</a>
+      <a href="#trajectory">Trajectories (ATE / RPE)</a>
       <a href="#filters">Filters and ground extraction</a>
       <a href="#raster">Rasterize (DEM / DSM)</a>
       <a href="#normals">Normals</a>
@@ -190,6 +191,36 @@
       In <b>Registration (ICP)</b>, <b>Align</b> moves one cloud onto a reference, point-to-plane or point-to-point. It can pre-align
       the centroids and trim non-overlapping points. The panel shows the RMS before and after and the 4×4
       transform, and <b>Undo alignment</b> reverts it.
+    </p>
+
+    <h2 id="trajectory">Trajectories (ATE / RPE)</h2>
+    <p>
+      Open trajectories like clouds: TUM (<code>timestamp tx ty tz qx qy qz qw</code>, or without the quaternion),
+      KITTI poses (12 numbers per line, a 3×4 matrix) and CSV with a header such as
+      <code>timestamp,x,y,z,qx,qy,qz,qw</code>. <code>.tum</code> and <code>.kitti</code> files are always
+      trajectories; a <code>.txt</code> or <code>.csv</code> file is one when its first line looks like it, and a
+      point cloud otherwise. They are listed in <b>Trajectories</b> and drawn as lines, which you can hide or recolor.
+    </p>
+    <p>
+      <b>Evaluate</b> compares an estimate with a reference, with the same definitions as the Python CLI
+      (<code>ca traj-evaluate</code>), so both give the same numbers:
+    </p>
+    <ul>
+      <li>Every reference pose is matched to the estimate at its timestamp, interpolated between the two estimate
+        poses around it when both are within <b>Max time diff.</b> (0.05 s by default). KITTI poses have no
+        timestamps: pose <i>i</i> gets time <i>i</i>, so compare them with another KITTI file.</li>
+      <li><b>Alignment</b> first moves the estimate onto the reference: by the first pose (<i>Origin</i>), the best
+        rigid motion (<i>SE(3)</i>) or rigid motion and scale (<i>Sim(3)</i>, Umeyama; for monocular odometry).</li>
+      <li><b>ATE</b> is the position error of each matched pose (RMSE, mean, median, standard deviation, min, max);
+        with orientations in both files, the rotation error too.</li>
+      <li><b>RPE</b> compares the motion between two poses <b>RPE delta</b> frames apart, or the first pose that many
+        metres further along the reference (KITTI style, also as a percentage of the distance): translation, and
+        rotation in degrees.</li>
+    </ul>
+    <p>
+      The aligned estimate is added as a line colored by its ATE in the current color ramp. <b>Save CSV</b> writes
+      the time, aligned estimate, reference and errors of every matched pose. An Origin or SE(3) alignment can also
+      move a cloud, e.g. the map built from the estimate, into the reference's frame (undo with Ctrl+Z).
     </p>
 
     <h2 id="filters">Filters and ground extraction</h2>

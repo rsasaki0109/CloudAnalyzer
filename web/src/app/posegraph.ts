@@ -17,6 +17,8 @@ import {
   addPoseGraphLoop,
   closePoseGraph,
   exportPoseGraph,
+  extractGround,
+  rasterizeCloud,
   findPoseGraphLoops,
   mergePoseGraph,
   openPoseGraph,
@@ -34,10 +36,13 @@ import {
 import { colorize, gradientCss, lut } from "../colormap";
 import { CANCELLED, type PoseFormat, type PoseGraphFiles, type PoseGraphState, type Progress, type RemovedEdge } from "../protocol";
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
+import { refreshColors } from "./colors";
+import { runM3c2 } from "./distance";
 import { addEntry, renderList } from "./entries";
+import { showRaster } from "./raster";
 import { colorByField } from "./scalars";
 import { record } from "./history";
-import { display, distanceChanged, globalShift, listChanged, viewer } from "./state";
+import { display, distanceChanged, globalShift, hideEntry, listChanged, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { setTool, toggleTool, type Tool } from "./tools";
 
@@ -46,6 +51,8 @@ interface Graph {
   state: PoseGraphState;
   scans: (Float32Array | null)[];
   scanPoints: number;
+  /** The recordings it was made of: the one opened, then each joined one, as node ranges. */
+  sessions: { name: string; first: number; count: number }[];
 }
 
 /** Undo information: the poses before the step, and the edges it added or removed. */
@@ -399,6 +406,11 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-undo").disabled = busy || steps.length === 0;
   $<HTMLButtonElement>("pg-map").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-compare").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-dem").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-parts").disabled = busy || withScans === 0;
+  $<HTMLInputElement>("pg-split").placeholder = String(
+    state.nodeIds[g.sessions[1]?.first ?? Math.floor(state.nodeIds.length / 2)] ?? "",
+  );
   $<HTMLButtonElement>("pg-find").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-merge").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-floor").disabled = busy || withScans === 0;
@@ -619,7 +631,13 @@ export async function open(picked: File[]): Promise<void> {
       },
       signal,
     );
-    graph = { name: opened.name, state: opened, scans: opened.scans, scanPoints: opened.scanPoints };
+    graph = {
+      name: opened.name,
+      state: opened,
+      scans: opened.scans,
+      scanPoints: opened.scanPoints,
+      sessions: [{ name: opened.name, first: 0, count: opened.poses.length / 16 }],
+    };
     fieldA.value = fieldB.value = "";
     selection = [];
     steps.length = 0;
@@ -695,6 +713,8 @@ async function merge(picked: File[]): Promise<void> {
       g.name = `${g.name} + ${merged.name}`;
       g.scans = [...g.scans, ...merged.scans];
       g.scanPoints += merged.scanPoints;
+      g.sessions.push({ name: merged.name, first: merged.offset, count: merged.scans.length });
+      $<HTMLInputElement>("pg-split").value = String(merged.state.nodeIds[merged.offset]);
       // Undo restores poses and edges of one graph; the join changed the graph itself.
       steps.length = 0;
       g.state = merged.state;
@@ -1140,6 +1160,82 @@ export const compareWithStart = (): Promise<void> =>
     );
   });
 $<HTMLButtonElement>("pg-compare").onclick = () => void compareWithStart();
+
+// --- From the map to the analysis tools -----------------------------------------
+
+/**
+ * The corrected map through ground extraction (CSF, ground points only) to
+ * a terrain model (DEM) in the color ramp, ready to save as a GeoTIFF.
+ */
+export const groundAndDem = (): Promise<void> =>
+  run("Making the DEM", async () => {
+    const voxel = Math.max(0, num("pg-map-voxel")) || 0.2;
+    const cell = Math.max(0.05, num("pg-dem-cell") || 1);
+    setStatus("Building the map…");
+    const map = addEntry(await poseGraphMap(voxel));
+    setStatus("Extracting the ground…");
+    const ground = addEntry(
+      await extractGround({ id: map.cloud.id, clothResolution: 1, classThreshold: 0.3, rigidness: "relief", output: "ground" }),
+    );
+    record({ label: "the ground", added: [map, ground], hide: [map] });
+    hideEntry(map);
+    setStatus("Rasterizing the ground…");
+    const out = await rasterizeCloud({
+      id: ground.cloud.id,
+      cell,
+      height: "mean",
+      percentile: 50,
+      // Only cells with ground: filling would spread over the unsurveyed box.
+      fillEmpty: false,
+      class: null,
+    });
+    // Heights in a sequential ramp over the 2nd to 98th percentile, so a
+    // few stray points below the road do not wash the terrain out.
+    display.ramp = "Blue > Green > Yellow > Red";
+    const dem = showRaster(ground, out);
+    const sorted = Float32Array.from(out.cellHeights.filter(Number.isFinite)).sort();
+    if (sorted.length) {
+      display.range = { lo: sorted[Math.floor(sorted.length * 0.02)], hi: sorted[Math.floor(sorted.length * 0.98)] };
+      refreshColors(dem);
+      distanceChanged.emit();
+    }
+    if (showScans()) $<HTMLInputElement>("pg-show-scans").click();
+    setStatus(
+      `DEM of ${ground.cloud.count.toLocaleString()} ground points of ${map.cloud.count.toLocaleString()}: ` +
+        `${out.nx} × ${out.ny} cells of ${fmt(cell)} m (save it from the Rasterize panel)`,
+    );
+  });
+$<HTMLButtonElement>("pg-dem").onclick = () => void groundAndDem();
+
+/**
+ * The map of the path up to a node against the map of the rest, by M3C2:
+ * for two joined sessions, what changed between them; for one drive that
+ * passes a place twice, how well the two passes agree.
+ */
+export const compareParts = (): Promise<void> =>
+  run("Comparing the parts", async () => {
+    const { state, sessions } = graph!;
+    const n = state.poses.length / 16;
+    const typed = $<HTMLInputElement>("pg-split").value;
+    const split =
+      typed === "" ? (sessions[1]?.first ?? Math.floor(n / 2)) : state.nodeIds.indexOf(Number(typed));
+    if (split <= 0 || split >= n) {
+      setStatus(`Split at a node between the first and the last (not ${typed})`, true);
+      return;
+    }
+    const voxel = Math.max(0, num("pg-map-voxel")) || 0.3;
+    setStatus("Building the two maps…");
+    const before = addEntry(await poseGraphMap(voxel, false, false, 0, split));
+    const after = addEntry(await poseGraphMap(voxel, false, false, split, n - split));
+    record({ label: "the two maps", added: [before, after] });
+    hideEntry(before);
+    renderList();
+    for (const [id, value] of Object.entries({ "m3c2-normal": "1", "m3c2-projection": "0.5", "m3c2-depth": "2", "m3c2-core": "0.5" })) {
+      $<HTMLInputElement>(id).value = value;
+    }
+    await runM3c2(after, before);
+  });
+$<HTMLButtonElement>("pg-parts").onclick = () => void compareParts();
 
 $<HTMLButtonElement>("pg-close").onclick = async () => {
   if (busy) return;

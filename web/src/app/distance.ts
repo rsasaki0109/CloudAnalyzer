@@ -89,7 +89,8 @@ export function showSigned(entry: Entry, result: NonNullable<Entry["c2c"]>): voi
   distanceChanged.emit();
 }
 
-async function runM3c2(compared: Entry, reference: Entry): Promise<void> {
+/** M3C2 from `reference` to `compared` with the panel's settings, shown on the core points. */
+export async function runM3c2(compared: Entry, reference: Entry): Promise<Entry> {
   const num = (id: string) => Number($<HTMLInputElement>(id).value);
   setStatus(`Computing M3C2: ${reference.cloud.name} → ${compared.cloud.name}…`);
   const out = await computeM3c2({
@@ -120,6 +121,7 @@ async function runM3c2(compared: Entry, reference: Entry): Promise<void> {
       `${stats.count.toLocaleString()} measured, ${significant.toLocaleString()} significant ` +
       `(${n ? ((100 * significant) / n).toFixed(1) : 0} %), mean ${fmt(stats.mean)}`,
   );
+  return entry;
 }
 
 runButton.onclick = async () => {

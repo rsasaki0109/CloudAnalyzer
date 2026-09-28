@@ -614,6 +614,15 @@
           <div class="button-row">
             <button id="pg-compare" title="The map as it is now, colored by how far each point moved from its place as loaded: where the corrections moved the map">Compare with the start</button>
           </div>
+          <h3>Analyse the map</h3>
+          <div class="range">
+            <label title="Cell size of the terrain model (metres)">DEM cell m <input id="pg-dem-cell" type="number" min="0" step="any" value="1" /></label>
+            <button id="pg-dem" title="The map, its ground points (CSF) and a terrain model (DEM) of them, in the color ramp">Ground &amp; DEM</button>
+          </div>
+          <div class="range">
+            <label title="The first node of the second part: the path before it is compared with the path from it (for two joined sessions, the second session's first node)">Split at node <input id="pg-split" type="number" step="1" /></label>
+            <button id="pg-parts" title="The map of the path before the split against the map from it, by M3C2: what changed between two sessions, or how well two passes agree">Compare parts (M3C2)</button>
+          </div>
         </div>
       </section>
 

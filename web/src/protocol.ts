@@ -501,6 +501,9 @@ export type Request =
       initial: boolean;
       /** Give each point a `correction` field: how far it moved from its place as loaded. */
       correction: boolean;
+      /** Only nodes `first` to `first + count - 1` (all with `count` 0). */
+      first: number;
+      count: number;
     }
   | { kind: "pg-close" }
   | { kind: "trajectory"; file: File }

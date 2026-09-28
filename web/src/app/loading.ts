@@ -70,8 +70,9 @@ export async function loadFiles(files: (File | RemoteCopc)[], origins?: Origin[]
             : cloud.keepEvery > 1
               ? `${cloud.count.toLocaleString()} of ${cloud.filePoints.toLocaleString()} points (1 in ${cloud.keepEvery})`
               : `${cloud.count.toLocaleString()} points`;
+      const splats = cloud.opacity ? " (Gaussian splat centers)" : "";
       setStatus(
-        `Loaded ${file.name}: ${size} in ${seconds(performance.now() - start)} ` +
+        `Loaded ${file.name}: ${size}${splats} in ${seconds(performance.now() - start)} ` +
           `(read ${seconds(parse)} · index ${seconds(index)}` +
           `${workers && workers > 1 ? ` on ${workers} workers` : ""} · prepare ${seconds(prepare)})`,
       );

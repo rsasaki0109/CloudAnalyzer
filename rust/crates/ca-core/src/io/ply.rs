@@ -4,7 +4,9 @@ use super::scalar::{Scalar, color_channel};
 use super::stream::RecordDecoder;
 use super::{IoError, split_header};
 use crate::mesh::TriangleMesh;
-use crate::{Attribute, AttributeValues, CLASSIFICATION, INTENSITY, PointCloud};
+use crate::{
+    Attribute, AttributeValues, CLASSIFICATION, INTENSITY, OPACITY, PointCloud, SPLAT_SIZE,
+};
 
 const FORMAT: &str = "PLY";
 
@@ -108,6 +110,44 @@ struct VertexLayout {
     intensity: Option<usize>,
     classification: Option<usize>,
     normals: Option<[usize; 3]>,
+    splat: Option<Splat>,
+}
+
+/// Coefficient of the degree-0 spherical harmonic, which turns a 3DGS
+/// `f_dc` term into a color: `0.5 + SH_C0 * f_dc`.
+const SH_C0: f64 = 0.282_094_791_773_878_14;
+
+/// Gaussian-splat vertex fields.
+#[derive(Debug, Clone, Copy)]
+enum Splat {
+    /// A 3D Gaussian Splatting export (INRIA, nerfstudio): SH DC color,
+    /// opacity as a logit and per-axis log scales. Only the centers are
+    /// kept; rotations and higher-order SH are ignored.
+    Raw {
+        dc: [usize; 3],
+        opacity: usize,
+        scale: [usize; 3],
+    },
+    /// `opacity` and `size` already converted, as CloudAnalyzer saves them.
+    Converted { opacity: usize, size: usize },
+}
+
+impl Splat {
+    /// Color (for a raw splat), opacity and size from the property values.
+    fn decode(self, get: impl Fn(usize) -> f64) -> (Option<[u8; 3]>, f32, f32) {
+        match self {
+            Self::Raw { dc, opacity, scale } => {
+                let rgb =
+                    dc.map(|i| ((0.5 + SH_C0 * get(i)).clamp(0.0, 1.0) * 255.0).round() as u8);
+                let opacity = 1.0 / (1.0 + (-get(opacity)).exp());
+                // The largest standard deviation: the Gaussian's reach along
+                // its longest axis, which is what makes a floater stand out.
+                let size = scale.map(get).into_iter().fold(f64::MIN, f64::max).exp();
+                (Some(rgb), opacity as f32, size as f32)
+            }
+            Self::Converted { opacity, size } => (None, get(opacity) as f32, get(size) as f32),
+        }
+    }
 }
 
 fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
@@ -131,9 +171,24 @@ fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
         (Some(r), Some(g), Some(b)) => Some(([r, g, b], [kind(r), kind(g), kind(b)])),
         _ => None,
     };
+    let all = |names: [&str; 3]| -> Option<[usize; 3]> {
+        Some([find(&[names[0]])?, find(&[names[1]])?, find(&[names[2]])?])
+    };
+    let splat = match (
+        all(["f_dc_0", "f_dc_1", "f_dc_2"]),
+        find(&["opacity"]),
+        all(["scale_0", "scale_1", "scale_2"]),
+        find(&["size"]),
+    ) {
+        (Some(dc), Some(opacity), Some(scale), _) => Some(Splat::Raw { dc, opacity, scale }),
+        (_, Some(opacity), _, Some(size)) => Some(Splat::Converted { opacity, size }),
+        _ => None,
+    };
+    let raw = matches!(splat, Some(Splat::Raw { .. }));
     Ok(VertexLayout {
         xyz,
-        rgb,
+        // A raw splat's color comes from its SH DC term.
+        rgb: rgb.filter(|_| !raw),
         // CloudCompare writes scalar fields as `scalar_<name>`.
         intensity: find(&["intensity", "scalar_intensity", "scalar_Intensity"]),
         classification: find(&[
@@ -141,10 +196,9 @@ fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
             "scalar_classification",
             "scalar_Classification",
         ]),
-        normals: match (find(&["nx"]), find(&["ny"]), find(&["nz"])) {
-            (Some(x), Some(y), Some(z)) => Some([x, y, z]),
-            _ => None,
-        },
+        // 3DGS exports carry nx/ny/nz, but as zeros.
+        normals: all(["nx", "ny", "nz"]).filter(|_| !raw),
+        splat,
     })
 }
 
@@ -170,11 +224,15 @@ impl VertexLayout {
                     v.push(values[i] as f32);
                 }
             }
+            slot += 3;
         }
         if let (Some(colors), Some((idx, kinds))) = (cloud.colors.as_mut(), self.rgb) {
             colors.push(std::array::from_fn(|c| {
                 color_channel(values[idx[c]], kinds[c])
             }));
+        }
+        if let Some(splat) = self.splat {
+            push_splat(cloud, slot, splat.decode(|i| values[i]));
         }
     }
 
@@ -200,10 +258,36 @@ impl VertexLayout {
                 });
             }
         }
+        if self.splat.is_some() {
+            for name in [OPACITY, SPLAT_SIZE] {
+                attributes.push(Attribute {
+                    name: name.into(),
+                    values: AttributeValues::F32(Vec::with_capacity(count)),
+                });
+            }
+        }
+        let raw_splat = matches!(self.splat, Some(Splat::Raw { .. }));
         PointCloud {
             positions: Vec::with_capacity(count),
-            colors: self.rgb.map(|_| Vec::with_capacity(count)),
+            colors: (self.rgb.is_some() || raw_splat).then(|| Vec::with_capacity(count)),
             attributes,
+        }
+    }
+}
+
+/// Append a decoded splat: its color (if any), then opacity and size into
+/// the attributes at `slot` and `slot + 1`.
+fn push_splat(
+    cloud: &mut PointCloud,
+    slot: usize,
+    (rgb, opacity, size): (Option<[u8; 3]>, f32, f32),
+) {
+    if let (Some(colors), Some(rgb)) = (cloud.colors.as_mut(), rgb) {
+        colors.push(rgb);
+    }
+    for (c, value) in [opacity, size].into_iter().enumerate() {
+        if let AttributeValues::F32(v) = &mut cloud.attributes[slot + c].values {
+            v.push(value);
         }
     }
 }
@@ -400,8 +484,10 @@ fn append_fixed_vertices(
     let rgb = layout.rgb.map(|(idx, _)| idx.map(field));
     // The common little-endian float/double + uchar layouts get a
     // monomorphic loop; everything else goes through `Scalar::decode`.
-    let plain =
-        layout.intensity.is_none() && layout.classification.is_none() && layout.normals.is_none();
+    let plain = layout.intensity.is_none()
+        && layout.classification.is_none()
+        && layout.normals.is_none()
+        && layout.splat.is_none();
     if le && plain && read_common_layout(records, stride, xyz, rgb, cloud) {
         return Ok(());
     }
@@ -435,6 +521,14 @@ fn append_fixed_vertices(
                     v.push(kind.decode(&record[at..], le) as f32);
                 }
             }
+            slot += 3;
+        }
+        if let Some(splat) = layout.splat {
+            let get = |i: usize| {
+                let (at, kind) = field(i);
+                kind.decode(&record[at..], le)
+            };
+            push_splat(cloud, slot, splat.decode(get));
         }
     }
     Ok(())
@@ -856,6 +950,108 @@ end_header
             cloud.attribute(INTENSITY).unwrap().values,
             AttributeValues::F32(vec![0.25])
         );
+    }
+
+    /// Header of a 3DGS export of three Gaussians (SH degree 0 plus one
+    /// `f_rest` for show).
+    fn splat_header(format: &str) -> String {
+        let names = "x y z nx ny nz f_dc_0 f_dc_1 f_dc_2 f_rest_0 opacity \
+            scale_0 scale_1 scale_2 rot_0 rot_1 rot_2 rot_3";
+        let properties: String = names
+            .split(' ')
+            .map(|n| format!("property float {n}\n"))
+            .collect();
+        format!("ply\nformat {format} 1.0\nelement vertex 3\n{properties}end_header\n")
+    }
+
+    fn binary_splats() -> Vec<u8> {
+        let mut bytes = splat_header("binary_little_endian").into_bytes();
+        for v in splats().into_iter().flatten() {
+            bytes.extend(v.to_le_bytes());
+        }
+        bytes
+    }
+
+    /// Three Gaussians: centre, f_dc, opacity logit, log scales.
+    fn splats() -> Vec<[f32; 18]> {
+        let white = (0.5 / SH_C0) as f32;
+        let nine = 9f32.ln();
+        [
+            (
+                [1.0, 2.0, 3.0],
+                [white, -white, 0.0],
+                nine,
+                [-2.0, -1.0, -3.0],
+            ),
+            ([-4.0, 0.5, 0.0], [100.0, 0.0, -100.0], 0.0, [0.0, 0.0, 0.0]),
+            ([0.0, 0.0, 7.0], [0.0, 0.0, 0.0], -nine, [2.0, -5.0, 1.0]),
+        ]
+        .into_iter()
+        .map(|(p, dc, opacity, scale)| {
+            let mut v = [0.0; 18];
+            v[..3].copy_from_slice(&p);
+            v[6..9].copy_from_slice(&dc);
+            v[9] = 0.3;
+            v[10] = opacity;
+            v[11..14].copy_from_slice(&scale);
+            v[14] = 1.0;
+            v
+        })
+        .collect()
+    }
+
+    fn assert_splats(cloud: &PointCloud) {
+        assert_eq!(
+            cloud.positions,
+            vec![[1.0, 2.0, 3.0], [-4.0, 0.5, 0.0], [0.0, 0.0, 7.0]]
+        );
+        // 0.5 + SH_C0 * f_dc, clamped; f_dc = 0 is mid grey.
+        assert_eq!(
+            cloud.colors,
+            Some(vec![[255, 0, 128], [255, 128, 0], [128, 128, 128]])
+        );
+        let AttributeValues::F32(opacity) = &cloud.attribute(OPACITY).unwrap().values else {
+            panic!("float opacity");
+        };
+        let AttributeValues::F32(size) = &cloud.attribute(SPLAT_SIZE).unwrap().values else {
+            panic!("float size");
+        };
+        for (got, want) in opacity.iter().zip([0.9, 0.5, 0.1]) {
+            assert!((got - want).abs() < 1e-6, "opacity {got} != {want}");
+        }
+        for (got, want) in size.iter().zip([(-1f32).exp(), 1.0, 2f32.exp()]) {
+            assert!((got - want).abs() < 1e-6, "size {got} != {want}");
+        }
+        // The zero normals of the export are not kept.
+        assert!(crate::normals::normals(cloud).is_none());
+    }
+
+    #[test]
+    fn reads_gaussian_splats() {
+        let bytes = binary_splats();
+        assert_splats(&read(&bytes).unwrap());
+        // Large files are streamed (as the app does).
+        let len = super::super::PointStream::header_len("a.ply", &bytes).unwrap();
+        let mut stream = super::super::PointStream::open("a.ply", &bytes[..len])
+            .unwrap()
+            .unwrap();
+        stream.push(&bytes[len..]);
+        assert_splats(&stream.finish().unwrap());
+        // ASCII goes through the general path.
+        let mut text = splat_header("ascii");
+        for s in splats() {
+            let row: Vec<String> = s.iter().map(|v| v.to_string()).collect();
+            text.push_str(&row.join(" "));
+            text.push('\n');
+        }
+        assert_splats(&read(text.as_bytes()).unwrap());
+    }
+
+    #[test]
+    fn saved_splat_attributes_read_back() {
+        let cloud = read(&binary_splats()).unwrap();
+        let back = read(&super::super::write_ply(&cloud, &[]).unwrap()).unwrap();
+        assert_eq!(back, cloud);
     }
 
     #[test]

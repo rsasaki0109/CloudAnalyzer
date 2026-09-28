@@ -484,6 +484,7 @@ function describe(
       intensity: null,
       classification: null,
       normals: null,
+      opacity: null,
       sources: null,
       bounds: Array.from(item.mesh.bounds()),
       shift: shift!,
@@ -502,6 +503,7 @@ function describe(
   const intensity = cloud.intensity() ?? null;
   const classification = cloud.classification() ?? null;
   const normals = cloud.normals() ?? null;
+  const opacity = cloud.attribute("opacity") ?? null;
   const lodNodes = cloud.lodNodes();
   const value: LoadedCloud = {
     kind: "cloud",
@@ -515,6 +517,7 @@ function describe(
     intensity,
     classification,
     normals,
+    opacity,
     sources: item.sources ?? null,
     bounds: Array.from(cloud.bounds()),
     shift: shift!,
@@ -526,7 +529,7 @@ function describe(
     timings: { ...timings, prepare: performance.now() - start },
   };
   const transfer: Transferable[] = [positions.buffer, lodNodes.buffer];
-  for (const buffer of [colors, intensity, classification, normals]) if (buffer) transfer.push(buffer.buffer);
+  for (const buffer of [colors, intensity, classification, normals, opacity]) if (buffer) transfer.push(buffer.buffer);
   return { value, transfer };
 }
 
@@ -914,7 +917,7 @@ async function handle(
       await buildIndex(filtered);
       const id = nextId++;
       const base = source!.name.replace(/\.[^.]+$/, "");
-      const suffix = { voxel: `voxel${req.a}`, random: `random${req.a}`, sor: "sor" }[req.op];
+      const suffix = { voxel: `voxel${req.a}`, random: `random${req.a}`, sor: "sor", splat: "clean" }[req.op];
       items.set(id, { kind: "cloud", cloud: filtered, name: `${base}_${suffix}` });
       return describe(id, { parse: 0, index: performance.now() - t });
     }

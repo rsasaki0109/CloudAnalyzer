@@ -8,6 +8,7 @@ mod obj;
 mod pcd;
 mod ply;
 mod scalar;
+mod splat;
 mod stl;
 mod stream;
 mod write;
@@ -28,6 +29,8 @@ pub enum Format {
     Las,
     Xyz,
     E57,
+    /// Headerless Gaussian splats (`.splat`), recognised by extension only.
+    Splat,
 }
 
 impl Format {
@@ -40,6 +43,7 @@ impl Format {
             Some("las") | Some("laz") => return Self::Las,
             Some("xyz" | "txt" | "csv" | "pts" | "asc") => return Self::Xyz,
             Some("e57") => return Self::E57,
+            Some("splat") => return Self::Splat,
             _ => {}
         }
         if bytes.starts_with(b"ply") {
@@ -109,6 +113,7 @@ pub fn read_thinned(name: &str, bytes: &[u8], keep_every: usize) -> Result<Point
         Format::Las => las::read(bytes, keep_every)?,
         Format::Xyz => xyz::read(bytes)?,
         Format::E57 => e57::read(bytes, keep_every)?,
+        Format::Splat => splat::read(bytes)?,
     };
     if keep_every > 1 && !matches!(format, Format::Las | Format::E57) {
         let keep: Vec<usize> = (0..cloud.len()).step_by(keep_every).collect();
@@ -122,7 +127,8 @@ pub fn read_thinned(name: &str, bytes: &[u8], keep_every: usize) -> Result<Point
 
 /// Number of points a file header announces (LAS, PLY, PCD; E57 given the
 /// whole file, as its XML comes last), to decide on thinning before reading.
-/// `None` when the header does not say.
+/// `None` when the header does not say. A `.splat` has no header: its count
+/// comes from the length of `head`, which must then be the whole file.
 pub fn announced_points(name: &str, head: &[u8]) -> Option<u64> {
     match Format::detect(name, head) {
         Format::Las => las::LasHeader::parse(head).ok().map(|h| h.count as u64),
@@ -140,6 +146,7 @@ pub fn announced_points(name: &str, head: &[u8]) -> Option<u64> {
         }
         Format::Xyz => None,
         Format::E57 => e57::announced_points(head),
+        Format::Splat => Some(head.len() as u64 / 32),
     }
 }
 
@@ -202,5 +209,6 @@ mod tests {
         assert_eq!(Format::detect("scan.E57", b""), Format::E57);
         assert_eq!(Format::detect("blob", b"ASTM-E57"), Format::E57);
         assert_eq!(Format::detect("blob", b"1 2 3"), Format::Xyz);
+        assert_eq!(Format::detect("garden.splat", b"ply\n"), Format::Splat);
     }
 }

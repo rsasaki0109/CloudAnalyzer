@@ -23,6 +23,8 @@ export interface LoadedCloud {
   classification: Uint8Array | null;
   /** Interleaved unit normals (octree order), or null. */
   normals: Float32Array | null;
+  /** Gaussian-splat opacity, 0..1 (octree order), or null for other clouds. */
+  opacity: Float32Array | null;
   /** For a merged cloud, the names of the clouds its `source` attribute refers to. */
   sources: string[] | null;
   /** Octree node table, see `Cloud.lodNodes()`. */
@@ -296,10 +298,10 @@ export type Request =
   | {
       kind: "filter";
       id: number;
-      op: "voxel" | "random" | "sor";
-      /** voxel: edge length; random: point count; sor: neighbours. */
+      op: "voxel" | "random" | "sor" | "splat";
+      /** voxel: edge length; random: point count; sor: neighbours; splat: minimum opacity. */
       a: number;
-      /** sor: standard-deviation threshold. */
+      /** sor: standard-deviation threshold; splat: maximum size. */
       b: number;
     }
   | {

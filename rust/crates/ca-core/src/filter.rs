@@ -1,9 +1,9 @@
 //! Point cloud filters: spatial and random subsampling, statistical outlier
-//! removal. Each returns the indices of the points to keep (in their original
+//! removal, Gaussian-splat cleanup. Each returns the indices of the points to keep (in their original
 //! order), so colors and attributes follow via [`PointCloud::select`].
 
-use crate::PointCloud;
 use crate::kdtree::KdTree;
+use crate::{AttributeValues, OPACITY, PointCloud, SPLAT_SIZE};
 
 /// Keep one point per cubic voxel of edge `voxel` (the first point, in cloud
 /// order, that falls into each occupied voxel). Original points are kept, not
@@ -98,6 +98,23 @@ pub fn statistical_outliers_par(cloud: &PointCloud, k: usize, ratio: f64) -> Vec
         means[i] = m;
     }
     sor_keep(&means, ratio)
+}
+
+/// Gaussian-splat cleanup: keep the splats with opacity at least
+/// `min_opacity` and size at most `max_size`. Raw 3DGS output is full of
+/// nearly transparent and huge "floater" Gaussians that are not surfaces.
+/// `None` when the cloud has no opacity / size attributes.
+pub fn splat_cleanup(cloud: &PointCloud, min_opacity: f64, max_size: f64) -> Option<Vec<usize>> {
+    let f32s = |name| match &cloud.attribute(name)?.values {
+        AttributeValues::F32(v) => Some(v),
+        AttributeValues::U8(_) => None,
+    };
+    let (opacity, size) = (f32s(OPACITY)?, f32s(SPLAT_SIZE)?);
+    Some(
+        (0..cloud.len())
+            .filter(|&i| f64::from(opacity[i]) >= min_opacity && f64::from(size[i]) <= max_size)
+            .collect(),
+    )
 }
 
 /// Mean distance of every point to its `k` nearest other points (the SOR
@@ -503,7 +520,7 @@ pub fn merge_knn<'a>(lists: impl IntoIterator<Item = &'a [f64]>, k: usize) -> f6
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Attribute, AttributeValues, INTENSITY};
+    use crate::{Attribute, INTENSITY};
 
     fn cloud(positions: Vec<[f64; 3]>) -> PointCloud {
         PointCloud {
@@ -544,6 +561,26 @@ mod tests {
         assert_eq!(unique.len(), 300);
         assert_ne!(a, random_subsample(&c, 300, 8));
         assert_eq!(random_subsample(&c, 10_000, 1).len(), c.len());
+    }
+
+    #[test]
+    fn splat_cleanup_drops_faint_and_huge_splats() {
+        let mut c = cloud(grid(2, 1.0));
+        assert_eq!(splat_cleanup(&c, 0.1, 1.0), None);
+        for (name, values) in [
+            (OPACITY, vec![0.9, 0.05, 0.5, 0.8]),
+            (SPLAT_SIZE, vec![0.01, 0.01, 3.0, 0.2]),
+        ] {
+            c.attributes.push(Attribute {
+                name: name.into(),
+                values: AttributeValues::F32(values),
+            });
+        }
+        assert_eq!(splat_cleanup(&c, 0.1, 1.0), Some(vec![0, 3]));
+        assert_eq!(
+            splat_cleanup(&c, 0.0, f64::INFINITY),
+            Some(vec![0, 1, 2, 3])
+        );
     }
 
     #[test]

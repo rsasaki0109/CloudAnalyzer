@@ -12,6 +12,8 @@ interface LodCloud {
   positions: Float32Array;
   colors: Uint8Array;
   material: THREE.PointsMaterial;
+  /** Adaptive size: a material per point size (world units), made on demand. */
+  sized: Map<number, THREE.PointsMaterial>;
   group: THREE.Group;
   /** Node index -> drawable, created on first use. */
   objects: Map<number, THREE.Points>;
@@ -34,6 +36,8 @@ export class Viewer {
   private readonly clouds = new Map<number, LodCloud>();
   private readonly meshes = new Map<number, THREE.Mesh>();
   private pointSize = 2;
+  /** Fixed: every point `pointSize` pixels. Adaptive: as large as the local point spacing, in world units. */
+  private sizeMode: "fixed" | "adaptive" = "fixed";
   private pointBudget = 3_000_000;
   private needsRender = true;
   private needsLod = true;
@@ -163,7 +167,7 @@ export class Viewer {
       this.needsLod = false;
       this.updateLod();
     }
-    if (this.edlEnabled) this.edl.render(this.renderer, this.scene, this.camera);
+    if (this.useEdl()) this.edl.render(this.renderer, this.scene, this.camera);
     else this.renderer.render(this.scene, this.camera);
     this.onAfterRender();
   };
@@ -188,8 +192,65 @@ export class Viewer {
         if (!cloud.objects.has(index)) this.createNode(cloud, index);
       }
       this.evict(cloud, wanted);
+      this.assignSizes(cloud, wanted);
     }
     this.onDrawn(selection.points);
+  }
+
+  /**
+   * In adaptive mode, give each drawn node points as wide as the finest
+   * spacing drawn in its subtree, so near surfaces close up and coarse
+   * ancestors do not paint over finer detail.
+   */
+  private assignSizes(cloud: LodCloud, wanted: Set<number>): void {
+    if (this.sizeMode === "fixed") {
+      for (const object of cloud.objects.values()) object.material = cloud.material;
+      return;
+    }
+    const finest = (index: number): number => {
+      const node = cloud.nodes[index];
+      // The lattice spacing, or wider where a node (e.g. a leaf) holds fewer
+      // points than its lattice has cells (points mostly lie on surfaces),
+      // capped so lone outliers do not become huge squares.
+      const edge = node.box.max.x - node.box.min.x;
+      let spacing = Math.min(4 * node.spacing, Math.max(node.spacing, edge / Math.sqrt(Math.max(1, node.count))));
+      for (const child of node.children) {
+        if (wanted.has(child)) spacing = Math.min(spacing, finest(child));
+      }
+      const object = cloud.objects.get(index);
+      if (object) object.material = this.sizedMaterial(cloud, spacing);
+      return spacing;
+    };
+    if (cloud.nodes.length && wanted.has(0)) finest(0);
+  }
+
+  private sizedMaterial(cloud: LodCloud, spacing: number): THREE.PointsMaterial {
+    let material = cloud.sized.get(spacing);
+    if (!material) {
+      material = cloud.material.clone();
+      material.sizeAttenuation = true;
+      cloud.sized.set(spacing, material);
+    }
+    material.size = spacing * this.pointSize * 0.5;
+    return material;
+  }
+
+  /** Every point material of a cloud (the fixed one and the adaptive ones). */
+  private materials(cloud: LodCloud): THREE.PointsMaterial[] {
+    return [cloud.material, ...cloud.sized.values()];
+  }
+
+  /**
+   * EDL shades depth steps between neighbouring pixels; adaptive points are
+   * wide squares with a step at every edge, which it would turn dark.
+   */
+  private useEdl(): boolean {
+    return this.edlEnabled && this.sizeMode === "fixed";
+  }
+
+  setPointSizeMode(mode: "fixed" | "adaptive"): void {
+    this.sizeMode = mode;
+    this.requestRender(true);
   }
 
   private createNode(cloud: LodCloud, index: number): void {
@@ -242,6 +303,7 @@ export class Viewer {
       positions,
       colors,
       material,
+      sized: new Map(),
       group,
       objects: new Map(),
       visible: true,
@@ -296,7 +358,7 @@ export class Viewer {
     if (!cloud) return;
     this.scene.remove(cloud.group);
     for (const object of cloud.objects.values()) object.geometry.dispose();
-    cloud.material.dispose();
+    for (const material of this.materials(cloud)) material.dispose();
     this.clouds.delete(id);
     this.requestRender(true);
   }
@@ -332,7 +394,10 @@ export class Viewer {
 
   setPointSize(size: number): void {
     this.pointSize = size;
-    for (const cloud of this.clouds.values()) cloud.material.size = size;
+    for (const cloud of this.clouds.values()) {
+      cloud.material.size = size;
+      for (const [spacing, material] of cloud.sized) material.size = spacing * size * 0.5;
+    }
     this.requestRender();
   }
 
@@ -536,8 +601,10 @@ export class Viewer {
     this.clipHelper.visible = !!box;
     const planes = box ? this.clipPlanes : null;
     for (const cloud of this.clouds.values()) {
-      cloud.material.clippingPlanes = planes;
-      cloud.material.needsUpdate = true;
+      for (const material of this.materials(cloud)) {
+        material.clippingPlanes = planes;
+        material.needsUpdate = true;
+      }
     }
     for (const mesh of this.meshes.values()) {
       const material = mesh.material as THREE.Material;
@@ -571,7 +638,7 @@ export class Viewer {
   /** The current view rendered into a new 2D canvas (device pixels). */
   snapshot(): HTMLCanvasElement {
     // Draw now and copy straight away, while the WebGL buffer still holds it.
-    if (this.edlEnabled) this.edl.render(this.renderer, this.scene, this.camera);
+    if (this.useEdl()) this.edl.render(this.renderer, this.scene, this.camera);
     else this.renderer.render(this.scene, this.camera);
     const source = this.renderer.domElement;
     const out = document.createElement("canvas");

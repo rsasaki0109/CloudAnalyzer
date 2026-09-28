@@ -64,7 +64,10 @@ const SOLID_COLORS: [number, number, number][] = [
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
 const viewer = new Viewer($("viewport"));
-viewer.setBackground(getComputedStyle(document.documentElement).getPropertyValue("--viewport").trim());
+const backgroundInput = $<HTMLInputElement>("background");
+backgroundInput.value = getComputedStyle(document.documentElement).getPropertyValue("--viewport").trim();
+viewer.setBackground(backgroundInput.value);
+backgroundInput.oninput = () => viewer.setBackground(backgroundInput.value);
 
 const entries = new Map<number, Entry>();
 let rampName: RampName = "Blue > Green > Yellow > Red";
@@ -675,6 +678,18 @@ edlToggle.onchange = edlStrength.oninput = () => {
   viewer.setEdl(edlToggle.checked, Number(edlStrength.value));
   edlStrength.disabled = !edlToggle.checked;
 };
+const pointSizeMode = $<HTMLSelectElement>("point-size-mode");
+function applyPointSizeMode(): void {
+  const adaptive = pointSizeMode.value === "adaptive";
+  viewer.setPointSizeMode(adaptive ? "adaptive" : "fixed");
+  // EDL does not shade adaptive points (see Viewer.useEdl).
+  edlToggle.disabled = adaptive;
+  edlStrength.disabled = adaptive || !edlToggle.checked;
+  edlToggle.parentElement!.title = adaptive
+    ? "Eye-Dome Lighting is off with adaptive point size"
+    : "Eye-Dome Lighting: shade by depth so the shape of a cloud is easier to read";
+}
+pointSizeMode.onchange = applyPointSizeMode;
 $<HTMLSelectElement>("point-budget").onchange = (e) =>
   viewer.setPointBudget(Number((e.target as HTMLSelectElement).value));
 
@@ -2353,6 +2368,60 @@ $<HTMLButtonElement>("save-image").onclick = async () => {
   }
 };
 
+// ---------------------------------------------------------------- views
+
+interface SavedView {
+  name: string;
+  /** Camera position and target in original coordinates. */
+  position: [number, number, number];
+  target: [number, number, number];
+}
+
+const savedViews: SavedView[] = [];
+
+function goToView(view: SavedView): void {
+  const shift = globalShift();
+  const toRender = (v: number[]) => new THREE.Vector3(v[0] - shift[0], v[1] - shift[1], v[2] - shift[2]);
+  viewer.setCamera(toRender(view.position), toRender(view.target));
+}
+
+function renderViews(): void {
+  $("view-list").replaceChildren(
+    ...savedViews.map((view, i) => {
+      const li = document.createElement("li");
+      const name = document.createElement("input");
+      name.type = "text";
+      name.value = view.name;
+      name.setAttribute("aria-label", `View ${i + 1} name`);
+      name.oninput = () => {
+        view.name = name.value;
+      };
+      const go = document.createElement("button");
+      go.textContent = "Go";
+      go.title = "Move the camera to this view";
+      go.onclick = () => goToView(view);
+      const remove = document.createElement("button");
+      remove.className = "remove";
+      remove.textContent = "✕";
+      remove.title = "Remove";
+      remove.onclick = () => {
+        savedViews.splice(i, 1);
+        renderViews();
+      };
+      li.append(name, go, remove);
+      return li;
+    }),
+  );
+}
+
+$<HTMLButtonElement>("view-save").onclick = () => {
+  const shift = globalShift();
+  const { position, target } = viewer.getCamera();
+  const original = (v: THREE.Vector3) => [v.x + shift[0], v.y + shift[1], v.z + shift[2]] as [number, number, number];
+  savedViews.push({ name: `View ${savedViews.length + 1}`, position: original(position), target: original(target) });
+  renderViews();
+};
+
 // ---------------------------------------------------------------- sessions
 
 /** A session waiting for some of its clouds to be opened. */
@@ -2386,6 +2455,9 @@ function captureSession(): Session {
     hiddenClasses: [...hiddenClasses],
     clip,
     profile: profileLine.length >= 2 ? { line: profileLine, halfWidth: profileHalfWidth() } : null,
+    background: backgroundInput.value,
+    pointSizeMode: pointSizeMode.value as "fixed" | "adaptive",
+    views: savedViews,
     labels: notes.map((n) => ({ position: n.point.exact, text: n.text })),
     clouds: [...entries.values()]
       .filter((e) => e.origin.kind !== "derived")
@@ -2410,6 +2482,14 @@ async function applySession(session: Session): Promise<void> {
   restored.clear();
   pointSizeInput.value = String(session.pointSize);
   viewer.setPointSize(session.pointSize);
+  if (session.background) {
+    backgroundInput.value = session.background;
+    viewer.setBackground(session.background);
+  }
+  pointSizeMode.value = session.pointSizeMode ?? "fixed";
+  applyPointSizeMode();
+  savedViews.splice(0, savedViews.length, ...(session.views ?? []));
+  renderViews();
   edlToggle.checked = session.edl;
   edlStrength.value = String(session.edlStrength);
   viewer.setEdl(session.edl, session.edlStrength);

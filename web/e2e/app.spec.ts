@@ -1318,8 +1318,14 @@ test("subsampling: minimum distance and octree level", async ({ page }) => {
   expect(kept).toBeLessThan(32 * 32);
 });
 
-test("pose graph: a drifted loop closed with ICP, optimised, undone and turned into a map", async ({ page }) => {
-  // A courtyard with pillars, scanned from 24 poses around a 20 m square.
+type Pose2 = { x: number; y: number; yaw: number };
+
+/**
+ * A courtyard with pillars scanned from 24 poses around a 20 m square: the
+ * true poses, dead-reckoned odometry with a yaw bias and 1 % scale error,
+ * and each pose's scan as a KITTI Velodyne .bin.
+ */
+function courtyard(): { truth: Pose2[]; drifted: Pose2[]; scan: (p: Pose2) => Buffer } {
   const world: number[][] = [];
   for (let a = -20; a <= 20; a += 0.5) {
     for (let z = 0; z <= 4; z += 0.5) world.push([a, -20, z], [a, 20, z], [-20, a, z], [20, a, z]);
@@ -1332,8 +1338,7 @@ test("pose graph: a drifted loop closed with ICP, optimised, undone and turned i
   }
   for (let x = -20; x <= 20; x += 1) for (let y = -20; y <= 20; y += 1) world.push([x, y, 0.1 * Math.sin(x / 3)]);
 
-  type Pose = { x: number; y: number; yaw: number };
-  const truth: Pose[] = [];
+  const truth: Pose2[] = [];
   for (let k = 0; k < 24; k++) {
     const s = (k * 80) / 24;
     const side = Math.floor(s / 20);
@@ -1342,7 +1347,7 @@ test("pose graph: a drifted loop closed with ICP, optimised, undone and turned i
     truth.push({ x, y, yaw: (side * Math.PI) / 2 });
   }
   // Odometry with a steady yaw bias and 1 % scale error, dead-reckoned.
-  const drifted: Pose[] = [truth[0]];
+  const drifted: Pose2[] = [truth[0]];
   for (let k = 1; k < 24; k++) {
     const [a, b, prev] = [truth[k - 1], truth[k], drifted[k - 1]];
     const [dx, dy] = [b.x - a.x, b.y - a.y];
@@ -1354,11 +1359,7 @@ test("pose graph: a drifted loop closed with ICP, optimised, undone and turned i
       yaw,
     });
   }
-  const kitti = (p: Pose) => {
-    const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
-    return `${c} ${-s} 0 ${p.x} ${s} ${c} 0 ${p.y} 0 0 1 0`;
-  };
-  const scan = (p: Pose) => {
+  const scan = (p: Pose2) => {
     const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
     const body = Buffer.alloc(world.length * 16);
     world.forEach(([x, y, z], i) => {
@@ -1367,15 +1368,31 @@ test("pose graph: a drifted loop closed with ICP, optimised, undone and turned i
     });
     return body;
   };
+  return { truth, drifted, scan };
+}
+
+/** A KITTI pose line (3x4, row-major) for a planar pose. */
+function kittiLine(p: Pose2): string {
+  const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
+  return `${c} ${-s} 0 ${p.x} ${s} ${c} 0 ${p.y} 0 0 1 0`;
+}
+
+/** Scan files named by frame number. */
+function scanFiles(poses: Pose2[], scan: (p: Pose2) => Buffer) {
+  return poses.map((p, k) => ({
+    name: `${String(k).padStart(6, "0")}.bin`,
+    mimeType: "application/octet-stream",
+    buffer: scan(p),
+  }));
+}
+
+test("pose graph: a drifted loop closed with ICP, optimised, undone and turned into a map", async ({ page }) => {
+  const { truth, drifted, scan } = courtyard();
   await page
     .locator("#pg-files-input")
     .setInputFiles([
-      { name: "poses.txt", mimeType: "text/plain", buffer: Buffer.from(`${drifted.map(kitti).join("\n")}\n`) },
-      ...truth.map((p, k) => ({
-        name: `${String(k).padStart(6, "0")}.bin`,
-        mimeType: "application/octet-stream",
-        buffer: scan(p),
-      })),
+      { name: "poses.txt", mimeType: "text/plain", buffer: Buffer.from(`${drifted.map(kittiLine).join("\n")}\n`) },
+      ...scanFiles(truth, scan),
     ]);
   await expect(status(page)).toContainText("Opened poses.txt: 24 poses");
   const stats = page.locator("#pg-stats");
@@ -1412,4 +1429,73 @@ test("pose graph: a drifted loop closed with ICP, optimised, undone and turned i
   await page.locator("#pg-map").click();
   await expect(status(page)).toContainText(/Added poses_map: [\d,]+ points/);
   await expect(page.locator("#cloud-list li")).toHaveCount(1);
+});
+
+test("pose graph: a wrong loop in a g2o file shows as the worst edge and is removed", async ({ page }) => {
+  const { truth, scan } = courtyard();
+  // The true poses and odometry, plus a loop claiming poses 3 and 15 (opposite sides) coincide.
+  const quat = (yaw: number) => `0 0 ${Math.sin(yaw / 2)} ${Math.cos(yaw / 2)}`;
+  const info = "100 0 0 0 0 0 100 0 0 0 0 100 0 0 0 1000 0 0 1000 0 1000";
+  const relative = (a: Pose2, b: Pose2) => {
+    const [dx, dy] = [b.x - a.x, b.y - a.y];
+    const [c, s] = [Math.cos(a.yaw), Math.sin(a.yaw)];
+    return `${c * dx + s * dy} ${-s * dx + c * dy} 0 ${quat(b.yaw - a.yaw)}`;
+  };
+  const lines = truth.map((p, k) => `VERTEX_SE3:QUAT ${k} ${p.x} ${p.y} 0 ${quat(p.yaw)}`);
+  for (let k = 1; k < truth.length; k++) lines.push(`EDGE_SE3:QUAT ${k - 1} ${k} ${relative(truth[k - 1], truth[k])} ${info}`);
+  lines.push(`EDGE_SE3:QUAT 0 23 ${relative(truth[0], truth[23])} ${info}`);
+  lines.push(`EDGE_SE3:QUAT 3 15 0 0 0 0 0 0 1 ${info}`);
+  await page
+    .locator("#pg-files-input")
+    .setInputFiles([
+      { name: "graph.g2o", mimeType: "text/plain", buffer: Buffer.from(`${lines.join("\n")}\n`) },
+      ...scanFiles(truth, scan),
+    ]);
+  await expect(status(page)).toContainText("Opened graph.g2o: 24 poses");
+  const stats = page.locator("#pg-stats");
+  await expect(stats).toContainText("23 odometry, 2 loops");
+
+  // Optimised, the wrong loop still disagrees most and heads the list.
+  await page.locator("#pg-optimize").click();
+  await expect(status(page)).toContainText("Optimised: χ²");
+  const loops = page.locator("#pg-loop-list li");
+  await expect(loops).toHaveCount(2);
+  await expect(loops.nth(0)).toContainText("3 – 15");
+  await expect(loops.nth(1)).toContainText("0 – 23");
+  const errorOf = async (row: number) => Number((await loops.nth(row).locator(".meta").textContent())!.replace("error ", ""));
+  expect(await errorOf(0)).toBeGreaterThan(10);
+
+  // Selecting a loop fills A and B.
+  await loops.nth(0).locator(".link").click();
+  await expect(page.locator("#pg-a")).toHaveValue("3");
+  await expect(page.locator("#pg-b")).toHaveValue("15");
+
+  await loops.nth(0).locator(".remove").click();
+  await expect(status(page)).toContainText("Removed loop 3 – 15 and optimised");
+  await expect(loops).toHaveCount(1);
+  await expect(stats).toContainText("23 odometry, 1 loops");
+  expect(await errorOf(0)).toBeLessThan(0.01);
+
+  await page.locator("#pg-undo").click();
+  await expect(status(page)).toContainText("Put back 1 removed edge");
+  await expect(loops).toHaveCount(2);
+  await expect(loops.nth(0)).toContainText("3 – 15");
+
+  // Removing by threshold catches the same loop.
+  await page.locator("#pg-prune-limit").fill("5");
+  await page.locator("#pg-prune").click();
+  await expect(status(page)).toContainText("Removed 1 loop with an error above 5 and optimised");
+  await expect(loops).toHaveCount(1);
+
+  // Height colors and error colors can be switched without errors.
+  await page.locator("#pg-colors").selectOption("height");
+  await page.locator("#pg-edge-errors").uncheck();
+  await page.locator("#pg-show-scans").uncheck();
+  await page.locator("#pg-show-scans").check();
+  await expect(page.locator("#pg-legend")).toBeHidden();
+
+  const download = page.waitForEvent("download");
+  await page.locator("#pg-save-g2o").click();
+  const saved = (await bytesOf(await download)).toString();
+  expect(saved.match(/^EDGE_SE3:QUAT/gm)).toHaveLength(24);
 });

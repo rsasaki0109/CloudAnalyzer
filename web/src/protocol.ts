@@ -309,6 +309,12 @@ export interface PoseGraphOptimized {
 
 export type PoseFormat = "g2o" | "kitti" | "tum";
 
+/** A removed edge, to put back on undo (see `PoseGraphSession.edgeData`). */
+export interface RemovedEdge {
+  index: number;
+  data: Float64Array;
+}
+
 /** Filters that keep a subset of a cloud's points (see `Cloud.filter`). */
 export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
 
@@ -340,7 +346,14 @@ export type Request =
       sigmaRDeg: number;
     }
   | { kind: "pg-optimize"; /** Huber threshold for loops, 0 for none. */ loopKernel: number }
-  | { kind: "pg-remove-edge"; index: number }
+  | {
+      /** Remove edges (the removed ones come back for undo), then optimise if `loopKernel` is given. */
+      kind: "pg-remove-edges";
+      indices: number[];
+      /** Huber threshold for the optimisation (0 for none), or null to skip it. */
+      loopKernel: number | null;
+    }
+  | { kind: "pg-insert-edges"; /** In ascending index order. */ edges: RemovedEdge[] }
   | { kind: "pg-set-poses"; poses: Float64Array }
   | { kind: "pg-export"; format: PoseFormat }
   | { kind: "pg-map"; /** Voxel size of the map, 0 for none. */ voxel: number }

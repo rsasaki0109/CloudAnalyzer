@@ -67,7 +67,8 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
   overflow-y: auto;
 }
 .sidebar section { padding: 10px 12px; border-bottom: 1px solid var(--border); }
-.sidebar h2 {
+.sidebar h2,
+.sidebar h3 {
   margin: 0 0 8px;
   font-size: 11px;
   text-transform: uppercase;
@@ -108,6 +109,13 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 .trajectory-list .remove { border: none; background: none; color: var(--muted); padding: 0 4px; }
 .trajectory-list .remove:hover { color: var(--danger); }
 .trajectory-list input[type="color"] { width: 16px; height: 14px; padding: 0; border: none; background: none; }
+.sidebar h3 { margin-top: 12px; }
+.loop-list { list-style: none; margin: 0 0 8px; padding: 0; max-height: 220px; overflow-y: auto; }
+.loop-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 6px; padding: 2px 0; }
+.loop-list .link { border: none; background: none; padding: 0; color: var(--accent); text-align: left; cursor: pointer; }
+.loop-list .meta { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.loop-list .remove { border: none; background: none; color: var(--muted); padding: 0 4px; }
+.loop-list .remove:hover { color: var(--danger); }
 .ramp-legend {
   display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px;
   margin: 0 0 8px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums;

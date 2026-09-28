@@ -665,6 +665,44 @@ export class Viewer {
     this.gizmo?.controls.setMode(mode);
   }
 
+  /**
+   * A move / rotate gizmo on any object of the overlay (e.g. a pose graph
+   * node): `onChange` while it is dragged, `onRelease` when a drag ends.
+   * Returns a function that removes it.
+   */
+  attachGizmo(
+    target: THREE.Object3D,
+    mode: "translate" | "rotate",
+    onChange: () => void,
+    onRelease: () => void,
+  ): { setMode(mode: "translate" | "rotate"): void; detach(): void } {
+    const controls = new TransformControls(this.camera, this.renderer.domElement);
+    controls.setMode(mode);
+    controls.attach(target);
+    controls.addEventListener("dragging-changed", (e) => {
+      this.controls.enabled = !e.value;
+      if (!e.value) onRelease();
+    });
+    controls.addEventListener("objectChange", () => {
+      onChange();
+      this.requestRender();
+    });
+    controls.addEventListener("change", () => this.requestRender());
+    const helper = controls.getHelper();
+    this.overlay.add(helper);
+    this.requestRender();
+    return {
+      setMode: (m) => controls.setMode(m),
+      detach: () => {
+        this.overlay.remove(helper);
+        controls.detach();
+        controls.dispose();
+        this.controls.enabled = true;
+        this.requestRender();
+      },
+    };
+  }
+
   /** The gizmo's motion so far, in render coordinates, or null without a gizmo. */
   gizmoMatrix(): THREE.Matrix4 | null {
     if (!this.gizmo) return null;

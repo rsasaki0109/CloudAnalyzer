@@ -277,6 +277,8 @@ export interface PoseGraphState {
   edgeKinds: Uint8Array;
   /** Squared (information-weighted) error per edge. */
   edgeErrors: Float64Array;
+  /** 1 per node the optimiser holds in place. */
+  fixed: Uint8Array;
   /** Plane landmarks (e.g. the floor), and node-to-plane edges. */
   planes: number;
   planeEdges: number;
@@ -450,6 +452,14 @@ export type Request =
       loopKernel: number;
     }
   | { kind: "pg-remove-plane"; index: number }
+  | {
+      /** Put a node at `pose` (row-major 4x4); with `carry`, the nodes after it move along. */
+      kind: "pg-set-node-pose";
+      index: number;
+      pose: number[];
+      carry: boolean;
+    }
+  | { kind: "pg-set-fixed"; index: number; fixed: boolean }
   | { kind: "pg-optimize"; /** Huber threshold for loops, 0 for none. */ loopKernel: number }
   | {
       /** Remove edges (the removed ones come back for undo), then optimise if `loopKernel` is given. */

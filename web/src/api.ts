@@ -295,6 +295,16 @@ export function addPoseGraphFloor(params: Omit<Extract<Request, { kind: "pg-floo
   return call({ kind: "pg-floor", ...params });
 }
 
+/** Move a node (and, with `carry`, the nodes after it). */
+export function setPoseGraphNodePose(index: number, pose: number[], carry: boolean): Promise<PoseGraphState> {
+  return call({ kind: "pg-set-node-pose", index, pose, carry });
+}
+
+/** Hold a node in place during optimisation, or free it. */
+export function setPoseGraphFixed(index: number, fixed: boolean): Promise<PoseGraphState> {
+  return call({ kind: "pg-set-fixed", index, fixed });
+}
+
 export function removePoseGraphPlane(index: number): Promise<PoseGraphState> {
   return call({ kind: "pg-remove-plane", index });
 }

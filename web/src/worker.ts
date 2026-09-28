@@ -934,13 +934,14 @@ function graphState(session: PoseGraphSession): PoseGraphState {
     edges: session.edgeEnds(),
     edgeKinds: session.edgeKinds(),
     edgeErrors: session.edgeErrors(),
+    fixed: session.fixedNodes(),
     planes: session.planeCount,
     planeEdges: session.planeEdgeCount,
   };
 }
 
 const stateTransfer = (s: PoseGraphState): Transferable[] =>
-  [s.nodeIds, s.poses, s.edges, s.edgeKinds, s.edgeErrors].map((a) => a.buffer);
+  [s.nodeIds, s.poses, s.edges, s.edgeKinds, s.edgeErrors, s.fixed].map((a) => a.buffer);
 
 /** The last run of digits in a file's base name (`000123.pcd` -> 123). */
 function frameNumber(name: string): number | null {
@@ -980,6 +981,9 @@ interface LoadedGraph {
   unmatched: string[];
 }
 
+/** Scan files read at once while loading a pose graph. */
+const READ_AHEAD = 8;
+
 /** Read a graph and its scans into a new session (freed again on failure). */
 async function loadGraph(
   req: PoseGraphFiles,
@@ -1007,15 +1011,25 @@ async function loadGraph(
     const scans: (Float32Array | null)[] = new Array(nodeIds.length).fill(null);
     const unmatched: string[] = [];
     let scanPoints = 0;
+    // Reading a file is slow next to parsing it: keep a few reads in flight.
+    const reads = new Map<number, Promise<ArrayBuffer>>();
+    const readAhead = (from: number) => {
+      for (let j = from; j < Math.min(req.scans.length, from + READ_AHEAD); j++) {
+        if (nodes[j] !== null && !reads.has(j)) reads.set(j, req.scans[j].arrayBuffer());
+      }
+    };
     for (const [k, file] of req.scans.entries()) {
       check();
+      readAhead(k);
       progress(`scan ${k + 1} of ${req.scans.length}`, k / req.scans.length);
       const node = nodes[k];
       if (node === null) {
         unmatched.push(file.name);
         continue;
       }
-      const cloud = Cloud.parse(file.name, new Uint8Array(await file.arrayBuffer()));
+      const bytes = new Uint8Array(await reads.get(k)!);
+      reads.delete(k);
+      const cloud = Cloud.parse(file.name, bytes);
       try {
         scanPoints += session.setScan(node, cloud, req.voxel, extrinsic);
       } finally {
@@ -1154,6 +1168,18 @@ async function handle(
       const state = graphState(session);
       const value: PoseGraphFloor = { state, plane, tied, up, optimized: { initialCost, finalCost, iterations } };
       return { value, transfer: stateTransfer(state) };
+    }
+    case "pg-set-node-pose": {
+      const session = openGraph();
+      session.setNodePose(req.index, new Float64Array(req.pose), req.carry);
+      const state = graphState(session);
+      return { value: state, transfer: stateTransfer(state) };
+    }
+    case "pg-set-fixed": {
+      const session = openGraph();
+      session.setFixed(req.index, req.fixed);
+      const state = graphState(session);
+      return { value: state, transfer: stateTransfer(state) };
     }
     case "pg-remove-plane": {
       const session = openGraph();

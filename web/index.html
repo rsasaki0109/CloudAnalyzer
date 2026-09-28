@@ -496,6 +496,15 @@
             <label title="The loop's second node; its scan is registered onto A's">Node B <input id="pg-b" type="number" step="1" /></label>
           </div>
           <button id="pg-pick" aria-pressed="false" title="Click two nodes in the view (the white dots) to fill A and B">Pick nodes</button>
+          <div class="range">
+            <button id="pg-move" aria-pressed="false" title="A gizmo on Node A: drag to move or turn it (each drag can be undone)">Move A</button>
+            <select id="pg-move-mode" aria-label="Gizmo mode">
+              <option value="translate" selected>Move</option>
+              <option value="rotate">Rotate</option>
+            </select>
+          </div>
+          <label class="check" title="Move the nodes after A along with it (a whole stretch of the path)"><input id="pg-move-carry" type="checkbox" /> With the nodes after it</label>
+          <button id="pg-fix" title="Hold Node A in place when optimising (red), or free it">Fix A</button>
           <details class="options">
             <summary>Loop options</summary>
             <div class="range">

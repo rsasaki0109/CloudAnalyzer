@@ -531,6 +531,30 @@
             <button id="pg-find" class="primary" title="Register every candidate pair with ICP, keep those that overlap, then optimise">Find loops</button>
           </details>
           <details class="options">
+            <summary>Floor constraint</summary>
+            <p class="hint small">Keyframes that see the same floor are tied to one floor plane, which removes the
+              tilt and height drift of odometry.</p>
+            <div class="range">
+              <label title="Up in the scans' coordinates; Auto tries +Z, −Y and +Y on the first scans">Up axis
+                <select id="pg-floor-up">
+                  <option value="auto" selected>Auto</option>
+                  <option value="+z">+Z (LiDAR)</option>
+                  <option value="-y">−Y (camera, KITTI Tr)</option>
+                  <option value="+y">+Y</option>
+                </select></label>
+              <label title="Largest angle between the floor's normal and up (degrees)">Max tilt ° <input id="pg-floor-tilt" type="number" min="0" max="89" step="any" value="20" /></label>
+            </div>
+            <div class="range">
+              <label title="Points within this distance of the plane are floor (metres)">Threshold m <input id="pg-floor-threshold" type="number" min="0" step="any" value="0.1" /></label>
+              <label title="Fewest floor points in a scan">Min points <input id="pg-floor-points" type="number" min="3" step="1" value="200" /></label>
+            </div>
+            <div class="range">
+              <label title="Standard deviation of the floor's tilt as seen from a keyframe (degrees)">σ tilt ° <input id="pg-floor-sigma-r" type="number" min="0" step="any" value="0.5" /></label>
+              <label title="Standard deviation of the keyframe's height above the floor (metres)">σ height m <input id="pg-floor-sigma-t" type="number" min="0" step="any" value="0.05" /></label>
+            </div>
+            <button id="pg-floor" title="Find the floor under every keyframe, tie them to one plane and optimise">Add floor</button>
+          </details>
+          <details class="options">
             <summary>Join another graph</summary>
             <p class="hint small">A second session of the same place: a node of it that stands near a node of
               this graph places the whole of it. Their scans are registered with ICP from several headings.</p>

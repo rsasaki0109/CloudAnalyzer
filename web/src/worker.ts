@@ -40,6 +40,7 @@ import type {
   MeshOutput,
   PoseGraphFound,
   PoseGraphFiles,
+  PoseGraphFloor,
   PoseGraphMerged,
   PoseGraphOpened,
   PoseGraphState,
@@ -933,6 +934,8 @@ function graphState(session: PoseGraphSession): PoseGraphState {
     edges: session.edgeEnds(),
     edgeKinds: session.edgeKinds(),
     edgeErrors: session.edgeErrors(),
+    planes: session.planeCount,
+    planeEdges: session.planeEdgeCount,
   };
 }
 
@@ -1136,6 +1139,27 @@ async function handle(
       const state = graphState(session);
       const value: PoseGraphFound = { state, candidates, added, edges, optimized };
       return { value, transfer: stateTransfer(state) };
+    }
+    case "pg-floor": {
+      const session = openGraph();
+      const [plane, tied, ...up] = session.addFloor(
+        new Float64Array(req.up ?? []),
+        req.maxTiltDeg,
+        req.threshold,
+        req.minPoints,
+        req.sigmaAngleDeg,
+        req.sigmaOffset,
+      );
+      const [initialCost, finalCost, iterations] = session.optimize(req.loopKernel);
+      const state = graphState(session);
+      const value: PoseGraphFloor = { state, plane, tied, up, optimized: { initialCost, finalCost, iterations } };
+      return { value, transfer: stateTransfer(state) };
+    }
+    case "pg-remove-plane": {
+      const session = openGraph();
+      session.removePlane(req.index);
+      const state = graphState(session);
+      return { value: state, transfer: stateTransfer(state) };
     }
     case "pg-optimize": {
       const session = openGraph();

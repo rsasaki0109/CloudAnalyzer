@@ -11,6 +11,7 @@ import type {
   MeshFormat,
   MeshOutput,
   PoseFormat,
+  PoseGraphFloor,
   PoseGraphFound,
   PoseGraphLoop,
   PoseGraphMerged,
@@ -287,6 +288,15 @@ export function findPoseGraphLoops(
   signal?: AbortSignal,
 ): Promise<PoseGraphFound> {
   return call({ kind: "pg-find-loops", ...params }, [], progress, signal);
+}
+
+/** Tie the keyframes to the floor their scans show, then optimise. */
+export function addPoseGraphFloor(params: Omit<Extract<Request, { kind: "pg-floor" }>, "kind">): Promise<PoseGraphFloor> {
+  return call({ kind: "pg-floor", ...params });
+}
+
+export function removePoseGraphPlane(index: number): Promise<PoseGraphState> {
+  return call({ kind: "pg-remove-plane", index });
 }
 
 export function optimizePoseGraph(loopKernel: number): Promise<PoseGraphOptimized> {

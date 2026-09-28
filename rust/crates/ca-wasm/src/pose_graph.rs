@@ -326,6 +326,91 @@ impl PoseGraphSession {
         Ok(vec![fitness, result.rms_final, edge as f64, offset as f64])
     }
 
+    #[wasm_bindgen(getter, js_name = planeCount)]
+    pub fn plane_count(&self) -> usize {
+        self.graph.planes.len()
+    }
+
+    #[wasm_bindgen(getter, js_name = planeEdgeCount)]
+    pub fn plane_edge_count(&self) -> usize {
+        self.graph.plane_edges.len()
+    }
+
+    /// Tie every keyframe whose scan shows a floor to one new floor plane
+    /// (see `ca_core::pose_graph::detect_floor`). `up` is the scans' up
+    /// direction, or empty to pick the axis (+z, -y, +y) under which most
+    /// of the first scans show a floor. Returns `[plane index, keyframes
+    /// tied, up x, up y, up z]`; fails when no scan shows a floor.
+    #[wasm_bindgen(js_name = addFloor)]
+    pub fn add_floor(
+        &mut self,
+        up: &[f64],
+        max_tilt_deg: f64,
+        threshold: f64,
+        min_points: usize,
+        sigma_angle_deg: f64,
+        sigma_offset: f64,
+    ) -> Result<Vec<f64>, JsError> {
+        let max_tilt = max_tilt_deg.to_radians();
+        let floor = |scan: &PointCloud, up: [f64; 3]| {
+            pose_graph::detect_floor(scan, up, max_tilt, threshold, min_points)
+        };
+        let scans: Vec<(usize, &PointCloud)> = self
+            .scans
+            .iter()
+            .enumerate()
+            .filter_map(|(i, s)| Some((i, s.as_ref()?)))
+            .collect();
+        let up: [f64; 3] = match up {
+            [x, y, z] => [*x, *y, *z],
+            [] => {
+                let trial = &scans[..scans.len().min(10)];
+                [[0.0, 0.0, 1.0], [0.0, -1.0, 0.0], [0.0, 1.0, 0.0]]
+                    .into_iter()
+                    .max_by_key(|&up| trial.iter().filter(|(_, s)| floor(s, up).is_some()).count())
+                    .unwrap_or([0.0, 0.0, 1.0])
+            }
+            _ => return Err(JsError::new("up must have 3 entries")),
+        };
+        let seen: Vec<(usize, [f64; 4])> = scans
+            .iter()
+            .filter_map(|&(i, s)| Some((i, floor(s, up)?)))
+            .collect();
+        let Some(&(first, measurement)) = seen.first() else {
+            return Err(JsError::new(
+                "no scan shows a floor: check the up axis and the tilt limit",
+            ));
+        };
+        let world = pose_graph::plane_in_world(&measurement, &self.graph.nodes[first].pose);
+        let plane = self.graph.add_plane(world);
+        let information = pose_graph::plane_information(sigma_angle_deg.to_radians(), sigma_offset);
+        for &(node, measurement) in &seen {
+            self.graph.plane_edges.push(pose_graph::PlaneEdge {
+                node,
+                plane,
+                measurement,
+                information,
+            });
+        }
+        Ok(vec![plane as f64, seen.len() as f64, up[0], up[1], up[2]])
+    }
+
+    /// Remove plane `index` and every edge to it.
+    #[wasm_bindgen(js_name = removePlane)]
+    pub fn remove_plane(&mut self, index: usize) -> Result<(), JsError> {
+        if index >= self.graph.planes.len() {
+            return Err(JsError::new("no such plane"));
+        }
+        self.graph.planes.remove(index);
+        self.graph.plane_edges.retain(|e| e.plane != index);
+        for e in &mut self.graph.plane_edges {
+            if e.plane > index {
+                e.plane -= 1;
+            }
+        }
+        Ok(())
+    }
+
     /// Loop candidates as `earlier, later` node index pairs (see
     /// `ca_core::pose_graph::loop_candidates`).
     #[wasm_bindgen(js_name = loopCandidates)]

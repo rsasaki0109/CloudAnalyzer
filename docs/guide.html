@@ -265,6 +265,14 @@
       Undo removes all the loops found at once.
     </p>
     <p>
+      <b>Floor constraint</b> removes the tilt and height drift that odometry leaves. <b>Add floor</b> looks for the
+      floor under every keyframe: the plane with the most scan points within <b>Threshold</b>, at most <b>Max
+      tilt</b> from the <b>Up axis</b> and below the sensor (<i>Auto</i> tries +Z for LiDAR, −Y for scans moved into
+      KITTI's camera frame, and +Y). The keyframes that see it are tied to one floor plane (a g2o
+      <code>VERTEX_PLANE</code> with <code>EDGE_SE3_PLANE</code> edges, weighted by <b>σ tilt</b> and <b>σ
+      height</b>), and the graph is optimised. Undo removes the floor again.
+    </p>
+    <p>
       <b>Join another graph</b> adds a second session of the same place, recorded in its own frame: give a node of
       this graph (<b>Node here</b>; empty takes Node A) and a node of the other one standing near it (<b>Node
       there</b>; empty takes its first node), then <b>Join folder…</b> and pick the other session's folder (poses and

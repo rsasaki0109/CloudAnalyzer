@@ -1366,7 +1366,8 @@ function courtyard(): { truth: Pose2[]; drifted: Pose2[]; scan: (p: Pose2) => Bu
     const body = Buffer.alloc(world.length * 16);
     world.forEach(([x, y, z], i) => {
       const [dx, dy] = [x - p.x, y - p.y];
-      [c * dx + s * dy, -s * dx + c * dy, z, 0.5].forEach((v, a) => body.writeFloatLE(v, i * 16 + a * 4));
+      // The sensor rides 1.8 m above the ground.
+      [c * dx + s * dy, -s * dx + c * dy, z - 1.8, 0.5].forEach((v, a) => body.writeFloatLE(v, i * 16 + a * 4));
     });
     return body;
   };
@@ -1554,4 +1555,63 @@ test("pose graph: a second session in another frame is joined at a shared place"
   await page.locator("#pg-save-g2o").click();
   // B's ids were shifted past A's.
   expect((await bytesOf(await g2o)).toString()).toContain("VERTEX_SE3:QUAT 23 ");
+});
+
+test("pose graph: a floor constraint levels a drive that drifted in pitch", async ({ page }) => {
+  const { truth, scan } = courtyard();
+  const poses = truth.slice(0, 12);
+  // Row-major 4x4 helpers for full 3D poses.
+  type M = number[];
+  const mul = (a: M, b: M): M =>
+    Array.from({ length: 16 }, (_, k) => [0, 1, 2, 3].reduce((sum, j) => sum + a[(k >> 2) * 4 + j] * b[j * 4 + (k & 3)], 0));
+  const planar = (p: Pose2): M => {
+    const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
+    return [c, -s, 0, p.x, s, c, 0, p.y, 0, 0, 1, 0, 0, 0, 0, 1];
+  };
+  const invert = (m: M): M => {
+    const r = [m[0], m[4], m[8], m[1], m[5], m[9], m[2], m[6], m[10]];
+    const t = [0, 1, 2].map((i) => -(r[i * 3] * m[3] + r[i * 3 + 1] * m[7] + r[i * 3 + 2] * m[11]));
+    return [r[0], r[1], r[2], t[0], r[3], r[4], r[5], t[1], r[6], r[7], r[8], t[2], 0, 0, 0, 1];
+  };
+  const pitch = (a: number): M => [Math.cos(a), 0, Math.sin(a), 0, 0, 1, 0, 0, -Math.sin(a), 0, Math.cos(a), 0, 0, 0, 0, 1];
+  // Odometry that pitches 0.6° per step: the drive sinks into the ground.
+  const drifted: M[] = [planar(poses[0])];
+  for (let k = 1; k < poses.length; k++) {
+    const step = mul(invert(planar(poses[k - 1])), planar(poses[k]));
+    drifted.push(mul(mul(drifted[k - 1], step), pitch(0.01)));
+  }
+  const text = drifted.map((m) => m.slice(0, 12).join(" ")).join("\n");
+  await page
+    .locator("#pg-files-input")
+    .setInputFiles([
+      { name: "poses.txt", mimeType: "text/plain", buffer: Buffer.from(`${text}\n`) },
+      ...scanFiles(poses, scan),
+    ]);
+  await expect(status(page)).toContainText("Opened poses.txt: 12 poses");
+
+  const heights = async () => {
+    const download = page.waitForEvent("download");
+    await page.locator("#pg-save-kitti").click();
+    const rows = (await bytesOf(await download)).toString().trim().split("\n");
+    return Math.max(...rows.map((row) => Math.abs(Number(row.split(" ")[11]))));
+  };
+  expect(await heights()).toBeGreaterThan(0.5);
+
+  await page.locator("#pose-graph-panel summary", { hasText: "Floor constraint" }).click();
+  await page.locator("#pg-floor-threshold").fill("0.15");
+  await page.locator("#pg-floor").click();
+  await expect(status(page)).toContainText(/Floor found under 12 of 12 keyframes \(up \+Z\); χ²/);
+  await expect(page.locator("#pg-stats")).toContainText("1 (12 keyframe views)");
+  expect(await heights()).toBeLessThan(0.15);
+
+  const g2o = page.waitForEvent("download");
+  await page.locator("#pg-save-g2o").click();
+  const saved = (await bytesOf(await g2o)).toString();
+  expect(saved).toContain("VERTEX_PLANE 12 ");
+  expect(saved.match(/^EDGE_SE3_PLANE/gm)).toHaveLength(12);
+
+  await page.locator("#pg-undo").click();
+  await expect(status(page)).toContainText("Removed the floor");
+  await expect(page.locator("#pg-stats")).not.toContainText("keyframe views");
+  expect(await heights()).toBeGreaterThan(0.5);
 });

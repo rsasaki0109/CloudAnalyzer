@@ -918,7 +918,14 @@ async function handle(
       await buildIndex(filtered);
       const id = nextId++;
       const base = source!.name.replace(/\.[^.]+$/, "");
-      const suffix = { voxel: `voxel${req.a}`, random: `random${req.a}`, sor: "sor", splat: "clean" }[req.op];
+      const suffix = {
+        voxel: `voxel${req.a}`,
+        random: `random${req.a}`,
+        spatial: `space${req.a}`,
+        octree: `octree${req.a}`,
+        sor: "sor",
+        splat: "clean",
+      }[req.op];
       items.set(id, { kind: "cloud", cloud: filtered, name: `${base}_${suffix}` });
       return describe(id, { parse: 0, index: performance.now() - t });
     }

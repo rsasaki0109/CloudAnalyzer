@@ -242,6 +242,9 @@ export interface TrajectoryEvaluation {
   estimateLength: number;
 }
 
+/** Filters that keep a subset of a cloud's points (see `Cloud.filter`). */
+export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
+
 export type Request =
   | { kind: "trajectory"; file: File }
   | {
@@ -304,8 +307,11 @@ export type Request =
   | {
       kind: "filter";
       id: number;
-      op: "voxel" | "random" | "sor" | "splat";
-      /** voxel: edge length; random: point count; sor: neighbours; splat: minimum opacity. */
+      op: FilterOp;
+      /**
+       * voxel: edge length; random: point count; spatial: minimum distance;
+       * octree: level; sor: neighbours; splat: minimum opacity.
+       */
       a: number;
       /** sor: standard-deviation threshold; splat: maximum size. */
       b: number;

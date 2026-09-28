@@ -1238,3 +1238,23 @@ test("scalar fields: histogram, color by field, range filter and a calculator fi
   const header = Buffer.concat(chunks).subarray(0, 600).toString("latin1");
   expect(header).toMatch(/property float mm/);
 });
+
+test("subsampling: minimum distance and octree level", async ({ page }) => {
+  await open(page, [{ name: "dense.ply", buffer: ply(grid(64)) }]);
+  await expect(status(page)).toContainText("Loaded dense.ply: 4,096 points");
+  await page.locator("#filter-op").selectOption("octree");
+  await expect(page.locator("#filter-level-hint")).toContainText("Cells of");
+  await page.locator("#filter-level").fill("3");
+  await page.locator("#filter-run").click();
+  // 64 x 64 points over an 8 x 8 grid of cells: one point per cell.
+  await expect(status(page)).toContainText("dense_octree3: kept 64 of 4,096 points");
+  await page.keyboard.press("Control+z");
+  await page.locator("#filter-op").selectOption("spatial");
+  await page.locator("#filter-spacing").fill("0.25");
+  await page.locator("#filter-run").click();
+  await expect(status(page)).toContainText(/dense_space0\.25: kept [\d,]+ of 4,096 points/);
+  const kept = Number(/kept ([\d,]+)/.exec((await status(page).textContent())!)![1].replace(/,/g, ""));
+  // Points 0.1 apart thinned to 0.25: between a 0.3 grid (22 x 22) and a 0.2 grid.
+  expect(kept).toBeGreaterThanOrEqual(22 * 22);
+  expect(kept).toBeLessThan(32 * 32);
+});

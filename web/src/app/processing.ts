@@ -3,7 +3,8 @@
 import { estimateNormals, extractGround, filterCloud, mergeClouds, splitCloud } from "../api";
 import { classColor, className } from "../colormap";
 import { refreshColors } from "./colors";
-import { $, errorText, roundUp, setStatus } from "./dom";
+import type { FilterOp } from "../protocol";
+import { $, errorText, fmt, roundUp, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { record } from "./history";
 import { clouds, type Entry, entries, listChanged } from "./state";
@@ -48,9 +49,22 @@ function suggestDefaults(): void {
   const b = entry.cloud.bounds;
   const extent = Math.max(b[3] - b[0], b[4] - b[1], b[5] - b[2]);
   voxelInput.value = String(roundUp(extent / 200));
+  $<HTMLInputElement>("filter-spacing").value = voxelInput.value;
   $<HTMLInputElement>("filter-size").value = String(roundUp(extent / 50));
   voxelInput.dataset.cloud = filterCloudSelect.value;
+  renderLevelHint();
 }
+
+/** The cell size an octree level gives for the chosen cloud. */
+function renderLevelHint(): void {
+  const entry = entries.get(Number(filterCloudSelect.value));
+  const level = Math.round(Number($<HTMLInputElement>("filter-level").value));
+  if (!entry || !(level >= 1)) return;
+  const b = entry.cloud.bounds;
+  const cube = Math.max(b[3] - b[0], b[4] - b[1], b[5] - b[2]);
+  $("filter-level-hint").textContent = `Cells of ${fmt(cube / 2 ** Math.min(21, level))} across.`;
+}
+$<HTMLInputElement>("filter-level").oninput = renderLevelHint;
 
 function showOpInputs(): void {
   for (const group of document.querySelectorAll<HTMLElement>("#filter-panel [data-op]")) {
@@ -68,10 +82,12 @@ filterRun.onclick = async () => {
     await runGround(entry);
     return;
   }
-  const op = filterOp.value as "voxel" | "random" | "sor" | "splat";
+  const op = filterOp.value as FilterOp;
   let a = 0;
   let b = 0;
   if (op === "voxel") a = Number(voxelInput.value);
+  if (op === "spatial") a = Number($<HTMLInputElement>("filter-spacing").value);
+  if (op === "octree") a = Math.round(Number($<HTMLInputElement>("filter-level").value));
   if (op === "random") a = Math.round((entry.cloud.count * Number($<HTMLInputElement>("filter-percent").value)) / 100);
   if (op === "sor") {
     a = Number($<HTMLInputElement>("filter-k").value);
@@ -95,6 +111,8 @@ filterRun.onclick = async () => {
     const label = {
       voxel: "the voxel filter",
       random: "the random subsampling",
+      spatial: "the minimum-distance subsampling",
+      octree: "the octree subsampling",
       sor: "the outlier filter",
       splat: "the splat cleanup",
     }[op];

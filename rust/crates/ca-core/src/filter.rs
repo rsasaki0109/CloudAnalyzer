@@ -3,6 +3,8 @@
 //! order), so colors and attributes follow via [`PointCloud::select`].
 
 use crate::kdtree::KdTree;
+use std::collections::HashMap;
+
 use crate::{AttributeValues, OPACITY, PointCloud, SPLAT_SIZE};
 
 /// Keep one point per cubic voxel of edge `voxel` (the first point, in cloud
@@ -35,6 +37,120 @@ pub fn voxel_subsample(cloud: &PointCloud, voxel: f64) -> Vec<usize> {
     }
     keep.sort_unstable();
     keep
+}
+
+/// Keep points so that no two kept points are closer than `distance`
+/// (CloudCompare's "space" subsampling). Points are visited in cloud order
+/// and kept when no kept point lies within `distance`; kept points are found
+/// through a hash grid with cells of that size, so only the 27 cells around
+/// a point are searched.
+pub fn spatial_subsample(cloud: &PointCloud, distance: f64) -> Vec<usize> {
+    if cloud.is_empty() || distance.is_nan() || distance <= 0.0 {
+        return (0..cloud.len()).collect();
+    }
+    let lo = cloud.bounds().map(|b| b.min).unwrap_or([0.0; 3]);
+    let cell = |p: &[f64; 3]| -> [i64; 3] {
+        std::array::from_fn(|a| ((p[a] - lo[a]) / distance).floor() as i64)
+    };
+    let d2 = distance * distance;
+    let mut grid: HashMap<[i64; 3], Vec<u32>, BuildCellHasher> = HashMap::default();
+    let mut keep = Vec::new();
+    'points: for (i, p) in cloud.positions.iter().enumerate() {
+        let c = cell(p);
+        for dx in -1..=1 {
+            for dy in -1..=1 {
+                for dz in -1..=1 {
+                    let Some(kept) = grid.get(&[c[0] + dx, c[1] + dy, c[2] + dz]) else {
+                        continue;
+                    };
+                    for &k in kept {
+                        let q = &cloud.positions[k as usize];
+                        if (0..3).map(|a| (p[a] - q[a]).powi(2)).sum::<f64>() < d2 {
+                            continue 'points;
+                        }
+                    }
+                }
+            }
+        }
+        grid.entry(c).or_default().push(i as u32);
+        keep.push(i);
+    }
+    keep
+}
+
+/// Keep the point nearest the centre of each occupied cell of octree
+/// `level` (CloudCompare's "octree" subsampling): cells are the cloud's
+/// bounding cube split `2^level` times along each axis.
+pub fn octree_subsample(cloud: &PointCloud, level: u32) -> Vec<usize> {
+    let Some(b) = cloud.bounds() else {
+        return Vec::new();
+    };
+    let level = level.min(21);
+    let size = (0..3).map(|a| b.max[a] - b.min[a]).fold(0.0, f64::max);
+    if size <= 0.0 || level == 0 {
+        return (0..cloud.len()).take(1).collect();
+    }
+    let cells = (1u64 << level) as f64;
+    let edge = size / cells;
+    let last = (1u64 << level) - 1;
+    let mut keyed: Vec<(u64, f64, u32)> = cloud
+        .positions
+        .iter()
+        .zip(0u32..)
+        .map(|(p, i)| {
+            let mut key = 0;
+            let mut d2 = 0.0;
+            for (a, (&v, &min)) in p.iter().zip(&b.min).enumerate() {
+                let k = (((v - min) / edge) as u64).min(last);
+                let center = min + (k as f64 + 0.5) * edge;
+                d2 += (v - center).powi(2);
+                key |= k << (21 * a);
+            }
+            (key, d2, i)
+        })
+        .collect();
+    // Nearest to the centre first within each cell; ties keep cloud order.
+    keyed.sort_by(|x, y| x.0.cmp(&y.0).then(x.1.total_cmp(&y.1)).then(x.2.cmp(&y.2)));
+    let mut keep: Vec<usize> = Vec::new();
+    let mut previous = None;
+    for &(key, _, i) in &keyed {
+        if previous != Some(key) {
+            keep.push(i as usize);
+            previous = Some(key);
+        }
+    }
+    keep.sort_unstable();
+    keep
+}
+
+/// A fast hasher for integer cell coordinates (SplitMix64 finaliser).
+#[derive(Default, Clone, Copy)]
+struct BuildCellHasher;
+
+impl std::hash::BuildHasher for BuildCellHasher {
+    type Hasher = CellHasher;
+    fn build_hasher(&self) -> CellHasher {
+        CellHasher(0)
+    }
+}
+
+struct CellHasher(u64);
+
+impl std::hash::Hasher for CellHasher {
+    fn finish(&self) -> u64 {
+        let mut z = self.0.wrapping_add(0x9e37_79b9_7f4a_7c15);
+        z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
+        z ^ (z >> 31)
+    }
+    fn write(&mut self, bytes: &[u8]) {
+        for &b in bytes {
+            self.0 = self.0.rotate_left(8) ^ u64::from(b);
+        }
+    }
+    fn write_i64(&mut self, v: i64) {
+        self.0 = self.0.rotate_left(21) ^ (v as u64);
+    }
 }
 
 /// Keep `count` points chosen uniformly at random (deterministic for a seed).
@@ -547,6 +663,52 @@ mod tests {
         assert_eq!(keep[0], 0);
         // A non-positive size keeps everything.
         assert_eq!(voxel_subsample(&c, 0.0).len(), c.len());
+    }
+
+    #[test]
+    fn spatial_subsample_keeps_points_at_least_the_distance_apart() {
+        // A 0.1 grid with a 0.25 minimum distance: roughly one point in six or more.
+        let c = cloud(grid(30, 0.1));
+        let keep = spatial_subsample(&c, 0.25);
+        assert!((80..=160).contains(&keep.len()), "{}", keep.len());
+        for (n, &i) in keep.iter().enumerate() {
+            for &j in &keep[n + 1..] {
+                let (p, q) = (c.positions[i], c.positions[j]);
+                assert!((0..3).map(|a| (p[a] - q[a]).powi(2)).sum::<f64>() >= 0.25 * 0.25 - 1e-12);
+            }
+        }
+        // Every dropped point has a kept one within the distance.
+        let kept: std::collections::HashSet<usize> = keep.iter().copied().collect();
+        for (i, p) in c
+            .positions
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| !kept.contains(i))
+        {
+            assert!(
+                keep.iter().any(|&k| {
+                    let q = c.positions[k];
+                    (0..3).map(|a| (p[a] - q[a]).powi(2)).sum::<f64>() < 0.25 * 0.25
+                }),
+                "point {i} has no kept neighbour"
+            );
+        }
+        assert_eq!(spatial_subsample(&c, 0.0).len(), c.len());
+    }
+
+    #[test]
+    fn octree_subsample_keeps_the_point_nearest_each_cell_centre() {
+        // 64 x 64 grid over [0, 6.3]: level 3 cuts the 6.3 cube into 8 x 8 cells.
+        let c = cloud(grid(64, 0.1));
+        let keep = octree_subsample(&c, 3);
+        assert_eq!(keep.len(), 64);
+        // The first cell (0..0.7875) has its centre at 0.39375: the point at 0.4 wins.
+        let first = c.positions[keep[0]];
+        assert!(
+            (first[0] - 0.4).abs() < 1e-9 && (first[1] - 0.4).abs() < 1e-9,
+            "{first:?}"
+        );
+        assert_eq!(octree_subsample(&c, 21).len(), c.len());
     }
 
     #[test]

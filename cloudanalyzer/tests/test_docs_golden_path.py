@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 
@@ -14,14 +15,18 @@ SLAM_SMOKE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "slam-benchmark-smok
 def test_readme_leads_with_the_web_viewer_and_links_the_cli():
     text = README.read_text(encoding="utf-8")
 
-    assert "Point cloud viewer and analyzer that runs in your browser." in text
+    assert "point cloud viewer and analyzer that runs in your browser" in text.lower()
     assert "https://rsasaki0109.github.io/CloudAnalyzer/app/" in text
-    assert (REPO_ROOT / "docs/images/web-viewer.png").is_file()
+    assert (REPO_ROOT / "docs/images/web/demo.gif").is_file()
+    # Every screenshot the README shows is checked in.
+    for image in re.findall(r'src="(docs/images/web/[^"]+)"', text):
+        assert (REPO_ROOT / image).is_file(), image
     assert (REPO_ROOT / "docs/images/social-preview.png").is_file()
     # The CI quality-gate CLI stays one click away, with its golden path.
     assert "[`cloudanalyzer/`](cloudanalyzer/)" in text
     cli = (REPO_ROOT / "cloudanalyzer" / "README.md").read_text(encoding="utf-8")
     assert "docs/tutorial-slam-benchmark.md" in cli
+    assert "docs/tutorial-slam-benchmark.md" in text
 
 
 def test_slam_benchmark_tutorial_uses_checked_in_smoke_suite():

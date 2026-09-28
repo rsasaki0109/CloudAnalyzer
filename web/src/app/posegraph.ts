@@ -34,10 +34,10 @@ import {
 import { colorize, gradientCss, lut } from "../colormap";
 import { CANCELLED, type PoseFormat, type PoseGraphFiles, type PoseGraphState, type Progress, type RemovedEdge } from "../protocol";
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
-import { runNearest } from "./distance";
 import { addEntry, renderList } from "./entries";
+import { colorByField } from "./scalars";
 import { record } from "./history";
-import { display, distanceChanged, globalShift, hideEntry, listChanged, viewer } from "./state";
+import { display, distanceChanged, globalShift, listChanged, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { setTool, toggleTool, type Tool } from "./tools";
 
@@ -1119,24 +1119,22 @@ $<HTMLButtonElement>("pg-map").onclick = () =>
   });
 
 /**
- * The map as loaded and as it is now, as two clouds, the current one
- * colored by its distance to the first: where the correction moved the map,
- * and by how much.
+ * The map as it is now, colored by how far each point moved from its place
+ * as loaded: where the corrections moved the map, and by how much.
  */
 $<HTMLButtonElement>("pg-compare").onclick = () =>
   run("Comparing", async () => {
-    const voxel = Math.max(0, num("pg-map-voxel") || 0);
-    setStatus("Building the map as loaded…");
-    const start = addEntry(await poseGraphMap(voxel, true));
-    setStatus("Building the map as it is now…");
-    const now = addEntry(await poseGraphMap(voxel));
-    record({ label: "the map comparison", added: [start, now] });
-    hideEntry(start);
+    setStatus("Building the map with each point's correction…");
+    const map = addEntry(await poseGraphMap(Math.max(0, num("pg-map-voxel") || 0), false, true));
+    record({ label: "the corrected map", added: [map] });
     renderList();
-    await runNearest(now, start, false);
+    await colorByField(map, "correction");
+    const values = map.field!.values;
+    let [sum, max] = [0, 0];
+    for (const v of values) [sum, max] = [sum + v, Math.max(max, v)];
     setStatus(
-      `${now.cloud.name} is colored by its distance to ${start.cloud.name} (the scans at their poses as loaded): ` +
-        "where the corrections moved the map",
+      `${map.cloud.name} is colored by how far each point moved from its place as loaded ` +
+        `(mean ${fmt(sum / values.length)} m, max ${fmt(max)} m)`,
     );
   });
 

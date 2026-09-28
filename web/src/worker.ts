@@ -1323,7 +1323,7 @@ async function handle(
       return { value: openGraph().export(req.format), transfer: [] };
     case "pg-map": {
       const t = performance.now();
-      let cloud = openGraph().map(req.initial);
+      let cloud = openGraph().map(req.initial, req.correction);
       if (req.voxel > 0) {
         const thinned = cloud.filter("voxel", req.voxel, 0);
         cloud.free();

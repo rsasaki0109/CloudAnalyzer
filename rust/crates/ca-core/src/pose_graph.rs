@@ -1631,6 +1631,22 @@ pub fn assemble(graph: &PoseGraph, scans: &[Option<PointCloud>]) -> PointCloud {
     out
 }
 
+/// How far each point of the [`assemble`]d map moved between the poses in
+/// `before` (one per node, e.g. as loaded) and the graph's poses now, in
+/// the map's point order: the true shift of every point, where a
+/// cloud-to-cloud distance would miss a slide along a wall.
+pub fn correction(graph: &PoseGraph, scans: &[Option<PointCloud>], before: &[Rigid]) -> Vec<f32> {
+    let mut out = Vec::new();
+    for ((node, scan), then) in graph.nodes.iter().zip(scans).zip(before) {
+        let Some(scan) = scan else { continue };
+        out.extend(scan.positions.iter().map(|p| {
+            let d = sub3(&node.pose.apply(p), &then.apply(p));
+            dot3(&d, &d).sqrt() as f32
+        }));
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2347,5 +2363,35 @@ FIX 1
             gravity_information(0.01),
             5
         ));
+    }
+
+    #[test]
+    fn correction_is_each_points_shift() {
+        let info = isotropic_information(1.0, 1.0);
+        let mut graph =
+            PoseGraph::from_poses(&[Rigid::IDENTITY, pose([5.0, 0.0, 0.0], [0.0; 3])], info);
+        let before: Vec<Rigid> = graph.nodes.iter().map(|n| n.pose).collect();
+        // Node 1 turns a quarter about its own origin.
+        graph.nodes[1].pose = pose([5.0, 0.0, 0.0], [0.0, 0.0, std::f64::consts::FRAC_PI_2]);
+        let scans = [
+            Some(scan_of(&[[0.0; 3]])),
+            Some(scan_of(&[[0.0; 3], [2.0, 0.0, 0.0]])),
+        ];
+        let moved = correction(&graph, &scans, &before);
+        // Node 0's point stays; node 1's origin stays, its point 2 m out swings by 2 sqrt(2).
+        assert_eq!(moved.len(), 3);
+        assert!(moved[0] == 0.0 && moved[1] == 0.0);
+        assert!(
+            (moved[2] - 2.0 * std::f32::consts::SQRT_2).abs() < 1e-5,
+            "{moved:?}"
+        );
+        assert_eq!(moved.len(), assemble(&graph, &scans).len());
+    }
+
+    fn scan_of(points: &[[f64; 3]]) -> PointCloud {
+        PointCloud {
+            positions: points.to_vec(),
+            ..PointCloud::default()
+        }
     }
 }

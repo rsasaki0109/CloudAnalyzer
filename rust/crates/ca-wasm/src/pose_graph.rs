@@ -744,8 +744,10 @@ impl PoseGraphSession {
     }
 
     /// Every scan at its node's pose as one cloud, or with `initial` at its
-    /// pose as loaded; call [`Cloud::build_index`] before drawing it.
-    pub fn map(&self, initial: bool) -> Result<Cloud, JsError> {
+    /// pose as loaded; call [`Cloud::build_index`] before drawing it. With
+    /// `correction`, each point carries how far it moved from its place as
+    /// loaded (the `correction` attribute, metres).
+    pub fn map(&self, initial: bool, correction: bool) -> Result<Cloud, JsError> {
         let map = if initial {
             let mut graph = self.graph.clone();
             for (node, pose) in graph.nodes.iter_mut().zip(&self.initial) {
@@ -757,6 +759,17 @@ impl PoseGraphSession {
         };
         if map.is_empty() {
             return Err(JsError::new("no scans are loaded"));
+        }
+        let mut map = map;
+        if correction {
+            map.attributes.push(ca_core::Attribute {
+                name: "correction".into(),
+                values: ca_core::AttributeValues::F32(pose_graph::correction(
+                    &self.graph,
+                    &self.scans,
+                    &self.initial,
+                )),
+            });
         }
         Ok(Cloud::unindexed(map))
     }

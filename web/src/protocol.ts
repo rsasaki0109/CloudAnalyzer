@@ -296,6 +296,20 @@ export interface PoseGraphLoop {
   rmsFinal: number;
   iterations: number;
   converged: boolean;
+  /** Fraction of B's points within the inlier distance of A's once registered. */
+  fitness: number;
+}
+
+/** Loops found automatically (see `pg-find-loops`). */
+export interface PoseGraphFound {
+  state: PoseGraphState;
+  candidates: number;
+  /** Accepted loops, as node indices, with their fitness. */
+  added: { from: number; to: number; fitness: number }[];
+  /** Their edge indices, for undo. */
+  edges: number[];
+  /** Graph cost before and after the optimisation that followed, if any loop was added. */
+  optimized: { initialCost: number; finalCost: number; iterations: number } | null;
 }
 
 export interface PoseGraphOptimized {
@@ -342,8 +356,29 @@ export type Request =
       maxIterations: number;
       overlap: number;
       pointToPlane: boolean;
+      /** For the reported fitness (metres). */
+      inlierDistance: number;
       sigmaT: number;
       sigmaRDeg: number;
+    }
+  | {
+      /**
+       * Find loops: node pairs close in space but far apart along the path,
+       * each registered with ICP and kept when its fitness is high enough;
+       * then optimise.
+       */
+      kind: "pg-find-loops";
+      maxDistance: number;
+      minTravel: number;
+      spacing: number;
+      /** 0..1: fraction of points within `inlierDistance` after registration. */
+      minFitness: number;
+      inlierDistance: number;
+      maxIterations: number;
+      overlap: number;
+      sigmaT: number;
+      sigmaRDeg: number;
+      loopKernel: number;
     }
   | { kind: "pg-optimize"; /** Huber threshold for loops, 0 for none. */ loopKernel: number }
   | {

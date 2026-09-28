@@ -15,6 +15,7 @@ use std::cmp::Reverse;
 use std::collections::{BTreeSet, BinaryHeap, HashMap};
 
 use crate::icp::{IcpParams, IcpResult, Rigid, icp};
+use crate::kdtree::KdTree;
 use crate::trajectory::{quaternion, rotation_matrix};
 use crate::{Attribute, AttributeValues, INTENSITY, PointCloud};
 
@@ -820,6 +821,89 @@ pub fn register_loop(
     Some((result.transform.compose(guess), result))
 }
 
+/// Fraction of `to_scan`'s points (up to a few thousand, evenly spread)
+/// that land within `max_distance` of a `from_scan` point once moved by
+/// `measurement` (the pose of `to` in the frame of `from`). A loop whose
+/// registration converged into the wrong place overlaps little.
+pub fn overlap_fitness(
+    from_scan: &PointCloud,
+    to_scan: &PointCloud,
+    measurement: &Rigid,
+    max_distance: f64,
+) -> f64 {
+    const SAMPLE: usize = 5000;
+    let Some(tree) = KdTree::new(&from_scan.positions) else {
+        return 0.0;
+    };
+    let step = to_scan.len().div_ceil(SAMPLE).max(1);
+    let mut guess = None;
+    let (mut inside, mut total) = (0usize, 0usize);
+    for p in to_scan.positions.iter().step_by(step) {
+        let hit = tree.nearest(&measurement.apply(p), guess);
+        guess = Some(hit);
+        total += 1;
+        inside += usize::from(hit.distance_sq <= max_distance * max_distance);
+    }
+    if total == 0 {
+        0.0
+    } else {
+        inside as f64 / total as f64
+    }
+}
+
+/// Node pairs `(earlier, later)` worth checking for a loop: at most
+/// `max_distance` apart as the graph has them now, at least `min_travel`
+/// apart along the path through the nodes (in order), and not joined by an
+/// edge yet. Each node proposes its nearest such earlier node, and along
+/// the path at most one proposal is kept every `spacing` metres.
+pub fn loop_candidates(
+    graph: &PoseGraph,
+    max_distance: f64,
+    min_travel: f64,
+    spacing: f64,
+) -> Vec<(usize, usize)> {
+    let positions: Vec<[f64; 3]> = graph.nodes.iter().map(|n| n.pose.translation).collect();
+    let Some(tree) = KdTree::new(&positions) else {
+        return Vec::new();
+    };
+    let mut travel = vec![0.0; positions.len()];
+    for i in 1..positions.len() {
+        let (a, b) = (positions[i - 1], positions[i]);
+        let step = ((b[0] - a[0]).powi(2) + (b[1] - a[1]).powi(2) + (b[2] - a[2]).powi(2)).sqrt();
+        travel[i] = travel[i - 1] + step;
+    }
+    let joined: std::collections::HashSet<(usize, usize)> = graph
+        .edges
+        .iter()
+        .map(|e| (e.from.min(e.to), e.from.max(e.to)))
+        .collect();
+    let mut out = Vec::new();
+    let mut last_kept = f64::NEG_INFINITY;
+    let mut near = Vec::new();
+    for i in 0..positions.len() {
+        if travel[i] - last_kept < spacing {
+            continue;
+        }
+        near.clear();
+        tree.within(&positions[i], max_distance, &mut near);
+        let distance_sq = |j: usize| {
+            (0..3)
+                .map(|a| (positions[i][a] - positions[j][a]).powi(2))
+                .sum::<f64>()
+        };
+        let best = near
+            .iter()
+            .copied()
+            .filter(|&j| j < i && travel[i] - travel[j] >= min_travel && !joined.contains(&(j, i)))
+            .min_by(|&a, &b| distance_sq(a).total_cmp(&distance_sq(b)));
+        if let Some(j) = best {
+            out.push((j, i));
+            last_kept = travel[i];
+        }
+    }
+    out
+}
+
 /// Every scan placed at its node's pose, in one cloud. `scans[i]` belongs
 /// to node `i` (in that node's frame); nodes without a scan add nothing.
 /// Intensity is kept when every scan has it.
@@ -1218,5 +1302,31 @@ FIX 1
         use crate::trajectory::{Format, parse};
         let back = parse(&kitti, Format::Kitti).unwrap();
         assert_eq!(back.positions[0], [1.0, 2.0, 3.0]);
+    }
+
+    #[test]
+    fn loop_candidates_pair_the_ends_of_a_loop() {
+        let (_, truth) = loop_graph(0.0);
+        let mut graph = PoseGraph::from_poses(&truth, isotropic_information(0.1, 0.1));
+        let candidates = loop_candidates(&graph, 3.0, 20.0, 5.0);
+        assert!(!candidates.is_empty());
+        for &(j, i) in &candidates {
+            assert!(j < 3 && i >= 36, "{candidates:?}");
+        }
+        // Joined pairs are not proposed again; a short path is never a loop.
+        let (j, i) = candidates[0];
+        graph.add_loop(j, i, graph.relative(j, i), isotropic_information(0.1, 0.1));
+        assert!(!loop_candidates(&graph, 3.0, 20.0, 5.0).contains(&(j, i)));
+        assert!(loop_candidates(&graph, 3.0, 100.0, 5.0).is_empty());
+    }
+
+    #[test]
+    fn overlap_fitness_tells_a_good_registration_from_a_bad_one() {
+        let truth = pose([0.8, -0.4, 0.1], [0.02, -0.01, 0.2]);
+        let from_scan = room();
+        let to_scan = transformed(&from_scan, &inverse(&truth));
+        assert!(overlap_fitness(&from_scan, &to_scan, &truth, 0.05) > 0.99);
+        let wrong = pose([0.0, 3.0, 0.0], [0.0; 3]).compose(&truth);
+        assert!(overlap_fitness(&from_scan, &to_scan, &wrong, 0.05) < 0.5);
     }
 }

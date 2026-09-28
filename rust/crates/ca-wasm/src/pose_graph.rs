@@ -178,19 +178,20 @@ impl PoseGraphSession {
     }
 
     /// Register node `to`'s scan onto node `from`'s from their current
-    /// relative pose and add the result as a loop edge. Returns `[edge
-    /// index, rms before, rms after, iterations, converged]`.
-    #[wasm_bindgen(js_name = addLoop)]
-    #[allow(clippy::too_many_arguments)]
-    pub fn add_loop(
-        &mut self,
+    /// relative pose, without changing the graph. Returns `[rms before, rms
+    /// after, iterations, converged, fitness, 16 matrix entries]`: the
+    /// matrix (row-major) is the measured pose of `to` in the frame of
+    /// `from`, and the fitness the fraction of `to`'s points within
+    /// `inlier_distance` of `from`'s once placed by it.
+    #[wasm_bindgen(js_name = registerLoop)]
+    pub fn register_loop(
+        &self,
         from: usize,
         to: usize,
         max_iterations: usize,
         overlap: f64,
         point_to_plane: bool,
-        sigma_t: f64,
-        sigma_r_deg: f64,
+        inlier_distance: f64,
     ) -> Result<Vec<f64>, JsError> {
         let n = self.graph.nodes.len();
         if from >= n || to >= n || from == to {
@@ -211,20 +212,58 @@ impl PoseGraphSession {
             overlap,
             ..IcpParams::default()
         };
+        let (from_scan, to_scan) = (scan(from)?, scan(to)?);
         let guess = self.graph.relative(from, to);
         let (measurement, result) =
-            pose_graph::register_loop(scan(from)?, scan(to)?, &guess, params)
+            pose_graph::register_loop(from_scan, to_scan, &guess, params)
                 .ok_or_else(|| JsError::new("ICP found too few matching points"))?;
-        let edge = self
-            .graph
-            .add_loop(from, to, measurement, information(sigma_t, sigma_r_deg));
-        Ok(vec![
-            edge as f64,
+        let fitness =
+            pose_graph::overlap_fitness(from_scan, to_scan, &measurement, inlier_distance);
+        let mut out = vec![
             result.rms_initial,
             result.rms_final,
             result.iterations as f64,
             f64::from(u8::from(result.converged)),
-        ])
+            fitness,
+        ];
+        out.extend(measurement.to_matrix());
+        Ok(out)
+    }
+
+    /// Add a loop edge measuring `to` in the frame of `from` (row-major
+    /// 4x4); returns its index.
+    #[wasm_bindgen(js_name = addLoopEdge)]
+    pub fn add_loop_edge(
+        &mut self,
+        from: usize,
+        to: usize,
+        measurement: &[f64],
+        sigma_t: f64,
+        sigma_r_deg: f64,
+    ) -> Result<usize, JsError> {
+        let n = self.graph.nodes.len();
+        let m: &[f64; 16] = measurement
+            .try_into()
+            .map_err(|_| JsError::new("measurement must have 16 entries"))?;
+        if from >= n || to >= n || from == to {
+            return Err(JsError::new("pick two different nodes"));
+        }
+        Ok(self.graph.add_loop(
+            from,
+            to,
+            Rigid::from_matrix(m),
+            information(sigma_t, sigma_r_deg),
+        ))
+    }
+
+    /// Loop candidates as `earlier, later` node index pairs (see
+    /// `ca_core::pose_graph::loop_candidates`).
+    #[wasm_bindgen(js_name = loopCandidates)]
+    pub fn loop_candidates(&self, max_distance: f64, min_travel: f64, spacing: f64) -> Vec<u32> {
+        pose_graph::loop_candidates(&self.graph, max_distance, min_travel, spacing)
+            .into_iter()
+            .flat_map(|(a, b)| [a as u32, b as u32])
+            .collect()
     }
 
     /// Remove edge `index` (later edges shift down).

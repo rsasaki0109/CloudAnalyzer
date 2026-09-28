@@ -11,6 +11,7 @@ import type {
   MeshFormat,
   MeshOutput,
   PoseFormat,
+  PoseGraphFound,
   PoseGraphLoop,
   PoseGraphOpened,
   PoseGraphOptimized,
@@ -267,6 +268,15 @@ export function openPoseGraph(
 /** Add a loop edge between two nodes, measured by ICP of their scans. */
 export function addPoseGraphLoop(params: Omit<Extract<Request, { kind: "pg-loop" }>, "kind">): Promise<PoseGraphLoop> {
   return call({ kind: "pg-loop", ...params });
+}
+
+/** Find, verify and add loops automatically, then optimise. */
+export function findPoseGraphLoops(
+  params: Omit<Extract<Request, { kind: "pg-find-loops" }>, "kind">,
+  progress?: (p: Progress) => void,
+  signal?: AbortSignal,
+): Promise<PoseGraphFound> {
+  return call({ kind: "pg-find-loops", ...params }, [], progress, signal);
 }
 
 export function optimizePoseGraph(loopKernel: number): Promise<PoseGraphOptimized> {

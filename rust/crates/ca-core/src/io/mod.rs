@@ -16,7 +16,7 @@ mod xyz;
 pub use e57::{scan_names as e57_scan_names, write_e57};
 pub use las_write::write_las;
 pub use stream::PointStream;
-pub use write::{ScalarField, write_csv, write_ply};
+pub use write::{ScalarField, write_csv, write_mesh_ply, write_obj, write_ply};
 
 use crate::PointCloud;
 use crate::mesh::TriangleMesh;

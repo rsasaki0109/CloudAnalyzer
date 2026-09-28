@@ -21,9 +21,10 @@ Rust + WebAssembly. Your files stay on your machine.
   trajectory ATE / RPE (TUM, KITTI, CSV; SE(3) / Sim(3) alignment, same numbers as the Python CLI).
 - **Process**: ICP and manual alignment (point pairs, gizmo, matrix), subsampling, outlier removal, ground extraction (CSF), normals, merge/split,
   rasterize to a DEM / DSM (GeoTIFF or colored PNG), RANSAC shape detection (planes, cylinders, spheres)
-  and Euclidean clustering.
+  and Euclidean clustering, mesh a cloud (2.5D Delaunay).
 - **Inspect**: clipping box, lasso segmentation with undo/redo, cross-section profiles, picking, measuring and labels; save the view as a PNG.
-- **Share**: links and session files that restore the view; export PLY, LAS/LAZ (distances as extra bytes), E57 or CSV.
+- **Share**: links and session files that restore the view; export PLY, LAS/LAZ (distances as extra bytes), E57 or CSV,
+  and meshes as PLY or OBJ.
 - Works on phones and tablets.
 
 ## Try it

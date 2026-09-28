@@ -287,6 +287,34 @@ pub fn raster_geotiff(
     Ok(ca_core::geotiff::write_geotiff(&grid, heights))
 }
 
+/// Result of [`Cloud::mesh_delaunay`].
+#[wasm_bindgen]
+pub struct DelaunayOutput {
+    /// Points triangulated (fewer than the cloud's when it was thinned).
+    #[wasm_bindgen(readonly)]
+    pub points: usize,
+    /// Voxel size the cloud was thinned with, 0 when it was not.
+    #[wasm_bindgen(readonly)]
+    pub voxel: f64,
+    /// Longest horizontal edge kept (`Infinity` when all were kept).
+    #[wasm_bindgen(readonly, js_name = maxEdge)]
+    pub max_edge: f64,
+    /// Triangles dropped for a longer edge.
+    #[wasm_bindgen(readonly)]
+    pub removed: usize,
+    mesh: Option<Mesh>,
+}
+
+#[wasm_bindgen]
+impl DelaunayOutput {
+    #[wasm_bindgen(js_name = takeMesh)]
+    pub fn take_mesh(&mut self) -> Result<Mesh, JsError> {
+        self.mesh
+            .take()
+            .ok_or_else(|| JsError::new("mesh already taken"))
+    }
+}
+
 /// Reads a point file piece by piece (see [`ca_core::io::PointStream`]), so
 /// large files never sit in memory whole.
 #[wasm_bindgen]
@@ -843,6 +871,44 @@ impl Cloud {
         });
         out.cloud = Some(self.segmented(segment, colors));
         Ok(out)
+    }
+
+    /// 2.5D Delaunay mesh: the points triangulated in the XY plane, heights
+    /// kept. Triangles with a horizontal edge longer than `max_edge` are
+    /// dropped (`undefined`: 4x the median edge; 0 keeps them all). A cloud
+    /// of more than `max_points` is first thinned with a voxel filter.
+    #[wasm_bindgen(js_name = meshDelaunay)]
+    pub fn mesh_delaunay(
+        &self,
+        max_edge: Option<f64>,
+        max_points: usize,
+    ) -> Result<DelaunayOutput, JsError> {
+        use ca_core::delaunay::{MaxEdge, delaunay_25d, thin_for_meshing};
+        let max_edge = match max_edge {
+            None => MaxEdge::Auto,
+            Some(l) if l == 0.0 || l == f64::INFINITY => MaxEdge::Unlimited,
+            Some(l) if l > 0.0 => MaxEdge::Length(l),
+            Some(_) => return Err(JsError::new("the max edge length must not be negative")),
+        };
+        let thinned = thin_for_meshing(&self.inner, max_points);
+        let points = match &thinned {
+            Some((keep, _)) => keep.iter().map(|&i| self.inner.positions[i]).collect(),
+            None => self.inner.positions.clone(),
+        };
+        let out = delaunay_25d(&points, max_edge)
+            .ok_or_else(|| JsError::new("the points are collinear in XY"))?;
+        if out.mesh.triangles.is_empty() {
+            return Err(JsError::new(
+                "every triangle is longer than the max edge length",
+            ));
+        }
+        Ok(DelaunayOutput {
+            points: points.len(),
+            voxel: thinned.map_or(0.0, |(_, voxel)| voxel),
+            max_edge: out.max_edge,
+            removed: out.removed,
+            mesh: Some(Mesh { inner: out.mesh }),
+        })
     }
 
     /// Apply a rigid transform (row-major 4x4) to every point and rebuild the
@@ -1487,6 +1553,15 @@ impl Mesh {
     pub fn raw_vertices(&self) -> Vec<f64> {
         self.inner.vertices.as_flattened().to_vec()
     }
+
+    /// Serialize the mesh as `"ply"` (binary) or `"obj"`.
+    pub fn export(&self, format: &str) -> Result<Vec<u8>, JsError> {
+        match format {
+            "ply" => Ok(ca_core::io::write_mesh_ply(&self.inner)),
+            "obj" => Ok(ca_core::io::write_obj(&self.inner)),
+            other => Err(JsError::new(&format!("unknown mesh format {other:?}"))),
+        }
+    }
 }
 
 /// Distance from every point of `compared` to `mesh` (C2M); negative behind
@@ -2094,6 +2169,7 @@ pub fn warm_up() {
             class: None,
         },
     );
+    let _ = ca_core::delaunay::delaunay_25d(&positions, ca_core::delaunay::MaxEdge::Auto);
     let normals = ca_core::normals::estimate_normals(
         &positions[..20_000],
         12,

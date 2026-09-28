@@ -9,6 +9,7 @@ import "./app/icp";
 import "./app/classes";
 import "./app/volume";
 import "./app/raster";
+import "./app/mesh";
 import "./app/processing";
 import "./app/segment";
 import "./app/clip";

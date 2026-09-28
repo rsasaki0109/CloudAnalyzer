@@ -89,6 +89,7 @@
       <a href="#trajectory">Trajectories (ATE / RPE)</a>
       <a href="#filters">Filters and ground extraction</a>
       <a href="#raster">Rasterize (DEM / DSM)</a>
+      <a href="#mesh">Meshing (Delaunay 2.5D)</a>
       <a href="#normals">Normals</a>
       <a href="#merge">Merge and split</a>
       <a href="#shapes">Shapes and clusters</a>
@@ -260,6 +261,18 @@
       the current color ramp, optionally hillshaded.
     </p>
 
+    <h2 id="mesh">Meshing (Delaunay 2.5D)</h2>
+    <p>
+      <b>Mesh</b> triangulates a cloud as seen from above (like CloudCompare's <i>Delaunay 2.5D (XY plane)</i>):
+      the points' XY positions are joined by a Delaunay triangulation and keep their heights, which suits terrain
+      and other surfaces with one height per position. Triangles with a horizontal edge longer than the
+      <i>max edge length</i> are dropped, so gaps and concave outlines are not bridged; left empty, it is four times
+      the median edge, and 0 keeps every triangle up to the convex hull. Clouds of more than 5 million points are
+      first thinned with a voxel filter, and the status says so. The mesh, named <code>&lt;cloud&gt;_mesh</code>, can
+      be the reference of a C2M distance or a surface of a volume, and its <b>⤓</b> button saves it as binary PLY
+      or OBJ.
+    </p>
+
     <h2 id="normals">Normals</h2>
     <p>
       <b>Compute normals</b> fits a plane to the <i>k</i> nearest neighbours of each point. The normals face up,
@@ -330,6 +343,7 @@
       The <b>⤓</b> button next to a cloud offers PLY, LAS, LAZ and CSV; the Distance panel saves the cloud whose
       distances are shown. A PLY file includes colors and all attributes: intensity, classification, normals,
       M3C2 fields and distances as <code>scalar_C2C_distance</code>. CloudCompare reads these as scalar fields.
+      A mesh's <b>⤓</b> offers binary PLY and OBJ.
     </p>
     <p>
       LAS and LAZ files are LAS 1.4 (point format 6, or 7 with colors) with intensity and classification; distances,

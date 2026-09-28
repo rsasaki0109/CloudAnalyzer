@@ -6,6 +6,8 @@ import type {
   IcpOutput,
   LoadedCloud,
   M3c2Output,
+  MeshFormat,
+  MeshOutput,
   ProfileOutput,
   Progress,
   RasterGrid,
@@ -126,6 +128,16 @@ export function exportCloud(
 ): Promise<Uint8Array> {
   // The scalar is copied, not transferred, so the UI keeps its distances.
   return call({ kind: "export", id, format, scalar });
+}
+
+/** Serialize a mesh as binary PLY or OBJ. */
+export function exportMesh(id: number, format: MeshFormat): Promise<Uint8Array> {
+  return call({ kind: "export", id, format });
+}
+
+/** 2.5D Delaunay mesh of a cloud (see `Cloud.meshDelaunay`), as a new mesh. */
+export function meshCloud(id: number, maxEdge: number | null): Promise<MeshOutput> {
+  return call({ kind: "mesh", id, maxEdge });
 }
 
 /** Extract the points inside (or outside) a box, in original coordinates, as a new cloud. */

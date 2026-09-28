@@ -5,6 +5,7 @@
 //! narrowing to `f32`.
 
 pub mod cluster;
+pub mod delaunay;
 pub mod distance;
 pub mod filter;
 pub mod geotiff;

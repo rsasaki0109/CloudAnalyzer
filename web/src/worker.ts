@@ -34,6 +34,7 @@ import type {
   IcpOutput,
   LoadedCloud,
   M3c2Output,
+  MeshOutput,
   ProfileOutput,
   Progress,
   RasterOutput,
@@ -70,6 +71,8 @@ const ready = init().then((wasm) => {
   void warmUpPool();
   return wasm;
 });
+/** Larger clouds are voxel-thinned before meshing, to bound time and memory. */
+const MESH_MAX_POINTS = 5_000_000;
 const items = new Map<number, Item>();
 let nextId = 1;
 // Like CloudCompare's global shift: chosen from the first file, shared by all.
@@ -1031,8 +1034,30 @@ async function handle(
       const values = alignPairs(new Float64Array(req.moving), new Float64Array(req.reference));
       return { value: values, transfer: [values.buffer] };
     }
+    case "mesh": {
+      const start = performance.now();
+      const out = getCloud(req.id).meshDelaunay(req.maxEdge ?? undefined, MESH_MAX_POINTS);
+      const id = nextId++;
+      const base = items.get(req.id)!.name.replace(/\.[^.]+$/, "");
+      items.set(id, { kind: "mesh", mesh: out.takeMesh(), name: `${base}_mesh` });
+      const described = describe(id);
+      const value: MeshOutput = {
+        mesh: described.value,
+        points: out.points,
+        voxel: out.voxel,
+        maxEdge: out.maxEdge,
+        removed: out.removed,
+        millis: performance.now() - start,
+      };
+      out.free();
+      return { value, transfer: described.transfer };
+    }
     case "export": {
-      const bytes = getCloud(req.id).export(req.format, req.scalar?.name, req.scalar?.values);
+      const item = items.get(req.id);
+      const bytes =
+        item?.kind === "mesh"
+          ? item.mesh.export(req.format)
+          : getCloud(req.id).export(req.format, req.scalar?.name, req.scalar?.values);
       return { value: bytes, transfer: [bytes.buffer] };
     }
     case "remove": {

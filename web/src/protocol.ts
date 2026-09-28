@@ -342,6 +342,12 @@ export type Request =
       keep: "inside" | "outside" | "both";
     }
   | {
+      kind: "align-pairs";
+      /** Picked points as flat xyz triples (original coordinates), pair i in both. */
+      moving: number[];
+      reference: number[];
+    }
+  | {
       kind: "export";
       id: number;
       format: ExportFormat;

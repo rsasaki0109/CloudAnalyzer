@@ -2,6 +2,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { EdlPass } from "./edl";
 import { type LodNode, selectNodes } from "./lod";
 
@@ -59,6 +60,11 @@ export class Viewer {
   private readonly clipHelper = new THREE.Box3Helper(new THREE.Box3(), 0xffd54f);
   private readonly edl = new EdlPass();
   private edlEnabled = true;
+  /** Gizmo moving one cloud or mesh around its centre, while active. */
+  private gizmo: { id: number; controls: TransformControls; pivot: THREE.Object3D; center: THREE.Vector3 } | null =
+    null;
+  /** Called while the gizmo moves an object. */
+  onGizmoChange: () => void = () => {};
 
   constructor(private readonly container: HTMLElement) {
     THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -176,7 +182,9 @@ export class Viewer {
 
   private updateLod(): void {
     this.camera.updateMatrixWorld();
-    const sources = [...this.clouds.values()].filter((c) => c.visible);
+    const sources = [...this.clouds.values()]
+      .filter((c) => c.visible)
+      .map((c) => (c.group.matrixAutoUpdate ? c : { ...c, matrix: c.group.matrix }));
     const selection = selectNodes(
       sources,
       this.camera,
@@ -347,6 +355,7 @@ export class Viewer {
   }
 
   remove(id: number): void {
+    if (this.gizmo?.id === id) this.endGizmo();
     const mesh = this.meshes.get(id);
     if (mesh) {
       this.scene.remove(mesh);
@@ -362,6 +371,72 @@ export class Viewer {
     for (const object of cloud.objects.values()) object.geometry.dispose();
     for (const material of this.materials(cloud)) material.dispose();
     this.clouds.delete(id);
+    this.requestRender(true);
+  }
+
+  /** The object drawing a cloud or mesh. */
+  private object(id: number): THREE.Object3D | undefined {
+    return this.meshes.get(id) ?? this.clouds.get(id)?.group;
+  }
+
+  /**
+   * Show a translate or rotate gizmo on a cloud or mesh, pivoting around
+   * `center` (render coordinates). Moving it only changes how the object is
+   * drawn; read the motion with {@link gizmoMatrix}.
+   */
+  startGizmo(id: number, center: THREE.Vector3, mode: "translate" | "rotate"): void {
+    this.endGizmo();
+    const object = this.object(id);
+    if (!object) return;
+    const pivot = new THREE.Object3D();
+    pivot.position.copy(center);
+    this.scene.add(pivot);
+    const controls = new TransformControls(this.camera, this.renderer.domElement);
+    controls.setMode(mode);
+    controls.attach(pivot);
+    controls.addEventListener("dragging-changed", (e) => {
+      this.controls.enabled = !e.value;
+    });
+    controls.addEventListener("objectChange", () => {
+      object.matrixAutoUpdate = false;
+      object.matrix.copy(this.gizmoMatrix()!);
+      object.matrixWorldNeedsUpdate = true;
+      this.onGizmoChange();
+      this.requestRender(true);
+    });
+    controls.addEventListener("change", () => this.requestRender());
+    this.scene.add(controls.getHelper());
+    this.gizmo = { id, controls, pivot, center: center.clone() };
+    this.requestRender();
+  }
+
+  setGizmoMode(mode: "translate" | "rotate"): void {
+    this.gizmo?.controls.setMode(mode);
+  }
+
+  /** The gizmo's motion so far, in render coordinates, or null without a gizmo. */
+  gizmoMatrix(): THREE.Matrix4 | null {
+    if (!this.gizmo) return null;
+    const { pivot, center } = this.gizmo;
+    pivot.updateMatrix();
+    return pivot.matrix.clone().multiply(new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z));
+  }
+
+  /** Remove the gizmo and draw its object where it was. */
+  endGizmo(): void {
+    if (!this.gizmo) return;
+    const { id, controls, pivot } = this.gizmo;
+    this.gizmo = null;
+    this.scene.remove(controls.getHelper(), pivot);
+    controls.detach();
+    controls.dispose();
+    this.controls.enabled = true;
+    const object = this.object(id);
+    if (object) {
+      object.matrix.identity();
+      object.matrixAutoUpdate = true;
+      object.matrixWorldNeedsUpdate = true;
+    }
     this.requestRender(true);
   }
 

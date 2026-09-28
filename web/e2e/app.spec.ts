@@ -911,3 +911,68 @@ test("segment: a lasso keeps or splits points; undo and redo restore the list", 
   expect(await count(1)).toBe(3600 - inside);
   await expect(page.locator("#redo")).toBeDisabled();
 });
+
+test("manual alignment: a typed matrix, point pairs and the gizmo, all undoable", async ({ page }) => {
+  // Dense enough that a click always lands within picking range of a point.
+  const shifted = grid(100).map(([x, y, z]) => [x + 1, y + 0.5, z + 0.2] as [number, number, number]);
+  await open(page, [
+    { name: "reference.ply", buffer: ply(grid(100)) },
+    { name: "moved.ply", buffer: ply(shifted) },
+  ]);
+  await expect(status(page)).toContainText("Loaded moved.ply");
+  await expect(page.locator("#align-moving")).toHaveValue(/\d+/);
+  await expect(page.locator("#align-moving option:checked")).toHaveText("moved.ply");
+  await expect(page.locator("#align-reference option:checked")).toHaveText("reference.ply");
+
+  // A typed rigid matrix moves the copy back onto the reference exactly.
+  await page.locator("#align-panel summary").click();
+  await page.locator("#align-matrix").fill("1 0 0 -1\n0 1 0 -0.5\n0 0 1 -0.2\n0 0 0 1");
+  await page.locator("#align-apply-matrix").click();
+  await expect(status(page)).toContainText("Applied the matrix to moved.ply");
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("C2C distance computed");
+  expect(Number(await page.locator("#c2c-stats tr", { hasText: "Max" }).locator("td").textContent())).toBeLessThan(1e-5);
+  // A scale is refused: undo could not invert it.
+  await page.locator("#align-matrix").fill("2 0 0 0\n0 2 0 0\n0 0 2 0\n0 0 0 1");
+  await page.locator("#align-apply-matrix").click();
+  await expect(status(page)).toContainText("Only rigid transforms");
+  await page.keyboard.press("Control+z");
+  await expect(status(page)).toContainText("Undid the matrix");
+
+  // Point pairs: picks must land on the right cloud; three pairs enable Align.
+  await page.locator("[data-view=top]").click();
+  await page.locator("#cloud-list li").nth(0).locator("input[type=checkbox]").uncheck();
+  const canvas = page.locator("#viewport > canvas");
+  const box = (await canvas.boundingBox())!;
+  const spots = [[0.45, 0.45], [0.55, 0.47], [0.5, 0.56]];
+  await page.locator("#align-pick").click();
+  const rows = page.locator("#cloud-list li");
+  for (const [fx, fy] of spots) {
+    await rows.nth(0).locator("input[type=checkbox]").uncheck();
+    await rows.nth(1).locator("input[type=checkbox]").check();
+    await canvas.click({ position: { x: box.width * fx, y: box.height * fy } });
+      await expect(page.locator("#align-hint")).toContainText("Now the same spot on reference.ply");
+    await rows.nth(1).locator("input[type=checkbox]").uncheck();
+    await rows.nth(0).locator("input[type=checkbox]").check();
+    await canvas.click({ position: { x: box.width * fx, y: box.height * fy } });
+  }
+  await expect(page.locator("#align-pairs li")).toHaveCount(3);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#align-run")).toBeEnabled();
+  await page.locator("#align-run").click();
+  await expect(status(page)).toContainText(/Aligned moved\.ply with 3 pairs: RMS/);
+  await expect(page.locator("#align-pairs li").first()).toContainText("residual");
+  await expect(page.locator("#undo")).toHaveAttribute("title", /Undo the point-pair alignment/);
+
+  // The gizmo: apply without dragging leaves the cloud where it is, cancel ends it.
+  await page.locator("#gizmo-translate").click();
+  await expect(page.locator("#gizmo-apply")).toBeEnabled();
+  await page.locator("#gizmo-rotate").click();
+  await expect(page.locator("#gizmo-rotate")).toHaveAttribute("aria-pressed", "true");
+  await page.locator("#gizmo-cancel").click();
+  await expect(page.locator("#gizmo-apply")).toBeDisabled();
+  await page.locator("#gizmo-translate").click();
+  await page.locator("#gizmo-apply").click();
+  await expect(status(page)).toContainText("Moved moved.ply");
+  await expect(page.locator("#undo")).toHaveAttribute("title", /Undo the manual move/);
+});

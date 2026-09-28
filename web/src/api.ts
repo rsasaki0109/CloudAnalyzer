@@ -138,6 +138,15 @@ export function segmentCloud(params: Omit<Extract<Request, { kind: "segment" }>,
   return call({ kind: "segment", ...params });
 }
 
+/** The rigid transform (row-major 4x4) taking picked points onto their partners, with the residuals. */
+export async function alignPairs(
+  moving: number[],
+  reference: number[],
+): Promise<{ matrix: number[]; rms: number; residuals: number[] }> {
+  const values: Float64Array = await call({ kind: "align-pairs", moving, reference });
+  return { matrix: [...values.subarray(0, 16)], rms: values[16], residuals: [...values.subarray(17)] };
+}
+
 /** A filtered copy of a cloud as a new cloud (see `Cloud.filter`). */
 export function filterCloud(id: number, op: "voxel" | "random" | "sor", a: number, b = 0): Promise<LoadedCloud> {
   return call({ kind: "filter", id, op, a, b });

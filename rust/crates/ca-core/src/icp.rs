@@ -196,6 +196,75 @@ pub fn icp(moving: &PointCloud, reference: &PointCloud, params: IcpParams) -> Op
     })
 }
 
+/// Picked point pairs aligned by [`align_pairs`].
+#[derive(Debug, Clone, PartialEq)]
+pub struct PairAlignment {
+    /// Maps the moving points onto the reference points.
+    pub transform: Rigid,
+    /// Distance left between each pair after the transform.
+    pub residuals: Vec<f64>,
+    pub rms: f64,
+}
+
+/// The rigid motion taking `moving[i]` onto `reference[i]` in the
+/// least-squares sense. Returns `None` with fewer than three pairs, or when
+/// either set of points is (nearly) collinear, which leaves the rotation
+/// about that line undetermined.
+pub fn align_pairs(moving: &[[f64; 3]], reference: &[[f64; 3]]) -> Option<PairAlignment> {
+    if moving.len() != reference.len() || moving.len() < 3 {
+        return None;
+    }
+    if [moving, reference].iter().any(|points| collinear(points)) {
+        return None;
+    }
+    // Relative to the reference centroid, so georeferenced picks keep their precision.
+    let origin = centroid(reference);
+    let local = |p: &[f64; 3]| -> [f64; 3] { std::array::from_fn(|i| p[i] - origin[i]) };
+    let pairs: Vec<Pair> = moving
+        .iter()
+        .zip(reference)
+        .enumerate()
+        .map(|(i, (m, r))| Pair {
+            distance_sq: 0.0,
+            moving: local(m),
+            reference: local(r),
+            reference_index: i,
+        })
+        .collect();
+    let transform = horn(&pairs).around(&origin);
+    let residuals: Vec<f64> = moving
+        .iter()
+        .zip(reference)
+        .map(|(m, r)| {
+            let p = transform.apply(m);
+            (0..3).map(|a| (p[a] - r[a]).powi(2)).sum::<f64>().sqrt()
+        })
+        .collect();
+    let rms = (residuals.iter().map(|d| d * d).sum::<f64>() / residuals.len() as f64).sqrt();
+    Some(PairAlignment {
+        transform,
+        residuals,
+        rms,
+    })
+}
+
+/// Whether the points lie (almost) on a line: the spread across the main
+/// direction is negligible next to the spread along it.
+fn collinear(points: &[[f64; 3]]) -> bool {
+    let c = centroid(points);
+    let mut cov = [[0.0; 3]; 3];
+    for p in points {
+        for i in 0..3 {
+            for j in 0..3 {
+                cov[i][j] += (p[i] - c[i]) * (p[j] - c[j]);
+            }
+        }
+    }
+    let (mut values, _) = symmetric_eigen(cov);
+    values.sort_by(|a, b| b.total_cmp(a));
+    values[1].is_nan() || values[1] <= 1e-12 * values[0].max(f64::MIN_POSITIVE)
+}
+
 /// A moving point matched to a reference point.
 struct Pair {
     distance_sq: f64,
@@ -597,6 +666,41 @@ mod tests {
             .collect();
         let error = displacement_error(&horn(&pairs), &truth, &points);
         assert!(error < 1e-12, "{error}");
+    }
+
+    #[test]
+    fn point_pairs_recover_a_georeferenced_motion() {
+        let truth = Rigid {
+            rotation: rotation(0.01, -0.02, 0.4),
+            translation: [2.5, -1.0, 0.3],
+        };
+        // Four picks on a UTM-sized scene, one of them off by 1 cm.
+        let reference: Vec<[f64; 3]> = surface(4, 7);
+        let inverse = |p: &[f64; 3]| {
+            // moving = truth⁻¹(reference)
+            let r = &truth.rotation;
+            let d: [f64; 3] = std::array::from_fn(|i| p[i] - truth.translation[i]);
+            std::array::from_fn(|i| (0..3).map(|k| r[k][i] * d[k]).sum())
+        };
+        let mut moving: Vec<[f64; 3]> = reference.iter().map(inverse).collect();
+        let exact = align_pairs(&moving, &reference).unwrap();
+        let error = displacement_error(&exact.transform, &truth, &moving);
+        assert!(error < 1e-6, "{error}");
+        assert!(exact.rms < 1e-6, "{}", exact.rms);
+
+        moving[2][0] += 0.01;
+        let noisy = align_pairs(&moving, &reference).unwrap();
+        assert!(noisy.rms > 1e-3 && noisy.rms < 0.01, "{}", noisy.rms);
+        assert_eq!(noisy.residuals.len(), 4);
+    }
+
+    #[test]
+    fn point_pairs_need_three_non_collinear_points() {
+        let line = [[0.0, 0.0, 0.0], [1.0, 1.0, 1.0], [2.0, 2.0, 2.0]];
+        let plane = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]];
+        assert!(align_pairs(&line, &line).is_none());
+        assert!(align_pairs(&plane[..2], &plane[..2]).is_none());
+        assert!(align_pairs(&plane, &plane).is_some());
     }
 
     #[test]

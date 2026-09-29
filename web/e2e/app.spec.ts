@@ -1576,6 +1576,9 @@ test("pose graph: a second session in another frame is joined at a shared place"
   await page.locator("#pg-parts").click();
   await expect(status(page)).toContainText(/M3C2 at [\d,]+ core points/);
   await expect(page.locator("#cloud-list li")).toHaveCount(3);
+  // The same courtyard both times: nothing changed enough to be an object.
+  await expect(page.locator("#pg-changes")).toBeVisible();
+  await expect(page.locator("#pg-changes-hint")).toContainText(/No significant change forms an object|changed object/);
   // And a terrain model of the joined map.
   await page.locator("#pg-dem").click();
   await expect(status(page)).toContainText(/DEM of [\d,]+ ground points of [\d,]+: \d+ × \d+ cells of 1 m/);

@@ -302,7 +302,11 @@
       98th percentile of the changes. KITTI 00 (recorded on 3 October 2011) joined with 07 (30 September, three
       days earlier) at a street both drove (87 % overlap, then 202 loops between the two) compares at 214,000 core
       points in 6 s: the buildings agree (mean 0.002 m) and 12 % of the points changed significantly, mostly the
-      cars parked along the streets.
+      cars parked along the streets. <b>Changes</b> then lists the changed objects, largest first: core points
+      that changed significantly by 0.3 m or more, the same way, and within 1 m of each other, with each object's
+      size and mean change; click one to centre the view on it. The M3C2 result gets a <code>change_object</code>
+      field (each object's rank) for the scalar field tools. Between the two KITTI drives the largest objects are
+      rows of parked cars that moved by 0.7 to 0.9 m or went.
     </p>
     <p>
       <b>IMU gravity</b> is the constraint for hills. <b>Add gravity…</b> takes a KITTI <code>oxts</code> folder (roll and

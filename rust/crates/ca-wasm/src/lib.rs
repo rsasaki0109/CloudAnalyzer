@@ -1008,6 +1008,63 @@ impl Cloud {
         .map_err(|e| JsError::new(&e))
     }
 
+    /// The significant changes of an M3C2 result grouped into objects (see
+    /// `ca_core::m3c2::changed_objects`): per object, largest first,
+    /// `[count, centroid xyz, min xyz, max xyz, mean change]`. Each point
+    /// also gets a `change_object` field: its object's rank from 1, or NaN.
+    #[wasm_bindgen(js_name = changedObjects)]
+    pub fn changed_objects(
+        &mut self,
+        min_change: f64,
+        link: f64,
+        min_points: usize,
+    ) -> Result<Vec<f64>, JsError> {
+        let change: Vec<f64> = match self.inner.attribute("m3c2_distance").map(|a| &a.values) {
+            Some(AttributeValues::F32(v)) => v.iter().map(|&d| f64::from(d)).collect(),
+            _ => return Err(JsError::new("not an M3C2 result (no m3c2_distance)")),
+        };
+        let significant: Vec<bool> = match self.inner.attribute("significant").map(|a| &a.values) {
+            Some(AttributeValues::U8(v)) => v.iter().map(|&s| s != 0).collect(),
+            Some(AttributeValues::F32(v)) => v.iter().map(|&s| s > 0.0).collect(),
+            _ => return Err(JsError::new("not an M3C2 result (no significant)")),
+        };
+        let (objects, labels) = ca_core::m3c2::changed_objects(
+            &self.inner.positions,
+            &change,
+            &significant,
+            min_change,
+            link,
+            min_points,
+        );
+        self.inner.attributes.retain(|a| a.name != "change_object");
+        self.inner.attributes.push(ca_core::Attribute {
+            name: "change_object".into(),
+            values: AttributeValues::F32(
+                labels
+                    .iter()
+                    .map(|&l| {
+                        if l == ca_core::cluster::NOISE {
+                            f32::NAN
+                        } else {
+                            (l + 1) as f32
+                        }
+                    })
+                    .collect(),
+            ),
+        });
+        Ok(objects
+            .iter()
+            .flat_map(|o| {
+                let mut row = vec![o.count as f64];
+                row.extend(o.centroid);
+                row.extend(o.min);
+                row.extend(o.max);
+                row.push(o.mean_change);
+                row
+            })
+            .collect())
+    }
+
     /// Values of a named per-point attribute as `f32` (octree order), or
     /// `undefined` when the cloud does not have it.
     pub fn attribute(&self, name: &str) -> Option<Vec<f32>> {

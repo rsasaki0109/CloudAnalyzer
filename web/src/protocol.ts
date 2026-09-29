@@ -507,6 +507,16 @@ export type Request =
       label: string;
     }
   | { kind: "pg-close" }
+  | {
+      /** An M3C2 result's significant changes as objects (see `Cloud.changedObjects`). */
+      kind: "change-objects";
+      id: number;
+      /** Smallest change counted (metres). */
+      minChange: number;
+      /** Significant core points closer than this are one object (metres). */
+      link: number;
+      minPoints: number;
+    }
   | { kind: "trajectory"; file: File }
   | {
       kind: "trajectory-eval";

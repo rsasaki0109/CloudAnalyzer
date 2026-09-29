@@ -350,8 +350,9 @@ def _xyz_with_mask(message: Any) -> tuple[np.ndarray, np.ndarray]:
         coords[:, axis_index] = np.ndarray(
             shape=(count,), dtype=dtype, buffer=raw, offset=int(field.offset), strides=(int(message.point_step),)
         )
-    keep = np.isfinite(coords).all(axis=1)
-    return coords[keep], keep
+    keep: np.ndarray = np.asarray(np.isfinite(coords).all(axis=1))
+    kept: np.ndarray = coords[keep]
+    return kept, keep
 
 
 INTENSITY_FIELDS = ("intensity", "reflectivity", "i")

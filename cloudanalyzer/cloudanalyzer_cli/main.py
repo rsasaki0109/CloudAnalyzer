@@ -1310,6 +1310,12 @@ def posegraph_fix_cmd(
         ..., help="Session folder: a poses file (g2o, KITTI or TUM) and one scan per pose, named by frame number"
     ),
     out: Optional[str] = typer.Option(None, "--out", help="Write the fixed graph, poses and map here"),
+    poses: Optional[str] = typer.Option(
+        None, "--poses", help="The poses file, when not in the folder (e.g. trajectory.tum from ca slam-run)"
+    ),
+    keyframe_spacing: float = typer.Option(
+        0.0, "--keyframe-spacing", help="Keep a keyframe every this many metres of a trajectory (0: every pose)"
+    ),
     gravity: Optional[str] = typer.Option(
         None, "--gravity", help="IMU up directions: a KITTI OXTS folder or a file of 'frame ux uy uz' lines"
     ),
@@ -1335,6 +1341,8 @@ def posegraph_fix_cmd(
         report = fix_session(
             folder,
             out,
+            poses=poses,
+            keyframe_spacing=keyframe_spacing,
             voxel=voxel,
             loops=not no_loops,
             loop_options={"max_distance": radius, "drift": drift / 100, "min_fitness": min_overlap / 100},

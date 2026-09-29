@@ -28,10 +28,13 @@ takes it:
 - **scans**: PCD, PLY, LAS/LAZ, XYZ or KITTI Velodyne `.bin`, named by frame number (`000042.pcd`), or
   one per pose in name order. A KITTI `calib.txt` in the folder moves them by its `Tr`.
 
-No odometry yet? `ca slam-run` makes one from the scans with KISS-ICP.
+No odometry yet? `ca slam-run` makes one from the scans with KISS-ICP; pass its `trajectory.tum`
+with `--poses` (the scans folder is left as it is) and thin it with `--keyframe-spacing 1`.
 
 | Option | Default | |
 |---|---|---|
+| `--poses FILE` | | The poses file when it is not in the folder (e.g. `trajectory.tum` from `ca slam-run`): one pose per scan, in order or by frame number |
+| `--keyframe-spacing` | 0 | Keep one pose every this many metres of a trajectory (0: every pose); nodes keep their frame numbers |
 | `--out DIR` | | Write `<poses>_fixed.g2o`, `<poses>_fixed_kitti.txt` (and `.tum` for a TUM input) and `<poses>_map.ply` (double coordinates, `intensity`, and `correction`: how far each point moved) |
 | `--gravity PATH` | | IMU up directions: a KITTI OXTS folder (roll and pitch per frame, `calib_imu_to_velo.txt`) or a file of `frame ux uy uz` lines |
 | `--remove-dynamic` | off | Leave points other scans saw through out of the map, and write them to `<poses>_dynamic.ply` |

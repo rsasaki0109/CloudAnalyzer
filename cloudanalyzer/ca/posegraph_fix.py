@@ -167,6 +167,22 @@ def read_ups(path: Path) -> dict[int, np.ndarray]:
     return ups
 
 
+def keyframes(poses: np.ndarray, spacing: float) -> list[int]:
+    """Rows of ``poses`` at least ``spacing`` metres of travel apart (the first and last always); all when 0."""
+    if spacing <= 0 or len(poses) < 3:
+        return list(range(len(poses)))
+    kept = [0]
+    travel = 0.0
+    for k in range(1, len(poses)):
+        travel += float(np.linalg.norm(poses[k, :3, 3] - poses[k - 1, :3, 3]))
+        if travel >= spacing:
+            kept.append(k)
+            travel = 0.0
+    if kept[-1] != len(poses) - 1:
+        kept.append(len(poses) - 1)
+    return kept
+
+
 def write_ply(path: Path, positions: np.ndarray, fields: dict[str, np.ndarray]) -> None:
     """Binary PLY: double x, y, z (exact georeferenced coordinates) and float fields."""
     header = [
@@ -211,29 +227,49 @@ def ate(estimate: np.ndarray, truth: np.ndarray) -> dict:
 class Session:
     """A session folder loaded into a ``cloudanalyzer_core.PoseGraph``."""
 
-    def __init__(self, folder: str, *, voxel: float = 0.4, sigma_t: float = 0.05, sigma_r_deg: float = 0.25, progress=None):
+    def __init__(
+        self,
+        folder: str,
+        *,
+        poses: str | None = None,
+        keyframe_spacing: float = 0.0,
+        voxel: float = 0.4,
+        sigma_t: float = 0.05,
+        sigma_r_deg: float = 0.25,
+        progress=None,
+    ):
         cloudanalyzer_core = _core()
         say = progress or (lambda message: None)
         root = Path(folder)
         if not root.is_dir():
             raise FileNotFoundError(folder)
-        poses_path = poses_file(root)
+        poses_path = Path(poses) if poses else poses_file(root)
         if poses_path is None:
             raise ValueError(f"no poses file (.g2o, .txt, .tum, .kitti) in {folder}")
+        if not poses_path.is_file():
+            raise FileNotFoundError(str(poses_path))
         self.root = root
         self.poses_path = poses_path
         self.timestamps = None
-        if poses_path.suffix.lower() == ".g2o":
-            self.graph = cloudanalyzer_core.PoseGraph.from_g2o(poses_path.read_text())
-        else:
-            poses, self.timestamps = read_trajectory(poses_path)
-            self.graph = cloudanalyzer_core.PoseGraph.from_poses(poses, sigma_t, sigma_r_deg)
-        self.node_ids = list(self.graph.node_ids)
         scans = sorted(p for p in root.iterdir() if p.suffix.lower() in SCAN_SUFFIXES)
         if not scans:
             raise ValueError(f"no scans next to {poses_path.name}")
+        if poses_path.suffix.lower() == ".g2o":
+            self.graph = cloudanalyzer_core.PoseGraph.from_g2o(poses_path.read_text())
+            self.node_ids = list(self.graph.node_ids)
+            matched = match_scans(scans, self.node_ids)
+        else:
+            rows, stamps = read_trajectory(poses_path)
+            # Scans match rows (by frame number or in order), then only keyframes stay: nodes
+            # keep their row as id, so scans and IMU frames still find them.
+            by_row = match_scans(scans, list(range(len(rows))))
+            kept = keyframes(rows, keyframe_spacing)
+            node_of_row = {row: i for i, row in enumerate(kept)}
+            matched = [None if row is None else node_of_row.get(row) for row in by_row]
+            self.graph = cloudanalyzer_core.PoseGraph.from_poses(rows[kept], sigma_t, sigma_r_deg, kept)
+            self.node_ids = kept
+            self.timestamps = None if stamps is None else stamps[kept]
         self.extrinsic = kitti_extrinsic(root)
-        matched = match_scans(scans, self.node_ids)
         self.scan_points = 0
         for k, (path, node) in enumerate(zip(scans, matched)):
             if node is None:
@@ -296,6 +332,8 @@ def fix_session(
     folder: str,
     out_dir: str | None = None,
     *,
+    poses: str | None = None,
+    keyframe_spacing: float = 0.0,
     voxel: float = 0.4,
     sigma_t: float = 0.05,
     sigma_r_deg: float = 0.25,
@@ -311,7 +349,15 @@ def fix_session(
     """Load a session folder, fix it and write the results; returns the report."""
     say = progress or (lambda message: None)
     clock = time.perf_counter()
-    session = Session(folder, voxel=voxel, sigma_t=sigma_t, sigma_r_deg=sigma_r_deg, progress=progress)
+    session = Session(
+        folder,
+        poses=poses,
+        keyframe_spacing=keyframe_spacing,
+        voxel=voxel,
+        sigma_t=sigma_t,
+        sigma_r_deg=sigma_r_deg,
+        progress=progress,
+    )
     graph, node_ids, poses_path, timestamps = session.graph, session.node_ids, session.poses_path, session.timestamps
     report: dict = {"session": str(session.root), **session.summary(), "timings_s": {}}
     report["timings_s"]["open"] = round(time.perf_counter() - clock, 2)
@@ -339,6 +385,8 @@ def fix_session(
 
     if truth:
         truth_poses, _ = read_trajectory(Path(truth))
+        rows = [i for i in node_ids if 0 <= i < len(truth_poses)]
+        truth_poses = truth_poses[rows]
         report["ate"] = {"before": ate(graph.poses(initial=True), truth_poses), "after": ate(graph.poses(), truth_poses)}
 
     if out_dir:

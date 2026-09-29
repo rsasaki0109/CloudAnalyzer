@@ -123,6 +123,77 @@ test("distance, volume, ground and M3C2 demos, with orbit frames for the GIF", a
   await orbitFrames(page, "e-posegraph", 24, 12);
 });
 
+/** Frames of the view every `ms` milliseconds while `during` runs. */
+async function framesWhile(page: Page, prefix: string, ms: number, during: Promise<unknown>): Promise<void> {
+  mkdirSync(FRAMES, { recursive: true });
+  let done = false;
+  void during.finally(() => (done = true));
+  for (let i = 0; !done && i < 400; i++) {
+    await page.screenshot({ path: fileURLToPath(new URL(`${prefix}-${String(i).padStart(3, "0")}.png`, FRAMES)) });
+    await page.waitForTimeout(ms);
+  }
+  await during;
+}
+
+/** Where node A's yellow marker is on screen (see the pose graph panel), or the view centre. */
+async function markerA(page: Page): Promise<{ x: number; y: number }> {
+  const box = (await canvas(page).boundingBox())!;
+  const shot = (await canvas(page).screenshot()).toString("base64");
+  const found = await page.evaluate(async (png) => {
+    const image = new Image();
+    image.src = `data:image/png;base64,${png}`;
+    await image.decode();
+    const c = document.createElement("canvas");
+    [c.width, c.height] = [image.width, image.height];
+    const g = c.getContext("2d")!;
+    g.drawImage(image, 0, 0);
+    const { data } = g.getImageData(0, 0, c.width, c.height);
+    let [sx, sy, n] = [0, 0, 0];
+    for (let i = 0; i < data.length; i += 4) {
+      if (data[i] > 240 && data[i + 1] > 215 && data[i + 1] < 250 && data[i + 2] < 90) {
+        sx += (i / 4) % c.width;
+        sy += Math.floor(i / 4 / c.width);
+        n++;
+      }
+    }
+    return n ? { x: sx / n / c.width, y: sy / n / c.height } : null;
+  }, shot);
+  return found ? { x: box.x + found.x * box.width, y: box.y + found.y * box.height } : { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+}
+
+test("pose graph: LiDAR odometry replayed, and a loop closed by hand", async ({ page }) => {
+  test.setTimeout(900_000);
+  // Corrections glide in over 10 s here, so the frames catch them moving.
+  await page.goto("/?demo=posegraph-drive&glide=10000");
+  await expect(status(page)).toContainText("Opened poses.txt", { timeout: 120_000 });
+  await page.locator("#round-points").check();
+  await page.locator("#point-size").fill("3");
+  await page.locator("#pg-colors").selectOption("height");
+  await page.locator("#pg-axes").check();
+  await page.locator("[data-view=iso]").click();
+  await zoom(page, 8);
+  // Slow, so each frame catches a keyframe or two (a screenshot takes most of a second); the GIF plays it fast.
+  await page.locator("#pg-play-rate").fill("2");
+  await page.locator("#pg-play").click();
+  await framesWhile(page, "f-odometry", 0, expect(page.locator("#pg-play")).toHaveText("Play", { timeout: 300_000 }));
+
+  // From above, close on the start: the drifted last lap misses it. Close the loop by hand and watch it glide in.
+  await page.locator("[data-view=top]").click();
+  await page.locator("#pg-a").fill("0");
+  await page.locator("#pg-b").fill("128");
+  await page.locator("#pg-goto").click();
+  await zoom(page, 10);
+  await page.waitForTimeout(800);
+  for (let i = 0; i < 10; i++) {
+    await page.screenshot({ path: fileURLToPath(new URL(`g-loop-${String(i).padStart(3, "0")}.png`, FRAMES)) });
+  }
+  await page.locator("#pg-loop").click();
+  await framesWhile(page, "g-loop-z", 0, expect(status(page)).toContainText(/Loop 0 – 128 added .*χ²/, { timeout: 60_000 }));
+  for (let i = 0; i < 12; i++) {
+    await page.screenshot({ path: fileURLToPath(new URL(`g-loop-zz-${String(i).padStart(3, "0")}.png`, FRAMES)) });
+  }
+});
+
 test("lasso segmentation and a cross-section profile on the town", async ({ page }) => {
   test.setTimeout(300_000);
   await page.goto("/?url=samples/town.ply");

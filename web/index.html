@@ -493,6 +493,14 @@
             <label class="check" title="Hide the scans to see the graph alone"><input id="pg-show-scans" type="checkbox" checked /> Show scans</label>
             <label class="check" title="Each keyframe's axes: x red, y green, z blue"><input id="pg-axes" type="checkbox" /> Pose axes</label>
           </div>
+          <div class="range">
+            <button id="pg-play" title="Replay the drive: each keyframe's scan appears in turn at its pose, the newest highlighted">Play</button>
+            <label title="Keyframes shown per second">Rate <input id="pg-play-rate" type="number" min="1" step="1" value="20" /></label>
+          </div>
+          <div class="range">
+            <label class="check" title="The camera follows the vehicle while playing"><input id="pg-play-follow" type="checkbox" checked /> Follow</label>
+            <span id="pg-play-at" class="small"></span>
+          </div>
           <div id="pg-legend" class="ramp-legend" title="Edge error, √χ² (standard deviations)">
             <span>0</span><span id="pg-legend-bar" class="ramp-legend-bar"></span><span id="pg-legend-max"></span>
           </div>
@@ -500,7 +508,10 @@
             <label title="The loop's first node (its id or frame number); its scan is the reference">Node A <input id="pg-a" type="number" step="1" /></label>
             <label title="The loop's second node; its scan is registered onto A's">Node B <input id="pg-b" type="number" step="1" /></label>
           </div>
-          <button id="pg-pick" aria-pressed="false" title="Click two nodes in the view (the white dots) to fill A and B">Pick nodes</button>
+          <div class="button-row">
+            <button id="pg-pick" aria-pressed="false" title="Click two nodes in the view (the white dots) to fill A and B">Pick nodes</button>
+            <button id="pg-goto" title="Centre the view on Node A">Go to A</button>
+          </div>
           <div class="range">
             <button id="pg-move" aria-pressed="false" title="A gizmo on Node A: drag to move or turn it (each drag can be undone)">Move A</button>
             <select id="pg-move-mode" aria-label="Gizmo mode">

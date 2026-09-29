@@ -1721,7 +1721,14 @@ test("pose graph: a node moved with the gizmo, fixed, optimised and undone", asy
   };
   const before = await saved();
 
+  // Replayed quickly, the drive ends with every keyframe shown.
+  await page.locator("#pg-play-rate").fill("100");
+  await page.locator("#pg-play").click();
+  await expect(page.locator("#pg-play-at")).toHaveText("12 / 12");
+  await expect(page.locator("#pg-play")).toHaveText("Play");
+
   await page.locator("#pg-a").fill("5");
+  await page.locator("#pg-goto").click();
   await page.locator("#pg-fix").click();
   await expect(status(page)).toContainText("Node 5 is held in place");
   await expect(page.locator("#pg-fix")).toHaveText("Free A");

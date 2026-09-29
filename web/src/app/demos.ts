@@ -78,10 +78,22 @@ async function poseGraphDemo(): Promise<void> {
   viewer.fit();
 }
 
+/** The same drive, only opened: to replay it or close a loop by hand. */
+async function poseGraphDrive(): Promise<void> {
+  setStatus("Making a drive round a city block…");
+  const { scans, poses } = poseGraphDemoFiles();
+  await openPoseGraph([poses, ...scans]);
+  $("pose-graph-panel").scrollIntoView({ block: "start" });
+}
+
 /** Load a demo's sample files, then run its analysis. */
 export async function runDemo(name: string): Promise<void> {
   if (name === "posegraph") {
     await poseGraphDemo();
+    return;
+  }
+  if (name === "posegraph-drive") {
+    await poseGraphDrive();
     return;
   }
   const demo = DEMOS[name];

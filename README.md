@@ -58,6 +58,13 @@
 </p>
 
 <p align="center">
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive"><img src="docs/images/web/odometry.gif" alt="LiDAR odometry replayed: scans build up along the drive, colored by height, with each keyframe's axes" width="49%"></a>
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive"><img src="docs/images/web/loop.gif" alt="A loop closed by hand: the drifted second lap glides onto the first" width="49%"></a><br>
+  <b>LiDAR odometry, replayed</b>: scans build up along the drive (height colors, pose axes) ·
+  <b>A loop closed by hand</b>: pick two keyframes, ICP registers them, and the drifted lap glides into place
+</p>
+
+<p align="center">
   <img src="docs/images/web/report.jpg" alt="QA report with pass / fail gates" width="640"><br>
   <b>QA report</b>: pass / fail gates on any result, as HTML or JSON in the <code>ca check</code> gate format
 </p>

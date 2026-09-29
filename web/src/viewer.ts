@@ -1101,7 +1101,7 @@ export class Viewer {
     this.requestRender(true);
   }
 
-  /** Bounding box of all visible clouds, meshes and lines (render coordinates). */
+  /** Bounding box of all visible clouds, meshes, lines and overlay objects (render coordinates). */
   contentBounds(): THREE.Box3 {
     const box = new THREE.Box3();
     for (const cloud of this.clouds.values()) {
@@ -1111,6 +1111,11 @@ export class Viewer {
       if (object.visible && object.geometry.boundingBox) {
         box.union(object.geometry.boundingBox.clone().translate(object.position));
       }
+    }
+    // The overlay too (e.g. a pose graph's scans), from its geometries' bounds.
+    if (this.overlay.children.some((c) => c.visible)) {
+      this.overlay.updateMatrixWorld(true);
+      box.union(new THREE.Box3().setFromObject(this.overlay));
     }
     return box;
   }

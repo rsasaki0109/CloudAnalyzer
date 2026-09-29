@@ -364,6 +364,113 @@ function poseAxes(state: PoseGraphState, local: (i: number) => THREE.Vector3): L
   return axes;
 }
 
+// --- Motion: corrections that glide into place, and odometry playback ---------------
+
+/** A correction glides into place over this long (milliseconds); `?glide=` slows it for recordings. */
+const GLIDE_MS = Number(new URLSearchParams(location.search).get("glide")) || 700;
+/** Larger graphs jump: redrawing every frame would cost more than it shows. */
+const GLIDE_MAX_NODES = 3000;
+
+const nextFrame = () => new Promise<number>((resolve) => requestAnimationFrame(resolve));
+
+/** `state`'s poses between `from` and `to` (row-major 4x4 each), `t` of the way: slerp and lerp. */
+function blend(from: Float64Array, to: Float64Array, t: number): Float64Array {
+  const out = new Float64Array(to.length);
+  const [a, b] = [new THREE.Matrix4(), new THREE.Matrix4()];
+  const [qa, qb] = [new THREE.Quaternion(), new THREE.Quaternion()];
+  const [pa, pb, scale] = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+  const m = new THREE.Matrix4();
+  for (let k = 0; k < to.length; k += 16) {
+    a.fromArray(from, k).transpose();
+    b.fromArray(to, k).transpose();
+    a.decompose(pa, qa, scale);
+    b.decompose(pb, qb, scale);
+    m.compose(pa.lerp(pb, t), qa.slerp(qb, t), new THREE.Vector3(1, 1, 1));
+    const e = m.transpose().elements;
+    out.set(e, k);
+  }
+  return out;
+}
+
+/** Show `state`, gliding the poses from where they are drawn now (see {@link update}). */
+async function animateTo(state: PoseGraphState): Promise<void> {
+  const from = graph?.state.poses;
+  if (!graph || !from || from.length !== state.poses.length || state.poses.length / 16 > GLIDE_MAX_NODES) {
+    update(state);
+    return;
+  }
+  const start = performance.now();
+  for (;;) {
+    const t = Math.min(1, (performance.now() - start) / GLIDE_MS);
+    if (t >= 1) break;
+    // Ease out: fast first, settling at the end.
+    update({ ...state, poses: blend(from, state.poses, 1 - (1 - t) ** 3) });
+    await nextFrame();
+  }
+  update(state);
+}
+
+let playing = false;
+
+/**
+ * Replay the drive: the keyframes' scans appear one after the other at
+ * their poses, the newest highlighted, with the camera following the
+ * vehicle, like watching LiDAR odometry run.
+ */
+export async function play(): Promise<void> {
+  if (!graph || playing) return;
+  playing = true;
+  $("pg-play").textContent = "Stop";
+  const g = graph;
+  const n = g.state.poses.length / 16;
+  const perSecond = Math.max(1, num("pg-play-rate") || 20);
+  const follow = $<HTMLInputElement>("pg-play-follow").checked;
+  const materials = scanObjects.map((o) => o?.material);
+  for (const o of scanObjects) if (o) o.visible = false;
+  const highlight = new THREE.PointsMaterial({ size: 3, sizeAttenuation: false, color: 0xffffff });
+  viewer.registerPointMaterial(highlight);
+  const { position, target } = viewer.getCamera();
+  const offset = position.clone().sub(target);
+  const start = performance.now();
+  let shown = -1;
+  try {
+    while (playing && shown < n - 1) {
+      const due = Math.min(n - 1, Math.floor(((performance.now() - start) / 1000) * perSecond));
+      for (let i = shown + 1; i <= due; i++) {
+        const o = scanObjects[i];
+        if (!o) continue;
+        o.visible = true;
+        o.material = highlight;
+        const previous = scanObjects[shown];
+        if (previous && shown >= 0) previous.material = materials[shown]!;
+        shown = i;
+      }
+      if (follow && shown >= 0) {
+        const at = renderPosition(g.state, shown);
+        viewer.setCamera(at.clone().add(offset), at);
+      }
+      viewer.requestRender();
+      $("pg-play-at").textContent = `${shown + 1} / ${n}`;
+      await nextFrame();
+    }
+  } finally {
+    scanObjects.forEach((o, i) => {
+      if (o) {
+        o.material = materials[i]!;
+        o.visible = showScans();
+      }
+    });
+    highlight.dispose();
+    playing = false;
+    $("pg-play").textContent = "Play";
+    viewer.requestRender();
+  }
+}
+$<HTMLButtonElement>("pg-play").onclick = () => {
+  if (playing) playing = false;
+  else void play();
+};
+
 /** Frame the graph's nodes. */
 function fitGraph(state: PoseGraphState): void {
   const box = new THREE.Box3();
@@ -455,7 +562,7 @@ function removeEdges(indices: number[], what: string): Promise<void> {
     const poses = graph!.state.poses.slice();
     const out = await removePoseGraphEdges(indices, kernel());
     steps.push({ poses, removed: out.removed });
-    update(out.state);
+    await animateTo(out.state);
     setStatus(`Removed ${what} and optimised`);
   });
 }
@@ -789,7 +896,7 @@ export const findLoops = (): Promise<void> =>
         signal,
       );
       if (found.added.length) steps.push({ poses, added: found.edges });
-      update(found.state);
+      await animateTo(found.state);
       const { optimized } = found;
       setStatus(
         found.candidates === 0
@@ -827,7 +934,7 @@ $<HTMLButtonElement>("pg-floor").onclick = () =>
       loopKernel: kernel(),
     });
     steps.push({ poses, planes: floor.planes });
-    update(floor.state);
+    await animateTo(floor.state);
     const withScans = graph!.scans.filter((s) => s).length;
     const { optimized } = floor;
     setStatus(
@@ -943,6 +1050,11 @@ async function commitMove(): Promise<void> {
 }
 
 $<HTMLButtonElement>("pg-move").onclick = () => (gizmo ? stopMoving() : startMoving());
+$<HTMLButtonElement>("pg-goto").onclick = () => {
+  const node = nodeA();
+  if (graph && node !== null) viewer.centerOn(renderPosition(graph.state, node));
+  else setStatus("Pick or type Node A first: the node to look at", true);
+};
 $<HTMLSelectElement>("pg-move-mode").onchange = () => gizmo?.handle.setMode(gizmoMode());
 
 $<HTMLButtonElement>("pg-fix").onclick = () =>
@@ -1032,7 +1144,7 @@ export async function addGravity(files: File[]): Promise<void> {
     const poses = state.poses.slice();
     const out = await setPoseGraphGravity(nodes, new Float64Array(ups), num("pg-gravity-sigma") || 0.1, kernel());
     steps.push({ poses, gravity: true });
-    update(out.state);
+    await animateTo(out.state);
     setStatus(
       `Gravity tied to ${out.tied.toLocaleString()} of ${(state.poses.length / 16).toLocaleString()} keyframes; ` +
         `χ² ${fmt(out.initialCost)} → ${fmt(out.finalCost)} in ${out.iterations} iterations`,
@@ -1052,7 +1164,7 @@ const kernel = () => ($<HTMLInputElement>("pg-robust").checked ? Math.max(0, num
 
 async function optimize(): Promise<string> {
   const out = await optimizePoseGraph(kernel());
-  update(out.state);
+  await animateTo(out.state);
   return `χ² ${fmt(out.initialCost)} → ${fmt(out.finalCost)} in ${out.iterations} iterations (${Math.round(out.millis)} ms)`;
 }
 
@@ -1102,7 +1214,7 @@ $<HTMLButtonElement>("pg-undo").onclick = () =>
     if (step.flipped !== undefined) await setPoseGraphFixed(step.flipped, !graph!.state.fixed[step.flipped]);
     if (step.gravity) await clearPoseGraphGravity();
     if (step.removed) await insertPoseGraphEdges(step.removed);
-    update(await setPoseGraphPoses(step.poses));
+    await animateTo(await setPoseGraphPoses(step.poses));
     const plural = (n: number) => (n === 1 ? "" : "s");
     setStatus(
       step.added

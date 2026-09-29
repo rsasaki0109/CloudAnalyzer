@@ -334,7 +334,12 @@
       shows up at the top. Click one to select its two nodes, <b>✕</b> to remove it and optimise again, or remove
       every loop with an error above a threshold with <b>Remove loops</b>. <b>Scan colors</b> shows a color per
       keyframe or colors by height; <b>Show scans</b> hides them to see the graph alone, and <b>Pose axes</b> draws
-      each keyframe's axes (x red, y green, z blue). The scans are drawn
+      each keyframe's axes (x red, y green, z blue). <b>Play</b> replays the drive: the keyframes' scans appear one
+      after the other at <b>Rate</b> per second, the newest in white, with the camera following the vehicle
+      (<b>Follow</b>), like watching LiDAR odometry run. Loops, optimisations, gravity and undo glide the map into
+      its new place rather than jump (graphs of up to 3,000 keyframes); <b>Go to A</b> centres the view on Node A.
+      <a href="app/?demo=posegraph-drive">This drive</a> opens without corrections, to replay it or close its loop by
+      hand (Node A 0, Node B 128). The scans are drawn
       without Eye-Dome Lighting, which would darken such thinned points, and the graph on top of them.
     </p>
     <p>

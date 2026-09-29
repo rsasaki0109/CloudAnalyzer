@@ -34,7 +34,7 @@ python3 -m twine check dist/*
 
 ## Commands
 
-There are **35** CLI subcommands (see `ca --help`). Summary:
+There are **36** CLI subcommands (see `ca --help`). Summary:
 
 ### Analysis & Evaluation
 
@@ -53,6 +53,7 @@ There are **35** CLI subcommands (see `ca --help`). Summary:
 | `ca traj-batch` | Batch trajectory benchmark with coverage, gate, and reports |
 | `ca run-evaluate` | Combined map + trajectory QA for one run |
 | `ca run-batch` | Combined map + trajectory benchmark across multiple runs |
+| `ca posegraph-fix` | Fix a SLAM map: loops by ICP, IMU gravity, dynamic points out; fixed poses, g2o and map ([docs](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/commands/posegraph-fix.md)) |
 | `ca info` | Point cloud metadata (points, BBox, robust BBox, centroid) |
 | `ca stats` | Detailed statistics (density, robust density, spacing distribution) |
 | `ca batch` | Run info on all files in a directory |

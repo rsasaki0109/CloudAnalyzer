@@ -11,6 +11,8 @@ use pyo3::exceptions::{PyIOError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
+mod pose_graph;
+
 /// Copy an `(N, 3)` array into points.
 fn points(array: &PyReadonlyArray2<f64>) -> PyResult<Vec<[f64; 3]>> {
     let shape = array.shape();
@@ -572,5 +574,6 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(profile, m)?)?;
     m.add_function(wrap_pyfunction!(normals, m)?)?;
     m.add_class::<CopcReader>()?;
+    m.add_class::<pose_graph::PoseGraph>()?;
     Ok(())
 }

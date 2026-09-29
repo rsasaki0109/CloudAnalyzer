@@ -32,6 +32,7 @@ dependencies = [
  "ca-core",
  "numpy",
  "pyo3",
+ "rayon",
 ]
 
 [[package]]

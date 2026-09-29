@@ -1304,6 +1304,69 @@ def rendered_evaluate_cmd(
         _dump_json(payload, output_json)
 
 
+@app.command("posegraph-fix")
+def posegraph_fix_cmd(
+    folder: str = typer.Argument(
+        ..., help="Session folder: a poses file (g2o, KITTI or TUM) and one scan per pose, named by frame number"
+    ),
+    out: Optional[str] = typer.Option(None, "--out", help="Write the fixed graph, poses and map here"),
+    gravity: Optional[str] = typer.Option(
+        None, "--gravity", help="IMU up directions: a KITTI OXTS folder or a file of 'frame ux uy uz' lines"
+    ),
+    remove_dynamic: bool = typer.Option(
+        False, "--remove-dynamic", help="Leave points other scans saw through (passing cars) out of the map"
+    ),
+    no_loops: bool = typer.Option(False, "--no-loops", help="Do not look for loops"),
+    voxel: float = typer.Option(0.4, "--voxel", help="Thin each scan to one point per voxel (m)"),
+    map_voxel: float = typer.Option(0.2, "--map-voxel", help="Thin the written map to one point per voxel (m)"),
+    radius: float = typer.Option(10.0, "--loop-radius", help="Loop candidates at most this far apart (m), plus drift"),
+    drift: float = typer.Option(3.0, "--drift", help="Odometry drift allowed, in % of the path between two nodes"),
+    min_overlap: float = typer.Option(50.0, "--min-overlap", help="Keep a loop when this % of the scan overlaps"),
+    truth: Optional[str] = typer.Option(
+        None, "--truth", help="Ground-truth poses (KITTI or TUM, same frames) to report the ATE before and after"
+    ),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Write the report as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print the report as JSON"),
+) -> None:
+    """Fix a SLAM map: find loops, tie to IMU gravity, optimise, remove dynamic points, write the map."""
+    from ca.posegraph_fix import fix_session
+
+    try:
+        report = fix_session(
+            folder,
+            out,
+            voxel=voxel,
+            loops=not no_loops,
+            loop_options={"max_distance": radius, "drift": drift / 100, "min_fitness": min_overlap / 100},
+            gravity=gravity,
+            remove_dynamic=remove_dynamic,
+            map_voxel=map_voxel,
+            truth=truth,
+            progress=None if format_json else (lambda m: typer.echo(f"... {m}", err=True)),
+        )
+    except (FileNotFoundError, ValueError, RuntimeError) as e:
+        _handle_error(e)
+    if output_json:
+        _dump_json(report, output_json)
+    if format_json:
+        typer.echo(json.dumps(report, indent=2))
+        return
+    typer.echo(f"{report['poses_file']}: {report['nodes']} poses, {report['scan_points']:,} scan points")
+    if "loops" in report:
+        loops = report["loops"]
+        typer.echo(f"loops: {loops['added']} of {loops['candidates']} candidates added ({loops['implausible']} implausible)")
+    if "gravity" in report:
+        typer.echo(f"gravity: {report['gravity']['tied']} keyframes tied")
+    if "dynamic" in report:
+        d = report["dynamic"]
+        typer.echo(f"dynamic: {d['points']:,} of {d['of']:,} points ({100 * d['share']:.2f} %)")
+    if "ate" in report:
+        b, a = report["ate"]["before"], report["ate"]["after"]
+        typer.echo(f"ATE: {b['ate_rmse']:.3f} -> {a['ate_rmse']:.3f} m (aligned {b['ate_rmse_aligned']:.3f} -> {a['ate_rmse_aligned']:.3f} m)")
+    for kind, path in report.get("outputs", {}).items():
+        typer.echo(f"wrote {kind}: {path}")
+
+
 @app.command("posegraph-validate")
 def posegraph_validate_cmd(
     g2o_path: str = typer.Argument(..., help="Path to pose graph file (pose_graph.g2o)"),

@@ -157,6 +157,16 @@ fn gravity_jacobian(x: &Rigid, world_up: &[f64; 3], measured: &[f64; 3]) -> Mat6
     j
 }
 
+/// Replace the gravity ties with `measured` (node index and up in its
+/// frame), each with standard deviation `sigma` (radians): world up comes
+/// from the first 1 % of the measurements (1 to 10), where odometry has
+/// drifted least (see [`tie_to_gravity`]). False when none is usable.
+pub fn set_gravity(graph: &mut PoseGraph, measured: &[(usize, [f64; 3])], sigma: f64) -> bool {
+    graph.gravity_edges.clear();
+    let reference = (measured.len() / 100).clamp(1, 10);
+    tie_to_gravity(graph, measured, gravity_information(sigma), reference)
+}
+
 /// Tie keyframes to gravity from the up direction each measured (`ups`:
 /// node index and up in its frame, e.g. from an IMU's roll and pitch).
 /// World up is taken as the mean of the first `reference` measurements

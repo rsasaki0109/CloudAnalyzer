@@ -1,7 +1,7 @@
 //! A pose graph with a scan per node, for the interactive SLAM editor.
 
 use ca_core::PointCloud;
-use ca_core::icp::{IcpMetric, IcpParams, Rigid};
+use ca_core::icp::{IcpParams, Rigid};
 use ca_core::pose_graph::{self, EdgeKind, OptimizeParams, PoseGraph};
 use wasm_bindgen::prelude::*;
 
@@ -21,18 +21,7 @@ pub struct PoseGraphSession {
     dynamic: Vec<Vec<bool>>,
 }
 
-/// ICP moves at most this many points of a loop's second scan: as accurate
-/// (within a centimetre on KITTI scans) and two to three times faster.
-const LOOP_SAMPLE: usize = 8000;
-
-struct LoopSettings {
-    max_iterations: usize,
-    overlap: f64,
-    point_to_plane: bool,
-    inlier_distance: f64,
-    retry_below: f64,
-    retry_headings: usize,
-}
+use ca_core::loop_search::{LOOP_SAMPLE, LoopSettings};
 
 /// Register `to_scan` onto `from_scan` from `guess` (the pose of `to` in
 /// the frame of `from`). Returns `[rms before, rms after, iterations,
@@ -52,49 +41,18 @@ fn registration(
     guess: &Rigid,
     settings: &LoopSettings,
 ) -> Result<Vec<f64>, JsError> {
-    let params = IcpParams {
-        metric: if settings.point_to_plane {
-            IcpMetric::PointToPlane
-        } else {
-            IcpMetric::PointToPoint
-        },
-        max_iterations: settings.max_iterations,
-        overlap: settings.overlap,
-        sample: LOOP_SAMPLE,
-        ..IcpParams::default()
-    };
-    let (mut measurement, mut result) =
-        pose_graph::register_loop(from_scan, to_scan, guess, params)
-            .ok_or_else(|| JsError::new("ICP found too few matching points"))?;
-    let inlier = settings.inlier_distance;
-    let mut fitness = pose_graph::overlap_fitness(from_scan, to_scan, &measurement, inlier);
-    let mut retried = false;
-    let retry = (fitness < settings.retry_below && settings.retry_headings > 0)
-        .then(|| {
-            pose_graph::register_with_yaw_search(
-                from_scan,
-                to_scan,
-                &Rigid::IDENTITY,
-                settings.retry_headings,
-                params,
-                inlier,
-            )
-        })
-        .flatten();
-    if let Some((m, f, r)) = retry.filter(|&(_, f, _)| f > fitness) {
-        (measurement, fitness, result, retried) = (m, f, r, true);
-    }
+    let r = ca_core::loop_search::register_pair(from_scan, to_scan, guess, settings)
+        .ok_or_else(|| JsError::new("ICP found too few matching points"))?;
     let mut out = vec![
-        result.rms_initial,
-        result.rms_final,
-        result.iterations as f64,
-        f64::from(u8::from(result.converged)),
-        fitness,
+        r.result.rms_initial,
+        r.result.rms_final,
+        r.result.iterations as f64,
+        f64::from(u8::from(r.result.converged)),
+        r.fitness,
     ];
-    out.extend(measurement.to_matrix());
-    out.push(f64::from(u8::from(retried)));
-    let d: [f64; 3] = std::array::from_fn(|k| measurement.translation[k] - guess.translation[k]);
-    out.push((d[0] * d[0] + d[1] * d[1] + d[2] * d[2]).sqrt());
+    out.extend(r.measurement.to_matrix());
+    out.push(f64::from(u8::from(r.retried)));
+    out.push(r.discrepancy);
     Ok(out)
 }
 
@@ -649,12 +607,7 @@ impl PoseGraphSession {
             .filter(|&(&i, _)| (i as usize) < n)
             .map(|(&i, up)| (i as usize, *up))
             .collect();
-        self.graph.gravity_edges.clear();
-        let information = pose_graph::gravity_information(sigma_deg.to_radians());
-        // World up from the first 1 % of the measurements (1 to 10), where
-        // odometry has drifted least.
-        let reference = (measured.len() / 100).clamp(1, 10);
-        if !pose_graph::tie_to_gravity(&mut self.graph, &measured, information, reference) {
+        if !pose_graph::set_gravity(&mut self.graph, &measured, sigma_deg.to_radians()) {
             return Err(JsError::new("no usable up directions"));
         }
         Ok(measured.len())

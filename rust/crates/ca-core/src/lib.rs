@@ -14,6 +14,7 @@ pub mod ground;
 pub mod icp;
 pub mod io;
 pub mod kdtree;
+pub mod loop_search;
 pub mod m3c2;
 pub mod map_quality;
 pub mod merge;

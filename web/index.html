@@ -697,6 +697,7 @@
           <select id="distance-method">
             <option value="nearest" selected>Nearest neighbour (C2C / C2M)</option>
             <option value="m3c2">M3C2 (along normals)</option>
+            <option value="quality" title="A SLAM map against its ground-truth map, after MapEval">Map quality (vs ground truth)</option>
           </select>
         </label>
         <label>Compared <select id="c2c-compared"></select></label>
@@ -710,6 +711,14 @@
           <div class="range">
             <label title="Cylinder half-length along the normal">Max depth <input id="m3c2-depth" type="number" min="0" step="any" value="2" /></label>
             <label title="One core point per voxel of this size (0 = every compared point)">Core spacing <input id="m3c2-core" type="number" min="0" step="any" value="0" /></label>
+          </div>
+        </details>
+        <details id="quality-options" class="options" hidden open>
+          <summary>Map quality options</summary>
+          <div class="range">
+            <label title="Nearest points closer than this count as matched (metres)">Inlier m <input id="quality-threshold" type="number" min="0" step="any" value="0.3" /></label>
+            <label title="Voxel size of the Gaussians compared by AWD and SCS (metres)">Voxel m <input id="quality-voxel" type="number" min="0" step="any" value="1" /></label>
+            <label title="Fewest points of both maps in a voxel for it to count">Min points <input id="quality-min" type="number" min="3" step="1" value="10" /></label>
           </div>
         </details>
         <label id="c2m-signed-row" class="check" hidden

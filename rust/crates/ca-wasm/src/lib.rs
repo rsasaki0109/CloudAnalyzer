@@ -1474,6 +1474,19 @@ pub fn register_icp(
 /// voxel). Returns the core points as a new indexed cloud carrying the
 /// `m3c2_distance` and `lod95` (NaN where undefined) and `significant`
 /// (1/0) attributes.
+/// Map quality of `estimate` against the ground-truth map `truth` by
+/// voxel Gaussians (see `ca_core::map_quality`): `[AWD, SCS, voxels]`.
+#[wasm_bindgen(js_name = mapQuality)]
+pub fn map_quality(estimate: &Cloud, truth: &Cloud, voxel: f64, min_points: usize) -> Vec<f64> {
+    let s = ca_core::map_quality::voxel_scores(
+        &estimate.inner.positions,
+        &truth.inner.positions,
+        voxel,
+        min_points,
+    );
+    vec![s.awd, s.scs, s.voxels as f64]
+}
+
 #[wasm_bindgen(js_name = computeM3c2)]
 pub fn compute_m3c2(
     compared: &Cloud,

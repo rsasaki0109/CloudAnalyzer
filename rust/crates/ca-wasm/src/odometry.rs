@@ -15,14 +15,13 @@ pub struct LidarOdometry {
 #[wasm_bindgen]
 impl LidarOdometry {
     /// Points nearer than `min_range` or further than `max_range` (metres)
-    /// are left out; the local map's voxel is a hundredth of `max_range`.
+    /// are left out.
     #[wasm_bindgen(constructor)]
     pub fn new(min_range: f64, max_range: f64) -> LidarOdometry {
         LidarOdometry {
             inner: Odometry::new(OdometryParams {
                 min_range,
                 max_range,
-                map_voxel: max_range / 100.0,
                 ..OdometryParams::default()
             }),
         }

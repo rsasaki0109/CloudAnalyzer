@@ -30,7 +30,9 @@ takes it:
 
 No odometry yet? Give it the raw scans, a folder without a poses file or a ROS bag (`.bag`,
 `.mcap`, `.db3`, a rosbag2 folder), with `--out`: the Rust core's LiDAR odometry (the same as the web
-app's) places the scans first, into `<out>/odometry`. A bag's scans are written there as KITTI `.bin` with
+app's) places the scans first, into `<out>/odometry`. The core reads `.bag` and `.mcap` files itself (lz4, zstd
+and bz2 chunks; no ROS install), `.db3` and rosbag2 folders need `pip install "cloudanalyzer[ros]"`. A bag's
+scans are written there as KITTI `.bin` with
 their intensity, and when it has a `sensor_msgs/Imu` topic its up directions become the gravity
 (`--imu-to-lidar` turns them into the LiDAR frame). Or pass an existing trajectory with `--poses`.
 

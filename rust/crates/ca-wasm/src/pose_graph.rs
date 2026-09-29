@@ -16,6 +16,9 @@ pub struct PoseGraphSession {
     timestamps: Vec<f64>,
     /// Per node, its pose as loaded (for comparing maps before and after).
     initial: Vec<Rigid>,
+    /// Per node, which of its scan's points are dynamic (see
+    /// `detect_dynamic`); empty until detected.
+    dynamic: Vec<Vec<bool>>,
 }
 
 /// ICP moves at most this many points of a loop's second scan: as accurate
@@ -154,6 +157,7 @@ impl PoseGraphSession {
         PoseGraphSession {
             scans: vec![None; graph.nodes.len()],
             initial: graph.nodes.iter().map(|n| n.pose).collect(),
+            dynamic: Vec::new(),
             graph,
             timestamps,
         }
@@ -458,6 +462,8 @@ impl PoseGraphSession {
             information(sigma_t, sigma_r_deg),
         );
         self.scans.extend(other.scans.iter().cloned());
+        // Joined scans have not been judged: detect again.
+        self.dynamic.clear();
         if self.timestamps.is_empty() || other.timestamps.is_empty() {
             self.timestamps.clear();
         } else {
@@ -748,9 +754,16 @@ impl PoseGraphSession {
     /// `correction`, each point carries how far it moved from its place as
     /// loaded (the `correction` attribute, metres). Only `nodes` (node
     /// indices) are included, or every node when it is empty.
-    pub fn map(&self, initial: bool, correction: bool, nodes: &[u32]) -> Result<Cloud, JsError> {
+    pub fn map(
+        &self,
+        initial: bool,
+        correction: bool,
+        nodes: &[u32],
+        part: u8,
+    ) -> Result<Cloud, JsError> {
         // Only `nodes` (all when empty): a part of the path, or the stretch
-        // near another session.
+        // near another session. `part` 1 keeps the static points only, 2 the
+        // dynamic ones (after `detect_dynamic`).
         let n = self.graph.nodes.len();
         let chosen: Vec<usize> = if nodes.is_empty() {
             (0..n).collect()
@@ -761,24 +774,80 @@ impl PoseGraphSession {
                 .filter(|&i| i < n)
                 .collect()
         };
+        if part != 0 && self.dynamic.len() != n {
+            return Err(JsError::new("find the dynamic points first"));
+        }
         let parts = || {
             chosen.iter().filter_map(|&i| {
                 let scan = self.scans[i].as_ref()?;
-                Some((&self.graph.nodes[i].pose, &self.initial[i], scan))
+                Some((i, &self.graph.nodes[i].pose, &self.initial[i], scan))
             })
         };
-        let mut map = pose_graph::assemble_from(
-            parts().map(|(now, then, scan)| (if initial { then } else { now }, scan)),
-        );
+        let mut map = if part == 0 {
+            pose_graph::assemble_from(
+                parts().map(|(_, now, then, scan)| (if initial { then } else { now }, scan)),
+            )
+        } else {
+            let want_dynamic = part == 2;
+            let mut out = ca_core::PointCloud::default();
+            let mut intensity = Vec::new();
+            let mut with_intensity = true;
+            for (i, now, then, scan) in parts() {
+                let pose = if initial { then } else { now };
+                let values = match scan.attribute(ca_core::INTENSITY).map(|a| &a.values) {
+                    Some(ca_core::AttributeValues::F32(v)) => Some(v),
+                    _ => None,
+                };
+                with_intensity &= values.is_some();
+                for (k, p) in scan.positions.iter().enumerate() {
+                    if self.dynamic[i].get(k).copied().unwrap_or(false) == want_dynamic {
+                        out.positions.push(pose.apply(p));
+                        if let Some(v) = values {
+                            intensity.push(v[k]);
+                        }
+                    }
+                }
+            }
+            if with_intensity && intensity.len() == out.positions.len() {
+                out.attributes.push(ca_core::Attribute {
+                    name: ca_core::INTENSITY.into(),
+                    values: ca_core::AttributeValues::F32(intensity),
+                });
+            }
+            out
+        };
         if map.is_empty() {
-            return Err(JsError::new("no scans are loaded there"));
+            return Err(JsError::new("no points there"));
         }
-        if correction {
+        if correction && part == 0 {
             map.attributes.push(ca_core::Attribute {
                 name: "correction".into(),
-                values: ca_core::AttributeValues::F32(pose_graph::correction_from(parts())),
+                values: ca_core::AttributeValues::F32(pose_graph::correction_from(
+                    parts().map(|(_, now, then, scan)| (now, then, scan)),
+                )),
             });
         }
         Ok(Cloud::unindexed(map))
+    }
+
+    /// Find the dynamic points of every scan at the current poses (see
+    /// `ca_core::dynamic`): judged against the `window` keyframes on either
+    /// side, see-through beyond `margin` metres (plus 2 % of the range),
+    /// with at least `votes` votes. Returns `[dynamic points, all points]`.
+    #[wasm_bindgen(js_name = detectDynamic)]
+    pub fn detect_dynamic(&mut self, window: usize, margin: f64, votes: usize) -> Vec<f64> {
+        use ca_core::dynamic::{VisibilityParams, dynamic_points};
+        let params = VisibilityParams {
+            window,
+            margin,
+            min_see_through: votes,
+            ..VisibilityParams::default()
+        };
+        let poses: Vec<Rigid> = self.graph.nodes.iter().map(|n| n.pose).collect();
+        let scans: Vec<Option<&PointCloud>> = self.scans.iter().map(Option::as_ref).collect();
+        self.dynamic = dynamic_points(&poses, &scans, &params);
+        let dynamic = self.dynamic.iter().flatten().filter(|&&d| d).count();
+        let total: usize = self.dynamic.iter().map(Vec::len).sum();
+        vec![dynamic as f64, total as f64]
     }
 }

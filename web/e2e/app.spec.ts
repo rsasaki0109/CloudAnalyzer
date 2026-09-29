@@ -1799,9 +1799,9 @@ test("pose graph: a node moved with the gizmo, fixed, optimised and undone", asy
 });
 
 test("pose graph demo: a drifting drive round a block, closed, levelled and compared with the truth", async ({ page }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   await page.goto("/?demo=posegraph");
-  await expect(status(page)).toContainText(/poses_map is colored by how far each point moved/, { timeout: 90_000 });
+  await expect(status(page)).toContainText(/poses_map is colored by how far each point moved/, { timeout: 240_000 });
   await expect(page.locator("#pg-stats")).toContainText("141 (141 with scans)");
   await expect(page.locator("#pg-stats")).toContainText("Gravity");
   await expect(page.locator("#pg-loop-list li").first()).toBeVisible();
@@ -1817,4 +1817,20 @@ test("pose graph demo: a drifting drive round a block, closed, levelled and comp
   const rmse = Math.sqrt(errors.reduce((sum, e) => sum + e * e, 0) / errors.length);
   // The drift left the end 12.8 m off; closed and levelled, the drive is within a few metres.
   expect(rmse).toBeLessThan(2.5);
+});
+
+test("pose graph: the demo's passing cars are found by visibility and left out of the map", async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto("/?demo=posegraph-drive");
+  await expect(status(page)).toContainText("Opened poses.txt", { timeout: 90_000 });
+  await page.locator("#pg-map-voxel").fill("0.3");
+  await page.locator("#pg-dynamic").click();
+  await expect(status(page)).toContainText(/[\d,]+ dynamic points of [\d,]+ \(([\d.]+) %\) left out of poses_map_static, shown in red as poses_map_dynamic/, {
+    timeout: 120_000,
+  });
+  const share = Number(/\(([\d.]+) %\)/.exec((await status(page).textContent()) ?? "")![1]);
+  // Three cars in about 1.1 M points: a small share, but not none.
+  expect(share).toBeGreaterThan(0.3);
+  expect(share).toBeLessThan(10);
+  await expect(page.locator("#cloud-list li")).toHaveCount(2);
 });

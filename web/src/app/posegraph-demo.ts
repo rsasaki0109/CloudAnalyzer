@@ -1,6 +1,6 @@
 /**
  * The pose graph demo's data, made in the browser: a drive once and a bit
- * around a city block over a gentle hill, with the drifting odometry a
+ * around a city block over a gentle hill, cars passing the other way, with the drifting odometry a
  * LiDAR odometry leaves (a slow turn, a slow pitch and 1 % of scale), a
  * Velodyne-like scan from every pose and an IMU's up direction for each.
  * Deterministic, so the demo and the README pictures always look the same.
@@ -84,6 +84,35 @@ function world(): Float32Array {
   return Float32Array.from(out);
 }
 
+/** Cars on the other side of the road, driving the other way faster than the vehicle: dynamic points. */
+const CARS = [0, 110, 220];
+const CAR_SPEED = 1.6;
+
+/** The cars' surface points (x, y, z, intensity) at keyframe `k`. */
+function cars(k: number): number[] {
+  const out: number[] = [];
+  for (const start of CARS) {
+    const along = start - CAR_SPEED * STEP * k;
+    const [cx, cy, yaw] = pointOnPath(along, 3.5);
+    const [c, s] = [Math.cos(yaw), Math.sin(yaw)];
+    const base = ground(cx, cy);
+    const add = (u: number, v: number, w: number) =>
+      out.push(cx + c * u - s * v, cy + s * u + c * v, base + 0.3 + w, 0.9);
+    for (let u = -2.1; u <= 2.1; u += 0.15) {
+      for (let w = 0; w <= 1.5; w += 0.15) {
+        add(u, -0.9, w);
+        add(u, 0.9, w);
+      }
+      for (let v = -0.9; v <= 0.9; v += 0.15) add(u, v, 1.5);
+    }
+    for (let v = -0.9; v <= 0.9; v += 0.15) for (let w = 0; w <= 1.5; w += 0.15) {
+      add(-2.1, v, w);
+      add(2.1, v, w);
+    }
+  }
+  return out;
+}
+
 /** The point `along` metres round the path from its start, `offset` metres to its left. */
 function pointOnPath(along: number, offset = 0): [number, number, number] {
   const sides = [2 * HALF_X, 2 * HALF_Y, 2 * HALF_X, 2 * HALF_Y];
@@ -155,13 +184,20 @@ const kitti = (p: Pose) =>
 /** The demo's files: the drifted poses (KITTI), a scan per pose (KITTI .bin) and gravity.txt. */
 export function poseGraphDemoFiles(): { scans: File[]; poses: File; gravity: File } {
   const points = world();
-  const n = points.length / 4;
   const truth = truePoses();
   const rnd = random(5);
   const scans = truth.map((pose, k) => {
+    // The static block and, at this moment, the passing cars.
+    const moving = cars(k);
+    const all = moving.length ? new Float32Array(points.length + moving.length) : points;
+    if (all !== points) {
+      all.set(points);
+      all.set(moving, points.length);
+    }
+    const total = all.length / 4;
     const seen: number[] = [];
-    for (let i = 0; i < n; i++) {
-      const [dx, dy] = [points[i * 4] - pose.t[0], points[i * 4 + 1] - pose.t[1]];
+    for (let i = 0; i < total; i++) {
+      const [dx, dy] = [all[i * 4] - pose.t[0], all[i * 4 + 1] - pose.t[1]];
       const d2 = dx * dx + dy * dy;
       if (d2 < SCAN_RANGE * SCAN_RANGE && (d2 < DENSE_RANGE * DENSE_RANGE || rnd() < (DENSE_RANGE * DENSE_RANGE) / d2)) {
         seen.push(i);
@@ -170,8 +206,8 @@ export function poseGraphDemoFiles(): { scans: File[]; poses: File; gravity: Fil
     const body = new Float32Array(seen.length * 4);
     const rt = transpose(pose.r);
     seen.forEach((i, j) => {
-      const local = apply(rt, [points[i * 4] - pose.t[0], points[i * 4 + 1] - pose.t[1], points[i * 4 + 2] - pose.t[2]]);
-      body.set([...local, points[i * 4 + 3]], j * 4);
+      const local = apply(rt, [all[i * 4] - pose.t[0], all[i * 4 + 1] - pose.t[1], all[i * 4 + 2] - pose.t[2]]);
+      body.set([...local, all[i * 4 + 3]], j * 4);
     });
     return new File([body], `${String(k).padStart(6, "0")}.bin`);
   });

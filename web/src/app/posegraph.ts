@@ -17,6 +17,7 @@ import {
   changedObjects,
   addPoseGraphLoop,
   closePoseGraph,
+  detectPoseGraphDynamic,
   exportPoseGraph,
   extractGround,
   rasterizeCloud,
@@ -515,6 +516,7 @@ function renderInfo(): void {
   $<HTMLButtonElement>("pg-map").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-compare").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-dem").disabled = busy || withScans === 0;
+  $<HTMLButtonElement>("pg-dynamic").disabled = busy || withScans === 0;
   $<HTMLButtonElement>("pg-parts").disabled = busy || withScans === 0;
   $<HTMLInputElement>("pg-split").placeholder = String(
     state.nodeIds[g.sessions[1]?.first ?? Math.floor(state.nodeIds.length / 2)] ?? "",
@@ -1319,6 +1321,40 @@ export const groundAndDem = (): Promise<void> =>
     );
   });
 $<HTMLButtonElement>("pg-dem").onclick = () => void groundAndDem();
+
+/**
+ * The map without its dynamic points (cars and people that moved while
+ * the scans were taken, found by visibility: other scans saw through
+ * them), and those points as a second cloud in red.
+ */
+export const removeDynamic = (): Promise<void> =>
+  run("Finding dynamic points", async () => {
+    setStatus("Finding the points other scans saw through…");
+    const found = await detectPoseGraphDynamic(
+      Math.max(1, Math.round(num("pg-dyn-window") || 10)),
+      Math.max(0.05, num("pg-dyn-margin") || 0.5),
+      Math.max(1, Math.round(num("pg-dyn-votes") || 3)),
+    );
+    const voxel = Math.max(0, num("pg-map-voxel") || 0);
+    setStatus("Building the static map…");
+    const map = addEntry(await poseGraphMap(voxel, false, false, [], "static", 1));
+    const moving = found.dynamic ? addEntry(await poseGraphMap(voxel, false, false, [], "dynamic", 2)) : null;
+    if (moving) {
+      moving.solid = [255, 64, 64];
+      moving.mode = "solid";
+      refreshColors(moving);
+    }
+    record({ label: "the static map", added: moving ? [map, moving] : [map] });
+    renderList();
+    if (showScans()) $<HTMLInputElement>("pg-show-scans").click();
+    const share = found.total ? (100 * found.dynamic) / found.total : 0;
+    setStatus(
+      `${found.dynamic.toLocaleString()} dynamic points of ${found.total.toLocaleString()} (${share.toFixed(2)} %) ` +
+        `left out of ${map.cloud.name}${moving ? `, shown in red as ${moving.cloud.name}` : ""} ` +
+        `(${(found.millis / 1000).toFixed(1)} s)`,
+    );
+  });
+$<HTMLButtonElement>("pg-dynamic").onclick = () => void removeDynamic();
 
 /** Keyframes compared by Compare parts: those within this distance (metres) of the other part's path. */
 const PART_REACH = 50;

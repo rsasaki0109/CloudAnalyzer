@@ -627,6 +627,15 @@
           </div>
           <h3>Analyse the map</h3>
           <div class="range">
+            <button id="pg-dynamic" title="Leave out the points of things that moved while the scans were taken (other scans nearby saw through them), and show them in red">Remove dynamic</button>
+            <details class="options">
+              <summary>Options</summary>
+              <label title="Scans this many keyframes before and after judge each scan">Window <input id="pg-dyn-window" type="number" min="1" step="1" value="10" /></label>
+              <label title="A beam must reach this much further than a point to see through it (metres; plus 2 % of the range)">Margin m <input id="pg-dyn-margin" type="number" min="0" step="any" value="0.5" /></label>
+              <label title="Fewest scans that saw through a point for it to be dynamic">Votes <input id="pg-dyn-votes" type="number" min="1" step="1" value="3" /></label>
+            </details>
+          </div>
+          <div class="range">
             <label title="Cell size of the terrain model (metres)">DEM cell m <input id="pg-dem-cell" type="number" min="0" step="any" value="1" /></label>
             <button id="pg-dem" title="The map, its ground points (CSF) and a terrain model (DEM) of them, in the color ramp">Ground &amp; DEM</button>
           </div>

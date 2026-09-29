@@ -7,6 +7,7 @@
 pub mod cluster;
 pub mod delaunay;
 pub mod distance;
+pub mod dynamic;
 pub mod filter;
 pub mod geotiff;
 pub mod ground;

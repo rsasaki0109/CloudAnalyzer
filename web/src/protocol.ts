@@ -505,6 +505,15 @@ export type Request =
       nodes: number[];
       /** Added to the cloud's name, e.g. which part it is. */
       label: string;
+      /** 0 every point, 1 the static ones, 2 the dynamic ones (after `pg-dynamic`). */
+      part: 0 | 1 | 2;
+    }
+  | {
+      /** Find the dynamic points of every scan by visibility (see `ca_core::dynamic`). */
+      kind: "pg-dynamic";
+      window: number;
+      margin: number;
+      votes: number;
     }
   | { kind: "pg-close" }
   | {

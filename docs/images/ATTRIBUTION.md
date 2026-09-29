@@ -30,7 +30,7 @@ with `scripts/fetch_pandaset.py` (the 360° Pandar64 only, moved into its own fr
 ## Web App Pictures from NCLT
 
 `web/loop.gif`, `web/posegraph.jpg` and the pose graph part of `web/demo.gif` show the web app on session
-2012-04-29, and `web/seasons.gif` on sessions 2012-06-15 and 2013-01-10 joined, of the University of Michigan North Campus Long-Term Vision and Lidar Dataset (NCLT;
+2012-04-29, and `web/seasons.gif` on sessions 2012-06-15 and 2012-12-01 (keyframes 200-2199) joined, of the University of Michigan North Campus Long-Term Vision and Lidar Dataset (NCLT;
 N. Carlevaris-Bianco, A. K. Ushani and R. M. Eustice, International Journal of Robotics Research, 2016,
 http://robots.engin.umich.edu/nclt/). Contains information from NCLT, which is made available under the
 [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/); its contents are under the

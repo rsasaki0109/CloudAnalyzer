@@ -39,8 +39,8 @@ async function openNclt(page: Page, query: string): Promise<void> {
 
 /**
  * Two NCLT seasons of the same campus, for the seasons GIF: `NCLT_SEASONS=<summer dir>,<winter dir>`
- * (2012-06-15 and 2013-01-10 from scripts/prepare_nclt.py), joined where summer keyframe 75 and
- * winter keyframe 100 stand within 0.2 m of each other.
+ * (2012-06-15, and keyframes 200-2199 of 2012-12-01, from scripts/prepare_nclt.py), joined where
+ * summer keyframe 1219 and winter keyframe 850 stand within 0.1 m of each other.
  */
 const SEASONS = process.env.NCLT_SEASONS?.split(",");
 
@@ -419,8 +419,8 @@ test("pose graph: the same campus street in summer and in winter", async ({ page
   await expect(status(page)).toContainText(/Added \d+ of/, { timeout: 600_000 });
   // Winter joins where both drives pass the same spot, then loops tie the seasons together.
   await page.locator("#pose-graph-panel summary", { hasText: "Join another graph" }).click();
-  await page.locator("#pg-merge-here").fill("75");
-  await page.locator("#pg-merge-there").fill("100");
+  await page.locator("#pg-merge-here").fill("1219");
+  await page.locator("#pg-merge-there").fill("850");
   await page.locator("#pg-merge-input").setInputFiles(`${winter}/velodyne`);
   await expect(status(page)).toContainText("Joined", { timeout: 900_000 });
   await page.locator("#pg-find").click();
@@ -456,7 +456,7 @@ test("pose graph: the same campus street in summer and in winter", async ({ page
     }
     await page.waitForTimeout(1500);
   };
-  // June, then January, then June and January again: leaves, then bare branches.
+  // June, then December, then June and December again: leaves, then bare branches.
   for (const [round, k] of [0, 1, 0, 1].entries()) {
     await show(k);
     await orbitFrames(page, `i-seasons-${round}`, 6, 4);

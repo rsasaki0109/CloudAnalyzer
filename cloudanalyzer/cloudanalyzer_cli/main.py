@@ -1426,6 +1426,17 @@ def posegraph_compare_cmd(
         typer.echo(f"wrote {kind}: {path}")
 
 
+@app.command("mcp")
+def mcp_cmd() -> None:
+    """Serve CloudAnalyzer's tools to AI agents over MCP (stdio): fix and compare SLAM maps, evaluate clouds."""
+    from ca.mcp_server import main as serve
+
+    try:
+        serve()
+    except RuntimeError as e:
+        _handle_error(e)
+
+
 @app.command("posegraph-validate")
 def posegraph_validate_cmd(
     g2o_path: str = typer.Argument(..., help="Path to pose graph file (pose_graph.g2o)"),

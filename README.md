@@ -143,7 +143,8 @@ ca evaluate candidate.pcd reference.pcd
 The pose graph tools run there too, natively and without the browser's memory limit, for scripts and AI
 agents: [`ca posegraph-fix`](docs/commands/posegraph-fix.md) finds the loops, ties to IMU gravity, removes
 dynamic points and writes the fixed poses and map, and [`ca posegraph-compare`](docs/commands/posegraph-compare.md)
-joins two drives and lists what changed between them, both with a JSON report.
+joins two drives and lists what changed between them, both with a JSON report. [`ca mcp`](docs/commands/mcp.md)
+serves the same tools to AI agents over MCP (`claude mcp add cloudanalyzer -- ca mcp`).
 
 ```bash
 ca posegraph-fix kitti/07/velodyne --out fixed/ --gravity kitti/07/oxts --remove-dynamic --format-json

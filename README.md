@@ -140,6 +140,14 @@ pip install cloudanalyzer
 ca evaluate candidate.pcd reference.pcd
 ```
 
+The pose graph tools run there too, natively and without the browser's memory limit, for scripts and AI
+agents: [`ca posegraph-fix`](docs/commands/posegraph-fix.md) finds the loops, ties to IMU gravity, removes
+dynamic points and writes the fixed poses and map, with a JSON report.
+
+```bash
+ca posegraph-fix kitti/07/velodyne --out fixed/ --gravity kitti/07/oxts --remove-dynamic --format-json
+```
+
 Start with the [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the
 [command reference](docs/commands/), [CI and quality gates](docs/ci.md) and the
 [SLAM leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/).

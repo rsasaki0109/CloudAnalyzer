@@ -27,6 +27,17 @@ upstream dataset terms.
 with `scripts/fetch_pandaset.py` (the 360° Pandar64 only, moved into its own frame) and recorded with
 `PANDASET_DIR=<dir> npm run media` in `web/`. The GIFs are adapted from PandaSet.
 
+## Web App Pictures from NCLT
+
+`web/loop.gif`, `web/posegraph.jpg` and the pose graph part of `web/demo.gif` show the web app on session
+2012-04-29 of the University of Michigan North Campus Long-Term Vision and Lidar Dataset (NCLT;
+N. Carlevaris-Bianco, A. K. Ushani and R. M. Eustice, International Journal of Robotics Research, 2016,
+http://robots.engin.umich.edu/nclt/). Contains information from NCLT, which is made available under the
+[Open Database License](https://opendatacommons.org/licenses/odbl/1-0/); its contents are under the
+[Database Contents License](https://opendatacommons.org/licenses/dbcl/1-0/). The scans were prepared with
+`scripts/prepare_nclt.py` (a keyframe every metre, KISS-ICP odometry) and recorded with
+`NCLT_DIR=<dir> npm run media` in `web/`.
+
 ## Social Preview
 
 `social-preview.svg` is original CloudAnalyzer artwork and does not use external image assets;

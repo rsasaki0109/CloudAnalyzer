@@ -12,7 +12,9 @@ Everything runs locally in Rust compiled to WebAssembly, on every core: nothing 
 never leaves your machine.
 
 <p align="center">
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive"><img src="docs/images/web/loop.gif" alt="A loop closed by hand: the drifted second lap glides onto the first" width="720"></a>
+  <a href="scripts/prepare_nclt.py"><img src="docs/images/web/loop.gif" alt="A loop closed by hand on a real campus drive: two scans of the same place, metres apart, lined up by ICP, then the whole drive pulled together" width="720"></a><br>
+  A loop closed by hand on a real drive (NCLT, University of Michigan): the same place seen twice a kilometre apart,
+  lined up with ICP, and the drive pulled together
 </p>
 
 <p align="center">
@@ -29,7 +31,7 @@ Drop a folder with a trajectory (KITTI, TUM) or a g2o pose graph and one scan pe
 
 <p align="center">
   <a href="scripts/fetch_pandaset.py"><img src="docs/images/web/odometry.gif" alt="A real drive through San Francisco replayed: Pandar64 scans build up along the street, colored by height" width="49%"></a>
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph"><img src="docs/images/web/posegraph.jpg" alt="The corrected map colored by how far each point moved" width="49%"></a><br>
+  <a href="scripts/prepare_nclt.py"><img src="docs/images/web/posegraph.jpg" alt="A campus map after automatic loop closure, colored by how far each point moved" width="49%"></a><br>
   <b>Replay the drive</b> scan by scan (PandaSet, San Francisco) · <b>See the correction</b>: every point colored by how far it moved
 </p>
 
@@ -89,6 +91,10 @@ Measured in the app on public datasets, with [KISS-ICP](https://github.com/PRBon
 | 00 &nbsp; 4,541 scans, 3.7 km | 22.3 m | 11.1 m | **5.8 m** |
 | 07 &nbsp; 1,101 scans | 2.14 m | 1.65 m | **1.16 m** |
 | 09 &nbsp; 1,591 scans, 38 m of hills | 16.4 m | 6.2 m | **2.3 m** |
+
+| NCLT 2012-04-29 (Segway on campus, 2,777 keyframes, 3.2 km) | Odometry | + loops |
+|---|---|---|
+| Trajectory ATE, SE(3)-aligned | 4.83 m | **1.64 m** (168 loops found in 11 s) |
 
 | KITTI map against the ground-truth map | Odometry | + loops + IMU gravity |
 |---|---|---|
@@ -152,7 +158,9 @@ re-takes the README screenshots and GIFs.
 
 [MIT](LICENSE). Public demo data, sample data and derived images keep their upstream terms; see the
 [image attribution](docs/images/ATTRIBUTION.md) and the [sample attribution](web/public/samples/ATTRIBUTION.md).
-The odometry and dynamic-object GIFs are of [PandaSet](https://pandaset.org) scene 019 (Scale AI and Hesai,
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), fetched with
-[`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py); the other pose graph pictures are of a drive generated in the
-browser. KITTI data is not redistributed here.
+The pose graph pictures are of real drives: [NCLT](http://robots.engin.umich.edu/nclt/) session 2012-04-29
+(University of Michigan, [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/), prepared with
+[`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) for the loops and corrections, and [PandaSet](https://pandaset.org)
+scene 019 (Scale AI and Hesai, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched with
+[`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects.
+KITTI data is not redistributed here.

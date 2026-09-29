@@ -1634,7 +1634,7 @@ const CHANGE_LIMIT = 50;
 
 /**
  * The changed objects of an M3C2 result, largest first: where each is,
- * how big, and by how much it changed. Clicking one centres the view on it.
+ * how big, and by how much it changed. Clicking one frames it in the view.
  */
 async function listChanges(id: number): Promise<void> {
   const flat = await changedObjects(id, CHANGE_MIN, CHANGE_LINK, CHANGE_MIN_POINTS);
@@ -1660,8 +1660,14 @@ async function listChanges(id: number): Promise<void> {
       const name = document.createElement("button");
       name.className = "name link";
       name.textContent = `#${k + 1} · ${size} m`;
-      name.title = "Centre the view on it";
-      name.onclick = () => viewer.centerOn(toRender([o[1], o[2], o[3]]));
+      name.title = "Frame it in the view";
+      // With some room round it, so its surroundings show what changed.
+      name.onclick = () =>
+        viewer.frameBox(
+          new THREE.Box3(toRender([o[4], o[5], o[6]]), toRender([o[7], o[8], o[9]])).expandByScalar(
+            Math.max(2, 0.5 * Math.max(o[7] - o[4], o[8] - o[5])),
+          ),
+        );
       const meta = document.createElement("span");
       meta.className = "meta";
       meta.textContent = `${o[10] > 0 ? "+" : ""}${fmt(o[10])} m · ${o[0].toLocaleString()} points`;

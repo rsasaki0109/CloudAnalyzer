@@ -1207,6 +1207,9 @@ export const groundAndDem = (): Promise<void> =>
   });
 $<HTMLButtonElement>("pg-dem").onclick = () => void groundAndDem();
 
+/** Keyframes compared by Compare parts: those within this distance (metres) of the other part's path. */
+const PART_REACH = 50;
+
 /**
  * The map of the path up to a node against the map of the rest, by M3C2:
  * for two joined sessions, what changed between them; for one drive that
@@ -1224,16 +1227,48 @@ export const compareParts = (): Promise<void> =>
       return;
     }
     const voxel = Math.max(0, num("pg-map-voxel")) || 0.3;
-    setStatus("Building the two maps…");
-    const before = addEntry(await poseGraphMap(voxel, false, false, 0, split));
-    const after = addEntry(await poseGraphMap(voxel, false, false, split, n - split));
+    // Only where the parts meet: each part's nodes near the other's path.
+    // A long drive's whole map would not fit, and elsewhere there is
+    // nothing to compare.
+    const near = (from: number, to: number, others: [number, number]): number[] => {
+      const out: number[] = [];
+      for (let i = from; i < to; i++) {
+        const p = nodePosition(state, i);
+        for (let j = others[0]; j < others[1]; j++) {
+          if (p.distanceToSquared(nodePosition(state, j)) < PART_REACH * PART_REACH) {
+            out.push(i);
+            break;
+          }
+        }
+      }
+      return out;
+    };
+    const [first, second] = [near(0, split, [split, n]), near(split, n, [0, split])];
+    if (first.length === 0 || second.length === 0) {
+      setStatus(`The two parts never come within ${PART_REACH} m of each other: nothing to compare`, true);
+      return;
+    }
+    setStatus(`Building the maps where the parts meet (${first.length} and ${second.length} keyframes)…`);
+    const ids = state.nodeIds;
+    const before = addEntry(await poseGraphMap(voxel, false, false, first, `before_${ids[split]}`));
+    const after = addEntry(await poseGraphMap(voxel, false, false, second, `from_${ids[split]}`));
     record({ label: "the two maps", added: [before, after] });
     hideEntry(before);
     renderList();
     for (const [id, value] of Object.entries({ "m3c2-normal": "1", "m3c2-projection": "0.5", "m3c2-depth": "2", "m3c2-core": "0.5" })) {
       $<HTMLInputElement>(id).value = value;
     }
-    await runM3c2(after, before);
+    const result = await runM3c2(after, before);
+    // A symmetric range at the 98th percentile of the changes (at least half
+    // a metre), so a moved car stands out rather than a few extreme cores.
+    const sizes = Float32Array.from(result.c2c!.distances.filter(Number.isFinite), Math.abs).sort();
+    if (sizes.length) {
+      const m = Math.max(0.5, sizes[Math.floor(sizes.length * 0.98)]);
+      display.range = { lo: -m, hi: m };
+      refreshColors(result);
+      distanceChanged.emit();
+    }
+    if (showScans()) $<HTMLInputElement>("pg-show-scans").click();
   });
 $<HTMLButtonElement>("pg-parts").onclick = () => void compareParts();
 

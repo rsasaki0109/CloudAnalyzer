@@ -297,7 +297,12 @@
       runs M3C2 between them: for two joined sessions (the split then defaults to where the second starts) what
       changed between them, and for one drive that passes a place twice how well the passes agree. On KITTI 07 split
       at node 1000, where the drive comes back to its start, the mean M3C2 distance between the passes went from
-      0.17 m with the odometry alone to 0.02 m after Find loops and IMU gravity.
+      0.17 m with the odometry alone to 0.02 m after Find loops and IMU gravity. Only the keyframes of each part
+      within 50 m of the other part's path are compared, so a long drive fits in memory, and the colors span the
+      98th percentile of the changes. KITTI 00 (recorded on 3 October 2011) joined with 07 (30 September, three
+      days earlier) at a street both drove (87 % overlap, then 202 loops between the two) compares at 214,000 core
+      points in 6 s: the buildings agree (mean 0.002 m) and 12 % of the points changed significantly, mostly the
+      cars parked along the streets.
     </p>
     <p>
       <b>IMU gravity</b> is the constraint for hills. <b>Add gravity…</b> takes a KITTI <code>oxts</code> folder (roll and

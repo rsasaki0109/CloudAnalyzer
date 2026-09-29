@@ -1323,7 +1323,7 @@ async function handle(
       return { value: openGraph().export(req.format), transfer: [] };
     case "pg-map": {
       const t = performance.now();
-      let cloud = openGraph().map(req.initial, req.correction, req.first, req.count);
+      let cloud = openGraph().map(req.initial, req.correction, new Uint32Array(req.nodes));
       if (req.voxel > 0) {
         const thinned = cloud.filter("voxel", req.voxel, 0);
         cloud.free();
@@ -1331,7 +1331,7 @@ async function handle(
       }
       await buildIndex(cloud);
       const id = nextId++;
-      const part = req.count > 0 ? `_${req.first}-${req.first + req.count - 1}` : "";
+      const part = req.label ? `_${req.label}` : "";
       items.set(id, { kind: "cloud", cloud, name: `${poseGraph!.name}_${req.initial ? "map_start" : "map"}${part}` });
       return describe(id, { parse: 0, index: performance.now() - t });
     }

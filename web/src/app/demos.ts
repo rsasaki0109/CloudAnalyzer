@@ -86,6 +86,29 @@ async function poseGraphDrive(): Promise<void> {
   $("pose-graph-panel").scrollIntoView({ block: "start" });
 }
 
+/**
+ * A real drive: part of an NCLT session (University of Michigan) as a ROS 2
+ * bag of LiDAR scans and IMU, without poses. Odometry places the scans, the
+ * IMU levels them, loops close where the drive comes back, and the map shows
+ * how far the corrections moved each point.
+ */
+async function ncltDemo(): Promise<void> {
+  const name = "nclt-2012-04-29.mcap";
+  setStatus(`Downloading ${name} (10 MB), a drive from the NCLT dataset…`);
+  const response = await fetch(`${import.meta.env.BASE_URL}samples/${name}`);
+  if (!response.ok) {
+    setStatus(`Could not download ${name}: ${response.status} ${response.statusText}`, true);
+    return;
+  }
+  await openPoseGraph([new File([await response.blob()], name)]);
+  $("pose-graph-panel").scrollIntoView({ block: "start" });
+  await findLoops();
+  $<HTMLInputElement>("pg-show-scans").click();
+  await compareWithStart();
+  viewer.view({ x: 0.4, y: -1, z: 1.1 });
+  viewer.fit();
+}
+
 /** Load a demo's sample files, then run its analysis. */
 export async function runDemo(name: string): Promise<void> {
   if (name === "posegraph") {
@@ -96,9 +119,13 @@ export async function runDemo(name: string): Promise<void> {
     await poseGraphDrive();
     return;
   }
+  if (name === "nclt") {
+    await ncltDemo();
+    return;
+  }
   const demo = DEMOS[name];
   if (!demo) {
-    setStatus(`Unknown demo "${name}" (try ${[...Object.keys(DEMOS), "posegraph"].join(", ")})`, true);
+    setStatus(`Unknown demo "${name}" (try ${[...Object.keys(DEMOS), "posegraph", "nclt"].join(", ")})`, true);
     return;
   }
   const missing = demo.files.filter((f) => !idOf(f));

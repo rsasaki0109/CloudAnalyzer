@@ -328,6 +328,15 @@ export interface PoseGraphOpened extends PoseGraphState {
   scanPoints: number;
   /** Scan files that matched no node. */
   unmatched: string[];
+  /** When the poses came from odometry: what it went through, and per node the IMU's up direction (three each, NaN where none). */
+  odometry: {
+    frames: number;
+    pathLength: number;
+    seconds: number;
+    topic: string | null;
+    imuTopic: string | null;
+    ups: Float64Array | null;
+  } | null;
 }
 
 export interface PoseGraphLoop {
@@ -362,8 +371,11 @@ export interface PoseGraphMerged {
 
 /** A pose graph's files and how to read them (see `pg-open`). */
 export interface PoseGraphFiles {
-  graph: File;
+  /** A g2o graph or a trajectory, with `scans`; a ROS bag (.bag, .mcap) alone; or null for scans without poses. */
+  graph: File | null;
   scans: File[];
+  /** For a bag, or scans without poses: odometry, keeping a keyframe every `keyframeSpacing` metres of travel. */
+  odometry: { minRange: number; maxRange: number; keyframeSpacing: number };
   /** Voxel size scans are thinned to (0 keeps every point). */
   voxel: number;
   /** Points per scan sent back for display. */

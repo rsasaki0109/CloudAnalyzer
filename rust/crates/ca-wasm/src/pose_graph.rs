@@ -228,6 +228,48 @@ impl PoseGraphSession {
         Ok(PoseGraphSession::new(graph, Vec::new()))
     }
 
+    /// A graph without nodes, to add them one at a time (see `addNode`).
+    pub fn empty() -> PoseGraphSession {
+        PoseGraphSession::new(
+            PoseGraph::from_poses(&[], information(1.0, 1.0)),
+            Vec::new(),
+        )
+    }
+
+    /// Add a node at `pose` (row-major 4x4) with id `id`, tied to the last
+    /// node by an odometry edge with the given standard deviations; its index.
+    #[wasm_bindgen(js_name = addNode)]
+    pub fn add_node(
+        &mut self,
+        pose: &[f64],
+        id: f64,
+        sigma_t: f64,
+        sigma_r_deg: f64,
+    ) -> Result<usize, JsError> {
+        let m: &[f64; 16] = pose
+            .try_into()
+            .map_err(|_| JsError::new("a pose needs 16 numbers"))?;
+        let pose = Rigid::from_matrix(m);
+        let index = self.graph.nodes.len();
+        if let Some(last) = self.graph.nodes.last() {
+            self.graph.edges.push(pose_graph::Edge {
+                from: index - 1,
+                to: index,
+                measurement: pose_graph::inverse(&last.pose).compose(&pose),
+                information: information(sigma_t, sigma_r_deg),
+                kind: EdgeKind::Odometry,
+            });
+        }
+        self.graph.nodes.push(pose_graph::Node {
+            id: id as i64,
+            pose,
+            fixed: index == 0,
+        });
+        self.scans.push(None);
+        self.initial.push(pose);
+        Ok(index)
+    }
+
     /// An odometry chain through a trajectory's poses (which need
     /// orientations), with the given standard deviations.
     #[wasm_bindgen(js_name = fromTrajectory)]

@@ -1,0 +1,393 @@
+//! LiDAR odometry, after KISS-ICP (Vizzo et al., 2023): each scan, thinned,
+//! is registered onto a local voxel map of the scans before it, starting
+//! from where a constant velocity puts it, by point-to-point ICP with a
+//! robust (Geman-McClure) kernel and correspondences within a threshold
+//! learnt from how far the motion model has been off; then it joins the
+//! map. Small enough to run in the browser, so a recording without poses
+//! can be opened there.
+
+use crate::PointCloud;
+use crate::icp::Rigid;
+use std::collections::{HashMap, HashSet};
+use std::hash::{BuildHasherDefault, Hasher};
+
+/// A fast hash for voxel keys (FxHash's step): the map is looked up millions
+/// of times a scan, where the default hasher's resistance to attacks is not needed.
+#[derive(Default)]
+struct VoxelHasher(u64);
+
+impl Hasher for VoxelHasher {
+    fn write(&mut self, bytes: &[u8]) {
+        for &b in bytes {
+            self.write_u64(u64::from(b));
+        }
+    }
+
+    fn write_u64(&mut self, v: u64) {
+        self.0 = (self.0.rotate_left(5) ^ v).wrapping_mul(0x51_7c_c1_b7_27_22_0a_95);
+    }
+
+    fn write_i64(&mut self, v: i64) {
+        self.write_u64(v as u64);
+    }
+
+    fn write_usize(&mut self, v: usize) {
+        self.write_u64(v as u64);
+    }
+
+    fn finish(&self) -> u64 {
+        self.0
+    }
+}
+
+type VoxelMap = HashMap<[i64; 3], Vec<[f64; 3]>, BuildHasherDefault<VoxelHasher>>;
+
+#[derive(Debug, Clone, Copy)]
+pub struct OdometryParams {
+    /// Points nearer than this or further than `max_range` (metres) are left out.
+    pub min_range: f64,
+    pub max_range: f64,
+    /// The local map keeps at most `map_points` points per voxel of this size (metres).
+    pub map_voxel: f64,
+    pub map_points: usize,
+    pub max_iterations: usize,
+    /// The spread of the motion model's error (metres) until it has been measured.
+    pub initial_sigma: f64,
+    /// Motion model errors smaller than this (metres) are not counted.
+    pub min_motion: f64,
+}
+
+impl Default for OdometryParams {
+    fn default() -> Self {
+        Self {
+            min_range: 1.5,
+            max_range: 80.0,
+            map_voxel: 1.0,
+            map_points: 20,
+            max_iterations: 500,
+            initial_sigma: 2.0,
+            min_motion: 0.1,
+        }
+    }
+}
+
+/// Odometry state: the local map, the poses so far and the motion model's error.
+pub struct Odometry {
+    params: OdometryParams,
+    map: VoxelMap,
+    poses: Vec<Rigid>,
+    error_sum: f64,
+    error_count: usize,
+}
+
+type Vec6 = [f64; 6];
+type Mat6 = [[f64; 6]; 6];
+
+/// `a x = b` by elimination with partial pivoting.
+fn solve6(mut a: Mat6, mut b: Vec6) -> Option<Vec6> {
+    for col in 0..6 {
+        let pivot = (col..6).max_by(|&i, &j| a[i][col].abs().total_cmp(&a[j][col].abs()))?;
+        if a[pivot][col].abs() < 1e-12 {
+            return None;
+        }
+        a.swap(col, pivot);
+        b.swap(col, pivot);
+        let top = a[col];
+        for row in col + 1..6 {
+            let f = a[row][col] / top[col];
+            for (x, t) in a[row].iter_mut().zip(top).skip(col) {
+                *x -= f * t;
+            }
+            b[row] -= f * b[col];
+        }
+    }
+    let mut x = [0.0; 6];
+    for row in (0..6).rev() {
+        let s: f64 = (row + 1..6).map(|k| a[row][k] * x[k]).sum();
+        x[row] = (b[row] - s) / a[row][row];
+    }
+    Some(x)
+}
+
+/// One point per voxel (the first in each).
+fn thin(points: &[[f64; 3]], voxel: f64) -> Vec<[f64; 3]> {
+    let mut seen = HashSet::new();
+    points
+        .iter()
+        .copied()
+        .filter(|p| seen.insert(p.map(|v| (v / voxel).floor() as i64)))
+        .collect()
+}
+
+/// `r` made a rotation again (Gram-Schmidt on its rows): products of
+/// rotations drift from one, and constant velocity, which multiplies by an
+/// inverse taken as the transpose, would let that grow without end.
+fn orthonormal(r: &[[f64; 3]; 3]) -> [[f64; 3]; 3] {
+    let unit = |v: [f64; 3]| {
+        let n = norm(&v);
+        v.map(|x| x / n)
+    };
+    let x = unit(r[0]);
+    let d = x[0] * r[1][0] + x[1] * r[1][1] + x[2] * r[1][2];
+    let y = unit(std::array::from_fn(|k| r[1][k] - d * x[k]));
+    let z = [
+        x[1] * y[2] - x[2] * y[1],
+        x[2] * y[0] - x[0] * y[2],
+        x[0] * y[1] - x[1] * y[0],
+    ];
+    [x, y, z]
+}
+
+fn norm(v: &[f64; 3]) -> f64 {
+    (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt()
+}
+
+impl Odometry {
+    pub fn new(params: OdometryParams) -> Self {
+        Odometry {
+            params,
+            map: VoxelMap::default(),
+            poses: Vec::new(),
+            error_sum: 0.0,
+            error_count: 0,
+        }
+    }
+
+    pub fn poses(&self) -> &[Rigid] {
+        &self.poses
+    }
+
+    fn sigma(&self) -> f64 {
+        if self.error_count == 0 {
+            self.params.initial_sigma
+        } else {
+            (self.error_sum / self.error_count as f64).sqrt()
+        }
+    }
+
+    /// The map point nearest `q` in its voxel and the 26 around it, with the
+    /// squared distance; a voxel is skipped when it is no nearer than the best so far.
+    fn nearest(&self, q: &[f64; 3]) -> Option<([f64; 3], f64)> {
+        let v = self.params.map_voxel;
+        let key = q.map(|x| (x / v).floor() as i64);
+        let mut best = ([0.0; 3], f64::INFINITY);
+        let search = |cell: [i64; 3], best: &mut ([f64; 3], f64)| {
+            for m in self.map.get(&cell).into_iter().flatten() {
+                let d = (m[0] - q[0]).powi(2) + (m[1] - q[1]).powi(2) + (m[2] - q[2]).powi(2);
+                if d < best.1 {
+                    *best = (*m, d);
+                }
+            }
+        };
+        search(key, &mut best);
+        for dx in -1..=1_i64 {
+            for dy in -1..=1_i64 {
+                for dz in -1..=1_i64 {
+                    let offset = [dx, dy, dz];
+                    if offset == [0, 0, 0] {
+                        continue;
+                    }
+                    // How far `q` is from that voxel.
+                    let gap: f64 = (0..3)
+                        .map(|k| match offset[k] {
+                            -1 => q[k] - key[k] as f64 * v,
+                            1 => (key[k] + 1) as f64 * v - q[k],
+                            _ => 0.0,
+                        })
+                        .map(|g| g * g)
+                        .sum();
+                    if gap < best.1 {
+                        search(std::array::from_fn(|k| key[k] + offset[k]), &mut best);
+                    }
+                }
+            }
+        }
+        best.1.is_finite().then_some(best)
+    }
+
+    /// The motion that best brings `source` (world points) onto the map:
+    /// pairs within 3 sigma, weighted by a Geman-McClure kernel of sigma/3.
+    fn align(&self, source: &[[f64; 3]], sigma: f64) -> Rigid {
+        let threshold_sq = (3.0 * sigma).powi(2);
+        let kernel = sigma / 3.0;
+        let mut total = Rigid::IDENTITY;
+        for _ in 0..self.params.max_iterations {
+            let mut jtj = [[0.0; 6]; 6];
+            let mut jtr = [0.0; 6];
+            for p in source {
+                let q = total.apply(p);
+                let Some((m, distance_sq)) = self.nearest(&q) else {
+                    continue;
+                };
+                if distance_sq > threshold_sq {
+                    continue;
+                }
+                let r = [q[0] - m[0], q[1] - m[1], q[2] - m[2]];
+                let w = kernel * kernel / (kernel + distance_sq).powi(2);
+                // d q / d (translation, rotation) = [I, -[q]x] for a change on the left.
+                let rows = [
+                    [1.0, 0.0, 0.0, 0.0, q[2], -q[1]],
+                    [0.0, 1.0, 0.0, -q[2], 0.0, q[0]],
+                    [0.0, 0.0, 1.0, q[1], -q[0], 0.0],
+                ];
+                for (row, r) in rows.iter().zip(r) {
+                    for i in 0..6 {
+                        jtr[i] -= w * row[i] * r;
+                        for j in 0..6 {
+                            jtj[i][j] += w * row[i] * row[j];
+                        }
+                    }
+                }
+            }
+            let Some(dx) = solve6(jtj, jtr) else { break };
+            let step = Rigid {
+                rotation: crate::pose_graph::exp_so3(&[dx[3], dx[4], dx[5]]),
+                translation: [dx[0], dx[1], dx[2]],
+            };
+            total = step.compose(&total);
+            if dx.iter().map(|v| v * v).sum::<f64>().sqrt() < 1e-4 {
+                break;
+            }
+        }
+        total
+    }
+
+    /// Register the next scan (in its sensor's frame) and return its pose.
+    pub fn register(&mut self, scan: &PointCloud) -> Rigid {
+        let p = self.params;
+        let near: Vec<[f64; 3]> = scan
+            .positions
+            .iter()
+            .copied()
+            .filter(|q| (p.min_range..=p.max_range).contains(&norm(q)))
+            .collect();
+        // Half a map voxel for the map, one and a half for registering.
+        let frame = thin(&near, 0.5 * p.map_voxel);
+        let source = thin(&frame, 1.5 * p.map_voxel);
+        // Constant velocity: the last motion again.
+        let n = self.poses.len();
+        let motion = match n {
+            0 | 1 => Rigid::IDENTITY,
+            _ => crate::pose_graph::inverse(&self.poses[n - 2]).compose(&self.poses[n - 1]),
+        };
+        let prediction = match n {
+            0 => Rigid::IDENTITY,
+            _ => self.poses[n - 1].compose(&motion),
+        };
+        let mut pose = if self.map.is_empty() || source.len() < 10 {
+            prediction
+        } else {
+            let moved: Vec<[f64; 3]> = source.iter().map(|q| prediction.apply(q)).collect();
+            self.align(&moved, self.sigma()).compose(&prediction)
+        };
+        pose.rotation = orthonormal(&pose.rotation);
+        // How far the motion model was off, as the most a point in range moved.
+        let deviation = crate::pose_graph::inverse(&prediction).compose(&pose);
+        let r = &deviation.rotation;
+        let theta = ((r[0][0] + r[1][1] + r[2][2] - 1.0) / 2.0)
+            .clamp(-1.0, 1.0)
+            .acos();
+        let error = 2.0 * p.max_range * (theta / 2.0).sin() + norm(&deviation.translation);
+        if error > p.min_motion {
+            self.error_sum += error * error;
+            self.error_count += 1;
+        }
+        // The scan joins the map; voxels out of the sensor's range leave it.
+        for q in &frame {
+            let w = pose.apply(q);
+            let cell = self
+                .map
+                .entry(w.map(|v| (v / p.map_voxel).floor() as i64))
+                .or_default();
+            if cell.len() < p.map_points {
+                cell.push(w);
+            }
+        }
+        let origin = pose.translation;
+        self.map.retain(|_, points| {
+            let q = points[0];
+            norm(&[q[0] - origin[0], q[1] - origin[1], q[2] - origin[2]]) <= p.max_range
+        });
+        self.poses.push(pose);
+        pose
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Ground and boxes scattered about, in world coordinates.
+    fn town() -> Vec<[f64; 3]> {
+        let mut out = Vec::new();
+        let mut seed = 7u64;
+        let mut next = || {
+            seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            (seed >> 33) as f64 / (1u64 << 31) as f64
+        };
+        // Ground, at random places so that no shift matches it with itself.
+        for _ in 0..100_000 {
+            out.push([next() * 120.0 - 40.0, next() * 60.0 - 30.0, 0.0]);
+        }
+        // Boxes of 2..4 m at random places and heights.
+        for _ in 0..200 {
+            let (cx, cy) = (next() * 110.0 - 30.0, next() * 50.0 - 25.0);
+            if cy.abs() < 4.0 {
+                continue;
+            }
+            let (sx, sy, h) = (2.0 + 2.0 * next(), 2.0 + 2.0 * next(), 1.0 + 4.0 * next());
+            let steps = |len: f64| (0..=(len / 0.2) as usize).map(move |k| k as f64 * 0.2);
+            for z in steps(h) {
+                for x in steps(sx) {
+                    out.push([cx + x, cy, z]);
+                    out.push([cx + x, cy + sy, z]);
+                }
+                for y in steps(sy) {
+                    out.push([cx, cy + y, z]);
+                    out.push([cx + sx, cy + y, z]);
+                }
+            }
+        }
+        out
+    }
+
+    #[test]
+    fn a_drive_through_a_town_is_followed() {
+        let world = town();
+        let mut odometry = Odometry::new(OdometryParams::default());
+        // Pulling away to 1 m a scan, turning slowly; the scans see 40 m around.
+        let mut x = 0.0;
+        let truth: Vec<Rigid> = (0..40)
+            .map(|k| {
+                x += 0.1 * k.min(10) as f64;
+                let yaw: f64 = 0.004 * k as f64;
+                let (s, c) = yaw.sin_cos();
+                Rigid {
+                    rotation: [[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]],
+                    translation: [x, 0.1 * x, 1.5],
+                }
+            })
+            .collect();
+        for pose in &truth {
+            let back = crate::pose_graph::inverse(pose);
+            let scan = PointCloud {
+                positions: world
+                    .iter()
+                    .map(|p| back.apply(p))
+                    .filter(|p| norm(p) < 40.0)
+                    .collect(),
+                ..PointCloud::default()
+            };
+            odometry.register(&scan);
+        }
+        // Relative to the first pose, as odometry starts at the identity.
+        let last = crate::pose_graph::inverse(&truth[0]).compose(&truth[39]);
+        let found = odometry.poses()[39];
+        let error = norm(&std::array::from_fn(|k| {
+            found.translation[k] - last.translation[k]
+        }));
+        assert!(error < 0.2, "{error}");
+    }
+}

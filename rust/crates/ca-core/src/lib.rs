@@ -21,6 +21,7 @@ pub mod merge;
 pub mod mesh;
 pub mod normals;
 pub mod octree;
+pub mod odometry;
 pub mod pose_graph;
 pub mod profile;
 pub mod raster;

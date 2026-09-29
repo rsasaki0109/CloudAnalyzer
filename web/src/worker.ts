@@ -16,6 +16,7 @@ import init, {
   e57ScanNames,
   evaluateTrajectory,
   LasReader,
+  LidarOdometry,
   Mesh,
   StreamLoader,
   planCloudToCloud,
@@ -29,6 +30,7 @@ import init, {
   VolumeSurface,
   warmUp,
 } from "./wasm/ca_wasm.js";
+import { decodeImu, decodePointCloud2, type ImuMessage, IMU, isBag, openBag, POINT_CLOUD, upsAt } from "./bag";
 import { type ByteSource, readRange } from "./bytes";
 import type { LasChunksResult, Slice } from "./c2c-worker";
 import { CANCELLED } from "./protocol";
@@ -982,6 +984,153 @@ interface LoadedGraph {
   scans: (Float32Array | null)[];
   scanPoints: number;
   unmatched: string[];
+  odometry: PoseGraphOpened["odometry"];
+}
+
+/** A scan without a pose: from a bag's messages or a file. */
+interface Frame {
+  id: number;
+  stamp: number;
+  cloud: Cloud;
+}
+
+/** A bag's scans (its PointCloud2 topic with the most messages), and its IMU's messages into `imu` on the way. */
+async function* bagFrames(
+  file: File,
+  imu: ImuMessage[],
+  topics: { scans: string | null; imu: string | null },
+  progress: (note: string, fraction?: number) => void,
+): AsyncGenerator<Frame> {
+  progress(`reading ${file.name}`);
+  const bag = await openBag(file);
+  const busiest = (type: string) =>
+    bag.topics.filter((t) => t.type === type).sort((a, b) => b.count - a.count)[0] ?? null;
+  const scans = busiest(POINT_CLOUD);
+  if (!scans) throw new Error(`${file.name} has no sensor_msgs/PointCloud2 messages`);
+  const imuTopic = busiest(IMU);
+  topics.scans = scans.topic;
+  topics.imu = imuTopic?.topic ?? null;
+  let id = 0;
+  let fraction = 0;
+  const wanted = new Set([scans.topic, ...(imuTopic ? [imuTopic.topic] : [])]);
+  for await (const m of bag.messages(wanted, (f) => (fraction = f))) {
+    if (m.topic !== scans.topic) {
+      imu.push(decodeImu(m.data, m.encoding));
+      continue;
+    }
+    const points = decodePointCloud2(m.data, m.encoding);
+    progress(`${scans.topic}: scan ${id + 1} of ${scans.count}`, fraction);
+    yield { id: id++, stamp: points.stamp, cloud: Cloud.fromXyz(points.xyz, points.intensity ?? new Float32Array(0)) };
+  }
+}
+
+/** Scan files in name order, numbered by their names where they have numbers. */
+async function* fileFrames(files: File[], progress: (note: string, fraction?: number) => void): AsyncGenerator<Frame> {
+  const sorted = files.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  const reads = new Map<number, Promise<ArrayBuffer>>();
+  for (const [k, file] of sorted.entries()) {
+    for (let j = k; j < Math.min(sorted.length, k + READ_AHEAD); j++) {
+      if (!reads.has(j)) reads.set(j, sorted[j].arrayBuffer());
+    }
+    progress(`scan ${k + 1} of ${sorted.length}`, k / sorted.length);
+    const bytes = new Uint8Array(await reads.get(k)!);
+    reads.delete(k);
+    yield { id: frameNumber(file.name) ?? k, stamp: k, cloud: Cloud.parse(file.name, bytes) };
+  }
+}
+
+/**
+ * A graph for scans without poses: odometry registers each onto the ones
+ * before; a keyframe every so many metres of travel (and the last scan)
+ * becomes a node with its scan.
+ */
+async function odometryGraph(
+  req: PoseGraphFiles,
+  progress: (note: string, fraction?: number) => void,
+  check: () => void,
+): Promise<LoadedGraph> {
+  const started = performance.now();
+  const o = req.odometry;
+  const imu: ImuMessage[] = [];
+  const topics = { scans: null as string | null, imu: null as string | null };
+  const frames = req.graph ? bagFrames(req.graph, imu, topics, progress) : fileFrames(req.scans, progress);
+  const odometry = new LidarOdometry(o.minRange, o.maxRange);
+  const session = PoseGraphSession.empty();
+  const scans: Float32Array[] = [];
+  const stamps: number[] = [];
+  const none = new Float64Array(0);
+  let scanPoints = 0;
+  let count = 0;
+  let pathLength = 0;
+  let travel = 0;
+  let last: Float64Array | null = null;
+  let held: (Frame & { pose: Float64Array }) | null = null;
+  const keep = (frame: Frame, pose: Float64Array) => {
+    const node = session.addNode(pose, frame.id, req.sigmaT, req.sigmaRDeg);
+    scanPoints += session.setScan(node, frame.cloud, req.voxel, none);
+    scans.push(session.scanPositions(node, req.displayPoints));
+    stamps.push(frame.stamp);
+  };
+  try {
+    for await (const frame of frames) {
+      check();
+      let pose: Float64Array;
+      try {
+        pose = odometry.register(frame.cloud);
+      } catch (err) {
+        frame.cloud.free();
+        throw err;
+      }
+      if (last) {
+        const step = Math.hypot(pose[3] - last[3], pose[7] - last[7], pose[11] - last[11]);
+        travel += step;
+        pathLength += step;
+      }
+      last = pose;
+      count++;
+      held?.cloud.free();
+      held = null;
+      if (count === 1 || travel >= o.keyframeSpacing) {
+        try {
+          keep(frame, pose);
+        } finally {
+          frame.cloud.free();
+        }
+        travel = 0;
+      } else {
+        // The last scan is always a keyframe: hold this one until the next.
+        held = { ...frame, pose };
+      }
+    }
+    if (held) keep(held, held.pose);
+    if (count === 0) throw new Error(req.graph ? `${req.graph.name} has no scans` : "no scans");
+  } catch (err) {
+    session.free();
+    throw err;
+  } finally {
+    held?.cloud.free();
+    odometry.free();
+  }
+  let ups: Float64Array | null = null;
+  if (imu.length) {
+    const out = new Float64Array(3 * stamps.length).fill(NaN);
+    upsAt(imu, stamps).forEach((up, i) => up && out.set(up, 3 * i));
+    ups = out;
+  }
+  return {
+    session,
+    scans,
+    scanPoints,
+    unmatched: [],
+    odometry: {
+      frames: count,
+      pathLength,
+      seconds: (performance.now() - started) / 1000,
+      topic: topics.scans,
+      imuTopic: topics.imu,
+      ups,
+    },
+  };
 }
 
 /**
@@ -1002,6 +1151,7 @@ async function loadGraph(
   progress: (note: string, fraction?: number) => void,
   check: () => void,
 ): Promise<LoadedGraph> {
+  if (!req.graph || isBag(req.graph.name)) return odometryGraph(req, progress, check);
   const text = await req.graph.text();
   let session: PoseGraphSession;
   if (/\.g2o$/i.test(req.graph.name)) {
@@ -1049,7 +1199,7 @@ async function loadGraph(
       }
       scans[node] = session.scanPositions(node, req.displayPoints);
     }
-    return { session, scans, scanPoints, unmatched };
+    return { session, scans, scanPoints, unmatched, odometry: null };
   } catch (err) {
     session.free();
     throw err;
@@ -1061,12 +1211,14 @@ async function openPoseGraph(
   progress: (note: string, fraction?: number) => void,
   check: () => void,
 ): Promise<{ value: PoseGraphOpened; transfer: Transferable[] }> {
-  const { session, scans, scanPoints, unmatched } = await loadGraph(req, progress, check);
+  const { session, scans, scanPoints, unmatched, odometry } = await loadGraph(req, progress, check);
   poseGraph?.session.free();
-  poseGraph = { session, name: req.graph.name.replace(/\.[^.]+$/, "") };
-  const value: PoseGraphOpened = { ...graphState(session), name: req.graph.name, scans, scanPoints, unmatched };
+  const name = req.graph?.name ?? "scans";
+  poseGraph = { session, name: name.replace(/\.[^.]+$/, "") };
+  const value: PoseGraphOpened = { ...graphState(session), name, scans, scanPoints, unmatched, odometry };
   const transfer = stateTransfer(value);
   for (const scan of scans) if (scan) transfer.push(scan.buffer);
+  if (odometry?.ups) transfer.push(odometry.ups.buffer);
   return { value, transfer };
 }
 
@@ -1080,7 +1232,7 @@ async function mergePoseGraph(
   try {
     const ids = other.session.nodeIds();
     const b = req.nodeB === null ? 0 : ids.indexOf(req.nodeB);
-    if (b < 0) throw new Error(`${req.files.graph.name} has no node ${req.nodeB}`);
+    if (b < 0) throw new Error(`${req.files.graph?.name ?? "the scans"} has no node ${req.nodeB}`);
     progress("registering the two graphs");
     const [fitness, rms, , offset] = session.merge(
       other.session,
@@ -1099,7 +1251,7 @@ async function mergePoseGraph(
     const state = graphState(session);
     const value: PoseGraphMerged = {
       state,
-      name: req.files.graph.name,
+      name: req.files.graph?.name ?? "scans",
       scans: other.scans,
       scanPoints: other.scanPoints,
       unmatched: other.unmatched,

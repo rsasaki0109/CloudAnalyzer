@@ -1324,6 +1324,11 @@ def posegraph_fix_cmd(
     remove_dynamic: bool = typer.Option(
         False, "--remove-dynamic", help="Leave points other scans saw through (passing cars) out of the map"
     ),
+    no_imu_calibration: bool = typer.Option(
+        False,
+        "--no-imu-calibration",
+        help="Take the up directions as given: do not estimate the IMU's rotation into the scans' frame",
+    ),
     no_loops: bool = typer.Option(False, "--no-loops", help="Do not look for loops"),
     voxel: float = typer.Option(0.4, "--voxel", help="Thin each scan to one point per voxel (m)"),
     map_voxel: float = typer.Option(0.2, "--map-voxel", help="Thin the written map to one point per voxel (m)"),
@@ -1373,6 +1378,7 @@ def posegraph_fix_cmd(
             loops=not no_loops,
             loop_options={"max_distance": radius, "drift": drift / 100, "min_fitness": min_overlap / 100},
             gravity=gravity,
+            calibrate_gravity=not no_imu_calibration,
             remove_dynamic=remove_dynamic,
             map_voxel=map_voxel,
             truth=truth,
@@ -1395,7 +1401,12 @@ def posegraph_fix_cmd(
         loops = report["loops"]
         typer.echo(f"loops: {loops['added']} of {loops['candidates']} candidates added ({loops['implausible']} implausible)")
     if "gravity" in report:
-        typer.echo(f"gravity: {report['gravity']['tied']} keyframes tied")
+        g = report["gravity"]
+        imu = g["imus"][0]
+        spread = f"{imu['spread_deg']:.2f} deg"
+        if "spread_deg_calibrated" in imu:
+            spread += f" -> {imu['spread_deg_calibrated']:.2f} deg with the IMU rotation estimated"
+        typer.echo(f"gravity: {g['tied']} keyframes tied (up directions spread {spread}; sigma {g['sigma_deg']:.2f} deg)")
     if "dynamic" in report:
         d = report["dynamic"]
         typer.echo(f"dynamic: {d['points']:,} of {d['of']:,} points ({100 * d['share']:.2f} %)")

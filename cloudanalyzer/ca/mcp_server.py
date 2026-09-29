@@ -117,13 +117,15 @@ def posegraph_fix(
     voxel: float = 0.4,
     map_voxel: float = 0.2,
     find_loops: bool = True,
+    calibrate_imu: bool = True,
 ) -> dict[str, Any]:
     """Fix a SLAM map: find loops with ICP, tie keyframes to IMU gravity (a KITTI OXTS folder
     or a 'frame ux uy uz' file), optimise, optionally leave dynamic points (traffic) out, and
     write the fixed g2o, KITTI/TUM poses and the map (PLY) to out_dir. poses names the poses
     file when it is not in the folder (trajectory.tum from slam_odometry); keyframe_spacing
     keeps one pose every so many metres of it. With truth (ground-truth poses, one per frame)
-    the report has the ATE before and after."""
+    the report has the ATE before and after. The IMU's rotation into the LiDAR frame is estimated
+    from the drive (calibrate_imu) and reported with how much its up directions disagree."""
     from ca.posegraph_fix import fix_session
 
     return fix_session(
@@ -134,6 +136,7 @@ def posegraph_fix(
         voxel=voxel,
         loops=find_loops,
         gravity=gravity,
+        calibrate_gravity=calibrate_imu,
         remove_dynamic=remove_dynamic,
         map_voxel=map_voxel,
         truth=truth,

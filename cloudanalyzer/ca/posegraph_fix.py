@@ -328,6 +328,81 @@ def _loops(graph, options: dict | None) -> dict:
     return out
 
 
+def odometry(
+    scans: str,
+    out_dir: str,
+    *,
+    max_range: float = 80.0,
+    voxel_size: float | None = None,
+    max_frames: int | None = None,
+    deskew: bool = False,
+    pointcloud_topic: str | None = None,
+    imu_topic: str | None = None,
+    imu_to_lidar: list[float] | None = None,
+) -> dict:
+    """KISS-ICP odometry for raw scans (a folder, or a ROS bag whose scans are written out as
+    KITTI ``.bin`` with intensity, with each scan's up direction from its IMU): writes
+    ``trajectory.tum`` and ``map.ply`` to ``out_dir`` and returns where the scans, trajectory
+    and gravity file are, ready for :func:`fix_session`."""
+    from ca.core.bag_ingest import imu_ups, is_bag_path, materialize_pointcloud_bag
+    from ca.core.slam_run import SlamRunRequest, discover_frame_paths, run_slam, write_map_ply, write_tum_trajectory
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    clock = time.perf_counter()
+    stamps: tuple[float, ...] | None = None
+    gravity_file: Path | None = None
+    if is_bag_path(scans):
+        frames, stamps = materialize_pointcloud_bag(
+            scans, out / "scans", topic=pointcloud_topic, max_frames=max_frames, kitti_bin=True
+        )
+        scan_folder = out / "scans"
+        ups = imu_ups(scans, stamps, topic=imu_topic)
+        if ups:
+            rotation = np.eye(3) if imu_to_lidar is None else np.array(imu_to_lidar, dtype=float).reshape(3, 3)
+            gravity_file = out / "gravity" / "gravity.txt"
+            gravity_file.parent.mkdir(exist_ok=True)
+            gravity_file.write_text(
+                "".join(f"{k} {' '.join(f'{v:.9f}' for v in rotation @ up)}" + chr(10) for k, up in sorted(ups.items()))
+            )
+    else:
+        frames = discover_frame_paths(Path(scans))
+        scan_folder = Path(scans) if Path(scans).is_dir() else frames[0].parent
+    request = SlamRunRequest(
+        frame_paths=tuple(frames),
+        timestamps_s=stamps,
+        max_range_m=max_range,
+        voxel_size_m=voxel_size,
+        deskew=deskew,
+        max_frames=max_frames,
+    )
+    result = run_slam(request)
+    write_tum_trajectory(out / "trajectory.tum", result.poses, result.timestamps_s)
+    write_map_ply(out / "map.ply", result.map_points)
+    steps = result.poses[1:, :3, 3] - result.poses[:-1, :3, 3]
+    return {
+        "driver": result.driver,
+        "frames": int(result.frames_processed),
+        "path_length_m": round(float(np.sqrt((steps**2).sum(1)).sum()), 1),
+        "runtime_s": round(time.perf_counter() - clock, 1),
+        "scans": str(scan_folder),
+        "trajectory": str(out / "trajectory.tum"),
+        "gravity": None if gravity_file is None else str(gravity_file),
+        "map": str(out / "map.ply"),
+    }
+
+
+def needs_odometry(folder: str, poses: str | None) -> bool:
+    """Whether ``folder`` holds raw scans only: a ROS bag, or scans without a poses file."""
+    from ca.core.bag_ingest import is_bag_path
+
+    if poses:
+        return False
+    if is_bag_path(folder):
+        return True
+    return Path(folder).is_dir() and poses_file(Path(folder)) is None
+
+
 def fix_session(
     folder: str,
     out_dir: str | None = None,

@@ -90,51 +90,19 @@ def slam_odometry(
     LiDAR frame: imu_to_lidar is the 3x3 rotation, row-major, identity when omitted). Then call
     posegraph_fix with folder=the scans ("scans" in the result), poses=the trajectory,
     gravity=the gravity file if any, and keyframe_spacing about 1 m for 10 Hz scans."""
-    import time
+    from ca.posegraph_fix import odometry
 
-    from ca.core.bag_ingest import imu_ups, is_bag_path, materialize_pointcloud_bag
-    from ca.core.slam_run import SlamRunRequest, discover_frame_paths, run_slam, write_map_ply, write_tum_trajectory
-
-    out = Path(out_dir)
-    out.mkdir(parents=True, exist_ok=True)
-    clock = time.perf_counter()
-    stamps: tuple[float, ...] | None = None
-    gravity_file: Path | None = None
-    if is_bag_path(scans):
-        frames, stamps = materialize_pointcloud_bag(scans, out / "scans", topic=pointcloud_topic, max_frames=max_frames)
-        scan_folder = out / "scans"
-        ups = imu_ups(scans, stamps, topic=imu_topic)
-        if ups:
-            rotation = np.eye(3) if imu_to_lidar is None else np.array(imu_to_lidar, dtype=float).reshape(3, 3)
-            gravity_file = out / "gravity" / "gravity.txt"
-            gravity_file.parent.mkdir(exist_ok=True)
-            lines = (f"{k} {' '.join(f'{v:.9f}' for v in rotation @ up)}" for k, up in sorted(ups.items()))
-            gravity_file.write_text("".join(line + chr(10) for line in lines))
-    else:
-        frames = discover_frame_paths(Path(scans))
-        scan_folder = Path(scans) if Path(scans).is_dir() else frames[0].parent
-    request = SlamRunRequest(
-        frame_paths=tuple(frames),
-        timestamps_s=stamps,
-        max_range_m=max_range,
-        voxel_size_m=voxel_size,
-        deskew=deskew,
+    return odometry(
+        scans,
+        out_dir,
+        max_range=max_range,
+        voxel_size=voxel_size,
         max_frames=max_frames,
+        deskew=deskew,
+        pointcloud_topic=pointcloud_topic,
+        imu_topic=imu_topic,
+        imu_to_lidar=imu_to_lidar,
     )
-    result = run_slam(request)
-    write_tum_trajectory(out / "trajectory.tum", result.poses, result.timestamps_s)
-    write_map_ply(out / "map.ply", result.map_points)
-    steps = result.poses[1:, :3, 3] - result.poses[:-1, :3, 3]
-    return {
-        "driver": result.driver,
-        "frames": int(result.frames_processed),
-        "path_length_m": round(float(np.sqrt((steps**2).sum(1)).sum()), 1),
-        "runtime_s": round(time.perf_counter() - clock, 1),
-        "scans": str(scan_folder),
-        "trajectory": str(out / "trajectory.tum"),
-        "gravity": None if gravity_file is None else str(gravity_file),
-        "map": str(out / "map.ply"),
-    }
 
 
 def posegraph_fix(

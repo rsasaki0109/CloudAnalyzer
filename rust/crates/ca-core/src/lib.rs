@@ -4,6 +4,7 @@
 //! loading; renderers should subtract [`PointCloud::suggested_shift`] before
 //! narrowing to `f32`.
 
+pub mod bag;
 pub mod cluster;
 pub mod delaunay;
 pub mod distance;

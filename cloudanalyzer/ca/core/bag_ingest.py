@@ -49,6 +49,18 @@ def is_bag_path(path: str | Path) -> bool:
     return p.suffix.lower() in BAG_SUFFIXES or (p.is_dir() and (p / "metadata.yaml").is_file())
 
 
+def core_reader(path: str | Path) -> Any | None:
+    """The Rust core's reader for a ROS 1 bag or MCAP file (no ROS install needed), when the
+    core is installed and the path is such a file: rosbag2 folders and ``.db3`` need rosbags."""
+    if Path(path).suffix.lower() not in {".bag", ".mcap"} or not Path(path).is_file():
+        return None
+    try:
+        import cloudanalyzer_core
+    except ImportError:
+        return None
+    return cloudanalyzer_core.BagReader(str(path))
+
+
 def require_rosbags() -> Any:
     """Import rosbags or raise a user-facing install hint."""
     try:
@@ -80,10 +92,30 @@ def _connection_rows(reader: Any) -> list[dict[str, Any]]:
 
 def inspect_bag(path: str, *, decode_sample: bool = False) -> dict[str, Any]:
     """Return topic metadata for a ROS bag-like recording."""
-    AnyReader = require_rosbags()
     bag_path = Path(path)
+    core = core_reader(bag_path)
+    if core is None:
+        AnyReader = require_rosbags()
     if not bag_path.exists():
         raise FileNotFoundError(path)
+    if core is not None and not decode_sample and core.time_range() is not None:
+        topics = [
+            {"topic": name, "type": kind.replace("/", "/msg/", 1), "count": int(count)}
+            for name, kind, count in core.topics()
+        ]
+        start, end = core.time_range()
+        return {
+            "path": str(bag_path),
+            "kind": "rosbag",
+            "duration_ns": int(round((end - start) * 1e9)),
+            "start_time_ns": int(round(start * 1e9)),
+            "end_time_ns": int(round(end * 1e9)),
+            "message_count": int(sum(row["count"] for row in topics)),
+            "topics": topics,
+            "decoded_sample_topics": [],
+        }
+    if core is not None:
+        AnyReader = require_rosbags()
 
     with AnyReader([bag_path]) as reader:
         topics = _connection_rows(reader)
@@ -246,6 +278,20 @@ def imu_ups(
     ``sensor_msgs/msg/Imu`` messages of a bag: from the orientation when the IMU gives one
     (world up seen in its frame), else from the mean acceleration over ``window_s`` either
     side (at rest an accelerometer reads straight up). Empty when the bag has no IMU."""
+    core = core_reader(path)
+    if core is not None:
+        core_stamps, core_ups, core_accels = core.imu(topic)
+        if len(core_stamps) == 0:
+            return {}
+        times = np.asarray(core_stamps, dtype=float)
+        order = np.argsort(times)
+        return _ups_at(
+            times[order],
+            [None if np.isnan(u[0]) else u for u in np.asarray(core_ups)[order]],
+            np.asarray(core_accels)[order],
+            frame_times,
+            window_s,
+        )
     AnyReader = require_rosbags()
     stamps: list[float] = []
     oriented: list[np.ndarray | None] = []
@@ -273,9 +319,17 @@ def imu_ups(
         return {}
     times = np.array(stamps)
     order = np.argsort(times)
-    times = times[order]
-    oriented = [oriented[k] for k in order]
-    acc = np.array(accels)[order]
+    return _ups_at(times[order], [oriented[k] for k in order], np.array(accels)[order], frame_times, window_s)
+
+
+def _ups_at(
+    times: np.ndarray,
+    oriented: list[np.ndarray | None],
+    acc: np.ndarray,
+    frame_times: tuple[float, ...] | list[float],
+    window_s: float,
+) -> dict[int, np.ndarray]:
+    """Per frame time, the up direction from the IMU messages sorted by ``times`` (see :func:`imu_ups`)."""
     ups: dict[int, np.ndarray] = {}
     for index, t in enumerate(frame_times):
         k = int(np.clip(np.searchsorted(times, t), 1, len(times) - 1)) if len(times) > 1 else 0
@@ -414,7 +468,6 @@ def materialize_pointcloud_bag(
     """Write each PointCloud2 message to ``frame_XXXXXX.pcd`` under *output_dir*, or with
     ``kitti_bin`` to ``frame_XXXXXX.bin`` (float32 x, y, z, intensity: KITTI's Velodyne
     format, which keeps the intensity and writes fast)."""
-    AnyReader = require_rosbags()
     bag_path = Path(path)
     out_dir = Path(output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -422,6 +475,35 @@ def materialize_pointcloud_bag(
     frame_paths: list[Path] = []
     timestamps: list[float] = []
 
+    core = core_reader(bag_path)
+    if core is not None:
+        # The Rust core reads the bag: no ROS install, and several times faster.
+        for scan in core.scans(topic):
+            if max_frames is not None and len(frame_paths) >= max_frames:
+                break
+            if len(scan) == 0:
+                continue
+            xyz = scan.positions()
+            index = len(frame_paths)
+            if kitti_bin:
+                frame_path = out_dir / f"frame_{index:06d}.bin"
+                intensity = scan.intensity()
+                if intensity is None:
+                    intensity = np.zeros(len(scan), dtype=np.float32)
+                np.hstack([xyz.astype(np.float32), intensity[:, None]]).astype(np.float32).tofile(frame_path)
+            else:
+                frame_path = out_dir / f"frame_{index:06d}.pcd"
+                cloud = o3d.geometry.PointCloud()
+                cloud.points = o3d.utility.Vector3dVector(xyz)
+                if not o3d.io.write_point_cloud(str(frame_path), cloud):
+                    raise ValueError(f"Failed to write extracted scan: {frame_path}")
+            frame_paths.append(frame_path)
+            timestamps.append(scan.stamp)
+        if not frame_paths:
+            raise ValueError(f"No non-empty PointCloud2 frames extracted from {bag_path}")
+        return frame_paths, tuple(timestamps)
+
+    AnyReader = require_rosbags()
     with AnyReader([bag_path]) as reader:
         connection = _pick_pointcloud_connection(reader.connections, topic)
         for _connection, _timestamp, rawdata in reader.messages(connections=[connection]):

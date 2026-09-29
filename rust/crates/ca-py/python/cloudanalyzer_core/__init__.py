@@ -5,8 +5,11 @@ and use all cores.
 """
 
 from ._core import (
+    BagMessages,
+    BagReader,
     LidarOdometry,
     PoseGraph,
+    Scan,
     __version__,
     calibrate_ups,
     changed_objects,
@@ -26,8 +29,11 @@ from ._core import (
 from ._copc import read_copc
 
 __all__ = [
+    "BagMessages",
+    "BagReader",
     "LidarOdometry",
     "PoseGraph",
+    "Scan",
     "__version__",
     "calibrate_ups",
     "changed_objects",

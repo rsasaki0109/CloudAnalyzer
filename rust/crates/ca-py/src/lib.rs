@@ -11,6 +11,7 @@ use pyo3::exceptions::{PyIOError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
+mod bag;
 mod odometry;
 mod pose_graph;
 
@@ -663,5 +664,8 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<CopcReader>()?;
     m.add_class::<pose_graph::PoseGraph>()?;
     m.add_class::<odometry::LidarOdometry>()?;
+    m.add_class::<bag::BagReader>()?;
+    m.add_class::<bag::BagMessages>()?;
+    m.add_class::<bag::Scan>()?;
     Ok(())
 }

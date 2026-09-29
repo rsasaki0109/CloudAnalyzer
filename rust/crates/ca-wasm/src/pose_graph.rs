@@ -11,7 +11,7 @@ use crate::{Cloud, TrajectoryData};
 pub struct PoseGraphSession {
     graph: PoseGraph,
     /// Per node, in the node's frame (voxel-thinned for registration).
-    scans: Vec<Option<PointCloud>>,
+    scans: Vec<Option<Scan>>,
     /// Per node, from a TUM trajectory (else empty).
     timestamps: Vec<f64>,
     /// Per node, its pose as loaded (for comparing maps before and after).
@@ -184,15 +184,67 @@ pub fn dynamic_scans(
     Ok(flags.into_iter().flatten().map(u8::from).collect())
 }
 
+/// A keyframe's scan as the session keeps it: positions in the scan's own
+/// frame as `f32` (within a sensor's range that is finer than a tenth of a
+/// millimetre) and intensity, half the memory of a [`PointCloud`]'s `f64`
+/// positions. Joined drives hold tens of millions of scan points, and a
+/// WebAssembly instance has 4 GB.
+#[derive(Clone)]
+struct Scan {
+    positions: Vec<[f32; 3]>,
+    intensity: Option<Vec<f32>>,
+}
+
+impl Scan {
+    fn from_cloud(cloud: &PointCloud) -> Self {
+        Scan {
+            positions: cloud
+                .positions
+                .iter()
+                .map(|p| p.map(|v| v as f32))
+                .collect(),
+            intensity: match cloud.attribute(ca_core::INTENSITY).map(|a| &a.values) {
+                Some(ca_core::AttributeValues::F32(v)) => Some(v.clone()),
+                _ => None,
+            },
+        }
+    }
+
+    fn len(&self) -> usize {
+        self.positions.len()
+    }
+
+    fn point(&self, k: usize) -> [f64; 3] {
+        self.positions[k].map(f64::from)
+    }
+
+    /// As a cloud, for the core's registration and plane fitting.
+    fn to_cloud(&self) -> PointCloud {
+        PointCloud {
+            positions: self.positions.iter().map(|p| p.map(f64::from)).collect(),
+            attributes: self
+                .intensity
+                .iter()
+                .map(|v| ca_core::Attribute {
+                    name: ca_core::INTENSITY.into(),
+                    values: ca_core::AttributeValues::F32(v.clone()),
+                })
+                .collect(),
+            ..PointCloud::default()
+        }
+    }
+}
+
 fn information(sigma_t: f64, sigma_r_deg: f64) -> [[f64; 6]; 6] {
     pose_graph::isotropic_information(sigma_t, sigma_r_deg.to_radians())
 }
 
 impl PoseGraphSession {
-    fn scan(&self, index: usize) -> Result<&PointCloud, JsError> {
+    fn scan(&self, index: usize) -> Result<PointCloud, JsError> {
         self.scans
             .get(index)
             .and_then(Option::as_ref)
+            .map(Scan::to_cloud)
             .ok_or_else(|| {
                 let id = self.graph.nodes.get(index).map_or(index as i64, |n| n.id);
                 JsError::new(&format!("node {id} has no scan"))
@@ -321,7 +373,7 @@ impl PoseGraphSession {
             }
         }
         let n = scan.len();
-        self.scans[index] = Some(scan);
+        self.scans[index] = Some(Scan::from_cloud(&scan));
         Ok(n)
     }
 
@@ -335,7 +387,8 @@ impl PoseGraphSession {
         scan.positions
             .iter()
             .step_by(step)
-            .flat_map(|p| p.map(|v| v as f32))
+            .flatten()
+            .copied()
             .collect()
     }
 
@@ -386,8 +439,8 @@ impl PoseGraphSession {
             retry_headings,
         };
         registration(
-            self.scan(from)?,
-            self.scan(to)?,
+            &self.scan(from)?,
+            &self.scan(to)?,
             &self.graph.relative(from, to),
             &settings,
         )
@@ -467,11 +520,13 @@ impl PoseGraphSession {
             .scans
             .get(a)
             .and_then(Option::as_ref)
+            .map(Scan::to_cloud)
             .ok_or_else(|| JsError::new("the node picked here has no scan"))?;
         let b_scan = other
             .scans
             .get(b)
             .and_then(Option::as_ref)
+            .map(Scan::to_cloud)
             .ok_or_else(|| JsError::new("the node picked in the other graph has no scan"))?;
         let params = IcpParams {
             max_iterations,
@@ -480,8 +535,8 @@ impl PoseGraphSession {
             ..IcpParams::default()
         };
         let (measurement, fitness, result) = pose_graph::register_with_yaw_search(
-            a_scan,
-            b_scan,
+            &a_scan,
+            &b_scan,
             &Rigid::IDENTITY,
             yaw_steps,
             params,
@@ -637,10 +692,10 @@ impl PoseGraphSession {
         sigma_offset: f64,
     ) -> Result<Vec<f64>, JsError> {
         let max_tilt = max_tilt_deg.to_radians();
-        let floor = |scan: &PointCloud, up: [f64; 3]| {
-            pose_graph::detect_floor(scan, up, max_tilt, threshold, min_points)
+        let floor = |scan: &Scan, up: [f64; 3]| {
+            pose_graph::detect_floor(&scan.to_cloud(), up, max_tilt, threshold, min_points)
         };
-        let scans: Vec<(usize, &PointCloud)> = self
+        let scans: Vec<(usize, &Scan)> = self
             .scans
             .iter()
             .enumerate()
@@ -829,48 +884,47 @@ impl PoseGraphSession {
                 Some((i, &self.graph.nodes[i].pose, &self.initial[i], scan))
             })
         };
-        let mut map = if part == 0 {
-            pose_graph::assemble_from(
-                parts().map(|(_, now, then, scan)| (if initial { then } else { now }, scan)),
-            )
-        } else {
-            let want_dynamic = part == 2;
-            let mut out = ca_core::PointCloud::default();
-            let mut intensity = Vec::new();
-            let mut with_intensity = true;
-            for (i, now, then, scan) in parts() {
-                let pose = if initial { then } else { now };
-                let values = match scan.attribute(ca_core::INTENSITY).map(|a| &a.values) {
-                    Some(ca_core::AttributeValues::F32(v)) => Some(v),
-                    _ => None,
-                };
-                with_intensity &= values.is_some();
-                for (k, p) in scan.positions.iter().enumerate() {
-                    if self.dynamic[i].get(k).copied().unwrap_or(false) == want_dynamic {
-                        out.positions.push(pose.apply(p));
-                        if let Some(v) = values {
-                            intensity.push(v[k]);
-                        }
-                    }
+        // Every point, or (`part`) the static or the dynamic ones.
+        let keep = |i: usize, k: usize| {
+            part == 0 || self.dynamic[i].get(k).copied().unwrap_or(false) == (part == 2)
+        };
+        let mut map = ca_core::PointCloud::default();
+        let mut intensity = Vec::new();
+        let mut moved = Vec::new();
+        let with_intensity = parts().all(|(.., scan)| scan.intensity.is_some());
+        for (i, now, then, scan) in parts() {
+            let pose = if initial { then } else { now };
+            for k in 0..scan.len() {
+                if !keep(i, k) {
+                    continue;
+                }
+                let p = scan.point(k);
+                map.positions.push(pose.apply(&p));
+                if let (true, Some(v)) = (with_intensity, &scan.intensity) {
+                    intensity.push(v[k]);
+                }
+                if correction && part == 0 {
+                    let (a, b) = (now.apply(&p), then.apply(&p));
+                    moved.push(
+                        ((a[0] - b[0]).powi(2) + (a[1] - b[1]).powi(2) + (a[2] - b[2]).powi(2))
+                            .sqrt() as f32,
+                    );
                 }
             }
-            if with_intensity && intensity.len() == out.positions.len() {
-                out.attributes.push(ca_core::Attribute {
-                    name: ca_core::INTENSITY.into(),
-                    values: ca_core::AttributeValues::F32(intensity),
-                });
-            }
-            out
-        };
+        }
         if map.is_empty() {
             return Err(JsError::new("no points there"));
+        }
+        if with_intensity {
+            map.attributes.push(ca_core::Attribute {
+                name: ca_core::INTENSITY.into(),
+                values: ca_core::AttributeValues::F32(intensity),
+            });
         }
         if correction && part == 0 {
             map.attributes.push(ca_core::Attribute {
                 name: "correction".into(),
-                values: ca_core::AttributeValues::F32(pose_graph::correction_from(
-                    parts().map(|(_, now, then, scan)| (now, then, scan)),
-                )),
+                values: ca_core::AttributeValues::F32(moved),
             });
         }
         Ok(Cloud::unindexed(map))
@@ -890,7 +944,13 @@ impl PoseGraphSession {
             ..VisibilityParams::default()
         };
         let poses: Vec<Rigid> = self.graph.nodes.iter().map(|n| n.pose).collect();
-        let scans: Vec<Option<&PointCloud>> = self.scans.iter().map(Option::as_ref).collect();
+        // Only without a worker pool: then the graph is small enough to hold twice.
+        let clouds: Vec<Option<PointCloud>> = self
+            .scans
+            .iter()
+            .map(|s| s.as_ref().map(Scan::to_cloud))
+            .collect();
+        let scans: Vec<Option<&PointCloud>> = clouds.iter().map(Option::as_ref).collect();
         self.dynamic = dynamic_points(&poses, &scans, &params);
         let dynamic = self.dynamic.iter().flatten().filter(|&&d| d).count();
         let total: usize = self.dynamic.iter().map(Vec::len).sum();
@@ -923,7 +983,7 @@ impl PoseGraphSession {
         }
         for i in lo..hi {
             if let Some(scan) = self.scans.get(i).and_then(Option::as_ref) {
-                out.extend(scan.positions.iter().flatten());
+                out.extend(scan.positions.iter().flatten().map(|&v| f64::from(v)));
             }
         }
         out

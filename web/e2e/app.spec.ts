@@ -1477,6 +1477,55 @@ test("pose graph: a drifted loop closed with ICP, by hand and found automaticall
   await expect(page.locator("#cloud-list li")).toHaveCount(1);
 });
 
+test("pose graph: a loop lined up by hand in the two-scan view, refined with ICP and added", async ({ page }) => {
+  const { truth, drifted, scan } = courtyard();
+  await looseOdometry(page);
+  await page
+    .locator("#pg-files-input")
+    .setInputFiles([
+      { name: "poses.txt", mimeType: "text/plain", buffer: Buffer.from(`${drifted.map(kittiLine).join("\n")}\n`) },
+      ...scanFiles(truth, scan),
+    ]);
+  await expect(status(page)).toContainText("Opened poses.txt: 24 poses");
+  await page.locator("#pg-a").fill("0");
+  await page.locator("#pg-b").fill("23");
+  await page.locator("#pg-align").click();
+  await expect(page.locator("#pg-align-panel")).toBeVisible();
+  await expect(status(page)).toContainText("Aligning node 23 (cyan) onto node 0 (orange)");
+  // The fields hold the graph's guess; turn B a further 10° off and let ICP bring it back.
+  const yaw = Number(await page.locator("#pg-align-yaw").inputValue());
+  await page.locator("#pg-align-yaw").fill(String(yaw + 10));
+  await page.locator("#pg-align-yaw").dispatchEvent("change");
+  await page.locator("#pg-align-icp").click();
+  await expect(page.locator("#pg-align-info")).toContainText(/ICP RMS .* overlap \d+ %/);
+  const fitted = Number(await page.locator("#pg-align-yaw").inputValue());
+  expect(Math.abs(fitted - (yaw + 10))).toBeGreaterThan(3);
+
+  await page.locator("#pg-align-accept").click();
+  await expect(status(page)).toContainText(/Loop 0 – 23 added by hand; χ²/);
+  await expect(page.locator("#pg-align-panel")).toBeHidden();
+  await expect(page.locator("#pg-stats")).toContainText("23 odometry, 1 loops");
+  const download = page.waitForEvent("download");
+  await page.locator("#pg-save-kitti").click();
+  const rows = (await bytesOf(await download)).toString().trim().split("\n");
+  const error = Math.max(
+    ...rows.map((row, k) => {
+      const m = row.split(" ").map(Number);
+      return Math.hypot(m[3] - truth[k].x, m[7] - truth[k].y);
+    }),
+  );
+  expect(error).toBeLessThan(0.3);
+
+  // Cancel leaves the graph as it was.
+  await page.locator("#pg-a").fill("0");
+  await page.locator("#pg-b").fill("12");
+  await page.locator("#pg-align").click();
+  await expect(page.locator("#pg-align-panel")).toBeVisible();
+  await page.locator("#pg-align-cancel").click();
+  await expect(page.locator("#pg-align-panel")).toBeHidden();
+  await expect(page.locator("#pg-stats")).toContainText("23 odometry, 1 loops");
+});
+
 test("pose graph: a wrong loop in a g2o file shows as the worst edge and is removed", async ({ page }) => {
   const { truth, scan } = courtyard();
   // The true poses and odometry, plus a loop claiming poses 3 and 15 (opposite sides) coincide.

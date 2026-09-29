@@ -542,6 +542,32 @@
             <button id="pg-optimize" title="Optimise the graph">Optimise</button>
             <button id="pg-undo" disabled title="Undo the last loop, removal or optimisation">Undo</button>
           </div>
+          <button id="pg-align" aria-pressed="false" disabled title="Show only A's and B's scans, overlaid: line B up by hand (gizmo or numbers), refine with ICP, then add the loop">Align by hand</button>
+          <div id="pg-align-panel" hidden>
+            <p class="small">A in orange, B in cyan. Drag B, or type where it sits in A's frame; ICP refines from there.</p>
+            <div class="range">
+              <label title="B's position in A's frame (metres)">x <input id="pg-align-x" type="number" step="0.1" /></label>
+              <label>y <input id="pg-align-y" type="number" step="0.1" /></label>
+              <label>z <input id="pg-align-z" type="number" step="0.1" /></label>
+            </div>
+            <div class="range">
+              <label title="B's rotation in A's frame (degrees)">roll° <input id="pg-align-roll" type="number" step="1" /></label>
+              <label>pitch° <input id="pg-align-pitch" type="number" step="1" /></label>
+              <label>yaw° <input id="pg-align-yaw" type="number" step="5" /></label>
+            </div>
+            <div class="button-row">
+              <select id="pg-align-mode" aria-label="Gizmo mode">
+                <option value="translate" selected>Move</option>
+                <option value="rotate">Rotate</option>
+              </select>
+              <button id="pg-align-icp" title="Register B onto A with ICP, starting where B is now">ICP</button>
+            </div>
+            <div class="button-row">
+              <button id="pg-align-accept" class="primary" title="Add a loop edge where B is now, and optimise">Add this loop</button>
+              <button id="pg-align-cancel">Cancel</button>
+            </div>
+            <div id="pg-align-info" class="small"></div>
+          </div>
           <details class="options">
             <summary>Find loops automatically</summary>
             <div class="range">

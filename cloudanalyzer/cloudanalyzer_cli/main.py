@@ -1307,7 +1307,9 @@ def rendered_evaluate_cmd(
 @app.command("posegraph-fix")
 def posegraph_fix_cmd(
     folder: str = typer.Argument(
-        ..., help="Session folder: a poses file (g2o, KITTI or TUM) and one scan per pose, named by frame number"
+        ...,
+        help="Session folder: a poses file (g2o, KITTI or TUM) and one scan per pose, named by frame number; "
+        "or raw scans (a folder without poses, or a ROS bag), for which KISS-ICP makes the odometry first",
     ),
     out: Optional[str] = typer.Option(None, "--out", help="Write the fixed graph, poses and map here"),
     poses: Optional[str] = typer.Option(
@@ -1331,13 +1333,37 @@ def posegraph_fix_cmd(
     truth: Optional[str] = typer.Option(
         None, "--truth", help="Ground-truth poses (KITTI or TUM, same frames) to report the ATE before and after"
     ),
+    pointcloud_topic: Optional[str] = typer.Option(None, "--pointcloud-topic", help="A bag's PointCloud2 topic"),
+    imu_topic: Optional[str] = typer.Option(None, "--imu-topic", help="A bag's Imu topic (for gravity)"),
+    imu_to_lidar: Optional[str] = typer.Option(
+        None, "--imu-to-lidar", help="The IMU-to-LiDAR rotation, 9 numbers row-major (identity when omitted)"
+    ),
+    max_range: float = typer.Option(80.0, "--max-range", help="Odometry: drop points farther than this (m)"),
     output_json: Optional[str] = typer.Option(None, "--output-json", help="Write the report as JSON"),
     format_json: bool = typer.Option(False, "--format-json", help="Print the report as JSON"),
 ) -> None:
     """Fix a SLAM map: find loops, tie to IMU gravity, optimise, remove dynamic points, write the map."""
-    from ca.posegraph_fix import fix_session
+    from ca.posegraph_fix import fix_session, needs_odometry, odometry
 
+    say = None if format_json else (lambda m: typer.echo(f"... {m}", err=True))
+    odometry_report = None
     try:
+        if needs_odometry(folder, poses):
+            if not out:
+                raise ValueError("raw scans need --out, where the odometry and the scans it reads are written")
+            if say:
+                say("no poses: making the odometry with KISS-ICP")
+            rotation = [float(v) for v in imu_to_lidar.replace(",", " ").split()] if imu_to_lidar else None
+            odometry_report = odometry(
+                folder,
+                str(Path(out) / "odometry"),
+                max_range=max_range,
+                pointcloud_topic=pointcloud_topic,
+                imu_topic=imu_topic,
+                imu_to_lidar=rotation,
+            )
+            folder, poses = odometry_report["scans"], odometry_report["trajectory"]
+            gravity = gravity or odometry_report["gravity"]
         report = fix_session(
             folder,
             out,
@@ -1350,15 +1376,20 @@ def posegraph_fix_cmd(
             remove_dynamic=remove_dynamic,
             map_voxel=map_voxel,
             truth=truth,
-            progress=None if format_json else (lambda m: typer.echo(f"... {m}", err=True)),
+            progress=say,
         )
     except (FileNotFoundError, ValueError, RuntimeError) as e:
         _handle_error(e)
+    if odometry_report:
+        report["odometry"] = odometry_report
     if output_json:
         _dump_json(report, output_json)
     if format_json:
         typer.echo(json.dumps(report, indent=2))
         return
+    if odometry_report:
+        o = odometry_report
+        typer.echo(f"odometry: {o['frames']} scans, {o['path_length_m']} m in {o['runtime_s']} s ({o['driver']})")
     typer.echo(f"{report['poses_file']}: {report['nodes']} poses, {report['scan_points']:,} scan points")
     if "loops" in report:
         loops = report["loops"]

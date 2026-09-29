@@ -44,14 +44,15 @@ With only the scans, an agent chains two tools: `slam_odometry` makes the trajec
 
 ## From a ROS bag
 
-Given a bag, `slam_odometry` writes its `sensor_msgs/PointCloud2` scans to `out_dir/scans`, and when
+Given a bag, `slam_odometry` writes its `sensor_msgs/PointCloud2` scans to `out_dir/scans` (KITTI
+`.bin`, with their intensity), and when
 the bag has a `sensor_msgs/Imu` topic, each scan's up direction to `out_dir/gravity/gravity.txt`:
 from the IMU's orientation, or from its mean acceleration over half a second when it gives none.
 `imu_to_lidar` turns it into the LiDAR frame (identity when the axes agree, as for most built-in
 IMUs). Its result names the `scans`, `trajectory` and `gravity` to pass on to `posegraph_fix`.
 
 KITTI 07 recorded as a ROS1 bag (the Velodyne scans on `/velodyne_points`, the OXTS orientation on
-`/imu/data`, 2.1 GB), over MCP: `slam_odometry` 176 s, then `posegraph_fix` with the bag's IMU
+`/imu/data`, 2.1 GB), over MCP: `slam_odometry` 82 s, then `posegraph_fix` with the bag's IMU
 gravity and dynamic removal 13 s, 7 loops, ATE 2.147 → 1.150 m, the same as from the scan folder.
 
 ## Example conversation

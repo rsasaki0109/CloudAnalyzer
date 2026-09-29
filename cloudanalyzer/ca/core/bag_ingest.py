@@ -332,6 +332,53 @@ def pointcloud2_to_xyz(message: Any) -> np.ndarray:
     return coords[finite]
 
 
+def _xyz_with_mask(message: Any) -> tuple[np.ndarray, np.ndarray]:
+    """``pointcloud2_to_xyz`` and which of the message's points it kept (the finite ones)."""
+    field_map = {field.name: field for field in message.fields}
+    count = int(message.height) * int(message.width)
+    if count == 0:
+        return np.empty((0, 3)), np.zeros(0, dtype=bool)
+    raw = np.frombuffer(bytes(message.data), dtype=np.uint8)
+    coords = np.empty((count, 3), dtype=np.float64)
+    for axis_index, axis in enumerate(("x", "y", "z")):
+        if axis not in field_map:
+            raise ValueError(f"PointCloud2 message is missing '{axis}' field")
+        field = field_map[axis]
+        dtype = _DATATYPE_TO_DTYPE.get(int(field.datatype))
+        if dtype is None:
+            raise ValueError(f"Unsupported PointCloud2 datatype for '{axis}': {field.datatype}")
+        coords[:, axis_index] = np.ndarray(
+            shape=(count,), dtype=dtype, buffer=raw, offset=int(field.offset), strides=(int(message.point_step),)
+        )
+    keep: np.ndarray = np.asarray(np.isfinite(coords).all(axis=1))
+    kept: np.ndarray = coords[keep]
+    return kept, keep
+
+
+INTENSITY_FIELDS = ("intensity", "reflectivity", "i")
+
+
+def pointcloud2_intensity(message: Any, keep: np.ndarray) -> np.ndarray:
+    """The intensity of a PointCloud2's points (its ``intensity`` or ``reflectivity``
+    field) as float32, at the points ``keep`` selects; zeros when it has neither."""
+    field_map = {field.name: field for field in message.fields}
+    name = next((n for n in INTENSITY_FIELDS if n in field_map), None)
+    if name is None:
+        return np.zeros(int(keep.sum()), dtype=np.float32)
+    field = field_map[name]
+    dtype = _DATATYPE_TO_DTYPE.get(int(field.datatype))
+    if dtype is None:
+        return np.zeros(int(keep.sum()), dtype=np.float32)
+    count = int(message.height) * int(message.width)
+    raw = np.frombuffer(bytes(message.data), dtype=np.uint8)
+    column = cast(
+        np.ndarray,
+        np.ndarray(shape=(count,), dtype=dtype, buffer=raw, offset=int(field.offset), strides=(int(message.point_step),)),
+    )
+    values: np.ndarray = column[keep].astype(np.float32)
+    return values
+
+
 def _pick_pointcloud_connection(connections: list[Any], topic: str | None) -> Any:
     pointclouds = [conn for conn in connections if conn.msgtype == POINTCLOUD2_TYPE]
     if topic is not None:
@@ -362,8 +409,11 @@ def materialize_pointcloud_bag(
     *,
     topic: str | None = None,
     max_frames: int | None = None,
+    kitti_bin: bool = False,
 ) -> tuple[list[Path], tuple[float, ...]]:
-    """Write each PointCloud2 message to ``frame_XXXXXX.pcd`` under *output_dir*."""
+    """Write each PointCloud2 message to ``frame_XXXXXX.pcd`` under *output_dir*, or with
+    ``kitti_bin`` to ``frame_XXXXXX.bin`` (float32 x, y, z, intensity: KITTI's Velodyne
+    format, which keeps the intensity and writes fast)."""
     AnyReader = require_rosbags()
     bag_path = Path(path)
     out_dir = Path(output_dir)
@@ -378,6 +428,16 @@ def materialize_pointcloud_bag(
             if max_frames is not None and len(frame_paths) >= max_frames:
                 break
             message = reader.deserialize(rawdata, connection.msgtype)
+            if kitti_bin:
+                xyz, keep = _xyz_with_mask(message)
+                if xyz.shape[0] == 0:
+                    continue
+                frame_path = out_dir / f"frame_{len(frame_paths):06d}.bin"
+                intensity = pointcloud2_intensity(message, keep)
+                np.hstack([xyz.astype(np.float32), intensity[:, None]]).astype(np.float32).tofile(frame_path)
+                frame_paths.append(frame_path)
+                timestamps.append(_header_timestamp_sec(message))
+                continue
             points = pointcloud2_to_xyz(message)
             if points.shape[0] == 0:
                 continue

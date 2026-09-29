@@ -65,6 +65,10 @@ dev = [
 fast = [
     "cloudanalyzer-core>=0.1",
 ]
+mcp = [
+    "cloudanalyzer-core>=0.1",
+    "mcp>=1.2",
+]
 slam = [
     "kiss-icp>=1.2.0",
     "kiss-slam>=0.0.2",

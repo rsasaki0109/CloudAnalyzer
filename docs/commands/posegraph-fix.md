@@ -71,5 +71,7 @@ from ca.posegraph_fix import fix_session
 report = fix_session("kitti/07/velodyne", "fixed/", gravity="kitti/07/oxts", remove_dynamic=True)
 ```
 
-or step by step with `cloudanalyzer_core.PoseGraph` (`from_poses`, `set_scan`, `find_loops`,
+Two drives through the same places: [`ca posegraph-compare`](posegraph-compare.md).
+
+Or step by step with `cloudanalyzer_core.PoseGraph` (`from_poses`, `set_scan`, `find_loops`,
 `set_gravity`, `optimize`, `detect_dynamic`, `map`, `to_g2o`).

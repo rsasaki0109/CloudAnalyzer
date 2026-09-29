@@ -208,6 +208,90 @@ def ate(estimate: np.ndarray, truth: np.ndarray) -> dict:
     }
 
 
+class Session:
+    """A session folder loaded into a ``cloudanalyzer_core.PoseGraph``."""
+
+    def __init__(self, folder: str, *, voxel: float = 0.4, sigma_t: float = 0.05, sigma_r_deg: float = 0.25, progress=None):
+        cloudanalyzer_core = _core()
+        say = progress or (lambda message: None)
+        root = Path(folder)
+        if not root.is_dir():
+            raise FileNotFoundError(folder)
+        poses_path = poses_file(root)
+        if poses_path is None:
+            raise ValueError(f"no poses file (.g2o, .txt, .tum, .kitti) in {folder}")
+        self.root = root
+        self.poses_path = poses_path
+        self.timestamps = None
+        if poses_path.suffix.lower() == ".g2o":
+            self.graph = cloudanalyzer_core.PoseGraph.from_g2o(poses_path.read_text())
+        else:
+            poses, self.timestamps = read_trajectory(poses_path)
+            self.graph = cloudanalyzer_core.PoseGraph.from_poses(poses, sigma_t, sigma_r_deg)
+        self.node_ids = list(self.graph.node_ids)
+        scans = sorted(p for p in root.iterdir() if p.suffix.lower() in SCAN_SUFFIXES)
+        if not scans:
+            raise ValueError(f"no scans next to {poses_path.name}")
+        self.extrinsic = kitti_extrinsic(root)
+        matched = match_scans(scans, self.node_ids)
+        self.scan_points = 0
+        for k, (path, node) in enumerate(zip(scans, matched)):
+            if node is None:
+                continue
+            cloud = cloudanalyzer_core.read(str(path))
+            positions = cloud["positions"]
+            if self.extrinsic is not None:
+                positions = positions @ self.extrinsic[:3, :3].T + self.extrinsic[:3, 3]
+            self.scan_points += self.graph.set_scan(node, np.ascontiguousarray(positions), cloud.get("intensity"), voxel)
+            if k % 200 == 0:
+                say(f"{root.name}: scan {k + 1} of {len(scans)}")
+        self.scans = sum(m is not None for m in matched)
+        self.unmatched = sum(m is None for m in matched)
+
+    def summary(self) -> dict:
+        return {
+            "poses_file": self.poses_path.name,
+            "nodes": len(self.node_ids),
+            "scans": self.scans,
+            "unmatched_scans": self.unmatched,
+            "scan_points": self.scan_points,
+            "scans_moved_by_calib_tr": self.extrinsic is not None,
+        }
+
+    def index(self, node_id: int) -> int:
+        """The node index of a vertex id or frame number."""
+        try:
+            return self.node_ids.index(node_id)
+        except ValueError:
+            raise ValueError(f"{self.poses_path.name} has no node {node_id}") from None
+
+    def ups(self, gravity: str) -> tuple[list[int], np.ndarray]:
+        """The nodes with an up direction in ``gravity`` and those directions, in the pose frame."""
+        ups = read_ups(Path(gravity))
+        nodes = [i for i, node_id in enumerate(self.node_ids) if node_id in ups]
+        if not nodes:
+            raise ValueError(f"no up direction in {gravity} matches a node of {self.poses_path.name}")
+        vectors = np.array([ups[self.node_ids[i]] for i in nodes])
+        if self.extrinsic is not None:
+            vectors = vectors @ self.extrinsic[:3, :3].T
+        return nodes, vectors
+
+
+def _loops(graph, options: dict | None) -> dict:
+    found = graph.find_loops(**(options or {}))
+    ids = list(graph.node_ids)
+    out = {
+        "candidates": found["candidates"],
+        "added": len(found["added"]),
+        "implausible": found["implausible"],
+        "same_place_retries": sum(1 for *_, retried in found["added"] if retried),
+        "pairs": [[ids[a], ids[b], round(f, 3)] for a, b, f, _ in found["added"]],
+    }
+    if found["added"]:
+        out["optimized"] = graph.optimize()
+    return out
+
+
 def fix_session(
     folder: str,
     out_dir: str | None = None,
@@ -225,75 +309,23 @@ def fix_session(
     progress=None,
 ) -> dict:
     """Load a session folder, fix it and write the results; returns the report."""
-    cloudanalyzer_core = _core()
     say = progress or (lambda message: None)
-    root = Path(folder)
-    if not root.is_dir():
-        raise FileNotFoundError(folder)
-    poses_path = poses_file(root)
-    if poses_path is None:
-        raise ValueError(f"no poses file (.g2o, .txt, .tum, .kitti) in {folder}")
-    report: dict = {"session": str(root), "poses_file": poses_path.name, "timings_s": {}}
     clock = time.perf_counter()
-
-    timestamps = None
-    if poses_path.suffix.lower() == ".g2o":
-        graph = cloudanalyzer_core.PoseGraph.from_g2o(poses_path.read_text())
-    else:
-        poses, timestamps = read_trajectory(poses_path)
-        graph = cloudanalyzer_core.PoseGraph.from_poses(poses, sigma_t, sigma_r_deg)
-    node_ids = list(graph.node_ids)
-
-    scans = sorted(p for p in root.iterdir() if p.suffix.lower() in SCAN_SUFFIXES)
-    if not scans:
-        raise ValueError(f"no scans next to {poses_path.name}")
-    extrinsic = kitti_extrinsic(root)
-    matched = match_scans(scans, node_ids)
-    scan_points = 0
-    for k, (path, node) in enumerate(zip(scans, matched)):
-        if node is None:
-            continue
-        cloud = cloudanalyzer_core.read(str(path))
-        positions = cloud["positions"]
-        if extrinsic is not None:
-            positions = positions @ extrinsic[:3, :3].T + extrinsic[:3, 3]
-        scan_points += graph.set_scan(node, np.ascontiguousarray(positions), cloud.get("intensity"), voxel)
-        if k % 200 == 0:
-            say(f"scan {k + 1} of {len(scans)}")
-    report.update(
-        nodes=graph.node_count,
-        scans=sum(m is not None for m in matched),
-        unmatched_scans=sum(m is None for m in matched),
-        scan_points=scan_points,
-        scans_moved_by_calib_tr=extrinsic is not None,
-    )
+    session = Session(folder, voxel=voxel, sigma_t=sigma_t, sigma_r_deg=sigma_r_deg, progress=progress)
+    graph, node_ids, poses_path, timestamps = session.graph, session.node_ids, session.poses_path, session.timestamps
+    report: dict = {"session": str(session.root), **session.summary(), "timings_s": {}}
     report["timings_s"]["open"] = round(time.perf_counter() - clock, 2)
 
     if loops:
         clock = time.perf_counter()
         say("finding loops")
-        found = graph.find_loops(**(loop_options or {}))
-        report["loops"] = {
-            "candidates": found["candidates"],
-            "added": len(found["added"]),
-            "implausible": found["implausible"],
-            "same_place_retries": sum(1 for *_, retried in found["added"] if retried),
-            "pairs": [[node_ids[a], node_ids[b], round(f, 3)] for a, b, f, _ in found["added"]],
-        }
-        if found["added"]:
-            report["loops"]["optimized"] = graph.optimize()
+        report["loops"] = _loops(graph, loop_options)
         report["timings_s"]["loops"] = round(time.perf_counter() - clock, 2)
 
     if gravity:
         clock = time.perf_counter()
         say("tying to gravity")
-        ups = read_ups(Path(gravity))
-        nodes = [i for i, node_id in enumerate(node_ids) if node_id in ups]
-        if not nodes:
-            raise ValueError(f"no up direction in {gravity} matches a node")
-        vectors = np.array([ups[node_ids[i]] for i in nodes])
-        if extrinsic is not None:
-            vectors = vectors @ extrinsic[:3, :3].T
+        nodes, vectors = session.ups(gravity)
         report["gravity"] = {"tied": graph.set_gravity(nodes, vectors, gravity_sigma_deg)}
         report["gravity"]["optimized"] = graph.optimize()
         report["timings_s"]["gravity"] = round(time.perf_counter() - clock, 2)
@@ -333,4 +365,143 @@ def fix_session(
             write_ply(files["dynamic"], d["positions"], {k: d[k] for k in ("intensity",) if k in d})
         report["outputs"] = {k: str(v) for k, v in files.items()}
         report["timings_s"]["write"] = round(time.perf_counter() - clock, 2)
+    return report
+
+
+def _near(positions: np.ndarray, others: np.ndarray, reach: float) -> list[int]:
+    """Indices of ``positions`` within ``reach`` of any of ``others``."""
+    out = []
+    for start in range(0, len(positions), 512):
+        block = positions[start : start + 512]
+        d2 = ((block[:, None, :] - others[None, :, :]) ** 2).sum(-1)
+        out.extend((start + np.flatnonzero(d2.min(1) < reach * reach)).tolist())
+    return out
+
+
+def compare_sessions(
+    first: str,
+    second: str,
+    out_dir: str | None = None,
+    *,
+    here: int,
+    there: int,
+    voxel: float = 0.4,
+    loops: bool = True,
+    loop_options: dict | None = None,
+    gravity_first: str | None = None,
+    gravity_second: str | None = None,
+    gravity_sigma_deg: float = 0.1,
+    map_voxel: float = 0.3,
+    reach: float = 50.0,
+    core_spacing: float = 0.5,
+    min_change: float = 0.3,
+    listed: int = 50,
+    progress=None,
+) -> dict:
+    """Two drives through the same place, joined and compared: what changed between them.
+
+    ``second`` joins ``first`` where its node ``there`` stands near ``first``'s
+    node ``here`` (vertex ids or frame numbers); loops tie them together, IMU
+    gravity levels both, and M3C2 compares their maps where they pass within
+    ``reach`` metres of each other. Changes of at least ``min_change`` metres
+    are grouped into objects, largest first.
+    """
+    cloudanalyzer_core = _core()
+    say = progress or (lambda message: None)
+    timings: dict = {}
+    clock = time.perf_counter()
+    a = Session(first, voxel=voxel, progress=progress)
+    b = Session(second, voxel=voxel, progress=progress)
+    report: dict = {"first": {"session": first, **a.summary()}, "second": {"session": second, **b.summary()}}
+    timings["open"] = round(time.perf_counter() - clock, 2)
+    graph = a.graph
+
+    clock = time.perf_counter()
+    if loops:
+        say("finding loops in the first drive")
+        report["first"]["loops"] = _loops(graph, loop_options)
+    say("joining the second drive")
+    joined = graph.join(b.graph, a.index(here), b.index(there))
+    offset = joined["offset"]
+    report["join"] = {"here": here, "there": there, "overlap": round(joined["fitness"], 3), "rms": joined["rms"]}
+    if loops:
+        say("finding loops across the drives")
+        report["loops"] = _loops(graph, loop_options)
+    else:
+        report["join"]["optimized"] = graph.optimize()
+    timings["loops"] = round(time.perf_counter() - clock, 2)
+
+    if gravity_first or gravity_second:
+        nodes: list[int] = []
+        vectors = []
+        for session, path, shift in ((a, gravity_first, 0), (b, gravity_second, offset)):
+            if path:
+                n, v = session.ups(path)
+                nodes += [i + shift for i in n]
+                vectors.append(v)
+        report["gravity"] = {"tied": graph.set_gravity(nodes, np.vstack(vectors), gravity_sigma_deg)}
+        report["gravity"]["optimized"] = graph.optimize()
+
+    clock = time.perf_counter()
+    say("building the maps where the drives meet")
+    positions = graph.poses()[:, :3, 3]
+    near_first = _near(positions[:offset], positions[offset:], reach)
+    near_second = [offset + i for i in _near(positions[offset:], positions[:offset], reach)]
+    if not near_first or not near_second:
+        raise ValueError(f"the two drives never come within {reach} m of each other: nothing to compare")
+    before = graph.map(voxel=map_voxel, nodes=near_first)
+    after = graph.map(voxel=map_voxel, nodes=near_second)
+    say("comparing them (M3C2)")
+    core = after["positions"][cloudanalyzer_core.voxel_subsample(after["positions"], core_spacing)]
+    distance, lod95, significant, _ = cloudanalyzer_core.m3c2(core, before["positions"], after["positions"])
+    objects, labels = cloudanalyzer_core.changed_objects(core, distance, significant, min_change)
+    measured = np.isfinite(distance)
+    report["m3c2"] = {
+        "keyframes": [len(near_first), len(near_second)],
+        "core_points": int(len(core)),
+        "measured": int(measured.sum()),
+        "significant": int(significant.sum()),
+        "significant_share": float(significant.sum() / max(len(core), 1)),
+        "mean_change": float(np.nanmean(distance)) if measured.any() else None,
+    }
+    report["changes"] = {
+        "objects": int(len(objects)),
+        "min_change": min_change,
+        "largest": [
+            {
+                "rank": k + 1,
+                "points": int(o[0]),
+                "centroid": [round(float(v), 3) for v in o[1:4]],
+                "size": [round(float(o[7 + i] - o[4 + i]), 3) for i in range(3)],
+                "mean_change": round(float(o[10]), 3),
+            }
+            for k, o in enumerate(objects[:listed])
+        ],
+    }
+    timings["compare"] = round(time.perf_counter() - clock, 2)
+
+    if out_dir:
+        out = Path(out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        files = {
+            "g2o": out / "joined.g2o",
+            "first_map": out / "first_map.ply",
+            "second_map": out / "second_map.ply",
+            "m3c2": out / "m3c2.ply",
+        }
+        files["g2o"].write_text(graph.to_g2o())
+        for key, m in (("first_map", before), ("second_map", after)):
+            write_ply(files[key], m["positions"], {k: m[k] for k in ("intensity",) if k in m})
+        write_ply(
+            files["m3c2"],
+            core,
+            {
+                "m3c2_distance": distance.astype(np.float32),
+                "lod95": lod95.astype(np.float32),
+                "significant": significant.astype(np.float32),
+                "change_object": np.where(labels < 0, np.nan, labels + 1).astype(np.float32),
+            },
+        )
+        report["outputs"] = {k: str(v) for k, v in files.items()}
+    report["timings_s"] = timings
     return report

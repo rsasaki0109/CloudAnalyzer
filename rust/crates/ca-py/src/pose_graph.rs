@@ -149,6 +149,85 @@ impl PoseGraph {
         Ok(n)
     }
 
+    /// Join ``other`` (a drive recorded separately, with its scans) to this
+    /// graph: its node ``there`` is taken to stand near node ``here`` of this
+    /// one, their scans are registered with a yaw search (``yaw_steps``
+    /// headings), which places the whole of ``other``, and the registration
+    /// becomes a loop edge. ``other``'s nodes follow this graph's, from
+    /// ``offset``. Fails, leaving this graph as it was, below ``min_fitness``.
+    /// Returns ``{"fitness", "rms", "offset"}``.
+    #[pyo3(signature = (
+        other, here, there, yaw_steps = 8, max_iterations = 50, overlap = 0.8, inlier_distance = 0.5,
+        min_fitness = 0.5, sigma_t = 0.1, sigma_r_deg = 1.0,
+    ))]
+    #[allow(clippy::too_many_arguments)]
+    fn join<'py>(
+        &mut self,
+        py: Python<'py>,
+        other: PyRef<'_, PoseGraph>,
+        here: usize,
+        there: usize,
+        yaw_steps: usize,
+        max_iterations: usize,
+        overlap: f64,
+        inlier_distance: f64,
+        min_fitness: f64,
+        sigma_t: f64,
+        sigma_r_deg: f64,
+    ) -> PyResult<Bound<'py, PyDict>> {
+        self.check(here)?;
+        let a_scan = self.scans[here]
+            .as_ref()
+            .ok_or_else(|| PyValueError::new_err(format!("node {here} here has no scan")))?;
+        let b_scan = other
+            .scans
+            .get(there)
+            .and_then(Option::as_ref)
+            .ok_or_else(|| {
+                PyValueError::new_err(format!("node {there} of the other graph has no scan"))
+            })?;
+        let params = ca_core::icp::IcpParams {
+            max_iterations,
+            overlap,
+            sample: ca_core::loop_search::LOOP_SAMPLE,
+            ..ca_core::icp::IcpParams::default()
+        };
+        let (measurement, fitness, result) = py
+            .detach(|| {
+                pose_graph::register_with_yaw_search(
+                    a_scan,
+                    b_scan,
+                    &Rigid::IDENTITY,
+                    yaw_steps,
+                    params,
+                    inlier_distance,
+                )
+            })
+            .ok_or_else(|| PyValueError::new_err("ICP found too few matching points"))?;
+        if fitness < min_fitness {
+            return Err(PyValueError::new_err(format!(
+                "the two scans overlap only {:.0} % at best: pick nodes at the same place",
+                fitness * 100.0
+            )));
+        }
+        // Place other so that its node `there` sits at `here`'s pose times the measurement.
+        let target = self.graph.nodes[here].pose.compose(&measurement);
+        let transform = target.compose(&pose_graph::inverse(&other.graph.nodes[there].pose));
+        let offset = self.graph.append(&other.graph, &transform);
+        self.initial
+            .extend(other.initial.iter().map(|pose| transform.compose(pose)));
+        let information = pose_graph::isotropic_information(sigma_t, sigma_r_deg.to_radians());
+        self.graph
+            .add_loop(here, offset + there, measurement, information);
+        self.scans.extend(other.scans.iter().cloned());
+        self.dynamic.clear();
+        let out = PyDict::new(py);
+        out.set_item("fitness", fitness)?;
+        out.set_item("rms", result.rms_final)?;
+        out.set_item("offset", offset)?;
+        Ok(out)
+    }
+
     /// Find loops (candidates registered with ICP on all cores) and add them
     /// as edges, without optimising. Returns ``{"candidates", "implausible",
     /// "added": [(from, to, fitness, retried)]}``.
@@ -308,7 +387,8 @@ impl PoseGraph {
     /// ``part`` "static" or "dynamic" keeps those points only (after
     /// ``detect_dynamic``); ``correction`` adds how far each point moved
     /// from its place as loaded.
-    #[pyo3(signature = (voxel = 0.0, part = "all", initial = false, correction = false))]
+    /// Only ``nodes`` (node indices) when given: a part of the drive.
+    #[pyo3(signature = (voxel = 0.0, part = "all", initial = false, correction = false, nodes = None))]
     fn map<'py>(
         &self,
         py: Python<'py>,
@@ -316,7 +396,19 @@ impl PoseGraph {
         part: &str,
         initial: bool,
         correction: bool,
+        nodes: Option<Vec<usize>>,
     ) -> PyResult<Bound<'py, PyDict>> {
+        let chosen: Vec<bool> = match &nodes {
+            Some(list) => {
+                let n = self.scans.len();
+                let mut chosen = vec![false; n];
+                for &i in list.iter().filter(|&&i| i < n) {
+                    chosen[i] = true;
+                }
+                chosen
+            }
+            None => vec![true; self.scans.len()],
+        };
         let want = match part {
             "all" => None,
             "static" => Some(false),
@@ -340,7 +432,9 @@ impl PoseGraph {
                 .flatten()
                 .all(|s| s.attribute(INTENSITY).is_some());
             for (i, scan) in self.scans.iter().enumerate() {
-                let Some(scan) = scan else { continue };
+                let Some(scan) = scan.as_ref().filter(|_| chosen[i]) else {
+                    continue;
+                };
                 let (now, then) = (&self.graph.nodes[i].pose, &self.initial[i]);
                 let pose = if initial { then } else { now };
                 let values = match scan.attribute(INTENSITY).map(|a| &a.values) {

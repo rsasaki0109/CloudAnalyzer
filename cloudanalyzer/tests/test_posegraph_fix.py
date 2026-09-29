@@ -68,12 +68,18 @@ def _yawed(x: float, y: float, yaw: float) -> np.ndarray:
     return m
 
 
-def _courtyard() -> np.ndarray:
+def _courtyard(ground: tuple[float, float, float, float] | None = None) -> np.ndarray:
+    """Walls round a 40 m square with a few pillars, 3 m high, and a patch of ``ground`` (x0, x1, y0, y1)
+    so that a change standing on it has something to be measured against."""
     points = []
-    for k in range(160):
+    for k in range(81):
         t = k * 0.5 - 20.0
         for z in np.arange(0, 3, 0.5):
             points += [(t, -20, z), (t, 20, z), (-20, t, z), (20, t, z)]
+    if ground:
+        for x in np.arange(ground[0], ground[1], 0.5):
+            for y in np.arange(ground[2], ground[3], 0.5):
+                points.append((x, y, 0.0))
     for px, py in [(-8, -9), (7, -6), (9, 8), (-6, 7), (0, 12)]:
         for a in np.linspace(0, 2 * math.pi, 12, endpoint=False):
             for z in np.arange(0, 3, 0.5):
@@ -81,8 +87,8 @@ def _courtyard() -> np.ndarray:
     return np.array(points, dtype=float)
 
 
-def _session(folder: Path) -> Path:
-    """A lap round a 24 m square in 3 m steps, odometry turning 0.3 degrees too far each step."""
+def _session(folder: Path, extra: np.ndarray | None = None, drift: float = 0.005, ground=None) -> Path:
+    """A lap round a 24 m square in 3 m steps, odometry turning ``drift`` radians too far each step."""
     truth = []
     for side in range(4):
         for step in range(8):
@@ -92,9 +98,10 @@ def _session(folder: Path) -> Path:
     truth.append(truth[0])
     drifted = [truth[0]]
     for k in range(1, len(truth)):
-        step = _yawed(0, 0, 0.005) @ np.linalg.inv(truth[k - 1]) @ truth[k]
+        step = _yawed(0, 0, drift) @ np.linalg.inv(truth[k - 1]) @ truth[k]
         drifted.append(drifted[-1] @ step)
-    world = np.c_[_courtyard(), np.ones(len(_courtyard()))]
+    points = _courtyard(ground) if extra is None else np.vstack([_courtyard(ground), extra])
+    world = np.c_[points, np.ones(len(points))]
     folder.mkdir()
     for k, pose in enumerate(truth):
         local = (np.linalg.inv(pose) @ world.T).T[:, :3]
@@ -131,3 +138,38 @@ def test_the_command_prints_a_json_report(tmp_path):
     assert result.exit_code == 0, result.output
     report = json.loads(result.output)
     assert report["loops"]["added"] >= 1 and "outputs" not in report
+
+
+def _box(cx: float, cy: float, size: float = 2.0, step: float = 0.2) -> np.ndarray:
+    """The surface of a cube standing on the ground at (cx, cy)."""
+    t = np.arange(0, size + 1e-9, step)
+    a, b = np.meshgrid(t, t)
+    a, b = a.ravel(), b.ravel()
+    x0, y0 = cx - size / 2, cy - size / 2
+    faces = [
+        (x0 + a, y0 + 0 * a, b), (x0 + a, y0 + size + 0 * a, b),
+        (x0 + 0 * a, y0 + a, b), (x0 + size + 0 * a, y0 + a, b),
+        (x0 + a, y0 + b, size + 0 * a),
+    ]
+    return np.vstack([np.c_[x, y, z] for x, y, z in faces])
+
+
+def test_two_drives_are_joined_and_a_new_box_is_the_change(tmp_path):
+    pytest.importorskip("cloudanalyzer_core")
+    from ca.posegraph_fix import compare_sessions
+
+    patch = (-2.0, 10.0, -19.5, -13.0)
+    _session(tmp_path / "before", ground=patch)
+    # The same lap later, drifting the other way, with a container standing by the south wall.
+    _session(tmp_path / "after", extra=_box(4.0, -16.0), drift=-0.004, ground=patch)
+    report = compare_sessions(
+        str(tmp_path / "before"), str(tmp_path / "after"), str(tmp_path / "out"), here=0, there=0, voxel=0.2,
+    )
+    assert report["join"]["overlap"] > 0.8
+    assert report["loops"]["added"] >= 1
+    assert report["m3c2"]["significant"] > 0
+    largest = report["changes"]["largest"][0]
+    assert math.dist(largest["centroid"][:2], (4.0, -16.0)) < 2.0, largest
+    for path in report["outputs"].values():
+        assert Path(path).stat().st_size > 0
+

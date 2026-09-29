@@ -1367,6 +1367,65 @@ def posegraph_fix_cmd(
         typer.echo(f"wrote {kind}: {path}")
 
 
+@app.command("posegraph-compare")
+def posegraph_compare_cmd(
+    first: str = typer.Argument(..., help="The first drive's session folder (poses and scans)"),
+    second: str = typer.Argument(..., help="The second drive's session folder, through some of the same places"),
+    here: int = typer.Option(..., "--here", help="A node of the first drive (vertex id or frame number)..."),
+    there: int = typer.Option(..., "--there", help="...and the second drive's node at the same place"),
+    out: Optional[str] = typer.Option(None, "--out", help="Write the joined graph, both maps and the M3C2 result here"),
+    gravity_first: Optional[str] = typer.Option(None, "--gravity-first", help="The first drive's IMU up directions"),
+    gravity_second: Optional[str] = typer.Option(None, "--gravity-second", help="The second drive's IMU up directions"),
+    no_loops: bool = typer.Option(False, "--no-loops", help="Only the join, no loop search"),
+    voxel: float = typer.Option(0.4, "--voxel", help="Thin each scan to one point per voxel (m)"),
+    map_voxel: float = typer.Option(0.3, "--map-voxel", help="Thin the compared maps (m)"),
+    reach: float = typer.Option(50.0, "--reach", help="Compare keyframes within this distance of the other drive (m)"),
+    min_change: float = typer.Option(0.3, "--min-change", help="Smallest change counted in a changed object (m)"),
+    output_json: Optional[str] = typer.Option(None, "--output-json", help="Write the report as JSON"),
+    format_json: bool = typer.Option(False, "--format-json", help="Print the report as JSON"),
+) -> None:
+    """Join two drives through the same place and list what changed between them (M3C2, changed objects)."""
+    from ca.posegraph_fix import compare_sessions
+
+    try:
+        report = compare_sessions(
+            first,
+            second,
+            out,
+            here=here,
+            there=there,
+            voxel=voxel,
+            loops=not no_loops,
+            gravity_first=gravity_first,
+            gravity_second=gravity_second,
+            map_voxel=map_voxel,
+            reach=reach,
+            min_change=min_change,
+            progress=None if format_json else (lambda m: typer.echo(f"... {m}", err=True)),
+        )
+    except (FileNotFoundError, ValueError, RuntimeError) as e:
+        _handle_error(e)
+    if output_json:
+        _dump_json(report, output_json)
+    if format_json:
+        typer.echo(json.dumps(report, indent=2))
+        return
+    j, m, c = report["join"], report["m3c2"], report["changes"]
+    typer.echo(f"joined at {j['here']} = {j['there']}: overlap {100 * j['overlap']:.0f} %")
+    if "loops" in report:
+        typer.echo(f"loops across the drives: {report['loops']['added']} of {report['loops']['candidates']} candidates")
+    typer.echo(
+        f"M3C2 at {m['core_points']:,} core points: {m['measured']:,} measured, "
+        f"{m['significant']:,} significant ({100 * m['significant_share']:.1f} %)"
+    )
+    typer.echo(f"{c['objects']:,} changed objects; the largest:")
+    for o in c["largest"][:10]:
+        size = " x ".join(f"{v:.1f}" for v in o["size"])
+        typer.echo(f"  #{o['rank']}  {size} m  {o['mean_change']:+.2f} m  {o['points']:,} points  at {o['centroid']}")
+    for kind, path in report.get("outputs", {}).items():
+        typer.echo(f"wrote {kind}: {path}")
+
+
 @app.command("posegraph-validate")
 def posegraph_validate_cmd(
     g2o_path: str = typer.Argument(..., help="Path to pose graph file (pose_graph.g2o)"),

@@ -1951,6 +1951,12 @@ test("pose graph: a ROS 2 bag without poses placed by LiDAR odometry and levelle
   };
   expect(await error()).toBeLessThan(0.2);
 
+  // A second recording of the drive joins as a bag too, and both IMUs level the graph.
+  await page.locator("#pose-graph-panel summary", { hasText: "Join another graph" }).click();
+  await page.locator("#pg-merge-files-input").setInputFiles([{ name: "again.mcap", mimeType: "application/octet-stream", buffer: bag }]);
+  await expect(status(page)).toContainText(/Gravity from the bags' IMUs tied to 80 of 80 keyframes/, { timeout: 60_000 });
+  await expect(page.locator("#pg-stats")).toContainText("drive.mcap + again.mcap");
+
   // The same scans as files, without poses: odometry places them too.
   await page.locator("#pg-files-input").setInputFiles(scanFiles(truth, scan));
   await expect(status(page)).toContainText("Opened scans: 40 poses from odometry over 40 scans", { timeout: 60_000 });

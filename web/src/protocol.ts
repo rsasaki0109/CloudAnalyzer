@@ -367,6 +367,8 @@ export interface PoseGraphMerged {
   fitness: number;
   rms: number;
   optimized: { initialCost: number; finalCost: number; iterations: number };
+  /** When its poses came from odometry (a bag): as for `PoseGraphOpened`, its nodes counted from 0. */
+  odometry: PoseGraphOpened["odometry"];
 }
 
 /** A pose graph's files and how to read them (see `pg-open`). */

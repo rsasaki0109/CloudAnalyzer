@@ -39,7 +39,15 @@ import {
 } from "../api";
 import { isBag } from "../bag";
 import { colorize, gradientCss, lut } from "../colormap";
-import { CANCELLED, type PoseFormat, type PoseGraphFiles, type PoseGraphState, type Progress, type RemovedEdge } from "../protocol";
+import {
+  CANCELLED,
+  type PoseFormat,
+  type PoseGraphFiles,
+  type PoseGraphOpened,
+  type PoseGraphState,
+  type Progress,
+  type RemovedEdge,
+} from "../protocol";
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
 import { refreshColors } from "./colors";
 import { runM3c2 } from "./distance";
@@ -58,6 +66,21 @@ interface Graph {
   scanPoints: number;
   /** The recordings it was made of: the one opened, then each joined one, as node ranges. */
   sessions: { name: string; first: number; count: number }[];
+  /** Up directions from the bags' IMUs: node indices and three numbers each. */
+  imu: { nodes: number[]; ups: number[] };
+}
+
+/** The up directions odometry found in a bag's IMU, for its nodes from `offset` on. */
+function bagUps(odometry: PoseGraphOpened["odometry"], offset: number): { nodes: number[]; ups: number[] } {
+  const nodes: number[] = [];
+  const ups: number[] = [];
+  const u = odometry?.ups;
+  for (let i = 0; u && i < u.length / 3; i++) {
+    if (!Number.isFinite(u[3 * i])) continue;
+    nodes.push(offset + i);
+    ups.push(u[3 * i], u[3 * i + 1], u[3 * i + 2]);
+  }
+  return { nodes, ups };
 }
 
 /** Undo information: the poses before the step, and the edges it added or removed. */
@@ -749,7 +772,6 @@ export async function open(picked: File[]): Promise<void> {
       ? `Opening ${title} with ${files.scans.length.toLocaleString()} scans…`
       : `Opening ${title}: odometry first…`,
   );
-  let ups: { nodes: number[]; ups: number[] } | null = null;
   try {
     const opened = await openPoseGraph(
       files,
@@ -765,6 +787,7 @@ export async function open(picked: File[]): Promise<void> {
       scans: opened.scans,
       scanPoints: opened.scanPoints,
       sessions: [{ name: opened.name, first: 0, count: opened.poses.length / 16 }],
+      imu: bagUps(opened.odometry, 0),
     };
     fieldA.value = fieldB.value = "";
     selection = [];
@@ -781,16 +804,6 @@ export async function open(picked: File[]): Promise<void> {
       `Opened ${opened.name}: ${(opened.poses.length / 16).toLocaleString()} poses${odometry}, ` +
         `${opened.scanPoints.toLocaleString()} scan points${extrinsicNote}${unmatched}`,
     );
-    if (o?.ups) {
-      const nodes: number[] = [];
-      const values: number[] = [];
-      for (let i = 0; i < o.ups.length / 3; i++) {
-        if (!Number.isFinite(o.ups[3 * i])) continue;
-        nodes.push(i);
-        values.push(o.ups[3 * i], o.ups[3 * i + 1], o.ups[3 * i + 2]);
-      }
-      if (nodes.length) ups = { nodes, ups: values };
-    }
   } catch (err) {
     const message = errorText(err);
     setStatus(message === CANCELLED ? "Opening cancelled" : `Could not open the pose graph: ${message}`, message !== CANCELLED);
@@ -800,7 +813,7 @@ export async function open(picked: File[]): Promise<void> {
     renderInfo();
   }
   // The bag's IMU levels the graph, as the up directions of an OXTS folder would.
-  if (ups) await tieGravity(ups.nodes, ups.ups, "the bag's IMU");
+  if (graph?.imu.nodes.length) await tieGravity(graph.imu.nodes, graph.imu.ups, "the bag's IMU");
 }
 
 for (const [button, input] of [
@@ -831,6 +844,7 @@ async function merge(picked: File[]): Promise<void> {
   }
   const there = $<HTMLInputElement>("pg-merge-there").value;
   setTool(null);
+  let joinedImu = false;
   await run("Joining", async () => {
     const signal = startTask();
     try {
@@ -859,6 +873,9 @@ async function merge(picked: File[]): Promise<void> {
       g.scans = [...g.scans, ...merged.scans];
       g.scanPoints += merged.scanPoints;
       g.sessions.push({ name: merged.name, first: merged.offset, count: merged.scans.length });
+      const imu = bagUps(merged.odometry, merged.offset);
+      g.imu = { nodes: [...g.imu.nodes, ...imu.nodes], ups: [...g.imu.ups, ...imu.ups] };
+      joinedImu = imu.nodes.length > 0;
       $<HTMLInputElement>("pg-split").value = String(merged.state.nodeIds[merged.offset]);
       // Undo restores poses and edges of one graph; the join changed the graph itself.
       steps.length = 0;
@@ -877,15 +894,22 @@ async function merge(picked: File[]): Promise<void> {
       endTask(signal);
     }
   });
+  // Tie the bags' IMUs again, the joined one's too (gravity ties replace the earlier ones).
+  if (joinedImu && graph) await tieGravity(graph.imu.nodes, graph.imu.ups, "the bags' IMUs");
 }
 
-$<HTMLButtonElement>("pg-merge").onclick = () => $<HTMLInputElement>("pg-merge-input").click();
-$<HTMLInputElement>("pg-merge-input").onchange = (e) => {
-  const target = e.target as HTMLInputElement;
-  const files = [...(target.files ?? [])];
-  target.value = "";
-  if (files.length) void merge(files);
-};
+for (const [button, input] of [
+  ["pg-merge", "pg-merge-input"],
+  ["pg-merge-files", "pg-merge-files-input"],
+] as const) {
+  $<HTMLButtonElement>(button).onclick = () => $<HTMLInputElement>(input).click();
+  $<HTMLInputElement>(input).onchange = (e) => {
+    const target = e.target as HTMLInputElement;
+    const files = [...(target.files ?? [])];
+    target.value = "";
+    if (files.length) void merge(files);
+  };
+}
 
 /** Run a graph operation with the buttons disabled. */
 async function run(label: string, action: () => Promise<void>): Promise<void> {

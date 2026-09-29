@@ -1255,6 +1255,7 @@ async function mergePoseGraph(
       scans: other.scans,
       scanPoints: other.scanPoints,
       unmatched: other.unmatched,
+      odometry: other.odometry,
       offset,
       fitness,
       rms,
@@ -1262,6 +1263,7 @@ async function mergePoseGraph(
     };
     const transfer = stateTransfer(state);
     for (const scan of other.scans) if (scan) transfer.push(scan.buffer);
+    if (other.odometry?.ups) transfer.push(other.odometry.ups.buffer);
     return { value, transfer };
   } finally {
     other.session.free();

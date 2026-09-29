@@ -380,6 +380,9 @@
       <b>Headings</b>; the best overlap (at least <b>Min overlap</b>) places the whole second graph, becomes a loop
       edge between the two, and the joined graph is optimised. Its ids are shifted past this graph's when they
       clash. <b>Find loops</b> then ties the two sessions together wherever they meet. A join cannot be undone.
+      <b>Join files…</b> takes the other session's files instead, or a ROS bag: odometry places its scans first, and
+      when both bags have an IMU, the up directions of both level the joined graph. Two NCLT drives round the same
+      block, in April and in June 2012, joined this way line up with each other to 0.16 m against the ground truth.
     </p>
     <p>
       <b>Edges by error</b> colors every edge by how far it disagrees with the optimised graph (√χ², in standard

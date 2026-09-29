@@ -14,6 +14,28 @@ test.describe.configure({ mode: "serial" });
 test.use({ viewport: { width: 1280, height: 760 } });
 
 const status = (page: Page) => page.locator("#status");
+
+/**
+ * A real drive for the pose graph GIFs: a PandaSet scene (CC BY 4.0) made
+ * with `python scripts/fetch_pandaset.py 019 <dir>`. Those GIFs are skipped without it.
+ */
+const PANDASET = process.env.PANDASET_DIR;
+
+async function openPandaSet(page: Page): Promise<void> {
+  await page.goto("/");
+  await page.locator("#pg-folder-input").setInputFiles(`${PANDASET}/velodyne`);
+  await expect(status(page)).toContainText("Opened poses.txt", { timeout: 300_000 });
+  await page.locator("#round-points").check();
+}
+
+/** Look along the street from above and behind node `node`. */
+async function streetView(page: Page, node: number, steps: number): Promise<void> {
+  await page.locator("[data-view=iso]").click();
+  await page.locator("#pg-a").fill(String(node));
+  await page.locator("#pg-goto").click();
+  await zoom(page, steps);
+  await page.locator("#pg-a").fill("");
+}
 const canvas = (page: Page) => page.locator("#viewport > canvas");
 
 async function shot(page: Page, name: string): Promise<void> {
@@ -161,7 +183,21 @@ async function markerA(page: Page): Promise<{ x: number; y: number }> {
   return found ? { x: box.x + found.x * box.width, y: box.y + found.y * box.height } : { x: box.x + box.width / 2, y: box.y + box.height / 2 };
 }
 
-test("pose graph: LiDAR odometry replayed, and a loop closed by hand", async ({ page }) => {
+test("pose graph: LiDAR odometry of a real drive replayed", async ({ page }) => {
+  test.skip(!PANDASET, "set PANDASET_DIR (scripts/fetch_pandaset.py)");
+  test.setTimeout(900_000);
+  await openPandaSet(page);
+  await page.locator("#point-size").fill("2");
+  await page.locator("#pg-colors").selectOption("height");
+  await page.locator("#pg-axes").check();
+  await streetView(page, 40, 3);
+  // Slow, so each frame catches a keyframe or two (a screenshot takes most of a second); the GIF plays it fast.
+  await page.locator("#pg-play-rate").fill("2");
+  await page.locator("#pg-play").click();
+  await framesWhile(page, "f-odometry", 0, expect(page.locator("#pg-play")).toHaveText("Play", { timeout: 300_000 }));
+});
+
+test("pose graph: a loop closed by hand", async ({ page }) => {
   test.setTimeout(900_000);
   // Corrections glide in over 10 s here, so the frames catch them moving.
   await page.goto("/?demo=posegraph-drive&glide=10000");
@@ -170,12 +206,6 @@ test("pose graph: LiDAR odometry replayed, and a loop closed by hand", async ({ 
   await page.locator("#point-size").fill("3");
   await page.locator("#pg-colors").selectOption("height");
   await page.locator("#pg-axes").check();
-  await page.locator("[data-view=iso]").click();
-  await zoom(page, 8);
-  // Slow, so each frame catches a keyframe or two (a screenshot takes most of a second); the GIF plays it fast.
-  await page.locator("#pg-play-rate").fill("2");
-  await page.locator("#pg-play").click();
-  await framesWhile(page, "f-odometry", 0, expect(page.locator("#pg-play")).toHaveText("Play", { timeout: 300_000 }));
 
   // From above, close on the start: the drifted last lap misses it. Close the loop by hand and watch it glide in.
   await page.locator("[data-view=top]").click();
@@ -194,22 +224,17 @@ test("pose graph: LiDAR odometry replayed, and a loop closed by hand", async ({ 
   }
 });
 
-test("pose graph: passing cars removed from the map", async ({ page }) => {
+test("pose graph: traffic removed from a real street's map", async ({ page }) => {
+  test.skip(!PANDASET, "set PANDASET_DIR (scripts/fetch_pandaset.py)");
   test.setTimeout(600_000);
-  await demo(page, "posegraph-drive", "Opened poses.txt");
-  await page.locator("#pose-graph-panel summary", { hasText: "Find loops automatically" }).click();
-  await page.locator("#pg-find").click();
-  await expect(status(page)).toContainText(/Added \d+ of/, { timeout: 120_000 });
-  await page.locator("#round-points").check();
-  await page.locator("#point-size").fill("3");
-  // The map with every scan: the cars that drove past leave ghost trails along the road.
-  await page.locator("#pg-map-voxel").fill("0.2");
+  await openPandaSet(page);
+  await page.locator("#point-size").fill("2");
+  // The map with every scan: the traffic that drove past leaves ghost trails along the lanes.
+  await page.locator("#pg-map-voxel").fill("0.1");
   await page.locator("#pg-map").click();
   await expect(status(page)).toContainText("Added poses_map", { timeout: 120_000 });
   await page.locator("#pg-show-scans").uncheck();
-  await page.locator("[data-view=iso]").click();
-  await page.locator("#fit").click();
-  await zoom(page, 4);
+  await streetView(page, 40, 6);
   await orbitFrames(page, "h-dynamic-a", 14, 10);
   // Left out: the ghosts turn red (their own cloud) and the map is clean.
   await page.locator("#pg-dynamic").click();

@@ -14,18 +14,27 @@ const all = readdirSync(frames)
 if (!all.length) throw new Error("no frames: run the media spec first");
 
 // Frames sort by scene prefix (a-c2c, b-m3c2, …) then number.
+// Real LiDAR scans (odometry, dynamic) are fine-grained noise to a GIF encoder: those keep
+// every other frame, at a smaller size and without dithering, to stay a few MB.
 const GIFS = [
   { name: "demo.gif", scenes: /^[a-e]-/, seconds: 0.125 },
-  { name: "odometry.gif", scenes: /^f-/, seconds: 0.18 },
+  { name: "odometry.gif", scenes: /^f-/, seconds: 0.18, real: true },
   { name: "loop.gif", scenes: /^g-/, seconds: 0.16 },
-  { name: "dynamic.gif", scenes: /^h-/, seconds: 0.16 },
+  { name: "dynamic.gif", scenes: /^h-/, seconds: 0.16, real: true },
 ];
-const filter =
-  "crop=1000:660:280:74,scale=720:-1:flags=lanczos,split[a][b];" +
-  "[a]palettegen=max_colors=128:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4";
+const filterFor = (real) =>
+  `crop=1000:660:280:74,scale=${real ? 640 : 720}:-1:flags=lanczos,split[a][b];` +
+  `[a]palettegen=max_colors=${real ? 64 : 128}:stats_mode=diff[p];` +
+  `[b][p]paletteuse=${real ? "dither=none:diff_mode=rectangle" : "dither=bayer:bayer_scale=4"}`;
 
-for (const { name, scenes, seconds } of GIFS) {
-  const names = all.filter((f) => scenes.test(f));
+for (const gif of GIFS) {
+  const { name, scenes, real } = gif;
+  let names = all.filter((f) => scenes.test(f));
+  let seconds = gif.seconds;
+  if (real) {
+    names = names.filter((_, i) => i % 2 === 0);
+    seconds *= 2;
+  }
   if (!names.length) {
     console.log(`skipped ${name}: no frames`);
     continue;
@@ -36,7 +45,7 @@ for (const { name, scenes, seconds } of GIFS) {
   const out = fileURLToPath(new URL(name, images));
   execFileSync(
     "ffmpeg",
-    ["-loglevel", "error", "-y", "-f", "concat", "-safe", "0", "-i", list, "-vf", filter, "-loop", "0", out],
+    ["-loglevel", "error", "-y", "-f", "concat", "-safe", "0", "-i", list, "-vf", filterFor(real), "-loop", "0", out],
     { stdio: "inherit" },
   );
   console.log(`wrote ${out} from ${names.length} frames`);

@@ -19,6 +19,14 @@ The README point-cloud triptych is derived from the deterministic RELLIS-3D perc
 artifacts. See [perception-demo attribution](../demo/perception/ATTRIBUTION.md) for the
 upstream dataset terms.
 
+## Web App GIFs from PandaSet
+
+`web/odometry.gif` and `web/dynamic.gif` show the web app on
+[PandaSet](https://pandaset.org) scene 019 (San Francisco), by Scale AI and Hesai, licensed under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The scans were converted to the app's input
+with `scripts/fetch_pandaset.py` (the 360° Pandar64 only, moved into its own frame) and recorded with
+`PANDASET_DIR=<dir> npm run media` in `web/`. The GIFs are adapted from PandaSet.
+
 ## Social Preview
 
 `social-preview.svg` is original CloudAnalyzer artwork and does not use external image assets;

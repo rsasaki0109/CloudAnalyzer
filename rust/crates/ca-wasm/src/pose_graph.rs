@@ -851,7 +851,8 @@ impl PoseGraphSession {
     }
 
     /// Every scan at its node's pose as one cloud, or with `initial` at its
-    /// pose as loaded; call [`Cloud::build_index`] before drawing it. With
+    /// pose as loaded, thinned to one point per `voxel` (0 keeps every
+    /// point); call [`Cloud::build_index`] before drawing it. With
     /// `correction`, each point carries how far it moved from its place as
     /// loaded (the `correction` attribute, metres). Only `nodes` (node
     /// indices) are included, or every node when it is empty.
@@ -861,6 +862,7 @@ impl PoseGraphSession {
         correction: bool,
         nodes: &[u32],
         part: u8,
+        voxel: f64,
     ) -> Result<Cloud, JsError> {
         // Only `nodes` (all when empty): a part of the path, or the stretch
         // near another session. `part` 1 keeps the static points only, 2 the
@@ -888,6 +890,21 @@ impl PoseGraphSession {
         let keep = |i: usize, k: usize| {
             part == 0 || self.dynamic[i].get(k).copied().unwrap_or(false) == (part == 2)
         };
+        // Thinned to one point per `voxel` as it is assembled, exactly as
+        // `voxel_subsample` would the whole map, which never has to exist.
+        let mut thin = (voxel > 0.0).then(|| {
+            let mut lo = [f64::INFINITY; 3];
+            for (i, now, then, scan) in parts() {
+                let pose = if initial { then } else { now };
+                for k in (0..scan.len()).filter(|&k| keep(i, k)) {
+                    let p = pose.apply(&scan.point(k));
+                    for a in 0..3 {
+                        lo[a] = lo[a].min(p[a]);
+                    }
+                }
+            }
+            ca_core::filter::VoxelFilter::new(lo, voxel, 1 << 16)
+        });
         let mut map = ca_core::PointCloud::default();
         let mut intensity = Vec::new();
         let mut moved = Vec::new();
@@ -899,7 +916,13 @@ impl PoseGraphSession {
                     continue;
                 }
                 let p = scan.point(k);
-                map.positions.push(pose.apply(&p));
+                let placed = pose.apply(&p);
+                if let Some(filter) = &mut thin
+                    && !filter.keep(&placed)
+                {
+                    continue;
+                }
+                map.positions.push(placed);
                 if let (true, Some(v)) = (with_intensity, &scan.intensity) {
                     intensity.push(v[k]);
                 }

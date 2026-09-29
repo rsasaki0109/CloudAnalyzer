@@ -1350,12 +1350,8 @@ async function handle(
       return { value: openGraph().export(req.format), transfer: [] };
     case "pg-map": {
       const t = performance.now();
-      let cloud = openGraph().map(req.initial, req.correction, new Uint32Array(req.nodes), req.part);
-      if (req.voxel > 0) {
-        const thinned = cloud.filter("voxel", req.voxel, 0);
-        cloud.free();
-        cloud = thinned;
-      }
+      // Thinned as it is assembled: a joined drive's whole map would not fit.
+      const cloud = openGraph().map(req.initial, req.correction, new Uint32Array(req.nodes), req.part, req.voxel);
       await buildIndex(cloud);
       const id = nextId++;
       const part = req.label ? `_${req.label}` : "";

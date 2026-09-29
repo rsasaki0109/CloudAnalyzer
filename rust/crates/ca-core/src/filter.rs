@@ -16,20 +16,41 @@ pub fn voxel_subsample(cloud: &PointCloud, voxel: f64) -> Vec<usize> {
         return (0..cloud.len()).collect();
     }
     let lo = cloud.bounds().map(|b| b.min).unwrap_or([0.0; 3]);
-    // One pass in cloud order: a point is kept when its voxel is new. A
-    // hash set of voxel keys is linear where sorting the keys was not.
-    let mut seen: std::collections::HashSet<u64, BuildCellHasher> =
-        std::collections::HashSet::with_capacity_and_hasher(cloud.len() / 4, BuildCellHasher);
+    let mut filter = VoxelFilter::new(lo, voxel, cloud.len() / 4);
     cloud
         .positions
         .iter()
         .enumerate()
-        .filter(|(_, p)| {
-            let cell = |a: usize| (((p[a] - lo[a]) / voxel) as u64).min((1 << 21) - 1);
-            seen.insert(cell(0) | cell(1) << 21 | cell(2) << 42)
-        })
+        .filter(|(_, p)| filter.keep(p))
         .map(|(i, _)| i)
         .collect()
+}
+
+/// [`voxel_subsample`] one point at a time, for points not yet in a cloud
+/// (a map being assembled, never whole in memory): the grid starts at `lo`
+/// (the points' lowest corner, as there) and the first point of each voxel
+/// is kept.
+pub struct VoxelFilter {
+    lo: [f64; 3],
+    voxel: f64,
+    // A hash set of voxel keys is linear where sorting the keys was not.
+    seen: std::collections::HashSet<u64, BuildCellHasher>,
+}
+
+impl VoxelFilter {
+    pub fn new(lo: [f64; 3], voxel: f64, capacity: usize) -> Self {
+        VoxelFilter {
+            lo,
+            voxel,
+            seen: std::collections::HashSet::with_capacity_and_hasher(capacity, BuildCellHasher),
+        }
+    }
+
+    /// Whether `p` is the first point of its voxel.
+    pub fn keep(&mut self, p: &[f64; 3]) -> bool {
+        let cell = |a: usize| (((p[a] - self.lo[a]) / self.voxel) as u64).min((1 << 21) - 1);
+        self.seen.insert(cell(0) | cell(1) << 21 | cell(2) << 42)
+    }
 }
 
 /// Keep points so that no two kept points are closer than `distance`

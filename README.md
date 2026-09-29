@@ -52,7 +52,15 @@ Drop a folder with a trajectory (KITTI, TUM) or a g2o pose graph and one scan pe
 
 - **Remove dynamic objects**: points that nearby scans saw straight through (passing cars, pedestrians) leave the
   map as a red cloud of their own; parked cars, seen again from every side, stay.
-- **Compare sessions or passes** with M3C2 and get the list of changed objects: a car that left, a new container.
+- **Compare sessions or passes** with M3C2 and get the list of changed objects: a car that left, a new container,
+  or a whole season:
+
+<p align="center">
+  <a href="scripts/prepare_nclt.py"><img src="docs/images/web/seasons.gif" alt="The same campus street in June and in January: leafy tree crowns, then bare trunks and branches" width="640"></a><br>
+  The same campus street in June 2012 and January 2013 (NCLT), two drives joined in the app:
+  full tree crowns, then bare branches
+</p>
+
 - **Score a map against ground truth**: accuracy, completeness, F1, Chamfer, and the Wasserstein distance between
   voxel Gaussians (AWD / SCS, as in MapEval), which tells a shifted map from a bent one.
 - **Ground and terrain**: extract the ground (CSF) and rasterize a DEM of the corrected map.
@@ -105,6 +113,8 @@ Measured in the app on public datasets, with [KISS-ICP](https://github.com/PRBon
   1,101 scans in 8 s.
 - **Across days**: KITTI 00 (Oct 3) joined with 07 (Sep 30) through 202 loops; the buildings agree to a mean of
   2 mm, and the changed objects are the parked cars.
+- **Across seasons**: NCLT June 2012 joined with January 2013 through 278 loops; 27 % of where they meet changed
+  by more than the level of detection, largest first the tree-lined streets.
 
 ## Try it
 
@@ -160,7 +170,7 @@ re-takes the README screenshots and GIFs.
 [image attribution](docs/images/ATTRIBUTION.md) and the [sample attribution](web/public/samples/ATTRIBUTION.md).
 The pose graph pictures are of real drives: [NCLT](http://robots.engin.umich.edu/nclt/) session 2012-04-29
 (University of Michigan, [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/), prepared with
-[`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) for the loops and corrections, and [PandaSet](https://pandaset.org)
+[`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) and 2012-06-15 / 2013-01-10 for the loops, corrections and seasons, and [PandaSet](https://pandaset.org)
 scene 019 (Scale AI and Hesai, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched with
 [`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects.
 KITTI data is not redistributed here.

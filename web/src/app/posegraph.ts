@@ -1154,7 +1154,7 @@ export function startAligning(): void {
     const geometry = new THREE.BufferGeometry();
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     geometry.computeBoundingSphere();
-    const material = new THREE.PointsMaterial({ size: 2, sizeAttenuation: false, color });
+    const material = new THREE.PointsMaterial({ size: Number(pointSizeInput.value) + 2, sizeAttenuation: false, color });
     viewer.registerPointMaterial(material);
     return new THREE.Points(geometry, material);
   };
@@ -1710,6 +1710,8 @@ function applyPointSize(): void {
   const size = Number(pointSizeInput.value) + 1;
   for (const material of scanMaterials) material.size = size;
   heightMaterial.uniforms.size.value = size;
+  // The two scans being aligned are all there is to see: larger still.
+  for (const material of aligning?.materials ?? []) material.size = size + 1;
   viewer.requestRender();
 }
 pointSizeInput.addEventListener("input", applyPointSize);

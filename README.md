@@ -130,29 +130,33 @@ Measured in the app on public datasets, with [KISS-ICP](https://github.com/PRBon
 Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/app/), or open one from a URL with
 `?url=https://…/cloud.laz`.
 
-## `ca`, the CI command line
+## `ca`: the command line, for CI and AI agents
 
-`ca` turns SLAM, LiDAR, perception and 3DGS outputs into metrics, HTML reports and pass / fail gates for CI, on
-the same Rust core.
-
-```bash
-pip install cloudanalyzer
-ca evaluate candidate.pcd reference.pcd
-```
-
-The pose graph tools run there too, natively and without the browser's memory limit, for scripts and AI
-agents: [`ca posegraph-fix`](docs/commands/posegraph-fix.md) finds the loops, ties to IMU gravity, removes
-dynamic points and writes the fixed poses and map, and [`ca posegraph-compare`](docs/commands/posegraph-compare.md)
-joins two drives and lists what changed between them, both with a JSON report. [`ca mcp`](docs/commands/mcp.md)
-serves the same tools to AI agents over MCP (`claude mcp add cloudanalyzer -- ca mcp`).
+`ca` runs the same Rust core natively, on all cores and without the browser's memory limit. It turns SLAM, LiDAR,
+perception and 3DGS outputs into metrics, HTML reports and pass / fail gates for CI, and it fixes SLAM maps:
 
 ```bash
-ca posegraph-fix kitti/07/velodyne --out fixed/ --gravity kitti/07/oxts --remove-dynamic --format-json
-ca posegraph-fix drive.mcap --out fixed/ --remove-dynamic   # a ROS bag: odometry and IMU gravity first
-ca web-view fixed/                                          # open the results in the web app
+pip install "cloudanalyzer[fast,slam,ros]"
+ca posegraph-fix drive.mcap --out fixed/ --remove-dynamic --keyframe-spacing 1   # 1. a recording in, a fixed map out
+ca web-view fixed/                                                            # 2. look at it in the web app
+ca posegraph-compare june/ december/ --here 1219 --there 850 --out changes/   # 3. what changed between two drives
 ```
 
-Start with the [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the
+1. From a ROS bag (or a folder of scans, or poses and scans), [`ca posegraph-fix`](docs/commands/posegraph-fix.md)
+   makes the odometry with KISS-ICP, closes the loops, levels the map with the bag's IMU (its mounting estimated
+   from the drive), leaves out what moved, and writes the fixed poses, g2o and map, with a JSON report.
+2. [`ca web-view`](docs/commands/web-view.md) serves the results from your machine and opens them in the app with
+   one link, to look at, measure and fix by hand.
+3. [`ca posegraph-compare`](docs/commands/posegraph-compare.md) joins two drives through the same places and lists
+   the changed objects.
+
+On hdl_graph_slam's recorded drive (`hdl_400.bag`: a Velodyne HDL-32E and a GPS/IMU, 126 s), step 1 finds 8 loops,
+estimates the IMU's mounting (its up directions spread 8.6° before, 2.2° after) and leaves out 4.7 % of the points
+as dynamic, in about three minutes. [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
+(`claude mcp add cloudanalyzer -- ca mcp`), from `slam_odometry` to `view_link`.
+
+For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
+[SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the
 [command reference](docs/commands/), [CI and quality gates](docs/ci.md) and the
 [SLAM leaderboard](https://rsasaki0109.github.io/CloudAnalyzer/leaderboard/).
 

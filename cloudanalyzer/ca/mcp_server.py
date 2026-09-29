@@ -83,7 +83,7 @@ def slam_odometry(
     imu_topic: str | None = None,
     imu_to_lidar: list[float] | None = None,
 ) -> dict[str, Any]:
-    """LiDAR odometry with KISS-ICP (pip install "cloudanalyzer[slam]") for raw scans: a folder
+    """LiDAR odometry (the Rust core's; pip install "cloudanalyzer[fast]") for raw scans: a folder
     of KITTI .bin, PCD or PLY named in time order, or a ROS bag (.bag, .mcap, .db3 or a rosbag2
     folder; pip install "cloudanalyzer[ros]"). Writes trajectory.tum (one pose per scan) and
     map.ply to out_dir. A bag's PointCloud2 scans are written to out_dir/scans, and when it has

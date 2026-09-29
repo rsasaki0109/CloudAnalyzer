@@ -29,8 +29,8 @@ takes it:
   one per pose in name order. A KITTI `calib.txt` in the folder moves them by its `Tr`.
 
 No odometry yet? Give it the raw scans, a folder without a poses file or a ROS bag (`.bag`,
-`.mcap`, `.db3`, a rosbag2 folder), with `--out`: KISS-ICP makes the odometry first (as
-`ca slam-run` does, into `<out>/odometry`). A bag's scans are written there as KITTI `.bin` with
+`.mcap`, `.db3`, a rosbag2 folder), with `--out`: the Rust core's LiDAR odometry (the same as the web
+app's) places the scans first, into `<out>/odometry`. A bag's scans are written there as KITTI `.bin` with
 their intensity, and when it has a `sensor_msgs/Imu` topic its up directions become the gravity
 (`--imu-to-lidar` turns them into the LiDAR frame). Or pass an existing trajectory with `--poses`.
 
@@ -39,8 +39,8 @@ ca posegraph-fix drive.mcap --out fixed/ --remove-dynamic --keyframe-spacing 1
 ```
 
 KITTI 07 recorded as a ROS1 bag (2.1 GB, Velodyne scans and the OXTS orientation as IMU): odometry
-82 s, then 7 loops, the bag's IMU gravity and dynamic removal, ATE 2.147 → 1.150 m, 1 min 40 s in
-all.
+70 s, then 7 loops, the bag's IMU gravity and dynamic removal, ATE 2.67 → 1.76 m (SE(3)-aligned
+0.78 → 0.39 m), 84 s in all.
 
 | Option | Default | |
 |---|---|---|

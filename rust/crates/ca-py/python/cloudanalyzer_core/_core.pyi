@@ -119,6 +119,26 @@ class CopcReader:
     def nodes_to(self, level: int) -> list[tuple[int, int, int]]: ...
     def decode(self, chunks: list[bytes], counts: list[int]) -> PointData: ...
 
+class LidarOdometry:
+    """LiDAR odometry: scans registered one after another onto a local map of the ones before."""
+
+    def __init__(
+        self,
+        min_range: float = 1.5,
+        max_range: float = 80.0,
+        map_voxel: float = 1.0,
+        map_points: int = 20,
+        deskew: bool = False,
+    ) -> None: ...
+    def register(
+        self, positions: npt.NDArray[np.float64], times: npt.NDArray[np.float32] | None = None
+    ) -> npt.NDArray[np.float64]:
+        """Register the next scan (N, 3), in its sensor's frame: its pose, 4x4."""
+        ...
+    def poses(self) -> npt.NDArray[np.float64]:
+        """Every pose so far, (K, 4, 4)."""
+        ...
+
 class PoseGraph:
     """A pose graph with one scan per node: loops by ICP, IMU gravity, dynamic points, the map."""
 

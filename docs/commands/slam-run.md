@@ -53,7 +53,7 @@ ca slam-run <input> <output_dir> [--driver kiss-icp] [options]
 
 | Option | Description |
 |---|---|
-| `--driver kiss-icp\|kiss-slam\|small-gicp` | SLAM driver to use. `kiss-icp` (default, adopted) is the upstream KISS-ICP scan-to-map LiDAR odometry. `kiss-slam` adds pose-graph optimization and MapClosures-based loop closures on top of the same odometry. `small-gicp` is scan-to-map VGICP via the `small_gicp` library's GaussianVoxelMap. All three pass the synthetic-figure8 gate; all but `kiss-icp` stay in experiments — see [What's adopted vs. what's experimental](#whats-adopted-vs-whats-experimental). |
+| `--driver kiss-icp\|cloudanalyzer\|kiss-slam\|small-gicp` | SLAM driver to use. `kiss-icp` (default, adopted) is the upstream KISS-ICP scan-to-map LiDAR odometry. `cloudanalyzer` is the Rust core's own scan-to-map odometry (the same recipe; what `ca posegraph-fix` and the web app use), with nothing to install. `kiss-slam` adds pose-graph optimization and MapClosures-based loop closures on top of the same odometry. `small-gicp` is scan-to-map VGICP via the `small_gicp` library's GaussianVoxelMap. All three pass the synthetic-figure8 gate; all but `kiss-icp` stay in experiments — see [What's adopted vs. what's experimental](#whats-adopted-vs-whats-experimental). |
 | `--max-range 80` | Drop scan points farther than this from the sensor (meters). |
 | `--voxel-size 0.5` | Local-map voxel grid (meters). Driver default kept if omitted. |
 | `--deskew` | Enable KISS-ICP motion-deskew. Default off because `.bin/.pcd` dumps don't typically carry per-point timestamps. |

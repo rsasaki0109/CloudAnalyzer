@@ -5,6 +5,7 @@ and use all cores.
 """
 
 from ._core import (
+    LidarOdometry,
     PoseGraph,
     __version__,
     calibrate_ups,
@@ -25,6 +26,7 @@ from ._core import (
 from ._copc import read_copc
 
 __all__ = [
+    "LidarOdometry",
     "PoseGraph",
     "__version__",
     "calibrate_ups",

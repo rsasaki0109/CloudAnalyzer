@@ -410,12 +410,19 @@ def odometry(
     imu_topic: str | None = None,
     imu_to_lidar: list[float] | None = None,
 ) -> dict:
-    """KISS-ICP odometry for raw scans (a folder, or a ROS bag whose scans are written out as
-    KITTI ``.bin`` with intensity, with each scan's up direction from its IMU): writes
-    ``trajectory.tum`` and ``map.ply`` to ``out_dir`` and returns where the scans, trajectory
-    and gravity file are, ready for :func:`fix_session`."""
+    """LiDAR odometry (the Rust core's) for raw scans (a folder, or a ROS bag whose scans are
+    written out as KITTI ``.bin`` with intensity, with each scan's up direction from its IMU):
+    writes ``trajectory.tum`` and ``map.ply`` to ``out_dir`` and returns where the scans,
+    trajectory and gravity file are, ready for :func:`fix_session`."""
     from ca.core.bag_ingest import imu_ups, is_bag_path, materialize_pointcloud_bag
-    from ca.core.slam_run import SlamRunRequest, discover_frame_paths, run_slam, write_map_ply, write_tum_trajectory
+    from ca.core.slam_run import (
+        CoreOdometryDriver,
+        SlamRunRequest,
+        discover_frame_paths,
+        run_slam,
+        write_map_ply,
+        write_tum_trajectory,
+    )
 
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -438,6 +445,7 @@ def odometry(
     else:
         frames = discover_frame_paths(Path(scans))
         scan_folder = Path(scans) if Path(scans).is_dir() else frames[0].parent
+    reading = time.perf_counter() - clock
     request = SlamRunRequest(
         frame_paths=tuple(frames),
         timestamps_s=stamps,
@@ -446,7 +454,7 @@ def odometry(
         deskew=deskew,
         max_frames=max_frames,
     )
-    result = run_slam(request)
+    result = run_slam(request, CoreOdometryDriver())
     write_tum_trajectory(out / "trajectory.tum", result.poses, result.timestamps_s)
     write_map_ply(out / "map.ply", result.map_points)
     steps = result.poses[1:, :3, 3] - result.poses[:-1, :3, 3]
@@ -455,6 +463,7 @@ def odometry(
         "frames": int(result.frames_processed),
         "path_length_m": round(float(np.sqrt((steps**2).sum(1)).sum()), 1),
         "runtime_s": round(time.perf_counter() - clock, 1),
+        "reading_s": round(reading, 1),
         "scans": str(scan_folder),
         "trajectory": str(out / "trajectory.tum"),
         "gravity": None if gravity_file is None else str(gravity_file),

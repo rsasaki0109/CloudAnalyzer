@@ -1335,6 +1335,10 @@ async function handle(
       items.set(id, { kind: "cloud", cloud, name: `${poseGraph!.name}_${req.initial ? "map_start" : "map"}${part}` });
       return describe(id, { parse: 0, index: performance.now() - t });
     }
+    case "change-objects": {
+      const objects = getCloud(req.id).changedObjects(req.minChange, req.link, req.minPoints);
+      return { value: objects, transfer: [objects.buffer] };
+    }
     case "pg-close":
       poseGraph?.session.free();
       poseGraph = null;

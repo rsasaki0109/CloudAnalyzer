@@ -349,3 +349,121 @@ mod tests {
         );
     }
 }
+
+/// A changed object: a cluster of core points whose change was significant.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ChangedObject {
+    pub count: usize,
+    pub centroid: [f64; 3],
+    pub min: [f64; 3],
+    pub max: [f64; 3],
+    /// Mean M3C2 distance of its points: positive where the compared
+    /// surface lies in front of the reference along the normal.
+    pub mean_change: f64,
+}
+
+/// The significant changes grouped into objects: core points whose change
+/// is significant and at least `min_change` in size, closer than `link`
+/// and changed the same way (towards or away along the normal), are one
+/// object; objects of fewer than `min_points` are dropped. Largest first,
+/// with each input point's object (or [`crate::cluster::NOISE`]).
+/// Without `min_change` and the split by sign, small differences of both
+/// signs (leaves, a rough wall) chain into sprawling objects of no net change.
+pub fn changed_objects(
+    positions: &[[f64; 3]],
+    change: &[f64],
+    significant: &[bool],
+    min_change: f64,
+    link: f64,
+    min_points: usize,
+) -> (Vec<ChangedObject>, Vec<u32>) {
+    let mut found: Vec<(ChangedObject, Vec<usize>)> = Vec::new();
+    for sign in [1.0, -1.0] {
+        let chosen: Vec<usize> = (0..positions.len())
+            .filter(|&i| {
+                significant.get(i).copied().unwrap_or(false) && sign * change[i] >= min_change
+            })
+            .collect();
+        let points: Vec<[f64; 3]> = chosen.iter().map(|&i| positions[i]).collect();
+        let clusters = crate::cluster::euclidean_clusters(&points, link, min_points.max(1));
+        let mut members: Vec<Vec<usize>> = vec![Vec::new(); clusters.sizes.len()];
+        for (k, &label) in clusters.labels.iter().enumerate() {
+            if label != crate::cluster::NOISE {
+                members[label as usize].push(chosen[k]);
+            }
+        }
+        for points in members {
+            let n = points.len() as f64;
+            let mut o = ChangedObject {
+                count: points.len(),
+                centroid: [0.0; 3],
+                min: [f64::INFINITY; 3],
+                max: [f64::NEG_INFINITY; 3],
+                mean_change: 0.0,
+            };
+            for &i in &points {
+                for (a, &v) in positions[i].iter().enumerate() {
+                    o.centroid[a] += v / n;
+                    o.min[a] = o.min[a].min(v);
+                    o.max[a] = o.max[a].max(v);
+                }
+                o.mean_change += change[i] / n;
+            }
+            found.push((o, points));
+        }
+    }
+    found.sort_by_key(|(o, _)| std::cmp::Reverse(o.count));
+    let mut labels = vec![crate::cluster::NOISE; positions.len()];
+    for (rank, (_, points)) in found.iter().enumerate() {
+        for &i in points {
+            labels[i] = rank as u32;
+        }
+    }
+    (found.into_iter().map(|(o, _)| o).collect(), labels)
+}
+
+#[cfg(test)]
+mod change_tests {
+    use super::*;
+
+    #[test]
+    fn significant_changes_group_into_objects() {
+        // A 3 x 3 patch of raised points, a lone raised point, and unchanged ground.
+        let mut positions = Vec::new();
+        let mut change = Vec::new();
+        let mut significant = Vec::new();
+        for i in 0..3 {
+            for j in 0..3 {
+                positions.push([i as f64 * 0.5, j as f64 * 0.5, 0.0]);
+                change.push(1.5);
+                significant.push(true);
+            }
+        }
+        positions.push([20.0, 0.0, 0.0]);
+        change.push(-2.0);
+        significant.push(true);
+        for i in 0..10 {
+            positions.push([5.0 + i as f64, 5.0, 0.0]);
+            change.push(0.01);
+            significant.push(false);
+        }
+        // A lowered patch next to the raised one is a separate object.
+        for i in 0..4 {
+            positions.push([2.0 + i as f64 * 0.5, 0.0, 0.0]);
+            change.push(-0.8);
+            significant.push(true);
+        }
+        let (objects, labels) = changed_objects(&positions, &change, &significant, 0.3, 1.0, 3);
+        assert_eq!(objects.len(), 2);
+        assert_eq!(objects[1].count, 4);
+        assert!((objects[1].mean_change + 0.8).abs() < 1e-12);
+        let o = &objects[0];
+        assert_eq!(o.count, 9);
+        assert!((o.mean_change - 1.5).abs() < 1e-12);
+        assert!((o.centroid[0] - 0.5).abs() < 1e-12 && (o.centroid[1] - 0.5).abs() < 1e-12);
+        assert_eq!((o.min[0], o.max[0]), (0.0, 1.0));
+        assert_eq!(labels[..9], [0; 9]);
+        assert!(labels[9..20].iter().all(|&l| l == crate::cluster::NOISE));
+        assert!(labels[20..].iter().all(|&l| l == 1));
+    }
+}

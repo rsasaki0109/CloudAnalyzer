@@ -14,6 +14,7 @@ import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 import {
   addPoseGraphFloor,
+  changedObjects,
   addPoseGraphLoop,
   closePoseGraph,
   exportPoseGraph,
@@ -42,7 +43,7 @@ import { addEntry, renderList } from "./entries";
 import { showRaster } from "./raster";
 import { colorByField } from "./scalars";
 import { record } from "./history";
-import { display, distanceChanged, globalShift, hideEntry, listChanged, viewer } from "./state";
+import { display, distanceChanged, entries, globalShift, hideEntry, listChanged, toRender, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { setTool, toggleTool, type Tool } from "./tools";
 
@@ -1269,8 +1270,61 @@ export const compareParts = (): Promise<void> =>
       distanceChanged.emit();
     }
     if (showScans()) $<HTMLInputElement>("pg-show-scans").click();
+    await listChanges(result.cloud.id);
   });
 $<HTMLButtonElement>("pg-parts").onclick = () => void compareParts();
+
+/** Smallest change (metres) of a point counted in a changed object. */
+const CHANGE_MIN = 0.3;
+/** Significant change points closer than this (metres) are one object. */
+const CHANGE_LINK = 1;
+/** Fewest core points of a listed object. */
+const CHANGE_MIN_POINTS = 8;
+/** Objects listed at most. */
+const CHANGE_LIMIT = 50;
+
+/**
+ * The changed objects of an M3C2 result, largest first: where each is,
+ * how big, and by how much it changed. Clicking one centres the view on it.
+ */
+async function listChanges(id: number): Promise<void> {
+  const flat = await changedObjects(id, CHANGE_MIN, CHANGE_LINK, CHANGE_MIN_POINTS);
+  const count = flat.length / 11;
+  // The result now has a change_object field for the scalar field tools.
+  const result = entries.get(id);
+  if (result && !result.cloud.scalarNames.includes("change_object")) {
+    result.cloud.scalarNames.push("change_object");
+    listChanged.emit();
+  }
+  $("pg-changes").hidden = false;
+  $("pg-changes-hint").textContent =
+    count === 0
+      ? "No significant change forms an object."
+      : `${count.toLocaleString()} changed object${count === 1 ? "" : "s"} (points that changed by ${CHANGE_MIN} m or more), largest first` +
+        (count > CHANGE_LIMIT ? ` (the first ${CHANGE_LIMIT} listed)` : "") +
+        ". Color the result by its change_object field to see them all.";
+  $("pg-change-list").replaceChildren(
+    ...Array.from({ length: Math.min(count, CHANGE_LIMIT) }, (_, k) => {
+      const o = flat.subarray(k * 11, k * 11 + 11);
+      const size = [o[7] - o[4], o[8] - o[5], o[9] - o[6]].map((v) => fmt(Math.max(v, 0))).join(" × ");
+      const li = document.createElement("li");
+      const name = document.createElement("button");
+      name.className = "name link";
+      name.textContent = `#${k + 1} · ${size} m`;
+      name.title = "Centre the view on it";
+      name.onclick = () => viewer.centerOn(toRender([o[1], o[2], o[3]]));
+      const meta = document.createElement("span");
+      meta.className = "meta";
+      meta.textContent = `${o[10] > 0 ? "+" : ""}${fmt(o[10])} m · ${o[0].toLocaleString()} points`;
+      li.append(name, meta);
+      return li;
+    }),
+  );
+  const listed = status();
+  setStatus(`${listed} · ${count.toLocaleString()} changed object${count === 1 ? "" : "s"} (see Changes)`);
+}
+
+const status = () => $("status").textContent ?? "";
 
 $<HTMLButtonElement>("pg-close").onclick = async () => {
   if (busy) return;

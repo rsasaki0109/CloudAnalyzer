@@ -363,6 +363,11 @@ export function poseGraphMap(
   return call({ kind: "pg-map", voxel, initial, correction, nodes, label });
 }
 
+/** An M3C2 result's changed objects: 11 numbers each (count, centroid, min, max, mean change), largest first. */
+export function changedObjects(id: number, minChange: number, link: number, minPoints: number): Promise<Float64Array> {
+  return call({ kind: "change-objects", id, minChange, link, minPoints });
+}
+
 export function closePoseGraph(): Promise<void> {
   return call({ kind: "pg-close" });
 }

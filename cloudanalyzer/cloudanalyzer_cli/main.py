@@ -1835,6 +1835,36 @@ def view_cmd(
         _handle_error(e)
 
 
+@app.command("web-view")
+def web_view_cmd(
+    paths: List[str] = typer.Argument(..., help="Files, or folders of results (their .ply, .pcd, .las/.laz, .tum ...)"),
+    port: int = typer.Option(0, "--port", help="Serve on this port (0: any free port)"),
+    app_url: str = typer.Option(
+        "https://rsasaki0109.github.io/CloudAnalyzer/app/", "--app", help="The web app to open them in"
+    ),
+    no_browser: bool = typer.Option(False, "--no-browser", help="Print the link only"),
+) -> None:
+    """Open results in the CloudAnalyzer web app: serve them from this machine and open one link."""
+    import webbrowser
+
+    from ca.web_view import Viewer
+
+    try:
+        viewer = Viewer(paths, port=port, app=app_url)
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+    for f in viewer.files:
+        typer.echo(f"serving {f}")
+    typer.echo(viewer.link)
+    if not no_browser:
+        webbrowser.open(viewer.link)
+    typer.echo("Serving on 127.0.0.1 only; Ctrl-C to stop.", err=True)
+    try:
+        viewer.serve_forever()
+    except KeyboardInterrupt:
+        viewer.close()
+
+
 @app.command("downsample")
 def downsample_cmd(
     path: str = typer.Argument(..., help="Input point cloud file"),

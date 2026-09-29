@@ -149,6 +149,7 @@ serves the same tools to AI agents over MCP (`claude mcp add cloudanalyzer -- ca
 ```bash
 ca posegraph-fix kitti/07/velodyne --out fixed/ --gravity kitti/07/oxts --remove-dynamic --format-json
 ca posegraph-fix drive.mcap --out fixed/ --remove-dynamic   # a ROS bag: odometry and IMU gravity first
+ca web-view fixed/                                          # open the results in the web app
 ```
 
 Start with the [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

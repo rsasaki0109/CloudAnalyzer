@@ -88,7 +88,8 @@ from ca.posegraph_fix import fix_session
 report = fix_session("kitti/07/velodyne", "fixed/", gravity="kitti/07/oxts", remove_dynamic=True)
 ```
 
-Two drives through the same places: [`ca posegraph-compare`](posegraph-compare.md).
+To look at the result: `ca web-view fixed/` opens the map and trajectory in the web app
+([`ca web-view`](web-view.md)). Two drives through the same places: [`ca posegraph-compare`](posegraph-compare.md).
 
 Or step by step with `cloudanalyzer_core.PoseGraph` (`from_poses`, `set_scan`, `find_loops`,
 `set_gravity`, `optimize`, `detect_dynamic`, `map`, `to_g2o`).

@@ -24,7 +24,8 @@ session_layout first (it is quick). Raw scans without poses: run slam_odometry f
 posegraph_fix with its trajectory. Then run posegraph_fix (loops, IMU gravity, dynamic
 points, the fixed map) or posegraph_compare (two drives through the same places: what
 changed). Those read every scan and take seconds to minutes on large drives. Outputs go to
-out_dir; open the written .ply maps in the CloudAnalyzer web app to look at them.
+out_dir; view_link(out_dir) gives a link that opens them in the CloudAnalyzer web app for the
+person to look at.
 """
 
 
@@ -169,6 +170,20 @@ def posegraph_compare(
     )
 
 
+_viewers: list[Any] = []
+
+
+def view_link(paths: list[str]) -> dict[str, Any]:
+    """A link that opens results (files, or folders of them: .ply maps, .tum trajectories ...)
+    in the CloudAnalyzer web app, for the person to look at: the files are served from this
+    machine (127.0.0.1 only) for as long as this server runs. Give the person the link."""
+    from ca.web_view import Viewer
+
+    viewer = Viewer(paths).serve_in_background()
+    _viewers.append(viewer)
+    return {"link": viewer.link, "files": [str(f) for f in viewer.files]}
+
+
 def cloud_info(path: str) -> dict[str, Any]:
     """A point cloud's size, bounds, centroid and density."""
     from ca.info import get_info
@@ -190,7 +205,7 @@ def evaluate_trajectory(estimate: str, reference: str, align_rigid: bool = True)
     return evaluate(estimate, reference, align_rigid=align_rigid)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

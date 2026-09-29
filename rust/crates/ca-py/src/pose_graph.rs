@@ -365,13 +365,14 @@ impl PoseGraph {
 
     /// Find the dynamic points of every scan by visibility (see
     /// ``ca_core::dynamic``), on all cores. Returns ``(dynamic, total)``.
-    #[pyo3(signature = (window = 10, margin = 0.5, votes = 3))]
+    #[pyo3(signature = (window = 10, margin = 0.5, votes = 3, elevation_tolerance_deg = 0.5))]
     fn detect_dynamic(
         &mut self,
         py: Python<'_>,
         window: usize,
         margin: f64,
         votes: usize,
+        elevation_tolerance_deg: f64,
     ) -> (usize, usize) {
         use ca_core::dynamic::{VisibilityParams, dynamic_points_of};
         use rayon::prelude::*;
@@ -379,6 +380,7 @@ impl PoseGraph {
             window,
             margin,
             min_see_through: votes,
+            elevation_tolerance_deg,
             ..VisibilityParams::default()
         };
         let poses: Vec<Rigid> = self.graph.nodes.iter().map(|n| n.pose).collect();

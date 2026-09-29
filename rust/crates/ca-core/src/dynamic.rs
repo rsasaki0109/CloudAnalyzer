@@ -11,9 +11,12 @@
 //! scan: stray ones revert, and the rest of an object joins.
 //!
 //! On SemanticKITTI 07 (moving classes, scans thinned to 0.4 m as the web
-//! app does, ground-truth poses) the defaults score precision 0.80, recall
-//! 0.58, F1 0.67, keeping 99.9 % of the static points; with KISS-ICP
-//! odometry for the poses, F1 0.66.
+//! app does, ground-truth poses) the defaults score precision 0.84, recall
+//! 0.56, F1 0.67, keeping 99.9 % of the static points; with KISS-ICP
+//! odometry for the poses, F1 0.67 too (precision 0.85, recall 0.55). The
+//! elevation tolerance took a sparse 32-beam LiDAR's (hdl_graph_slam's
+//! hdl_400 drive) dynamic share from 7.1 % to 4.7 %, most of it ground
+//! the beams graze.
 
 use crate::PointCloud;
 use crate::icp::Rigid;
@@ -40,6 +43,14 @@ pub struct VisibilityParams {
     /// (the rest of a car whose every point did not get the votes). 0 skips.
     pub object_link: f64,
     pub min_object: usize,
+    /// A neighbour's beam that passed more than this (degrees) above a
+    /// point does not count as seeing through it, nor does one a little
+    /// above that reached only as far as the point's height allows (ground
+    /// it grazed). The nearest return of a point's bin comes from the ring
+    /// nearest the ground, which on a surface the beams graze lands far
+    /// beyond a point a little lower; a sparse LiDAR's rings (32 beams, 1.3
+    /// degrees apart) leave such gaps. 0 turns both checks off.
+    pub elevation_tolerance_deg: f64,
 }
 
 impl Default for VisibilityParams {
@@ -53,6 +64,7 @@ impl Default for VisibilityParams {
             max_range: 50.0,
             object_link: 0.7,
             min_object: 15,
+            elevation_tolerance_deg: 0.5,
         }
     }
 }
@@ -65,6 +77,8 @@ struct RangeImage {
     rows: usize,
     resolution: f64,
     ranges: Vec<f32>,
+    /// The sine of each bin's nearest return's elevation.
+    rises: Vec<f32>,
 }
 
 impl RangeImage {
@@ -77,11 +91,14 @@ impl RangeImage {
             rows,
             resolution,
             ranges: vec![f32::INFINITY; cols * rows],
+            rises: vec![0.0; cols * rows],
         };
         for p in &scan.positions {
-            if let Some((bin, r)) = image.bin(p) {
-                let slot = &mut image.ranges[bin];
-                *slot = slot.min(r as f32);
+            if let Some((bin, r)) = image.bin(p)
+                && (r as f32) < image.ranges[bin]
+            {
+                image.ranges[bin] = r as f32;
+                image.rises[bin] = (p[2] / r) as f32;
             }
         }
         image
@@ -157,6 +174,7 @@ pub fn dynamic_points_of(
                         return false;
                     }
                     let (mut through, mut hits) = (0usize, 0usize);
+                    let tolerance = params.elevation_tolerance_deg.to_radians();
                     for (to_j, image) in &neighbours {
                         let q = to_j.apply(p);
                         let Some((bin, r)) = image.bin(&q) else {
@@ -171,7 +189,17 @@ pub fn dynamic_points_of(
                         }
                         let margin = params.margin + params.margin_ratio * r;
                         if seen > r + margin {
-                            through += 1;
+                            // Along a beam that passed well above the point, nothing is known of it;
+                            // one a little above that went only as far as the point's height allows
+                            // (ground it grazed) is no evidence either.
+                            let (point, beam) =
+                                ((q[2] / r).asin(), f64::from(image.rises[bin]).asin());
+                            let grazed = beam > point
+                                && beam < 0.0
+                                && seen <= r * point.sin() / beam.sin() + margin;
+                            if tolerance <= 0.0 || (beam - point <= tolerance && !grazed) {
+                                through += 1;
+                            }
                         } else if (seen - r).abs() <= margin {
                             hits += 1;
                         }
@@ -289,6 +317,65 @@ mod tests {
         let mut parts = dynamic_points_of(&poses, &refs, &params, 0..2);
         parts.extend(dynamic_points_of(&poses, &refs, &params, 2..5));
         assert_eq!(parts, whole);
+    }
+
+    /// Flat ground seen by a 32-beam LiDAR 1.8 m up, rings 1.33 degrees
+    /// apart, from poses 2 m apart along x: only its rings' points.
+    fn sparse_ground(poses: &[Rigid]) -> Vec<PointCloud> {
+        poses
+            .iter()
+            .map(|pose| {
+                let back = crate::pose_graph::inverse(pose);
+                let mut points = Vec::new();
+                for ring in 0..24 {
+                    let elevation = (-30.67 + 1.333 * ring as f64).to_radians();
+                    let range = 1.8 / -elevation.sin();
+                    for k in 0..360 {
+                        let azimuth = (k as f64).to_radians();
+                        let (c, s) = (elevation.cos(), elevation.sin());
+                        let local = [
+                            range * c * azimuth.cos(),
+                            range * c * azimuth.sin(),
+                            range * s,
+                        ];
+                        let world = pose.apply(&local);
+                        points.push(back.apply(&world));
+                    }
+                }
+                cloud(points)
+            })
+            .collect()
+    }
+
+    #[test]
+    fn ground_between_a_sparse_lidar_s_rings_is_not_dynamic() {
+        let poses: Vec<Rigid> = (0..7)
+            .map(|k| Rigid {
+                translation: [k as f64 * 2.0, 0.0, 0.0],
+                ..Rigid::IDENTITY
+            })
+            .collect();
+        let scans = sparse_ground(&poses);
+        let refs: Vec<Option<&PointCloud>> = scans.iter().map(Some).collect();
+        let count = |params: &VisibilityParams| -> usize {
+            dynamic_points(&poses, &refs, params)
+                .iter()
+                .map(|f| f.iter().filter(|&&d| d).count())
+                .sum()
+        };
+        let plain = VisibilityParams {
+            elevation_tolerance_deg: 0.0,
+            object_link: 0.0,
+            ..VisibilityParams::default()
+        };
+        // Beams that passed above a ground point land far beyond it...
+        assert!(count(&plain) > 100, "{}", count(&plain));
+        // ...and do not count as seeing through it.
+        let tolerant = VisibilityParams {
+            object_link: 0.0,
+            ..VisibilityParams::default()
+        };
+        assert_eq!(count(&tolerant), 0);
     }
 
     #[test]

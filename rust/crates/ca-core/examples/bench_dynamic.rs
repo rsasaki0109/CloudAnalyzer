@@ -1,5 +1,5 @@
 //! Score dynamic point detection against SemanticKITTI moving labels:
-//! `cargo run --release -p ca-core --example bench_dynamic -- <velodyne dir> <labels dir> <poses.txt> [voxel] [window] [margin] [votes] [resolution] [margin ratio] [object link] [min object]`.
+//! `cargo run --release -p ca-core --example bench_dynamic -- <velodyne dir> <labels dir> <poses.txt> [voxel] [window] [margin] [votes] [resolution] [margin ratio] [object link] [min object] [elevation tolerance deg]`.
 //!
 //! Scans are voxel-thinned as the web app does, and the labels follow the
 //! points kept. Moving classes are 252 to 259.
@@ -22,6 +22,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         margin_ratio: arg(9, 0.02)?,
         object_link: arg(10, 0.7)?,
         min_object: arg(11, 15.0)? as usize,
+        elevation_tolerance_deg: arg(12, 0.5)?,
         ..VisibilityParams::default()
     };
     let poses: Vec<Rigid> = std::fs::read_to_string(poses_file)?

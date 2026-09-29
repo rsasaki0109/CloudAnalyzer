@@ -6,6 +6,13 @@ use numpy::{IntoPyArray, PyArray1, PyArray2};
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
 
+/// Per IMU message: stamps (N,), up directions (N, 3) and accelerations (N, 3).
+type ImuArrays<'py> = (
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray2<f64>>,
+);
+
 fn err(e: bag::BagError) -> PyErr {
     PyValueError::new_err(e.0)
 }
@@ -137,15 +144,7 @@ impl BagReader {
     /// stamp, its up direction in its frame from its orientation (NaN when it gives
     /// none) and its linear acceleration, as (N,), (N, 3) and (N, 3) arrays.
     #[pyo3(signature = (topic=None))]
-    fn imu<'py>(
-        &self,
-        py: Python<'py>,
-        topic: Option<String>,
-    ) -> PyResult<(
-        Bound<'py, PyArray1<f64>>,
-        Bound<'py, PyArray2<f64>>,
-        Bound<'py, PyArray2<f64>>,
-    )> {
+    fn imu<'py>(&self, py: Python<'py>, topic: Option<String>) -> PyResult<ImuArrays<'py>> {
         let imus: Vec<&str> = self
             .topics
             .iter()

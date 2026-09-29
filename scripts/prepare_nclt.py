@@ -16,7 +16,10 @@ output folder already, and writes
     nclt/2013-01-10/gravity/gravity.txt      the MS25 IMU's up direction per keyframe (for IMU gravity)
 
 The README's loop and correction pictures are of session 2012-04-29 (8.7 GB; `NCLT_DIR=nclt/2012-04-29 npm run
-media` in web/). `--gravity-only` as a third argument rewrites just the gravity file.
+media` in web/). `--gravity-only` as a third argument rewrites just the gravity file. The seasons GIF joins
+2012-06-15 with keyframes 200-2199 of 2012-12-01, cut out by
+
+    python scripts/prepare_nclt.py 2012-12-01 nclt/2012-12-01 --slice 200:2200 nclt/2012-12-01-part
 """
 import csv
 import os
@@ -108,6 +111,24 @@ def write_gravity(stamps):
             up = FLIP[:3, :3] @ body_vel_rotation.T @ body.T @ np.array([0.0, 0.0, -1.0])
             f.write(f"{k} {up[0]:.9f} {up[1]:.9f} {up[2]:.9f}\n")
 
+
+if len(sys.argv) > 4 and sys.argv[3] == "--slice":
+    # Keyframes FIRST:END of a prepared session, renumbered from 0, into another folder
+    # (a long session's stretch that passes where another drive went, small enough to join).
+    first, end = (int(v) for v in sys.argv[4].split(":"))
+    dest = sys.argv[5]
+    os.makedirs(f"{dest}/velodyne", exist_ok=True)
+    os.makedirs(f"{dest}/gravity", exist_ok=True)
+    for k in range(first, end):
+        with open(f"{out}/velodyne/{k:06d}.bin", "rb") as src, open(f"{dest}/velodyne/{k - first:06d}.bin", "wb") as dst:
+            dst.write(src.read())
+    lines = open(f"{out}/velodyne/kiss_poses.txt").read().splitlines()[first:end]
+    open(f"{dest}/velodyne/kiss_poses.txt", "w").write("\n".join(lines) + "\n")
+    up = open(f"{out}/gravity/gravity.txt").read().splitlines()[first:end]
+    open(f"{dest}/gravity/gravity.txt", "w").write(
+        "".join(f"{k} {' '.join(line.split()[1:])}\n" for k, line in enumerate(up))
+    )
+    sys.exit()
 
 if len(sys.argv) > 3 and sys.argv[3] == "--gravity-only":
     body_vel = ssc_to_matrix(*BODY_VEL[:3], *np.radians(BODY_VEL[3:]))

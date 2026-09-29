@@ -139,23 +139,23 @@ Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/
 perception and 3DGS outputs into metrics, HTML reports and pass / fail gates for CI, and it fixes SLAM maps:
 
 ```bash
-pip install "cloudanalyzer[fast,slam,ros]"
+pip install "cloudanalyzer[fast,ros]"
 ca posegraph-fix drive.mcap --out fixed/ --remove-dynamic --keyframe-spacing 1   # 1. a recording in, a fixed map out
 ca web-view fixed/                                                            # 2. look at it in the web app
 ca posegraph-compare june/ december/ --here 1219 --there 850 --out changes/   # 3. what changed between two drives
 ```
 
 1. From a ROS bag (or a folder of scans, or poses and scans), [`ca posegraph-fix`](docs/commands/posegraph-fix.md)
-   makes the odometry with KISS-ICP, closes the loops, levels the map with the bag's IMU (its mounting estimated
+   makes the odometry (in the Rust core, as the web app does), closes the loops, levels the map with the bag's IMU (its mounting estimated
    from the drive), leaves out what moved, and writes the fixed poses, g2o and map, with a JSON report.
 2. [`ca web-view`](docs/commands/web-view.md) serves the results from your machine and opens them in the app with
    one link, to look at, measure and fix by hand.
 3. [`ca posegraph-compare`](docs/commands/posegraph-compare.md) joins two drives through the same places and lists
    the changed objects.
 
-On hdl_graph_slam's recorded drive (`hdl_400.bag`: a Velodyne HDL-32E and a GPS/IMU, 126 s), step 1 finds 8 loops,
-estimates the IMU's mounting (its up directions spread 8.6° before, 2.2° after) and leaves out 4.7 % of the points
-as dynamic, in about three minutes. [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
+On hdl_graph_slam's recorded drive (`hdl_400.bag`: a Velodyne HDL-32E and a GPS/IMU, 126 s), step 1 finds 6 loops,
+estimates the IMU's mounting (its up directions spread 8.1° before, 2.0° after) and leaves out 5.1 % of the points
+as dynamic, in about six minutes (half of it reading the bag). [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
 (`claude mcp add cloudanalyzer -- ca mcp`), from `slam_odometry` to `view_link`.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the

@@ -34,6 +34,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         map_points: env("ODOM_MAP_POINTS", defaults.map_points as f64) as usize,
         deskew: env("ODOM_DESKEW", 0.0) != 0.0,
         sweep: env("ODOM_SWEEP", defaults.sweep),
+        tolerance_t: env("ODOM_TOL_T", defaults.tolerance_t),
+        tolerance_r: env("ODOM_TOL_R", defaults.tolerance_r),
         ..defaults
     };
     let mut odometry = Odometry::new(params);

@@ -154,6 +154,40 @@ def _box(cx: float, cy: float, size: float = 2.0, step: float = 0.2) -> np.ndarr
     return np.vstack([np.c_[x, y, z] for x, y, z in faces])
 
 
+def test_raw_scans_get_their_odometry_from_the_core(tmp_path):
+    pytest.importorskip("cloudanalyzer_core")
+    from ca.posegraph_fix import odometry
+
+    # A yard of boxes on random ground, scanned from a drive pulling away along x.
+    rng = np.random.default_rng(3)
+    world = np.vstack(
+        [_box(cx, cy, size=2 + 2 * rng.random(), step=0.2) for cx, cy in rng.uniform([-15, 5], [45, 25], (24, 2))]
+        + [_box(cx, cy, size=2 + 2 * rng.random(), step=0.2) for cx, cy in rng.uniform([-15, -25], [45, -5], (24, 2))]
+        + [np.c_[rng.uniform(-20, 50, 40000), rng.uniform(-30, 30, 40000), np.zeros(40000)]]
+    )
+    scans = tmp_path / "scans"
+    scans.mkdir()
+    truth = []
+    x = 0.0
+    for k in range(20):
+        x += 0.1 * min(k, 8)
+        truth.append(x)
+        local = world - [x, 0.0, 1.5]
+        local = local[np.linalg.norm(local, axis=1) < 40]
+        np.c_[local, np.full(len(local), 0.5)].astype(np.float32).tofile(scans / f"{k:06d}.bin")
+    report = odometry(str(scans), str(tmp_path / "odom"))
+    assert report["driver"] == "cloudanalyzer" and report["frames"] == 20
+    # The same odometry is a driver of `ca slam-run`.
+    from ca.core.slam_run import CoreOdometryDriver, get_driver, list_drivers
+
+    assert "cloudanalyzer" in list_drivers() and isinstance(get_driver("cloudanalyzer"), CoreOdometryDriver)
+    poses = np.loadtxt(report["trajectory"])
+    assert poses.shape == (20, 8)
+    assert abs(poses[-1, 1] - truth[-1]) < 0.2 and abs(poses[-1, 2]) < 0.2
+    assert abs(report["path_length_m"] - truth[-1]) < 0.5
+    assert Path(report["map"]).stat().st_size > 0
+
+
 def test_two_drives_are_joined_and_a_new_box_is_the_change(tmp_path):
     pytest.importorskip("cloudanalyzer_core")
     from ca.posegraph_fix import compare_sessions

@@ -60,6 +60,12 @@ pub struct OdometryParams {
     /// Off by default: on the drives tried (a Segway at 1 m/s, an ATV at
     /// 3-5 m/s with a 10 Hz sensor) it made no measurable difference.
     pub deskew: bool,
+    /// Registration stops once a step shifts less than `tolerance_t` metres
+    /// and turns less than `tolerance_r` radians. Looser (1 mm, 0.1 mrad)
+    /// is a third faster but leaves the map less consistent: on hdl_400.bag
+    /// the visibility check then took 11 % of the points for dynamic, not 5 %.
+    pub tolerance_t: f64,
+    pub tolerance_r: f64,
     /// How much of the motion between scans a sweep takes when the scan's
     /// [`TIME`] attribute does not say: 1 for a spinning sensor recorded at
     /// its full rate, less when frames were skipped.
@@ -78,6 +84,8 @@ impl Default for OdometryParams {
             min_motion: 0.1,
             deskew: false,
             sweep: 1.0,
+            tolerance_t: 1e-4,
+            tolerance_r: 1e-5,
         }
     }
 }
@@ -324,8 +332,8 @@ impl Odometry {
             };
             total = step.compose(&total);
             // Converged: steps of under a millimetre and a tenth of a milliradian.
-            if dx[..3].iter().map(|v| v * v).sum::<f64>().sqrt() < 1e-3
-                && dx[3..].iter().map(|v| v * v).sum::<f64>().sqrt() < 1e-4
+            if dx[..3].iter().map(|v| v * v).sum::<f64>().sqrt() < self.params.tolerance_t
+                && dx[3..].iter().map(|v| v * v).sum::<f64>().sqrt() < self.params.tolerance_r
             {
                 break;
             }

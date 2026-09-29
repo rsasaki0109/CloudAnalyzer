@@ -11,6 +11,7 @@ use pyo3::exceptions::{PyIOError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
+mod odometry;
 mod pose_graph;
 
 /// Copy an `(N, 3)` array into points.
@@ -661,5 +662,6 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(normals, m)?)?;
     m.add_class::<CopcReader>()?;
     m.add_class::<pose_graph::PoseGraph>()?;
+    m.add_class::<odometry::LidarOdometry>()?;
     Ok(())
 }

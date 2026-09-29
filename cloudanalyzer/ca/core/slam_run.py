@@ -422,6 +422,54 @@ def list_drivers() -> list[str]:
 # ---------------------------------------------------------------------------
 
 
+class CoreOdometryDriver:
+    """LiDAR odometry from the Rust core (``cloudanalyzer_core.LidarOdometry``): the KISS-ICP
+    recipe, without a SLAM package to install. The map is every frame's points, thinned to
+    ``voxel_size_m`` (0.5 m by default), in the world frame."""
+
+    name = "cloudanalyzer"
+
+    def run(self, request: SlamRunRequest) -> SlamRunResult:
+        import time
+
+        import cloudanalyzer_core
+
+        frames = list(request.frame_paths)
+        if request.max_frames is not None:
+            frames = frames[: request.max_frames]
+        voxel = request.voxel_size_m or 0.5
+        odometry = cloudanalyzer_core.LidarOdometry(
+            max_range=request.max_range_m or 80.0, deskew=request.deskew
+        )
+        world: list[np.ndarray] = []
+        clock = time.perf_counter()
+        for path in frames:
+            points = load_frame(path)
+            pose = odometry.register(points)
+            kept = points[cloudanalyzer_core.voxel_subsample(points, voxel)]
+            world.append(kept @ pose[:3, :3].T + pose[:3, 3])
+        runtime = time.perf_counter() - clock
+        poses = odometry.poses()
+        if request.timestamps_s is not None:
+            stamps = np.asarray(request.timestamps_s[: len(frames)], dtype=np.float64)
+        else:
+            stamps = np.arange(len(frames), dtype=np.float64) * request.frame_period_s
+        if world:
+            points = np.vstack(world)
+            points = points[cloudanalyzer_core.voxel_subsample(points, voxel)]
+        else:
+            points = np.empty((0, 3))
+        return SlamRunResult(
+            driver=self.name,
+            poses=poses,
+            timestamps_s=stamps,
+            map_points=points,
+            runtime_s=runtime,
+            frames_processed=len(frames),
+            metadata={"max_range_m": request.max_range_m or 80.0, "voxel_size_m": voxel, "deskew": request.deskew},
+        )
+
+
 def _kiss_icp_factory() -> SlamRunDriver:
     from ca.experiments.slam_run.kiss_icp_driver import KissICPSlamDriver
 
@@ -440,6 +488,7 @@ def _small_gicp_factory() -> SlamRunDriver:
     return SmallGICPSlamDriver()
 
 
+register_driver("cloudanalyzer", CoreOdometryDriver)
 register_driver("kiss-icp", _kiss_icp_factory)
 register_driver("kiss-slam", _kiss_slam_factory)
 register_driver("small-gicp", _small_gicp_factory)
@@ -460,6 +509,7 @@ def run_slam(request: SlamRunRequest, driver: SlamRunDriver | None = None) -> Sl
 
 
 __all__ = [
+    "CoreOdometryDriver",
     "SlamRunRequest",
     "SlamRunResult",
     "SlamRunDriver",

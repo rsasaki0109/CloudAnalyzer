@@ -1309,7 +1309,7 @@ def posegraph_fix_cmd(
     folder: str = typer.Argument(
         ...,
         help="Session folder: a poses file (g2o, KITTI or TUM) and one scan per pose, named by frame number; "
-        "or raw scans (a folder without poses, or a ROS bag), for which KISS-ICP makes the odometry first",
+        "or raw scans (a folder without poses, or a ROS bag), for which LiDAR odometry is made first",
     ),
     out: Optional[str] = typer.Option(None, "--out", help="Write the fixed graph, poses and map here"),
     poses: Optional[str] = typer.Option(
@@ -1357,7 +1357,7 @@ def posegraph_fix_cmd(
             if not out:
                 raise ValueError("raw scans need --out, where the odometry and the scans it reads are written")
             if say:
-                say("no poses: making the odometry with KISS-ICP")
+                say("no poses: making the odometry")
             rotation = [float(v) for v in imu_to_lidar.replace(",", " ").split()] if imu_to_lidar else None
             odometry_report = odometry(
                 folder,
@@ -1395,7 +1395,8 @@ def posegraph_fix_cmd(
         return
     if odometry_report:
         o = odometry_report
-        typer.echo(f"odometry: {o['frames']} scans, {o['path_length_m']} m in {o['runtime_s']} s ({o['driver']})")
+        reading = f" (reading the bag {o['reading_s']} s of it)" if o["reading_s"] >= 1 else ""
+        typer.echo(f"odometry: {o['frames']} scans, {o['path_length_m']} m in {o['runtime_s']} s{reading}")
     typer.echo(f"{report['poses_file']}: {report['nodes']} poses, {report['scan_points']:,} scan points")
     if "loops" in report:
         loops = report["loops"]
@@ -2701,7 +2702,8 @@ def slam_run_cmd(
         "kiss-icp",
         "--driver",
         help=(
-            "SLAM driver to run. Built-in: 'kiss-icp' (default, adopted), "
+            "SLAM driver to run. Built-in: 'kiss-icp' (default, adopted), 'cloudanalyzer' (the Rust core's odometry, "
+            "nothing to install), "
             "'kiss-slam' (experimental — pose-graph + loop closures), "
             "'small-gicp' (experimental — scan-to-map VGICP). Third-party "
             "packages can register additional drivers under the "

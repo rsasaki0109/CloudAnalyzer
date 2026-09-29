@@ -1763,7 +1763,7 @@ test("pose graph: IMU gravity levels a drive that drifted in pitch", async ({ pa
   writeFileSync(join(dir, "gravity.txt"), poses.map((_, k) => `${k} 0 0 1`).join("\n"));
   await page.locator("#pose-graph-panel summary", { hasText: "IMU gravity" }).click();
   await page.locator("#pg-gravity-input").setInputFiles(dir);
-  await expect(status(page)).toContainText(/Gravity tied to 12 of 12 keyframes; χ²/);
+  await expect(status(page)).toContainText(/Gravity tied to 12 of 12 keyframes \(up directions spread .*\); χ²/);
   await expect(page.locator("#pg-stats")).toContainText("12 keyframes");
   expect(await heights()).toBeLessThan(0.15);
 

@@ -1345,12 +1345,20 @@ export async function addGravity(files: File[]): Promise<void> {
       return;
     }
     const poses = state.poses.slice();
-    const out = await setPoseGraphGravity(nodes, new Float64Array(ups), num("pg-gravity-sigma") || 0.1, kernel());
+    const out = await setPoseGraphGravity(
+      nodes,
+      new Float64Array(ups),
+      num("pg-gravity-sigma") || 0.1,
+      kernel(),
+      $<HTMLInputElement>("pg-gravity-calibrate").checked,
+    );
     steps.push({ poses, gravity: true });
     await animateTo(out.state);
     setStatus(
-      `Gravity tied to ${out.tied.toLocaleString()} of ${(state.poses.length / 16).toLocaleString()} keyframes; ` +
-        `χ² ${fmt(out.initialCost)} → ${fmt(out.finalCost)} in ${out.iterations} iterations`,
+      `Gravity tied to ${out.tied.toLocaleString()} of ${(state.poses.length / 16).toLocaleString()} keyframes ` +
+        `(up directions spread ${out.spread.toFixed(2)}°` +
+        (Number.isFinite(out.calibratedSpread) ? `, ${out.calibratedSpread.toFixed(2)}° with the IMU's mounting estimated` : "") +
+        `; σ ${out.sigmaDeg.toFixed(2)}°); χ² ${fmt(out.initialCost)} → ${fmt(out.finalCost)} in ${out.iterations} iterations`,
     );
   });
 }

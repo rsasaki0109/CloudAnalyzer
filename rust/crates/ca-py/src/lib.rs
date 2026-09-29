@@ -280,6 +280,29 @@ fn ground_csf<'py>(
     Ok(ground.into_pyarray(py))
 }
 
+/// The rotation of an IMU's frame into the scans' frame that its up
+/// directions ``ups`` ((N, 3)) agree with best, seen through the keyframes'
+/// ``rotations`` ((N, 3, 3), scans' frame to world); see
+/// ``ca_core::pose_graph::calibrate_ups``.
+#[pyfunction]
+fn calibrate_ups<'py>(
+    py: Python<'py>,
+    rotations: numpy::PyReadonlyArray3<f64>,
+    ups: PyReadonlyArray2<f64>,
+) -> PyResult<Bound<'py, PyArray2<f64>>> {
+    let ups = points(&ups)?;
+    let view = rotations.as_array();
+    if view.shape()[0] != ups.len() || view.shape()[1] != 3 || view.shape()[2] != 3 {
+        return Err(PyValueError::new_err("one (3, 3) rotation per up expected"));
+    }
+    let rotations: Vec<[[f64; 3]; 3]> = view
+        .outer_iter()
+        .map(|m| std::array::from_fn(|i| std::array::from_fn(|j| m[[i, j]])))
+        .collect();
+    let mount = py.detach(|| ca_core::pose_graph::calibrate_ups(&rotations, &ups));
+    Ok(to_array2(py, mount.to_vec()))
+}
+
 /// The significant M3C2 changes grouped into objects (see
 /// ``ca_core::m3c2::changed_objects``), largest first: ``(objects, labels)``
 /// with one row per object ``[count, centroid xyz, min xyz, max xyz, mean
@@ -633,6 +656,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(ground_csf, m)?)?;
     m.add_function(wrap_pyfunction!(m3c2, m)?)?;
     m.add_function(wrap_pyfunction!(changed_objects, m)?)?;
+    m.add_function(wrap_pyfunction!(calibrate_ups, m)?)?;
     m.add_function(wrap_pyfunction!(profile, m)?)?;
     m.add_function(wrap_pyfunction!(normals, m)?)?;
     m.add_class::<CopcReader>()?;

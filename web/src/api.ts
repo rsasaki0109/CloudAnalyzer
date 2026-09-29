@@ -332,8 +332,19 @@ export function setPoseGraphGravity(
   ups: Float64Array,
   sigmaDeg: number,
   loopKernel: number,
-): Promise<{ state: PoseGraphState; tied: number; initialCost: number; finalCost: number; iterations: number }> {
-  return call({ kind: "pg-gravity", nodes, ups, sigmaDeg, loopKernel });
+  calibrate = true,
+): Promise<{
+  state: PoseGraphState;
+  tied: number;
+  /** Median spread of the up directions (degrees), as measured and with the estimated IMU rotation (NaN: not used). */
+  spread: number;
+  calibratedSpread: number;
+  sigmaDeg: number;
+  initialCost: number;
+  finalCost: number;
+  iterations: number;
+}> {
+  return call({ kind: "pg-gravity", nodes, ups, sigmaDeg, loopKernel, calibrate });
 }
 
 export function clearPoseGraphGravity(): Promise<PoseGraphState> {

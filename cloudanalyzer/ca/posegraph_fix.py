@@ -334,34 +334,39 @@ def up_spread(rotations: np.ndarray, ups: np.ndarray) -> np.ndarray:
     seen = np.einsum("nij,nj->ni", rotations, ups)
     g = seen.mean(0)
     g /= np.linalg.norm(g)
+    seen /= np.linalg.norm(seen, axis=1, keepdims=True)
     return np.asarray(np.degrees(np.arccos(np.clip(seen @ g, -1.0, 1.0))))
+
+
+def up_noise(rotations: np.ndarray, ups: np.ndarray) -> float:
+    """How noisy the up directions are (degrees), as the Rust core measures it: from keyframes 1
+    and 2 apart, the part of their disagreement that does not grow with the distance between
+    them (odometry drift d adds d^2 and 4 d^2 to the mean squared angles, noise 2 sigma^2 to both)."""
+    seen = np.einsum("nij,nj->ni", rotations, ups)
+    seen /= np.linalg.norm(seen, axis=1, keepdims=True)
+
+    def mean_square(k: int) -> float:
+        if len(seen) <= k:
+            return 0.0
+        a = np.arccos(np.clip((seen[:-k] * seen[k:]).sum(1), -1.0, 1.0))
+        return float((a**2).mean())
+
+    return float(np.degrees(np.sqrt(max(0.0, (4 * mean_square(1) - mean_square(2)) / 6))))
 
 
 def calibrate_ups(rotations: np.ndarray, ups: np.ndarray) -> np.ndarray:
     """The rotation of an IMU's frame into the scans' frame that its up directions ``ups``
-    agree with best, seen through the keyframes' ``rotations``: the one that makes the ups,
-    turned by it and seen in the world, closest to their mean (a drive that turns and tilts
-    constrains it). Tried from an upright and an upside-down IMU; the up's sign is free, since
-    tying to gravity does not depend on it."""
-    from scipy.optimize import least_squares
-    from scipy.spatial.transform import Rotation
-
-    def residual(vector: np.ndarray) -> np.ndarray:
-        seen = np.einsum("nij,nj->ni", rotations, ups @ Rotation.from_rotvec(vector).as_matrix().T)
-        g = seen.mean(0)
-        return np.asarray((seen - g / np.linalg.norm(g)).ravel())
-
-    starts = [np.zeros(3), np.array([np.pi, 0.0, 0.0]), np.array([0.0, np.pi, 0.0])]
-    best = min((least_squares(residual, x0) for x0 in starts), key=lambda solution: solution.cost)
-    return np.asarray(Rotation.from_rotvec(best.x).as_matrix())
+    agree with best, seen through the keyframes' ``rotations`` (the Rust core's, as the web
+    app uses; the up's sign is free, since tying to gravity does not depend on it)."""
+    return np.asarray(_core().calibrate_ups(np.ascontiguousarray(rotations), np.ascontiguousarray(ups)))
 
 
 def tie_gravity(graph, groups: list[tuple[list[int], np.ndarray]], sigma_deg: float, calibrate: bool = True) -> dict:
     """Tie keyframes to the up directions of one or more IMUs (``groups`` of node indices and
     ups in the scans' frame), then optimise. With ``calibrate`` each IMU's rotation into the
     scans' frame is estimated from the drive (see :func:`calibrate_ups`) and used when it makes
-    the up directions agree better; the standard deviation is at least what is left of their
-    spread, so a noisy IMU levels the map without bending it."""
+    the up directions agree better; the standard deviation is at least their noise (see
+    :func:`up_noise`), so a noisy IMU levels the map without bending it while drift is removed."""
     poses = graph.poses()
     all_nodes: list[int] = []
     all_ups = []
@@ -370,18 +375,20 @@ def tie_gravity(graph, groups: list[tuple[list[int], np.ndarray]], sigma_deg: fl
         rotations = poses[nodes, :3, :3]
         before = up_spread(rotations, ups)
         info: dict = {"keyframes": len(nodes), "spread_deg": round(float(np.median(before)), 3)}
-        if calibrate and len(nodes) >= 10:
+        if calibrate and len(nodes) >= 50:
             rotation = calibrate_ups(rotations, ups)
             after = up_spread(rotations, ups @ rotation.T)
-            if np.median(after) < np.median(before):
+            # Only a clear gain (half the spread, a degree less at least) over 50 keyframes or
+            # more, as the Rust core: drift that follows the heading can pass for a skewed mount.
+            if np.median(after) < 0.5 * np.median(before) and np.median(before) - np.median(after) > 1.0:
                 ups = ups @ rotation.T
                 info["calibration"] = [[round(float(v), 6) for v in row] for row in rotation]
                 info["spread_deg_calibrated"] = round(float(np.median(after)), 3)
+        info["noise_deg"] = round(up_noise(rotations, ups), 3)
         all_nodes += nodes
         all_ups.append(ups)
         imus.append(info)
-    spread = max(i.get("spread_deg_calibrated", i["spread_deg"]) for i in imus)
-    sigma = max(sigma_deg, spread)
+    sigma = max(sigma_deg, max(i["noise_deg"] for i in imus))
     report = {
         "tied": graph.set_gravity(all_nodes, np.vstack(all_ups), sigma),
         "sigma_deg": round(float(sigma), 3),

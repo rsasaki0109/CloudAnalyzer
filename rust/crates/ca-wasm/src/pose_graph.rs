@@ -587,16 +587,19 @@ impl PoseGraphSession {
 
     /// Tie nodes to gravity: `nodes[i]` measured `ups[3i..3i+3]` as its up
     /// direction (in its frame, e.g. from an IMU's roll and pitch), with
-    /// standard deviation `sigma_deg` (see
-    /// `ca_core::pose_graph::tie_to_gravity`). Replaces earlier gravity
-    /// edges. Returns the edges added.
+    /// standard deviation `sigma_deg`; with `calibrate`, the IMU's rotation
+    /// into the scans' frame is estimated from the drive first (see
+    /// `ca_core::pose_graph::set_gravity_calibrated`). Replaces earlier
+    /// gravity edges. Returns `[edges added, spread as measured (degrees),
+    /// spread with the estimated rotation (NaN when not used), sigma used]`.
     #[wasm_bindgen(js_name = setGravity)]
     pub fn set_gravity(
         &mut self,
         nodes: &[u32],
         ups: &[f64],
         sigma_deg: f64,
-    ) -> Result<usize, JsError> {
+        calibrate: bool,
+    ) -> Result<Vec<f64>, JsError> {
         if ups.len() != 3 * nodes.len() {
             return Err(JsError::new("one up vector per node expected"));
         }
@@ -607,10 +610,15 @@ impl PoseGraphSession {
             .filter(|&(&i, _)| (i as usize) < n)
             .map(|(&i, up)| (i as usize, *up))
             .collect();
-        if !pose_graph::set_gravity(&mut self.graph, &measured, sigma_deg.to_radians()) {
-            return Err(JsError::new("no usable up directions"));
-        }
-        Ok(measured.len())
+        let tie =
+            pose_graph::set_gravity_calibrated(&mut self.graph, &measured, sigma_deg, calibrate)
+                .ok_or_else(|| JsError::new("no usable up directions"))?;
+        Ok(vec![
+            tie.tied as f64,
+            tie.spread,
+            tie.mount.map_or(f64::NAN, |(_, spread)| spread),
+            tie.sigma_deg,
+        ])
     }
 
     /// Remove every gravity edge.

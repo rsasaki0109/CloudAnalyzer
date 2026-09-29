@@ -1294,10 +1294,16 @@ async function handle(
     }
     case "pg-gravity": {
       const session = openGraph();
-      const tied = session.setGravity(new Uint32Array(req.nodes), req.ups, req.sigmaDeg);
+      const [tied, spread, calibratedSpread, sigmaDeg] = session.setGravity(
+        new Uint32Array(req.nodes),
+        req.ups,
+        req.sigmaDeg,
+        req.calibrate,
+      );
       const [initialCost, finalCost, iterations] = session.optimize(req.loopKernel);
       const state = graphState(session);
-      return { value: { state, tied, initialCost, finalCost, iterations }, transfer: stateTransfer(state) };
+      const value = { state, tied, spread, calibratedSpread, sigmaDeg, initialCost, finalCost, iterations };
+      return { value, transfer: stateTransfer(state) };
     }
     case "pg-clear-gravity": {
       const session = openGraph();

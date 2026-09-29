@@ -167,6 +167,234 @@ pub fn set_gravity(graph: &mut PoseGraph, measured: &[(usize, [f64; 3])], sigma:
     tie_to_gravity(graph, measured, gravity_information(sigma), reference)
 }
 
+fn apply3(m: &Mat3, v: &[f64; 3]) -> [f64; 3] {
+    std::array::from_fn(|i| (0..3).map(|k| m[i][k] * v[k]).sum())
+}
+
+/// Each up in `ups` (a sensor's frame) turned by `mount` and seen in the
+/// world through its keyframe's `rotations`, and their mean direction.
+fn seen_ups(rotations: &[Mat3], ups: &[[f64; 3]], mount: &Mat3) -> (Vec<[f64; 3]>, [f64; 3]) {
+    let seen: Vec<[f64; 3]> = rotations
+        .iter()
+        .zip(ups)
+        .map(|(r, u)| apply3(r, &apply3(mount, u)))
+        .collect();
+    let mut mean = [0.0; 3];
+    for v in &seen {
+        for k in 0..3 {
+            mean[k] += v[k];
+        }
+    }
+    let norm = dot3(&mean, &mean).sqrt().max(1e-12);
+    (seen, mean.map(|v| v / norm))
+}
+
+fn angle(a: &[f64; 3], b: &[f64; 3]) -> f64 {
+    let n = (dot3(a, a) * dot3(b, b)).sqrt().max(1e-24);
+    (dot3(a, b) / n).clamp(-1.0, 1.0).acos()
+}
+
+/// Per keyframe, the angle (degrees) between its measured up, turned by
+/// `mount` and seen in the world through its rotation, and the mean of
+/// them: all 0 when the up directions and the poses agree. A skewed mount
+/// shows as the drive turns; so does odometry drift, over a long drive.
+pub fn up_spread(rotations: &[Mat3], ups: &[[f64; 3]], mount: &Mat3) -> Vec<f64> {
+    let (seen, mean) = seen_ups(rotations, ups, mount);
+    seen.iter().map(|v| angle(v, &mean).to_degrees()).collect()
+}
+
+/// How noisy the up directions are (degrees), turned by `mount` and seen
+/// through the rotations: from keyframes 1 and 2 apart, the part of their
+/// disagreement that does not grow with the distance between them. Odometry
+/// drift d per keyframe adds d² and 4d² to the mean squared angles A1² and
+/// A2², noise σ adds 2σ² to both, so σ² = (4 A1² - A2²) / 6.
+pub fn up_noise(rotations: &[Mat3], ups: &[[f64; 3]], mount: &Mat3) -> f64 {
+    let (seen, _) = seen_ups(rotations, ups, mount);
+    let mean_square = |k: usize| {
+        let angles: Vec<f64> = (0..seen.len().saturating_sub(k))
+            .map(|i| angle(&seen[i], &seen[i + k]))
+            .collect();
+        angles.iter().map(|a| a * a).sum::<f64>() / angles.len().max(1) as f64
+    };
+    ((4.0 * mean_square(1) - mean_square(2)) / 6.0)
+        .max(0.0)
+        .sqrt()
+        .to_degrees()
+}
+
+fn median(mut values: Vec<f64>) -> f64 {
+    values.sort_by(f64::total_cmp);
+    values.get(values.len() / 2).copied().unwrap_or(0.0)
+}
+
+/// The rotation of an IMU's frame into the scans' frame that its up
+/// directions `ups` agree with best, seen through the keyframes'
+/// `rotations`: the one that makes them, turned and seen in the world,
+/// closest to their mean. A drive that turns and tilts pins it down.
+/// Gauss-Newton on a rotation vector, from an upright and two upside-down
+/// starts; the up's sign is free (tying to gravity does not depend on it).
+pub fn calibrate_ups(rotations: &[Mat3], ups: &[[f64; 3]]) -> Mat3 {
+    let residual = |x: &[f64; 3]| -> Vec<f64> {
+        let (seen, mean) = seen_ups(rotations, ups, &exp_so3(x));
+        seen.iter()
+            .flat_map(|v| [v[0] - mean[0], v[1] - mean[1], v[2] - mean[2]])
+            .collect()
+    };
+    let cost = |r: &[f64]| r.iter().map(|v| v * v).sum::<f64>();
+    let mut best = ([0.0; 3], f64::INFINITY);
+    for start in [
+        [0.0; 3],
+        [std::f64::consts::PI, 0.0, 0.0],
+        [0.0, std::f64::consts::PI, 0.0],
+    ] {
+        let mut x = start;
+        let mut lambda = 1e-3;
+        let mut r = residual(&x);
+        let mut c = cost(&r);
+        for _ in 0..100 {
+            // Numerical Jacobian (3 columns), then damped normal equations.
+            let h = 1e-6;
+            let columns: Vec<Vec<f64>> = (0..3)
+                .map(|k| {
+                    let mut xk = x;
+                    xk[k] += h;
+                    residual(&xk)
+                        .iter()
+                        .zip(&r)
+                        .map(|(a, b)| (a - b) / h)
+                        .collect()
+                })
+                .collect();
+            let mut a = [[0.0; 3]; 3];
+            let mut g = [0.0; 3];
+            for i in 0..3 {
+                for j in 0..3 {
+                    a[i][j] = columns[i].iter().zip(&columns[j]).map(|(p, q)| p * q).sum();
+                }
+                g[i] = -columns[i].iter().zip(&r).map(|(p, q)| p * q).sum::<f64>();
+            }
+            let mut improved = false;
+            for _ in 0..10 {
+                let mut damped = a;
+                for (i, row) in damped.iter_mut().enumerate() {
+                    row[i] += lambda * (1.0 + a[i][i]);
+                }
+                let Some(step) = solve3(&damped, &g) else {
+                    break;
+                };
+                let candidate = [x[0] + step[0], x[1] + step[1], x[2] + step[2]];
+                let rc = residual(&candidate);
+                let cc = cost(&rc);
+                if cc < c {
+                    (x, r, c) = (candidate, rc, cc);
+                    lambda = (lambda * 0.3).max(1e-9);
+                    improved = true;
+                    break;
+                }
+                lambda *= 10.0;
+            }
+            if !improved || c < 1e-18 {
+                break;
+            }
+        }
+        if c < best.1 {
+            best = (x, c);
+        }
+    }
+    exp_so3(&best.0)
+}
+
+fn solve3(a: &Mat3, b: &[f64; 3]) -> Option<[f64; 3]> {
+    let det = |m: &Mat3| {
+        m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1])
+            - m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0])
+            + m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0])
+    };
+    let d = det(a);
+    if d.abs() < 1e-300 {
+        return None;
+    }
+    Some(std::array::from_fn(|k| {
+        let mut m = *a;
+        for i in 0..3 {
+            m[i][k] = b[i];
+        }
+        det(&m) / d
+    }))
+}
+
+/// An estimated IMU mount is used only when it takes this much (degrees)
+/// off the up directions' spread, and at least half of it...
+const MOUNT_GAIN_DEG: f64 = 1.0;
+/// ...over a drive of this many keyframes at least: over a few, drift that
+/// follows the heading can pass for a skewed mount.
+const MOUNT_MIN_KEYFRAMES: usize = 50;
+
+/// What [`set_gravity_calibrated`] did.
+#[derive(Debug, Clone, PartialEq)]
+pub struct GravityTie {
+    /// Keyframes tied.
+    pub tied: usize,
+    /// Median spread (degrees) of the up directions as measured, see [`up_spread`].
+    pub spread: f64,
+    /// The IMU's rotation into the scans' frame, when estimating it made
+    /// them agree better, and their median spread then.
+    pub mount: Option<(Mat3, f64)>,
+    /// Their noise (degrees, see [`up_noise`]), with the rotation if used.
+    pub noise: f64,
+    /// The standard deviation used (degrees): at least the noise.
+    pub sigma_deg: f64,
+}
+
+/// [`set_gravity`] for a real IMU: with `calibrate`, its rotation into the
+/// scans' frame is estimated from the drive ([`calibrate_ups`]) and used
+/// when it makes the ups agree clearly better (half the spread, and a
+/// degree less at least); the standard deviation is at least
+/// their noise ([`up_noise`], `sigma_deg` otherwise), so a noisy IMU levels
+/// the map without bending it while drift is still removed. None when no
+/// up is usable.
+pub fn set_gravity_calibrated(
+    graph: &mut PoseGraph,
+    measured: &[(usize, [f64; 3])],
+    sigma_deg: f64,
+    calibrate: bool,
+) -> Option<GravityTie> {
+    let rotations: Vec<Mat3> = measured
+        .iter()
+        .map(|&(i, _)| graph.nodes[i].pose.rotation)
+        .collect();
+    let ups: Vec<[f64; 3]> = measured.iter().map(|&(_, u)| u).collect();
+    let identity = exp_so3(&[0.0; 3]);
+    let spread = median(up_spread(&rotations, &ups, &identity));
+    let mut mount = None;
+    if calibrate && measured.len() >= MOUNT_MIN_KEYFRAMES {
+        let m = calibrate_ups(&rotations, &ups);
+        let after = median(up_spread(&rotations, &ups, &m));
+        // Only a clear gain: drift that follows the heading (a lap round a
+        // block) can pass for a slightly skewed mount.
+        if after < 0.5 * spread && spread - after > MOUNT_GAIN_DEG {
+            mount = Some((m, after));
+        }
+    }
+    let used: Vec<(usize, [f64; 3])> = match &mount {
+        Some((m, _)) => measured.iter().map(|&(i, u)| (i, apply3(m, &u))).collect(),
+        None => measured.to_vec(),
+    };
+    let noise = up_noise(
+        &rotations,
+        &ups,
+        mount.as_ref().map_or(&identity, |(m, _)| m),
+    );
+    let sigma = sigma_deg.max(noise);
+    set_gravity(graph, &used, sigma.to_radians()).then_some(GravityTie {
+        tied: used.len(),
+        spread,
+        mount,
+        noise,
+        sigma_deg: sigma,
+    })
+}
+
 /// Tie keyframes to gravity from the up direction each measured (`ups`:
 /// node index and up in its frame, e.g. from an IMU's roll and pitch).
 /// World up is taken as the mean of the first `reference` measurements
@@ -1988,6 +2216,84 @@ FIX 1
         }
         assert!(PoseGraph::from_g2o("EDGE_SE3:QUAT 0 1").is_err());
         assert!(PoseGraph::from_g2o("VERTEX_SE3:QUAT 0 0 0 0 0 0 0 1\nEDGE_SE3:QUAT 0 5 0 0 0 0 0 0 1 1 0 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0 0 1 0 1").is_err());
+    }
+
+    #[test]
+    fn an_imu_mounted_turned_and_upside_down_is_calibrated_from_the_drive() {
+        // A drive that turns and tilts a little: its keyframes' rotations.
+        let mut seed = 11u64;
+        let mut noise = || {
+            seed = seed
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            ((seed >> 11) as f64 / (1u64 << 53) as f64 - 0.5) * 0.1
+        };
+        let mul = |a: &Mat3, b: &Mat3| -> Mat3 {
+            std::array::from_fn(|i| {
+                std::array::from_fn(|j| (0..3).map(|k| a[i][k] * b[k][j]).sum())
+            })
+        };
+        let rotations: Vec<Mat3> = (0..80)
+            .map(|k| {
+                let yaw = exp_so3(&[0.0, 0.0, k as f64 * 0.075]);
+                mul(&yaw, &exp_so3(&[noise(), noise(), 0.0]))
+            })
+            .collect();
+        // The IMU is turned a quarter about z, tilted 5 degrees and upside down against the LiDAR.
+        let mount = mul(
+            &mul(
+                &exp_so3(&[0.0, 0.0, std::f64::consts::FRAC_PI_2]),
+                &exp_so3(&[5f64.to_radians(), 0.0, 0.0]),
+            ),
+            &exp_so3(&[std::f64::consts::PI, 0.0, 0.0]),
+        );
+        let transpose =
+            |m: &Mat3| -> Mat3 { std::array::from_fn(|i| std::array::from_fn(|j| m[j][i])) };
+        let ups: Vec<[f64; 3]> = rotations
+            .iter()
+            .map(|r| apply3(&transpose(&mount), &apply3(&transpose(r), &[0.0, 0.0, 1.0])))
+            .collect();
+        let identity = exp_so3(&[0.0; 3]);
+        assert!(median(up_spread(&rotations, &ups, &identity)) > 4.0);
+        let found = calibrate_ups(&rotations, &ups);
+        assert!(median(up_spread(&rotations, &ups, &found)) < 0.01);
+
+        // Tied through a graph: the estimate is used, and the spread left sets the sigma.
+        let poses: Vec<Rigid> = rotations
+            .iter()
+            .enumerate()
+            .map(|(k, r)| Rigid {
+                rotation: *r,
+                translation: [k as f64, 0.0, 0.0],
+            })
+            .collect();
+        let mut graph = PoseGraph::from_poses(&poses, isotropic_information(0.1, 0.01));
+        // (80 keyframes: enough to estimate the mount from.)
+        let measured: Vec<(usize, [f64; 3])> = ups.iter().copied().enumerate().collect();
+        let tie = set_gravity_calibrated(&mut graph, &measured, 0.1, true).unwrap();
+        assert_eq!(tie.tied, 80);
+        assert!(tie.spread > 4.0 && tie.mount.as_ref().unwrap().1 < 0.01);
+        assert_eq!(tie.sigma_deg, 0.1);
+        let raw = set_gravity_calibrated(&mut graph, &measured, 0.1, false).unwrap();
+        assert!(raw.mount.is_none());
+
+        // Drift alone (up directions exact, poses pitching 0.6 degrees a keyframe) is not noise.
+        let drifted: Vec<Mat3> = (0..40)
+            .map(|k| exp_so3(&[0.0, (0.6 * k as f64).to_radians(), 0.0]))
+            .collect();
+        let exact: Vec<[f64; 3]> = vec![[0.0, 0.0, 1.0]; 40];
+        assert!(up_noise(&drifted, &exact, &identity) < 1e-6);
+        // Noise alone is: 1 degree either way about x, alternately.
+        let level: Vec<Mat3> = (0..40).map(|_| identity).collect();
+        let noisy: Vec<[f64; 3]> = (0..40)
+            .map(|k| {
+                apply3(
+                    &exp_so3(&[if k % 2 == 0 { 1f64 } else { -1.0 }.to_radians(), 0.0, 0.0]),
+                    &[0.0, 0.0, 1.0],
+                )
+            })
+            .collect();
+        assert!(up_noise(&level, &noisy, &identity) > 0.5);
     }
 
     /// Points on three walls and a floor of a room, in the room's frame.

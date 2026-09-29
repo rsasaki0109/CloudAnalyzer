@@ -591,7 +591,8 @@
               loses its tilt drift, and the height drift that follows, while hills stay hills. Pick a KITTI
               <code>oxts</code> folder (with <code>calib_imu_to_velo.txt</code> next to its files) or a text file of
               <code>frame ux uy uz</code> lines (up in scan coordinates).</p>
-            <label title="Standard deviation of the measured up direction (degrees)">σ tilt ° <input id="pg-gravity-sigma" type="number" min="0" step="any" value="0.1" /></label>
+            <label title="Standard deviation of the measured up direction (degrees); at least the spread the up directions show">σ tilt ° <input id="pg-gravity-sigma" type="number" min="0" step="any" value="0.1" /></label>
+            <label class="check" title="Estimate how the IMU is mounted against the LiDAR (turned, tilted, upside down) from the drive, and use it when the up directions agree better"><input id="pg-gravity-calibrate" type="checkbox" checked /> Estimate the IMU's mounting</label>
             <button id="pg-gravity" title="Open the IMU data and tie the keyframes to gravity, then optimise">Add gravity…</button>
             <input id="pg-gravity-input" type="file" webkitdirectory multiple hidden />
           </details>

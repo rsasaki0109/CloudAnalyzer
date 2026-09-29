@@ -576,7 +576,7 @@ pub fn inverse(x: &Rigid) -> Rigid {
 }
 
 /// Rotation of the rotation vector `w` (Rodrigues).
-fn exp_so3(w: &[f64; 3]) -> Mat3 {
+pub(crate) fn exp_so3(w: &[f64; 3]) -> Mat3 {
     let theta2 = w[0] * w[0] + w[1] * w[1] + w[2] * w[2];
     let theta = theta2.sqrt();
     let (a, b) = if theta < 1e-8 {

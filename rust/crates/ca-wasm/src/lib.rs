@@ -7,7 +7,9 @@ use ca_core::{
 };
 use wasm_bindgen::prelude::*;
 
+mod odometry;
 mod pose_graph;
+pub use odometry::LidarOdometry;
 pub use pose_graph::{PoseGraphSession, register_scans};
 
 /// Numbers per node in [`Cloud::lod_nodes`].
@@ -400,6 +402,36 @@ impl Cloud {
     /// Call [`Cloud::build_index`] before using any per-point output.
     pub fn parse(name: &str, bytes: &[u8]) -> Result<Cloud, JsError> {
         Ok(Cloud::unindexed(ca_core::read(name, bytes)?))
+    }
+
+    /// A cloud of `xyz` (three per point) with a per-point `intensity`
+    /// (empty for none), e.g. decoded from a ROS message. Call
+    /// [`Cloud::build_index`] before using any per-point output.
+    #[wasm_bindgen(js_name = fromXyz)]
+    pub fn from_xyz(xyz: &[f32], intensity: &[f32]) -> Result<Cloud, JsError> {
+        if !xyz.len().is_multiple_of(3) {
+            return Err(JsError::new("xyz needs three numbers per point"));
+        }
+        let n = xyz.len() / 3;
+        if !intensity.is_empty() && intensity.len() != n {
+            return Err(JsError::new("intensity needs one number per point"));
+        }
+        let mut inner = PointCloud {
+            positions: xyz
+                .as_chunks::<3>()
+                .0
+                .iter()
+                .map(|p| p.map(f64::from))
+                .collect(),
+            ..PointCloud::default()
+        };
+        if !intensity.is_empty() {
+            inner.attributes.push(ca_core::Attribute {
+                name: INTENSITY.to_string(),
+                values: AttributeValues::F32(intensity.to_vec()),
+            });
+        }
+        Ok(Cloud::unindexed(inner))
     }
 
     /// Parse a whole file keeping every `keep_every`-th point (LAS/LAZ thin

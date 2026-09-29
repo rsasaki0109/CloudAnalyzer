@@ -1773,6 +1773,190 @@ test("pose graph: IMU gravity levels a drive that drifted in pitch", async ({ pa
   expect(await heights()).toBeGreaterThan(0.5);
 });
 
+/** Serialises ROS 2 messages (CDR, little-endian) the way a bag holds them. */
+class Cdr {
+  private bytes: number[] = [0, 1, 0, 0];
+
+  private align(n: number): void {
+    while ((this.bytes.length - 4) % n) this.bytes.push(0);
+  }
+
+  u8(v: number): this {
+    this.bytes.push(v);
+    return this;
+  }
+
+  u32(v: number): this {
+    this.align(4);
+    const b = Buffer.alloc(4);
+    b.writeUInt32LE(v);
+    this.bytes.push(...b);
+    return this;
+  }
+
+  f64(...values: number[]): this {
+    for (const v of values) {
+      this.align(8);
+      const b = Buffer.alloc(8);
+      b.writeDoubleLE(v);
+      this.bytes.push(...b);
+    }
+    return this;
+  }
+
+  string(v: string): this {
+    this.u32(v.length + 1);
+    this.bytes.push(...Buffer.from(v), 0);
+    return this;
+  }
+
+  raw(b: Buffer): this {
+    this.u32(b.length);
+    for (const v of b) this.bytes.push(v);
+    return this;
+  }
+
+  header(time: number): this {
+    return this.u32(Math.floor(time)).u32(Math.round((time % 1) * 1e9)).string("lidar");
+  }
+
+  done(): Buffer {
+    return Buffer.from(this.bytes);
+  }
+}
+
+/** An MCAP file (ROS 2's bag format, unchunked and without a summary) of `messages` on their topics. */
+function mcap(channels: { topic: string; type: string }[], messages: { channel: number; time: number; data: Buffer }[]): Buffer {
+  const record = (op: number, body: Buffer) => {
+    const head = Buffer.alloc(9);
+    head[0] = op;
+    head.writeBigUInt64LE(BigInt(body.length), 1);
+    return Buffer.concat([head, body]);
+  };
+  const str = (v: string) => {
+    const b = Buffer.alloc(4);
+    b.writeUInt32LE(v.length);
+    return Buffer.concat([b, Buffer.from(v)]);
+  };
+  const u16 = (v: number) => Buffer.from([v & 255, v >> 8]);
+  const u32 = (v: number) => {
+    const b = Buffer.alloc(4);
+    b.writeUInt32LE(v);
+    return b;
+  };
+  const u64 = (v: bigint) => {
+    const b = Buffer.alloc(8);
+    b.writeBigUInt64LE(v);
+    return b;
+  };
+  const magic = Buffer.from([0x89, 0x4d, 0x43, 0x41, 0x50, 0x30, 0x0d, 0x0a]);
+  const parts = [magic, record(0x01, Buffer.concat([str("ros2"), str("test")]))];
+  channels.forEach((c, id) => {
+    parts.push(record(0x03, Buffer.concat([u16(id + 1), str(c.type), str("ros2msg"), u32(0)])));
+    parts.push(record(0x04, Buffer.concat([u16(id), u16(id + 1), str(c.topic), str("cdr"), u32(0)])));
+  });
+  messages.forEach((m, k) => {
+    const ns = BigInt(Math.round(m.time * 1e9));
+    parts.push(record(0x05, Buffer.concat([u16(m.channel), u32(k), u64(ns), u64(ns), m.data])));
+  });
+  parts.push(record(0x0f, u32(0)), record(0x02, Buffer.concat([u64(0n), u64(0n), u32(0)])), magic);
+  return Buffer.concat(parts);
+}
+
+test("pose graph: a ROS 2 bag without poses placed by LiDAR odometry and levelled by its IMU", async ({ page }) => {
+  test.setTimeout(120_000);
+  // Walls, pillars and ground at random places: a regular grid would give point-to-point ICP false minima.
+  let seed = 1;
+  const random = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+  const world: number[][] = [];
+  for (let k = 0; k < 3000; k++) {
+    const [a, z] = [40 * random() - 20, 4 * random()];
+    world.push([a, -20, z], [a, 20, z], [-20, a, z], [20, a, z]);
+  }
+  for (let p = 0; p < 12; p++) {
+    const [cx, cy, h] = [30 * random() - 15, 30 * random() - 15, 1 + 3 * random()];
+    for (let k = 0; k < 150; k++) {
+      const t = 2 * Math.PI * random();
+      world.push([cx + 0.5 * Math.cos(t), cy + 0.5 * Math.sin(t), h * random()]);
+    }
+  }
+  for (let k = 0; k < 6000; k++) {
+    const [x, y] = [40 * random() - 20, 40 * random() - 20];
+    world.push([x, y, 0.1 * Math.sin(x / 3)]);
+  }
+  const scan = (p: Pose2) => {
+    const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
+    const body = Buffer.alloc(world.length * 16);
+    world.forEach(([x, y, z], i) => {
+      const [dx, dy] = [x - p.x, y - p.y];
+      [c * dx + s * dy, -s * dx + c * dy, z - 1.8, 0.5].forEach((v, a) => body.writeFloatLE(v, i * 16 + a * 4));
+    });
+    return body;
+  };
+  // Along the courtyard, then turning left, 0.37 m a scan.
+  const truth: Pose2[] = [{ x: -10, y: -12, yaw: 0 }];
+  for (let k = 1; k < 40; k++) {
+    const p = truth[k - 1];
+    const yaw = p.yaw + (k > 20 ? 0.05 : 0);
+    truth.push({ x: p.x + 0.37 * Math.cos(yaw), y: p.y + 0.37 * Math.sin(yaw), yaw });
+  }
+  const pointCloud = (p: Pose2, time: number) => {
+    const data = scan(p);
+    const n = data.length / 16;
+    const m = new Cdr().header(time).u32(1).u32(n).u32(4);
+    ["x", "y", "z", "intensity"].forEach((name, k) => m.string(name).u32(4 * k).u8(7).u32(1));
+    return m.u8(0).u32(16).u32(16 * n).raw(data).u8(1).done();
+  };
+  // The IMU's orientation: level, turned by the yaw.
+  const imu = (p: Pose2, time: number) =>
+    new Cdr()
+      .header(time)
+      .f64(0, 0, Math.sin(p.yaw / 2), Math.cos(p.yaw / 2))
+      .f64(...new Array(9 + 3 + 9).fill(0))
+      .f64(0, 0, 9.8)
+      .f64(...new Array(9).fill(0))
+      .done();
+  const bag = mcap(
+    [
+      { topic: "/points", type: "sensor_msgs/msg/PointCloud2" },
+      { topic: "/imu", type: "sensor_msgs/msg/Imu" },
+    ],
+    truth.flatMap((p, k) => [
+      { channel: 1, time: 100 + 0.1 * k - 0.01, data: imu(p, 100 + 0.1 * k - 0.01) },
+      { channel: 0, time: 100 + 0.1 * k, data: pointCloud(p, 100 + 0.1 * k) },
+    ]),
+  );
+
+  // Every scan a keyframe, to compare with the truth scan by scan.
+  await page.locator("#pose-graph-panel summary", { hasText: "Loading options" }).click();
+  await page.locator("#pg-keyframe-spacing").fill("0");
+  await page.locator("#pg-files-input").setInputFiles([{ name: "drive.mcap", mimeType: "application/octet-stream", buffer: bag }]);
+  await expect(status(page)).toContainText(/Gravity from the bag's IMU tied to 40 of 40 keyframes/, { timeout: 60_000 });
+  await expect(page.locator("#pg-stats")).toContainText("40 (40 with scans)");
+
+  /** Largest distance of the saved poses from the truth, both from the first pose. */
+  const error = async () => {
+    const download = page.waitForEvent("download");
+    await page.locator("#pg-save-kitti").click();
+    const rows = (await bytesOf(await download)).toString().trim().split("\n");
+    expect(rows).toHaveLength(40);
+    const [c, s] = [Math.cos(truth[0].yaw), Math.sin(truth[0].yaw)];
+    return Math.max(
+      ...rows.map((row, k) => {
+        const m = row.split(" ").map(Number);
+        const [dx, dy] = [truth[k].x - truth[0].x, truth[k].y - truth[0].y];
+        return Math.hypot(m[3] - (c * dx + s * dy), m[7] - (-s * dx + c * dy), m[11]);
+      }),
+    );
+  };
+  expect(await error()).toBeLessThan(0.2);
+
+  // The same scans as files, without poses: odometry places them too.
+  await page.locator("#pg-files-input").setInputFiles(scanFiles(truth, scan));
+  await expect(status(page)).toContainText("Opened scans: 40 poses from odometry over 40 scans", { timeout: 60_000 });
+  expect(await error()).toBeLessThan(0.2);
+});
+
 test("pose graph: a node moved with the gizmo, fixed, optimised and undone", async ({ page }) => {
   const { truth, scan } = courtyard();
   const poses = truth.slice(0, 12);
@@ -1890,6 +2074,19 @@ test("pose graph demo: a drifting drive round a block, closed, levelled and comp
   const rmse = Math.sqrt(errors.reduce((sum, e) => sum + e * e, 0) / errors.length);
   // The drift left the end 12.8 m off; closed and levelled, the drive is within a few metres.
   expect(rmse).toBeLessThan(2.5);
+});
+
+test("pose graph demo: a real drive's ROS 2 bag opened with odometry, levelled by its IMU and its loop closed", async ({ page }) => {
+  test.setTimeout(600_000);
+  await page.goto("/?demo=nclt");
+  // Odometry through its 236 scans, then gravity, loops and the map: the status passes on quickly.
+  await expect(status(page)).toContainText(/nclt-2012-04-29_map is colored by how far each point moved/, { timeout: 540_000 });
+  const stats = page.locator("#pg-stats");
+  await expect(stats).toContainText("nclt-2012-04-29.mcap");
+  await expect(stats).toContainText(/Nodes\s*(1\d\d|2\d\d) \(\1 with scans\)/);
+  await expect(stats).toContainText("Gravity");
+  // Once round the block: the end comes back to the start.
+  await expect(page.locator("#pg-loop-list li").first()).toBeVisible();
 });
 
 test("pose graph: the demo's passing cars are found by visibility and left out of the map", async ({ page }) => {

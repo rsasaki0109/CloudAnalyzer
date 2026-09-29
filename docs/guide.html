@@ -258,11 +258,24 @@
     <h2 id="pose-graph">Pose graph (SLAM)</h2>
     <p class="small">To see it at work, open the <a href="app/?demo=posegraph">SLAM loop closure demo</a>: a drive made in
       the browser, once and a bit round a city block over a hill, with drifting odometry; it finds the loops, ties the
-      keyframes to the IMU's gravity and colors the map by how far each point moved.</p>
+      keyframes to the IMU's gravity and colors the map by how far each point moved. The
+      <a href="app/?demo=nclt">real drive demo</a> does the same from a ROS 2 bag of a real drive (part of the NCLT
+      dataset, 10 MB): odometry first, as the bag holds scans and IMU but no poses.</p>
     <p>
       Fix a SLAM map by closing loops, by hand or automatically. In <b>Pose graph (SLAM)</b>,
       <b>Open folder…</b> takes a folder holding the poses and one scan per pose; <b>Open files…</b> takes the same
-      files picked one by one (or the poses file alone, after a folder of scans without one).
+      files picked one by one.
+    </p>
+    <p>
+      A ROS bag (ROS 1 <code>.bag</code>, or the <code>.mcap</code> file of a ROS 2 bag) opens with <b>Open
+      files…</b> too, and so do scans without poses: LiDAR odometry places the scans first, in the browser. It takes the
+      bag's <code>sensor_msgs/PointCloud2</code> topic with the most messages, registers each scan onto a local map of
+      the ones before it (points between the <b>Range</b> limits, 1.5–80 m by default), and keeps a scan every
+      <b>Keyframe</b> metres of travel as a node. When the bag has a <code>sensor_msgs/Imu</code> topic, its up direction
+      at each keyframe (from the orientation, else the mean acceleration) then levels the graph as <b>IMU gravity</b>
+      does, with the IMU's mounting estimated. Compressed bags (lz4, zstd) open as they are, except bz2 ROS 1 bags;
+      ROS 2 bags stored in SQLite (<code>.db3</code>) do not open: record them as MCAP, or convert them. A
+      2.4 GB ROS 1 bag of a Velodyne HDL-32E (1,263 scans, 126 s of driving) opens in about six minutes.
     </p>
     <ul>
       <li><b>Poses</b>: a g2o graph (<code>VERTEX_SE3:QUAT</code>, <code>EDGE_SE3:QUAT</code>, <code>FIX</code>), or a

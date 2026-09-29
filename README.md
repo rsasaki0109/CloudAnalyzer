@@ -19,7 +19,7 @@ never leaves your machine.
 
 <p align="center">
   <b><a href="https://rsasaki0109.github.io/CloudAnalyzer/app/">Open the app</a></b> ·
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph">SLAM demo</a> ·
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt">A real drive from a ROS bag</a> ·
   <a href="https://rsasaki0109.github.io/CloudAnalyzer/guide.html">Guide</a> ·
   <a href="#proven-on-real-data">Results on KITTI</a> ·
   <a href="#ca-the-ci-command-line">CLI</a>
@@ -27,7 +27,9 @@ never leaves your machine.
 
 ## 1. Fix the map
 
-Drop a folder with a trajectory (KITTI, TUM) or a g2o pose graph and one scan per pose.
+Drop a folder with a trajectory (KITTI, TUM) or a g2o pose graph and one scan per pose, or just a ROS bag
+(ROS 1 `.bag`, ROS 2 `.mcap`): LiDAR odometry turns its scans into a pose graph in the browser, and its IMU
+levels it.
 
 <p align="center">
   <a href="scripts/fetch_pandaset.py"><img src="docs/images/web/odometry.gif" alt="A real drive through San Francisco replayed: Pandar64 scans build up along the street, colored by height" width="49%"></a>
@@ -120,6 +122,7 @@ Measured in the app on public datasets, with [KISS-ICP](https://github.com/PRBon
 
 | Demo | |
 |---|---|
+| [Real drive from a ROS bag](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt) | Once round a block on the NCLT campus, as a ROS 2 bag of scans and IMU (10 MB): odometry, gravity and loops |
 | [SLAM loop closure](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph) | A drifting drive round a block: loops found, gravity tied, correction shown |
 | [SLAM drive](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive) | The same drive to fix yourself: replay, close a loop, remove cars |
 | [Two LiDAR scans](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=c2c) | Cloud-to-cloud distance |
@@ -186,7 +189,8 @@ re-takes the README screenshots and GIFs.
 [image attribution](docs/images/ATTRIBUTION.md) and the [sample attribution](web/public/samples/ATTRIBUTION.md).
 The pose graph pictures are of real drives: [NCLT](http://robots.engin.umich.edu/nclt/) session 2012-04-29
 (University of Michigan, [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/), prepared with
-[`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) and 2012-06-15 / 2012-12-01 for the loops, corrections and seasons, and [PandaSet](https://pandaset.org)
+[`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) and 2012-06-15 / 2012-12-01 for the loops, corrections and seasons,
+with the ROS bag demo made from 2012-04-29 by [`scripts/make_nclt_bag.py`](scripts/make_nclt_bag.py); and [PandaSet](https://pandaset.org)
 scene 019 (Scale AI and Hesai, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched with
 [`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects.
 KITTI data is not redistributed here.

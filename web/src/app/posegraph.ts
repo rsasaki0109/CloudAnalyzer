@@ -37,6 +37,7 @@ import {
   setPoseGraphNodePose,
   setPoseGraphPoses,
 } from "../api";
+import { isBag } from "../bag";
 import { colorize, gradientCss, lut } from "../colormap";
 import { CANCELLED, type PoseFormat, type PoseGraphFiles, type PoseGraphState, type Progress, type RemovedEdge } from "../protocol";
 import { $, download, errorText, fillTable, fmt, removeButton, setStatus } from "./dom";
@@ -159,8 +160,6 @@ let drawnShift = "";
 /** Node indices of the loop's ends (from the A and B fields), in that order. */
 let selection: number[] = [];
 const steps: Step[] = [];
-/** Scans from a folder without poses, waiting for the poses file. */
-let pendingScans: File[] = [];
 let busy = false;
 
 const num = (id: string) => Number($<HTMLInputElement>(id).value);
@@ -672,29 +671,39 @@ function posesFile(files: File[]): File | undefined {
 /**
  * The poses file, scans and loading options for picked files, with a note on
  * the scan transform used; null (with a status message) when they do not
- * make a graph. Scans picked without poses wait for them when `pending`.
+ * make a graph. A ROS bag, or scans without poses, get their poses from
+ * odometry.
  */
-async function graphFiles(
-  files: File[],
-  pending: boolean,
-): Promise<{ files: PoseGraphFiles; note: string } | null> {
+async function graphFiles(files: File[]): Promise<{ files: PoseGraphFiles; note: string } | null> {
+  const odometry = {
+    minRange: Math.max(0, num("pg-odom-min-range")),
+    maxRange: Math.max(1, num("pg-odom-range") || 80),
+    keyframeSpacing: Math.max(0, num("pg-keyframe-spacing")),
+  };
+  const options = (scans: File[]) => ({
+    voxel: Math.max(0, num("pg-voxel") || 0),
+    displayPoints: Math.max(
+      100,
+      Math.min(num("pg-display") || 5000, Math.floor(DISPLAY_BUDGET / ((graph?.scans.length ?? 0) + Math.max(scans.length, 1000)))),
+    ),
+    sigmaT: num("pg-sigma-t") || 0.05,
+    sigmaRDeg: num("pg-sigma-r") || 0.25,
+    odometry,
+  });
+  const bag = files.find((f) => isBag(f.name));
   let scans = files.filter((f) => SCAN_FILE.test(f.name));
   const poses = posesFile(files);
+  if (bag || (!poses && scans.length > 0)) {
+    lastExtrinsic = null;
+    const note = bag ? "" : " (poses from odometry)";
+    return { files: { graph: bag ?? null, scans: bag ? [] : scans, extrinsic: null, ...options(scans) }, note };
+  }
   if (!poses) {
-    if (scans.length === 0) {
-      setStatus("No poses file (.g2o, .txt, .tum, .kitti) or scans among the files", true);
-    } else if (pending) {
-      pendingScans = scans;
-      setStatus(`${scans.length.toLocaleString()} scans found but no poses: now open the poses file (Open files…)`);
-    } else {
-      setStatus("No poses file (.g2o, .txt, .tum, .kitti) next to the scans", true);
-    }
+    setStatus("No poses file (.g2o, .txt, .tum, .kitti), ROS bag (.bag, .mcap) or scans among the files", true);
     return null;
   }
-  if (scans.length === 0 && pending) scans = pendingScans;
-  pendingScans = [];
   if (scans.length === 0) {
-    setStatus(`No scans next to ${poses.name}: open a folder holding both, or the scans first`, true);
+    setStatus(`No scans next to ${poses.name}: open a folder holding both`, true);
     return null;
   }
   let extrinsic: number[] | null;
@@ -715,11 +724,9 @@ async function graphFiles(
     files: {
       graph: poses,
       scans,
-      voxel: Math.max(0, num("pg-voxel") || 0),
-      displayPoints: Math.max(100, Math.min(num("pg-display") || 5000, Math.floor(DISPLAY_BUDGET / shown))),
       extrinsic,
-      sigmaT: num("pg-sigma-t") || 0.05,
-      sigmaRDeg: num("pg-sigma-r") || 0.25,
+      ...options(scans),
+      displayPoints: Math.max(100, Math.min(num("pg-display") || 5000, Math.floor(DISPLAY_BUDGET / shown))),
     },
     note,
   };
@@ -729,21 +736,26 @@ export async function open(picked: File[]): Promise<void> {
   // Opening replaces the graph: its scans do not count against the display budget.
   const current = graph;
   graph = null;
-  const found = await graphFiles(picked, true);
+  const found = await graphFiles(picked);
   graph = current;
   if (!found) return;
   const { files, note: extrinsicNote } = found;
-  const poses = files.graph;
+  const title = files.graph?.name ?? "the scans";
   setTool(null);
   const signal = startTask();
   busy = true;
-  setStatus(`Opening ${poses.name} with ${files.scans.length.toLocaleString()} scans…`);
+  setStatus(
+    files.graph && !isBag(files.graph.name)
+      ? `Opening ${title} with ${files.scans.length.toLocaleString()} scans…`
+      : `Opening ${title}: odometry first…`,
+  );
+  let ups: { nodes: number[]; ups: number[] } | null = null;
   try {
     const opened = await openPoseGraph(
       files,
       (p: Progress) => {
         showProgress(p);
-        setStatus(`Opening ${poses.name}: ${p.note}…`);
+        setStatus(`Opening ${title}: ${p.note}…`);
       },
       signal,
     );
@@ -760,10 +772,25 @@ export async function open(picked: File[]): Promise<void> {
     build(graph);
     fitGraph(opened);
     const unmatched = opened.unmatched.length ? `; ${opened.unmatched.length} scans matched no pose` : "";
+    const o = opened.odometry;
+    const odometry = o
+      ? ` from odometry over ${o.frames.toLocaleString()} scans${o.topic ? ` of ${o.topic}` : ""} ` +
+        `(${Math.round(o.pathLength).toLocaleString()} m in ${Math.round(o.seconds)} s)`
+      : "";
     setStatus(
-      `Opened ${opened.name}: ${(opened.poses.length / 16).toLocaleString()} poses, ` +
+      `Opened ${opened.name}: ${(opened.poses.length / 16).toLocaleString()} poses${odometry}, ` +
         `${opened.scanPoints.toLocaleString()} scan points${extrinsicNote}${unmatched}`,
     );
+    if (o?.ups) {
+      const nodes: number[] = [];
+      const values: number[] = [];
+      for (let i = 0; i < o.ups.length / 3; i++) {
+        if (!Number.isFinite(o.ups[3 * i])) continue;
+        nodes.push(i);
+        values.push(o.ups[3 * i], o.ups[3 * i + 1], o.ups[3 * i + 2]);
+      }
+      if (nodes.length) ups = { nodes, ups: values };
+    }
   } catch (err) {
     const message = errorText(err);
     setStatus(message === CANCELLED ? "Opening cancelled" : `Could not open the pose graph: ${message}`, message !== CANCELLED);
@@ -772,6 +799,8 @@ export async function open(picked: File[]): Promise<void> {
     endTask(signal);
     renderInfo();
   }
+  // The bag's IMU levels the graph, as the up directions of an OXTS folder would.
+  if (ups) await tieGravity(ups.nodes, ups.ups, "the bag's IMU");
 }
 
 for (const [button, input] of [
@@ -790,7 +819,7 @@ for (const [button, input] of [
 /** Join a second graph, placed by registering the scans of a node in each. */
 async function merge(picked: File[]): Promise<void> {
   if (!graph || busy) return;
-  const found = await graphFiles(picked, false);
+  const found = await graphFiles(picked);
   if (!found) return;
   const { files, note } = found;
   const ids = graph.state.nodeIds;
@@ -821,7 +850,7 @@ async function merge(picked: File[]): Promise<void> {
         },
         (p: Progress) => {
           showProgress(p);
-          setStatus(`Joining ${files.graph.name}: ${p.note}…`);
+          setStatus(`Joining ${files.graph?.name ?? "the scans"}: ${p.note}…`);
         },
         signal,
       );
@@ -1322,28 +1351,34 @@ async function readUps(files: File[]): Promise<Map<number, [number, number, numb
 }
 
 export async function addGravity(files: File[]): Promise<void> {
+  const byFrame = await readUps(files);
+  const state = graph!.state;
+  const e = lastExtrinsic;
+  const nodes: number[] = [];
+  const ups: number[] = [];
+  state.nodeIds.forEach((id, i) => {
+    const up = byFrame.get(id);
+    if (!up) return;
+    // Into the pose frame, as the scans were.
+    const [x, y, z] = up;
+    nodes.push(i);
+    ups.push(
+      ...(e
+        ? [e[0] * x + e[1] * y + e[2] * z, e[4] * x + e[5] * y + e[6] * z, e[8] * x + e[9] * y + e[10] * z]
+        : up),
+    );
+  });
+  if (nodes.length === 0) {
+    setStatus("No up directions matched a node: pick an OXTS folder (or frame ux uy uz lines) named by frame", true);
+    return;
+  }
+  await tieGravity(nodes, ups, null);
+}
+
+/** Tie `nodes` to the up directions `ups` (three each, in the scans' frame), then optimise; `source` names them in the status. */
+async function tieGravity(nodes: number[], ups: number[], source: string | null): Promise<void> {
   await run("Adding gravity", async () => {
-    const byFrame = await readUps(files);
     const state = graph!.state;
-    const e = lastExtrinsic;
-    const nodes: number[] = [];
-    const ups: number[] = [];
-    state.nodeIds.forEach((id, i) => {
-      const up = byFrame.get(id);
-      if (!up) return;
-      // Into the pose frame, as the scans were.
-      const [x, y, z] = up;
-      nodes.push(i);
-      ups.push(
-        ...(e
-          ? [e[0] * x + e[1] * y + e[2] * z, e[4] * x + e[5] * y + e[6] * z, e[8] * x + e[9] * y + e[10] * z]
-          : up),
-      );
-    });
-    if (nodes.length === 0) {
-      setStatus("No up directions matched a node: pick an OXTS folder (or frame ux uy uz lines) named by frame", true);
-      return;
-    }
     const poses = state.poses.slice();
     const out = await setPoseGraphGravity(
       nodes,
@@ -1355,7 +1390,7 @@ export async function addGravity(files: File[]): Promise<void> {
     steps.push({ poses, gravity: true });
     await animateTo(out.state);
     setStatus(
-      `Gravity tied to ${out.tied.toLocaleString()} of ${(state.poses.length / 16).toLocaleString()} keyframes ` +
+      `Gravity${source ? ` from ${source}` : ""} tied to ${out.tied.toLocaleString()} of ${(state.poses.length / 16).toLocaleString()} keyframes ` +
         `(up directions spread ${out.spread.toFixed(2)}°` +
         (Number.isFinite(out.calibratedSpread) ? `, ${out.calibratedSpread.toFixed(2)}° with the IMU's mounting estimated` : "") +
         `; σ ${out.sigmaDeg.toFixed(2)}°); χ² ${fmt(out.initialCost)} → ${fmt(out.finalCost)} in ${out.iterations} iterations`,

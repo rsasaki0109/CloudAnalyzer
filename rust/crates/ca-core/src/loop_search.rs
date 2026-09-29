@@ -235,7 +235,7 @@ mod tests {
     /// A courtyard: walls round a 40 m square with a few pillars, 3 m high.
     fn courtyard() -> Vec<[f64; 3]> {
         let mut out = Vec::new();
-        for k in 0..160 {
+        for k in 0..81 {
             let t = k as f64 * 0.5 - 20.0;
             for z in 0..6 {
                 let z = z as f64 * 0.5;

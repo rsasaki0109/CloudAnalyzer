@@ -280,6 +280,67 @@ fn ground_csf<'py>(
     Ok(ground.into_pyarray(py))
 }
 
+/// The significant M3C2 changes grouped into objects (see
+/// ``ca_core::m3c2::changed_objects``), largest first: ``(objects, labels)``
+/// with one row per object ``[count, centroid xyz, min xyz, max xyz, mean
+/// change]`` and each core point's object (or -1).
+#[pyfunction]
+#[pyo3(signature = (positions, change, significant, min_change = 0.3, link = 1.0, min_points = 8))]
+#[allow(clippy::type_complexity)]
+fn changed_objects<'py>(
+    py: Python<'py>,
+    positions: PyReadonlyArray2<f64>,
+    change: numpy::PyReadonlyArray1<f64>,
+    significant: numpy::PyReadonlyArray1<bool>,
+    min_change: f64,
+    link: f64,
+    min_points: usize,
+) -> PyResult<(Bound<'py, PyArray2<f64>>, Bound<'py, PyArray1<i64>>)> {
+    let positions = points(&positions)?;
+    let (change, significant) = (
+        change.as_slice()?.to_vec(),
+        significant.as_slice()?.to_vec(),
+    );
+    if change.len() != positions.len() || significant.len() != positions.len() {
+        return Err(PyValueError::new_err(
+            "one change and one significance per point expected",
+        ));
+    }
+    let (objects, labels) = py.detach(|| {
+        ca_core::m3c2::changed_objects(
+            &positions,
+            &change,
+            &significant,
+            min_change,
+            link,
+            min_points,
+        )
+    });
+    let rows: Vec<f64> = objects
+        .iter()
+        .flat_map(|o| {
+            let mut row = vec![o.count as f64];
+            row.extend(o.centroid);
+            row.extend(o.min);
+            row.extend(o.max);
+            row.push(o.mean_change);
+            row
+        })
+        .collect();
+    let table = Array2::from_shape_vec((objects.len(), 11), rows).expect("k x 11");
+    let labels: Vec<i64> = labels
+        .iter()
+        .map(|&l| {
+            if l == ca_core::cluster::NOISE {
+                -1
+            } else {
+                i64::from(l)
+            }
+        })
+        .collect();
+    Ok((table.into_pyarray(py), labels.into_pyarray(py)))
+}
+
 /// M3C2 change from ``cloud1`` to ``cloud2`` at the ``core`` points
 /// (Lague et al. 2013), multi-threaded. Returns ``(distance, lod95,
 /// significant, normals)``; distance and LoD95 are NaN where a cylinder
@@ -571,6 +632,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(volume, m)?)?;
     m.add_function(wrap_pyfunction!(ground_csf, m)?)?;
     m.add_function(wrap_pyfunction!(m3c2, m)?)?;
+    m.add_function(wrap_pyfunction!(changed_objects, m)?)?;
     m.add_function(wrap_pyfunction!(profile, m)?)?;
     m.add_function(wrap_pyfunction!(normals, m)?)?;
     m.add_class::<CopcReader>()?;

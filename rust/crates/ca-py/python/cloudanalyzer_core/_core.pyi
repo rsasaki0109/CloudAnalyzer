@@ -92,6 +92,15 @@ def normals(
     orientation: str = "up",
 ) -> npt.NDArray[np.float32]: ...
 
+def changed_objects(
+    positions: npt.NDArray[np.float64],
+    change: npt.NDArray[np.float64],
+    significant: npt.NDArray[np.bool_],
+    min_change: float = 0.3,
+    link: float = 1.0,
+    min_points: int = 8,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.int64]]: ...
+
 class CopcReader:
     @staticmethod
     def is_copc(head: bytes) -> bool: ...
@@ -156,6 +165,24 @@ class PoseGraph:
     def detect_dynamic(
         self, window: int = 10, margin: float = 0.5, votes: int = 3
     ) -> tuple[int, int]: ...
+    def join(
+        self,
+        other: PoseGraph,
+        here: int,
+        there: int,
+        yaw_steps: int = 8,
+        max_iterations: int = 50,
+        overlap: float = 0.8,
+        inlier_distance: float = 0.5,
+        min_fitness: float = 0.5,
+        sigma_t: float = 0.1,
+        sigma_r_deg: float = 1.0,
+    ) -> dict: ...
     def map(
-        self, voxel: float = 0.0, part: str = "all", initial: bool = False, correction: bool = False
+        self,
+        voxel: float = 0.0,
+        part: str = "all",
+        initial: bool = False,
+        correction: bool = False,
+        nodes: list[int] | None = None,
     ) -> dict: ...

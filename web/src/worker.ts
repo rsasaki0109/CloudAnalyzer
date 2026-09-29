@@ -988,6 +988,9 @@ interface LoadedGraph {
  */
 const RETRY_MIN_DRIFT = 5;
 
+/** Fewest keyframes one pool worker judges for dynamic points: fewer would mostly send neighbours. */
+const DYNAMIC_MIN_PART = 20;
+
 /** Scan files read at once while loading a pose graph. */
 const READ_AHEAD = 8;
 
@@ -1341,7 +1344,41 @@ async function handle(
     }
     case "pg-dynamic": {
       const start = performance.now();
-      const [dynamic, total] = openGraph().detectDynamic(req.window, req.margin, req.votes);
+      const session = openGraph();
+      const n = session.nodeCount;
+      const lanes = poolSize();
+      if (lanes < 2 || n < 2 * DYNAMIC_MIN_PART) {
+        const [dynamic, total] = session.detectDynamic(req.window, req.margin, req.votes);
+        return { value: { dynamic, total, millis: performance.now() - start }, transfer: [] };
+      }
+      // Parts of the drive on the pool: each needs its own scans and `window` more on either side.
+      const size = Math.max(DYNAMIC_MIN_PART, Math.ceil(n / (3 * lanes)));
+      const parts = Math.ceil(n / size);
+      let dynamic = 0;
+      let total = 0;
+      let done = 0;
+      await eachSlice(
+        parts,
+        (k) => {
+          const first = k * size;
+          const lo = Math.max(0, first - req.window);
+          return {
+            kind: "dynamic" as const,
+            context: session.dynamicContext(lo, Math.min(n, first + size + req.window)),
+            first: first - lo,
+            count: Math.min(size, n - first),
+            window: req.window,
+            margin: req.margin,
+            votes: req.votes,
+          };
+        },
+        (k, flags) => {
+          check();
+          dynamic += session.setDynamic(k * size, flags);
+          total += flags.length;
+          progress(`judged ${++done} of ${parts} parts of the drive`, done / parts);
+        },
+      );
       return { value: { dynamic, total, millis: performance.now() - start }, transfer: [] };
     }
     case "pg-close":

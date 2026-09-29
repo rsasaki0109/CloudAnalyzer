@@ -62,7 +62,7 @@ Drop a folder with a trajectory (KITTI, TUM) or a g2o pose graph and one scan pe
 </p>
 
 - **Score a map against ground truth**: accuracy, completeness, F1, Chamfer, and the Wasserstein distance between
-  voxel Gaussians (AWD / SCS, as in MapEval), which tells a shifted map from a bent one.
+  voxel Gaussians (AWD) and its spread (SCS), which tells a shifted map from a bent one.
 - **Ground and terrain**: extract the ground (CSF) and rasterize a DEM of the corrected map.
 
 ## 3. Measure any point cloud

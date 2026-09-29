@@ -18,7 +18,7 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 | Tool | What it does |
 |---|---|
 | `session_layout(folder)` | Look at a SLAM session folder without loading it: poses file, poses and scans, whether they match, path length, IMU gravity folders nearby. Quick; call it first. |
-| `slam_odometry(scans, out_dir, max_range?, voxel_size?, max_frames?, deskew?)` | Raw scans without poses: KISS-ICP odometry ([`ca slam-run`](slam-run.md)), writing `trajectory.tum` and `map.ply` (`pip install "cloudanalyzer[slam]"`) |
+| `slam_odometry(scans, out_dir, max_range?, voxel_size?, max_frames?, deskew?, pointcloud_topic?, imu_topic?, imu_to_lidar?)` | Raw scans without poses, as a folder or a ROS bag (`.bag`, `.mcap`, `.db3`, a rosbag2 folder): KISS-ICP odometry ([`ca slam-run`](slam-run.md)), writing `trajectory.tum` and `map.ply`; from a bag also the scans and, with an IMU topic, each scan's up direction (`pip install "cloudanalyzer[slam,ros]"`) |
 | `posegraph_fix(folder, out_dir?, poses?, keyframe_spacing?, gravity?, remove_dynamic?, truth?, voxel?, map_voxel?, find_loops?)` | [`ca posegraph-fix`](posegraph-fix.md): loops, IMU gravity, dynamic points, the fixed g2o / poses / map |
 | `posegraph_compare(first, second, here, there, out_dir?, gravity_first?, gravity_second?, reach?, min_change?)` | [`ca posegraph-compare`](posegraph-compare.md): two drives joined, M3C2, the changed objects |
 | `cloud_info(path)` | A cloud's size, bounds, centroid and density |
@@ -41,6 +41,18 @@ With only the scans, an agent chains two tools: `slam_odometry` makes the trajec
 | `slam_odometry` | 47 s | 1,106 poses, 697.5 m |
 | `posegraph_fix`, every pose, OXTS gravity, dynamic removal | 12 s | 7 loops, ATE 2.147 → 1.150 m |
 | `posegraph_fix`, a keyframe every metre (506) | 6 s | 7 loops, ATE 2.132 → 1.205 m |
+
+## From a ROS bag
+
+Given a bag, `slam_odometry` writes its `sensor_msgs/PointCloud2` scans to `out_dir/scans`, and when
+the bag has a `sensor_msgs/Imu` topic, each scan's up direction to `out_dir/gravity/gravity.txt`:
+from the IMU's orientation, or from its mean acceleration over half a second when it gives none.
+`imu_to_lidar` turns it into the LiDAR frame (identity when the axes agree, as for most built-in
+IMUs). Its result names the `scans`, `trajectory` and `gravity` to pass on to `posegraph_fix`.
+
+KITTI 07 recorded as a ROS1 bag (the Velodyne scans on `/velodyne_points`, the OXTS orientation on
+`/imu/data`, 2.1 GB), over MCP: `slam_odometry` 176 s, then `posegraph_fix` with the bag's IMU
+gravity and dynamic removal 13 s, 7 loops, ATE 2.147 → 1.150 m, the same as from the scan folder.
 
 ## Example conversation
 

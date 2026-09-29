@@ -43,8 +43,10 @@ _DATATYPE_TO_DTYPE = {
 
 
 def is_bag_path(path: str | Path) -> bool:
-    """Return True when *path* looks like a ROS bag / MCAP / sqlite recording."""
-    return Path(path).suffix.lower() in BAG_SUFFIXES
+    """Return True when *path* looks like a ROS bag / MCAP / sqlite recording, or a rosbag2
+    recording folder (one holding a ``metadata.yaml``)."""
+    p = Path(path)
+    return p.suffix.lower() in BAG_SUFFIXES or (p.is_dir() and (p / "metadata.yaml").is_file())
 
 
 def require_rosbags() -> Any:
@@ -216,6 +218,80 @@ def load_trajectory_from_bag(
     if frame is not None:
         result["frame"] = frame
     return result
+
+
+IMU_TYPE = "sensor_msgs/msg/Imu"
+
+
+def _quaternion_matrix(x: float, y: float, z: float, w: float) -> np.ndarray:
+    n = float(np.sqrt(x * x + y * y + z * z + w * w))
+    x, y, z, w = x / n, y / n, z / n, w / n
+    return np.array(
+        [
+            [1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+            [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+            [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)],
+        ]
+    )
+
+
+def imu_ups(
+    path: str | Path,
+    frame_times: tuple[float, ...] | list[float],
+    *,
+    topic: str | None = None,
+    window_s: float = 0.5,
+) -> dict[int, np.ndarray]:
+    """Per frame, the up direction in the IMU's frame at that frame's time, from the
+    ``sensor_msgs/msg/Imu`` messages of a bag: from the orientation when the IMU gives one
+    (world up seen in its frame), else from the mean acceleration over ``window_s`` either
+    side (at rest an accelerometer reads straight up). Empty when the bag has no IMU."""
+    AnyReader = require_rosbags()
+    stamps: list[float] = []
+    oriented: list[np.ndarray | None] = []
+    accels: list[np.ndarray] = []
+    with AnyReader([Path(path)]) as reader:
+        imus = [c for c in reader.connections if c.msgtype == IMU_TYPE]
+        if topic is not None:
+            imus = [c for c in imus if c.topic == topic]
+            if not imus:
+                raise ValueError(f"Imu topic not found: {topic}")
+        if not imus:
+            return {}
+        if len(imus) > 1:
+            names = ", ".join(sorted(c.topic for c in imus))
+            raise ValueError(f"Several Imu topics in the bag; pick one: {names}")
+        for _connection, _t, raw in reader.messages(connections=imus):
+            message = reader.deserialize(raw, IMU_TYPE)
+            q = message.orientation
+            usable = float(message.orientation_covariance[0]) != -1.0 and abs(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w - 1) < 0.1
+            stamps.append(_header_timestamp_sec(message))
+            oriented.append(_quaternion_matrix(q.x, q.y, q.z, q.w).T @ np.array([0.0, 0.0, 1.0]) if usable else None)
+            a = message.linear_acceleration
+            accels.append(np.array([a.x, a.y, a.z], dtype=float))
+    if not stamps:
+        return {}
+    times = np.array(stamps)
+    order = np.argsort(times)
+    times = times[order]
+    oriented = [oriented[k] for k in order]
+    acc = np.array(accels)[order]
+    ups: dict[int, np.ndarray] = {}
+    for index, t in enumerate(frame_times):
+        k = int(np.clip(np.searchsorted(times, t), 1, len(times) - 1)) if len(times) > 1 else 0
+        if len(times) > 1 and abs(times[k - 1] - t) < abs(times[k] - t):
+            k -= 1
+        if abs(times[k] - t) > window_s:
+            continue
+        up = oriented[k]
+        if up is None:
+            near = np.abs(times - t) <= window_s
+            mean = acc[near].mean(axis=0)
+            if not np.isfinite(mean).all() or np.linalg.norm(mean) < 1e-6:
+                continue
+            up = mean
+        ups[index] = up / np.linalg.norm(up)
+    return ups
 
 
 def pointcloud2_to_xyz(message: Any) -> np.ndarray:

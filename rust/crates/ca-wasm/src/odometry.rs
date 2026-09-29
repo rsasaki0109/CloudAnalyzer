@@ -15,13 +15,15 @@ pub struct LidarOdometry {
 #[wasm_bindgen]
 impl LidarOdometry {
     /// Points nearer than `min_range` or further than `max_range` (metres)
-    /// are left out.
+    /// are left out; `deskew` undoes the motion during each scan (from its
+    /// `time` attribute, else from the order a spinning sensor takes points).
     #[wasm_bindgen(constructor)]
-    pub fn new(min_range: f64, max_range: f64) -> LidarOdometry {
+    pub fn new(min_range: f64, max_range: f64, deskew: bool) -> LidarOdometry {
         LidarOdometry {
             inner: Odometry::new(OdometryParams {
                 min_range,
                 max_range,
+                deskew,
                 ..OdometryParams::default()
             }),
         }

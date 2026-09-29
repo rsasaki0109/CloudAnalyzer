@@ -702,6 +702,7 @@ async function graphFiles(files: File[]): Promise<{ files: PoseGraphFiles; note:
     minRange: Math.max(0, num("pg-odom-min-range")),
     maxRange: Math.max(1, num("pg-odom-range") || 80),
     keyframeSpacing: Math.max(0, num("pg-keyframe-spacing")),
+    deskew: $<HTMLInputElement>("pg-odom-deskew").checked,
   };
   const options = (scans: File[]) => ({
     voxel: Math.max(0, num("pg-voxel") || 0),

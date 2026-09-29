@@ -273,8 +273,14 @@
       the ones before it (points between the <b>Range</b> limits, 1.5–80 m by default), and keeps a scan every
       <b>Keyframe</b> metres of travel as a node. When the bag has a <code>sensor_msgs/Imu</code> topic, its up direction
       at each keyframe (from the orientation, else the mean acceleration) then levels the graph as <b>IMU gravity</b>
-      does, with the IMU's mounting estimated. Compressed bags (lz4, zstd) open as they are, except bz2 ROS 1 bags;
-      ROS 2 bags stored in SQLite (<code>.db3</code>) do not open: record them as MCAP, or convert them. A
+      does, with the IMU's mounting estimated. <b>Deskew scans</b> undoes the sensor's motion during each scan
+      (a spinning sensor sees the end of its sweep from somewhere else than its start) from the points' time field
+      (<code>t</code>, <code>time</code>, <code>timestamp</code>…), or, without one, from the order a spinning sensor
+      takes the points; scans sorted by ring or corrected already (KITTI's) are left as they are. It is off by
+      default: on the drives tried (a Segway at 1 m/s, an ATV at 3–5 m/s with a 10 Hz sensor) it made no measurable
+      difference against the ground truth. Compressed bags
+      (lz4, zstd, bz2) open as they are; ROS 2 bags stored in SQLite (<code>.db3</code>) do not open: record them as
+      MCAP, or convert them. A
       2.4 GB ROS 1 bag of a Velodyne HDL-32E (1,263 scans, 126 s of driving) opens in about two minutes.
     </p>
     <ul>

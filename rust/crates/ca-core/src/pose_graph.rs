@@ -594,7 +594,7 @@ pub(crate) fn exp_so3(w: &[f64; 3]) -> Mat3 {
 }
 
 /// Rotation vector of `r`.
-fn log_so3(r: &Mat3) -> [f64; 3] {
+pub(crate) fn log_so3(r: &Mat3) -> [f64; 3] {
     let v = [r[2][1] - r[1][2], r[0][2] - r[2][0], r[1][0] - r[0][1]];
     // atan2 keeps small angles precise, where acos of the trace does not.
     let sin = (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt() / 2.0;

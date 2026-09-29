@@ -12,6 +12,17 @@ mod pose_graph;
 pub use odometry::LidarOdometry;
 pub use pose_graph::{PoseGraphSession, register_scans};
 
+/// Decompress a bzip2 stream (ROS 1 bags recorded with `--bz2`).
+#[wasm_bindgen]
+pub fn bunzip2(data: &[u8]) -> Result<Vec<u8>, JsError> {
+    use std::io::Read;
+    let mut out = Vec::new();
+    bzip2::read::MultiBzDecoder::new(data)
+        .read_to_end(&mut out)
+        .map_err(|e| JsError::new(&format!("bzip2: {e}")))?;
+    Ok(out)
+}
+
 /// Numbers per node in [`Cloud::lod_nodes`].
 const NODE_STRIDE: usize = 15;
 
@@ -404,17 +415,20 @@ impl Cloud {
         Ok(Cloud::unindexed(ca_core::read(name, bytes)?))
     }
 
-    /// A cloud of `xyz` (three per point) with a per-point `intensity`
-    /// (empty for none), e.g. decoded from a ROS message. Call
-    /// [`Cloud::build_index`] before using any per-point output.
+    /// A cloud of `xyz` (three per point) with a per-point `intensity` and
+    /// `time` within the scan (each empty for none), e.g. decoded from a ROS
+    /// message. Call [`Cloud::build_index`] before using any per-point output.
     #[wasm_bindgen(js_name = fromXyz)]
-    pub fn from_xyz(xyz: &[f32], intensity: &[f32]) -> Result<Cloud, JsError> {
+    pub fn from_xyz(xyz: &[f32], intensity: &[f32], time: &[f32]) -> Result<Cloud, JsError> {
         if !xyz.len().is_multiple_of(3) {
             return Err(JsError::new("xyz needs three numbers per point"));
         }
         let n = xyz.len() / 3;
         if !intensity.is_empty() && intensity.len() != n {
             return Err(JsError::new("intensity needs one number per point"));
+        }
+        if !time.is_empty() && time.len() != n {
+            return Err(JsError::new("time needs one number per point"));
         }
         let mut inner = PointCloud {
             positions: xyz
@@ -429,6 +443,12 @@ impl Cloud {
             inner.attributes.push(ca_core::Attribute {
                 name: INTENSITY.to_string(),
                 values: AttributeValues::F32(intensity.to_vec()),
+            });
+        }
+        if !time.is_empty() {
+            inner.attributes.push(ca_core::Attribute {
+                name: ca_core::odometry::TIME.to_string(),
+                values: AttributeValues::F32(time.to_vec()),
             });
         }
         Ok(Cloud::unindexed(inner))

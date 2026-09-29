@@ -122,18 +122,19 @@ function lz4Block(src: Uint8Array, start: number, end: number, out: Uint8Array, 
   return n;
 }
 
+/** Decompressors by a bag's name for them; `bz2` is added by whoever has one (the Rust core's). */
+export const decompressors: Record<string, (data: Uint8Array, size: number) => Uint8Array> = {
+  lz4: lz4Frame,
+  zstd: (data, size) => zstd(data, new Uint8Array(size)),
+};
+
 function expand(compression: string, data: Uint8Array, size: number): Uint8Array {
-  switch (compression) {
-    case "":
-    case "none":
-      return data;
-    case "lz4":
-      return lz4Frame(data, size);
-    case "zstd":
-      return zstd(data, new Uint8Array(size));
-    default:
-      throw new Error(`${compression}-compressed bags are not supported: decompress it first (e.g. rosbag decompress)`);
+  if (compression === "" || compression === "none") return data;
+  const decompress = decompressors[compression];
+  if (!decompress) {
+    throw new Error(`${compression}-compressed bags are not supported: decompress it first (e.g. rosbag decompress)`);
   }
+  return decompress(data, size);
 }
 
 // --- ROS 1 -------------------------------------------------------------------
@@ -534,7 +535,12 @@ export interface PointsMessage {
   xyz: Float32Array;
   /** One per point, when the cloud has an `intensity` field. */
   intensity: Float32Array | null;
+  /** How far through the scan each point was taken, 0 to 1, when the cloud has a per-point time field. */
+  time: Float32Array | null;
 }
+
+/** Names LiDAR drivers give a per-point time field. */
+const TIME_FIELDS = ["t", "time", "timestamp", "time_stamp", "time_offset", "point_time", "ts"];
 
 export function decodePointCloud2(data: Uint8Array, encoding: Encoding): PointsMessage {
   const m = new Message(data, encoding === "cdr");
@@ -583,8 +589,11 @@ export function decodePointCloud2(data: Uint8Array, encoding: Encoding): PointsM
   const [x, y, z] = ["x", "y", "z"].map(reader);
   if (!x || !y || !z) throw new Error("a PointCloud2 without x, y and z fields");
   const intensity = reader("intensity");
+  const timeField = TIME_FIELDS.find((name) => layout.has(name));
+  const time = timeField ? reader(timeField) : null;
   const xyz = new Float32Array(width * height * 3);
   const values = intensity ? new Float32Array(width * height) : null;
+  const times = time ? new Float64Array(width * height) : null;
   let n = 0;
   for (let row = 0; row < height; row++) {
     for (let col = 0; col < width; col++) {
@@ -598,10 +607,21 @@ export function decodePointCloud2(data: Uint8Array, encoding: Encoding): PointsM
       xyz[3 * n + 1] = py;
       xyz[3 * n + 2] = pz;
       if (values) values[n] = intensity!(at);
+      if (times) times[n] = time!(at);
       n++;
     }
   }
-  return { stamp, xyz: xyz.subarray(0, 3 * n), intensity: values ? values.subarray(0, n) : null };
+  let fractions: Float32Array | null = null;
+  if (times && n > 1) {
+    let lo = Infinity;
+    let hi = -Infinity;
+    for (let i = 0; i < n; i++) {
+      lo = Math.min(lo, times[i]);
+      hi = Math.max(hi, times[i]);
+    }
+    if (hi > lo) fractions = Float32Array.from(times.subarray(0, n), (t) => (t - lo) / (hi - lo));
+  }
+  return { stamp, xyz: xyz.subarray(0, 3 * n), intensity: values ? values.subarray(0, n) : null, time: fractions };
 }
 
 export interface ImuMessage {

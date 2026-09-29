@@ -377,7 +377,7 @@ export interface PoseGraphFiles {
   graph: File | null;
   scans: File[];
   /** For a bag, or scans without poses: odometry, keeping a keyframe every `keyframeSpacing` metres of travel. */
-  odometry: { minRange: number; maxRange: number; keyframeSpacing: number };
+  odometry: { minRange: number; maxRange: number; keyframeSpacing: number; deskew: boolean };
   /** Voxel size scans are thinned to (0 keeps every point). */
   voxel: number;
   /** Points per scan sent back for display. */

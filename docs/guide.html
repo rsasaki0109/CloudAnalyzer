@@ -84,6 +84,7 @@
       <a href="#fields">Scalar fields</a>
       <a href="#distance">Distances (C2C, C2M)</a>
       <a href="#m3c2">Change detection (M3C2)</a>
+      <a href="#map-quality">Map quality</a>
       <a href="#volume">Cut / fill volume</a>
       <a href="#manual-align">Manual alignment</a>
       <a href="#icp">Alignment (ICP)</a>
@@ -200,6 +201,26 @@
     </ul>
     <p>Core points where either cylinder has too few points are grey.</p>
     <a class="try" href="./app/?demo=m3c2">Try: a landslide</a>
+
+    <h2 id="map-quality">Map quality against ground truth</h2>
+    <p>
+      Choose <b>Method: Map quality</b> in the Distance panel, with the map to judge as <i>Compared</i> and a
+      ground-truth map as <i>Reference</i> (for a SLAM result, the same scans built with ground-truth poses). The
+      metrics follow MapEval (JokerJohn/Cloud_Map_Evaluation):
+    </p>
+    <ul>
+      <li><b>accuracy</b>, the RMS distance of the map's points within the <i>inlier</i> distance of the truth;</li>
+      <li><b>precision</b> and <b>completeness</b>, the share of the map near the truth and of the truth near the map,
+        and their <b>F1</b>; <b>Chamfer</b>, the mean matched distance both ways;</li>
+      <li><b>AWD</b>, the average Wasserstein distance between the Gaussians of the voxels both maps fill, and
+        <b>SCS</b>, its spread among neighbouring voxels (large where the map is bent rather than shifted).</li>
+    </ul>
+    <p>
+      The map is coloured by its distance to the truth, up to the inlier distance. On KITTI (scans thinned to
+      0.2 m, the truth built from the ground-truth poses), loop closure and IMU gravity raise F1 at 0.3 m from 0.45 to
+      0.70 on sequence 07 (completeness 44 → 68 %, AWD 0.33 → 0.25 m) and from 0.16 to 0.42 on 09. KITTI's ground-truth
+      poses are themselves locally noisy, so no map reaches 100 %.
+    </p>
 
     <h2 id="volume">Cut / fill volume</h2>
     <p>

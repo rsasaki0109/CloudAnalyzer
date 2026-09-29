@@ -84,6 +84,7 @@
   file where you zoom in, read from the file on demand without converting it.
   Georeferenced coordinates (UTM, ECEF) stay exact to the millimetre.
 - **Compare**: cloud-to-cloud and cloud-to-mesh distance, M3C2 change detection, cut/fill volume,
+  map quality against a ground-truth map (accuracy, completeness, Chamfer, AWD / SCS as in MapEval),
   trajectory ATE / RPE (TUM, KITTI, CSV; SE(3) / Sim(3) alignment, same numbers as the Python CLI).
 - **Process**: ICP and manual alignment (point pairs, gizmo, matrix), subsampling (voxel, minimum distance, octree level, random), outlier removal, ground extraction (CSF), normals, merge/split,
   rasterize to a DEM / DSM (GeoTIFF or colored PNG), RANSAC shape detection (planes, cylinders, spheres)

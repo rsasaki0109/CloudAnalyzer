@@ -15,6 +15,7 @@ pub mod icp;
 pub mod io;
 pub mod kdtree;
 pub mod m3c2;
+pub mod map_quality;
 pub mod merge;
 pub mod mesh;
 pub mod normals;

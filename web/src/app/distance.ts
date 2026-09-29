@@ -1,8 +1,8 @@
 /** Distance panel (C2C, C2M, M3C2) and the colorbar of the shown distances. */
 
-import { cloudToCloud, computeM3c2 } from "../api";
+import { cloudToCloud, computeM3c2, mapVoxelScores } from "../api";
 import { RAMPS, gradientCss, lut, quantile, type RampName } from "../colormap";
-import type { C2cOutput } from "../protocol";
+import type { C2cOutput, MapQuality } from "../protocol";
 import { refreshColors } from "./colors";
 import { $, errorText, fillTable, fmt, setStatus } from "./dom";
 import { addEntry, renderList, saveCloud } from "./entries";
@@ -42,13 +42,15 @@ listChanged.add(renderSelects);
 function updateRunButton(): void {
   const reference = entries.get(Number(referenceSelect.value));
   const m3c2 = methodSelect.value === "m3c2";
+  const quality = methodSelect.value === "quality";
   runButton.disabled =
     !comparedSelect.value ||
     !referenceSelect.value ||
     comparedSelect.value === referenceSelect.value ||
-    (m3c2 && !!reference && isMesh(reference));
-  $("c2m-signed-row").hidden = m3c2 || !reference || !isMesh(reference);
+    ((m3c2 || quality) && !!reference && isMesh(reference));
+  $("c2m-signed-row").hidden = m3c2 || quality || !reference || !isMesh(reference);
   $("m3c2-options").hidden = !m3c2;
+  $("quality-options").hidden = !quality;
 }
 methodSelect.onchange = updateRunButton;
 comparedSelect.onchange = referenceSelect.onchange = updateRunButton;
@@ -131,6 +133,7 @@ runButton.onclick = async () => {
   runButton.disabled = true;
   try {
     if (methodSelect.value === "m3c2") await runM3c2(compared, reference);
+    else if (methodSelect.value === "quality") await runMapQuality(compared, reference);
     else await runNearest(compared, reference, $<HTMLInputElement>("c2m-signed").checked);
   } catch (err) {
     setStatus(`M3C2 failed: ${errorText(err)}`, true);
@@ -138,6 +141,74 @@ runButton.onclick = async () => {
     updateRunButton();
   }
 };
+
+/** Mean and RMS of the distances up to `threshold`, and their share. */
+function inliers(distances: Float32Array, threshold: number): { share: number; mean: number; rms: number } {
+  let [n, sum, sum2] = [0, 0, 0];
+  for (const d of distances) {
+    if (!(d <= threshold)) continue;
+    n++;
+    sum += d;
+    sum2 += d * d;
+  }
+  return {
+    share: distances.length ? n / distances.length : 0,
+    mean: n ? sum / n : Number.NaN,
+    rms: n ? Math.sqrt(sum2 / n) : Number.NaN,
+  };
+}
+
+/**
+ * A map (`compared`) against its ground truth (`reference`), after MapEval:
+ * accuracy, completeness and Chamfer from nearest distances both ways, and
+ * AWD / SCS from voxel Gaussians. The map is coloured by its distance.
+ */
+export async function runMapQuality(compared: Entry, reference: Entry): Promise<MapQuality> {
+  const num = (id: string) => Number($<HTMLInputElement>(id).value);
+  const threshold = Math.max(1e-6, num("quality-threshold") || 0.3);
+  const voxel = Math.max(1e-3, num("quality-voxel") || 1);
+  const minPoints = Math.max(3, Math.round(num("quality-min") || 10));
+  setStatus(`Map quality: ${compared.cloud.name} against ${reference.cloud.name}…`);
+  const start = performance.now();
+  const ours = await cloudToCloud(compared.cloud.id, reference.cloud.id, false);
+  const theirs = await cloudToCloud(reference.cloud.id, compared.cloud.id, false);
+  const voxels = await mapVoxelScores({
+    compared: compared.cloud.id,
+    reference: reference.cloud.id,
+    voxel,
+    minPoints,
+  });
+  const [a, b] = [inliers(ours.distances, threshold), inliers(theirs.distances, threshold)];
+  const f1 = a.share + b.share > 0 ? (2 * a.share * b.share) / (a.share + b.share) : 0;
+  const quality: MapQuality = {
+    threshold,
+    accuracy: a.rms,
+    precision: a.share,
+    completeness: b.share,
+    f1,
+    chamfer: (a.mean + b.mean) / 2,
+    ...voxels,
+  };
+  compared.c2c = {
+    ...ours,
+    quality,
+    millis: performance.now() - start,
+    referenceName: reference.cloud.name,
+  };
+  compared.mode = "c2c";
+  display.activeC2c = compared.cloud.id;
+  display.range = { lo: 0, hi: threshold };
+  refreshColors(compared);
+  renderList();
+  distanceChanged.emit();
+  const pct = (v: number) => `${(100 * v).toFixed(1)} %`;
+  setStatus(
+    `Map quality within ${fmt(threshold)} m: accuracy ${fmt(quality.accuracy)} m, completeness ${pct(quality.completeness)}, ` +
+      `F1 ${quality.f1.toFixed(3)}, Chamfer ${fmt(quality.chamfer)} m, AWD ${fmt(quality.awd)} m, SCS ${fmt(quality.scs)} m ` +
+      `(${voxels.voxels.toLocaleString()} voxels)`,
+  );
+  return quality;
+}
 
 /** C2C (or C2M against a mesh) from `compared` to `reference`, shown on `compared`. */
 export async function runNearest(compared: Entry, reference: Entry, signed: boolean): Promise<void> {
@@ -215,8 +286,20 @@ function renderResult(): void {
   }
   if (!entry || !c2c) return;
 
-  const { stats } = c2c;
+  const { stats, quality } = c2c;
+  const pct = (v: number) => `${(100 * v).toFixed(1)} %`;
   fillTable($("c2c-stats"), [
+    ...(quality
+      ? ([
+          [`Accuracy (≤ ${fmt(quality.threshold)})`, fmt(quality.accuracy)],
+          ["Precision", pct(quality.precision)],
+          ["Completeness", pct(quality.completeness)],
+          ["F1", quality.f1.toFixed(3)],
+          ["Chamfer", fmt(quality.chamfer)],
+          ["AWD", fmt(quality.awd)],
+          ["SCS", fmt(quality.scs)],
+        ] as [string, string][])
+      : []),
     ["Points", stats.count.toLocaleString()],
     ["Mean", fmt(stats.mean)],
     ["Std. dev.", fmt(stats.stdDev)],
@@ -227,13 +310,15 @@ function renderResult(): void {
   ]);
 
   renderColorbar(
-    c2c.kind === "volume"
-      ? `Height difference (after − before) · ${entry.cloud.name}`
-      : c2c.kind === "m3c2"
-        ? `M3C2 distance · ${entry.cloud.name}`
-        : c2c.kind === "raster"
-          ? `Height · ${entry.cloud.name}`
-          : `${c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C"} distance · ${entry.cloud.name}`,
+    c2c.quality
+      ? `Distance to ${c2c.referenceName} · ${entry.cloud.name}`
+      : c2c.kind === "volume"
+        ? `Height difference (after − before) · ${entry.cloud.name}`
+        : c2c.kind === "m3c2"
+          ? `M3C2 distance · ${entry.cloud.name}`
+          : c2c.kind === "raster"
+            ? `Height · ${entry.cloud.name}`
+            : `${c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C"} distance · ${entry.cloud.name}`,
     stats,
   );
 }
@@ -267,8 +352,16 @@ addReportSection("distance", () => {
   for (const entry of entries.values()) {
     const c2c = entry.c2c;
     if (!c2c || c2c.kind === "volume" || c2c.kind === "raster") continue;
-    const kind = c2c.kind === "m3c2" ? "M3C2" : c2c.kind === "c2m" ? (c2c.signed ? "Signed C2M" : "C2M") : "C2C";
-    const { stats } = c2c;
+    const kind = c2c.quality
+      ? "Map quality"
+      : c2c.kind === "m3c2"
+        ? "M3C2"
+        : c2c.kind === "c2m"
+          ? c2c.signed
+            ? "Signed C2M"
+            : "C2M"
+          : "C2C";
+    const { stats, quality } = c2c;
     out.set(entry.cloud.name, {
       title: `${kind} ${entry.cloud.name} → ${c2c.referenceName}`,
       metrics: {
@@ -280,6 +373,18 @@ addReportSection("distance", () => {
         min: { label: "Min", value: stats.min },
         max: { label: "Max", value: stats.max },
         p95: { label: "95th percentile |d|", value: p95(c2c.distances) },
+        ...(quality && {
+          accuracy: {
+            label: `Accuracy (RMS ≤ ${quality.threshold} m)`,
+            value: quality.accuracy,
+          },
+          precision: { label: "Precision", value: quality.precision },
+          completeness: { label: "Completeness", value: quality.completeness },
+          f1: { label: "F1", value: quality.f1 },
+          chamfer: { label: "Chamfer", value: quality.chamfer },
+          awd: { label: "AWD", value: quality.awd },
+          scs: { label: "SCS", value: quality.scs },
+        }),
       },
     });
   }

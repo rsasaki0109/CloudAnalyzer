@@ -82,6 +82,26 @@ export interface C2cStats {
   median: number;
 }
 
+/** A map against its ground truth, after MapEval. Distances in metres. */
+export interface MapQuality {
+  /** Inlier distance: nearest points closer than this count as matched. */
+  threshold: number;
+  /** RMS distance from the map's matched points to the truth. */
+  accuracy: number;
+  /** Share of the map's points near the truth. */
+  precision: number;
+  /** Share of the truth's points near the map. */
+  completeness: number;
+  f1: number;
+  /** Mean matched distance, averaged over both directions. */
+  chamfer: number;
+  /** Average Wasserstein distance between matching voxel Gaussians. */
+  awd: number;
+  /** Spatial consistency: spread of that distance among neighbouring voxels. */
+  scs: number;
+  voxels: number;
+}
+
 export interface C2cOutput {
   /** Cloud-to-cloud, cloud-to-mesh, a cut/fill height difference, or raster heights. */
   kind: "c2c" | "c2m" | "volume" | "m3c2" | "raster";
@@ -93,6 +113,8 @@ export interface C2cOutput {
   millis: number;
   /** Number of WASM workers the computation was split across. */
   workers: number;
+  /** Set by the Map quality method. */
+  quality?: MapQuality;
 }
 
 export interface IcpOutput {
@@ -618,6 +640,14 @@ export type Request =
       maxDepth: number;
       /** Core points: one per voxel of this size (0 = every compared point). */
       coreSpacing: number;
+    }
+  | {
+      /** Voxel Gaussian scores of `compared` against the ground-truth map `reference` (see `ca_core::map_quality`). */
+      kind: "map-quality";
+      compared: number;
+      reference: number;
+      voxel: number;
+      minPoints: number;
     }
   | { kind: "merge"; ids: number[]; fills: Vec3[] }
   | { kind: "normals"; id: number; k: number; orientation: "up" | "outward" }

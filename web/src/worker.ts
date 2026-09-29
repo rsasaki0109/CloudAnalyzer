@@ -11,6 +11,7 @@ import init, {
   cloudToCloud,
   cloudToMesh,
   computeM3c2,
+  mapQuality,
   computeVolume,
   e57ScanNames,
   evaluateTrajectory,
@@ -1621,6 +1622,10 @@ async function handle(
     }
     case "shapes":
       return shapes(req);
+    case "map-quality": {
+      const [awd, scs, voxels] = mapQuality(getCloud(req.compared), getCloud(req.reference), req.voxel, req.minPoints);
+      return { value: { awd, scs, voxels }, transfer: [] };
+    }
     case "m3c2": {
       const start = performance.now();
       const cloud = computeM3c2(

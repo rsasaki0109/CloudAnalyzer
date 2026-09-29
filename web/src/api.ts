@@ -229,6 +229,13 @@ export function extractGround(params: Omit<Extract<Request, { kind: "ground" }>,
 }
 
 /** M3C2 change between two clouds, at core points from `compared`. */
+/** `[AWD, SCS, voxels]` of `compared` against the ground-truth map `reference`. */
+export function mapVoxelScores(
+  params: Omit<Extract<Request, { kind: "map-quality" }>, "kind">,
+): Promise<{ awd: number; scs: number; voxels: number }> {
+  return call({ kind: "map-quality", ...params });
+}
+
 export function computeM3c2(params: Omit<Extract<Request, { kind: "m3c2" }>, "kind">): Promise<M3c2Output> {
   return call({ kind: "m3c2", ...params });
 }

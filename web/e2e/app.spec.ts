@@ -552,6 +552,30 @@ test("M3C2: a flat grid lifted by 0.3 m changes by 0.3 m along the normal", asyn
   expect(header).toContain("property uchar significant");
 });
 
+test("map quality: half a map lifted off its ground truth is half precise and half complete", async ({ page }) => {
+  const truth = grid(60).map(([x, y]) => [x, y, 0] as [number, number, number]);
+  const warped = truth.map(([x, y]) => [x, y, x >= 2.95 ? 1 : 0] as [number, number, number]);
+  await open(page, [
+    { name: "truth.ply", buffer: ply(truth) },
+    { name: "warped.ply", buffer: ply(warped) },
+  ]);
+  await expect(status(page)).toContainText("Loaded warped.ply: 3,600 points");
+  await page.locator("#distance-method").selectOption("quality");
+  await expect(page.locator("#quality-options")).toBeVisible();
+  await page.locator("#c2c-compared").selectOption({ label: "warped.ply" });
+  await page.locator("#c2c-reference").selectOption({ label: "truth.ply" });
+  await page.locator("#quality-threshold").fill("0.05");
+  await page.locator("#c2c-run").click();
+  await expect(status(page)).toContainText("Map quality within 0.05 m");
+  await expect(status(page)).toContainText("completeness 50.0 %, F1 0.500");
+  // Only the untouched half's voxels match (3 x 6 of 1 m), and they agree exactly.
+  await expect(status(page)).toContainText("(18 voxels)");
+  const stats = page.locator("#c2c-stats");
+  await expect(stats).toContainText(/Precision\s*50\.0 %/);
+  // Zero to rounding (about 1e-9 m).
+  await expect(stats).toContainText(/AWD\s*(0|[\d.]+e-\d+)SCS/);
+});
+
 test("trajectories: TUM files are drawn and give the Python module's ATE", async ({ page }) => {
   // The Rust parity fixture (see rust/crates/ca-core/tests/trajectory.rs).
   const fixture = (name: string) =>

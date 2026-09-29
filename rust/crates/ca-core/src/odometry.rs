@@ -55,6 +55,15 @@ pub struct OdometryParams {
     pub initial_sigma: f64,
     /// Motion model errors smaller than this (metres) are not counted.
     pub min_motion: f64,
+    /// Undo the motion during each scan (see [`sweep_times`]), taking the
+    /// last motion for it: the pose is the sensor's halfway through the scan.
+    /// Off by default: on the drives tried (a Segway at 1 m/s, an ATV at
+    /// 3-5 m/s with a 10 Hz sensor) it made no measurable difference.
+    pub deskew: bool,
+    /// How much of the motion between scans a sweep takes when the scan's
+    /// [`TIME`] attribute does not say: 1 for a spinning sensor recorded at
+    /// its full rate, less when frames were skipped.
+    pub sweep: f64,
 }
 
 impl Default for OdometryParams {
@@ -67,6 +76,8 @@ impl Default for OdometryParams {
             max_iterations: 500,
             initial_sigma: 2.0,
             min_motion: 0.1,
+            deskew: false,
+            sweep: 1.0,
         }
     }
 }
@@ -136,6 +147,62 @@ fn orthonormal(r: &[[f64; 3]; 3]) -> [[f64; 3]; 3] {
         x[0] * y[1] - x[1] * y[0],
     ];
     [x, y, z]
+}
+
+/// The name of a per-point attribute giving when in its scan each point
+/// was taken (any unit; only the order and spacing count).
+pub const TIME: &str = "time";
+
+/// How far through its sweep the scan took each point, 0 to 1: from the
+/// scan's [`TIME`] attribute when it has one, else from the azimuths, when
+/// the points come in the order a spinning sensor takes them (one turn from
+/// first to last; a scan sorted by ring, or already corrected, like
+/// KITTI's, gives many turns and None).
+pub fn sweep_times(scan: &PointCloud) -> Option<Vec<f32>> {
+    if let Some(crate::AttributeValues::F32(t)) = scan.attribute(TIME).map(|a| &a.values) {
+        let (lo, hi) = t
+            .iter()
+            .fold((f32::MAX, f32::MIN), |(lo, hi), &v| (lo.min(v), hi.max(v)));
+        return (hi > lo).then(|| t.iter().map(|v| (v - lo) / (hi - lo)).collect());
+    }
+    let mut turned = Vec::with_capacity(scan.len());
+    let mut total = 0.0;
+    let mut last = None;
+    for p in &scan.positions {
+        let azimuth = p[1].atan2(p[0]);
+        if let Some(prev) = last {
+            let mut step = azimuth - prev;
+            if step > std::f64::consts::PI {
+                step -= std::f64::consts::TAU;
+            } else if step < -std::f64::consts::PI {
+                step += std::f64::consts::TAU;
+            }
+            total += step;
+        }
+        last = Some(azimuth);
+        turned.push(total);
+    }
+    let turns = total.abs() / std::f64::consts::TAU;
+    if !(0.8..1.2).contains(&turns) {
+        return None;
+    }
+    Some(
+        turned
+            .iter()
+            .map(|t| (t / total).clamp(0.0, 1.0) as f32)
+            .collect(),
+    )
+}
+
+/// `point` taken `fraction` of a scan after its middle, with the sensor
+/// moving by `motion` over the scan, moved to where the sensor was at the
+/// middle (a constant velocity: the motion scaled to the fraction).
+fn deskewed(point: &[f64; 3], fraction: f64, motion: &Rigid, spin: &[f64; 3]) -> [f64; 3] {
+    let part = Rigid {
+        rotation: crate::pose_graph::exp_so3(&spin.map(|w| w * fraction)),
+        translation: motion.translation.map(|t| t * fraction),
+    };
+    part.apply(point)
 }
 
 fn norm(v: &[f64; 3]) -> f64 {
@@ -269,21 +336,31 @@ impl Odometry {
     /// Register the next scan (in its sensor's frame) and return its pose.
     pub fn register(&mut self, scan: &PointCloud) -> Rigid {
         let p = self.params;
-        let near: Vec<[f64; 3]> = scan
-            .positions
-            .iter()
-            .copied()
-            .filter(|q| (p.min_range..=p.max_range).contains(&norm(q)))
-            .collect();
-        // Half a map voxel for the map, one and a half for registering.
-        let frame = thin(&near, 0.5 * p.map_voxel);
-        let source = thin(&frame, 1.5 * p.map_voxel);
         // Constant velocity: the last motion again.
         let n = self.poses.len();
         let motion = match n {
             0 | 1 => Rigid::IDENTITY,
             _ => crate::pose_graph::inverse(&self.poses[n - 2]).compose(&self.poses[n - 1]),
         };
+        let times = if p.deskew && n >= 2 {
+            sweep_times(scan)
+        } else {
+            None
+        };
+        let spin = crate::pose_graph::log_so3(&motion.rotation);
+        let near: Vec<[f64; 3]> = scan
+            .positions
+            .iter()
+            .enumerate()
+            .filter(|(_, q)| (p.min_range..=p.max_range).contains(&norm(q)))
+            .map(|(k, q)| match &times {
+                Some(t) => deskewed(q, (f64::from(t[k]) - 0.5) * p.sweep, &motion, &spin),
+                None => *q,
+            })
+            .collect();
+        // Half a map voxel for the map, one and a half for registering.
+        let frame = thin(&near, 0.5 * p.map_voxel);
+        let source = thin(&frame, 1.5 * p.map_voxel);
         let prediction = match n {
             0 => Rigid::IDENTITY,
             _ => self.poses[n - 1].compose(&motion),
@@ -366,6 +443,93 @@ mod tests {
             }
         }
         out
+    }
+
+    /// Scans of `world` along `truth`, each taken over the move to the next
+    /// pose (the sensor spinning once, so the azimuth tells the time).
+    fn skewed_scans(world: &[[f64; 3]], truth: &[Rigid]) -> Vec<PointCloud> {
+        truth
+            .windows(2)
+            .map(|w| {
+                let (a, b) = (&w[0], &w[1]);
+                let step = crate::pose_graph::inverse(a).compose(b);
+                let spin = crate::pose_graph::log_so3(&step.rotation);
+                // In a's frame, which azimuth each point is at (a full turn from -pi).
+                let mut seen: Vec<([f64; 3], f64)> = world
+                    .iter()
+                    .map(|p| crate::pose_graph::inverse(a).apply(p))
+                    .filter(|p| norm(p) < 40.0)
+                    .map(|p| (p, p[1].atan2(p[0])))
+                    .collect();
+                seen.sort_by(|x, y| x.1.total_cmp(&y.1));
+                let positions = seen
+                    .iter()
+                    .map(|(p, azimuth)| {
+                        // Taken this far into the move: seen from there.
+                        let f = (azimuth + std::f64::consts::PI) / std::f64::consts::TAU;
+                        let there = Rigid {
+                            rotation: crate::pose_graph::exp_so3(&spin.map(|w| w * f)),
+                            translation: step.translation.map(|t| t * f),
+                        };
+                        crate::pose_graph::inverse(&there).apply(p)
+                    })
+                    .collect();
+                PointCloud {
+                    positions,
+                    ..PointCloud::default()
+                }
+            })
+            .collect()
+    }
+
+    #[test]
+    fn a_turn_taken_while_scanning_is_undone() {
+        let world = town();
+        // Pulling away into a turn of 6 degrees a scan while moving 0.6 m:
+        // the end of each sweep sees the world turned against its start.
+        let mut u = 0.0;
+        let truth: Vec<Rigid> = (0..30)
+            .map(|k| {
+                u += 0.1 * k.min(10) as f64;
+                let yaw = 0.1 * u;
+                let (s, c) = yaw.sin_cos();
+                Rigid {
+                    rotation: [[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]],
+                    translation: [6.0 * yaw.sin(), 6.0 * (1.0 - yaw.cos()), 1.5],
+                }
+            })
+            .collect();
+        let scans = skewed_scans(&world, &truth);
+        let errors: Vec<f64> = [true, false]
+            .map(|deskew| {
+                let mut odometry = Odometry::new(OdometryParams {
+                    deskew,
+                    ..OdometryParams::default()
+                });
+                for scan in &scans {
+                    odometry.register(scan);
+                }
+                // Each pose stands for the middle of its scan: halfway between the two.
+                let found = odometry.poses()[28];
+                let first = crate::pose_graph::inverse(&truth[0]);
+                let (a, b) = (first.compose(&truth[28]), first.compose(&truth[29]));
+                let mid: [f64; 3] =
+                    std::array::from_fn(|k| 0.5 * (a.translation[k] + b.translation[k]));
+                norm(&std::array::from_fn(|k| found.translation[k] - mid[k]))
+            })
+            .to_vec();
+        assert!(
+            errors[0] < 0.15,
+            "deskewed {}, skewed {}",
+            errors[0],
+            errors[1]
+        );
+        assert!(
+            errors[0] < 0.5 * errors[1],
+            "deskewed {}, skewed {}",
+            errors[0],
+            errors[1]
+        );
     }
 
     #[test]

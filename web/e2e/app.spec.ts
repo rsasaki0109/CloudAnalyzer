@@ -1884,28 +1884,42 @@ test("pose graph: a ROS 2 bag without poses placed by LiDAR odometry and levelle
     const [x, y] = [40 * random() - 20, 40 * random() - 20];
     world.push([x, y, 0.1 * Math.sin(x / 3)]);
   }
-  const scan = (p: Pose2) => {
-    const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
-    const body = Buffer.alloc(world.length * 16);
-    world.forEach(([x, y, z], i) => {
-      const [dx, dy] = [x - p.x, y - p.y];
-      [c * dx + s * dy, -s * dx + c * dy, z - 1.8, 0.5].forEach((v, a) => body.writeFloatLE(v, i * 16 + a * 4));
-    });
-    return body;
-  };
   // Along the courtyard, then turning left, 0.37 m a scan.
   const truth: Pose2[] = [{ x: -10, y: -12, yaw: 0 }];
-  for (let k = 1; k < 40; k++) {
+  for (let k = 1; k < 41; k++) {
     const p = truth[k - 1];
     const yaw = p.yaw + (k > 20 ? 0.05 : 0);
     truth.push({ x: p.x + 0.37 * Math.cos(yaw), y: p.y + 0.37 * Math.sin(yaw), yaw });
   }
-  const pointCloud = (p: Pose2, time: number) => {
-    const data = scan(p);
-    const n = data.length / 16;
-    const m = new Cdr().header(time).u32(1).u32(n).u32(4);
-    ["x", "y", "z", "intensity"].forEach((name, k) => m.string(name).u32(4 * k).u8(7).u32(1));
-    return m.u8(0).u32(16).u32(16 * n).raw(data).u8(1).done();
+  const seen = (p: Pose2, [x, y, z]: number[]) => {
+    const [c, s] = [Math.cos(p.yaw), Math.sin(p.yaw)];
+    const [dx, dy] = [x - p.x, y - p.y];
+    return [c * dx + s * dy, -s * dx + c * dy, z - 1.8];
+  };
+  /**
+   * Scan `k` as a spinning sensor takes it: the points in azimuth order, each
+   * seen from where the sensor was at that moment of the sweep (on its way to
+   * the next pose), with that moment as its time field, 0 to 1.
+   */
+  const scan = (k: number) => {
+    const [a, b] = [truth[k], truth[k + 1]];
+    const order = world
+      .map((w, i) => ({ i, azimuth: Math.atan2(...(seen(a, w).slice(0, 2).reverse() as [number, number])) }))
+      .sort((u, v) => u.azimuth - v.azimuth);
+    const body = Buffer.alloc(world.length * 20);
+    order.forEach(({ i }, n) => {
+      const f = n / (order.length - 1);
+      const at = { x: a.x + f * (b.x - a.x), y: a.y + f * (b.y - a.y), yaw: a.yaw + f * (b.yaw - a.yaw) };
+      [...seen(at, world[i]), 0.5, f].forEach((v, c) => body.writeFloatLE(v, n * 20 + c * 4));
+    });
+    return body;
+  };
+  const scans = truth.slice(0, 40).map((_, k) => scan(k));
+  const pointCloud = (data: Buffer, time: number) => {
+    const n = data.length / 20;
+    const m = new Cdr().header(time).u32(1).u32(n).u32(5);
+    ["x", "y", "z", "intensity", "t"].forEach((name, k) => m.string(name).u32(4 * k).u8(7).u32(1));
+    return m.u8(0).u32(20).u32(20 * n).raw(data).u8(1).done();
   };
   // The IMU's orientation: level, turned by the yaw.
   const imu = (p: Pose2, time: number) =>
@@ -1921,20 +1935,21 @@ test("pose graph: a ROS 2 bag without poses placed by LiDAR odometry and levelle
       { topic: "/points", type: "sensor_msgs/msg/PointCloud2" },
       { topic: "/imu", type: "sensor_msgs/msg/Imu" },
     ],
-    truth.flatMap((p, k) => [
-      { channel: 1, time: 100 + 0.1 * k - 0.01, data: imu(p, 100 + 0.1 * k - 0.01) },
-      { channel: 0, time: 100 + 0.1 * k, data: pointCloud(p, 100 + 0.1 * k) },
+    scans.flatMap((data, k) => [
+      { channel: 1, time: 100 + 0.1 * k - 0.01, data: imu(truth[k], 100 + 0.1 * k - 0.01) },
+      { channel: 0, time: 100 + 0.1 * k, data: pointCloud(data, 100 + 0.1 * k) },
     ]),
   );
 
-  // Every scan a keyframe, to compare with the truth scan by scan.
+  // Every scan a keyframe, to compare with the truth scan by scan; the scans are skewed, so deskew them.
   await page.locator("#pose-graph-panel summary", { hasText: "Loading options" }).click();
   await page.locator("#pg-keyframe-spacing").fill("0");
+  await page.locator("#pg-odom-deskew").check();
   await page.locator("#pg-files-input").setInputFiles([{ name: "drive.mcap", mimeType: "application/octet-stream", buffer: bag }]);
   await expect(status(page)).toContainText(/Gravity from the bag's IMU tied to 40 of 40 keyframes/, { timeout: 60_000 });
   await expect(page.locator("#pg-stats")).toContainText("40 (40 with scans)");
 
-  /** Largest distance of the saved poses from the truth, both from the first pose. */
+  /** Largest distance of the saved poses from the truth (each pose halfway through its sweep), both from the first. */
   const error = async () => {
     const download = page.waitForEvent("download");
     await page.locator("#pg-save-kitti").click();
@@ -1944,7 +1959,9 @@ test("pose graph: a ROS 2 bag without poses placed by LiDAR odometry and levelle
     return Math.max(
       ...rows.map((row, k) => {
         const m = row.split(" ").map(Number);
-        const [dx, dy] = [truth[k].x - truth[0].x, truth[k].y - truth[0].y];
+        const mid = (a: number, b: number) => 0.5 * (a + b);
+        const [x0, y0] = [mid(truth[0].x, truth[1].x), mid(truth[0].y, truth[1].y)];
+        const [dx, dy] = [mid(truth[k].x, truth[k + 1].x) - x0, mid(truth[k].y, truth[k + 1].y) - y0];
         return Math.hypot(m[3] - (c * dx + s * dy), m[7] - (-s * dx + c * dy), m[11]);
       }),
     );
@@ -1957,8 +1974,15 @@ test("pose graph: a ROS 2 bag without poses placed by LiDAR odometry and levelle
   await expect(status(page)).toContainText(/Gravity from the bags' IMUs tied to 80 of 80 keyframes/, { timeout: 60_000 });
   await expect(page.locator("#pg-stats")).toContainText("drive.mcap + again.mcap");
 
-  // The same scans as files, without poses: odometry places them too.
-  await page.locator("#pg-files-input").setInputFiles(scanFiles(truth, scan));
+  // The same scans as files (KITTI .bin: x y z intensity, no times), without poses: odometry
+  // places them too, undoing the sweep's motion from the points' order.
+  const bins = scans.map((data, k) => {
+    const n = data.length / 20;
+    const bin = Buffer.alloc(n * 16);
+    for (let i = 0; i < n; i++) data.copy(bin, i * 16, i * 20, i * 20 + 16);
+    return { name: `${String(k).padStart(6, "0")}.bin`, mimeType: "application/octet-stream", buffer: bin };
+  });
+  await page.locator("#pg-files-input").setInputFiles(bins);
   await expect(status(page)).toContainText("Opened scans: 40 poses from odometry over 40 scans", { timeout: 60_000 });
   expect(await error()).toBeLessThan(0.2);
 });

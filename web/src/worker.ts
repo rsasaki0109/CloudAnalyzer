@@ -5,6 +5,7 @@
 import init, {
   alignPairs,
   announcedPoints,
+  bunzip2,
   Cloud,
   CloudMerger,
   CopcReader,
@@ -30,7 +31,7 @@ import init, {
   VolumeSurface,
   warmUp,
 } from "./wasm/ca_wasm.js";
-import { decodeImu, decodePointCloud2, type ImuMessage, IMU, isBag, openBag, POINT_CLOUD, upsAt } from "./bag";
+import { decodeImu, decodePointCloud2, decompressors, type ImuMessage, IMU, isBag, openBag, POINT_CLOUD, upsAt } from "./bag";
 import { type ByteSource, readRange } from "./bytes";
 import type { LasChunksResult, Slice } from "./c2c-worker";
 import { CANCELLED } from "./protocol";
@@ -99,6 +100,7 @@ const ready = init().then((wasm) => {
   // arrives (see `warmUp`); requests wait for this one.
   warmUp();
   void warmUpPool();
+  decompressors.bz2 = bunzip2;
   return wasm;
 });
 /** Larger clouds are voxel-thinned before meshing, to bound time and memory. */
@@ -1020,7 +1022,8 @@ async function* bagFrames(
     }
     const points = decodePointCloud2(m.data, m.encoding);
     progress(`${scans.topic}: scan ${id + 1} of ${scans.count}`, fraction);
-    yield { id: id++, stamp: points.stamp, cloud: Cloud.fromXyz(points.xyz, points.intensity ?? new Float32Array(0)) };
+    const none = new Float32Array(0);
+    yield { id: id++, stamp: points.stamp, cloud: Cloud.fromXyz(points.xyz, points.intensity ?? none, points.time ?? none) };
   }
 }
 
@@ -1054,7 +1057,7 @@ async function odometryGraph(
   const imu: ImuMessage[] = [];
   const topics = { scans: null as string | null, imu: null as string | null };
   const frames = req.graph ? bagFrames(req.graph, imu, topics, progress) : fileFrames(req.scans, progress);
-  const odometry = new LidarOdometry(o.minRange, o.maxRange);
+  const odometry = new LidarOdometry(o.minRange, o.maxRange, o.deskew);
   const session = PoseGraphSession.empty();
   const scans: Float32Array[] = [];
   const stamps: number[] = [];

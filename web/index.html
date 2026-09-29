@@ -481,6 +481,7 @@
             <label title="Odometry uses the points between these ranges (metres)">Range m <input id="pg-odom-min-range" type="number" min="0" step="any" value="1.5" />–<input id="pg-odom-range" type="number" min="1" step="any" value="80" /></label>
             <label title="After odometry, a scan every this many metres of travel becomes a node (0: every scan)">Keyframe m <input id="pg-keyframe-spacing" type="number" min="0" step="any" value="1" /></label>
           </div>
+          <label class="check" title="Undo the sensor's motion during each scan, from the points' time field, or from the order a spinning sensor takes them (scans sorted by ring, or corrected already, are left as they are)"><input id="pg-odom-deskew" type="checkbox" /> Deskew scans</label>
           <label title="Optional 3x4 or 4x4 row-major matrix taking scan coordinates to the pose frame, e.g. KITTI's Tr (velodyne to camera)">Scan → pose frame
             <textarea id="pg-extrinsic" rows="3" placeholder="identity"></textarea></label>
         </details>

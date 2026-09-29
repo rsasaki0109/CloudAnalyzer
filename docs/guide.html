@@ -298,7 +298,7 @@
       (0.7 m apart, 15 points or more): stray ones go back, the rest of an object joins. The result is the map
       without them (<code>_static</code>) and them in red (<code>_dynamic</code>), both ordinary clouds. On
       SemanticKITTI 07 (its moving classes, KISS-ICP poses, scans thinned to 0.4 m) it scores precision 0.77,
-      recall 0.58, F1 0.66 and keeps 99.9 % of the static points; the 1,101 scans take about 35 s.
+      recall 0.58, F1 0.66 and keeps 99.9 % of the static points; the 1,101 scans take about 8 s, parts of the drive judged on the worker pool (35 s on one thread).
     </p>
     <p>
       <b>Analyse the map</b> hands the corrected map to the analysis tools. <b>Ground &amp; DEM</b> builds the map,

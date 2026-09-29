@@ -138,6 +138,52 @@ pub fn register_scans(
     )
 }
 
+/// [`PoseGraphSession::detect_dynamic`] on a pool worker, for `count`
+/// scans from `first` of a [`PoseGraphSession::dynamic_context`] (which
+/// holds `window` more on either side). One flag per point of those
+/// scans, scan after scan.
+#[wasm_bindgen(js_name = dynamicScans)]
+pub fn dynamic_scans(
+    context: &[f64],
+    first: usize,
+    count: usize,
+    window: usize,
+    margin: f64,
+    votes: usize,
+) -> Result<Vec<u8>, JsError> {
+    use ca_core::dynamic::{VisibilityParams, dynamic_points_of};
+    let bad = || JsError::new("malformed dynamic context");
+    let n = *context.first().ok_or_else(bad)? as usize;
+    let poses_end = 1 + 16 * n;
+    let counts = context.get(poses_end..poses_end + n).ok_or_else(bad)?;
+    let poses: Vec<Rigid> = context[1..poses_end]
+        .as_chunks::<16>()
+        .0
+        .iter()
+        .map(Rigid::from_matrix)
+        .collect();
+    let mut at = poses_end + n;
+    let mut clouds = Vec::with_capacity(n);
+    for &c in counts {
+        if c < 0.0 {
+            clouds.push(None);
+            continue;
+        }
+        let end = at + 3 * c as usize;
+        clouds.push(Some(cloud_of(context.get(at..end).ok_or_else(bad)?)));
+        at = end;
+    }
+    let scans: Vec<Option<&PointCloud>> = clouds.iter().map(Option::as_ref).collect();
+    let params = VisibilityParams {
+        window,
+        margin,
+        min_see_through: votes,
+        ..VisibilityParams::default()
+    };
+    let flags = dynamic_points_of(&poses, &scans, &params, first..first + count);
+    Ok(flags.into_iter().flatten().map(u8::from).collect())
+}
+
 fn information(sigma_t: f64, sigma_r_deg: f64) -> [[f64; 6]; 6] {
     pose_graph::isotropic_information(sigma_t, sigma_r_deg.to_radians())
 }
@@ -849,5 +895,65 @@ impl PoseGraphSession {
         let dynamic = self.dynamic.iter().flatten().filter(|&&d| d).count();
         let total: usize = self.dynamic.iter().map(Vec::len).sum();
         vec![dynamic as f64, total as f64]
+    }
+
+    /// Nodes `lo..hi` packed for [`dynamic_scans`] on a pool worker:
+    /// `[count, poses (row-major 4x4 each), points per scan, xyz...]`; a
+    /// node without a scan has -1 points.
+    #[wasm_bindgen(js_name = dynamicContext)]
+    pub fn dynamic_context(&self, lo: usize, hi: usize) -> Vec<f64> {
+        let hi = hi.min(self.graph.nodes.len());
+        let lo = lo.min(hi);
+        let points: usize = (lo..hi)
+            .filter_map(|i| self.scans.get(i)?.as_ref())
+            .map(|s| s.positions.len())
+            .sum();
+        let mut out = Vec::with_capacity(1 + 17 * (hi - lo) + 3 * points);
+        out.push((hi - lo) as f64);
+        for node in &self.graph.nodes[lo..hi] {
+            out.extend(node.pose.to_matrix());
+        }
+        for i in lo..hi {
+            out.push(
+                self.scans
+                    .get(i)
+                    .and_then(Option::as_ref)
+                    .map_or(-1.0, |s| s.positions.len() as f64),
+            );
+        }
+        for i in lo..hi {
+            if let Some(scan) = self.scans.get(i).and_then(Option::as_ref) {
+                out.extend(scan.positions.iter().flatten());
+            }
+        }
+        out
+    }
+
+    /// Take the dynamic points found for nodes from `first` on (one flag
+    /// per point, scan after scan, as [`dynamic_scans`] returns them).
+    /// Returns how many of them are dynamic.
+    #[wasm_bindgen(js_name = setDynamic)]
+    pub fn set_dynamic(&mut self, first: usize, flags: &[u8]) -> Result<usize, JsError> {
+        let n = self.graph.nodes.len();
+        if self.dynamic.len() != n {
+            self.dynamic = vec![Vec::new(); n];
+        }
+        let mut at = 0;
+        for i in first..n {
+            if at >= flags.len() {
+                break;
+            }
+            let len = self
+                .scans
+                .get(i)
+                .and_then(Option::as_ref)
+                .map_or(0, |s| s.positions.len());
+            let part = flags
+                .get(at..at + len)
+                .ok_or_else(|| JsError::new("dynamic flags do not match the scans"))?;
+            self.dynamic[i] = part.iter().map(|&f| f != 0).collect();
+            at += len;
+        }
+        Ok(flags.iter().filter(|&&f| f != 0).count())
     }
 }

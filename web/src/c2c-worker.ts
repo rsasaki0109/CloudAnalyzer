@@ -9,6 +9,7 @@ import init, {
   decodeCopcNodes,
   decodeLasChunks,
   buildBucket,
+  dynamicScans,
   meshDistances,
   nearestDistances,
   normalsOf,
@@ -59,6 +60,11 @@ export type Slice =
       retryBelow: number;
       retryHeadings: number;
     }
+  /**
+   * Find the dynamic points of `count` scans from `first` of `context`
+   * (`PoseGraphSession.dynamicContext`, holding `window` scans more on either side).
+   */
+  | { kind: "dynamic"; context: Float64Array; first: number; count: number; window: number; margin: number; votes: number }
   /** Run every kernel once so the browser optimizes them (see `warmUp`). */
   | { kind: "warm-up" };
 
@@ -105,6 +111,8 @@ export type SliceResult<S extends Slice> = S extends { kind: "bucket-chunk" | "b
       ? LasChunksResult
     : S extends { kind: "normals" }
       ? Float32Array
+    : S extends { kind: "dynamic" }
+      ? Uint8Array
       : Float64Array;
 
 export type SliceRequest = Slice & { seq: number };
@@ -131,7 +139,7 @@ function unpack(r: Reordered): { value: ReorderedResult; transfer: Transferable[
   return { value, transfer };
 }
 
-type Value = Float64Array | Float32Array | ReorderedResult | SorLocalResult | CopcNodesResult | LasChunksResult;
+type Value = Float64Array | Float32Array | Uint8Array | ReorderedResult | SorLocalResult | CopcNodesResult | LasChunksResult;
 
 async function run(request: SliceRequest): Promise<{ value: Value; transfer: Transferable[] }> {
   switch (request.kind) {
@@ -250,6 +258,10 @@ async function run(request: SliceRequest): Promise<{ value: Value; transfer: Tra
         request.retryBelow,
         request.retryHeadings,
       );
+      return { value: r, transfer: [r.buffer] };
+    }
+    case "dynamic": {
+      const r = dynamicScans(request.context, request.first, request.count, request.window, request.margin, request.votes);
       return { value: r, transfer: [r.buffer] };
     }
     case "sor-release":

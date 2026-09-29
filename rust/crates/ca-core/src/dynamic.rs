@@ -112,16 +112,33 @@ pub fn dynamic_points(
     scans: &[Option<&PointCloud>],
     params: &VisibilityParams,
 ) -> Vec<Vec<bool>> {
+    dynamic_points_of(poses, scans, params, 0..scans.len())
+}
+
+/// [`dynamic_points`] for the scans in `judged` only (one entry each), so
+/// parts of a drive can be judged apart: each part needs just its own
+/// scans and `window` more on either side.
+pub fn dynamic_points_of(
+    poses: &[Rigid],
+    scans: &[Option<&PointCloud>],
+    params: &VisibilityParams,
+    judged: std::ops::Range<usize>,
+) -> Vec<Vec<bool>> {
+    let judged = judged.start.min(scans.len())..judged.end.min(scans.len());
+    let near =
+        judged.start.saturating_sub(params.window)..(judged.end + params.window).min(scans.len());
     let images: Vec<Option<RangeImage>> = scans
         .iter()
-        .map(|s| s.map(|s| RangeImage::new(s, params.resolution_deg)))
+        .enumerate()
+        .map(|(j, s)| {
+            s.filter(|_| near.contains(&j))
+                .map(|s| RangeImage::new(s, params.resolution_deg))
+        })
         .collect();
     let inverse: Vec<Rigid> = poses.iter().map(crate::pose_graph::inverse).collect();
-    scans
-        .iter()
-        .enumerate()
-        .map(|(i, scan)| {
-            let Some(scan) = scan else {
+    judged
+        .map(|i| {
+            let Some(scan) = scans[i] else {
                 return Vec::new();
             };
             let lo = i.saturating_sub(params.window);
@@ -131,7 +148,8 @@ pub fn dynamic_points(
                 .filter(|&j| j != i)
                 .filter_map(|j| Some((inverse[j].compose(&poses[i]), images[j].as_ref()?)))
                 .collect();
-            scan.positions
+            let flags: Vec<bool> = scan
+                .positions
                 .iter()
                 .map(|p| {
                     let own = (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]).sqrt();
@@ -160,14 +178,12 @@ pub fn dynamic_points(
                     }
                     through >= params.min_see_through && through > hits
                 })
-                .collect::<Vec<bool>>()
-        })
-        .zip(scans)
-        .map(|(flags, scan)| match scan {
-            Some(scan) if params.object_link > 0.0 && !flags.is_empty() => {
+                .collect();
+            if params.object_link > 0.0 && !flags.is_empty() {
                 objects(scan, flags, params.object_link, params.min_object)
+            } else {
+                flags
             }
-            _ => flags,
         })
         .collect()
 }
@@ -264,6 +280,15 @@ mod tests {
         );
         // The other scans see only the wall: nothing dynamic.
         assert!(flags[0].iter().all(|&d| !d));
+        // Judged in parts, the same answer.
+        let params = VisibilityParams {
+            window: 2,
+            ..VisibilityParams::default()
+        };
+        let whole = dynamic_points(&poses, &refs, &params);
+        let mut parts = dynamic_points_of(&poses, &refs, &params, 0..2);
+        parts.extend(dynamic_points_of(&poses, &refs, &params, 2..5));
+        assert_eq!(parts, whole);
     }
 
     #[test]

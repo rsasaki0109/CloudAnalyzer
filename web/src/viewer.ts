@@ -1163,7 +1163,11 @@ export class Viewer {
 
   /** Frame all visible clouds, keeping the current viewing direction. */
   fit(): void {
-    const box = this.clip ? this.clip.clone() : this.contentBounds();
+    this.frameBox(this.clip ? this.clip.clone() : this.contentBounds());
+  }
+
+  /** Frame `box` (render space), keeping the current viewing direction. */
+  frameBox(box: THREE.Box3): void {
     if (box.isEmpty()) return;
     const sphere = box.getBoundingSphere(new THREE.Sphere());
     const radius = Math.max(sphere.radius, 1e-3);

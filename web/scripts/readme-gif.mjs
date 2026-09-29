@@ -21,6 +21,7 @@ const GIFS = [
   { name: "odometry.gif", scenes: /^f-/, seconds: 0.18, real: true },
   { name: "loop.gif", scenes: /^g-/, seconds: 0.16, real: true },
   { name: "dynamic.gif", scenes: /^h-/, seconds: 0.16, real: true },
+  { name: "seasons.gif", scenes: /^i-/, seconds: 0.2, real: true },
 ];
 const filterFor = (real) =>
   `crop=1000:660:280:74,scale=${real ? 640 : 720}:-1:flags=lanczos,split[a][b];` +

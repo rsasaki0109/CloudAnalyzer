@@ -3,7 +3,9 @@
 // images to docs/images/web/ (see scripts/readme-gif.mjs for the GIF).
 
 import { expect, type Page, test } from "@playwright/test";
-import { mkdirSync, readFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const OUT = new URL("../../docs/images/web/", import.meta.url);
@@ -34,6 +36,13 @@ async function openNclt(page: Page, query: string): Promise<void> {
   await expect(status(page)).toContainText("Opened kiss_poses.txt", { timeout: 900_000 });
   await page.locator("#round-points").check();
 }
+
+/**
+ * Two NCLT seasons of the same campus, for the seasons GIF: `NCLT_SEASONS=<summer dir>,<winter dir>`
+ * (2012-06-15 and 2013-01-10 from scripts/prepare_nclt.py), joined where summer keyframe 75 and
+ * winter keyframe 100 stand within 0.2 m of each other.
+ */
+const SEASONS = process.env.NCLT_SEASONS?.split(",");
 
 async function openPandaSet(page: Page): Promise<void> {
   await page.goto("/");
@@ -395,4 +404,61 @@ test("manual alignment with the gizmo", async ({ page }) => {
   await page.locator("#align-panel summary").click();
   await page.locator("#gizmo-rotate").click();
   await shot(page, "align");
+});
+
+test("pose graph: the same campus street in summer and in winter", async ({ page }) => {
+  test.skip(!SEASONS, "set NCLT_SEASONS (scripts/prepare_nclt.py, two sessions)");
+  test.setTimeout(1_800_000);
+  const [summer, winter] = SEASONS!;
+  await page.goto("/");
+  await page.locator("#pg-folder-input").setInputFiles(`${summer}/velodyne`);
+  await expect(status(page)).toContainText("Opened kiss_poses.txt", { timeout: 900_000 });
+  const summerNodes = readFileSync(`${summer}/velodyne/kiss_poses.txt`, "utf8").trim().split("\n").length;
+  await page.locator("#pose-graph-panel summary", { hasText: "Find loops automatically" }).click();
+  await page.locator("#pg-find").click();
+  await expect(status(page)).toContainText(/Added \d+ of/, { timeout: 600_000 });
+  // Winter joins where both drives pass the same spot, then loops tie the seasons together.
+  await page.locator("#pose-graph-panel summary", { hasText: "Join another graph" }).click();
+  await page.locator("#pg-merge-here").fill("75");
+  await page.locator("#pg-merge-there").fill("100");
+  await page.locator("#pg-merge-input").setInputFiles(`${winter}/velodyne`);
+  await expect(status(page)).toContainText("Joined", { timeout: 900_000 });
+  await page.locator("#pg-find").click();
+  await expect(status(page)).toContainText(/Added \d+ of/, { timeout: 600_000 });
+  // The IMU's up direction for both drives, winter's keyframes after summer's.
+  const gravity = mkdtempSync(join(tmpdir(), "seasons-"));
+  const lines = (dir: string, offset: number) =>
+    readFileSync(`${dir}/gravity/gravity.txt`, "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => line.replace(/^\d+/, (k) => String(Number(k) + offset)));
+  writeFileSync(join(gravity, "gravity.txt"), [...lines(summer, 0), ...lines(winter, summerNodes)].join("\n") + "\n");
+  await page.locator("#pose-graph-panel summary", { hasText: "IMU gravity" }).click();
+  await page.locator("#pg-gravity-input").setInputFiles(gravity);
+  await expect(status(page)).toContainText("Gravity tied", { timeout: 300_000 });
+  // Each season's map where they meet, and the largest change between them: a tree-lined street.
+  await page.locator("#pg-map-voxel").fill("0.3");
+  await page.locator("#pg-parts").click();
+  await expect(status(page)).toContainText("M3C2 at", { timeout: 1_800_000 });
+  await page.locator("#pg-show-scans").uncheck();
+  await page.locator("#round-points").check();
+  const maps = page.locator("#cloud-list li");
+  // The seasons' own look, not the M3C2 colour bar.
+  await maps.nth(2).locator("select").first().selectOption("solid");
+  await page.locator("#pg-change-list li .link").first().click();
+  await page.waitForTimeout(2000);
+  await page.locator("[data-view=iso]").click();
+  await zoom(page, 18);
+  const show = async (k: number) => {
+    for (let i = 0; i < 3; i++) {
+      const box = maps.nth(i).locator("input[type=checkbox]").first();
+      if ((await box.isChecked()) !== (i === k)) await box.click();
+    }
+    await page.waitForTimeout(1500);
+  };
+  // June, then January, then June and January again: leaves, then bare branches.
+  for (const [round, k] of [0, 1, 0, 1].entries()) {
+    await show(k);
+    await orbitFrames(page, `i-seasons-${round}`, 6, 4);
+  }
 });

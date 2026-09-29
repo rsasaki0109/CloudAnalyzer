@@ -359,8 +359,18 @@ export function poseGraphMap(
   correction = false,
   nodes: number[] = [],
   label = "",
+  part: 0 | 1 | 2 = 0,
 ): Promise<LoadedCloud> {
-  return call({ kind: "pg-map", voxel, initial, correction, nodes, label });
+  return call({ kind: "pg-map", voxel, initial, correction, nodes, label, part });
+}
+
+/** Find the dynamic points of the pose graph's scans: `[dynamic, all]` points, and the time taken. */
+export function detectPoseGraphDynamic(
+  window: number,
+  margin: number,
+  votes: number,
+): Promise<{ dynamic: number; total: number; millis: number }> {
+  return call({ kind: "pg-dynamic", window, margin, votes });
 }
 
 /** An M3C2 result's changed objects: 11 numbers each (count, centroid, min, max, mean change), largest first. */

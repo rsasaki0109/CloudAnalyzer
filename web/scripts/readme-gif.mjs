@@ -18,6 +18,7 @@ const GIFS = [
   { name: "demo.gif", scenes: /^[a-e]-/, seconds: 0.125 },
   { name: "odometry.gif", scenes: /^f-/, seconds: 0.18 },
   { name: "loop.gif", scenes: /^g-/, seconds: 0.16 },
+  { name: "dynamic.gif", scenes: /^h-/, seconds: 0.16 },
 ];
 const filter =
   "crop=1000:660:280:74,scale=720:-1:flags=lanczos,split[a][b];" +

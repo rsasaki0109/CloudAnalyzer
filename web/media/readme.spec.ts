@@ -194,6 +194,32 @@ test("pose graph: LiDAR odometry replayed, and a loop closed by hand", async ({ 
   }
 });
 
+test("pose graph: passing cars removed from the map", async ({ page }) => {
+  test.setTimeout(600_000);
+  await demo(page, "posegraph-drive", "Opened poses.txt");
+  await page.locator("#pose-graph-panel summary", { hasText: "Find loops automatically" }).click();
+  await page.locator("#pg-find").click();
+  await expect(status(page)).toContainText(/Added \d+ of/, { timeout: 120_000 });
+  await page.locator("#round-points").check();
+  await page.locator("#point-size").fill("3");
+  // The map with every scan: the cars that drove past leave ghost trails along the road.
+  await page.locator("#pg-map-voxel").fill("0.2");
+  await page.locator("#pg-map").click();
+  await expect(status(page)).toContainText("Added poses_map", { timeout: 120_000 });
+  await page.locator("#pg-show-scans").uncheck();
+  await page.locator("[data-view=iso]").click();
+  await page.locator("#fit").click();
+  await zoom(page, 4);
+  await orbitFrames(page, "h-dynamic-a", 14, 10);
+  // Left out: the ghosts turn red (their own cloud) and the map is clean.
+  await page.locator("#pg-dynamic").click();
+  await expect(status(page)).toContainText(/dynamic points of/, { timeout: 180_000 });
+  await page.locator("#cloud-list li").first().locator("input[type=checkbox]").uncheck();
+  await orbitFrames(page, "h-dynamic-b", 14, 10);
+  await page.locator("#cloud-list li").last().locator("input[type=checkbox]").uncheck();
+  await orbitFrames(page, "h-dynamic-c", 12, 10);
+});
+
 test("lasso segmentation and a cross-section profile on the town", async ({ page }) => {
   test.setTimeout(300_000);
   await page.goto("/?url=samples/town.ply");

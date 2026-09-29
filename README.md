@@ -65,6 +65,12 @@
 </p>
 
 <p align="center">
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive"><img src="docs/images/web/dynamic.gif" alt="Dynamic points removed: the ghost trails of passing cars turn red and leave the map" width="640"></a><br>
+  <b>Dynamic objects removed</b>: points other scans saw through (passing cars) leave the map, as a red cloud of their own
+  (F1 0.67 on SemanticKITTI 07, keeping 99.9 % of the static points)
+</p>
+
+<p align="center">
   <img src="docs/images/web/report.jpg" alt="QA report with pass / fail gates" width="640"><br>
   <b>QA report</b>: pass / fail gates on any result, as HTML or JSON in the <code>ca check</code> gate format
 </p>

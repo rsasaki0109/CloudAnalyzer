@@ -1323,7 +1323,7 @@ async function handle(
       return { value: openGraph().export(req.format), transfer: [] };
     case "pg-map": {
       const t = performance.now();
-      let cloud = openGraph().map(req.initial, req.correction, new Uint32Array(req.nodes));
+      let cloud = openGraph().map(req.initial, req.correction, new Uint32Array(req.nodes), req.part);
       if (req.voxel > 0) {
         const thinned = cloud.filter("voxel", req.voxel, 0);
         cloud.free();
@@ -1338,6 +1338,11 @@ async function handle(
     case "change-objects": {
       const objects = getCloud(req.id).changedObjects(req.minChange, req.link, req.minPoints);
       return { value: objects, transfer: [objects.buffer] };
+    }
+    case "pg-dynamic": {
+      const start = performance.now();
+      const [dynamic, total] = openGraph().detectDynamic(req.window, req.margin, req.votes);
+      return { value: { dynamic, total, millis: performance.now() - start }, transfer: [] };
     }
     case "pg-close":
       poseGraph?.session.free();

@@ -121,7 +121,10 @@ class PoseGraph:
 
     @staticmethod
     def from_poses(
-        poses: npt.NDArray[np.float64], sigma_t: float = 0.05, sigma_r_deg: float = 0.25
+        poses: npt.NDArray[np.float64],
+        sigma_t: float = 0.05,
+        sigma_r_deg: float = 0.25,
+        ids: list[int] | None = None,
     ) -> PoseGraph: ...
     @staticmethod
     def from_g2o(text: str) -> PoseGraph: ...

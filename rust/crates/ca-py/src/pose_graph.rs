@@ -58,9 +58,15 @@ impl PoseGraph {
 impl PoseGraph {
     /// A chain of odometry edges through ``poses`` ((N, 4, 4), sensor to
     /// world), each with standard deviations ``sigma_t`` (m) and ``sigma_r_deg``.
+    /// ``ids`` names the nodes (e.g. the frame numbers of keyframes), else 0..N.
     #[staticmethod]
-    #[pyo3(signature = (poses, sigma_t = 0.05, sigma_r_deg = 0.25))]
-    fn from_poses(poses: PyReadonlyArray3<f64>, sigma_t: f64, sigma_r_deg: f64) -> PyResult<Self> {
+    #[pyo3(signature = (poses, sigma_t = 0.05, sigma_r_deg = 0.25, ids = None))]
+    fn from_poses(
+        poses: PyReadonlyArray3<f64>,
+        sigma_t: f64,
+        sigma_r_deg: f64,
+        ids: Option<Vec<i64>>,
+    ) -> PyResult<Self> {
         let shape = poses.shape();
         if shape[1] != 4 || shape[2] != 4 {
             return Err(PyValueError::new_err(format!(
@@ -73,7 +79,16 @@ impl PoseGraph {
             .map(|m| rigid(&std::array::from_fn(|r| std::array::from_fn(|c| m[[r, c]]))))
             .collect();
         let information = pose_graph::isotropic_information(sigma_t, sigma_r_deg.to_radians());
-        Ok(Self::wrap(Graph::from_poses(&list, information)))
+        let mut graph = Graph::from_poses(&list, information);
+        if let Some(ids) = ids {
+            if ids.len() != graph.nodes.len() {
+                return Err(PyValueError::new_err("one id per pose expected"));
+            }
+            for (node, id) in graph.nodes.iter_mut().zip(ids) {
+                node.id = id;
+            }
+        }
+        Ok(Self::wrap(graph))
     }
 
     /// A graph from g2o text (``VERTEX_SE3:QUAT``, ``EDGE_SE3:QUAT``, planes, ``FIX``).

@@ -13,12 +13,15 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
 
 A SLAM session folder holds a poses file (g2o, or a KITTI / TUM trajectory) and one scan
 per pose (PCD, PLY, LAS/LAZ, XYZ, KITTI .bin) named by frame number. Look at a folder with
-session_layout first (it is quick), then run posegraph_fix (loops, IMU gravity, dynamic
+session_layout first (it is quick). Raw scans without poses: run slam_odometry first, then
+posegraph_fix with its trajectory. Then run posegraph_fix (loops, IMU gravity, dynamic
 points, the fixed map) or posegraph_compare (two drives through the same places: what
 changed). Those read every scan and take seconds to minutes on large drives. Outputs go to
 out_dir; open the written .ply maps in the CloudAnalyzer web app to look at them.
@@ -68,9 +71,52 @@ def session_layout(folder: str) -> dict[str, Any]:
     return out
 
 
+def slam_odometry(
+    scans: str,
+    out_dir: str,
+    max_range: float = 80.0,
+    voxel_size: float | None = None,
+    max_frames: int | None = None,
+    deskew: bool = False,
+) -> dict[str, Any]:
+    """LiDAR odometry for raw scans (a folder of KITTI .bin, PCD or PLY named in time order)
+    with KISS-ICP (pip install "cloudanalyzer[slam]"): writes trajectory.tum (one pose per scan) and map.ply to out_dir.
+    Then give posegraph_fix the scans folder and poses=<out_dir>/trajectory.tum (with a
+    keyframe_spacing of about 1 m for 10 Hz scans) to close its loops."""
+    import time
+
+    from ca.core.slam_run import SlamRunRequest, discover_frame_paths, run_slam, write_map_ply, write_tum_trajectory
+
+    frames = discover_frame_paths(Path(scans))
+    request = SlamRunRequest(
+        frame_paths=tuple(frames),
+        max_range_m=max_range,
+        voxel_size_m=voxel_size,
+        deskew=deskew,
+        max_frames=max_frames,
+    )
+    clock = time.perf_counter()
+    result = run_slam(request)
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    write_tum_trajectory(out / "trajectory.tum", result.poses, result.timestamps_s)
+    write_map_ply(out / "map.ply", result.map_points)
+    steps = result.poses[1:, :3, 3] - result.poses[:-1, :3, 3]
+    return {
+        "driver": result.driver,
+        "frames": int(result.frames_processed),
+        "path_length_m": round(float(np.sqrt((steps**2).sum(1)).sum()), 1),
+        "runtime_s": round(time.perf_counter() - clock, 1),
+        "trajectory": str(out / "trajectory.tum"),
+        "map": str(out / "map.ply"),
+    }
+
+
 def posegraph_fix(
     folder: str,
     out_dir: str | None = None,
+    poses: str | None = None,
+    keyframe_spacing: float = 0.0,
     gravity: str | None = None,
     remove_dynamic: bool = False,
     truth: str | None = None,
@@ -80,13 +126,17 @@ def posegraph_fix(
 ) -> dict[str, Any]:
     """Fix a SLAM map: find loops with ICP, tie keyframes to IMU gravity (a KITTI OXTS folder
     or a 'frame ux uy uz' file), optimise, optionally leave dynamic points (traffic) out, and
-    write the fixed g2o, KITTI/TUM poses and the map (PLY) to out_dir. With truth (ground-truth
-    poses in the same frames) the report has the ATE before and after."""
+    write the fixed g2o, KITTI/TUM poses and the map (PLY) to out_dir. poses names the poses
+    file when it is not in the folder (trajectory.tum from slam_odometry); keyframe_spacing
+    keeps one pose every so many metres of it. With truth (ground-truth poses, one per frame)
+    the report has the ATE before and after."""
     from ca.posegraph_fix import fix_session
 
     return fix_session(
         folder,
         out_dir,
+        poses=poses,
+        keyframe_spacing=keyframe_spacing,
         voxel=voxel,
         loops=find_loops,
         gravity=gravity,
@@ -147,7 +197,7 @@ def evaluate_trajectory(estimate: str, reference: str, align_rigid: bool = True)
     return evaluate(estimate, reference, align_rigid=align_rigid)
 
 
-TOOLS = [session_layout, posegraph_fix, posegraph_compare, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

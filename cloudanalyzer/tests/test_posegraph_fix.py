@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from typer.testing import CliRunner
 
-from ca.posegraph_fix import frame_number, match_scans, poses_file, read_trajectory, read_ups
+from ca.posegraph_fix import frame_number, keyframes, match_scans, poses_file, read_trajectory, read_ups
 
 
 def test_frame_numbers_and_matching():
@@ -172,4 +172,28 @@ def test_two_drives_are_joined_and_a_new_box_is_the_change(tmp_path):
     assert math.dist(largest["centroid"][:2], (4.0, -16.0)) < 2.0, largest
     for path in report["outputs"].values():
         assert Path(path).stat().st_size > 0
+
+
+def test_keyframes_every_so_many_metres():
+    poses = np.tile(np.eye(4), (11, 1, 1))
+    poses[:, 0, 3] = np.arange(11) * 0.4  # 0.4 m a frame
+    assert keyframes(poses, 0.0) == list(range(11))
+    assert keyframes(poses, 1.0) == [0, 3, 6, 9, 10]
+
+
+def test_poses_from_elsewhere_thinned_to_keyframes_still_close_the_lap(tmp_path):
+    pytest.importorskip("cloudanalyzer_core")
+    from ca.posegraph_fix import fix_session
+
+    truth = _session(tmp_path / "lap")
+    # The odometry lives outside the scans' folder, as ca slam-run writes it.
+    (tmp_path / "lap" / "poses.txt").rename(tmp_path / "odometry.txt")
+    report = fix_session(
+        str(tmp_path / "lap"), poses=str(tmp_path / "odometry.txt"), keyframe_spacing=5.0, voxel=0.3, truth=str(truth)
+    )
+    assert report["poses_file"] == "odometry.txt"
+    assert report["nodes"] < 33 and report["scans"] == report["nodes"]
+    assert report["loops"]["added"] >= 1
+    # Keyframes 6 m apart register less tightly than every 3 m, still well within the drift.
+    assert report["ate"]["before"]["end_error"] > 1.0 and report["ate"]["after"]["end_error"] < 0.3
 

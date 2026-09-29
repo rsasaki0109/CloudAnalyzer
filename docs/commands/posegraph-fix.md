@@ -68,15 +68,18 @@ An IMU is seldom mounted square with the LiDAR, and its up direction is noisier 
 survey-grade OXTS. So `--gravity` first estimates the IMU's rotation into the scans' frame from the
 drive itself: the rotation that makes every keyframe's measured up, seen in the world through its
 pose, agree best (a drive that turns and tilts pins it down, upside-down IMUs included). It is used
-when it makes them agree better, and the tie's standard deviation is at least the spread that is
-left, so a noisy IMU levels the map without bending it. The report gives the spread before and
-after, and the rotation.
+only when it clearly helps: over 50 keyframes or more, halving their spread and taking a degree off
+it (over a few keyframes, drift that follows the heading can pass for a skewed mount). The tie's
+standard deviation is at least the IMU's noise, estimated from keyframes 1 and 2 apart so that
+odometry drift does not count, so a noisy IMU levels the map without bending it while the drift
+still goes. The report gives the spread, the rotation when used, and the noise. The web app's IMU
+gravity does the same (the same Rust code), with a checkbox to turn it off.
 
-| Drive | Up spread | With the rotation estimated |
+| Drive | Up spread | Result |
 |---|---|---|
-| KITTI 07 (OXTS) | 0.49° | 0.49°, ATE 1.164 m (1.162 m before) |
-| KITTI 09 (OXTS, hills) | 1.06° | 0.74°, ATE 2.17 m (2.26 m before) |
-| hdl_graph_slam's `hdl_400.bag` (HDL-32E, a z-down GPS/IMU) | 8.60° | 2.19°: height range 3.13 → 2.08 m, dynamic points 16.9 → 7.1 % |
+| KITTI 07 (OXTS) | 0.49°, noise 0.05° | no rotation; ATE 1.162 m, as before |
+| KITTI 09 (OXTS, hills) | 1.06°, noise 0.04° | no rotation; ATE 2.26 m, as before |
+| hdl_graph_slam's `hdl_400.bag` (HDL-32E, a z-down GPS/IMU) | 8.60° → 2.19° with the rotation, noise 2.25° | height range 3.13 → 2.08 m, dynamic points 16.9 → 4.7 % |
 
 ## Example: KITTI 07
 

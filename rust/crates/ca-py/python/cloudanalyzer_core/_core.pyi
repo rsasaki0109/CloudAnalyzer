@@ -92,6 +92,9 @@ def normals(
     orientation: str = "up",
 ) -> npt.NDArray[np.float32]: ...
 
+def calibrate_ups(
+    rotations: npt.NDArray[np.float64], ups: npt.NDArray[np.float64]
+) -> npt.NDArray[np.float64]: ...
 def changed_objects(
     positions: npt.NDArray[np.float64],
     change: npt.NDArray[np.float64],

@@ -350,7 +350,9 @@
       <b>IMU gravity</b> is the constraint for hills. <b>Add gravity…</b> takes a KITTI <code>oxts</code> folder (roll and
       pitch of each frame, turned into the Velodyne frame by <code>calib_imu_to_velo.txt</code> when it is there, and by
       the scan → pose matrix the scans were opened with) or a text file of <code>frame ux uy uz</code> lines (up in scan
-      coordinates). Each keyframe is held to its measured up direction (<b>σ tilt</b>); world up is taken from the
+      coordinates). Each keyframe is held to its measured up direction (<b>σ tilt</b>, raised to the IMU's noise
+      when that is larger; <b>Estimate the IMU's mounting</b> first finds how a real IMU sits against the LiDAR, turned,
+      tilted or upside down, from the drive itself, and uses it when that clearly helps); world up is taken from the
       first keyframes, where odometry has drifted least. It assumes nothing about the ground, so the path loses its
       tilt drift, and the height drift that follows, while hills stay hills. After Find loops, on KITTI with KISS-ICP
       odometry, it took the height RMSE from 0.41 to 0.14 m on sequence 07, from 5.9 to 1.8 m on the hills of 09

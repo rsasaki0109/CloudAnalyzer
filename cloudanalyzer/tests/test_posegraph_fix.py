@@ -209,6 +209,7 @@ def _rot(axis: str, angle: float) -> np.ndarray:
 
 
 def test_an_imu_mounted_turned_and_upside_down_is_calibrated_from_the_drive():
+    pytest.importorskip("cloudanalyzer_core")
     from ca.posegraph_fix import calibrate_ups, up_spread
 
     rng = np.random.default_rng(3)

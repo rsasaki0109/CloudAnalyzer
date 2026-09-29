@@ -515,6 +515,8 @@ export type Request =
       /** Three per node. */
       ups: Float64Array;
       sigmaDeg: number;
+      /** Estimate the IMU's rotation into the scans' frame from the drive first. */
+      calibrate: boolean;
       loopKernel: number;
     }
   | { kind: "pg-clear-gravity" }

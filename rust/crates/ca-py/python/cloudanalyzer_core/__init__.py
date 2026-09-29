@@ -7,6 +7,7 @@ and use all cores.
 from ._core import (
     PoseGraph,
     __version__,
+    calibrate_ups,
     changed_objects,
     cloud_to_mesh,
     ground_csf,
@@ -26,6 +27,7 @@ from ._copc import read_copc
 __all__ = [
     "PoseGraph",
     "__version__",
+    "calibrate_ups",
     "changed_objects",
     "cloud_to_mesh",
     "ground_csf",

@@ -155,7 +155,7 @@ ca posegraph-compare june/ december/ --here 1219 --there 850 --out changes/   # 
 
 On hdl_graph_slam's recorded drive (`hdl_400.bag`: a Velodyne HDL-32E and a GPS/IMU, 126 s), step 1 finds 6 loops,
 estimates the IMU's mounting (its up directions spread 8.1° before, 2.0° after) and leaves out 5.1 % of the points
-as dynamic, in about five minutes; the bag itself is read in ten seconds, by the Rust core. [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
+as dynamic, in under three minutes on a laptop (the bag itself is read in ten seconds). [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
 (`claude mcp add cloudanalyzer -- ca mcp`), from `slam_odometry` to `view_link`.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the

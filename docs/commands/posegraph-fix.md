@@ -40,9 +40,9 @@ their intensity, and when it has a `sensor_msgs/Imu` topic its up directions bec
 ca posegraph-fix drive.mcap --out fixed/ --remove-dynamic --keyframe-spacing 1
 ```
 
-KITTI 07 recorded as a ROS1 bag (2.1 GB, Velodyne scans and the OXTS orientation as IMU): odometry
-70 s, then 7 loops, the bag's IMU gravity and dynamic removal, ATE 2.67 → 1.76 m (SE(3)-aligned
-0.78 → 0.39 m), 84 s in all.
+KITTI 07 recorded as a ROS1 bag (2.1 GB, Velodyne scans and the OXTS orientation as IMU): reading the
+bag and the odometry 61 s, then 7 loops, the bag's IMU gravity and dynamic removal, ATE 2.67 → 1.76 m
+(SE(3)-aligned 0.78 → 0.39 m), 78 s in all on a laptop.
 
 | Option | Default | |
 |---|---|---|

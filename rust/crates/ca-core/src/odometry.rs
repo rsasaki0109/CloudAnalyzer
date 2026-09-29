@@ -290,9 +290,47 @@ impl Odometry {
         let kernel = sigma / 3.0;
         let mut total = Rigid::IDENTITY;
         for _ in 0..self.params.max_iterations {
+            let system = self.normal_equations(source, &total, center, threshold_sq, kernel);
+            let (jtj, jtr) = (system.0, system.1);
+            let Some(dx) = solve6(jtj, jtr) else { break };
+            // Turn about `center`, then shift.
+            let rotation = crate::pose_graph::exp_so3(&[dx[3], dx[4], dx[5]]);
+            let turned = Rigid {
+                rotation,
+                translation: [0.0; 3],
+            }
+            .apply(&center);
+            let step = Rigid {
+                rotation,
+                translation: std::array::from_fn(|k| center[k] - turned[k] + dx[k]),
+            };
+            total = step.compose(&total);
+            // Converged: steps of under a millimetre and a tenth of a milliradian.
+            if dx[..3].iter().map(|v| v * v).sum::<f64>().sqrt() < self.params.tolerance_t
+                && dx[3..].iter().map(|v| v * v).sum::<f64>().sqrt() < self.params.tolerance_r
+            {
+                break;
+            }
+        }
+        total
+    }
+
+    /// The normal equations of one Gauss-Newton step: each point of `source`
+    /// moved by `total`, paired with the map point nearest it within the
+    /// threshold, weighted by the kernel; summed over chunks of points (in
+    /// parallel on the cores, natively).
+    fn normal_equations(
+        &self,
+        source: &[[f64; 3]],
+        total: &Rigid,
+        center: [f64; 3],
+        threshold_sq: f64,
+        kernel: f64,
+    ) -> (Mat6, Vec6) {
+        let chunk = |points: &[[f64; 3]]| -> (Mat6, Vec6) {
             let mut jtj = [[0.0; 6]; 6];
             let mut jtr = [0.0; 6];
-            for p in source {
+            for p in points {
                 let q = total.apply(p);
                 let Some((m, distance_sq)) = self.nearest(&q) else {
                     continue;
@@ -318,27 +356,30 @@ impl Odometry {
                     }
                 }
             }
-            let Some(dx) = solve6(jtj, jtr) else { break };
-            // Turn about `center`, then shift.
-            let rotation = crate::pose_graph::exp_so3(&[dx[3], dx[4], dx[5]]);
-            let turned = Rigid {
-                rotation,
-                translation: [0.0; 3],
+            (jtj, jtr)
+        };
+        let add = |(mut a, mut b): (Mat6, Vec6), (c, d): (Mat6, Vec6)| {
+            for i in 0..6 {
+                b[i] += d[i];
+                for j in 0..6 {
+                    a[i][j] += c[i][j];
+                }
             }
-            .apply(&center);
-            let step = Rigid {
-                rotation,
-                translation: std::array::from_fn(|k| center[k] - turned[k] + dx[k]),
-            };
-            total = step.compose(&total);
-            // Converged: steps of under a millimetre and a tenth of a milliradian.
-            if dx[..3].iter().map(|v| v * v).sum::<f64>().sqrt() < self.params.tolerance_t
-                && dx[3..].iter().map(|v| v * v).sum::<f64>().sqrt() < self.params.tolerance_r
-            {
-                break;
-            }
+            (a, b)
+        };
+        #[cfg(feature = "parallel")]
+        {
+            use rayon::prelude::*;
+            source
+                .par_chunks(256)
+                .map(chunk)
+                .reduce(|| ([[0.0; 6]; 6], [0.0; 6]), add)
         }
-        total
+        #[cfg(not(feature = "parallel"))]
+        {
+            let _ = add;
+            chunk(source)
+        }
     }
 
     /// Register the next scan (in its sensor's frame) and return its pose.

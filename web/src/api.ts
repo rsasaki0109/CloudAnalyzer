@@ -357,10 +357,10 @@ export function poseGraphMap(
   voxel: number,
   initial = false,
   correction = false,
-  first = 0,
-  count = 0,
+  nodes: number[] = [],
+  label = "",
 ): Promise<LoadedCloud> {
-  return call({ kind: "pg-map", voxel, initial, correction, first, count });
+  return call({ kind: "pg-map", voxel, initial, correction, nodes, label });
 }
 
 export function closePoseGraph(): Promise<void> {

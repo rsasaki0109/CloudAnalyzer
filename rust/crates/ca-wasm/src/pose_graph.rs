@@ -746,45 +746,37 @@ impl PoseGraphSession {
     /// Every scan at its node's pose as one cloud, or with `initial` at its
     /// pose as loaded; call [`Cloud::build_index`] before drawing it. With
     /// `correction`, each point carries how far it moved from its place as
-    /// loaded (the `correction` attribute, metres).
-    pub fn map(
-        &self,
-        initial: bool,
-        correction: bool,
-        first: usize,
-        count: usize,
-    ) -> Result<Cloud, JsError> {
-        // Only nodes `first..first + count` (all with `count` 0): a part of
-        // the path, e.g. one of two joined sessions.
+    /// loaded (the `correction` attribute, metres). Only `nodes` (node
+    /// indices) are included, or every node when it is empty.
+    pub fn map(&self, initial: bool, correction: bool, nodes: &[u32]) -> Result<Cloud, JsError> {
+        // Only `nodes` (all when empty): a part of the path, or the stretch
+        // near another session.
         let n = self.graph.nodes.len();
-        let first = first.min(n);
-        let end = if count == 0 {
-            n
+        let chosen: Vec<usize> = if nodes.is_empty() {
+            (0..n).collect()
         } else {
-            (first + count).min(n)
+            nodes
+                .iter()
+                .map(|&i| i as usize)
+                .filter(|&i| i < n)
+                .collect()
         };
-        let now = PoseGraph {
-            nodes: self.graph.nodes[first..end].to_vec(),
-            ..PoseGraph::default()
+        let parts = || {
+            chosen.iter().filter_map(|&i| {
+                let scan = self.scans[i].as_ref()?;
+                Some((&self.graph.nodes[i].pose, &self.initial[i], scan))
+            })
         };
-        let scans = &self.scans[first..end];
-        let loaded = &self.initial[first..end];
-        let mut map = if initial {
-            let mut then = now.clone();
-            for (node, pose) in then.nodes.iter_mut().zip(loaded) {
-                node.pose = *pose;
-            }
-            pose_graph::assemble(&then, scans)
-        } else {
-            pose_graph::assemble(&now, scans)
-        };
+        let mut map = pose_graph::assemble_from(
+            parts().map(|(now, then, scan)| (if initial { then } else { now }, scan)),
+        );
         if map.is_empty() {
             return Err(JsError::new("no scans are loaded there"));
         }
         if correction {
             map.attributes.push(ca_core::Attribute {
                 name: "correction".into(),
-                values: ca_core::AttributeValues::F32(pose_graph::correction(&now, scans, loaded)),
+                values: ca_core::AttributeValues::F32(pose_graph::correction_from(parts())),
             });
         }
         Ok(Cloud::unindexed(map))

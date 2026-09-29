@@ -1640,22 +1640,31 @@ pub fn loop_candidates(
 /// to node `i` (in that node's frame); nodes without a scan add nothing.
 /// Intensity is kept when every scan has it.
 pub fn assemble(graph: &PoseGraph, scans: &[Option<PointCloud>]) -> PointCloud {
-    let present: Vec<(&Node, &PointCloud)> = graph
-        .nodes
-        .iter()
-        .zip(scans)
-        .filter_map(|(n, s)| Some((n, s.as_ref()?)))
-        .collect();
+    assemble_from(
+        graph
+            .nodes
+            .iter()
+            .zip(scans)
+            .filter_map(|(n, s)| Some((&n.pose, s.as_ref()?))),
+    )
+}
+
+/// Scans placed at poses, in one cloud (see [`assemble`]), for any set of
+/// nodes: a part of the path, or the nodes near another session.
+pub fn assemble_from<'a>(
+    parts: impl IntoIterator<Item = (&'a Rigid, &'a PointCloud)>,
+) -> PointCloud {
+    let parts: Vec<(&Rigid, &PointCloud)> = parts.into_iter().collect();
     let intensity = |s: &PointCloud| match s.attribute(INTENSITY).map(|a| &a.values) {
         Some(AttributeValues::F32(v)) => Some(v.clone()),
         _ => None,
     };
-    let with_intensity = present.iter().all(|(_, s)| intensity(s).is_some());
+    let with_intensity = parts.iter().all(|(_, s)| intensity(s).is_some());
     let mut out = PointCloud::default();
     let mut values = Vec::new();
-    for (node, scan) in present {
+    for (pose, scan) in parts {
         out.positions
-            .extend(scan.positions.iter().map(|p| node.pose.apply(p)));
+            .extend(scan.positions.iter().map(|p| pose.apply(p)));
         if with_intensity {
             values.extend(intensity(scan).unwrap_or_default());
         }
@@ -1674,11 +1683,24 @@ pub fn assemble(graph: &PoseGraph, scans: &[Option<PointCloud>]) -> PointCloud {
 /// the map's point order: the true shift of every point, where a
 /// cloud-to-cloud distance would miss a slide along a wall.
 pub fn correction(graph: &PoseGraph, scans: &[Option<PointCloud>], before: &[Rigid]) -> Vec<f32> {
+    correction_from(
+        graph
+            .nodes
+            .iter()
+            .zip(scans)
+            .zip(before)
+            .filter_map(|((n, s), then)| Some((&n.pose, then, s.as_ref()?))),
+    )
+}
+
+/// [`correction`] for any set of nodes, as `(pose now, pose before, scan)`.
+pub fn correction_from<'a>(
+    parts: impl IntoIterator<Item = (&'a Rigid, &'a Rigid, &'a PointCloud)>,
+) -> Vec<f32> {
     let mut out = Vec::new();
-    for ((node, scan), then) in graph.nodes.iter().zip(scans).zip(before) {
-        let Some(scan) = scan else { continue };
+    for (now, then, scan) in parts {
         out.extend(scan.positions.iter().map(|p| {
-            let d = sub3(&node.pose.apply(p), &then.apply(p));
+            let d = sub3(&now.apply(p), &then.apply(p));
             dot3(&d, &d).sqrt() as f32
         }));
     }

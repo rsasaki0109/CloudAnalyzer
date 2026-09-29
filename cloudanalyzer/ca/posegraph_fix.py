@@ -328,6 +328,69 @@ def _loops(graph, options: dict | None) -> dict:
     return out
 
 
+def up_spread(rotations: np.ndarray, ups: np.ndarray) -> np.ndarray:
+    """Per keyframe, the angle (degrees) between its up seen in the world (through its pose)
+    and the mean of them: 0 everywhere when the up directions and the poses agree."""
+    seen = np.einsum("nij,nj->ni", rotations, ups)
+    g = seen.mean(0)
+    g /= np.linalg.norm(g)
+    return np.asarray(np.degrees(np.arccos(np.clip(seen @ g, -1.0, 1.0))))
+
+
+def calibrate_ups(rotations: np.ndarray, ups: np.ndarray) -> np.ndarray:
+    """The rotation of an IMU's frame into the scans' frame that its up directions ``ups``
+    agree with best, seen through the keyframes' ``rotations``: the one that makes the ups,
+    turned by it and seen in the world, closest to their mean (a drive that turns and tilts
+    constrains it). Tried from an upright and an upside-down IMU; the up's sign is free, since
+    tying to gravity does not depend on it."""
+    from scipy.optimize import least_squares
+    from scipy.spatial.transform import Rotation
+
+    def residual(vector: np.ndarray) -> np.ndarray:
+        seen = np.einsum("nij,nj->ni", rotations, ups @ Rotation.from_rotvec(vector).as_matrix().T)
+        g = seen.mean(0)
+        return np.asarray((seen - g / np.linalg.norm(g)).ravel())
+
+    starts = [np.zeros(3), np.array([np.pi, 0.0, 0.0]), np.array([0.0, np.pi, 0.0])]
+    best = min((least_squares(residual, x0) for x0 in starts), key=lambda solution: solution.cost)
+    return np.asarray(Rotation.from_rotvec(best.x).as_matrix())
+
+
+def tie_gravity(graph, groups: list[tuple[list[int], np.ndarray]], sigma_deg: float, calibrate: bool = True) -> dict:
+    """Tie keyframes to the up directions of one or more IMUs (``groups`` of node indices and
+    ups in the scans' frame), then optimise. With ``calibrate`` each IMU's rotation into the
+    scans' frame is estimated from the drive (see :func:`calibrate_ups`) and used when it makes
+    the up directions agree better; the standard deviation is at least what is left of their
+    spread, so a noisy IMU levels the map without bending it."""
+    poses = graph.poses()
+    all_nodes: list[int] = []
+    all_ups = []
+    imus = []
+    for nodes, ups in groups:
+        rotations = poses[nodes, :3, :3]
+        before = up_spread(rotations, ups)
+        info: dict = {"keyframes": len(nodes), "spread_deg": round(float(np.median(before)), 3)}
+        if calibrate and len(nodes) >= 10:
+            rotation = calibrate_ups(rotations, ups)
+            after = up_spread(rotations, ups @ rotation.T)
+            if np.median(after) < np.median(before):
+                ups = ups @ rotation.T
+                info["calibration"] = [[round(float(v), 6) for v in row] for row in rotation]
+                info["spread_deg_calibrated"] = round(float(np.median(after)), 3)
+        all_nodes += nodes
+        all_ups.append(ups)
+        imus.append(info)
+    spread = max(i.get("spread_deg_calibrated", i["spread_deg"]) for i in imus)
+    sigma = max(sigma_deg, spread)
+    report = {
+        "tied": graph.set_gravity(all_nodes, np.vstack(all_ups), sigma),
+        "sigma_deg": round(float(sigma), 3),
+        "imus": imus,
+    }
+    report["optimized"] = graph.optimize()
+    return report
+
+
 def odometry(
     scans: str,
     out_dir: str,
@@ -416,6 +479,7 @@ def fix_session(
     loop_options: dict | None = None,
     gravity: str | None = None,
     gravity_sigma_deg: float = 0.1,
+    calibrate_gravity: bool = True,
     remove_dynamic: bool = False,
     map_voxel: float = 0.2,
     truth: str | None = None,
@@ -446,9 +510,7 @@ def fix_session(
     if gravity:
         clock = time.perf_counter()
         say("tying to gravity")
-        nodes, vectors = session.ups(gravity)
-        report["gravity"] = {"tied": graph.set_gravity(nodes, vectors, gravity_sigma_deg)}
-        report["gravity"]["optimized"] = graph.optimize()
+        report["gravity"] = tie_gravity(graph, [session.ups(gravity)], gravity_sigma_deg, calibrate_gravity)
         report["timings_s"]["gravity"] = round(time.perf_counter() - clock, 2)
 
     if remove_dynamic:
@@ -514,6 +576,7 @@ def compare_sessions(
     gravity_first: str | None = None,
     gravity_second: str | None = None,
     gravity_sigma_deg: float = 0.1,
+    calibrate_gravity: bool = True,
     map_voxel: float = 0.3,
     reach: float = 50.0,
     core_spacing: float = 0.5,
@@ -555,15 +618,12 @@ def compare_sessions(
     timings["loops"] = round(time.perf_counter() - clock, 2)
 
     if gravity_first or gravity_second:
-        nodes: list[int] = []
-        vectors = []
+        groups = []
         for session, path, shift in ((a, gravity_first, 0), (b, gravity_second, offset)):
             if path:
                 n, v = session.ups(path)
-                nodes += [i + shift for i in n]
-                vectors.append(v)
-        report["gravity"] = {"tied": graph.set_gravity(nodes, np.vstack(vectors), gravity_sigma_deg)}
-        report["gravity"]["optimized"] = graph.optimize()
+                groups.append(([i + shift for i in n], v))
+        report["gravity"] = tie_gravity(graph, groups, gravity_sigma_deg, calibrate_gravity)
 
     clock = time.perf_counter()
     say("building the maps where the drives meet")

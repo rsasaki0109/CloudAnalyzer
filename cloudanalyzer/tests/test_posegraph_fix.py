@@ -197,3 +197,31 @@ def test_poses_from_elsewhere_thinned_to_keyframes_still_close_the_lap(tmp_path)
     # Keyframes 6 m apart register less tightly than every 3 m, still well within the drift.
     assert report["ate"]["before"]["end_error"] > 1.0 and report["ate"]["after"]["end_error"] < 0.3
 
+
+
+def _rot(axis: str, angle: float) -> np.ndarray:
+    c, s = math.cos(angle), math.sin(angle)
+    return {
+        "x": np.array([[1, 0, 0], [0, c, -s], [0, s, c]]),
+        "y": np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]]),
+        "z": np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]]),
+    }[axis]
+
+
+def test_an_imu_mounted_turned_and_upside_down_is_calibrated_from_the_drive():
+    from ca.posegraph_fix import calibrate_ups, up_spread
+
+    rng = np.random.default_rng(3)
+    # A drive that turns (and tilts a little): the keyframes' rotations, scans' frame to world.
+    rotations = np.array(
+        [_rot("z", yaw) @ _rot("x", rng.normal(0, 0.03)) @ _rot("y", rng.normal(0, 0.03)) for yaw in np.linspace(0, 6, 80)]
+    )
+    up_in_scans = np.einsum("nji,j->ni", rotations, np.array([0.0, 0.0, 1.0]))
+    # The IMU is turned a quarter about z, tilted 5 degrees and upside down (z down) against the LiDAR.
+    imu_to_scans = _rot("z", math.pi / 2) @ _rot("x", math.radians(5)) @ _rot("x", math.pi)
+    ups = up_in_scans @ imu_to_scans  # each row is imu_to_scans.T @ up
+    assert np.median(up_spread(rotations, ups)) > 4
+    rotation = calibrate_ups(rotations, ups)
+    assert np.median(up_spread(rotations, ups @ rotation.T)) < 0.01
+    # Up to its sign, which tying to gravity does not depend on.
+    assert np.allclose(np.abs(np.einsum("ni,ni->n", ups @ rotation.T, up_in_scans)), 1, atol=1e-6)

@@ -51,6 +51,7 @@ all.
 | `--max-range` | 80 | Odometry: drop points farther than this (m) |
 | `--out DIR` | | Write `<poses>_fixed.g2o`, `<poses>_fixed_kitti.txt` (and `.tum` for a TUM input) and `<poses>_map.ply` (double coordinates, `intensity`, and `correction`: how far each point moved) |
 | `--gravity PATH` | | IMU up directions: a KITTI OXTS folder (roll and pitch per frame, `calib_imu_to_velo.txt`) or a file of `frame ux uy uz` lines |
+| `--no-imu-calibration` | off | Take the up directions as given (see below) |
 | `--remove-dynamic` | off | Leave points other scans saw through out of the map, and write them to `<poses>_dynamic.ply` |
 | `--no-loops` | off | Skip the loop search (e.g. gravity only) |
 | `--voxel` | 0.4 | Thin each scan to one point per voxel (m) for registration and the map |
@@ -60,6 +61,22 @@ all.
 | `--min-overlap` | 50 | Keep a loop when this % of the later scan overlaps the earlier |
 | `--truth GT` | | Ground-truth poses (KITTI or TUM, same frames): report the ATE before and after |
 | `--format-json` / `--output-json FILE` | | The report as JSON |
+
+## IMU gravity on a real IMU
+
+An IMU is seldom mounted square with the LiDAR, and its up direction is noisier than KITTI's
+survey-grade OXTS. So `--gravity` first estimates the IMU's rotation into the scans' frame from the
+drive itself: the rotation that makes every keyframe's measured up, seen in the world through its
+pose, agree best (a drive that turns and tilts pins it down, upside-down IMUs included). It is used
+when it makes them agree better, and the tie's standard deviation is at least the spread that is
+left, so a noisy IMU levels the map without bending it. The report gives the spread before and
+after, and the rotation.
+
+| Drive | Up spread | With the rotation estimated |
+|---|---|---|
+| KITTI 07 (OXTS) | 0.49° | 0.49°, ATE 1.164 m (1.162 m before) |
+| KITTI 09 (OXTS, hills) | 1.06° | 0.74°, ATE 2.17 m (2.26 m before) |
+| hdl_graph_slam's `hdl_400.bag` (HDL-32E, a z-down GPS/IMU) | 8.60° | 2.19°: height range 3.13 → 2.08 m, dynamic points 16.9 → 7.1 % |
 
 ## Example: KITTI 07
 

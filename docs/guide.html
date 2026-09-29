@@ -275,7 +275,7 @@
       at each keyframe (from the orientation, else the mean acceleration) then levels the graph as <b>IMU gravity</b>
       does, with the IMU's mounting estimated. Compressed bags (lz4, zstd) open as they are, except bz2 ROS 1 bags;
       ROS 2 bags stored in SQLite (<code>.db3</code>) do not open: record them as MCAP, or convert them. A
-      2.4 GB ROS 1 bag of a Velodyne HDL-32E (1,263 scans, 126 s of driving) opens in about six minutes.
+      2.4 GB ROS 1 bag of a Velodyne HDL-32E (1,263 scans, 126 s of driving) opens in about two minutes.
     </p>
     <ul>
       <li><b>Poses</b>: a g2o graph (<code>VERTEX_SE3:QUAT</code>, <code>EDGE_SE3:QUAT</code>, <code>FIX</code>), or a

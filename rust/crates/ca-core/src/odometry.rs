@@ -111,7 +111,7 @@ fn solve6(mut a: Mat6, mut b: Vec6) -> Option<Vec6> {
 
 /// One point per voxel (the first in each).
 fn thin(points: &[[f64; 3]], voxel: f64) -> Vec<[f64; 3]> {
-    let mut seen = HashSet::new();
+    let mut seen: HashSet<[i64; 3], BuildHasherDefault<VoxelHasher>> = HashSet::default();
     points
         .iter()
         .copied()
@@ -207,7 +207,10 @@ impl Odometry {
 
     /// The motion that best brings `source` (world points) onto the map:
     /// pairs within 3 sigma, weighted by a Geman-McClure kernel of sigma/3.
-    fn align(&self, source: &[[f64; 3]], sigma: f64) -> Rigid {
+    /// Rotations are about `center` (where the sensor is): about the world's
+    /// origin, far from it, a small turn would come with a large shift, and
+    /// the steps would shrink below the tolerance only after many iterations.
+    fn align(&self, source: &[[f64; 3]], center: [f64; 3], sigma: f64) -> Rigid {
         let threshold_sq = (3.0 * sigma).powi(2);
         let kernel = sigma / 3.0;
         let mut total = Rigid::IDENTITY;
@@ -224,7 +227,8 @@ impl Odometry {
                 }
                 let r = [q[0] - m[0], q[1] - m[1], q[2] - m[2]];
                 let w = kernel * kernel / (kernel + distance_sq).powi(2);
-                // d q / d (translation, rotation) = [I, -[q]x] for a change on the left.
+                // d q / d (translation, rotation) = [I, -[q - center]x] for a change on the left.
+                let q = [q[0] - center[0], q[1] - center[1], q[2] - center[2]];
                 let rows = [
                     [1.0, 0.0, 0.0, 0.0, q[2], -q[1]],
                     [0.0, 1.0, 0.0, -q[2], 0.0, q[0]],
@@ -240,12 +244,22 @@ impl Odometry {
                 }
             }
             let Some(dx) = solve6(jtj, jtr) else { break };
+            // Turn about `center`, then shift.
+            let rotation = crate::pose_graph::exp_so3(&[dx[3], dx[4], dx[5]]);
+            let turned = Rigid {
+                rotation,
+                translation: [0.0; 3],
+            }
+            .apply(&center);
             let step = Rigid {
-                rotation: crate::pose_graph::exp_so3(&[dx[3], dx[4], dx[5]]),
-                translation: [dx[0], dx[1], dx[2]],
+                rotation,
+                translation: std::array::from_fn(|k| center[k] - turned[k] + dx[k]),
             };
             total = step.compose(&total);
-            if dx.iter().map(|v| v * v).sum::<f64>().sqrt() < 1e-4 {
+            // Converged: steps of under a millimetre and a tenth of a milliradian.
+            if dx[..3].iter().map(|v| v * v).sum::<f64>().sqrt() < 1e-3
+                && dx[3..].iter().map(|v| v * v).sum::<f64>().sqrt() < 1e-4
+            {
                 break;
             }
         }
@@ -278,7 +292,8 @@ impl Odometry {
             prediction
         } else {
             let moved: Vec<[f64; 3]> = source.iter().map(|q| prediction.apply(q)).collect();
-            self.align(&moved, self.sigma()).compose(&prediction)
+            self.align(&moved, prediction.translation, self.sigma())
+                .compose(&prediction)
         };
         pose.rotation = orthonormal(&pose.rotation);
         // How far the motion model was off, as the most a point in range moved.

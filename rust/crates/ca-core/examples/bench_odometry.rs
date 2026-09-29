@@ -30,6 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         map_voxel: env("ODOM_MAP_VOXEL", defaults.map_voxel),
         min_range: env("ODOM_MIN_RANGE", defaults.min_range),
         max_range: env("ODOM_MAX_RANGE", defaults.max_range),
+        map_points: env("ODOM_MAP_POINTS", defaults.map_points as f64) as usize,
         ..defaults
     };
     let mut odometry = Odometry::new(params);

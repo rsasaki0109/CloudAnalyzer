@@ -28,9 +28,9 @@ never leaves your machine.
 Drop a folder with a trajectory (KITTI, TUM) or a g2o pose graph and one scan per pose.
 
 <p align="center">
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive"><img src="docs/images/web/odometry.gif" alt="LiDAR odometry replayed: scans build up along the drive, colored by height, with each keyframe's axes" width="49%"></a>
+  <a href="scripts/fetch_pandaset.py"><img src="docs/images/web/odometry.gif" alt="A real drive through San Francisco replayed: Pandar64 scans build up along the street, colored by height" width="49%"></a>
   <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph"><img src="docs/images/web/posegraph.jpg" alt="The corrected map colored by how far each point moved" width="49%"></a><br>
-  <b>Replay the drive</b> scan by scan · <b>See the correction</b>: every point colored by how far it moved
+  <b>Replay the drive</b> scan by scan (PandaSet, San Francisco) · <b>See the correction</b>: every point colored by how far it moved
 </p>
 
 - **Close loops** between two keyframes you pick, or let it search the whole drive: candidates are found within
@@ -44,7 +44,8 @@ Drop a folder with a trajectory (KITTI, TUM) or a g2o pose graph and one scan pe
 ## 2. Clean it and see what changed
 
 <p align="center">
-  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive"><img src="docs/images/web/dynamic.gif" alt="Dynamic points removed: the ghost trails of passing cars turn red and leave the map" width="720"></a>
+  <a href="scripts/fetch_pandaset.py"><img src="docs/images/web/dynamic.gif" alt="A real San Francisco street: the ghost trails the traffic left in the lanes turn red and leave the map" width="720"></a><br>
+  A real street (PandaSet scene 019, 80 Pandar64 scans): the traffic's ghost trails turn red and leave the map
 </p>
 
 - **Remove dynamic objects**: points that nearby scans saw straight through (passing cars, pedestrians) leave the
@@ -151,4 +152,7 @@ re-takes the README screenshots and GIFs.
 
 [MIT](LICENSE). Public demo data, sample data and derived images keep their upstream terms; see the
 [image attribution](docs/images/ATTRIBUTION.md) and the [sample attribution](web/public/samples/ATTRIBUTION.md).
-The GIFs above are of a drive generated in the browser; KITTI data is not redistributed here.
+The odometry and dynamic-object GIFs are of [PandaSet](https://pandaset.org) scene 019 (Scale AI and Hesai,
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)), fetched with
+[`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py); the other pose graph pictures are of a drive generated in the
+browser. KITTI data is not redistributed here.

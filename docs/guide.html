@@ -320,6 +320,9 @@
       without them (<code>_static</code>) and them in red (<code>_dynamic</code>), both ordinary clouds. On
       SemanticKITTI 07 (its moving classes, KISS-ICP poses, scans thinned to 0.4 m) it scores precision 0.77,
       recall 0.58, F1 0.66 and keeps 99.9 % of the static points; the 1,101 scans take about 8 s, parts of the drive judged on the worker pool (35 s on one thread).
+      On PandaSet scene 019 (a busy San Francisco street, 80 scans, 8 s; moving vehicles from the labelled cuboids)
+      it scores precision 0.62, recall 0.34 and keeps 98.9 % of the static points: traffic driving along with the
+      car is never seen through in so short a drive, so it stays.
     </p>
     <p>
       <b>Analyse the map</b> hands the corrected map to the analysis tools. <b>Ground &amp; DEM</b> builds the map,

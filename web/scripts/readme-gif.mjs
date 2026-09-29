@@ -14,12 +14,12 @@ const all = readdirSync(frames)
 if (!all.length) throw new Error("no frames: run the media spec first");
 
 // Frames sort by scene prefix (a-c2c, b-m3c2, …) then number.
-// Real LiDAR scans (odometry, dynamic) are fine-grained noise to a GIF encoder: those keep
+// Real LiDAR scans (odometry, loop, dynamic) are fine-grained noise to a GIF encoder: those keep
 // every other frame, at a smaller size and without dithering, to stay a few MB.
 const GIFS = [
   { name: "demo.gif", scenes: /^[a-e]-/, seconds: 0.125 },
   { name: "odometry.gif", scenes: /^f-/, seconds: 0.18, real: true },
-  { name: "loop.gif", scenes: /^g-/, seconds: 0.16 },
+  { name: "loop.gif", scenes: /^g-/, seconds: 0.16, real: true },
   { name: "dynamic.gif", scenes: /^h-/, seconds: 0.16, real: true },
 ];
 const filterFor = (real) =>

@@ -21,6 +21,20 @@ const status = (page: Page) => page.locator("#status");
  */
 const PANDASET = process.env.PANDASET_DIR;
 
+/**
+ * A real drive with loops: an NCLT session (Open Database License) made with
+ * `python scripts/prepare_nclt.py 2012-04-29 <dir>`. Those pictures are skipped without it.
+ */
+const NCLT = process.env.NCLT_DIR;
+
+/** Open the NCLT session; `query` is added to the app's URL (e.g. to slow the glide). */
+async function openNclt(page: Page, query: string): Promise<void> {
+  await page.goto(`/${query}`);
+  await page.locator("#pg-folder-input").setInputFiles(`${NCLT}/velodyne`);
+  await expect(status(page)).toContainText("Opened kiss_poses.txt", { timeout: 900_000 });
+  await page.locator("#round-points").check();
+}
+
 async function openPandaSet(page: Page): Promise<void> {
   await page.goto("/");
   await page.locator("#pg-folder-input").setInputFiles(`${PANDASET}/velodyne`);
@@ -139,8 +153,22 @@ test("distance, volume, ground and M3C2 demos, with orbit frames for the GIF", a
   await shot(page, "ground");
   await orbitFrames(page, "d-ground", 24, 12);
 
-  await demo(page, "posegraph", "colored by how far");
-  await page.locator("#round-points").check();
+});
+
+test("pose graph: a campus drive's loops closed, and how far each point moved", async ({ page }) => {
+  test.skip(!NCLT, "set NCLT_DIR (scripts/prepare_nclt.py)");
+  test.setTimeout(900_000);
+  await openNclt(page, "");
+  await page.locator("#pose-graph-panel summary", { hasText: "Find loops automatically" }).click();
+  await page.locator("#pg-find").click();
+  await expect(status(page)).toContainText(/Added \d+ of/, { timeout: 300_000 });
+  await page.locator("#pg-map-voxel").fill("0.3");
+  await page.locator("#pg-compare").click();
+  await expect(status(page)).toContainText("colored by how far", { timeout: 300_000 });
+  await page.locator("#pg-show-scans").uncheck();
+  await page.locator("[data-view=iso]").click();
+  await page.locator("#fit").click();
+  await zoom(page, 4);
   await shot(page, "posegraph");
   await orbitFrames(page, "e-posegraph", 24, 12);
 });
@@ -197,31 +225,35 @@ test("pose graph: LiDAR odometry of a real drive replayed", async ({ page }) => 
   await framesWhile(page, "f-odometry", 0, expect(page.locator("#pg-play")).toHaveText("Play", { timeout: 300_000 }));
 });
 
-test("pose graph: a loop closed by hand", async ({ page }) => {
+test("pose graph: a loop on a real campus closed by hand", async ({ page }) => {
+  test.skip(!NCLT, "set NCLT_DIR (scripts/prepare_nclt.py)");
   test.setTimeout(900_000);
   // Corrections glide in over 10 s here, so the frames catch them moving.
-  await page.goto("/?demo=posegraph-drive&glide=10000");
-  await expect(status(page)).toContainText("Opened poses.txt", { timeout: 120_000 });
-  await page.locator("#round-points").check();
-  await page.locator("#point-size").fill("3");
+  await openNclt(page, "?glide=10000");
+  await page.locator("#point-size").fill("2");
   await page.locator("#pg-colors").selectOption("height");
-  await page.locator("#pg-axes").check();
 
-  // From above, close on the start: the drifted last lap misses it. Close the loop by hand and watch it glide in.
+  // Where the drive comes back after a kilometre, the two passes' scans side by side (Align by hand):
+  // the odometry left them metres apart. ICP lines them up; the loop then pulls the drive together.
+  const frames = async (prefix: string, count: number) => {
+    await page.waitForTimeout(600);
+    for (let i = 0; i < count; i++) {
+      await page.screenshot({ path: fileURLToPath(new URL(`${prefix}-${String(i).padStart(3, "0")}.png`, FRAMES)) });
+    }
+  };
   await page.locator("[data-view=top]").click();
-  await page.locator("#pg-a").fill("0");
-  await page.locator("#pg-b").fill("128");
-  await page.locator("#pg-goto").click();
-  await zoom(page, 10);
-  await page.waitForTimeout(800);
-  for (let i = 0; i < 10; i++) {
-    await page.screenshot({ path: fileURLToPath(new URL(`g-loop-${String(i).padStart(3, "0")}.png`, FRAMES)) });
-  }
-  await page.locator("#pg-loop").click();
-  await framesWhile(page, "g-loop-z", 0, expect(status(page)).toContainText(/Loop 0 – 128 added .*χ²/, { timeout: 60_000 }));
-  for (let i = 0; i < 12; i++) {
-    await page.screenshot({ path: fileURLToPath(new URL(`g-loop-zz-${String(i).padStart(3, "0")}.png`, FRAMES)) });
-  }
+  await page.locator("#pg-a").fill("469");
+  await page.locator("#pg-b").fill("1410");
+  await page.locator("#pg-align").click();
+  await expect(page.locator("#pg-align-panel")).toBeVisible();
+  await zoom(page, 20);
+  await frames("g-loop-a", 8);
+  await page.locator("#pg-align-icp").click();
+  await expect(page.locator("#pg-align-info")).toContainText("ICP RMS", { timeout: 60_000 });
+  await frames("g-loop-b", 8);
+  await page.locator("#pg-align-accept").click();
+  await framesWhile(page, "g-loop-c", 0, expect(status(page)).toContainText(/Loop 469 – 1410 added by hand; χ²/, { timeout: 120_000 }));
+  await frames("g-loop-d", 10);
 });
 
 test("pose graph: traffic removed from a real street's map", async ({ page }) => {

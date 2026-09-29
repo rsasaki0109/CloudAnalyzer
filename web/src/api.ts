@@ -288,6 +288,20 @@ export function addPoseGraphLoop(params: Omit<Extract<Request, { kind: "pg-loop"
   return call({ kind: "pg-loop", ...params });
 }
 
+/** ICP of one scan onto another from a guess, leaving the graph as it is. */
+export function registerPoseGraphPair(
+  params: Omit<Extract<Request, { kind: "pg-register" }>, "kind">,
+): Promise<{ matrix: number[]; rmsInitial: number; rmsFinal: number; fitness: number; converged: boolean }> {
+  return call({ kind: "pg-register", ...params });
+}
+
+/** Add a loop edge with a given measurement. */
+export function addPoseGraphEdge(
+  params: Omit<Extract<Request, { kind: "pg-add-edge" }>, "kind">,
+): Promise<{ state: PoseGraphState; edge: number }> {
+  return call({ kind: "pg-add-edge", ...params });
+}
+
 /** Find, verify and add loops automatically, then optimise. */
 export function findPoseGraphLoops(
   params: Omit<Extract<Request, { kind: "pg-find-loops" }>, "kind">,

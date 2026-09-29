@@ -23,6 +23,7 @@ import init, {
   PoseGraphSession,
   rasterGeotiff,
   registerIcp,
+  registerScans,
   summarizeDistances,
   TrajectoryData,
   VolumeSurface,
@@ -1152,6 +1153,28 @@ async function handle(
         retried: r[21] === 1,
       };
       return { value, transfer: stateTransfer(state) };
+    }
+    case "pg-register": {
+      const session = openGraph();
+      const r = registerScans(
+        session.scanXyz(req.from),
+        session.scanXyz(req.to),
+        new Float64Array(req.guess),
+        req.maxIterations,
+        req.overlap,
+        req.inlierDistance,
+        0,
+        0,
+      );
+      const [rmsInitial, rmsFinal, , converged, fitness] = r;
+      const value = { matrix: Array.from(r.subarray(5, 21)), rmsInitial, rmsFinal, fitness, converged: converged === 1 };
+      return { value, transfer: [] };
+    }
+    case "pg-add-edge": {
+      const session = openGraph();
+      const edge = session.addLoopEdge(req.from, req.to, new Float64Array(req.matrix), req.sigmaT, req.sigmaRDeg);
+      const state = graphState(session);
+      return { value: { state, edge }, transfer: stateTransfer(state) };
     }
     case "pg-find-loops": {
       const session = openGraph();

@@ -451,6 +451,28 @@ export type Request =
     }
   | {
       /**
+       * ICP of node `to`'s scan onto node `from`'s from `guess` (`to` in
+       * `from`'s frame, row-major 4x4), without changing the graph.
+       */
+      kind: "pg-register";
+      from: number;
+      to: number;
+      guess: number[];
+      maxIterations: number;
+      overlap: number;
+      inlierDistance: number;
+    }
+  | {
+      /** Add a loop edge measuring `to` in `from`'s frame as `matrix` (row-major 4x4). */
+      kind: "pg-add-edge";
+      from: number;
+      to: number;
+      matrix: number[];
+      sigmaT: number;
+      sigmaRDeg: number;
+    }
+  | {
+      /**
        * Find loops: node pairs close in space but far apart along the path,
        * each registered with ICP and kept when its fitness is high enough;
        * then optimise.

@@ -15,7 +15,9 @@ import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeome
 import {
   addPoseGraphFloor,
   changedObjects,
+  addPoseGraphEdge,
   addPoseGraphLoop,
+  registerPoseGraphPair,
   closePoseGraph,
   detectPoseGraphDynamic,
   exportPoseGraph,
@@ -164,6 +166,7 @@ let busy = false;
 const num = (id: string) => Number($<HTMLInputElement>(id).value);
 
 function clearGroup(): void {
+  stopAligning();
   for (const child of [...group.children]) {
     group.remove(child);
     if (child instanceof THREE.Points || child instanceof LineSegments2) child.geometry.dispose();
@@ -511,6 +514,8 @@ function renderInfo(): void {
     ["Total error (χ²)", fmt(errors)],
   ]);
   $<HTMLButtonElement>("pg-loop").disabled = busy || selection.length !== 2;
+  $<HTMLButtonElement>("pg-align").disabled = busy || (!aligning && selection.length !== 2);
+  for (const id of ["pg-align-icp", "pg-align-accept"]) $<HTMLButtonElement>(id).disabled = busy;
   $<HTMLButtonElement>("pg-optimize").disabled = busy;
   $<HTMLButtonElement>("pg-undo").disabled = busy || steps.length === 0;
   $<HTMLButtonElement>("pg-map").disabled = busy || withScans === 0;
@@ -611,6 +616,7 @@ function readSelection(): void {
 }
 fieldA.oninput = fieldB.oninput = () => {
   stopMoving();
+  stopAligning();
   readSelection();
 };
 
@@ -1052,6 +1058,201 @@ async function commitMove(): Promise<void> {
 }
 
 $<HTMLButtonElement>("pg-move").onclick = () => (gizmo ? stopMoving() : startMoving());
+
+// --- Align by hand: two scans overlaid, B lined up by hand, then ICP ---------------
+
+let aligning: {
+  from: number;
+  to: number;
+  /** A's pose in render space. */
+  frame: THREE.Matrix4;
+  /** Where B is drawn: its pose in render space, moved by the gizmo. */
+  pivot: THREE.Object3D;
+  objects: THREE.Points[];
+  materials: THREE.PointsMaterial[];
+  handle: ReturnType<typeof viewer.attachGizmo>;
+  /** Which scans were shown before. */
+  shown: boolean[];
+} | null = null;
+
+const ALIGN_FIELDS = ["x", "y", "z", "roll", "pitch", "yaw"] as const;
+
+/** `m` as row-major numbers, and back. */
+const rowMajor = (m: THREE.Matrix4) => m.clone().transpose().elements.slice();
+const fromRowMajor = (v: ArrayLike<number>) => new THREE.Matrix4().fromArray(Array.from(v)).transpose();
+
+/** B in A's frame, as the pivot now has it. */
+function alignedGuess(): THREE.Matrix4 {
+  const a = aligning!;
+  a.pivot.updateMatrix();
+  return a.frame.clone().invert().multiply(a.pivot.matrix);
+}
+
+/** Put B at `guess` (in A's frame) and show its numbers. */
+function placeAligned(guess: THREE.Matrix4): void {
+  const a = aligning!;
+  a.frame.clone().multiply(guess).decompose(a.pivot.position, a.pivot.quaternion, a.pivot.scale);
+  a.pivot.updateMatrix();
+  showAlignedNumbers(guess);
+  viewer.requestRender();
+}
+
+function showAlignedNumbers(guess: THREE.Matrix4): void {
+  const p = new THREE.Vector3().setFromMatrixPosition(guess);
+  const e = new THREE.Euler().setFromRotationMatrix(guess, "ZYX");
+  const deg = THREE.MathUtils.radToDeg;
+  const values = [p.x, p.y, p.z, deg(e.x), deg(e.y), deg(e.z)];
+  ALIGN_FIELDS.forEach((f, k) => ($<HTMLInputElement>(`pg-align-${f}`).value = values[k].toFixed(k < 3 ? 3 : 2)));
+}
+
+/** The guess the number fields describe. */
+function typedGuess(): THREE.Matrix4 {
+  const [x, y, z, roll, pitch, yaw] = ALIGN_FIELDS.map((f) => num(`pg-align-${f}`) || 0);
+  const rad = THREE.MathUtils.degToRad;
+  return new THREE.Matrix4()
+    .makeRotationFromEuler(new THREE.Euler(rad(roll), rad(pitch), rad(yaw), "ZYX"))
+    .setPosition(x, y, z);
+}
+
+function stopAligning(): void {
+  const a = aligning;
+  if (!a) return;
+  aligning = null;
+  a.handle.detach();
+  viewer.overlay.remove(a.pivot);
+  for (const o of a.objects) {
+    o.removeFromParent();
+    o.geometry.dispose();
+  }
+  for (const m of a.materials) m.dispose();
+  scanObjects.forEach((o, i) => {
+    if (o) o.visible = a.shown[i];
+  });
+  $("pg-align-panel").hidden = true;
+  $("pg-align").setAttribute("aria-pressed", "false");
+  renderInfo();
+  viewer.requestRender();
+}
+
+/** Show A's and B's scans alone, B on a gizmo at the graph's current guess. */
+export function startAligning(): void {
+  if (!graph || selection.length !== 2) {
+    setStatus("Pick or type Node A and Node B first", true);
+    return;
+  }
+  stopMoving();
+  stopAligning();
+  const [from, to] = selection;
+  const { scans, state } = graph;
+  const [scanA, scanB] = [scans[from], scans[to]];
+  if (!scanA?.length || !scanB?.length) {
+    setStatus("Both nodes need a scan to align", true);
+    return;
+  }
+  const frame = renderMatrix(state.poses, from);
+  const cloud = (positions: Float32Array, color: number) => {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geometry.computeBoundingSphere();
+    const material = new THREE.PointsMaterial({ size: 2, sizeAttenuation: false, color });
+    viewer.registerPointMaterial(material);
+    return new THREE.Points(geometry, material);
+  };
+  const objects = [cloud(scanA, 0xff9800), cloud(scanB, 0x00e5ff)];
+  objects[0].matrixAutoUpdate = false;
+  objects[0].matrix.copy(frame);
+  const pivot = new THREE.Object3D();
+  pivot.add(objects[1]);
+  viewer.overlay.add(objects[0], pivot);
+  const shown = scanObjects.map((o) => !!o?.visible);
+  for (const o of scanObjects) if (o) o.visible = false;
+  aligning = {
+    from,
+    to,
+    frame,
+    pivot,
+    objects,
+    materials: objects.map((o) => o.material as THREE.PointsMaterial),
+    shown,
+    handle: viewer.attachGizmo(
+      pivot,
+      $<HTMLSelectElement>("pg-align-mode").value as "translate" | "rotate",
+      () => {
+        if (aligning) showAlignedNumbers(alignedGuess());
+      },
+      () => undefined,
+    ),
+  };
+  placeAligned(frame.clone().invert().multiply(renderMatrix(state.poses, to)));
+  $("pg-align-panel").hidden = false;
+  $("pg-align").setAttribute("aria-pressed", "true");
+  $("pg-align-info").textContent = "";
+  viewer.centerOn(new THREE.Vector3().setFromMatrixPosition(frame));
+  renderInfo();
+  const ids = state.nodeIds;
+  setStatus(`Aligning node ${ids[to]} (cyan) onto node ${ids[from]} (orange): move it close, then ICP`);
+}
+
+$<HTMLButtonElement>("pg-align").onclick = () => (aligning ? stopAligning() : startAligning());
+$<HTMLButtonElement>("pg-align-cancel").onclick = () => {
+  stopAligning();
+  setStatus("Alignment cancelled");
+};
+$<HTMLSelectElement>("pg-align-mode").onchange = () =>
+  aligning?.handle.setMode($<HTMLSelectElement>("pg-align-mode").value as "translate" | "rotate");
+for (const f of ALIGN_FIELDS) {
+  $<HTMLInputElement>(`pg-align-${f}`).onchange = () => {
+    if (aligning) placeAligned(typedGuess());
+  };
+}
+
+/** ICP from where B is now; B moves to the result. */
+export const alignWithIcp = (): Promise<void> =>
+  run("ICP", async () => {
+    const a = aligning;
+    if (!a) return;
+    const out = await registerPoseGraphPair({
+      from: a.from,
+      to: a.to,
+      guess: rowMajor(alignedGuess()),
+      maxIterations: Math.max(1, num("pg-icp-iterations") || 50),
+      overlap: Math.min(100, Math.max(10, num("pg-icp-overlap") || 80)) / 100,
+      inlierDistance: inlierDistance(),
+    });
+    if (aligning !== a) return;
+    placeAligned(fromRowMajor(out.matrix));
+    const text =
+      `ICP RMS ${fmt(out.rmsInitial)} → ${fmt(out.rmsFinal)}, overlap ${Math.round(out.fitness * 100)} %` +
+      (out.converged ? "" : " (not converged)");
+    $("pg-align-info").textContent = text;
+    setStatus(`${text}: add the loop if the scans line up`);
+  });
+$<HTMLButtonElement>("pg-align-icp").onclick = () => void alignWithIcp();
+
+/** Add a loop edge where B sits now, then optimise. */
+export const acceptAlignment = (): Promise<void> =>
+  run("Adding the loop", async () => {
+    const a = aligning;
+    if (!a) return;
+    const ids = graph!.state.nodeIds;
+    const poses = graph!.state.poses.slice();
+    const { state, edge } = await addPoseGraphEdge({
+      from: a.from,
+      to: a.to,
+      matrix: rowMajor(alignedGuess()),
+      sigmaT: num("pg-loop-sigma-t") || 0.1,
+      sigmaRDeg: num("pg-loop-sigma-r") || 1,
+    });
+    stopAligning();
+    steps.push({ poses, added: [edge] });
+    update(state);
+    setStatus(`Loop ${ids[a.from]} – ${ids[a.to]} added by hand; optimising…`);
+    const optimized = await optimize();
+    setSelection([]);
+    setStatus(`Loop ${ids[a.from]} – ${ids[a.to]} added by hand; ${optimized}`);
+  });
+$<HTMLButtonElement>("pg-align-accept").onclick = () => void acceptAlignment();
+
 $<HTMLButtonElement>("pg-goto").onclick = () => {
   const node = nodeA();
   if (graph && node !== null) viewer.centerOn(renderPosition(graph.state, node));
@@ -1478,6 +1679,7 @@ $<HTMLButtonElement>("pg-close").onclick = async () => {
   if (busy) return;
   setTool(null);
   stopMoving();
+  stopAligning();
   await closePoseGraph();
   graph = null;
   fieldA.value = fieldB.value = "";

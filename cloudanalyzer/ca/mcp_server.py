@@ -78,27 +78,50 @@ def slam_odometry(
     voxel_size: float | None = None,
     max_frames: int | None = None,
     deskew: bool = False,
+    pointcloud_topic: str | None = None,
+    imu_topic: str | None = None,
+    imu_to_lidar: list[float] | None = None,
 ) -> dict[str, Any]:
-    """LiDAR odometry for raw scans (a folder of KITTI .bin, PCD or PLY named in time order)
-    with KISS-ICP (pip install "cloudanalyzer[slam]"): writes trajectory.tum (one pose per scan) and map.ply to out_dir.
-    Then give posegraph_fix the scans folder and poses=<out_dir>/trajectory.tum (with a
-    keyframe_spacing of about 1 m for 10 Hz scans) to close its loops."""
+    """LiDAR odometry with KISS-ICP (pip install "cloudanalyzer[slam]") for raw scans: a folder
+    of KITTI .bin, PCD or PLY named in time order, or a ROS bag (.bag, .mcap, .db3 or a rosbag2
+    folder; pip install "cloudanalyzer[ros]"). Writes trajectory.tum (one pose per scan) and
+    map.ply to out_dir. A bag's PointCloud2 scans are written to out_dir/scans, and when it has
+    a sensor_msgs/Imu topic, each scan's up direction to out_dir/gravity/gravity.txt (in the
+    LiDAR frame: imu_to_lidar is the 3x3 rotation, row-major, identity when omitted). Then call
+    posegraph_fix with folder=the scans ("scans" in the result), poses=the trajectory,
+    gravity=the gravity file if any, and keyframe_spacing about 1 m for 10 Hz scans."""
     import time
 
+    from ca.core.bag_ingest import imu_ups, is_bag_path, materialize_pointcloud_bag
     from ca.core.slam_run import SlamRunRequest, discover_frame_paths, run_slam, write_map_ply, write_tum_trajectory
 
-    frames = discover_frame_paths(Path(scans))
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    clock = time.perf_counter()
+    stamps: tuple[float, ...] | None = None
+    gravity_file: Path | None = None
+    if is_bag_path(scans):
+        frames, stamps = materialize_pointcloud_bag(scans, out / "scans", topic=pointcloud_topic, max_frames=max_frames)
+        scan_folder = out / "scans"
+        ups = imu_ups(scans, stamps, topic=imu_topic)
+        if ups:
+            rotation = np.eye(3) if imu_to_lidar is None else np.array(imu_to_lidar, dtype=float).reshape(3, 3)
+            gravity_file = out / "gravity" / "gravity.txt"
+            gravity_file.parent.mkdir(exist_ok=True)
+            lines = (f"{k} {' '.join(f'{v:.9f}' for v in rotation @ up)}" for k, up in sorted(ups.items()))
+            gravity_file.write_text("".join(line + chr(10) for line in lines))
+    else:
+        frames = discover_frame_paths(Path(scans))
+        scan_folder = Path(scans) if Path(scans).is_dir() else frames[0].parent
     request = SlamRunRequest(
         frame_paths=tuple(frames),
+        timestamps_s=stamps,
         max_range_m=max_range,
         voxel_size_m=voxel_size,
         deskew=deskew,
         max_frames=max_frames,
     )
-    clock = time.perf_counter()
     result = run_slam(request)
-    out = Path(out_dir)
-    out.mkdir(parents=True, exist_ok=True)
     write_tum_trajectory(out / "trajectory.tum", result.poses, result.timestamps_s)
     write_map_ply(out / "map.ply", result.map_points)
     steps = result.poses[1:, :3, 3] - result.poses[:-1, :3, 3]
@@ -107,7 +130,9 @@ def slam_odometry(
         "frames": int(result.frames_processed),
         "path_length_m": round(float(np.sqrt((steps**2).sum(1)).sum()), 1),
         "runtime_s": round(time.perf_counter() - clock, 1),
+        "scans": str(scan_folder),
         "trajectory": str(out / "trajectory.tum"),
+        "gravity": None if gravity_file is None else str(gravity_file),
         "map": str(out / "map.ply"),
     }
 

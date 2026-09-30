@@ -498,6 +498,11 @@ $<HTMLButtonElement>("pg-play").onclick = () => {
 };
 
 /** Frame the graph's nodes. */
+/** Frame the graph's nodes (with room for their scans), keeping the viewing direction. */
+export function frameGraph(): void {
+  if (graph) fitGraph(graph.state);
+}
+
 function fitGraph(state: PoseGraphState): void {
   const box = new THREE.Box3();
   for (let i = 0; i < state.poses.length / 16; i++) box.expandByPoint(renderPosition(state, i));

@@ -5,7 +5,7 @@ import { runButton } from "./distance";
 import { $, choose, setStatus } from "./dom";
 import { renderList } from "./entries";
 import { loadUrls } from "./loading";
-import { addGravity, compareParts, compareWithStart, findLoops, merge, open as openPoseGraph } from "./posegraph";
+import { addGravity, compareParts, compareWithStart, findLoops, frameGraph, merge, open as openPoseGraph } from "./posegraph";
 import { poseGraphDemoFiles } from "./posegraph-demo";
 import { entries, hideEntry, viewer } from "./state";
 
@@ -130,8 +130,9 @@ async function ncltSeasonsDemo(): Promise<void> {
   await merge([june]);
   await findLoops();
   await compareParts();
-  viewer.view({ x: 0.4, y: -1, z: 1.1 });
-  viewer.fit();
+  // The block from above, so that the changes read as a map.
+  viewer.view({ x: 0.2, y: -0.6, z: 1.4 });
+  frameGraph();
 }
 
 /** Load a demo's sample files, then run its analysis. */

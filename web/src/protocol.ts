@@ -420,6 +420,9 @@ export interface RemovedEdge {
   data: Float64Array;
 }
 
+/** A ROS 1 bag or an MCAP file, by name. */
+export const isBag = (name: string) => /\.(bag|mcap)$/i.test(name);
+
 /** Filters that keep a subset of a cloud's points (see `Cloud.filter`). */
 export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
 

@@ -95,6 +95,35 @@ def _connection_rows(reader: Any) -> list[dict[str, Any]]:
     return topics
 
 
+def _inspect_with_core(core: Any, bag_path: Path, decode_sample: bool) -> dict[str, Any]:
+    """:func:`inspect_bag` through the Rust core's reader."""
+    topics = [
+        {"topic": name, "type": kind.replace("/", "/msg/", 1), "count": int(count)}
+        for name, kind, count in core.topics()
+    ]
+    time_range = core.time_range()
+    if time_range is None:
+        # A recording without an index: the first and last message, reading it all.
+        stamps = [m[1] if isinstance(m, tuple) else m.stamp for m in core.messages([t["topic"] for t in topics])]
+        time_range = (min(stamps), max(stamps)) if stamps else (0.0, 0.0)
+    start, end = time_range
+    decoded: list[str] = []
+    if decode_sample:
+        for row in topics:
+            if row["count"] > 0 and next(iter(core.messages([row["topic"]])), None) is not None:
+                decoded.append(row["topic"])
+    return {
+        "path": str(bag_path),
+        "kind": "rosbag",
+        "duration_ns": int(round((end - start) * 1e9)),
+        "start_time_ns": int(round(start * 1e9)),
+        "end_time_ns": int(round(end * 1e9)),
+        "message_count": int(sum(row["count"] for row in topics)),
+        "topics": topics,
+        "decoded_sample_topics": decoded,
+    }
+
+
 def inspect_bag(path: str, *, decode_sample: bool = False) -> dict[str, Any]:
     """Return topic metadata for a ROS bag-like recording."""
     bag_path = Path(path)
@@ -103,24 +132,8 @@ def inspect_bag(path: str, *, decode_sample: bool = False) -> dict[str, Any]:
         AnyReader = require_rosbags()
     if not bag_path.exists():
         raise FileNotFoundError(path)
-    if core is not None and not decode_sample and core.time_range() is not None:
-        topics = [
-            {"topic": name, "type": kind.replace("/", "/msg/", 1), "count": int(count)}
-            for name, kind, count in core.topics()
-        ]
-        start, end = core.time_range()
-        return {
-            "path": str(bag_path),
-            "kind": "rosbag",
-            "duration_ns": int(round((end - start) * 1e9)),
-            "start_time_ns": int(round(start * 1e9)),
-            "end_time_ns": int(round(end * 1e9)),
-            "message_count": int(sum(row["count"] for row in topics)),
-            "topics": topics,
-            "decoded_sample_topics": [],
-        }
     if core is not None:
-        AnyReader = require_rosbags()
+        return _inspect_with_core(core, bag_path, decode_sample)
 
     with AnyReader([bag_path]) as reader:
         topics = _connection_rows(reader)

@@ -1061,6 +1061,69 @@ pub fn decode_imu(data: &[u8], encoding: Encoding) -> Result<ImuMessage> {
     })
 }
 
+/// A pose from a trajectory topic.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PoseMessage {
+    pub stamp: f64,
+    pub position: [f64; 3],
+    /// x, y, z, w.
+    pub orientation: [f64; 4],
+}
+
+pub const POSE_STAMPED: &str = "geometry_msgs/PoseStamped";
+pub const ODOMETRY: &str = "nav_msgs/Odometry";
+pub const TF: &str = "tf2_msgs/TFMessage";
+
+fn pose_of(m: &mut Reader) -> Result<([f64; 3], [f64; 4])> {
+    let position = [m.f64()?, m.f64()?, m.f64()?];
+    let orientation = [m.f64()?, m.f64()?, m.f64()?, m.f64()?];
+    Ok((position, orientation))
+}
+
+/// A geometry_msgs/PoseStamped.
+pub fn decode_pose_stamped(data: &[u8], encoding: Encoding) -> Result<PoseMessage> {
+    let mut m = Reader::new(data, encoding);
+    let stamp = m.header()?;
+    let (position, orientation) = pose_of(&mut m)?;
+    Ok(PoseMessage {
+        stamp,
+        position,
+        orientation,
+    })
+}
+
+/// A nav_msgs/Odometry: its pose.
+pub fn decode_odometry(data: &[u8], encoding: Encoding) -> Result<PoseMessage> {
+    let mut m = Reader::new(data, encoding);
+    let stamp = m.header()?;
+    m.string()?;
+    let (position, orientation) = pose_of(&mut m)?;
+    Ok(PoseMessage {
+        stamp,
+        position,
+        orientation,
+    })
+}
+
+/// A tf2_msgs/TFMessage: the transforms whose child frame is `frame`, as poses.
+pub fn decode_tf(data: &[u8], encoding: Encoding, frame: &str) -> Result<Vec<PoseMessage>> {
+    let mut m = Reader::new(data, encoding);
+    let mut out = Vec::new();
+    for _ in 0..m.u32()? {
+        let stamp = m.header()?;
+        let child = m.string()?;
+        let (position, orientation) = pose_of(&mut m)?;
+        if child == frame {
+            out.push(PoseMessage {
+                stamp,
+                position,
+                orientation,
+            });
+        }
+    }
+    Ok(out)
+}
+
 /// Per time in `times`, the up direction (unit, in the IMU's frame) from the
 /// IMU messages: its orientation when the nearest message within `window`
 /// seconds has one, else the mean acceleration within `window` either side

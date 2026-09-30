@@ -69,16 +69,15 @@ def _ros1_bag(path: Path, compression) -> None:
             w.write(points, int(t * 1e9), ts.serialize_ros1(cloud, "sensor_msgs/msg/PointCloud2"))
 
 
-def _mcap_file(folder: Path) -> Path:
-    """A rosbag2 folder holding one MCAP file (rosbags writes zstd chunks): that file."""
+def _rosbag2(folder: Path, storage) -> None:
+    """A rosbag2 folder (MCAP with zstd chunks, or SQLite)."""
     ts = get_typestore(Stores.ROS2_HUMBLE)
-    with Writer2(folder, version=9, storage_plugin=StoragePlugin.MCAP) as w:
+    with Writer2(folder, version=9, storage_plugin=storage) as w:
         points = w.add_connection("/points", "sensor_msgs/msg/PointCloud2", typestore=ts)
         imu = w.add_connection("/imu", "sensor_msgs/msg/Imu", typestore=ts)
         for t, cloud, m in _messages(ts, ros1=False):
             w.write(imu, int((t - 0.01) * 1e9), ts.serialize_cdr(m, "sensor_msgs/msg/Imu"))
             w.write(points, int(t * 1e9), ts.serialize_cdr(cloud, "sensor_msgs/msg/PointCloud2"))
-    return next(folder.glob("*.mcap"))
 
 
 def _check(path: Path) -> None:
@@ -120,4 +119,14 @@ def test_a_ros1_bag_reads_as_rosbags_reads_it(tmp_path, compression):
 
 
 def test_an_mcap_reads_as_rosbags_reads_it(tmp_path):
-    _check(_mcap_file(tmp_path / "drive"))
+    _rosbag2(tmp_path / "drive", StoragePlugin.MCAP)
+    _check(next((tmp_path / "drive").glob("*.mcap")))
+
+
+@pytest.mark.parametrize("storage", [StoragePlugin.MCAP, StoragePlugin.SQLITE3])
+def test_a_rosbag2_folder_reads_as_rosbags_reads_it(tmp_path, storage):
+    _rosbag2(tmp_path / "drive", storage)
+    _check(tmp_path / "drive")
+    # Its SQLite file on its own too.
+    for db in (tmp_path / "drive").glob("*.db3"):
+        _check(db)

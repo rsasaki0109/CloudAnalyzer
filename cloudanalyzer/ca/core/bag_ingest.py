@@ -15,9 +15,10 @@ import open3d as o3d
 
 BAG_SUFFIXES = frozenset({".bag", ".mcap", ".db3"})
 
+# The Rust core reads recordings on its own; rosbags is the fallback without it.
 ROS_INSTALL_HINT = (
-    "ROS bag input requires optional dependencies.\n"
-    'Install with: pip install "cloudanalyzer[ros]"'
+    "ROS bag input needs the Rust core, or rosbags.\n"
+    'Install with: pip install "cloudanalyzer[fast]" (or "cloudanalyzer[ros]")'
 )
 
 POINTCLOUD2_TYPE = "sensor_msgs/msg/PointCloud2"
@@ -50,15 +51,19 @@ def is_bag_path(path: str | Path) -> bool:
 
 
 def core_reader(path: str | Path) -> Any | None:
-    """The Rust core's reader for a ROS 1 bag or MCAP file (no ROS install needed), when the
-    core is installed and the path is such a file: rosbag2 folders and ``.db3`` need rosbags."""
-    if Path(path).suffix.lower() not in {".bag", ".mcap"} or not Path(path).is_file():
+    """The Rust core's reader for a recording (no ROS install needed), when the core is
+    installed and the path is a ROS 1 bag, an MCAP file, a rosbag2 ``.db3`` file or a rosbag2
+    folder that exists."""
+    p = Path(path)
+    if not (p.is_dir() and (p / "metadata.yaml").is_file()) and not (
+        p.is_file() and p.suffix.lower() in BAG_SUFFIXES
+    ):
         return None
     try:
         import cloudanalyzer_core
     except ImportError:
         return None
-    return cloudanalyzer_core.BagReader(str(path))
+    return cloudanalyzer_core.BagReader(str(p))
 
 
 def require_rosbags() -> Any:
@@ -214,8 +219,12 @@ def load_trajectory_from_bag(
     frame: str | None = None,
 ) -> dict:
     """Load timestamps and XYZ positions from a ROS bag-like recording."""
-    AnyReader = require_rosbags()
     bag_path = Path(path)
+    core = core_reader(bag_path)
+    if core is not None:
+        (stamps, xyz, _), read_topic, msgtype = core.poses(topic, frame)
+        return _trajectory(path, list(map(float, stamps)), xyz.tolist(), read_topic, msgtype, frame)
+    AnyReader = require_rosbags()
     with AnyReader([bag_path]) as reader:
         connection = _pick_trajectory_connection(reader.connections, topic, frame=frame)
         timestamps: list[float] = []
@@ -231,6 +240,17 @@ def load_trajectory_from_bag(
                 timestamps.append(_header_timestamp_sec(message))
                 positions.append(_position_from_message(message, connection.msgtype))
 
+    return _trajectory(path, timestamps, positions, connection.topic, connection.msgtype, frame)
+
+
+def _trajectory(
+    path: str,
+    timestamps: list[float],
+    positions: list[list[float]],
+    topic: str,
+    msgtype: str,
+    frame: str | None,
+) -> dict:
     if len(timestamps) < 2:
         raise ValueError("Trajectory bag must contain at least 2 poses on the selected topic")
     timestamp_array = np.asarray(timestamps, dtype=float)
@@ -241,8 +261,8 @@ def load_trajectory_from_bag(
     result = {
         "path": path,
         "format": "rosbag",
-        "topic": connection.topic,
-        "message_type": connection.msgtype,
+        "topic": topic,
+        "message_type": msgtype,
         "timestamps": timestamp_array,
         "positions": position_array,
         "num_poses": int(timestamp_array.size),

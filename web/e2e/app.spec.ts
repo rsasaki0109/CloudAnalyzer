@@ -2119,6 +2119,17 @@ test("pose graph demo: a real drive's ROS 2 bag opened with odometry, levelled b
   await expect(page.locator("#pg-loop-list li").first()).toBeVisible();
 });
 
+test("pose graph demo: two seasons of a block, the second bag joined and the changes between them compared", async ({ page }) => {
+  test.setTimeout(900_000);
+  await page.goto("/?demo=nclt-seasons");
+  const stats = page.locator("#pg-stats");
+  await expect(stats).toContainText("nclt-2012-04-29.mcap + nclt-2012-06-15.mcap", { timeout: 840_000 });
+  // Odometry through both bags, both IMUs, loops between the drives, then the maps of where they meet compared.
+  await expect(page.locator("#cloud-list li", { hasText: /_m3c2/ })).toBeVisible({ timeout: 240_000 });
+  await expect(stats).toContainText("Gravity");
+  await expect(page.locator("#pg-loop-list li").first()).toBeVisible();
+});
+
 test("pose graph: the demo's passing cars are found by visibility and left out of the map", async ({ page }) => {
   test.setTimeout(180_000);
   await page.goto("/?demo=posegraph-drive");

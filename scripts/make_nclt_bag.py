@@ -7,6 +7,7 @@ contents under the Database Contents License; the bag is a derived database unde
 
     python scripts/prepare_nclt.py 2012-04-29 nclt/2012-04-29      # the scans, sensors and keyframe times
     python scripts/make_nclt_bag.py nclt/2012-04-29 2520 2740 web/public/samples/nclt-2012-04-29.mcap
+    python scripts/make_nclt_bag.py nclt/2012-06-15 2476 2700 web/public/samples/nclt-2012-06-15.mcap
     # pip install numpy mcap zstandard
 
 takes the drive from keyframe ``first`` to keyframe ``end`` (``times.txt``): every ``--every``-th Velodyne

@@ -89,6 +89,7 @@
       <a href="#manual-align">Manual alignment</a>
       <a href="#icp">Alignment (ICP)</a>
       <a href="#pose-graph">Pose graph (SLAM)</a>
+      <a href="#vector-map">Vector map (Lanelet2)</a>
       <a href="#trajectory">Trajectories (ATE / RPE)</a>
       <a href="#filters">Filters and ground extraction</a>
       <a href="#raster">Rasterize (DEM / DSM)</a>
@@ -428,6 +429,45 @@
       On NCLT session 2012-04-29 (a Segway round the University of Michigan campus: 2,777 keyframes, 3.2 km,
       prepared with <code>scripts/prepare_nclt.py</code>), Find loops adds 168 loops in 11 s and takes the SE(3)-aligned
       ATE from 4.83 to 1.64 m.
+    </p>
+
+    <h2 id="vector-map">Vector map (Lanelet2)</h2>
+    <p>
+      Open a point cloud, choose <b>Top</b>, and expand <b>Vector map (Lanelet2)</b>. Use <b>Draw road</b>
+      to click along a road and press <kbd>Enter</kbd> or double-click to build it. <kbd>Backspace</kbd>
+      removes the last point; <kbd>Esc</kbd> cancels. Clicked cloud points supply the road's elevation;
+      clicks without a cloud point use a horizontal plane at the map's height.
+    </p>
+    <p>
+      Set forward and backward lane counts, lane width, speed limit in km/h and the traffic side in
+      <b>Road options</b> before drawing. Traffic keeps left by default. For a road with both directions,
+      the drawn line separates them; for a one-way road, it is the road centre. A positive piece length
+      divides the road into connected lane sections; zero keeps it whole. Adjacent lanes share boundaries.
+    </p>
+    <ul>
+      <li><b>Connect</b>: click the lane to leave, then the lane to enter, to create a turning lane.</li>
+      <li><b>Stop line</b>: click its location on a lane; it spans adjacent lanes going the same way.</li>
+      <li><b>Traffic light</b>: click a lane to add a light and, if needed, a stop line.</li>
+      <li><b>Crosswalk</b>: click a lane to add a 4 m wide crossing and stop lines 1.5 m before it.</li>
+      <li><b>Select</b>: click a lane to inspect its connections, change its speed limit or delete it.</li>
+    </ul>
+    <p>
+      The panel lists Autoware errors and warnings after each edit. Click a lane issue to inspect and
+      frame that lane. <b>Undo</b> restores up to 100 edits, including <b>Clear</b>.
+      <b>Open…</b> reads Lanelet2 <code>.osm</code> or vectormap JSON; an <code>.osm</code> file can also
+      be dropped into the viewer. Opening replaces the current map and clears its undo history.
+      <b>Import notes</b> lists the chosen coordinate projection and any map elements the reader cannot
+      represent. Those elements will be absent from the saved map; retain the original file.
+    </p>
+    <p>
+      <b>Save for Autoware</b> downloads <code>lanelet2_map.osm</code> and
+      <code>map_projector_info.yaml</code>. Allow multiple downloads if the browser prompts.
+      New maps use the <code>Local</code> projector; maps opened with a supported georeference retain it.
+      MGRS maps with <code>mgrs_code</code> node tags retain their UTM grid coordinates and export
+      with <code>projector_type: MGRS</code>. Only a single 100 km UTM grid is supported;
+      polar UPS grids and maps spanning multiple squares are rejected.
+      Check reported issues and the coordinate frame before using the map in Autoware.
+      Geometry and editing run locally through <a href="https://github.com/rsasaki0109/vectormap-rs">vectormap-rs</a>.
     </p>
 
     <h2 id="trajectory">Trajectories (ATE / RPE)</h2>

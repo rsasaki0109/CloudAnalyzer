@@ -13,3 +13,7 @@ crate-type = ["cdylib", "rlib"]
 ca-core = { path = "../ca-core" }
 js-sys = "0.3"
 wasm-bindgen = "0.2.129"
+serde_json = "1.0"
+vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "b59b6424603c78ff4826e0bc8659cf1c86ecef32" }
+vectormap-io = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "b59b6424603c78ff4826e0bc8659cf1c86ecef32" }
+vectormap-validation = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "b59b6424603c78ff4826e0bc8659cf1c86ecef32" }

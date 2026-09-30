@@ -12,7 +12,7 @@
       <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti" />
+        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti,.osm" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -728,6 +728,63 @@
           <button id="trajectory-csv" title="Time, aligned estimate, reference and errors of every matched pose">Save CSV</button>
           <label>Apply the alignment to <select id="trajectory-apply-cloud"></select></label>
           <button id="trajectory-apply" disabled>Move cloud</button>
+        </div>
+      </section>
+
+      <section id="vector-map-panel">
+        <h2>Vector map (Lanelet2)</h2>
+        <p id="vm-hint" class="hint small"></p>
+        <div class="button-row">
+          <button id="vm-open" title="A Lanelet2 map (.osm) or vectormap IR (.json), drawn over the clouds">Open…</button>
+          <button id="vm-export" class="primary" disabled title="lanelet2_map.osm and map_projector_info.yaml for Autoware">Save for Autoware</button>
+          <button id="vm-undo" disabled>Undo</button>
+          <button id="vm-clear" title="Start a new map">Clear</button>
+        </div>
+        <input id="vm-file" type="file" accept=".osm,.xml,.json" hidden />
+        <div class="button-row">
+          <button id="vm-road" aria-pressed="false" title="Click points along a road; its lanes are built around them">Draw road</button>
+          <button id="vm-connect" aria-pressed="false" title="Join the end of one lane to the start of another with a turning lane">Connect</button>
+          <button id="vm-select" aria-pressed="false" title="Look at a lane, set its speed limit or remove it">Select</button>
+        </div>
+        <div class="button-row">
+          <button id="vm-stop" aria-pressed="false" title="A stop line across the clicked lane and those beside it going the same way">Stop line</button>
+          <button id="vm-light" aria-pressed="false" title="A traffic light for the clicked lane and those beside it">Traffic light</button>
+          <button id="vm-crosswalk" aria-pressed="false" title="A crosswalk across the road at the click, with stop lines before it">Crosswalk</button>
+        </div>
+        <details class="options">
+          <summary>Road options</summary>
+          <div class="range">
+            <label title="Lanes going the way the road is drawn">Forward lanes <input id="vm-forward" type="number" min="0" step="1" value="1" /></label>
+            <label title="Lanes going the other way">Backward lanes <input id="vm-backward" type="number" min="0" step="1" value="1" /></label>
+          </div>
+          <div class="range">
+            <label>Lane width (m) <input id="vm-width" type="number" min="0.5" step="0.05" value="3.5" /></label>
+            <label title="Empty: no limit (Autoware needs one)">Speed limit (km/h) <input id="vm-speed" type="number" min="0" step="5" value="40" /></label>
+          </div>
+          <div class="range">
+            <label title="The road is cut into connected lanes of about this length; 0 keeps one lane per road">Piece length (m) <input id="vm-segment" type="number" min="0" step="5" value="50" /></label>
+            <label>Traffic keeps
+              <select id="vm-traffic">
+                <option value="left" selected>Left</option>
+                <option value="right">Right</option>
+              </select>
+            </label>
+          </div>
+        </details>
+        <p id="vm-status" class="small"></p>
+        <ol id="vm-issues" class="issue-list small"></ol>
+        <details id="vm-import-notes" hidden>
+          <summary>Import notes</summary>
+          <ol id="vm-import-issues" class="issue-list small"></ol>
+        </details>
+        <div id="vm-lane" hidden>
+          <h3 id="vm-lane-title"></h3>
+          <p id="vm-lane-info" class="small"></p>
+          <div class="button-row">
+            <label>Speed limit (km/h) <input id="vm-lane-speed" type="number" min="0" step="5" /></label>
+            <button id="vm-lane-apply">Set</button>
+            <button id="vm-lane-delete">Remove lane</button>
+          </div>
         </div>
       </section>
 

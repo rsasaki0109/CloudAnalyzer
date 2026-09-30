@@ -10,9 +10,11 @@ use wasm_bindgen::prelude::*;
 mod bag;
 mod odometry;
 mod pose_graph;
+mod vector_map;
 pub use bag::{BagFile, BagMessage};
 pub use odometry::{LidarOdometry, OdometryMap, Registration};
 pub use pose_graph::{PoseGraphSession, register_scans};
+pub use vector_map::VectorMapSession;
 
 /// Numbers per node in [`Cloud::lod_nodes`].
 const NODE_STRIDE: usize = 15;

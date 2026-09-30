@@ -20,6 +20,7 @@ import "./app/scalars";
 import "./app/shapes";
 import "./app/posegraph";
 import "./app/trajectory";
+import "./app/vectormap";
 import { runDemo } from "./app/demos";
 import { errorText, setStatus } from "./app/dom";
 import { renderList } from "./app/entries";

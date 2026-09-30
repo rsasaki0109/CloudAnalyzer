@@ -9,6 +9,7 @@ import { applySession, restorePendingAfterLoad } from "./session";
 import { entries, globalShift, type Origin, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { addTrajectory } from "./trajectory";
+import { openVectorMap } from "./vectormap";
 
 /** A LAS/LAZ or COPC file on a server, read with range requests instead of downloaded. */
 interface RemoteFile {
@@ -33,6 +34,14 @@ export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]
     if (signal.aborted) break;
     if (file instanceof File && /\.json$/i.test(file.name)) {
       sessions.push(file);
+      continue;
+    }
+    if (file instanceof File && /\.osm$/i.test(file.name)) {
+      try {
+        await openVectorMap(file.name, await file.text());
+      } catch (err) {
+        setStatus(`Could not open ${file.name}: ${errorText(err)}`);
+      }
       continue;
     }
     const size = file.size;

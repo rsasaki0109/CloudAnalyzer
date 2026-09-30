@@ -1,6 +1,8 @@
-//! ROS bags for Python: topics, scans and IMU messages, without a ROS install.
+//! ROS recordings for Python: topics, scans, IMU and trajectory messages,
+//! without a ROS install (ROS 1 bags, MCAP, rosbag2 SQLite files and folders).
 
-use ca_core::bag::{self, Bag, Cursor, Encoding, ImuMessage};
+use ca_core::bag::{self, Encoding};
+use ca_core::rosbag2::{Recording, RecordingCursor};
 use numpy::ndarray::Array2;
 use numpy::{IntoPyArray, PyArray1, PyArray2};
 use pyo3::exceptions::PyValueError;
@@ -13,11 +15,26 @@ type ImuArrays<'py> = (
     Bound<'py, PyArray2<f64>>,
 );
 
+/// Per pose: stamps (N,), positions (N, 3) and orientations (N, 4: x, y, z, w).
+type PoseArrays<'py> = (
+    Bound<'py, PyArray1<f64>>,
+    Bound<'py, PyArray2<f64>>,
+    Bound<'py, PyArray2<f64>>,
+);
+
 fn err(e: bag::BagError) -> PyErr {
     PyValueError::new_err(e.0)
 }
 
-/// A ROS 1 bag (`.bag`) or MCAP file, opened for reading.
+fn rows<'py>(py: Python<'py>, flat: Vec<f64>, width: usize) -> Bound<'py, PyArray2<f64>> {
+    let n = flat.len() / width;
+    Array2::from_shape_vec((n, width), flat)
+        .expect("rows of the width")
+        .into_pyarray(py)
+}
+
+/// A ROS 1 bag (`.bag`), an MCAP file, a rosbag2 SQLite file (`.db3`) or a
+/// rosbag2 folder, opened for reading.
 #[pyclass]
 pub struct BagReader {
     path: String,
@@ -25,11 +42,11 @@ pub struct BagReader {
     time_range: Option<(f64, f64)>,
 }
 
-/// The messages of some topics of a bag, oldest first.
-#[pyclass]
+/// The messages of some topics of a recording, oldest first.
+#[pyclass(unsendable)]
 pub struct BagMessages {
-    bag: Bag<std::fs::File>,
-    cursor: Cursor,
+    recording: Recording,
+    cursor: RecordingCursor,
 }
 
 /// A PointCloud2 decoded: its stamp (seconds), points (N, 3), intensity (N,)
@@ -46,10 +63,7 @@ pub struct Scan {
 #[pymethods]
 impl Scan {
     fn positions<'py>(&self, py: Python<'py>) -> Bound<'py, PyArray2<f64>> {
-        let flat: Vec<f64> = self.positions.iter().flatten().copied().collect();
-        Array2::from_shape_vec((self.positions.len(), 3), flat)
-            .expect("three per point")
-            .into_pyarray(py)
+        rows(py, self.positions.iter().flatten().copied().collect(), 3)
     }
 
     fn intensity<'py>(&self, py: Python<'py>) -> Option<Bound<'py, PyArray1<f32>>> {
@@ -65,15 +79,48 @@ impl Scan {
     }
 }
 
+impl BagReader {
+    /// The one topic of `kind`, or `topic` when given (an error names the
+    /// topics otherwise); None when the recording has no such topic and none was asked for.
+    fn pick(&self, kind: &str, topic: Option<String>, hint: &str) -> PyResult<Option<String>> {
+        let matching: Vec<&str> = self
+            .topics
+            .iter()
+            .filter(|(_, k, _)| k == kind)
+            .map(|(name, _, _)| name.as_str())
+            .collect();
+        match topic {
+            Some(t) => {
+                if !matching.contains(&t.as_str()) {
+                    let names: Vec<&str> = self.topics.iter().map(|(n, _, _)| n.as_str()).collect();
+                    return Err(PyValueError::new_err(format!(
+                        "{kind} topic not found: {t}. Available topics: {}",
+                        names.join(", ")
+                    )));
+                }
+                Ok(Some(t))
+            }
+            None => match matching.as_slice() {
+                [] => Ok(None),
+                [one] => Ok(Some(one.to_string())),
+                many => Err(PyValueError::new_err(format!(
+                    "Multiple {kind} topics found in bag; {hint}. Candidates: {}",
+                    many.join(", ")
+                ))),
+            },
+        }
+    }
+}
+
 #[pymethods]
 impl BagReader {
     #[new]
     fn new(path: &str) -> PyResult<Self> {
-        let bag = Bag::open(path).map_err(err)?;
+        let recording = Recording::open(path).map_err(err)?;
         Ok(BagReader {
             path: path.to_string(),
-            time_range: bag.time_range(),
-            topics: bag
+            time_range: recording.time_range(),
+            topics: recording
                 .topics()
                 .iter()
                 .map(|t| (t.name.clone(), t.kind.clone(), t.count))
@@ -86,7 +133,7 @@ impl BagReader {
         self.topics.clone()
     }
 
-    /// When the first and the last message were recorded (seconds), when the bag's index says.
+    /// When the first and the last message were recorded (seconds), when the recording's index says.
     fn time_range(&self) -> Option<(f64, f64)> {
         self.time_range
     }
@@ -94,10 +141,9 @@ impl BagReader {
     /// The messages of `topics`, oldest first (see `BagMessages`).
     fn messages(&self, topics: Vec<String>) -> PyResult<BagMessages> {
         let names: Vec<&str> = topics.iter().map(|t| t.as_str()).collect();
-        Ok(BagMessages {
-            bag: Bag::open(&self.path).map_err(err)?,
-            cursor: Cursor::new(&names),
-        })
+        let recording = Recording::open(&self.path).map_err(err)?;
+        let cursor = recording.cursor(&names);
+        Ok(BagMessages { recording, cursor })
     }
 
     /// The PointCloud2 messages of `topic` (the one PointCloud2 topic when
@@ -105,37 +151,10 @@ impl BagReader {
     /// decoded as `Scan`s.
     #[pyo3(signature = (topic=None))]
     fn scans(&self, topic: Option<String>) -> PyResult<BagMessages> {
-        let clouds: Vec<&(String, String, u64)> = self
-            .topics
-            .iter()
-            .filter(|(_, kind, _)| kind == bag::POINT_CLOUD)
-            .collect();
-        let topic = match topic {
-            Some(t) => {
-                if !clouds.iter().any(|(name, _, _)| *name == t) {
-                    let names: Vec<&str> = self.topics.iter().map(|(n, _, _)| n.as_str()).collect();
-                    return Err(PyValueError::new_err(format!(
-                        "PointCloud2 topic not found: {t}. Available topics: {}",
-                        names.join(", ")
-                    )));
-                }
-                t
-            }
-            None => match clouds.as_slice() {
-                [] => {
-                    return Err(PyValueError::new_err(
-                        "No sensor_msgs/msg/PointCloud2 topic found in bag. Use --pointcloud-topic to select a topic.",
-                    ));
-                }
-                [one] => one.0.clone(),
-                many => {
-                    let names: Vec<&str> = many.iter().map(|(n, _, _)| n.as_str()).collect();
-                    return Err(PyValueError::new_err(format!(
-                        "Multiple PointCloud2 topics found in bag; use --pointcloud-topic. Candidates: {}",
-                        names.join(", ")
-                    )));
-                }
-            },
+        let Some(topic) = self.pick(bag::POINT_CLOUD, topic, "use --pointcloud-topic")? else {
+            return Err(PyValueError::new_err(
+                "No sensor_msgs/msg/PointCloud2 topic found in bag. Use --pointcloud-topic to select a topic.",
+            ));
         };
         self.messages(vec![topic])
     }
@@ -145,45 +164,22 @@ impl BagReader {
     /// none) and its linear acceleration, as (N,), (N, 3) and (N, 3) arrays.
     #[pyo3(signature = (topic=None))]
     fn imu<'py>(&self, py: Python<'py>, topic: Option<String>) -> PyResult<ImuArrays<'py>> {
-        let imus: Vec<&str> = self
-            .topics
-            .iter()
-            .filter(|(_, kind, _)| kind == bag::IMU)
-            .map(|(name, _, _)| name.as_str())
-            .collect();
-        let topic = match topic {
-            Some(t) => {
-                if !imus.contains(&t.as_str()) {
-                    return Err(PyValueError::new_err(format!("Imu topic not found: {t}")));
-                }
-                t
-            }
-            None => match imus.as_slice() {
-                [] => String::new(),
-                [one] => one.to_string(),
-                many => {
-                    return Err(PyValueError::new_err(format!(
-                        "Several Imu topics in the bag; pick one: {}",
-                        many.join(", ")
-                    )));
-                }
-            },
-        };
-        let mut messages: Vec<ImuMessage> = Vec::new();
-        if !topic.is_empty() {
-            let mut bag = Bag::open(&self.path).map_err(err)?;
+        let topic = self.pick(bag::IMU, topic, "pick one")?;
+        let mut messages: Vec<bag::ImuMessage> = Vec::new();
+        if let Some(topic) = topic {
+            let mut recording = Recording::open(&self.path).map_err(err)?;
+            let mut cursor = recording.cursor(&[topic.as_str()]);
             messages = py
-                .detach(|| -> Result<Vec<ImuMessage>, bag::BagError> {
-                    bag.messages(&[topic.as_str()])
-                        .map(|m| {
-                            let m = m?;
-                            bag::decode_imu(&m.data, m.encoding)
-                        })
-                        .collect()
+                .detach(|| -> Result<Vec<bag::ImuMessage>, bag::BagError> {
+                    let mut out = Vec::new();
+                    while let Some(m) = cursor.next(&mut recording) {
+                        let m = m?;
+                        out.push(bag::decode_imu(&m.data, m.encoding)?);
+                    }
+                    Ok(out)
                 })
                 .map_err(err)?;
         }
-        let n = messages.len();
         let stamps: Vec<f64> = messages.iter().map(|m| m.stamp).collect();
         let ups: Vec<f64> = messages
             .iter()
@@ -192,12 +188,104 @@ impl BagReader {
         let accel: Vec<f64> = messages.iter().flat_map(|m| m.acceleration).collect();
         Ok((
             stamps.into_pyarray(py),
-            Array2::from_shape_vec((n, 3), ups)
-                .expect("three per message")
-                .into_pyarray(py),
-            Array2::from_shape_vec((n, 3), accel)
-                .expect("three per message")
-                .into_pyarray(py),
+            rows(py, ups, 3),
+            rows(py, accel, 3),
+        ))
+    }
+
+    /// The poses of a trajectory topic (`nav_msgs/Odometry`, `geometry_msgs/PoseStamped`,
+    /// or `tf2_msgs/TFMessage` with the child `frame`): the one such topic when
+    /// `topic` is None. Per pose its stamp, position and orientation (x, y, z, w),
+    /// as (N,), (N, 3) and (N, 4) arrays, and the topic and type read.
+    #[pyo3(signature = (topic=None, frame=None))]
+    fn poses<'py>(
+        &self,
+        py: Python<'py>,
+        topic: Option<String>,
+        frame: Option<String>,
+    ) -> PyResult<(PoseArrays<'py>, String, String)> {
+        let kind_of = |name: &str| {
+            self.topics
+                .iter()
+                .find(|(n, _, _)| n == name)
+                .map(|(_, k, _)| k.clone())
+        };
+        let topic = match topic {
+            Some(t) => match kind_of(&t) {
+                Some(k) if k == bag::POSE_STAMPED || k == bag::ODOMETRY || k == bag::TF => t,
+                Some(k) => {
+                    return Err(PyValueError::new_err(format!(
+                        "Unsupported trajectory message type on {t}: {}",
+                        k.replacen('/', "/msg/", 1)
+                    )));
+                }
+                None => {
+                    let names: Vec<&str> = self.topics.iter().map(|(n, _, _)| n.as_str()).collect();
+                    return Err(PyValueError::new_err(format!(
+                        "Trajectory topic not found: {t}. Available topics: {}",
+                        names.join(", ")
+                    )));
+                }
+            },
+            None => {
+                let direct: Vec<&str> = self
+                    .topics
+                    .iter()
+                    .filter(|(_, k, _)| k == bag::POSE_STAMPED || k == bag::ODOMETRY)
+                    .map(|(n, _, _)| n.as_str())
+                    .collect();
+                match direct.as_slice() {
+                    [] => {
+                        return Err(PyValueError::new_err(
+                            "No supported trajectory topic found in bag. Supported types: geometry_msgs/msg/PoseStamped, nav_msgs/msg/Odometry. Use --topic to select a topic.",
+                        ));
+                    }
+                    [one] => one.to_string(),
+                    many => {
+                        return Err(PyValueError::new_err(format!(
+                            "Multiple supported trajectory topics found in bag; use --topic. Candidates: {}",
+                            many.join(", ")
+                        )));
+                    }
+                }
+            }
+        };
+        let kind = kind_of(&topic).unwrap_or_default();
+        if kind == bag::TF && frame.is_none() {
+            return Err(PyValueError::new_err(format!(
+                "Topic {topic} carries tf2_msgs/msg/TFMessage; pass --frame with the child frame id"
+            )));
+        }
+        let mut recording = Recording::open(&self.path).map_err(err)?;
+        let mut cursor = recording.cursor(&[topic.as_str()]);
+        let frame = frame.unwrap_or_default();
+        let poses = py
+            .detach(|| -> Result<Vec<bag::PoseMessage>, bag::BagError> {
+                let mut out = Vec::new();
+                while let Some(m) = cursor.next(&mut recording) {
+                    let m = m?;
+                    if kind == bag::TF {
+                        out.extend(bag::decode_tf(&m.data, m.encoding, &frame)?);
+                    } else if kind == bag::ODOMETRY {
+                        out.push(bag::decode_odometry(&m.data, m.encoding)?);
+                    } else {
+                        out.push(bag::decode_pose_stamped(&m.data, m.encoding)?);
+                    }
+                }
+                Ok(out)
+            })
+            .map_err(err)?;
+        let stamps: Vec<f64> = poses.iter().map(|p| p.stamp).collect();
+        let positions: Vec<f64> = poses.iter().flat_map(|p| p.position).collect();
+        let orientations: Vec<f64> = poses.iter().flat_map(|p| p.orientation).collect();
+        Ok((
+            (
+                stamps.into_pyarray(py),
+                rows(py, positions, 3),
+                rows(py, orientations, 4),
+            ),
+            topic,
+            kind.replacen('/', "/msg/", 1),
         ))
     }
 }
@@ -208,20 +296,24 @@ impl BagMessages {
         slf
     }
 
-    /// The next message as a `Scan` for a PointCloud2, else as
-    /// (topic, stamp, encoding, bytes).
-    /// How far through the bag the read is, 0 to 1.
+    /// How far through the recording the read is, 0 to 1.
     fn progress(&self) -> f64 {
-        self.cursor.progress(&self.bag)
+        self.cursor.progress(&self.recording)
     }
 
+    /// The next message as a `Scan` for a PointCloud2, else as
+    /// (topic, stamp, encoding, bytes).
     fn __next__(&mut self, py: Python<'_>) -> PyResult<Option<Py<PyAny>>> {
-        let (bag, cursor) = (&mut self.bag, &mut self.cursor);
-        let Some(m) = py.detach(|| cursor.next(bag)).transpose().map_err(err)? else {
+        let (recording, cursor) = (&mut self.recording, &mut self.cursor);
+        let Some(m) = py
+            .detach(|| cursor.next(recording))
+            .transpose()
+            .map_err(err)?
+        else {
             return Ok(None);
         };
         let kind = self
-            .bag
+            .recording
             .topics()
             .iter()
             .find(|t| t.name == m.topic)

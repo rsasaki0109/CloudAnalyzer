@@ -26,6 +26,8 @@ pub mod odometry;
 pub mod pose_graph;
 pub mod profile;
 pub mod raster;
+#[cfg(feature = "sqlite")]
+pub mod rosbag2;
 pub mod segment;
 pub mod shapes;
 pub mod trajectory;

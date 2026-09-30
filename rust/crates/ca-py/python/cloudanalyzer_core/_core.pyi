@@ -141,7 +141,8 @@ class BagMessages:
     def progress(self) -> float: ...
 
 class BagReader:
-    """A ROS 1 bag (.bag) or MCAP file, read without a ROS install (lz4, zstd and bz2 chunks)."""
+    """A ROS 1 bag (.bag), an MCAP file, a rosbag2 .db3 file or a rosbag2 folder, read without a
+    ROS install (lz4, zstd and bz2 chunks)."""
 
     def __init__(self, path: str) -> None: ...
     def topics(self) -> list[tuple[str, str, int]]:
@@ -159,6 +160,15 @@ class BagReader:
     ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]]:
         """Per Imu message: stamps (N,), up directions in the IMU's frame (N, 3; NaN without an
         orientation) and linear accelerations (N, 3)."""
+        ...
+    def poses(
+        self, topic: str | None = None, frame: str | None = None
+    ) -> tuple[
+        tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64]], str, str
+    ]:
+        """The poses of a trajectory topic (nav_msgs/Odometry, geometry_msgs/PoseStamped, or
+        tf2_msgs/TFMessage with the child `frame`): (stamps (N,), positions (N, 3), orientations
+        (N, 4)), the topic and its type."""
         ...
 
 class LidarOdometry:

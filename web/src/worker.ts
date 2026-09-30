@@ -29,6 +29,7 @@ import init, {
   summarizeDistances,
   TrajectoryData,
   upsAt,
+  VectorMapSession,
   VolumeSurface,
   warmUp,
 } from "./wasm/ca_wasm.js";
@@ -927,6 +928,36 @@ const MAX_SLICES = 16;
 /** The open pose graph, if any (one at a time). */
 let poseGraph: { session: PoseGraphSession; name: string } | null = null;
 
+/** The vector map, made on first use. */
+let vectorMap: VectorMapSession | null = null;
+
+/** A "vm" request's answer: JSON text, or for edits `{result, view}` with the view after the edit. */
+function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
+  const map = (vectorMap ??= new VectorMapSession());
+  const withView = (result: string) => `{"result":${result},"view":${map.view()},"undo":${map.undoDepth}}`;
+  switch (req.op) {
+    case "open":
+      return withView(map.open(req.name ?? "", req.text ?? ""));
+    case "apply":
+      return withView(map.apply(req.text ?? "[]"));
+    case "undo":
+      return withView(String(map.undo()));
+    case "clear":
+      map.clear();
+      return withView("null");
+    case "view":
+      return withView("null");
+    case "validate":
+      return map.validate(req.autoware ?? true);
+    case "export":
+      return map.exportLanelet2(req.autoware ?? true);
+    case "nearest":
+      return map.nearestLane(req.x ?? 0, req.y ?? 0);
+    case "json":
+      return map.toJson();
+  }
+}
+
 function openGraph(): PoseGraphSession {
   if (!poseGraph) throw new Error("no pose graph is open");
   return poseGraph.session;
@@ -1624,6 +1655,8 @@ async function handle(
       );
       return { value: { dynamic, total, millis: performance.now() - start }, transfer: [] };
     }
+    case "vm":
+      return { value: vectorMapRequest(req), transfer: [] };
     case "pg-close":
       poseGraph?.session.free();
       poseGraph = null;

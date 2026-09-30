@@ -78,7 +78,10 @@ export async function pickPoint(x: number, y: number): Promise<PickedPoint | nul
 }
 
 viewer.onClick = (x, y) => void (active ?? idle).click(x, y);
-viewer.onDoubleClick = (x, y) => (active?.doubleClick ?? idle.doubleClick)(x, y);
+viewer.onDoubleClick = (x, y) => {
+  if (active) active.doubleClick?.(x, y);
+  else idle.doubleClick(x, y);
+};
 
 /** Single-key shortcuts that toggle tools, e.g. "m" for measuring. */
 const shortcuts = new Map<string, Tool>();

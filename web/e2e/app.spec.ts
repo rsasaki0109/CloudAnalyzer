@@ -2145,3 +2145,100 @@ test("pose graph: the demo's passing cars are found by visibility and left out o
   expect(share).toBeLessThan(10);
   await expect(page.locator("#cloud-list li")).toHaveCount(2);
 });
+
+test("vector map: roads drawn over a cloud, a turn, a traffic light and a crosswalk, saved for Autoware", async ({
+  page,
+}) => {
+  // Flat ground 60 x 60 m at z = 2.
+  const ground: [number, number, number][] = [];
+  for (let j = 0; j <= 120; j++) for (let i = 0; i <= 120; i++) ground.push([i * 0.5, j * 0.5, 2]);
+  await open(page, [{ name: "ground.ply", buffer: ply(ground) }]);
+  await expect(status(page)).toContainText("Loaded ground.ply");
+  await page.locator('[data-view="top"]').click();
+  await page.locator("#fit").click();
+  const canvas = page.locator("#viewport > canvas");
+  const box = (await canvas.boundingBox())!;
+  const at = (fx: number, fy: number) => ({ position: { x: box.width * fx, y: box.height * fy } });
+
+  // A two-way road across the middle (left-hand traffic: forward lanes on the left).
+  await page.locator("#vector-map-panel").getByText("Road options", { exact: true }).click();
+  await page.locator("#vm-width").fill("6");
+  await page.locator("#vm-segment").fill("0");
+  await page.locator("#vm-road").click();
+  await canvas.click(at(0.3, 0.5));
+  await canvas.click(at(0.5, 0.5));
+  await page.keyboard.press("Enter");
+  await expect(status(page)).toContainText("Road built");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  await expect(page.locator("#vm-status")).toContainText("0 errors");
+
+  // A one-way road going up the screen, right of the first; a connector turns into it.
+  await page.locator("#vm-backward").fill("0");
+  await page.locator("#vm-road").click();
+  await canvas.click(at(0.62, 0.38));
+  await canvas.click(at(0.62, 0.15));
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#vm-status")).toContainText("3 lanes");
+  await page.locator("#vm-connect").click();
+  await canvas.click(at(0.48, 0.45));
+  await expect(page.locator("#vm-hint")).toContainText("now click the lane to enter");
+  await canvas.click(at(0.62, 0.3));
+  await expect(status(page)).toContainText("connected");
+  await expect(page.locator("#vm-status")).toContainText("4 lanes");
+
+  // A traffic light for the forward lane, a crosswalk across the road.
+  await page.locator("#vm-light").click();
+  await canvas.click(at(0.4, 0.45));
+  await expect(status(page)).toContainText("Traffic light added");
+  await page.locator("#vm-crosswalk").click();
+  await canvas.click(at(0.36, 0.45));
+  await expect(status(page)).toContainText("Crosswalk added");
+  await expect(page.locator("#vm-status")).toContainText("1 traffic light, 1 crosswalk");
+
+  // Undo and redo by hand (the tool is still on): the crosswalk goes, then comes back.
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-status")).not.toContainText("crosswalk");
+  await canvas.click(at(0.36, 0.45));
+  await expect(page.locator("#vm-status")).toContainText("1 crosswalk");
+  // The only complaint: the backward lane leads nowhere.
+  await expect(page.locator("#vm-issues li")).toHaveText([/has neither predecessors nor successors/]);
+  await page.keyboard.press("Escape");
+
+  // The speed limit of the connector (lanes without one fail the Autoware check).
+  await page.locator("#vm-select").click();
+  await canvas.click(at(0.56, 0.46));
+  await expect(page.locator("#vm-lane-info")).toContainText("turns left");
+  await page.locator("#vm-lane-speed").fill("20");
+  await page.locator("#vm-lane-apply").click();
+  await expect(status(page)).toContainText("Speed limit of lane");
+  await page.keyboard.press("Escape");
+
+  const osm = page.waitForEvent("download", (file) => file.suggestedFilename() === "lanelet2_map.osm");
+  const yaml = page.waitForEvent("download", (file) => file.suggestedFilename() === "map_projector_info.yaml");
+  await page.locator("#vm-export").click();
+  const [osmFile, yamlFile] = [await osm, await yaml];
+  expect(osmFile.suggestedFilename()).toBe("lanelet2_map.osm");
+  expect(yamlFile.suggestedFilename()).toBe("map_projector_info.yaml");
+  expect((await bytesOf(yamlFile)).toString()).toBe("projector_type: Local\n");
+  const xml = (await bytesOf(osmFile)).toString();
+  // Road lanelets, a crosswalk lanelet, and their rules.
+  expect(xml.match(/<tag k="subtype" v="road"\/>/g)?.length).toBe(4);
+  expect(xml).toContain('<tag k="subtype" v="crosswalk"/>');
+  expect(xml).toContain('<tag k="subtype" v="traffic_light"/>');
+  expect(xml).toContain('<tag k="turn_direction" v="left"/>');
+  expect(xml).toContain('<tag k="speed_limit" v="20"/>');
+  // Heights come from the cloud.
+  expect(xml).toMatch(/<tag k="ele" v="2(\.0+)?"\/>/);
+
+  // Reopening the saved map shows the same lanes.
+  await page.locator("#vm-clear").click();
+  await expect(page.locator("#vm-status")).toContainText("No map yet");
+  await page.locator("#vm-file").setInputFiles({ name: "lanelet2_map.osm", mimeType: "application/xml", buffer: Buffer.from(xml) });
+  await expect(status(page)).toContainText("Opened lanelet2_map.osm: 4 lanes");
+  await expect(page.locator("#vm-status")).toContainText("1 traffic light, 1 crosswalk");
+  await expect(page.locator("#vm-import-issues")).toContainText("local_x/local_y");
+  await page.locator("#vm-clear").click();
+  await expect(page.locator("#vm-status")).toContainText("No map yet");
+  await open(page, [{ name: "lanelet2_map.osm", buffer: Buffer.from(xml) }]);
+  await expect(status(page)).toContainText("Opened lanelet2_map.osm: 4 lanes");
+});

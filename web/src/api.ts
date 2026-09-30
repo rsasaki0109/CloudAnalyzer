@@ -29,6 +29,7 @@ import type {
   TrajectoryPoses,
   UiMessage,
   Vec3,
+  VectorMapOp,
   VolumeOutput,
   WorkerMessage,
 } from "./protocol";
@@ -408,6 +409,14 @@ export function detectPoseGraphDynamic(
 /** An M3C2 result's changed objects: 11 numbers each (count, centroid, min, max, mean change), largest first. */
 export function changedObjects(id: number, minChange: number, link: number, minPoints: number): Promise<Float64Array> {
   return call({ kind: "change-objects", id, minChange, link, minPoints });
+}
+
+/** A vector map request (see `VectorMapOp`); answers parsed JSON. */
+export async function vectorMap<T>(
+  op: VectorMapOp,
+  args: { name?: string; text?: string; x?: number; y?: number; autoware?: boolean } = {},
+): Promise<T> {
+  return JSON.parse(await call<string>({ kind: "vm", op, ...args })) as T;
 }
 
 export function closePoseGraph(): Promise<void> {

@@ -426,6 +426,9 @@ export const isBag = (name: string) => /\.(bag|mcap)$/i.test(name);
 /** Filters that keep a subset of a cloud's points (see `Cloud.filter`). */
 export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
 
+/** What a "vm" request does. */
+export type VectorMapOp = "open" | "apply" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
+
 export type Request =
   | ({
       /** Open a pose graph (g2o, or a TUM / KITTI trajectory as an odometry chain) with a scan per node. */
@@ -579,6 +582,20 @@ export type Request =
       votes: number;
     }
   | { kind: "pg-close" }
+  | {
+      /**
+       * The vector map (see `VectorMapSession`): open a Lanelet2 / IR file,
+       * apply vectormap commands (a JSON list), undo, clear, or read its
+       * view, issues, export or the lane nearest to a point. Answers JSON text.
+       */
+      kind: "vm";
+      op: VectorMapOp;
+      name?: string;
+      text?: string;
+      x?: number;
+      y?: number;
+      autoware?: boolean;
+    }
   | {
       /** An M3C2 result's significant changes as objects (see `Cloud.changedObjects`). */
       kind: "change-objects";

@@ -6,10 +6,10 @@
 
 **Fix your SLAM map, clean it, measure it. In the browser.**
 
-CloudAnalyzer is a point cloud viewer and analyzer that runs in your browser: open a drive's poses and scans,
-close its loops, take out the cars that drove past, and compare the result with last week's map or the ground truth.
-Everything runs locally in Rust compiled to WebAssembly, on every core: nothing to install, and your data
-never leaves your machine.
+CloudAnalyzer is a point cloud viewer and analyzer that runs in your browser: open a ROS bag or a drive's poses
+and scans, close its loops, take out the cars that drove past, and compare the result with last month's map or
+the ground truth. Everything runs locally in Rust compiled to WebAssembly, on every core: nothing to install, and
+your data never leaves your machine.
 
 <p align="center">
   <a href="scripts/prepare_nclt.py"><img src="docs/images/web/loop.gif" alt="A loop closed by hand on a real campus drive: two scans of the same place, metres apart, lined up by ICP, then the whole drive pulled together" width="720"></a><br>
@@ -27,9 +27,10 @@ never leaves your machine.
 
 ## 1. Fix the map
 
-Drop a folder with a trajectory (KITTI, TUM) or a g2o pose graph and one scan per pose, or just a ROS bag
-(ROS 1 `.bag`, ROS 2 `.mcap`): LiDAR odometry turns its scans into a pose graph in the browser, and its IMU
-levels it.
+Drop a recording as it is, a ROS 1 `.bag` or a ROS 2 `.mcap` (gigabytes are fine: it is read a slice at a time),
+or a folder of scans without poses: LiDAR odometry places the scans in the browser, on the worker pool, and the
+bag's IMU levels the result, its mounting estimated from the drive. Or drop a trajectory (KITTI, TUM) or a g2o
+pose graph with one scan per pose.
 
 <p align="center">
   <a href="scripts/fetch_pandaset.py"><img src="docs/images/web/odometry.gif" alt="A real drive through San Francisco replayed: Pandar64 scans build up along the street, colored by height" width="49%"></a>
@@ -42,7 +43,8 @@ levels it.
   structure (not just the road) overlaps.
 - **Level it** with the IMU's gravity (KITTI OXTS or a plain `index ux uy uz` file) or a floor plane.
 - **Drag a keyframe** with a gizmo, fix it, undo anything; edges colored by their error show what disagrees.
-- **Join sessions**: a second drive through the same streets is attached where they meet and tied in with loops.
+- **Join sessions**: a second drive through the same streets, as a folder or a bag, is attached where they meet
+  and tied in with loops.
 - **Export** the graph as g2o, the poses as KITTI / TUM, and the map as a cloud.
 
 ## 2. Clean it and see what changed
@@ -55,7 +57,15 @@ levels it.
 - **Remove dynamic objects**: points that nearby scans saw straight through (passing cars, pedestrians) leave the
   map as a red cloud of their own; parked cars, seen again from every side, stay.
 - **Compare sessions or passes** with M3C2 and get the list of changed objects: a car that left, a new container,
-  or a whole season:
+  or a whole season. From two bags of the same block, April and June, in the browser:
+
+<p align="center">
+  <a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt-seasons"><img src="docs/images/web/bags.jpg" alt="Two ROS bags of the same campus block, April and June, opened with odometry, joined, and compared: the changes coloured on the map" width="720"></a><br>
+  Two ROS 2 bags of the same block (NCLT, April and June 2012) opened in the app: odometry, the IMUs, 46 loops,
+  and the changes between the months (<a href="https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt-seasons">try it</a>, 19 MB)
+</p>
+
+And the same campus trees half a year apart:
 
 <p align="center">
   <a href="scripts/prepare_nclt.py"><img src="docs/images/web/seasons.gif" alt="The same campus trees in June and in December: full crowns, then bare branches" width="640"></a><br>
@@ -94,7 +104,18 @@ coordinates stay exact to the millimetre. **Saves** PLY, LAS / LAZ, E57, CSV and
 
 ## Proven on real data
 
-Measured in the app on public datasets, with [KISS-ICP](https://github.com/PRBonn/kiss-icp) odometry as the input:
+From recordings, in the app: the built-in odometry, then loops and the IMU.
+
+| NCLT, a block on campus as ROS 2 bags (~250 m, 190 s each) | Odometry | + loops + IMU gravity |
+|---|---|---|
+| April, trajectory ATE / SE(3)-aligned | 1.25 m / 0.17 m | **1.07 m** / 0.17 m |
+| April and June joined, SE(3)-aligned, each drive | | **0.17 m / 0.16 m** |
+
+`hdl_400.bag` (2.4 GB, a Velodyne HDL-32E and a GPS/IMU, 1,263 scans) opens in the browser in about three and a
+half minutes on a laptop: 248 keyframes, the IMU's mounting estimated (its up directions spread 8.2° before,
+1.8° after) and 6 loops.
+
+With poses from [KISS-ICP](https://github.com/PRBonn/kiss-icp) odometry as the input:
 
 | KITTI trajectory ATE (RMSE) | Odometry | + loops | + IMU gravity |
 |---|---|---|---|
@@ -137,7 +158,8 @@ Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/
 ## `ca`: the command line, for CI and AI agents
 
 `ca` runs the same Rust core natively, on all cores and without the browser's memory limit. It turns SLAM, LiDAR,
-perception and 3DGS outputs into metrics, HTML reports and pass / fail gates for CI, and it fixes SLAM maps:
+perception and 3DGS outputs into metrics, HTML reports and pass / fail gates for CI, and it fixes SLAM maps. It
+reads ROS 1 bags, MCAP files, rosbag2 SQLite files and folders itself: no ROS install.
 
 ```bash
 pip install "cloudanalyzer[fast]"
@@ -147,16 +169,17 @@ ca posegraph-compare june/ december/ --here 1219 --there 850 --out changes/   # 
 ```
 
 1. From a ROS bag (or a folder of scans, or poses and scans), [`ca posegraph-fix`](docs/commands/posegraph-fix.md)
-   makes the odometry (in the Rust core, as the web app does), closes the loops, levels the map with the bag's IMU (its mounting estimated
-   from the drive), leaves out what moved, and writes the fixed poses, g2o and map, with a JSON report.
+   makes the odometry (the same as the web app's), closes the loops, levels the map with the bag's IMU (its
+   mounting estimated from the drive), leaves out what moved, and writes the fixed poses, g2o and map, with a JSON
+   report.
 2. [`ca web-view`](docs/commands/web-view.md) serves the results from your machine and opens them in the app with
    one link, to look at, measure and fix by hand.
 3. [`ca posegraph-compare`](docs/commands/posegraph-compare.md) joins two drives through the same places and lists
    the changed objects.
 
-On hdl_graph_slam's recorded drive (`hdl_400.bag`: a Velodyne HDL-32E and a GPS/IMU, 126 s), step 1 finds 6 loops,
-estimates the IMU's mounting (its up directions spread 8.1° before, 2.0° after) and leaves out 5.1 % of the points
-as dynamic, in under three minutes on a laptop (the bag itself is read in ten seconds). [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
+On `hdl_400.bag` step 1 finds the same 6 loops, estimates the IMU's mounting (8.1° → 2.0°) and leaves out 5.1 %
+of the points as dynamic in under three minutes on a laptop (the 2.4 GB bag is read in ten seconds); KITTI 07 as a
+bag takes 78 s. [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
 (`claude mcp add cloudanalyzer -- ca mcp`), from `slam_odometry` to `view_link`.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
@@ -169,7 +192,7 @@ For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a referen
 | Path | |
 |---|---|
 | [`web/`](web/) | The browser app (TypeScript, three.js, a pool of WebAssembly workers) |
-| [`rust/`](rust/) | The Rust core: registration, pose graph optimisation, M3C2, visibility, octrees, I/O; WebAssembly and Python bindings |
+| [`rust/`](rust/) | The Rust core: LiDAR odometry, registration, pose graph optimisation, M3C2, visibility, octrees, ROS bag and point cloud I/O; WebAssembly and Python bindings |
 | [`cloudanalyzer/`](cloudanalyzer/) | `ca`, the Python CLI for quality gates in CI |
 
 ## Develop
@@ -191,7 +214,7 @@ re-takes the README screenshots and GIFs.
 The pose graph pictures are of real drives: [NCLT](http://robots.engin.umich.edu/nclt/) session 2012-04-29
 (University of Michigan, [Open Database License](https://opendatacommons.org/licenses/odbl/1-0/), prepared with
 [`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) and 2012-06-15 / 2012-12-01 for the loops, corrections and seasons,
-with the ROS bag demo made from 2012-04-29 by [`scripts/make_nclt_bag.py`](scripts/make_nclt_bag.py); and [PandaSet](https://pandaset.org)
+with the ROS bag demos made from 2012-04-29 and 2012-06-15 by [`scripts/make_nclt_bag.py`](scripts/make_nclt_bag.py); and [PandaSet](https://pandaset.org)
 scene 019 (Scale AI and Hesai, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched with
 [`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects.
 KITTI data is not redistributed here.

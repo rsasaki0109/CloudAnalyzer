@@ -182,6 +182,14 @@ test("pose graph: a campus drive's loops closed, and how far each point moved", 
   await orbitFrames(page, "e-posegraph", 24, 12);
 });
 
+test("pose graph: two ROS bags of a real block, April and June, joined and compared", async ({ page }) => {
+  // The samples the demo downloads are real (NCLT, see web/public/samples/ATTRIBUTION.md).
+  test.setTimeout(900_000);
+  await page.goto("/?demo=nclt-seasons");
+  await expect(page.locator("#cloud-list li", { hasText: /_m3c2/ })).toBeVisible({ timeout: 840_000 });
+  await shot(page, "bags");
+});
+
 /** Frames of the view every `ms` milliseconds while `during` runs. */
 async function framesWhile(page: Page, prefix: string, ms: number, during: Promise<unknown>): Promise<void> {
   mkdirSync(FRAMES, { recursive: true });

@@ -6,6 +6,7 @@
 import { type ByteSource, readRange } from "./bytes";
 import init, {
   bucketChunk,
+  OdometryMap,
   decodeCopcNodes,
   decodeLasChunks,
   buildBucket,
@@ -66,7 +67,15 @@ export type Slice =
    */
   | { kind: "dynamic"; context: Float64Array; first: number; count: number; window: number; margin: number; votes: number }
   /** Run every kernel once so the browser optimizes them (see `warmUp`). */
-  | { kind: "warm-up" };
+  | { kind: "warm-up" }
+  /** Odometry on the pool: this worker keeps a copy of the local map. */
+  | { kind: "odom-reset"; voxel: number; maxPoints: number }
+  /** Points the last scan added to the map, and where the sensor is now. */
+  | { kind: "odom-map"; placed: Float64Array; origin: Float64Array; range: number }
+  /** This worker's share of a scan's source points, for the steps to come. */
+  | { kind: "odom-source"; source: Float64Array }
+  /** The normal equations of one step over that share: 42 numbers. */
+  | { kind: "odom-equations"; total: Float64Array; terms: Float64Array };
 
 /** Reordered points; see `Reordered` in the WASM API for `counts`/`nodes`. */
 export interface ReorderedResult {
@@ -124,6 +133,9 @@ export type SliceResponse =
 const ready = init();
 /** SOR parts indexed in step 1, by job, until released. */
 const sorParts = new Map<number, SorPart>();
+/** This worker's copy of the odometry's local map, and its share of the scan being registered. */
+let odometryMap: OdometryMap | null = null;
+let odometrySource: Float64Array = new Float64Array(0);
 
 function unpack(r: Reordered): { value: ReorderedResult; transfer: Transferable[] } {
   const value: ReorderedResult = {
@@ -271,6 +283,22 @@ async function run(request: SliceRequest): Promise<{ value: Value; transfer: Tra
     case "warm-up":
       warmUp();
       return { value: new Float64Array(0), transfer: [] };
+    case "odom-reset":
+      odometryMap?.free();
+      odometryMap = new OdometryMap(request.voxel, request.maxPoints);
+      odometrySource = new Float64Array(0);
+      return { value: new Float64Array(0), transfer: [] };
+    case "odom-map":
+      odometryMap?.update(request.placed, request.origin, request.range);
+      return { value: new Float64Array(0), transfer: [] };
+    case "odom-source":
+      odometrySource = request.source;
+      return { value: new Float64Array(0), transfer: [] };
+    case "odom-equations": {
+      if (!odometryMap) throw new Error("the odometry map was not set up on this worker");
+      const r = odometryMap.equations(odometrySource, request.total, request.terms) as Float64Array<ArrayBuffer>;
+      return { value: r, transfer: [r.buffer] };
+    }
   }
 }
 

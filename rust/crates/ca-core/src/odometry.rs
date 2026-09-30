@@ -93,10 +93,72 @@ impl Default for OdometryParams {
 /// Odometry state: the local map, the poses so far and the motion model's error.
 pub struct Odometry {
     params: OdometryParams,
-    map: VoxelMap,
+    map: LocalMap,
     poses: Vec<Rigid>,
     error_sum: f64,
     error_count: usize,
+    /// The world points the last scan added to the map (see [`Odometry::finish`]).
+    placed: Vec<[f64; 3]>,
+}
+
+/// The local map: a voxel grid keeping at most so many points per voxel,
+/// with the nearest-point search and the normal equations of a
+/// registration step. A copy of it can live elsewhere (a worker), fed the
+/// same [`LocalMap::insert`]s and [`LocalMap::retain_within`]s.
+pub struct LocalMap {
+    voxel: f64,
+    max_points: usize,
+    map: VoxelMap,
+}
+
+/// A scan's registration in progress: made by [`Odometry::begin`], moved a
+/// step at a time by [`Odometry::step`] from the normal equations (from
+/// [`Odometry::equations`], or summed from copies of the map elsewhere), and
+/// finished by [`Odometry::finish`].
+pub struct Registration {
+    /// The scan thinned for the map, in the sensor's frame.
+    frame: Vec<[f64; 3]>,
+    /// The scan thinned for registering, in the world at the prediction; empty when there is nothing to register onto.
+    source: Vec<[f64; 3]>,
+    prediction: Rigid,
+    /// The correction so far, applied to `source`.
+    total: Rigid,
+    center: [f64; 3],
+    threshold_sq: f64,
+    kernel: f64,
+    iterations: usize,
+}
+
+impl Registration {
+    /// Whether the scan is registered at all (the map has points and the scan enough).
+    pub fn needs_alignment(&self) -> bool {
+        !self.source.is_empty()
+    }
+
+    /// The points registered, in the world at the prediction.
+    pub fn source(&self) -> &[[f64; 3]] {
+        &self.source
+    }
+
+    /// The correction found so far (applied to the source points).
+    pub fn total(&self) -> &Rigid {
+        &self.total
+    }
+
+    /// Where the sensor is: rotations are taken about it.
+    pub fn center(&self) -> [f64; 3] {
+        self.center
+    }
+
+    /// Pairs further apart than this (squared) are left out.
+    pub fn threshold_sq(&self) -> f64 {
+        self.threshold_sq
+    }
+
+    /// The robust kernel's scale.
+    pub fn kernel(&self) -> f64 {
+        self.kernel
+    }
 }
 
 type Vec6 = [f64; 6];
@@ -217,33 +279,49 @@ fn norm(v: &[f64; 3]) -> f64 {
     (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt()
 }
 
-impl Odometry {
-    pub fn new(params: OdometryParams) -> Self {
-        Odometry {
-            params,
+impl LocalMap {
+    pub fn new(voxel: f64, max_points: usize) -> Self {
+        LocalMap {
+            voxel,
+            max_points,
             map: VoxelMap::default(),
-            poses: Vec::new(),
-            error_sum: 0.0,
-            error_count: 0,
         }
     }
 
-    pub fn poses(&self) -> &[Rigid] {
-        &self.poses
+    pub fn is_empty(&self) -> bool {
+        self.map.is_empty()
     }
 
-    fn sigma(&self) -> f64 {
-        if self.error_count == 0 {
-            self.params.initial_sigma
-        } else {
-            (self.error_sum / self.error_count as f64).sqrt()
+    /// How many points the map holds.
+    pub fn len(&self) -> usize {
+        self.map.values().map(Vec::len).sum()
+    }
+
+    /// Add world points, each to its voxel while the voxel has room.
+    pub fn insert(&mut self, points: &[[f64; 3]]) {
+        for w in points {
+            let cell = self
+                .map
+                .entry(w.map(|v| (v / self.voxel).floor() as i64))
+                .or_default();
+            if cell.len() < self.max_points {
+                cell.push(*w);
+            }
         }
+    }
+
+    /// Drop the voxels further than `range` from `origin`.
+    pub fn retain_within(&mut self, origin: [f64; 3], range: f64) {
+        self.map.retain(|_, points| {
+            let q = points[0];
+            norm(&[q[0] - origin[0], q[1] - origin[1], q[2] - origin[2]]) <= range
+        });
     }
 
     /// The map point nearest `q` in its voxel and the 26 around it, with the
     /// squared distance; a voxel is skipped when it is no nearer than the best so far.
     fn nearest(&self, q: &[f64; 3]) -> Option<([f64; 3], f64)> {
-        let v = self.params.map_voxel;
+        let v = self.voxel;
         let key = q.map(|x| (x / v).floor() as i64);
         let mut best = ([0.0; 3], f64::INFINITY);
         let search = |cell: [i64; 3], best: &mut ([f64; 3], f64)| {
@@ -280,46 +358,12 @@ impl Odometry {
         best.1.is_finite().then_some(best)
     }
 
-    /// The motion that best brings `source` (world points) onto the map:
-    /// pairs within 3 sigma, weighted by a Geman-McClure kernel of sigma/3.
-    /// Rotations are about `center` (where the sensor is): about the world's
-    /// origin, far from it, a small turn would come with a large shift, and
-    /// the steps would shrink below the tolerance only after many iterations.
-    fn align(&self, source: &[[f64; 3]], center: [f64; 3], sigma: f64) -> Rigid {
-        let threshold_sq = (3.0 * sigma).powi(2);
-        let kernel = sigma / 3.0;
-        let mut total = Rigid::IDENTITY;
-        for _ in 0..self.params.max_iterations {
-            let system = self.normal_equations(source, &total, center, threshold_sq, kernel);
-            let (jtj, jtr) = (system.0, system.1);
-            let Some(dx) = solve6(jtj, jtr) else { break };
-            // Turn about `center`, then shift.
-            let rotation = crate::pose_graph::exp_so3(&[dx[3], dx[4], dx[5]]);
-            let turned = Rigid {
-                rotation,
-                translation: [0.0; 3],
-            }
-            .apply(&center);
-            let step = Rigid {
-                rotation,
-                translation: std::array::from_fn(|k| center[k] - turned[k] + dx[k]),
-            };
-            total = step.compose(&total);
-            // Converged: steps of under a millimetre and a tenth of a milliradian.
-            if dx[..3].iter().map(|v| v * v).sum::<f64>().sqrt() < self.params.tolerance_t
-                && dx[3..].iter().map(|v| v * v).sum::<f64>().sqrt() < self.params.tolerance_r
-            {
-                break;
-            }
-        }
-        total
-    }
-
     /// The normal equations of one Gauss-Newton step: each point of `source`
     /// moved by `total`, paired with the map point nearest it within the
-    /// threshold, weighted by the kernel; summed over chunks of points (in
-    /// parallel on the cores, natively).
-    fn normal_equations(
+    /// threshold, weighted by a Geman-McClure kernel of scale `kernel`;
+    /// rotations about `center`. Summed over chunks of points (in parallel
+    /// on the cores, natively).
+    pub fn normal_equations(
         &self,
         source: &[[f64; 3]],
         total: &Rigid,
@@ -381,9 +425,48 @@ impl Odometry {
             chunk(source)
         }
     }
+}
 
-    /// Register the next scan (in its sensor's frame) and return its pose.
-    pub fn register(&mut self, scan: &PointCloud) -> Rigid {
+impl Odometry {
+    pub fn new(params: OdometryParams) -> Self {
+        Odometry {
+            params,
+            map: LocalMap::new(params.map_voxel, params.map_points),
+            poses: Vec::new(),
+            error_sum: 0.0,
+            error_count: 0,
+            placed: Vec::new(),
+        }
+    }
+
+    pub fn params(&self) -> &OdometryParams {
+        &self.params
+    }
+
+    pub fn poses(&self) -> &[Rigid] {
+        &self.poses
+    }
+
+    pub fn map(&self) -> &LocalMap {
+        &self.map
+    }
+
+    /// The world points the last finished scan added to the map.
+    pub fn placed(&self) -> &[[f64; 3]] {
+        &self.placed
+    }
+
+    fn sigma(&self) -> f64 {
+        if self.error_count == 0 {
+            self.params.initial_sigma
+        } else {
+            (self.error_sum / self.error_count as f64).sqrt()
+        }
+    }
+
+    /// Start registering the next scan (in its sensor's frame): filtered,
+    /// deskewed, thinned and put where a constant velocity predicts it.
+    pub fn begin(&self, scan: &PointCloud) -> Registration {
         let p = self.params;
         // Constant velocity: the last motion again.
         let n = self.poses.len();
@@ -409,23 +492,79 @@ impl Odometry {
             .collect();
         // Half a map voxel for the map, one and a half for registering.
         let frame = thin(&near, 0.5 * p.map_voxel);
-        let source = thin(&frame, 1.5 * p.map_voxel);
+        let thinned = thin(&frame, 1.5 * p.map_voxel);
         let prediction = match n {
             0 => Rigid::IDENTITY,
             _ => self.poses[n - 1].compose(&motion),
         };
-        let mut pose = if self.map.is_empty() || source.len() < 10 {
-            prediction
+        let source = if self.map.is_empty() || thinned.len() < 10 {
+            Vec::new()
         } else {
-            let moved: Vec<[f64; 3]> = source.iter().map(|q| prediction.apply(q)).collect();
-            self.align(&moved, prediction.translation, self.sigma())
-                .compose(&prediction)
+            thinned.iter().map(|q| prediction.apply(q)).collect()
         };
+        let sigma = self.sigma();
+        Registration {
+            frame,
+            source,
+            prediction,
+            total: Rigid::IDENTITY,
+            center: prediction.translation,
+            // Pairs within 3 sigma, weighted by a Geman-McClure kernel of sigma / 3.
+            threshold_sq: (3.0 * sigma).powi(2),
+            kernel: sigma / 3.0,
+            iterations: 0,
+        }
+    }
+
+    /// The normal equations of the registration's next step, from this map.
+    pub fn equations(&self, registration: &Registration) -> (Mat6, Vec6) {
+        let r = registration;
+        self.map
+            .normal_equations(&r.source, &r.total, r.center, r.threshold_sq, r.kernel)
+    }
+
+    /// Take one Gauss-Newton step from the normal equations (from
+    /// [`Odometry::equations`], or summed over copies of the map). True when
+    /// the registration is done: converged, or out of iterations, or with
+    /// nothing to solve. Rotations are about the sensor: about the world's
+    /// origin, far from it, a small turn would come with a large shift, and
+    /// the steps would shrink below the tolerance only after many iterations.
+    pub fn step(&self, registration: &mut Registration, (jtj, jtr): (Mat6, Vec6)) -> bool {
+        let r = registration;
+        let Some(dx) = solve6(jtj, jtr) else {
+            return true;
+        };
+        // Turn about the center, then shift.
+        let rotation = crate::pose_graph::exp_so3(&[dx[3], dx[4], dx[5]]);
+        let turned = Rigid {
+            rotation,
+            translation: [0.0; 3],
+        }
+        .apply(&r.center);
+        let step = Rigid {
+            rotation,
+            translation: std::array::from_fn(|k| r.center[k] - turned[k] + dx[k]),
+        };
+        r.total = step.compose(&r.total);
+        r.iterations += 1;
+        // Converged: steps of under the tolerances.
+        let shift = dx[..3].iter().map(|v| v * v).sum::<f64>().sqrt();
+        let turn = dx[3..].iter().map(|v| v * v).sum::<f64>().sqrt();
+        (shift < self.params.tolerance_t && turn < self.params.tolerance_r)
+            || r.iterations >= self.params.max_iterations
+    }
+
+    /// Finish the registration: the scan's pose, learnt from for the
+    /// threshold, and the scan joins the map (see [`Odometry::placed`]).
+    pub fn finish(&mut self, registration: Registration) -> Rigid {
+        let p = self.params;
+        let r = registration;
+        let mut pose = r.total.compose(&r.prediction);
         pose.rotation = orthonormal(&pose.rotation);
         // How far the motion model was off, as the most a point in range moved.
-        let deviation = crate::pose_graph::inverse(&prediction).compose(&pose);
-        let r = &deviation.rotation;
-        let theta = ((r[0][0] + r[1][1] + r[2][2] - 1.0) / 2.0)
+        let deviation = crate::pose_graph::inverse(&r.prediction).compose(&pose);
+        let m = &deviation.rotation;
+        let theta = ((m[0][0] + m[1][1] + m[2][2] - 1.0) / 2.0)
             .clamp(-1.0, 1.0)
             .acos();
         let error = 2.0 * p.max_range * (theta / 2.0).sin() + norm(&deviation.translation);
@@ -434,23 +573,25 @@ impl Odometry {
             self.error_count += 1;
         }
         // The scan joins the map; voxels out of the sensor's range leave it.
-        for q in &frame {
-            let w = pose.apply(q);
-            let cell = self
-                .map
-                .entry(w.map(|v| (v / p.map_voxel).floor() as i64))
-                .or_default();
-            if cell.len() < p.map_points {
-                cell.push(w);
-            }
-        }
-        let origin = pose.translation;
-        self.map.retain(|_, points| {
-            let q = points[0];
-            norm(&[q[0] - origin[0], q[1] - origin[1], q[2] - origin[2]]) <= p.max_range
-        });
+        self.placed = r.frame.iter().map(|q| pose.apply(q)).collect();
+        self.map.insert(&self.placed);
+        self.map.retain_within(pose.translation, p.max_range);
         self.poses.push(pose);
         pose
+    }
+
+    /// Register the next scan (in its sensor's frame) and return its pose.
+    pub fn register(&mut self, scan: &PointCloud) -> Rigid {
+        let mut registration = self.begin(scan);
+        if registration.needs_alignment() {
+            loop {
+                let equations = self.equations(&registration);
+                if self.step(&mut registration, equations) {
+                    break;
+                }
+            }
+        }
+        self.finish(registration)
     }
 }
 

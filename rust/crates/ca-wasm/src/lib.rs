@@ -11,7 +11,7 @@ mod bag;
 mod odometry;
 mod pose_graph;
 pub use bag::{BagFile, BagMessage};
-pub use odometry::LidarOdometry;
+pub use odometry::{LidarOdometry, OdometryMap, Registration};
 pub use pose_graph::{PoseGraphSession, register_scans};
 
 /// Numbers per node in [`Cloud::lod_nodes`].

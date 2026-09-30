@@ -831,7 +831,7 @@ for (const [button, input] of [
 }
 
 /** Join a second graph, placed by registering the scans of a node in each. */
-async function merge(picked: File[]): Promise<void> {
+export async function merge(picked: File[]): Promise<void> {
   if (!graph || busy) return;
   const found = await graphFiles(picked);
   if (!found) return;

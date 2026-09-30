@@ -5,7 +5,7 @@ import { runButton } from "./distance";
 import { $, choose, setStatus } from "./dom";
 import { renderList } from "./entries";
 import { loadUrls } from "./loading";
-import { addGravity, compareWithStart, findLoops, open as openPoseGraph } from "./posegraph";
+import { addGravity, compareParts, compareWithStart, findLoops, merge, open as openPoseGraph } from "./posegraph";
 import { poseGraphDemoFiles } from "./posegraph-demo";
 import { entries, hideEntry, viewer } from "./state";
 
@@ -92,19 +92,44 @@ async function poseGraphDrive(): Promise<void> {
  * IMU levels them, loops close where the drive comes back, and the map shows
  * how far the corrections moved each point.
  */
-async function ncltDemo(): Promise<void> {
-  const name = "nclt-2012-04-29.mcap";
-  setStatus(`Downloading ${name} (10 MB), a drive from the NCLT dataset…`);
+/** A sample bag downloaded, or null with the status saying why not. */
+async function sampleBag(name: string, what: string): Promise<File | null> {
+  setStatus(`Downloading ${name} (${what})…`);
   const response = await fetch(`${import.meta.env.BASE_URL}samples/${name}`);
   if (!response.ok) {
     setStatus(`Could not download ${name}: ${response.status} ${response.statusText}`, true);
-    return;
+    return null;
   }
-  await openPoseGraph([new File([await response.blob()], name)]);
+  return new File([await response.blob()], name);
+}
+
+async function ncltDemo(): Promise<void> {
+  const bag = await sampleBag("nclt-2012-04-29.mcap", "10 MB, a drive from the NCLT dataset");
+  if (!bag) return;
+  await openPoseGraph([bag]);
   $("pose-graph-panel").scrollIntoView({ block: "start" });
   await findLoops();
   $<HTMLInputElement>("pg-show-scans").click();
   await compareWithStart();
+  viewer.view({ x: 0.4, y: -1, z: 1.1 });
+  viewer.fit();
+}
+
+/**
+ * The same block in April and in June (NCLT): the June bag joins the April
+ * one where both start, loops tie the two drives together, and the maps of
+ * where they meet are compared, so the changes between the seasons show.
+ */
+async function ncltSeasonsDemo(): Promise<void> {
+  const april = await sampleBag("nclt-2012-04-29.mcap", "10 MB, the block in April");
+  if (!april) return;
+  await openPoseGraph([april]);
+  $("pose-graph-panel").scrollIntoView({ block: "start" });
+  const june = await sampleBag("nclt-2012-06-15.mcap", "9 MB, the block in June");
+  if (!june) return;
+  await merge([june]);
+  await findLoops();
+  await compareParts();
   viewer.view({ x: 0.4, y: -1, z: 1.1 });
   viewer.fit();
 }
@@ -123,9 +148,13 @@ export async function runDemo(name: string): Promise<void> {
     await ncltDemo();
     return;
   }
+  if (name === "nclt-seasons") {
+    await ncltSeasonsDemo();
+    return;
+  }
   const demo = DEMOS[name];
   if (!demo) {
-    setStatus(`Unknown demo "${name}" (try ${[...Object.keys(DEMOS), "posegraph", "nclt"].join(", ")})`, true);
+    setStatus(`Unknown demo "${name}" (try ${[...Object.keys(DEMOS), "posegraph", "nclt", "nclt-seasons"].join(", ")})`, true);
     return;
   }
   const missing = demo.files.filter((f) => !idOf(f));

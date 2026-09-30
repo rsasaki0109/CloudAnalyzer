@@ -123,6 +123,7 @@ Measured in the app on public datasets, with [KISS-ICP](https://github.com/PRBon
 | Demo | |
 |---|---|
 | [Real drive from a ROS bag](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt) | Once round a block on the NCLT campus, as a ROS 2 bag of scans and IMU (10 MB): odometry, gravity and loops |
+| [Two seasons of a block](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=nclt-seasons) | The same block in April and in June, two bags (19 MB): the drives joined, loops between them, the changes between the seasons |
 | [SLAM loop closure](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph) | A drifting drive round a block: loops found, gravity tied, correction shown |
 | [SLAM drive](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=posegraph-drive) | The same drive to fix yourself: replay, close a loop, remove cars |
 | [Two LiDAR scans](https://rsasaki0109.github.io/CloudAnalyzer/app/?demo=c2c) | Cloud-to-cloud distance |

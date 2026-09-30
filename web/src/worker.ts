@@ -1064,6 +1064,49 @@ async function* fileFrames(files: File[], progress: (note: string, fraction?: nu
 }
 
 /**
+ * Registering a scan with the odometry, the normal equations of each step
+ * summed over the worker pool when there is one: each worker keeps a copy
+ * of the local map and takes a share of the scan's points. With one core,
+ * or no pool, the odometry registers on its own.
+ */
+async function pooledRegistration(odometry: LidarOdometry): Promise<(cloud: Cloud) => Promise<Float64Array>> {
+  const lanes = poolSize();
+  if (lanes < 2) return async (cloud) => odometry.register(cloud);
+  const all = Array.from({ length: lanes }, (_, lane) => lane);
+  await Promise.all(all.map((lane) => runOn(lane, { kind: "odom-reset", voxel: odometry.mapVoxel, maxPoints: odometry.mapPoints })));
+  const range = odometry.maxRange;
+  return async (cloud) => {
+    const registration = odometry.begin(cloud);
+    try {
+      if (registration.needsAlignment) {
+        const source = registration.source();
+        const points = source.length / 3;
+        const per = Math.ceil(points / lanes);
+        await Promise.all(
+          all.map((lane) => runOn(lane, { kind: "odom-source", source: source.slice(3 * lane * per, 3 * Math.min(points, (lane + 1) * per)) })),
+        );
+        const terms = registration.terms();
+        for (;;) {
+          const total = registration.total();
+          const parts = await Promise.all(all.map((lane) => runOn(lane, { kind: "odom-equations", total: total.slice(), terms: terms.slice() })));
+          const sum = new Float64Array(42);
+          for (const part of parts) for (let k = 0; k < 42; k++) sum[k] += part[k];
+          if (odometry.step(registration, sum)) break;
+        }
+      }
+      const pose = odometry.finish(registration);
+      const placed = odometry.placed();
+      const origin = new Float64Array([pose[3], pose[7], pose[11]]);
+      await Promise.all(all.map((lane) => runOn(lane, { kind: "odom-map", placed: placed.slice(), origin: origin.slice(), range })));
+      return pose;
+    } catch (err) {
+      registration.free?.();
+      throw err;
+    }
+  };
+}
+
+/**
  * A graph for scans without poses: odometry registers each onto the ones
  * before; a keyframe every so many metres of travel (and the last scan)
  * becomes a node with its scan.
@@ -1079,6 +1122,7 @@ async function odometryGraph(
   const topics = { scans: null as string | null, imu: null as string | null };
   const frames = req.graph ? bagFrames(req.graph, imu, topics, progress) : fileFrames(req.scans, progress);
   const odometry = new LidarOdometry(o.minRange, o.maxRange, o.deskew);
+  const register = await pooledRegistration(odometry);
   const session = PoseGraphSession.empty();
   const scans: Float32Array[] = [];
   const stamps: number[] = [];
@@ -1100,7 +1144,7 @@ async function odometryGraph(
       check();
       let pose: Float64Array;
       try {
-        pose = odometry.register(frame.cloud);
+        pose = await register(frame.cloud);
       } catch (err) {
         frame.cloud.free();
         throw err;

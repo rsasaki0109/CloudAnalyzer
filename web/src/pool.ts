@@ -37,6 +37,9 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
     if (slice.kind === "sor-within") transfer.push(slice.queries.buffer);
     if (slice.kind === "dynamic") transfer.push(slice.context.buffer);
     if (slice.kind === "loop") transfer.push(slice.from.buffer, slice.to.buffer);
+    if (slice.kind === "odom-map") transfer.push(slice.placed.buffer, slice.origin.buffer);
+    if (slice.kind === "odom-source") transfer.push(slice.source.buffer);
+    if (slice.kind === "odom-equations") transfer.push(slice.total.buffer, slice.terms.buffer);
     if (slice.kind === "copc-nodes") transfer.push(slice.head.buffer, slice.nodes.buffer);
     if (slice.kind === "las-chunks") transfer.push(slice.head.buffer, slice.chunks.buffer);
     if (slice.kind === "bucket-chunk" || slice.kind === "bucket") {

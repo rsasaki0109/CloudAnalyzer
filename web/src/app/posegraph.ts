@@ -37,10 +37,10 @@ import {
   setPoseGraphNodePose,
   setPoseGraphPoses,
 } from "../api";
-import { isBag } from "../bag";
 import { colorize, gradientCss, lut } from "../colormap";
 import {
   CANCELLED,
+  isBag,
   type PoseFormat,
   type PoseGraphFiles,
   type PoseGraphOpened,

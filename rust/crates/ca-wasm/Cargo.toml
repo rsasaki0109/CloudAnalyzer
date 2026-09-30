@@ -11,6 +11,5 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 ca-core = { path = "../ca-core" }
-# bzip2 for ROS 1 bags (pure Rust, so it builds for the web).
-bzip2 = "0.6"
+js-sys = "0.3"
 wasm-bindgen = "0.2.129"

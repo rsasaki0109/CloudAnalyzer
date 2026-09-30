@@ -5,7 +5,7 @@
 import init, {
   alignPairs,
   announcedPoints,
-  bunzip2,
+  BagFile,
   Cloud,
   CloudMerger,
   CopcReader,
@@ -28,13 +28,13 @@ import init, {
   registerScans,
   summarizeDistances,
   TrajectoryData,
+  upsAt,
   VolumeSurface,
   warmUp,
 } from "./wasm/ca_wasm.js";
-import { decodeImu, decodePointCloud2, decompressors, type ImuMessage, IMU, isBag, openBag, POINT_CLOUD, upsAt } from "./bag";
 import { type ByteSource, readRange } from "./bytes";
 import type { LasChunksResult, Slice } from "./c2c-worker";
-import { CANCELLED } from "./protocol";
+import { CANCELLED, isBag } from "./protocol";
 import { eachSlice, MIN_PARALLEL_QUERIES, poolSize, runAny, runOn, runSlices, warmUpPool } from "./pool";
 import type {
   C2cOutput,
@@ -100,7 +100,6 @@ const ready = init().then((wasm) => {
   // arrives (see `warmUp`); requests wait for this one.
   warmUp();
   void warmUpPool();
-  decompressors.bz2 = bunzip2;
   return wasm;
 });
 /** Larger clouds are voxel-thinned before meshing, to bound time and memory. */
@@ -996,34 +995,56 @@ interface Frame {
   cloud: Cloud;
 }
 
-/** A bag's scans (its PointCloud2 topic with the most messages), and its IMU's messages into `imu` on the way. */
+const POINT_CLOUD = "sensor_msgs/PointCloud2";
+const IMU = "sensor_msgs/Imu";
+
+/**
+ * A bag's scans (its PointCloud2 topic with the most messages), and its
+ * IMU's messages (seven numbers each, see `BagMessage.imu`) into `imu` on
+ * the way. The Rust core reads the bag, a slice of the file at a time.
+ */
 async function* bagFrames(
   file: File,
-  imu: ImuMessage[],
+  imu: number[],
   topics: { scans: string | null; imu: string | null },
   progress: (note: string, fraction?: number) => void,
 ): AsyncGenerator<Frame> {
   progress(`reading ${file.name}`);
-  const bag = await openBag(file);
-  const busiest = (type: string) =>
-    bag.topics.filter((t) => t.type === type).sort((a, b) => b.count - a.count)[0] ?? null;
-  const scans = busiest(POINT_CLOUD);
-  if (!scans) throw new Error(`${file.name} has no sensor_msgs/PointCloud2 messages`);
-  const imuTopic = busiest(IMU);
-  topics.scans = scans.topic;
-  topics.imu = imuTopic?.topic ?? null;
-  let id = 0;
-  let fraction = 0;
-  const wanted = new Set([scans.topic, ...(imuTopic ? [imuTopic.topic] : [])]);
-  for await (const m of bag.messages(wanted, (f) => (fraction = f))) {
-    if (m.topic !== scans.topic) {
-      imu.push(decodeImu(m.data, m.encoding));
-      continue;
+  const reader = new FileReaderSync();
+  const bag = new BagFile(file.size, (at: number, length: number) => new Uint8Array(reader.readAsArrayBuffer(file.slice(at, at + length))));
+  try {
+    const names = bag.topicNames();
+    const kinds = bag.topicKinds();
+    const counts = bag.topicCounts();
+    const busiest = (kind: string) => {
+      let best: { topic: string; count: number } | null = null;
+      names.forEach((topic, k) => {
+        if (kinds[k] === kind && (!best || counts[k] > best.count)) best = { topic, count: counts[k] };
+      });
+      return best as { topic: string; count: number } | null;
+    };
+    const scans = busiest(POINT_CLOUD);
+    if (!scans) throw new Error(`${file.name} has no sensor_msgs/PointCloud2 messages`);
+    const imuTopic = busiest(IMU);
+    topics.scans = scans.topic;
+    topics.imu = imuTopic?.topic ?? null;
+    bag.start([scans.topic, ...(imuTopic ? [imuTopic.topic] : [])]);
+    let id = 0;
+    for (let m = bag.next(); m; m = bag.next()) {
+      try {
+        if (m.topic !== scans.topic) {
+          imu.push(...m.imu());
+          continue;
+        }
+        progress(`${scans.topic}: scan ${id + 1} of ${scans.count}`, bag.progress());
+        const cloud = m.scan();
+        yield { id: id++, stamp: m.stamp(), cloud };
+      } finally {
+        m.free();
+      }
     }
-    const points = decodePointCloud2(m.data, m.encoding);
-    progress(`${scans.topic}: scan ${id + 1} of ${scans.count}`, fraction);
-    const none = new Float32Array(0);
-    yield { id: id++, stamp: points.stamp, cloud: Cloud.fromXyz(points.xyz, points.intensity ?? none, points.time ?? none) };
+  } finally {
+    bag.free();
   }
 }
 
@@ -1054,7 +1075,7 @@ async function odometryGraph(
 ): Promise<LoadedGraph> {
   const started = performance.now();
   const o = req.odometry;
-  const imu: ImuMessage[] = [];
+  const imu: number[] = [];
   const topics = { scans: null as string | null, imu: null as string | null };
   const frames = req.graph ? bagFrames(req.graph, imu, topics, progress) : fileFrames(req.scans, progress);
   const odometry = new LidarOdometry(o.minRange, o.maxRange, o.deskew);
@@ -1114,12 +1135,7 @@ async function odometryGraph(
     held?.cloud.free();
     odometry.free();
   }
-  let ups: Float64Array | null = null;
-  if (imu.length) {
-    const out = new Float64Array(3 * stamps.length).fill(NaN);
-    upsAt(imu, stamps).forEach((up, i) => up && out.set(up, 3 * i));
-    ups = out;
-  }
+  const ups = imu.length ? upsAt(new Float64Array(imu), new Float64Array(stamps), 0.5) : null;
   return {
     session,
     scans,

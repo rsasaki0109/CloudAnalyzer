@@ -7,21 +7,12 @@ use ca_core::{
 };
 use wasm_bindgen::prelude::*;
 
+mod bag;
 mod odometry;
 mod pose_graph;
+pub use bag::{BagFile, BagMessage};
 pub use odometry::LidarOdometry;
 pub use pose_graph::{PoseGraphSession, register_scans};
-
-/// Decompress a bzip2 stream (ROS 1 bags recorded with `--bz2`).
-#[wasm_bindgen]
-pub fn bunzip2(data: &[u8]) -> Result<Vec<u8>, JsError> {
-    use std::io::Read;
-    let mut out = Vec::new();
-    bzip2::read::MultiBzDecoder::new(data)
-        .read_to_end(&mut out)
-        .map_err(|e| JsError::new(&format!("bzip2: {e}")))?;
-    Ok(out)
-}
 
 /// Numbers per node in [`Cloud::lod_nodes`].
 const NODE_STRIDE: usize = 15;

@@ -12,7 +12,6 @@
     "media": "playwright test --config playwright.media.config.ts && node scripts/readme-gif.mjs"
   },
   "dependencies": {
-    "fzstd": "^0.1.1",
     "three": "^0.186.1"
   },
   "devDependencies": {

@@ -2353,3 +2353,67 @@ test("vector map: trajectory builds a ground-level draft with an evidence report
   await page.locator("#vm-undo").click();
   await expect(page.locator("#vm-status")).toContainText("No map yet");
 });
+
+test("vector map: branching junction preview, selection, invalidation and batch undo", async ({ page }) => {
+  const ground: [number, number, number][] = [];
+  for (let x = -22; x <= 2; x += 0.2) for (let y = -22; y <= 22; y += 0.2) ground.push([50000 + x, 50000 + y, 2]);
+  await open(page, [{ name: "junction.ply", buffer: ply(ground) }]);
+  await expect(status(page)).toContainText("Loaded junction.ply");
+  const paths = [
+    [[[-20, 1.75], [-10, 1.75]], [[-20, -1.75], [-10, -1.75]]],
+    [[[-1.75, 10], [-1.75, 20]], [[1.75, 10], [1.75, 20]]],
+    [[[1.75, -10], [1.75, -20]], [[-1.75, -10], [-1.75, -20]]],
+  ];
+  const map = {
+    format: "vectormap-ir", version: 1,
+    metadata: { georeference: { projection: "mgrs", origin: { lat: 35.681236, lon: 139.767125 } } },
+    lanes: paths.map((_, i) => ({ id: i + 7, kind: "driving", left: i * 2 + 1, right: i * 2 + 2, speed_limit: { kmh: 20 } })),
+    boundaries: paths.flatMap((sides, i) => sides.map((points, side) => ({
+      id: i * 2 + side + 1, kind: { type: "virtual" }, geometry: points.map(([x, y]) => [50000 + x, 50000 + y, 2]),
+    }))),
+  };
+  await page.locator("#vm-file").setInputFiles({ name: "legs.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(map)) });
+  await expect(status(page)).toContainText("Opened legs.json: 3 lanes");
+  await page.locator("#vector-map-panel").getByText("Draft junction connections", { exact: true }).click();
+  const exportXml = async () => {
+    const file = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
+    await page.locator("#vm-export").click();
+    return (await bytesOf(await file)).toString();
+  };
+  const before = await exportXml();
+  await page.locator("#vm-junction-preview").click();
+  await expect(page.locator("#vm-junction-report")).toContainText("2 ground-supported candidates; 2 selected");
+  await expect(page.locator("#vm-junction-candidates input")).toHaveCount(2);
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+  expect(await exportXml()).toBe(before);
+  await page.locator("#vm-junction-none").click();
+  await expect(page.locator("#vm-junction-apply")).toBeDisabled();
+  await page.locator("#vm-junction-candidates input").last().check();
+  await page.locator("#vm-junction-apply").click();
+  await expect(status(page)).toContainText("1 draft connections added");
+  await expect(page.locator("#vm-status")).toContainText("4 lanes");
+  await expect(page.locator("#vm-junction-candidates input")).toHaveCount(0);
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-status")).toContainText("3 lanes");
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+  expect(await exportXml()).toBe(before);
+  await page.locator("#vm-junction-preview").click();
+  await expect(page.locator("#vm-junction-candidates input")).toHaveCount(2);
+  await page.locator("#vm-junction-gap").fill("20");
+  await page.locator("#vm-junction-support").focus();
+  await expect(page.locator("#vm-junction-apply")).toBeDisabled();
+  await page.locator("#vm-junction-preview").click();
+  await expect(page.locator("#vm-junction-candidates input")).toHaveCount(2);
+  await page.locator("#vm-junction-all").click();
+  await page.locator("#vm-junction-apply").click();
+  await expect(page.locator("#vm-status")).toContainText("5 lanes");
+  const connected = await exportXml();
+  expect(connected.match(/k="cloudanalyzer_review_required" v="yes"/g)?.length).toBe(2);
+  await page.locator("#vm-junction-preview").click();
+  await expect(page.locator("#vm-junction-report")).toContainText("0 ground-supported candidates");
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+  // Pace Chromium's fifth export burst before another pair of downloads.
+  await page.waitForTimeout(1100);
+  expect(await exportXml()).toBe(before);
+});

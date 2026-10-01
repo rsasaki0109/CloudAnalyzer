@@ -70,6 +70,23 @@ interface Nearest {
   inside: boolean;
 }
 
+interface JunctionCandidate {
+  from: number;
+  to: number;
+  gap: number;
+  turn_degrees: number;
+  ground_support: number;
+  ambiguous: boolean;
+  center: XYZ[];
+  left: XYZ[];
+  right: XYZ[];
+}
+interface JunctionReport {
+  candidates: JunctionCandidate[];
+  added: number[];
+  warnings: string[];
+}
+
 /** Dashes of dashed lane lines (metres). */
 const DASH = 3;
 const GAP = 3;
@@ -89,6 +106,10 @@ let view: MapView = { lanes: [], boundaries: [], stopLines: [], crosswalks: [], 
 let undoDepth = 0;
 let selected: number | null = null;
 let busy = false;
+let junctionPreview: JunctionReport | null = null;
+const junctionSelection = new Set<number>();
+let junctionSnapshot: { id: number; text: string } | null = null;
+let junctionRevision = 0;
 /** Points clicked so far while drawing a road (original coordinates). */
 let sketch: XYZ[] = [];
 
@@ -108,6 +129,7 @@ const materials = {
   signal: viewer.lineMaterial({ color: 0xffea00, linewidth: 5, depthTest: false }),
   crosswalk: viewer.lineMaterial({ color: 0xffffff, linewidth: 1.5, depthTest: false }),
   sketch: viewer.lineMaterial({ color: 0xffeb3b, linewidth: 3, depthTest: false }),
+  proposal: viewer.lineMaterial({ color: 0x00e5ff, linewidth: 3, depthTest: false }),
 };
 const laneFill = new THREE.MeshBasicMaterial({
   color: 0x42a5f5,
@@ -280,6 +302,19 @@ function draw(): void {
     );
   }
   segments(signals, materials.signal, 3);
+  if (junctionPreview) {
+    const chosen: number[] = [];
+    const other: number[] = [];
+    junctionPreview.candidates.forEach((candidate, index) => {
+      if (junctionSelection.has(index)) {
+        polylinePairs(candidate.left, chosen);
+        polylinePairs(candidate.right, chosen);
+        dashedPairs(candidate.center, chosen);
+      } else polylinePairs(candidate.center, other);
+    });
+    segments(other, materials.virtual, 3);
+    segments(chosen, materials.proposal, 4);
+  }
   if (sketch.length > 0) {
     const pairs: number[] = [];
     polylinePairs(sketch, pairs);
@@ -331,6 +366,126 @@ interface BuildReport {
 const buildButton = $<HTMLButtonElement>("vm-build");
 const cloudInput = $<HTMLSelectElement>("vm-cloud");
 const trajectoryInput = $<HTMLSelectElement>("vm-trajectory");
+const junctionCloud = $<HTMLSelectElement>("vm-junction-cloud");
+const junctionGap = $<HTMLInputElement>("vm-junction-gap");
+const junctionSupport = $<HTMLInputElement>("vm-junction-support");
+const junctionPreviewButton = $<HTMLButtonElement>("vm-junction-preview");
+const junctionApplyButton = $<HTMLButtonElement>("vm-junction-apply");
+const junctionAll = $<HTMLButtonElement>("vm-junction-all");
+const junctionNone = $<HTMLButtonElement>("vm-junction-none");
+const junctionList = $("vm-junction-candidates");
+function junctionInputs(): void {
+  junctionCloud.disabled = junctionGap.disabled = junctionSupport.disabled = busy;
+  junctionPreviewButton.disabled = busy || !junctionCloud.value || !view.lanes.length;
+  junctionApplyButton.disabled = busy || !junctionPreview || !junctionSelection.size;
+  junctionAll.disabled = junctionNone.disabled = busy || !junctionPreview?.candidates.length;
+}
+function clearJunctionPreview(): void {
+  junctionRevision++;
+  junctionPreview = null;
+  junctionSnapshot = null;
+  junctionSelection.clear();
+  junctionList.replaceChildren();
+  $("vm-junction-report").textContent = "Preview connections against the selected point cloud.";
+  junctionInputs();
+}
+function renderJunctionSelection(): void {
+  if (!junctionPreview) return;
+  $("vm-junction-report").textContent = `${junctionPreview.candidates.length} ground-supported candidates; ${junctionSelection.size} selected. ` +
+    junctionPreview.warnings.join(" ");
+  junctionList.querySelectorAll<HTMLInputElement>("input").forEach((input) => {
+    input.checked = junctionSelection.has(Number(input.value));
+  });
+  junctionInputs();
+  draw();
+}
+for (const input of [junctionCloud, junctionGap, junctionSupport]) input.onchange = () => {
+  clearJunctionPreview();
+  draw();
+};
+junctionAll.onclick = () => {
+  if (busy) return;
+  junctionPreview?.candidates.forEach((_, index) => junctionSelection.add(index));
+  renderJunctionSelection();
+};
+junctionNone.onclick = () => {
+  if (busy) return;
+  junctionSelection.clear();
+  renderJunctionSelection();
+};
+junctionPreviewButton.onclick = async () => {
+  if (busy || !junctionCloud.value) return;
+  setTool(null);
+  clearJunctionPreview();
+  const snapshot = {
+    id: Number(junctionCloud.value),
+    text: JSON.stringify({ max_gap: Number(junctionGap.value), min_ground_support: Number(junctionSupport.value) / 100 }),
+  };
+  const revision = junctionRevision;
+  busy = true;
+  junctionInputs();
+  setStatus("Finding ground-supported junction drafts…");
+  try {
+    const proposal = await vectorMap<JunctionReport>("junction-preview", snapshot);
+    if (revision !== junctionRevision) return;
+    junctionPreview = proposal;
+    junctionSnapshot = snapshot;
+    junctionPreview.candidates.forEach((candidate, index) => {
+      junctionSelection.add(index);
+      const label = document.createElement("label");
+      label.style.display = "block";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = String(index);
+      checkbox.checked = true;
+      checkbox.onchange = () => {
+        if (busy) { checkbox.checked = junctionSelection.has(index); return; }
+        if (checkbox.checked) junctionSelection.add(index); else junctionSelection.delete(index);
+        renderJunctionSelection();
+      };
+      label.append(checkbox, ` ${candidate.from} → ${candidate.to}: ${fmt(candidate.gap)} m, ${Math.round(candidate.turn_degrees)}°, ground ${Math.round(candidate.ground_support * 100)}%${candidate.ambiguous ? "; shared branch" : ""}`);
+      const focus = document.createElement("button");
+      focus.textContent = "Show";
+      focus.onclick = () => {
+        const shift = globalShift();
+        const box = new THREE.Box3();
+        for (const p of [...candidate.left, ...candidate.right]) box.expandByPoint(new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] - shift[2]));
+        box.expandByScalar(5);
+        viewer.frameBox(box);
+      };
+      label.append(focus);
+      junctionList.append(label);
+    });
+    renderJunctionSelection();
+    setStatus("Cyan connections are draft candidates. Review permitted turns, lane width and clearance before adding them.");
+  } catch (err) {
+    clearJunctionPreview();
+    setStatus(`Could not preview junctions: ${errorText(err)}`);
+  } finally {
+    busy = false;
+    junctionInputs();
+  }
+};
+junctionApplyButton.onclick = async () => {
+  if (busy || !junctionPreview || !junctionSnapshot || !junctionSelection.size) return;
+  const pairs: [number, number][] = [...junctionSelection].map((index) => {
+    const candidate = junctionPreview!.candidates[index];
+    return [candidate.from, candidate.to];
+  });
+  busy = true;
+  junctionInputs();
+  try {
+    const edited = await vectorMap<Edited>("junction-connect", { ...junctionSnapshot, pairs });
+    const report = edited.result as JunctionReport;
+    takeView(edited);
+    setStatus(`${report.added.length} draft connections added. Review traffic rules and clearance before export. Undo removes this batch.`);
+  } catch (err) {
+    setStatus(`Could not add junctions: ${errorText(err)}`);
+  } finally {
+    busy = false;
+    junctionInputs();
+  }
+};
 function buildInputs(): void {
   const fill = (select: HTMLSelectElement, items: { id: number; name: string }[]) => {
     const value = select.value;
@@ -338,10 +493,12 @@ function buildInputs(): void {
     if (items.some((item) => String(item.id) === value)) select.value = value;
   };
   fill(cloudInput, clouds().map((entry) => entry.cloud));
+  fill(junctionCloud, clouds().map((entry) => entry.cloud));
   fill(trajectoryInput, inputTrajectories());
   buildButton.disabled = busy || !cloudInput.value || !trajectoryInput.value;
+  junctionInputs();
 }
-listChanged.add(buildInputs);
+listChanged.add(() => { clearJunctionPreview(); buildInputs(); draw(); });
 trajectoryChanged.add(buildInputs);
 buildInputs();
 buildButton.onclick = async () => {
@@ -387,6 +544,7 @@ buildButton.onclick = async () => {
 
 function takeView(edited: Edited): void {
   view = edited.view;
+  clearJunctionPreview();
   undoDepth = edited.undo;
   if (selected !== null && !view.lanes.some((l) => l.id === selected)) selected = null;
   draw();
@@ -401,6 +559,7 @@ function takeView(edited: Edited): void {
 async function apply(commands: object[], what: string): Promise<boolean> {
   if (busy) return false;
   busy = true;
+  junctionInputs();
   try {
     const edited = await vectorMap<Edited>("apply", { text: JSON.stringify(commands) });
     takeView(edited);
@@ -413,6 +572,7 @@ async function apply(commands: object[], what: string): Promise<boolean> {
     return false;
   } finally {
     busy = false;
+    junctionInputs();
   }
 }
 
@@ -759,6 +919,7 @@ const vertexTool: Tool = {
   },
   enter() {
     editingVertices = true;
+    clearJunctionPreview();
     $("vm-vertices").setAttribute("aria-pressed", "true");
     hint.textContent = "Drag a yellow boundary vertex. Height is kept; shared lanes update together. Escape leaves editing.";
     draw();
@@ -844,6 +1005,7 @@ undoButton.onclick = async () => {
   setStatus("Undone.");
 };
 $("vm-clear").onclick = async () => {
+  if (busy) return;
   setTool(null);
   if (view.lanes.length === 0 && view.boundaries.length === 0) return;
   selected = null;

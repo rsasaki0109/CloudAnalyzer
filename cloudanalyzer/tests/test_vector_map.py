@@ -5,8 +5,99 @@ import json
 import pytest
 from typer.testing import CliRunner
 
-from ca.vector_map import build_vector_map
+from ca.vector_map import build_vector_map, connect_vector_map_junctions
 from cloudanalyzer_cli.main import app
+
+
+@pytest.fixture
+def junction_survey(tmp_path):
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "connect_vector_map_junctions"):
+        pytest.skip("installed core predates junction support")
+    cloud = tmp_path / "junction.xyz"
+    cloud.write_text("".join(
+        f"{50000 + x / 5} {50000 + y / 5} 2\n"
+        for x in range(-110, 11) for y in range(-110, 111)
+    ))
+    paths = [([(-20, 1.75), (-10, 1.75)], [(-20, -1.75), (-10, -1.75)]),
+             ([(-1.75, 10), (-1.75, 20)], [(1.75, 10), (1.75, 20)]),
+             ([(1.75, -10), (1.75, -20)], [(-1.75, -10), (-1.75, -20)])]
+    boundaries = [
+        {"id": i * 2 + side + 1, "kind": {"type": "virtual"},
+         "geometry": [[50000 + x, 50000 + y, 2] for x, y in path]}
+        for i, sides in enumerate(paths) for side, path in enumerate(sides)
+    ]
+    data = {"format": "vectormap-ir", "version": 1,
+            "metadata": {"georeference": {"projection": "mgrs", "origin": {"lat": 35.681236, "lon": 139.767125}}},
+            "lanes": [{"id": i + 7, "kind": "driving", "left": 2 * i + 1, "right": 2 * i + 2,
+                       "speed_limit": {"kmh": 20}, "attributes": {"survey": "retained"}} for i in range(3)],
+            "boundaries": boundaries}
+    path = tmp_path / "legs.json"
+    path.write_text(json.dumps(data))
+    return cloud, path
+
+
+def test_junction_preview_selection_atomic_publication_and_replay(junction_survey, tmp_path):
+    cloud, source = junction_survey
+    before = source.read_bytes()
+    preview = tmp_path / "preview"
+    report = connect_vector_map_junctions(str(cloud), str(source), str(preview), preview_only=True)
+    assert report["status"] == "preview"
+    candidates = report["junctions"]["candidates"]
+    assert {(c["from"], c["to"]) for c in candidates} == {(7, 8), (7, 9)}
+    assert all(c["ambiguous"] for c in candidates)
+    assert report["junctions"]["added"] == []
+    original = json.loads((preview / "vector_map.json").read_text())
+    selected = tmp_path / "selected"
+    report = connect_vector_map_junctions(str(cloud), str(source), str(selected), lane_pairs=[(7, 9)])
+    assert json.loads((selected / "report.json").read_text()) == report
+    assert len(report["junctions"]["added"]) == 1
+    changed = json.loads((selected / "vector_map.json").read_text())
+    for field in ("boundaries", "lanes"):
+        retained = {item["id"]: item for item in changed[field]}
+        assert all(retained[item["id"]] == item for item in original[field])
+    assert changed["metadata"] == original["metadata"]
+    assert source.read_bytes() == before
+    assert "projector_type: MGRS" in (selected / "map_projector_info.yaml").read_text()
+    assert 'k="cloudanalyzer_review_required" v="yes"' in (selected / "lanelet2_map.osm").read_text()
+    replay = tmp_path / "replay"
+    report = connect_vector_map_junctions(str(cloud), str(selected / "vector_map.json"), str(replay))
+    assert report["junctions"]["added"] == []
+    assert json.loads((replay / "vector_map.json").read_text()) == changed
+    invalid = tmp_path / "invalid-junction"
+    with pytest.raises(ValueError, match="not supported"):
+        connect_vector_map_junctions(str(cloud), str(source), str(invalid), lane_pairs=[(7, 9), (9, 7)])
+    assert not invalid.exists()
+    with pytest.raises(FileExistsError):
+        connect_vector_map_junctions(str(cloud), str(source), str(selected))
+    empty = tmp_path / "empty-selection"
+    connect_vector_map_junctions(str(cloud), str(source), str(empty), lane_pairs=[])
+    assert json.loads((empty / "vector_map.json").read_text()) == original
+
+
+def test_junction_cli_selects_branches_and_rejects_malformed_pairs(junction_survey, tmp_path):
+    cloud, source = junction_survey
+    runner = CliRunner()
+    preview = tmp_path / "cli-preview"
+    result = runner.invoke(app, ["vectormap-connect", str(cloud), str(source), "--out", str(preview), "--preview"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report["status"] == "preview"
+    assert len(report["junctions"]["candidates"]) == 2 and report["junctions"]["added"] == []
+    automatic = tmp_path / "cli-automatic"
+    result = runner.invoke(app, ["vectormap-connect", str(cloud), str(source), "--out", str(automatic)])
+    assert result.exit_code == 0, result.output
+    assert len(json.loads(result.stdout)["junctions"]["added"]) == 2
+    out = tmp_path / "cli-connections"
+    result = runner.invoke(app, ["vectormap-connect", str(cloud), str(source), "--out", str(out), "--pair", "7:8", "--pair", "7:9"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report == json.loads((out / "report.json").read_text())
+    assert len(report["junctions"]["added"]) == 2
+    invalid = tmp_path / "bad-pair"
+    result = runner.invoke(app, ["vectormap-connect", str(cloud), str(source), "--out", str(invalid), "--pair", "7:8:9"])
+    assert result.exit_code != 0
+    assert not invalid.exists()
 
 
 @pytest.fixture

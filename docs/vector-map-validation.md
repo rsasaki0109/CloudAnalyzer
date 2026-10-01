@@ -5,8 +5,8 @@ It assumes the trajectory follows the outside forward lane, uses configured lane
 widths, and estimates road elevation from the cloud. It detects intensity peaks, curb steps
 and ground coverage edges within a limited distance of each nominal boundary. Missing
 features use the explicit width prior. Detected features are candidates, not proof of a correct
-lane boundary. Repeated passes must already be aligned and require review; junctions
-require manual review and connection.
+lane boundary. Repeated passes must already be aligned and require review. Ground-supported
+junction connections can be drafted automatically; geometry and traffic rules require review.
 
 ## Recorded Autoware drive and reference map
 
@@ -220,3 +220,53 @@ python scripts/vector_map_integrate_evaluate.py sample-map-rosbag/pointcloud_map
 The input CSV must have `timestamp,x,y,z` columns. Results must be a new directory.
 The script writes maps and reports for first/replay/overlap, checks complete replay equality
 and retention of old lane/boundary documents, and records the limitations in `summary.json`.
+
+## Branching junction connection drafts
+
+A controlled ablation uses the official Autoware **sample-map-planning** cloud and map
+(1,757,841 points, MGRS 54SVE). Removing 114 lanes with turn labels leaves 72 input lanes,
+including 69 surveyed driving legs. Their existing geometry, directly connected ends,
+rules and coordinate metadata are retained. Reference topology supplies 88 expected
+leg-to-leg pairs through the removed connector chains; it is used only after generation
+for scoring, never passed to the proposal or connection algorithm.
+
+With default 30 m gap and 90% ground-support thresholds:
+
+| Pair measure | Result |
+|---|---:|
+| Generated connection pairs | 83 |
+| Pairs matching reference topology | 76 |
+| Incorrect pairs | 7 |
+| Missed reference pairs | 12 |
+| Pair precision | 91.57% |
+| Pair recall | 86.36% |
+
+All existing lane/boundary/rule documents and metadata remained unchanged. Preview was
+read-only; replay added no geometry. New lanes' predecessor/successor pairs and review
+tags survived MGRS OSM export/import. Branches are retained, including multiple supported
+choices at one incoming or outgoing road end. Every generated connection is marked for
+review; no new traffic-rule permissions are inferred.
+
+This measures reconstruction of topology from **surveyed input legs**, not end-to-end
+lane extraction or boundary accuracy. This sample informed development, so it is not a
+held-out accuracy estimate. Centre ground support does not check full lane width or
+obstacle clearance and cannot decide legal manoeuvres. The seven incorrect pairs make
+manual inspection necessary. The removed lanes' rules can become orphaned; import,
+input/output validation and Autoware/export issues are recorded separately to distinguish
+existing map issues from changes introduced by the experiment.
+Input and output had zero validation errors. Isolated-lane warnings decreased from
+42 to 3, and disconnected-topology warnings from 35 to 2; the other validation,
+Autoware and export issue counts were unchanged. Those improvements measure connectivity,
+not driving permission or lane-boundary accuracy.
+
+Reproduce with external official sample-map-planning inputs and a new output directory:
+
+```sh
+cargo run --manifest-path rust/Cargo.toml -p ca-wasm --example vector_map_junction_evaluate -- sample-map-planning/pointcloud_map.pcd sample-map-planning/lanelet2_map.osm results/junction-ablation
+```
+
+An optional fourth argument supplies a JSON options file. The example writes ablated
+`input.json`, generated IR/OSM/projector artifacts and a report containing expected,
+generated, incorrect and missed pairs, preservation/replay checks and validation issues.
+Use the [preview and selection workflow](commands/vectormap-connect.md) to review drafts
+on your own map; neither reference maps nor ground support establish driving permission.

@@ -788,6 +788,23 @@
           <p id="vm-build-report" class="small"></p>
         </details>
         <ol id="vm-issues" class="issue-list small"></ol>
+        <details class="options">
+          <summary>Draft junction connections</summary>
+          <label>Point cloud <select id="vm-junction-cloud"></select></label>
+          <label>Maximum gap (m) <input id="vm-junction-gap" type="number" min="1" max="100" step="1" value="30" /></label>
+          <label>Minimum ground support (%) <input id="vm-junction-support" type="number" min="50" max="100" step="5" value="90" /></label>
+          <p class="hint small">Preview connections between open road ends in the cloud's coordinate frame.
+            Ground under a centreline does not establish permitted turns or obstacle clearance.
+            Review branches and traffic rules before adding a draft.</p>
+          <button id="vm-junction-preview" disabled>Preview connections</button>
+          <p id="vm-junction-report" class="small"></p>
+          <div class="button-row">
+            <button id="vm-junction-all" disabled>Select all</button>
+            <button id="vm-junction-none" disabled>Select none</button>
+          </div>
+          <div id="vm-junction-candidates" class="small" style="max-height: 240px; overflow-y: auto"></div>
+          <button id="vm-junction-apply" disabled>Add selected draft connections</button>
+        </details>
         <details id="vm-import-notes" hidden>
           <summary>Import notes</summary>
           <ol id="vm-import-issues" class="issue-list small"></ol>

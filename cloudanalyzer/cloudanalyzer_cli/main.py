@@ -1887,6 +1887,38 @@ def vectormap_build_cmd(
     typer.echo(json.dumps(report, indent=2))
 
 
+@app.command("vectormap-connect")
+def vectormap_connect_cmd(
+    cloud: str = typer.Argument(..., help="Point cloud in the map's metre frame"),
+    vector_map: str = typer.Argument(..., help="Editable IR JSON or Lanelet2 map with open road ends"),
+    out: str = typer.Option(..., "--out", help="New output directory"),
+    max_gap: float = typer.Option(30.0, "--max-gap", help="Maximum XY gap in metres, 1..100"),
+    min_ground_support: float = typer.Option(0.9, "--min-ground-support", help="Supported centre sample fraction, 0.5..1"),
+    preview: bool = typer.Option(False, "--preview", help="Write candidates and the unchanged input map for review"),
+    lane_pairs: Optional[List[str]] = typer.Option(None, "--pair", help="Select FROM:TO; repeat for branches. Omit to add all proposals"),
+) -> None:
+    """Draft junction connections; ground support does not establish permitted turns."""
+    from ca.vector_map import connect_vector_map_junctions
+
+    try:
+        pairs: Optional[List[tuple[int, int]]] = None
+        if lane_pairs is not None:
+            pairs = []
+            for value in lane_pairs:
+                parts = value.split(":")
+                if len(parts) != 2:
+                    raise ValueError("--pair requires FROM:TO lane IDs")
+                pairs.append((int(parts[0]), int(parts[1])))
+        report = connect_vector_map_junctions(
+            cloud, vector_map, out, max_gap=max_gap, min_ground_support=min_ground_support,
+            lane_pairs=pairs, preview_only=preview,
+        )
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+        return
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command("web-view")
 def web_view_cmd(
     paths: List[str] = typer.Argument(..., help="Files, or folders of results (their .ply, .pcd, .las/.laz, .tum ...)"),

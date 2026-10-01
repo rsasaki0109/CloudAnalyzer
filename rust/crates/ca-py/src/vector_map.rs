@@ -1,6 +1,6 @@
 //! File-based draft generation; returns artifacts without writing destinations.
 use pyo3::{exceptions::PyValueError, prelude::*};
-use serde_json::json;
+use serde_json::{Value, json};
 use vectormap_core::{GeoReference, Map};
 use vectormap_io::{autoware, lanelet2};
 
@@ -94,7 +94,71 @@ fn generate(
     let poses = ca_core::trajectory::parse(&text, format).map_err(|e| e.to_string())?;
     let extraction = ca_core::vector_map::build(&mut map, &cloud, &poses.positions, &parameters)
         .map_err(|e| e.to_string())?;
-    let (osm, export_issues) = lanelet2::write_string(&map, &lanelet2::SaveOptions::autoware());
+    artifacts(
+        &map,
+        json!(import_issues),
+        json!({"status":"draft","extraction":extraction}),
+    )
+}
+
+/// Preview or add junction connection drafts without changing existing geometry.
+#[pyfunction]
+#[pyo3(signature = (cloud, vector_map, options="{}", lane_pairs=None, preview_only=false))]
+pub fn connect_vector_map_junctions(
+    py: Python<'_>,
+    cloud: &str,
+    vector_map: &str,
+    options: &str,
+    lane_pairs: Option<&str>,
+    preview_only: bool,
+) -> PyResult<String> {
+    py.detach(|| {
+        let parameters = serde_json::from_str(options).map_err(|e| e.to_string())?;
+        let selected: Option<Vec<[u64; 2]>> = lane_pairs
+            .map(serde_json::from_str)
+            .transpose()
+            .map_err(|e| e.to_string())?;
+        let text = std::fs::read_to_string(vector_map).map_err(|e| format!("{vector_map}: {e}"))?;
+        let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
+            vectormap_io::json::from_str(&text)
+        } else {
+            lanelet2::read_str(&text, &Default::default())
+        }
+        .map_err(|e| e.to_string())?;
+        if let Some(issue) = loaded
+            .issues
+            .iter()
+            .find(|i| i.severity == vectormap_core::Severity::Error)
+        {
+            return Err(format!("cannot retain vector_map: {}", issue.message));
+        }
+        let data = std::fs::read(cloud).map_err(|e| format!("{cloud}: {e}"))?;
+        let cloud = ca_core::read(cloud, &data).map_err(|e| e.to_string())?;
+        let mut map = loaded.map;
+        let junctions = if preview_only {
+            ca_core::vector_map::junctions::propose(&map, &cloud, &parameters)
+        } else {
+            ca_core::vector_map::junctions::connect(
+                &mut map,
+                &cloud,
+                &parameters,
+                selected.as_deref(),
+            )
+        }
+        .map_err(|e| e.to_string())?;
+        artifacts(
+            &map,
+            json!(loaded.issues),
+            json!({
+                "status": if preview_only {"preview"} else {"draft"}, "junctions":junctions,
+            }),
+        )
+    })
+    .map_err(PyValueError::new_err)
+}
+
+fn artifacts(map: &Map, import_issues: Value, mut report: Value) -> Result<String, String> {
+    let (osm, export_issues) = lanelet2::write_string(map, &lanelet2::SaveOptions::autoware());
     if let Some(issue) = export_issues
         .iter()
         .find(|issue| issue.severity == vectormap_core::Severity::Error)
@@ -104,14 +168,17 @@ fn generate(
             issue.message
         ));
     }
-    let mut issues = autoware::check(&map);
+    let mut issues = autoware::check(map);
     issues.extend(export_issues);
-    let validation = vectormap_validation::validate(&map, &Default::default());
+    let validation = vectormap_validation::validate(map, &Default::default());
+    report["autoware_issues"] = json!(issues);
+    report["import_issues"] = import_issues;
+    report["validation"] = json!(validation);
+    report["georeference"] = json!(map.metadata().georeference);
     Ok(json!({
         "osm":osm, "projector_info":autoware::projector_info_yaml(map.metadata().georeference),
-        "map_json":vectormap_io::json::to_string(&map),
-        "report":{"status":"draft","extraction":extraction,"autoware_issues":issues,"import_issues":import_issues,
-            "validation":validation,"georeference":map.metadata().georeference}
+        "map_json":vectormap_io::json::to_string(map),
+        "report":report
     })
     .to_string())
 }

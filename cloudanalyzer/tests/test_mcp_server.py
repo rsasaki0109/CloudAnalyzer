@@ -57,6 +57,12 @@ def test_the_server_answers_over_stdio(tmp_path):
                 for field in ("track_boundaries", "fit_boundaries"):
                     assert properties[field]["type"] == "boolean"
                     assert properties[field]["default"] is True
+                junction = next(t for t in tools if t.name == "connect_vector_map_junctions")
+                properties = junction.model_dump(by_alias=True)["inputSchema"]["properties"]
+                assert properties["preview_only"]["type"] == "boolean"
+                assert properties["preview_only"]["default"] is False
+                assert properties["max_gap"]["default"] == 30.0
+                assert "lane_pairs" in properties
                 result = await session.call_tool("session_layout", {"folder": str(folder)})
                 return names, result
 

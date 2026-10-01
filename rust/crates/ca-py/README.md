@@ -46,3 +46,11 @@ returns a JSON string containing a draft Lanelet2 map, projector metadata, edita
 and evidence/validation report. Inputs must already share a metre frame. For publication
 of all artifacts together, use [`ca vectormap-build`](../../../docs/commands/vectormap-build.md)
 or the `build_vector_map` tool from `ca mcp`.
+
+`connect_vector_map_junctions(cloud, vector_map, options="{}", lane_pairs=None, preview_only=False)`
+returns the same artifacts with ground-supported junction candidates and added lane IDs.
+Options and optional `[from,to]` pairs are JSON strings. Preview is read-only; omitted
+pairs add all supported branches. Existing IR geometry/rules/coordinates remain fixed;
+new connections require review of permitted turns and clearance. Use
+[`ca vectormap-connect`](../../../docs/commands/vectormap-connect.md) or its MCP tool for
+atomic publication into a new directory.

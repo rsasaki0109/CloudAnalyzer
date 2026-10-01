@@ -663,6 +663,10 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(profile, m)?)?;
     m.add_function(wrap_pyfunction!(normals, m)?)?;
     m.add_function(wrap_pyfunction!(vector_map::build_vector_map, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        vector_map::connect_vector_map_junctions,
+        m
+    )?)?;
     m.add_class::<CopcReader>()?;
     m.add_class::<pose_graph::PoseGraph>()?;
     m.add_class::<odometry::LidarOdometry>()?;

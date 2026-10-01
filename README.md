@@ -190,6 +190,9 @@ bag takes 78 s. [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools 
 draft Autoware Lanelet2 roads from a surveyed cloud and a trajectory, with evidence and
 validation reports. Review the draft with `ca web-view map.pcd draft-map` and edit it with
 `vectormap mcp draft-map/lanelet2_map.osm`.
+[`ca vectormap-connect`](docs/commands/vectormap-connect.md) and its MCP tool preview or
+add ground-supported branching connections; the Web panel lets you select candidates
+and undo the batch. Review turns, clearance and traffic rules before use.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

@@ -1858,6 +1858,7 @@ def vectormap_build_cmd(
     lane_width: float = typer.Option(3.5, "--lane-width", help="Width prior in metres"),
     speed_limit: float = typer.Option(40.0, "--speed-limit", help="Speed in km/h"),
     segment_length: float = typer.Option(50.0, "--segment-length", help="Lane piece length in metres; 0 keeps whole roads"),
+    no_anchor_width_prior: bool = typer.Option(False, "--no-anchor-width-prior", help="Keep inferred lines relative to the trajectory instead of detected outer edges"),
     reference_map: Optional[str] = typer.Option(None, "--reference-map", help="Lanelet2 map supplying coordinate metadata only"),
     projection: Optional[str] = typer.Option(None, "--projection", help="mgrs, utm or transverse_mercator; omit for Local"),
     origin_lat: Optional[float] = typer.Option(None, "--origin-lat", help="Latitude of origin or MGRS tile representative"),
@@ -1871,6 +1872,7 @@ def vectormap_build_cmd(
             cloud, trajectory, out, forward_lanes=forward_lanes, backward_lanes=backward_lanes,
             left_hand_traffic=not right_hand, lane_width=lane_width, speed_limit=speed_limit,
             segment_length=segment_length, reference_map=reference_map, projection=projection,
+            anchor_width_prior=not no_anchor_width_prior,
             origin_lat=origin_lat, origin_lon=origin_lon,
         )
     except (OSError, ValueError, RuntimeError) as error:

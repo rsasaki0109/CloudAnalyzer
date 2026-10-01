@@ -48,6 +48,8 @@ measure_vector_map_signal fits housing geometry from a user-identified head's 3D
 Supply original-coordinate bounds and explicitly confirmed controlled lane IDs. Preview
 first, then add with preview_only=false in another new out_dir. This measures shape;
 it does not classify an unlabelled object or infer lamps, stop lines or controlled lanes.
+Local LAS/LAZ/CSV stream a filtered box; local/HTTP(S) COPC reads all overlapping levels.
+At most 200000 selected XYZ points are retained. Other signal formats still read whole files.
 After generation, edit with the separate vectormap MCP server: register it with
 `claude mcp add vectormap -- vectormap mcp <out_dir>/lanelet2_map.osm`.
 Use view_link([cloud, out_dir]) to show the point cloud and Lanelet2 map together.

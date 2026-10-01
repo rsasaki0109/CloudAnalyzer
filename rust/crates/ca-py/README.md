@@ -79,3 +79,10 @@ and optional `kind`. It returns measured geometry and support plus the usual map
 artifacts. Classification, controlled lanes, lamps and stop lines are not inferred.
 Use [`ca vectormap-signal`](../../../docs/commands/vectormap-signal.md) or its MCP
 tool to preview and publish the artifacts together.
+The low-level file method reads the complete source. For bounded spatial input,
+`measure_vector_map_signal_points(points, vector_map, options, preview_only=True)`
+accepts at most 200,000 finite `(N,3)` float64 points (including strided arrays).
+Use the high-level CLI/Python/MCP method to stream local LAS/LAZ/CSV or read an
+inclusive full-density local/HTTP COPC box before fitting. Other high-level source
+formats retain the whole-file compatibility reader. All coordinates must already
+share the map's metre frame; neither path transforms CRS metadata.

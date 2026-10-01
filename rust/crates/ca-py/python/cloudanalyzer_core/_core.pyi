@@ -34,6 +34,13 @@ class IcpResult(TypedDict):
     converged: bool
 
 def read(path: str, keep_every: int = 1) -> PointData: ...
+def measure_vector_map_signal(
+    cloud: str, vector_map: str, options: str, preview_only: bool = True,
+) -> str: ...
+def measure_vector_map_signal_points(
+    points: npt.NDArray[np.float64], vector_map: str, options: str,
+    preview_only: bool = True,
+) -> str: ...
 def read_mesh(path: str) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.uint32]] | None: ...
 def nearest_distances(
     source: npt.NDArray[np.float64], target: npt.NDArray[np.float64]

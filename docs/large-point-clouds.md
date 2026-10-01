@@ -76,7 +76,10 @@ only through `Number.MAX_SAFE_INTEGER`; ten billion is within that range.
 Current Web COPC loading and Python `read_copc` choose whole octree levels for
 display. The root is always loaded even when it exceeds the requested point
 budget. They accumulate the chosen output in memory; LOD is not full-density
-analysis. Existing native vector-map operations load the input cloud in memory.
+analysis. Native road/junction map operations load the input cloud in memory.
+The high-level signal-box command streams LAS/LAZ/CSV and spatial COPC inputs;
+other signal formats retain the whole-file compatibility reader. See
+[signal measurement](commands/vectormap-signal.md).
 These APIs should not be described as bounded processing of an entire
 ten-billion-point cloud.
 

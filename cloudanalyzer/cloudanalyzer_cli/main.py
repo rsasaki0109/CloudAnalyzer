@@ -1921,7 +1921,7 @@ def vectormap_connect_cmd(
 
 @app.command("vectormap-signal")
 def vectormap_signal_cmd(
-    cloud: str = typer.Argument(..., help="Point cloud in the map's metre frame"),
+    cloud: str = typer.Argument(..., help="Local point cloud or HTTP(S) COPC .laz URL in the map's metre frame"),
     vector_map: str = typer.Argument(..., help="Editable IR JSON or Lanelet2 map"),
     out: str = typer.Option(..., "--out", help="New output directory"),
     box: str = typer.Option(..., "--box", help="xmin,ymin,zmin,xmax,ymax,zmax enclosing the identified head"),

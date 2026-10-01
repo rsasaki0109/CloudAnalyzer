@@ -1,4 +1,5 @@
 //! File-based draft generation; returns artifacts without writing destinations.
+use numpy::{PyReadonlyArray2, PyUntypedArrayMethods};
 use pyo3::{exceptions::PyValueError, prelude::*};
 use serde_json::{Value, json};
 use vectormap_core::{GeoReference, Map};
@@ -157,7 +158,7 @@ pub fn connect_vector_map_junctions(
     .map_err(PyValueError::new_err)
 }
 
-/// Measure a user-identified signal box; controlled lanes are supplied explicitly.
+/// Compatibility file reader: loads the complete input cloud before measurement.
 #[pyfunction]
 #[pyo3(signature = (cloud, vector_map, options, preview_only=true))]
 pub fn measure_vector_map_signal(
@@ -168,37 +169,70 @@ pub fn measure_vector_map_signal(
     preview_only: bool,
 ) -> PyResult<String> {
     py.detach(|| {
-        let parameters = serde_json::from_str(options).map_err(|e| e.to_string())?;
-        let text = std::fs::read_to_string(vector_map).map_err(|e| format!("{vector_map}: {e}"))?;
-        let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
-            vectormap_io::json::from_str(&text)
-        } else {
-            lanelet2::read_str(&text, &Default::default())
-        }
-        .map_err(|e| e.to_string())?;
-        if let Some(issue) = loaded
-            .issues
-            .iter()
-            .find(|i| i.severity == vectormap_core::Severity::Error)
-        {
-            return Err(format!("cannot retain vector_map: {}", issue.message));
-        }
         let data = std::fs::read(cloud).map_err(|e| format!("{cloud}: {e}"))?;
         let cloud = ca_core::read(cloud, &data).map_err(|e| e.to_string())?;
-        let mut map = loaded.map;
-        let measurement = if preview_only {
-            ca_core::vector_map::signals::measure(&map, &cloud, &parameters)
-        } else {
-            ca_core::vector_map::signals::add(&mut map, &cloud, &parameters)
-        }
-        .map_err(|e| e.to_string())?;
-        artifacts(
-            &map,
-            json!(loaded.issues),
-            json!({"status":if preview_only {"preview"} else {"draft"},"signal":measurement}),
-        )
+        signal_artifacts(&cloud, vector_map, options, preview_only)
     })
     .map_err(PyValueError::new_err)
+}
+
+/// Fit at most 200,000 selected finite XYZ points, retaining f64 source coordinates.
+#[pyfunction]
+#[pyo3(signature = (points, vector_map, options, preview_only=true))]
+pub fn measure_vector_map_signal_points(
+    py: Python<'_>,
+    points: PyReadonlyArray2<f64>,
+    vector_map: &str,
+    options: &str,
+    preview_only: bool,
+) -> PyResult<String> {
+    let shape = points.shape();
+    if shape[1] != 3 || shape[0] > 200_000 {
+        return Err(PyValueError::new_err(
+            "signal points must have shape (N, 3), at most 200000 points",
+        ));
+    }
+    if !points.as_array().iter().all(|v| v.is_finite()) {
+        return Err(PyValueError::new_err("signal points must be finite"));
+    }
+    let cloud = crate::cloud_of(crate::points(&points)?);
+    py.detach(|| signal_artifacts(&cloud, vector_map, options, preview_only))
+        .map_err(PyValueError::new_err)
+}
+
+fn signal_artifacts(
+    cloud: &ca_core::PointCloud,
+    vector_map: &str,
+    options: &str,
+    preview_only: bool,
+) -> Result<String, String> {
+    let parameters = serde_json::from_str(options).map_err(|e| e.to_string())?;
+    let text = std::fs::read_to_string(vector_map).map_err(|e| format!("{vector_map}: {e}"))?;
+    let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
+        vectormap_io::json::from_str(&text)
+    } else {
+        lanelet2::read_str(&text, &Default::default())
+    }
+    .map_err(|e| e.to_string())?;
+    if let Some(issue) = loaded
+        .issues
+        .iter()
+        .find(|i| i.severity == vectormap_core::Severity::Error)
+    {
+        return Err(format!("cannot retain vector_map: {}", issue.message));
+    }
+    let mut map = loaded.map;
+    let measurement = if preview_only {
+        ca_core::vector_map::signals::measure(&map, cloud, &parameters)
+    } else {
+        ca_core::vector_map::signals::add(&mut map, cloud, &parameters)
+    }
+    .map_err(|e| e.to_string())?;
+    artifacts(
+        &map,
+        json!(loaded.issues),
+        json!({"status":if preview_only {"preview"} else {"draft"},"signal":measurement}),
+    )
 }
 
 fn artifacts(map: &Map, import_issues: Value, mut report: Value) -> Result<String, String> {

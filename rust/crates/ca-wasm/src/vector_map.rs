@@ -133,6 +133,8 @@ impl VectorMapSession {
                     "kind": lane.kind,
                     "left": points(&left),
                     "right": points(&right),
+                    "leftRef": {"id": lane.left.boundary, "reversed": lane.left.reversed},
+                    "rightRef": {"id": lane.right.boundary, "reversed": lane.right.reversed},
                     "center": points(&center),
                     "successors": map.successors(lane.id),
                     "predecessors": map.predecessors(lane.id),

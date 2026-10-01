@@ -444,6 +444,14 @@
       for each boundary and warns about missing data. Scan gaps can look like road edges.
       Review the draft, especially repeated passes, lane changes and junctions; use <b>Connect</b>
       to add junction links. A whole build can be undone in one step.
+
+      Use <b>Frame map</b> to focus the view on the road boundaries, then <b>Edit vertices</b>
+      to drag the yellow boundary points. Each move keeps
+      the vertex's height and updates every lane sharing that boundary, including lanes travelling
+      in the opposite direction. A completed drag is one <b>Undo</b> step; <b>Escape</b> cancels
+      an unfinished drag. Drag empty space to orbit as usual. Moving a section endpoint can
+      leave a gap to the next section: review the validation messages and move its matching
+      endpoint too. Inferred geometry still needs review after editing.
     </p>
     <p>
       Open a point cloud, choose <b>Top</b>, and expand <b>Vector map (Lanelet2)</b>. Use <b>Draw road</b>

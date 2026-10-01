@@ -29,6 +29,8 @@ interface LaneView {
   kind: string;
   left: XYZ[];
   right: XYZ[];
+  leftRef: { id: number; reversed: boolean };
+  rightRef: { id: number; reversed: boolean };
   center: XYZ[];
   successors: number[];
   predecessors: number[];
@@ -123,6 +125,13 @@ const selectedFill = new THREE.MeshBasicMaterial({
   depthTest: false,
   depthWrite: false,
 });
+const vertexMaterial = new THREE.PointsMaterial({ color: 0xffeb3b, size: 7, sizeAttenuation: false, depthTest: false });
+let editingVertices = false;
+let activeBoundary: number | null = null;
+let drag: {
+  before: MapView; boundary: number; index: number; point: XYZ;
+  offset: [number, number]; start: [number, number]; moved: boolean;
+} | null = null;
 
 // ---------------------------------------------------------------------------
 // Drawing
@@ -131,7 +140,7 @@ const selectedFill = new THREE.MeshBasicMaterial({
 function clearGroup(): void {
   for (const child of [...group.children]) {
     group.remove(child);
-    if (child instanceof LineSegments2 || child instanceof THREE.Mesh) child.geometry.dispose();
+    if (child instanceof LineSegments2 || child instanceof THREE.Mesh || child instanceof THREE.Points) child.geometry.dispose();
   }
 }
 
@@ -277,6 +286,20 @@ function draw(): void {
     if (sketch.length === 1) pairs.push(...local(sketch[0]), ...local([sketch[0][0] + 0.3, sketch[0][1], sketch[0][2]]));
     segments(pairs, materials.sketch, 4);
   }
+  if (editingVertices) {
+    const points = view.boundaries.flatMap((b) => b.points.flatMap(local));
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+    const dots = new THREE.Points(geometry, vertexMaterial);
+    dots.renderOrder = 5;
+    group.add(dots);
+    const boundary = view.boundaries.find((b) => b.id === activeBoundary);
+    if (boundary) {
+      const pairs: number[] = [];
+      polylinePairs(boundary.points, pairs);
+      segments(pairs, materials.sketch, 4);
+    }
+  }
   viewer.requestRender();
 }
 
@@ -359,6 +382,7 @@ function takeView(edited: Edited): void {
   draw();
   undoButton.disabled = undoDepth === 0;
   exportButton.disabled = view.lanes.length === 0;
+  $<HTMLButtonElement>("vm-fit").disabled = view.boundaries.length === 0;
   renderLane();
   void renderIssues();
 }
@@ -648,6 +672,98 @@ laneTool("vm-crosswalk", "Click a lane where the crosswalk crosses the road; sto
 );
 laneTool("vm-select", "Click a lane to see it, set its speed limit or remove it.", async () => {});
 
+/** Boundary IDs, rather than lane-side copies, keep shared/reversed sides together. */
+function previewBoundary(): void {
+  const byId = new Map(view.boundaries.map((b) => [b.id, b.points]));
+  for (const lane of view.lanes) {
+    const oriented = (ref: LaneView["leftRef"]): XYZ[] => {
+      const points = byId.get(ref.id)!;
+      return ref.reversed ? [...points].reverse() : points;
+    };
+    lane.left = oriented(lane.leftRef);
+    lane.right = oriented(lane.rightRef);
+    const n = Math.max(lane.left.length, lane.right.length, 2);
+    const left = resample(lane.left, n);
+    const right = resample(lane.right, n);
+    lane.center = left.map((p, i) => p.map((v, j) => (v + right[i][j]) / 2) as XYZ);
+  }
+  draw();
+}
+
+const vertexTool: Tool = {
+  click() {},
+  pointerDown(x, y) {
+    if (busy) return false;
+    const rect = $("viewport").querySelector(":scope > canvas")!.getBoundingClientRect();
+    const shift = globalShift();
+    let hit: { boundary: number; index: number; point: XYZ } | null = null;
+    let best = 10;
+    for (const b of view.boundaries) {
+      for (const [index, p] of b.points.entries()) {
+        const screen = viewer.project(new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] - shift[2]));
+        if (!screen) continue;
+        const distance = Math.hypot(screen.x + rect.left - x, screen.y + rect.top - y);
+        if (distance < best) {
+          best = distance;
+          hit = { boundary: b.id, index, point: [...p] };
+        }
+      }
+    }
+    if (!hit) return false;
+    const ground = viewer.groundPoint(x, y, hit.point[2] - shift[2]);
+    if (!ground) return false;
+    drag = {
+      before: structuredClone(view), ...hit, start: [x, y], moved: false,
+      offset: [hit.point[0] - shift[0] - ground.x, hit.point[1] - shift[1] - ground.y],
+    };
+    activeBoundary = hit.boundary;
+    hint.textContent = `Boundary ${hit.boundary}, vertex ${hit.index + 1}: drag to move; Escape cancels.`;
+    draw();
+    return true;
+  },
+  pointerMove(x, y) {
+    if (!drag) return;
+    if (!drag.moved && Math.hypot(x - drag.start[0], y - drag.start[1]) < 2) return;
+    const shift = globalShift();
+    const p = viewer.groundPoint(x, y, drag.point[2] - shift[2]);
+    if (!p) return;
+    const next: XYZ = [p.x + shift[0] + drag.offset[0], p.y + shift[1] + drag.offset[1], drag.point[2]];
+    const b = view.boundaries.find((b) => b.id === drag!.boundary)!;
+    b.points[drag.index] = next;
+    drag.moved = Math.hypot(next[0] - drag.point[0], next[1] - drag.point[1]) > 1e-4;
+    previewBoundary();
+  },
+  async pointerUp(x, y) {
+    vertexTool.pointerMove!(x, y);
+    const finished = drag;
+    if (!finished) return;
+    const points = view.boundaries.find((b) => b.id === finished.boundary)!.points;
+    drag = null;
+    view = finished.before;
+    draw();
+    if (finished.moved) await apply([{ op: "set_boundary_geometry", boundary: finished.boundary, geometry: points }], `Boundary ${finished.boundary} vertex moved`);
+    hint.textContent = "Drag a yellow boundary vertex. Height is kept; shared lanes update together. Escape leaves editing.";
+  },
+  pointerCancel() {
+    if (drag) { view = drag.before; drag = null; draw(); }
+  },
+  enter() {
+    editingVertices = true;
+    $("vm-vertices").setAttribute("aria-pressed", "true");
+    hint.textContent = "Drag a yellow boundary vertex. Height is kept; shared lanes update together. Escape leaves editing.";
+    draw();
+  },
+  exit() {
+    vertexTool.pointerCancel!();
+    editingVertices = false;
+    activeBoundary = null;
+    $("vm-vertices").setAttribute("aria-pressed", "false");
+    renderHint();
+    draw();
+  },
+};
+$("vm-vertices").onclick = () => toggleTool(vertexTool);
+
 function renderHint(): void {
   if (activeTool() === roadTool) {
     hint.textContent = sketch.length
@@ -710,6 +826,7 @@ function frameMap(): void {
   }
   viewer.frameBox(box);
 }
+$("vm-fit").onclick = frameMap;
 
 undoButton.onclick = async () => {
   if (busy) return;

@@ -13,6 +13,7 @@ import "./app/mesh";
 import "./app/processing";
 import "./app/segment";
 import "./app/clip";
+import "./app/copc-box";
 import "./app/profile";
 import "./app/image";
 import "./app/report";

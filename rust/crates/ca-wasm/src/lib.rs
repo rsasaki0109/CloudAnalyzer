@@ -8,10 +8,12 @@ use ca_core::{
 use wasm_bindgen::prelude::*;
 
 mod bag;
+mod copc_box;
 mod odometry;
 mod pose_graph;
 mod vector_map;
 pub use bag::{BagFile, BagMessage};
+pub use copc_box::CopcBoxReader;
 pub use odometry::{LidarOdometry, OdometryMap, Registration};
 pub use pose_graph::{PoseGraphSession, register_scans};
 pub use vector_map::VectorMapSession;

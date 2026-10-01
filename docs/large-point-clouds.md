@@ -1,5 +1,55 @@
 # Large point clouds
 
+## Web full-density working box
+
+Open a COPC file, then use **COPC full-density box** to select its original
+source coordinates and a point limit (default 200,000; maximum 1,000,000).
+**Use clipping box** copies the current clipping bounds. **Read full-density
+box** reads all overlapping octree levels, filters exact inclusive XYZ bounds,
+and adds a working cloud. The original display cloud is hidden; Undo restores
+it. The new cloud can be used by the existing signal measurement and other
+map tools. The ordinary clipping crop only copies displayed points.
+
+Traversal accepts one page/node at a time, with limits of 8 MiB for the header,
+1 MiB per hierarchy page, 16 MiB per compressed node, 32 MiB per raw node,
+16,384 pending entries and 32 nested pages. Oversized selections fail without
+adding a partial cloud or thinning their points. Cancel aborts in-flight HTTP
+requests and discards pending results; synchronous node decoding cannot be
+interrupted. Moving/removing the source invalidates its original-coordinate
+reader. Changing form inputs during a request discards its result.
+
+Remote full-density selection requires a strong ETag exposed through CORS and
+`If-Match` allowed in requests, in addition to valid byte ranges. A changed ETag
+or source size fails before consuming the response body. Without an exposed
+strong ETag, use the local file. Display loading can still work without one.
+
+These are per-operation buffer/output limits, **not** a browser memory ceiling:
+display clouds, worker pools, indexing, draw buffers and Undo history also retain
+memory, and WASM memory may keep its high-water allocation. Remove unused clouds
+to release their data. The result has the normal viewer's XYZ64, intensity,
+classification and normalized 8-bit RGB attributes; it does not retain GPS time,
+all raw LAS fields or original CRS records. Use Python tile exports below for
+original LAS records and CRS metadata.
+
+The 42,000-point fixture's box `[8,8,-1]` to `[20,24,10]` selects 1,965 points.
+Browser regression tests compare its exported XYZ, intensity and classification
+against a separate full-source load, including duplicate records. Loading only
+the 2,000-point display root still yields the same full-density box. Overflow,
+empty selection, changed HTTP identity and cancellation must publish no cloud.
+
+On 2026-10-01 a local Web check used the public Autzen COPC file below
+(10,653,336 source points). The display loaded only its 61,201-point root.
+The box `[636800,851200,400]` to `[636900,851300,700]` read 9 nodes and
+selected 3,708 points, matching a separate sequential laspy scan's XYZ,
+intensity and classification multiset exactly. Selection transferred
+3,119,416 bytes, excluding the already cached header; this explains its
+65,536-byte difference from the Rust example's range IO below. One warm-cache
+browser selection/index/display request took 0.40 s. The main worker reported
+21 MB WASM memory before and after; this is not peak process/browser memory
+or a GPU comparison. Undo restored the original cloud, and the working cloud
+was available to the signal tool. This is a real ten-million-point source test,
+not physical ten-billion-point validation.
+
 LAS 1.4 point counts remain `u64` in the Rust readers, including WASM builds.
 The extended count is authoritative even when a legacy count is also present,
 as required by the [LAS 1.4 public header definition](https://github.com/ASPRSorg/LAS/blob/main-1.4/source/02.04_header.sub).
@@ -14,8 +64,8 @@ request. Servers that ignore ranges are rejected before their full body is
 buffered. Encoded, truncated and oversized responses are rejected. HTTP byte
 ranges are limited to 64 MiB per request; this is a response limit, **not** a
 total process memory limit. Browser CORS configuration must expose
-`Content-Range` (and `Content-Length` when available). The Python reader also
-pins the total size and a strong ETag, when provided, and sends `If-Match` on
+`Content-Range` (and `Content-Length` when available). Python and Web readers
+pin the total size and a strong ETag, when provided, and send `If-Match` on
 later requests. Local reads do not require an HTTP server.
 
 The Web regression with a 10,000,000,000-point header uses a 42,000-point fixture
@@ -72,8 +122,8 @@ cargo run --release -p ca-core --example copc_query -- \
 Raw records are a verification artifact, not a standalone LAS file. The example
 may leave a partial raw output on an error; it is not a resumable tile job.
 The published Web/Python display APIs still use their existing LOD behavior.
-Python full-density batches are available separately as described below. Web
-selections are the next stage. Python tile processing with halo and durable
+Python full-density batches and Web box selections are available separately as
+described below. Python tile processing with halo and durable
 checkpoints is described below. Accuracy-sensitive
 operations must specify their neighborhood requirements; a display subsample
 cannot substitute for the full-density input. GPU work follows measured kernel

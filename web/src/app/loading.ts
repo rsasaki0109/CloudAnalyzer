@@ -1,6 +1,7 @@
 /** Opening clouds from files, drops and URLs. */
 
 import { loadCloud, loadTrajectory, loadUrl } from "../api";
+import { readRangeResponse } from "../bytes";
 import { CANCELLED, type Progress } from "../protocol";
 import { nameFromUrl, parseSession } from "../session";
 import { $, errorText, setStatus } from "./dom";
@@ -121,15 +122,11 @@ export async function loadUrls(urls: string[]): Promise<void> {
     const name = nameFromUrl(url);
     setStatus(`Downloading ${name}…`);
     try {
-      // Ask for the first bytes: a LAS/LAZ or COPC file is then read piece
-      // by piece; a server that ignores the range sends the whole file right
-      // away. Not cached: Chrome can otherwise splice this partial response
-      // into a later full download of the same URL.
+      // LAS/COPC must stay on the range path, even for extensionless URLs.
       const probe = await fetch(url, { signal, cache: "no-store", headers: { Range: "bytes=0-1023" } });
       if (!probe.ok) throw new Error(`HTTP ${probe.status}`);
       if (probe.status === 206) {
-        const head = new Uint8Array(await probe.arrayBuffer());
-        const size = Number(/\/(\d+)$/.exec(probe.headers.get("content-range") ?? "")?.[1]);
+        const { bytes: head, total: size } = await readRangeResponse(probe, 0, 1024);
         if (isLasHead(head) && size > 0) {
           files.push({ url, name, size });
         } else {
@@ -138,6 +135,10 @@ export async function loadUrls(urls: string[]): Promise<void> {
           files.push(new File([await readWithProgress(response, name)], name));
         }
       } else {
+        if (/\.(las|laz)$/i.test(name)) {
+          await probe.body?.cancel();
+          throw new Error("LAS/LAZ URLs require HTTP byte range support (206)");
+        }
         files.push(new File([await readWithProgress(probe, name)], name));
       }
       origins.push({ kind: "url", url });
@@ -165,7 +166,7 @@ function isLasHead(head: Uint8Array): boolean {
 /** The body of a download, reporting progress when its size is known. */
 async function readWithProgress(response: Response, name: string): Promise<Blob> {
   const total = Number(response.headers.get("content-length")) || 0;
-  if (!response.body || !total) return response.blob();
+  if (!response.body) throw new Error("missing download body");
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let received = 0;
@@ -174,6 +175,21 @@ async function readWithProgress(response: Response, name: string): Promise<Blob>
     if (done) break;
     chunks.push(value);
     received += value.length;
+    if (received >= 4) {
+      const signature = new Uint8Array(4);
+      let at = 0;
+      for (const chunk of chunks) {
+        const piece = chunk.subarray(0, 4 - at);
+        signature.set(piece, at);
+        at += piece.length;
+        if (at === 4) break;
+      }
+      if (isLasHead(signature)) {
+        await reader.cancel();
+        throw new Error("LAS/LAZ URLs require HTTP byte range support (206)");
+      }
+    }
+    if (!total) continue;
     showProgress({ note: "", fraction: Math.min(1, received / total) });
     setStatus(`Downloading ${name}: ${Math.round((received / total) * 100)}% of ${(total / 1e6).toFixed(1)} MB…`);
   }

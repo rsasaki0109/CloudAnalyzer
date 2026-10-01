@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import os
 import threading
-import urllib.request
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from ._core import CopcReader
+from ._ranges import MAX_RANGE_BYTES, HttpRangeReader
 
 #: Nodes this close together in the file are fetched in one read.
 _MERGE_GAP = 64 << 10
@@ -29,18 +29,7 @@ def _file_reader(path: str | os.PathLike[str]) -> Callable[[int, int], bytes]:
 
 
 def _url_reader(url: str) -> Callable[[int, int], bytes]:
-    def read(offset: int, length: int) -> bytes:
-        request = urllib.request.Request(url, headers={"Range": f"bytes={offset}-{offset + length - 1}"})
-        with urllib.request.urlopen(request, timeout=120) as response:  # noqa: S310 - caller-chosen URL
-            data = response.read()
-            if response.status == 206:
-                return data
-        # The server ignored the range and sent the whole file.
-        if len(data) >= offset + length:
-            return data[offset : offset + length]
-        raise OSError(f"{url}: the server does not support range requests")
-
-    return read
+    return HttpRangeReader(url)
 
 
 def read_copc(
@@ -86,7 +75,7 @@ def read_copc(
             nodes = sorted(reader.nodes_to(level - 1))
             runs: list[list[int]] = []
             for offset, size, _ in nodes:
-                if runs and offset <= runs[-1][1] + _MERGE_GAP:
+                if runs and offset <= runs[-1][1] + _MERGE_GAP and offset + size - runs[-1][0] <= MAX_RANGE_BYTES:
                     runs[-1][1] = max(runs[-1][1], offset + size)
                 else:
                     runs.append([offset, offset + size])

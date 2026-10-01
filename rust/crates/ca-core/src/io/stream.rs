@@ -28,7 +28,10 @@ pub(crate) fn decode_records(
     if keep_every <= 1 {
         decoder.decode_block(records);
     } else {
-        let mut kept = Vec::with_capacity(records.len() / keep_every as usize + len);
+        // The sample interval can exceed usize on wasm32. The result is
+        // bounded by this input block, so narrow only after division.
+        let capacity = n.div_ceil(keep_every) as usize * len;
+        let mut kept = Vec::with_capacity(capacity);
         for (k, record) in records.chunks_exact(len).enumerate() {
             if (*index + k as u64).is_multiple_of(keep_every) {
                 kept.extend_from_slice(record);
@@ -73,18 +76,24 @@ impl PointStream {
             Format::Pcd => super::pcd::stream(head)?,
             Format::Xyz | Format::E57 | Format::Splat | Format::KittiBin => None,
         };
-        Ok(opened.map(|(decoder, data_offset, total_points)| {
-            let remaining = total_points * decoder.record_len() as u64;
-            Self {
-                decoder,
-                data_offset: data_offset as u64,
-                total_points,
-                remaining,
-                pending: Vec::new(),
-                keep_every: 1,
-                index: 0,
-            }
-        }))
+        opened
+            .map(|(decoder, data_offset, total_points)| {
+                let remaining = total_points
+                    .checked_mul(decoder.record_len() as u64)
+                    .ok_or_else(|| {
+                        IoError::Unsupported("point record span exceeds 64 bits".into())
+                    })?;
+                Ok(Self {
+                    decoder,
+                    data_offset: data_offset as u64,
+                    total_points,
+                    remaining,
+                    pending: Vec::new(),
+                    keep_every: 1,
+                    index: 0,
+                })
+            })
+            .transpose()
     }
 
     /// Byte offset in the file where the point records start.
@@ -186,6 +195,13 @@ fn find_data_line_end(head: &[u8]) -> Option<usize> {
 mod tests {
     use super::*;
     use crate::{AttributeValues, CLASSIFICATION};
+
+    #[test]
+    fn sample_interval_larger_than_32_bits() {
+        let file = las_file(3);
+        let cloud = stream_file("sample.las", &file, 28, 1u64 << 32);
+        assert_eq!(cloud.positions, vec![[0.0, 0.0, 0.0]]);
+    }
 
     fn las_file(n: usize) -> Vec<u8> {
         let mut h = vec![0u8; 227];

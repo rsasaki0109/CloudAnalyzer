@@ -138,7 +138,7 @@ pub fn read_thinned(name: &str, bytes: &[u8], keep_every: usize) -> Result<Point
 /// comes from the length of `head`, which must then be the whole file.
 pub fn announced_points(name: &str, head: &[u8]) -> Option<u64> {
     match Format::detect(name, head) {
-        Format::Las => las::LasHeader::parse(head).ok().map(|h| h.count as u64),
+        Format::Las => las::LasHeader::parse(head).ok().map(|h| h.count),
         Format::Ply | Format::Pcd => {
             let len = PointStream::header_len(name, head)?;
             let text = std::str::from_utf8(&head[..len]).ok()?;

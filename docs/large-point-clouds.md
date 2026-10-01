@@ -76,7 +76,10 @@ only through `Number.MAX_SAFE_INTEGER`; ten billion is within that range.
 Current Web COPC loading and Python `read_copc` choose whole octree levels for
 display. The root is always loaded even when it exceeds the requested point
 budget. They accumulate the chosen output in memory; LOD is not full-density
-analysis. Existing native vector-map operations load the input cloud in memory.
+analysis. Native road/junction map operations load the input cloud in memory.
+The high-level signal-box command streams LAS/LAZ/CSV and spatial COPC inputs;
+other signal formats retain the whole-file compatibility reader. See
+[signal measurement](commands/vectormap-signal.md).
 These APIs should not be described as bounded processing of an entire
 ten-billion-point cloud.
 
@@ -255,6 +258,8 @@ fit configured limits, and persistent output/storage must fit the chosen disk
 and filesystem. With 36-byte original records, raw packs use 45 bytes per
 record before halo: ten billion records alone require about 450 GB plus pack,
 SQLite, halo and exported-artifact costs. This is format arithmetic, not a
-measured storage result or runtime extrapolation. Current Web loading remains
-LOD output in memory, and native vector-map whole-cloud paths still need a
-bounded spatial selection. GPU work is reserved for measured kernel needs.
+measured storage result or runtime extrapolation. Ordinary Web loading retains
+LOD output in memory, alongside the bounded full-density working-box option.
+Native road/junction generation and signal-format compatibility readers still
+load whole clouds; spatial signal inputs use the capped reader described above.
+GPU work is reserved for measured kernel needs.

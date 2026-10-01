@@ -1,7 +1,7 @@
 """Point cloud I/O module."""
 
 import csv
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
 from dataclasses import dataclass, field
 from itertools import chain
 from pathlib import Path
@@ -235,7 +235,7 @@ def iter_point_chunks(
     *,
     chunk_size: int = 100_000,
     bounds: tuple[float, float, float, float, float, float] | None = None,
-) -> Iterator[np.ndarray]:
+) -> Generator[np.ndarray, None, None]:
     """Yield finite XYZ chunks without requiring one in-memory point array.
 
     ``bounds`` is an inclusive axis-aligned box.  LAS/LAZ uses laspy's native

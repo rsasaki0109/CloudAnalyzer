@@ -1,13 +1,166 @@
 """File publication and CLI use the native draft builder, including failures."""
 
 import json
+import asyncio
+import sys
+from pathlib import Path
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
 
 import pytest
 from typer.testing import CliRunner
-
-from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal
 from cloudanalyzer_cli.main import app
 
+from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal
+
+
+def test_signal_las_spatial_reader_matches_native_file_and_cli(junction_survey, tmp_path):
+    import laspy
+    import numpy as np
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "measure_vector_map_signal_points"):
+        pytest.skip("installed core predates spatial signals")
+    _, source = junction_survey
+    bounds = [49994.3, 50000.9, 6.9, 49995.7, 50001.1, 7.6]
+    points = np.array([[49994.4 + x * .05, 50001, 7 + z * .01] for x in range(25) for z in range(0, 51, 5)])
+    xyz = np.vstack([np.tile([50020., 50020., 0.], (30000, 1)), points])
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = np.full(3, .001)
+    las = laspy.LasData(header)
+    las.x, las.y, las.z = xyz.T
+    cloud = tmp_path / "head.las"
+    las.write(cloud)
+    options = json.dumps({"min": bounds[:3], "max": bounds[3:], "lanes": [7], "kind": "vehicle"})
+    expected = json.loads(native.measure_vector_map_signal(str(cloud), str(source), options))["report"]["signal"]
+    report = measure_vector_map_signal(str(cloud), str(source), str(tmp_path / "preview"), bounds=bounds, lanes=[7])
+    assert report["signal"] == expected
+    assert report["processing"] == {"strategy": "sequential-filtered-chunks", "selected_points": 275,
+                                    "selected_limit": 200000, "chunk_points": 10000}
+    result = CliRunner().invoke(app, ["vectormap-signal", str(cloud), str(source), "--out", str(tmp_path / "cli"),
+                                    "--box", ",".join(map(str, bounds)), "--lane", "7"])
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout)["signal"] == expected
+    with pytest.raises(ValueError, match="shape"):
+        native.measure_vector_map_signal_points(np.zeros((4, 2)), str(source), options)
+    with pytest.raises(ValueError, match="200000"):
+        native.measure_vector_map_signal_points(np.zeros((200001, 3)), str(source), options)
+    with pytest.raises(ValueError, match="finite"):
+        native.measure_vector_map_signal_points(np.array([[0., 0., np.nan]]), str(source), options)
+    # Strided arrays are copied correctly; no contiguous-only requirement.
+    doubled = np.repeat(points, 2, axis=0)
+    result = json.loads(native.measure_vector_map_signal_points(doubled[::2], str(source), options))
+    assert result["report"]["signal"]["points"] == 275
+
+
+def test_signal_copc_local_and_http_all_levels(junction_survey, tmp_path):
+    import laspy
+    import numpy as np
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "measure_vector_map_signal_points"):
+        pytest.skip("installed core predates spatial signals")
+    _, source = junction_survey
+    fixture = Path(__file__).parent / "data" / "signal.copc.laz"
+    data = fixture.read_bytes()
+    bounds = [49994.3, 50000.9, 6.9, 49995.7, 50001.1, 7.6]
+    # Independent laspy/lazrs full-source reader; filter only after reading all nodes.
+    # The minimal test writer omits the ordinary LAZ chunk table.
+    with laspy.CopcReader.open(str(fixture)) as reader:
+        all_points = reader.query()
+    xyz = np.column_stack([all_points.x, all_points.y, all_points.z])
+    selected = xyz[np.all((xyz >= bounds[:3]) & (xyz <= bounds[3:]), axis=1)]
+    assert len(xyz) == 5275 and len(selected) == 275
+    options = json.dumps({"min": bounds[:3], "max": bounds[3:], "lanes": [7], "kind": "vehicle"})
+    expected = json.loads(native.measure_vector_map_signal_points(selected, str(source), options))["report"]["signal"]
+    local = measure_vector_map_signal(str(fixture), str(source), str(tmp_path / "local"), bounds=bounds, lanes=[7])
+    assert local["signal"] == expected
+    assert local["processing"]["strategy"] == "copc-full-density-box"
+    ranges = []
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            span = self.headers["Range"].removeprefix("bytes=").split("-")
+            a, b = int(span[0]), min(int(span[1]), len(data) - 1)
+            ranges.append((a, b))
+            self.send_response(206)
+            self.send_header("Content-Range", f"bytes {a}-{b}/{len(data)}")
+            self.send_header("Content-Length", str(b - a + 1))
+            self.send_header("ETag", '"fixture-v1"')
+            self.end_headers()
+            self.wfile.write(data[a:b + 1])
+        def log_message(self, *_): pass
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        url = f"http://127.0.0.1:{server.server_port}/signal.copc.laz?token=secret#fragment"
+        remote = measure_vector_map_signal(url, str(source), str(tmp_path / "http"), bounds=bounds, lanes=[7])
+        assert remote["signal"] == expected
+        assert remote["processing"]["selected_points"] == 275
+        assert "secret" not in remote["inputs"]["cloud"] and "fragment" not in remote["inputs"]["cloud"]
+        assert len(ranges) > 2
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join()
+
+
+def test_signal_spatial_caps_close_reader_and_invalid_box_never_reads(junction_survey, tmp_path, monkeypatch):
+    import numpy as np
+    import ca.io
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "measure_vector_map_signal_points"):
+        pytest.skip("installed core predates spatial signals")
+    _, source = junction_survey
+    cloud = tmp_path / "source.las"
+    cloud.touch()
+    closed = []
+    calls = []
+    def chunks(*args, **kwargs):
+        calls.append((args, kwargs))
+        try:
+            for _ in range(21): yield np.tile([49995., 50001., 7.25], (10000, 1))
+            pytest.fail("reader continued after point limit")
+        finally: closed.append(True)
+    monkeypatch.setattr(ca.io, "iter_point_chunks", chunks)
+    bounds = [49994.3, 50000.9, 6.9, 49995.7, 50001.1, 7.6]
+    out = tmp_path / "overflow"
+    with pytest.raises(ValueError, match="200000"):
+        measure_vector_map_signal(str(cloud), str(source), str(out), bounds=bounds, lanes=[7])
+    assert closed == [True] and not out.exists()
+    assert calls[0][1] == {"chunk_size": 10000, "bounds": tuple(bounds)}
+    calls.clear()
+    for bad in [[0, 0, 0, 11, 1, 1], [0, 0, 0, 0, 1, 1], [0, 0, 0, float("nan"), 1, 1]]:
+        with pytest.raises(ValueError, match="bounds"):
+            measure_vector_map_signal(str(cloud), str(source), str(out), bounds=bad, lanes=[7])
+    with pytest.raises(ValueError, match="lane"):
+        measure_vector_map_signal(str(cloud), str(source), str(out), bounds=bounds, lanes=[7, 7])
+    assert calls == [] and not out.exists()
+
+
+def test_signal_mcp_spatial_copc_publishes_preview(junction_survey, tmp_path):
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "measure_vector_map_signal_points"):
+        pytest.skip("installed core predates spatial signals")
+    pytest.importorskip("mcp")
+    from mcp import ClientSession, StdioServerParameters
+    from mcp.client.stdio import stdio_client
+    _, source = junction_survey
+    fixture = Path(__file__).parent / "data" / "signal.copc.laz"
+    server = StdioServerParameters(command=sys.executable,
+        args=["-c", "from ca.mcp_server import main; main()"], cwd=str(Path(__file__).resolve().parents[1]))
+    async def run():
+        async with stdio_client(server) as (read, write):
+            async with ClientSession(read, write) as session:
+                await session.initialize()
+                return await session.call_tool("measure_vector_map_signal", {
+                    "cloud": str(fixture), "vector_map": str(source), "out_dir": str(tmp_path / "mcp-preview"),
+                    "bounds": [49994.3, 50000.9, 6.9, 49995.7, 50001.1, 7.6], "lanes": [7]})
+    result = asyncio.run(run())
+    assert not getattr(result, "is_error", getattr(result, "isError", False))
+    text = "".join(c.text for c in result.content if getattr(c, "type", "") == "text")
+    report = json.loads(text)
+    assert report["status"] == "preview" and report["signal"]["points"] == 275
+    assert report["processing"]["strategy"] == "copc-full-density-box"
+    assert Path(report["files"]["editable_map"]).is_file()
 
 @pytest.fixture
 def junction_survey(tmp_path):

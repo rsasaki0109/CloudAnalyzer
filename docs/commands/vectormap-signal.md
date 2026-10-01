@@ -57,6 +57,8 @@ the validated box into a separate cloud, gives it a solid color and hides its
 source. Measure that isolated cloud again before adding. Cloud Undo restores the
 source; map Undo removes the signal. Original coordinates and attributes are retained.
 Only loaded points are used: a sparse LOD display is not a full-density measurement.
+For COPC, first use **COPC full-density box** to read all overlapping density
+levels into a capped working cloud, then select that cloud for measurement.
 
 Python and MCP expose the same workflow:
 
@@ -70,6 +72,21 @@ report = measure_vector_map_signal(
 )
 ```
 
-MCP tool `measure_vector_map_signal` defaults to `preview_only=true`. The native
-file path currently reads the complete cloud into memory; this is not a 10-billion
-point processing benchmark. See [real-data validation](../vector-map-validation.md).
+MCP tool `measure_vector_map_signal` defaults to `preview_only=true`. Python,
+CLI and MCP use the same high-level reader: local LAS/LAZ and CSV are scanned in
+10,000-point chunks, filtering the inclusive box and retaining at most 200,000
+selected XYZ64 points. Local `.copc.laz` and HTTP(S) COPC `.laz` URLs use bounded
+full-density spatial traversal. A small box does not avoid a sequential scan of
+ordinary LAS/LAZ; COPC can skip non-overlapping nodes. Oversized boxes or selected
+outputs fail without publishing artifacts. The current native core is required
+for spatial signal inputs; no display-level thinning substitutes for selection.
+
+Other formats, including PCD/PLY/XYZ, retain the complete-file compatibility
+reader. Its selection cap does not limit source memory. The low-level native
+`cloudanalyzer_core.measure_vector_map_signal` file method also reads whole files;
+`measure_vector_map_signal_points` instead accepts at most 200,000 finite `(N,3)`
+float64 points supplied by a caller. These limits exclude libraries, metadata and
+decoder buffers; see [large-cloud limits](../large-point-clouds.md).
+Reports identify the processing strategy. Remote source URLs in published reports
+omit query strings, fragments and user credentials. This is not a physical
+10-billion-point benchmark. See [real-data validation](../vector-map-validation.md).

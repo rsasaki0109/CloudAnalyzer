@@ -30,10 +30,16 @@ from ._core import (
     voxel_subsample,
 )
 from ._copc import read_copc
+from ._spatial import CopcBatch, CopcCancelled, CopcLimits, CopcNode, CopcStream, iter_copc_batches
 
 __all__ = [
     "BagMessages",
     "BagReader",
+    "CopcBatch",
+    "CopcCancelled",
+    "CopcLimits",
+    "CopcNode",
+    "CopcStream",
     "LidarOdometry",
     "PoseGraph",
     "Scan",
@@ -45,6 +51,7 @@ __all__ = [
     "connect_vector_map_junctions",
     "ground_csf",
     "icp",
+    "iter_copc_batches",
     "m3c2",
     "measure_vector_map_signal",
     "nearest_distances",

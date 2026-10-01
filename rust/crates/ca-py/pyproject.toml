@@ -19,6 +19,9 @@ classifiers = [
 [project.urls]
 Repository = "https://github.com/rsasaki0109/CloudAnalyzer"
 
+[project.optional-dependencies]
+copc = ["laspy>=2.5"]
+
 [tool.maturin]
 python-source = "python"
 module-name = "cloudanalyzer_core._core"

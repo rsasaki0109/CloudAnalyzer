@@ -72,8 +72,9 @@ cargo run --release -p ca-core --example copc_query -- \
 Raw records are a verification artifact, not a standalone LAS file. The example
 may leave a partial raw output on an error; it is not a resumable tile job.
 The published Web/Python display APIs still use their existing LOD behavior.
-Connecting this core to bounded Python/Web selections and tile processing with
-halo, cancellation and durable checkpoints is the next stage. Accuracy-sensitive
+Python full-density batches are available separately as described below. Web
+selections and tile processing with halo and durable checkpoints are the next
+stage. Accuracy-sensitive
 operations must specify their neighborhood requirements; a display subsample
 cannot substitute for the full-density input. GPU work follows measured kernel
 costs after the IO and memory limits are in place.
@@ -96,3 +97,66 @@ ten-billion-point benchmark. The whole run counts points without retaining
 them or writing a full output cloud. The raw ROI artifact contains only the
 selected records. Larger nodes, deeper pages, consumers and persisted tile/halo
 outputs have different memory/storage costs.
+
+The Python native wheel exposes `CopcStream` / `iter_copc_batches`. Install
+`cloudanalyzer-core[copc]` for the optional laspy schema dependency, or use
+CloudAnalyzer with an updated core (`cloudanalyzer[fast]`). HTTP(S) URLs, including
+presigned URLs, and local COPC files use the same full-density iterator:
+
+```python
+from cloudanalyzer_core import CopcStream, CopcLimits
+
+with CopcStream("survey.copc.laz", bounds=(636800, 851200, 400, 636900, 851300, 700),
+                chunk_size=10000, limits=CopcLimits()) as stream:
+    count = 0
+    for batch in stream:
+        count += len(batch.positions)
+        # positions: XYZ64; records: laspy ScaleAwarePointRecord with all fields.
+        # node_offset + ordinals identify original records, including duplicates.
+        # Consume/discard here rather than collecting a global array.
+```
+
+It decodes one node, then filters its raw records in batches; there is no pool
+of outstanding reads or global output list. The Rust-to-Python byte transfer
+temporarily copies the raw node. XYZ, filtering masks, selected records and
+identities add batch-sized buffers. Limits bound each item, not their combined
+RSS or output retained by the consumer. Python limits additionally cap each
+page/compressed/raw item at 64 MiB, pending entries at 65,536, path depth at 64,
+metadata at 8 MiB and requested batches at 1,000,000 points.
+
+Source VLRs and non-index EVLRs retain CRS/extra-field metadata. EVLR headers
+are followed by checked offsets; COPC hierarchy payloads are skipped, so a large
+hierarchy EVLR is not materialized. At most 16,384 EVLR headers are inspected;
+non-index metadata that exceeds the combined limit fails explicitly. The original
+header prefix is retained as `raw_header`; raw records alone are not a standalone
+LAS artifact. Publishing ordinary LAS requires removing COPC/compression index
+VLRs and supplying the source schema/metadata through an appropriate writer.
+
+Use the context manager to close on errors/early exit. Alternatively close an
+`iter_copc_batches` generator explicitly after an early break. `cancel=event.is_set`
+raises `CopcCancelled` between ranges/nodes/batches. Blocking HTTP IO has a timeout
+(60 s default); it cannot be interrupted midway through a blocking request. Local
+ranges pin the open descriptor's file identity, size and timestamps. HTTP ranges
+pin size and an available strong ETag. Without a strong ETag, size checks alone
+cannot prove immutable contents for resumption. The low-level `nodes()` iterator
+can skip committed nodes without reading their point bytes, but this API does not
+yet persist a tile checkpoint.
+
+`ca.io.iter_point_chunks` uses this path for local `.copc.laz` and remote COPC
+HTTP(S) inputs. It yields only XYZ under its existing inclusive-box/empty-result
+contract. It requires the updated Rust core and does not use PDAL's full-output
+array pipeline. `s3://` inputs need an HTTP(S)/presigned URL. Local ordinary LAS/LAZ
+still uses sequential laspy chunks; PCD/PLY still load via Open3D before chunking.
+
+On 2026-10-01, the Python iterator selected the same 3,708 complete raw Autzen
+records as the independent laspy oracle through both local and real HTTP input.
+Each read 3,185,012 bytes in 12 ranges (including a 60-byte EVLR header), visiting
+9 nodes / 18 selected batches with a 10,000-point batch setting. Local ROI wall
+time was 0.29 s and HTTP ROI 15.10 s; observed peak process RSS was 65.2 MB and
+69.2 MB, including Python/NumPy/laspy and a roughly 54.6 MB baseline. The local
+whole-file count visited 278 nodes / 1,210 batches and counted all 10,653,336 points
+in 7.57 s, reading 81,185,534 bytes, with 66.0 MB peak RSS. Sampling used external
+psutil every 2 ms plus Windows `peak_wset`; each mode ran in a separate process.
+Only the small ROI records were retained for equality verification. These are
+single-machine observations under varying load, not controlled comparisons with
+the earlier Rust run, hard process memory caps, or a ten-billion-point benchmark.

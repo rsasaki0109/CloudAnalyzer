@@ -122,8 +122,9 @@ class TestPointChunkReader:
         np.testing.assert_allclose(summary["minimum"], points.min(axis=0))
         np.testing.assert_allclose(summary["maximum"], points.max(axis=0))
 
-    def test_remote_copc_reports_optional_backend(self):
-        with pytest.raises(ValueError, match="PDAL"):
+    def test_remote_copc_reports_optional_backend(self, monkeypatch):
+        monkeypatch.setattr("ca.io.core", lambda: None)
+        with pytest.raises(ValueError, match="updated Rust core"):
             list(iter_point_chunks("https://example.invalid/map.copc.laz"))
 
 

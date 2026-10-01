@@ -124,6 +124,62 @@ def build_vector_map(
         "existing_map": str(Path(existing_map).resolve()) if existing_map else None,
     }
     report["options"] = json.loads(options)
+    return _publish(payload, out)
+
+
+def connect_vector_map_junctions(
+    cloud: str,
+    vector_map: str,
+    out_dir: str,
+    *,
+    max_gap: float = 30.0,
+    min_ground_support: float = 0.9,
+    lane_pairs: list[tuple[int, int]] | None = None,
+    preview_only: bool = False,
+) -> dict[str, Any]:
+    """Preview or add junction drafts and write four artifacts in a NEW directory.
+
+    Inputs share a metre frame. Existing IR geometry, IDs, rules and projector remain
+    fixed; OSM imports report unsupported members. Open driving road ends generate all
+    ground-supported choices, including branching junctions. Geometry cannot establish
+    permitted turns, obstacle clearance or signal rules: review every candidate.
+    preview_only keeps the map unchanged and returns candidate geometry in the report.
+    lane_pairs selects (from,to) pairs; omit to add all proposals, or [] for a no-op.
+    Use the original input map and a new output directory after reviewing a preview.
+    """
+    module = core()
+    if module is None or not hasattr(module, "connect_vector_map_junctions"):
+        raise RuntimeError("junction drafting needs an updated Rust core")
+    inputs = [Path(cloud), Path(vector_map)]
+    for path in inputs:
+        if not path.is_file():
+            raise FileNotFoundError(str(path))
+    out = Path(out_dir).resolve()
+    if out.exists():
+        raise FileExistsError(
+            f"output directory already exists: {out}; choose a new directory"
+        )
+    options = json.dumps(
+        {"max_gap": max_gap, "min_ground_support": min_ground_support}, allow_nan=False
+    )
+    pairs = json.dumps(lane_pairs, allow_nan=False) if lane_pairs is not None else None
+    payload = json.loads(
+        module.connect_vector_map_junctions(
+            str(inputs[0]), str(inputs[1]), options, pairs, preview_only
+        )
+    )
+    report: dict[str, Any] = payload["report"]
+    report["inputs"] = {
+        "cloud": str(inputs[0].resolve()),
+        "vector_map": str(inputs[1].resolve()),
+    }
+    report["options"] = json.loads(options)
+    report["lane_pairs"] = json.loads(pairs) if pairs is not None else None
+    return _publish(payload, out)
+
+
+def _publish(payload: dict[str, Any], out: Path) -> dict[str, Any]:
+    report: dict[str, Any] = payload["report"]
     names = {
         "map": "lanelet2_map.osm",
         "projector": "map_projector_info.yaml",

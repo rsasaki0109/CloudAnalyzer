@@ -414,7 +414,7 @@ export function changedObjects(id: number, minChange: number, link: number, minP
 /** A vector map request (see `VectorMapOp`); answers parsed JSON. */
 export async function vectorMap<T>(
   op: VectorMapOp,
-  args: { name?: string; text?: string; x?: number; y?: number; autoware?: boolean; id?: number; positions?: Float64Array } = {},
+  args: { name?: string; text?: string; x?: number; y?: number; autoware?: boolean; id?: number; positions?: Float64Array; pairs?: [number, number][] } = {},
 ): Promise<T> {
   return JSON.parse(await call<string>({ kind: "vm", op, ...args })) as T;
 }

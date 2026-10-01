@@ -103,6 +103,46 @@ impl VectorMapSession {
         serde_json::to_string(&report).map_err(error)
     }
 
+    /// Preview ground-supported junction drafts without changing the map or undo history.
+    #[wasm_bindgen(js_name = previewJunctions)]
+    pub fn preview_junctions(
+        &self,
+        cloud: &crate::Cloud,
+        options: &str,
+    ) -> Result<String, JsError> {
+        let o = serde_json::from_str(options).map_err(error)?;
+        let report =
+            ca_core::vector_map::junctions::propose(&self.map, &cloud.inner, &o).map_err(error)?;
+        serde_json::to_string(&report).map_err(error)
+    }
+
+    /// Add selected geometric connections as one Undo step, rechecking support.
+    #[wasm_bindgen(js_name = connectJunctions)]
+    pub fn connect_junctions(
+        &mut self,
+        cloud: &crate::Cloud,
+        options: &str,
+        pairs: &str,
+    ) -> Result<String, JsError> {
+        let o = serde_json::from_str(options).map_err(error)?;
+        let pairs: Option<Vec<[u64; 2]>> = serde_json::from_str(pairs).map_err(error)?;
+        let before = self.map.clone();
+        let report = ca_core::vector_map::junctions::connect(
+            &mut self.map,
+            &cloud.inner,
+            &o,
+            pairs.as_deref(),
+        )
+        .map_err(error)?;
+        if self.map != before {
+            self.undo.push(before);
+            if self.undo.len() > UNDO_DEPTH {
+                self.undo.remove(0);
+            }
+        }
+        serde_json::to_string(&report).map_err(error)
+    }
+
     /// Undo the last edit; false if there is none.
     pub fn undo(&mut self) -> bool {
         match self.undo.pop() {
@@ -253,6 +293,43 @@ impl Default for VectorMapSession {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn junction_preview_and_replay_do_not_add_undo_but_branch_batch_does() {
+        let mut s = VectorMapSession::new();
+        s.apply(r#"[
+          {"op":"build_road","reference":[[-20,0,2],[-10,0,2]],"lanes":[{"width":3.5}],"speed_limit":{"kmh":20}},
+          {"op":"build_road","reference":[[0,10,2],[0,20,2]],"lanes":[{"width":3.5}],"speed_limit":{"kmh":20}},
+          {"op":"build_road","reference":[[0,-10,2],[0,-20,2]],"lanes":[{"width":3.5}],"speed_limit":{"kmh":20}}
+        ]"#).unwrap();
+        s.undo.clear();
+        let mut ground = ca_core::PointCloud::default();
+        for x in -110..=10 {
+            for y in -110..=110 {
+                ground.positions.push([x as f64 * 0.2, y as f64 * 0.2, 2.0]);
+            }
+        }
+        let cloud = crate::Cloud::unindexed(ground);
+        let before = s.to_json();
+        let preview: Value =
+            serde_json::from_str(&s.preview_junctions(&cloud, "{}").unwrap()).unwrap();
+        assert_eq!(preview["candidates"].as_array().unwrap().len(), 2);
+        assert_eq!(s.to_json(), before);
+        assert_eq!(s.undo.len(), 0);
+        s.connect_junctions(&cloud, "{}", "[]").unwrap();
+        assert_eq!(s.undo.len(), 0);
+        let report: Value =
+            serde_json::from_str(&s.connect_junctions(&cloud, "{}", "null").unwrap()).unwrap();
+        assert_eq!(report["added"].as_array().unwrap().len(), 2);
+        assert_eq!(s.undo.len(), 1);
+        let after = s.to_json();
+        s.connect_junctions(&cloud, "{}", "null").unwrap();
+        assert_eq!(s.to_json(), after);
+        assert_eq!(s.undo.len(), 1);
+        assert!(s.undo());
+        assert_eq!(s.to_json(), before);
+        assert!(!s.undo());
+    }
 
     #[test]
     fn build_edit_undo_and_export() {

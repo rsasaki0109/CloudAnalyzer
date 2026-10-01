@@ -2247,6 +2247,72 @@ test("vector map: roads drawn over a cloud, a turn, a traffic light and a crossw
   await expect(status(page)).toContainText("Opened lanelet2_map.osm: 4 lanes");
 });
 
+test("vector map: a shared reversed boundary can be dragged, cancelled, exported and undone", async ({ page }) => {
+  // Large survey coordinates also exercise the overlay's render origin. Both
+  // lanes use boundary 2, one in reverse; the midpoint is at the view centre.
+  const map = {
+    format: "vectormap-ir", version: 1,
+    lanes: [
+      { id: 4, kind: "driving", left: 1, right: 2, speed_limit: { kmh: 40 } },
+      { id: 5, kind: "driving", left: { boundary: 3, reversed: true }, right: { boundary: 2, reversed: true }, speed_limit: { kmh: 40 } },
+    ],
+    boundaries: [4, 0, -4].map((y, i) => ({
+      id: i + 1, kind: { type: "lane_marking", pattern: "solid" },
+      geometry: [0, 20, 40].map((x) => [100000 + x, 100000 + y, 2]),
+    })),
+  };
+  await page.locator("#vm-file").setInputFiles({ name: "shared.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(map)) });
+  await expect(status(page)).toContainText("Opened shared.json: 2 lanes");
+  await page.locator('[data-view="top"]').click();
+  await page.waitForTimeout(1000);
+  const box = (await page.locator("#viewport > canvas").boundingBox())!;
+  const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+  const exportXml = async () => {
+    const file = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
+    await page.locator("#vm-export").click();
+    return (await bytesOf(await file)).toString();
+  };
+  const before = await exportXml();
+  await page.locator("#vm-vertices").click();
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await expect(page.locator("#vm-hint")).toContainText("Boundary 2, vertex 2");
+  await page.mouse.move(x + 10, y + 30, { steps: 6 });
+  await page.keyboard.press("Escape");
+  await page.mouse.up();
+  expect(await exportXml()).toBe(before);
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+
+  await page.locator("#vm-vertices").click();
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 10, y + 30, { steps: 6 });
+  await page.mouse.up();
+  await expect(status(page)).toContainText("Boundary 2 vertex moved");
+  const after = await exportXml();
+  expect(after).not.toBe(before);
+  const shared = await page.evaluate((xml) => {
+    const doc = new DOMParser().parseFromString(xml, "application/xml");
+    const value = (el: Element, key: string) => el.querySelector(`tag[k="${key}"]`)?.getAttribute("v");
+    const node = [...doc.querySelectorAll("node")].find((n) => {
+      const x = Number(value(n, "local_x"));
+      const y = Number(value(n, "local_y"));
+      return x > 100015 && x < 100025 && Math.abs(y - 100000) < 3 && Math.abs(y - 100000) > 0.01;
+    })!;
+    const id = node.getAttribute("id");
+    const ways = [...doc.querySelectorAll("way")].filter((w) => w.querySelector(`nd[ref="${id}"]`)).map((w) => w.getAttribute("id"));
+    return { height: value(node, "ele"), lanes: [...doc.querySelectorAll("relation")].filter((r) => [...r.querySelectorAll('member[type="way"]')].some((m) => ways.includes(m.getAttribute("ref")))).length };
+  }, after);
+  expect(shared).toEqual({ height: "2", lanes: 2 });
+  await page.locator("#vm-undo").click();
+  await expect(status(page)).toContainText("Undone");
+  expect(await exportXml()).toBe(before);
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+  await page.locator("#vm-file").setInputFiles({ name: "edited.osm", mimeType: "application/xml", buffer: Buffer.from(after) });
+  await expect(status(page)).toContainText("Opened edited.osm: 2 lanes");
+  expect(await exportXml()).toBe(after);
+});
+
 test("vector map: trajectory builds a ground-level draft with an evidence report and one-step undo", async ({ page }) => {
   const ground: [number, number, number][] = [];
   for (let x = 0; x <= 60; x += 0.2) for (let y = -8; y <= 4; y += 0.2) ground.push([x, y, 2]);

@@ -115,6 +115,11 @@ export class Viewer {
   onClick: (clientX: number, clientY: number) => void = () => {};
   /** Called for a double click or double tap, after both clicks. */
   onDoubleClick: (clientX: number, clientY: number) => void = () => {};
+  onToolPointerDown: (x: number, y: number) => boolean = () => false;
+  onToolPointerMove: (x: number, y: number) => void = () => {};
+  onToolPointerUp: (x: number, y: number) => void = () => {};
+  onToolPointerCancel: () => void = () => {};
+  private toolDrag: { pointer: number; controlsEnabled: boolean } | null = null;
   /** Called after every rendered frame, e.g. to move HTML overlays. */
   onAfterRender: () => void = () => {};
   private readonly annotations = new THREE.Group();
@@ -172,6 +177,36 @@ export class Viewer {
     let last: { x: number; y: number; time: number } | null = null;
     const active = new Set<number>();
     const canvas = this.renderer.domElement;
+    // Capture before OrbitControls sees the press. A tool takes ownership only
+    // when it actually hits a handle; empty space retains camera navigation.
+    canvas.addEventListener("pointerdown", (e) => {
+      if (this.toolDrag || e.button !== 0 || !e.isPrimary || !this.onToolPointerDown(e.clientX, e.clientY)) return;
+      down = last = null;
+      this.toolDrag = { pointer: e.pointerId, controlsEnabled: this.controls.enabled };
+      this.controls.enabled = false;
+      canvas.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }, true);
+    canvas.addEventListener("pointermove", (e) => {
+      if (this.toolDrag?.pointer !== e.pointerId) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      this.onToolPointerMove(e.clientX, e.clientY);
+    }, true);
+    canvas.addEventListener("pointerup", (e) => {
+      if (this.toolDrag?.pointer !== e.pointerId) return;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      this.releaseToolDrag();
+      this.onToolPointerUp(e.clientX, e.clientY);
+    }, true);
+    canvas.addEventListener("pointercancel", (e) => {
+      if (this.toolDrag?.pointer !== e.pointerId) return;
+      e.stopImmediatePropagation();
+      this.cancelToolDrag();
+    }, true);
+    canvas.addEventListener("lostpointercapture", () => this.cancelToolDrag());
     canvas.addEventListener("pointerdown", (e) => {
       active.add(e.pointerId);
       down =
@@ -206,6 +241,22 @@ export class Viewer {
     new ResizeObserver(() => this.resize()).observe(container);
     this.resize();
     this.loop();
+  }
+
+  private releaseToolDrag(): void {
+    const drag = this.toolDrag;
+    if (!drag) return;
+    this.toolDrag = null;
+    this.controls.enabled = drag.controlsEnabled;
+    const canvas = this.renderer.domElement;
+    if (canvas.hasPointerCapture(drag.pointer)) canvas.releasePointerCapture(drag.pointer);
+  }
+
+  /** Restore camera interaction and discard a tool's unfinished preview. */
+  cancelToolDrag(): void {
+    if (!this.toolDrag) return;
+    this.releaseToolDrag();
+    this.onToolPointerCancel();
   }
 
   setBackground(color: string): void {

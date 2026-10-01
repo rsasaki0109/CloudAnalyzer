@@ -108,3 +108,9 @@ Lanelet2 reference was available for this test, so these counts are not accuracy
 Use `-` as the reference argument of the evaluation example to obtain counts without scores;
 that mode uses right-hand traffic and a Local projector. The existing
 `scripts/fetch_pandaset.py` documents the public archive and sensor/world transforms.
+
+The generated PandaSet map also exercises Web vertex editing: a shared internal boundary
+vertex was dragged with its cloud-relative height unchanged, both adjacent lanes updated,
+and one Undo restored the complete map view exactly. This checks editing behavior, not
+whether the new position matches a surveyed marking. A production E2E separately covers
+large coordinates, reversed shared boundaries, cancellation, export and reload.

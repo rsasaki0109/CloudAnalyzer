@@ -12,6 +12,11 @@ import type * as THREE from "three";
 
 export interface Tool {
   click(x: number, y: number): void | Promise<void>;
+  /** Return true to capture a primary-pointer drag instead of orbiting. */
+  pointerDown?(x: number, y: number): boolean;
+  pointerMove?(x: number, y: number): void;
+  pointerUp?(x: number, y: number): void | Promise<void>;
+  pointerCancel?(): void;
   doubleClick?(x: number, y: number): void;
   /** A key while active; return true if handled. Unhandled Escape leaves the tool. */
   key?(e: KeyboardEvent): boolean;
@@ -53,6 +58,7 @@ export function activeTool(): Tool | null {
 /** Switch to `tool` (null for none), leaving the current one. */
 export function setTool(tool: Tool | null): void {
   if (active === tool) return;
+  viewer.cancelToolDrag();
   const previous = active;
   active = tool;
   previous?.exit();
@@ -78,6 +84,10 @@ export async function pickPoint(x: number, y: number): Promise<PickedPoint | nul
 }
 
 viewer.onClick = (x, y) => void (active ?? idle).click(x, y);
+viewer.onToolPointerDown = (x, y) => active?.pointerDown?.(x, y) ?? false;
+viewer.onToolPointerMove = (x, y) => active?.pointerMove?.(x, y);
+viewer.onToolPointerUp = (x, y) => void active?.pointerUp?.(x, y);
+viewer.onToolPointerCancel = () => active?.pointerCancel?.();
 viewer.onDoubleClick = (x, y) => {
   if (active) active.doubleClick?.(x, y);
   else idle.doubleClick(x, y);

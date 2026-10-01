@@ -186,6 +186,11 @@ of the points as dynamic in under three minutes on a laptop (the 2.4 GB bag is r
 bag takes 78 s. [`ca mcp`](docs/commands/mcp.md) gives AI agents the same tools over MCP
 (`claude mcp add cloudanalyzer -- ca mcp`), from `slam_odometry` to `view_link`.
 
+[`ca vectormap-build`](docs/commands/vectormap-build.md) and the `build_vector_map` MCP tool
+draft Autoware Lanelet2 roads from a surveyed cloud and a trajectory, with evidence and
+validation reports. Review the draft with `ca web-view map.pcd draft-map` and edit it with
+`vectormap mcp draft-map/lanelet2_map.osm`.
+
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the
 [command reference](docs/commands/), [CI and quality gates](docs/ci.md) and the

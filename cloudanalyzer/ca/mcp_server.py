@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from ca.vector_map import build_vector_map
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
@@ -26,6 +27,16 @@ points, the fixed map) or posegraph_compare (two drives through the same places:
 changed). Those read every scan and take seconds to minutes on large drives. Outputs go to
 out_dir; view_link(out_dir) gives a link that opens them in the CloudAnalyzer web app for the
 person to look at.
+
+build_vector_map drafts Autoware roads from a surveyed cloud and a recorded trajectory
+already in the same metre frame. The trajectory must follow the outside forward lane.
+Use a new out_dir; the tool will not replace existing results. Choose lane counts, widths,
+traffic side and speed. A reference_map supplies only coordinate metadata; otherwise
+specify a projection and origin, or use Local. Detected boundaries are candidates; read
+the evidence counts, warnings and validation issues and review the draft geometry.
+After generation, edit with the separate vectormap MCP server: register it with
+`claude mcp add vectormap -- vectormap mcp <out_dir>/lanelet2_map.osm`.
+Use view_link([cloud, out_dir]) to show the point cloud and Lanelet2 map together.
 """
 
 
@@ -208,7 +219,7 @@ def evaluate_trajectory(estimate: str, reference: str, align_rigid: bool = True)
     return evaluate(estimate, reference, align_rigid=align_rigid)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

@@ -55,6 +55,7 @@ There are **39** CLI subcommands (see `ca --help`). Summary:
 | `ca run-batch` | Combined map + trajectory benchmark across multiple runs |
 | `ca web-view` | Open results (maps, trajectories) in the web app with one link, served from this machine ([docs](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/commands/web-view.md)) |
 | `ca mcp` | Serve the pose graph and evaluation tools to AI agents over MCP ([docs](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/commands/mcp.md)) |
+| `ca vectormap-build` | Draft Autoware Lanelet2 roads from a cloud and a trajectory, with detected/inferred counts and validation ([docs](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/commands/vectormap-build.md)) |
 | `ca posegraph-compare` | Join two drives through the same places and list the changed objects (M3C2) ([docs](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/commands/posegraph-compare.md)) |
 | `ca posegraph-fix` | Fix a SLAM map: loops by ICP, IMU gravity, dynamic points out; fixed poses, g2o and map ([docs](https://github.com/rsasaki0109/CloudAnalyzer/blob/main/docs/commands/posegraph-fix.md)) |
 | `ca info` | Point cloud metadata (points, BBox, robust BBox, centroid) |

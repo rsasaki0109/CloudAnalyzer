@@ -55,6 +55,6 @@ def test_the_server_answers_over_stdio(tmp_path):
                 return names, result
 
     names, result = asyncio.run(run())
-    assert {"session_layout", "posegraph_fix", "posegraph_compare", "evaluate_map"} <= names
+    assert {"session_layout", "posegraph_fix", "posegraph_compare", "evaluate_map", "build_vector_map"} <= names
     text = "".join(c.text for c in result.content if getattr(c, "type", "") == "text")
     assert json.loads(text)["scans_matched"] == 4

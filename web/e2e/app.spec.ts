@@ -2241,6 +2241,10 @@ test("vector map: roads drawn over a cloud, a turn, a traffic light and a crossw
   await expect(page.locator("#vm-status")).toContainText("No map yet");
   await open(page, [{ name: "lanelet2_map.osm", buffer: Buffer.from(xml) }]);
   await expect(status(page)).toContainText("Opened lanelet2_map.osm: 4 lanes");
+  // Links produced by ca web-view / MCP view_link load Lanelet2 URLs too.
+  await page.route("https://maps.example/lanelet2_map.osm", (route) => route.fulfill({ body: xml, contentType: "application/xml" }));
+  await page.goto("/?url=https%3A%2F%2Fmaps.example%2Flanelet2_map.osm");
+  await expect(status(page)).toContainText("Opened lanelet2_map.osm: 4 lanes");
 });
 
 test("vector map: trajectory builds a ground-level draft with an evidence report and one-step undo", async ({ page }) => {

@@ -14,6 +14,7 @@ use pyo3::types::PyDict;
 mod bag;
 mod odometry;
 mod pose_graph;
+mod vector_map;
 
 /// Copy an `(N, 3)` array into points.
 fn points(array: &PyReadonlyArray2<f64>) -> PyResult<Vec<[f64; 3]>> {
@@ -661,6 +662,7 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(calibrate_ups, m)?)?;
     m.add_function(wrap_pyfunction!(profile, m)?)?;
     m.add_function(wrap_pyfunction!(normals, m)?)?;
+    m.add_function(wrap_pyfunction!(vector_map::build_vector_map, m)?)?;
     m.add_class::<CopcReader>()?;
     m.add_class::<pose_graph::PoseGraph>()?;
     m.add_class::<odometry::LidarOdometry>()?;

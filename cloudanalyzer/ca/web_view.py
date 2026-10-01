@@ -17,7 +17,7 @@ from pathlib import Path
 APP_URL = "https://rsasaki0109.github.io/CloudAnalyzer/app/"
 # What the app opens from a link: clouds and meshes, and TUM trajectories. KITTI pose text
 # (.txt) is left out: the app would take it for a point cloud.
-VIEWABLE = {".ply", ".pcd", ".las", ".laz", ".e57", ".xyz", ".obj", ".stl", ".tum", ".splat"}
+VIEWABLE = {".ply", ".pcd", ".las", ".laz", ".e57", ".xyz", ".obj", ".stl", ".tum", ".splat", ".osm"}
 
 
 def viewable_files(paths: list[str]) -> list[Path]:

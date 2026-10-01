@@ -24,6 +24,8 @@ def build_vector_map(
     speed_limit: float = 40.0,
     segment_length: float = 50.0,
     anchor_width_prior: bool = True,
+    track_boundaries: bool = True,
+    fit_boundaries: bool = True,
     merge_repeated_passes: bool = True,
     existing_map: str | None = None,
     reference_map: str | None = None,
@@ -39,6 +41,9 @@ def build_vector_map(
     Reference maps supply coordinate metadata only, never geometry. Explicit
     projections are mgrs, utm or transverse_mercator; an origin selects the MGRS tile or
     defines the local origin of the other projections. Omitted metadata uses Autoware Local.
+    Candidate tracking rejects isolated peaks; local curve fitting moves XY by at most
+    0.5 m and preserves ground heights. Evidence counts describe selected sources before
+    fitting, including explicit width priors. Both stages can be disabled independently.
     Review boundaries, repeated passes, travel directions and junctions before using the map.
     """
     module = core()
@@ -100,6 +105,8 @@ def build_vector_map(
             "speed_limit": speed_limit,
             "segment_length": segment_length,
             "anchor_width_prior": anchor_width_prior,
+            "track_boundaries": track_boundaries,
+            "fit_boundaries": fit_boundaries,
             "merge_repeated_passes": merge_repeated_passes,
         },
         allow_nan=False,

@@ -70,10 +70,17 @@ def test_cli_writes_the_same_report_with_mgrs_and_reference_metadata_only(
             "35.681236",
             "--origin-lon",
             "139.767125",
+            "--no-track-boundaries",
+            "--no-fit-boundaries",
         ],
     )
     assert result.exit_code == 0, result.output
     assert json.loads(result.stdout) == json.loads((out / "report.json").read_text())
+    report = json.loads(result.stdout)
+    assert report["options"]["track_boundaries"] is False
+    assert report["options"]["fit_boundaries"] is False
+    assert report["extraction"]["tracked_vertices"] == 0
+    assert report["extraction"]["fitted_vertices"] == 0
     assert "projector_type: MGRS" in (out / "map_projector_info.yaml").read_text()
     copied = tmp_path / "copy"
     report = build_vector_map(

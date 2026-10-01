@@ -2333,9 +2333,12 @@ test("vector map: trajectory builds a ground-level draft with an evidence report
   await expect(status(page)).toContainText("trajectory of 3 poses");
   await page.locator("#vector-map-panel").getByText("Build from a trajectory", { exact: true }).click();
   await expect(page.locator("#vm-build")).toBeEnabled();
+  await expect(page.locator("#vm-track-boundaries")).toBeChecked();
+  await expect(page.locator("#vm-fit-boundaries")).toBeChecked();
   await page.locator("#vm-build").click();
   await expect(status(page)).toContainText("Draft roads added");
   await expect(page.locator("#vm-build-report")).toContainText("configured lane width");
+  await expect(page.locator("#vm-build-report")).toContainText("Measured sources before fitting");
   await expect(page.locator("#vm-status")).toContainText("2 lanes");
   const saved = page.waitForEvent("download", (file) => file.suggestedFilename() === "lanelet2_map.osm");
   await page.locator("#vm-export").click();

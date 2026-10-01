@@ -9,7 +9,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
-    "media": "playwright test --config playwright.media.config.ts && node scripts/readme-gif.mjs"
+    "media": "playwright test --config playwright.media.config.ts && node scripts/readme-gif.mjs",
+    "media:vectormap": "playwright test --config playwright.media.config.ts vector-map.spec.ts && node scripts/vector-map-gif.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"

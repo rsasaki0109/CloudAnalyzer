@@ -47,9 +47,16 @@ pose graph with one scan per pose.
   and tied in with loops.
 - **Export** the graph as g2o, the poses as KITTI / TUM, and the map as a cloud.
 - **Build a vector map** over the point cloud: draft boundaries from a cloud and a trajectory with measured/inferred counts, draw roads with lanes in either direction, connect junctions,
-  add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
+  drag shared boundary vertices, add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
   [vectormap-rs](https://github.com/rsasaki0109/vectormap-rs), checks the map for Autoware, and saves
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
+
+<p align="center">
+  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map.gif" alt="Real PandaSet LiDAR and recorded poses become a lane draft; a shared boundary vertex is dragged and the map is saved for Autoware" width="800"></a><br>
+  <b>Draft, review, edit, export.</b> Real PandaSet scene 019 data; inferred boundaries need manual review.<br>
+  <a href="docs/vector-map-validation.md">Measured accuracy and limitations</a> ·
+  <a href="docs/vector-map-media.md">Reproduce this GIF</a>
+</p>
 
 ## 2. Clean it and see what changed
 
@@ -225,5 +232,6 @@ The pose graph pictures are of real drives: [NCLT](http://robots.engin.umich.edu
 [`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) and 2012-06-15 / 2012-12-01 for the loops, corrections and seasons,
 with the ROS bag demos made from 2012-04-29 and 2012-06-15 by [`scripts/make_nclt_bag.py`](scripts/make_nclt_bag.py); and [PandaSet](https://pandaset.org)
 scene 019 (Scale AI and Hesai, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched with
-[`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects.
+[`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects,
+and [`scripts/prepare_vector_map_pandaset.py`](scripts/prepare_vector_map_pandaset.py) for the vector map GIF.
 KITTI data is not redistributed here.

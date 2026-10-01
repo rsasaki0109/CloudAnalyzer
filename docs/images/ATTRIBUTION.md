@@ -27,6 +27,15 @@ upstream dataset terms.
 with `scripts/fetch_pandaset.py` (the 360° Pandar64 only, moved into its own frame) and recorded with
 `PANDASET_DIR=<dir> npm run media` in `web/`. The GIFs are adapted from PandaSet.
 
+`web/vector-map.gif` is also adapted from PandaSet 019 under CC BY 4.0, using
+Pandar64 frames 0, 8, …, 72 with original world coordinates and intensity and
+all 80 recorded positions. It adds generated draft lane geometry, explanatory
+captions and a cursor ring, and crops/scales the real Web app capture. Scale AI
+and Hesai provided the source data. Preparation uses
+[`scripts/prepare_vector_map_pandaset.py`](../../scripts/prepare_vector_map_pandaset.py);
+recording uses `VECTOR_MAP_DEMO_DIR=<dir> npm run media:vectormap` in `web/`.
+See [reproduction and accuracy limits](../vector-map-media.md).
+
 ## Web App Pictures from NCLT
 
 `web/loop.gif`, `web/posegraph.jpg` and the pose graph part of `web/demo.gif` show the web app on session

@@ -83,6 +83,9 @@ def test_cli_writes_the_same_report_with_mgrs_and_reference_metadata_only(
         reference_map=str(out / "lanelet2_map.osm"),
     )
     assert report["extraction"]["lanes"] == 2  # No reference geometry is added.
+    assert (copied / "lanelet2_map.osm").read_text().count(
+        '<tag k="subtype" v="road"/>'
+    ) == 2
     assert (copied / "map_projector_info.yaml").read_bytes() == (
         out / "map_projector_info.yaml"
     ).read_bytes()

@@ -9,6 +9,7 @@ on:
       - "rust/crates/ca-py/**"
       - "cloudanalyzer/ca/_rust.py"
       - "cloudanalyzer/tests/test_rust_core.py"
+      - "cloudanalyzer/tests/test_vector_map.py"
       - ".github/workflows/python-core.yml"
   pull_request:
     branches: [main]
@@ -17,6 +18,7 @@ on:
       - "rust/crates/ca-py/**"
       - "cloudanalyzer/ca/_rust.py"
       - "cloudanalyzer/tests/test_rust_core.py"
+      - "cloudanalyzer/tests/test_vector_map.py"
       - ".github/workflows/python-core.yml"
   workflow_dispatch:
 

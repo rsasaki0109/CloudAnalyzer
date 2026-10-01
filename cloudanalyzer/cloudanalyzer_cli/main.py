@@ -4666,6 +4666,57 @@ def tracking_evaluate_cmd(
         raise typer.Exit(code=1)
 
 
+@app.command("copc-tile")
+def copc_tile_cmd(
+    source: str = typer.Argument(..., help="Local or HTTP(S) COPC source"),
+    out: str = typer.Option(..., "--out", help="New job directory, or existing job with --resume"),
+    grid: float = typer.Option(..., "--grid", help="XY tile width in source coordinate units"),
+    halo: float = typer.Option(0, "--halo", help="Neighbor support width in source units"),
+    box: Optional[str] = typer.Option(None, "--box", help="Inclusive original-coordinate xmin,ymin,zmin,xmax,ymax,zmax"),
+    origin: str = typer.Option("0,0", "--origin", help="XY grid origin in source coordinates"),
+    chunk_size: int = typer.Option(10000, "--chunk-size", help="Requested points per batch; frames also have an 8 MiB cap"),
+    resume: bool = typer.Option(False, "--resume", help="Verify source/options and continue committed prefix"),
+    stop_after_nodes: Optional[int] = typer.Option(None, "--stop-after-nodes", help="Commit this many new nodes then pause"),
+    max_node_output_mib: int = typer.Option(256, "--max-node-output-mib", help="Per-node output quota; may be increased on resume"),
+    max_fragments_per_node: int = typer.Option(65536, "--max-fragments-per-node", help="Per-node fragment quota; may be increased on resume"),
+) -> None:
+    """Create bounded full-density tile packs with halo and durable checkpoints."""
+    from ca.copc_tiles import tile_copc
+    from sqlite3 import Error as SqliteError
+
+    try:
+        report = tile_copc(source, out, grid, halo=halo,
+                           bounds=[float(v) for v in box.split(",")] if box else None,
+                           origin=[float(v) for v in origin.split(",")], chunk_size=chunk_size,
+                           resume=resume, stop_after_nodes=stop_after_nodes,
+                           max_node_output_bytes=max_node_output_mib << 20,
+                           max_fragments_per_node=max_fragments_per_node)
+    except (OSError, ValueError, RuntimeError, SqliteError) as error:
+        _handle_error(error)
+        return
+    typer.echo(json.dumps(report, indent=2))
+
+
+@app.command("copc-tile-export")
+def copc_tile_export_cmd(
+    job: str = typer.Argument(..., help="COPC tile job directory"),
+    i: int = typer.Option(..., "--i", help="Tile X grid index"),
+    j: int = typer.Option(..., "--j", help="Tile Y grid index"),
+    out: str = typer.Option(..., "--out", help="New .las/.laz artifact"),
+    include_halo: bool = typer.Option(False, "--include-halo", help="Export halo with explicit source identity/halo dimensions"),
+) -> None:
+    """Stream one committed tile to LAS/LAZ with original attributes and CRS."""
+    from ca.copc_tiles import export_copc_tile
+    from sqlite3 import Error as SqliteError
+
+    try:
+        report = export_copc_tile(job, i, j, out, include_halo=include_halo)
+    except (OSError, ValueError, RuntimeError, SqliteError) as error:
+        _handle_error(error)
+        return
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command("split")
 def split_cmd(
     input_path: str = typer.Argument(..., help="Input point cloud file"),

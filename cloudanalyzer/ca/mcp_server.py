@@ -51,6 +51,15 @@ it does not classify an unlabelled object or infer lamps, stop lines or controll
 After generation, edit with the separate vectormap MCP server: register it with
 `claude mcp add vectormap -- vectormap mcp <out_dir>/lanelet2_map.osm`.
 Use view_link([cloud, out_dir]) to show the point cloud and Lanelet2 map together.
+
+tile_copc reads full-density local/HTTP COPC into bounded XY tile packs and a SQLite
+journal, preserving raw LAS fields and source identities. Supply source-coordinate grid,
+origin, optional box and halo. Use a new out_dir; resume=true requires the same source/options.
+stop_after_nodes bounds a call and commits a resumable prefix. Core counts exclude halo copies.
+export_copc_tile streams one committed tile to new LAS/LAZ; include_halo adds explicit flags
+and source identities. Packs are internal artifacts, not files the viewer can directly open.
+Physical ten-billion-point processing is not benchmarked; finite halo cannot establish exact
+global neighbors/ICP. Read the returned small summary and manifest rather than load all packs.
 """
 
 
@@ -233,7 +242,34 @@ def evaluate_trajectory(estimate: str, reference: str, align_rigid: bool = True)
     return evaluate(estimate, reference, align_rigid=align_rigid)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+def tile_copc(source: str, out_dir: str, grid_size: float, halo: float = 0,
+              bounds: list[float] | None = None, origin: list[float] | None = None,
+              chunk_size: int = 10_000, resume: bool = False,
+              stop_after_nodes: int | None = None, max_node_output_bytes: int = 256 << 20,
+              max_fragments_per_node: int = 65_536) -> dict[str, Any]:
+    """Create or resume full-density XY COPC tiles with source attributes, halo and disk checkpoints.
+
+    Use a new directory initially; compatible resume verifies source/options and committed hashes.
+    Coordinates are in source units. Stop after new nodes for bounded calls; packs require export
+    before viewing. Halo copies do not increase core totals; fixed halo is not global-neighbor proof.
+    """
+    from ca.copc_tiles import tile_copc as run
+    return run(source, out_dir, grid_size, halo=halo, bounds=bounds, origin=origin,
+               chunk_size=chunk_size, resume=resume, stop_after_nodes=stop_after_nodes,
+               max_node_output_bytes=max_node_output_bytes, max_fragments_per_node=max_fragments_per_node)
+
+
+def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bool = False) -> dict[str, Any]:
+    """Export one committed COPC job tile to a new LAS/LAZ with original schema and CRS.
+
+    Default exports uniquely owned core records. include_halo adds halo/source identity dimensions.
+    Existing output is refused. Hashes are checked and bounded frames stream without a global cloud.
+    """
+    from ca.copc_tiles import export_copc_tile as run
+    return run(out_dir, i, j, output, include_halo=include_halo)
+
+
+TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

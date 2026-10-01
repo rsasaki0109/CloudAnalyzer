@@ -92,5 +92,6 @@ def test_non_index_evlr_preservation_and_metadata_limit(tmp_path):
         assert len(stream.header.evlrs) == 1
         assert stream.header.evlrs[0].record_data_bytes() == payload
         assert stream.header.evlrs[0].user_id == "test_metadata"
+        assert stream.raw_metadata_evlrs == evlr + payload
     with pytest.raises(ValueError, match="metadata byte limit"):
         cc.CopcStream(path, limits=cc.CopcLimits(metadata_bytes=int.from_bytes(data[96:100], "little")))

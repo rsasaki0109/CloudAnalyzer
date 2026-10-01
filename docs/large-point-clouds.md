@@ -258,6 +258,8 @@ fit configured limits, and persistent output/storage must fit the chosen disk
 and filesystem. With 36-byte original records, raw packs use 45 bytes per
 record before halo: ten billion records alone require about 450 GB plus pack,
 SQLite, halo and exported-artifact costs. This is format arithmetic, not a
-measured storage result or runtime extrapolation. Current Web loading remains
-LOD output in memory, and native vector-map whole-cloud paths still need a
-bounded spatial selection. GPU work is reserved for measured kernel needs.
+measured storage result or runtime extrapolation. Ordinary Web loading retains
+LOD output in memory, alongside the bounded full-density working-box option.
+Native road/junction generation and signal-format compatibility readers still
+load whole clouds; spatial signal inputs use the capped reader described above.
+GPU work is reserved for measured kernel needs.

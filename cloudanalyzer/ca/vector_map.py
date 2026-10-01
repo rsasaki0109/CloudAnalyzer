@@ -23,6 +23,7 @@ def build_vector_map(
     lane_width: float = 3.5,
     speed_limit: float = 40.0,
     segment_length: float = 50.0,
+    anchor_width_prior: bool = True,
     reference_map: str | None = None,
     projection: str | None = None,
     origin_lat: float | None = None,
@@ -86,6 +87,7 @@ def build_vector_map(
             "lane_width": lane_width,
             "speed_limit": speed_limit,
             "segment_length": segment_length,
+            "anchor_width_prior": anchor_width_prior,
         },
         allow_nan=False,
     )

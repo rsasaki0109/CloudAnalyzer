@@ -28,6 +28,8 @@ pub struct BuildOptions {
     pub sample_spacing: f64,
     /// Radius in resampled vertices of the triangular trajectory smoother.
     pub smoothing_window: usize,
+    /// Place inferred lane lines relative to nearby detected outer boundaries.
+    pub anchor_width_prior: bool,
     /// Half-length of each longitudinal slice.
     pub half_window: f64,
     /// How far a measured boundary can deviate from its nominal position.
@@ -48,6 +50,7 @@ impl Default for BuildOptions {
             segment_length: 50.0,
             sample_spacing: 2.0,
             smoothing_window: 2,
+            anchor_width_prior: true,
             half_window: 2.0,
             search_margin: 1.5,
             bin_width: 0.2,
@@ -91,6 +94,7 @@ pub struct BuildReport {
     pub curb_vertices: usize,
     pub support_edge_vertices: usize,
     pub width_prior_vertices: usize,
+    pub anchored_prior_vertices: usize,
     pub observed_fraction: Vec<f64>,
     pub warnings: Vec<String>,
 }
@@ -337,6 +341,7 @@ pub fn extract(
         curb_vertices: 0,
         support_edge_vertices: 0,
         width_prior_vertices: 0,
+        anchored_prior_vertices: 0,
         observed_fraction: vec![0.0; nlanes + 1],
         warnings: Vec::new(),
     };
@@ -493,6 +498,11 @@ pub fn extract(
             "no continuous road surface found near the trajectory; check the coordinate frame and point density",
         );
     }
+    if o.anchor_width_prior {
+        for road in &mut roads {
+            report.anchored_prior_vertices += anchor_priors(road, &nominal);
+        }
+    }
     let mut totals = vec![0usize; nlanes + 1];
     for road in &roads {
         report.generated_length += length(&road.reference);
@@ -516,6 +526,7 @@ pub fn extract(
             report.observed_fraction[j] /= n as f64;
         }
     }
+    report.intensity_used = report.intensity_vertices > 0;
     report.roads = roads.len();
     if !report.intensity_used {
         report.warnings.push(
@@ -529,6 +540,9 @@ pub fn extract(
             report.width_prior_vertices
         ));
     }
+    if report.anchored_prior_vertices > 0 {
+        report.warnings.push(format!("{} inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",report.anchored_prior_vertices));
+    }
     if report.support_edge_vertices > 0 {
         report.warnings.push("Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.".into());
     }
@@ -537,6 +551,57 @@ pub fn extract(
     }
     report.warnings.push("Draft map: verify lane counts, travel directions, junctions and boundary geometry before use.".into());
     Ok((roads, report))
+}
+
+/// Estimate a slowly varying lateral offset from detected outside edges. A
+/// five-section median rejects single-section curb/coverage outliers. Only
+/// width-prior vertices move; measured candidates retain their geometry and
+/// inferred vertices keep their evidence label. No reference map is consulted.
+fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64]) -> usize {
+    let n = road.reference.len();
+    let last = nominal.len() - 1;
+    let normals: Vec<_> = (0..n)
+        .map(|k| {
+            let a = road.reference[k.saturating_sub(1)];
+            let b = road.reference[(k + 1).min(n - 1)];
+            let norm = (b[0] - a[0]).hypot(b[1] - a[1]).max(1e-12);
+            [-(b[1] - a[1]) / norm, (b[0] - a[0]) / norm]
+        })
+        .collect();
+    let residuals: Vec<_> = (0..n)
+        .map(|k| {
+            let p = road.reference[k];
+            let mut sum = 0.0;
+            let mut count = 0;
+            for j in [0, last] {
+                if road.evidence[j][k] != Evidence::WidthPrior {
+                    let q = road.boundaries[j][k];
+                    sum +=
+                        (q[0] - p[0]) * normals[k][0] + (q[1] - p[1]) * normals[k][1] - nominal[j];
+                    count += 1;
+                }
+            }
+            (sum / f64::from(count.max(1)), count > 0)
+        })
+        .collect();
+    let mut moved = 0;
+    for k in 0..n {
+        if !residuals[k].1 {
+            continue;
+        }
+        let start = k.saturating_sub(2);
+        let end = (k + 2).min(n - 1);
+        let mut values: Vec<_> = residuals[start..=end].iter().map(|r| r.0).collect();
+        let offset = quantile(&mut values, 0.5).unwrap();
+        for (j, &value) in nominal.iter().enumerate() {
+            if road.evidence[j][k] == Evidence::WidthPrior && offset.abs() > 1e-6 {
+                road.boundaries[j][k][0] = road.reference[k][0] + normals[k][0] * (value + offset);
+                road.boundaries[j][k][1] = road.reference[k][1] + normals[k][1] * (value + offset);
+                moved += 1;
+            }
+        }
+    }
+    moved
 }
 
 /// Add extracted roads atomically to a map. Existing geometry and georeference
@@ -672,5 +737,40 @@ mod tests {
         assert!(report.unsupported_sections > 0);
         assert!(!report.intensity_used);
         assert!(report.width_prior_vertices > 0);
+    }
+
+    #[test]
+    fn outer_evidence_corrects_an_off_center_drive_without_claiming_observed_lines() {
+        let mut cloud = marked_road();
+        cloud.attributes.clear();
+        for p in &mut cloud.positions {
+            p[1] += 0.8;
+        }
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let disabled = BuildOptions {
+            anchor_width_prior: false,
+            ..Default::default()
+        };
+        let (baseline, _) = extract(&cloud, &poses, &disabled).unwrap();
+        let (refined, report) = extract(&cloud, &poses, &BuildOptions::default()).unwrap();
+        let expected = -1.75 + 0.8;
+        let error = |road: &ExtractedRoad| {
+            road.boundaries[1]
+                .iter()
+                .map(|p| (p[1] - expected).abs())
+                .sum::<f64>()
+                / road.reference.len() as f64
+        };
+        assert!(error(&baseline[0]) > 0.7);
+        assert!(error(&refined[0]) < 0.25);
+        assert_eq!(baseline[0].boundaries[0], refined[0].boundaries[0]);
+        assert_eq!(baseline[0].boundaries[2], refined[0].boundaries[2]);
+        assert!(
+            refined[0].evidence[1]
+                .iter()
+                .all(|e| *e == Evidence::WidthPrior)
+        );
+        assert!(report.anchored_prior_vertices > 0);
+        assert!(!report.intensity_used);
     }
 }

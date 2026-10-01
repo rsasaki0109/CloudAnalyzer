@@ -32,8 +32,11 @@ fn sample(line: &Polyline3, spacing: f64) -> Vec<[f64; 3]> {
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<_> = env::args().skip(1).collect();
-    if args.len() != 4 {
-        return Err("expected cloud.pcd trajectory.csv reference.osm output-directory".into());
+    if !(4..=5).contains(&args.len()) {
+        return Err(
+            "expected cloud.pcd trajectory.csv reference.osm output-directory [options.json]"
+                .into(),
+        );
     }
     let cloud = ca_core::read(&args[0], &fs::read(&args[0])?)?;
     let poses = trajectory::parse(&fs::read_to_string(&args[1])?, trajectory::Format::Csv)?;
@@ -42,9 +45,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     } else {
         lanelet2::read_str(&fs::read_to_string(&args[2])?, &Default::default())?.map
     };
-    let options = BuildOptions {
+    let defaults = BuildOptions {
         left_hand_traffic: args[2] != "-",
         ..Default::default()
+    };
+    let options: BuildOptions = if let Some(path) = args.get(4) {
+        serde_json::from_str(&fs::read_to_string(path)?)?
+    } else {
+        defaults
     };
     let mut map = Map::new();
     // Coordinate metadata only; reference lane geometry is used only for scoring.
@@ -89,6 +97,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect();
     let out = PathBuf::from(&args[3]);
     fs::create_dir_all(&out)?;
+    let comparison = json!({
+        "options":options,"trajectory":poses.positions,
+        "cloud":cloud.positions.iter().step_by((cloud.len()/20_000).max(1)).collect::<Vec<_>>(),
+        "reference":truth.boundaries().map(|b| json!({"id":b.id,"kind":b.kind,"points":b.geometry,
+            "scored":boundary_ids.contains(&b.id)})).collect::<Vec<_>>(),
+        "reference_centers":truth.lanes().filter_map(|l|truth.centerline(l.id).map(|line|json!({"id":l.id,"points":line,"left":l.left.boundary,"right":l.right.boundary}))).collect::<Vec<_>>(),
+        "generated":extracted.iter().map(|r|json!({"reference":r.reference,"boundaries":r.boundaries,"evidence":r.evidence})).collect::<Vec<_>>()
+    });
+    fs::write(
+        out.join("comparison.json"),
+        serde_json::to_string(&comparison)?,
+    )?;
     let issues = autoware::save(&map, &out)?;
     if args[2] == "-" {
         let result =

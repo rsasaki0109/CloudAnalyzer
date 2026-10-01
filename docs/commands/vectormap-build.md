@@ -20,6 +20,10 @@ the end of ground coverage provide boundary candidates. Missing features use a w
 missing ground splits the road. Coverage edges can be scan gaps. Review the draft geometry,
 lane counts, directions, repeated passes and junctions before using it.
 
+Inferred lines are anchored to detected outer edges when available, while keeping their
+inferred label. This reduces dependence on the trajectory being exactly at the lane centre.
+`--no-anchor-width-prior` disables that adjustment; the MCP option is `anchor_width_prior`.
+
 Traffic keeps left by default. Options include `--right-hand`, `--forward-lanes 1`,
 `--backward-lanes 1`, `--lane-width 3.5` (metres), `--speed-limit 40` (km/h) and
 `--segment-length 50` (metres; zero keeps each stretch whole).

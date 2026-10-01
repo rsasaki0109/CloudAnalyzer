@@ -438,7 +438,9 @@
       frame in metres. Set lane counts, width, traffic side and speed under <b>Road options</b>.
       The trajectory must follow the outside forward lane. Elevations come from the point cloud.
       The builder follows intensity peaks, curb steps and the end of ground coverage; boundaries
-      without a detected feature use the configured width. The report gives the measured fraction
+      without a detected feature use the configured width. Inferred lines are anchored to detected outer edges by default; clear
+      the checkbox to keep them relative to the trajectory. They remain inferred after adjustment.
+      The report gives the measured fraction
       for each boundary and warns about missing data. Scan gaps can look like road edges.
       Review the draft, especially repeated passes, lane changes and junctions; use <b>Connect</b>
       to add junction links. A whole build can be undone in one step.

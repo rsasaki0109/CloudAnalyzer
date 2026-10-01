@@ -19,7 +19,7 @@ NavSatFix measurements over about 127 m; they are projected into MGRS tile 54SUE
 PROJ. The reference Lanelet2 geometry is used only for scoring, never for extraction.
 The evaluation copies only its coordinate metadata into the generated map.
 
-With default options, the builder produced two supported stretches, six lane sections and
+With the original defaults (outer-edge anchoring disabled), the builder produced two supported stretches, six lane sections and
 122.13 m of reference line. One section lacked ground support. Of 192 boundary vertices,
 52 were curb candidates, 24 coverage edge candidates and 116 width priors. The measured
 fractions for the three boundaries were 50%, 0% and 68.75%.
@@ -40,6 +40,47 @@ beyond the recorded drive. At a 0.3 m tolerance:
 These low scores establish that this GNSS-driven, intensity-free draft requires substantial
 geometry review. Export format checks passing do not establish lane geometry accuracy.
 No survey-grade accuracy is claimed. Inputs are not redistributed or used as README artwork.
+
+## Outer-edge anchoring and reproducible diagnostics
+
+The original width prior placed missing lane lines relative to the trajectory, assuming it
+was at the outside forward lane's centre. The recorded drive is often off the reference
+centreline, so this assumption displaces otherwise plausible lines. The builder now uses
+detected outer-edge offsets to position inferred boundaries, with a five-section median
+to reject isolated candidates. Detected vertices stay fixed and inferred vertices remain
+labelled as width priors. This cannot recover unobserved paint or establish lane counts.
+
+On the same files, lane counts and sampling method, with no reference geometry supplied
+to extraction:
+
+| Metric at 0.3 m | Original / anchoring disabled | Anchoring enabled |
+|---|---:|---:|
+| Boundary precision | 15.96% | 26.56% |
+| Boundary recall | 5.68% | 9.55% |
+| F1 | 0.0838 | 0.1404 |
+| Detected candidate vertex precision | 26.32% | 26.32% |
+
+The improvement is limited to inferred geometry. Road-edge detection remains imperfect,
+and overall accuracy still requires manual review. Changing ground extraction or interpreting
+coverage gaps as actual curbs is not justified by this experiment. The disabled mode
+reproduces the original measurements; no scoring tolerances or reference selections changed.
+
+The evaluation example also writes `comparison.json`, containing external reference
+boundaries, a cloud preview, the recorded trajectory and draft vertices with evidence labels.
+Plot an overlay, per-evidence error distribution and elevation comparison:
+
+```sh
+pip install numpy scipy matplotlib
+python scripts/vector_map_diagnose.py results/comparison.json results/plots
+```
+
+It writes `comparison.png`, `comparison.svg` and `diagnostics.json`; keep these external
+data artifacts outside version control. The original candidate errors were median 0.60 m
+for curbs, 0.52 m for coverage edges and 0.74 m for width priors. These are distances to
+the selected reference, not a measured GNSS sensor error. To reproduce the ablation,
+pass a fifth argument to the Rust example: a JSON options file containing
+`{"anchor_width_prior": false}`. CLI uses `--no-anchor-width-prior`; MCP accepts
+`anchor_width_prior=false`; the Web build panel has the corresponding checkbox.
 
 To reproduce after downloading and extracting the two official archives:
 

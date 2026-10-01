@@ -332,6 +332,7 @@ buildButton.onclick = async () => {
       lane_width: Number($<HTMLInputElement>("vm-width").value),
       speed_limit: Number($<HTMLInputElement>("vm-speed").value),
       segment_length: Number($<HTMLInputElement>("vm-segment").value),
+      anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
     };
     const edited = await vectorMap<Edited>("build", {
       id: Number(cloudInput.value), positions: trajectory.poses.positions, text: JSON.stringify(options),

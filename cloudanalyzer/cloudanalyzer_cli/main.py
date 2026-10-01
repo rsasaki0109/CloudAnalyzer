@@ -1847,6 +1847,38 @@ def view_cmd(
         _handle_error(e)
 
 
+@app.command("vectormap-build")
+def vectormap_build_cmd(
+    cloud: str = typer.Argument(..., help="Surveyed point cloud, in the trajectory's metre frame"),
+    trajectory: str = typer.Argument(..., help="TUM, KITTI or timestamped XYZ CSV; outside forward lane"),
+    out: str = typer.Option(..., "--out", help="New output directory; existing directories are not replaced"),
+    forward_lanes: int = typer.Option(1, "--forward-lanes"),
+    backward_lanes: int = typer.Option(1, "--backward-lanes"),
+    right_hand: bool = typer.Option(False, "--right-hand", help="Traffic keeps right (default: left)"),
+    lane_width: float = typer.Option(3.5, "--lane-width", help="Width prior in metres"),
+    speed_limit: float = typer.Option(40.0, "--speed-limit", help="Speed in km/h"),
+    segment_length: float = typer.Option(50.0, "--segment-length", help="Lane piece length in metres; 0 keeps whole roads"),
+    reference_map: Optional[str] = typer.Option(None, "--reference-map", help="Lanelet2 map supplying coordinate metadata only"),
+    projection: Optional[str] = typer.Option(None, "--projection", help="mgrs, utm or transverse_mercator; omit for Local"),
+    origin_lat: Optional[float] = typer.Option(None, "--origin-lat", help="Latitude of origin or MGRS tile representative"),
+    origin_lon: Optional[float] = typer.Option(None, "--origin-lon", help="Longitude of origin or MGRS tile representative"),
+) -> None:
+    """Draft Autoware Lanelet2 roads and print their evidence and validation report as JSON."""
+    from ca.vector_map import build_vector_map
+
+    try:
+        report = build_vector_map(
+            cloud, trajectory, out, forward_lanes=forward_lanes, backward_lanes=backward_lanes,
+            left_hand_traffic=not right_hand, lane_width=lane_width, speed_limit=speed_limit,
+            segment_length=segment_length, reference_map=reference_map, projection=projection,
+            origin_lat=origin_lat, origin_lon=origin_lon,
+        )
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+        return
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command("web-view")
 def web_view_cmd(
     paths: List[str] = typer.Argument(..., help="Files, or folders of results (their .ply, .pcd, .las/.laz, .tum ...)"),

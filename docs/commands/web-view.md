@@ -5,8 +5,9 @@ link: the maps and trajectories that `ca posegraph-fix`, `ca posegraph-compare` 
 wrote, to look at, measure and fix by hand.
 
 ```bash
-ca web-view fixed/                 # a folder: its .ply, .pcd, .las/.laz, .e57, .xyz, .obj/.stl, .tum and .splat files
+ca web-view fixed/                 # a folder: clouds, meshes, .tum trajectories and .osm maps
 ca web-view fixed/map.ply run.tum  # or files
+ca web-view map.pcd draft-map/     # point cloud and generated Lanelet2 map together
 ```
 
 The web app runs in the browser and cannot read files on your disk by itself, so `ca web-view`

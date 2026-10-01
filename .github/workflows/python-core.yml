@@ -9,6 +9,7 @@ on:
       - "rust/crates/ca-py/**"
       - "cloudanalyzer/ca/_rust.py"
       - "cloudanalyzer/tests/test_rust_core.py"
+      - "cloudanalyzer/tests/test_vector_map.py"
       - ".github/workflows/python-core.yml"
   pull_request:
     branches: [main]
@@ -17,6 +18,7 @@ on:
       - "rust/crates/ca-py/**"
       - "cloudanalyzer/ca/_rust.py"
       - "cloudanalyzer/tests/test_rust_core.py"
+      - "cloudanalyzer/tests/test_vector_map.py"
       - ".github/workflows/python-core.yml"
   workflow_dispatch:
 
@@ -97,7 +99,7 @@ jobs:
           pip install dist/*.whl
       - name: Rust core agrees with Open3D and laspy
         working-directory: cloudanalyzer
-        run: python -m pytest -q tests/test_rust_core.py tests/test_metrics.py tests/test_io.py
+        run: python -m pytest -q tests/test_rust_core.py tests/test_metrics.py tests/test_io.py tests/test_vector_map.py
 
   publish:
     # Push a tag such as `core-v0.1.0` to publish to PyPI (trusted publishing).

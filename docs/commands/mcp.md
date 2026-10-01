@@ -21,6 +21,7 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 | `slam_odometry(scans, out_dir, max_range?, voxel_size?, max_frames?, deskew?, pointcloud_topic?, imu_topic?, imu_to_lidar?)` | Raw scans without poses, as a folder or a ROS bag (`.bag`, `.mcap`, `.db3`, a rosbag2 folder): the Rust core's LiDAR odometry, writing `trajectory.tum` and `map.ply`; from a bag also the scans and, with an IMU topic, each scan's up direction (`pip install "cloudanalyzer[fast]"`) |
 | `posegraph_fix(folder, out_dir?, poses?, keyframe_spacing?, gravity?, remove_dynamic?, truth?, voxel?, map_voxel?, find_loops?)` | [`ca posegraph-fix`](posegraph-fix.md): loops, IMU gravity, dynamic points, the fixed g2o / poses / map |
 | `posegraph_compare(first, second, here, there, out_dir?, gravity_first?, gravity_second?, reach?, min_change?)` | [`ca posegraph-compare`](posegraph-compare.md): two drives joined, M3C2, the changed objects |
+| `build_vector_map(cloud, trajectory, out_dir, forward_lanes?, backward_lanes?, left_hand_traffic?, lane_width?, speed_limit?, segment_length?, reference_map?, projection?, origin_lat?, origin_lon?)` | Draft Autoware Lanelet2 roads, coordinate metadata and an evidence/validation report in a new directory ([details](vectormap-build.md)) |
 | `view_link(paths)` | A link that opens results (a folder or files) in the web app for the person, served from this machine while the server runs ([`ca web-view`](web-view.md)) |
 | `cloud_info(path)` | A cloud's size, bounds, centroid and density |
 | `evaluate_map(candidate, reference, thresholds?)` | Chamfer, Hausdorff, F1 at thresholds, AUC |
@@ -30,6 +31,16 @@ Paths are on the machine the server runs on. The pose graph tools read every sca
 short drive, a minute or so for a few thousand keyframes (KITTI 07, 1,101 scans: about 50 s), so
 give the client a generous tool timeout. `view_link(out_dir)` then gives the person one link that
 opens the maps and trajectories in the [web app](https://rsasaki0109.github.io/CloudAnalyzer/app/).
+
+## Draft a vector map
+
+For a surveyed cloud and a trajectory already in the same metre frame, call
+`build_vector_map`. The trajectory must follow the outside forward lane. Review its
+detected versus inferred boundary counts and validation issues; junctions and repeated
+passes require editing. `reference_map` copies coordinate metadata only. Use
+`view_link([cloud, out_dir])` to overlay the resulting `.osm` on the cloud. For subsequent
+editing register the separate server with
+`claude mcp add vectormap -- vectormap mcp <out_dir>/lanelet2_map.osm`.
 
 ## From raw scans
 

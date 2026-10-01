@@ -40,3 +40,9 @@ The `cloudanalyzer` CLI uses this package automatically when it is installed
 the Open3D implementation.
 
 Build from source with [maturin](https://www.maturin.rs/): `maturin develop --release`.
+
+`build_vector_map(cloud, trajectory, options="{}", reference_map=None, georeference=None)`
+returns a JSON string containing a draft Lanelet2 map, projector metadata, editable map IR
+and evidence/validation report. Inputs must already share a metre frame. For publication
+of all artifacts together, use [`ca vectormap-build`](../../../docs/commands/vectormap-build.md)
+or the `build_vector_map` tool from `ca mcp`.

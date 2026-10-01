@@ -67,7 +67,9 @@ impl LasLayout {
     /// `None` if `head` is too short to tell (read at least 227 bytes) or not LAS.
     pub fn header_len(head: &[u8]) -> Option<usize> {
         let header = LasHeader::parse(head).ok()?;
-        Some(header.data_offset + if header.compressed { 8 } else { 0 })
+        header
+            .data_offset
+            .checked_add(if header.compressed { 8 } else { 0 })
     }
 
     /// Open a file of `file_size` bytes. `Ok(None)` when it is not LAS or is
@@ -96,9 +98,17 @@ impl LasLayout {
             (Some(vlr), need, Vec::new())
         } else {
             let record_len = header.record_len as u64;
-            let total = header.count as u64;
-            if data + total * record_len > file_size {
+            let total = header.count;
+            let end = total
+                .checked_mul(record_len)
+                .and_then(|n| data.checked_add(n));
+            if end.is_none_or(|end| end > file_size) {
                 return Err(IoError::Truncated("LAS"));
+            }
+            if total.div_ceil(LAS_CHUNK_POINTS) > 2_000_000 {
+                return Err(IoError::Unsupported(
+                    "LAS layout exceeds 2 million chunks".into(),
+                ));
             }
             let chunks = (0..total.div_ceil(LAS_CHUNK_POINTS))
                 .map(|k| {
@@ -125,7 +135,12 @@ impl LasLayout {
 
     /// A chunk table offset, if it points past the data start and into the file.
     fn table_at(offset: i64, data: u64, file_size: u64) -> Option<u64> {
-        (offset > data as i64 && (offset as u64) + 8 <= file_size).then_some(offset as u64)
+        (offset >= 0
+            && offset as u64 > data
+            && (offset as u64)
+                .checked_add(8)
+                .is_some_and(|end| end <= file_size))
+        .then_some(offset as u64)
     }
 
     /// The byte range (`offset, length`) to read next, or `None` once the
@@ -162,14 +177,29 @@ impl LasLayout {
                     .get(4..8)
                     .map(|b| u32::from_le_bytes(b.try_into().unwrap()))
                     .ok_or(IoError::Truncated(FORMAT))?;
+                if chunks > 2_000_000 {
+                    return Err(IoError::Unsupported(
+                        "LAZ layout exceeds 2 million chunks".into(),
+                    ));
+                }
                 self.need = Need::Table { offset, chunks };
             }
-            Need::Table { .. } => {
+            Need::Table { chunks, .. } => {
+                if bytes.get(4..8) != Some(chunks.to_le_bytes().as_slice()) {
+                    return Err(IoError::header(FORMAT, "chunk table count changed"));
+                }
                 let vlr = self.laz.as_ref().expect("only LAZ reads a table");
                 let variable = vlr.uses_variable_size_chunks();
                 let table = ChunkTable::read(&mut Cursor::new(bytes), variable)
                     .map_err(|e| IoError::header(FORMAT, format!("bad chunk table: {e}")))?;
-                self.chunks = Self::layout(&table, vlr, data + 8, self.header.count as u64)?;
+                self.chunks = Self::layout(&table, vlr, data + 8, self.header.count)?;
+                if self.chunks.iter().any(|c| {
+                    c.offset
+                        .checked_add(c.size)
+                        .is_none_or(|end| end > self.file_size)
+                }) {
+                    return Err(IoError::Truncated(FORMAT));
+                }
                 self.need = Need::Nothing;
             }
         }
@@ -203,7 +233,9 @@ impl LasLayout {
                 size: entry.byte_count,
             });
             first += count;
-            offset += entry.byte_count;
+            offset = offset
+                .checked_add(entry.byte_count)
+                .ok_or_else(|| IoError::header(FORMAT, "chunk byte span overflow"))?;
         }
         if first < total {
             return Err(IoError::header(
@@ -220,7 +252,7 @@ impl LasLayout {
 
     /// Points in the file.
     pub fn total_points(&self) -> u64 {
-        self.header.count as u64
+        self.header.count
     }
 
     /// Bytes of the file start a [`ChunkDecoder`] needs (header and VLRs).
@@ -269,25 +301,42 @@ impl ChunkDecoder {
     ) -> Result<DecodedChunks, IoError> {
         let keep_every = keep_every.max(1);
         let len = self.header.record_len;
-        let kept: u64 = chunks
-            .iter()
-            .map(|c| (c.first + c.count).div_ceil(keep_every) - c.first.div_ceil(keep_every))
-            .sum();
-        let mut decoder = LasDecoder::new(self.header.clone(), kept as usize);
+        let kept: u64 = chunks.iter().try_fold(0u64, |sum, c| {
+            let end = c
+                .first
+                .checked_add(c.count)
+                .filter(|&end| end <= self.header.count)
+                .ok_or_else(|| {
+                    IoError::header(FORMAT, "chunk point span overflow or past total")
+                })?;
+            sum.checked_add(end.div_ceil(keep_every) - c.first.div_ceil(keep_every))
+                .ok_or_else(|| IoError::header(FORMAT, "output point count overflow"))
+        })?;
+        let capacity = usize::try_from(kept)
+            .map_err(|_| IoError::Unsupported("LAZ output exceeds address space".into()))?;
+        let mut decoder = LasDecoder::new(self.header.clone(), capacity)?;
         let mut bounds = Vec::with_capacity(chunks.len());
         let mut records = Vec::new();
         let mut at = 0usize;
         for chunk in chunks {
-            let data = bytes
-                .get(at..at + chunk.size as usize)
-                .ok_or(IoError::Truncated(FORMAT))?;
-            at += chunk.size as usize;
+            let end = usize::try_from(chunk.size)
+                .ok()
+                .and_then(|size| at.checked_add(size))
+                .ok_or_else(|| IoError::header(FORMAT, "chunk byte span exceeds address space"))?;
+            let data = bytes.get(at..end).ok_or(IoError::Truncated(FORMAT))?;
+            at = end;
+            let record_bytes = chunk
+                .count
+                .checked_mul(len as u64)
+                .and_then(|n| usize::try_from(n).ok())
+                .ok_or_else(|| IoError::header(FORMAT, "chunk records exceed address space"))?;
             let records: &[u8] = match &self.laz {
-                None => data
-                    .get(..chunk.count as usize * len)
-                    .ok_or(IoError::Truncated("LAS"))?,
+                None => data.get(..record_bytes).ok_or(IoError::Truncated("LAS"))?,
                 Some(vlr) => {
-                    records.resize(chunk.count as usize * len, 0);
+                    records
+                        .try_reserve(record_bytes.saturating_sub(records.len()))
+                        .map_err(|e| IoError::Unsupported(format!("LAZ allocation: {e}")))?;
+                    records.resize(record_bytes, 0);
                     decompress(vlr, data, &mut records)?;
                     &records
                 }
@@ -346,6 +395,21 @@ mod tests {
     use laz::{LasZipCompressor, LazItemRecordBuilder, LazVlrBuilder};
 
     const DATA: usize = 227;
+
+    #[test]
+    fn large_layout_count_and_overflow_are_checked_without_point_data() {
+        let mut h = header(0, 20, 0);
+        h.resize(375, 0);
+        h[25] = 4;
+        h[96..100].copy_from_slice(&375u32.to_le_bytes());
+        h[247..255].copy_from_slice(&10_000_000_000u64.to_le_bytes());
+        let layout = LasLayout::open(&h, 375 + 200_000_000_000).unwrap().unwrap();
+        assert_eq!(layout.total_points(), 10_000_000_000);
+        assert_eq!(layout.chunks().len(), 200_000);
+        assert_eq!(layout.chunks().last().unwrap().first, 9_999_950_000);
+        h[247..255].copy_from_slice(&u64::MAX.to_le_bytes());
+        assert!(LasLayout::open(&h, u64::MAX).is_err());
+    }
 
     /// A LAS 1.2 header for `n` records of `format` (`record_len` bytes)
     /// with 1 cm scale and offset (1000, 2000, 0).

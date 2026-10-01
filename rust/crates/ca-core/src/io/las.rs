@@ -47,7 +47,7 @@ fn rgb_offset(format: u8) -> Option<usize> {
 pub(crate) struct LasHeader {
     pub data_offset: usize,
     pub record_len: usize,
-    pub count: usize,
+    pub count: u64,
     pub compressed: bool,
     format: u8,
     pub scale: [f64; 3],
@@ -70,11 +70,13 @@ impl LasHeader {
         }
         let record_len = u16_at(b, 105)? as usize;
         let legacy_count = u32_at(b, 107)? as u64;
-        let count = if minor >= 4 && legacy_count == 0 {
+        // LAS 1.4's extended count is authoritative, including legacy mode.
+        // Keep it independent of the address width (notably wasm32).
+        let count = if minor >= 4 {
             u64_at(b, 247)?
         } else {
             legacy_count
-        } as usize;
+        };
         if record_len < rgb_offset(format).map_or(20, |o| o + 6) {
             return Err(IoError::header(FORMAT, "point record too short"));
         }
@@ -106,7 +108,7 @@ pub(crate) struct LasDecoder {
 }
 
 impl LasDecoder {
-    pub fn new(header: LasHeader, capacity: usize) -> Self {
+    pub fn new(header: LasHeader, capacity: usize) -> Result<Self, IoError> {
         // Legacy formats pack the class into the low 5 bits of byte 15; the
         // 1.4 formats (6-10) give it the whole of byte 16.
         let (class_at, class_mask) = if header.format >= 6 {
@@ -115,16 +117,30 @@ impl LasDecoder {
             (15, 0x1f)
         };
         let rgb = rgb_offset(header.format);
-        Self {
+        let mut out = Self {
             rgb,
             class_at,
             class_mask,
-            positions: Vec::with_capacity(capacity),
-            wide_colors: Vec::with_capacity(if rgb.is_some() { capacity } else { 0 }),
-            intensity: Vec::with_capacity(capacity),
-            classification: Vec::with_capacity(capacity),
+            positions: Vec::new(),
+            wide_colors: Vec::new(),
+            intensity: Vec::new(),
+            classification: Vec::new(),
             header,
-        }
+        };
+        let allocation = |e| IoError::Unsupported(format!("LAS allocation: {e}"));
+        out.positions
+            .try_reserve_exact(capacity)
+            .map_err(allocation)?;
+        out.wide_colors
+            .try_reserve_exact(if rgb.is_some() { capacity } else { 0 })
+            .map_err(allocation)?;
+        out.intensity
+            .try_reserve_exact(capacity)
+            .map_err(allocation)?;
+        out.classification
+            .try_reserve_exact(capacity)
+            .map_err(allocation)?;
+        Ok(out)
     }
 }
 
@@ -253,8 +269,8 @@ pub(crate) fn stream(head: &[u8]) -> Result<Option<(Box<dyn RecordDecoder>, usiz
     if header.compressed {
         return Ok(None);
     }
-    let (offset, count) = (header.data_offset, header.count as u64);
-    Ok(Some((Box::new(LasDecoder::new(header, 0)), offset, count)))
+    let (offset, count) = (header.data_offset, header.count);
+    Ok(Some((Box::new(LasDecoder::new(header, 0)?), offset, count)))
 }
 
 /// Read a whole LAS/LAZ file, keeping every `keep_every`-th point. LAZ is
@@ -268,8 +284,25 @@ pub(crate) fn read(b: &[u8], keep_every: usize) -> Result<PointCloud, IoError> {
         header.compressed,
     );
     let keep_every = keep_every.max(1);
+    // Validate the record span before allocating from an untrusted count.
+    let records = if compressed {
+        None
+    } else {
+        let size = count
+            .checked_mul(record_len as u64)
+            .and_then(|n| n.checked_add(data_offset as u64))
+            .and_then(|n| usize::try_from(n).ok())
+            .ok_or_else(|| IoError::header(FORMAT, "record span exceeds address space"))?;
+        Some(b.get(data_offset..size).ok_or(IoError::Truncated(FORMAT))?)
+    };
+    let capacity = usize::try_from(count.div_ceil(keep_every as u64))
+        .ok()
+        .filter(|&n| n <= isize::MAX as usize / std::mem::size_of::<[f64; 3]>())
+        .ok_or_else(|| {
+            IoError::Unsupported("LAS output exceeds address space; use chunked reading".into())
+        })?;
     let mut decoder: Box<dyn RecordDecoder> =
-        Box::new(LasDecoder::new(header, count.div_ceil(keep_every)));
+        Box::new(LasDecoder::new(header, capacity.min(50_000))?);
     let mut index = 0u64;
     if compressed {
         let vlr = laszip_vlr(b)?;
@@ -279,23 +312,25 @@ pub(crate) fn read(b: &[u8], keep_every: usize) -> Result<PointCloud, IoError> {
         source.set_position(data_offset as u64);
         let mut decompressor = laz::LasZipDecompressor::new(source, vlr)
             .map_err(|e| IoError::Unsupported(format!("LAZ: {e}")))?;
-        const BLOCK: usize = 50_000;
-        let mut buffer = vec![0u8; BLOCK * record_len];
+        let block_points = 50_000.min((4 << 20) / record_len).max(1);
+        let mut buffer = vec![0u8; block_points * record_len];
         let mut left = count;
         while left > 0 {
-            let n = left.min(BLOCK);
+            let n = left.min(block_points as u64) as usize;
             let block = &mut buffer[..n * record_len];
             decompressor
                 .decompress_many(block)
                 .map_err(|e| IoError::Unsupported(format!("LAZ: {e}")))?;
             decode_records(decoder.as_mut(), block, keep_every as u64, &mut index);
-            left -= n;
+            left -= n as u64;
         }
     } else {
-        let records = b
-            .get(data_offset..data_offset + record_len * count)
-            .ok_or(IoError::Truncated(FORMAT))?;
-        decode_records(decoder.as_mut(), records, keep_every as u64, &mut index);
+        decode_records(
+            decoder.as_mut(),
+            records.unwrap(),
+            keep_every as u64,
+            &mut index,
+        );
     }
     Ok(decoder.finish())
 }
@@ -324,6 +359,26 @@ pub(crate) fn laszip_vlr(b: &[u8]) -> Result<&[u8], IoError> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn extended_count_stays_64_bit_and_is_authoritative() {
+        let mut h = las(0, 20, &[]);
+        h.resize(375, 0);
+        h[25] = 4;
+        h[107..111].copy_from_slice(&7u32.to_le_bytes());
+        h[247..255].copy_from_slice(&10_000_000_000u64.to_le_bytes());
+        assert_eq!(LasHeader::parse(&h).unwrap().count, 10_000_000_000);
+        let (_, _, count) = stream(&h).unwrap().unwrap();
+        assert_eq!(count, 10_000_000_000);
+        // A header alone must fail before an allocation based on its count.
+        assert!(matches!(
+            read(&h, 1),
+            Err(IoError::Truncated(_)) | Err(IoError::Header { .. })
+        ));
+        h[247..255].copy_from_slice(&u64::MAX.to_le_bytes());
+        assert!(read(&h, 1).is_err());
+        assert!(crate::io::PointStream::open("huge.las", &h).is_err());
+    }
 
     fn las(format: u8, record_len: u16, records: &[Vec<u8>]) -> Vec<u8> {
         let mut h = vec![0u8; 227];

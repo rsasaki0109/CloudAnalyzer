@@ -48,6 +48,7 @@ dependencies = [
  "rusqlite",
  "ruzstd",
  "serde",
+ "serde_json",
  "thiserror",
  "vectormap-core",
 ]

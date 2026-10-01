@@ -1,6 +1,7 @@
 //! Point cloud file readers.
 
 pub mod copc;
+pub mod copc_query;
 mod e57;
 mod kitti;
 mod las;

@@ -3,7 +3,7 @@
 // parallel octree index build. Each pool worker owns a separate WASM instance, so no
 // SharedArrayBuffer (and no COOP/COEP headers) is needed.
 
-import { type ByteSource, readRange } from "./bytes";
+import { type ByteSource, MAX_RANGE_BYTES, readRange } from "./bytes";
 import init, {
   bucketChunk,
   OdometryMap,
@@ -211,7 +211,7 @@ async function run(request: SliceRequest): Promise<{ value: Value; transfer: Tra
       for (const k of offsets.map((_, k) => k).sort((a, b) => offsets[a] - offsets[b])) {
         const last = runs.at(-1);
         const end = offsets[k] + sizes[k];
-        if (last && offsets[k] <= last.end + (64 << 10)) last.end = Math.max(last.end, end);
+        if (last && offsets[k] <= last.end + (64 << 10) && end - last.start <= MAX_RANGE_BYTES) last.end = Math.max(last.end, end);
         else runs.push({ start: offsets[k], end });
       }
       const data = await Promise.all(runs.map((r) => readRange(request.source, r.start, r.end - r.start)));

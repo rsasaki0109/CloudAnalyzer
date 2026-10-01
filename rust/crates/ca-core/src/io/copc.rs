@@ -74,7 +74,7 @@ impl CopcHeader {
             halfsize: f(3),
             spacing: f(4),
             root_page: (u(5), u(6)),
-            total_points: las.count as u64,
+            total_points: las.count,
             las,
             laz,
         })
@@ -87,11 +87,18 @@ impl CopcHeader {
         decompressor
             .set_fields_from(self.laz.items())
             .map_err(|e| IoError::Unsupported(format!("COPC: {e}")))?;
-        let mut records = vec![0u8; count * record_len];
+        let size = count
+            .checked_mul(record_len)
+            .ok_or_else(|| IoError::header(FORMAT, "node record span overflow"))?;
+        let mut records = Vec::new();
+        records
+            .try_reserve_exact(size)
+            .map_err(|e| IoError::Unsupported(format!("COPC allocation: {e}")))?;
+        records.resize(size, 0);
         decompressor
             .decompress_many(&mut records)
             .map_err(|e| IoError::Unsupported(format!("COPC: {e}")))?;
-        let mut decoder = LasDecoder::new(self.las.clone(), count);
+        let mut decoder = LasDecoder::new(self.las.clone(), count)?;
         for record in records.chunks_exact(record_len) {
             decoder.decode(record);
         }
@@ -418,5 +425,15 @@ mod tests {
         las[..4].copy_from_slice(b"LASF");
         assert!(!CopcHeader::is_copc(&las));
         assert!(CopcHeader::parse(&las).is_err());
+    }
+
+    #[test]
+    fn count_is_not_narrowed_to_the_target_address_width() {
+        let mut file = write_minimal_copc(&[(key(0, 0, 0, 0), grid(2, 0.0))], [0.0; 3], 8.0);
+        file[247..255].copy_from_slice(&10_000_000_000u64.to_le_bytes());
+        assert_eq!(
+            CopcHeader::parse(&file).unwrap().total_points,
+            10_000_000_000
+        );
     }
 }

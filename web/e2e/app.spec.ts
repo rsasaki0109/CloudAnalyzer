@@ -888,10 +888,38 @@ test("demos: ?demo= loads synthetic samples and runs the analysis", async ({ pag
 test.describe("COPC", () => {
   const copc = readFileSync(new URL("./fixtures/small.copc.laz", import.meta.url));
 
+  test("WASM retains a 10 billion point header without allocating that many points", async ({ page }) => {
+    // Metadata regression only: the body still contains the 42,000-point fixture.
+    const headerTest = Buffer.from(copc);
+    headerTest.writeBigUInt64LE(10_000_000_000n, 247);
+    await open(page, [{ name: "large-header.copc.laz", buffer: headerTest }]);
+    await expect(status(page)).toContainText("42,000 of 10,000,000,000 points");
+  });
+
+  for (const fault of ["ignored", "missing", "wrong", "oversized"] as const) {
+    test(`rejects ${fault} HTTP range responses`, async ({ page }) => {
+      await page.route((url) => url.pathname === "/remote/fault.copc.laz", (route) => route.fulfill({
+        status: fault === "ignored" ? 200 : 206,
+        headers: fault === "missing" ? {} : { "content-range": fault === "wrong" ? `bytes 1-1024/${copc.length}` : `bytes 0-1023/${copc.length}` },
+        body: fault === "ignored" ? copc : copc.subarray(0, fault === "oversized" ? 1025 : 1024),
+      }));
+      await page.goto("/?url=/remote/fault.copc.laz");
+      await expect(status(page)).toContainText("Could not download");
+      await expect(page.locator(".cloud-list li")).toHaveCount(0);
+    });
+  }
+
   test("a local COPC file loads its octree levels", async ({ page }) => {
     await open(page, [{ name: "small.copc.laz", buffer: copc }]);
     await expect(status(page)).toContainText("Loaded small.copc.laz: 42,000 of 42,000 points (COPC levels 0–2)");
     await expect(page.locator("#class-panel")).toBeVisible();
+  });
+
+  test("rejects an ignored LAS range even for an extensionless URL", async ({ page }) => {
+    await page.route((url) => url.pathname === "/remote/opaque", (route) => route.fulfill({ status: 200, body: copc }));
+    await page.goto("/?url=/remote/opaque");
+    await expect(status(page)).toContainText("LAS/LAZ URLs require HTTP byte range support");
+    await expect(page.locator(".cloud-list li")).toHaveCount(0);
   });
 
   test("a remote COPC file is read with range requests", async ({ page }) => {

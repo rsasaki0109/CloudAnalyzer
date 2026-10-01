@@ -113,6 +113,9 @@ pass / fail gates. See the [guide](https://rsasaki0109.github.io/CloudAnalyzer/g
 COPC from a URL. LAS / LAZ larger than memory open thinned and fill in where you zoom; UTM and ECEF
 coordinates stay exact to the millimetre. **Saves** PLY, LAS / LAZ, E57, CSV and session links.
 
+See [large point cloud IO limits](docs/large-point-clouds.md) for HTTP range
+requirements, 64-bit counts, and the distinction between display LOD and full-density processing.
+
 ## Proven on real data
 
 From recordings, in the app: the built-in odometry, then loops and the IMU.

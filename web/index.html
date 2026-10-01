@@ -805,6 +805,29 @@
           <div id="vm-junction-candidates" class="small" style="max-height: 240px; overflow-y: auto"></div>
           <button id="vm-junction-apply" disabled>Add selected draft connections</button>
         </details>
+        <details class="options">
+          <summary>Measure a signal from points</summary>
+          <p class="hint small">Identify a signal head, excluding its pole and background. Segment it into a cloud, or enter a tight box in the original metre coordinates. This measures shape; confirm the object and controlled lanes. Lamps and stop lines need separate editing.</p>
+          <label>Point cloud <select id="vm-signal-cloud"></select></label>
+          <button id="vm-signal-bounds">Use cloud bounds</button>
+          <div class="param-grid">
+            <label>Min X <input id="vm-signal-min-x" type="number" step="any" /></label>
+            <label>Max X <input id="vm-signal-max-x" type="number" step="any" /></label>
+            <label>Min Y <input id="vm-signal-min-y" type="number" step="any" /></label>
+            <label>Max Y <input id="vm-signal-max-y" type="number" step="any" /></label>
+            <label>Min Z <input id="vm-signal-min-z" type="number" step="any" /></label>
+            <label>Max Z <input id="vm-signal-max-z" type="number" step="any" /></label>
+          </div>
+          <label>Controlled lane IDs (comma separated) <input id="vm-signal-lanes" /></label>
+          <button id="vm-signal-selected">Use selected lane</button>
+          <label>Identified kind <select id="vm-signal-kind"><option value="vehicle">Vehicle</option><option value="pedestrian">Pedestrian</option></select></label>
+          <div class="button-row">
+            <button id="vm-signal-preview">Measure and preview</button>
+            <button id="vm-signal-inspect" disabled>Inspect box points</button>
+            <button id="vm-signal-add" disabled>Add reviewed signal</button>
+          </div>
+          <p id="vm-signal-report" class="small"></p>
+        </details>
         <details id="vm-import-notes" hidden>
           <summary>Import notes</summary>
           <ol id="vm-import-issues" class="issue-list small"></ol>

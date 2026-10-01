@@ -63,6 +63,11 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert properties["preview_only"]["default"] is False
                 assert properties["max_gap"]["default"] == 30.0
                 assert "lane_pairs" in properties
+                signal = next(t for t in tools if t.name == "measure_vector_map_signal")
+                properties = signal.model_dump(by_alias=True)["inputSchema"]["properties"]
+                assert properties["preview_only"]["default"] is True
+                assert properties["bounds"]["type"] == "array"
+                assert properties["lanes"]["type"] == "array"
                 result = await session.call_tool("session_layout", {"folder": str(folder)})
                 return names, result
 

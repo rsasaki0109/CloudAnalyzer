@@ -143,6 +143,31 @@ impl VectorMapSession {
         serde_json::to_string(&report).map_err(error)
     }
 
+    /// Measure a user-identified signal head; additions are one undo step.
+    #[wasm_bindgen(js_name = measureSignal)]
+    pub fn measure_signal(
+        &mut self,
+        cloud: &crate::Cloud,
+        options: &str,
+        preview: bool,
+    ) -> Result<String, JsError> {
+        let o = serde_json::from_str(options).map_err(error)?;
+        let before = self.map.clone();
+        let report = if preview {
+            ca_core::vector_map::signals::measure(&self.map, &cloud.inner, &o)
+        } else {
+            ca_core::vector_map::signals::add(&mut self.map, &cloud.inner, &o)
+        }
+        .map_err(error)?;
+        if self.map != before {
+            self.undo.push(before);
+            if self.undo.len() > UNDO_DEPTH {
+                self.undo.remove(0);
+            }
+        }
+        serde_json::to_string(&report).map_err(error)
+    }
+
     /// Undo the last edit; false if there is none.
     pub fn undo(&mut self) -> bool {
         match self.undo.pop() {
@@ -292,6 +317,49 @@ impl Default for VectorMapSession {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn signal_measurement_preview_add_replay_and_undo_are_atomic() {
+        let mut s = super::VectorMapSession::new();
+        s.apply(r#"[{"op":"build_road","reference":[[0,0,2],[0,10,2]],"lanes":[{"width":3.5,"direction":"forward"}]}]"#).unwrap();
+        let lane = s.map.lanes().next().unwrap().id;
+        let mut points = ca_core::PointCloud::default();
+        for x in 0..=24 {
+            for z in 0..=10 {
+                points
+                    .positions
+                    .push([-0.6 + x as f64 * 0.05, 11.0, 7.0 + z as f64 * 0.05]);
+            }
+        }
+        let cloud = crate::Cloud::unindexed(points);
+        let options =
+            serde_json::json!({"min":[-0.7,10.9,6.9],"max":[0.7,11.1,7.6],"lanes":[lane]})
+                .to_string();
+        let before = s.to_json();
+        let depth = s.undo.len();
+        s.measure_signal(&cloud, &options, true).unwrap();
+        assert_eq!(s.to_json(), before);
+        assert_eq!(s.undo.len(), depth);
+        s.measure_signal(&cloud, &options, false).unwrap();
+        assert_eq!(s.undo.len(), depth + 1);
+        let added = s.to_json();
+        s.measure_signal(&cloud, &options, false).unwrap();
+        assert_eq!(s.to_json(), added);
+        assert_eq!(s.undo.len(), depth + 1);
+        let exported: serde_json::Value = serde_json::from_str(&s.export_lanelet2(true)).unwrap();
+        let mut restored = super::VectorMapSession::new();
+        restored
+            .open("map.osm", exported["osm"].as_str().unwrap())
+            .unwrap();
+        let imported = restored.to_json();
+        let replay: serde_json::Value =
+            serde_json::from_str(&restored.measure_signal(&cloud, &options, false).unwrap())
+                .unwrap();
+        assert!(replay["reused"].is_number());
+        assert_eq!(restored.to_json(), imported);
+        assert_eq!(restored.undo.len(), 0);
+        assert!(s.undo());
+        assert_eq!(s.to_json(), before);
+    }
     use super::*;
 
     #[test]

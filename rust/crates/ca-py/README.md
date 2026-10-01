@@ -54,3 +54,10 @@ pairs add all supported branches. Existing IR geometry/rules/coordinates remain 
 new connections require review of permitted turns and clearance. Use
 [`ca vectormap-connect`](../../../docs/commands/vectormap-connect.md) or its MCP tool for
 atomic publication into a new directory.
+
+`measure_vector_map_signal(cloud, vector_map, options, preview_only=True)` measures
+a user-identified signal head. Options are JSON `min`, `max`, explicit `lanes`
+and optional `kind`. It returns measured geometry and support plus the usual map
+artifacts. Classification, controlled lanes, lamps and stop lines are not inferred.
+Use [`ca vectormap-signal`](../../../docs/commands/vectormap-signal.md) or its MCP
+tool to preview and publish the artifacts together.

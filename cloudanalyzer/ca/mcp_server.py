@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from ca.vector_map import build_vector_map, connect_vector_map_junctions
+from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
@@ -44,6 +44,10 @@ then call it with the original vector_map, a different new out_dir and selected 
 Omitting lane_pairs adds all proposals; [] adds none. Prefer editable IR to retain imported
 rules and metadata. Ground support cannot establish legal turns, lane clearance or signal
 rules. Existing rules remain, but new connections require traffic-rule review.
+measure_vector_map_signal fits housing geometry from a user-identified head's 3D box.
+Supply original-coordinate bounds and explicitly confirmed controlled lane IDs. Preview
+first, then add with preview_only=false in another new out_dir. This measures shape;
+it does not classify an unlabelled object or infer lamps, stop lines or controlled lanes.
 After generation, edit with the separate vectormap MCP server: register it with
 `claude mcp add vectormap -- vectormap mcp <out_dir>/lanelet2_map.osm`.
 Use view_link([cloud, out_dir]) to show the point cloud and Lanelet2 map together.
@@ -229,7 +233,7 @@ def evaluate_trajectory(estimate: str, reference: str, align_rigid: bool = True)
     return evaluate(estimate, reference, align_rigid=align_rigid)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

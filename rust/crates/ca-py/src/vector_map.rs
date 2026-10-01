@@ -157,6 +157,29 @@ pub fn connect_vector_map_junctions(
     .map_err(PyValueError::new_err)
 }
 
+/// Measure a user-identified signal box; controlled lanes are supplied explicitly.
+#[pyfunction]
+#[pyo3(signature = (cloud, vector_map, options, preview_only=true))]
+pub fn measure_vector_map_signal(py: Python<'_>, cloud: &str, vector_map: &str, options: &str, preview_only: bool) -> PyResult<String> {
+    py.detach(|| {
+        let parameters = serde_json::from_str(options).map_err(|e| e.to_string())?;
+        let text = std::fs::read_to_string(vector_map).map_err(|e| format!("{vector_map}: {e}"))?;
+        let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
+            vectormap_io::json::from_str(&text)
+        } else { lanelet2::read_str(&text, &Default::default()) }.map_err(|e| e.to_string())?;
+        if let Some(issue) = loaded.issues.iter().find(|i| i.severity == vectormap_core::Severity::Error) {
+            return Err(format!("cannot retain vector_map: {}", issue.message));
+        }
+        let data = std::fs::read(cloud).map_err(|e| format!("{cloud}: {e}"))?;
+        let cloud = ca_core::read(cloud, &data).map_err(|e| e.to_string())?;
+        let mut map = loaded.map;
+        let measurement = if preview_only {
+            ca_core::vector_map::signals::measure(&map, &cloud, &parameters)
+        } else { ca_core::vector_map::signals::add(&mut map, &cloud, &parameters) }.map_err(|e| e.to_string())?;
+        artifacts(&map, json!(loaded.issues), json!({"status":if preview_only {"preview"} else {"draft"},"signal":measurement}))
+    }).map_err(PyValueError::new_err)
+}
+
 fn artifacts(map: &Map, import_issues: Value, mut report: Value) -> Result<String, String> {
     let (osm, export_issues) = lanelet2::write_string(map, &lanelet2::SaveOptions::autoware());
     if let Some(issue) = export_issues

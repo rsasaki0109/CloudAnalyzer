@@ -11,9 +11,12 @@
 import * as THREE from "three";
 import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
-import { vectorMap } from "../api";
+import { cropCloud, removeCloud, vectorMap } from "../api";
+import { addEntry, renderList } from "./entries";
+import { refreshColors } from "./colors";
+import { record } from "./history";
 import { $, download, errorText, fmt, setStatus } from "./dom";
-import { clouds, entries, globalShift, listChanged, viewer } from "./state";
+import { clouds, entries, globalShift, listChanged, pointsInvalidated, viewer } from "./state";
 import { inputTrajectories, trajectoryChanged } from "./trajectory";
 import { activeTool, pickPoint, setTool, toggleTool, type Tool } from "./tools";
 
@@ -86,6 +89,10 @@ interface JunctionReport {
   added: number[];
   warnings: string[];
 }
+interface SignalReport {
+  geometry: XYZ[]; height: number; width: number; thickness: number; points: number;
+  plane_rms: number; added: number | null; reused: number | null; warnings: string[];
+}
 
 /** Dashes of dashed lane lines (metres). */
 const DASH = 3;
@@ -110,6 +117,9 @@ let junctionPreview: JunctionReport | null = null;
 const junctionSelection = new Set<number>();
 let junctionSnapshot: { id: number; text: string } | null = null;
 let junctionRevision = 0;
+let signalPreview: SignalReport | null = null;
+let signalSnapshot: string | null = null;
+let signalRevision = 0;
 /** Points clicked so far while drawing a road (original coordinates). */
 let sketch: XYZ[] = [];
 
@@ -300,8 +310,18 @@ function draw(): void {
       s.points.map(([x, y, z]) => [x, y, z + h] as XYZ),
       signals,
     );
+    for (const p of [s.points[0], s.points.at(-1)]) {
+      if (p) polylinePairs([p, [p[0], p[1], p[2] + h]], signals);
+    }
   }
   segments(signals, materials.signal, 3);
+  if (signalPreview) {
+    const [a, b] = signalPreview.geometry;
+    const raised = ([x, y, z]: XYZ): XYZ => [x, y, z + signalPreview!.height];
+    const outline: number[] = [];
+    polylinePairs([a, b, raised(b), raised(a), a], outline);
+    segments(outline, materials.proposal, 4);
+  }
   if (junctionPreview) {
     const chosen: number[] = [];
     const other: number[] = [];
@@ -375,6 +395,7 @@ const junctionAll = $<HTMLButtonElement>("vm-junction-all");
 const junctionNone = $<HTMLButtonElement>("vm-junction-none");
 const junctionList = $("vm-junction-candidates");
 function junctionInputs(): void {
+  signalInputs();
   junctionCloud.disabled = junctionGap.disabled = junctionSupport.disabled = busy;
   junctionPreviewButton.disabled = busy || !junctionCloud.value || !view.lanes.length;
   junctionApplyButton.disabled = busy || !junctionPreview || !junctionSelection.size;
@@ -486,6 +507,107 @@ junctionApplyButton.onclick = async () => {
     junctionInputs();
   }
 };
+function signalInputs(): void {
+  for (const el of $("vm-signal-preview").closest("details")!.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>("input,select,button")) el.disabled = busy;
+  $<HTMLButtonElement>("vm-signal-add").disabled = busy || !signalPreview || !signalSnapshot;
+  $<HTMLButtonElement>("vm-signal-inspect").disabled = busy || !signalPreview || !signalSnapshot;
+}
+function clearSignalPreview(): void {
+  signalRevision++;
+  signalPreview = null;
+  signalSnapshot = null;
+  $("vm-signal-report").textContent = "";
+  signalInputs();
+}
+function signalRequest(): { id: number; text: string } {
+  const id = Number($<HTMLSelectElement>("vm-signal-cloud").value);
+  if (!entries.has(id)) throw new Error("Choose a point cloud.");
+  const read = (edge: string) => ["x", "y", "z"].map((axis) => {
+    const value = $<HTMLInputElement>(`vm-signal-${edge}-${axis}`).value;
+    if (!value.trim()) throw new Error("Enter all six box coordinates, or use the isolated cloud's bounds.");
+    return Number(value);
+  });
+  const lanes = $<HTMLInputElement>("vm-signal-lanes").value.split(",").map((s) => Number(s.trim()));
+  if (!lanes.every((id) => Number.isSafeInteger(id) && id > 0)) throw new Error("Enter confirmed controlled lane IDs.");
+  return { id, text: JSON.stringify({ min: read("min"), max: read("max"), lanes, kind: $<HTMLSelectElement>("vm-signal-kind").value }) };
+}
+for (const input of $("vm-signal-preview").closest("details")!.querySelectorAll("input,select")) input.addEventListener("input", () => { clearSignalPreview(); draw(); });
+$("vm-signal-bounds").onclick = () => {
+  if (busy) return;
+  const cloud = entries.get(Number($<HTMLSelectElement>("vm-signal-cloud").value))?.cloud;
+  if (!cloud) return setStatus("Choose a point cloud.");
+  ["min", "max"].forEach((edge, j) => ["x", "y", "z"].forEach((axis, i) => {
+    const padding = cloud.bounds[i] === cloud.bounds[i + 3] ? 0.001 : 0;
+    $<HTMLInputElement>(`vm-signal-${edge}-${axis}`).value = String(cloud.bounds[j * 3 + i] + (j ? padding : -padding));
+  }));
+  clearSignalPreview(); draw();
+};
+$("vm-signal-selected").onclick = () => {
+  if (busy) return;
+  if (selected === null) return setStatus("Select the controlled lane first.");
+  $<HTMLInputElement>("vm-signal-lanes").value = String(selected);
+  clearSignalPreview(); draw();
+};
+async function measureSignal(preview: boolean): Promise<void> {
+  if (busy) return;
+  const revision = signalRevision;
+  try {
+    const request = signalRequest();
+    if (!preview && JSON.stringify(request) !== signalSnapshot) throw new Error("Measure and review these inputs before adding.");
+    setTool(null);
+    busy = true;
+    signalInputs();
+    const edited = await vectorMap<Edited>(preview ? "signal-preview" : "signal-add", request);
+    if (revision !== signalRevision) return;
+    takeView(edited);
+    const report = edited.result as SignalReport;
+    if (preview) {
+      signalPreview = report;
+      signalSnapshot = JSON.stringify(request);
+      const shift = globalShift();
+      const box = new THREE.Box3();
+      for (const p of report.geometry) {
+        box.expandByPoint(new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] - shift[2]));
+        box.expandByPoint(new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] + report.height - shift[2]));
+      }
+      viewer.frameBox(box.expandByScalar(2));
+    }
+    $("vm-signal-report").textContent = `${report.points} points; width ${fmt(report.width)} m, height ${fmt(report.height)} m; thickness ${fmt(report.thickness)} m; plane RMS ${fmt(report.plane_rms)} m. ${report.warnings.join(" ")}`;
+    setStatus(preview ? "Signal geometry measured. Confirm the cyan outline, object kind and controlled lanes before adding." : report.added ? `Measured signal ${report.added} added. Undo removes this signal and its reviewed lane assignment.` : `Signal ${report.reused} already measured; no changes.`);
+    draw();
+  } catch (err) {
+    if (revision !== signalRevision) return;
+    clearSignalPreview(); draw();
+    setStatus(`Could not measure signal: ${errorText(err)}`);
+  } finally { busy = false; junctionInputs(); }
+}
+$("vm-signal-preview").onclick = () => { void measureSignal(true); };
+$("vm-signal-add").onclick = () => { void measureSignal(false); };
+$("vm-signal-inspect").onclick = async () => {
+  if (busy || !signalPreview || !signalSnapshot) return;
+  const revision = signalRevision;
+  busy = true; junctionInputs();
+  try {
+    const request = signalRequest();
+    if (JSON.stringify(request) !== signalSnapshot) throw new Error("Measure these inputs first.");
+    const options = JSON.parse(request.text) as { min: XYZ; max: XYZ };
+    const cloud = await cropCloud(request.id, options.min, options.max, true);
+    if (revision !== signalRevision || !entries.has(request.id)) {
+      await removeCloud(cloud.id);
+      throw new Error("Point cloud changed; measure again before inspecting.");
+    }
+    const source = entries.get(request.id)!;
+    const added = addEntry(cloud);
+    added.mode = "solid";
+    refreshColors(added);
+    record({ label: "the signal box", added: [added], hide: [source] });
+    renderList();
+    $<HTMLSelectElement>("vm-signal-cloud").value = String(cloud.id);
+    setStatus(`${cloud.count} box points copied for inspection. The source is hidden; cloud Undo restores it. Measure this isolated cloud again before adding.`);
+  } catch (err) { setStatus(`Could not inspect signal points: ${errorText(err)}`); }
+  finally { busy = false; junctionInputs(); }
+};
+
 function buildInputs(): void {
   const fill = (select: HTMLSelectElement, items: { id: number; name: string }[]) => {
     const value = select.value;
@@ -494,11 +616,13 @@ function buildInputs(): void {
   };
   fill(cloudInput, clouds().map((entry) => entry.cloud));
   fill(junctionCloud, clouds().map((entry) => entry.cloud));
+  fill($<HTMLSelectElement>("vm-signal-cloud"), clouds().map((entry) => entry.cloud));
   fill(trajectoryInput, inputTrajectories());
   buildButton.disabled = busy || !cloudInput.value || !trajectoryInput.value;
   junctionInputs();
 }
-listChanged.add(() => { clearJunctionPreview(); buildInputs(); draw(); });
+listChanged.add(() => { clearJunctionPreview(); clearSignalPreview(); buildInputs(); draw(); });
+pointsInvalidated.add(() => { clearJunctionPreview(); clearSignalPreview(); draw(); });
 trajectoryChanged.add(buildInputs);
 buildInputs();
 buildButton.onclick = async () => {
@@ -545,6 +669,7 @@ buildButton.onclick = async () => {
 function takeView(edited: Edited): void {
   view = edited.view;
   clearJunctionPreview();
+  clearSignalPreview();
   undoDepth = edited.undo;
   if (selected !== null && !view.lanes.some((l) => l.id === selected)) selected = null;
   draw();

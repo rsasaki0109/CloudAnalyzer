@@ -2354,6 +2354,53 @@ test("vector map: trajectory builds a ground-level draft with an evidence report
   await expect(page.locator("#vm-status")).toContainText("No map yet");
 });
 
+test("vector map: measured signal preview, stale inputs, export, replay and undo", async ({ page }) => {
+  const points: [number, number, number][] = [];
+  for (let x = 0; x <= 24; x++) for (let z = 0; z <= 10; z++) points.push([50000 - .6 + x * .05, 11, 7 + z * .05]);
+  await open(page, [{ name: "head.ply", buffer: ply(points) }]);
+  await expect(status(page)).toContainText("Loaded head.ply");
+  const map = { format: "vectormap-ir", version: 1, lanes: [{ id: 3, kind: "driving", left: 1, right: 2 }],
+    boundaries: [{ id: 1, kind: { type: "virtual" }, geometry: [[49998.25, 0, 2], [49998.25, 10, 2]] },
+      { id: 2, kind: { type: "virtual" }, geometry: [[50001.75, 0, 2], [50001.75, 10, 2]] }] };
+  await page.locator("#vm-file").setInputFiles({ name: "lane.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(map)) });
+  await expect(status(page)).toContainText("Opened lane.json");
+  await page.locator("#vector-map-panel").getByText("Measure a signal from points", { exact: true }).click();
+  await page.locator("#vm-signal-bounds").click();
+  // The planar input has zero Y extent: explicitly enclose its plane.
+  await page.locator("#vm-signal-min-y").fill("10.9");
+  await page.locator("#vm-signal-max-y").fill("11.1");
+  await page.locator("#vm-signal-lanes").fill("3");
+  await page.locator("#vm-signal-preview").click();
+  await expect(status(page)).toContainText("Signal geometry measured");
+  await expect(page.locator("#vm-signal-report")).toContainText("275 points");
+  await expect(page.locator("#vm-status")).not.toContainText("traffic light");
+  const measured = await page.locator("#vm-signal-report").textContent();
+  await page.locator("#vm-signal-inspect").click();
+  await expect(status(page)).toContainText("275 box points copied");
+  await expect(page.locator("#vm-signal-add")).toBeDisabled();
+  await page.locator("#vm-signal-preview").click();
+  await expect(page.locator("#vm-signal-add")).toBeEnabled();
+  await expect(page.locator("#vm-signal-report")).toHaveText(measured!);
+  await page.locator("#vm-signal-kind").selectOption("pedestrian");
+  await expect(page.locator("#vm-signal-add")).toBeDisabled();
+  await page.locator("#vm-signal-preview").click();
+  await expect(page.locator("#vm-signal-add")).toBeEnabled();
+  await page.locator("#vm-signal-add").click();
+  await expect(status(page)).toContainText("Measured signal");
+  await expect(page.locator("#vm-status")).toContainText("1 traffic light");
+  const saved = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
+  await page.locator("#vm-export").click();
+  const xml = (await bytesOf(await saved)).toString();
+  expect(xml).toContain('k="cloudanalyzer_geometry_source" v="point_cloud_box_fit"');
+  expect(xml).not.toContain('v="traffic_light_bulbs"');
+  await page.locator("#vm-signal-preview").click();
+  await expect(page.locator("#vm-signal-add")).toBeEnabled();
+  await page.locator("#vm-signal-add").click();
+  await expect(status(page)).toContainText("already measured");
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-status")).not.toContainText("traffic light");
+});
+
 test("vector map: branching junction preview, selection, invalidation and batch undo", async ({ page }) => {
   const ground: [number, number, number][] = [];
   for (let x = -22; x <= 2; x += 0.2) for (let y = -22; y <= 22; y += 0.2) ground.push([50000 + x, 50000 + y, 2]);

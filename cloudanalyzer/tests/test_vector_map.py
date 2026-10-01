@@ -5,7 +5,7 @@ import json
 import pytest
 from typer.testing import CliRunner
 
-from ca.vector_map import build_vector_map, connect_vector_map_junctions
+from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal
 from cloudanalyzer_cli.main import app
 
 
@@ -327,6 +327,43 @@ def test_existing_map_failure_is_atomic(survey, tmp_path):
         )
     assert existing.read_bytes() == before
     assert not out.exists()
+
+
+def test_signal_measurement_publication_cli_replay_and_sparse_rejection(junction_survey, tmp_path):
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "measure_vector_map_signal"):
+        pytest.skip("installed core predates measured signals")
+    _, source = junction_survey
+    cloud = tmp_path / "head.xyz"
+    cloud.write_text("".join(f"{49994.4 + x * .05} 50001 7.{z:02d}\n" for x in range(25) for z in range(0, 51, 5)))
+    bounds = [49994.3, 50000.9, 6.9, 49995.7, 50001.1, 7.6]
+    preview = tmp_path / "signal-preview"
+    report = measure_vector_map_signal(str(cloud), str(source), str(preview), bounds=bounds, lanes=[7])
+    assert report["status"] == "preview"
+    assert report["signal"]["points"] == 275
+    assert report["signal"]["added"] is None
+    before = json.loads((preview / "vector_map.json").read_text())
+    result = CliRunner().invoke(app, ["vectormap-signal", str(cloud), str(source), "--out", str(tmp_path / "signal-added"),
+                                    "--box", ",".join(map(str, bounds)), "--lane", "7", "--add"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    added = tmp_path / "signal-added"
+    changed = json.loads((added / "vector_map.json").read_text())
+    for key in ("lanes", "boundaries", "metadata"):
+        assert changed[key] == before[key]
+    assert len(changed["traffic_signals"]) == 1 and not changed.get("stop_lines")
+    assert not changed["traffic_signals"][0].get("bulbs")
+    assert report["signal"]["classification_source"] == "user_identified_box"
+    assert 'k="cloudanalyzer_geometry_source" v="point_cloud_box_fit"' in (added / "lanelet2_map.osm").read_text()
+    replay = tmp_path / "signal-replay"
+    again = measure_vector_map_signal(str(cloud), str(added / "vector_map.json"), str(replay), bounds=bounds, lanes=[7], preview_only=False)
+    assert again["signal"]["reused"] == report["signal"]["added"]
+    assert json.loads((replay / "vector_map.json").read_text()) == changed
+    cloud.write_text("49995 50001 7\n")
+    invalid = tmp_path / "signal-invalid"
+    with pytest.raises(ValueError, match="at least 12"):
+        measure_vector_map_signal(str(cloud), str(source), str(invalid), bounds=bounds, lanes=[7], preview_only=False)
+    assert not invalid.exists()
 
 
 def test_existing_explicit_centres_are_respected_and_invalid_imports_rejected(

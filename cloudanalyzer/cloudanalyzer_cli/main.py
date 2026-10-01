@@ -1919,6 +1919,28 @@ def vectormap_connect_cmd(
     typer.echo(json.dumps(report, indent=2))
 
 
+@app.command("vectormap-signal")
+def vectormap_signal_cmd(
+    cloud: str = typer.Argument(..., help="Point cloud in the map's metre frame"),
+    vector_map: str = typer.Argument(..., help="Editable IR JSON or Lanelet2 map"),
+    out: str = typer.Option(..., "--out", help="New output directory"),
+    box: str = typer.Option(..., "--box", help="xmin,ymin,zmin,xmax,ymax,zmax enclosing the identified head"),
+    lanes: List[int] = typer.Option(..., "--lane", help="Confirmed controlled lane ID; repeat for multiple lanes"),
+    kind: str = typer.Option("vehicle", "--kind", help="vehicle or pedestrian (user identification)"),
+    add: bool = typer.Option(False, "--add", help="Add measured geometry; default only previews"),
+) -> None:
+    """Measure a signal head from points; identify the object and controlled lanes first."""
+    from ca.vector_map import measure_vector_map_signal
+
+    try:
+        report = measure_vector_map_signal(cloud, vector_map, out, bounds=[float(v) for v in box.split(",")],
+                                          lanes=lanes, kind=kind, preview_only=not add)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+        return
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command("web-view")
 def web_view_cmd(
     paths: List[str] = typer.Argument(..., help="Files, or folders of results (their .ply, .pcd, .las/.laz, .tum ...)"),

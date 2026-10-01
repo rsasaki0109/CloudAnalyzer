@@ -1,6 +1,6 @@
 // Reproduce the README GIF from a real PandaSet drive, without distributing inputs.
 import { expect, test } from "@playwright/test";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const INPUT = process.env.VECTOR_MAP_DEMO_DIR;
@@ -12,6 +12,15 @@ test("vector map README GIF on real PandaSet", async ({ page }) => {
   test.setTimeout(180_000);
   mkdirSync(FRAMES, { recursive: true });
   const status = page.locator("#status");
+  const exportMap = async () => {
+    const osm = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
+    const yaml = page.waitForEvent("download", (d) => d.suggestedFilename() === "map_projector_info.yaml");
+    await page.locator("#vm-export").click();
+    const [map] = await Promise.all([osm, yaml]);
+    const path = await map.path();
+    if (!path) throw new Error("OSM download was not available");
+    return readFileSync(path);
+  };
   await page.goto("/");
   await page.locator("#file-input").setInputFiles([`${INPUT}/map.pcd`, `${INPUT}/trajectory.csv`]);
   await expect(status).toContainText("trajectory of 80 poses", { timeout: 120_000 });
@@ -47,9 +56,11 @@ test("vector map README GIF on real PandaSet", async ({ page }) => {
   await shot("1. Real LiDAR + recorded trajectory", 1.5);
   await page.locator("#vm-build").click();
   await expect(status).toContainText("Draft roads added", { timeout: 120_000 });
+  await expect(page.locator("#vm-build-report")).toContainText("Tracking changed 41 sources; fitted 135 vertices");
+  const original = await exportMap();
   await page.locator("#vm-fit").click();
   await page.waitForTimeout(1200);
-  await shot("2. Generate a lane draft", 2);
+  await shot("2. Generate continuous lane boundaries", 2);
   await page.locator("#vm-vertices").click();
   const box = (await page.locator("#viewport > canvas").boundingBox())!;
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
@@ -102,22 +113,23 @@ test("vector map README GIF on real PandaSet", async ({ page }) => {
   if (!vertex) throw new Error("No shared interior vertex was selected");
   await shot("3. Review and drag shared vertices", 0.5);
   for (let i = 1; i <= 12; i++) {
-    await page.mouse.move(vertex.x + 18 * i / 12, vertex.y + 8 * i / 12);
+    await page.mouse.move(vertex.x + 6 * i / 12, vertex.y + 3 * i / 12);
     await shot("3. Review and drag shared vertices", 0.12);
   }
   await page.mouse.up();
   await expect(status).toContainText("vertex moved");
-  await shot("Shared lanes update together", 1.5);
+  await shot("Shared lanes update together", 1);
+  expect((await exportMap()).equals(original)).toBe(false);
   await page.locator("#capture-cursor").evaluate((el) => { (el as HTMLElement).style.display = "none"; });
   await page.keyboard.press("Escape");
-  const osm = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
-  const yaml = page.waitForEvent("download", (d) => d.suggestedFilename() === "map_projector_info.yaml");
-  await page.locator("#vm-export").click();
-  await Promise.all([osm, yaml]);
+  await page.locator("#vm-undo").click();
+  await expect(status).toContainText("Undone");
+  await shot("Undo restores the generated draft", 1);
+  expect((await exportMap()).equals(original)).toBe(true);
   await shot("4. Save Lanelet2 + Autoware metadata", 2);
   await page.locator("#vm-fit").click();
   await page.waitForTimeout(1000);
-  await shot("A draft to review, edit and validate", 2);
+  await shot("A draft to review, edit and validate", 1.5);
   writeFileSync(`${FRAMES}/frames.json`, JSON.stringify(frames, null, 2));
   writeFileSync(`${FRAMES}/concat.txt`, frames.map((f) => `file '${f.name}'\nduration ${f.duration}\n`).join("") + `file '${frames.at(-1)!.name}'\n`);
 });

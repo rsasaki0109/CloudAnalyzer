@@ -8,8 +8,11 @@ sensor positions. PandaSet is provided by Scale AI and Hesai under
 scaled capture with explanatory captions and a cursor ring. Raw inputs are not
 included in this repository.
 
-It shows generation, manual movement of an interior vertex on a shared boundary,
-and export of `lanelet2_map.osm` plus `map_projector_info.yaml`. The drive has a
+It shows generation with continuity tracking and local curve fitting, manual movement
+of an interior vertex on a shared boundary, one-step Undo, and export of
+`lanelet2_map.osm` plus `map_projector_info.yaml`. Undo restores the generated draft
+before the final export; the capture verifies byte-identical OSM before editing and after
+Undo, and a changed OSM after dragging. The drive has a
 Local projector. Captions describe actual UI actions; point cloud and map geometry
 come from the app. The vertex move demonstrates editing, rather than a correction
 validated against a surveyed marking. Generated lines remain a draft: see

@@ -52,8 +52,8 @@ pose graph with one scan per pose.
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
 
 <p align="center">
-  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map.gif" alt="Real PandaSet LiDAR and recorded poses become a lane draft; a shared boundary vertex is dragged and the map is saved for Autoware" width="800"></a><br>
-  <b>Draft, review, edit, export.</b> Real PandaSet scene 019 data; inferred boundaries need manual review.<br>
+  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map.gif" alt="Real PandaSet LiDAR and recorded poses become a continuous lane draft; a shared boundary vertex is dragged, undone and the generated map is saved for Autoware" width="800"></a><br>
+  <b>Draft, review, edit, undo, export.</b> Real PandaSet scene 019 data; inferred boundaries need manual review.<br>
   <a href="docs/vector-map-validation.md">Measured accuracy and limitations</a> ·
   <a href="docs/vector-map-media.md">Reproduce this GIF</a>
 </p>

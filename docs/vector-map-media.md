@@ -55,3 +55,9 @@ go to ignored `web/media-frames/vector-map/`. ffmpeg writes
 12 seconds (about 0.8 MB). The capture selects an interior point of shared boundary
 2 through visible handles and panel feedback, so a failed selection fails the
 capture instead of producing a misleading editing scene.
+
+The capture is checked against main `4d64557` (2026-10-02), including the bounded
+COPC working-box and spatial signal workflows. Those workflows are described in
+[large clouds](large-point-clouds.md) and [signal measurement](commands/vectormap-signal.md);
+this animation demonstrates road drafting and editing on the recorded PandaSet
+drive. It is not a large-source benchmark or automatic signal-classification demo.

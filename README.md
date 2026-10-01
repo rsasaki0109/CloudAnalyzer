@@ -51,6 +51,10 @@ pose graph with one scan per pose.
   [vectormap-rs](https://github.com/rsasaki0109/vectormap-rs), checks the map for Autoware, and saves
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
 
+To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
+and confirm its controlled lanes. For COPC surveys,
+[read a full-density working box](docs/large-point-clouds.md#web-full-density-working-box) first.
+
 <p align="center">
   <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map.gif" alt="Real PandaSet LiDAR and recorded poses become a continuous lane draft; a shared boundary vertex is dragged, undone and the generated map is saved for Autoware" width="800"></a><br>
   <b>Draft, review, edit, undo, export.</b> Real PandaSet scene 019 data; inferred boundaries need manual review.<br>

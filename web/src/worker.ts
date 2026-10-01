@@ -9,6 +9,7 @@ import init, {
   Cloud,
   CloudMerger,
   CopcReader,
+  CopcBoxReader,
   cloudToCloud,
   cloudToMesh,
   computeM3c2,
@@ -77,6 +78,8 @@ type Item =
       sources?: string[];
       copcLevels?: number;
       detail?: Detail;
+      copcSource?: CopcSource;
+      copcBox?: LoadedCloud["copcBox"];
     }
   | { kind: "mesh"; mesh: Mesh; name: string };
 
@@ -95,6 +98,8 @@ interface Detail {
   /** How the file's 16-bit colors were narrowed to 8 bits. */
   colorShift: number;
 }
+
+interface CopcSource { source: ByteSource; size: number; head: Uint8Array }
 
 const ready = init().then((wasm) => {
   // Optimize the heavy kernels here and on the pool before the first file
@@ -284,6 +289,7 @@ type Loaded =
       /** Scan names of a multi-scan E57, by `source` value. */
       sources?: string[];
       detail?: Detail;
+      copcSource?: CopcSource;
     };
 
 /** COPC nodes decoded per pool job. */
@@ -304,6 +310,8 @@ async function readCopc(
   progress("reading the COPC header");
   let head = await readRange(source, 0, Math.min(size, 1 << 16));
   const needed = CopcReader.headerLength(head) ?? head.length;
+  if (!Number.isSafeInteger(needed) || needed > size || needed > 8 * 1024 * 1024)
+    throw new Error("COPC header exceeds the 8 MiB metadata limit or file size");
   head = needed > head.length ? await readRange(source, 0, needed) : head.slice(0, needed);
   const reader = CopcReader.open(head);
   try {
@@ -350,10 +358,76 @@ async function readCopc(
     for (const r of results) reader.addDecoded(r.positions, r.colors ?? undefined, r.intensity, r.classification);
     const filePoints = reader.totalPoints;
     const cloud = reader.finish();
-    return { kind: "cloud", cloud, keepEvery: 1, filePoints, copcLevels: level };
+    return { kind: "cloud", cloud, keepEvery: 1, filePoints, copcLevels: level, copcSource: { source, size, head } };
   } catch (err) {
     reader.free();
     throw err;
+  }
+}
+
+/** Read one node at a time into a capped, full-density working cloud. */
+async function readFullDensityBox(
+  req: Extract<Request, { kind: "copc-box" }>,
+  progress: (note: string, fraction?: number) => void, check: () => void, signal: AbortSignal,
+): Promise<{ value: LoadedCloud; transfer: Transferable[] }> {
+  const item = items.get(req.id);
+  if (item?.kind !== "cloud" || !item.copcSource) throw new Error("no original COPC source for this cloud");
+  const snapshot = item.copcSource;
+  if ("url" in snapshot.source && !snapshot.source.etag)
+    throw new Error("full-density HTTP selection requires an exposed strong ETag; open the local COPC file instead");
+  if (!Number.isSafeInteger(req.maxPoints) || req.maxPoints < 1 || req.maxPoints > 1_000_000)
+    throw new Error("selection point limit must be in 1..1000000");
+  const valid = () => {
+    check();
+    const current = items.get(req.id);
+    if (current?.kind !== "cloud" || current.copcSource !== snapshot)
+      throw new Error("original COPC cloud was removed or moved during selection");
+  };
+  valid();
+  let reader: CopcBoxReader | undefined = CopcBoxReader.open(snapshot.head, snapshot.size,
+    new Float64Array([...req.min, ...req.max]), req.maxPoints);
+  let cloud: Cloud | undefined;
+  let sourceReadBytes = 0;
+  let nodes = 0;
+  const start = performance.now();
+  try {
+    for (;;) {
+      valid();
+      const next = reader.nextItem();
+      if (!next.length) break;
+      const [kind, offset, size] = next;
+      const bytes = await readRange(snapshot.source, offset, size, signal);
+      valid();
+      if (bytes.length !== size) throw new Error("original COPC range is truncated");
+      sourceReadBytes += bytes.length;
+      if (kind === 0) reader.supplyPage(offset, bytes);
+      else { reader.supplyNode(offset, bytes); nodes++; }
+      progress(`full-density box: ${reader.selectedPoints.toLocaleString()} points, ${nodes} nodes`);
+    }
+    // finish consumes its WASM object, including on errors.
+    const finished = reader;
+    reader = undefined;
+    cloud = finished.finish();
+    valid();
+    const parse = performance.now() - start;
+    progress(`indexing ${cloud.length.toLocaleString()} full-density points`);
+    const indexStart = performance.now();
+    await buildIndex(cloud);
+    valid();
+    const id = nextId++;
+    items.set(id, { kind: "cloud", cloud, name: `${item.name.replace(/\.[^.]+$/, "")}_full-density-box`,
+      copcBox: { sourcePoints: item.filePoints ?? 0, sourceReadBytes, nodes } });
+    try {
+      const output = describe(id, { parse, index: performance.now() - indexStart });
+      cloud = undefined;
+      return output;
+    } catch (error) {
+      items.delete(id);
+      throw error;
+    }
+  } finally {
+    reader?.free();
+    cloud?.free();
   }
 }
 
@@ -660,6 +734,8 @@ function describe(
     keepEvery: item.keepEvery ?? 1,
     filePoints: item.filePoints ?? cloud.length,
     copcLevels: item.copcLevels ?? null,
+    copcBoxAvailable: Boolean(item.copcSource),
+    copcBox: item.copcBox,
     detailChunks,
     timings: { ...timings, prepare: performance.now() - start },
   };
@@ -855,7 +931,7 @@ function evaluate(req: Extract<Request, { kind: "trajectory-eval" }>): Trajector
 /** The file no longer matches a cloud whose points moved. */
 function dropDetail(id: number): void {
   const item = items.get(id);
-  if (item?.kind === "cloud") item.detail = undefined;
+  if (item?.kind === "cloud") { item.detail = undefined; item.copcSource = undefined; }
 }
 
 /** Decode one chunk of a thinned cloud's file at full density, on the pool. */
@@ -1381,9 +1457,12 @@ async function handle(
   req: Request,
   progress: (note: string, fraction?: number) => void,
   check: () => void,
+  signal: AbortSignal,
 ): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
+    case "copc-box":
+      return readFullDensityBox(req, progress, check, signal);
     case "pg-open":
       return openPoseGraph(req, progress, check);
     case "pg-merge":
@@ -1686,7 +1765,7 @@ async function handle(
       const loaded =
         req.kind === "load"
           ? await readPoints({ file: req.file }, name, req.file.size, maxPoints, progress, check)
-          : await readPoints({ url: req.url }, name, req.size, maxPoints, progress, check);
+          : await readPoints({ url: req.url, total: req.size, etag: req.etag }, name, req.size, maxPoints, progress, check);
       const parse = performance.now() - t;
       try {
         check();
@@ -1720,6 +1799,7 @@ async function handle(
         copcLevels: loaded.copcLevels,
         sources: loaded.sources,
         detail: loaded.detail,
+        copcSource: loaded.copcSource,
       });
       progress("preparing for display");
       return describe(id, { parse, index, workers });
@@ -2063,13 +2143,19 @@ async function handle(
 
 /** Requests asked to stop; they check between steps. */
 const cancelled = new Set<number>();
+const controllers = new Map<number, AbortController>();
 
 self.onmessage = async (event: MessageEvent<UiMessage>) => {
   if ("cancel" in event.data) {
-    cancelled.add(event.data.cancel);
+    if (controllers.has(event.data.cancel)) {
+      cancelled.add(event.data.cancel);
+      controllers.get(event.data.cancel)!.abort();
+    }
     return;
   }
   const { seq, req } = event.data;
+  const controller = new AbortController();
+  controllers.set(seq, controller);
   let response: Response;
   let transfer: Transferable[] = [];
   const progress = (note: string, fraction?: number) => {
@@ -2081,17 +2167,19 @@ self.onmessage = async (event: MessageEvent<UiMessage>) => {
     if (cancelled.has(seq)) throw new Error(CANCELLED);
   };
   try {
-    const out = await handle(req, progress, check);
+    const out = await handle(req, progress, check, controller.signal);
     response = { ok: true, value: out.value };
     transfer = out.transfer;
   } catch (err) {
     let error = err instanceof Error ? err.message : String(err);
+    if (cancelled.has(seq)) error = CANCELLED;
     if (/memory|allocation|unreachable/i.test(error)) {
       error = `out of memory (${error}); lower "Max points" and load the file again`;
     }
     response = { ok: false, error };
   }
   cancelled.delete(seq);
+  controllers.delete(seq);
   const memory = (await ready).memory.buffer.byteLength;
   const message: WorkerMessage = { seq, response, memory };
   self.postMessage(message, { transfer });

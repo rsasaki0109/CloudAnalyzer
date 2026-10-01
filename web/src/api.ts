@@ -37,7 +37,7 @@ import type {
 const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
 const pending = new Map<
   number,
-  { resolve: (v: unknown) => void; reject: (e: Error) => void; progress?: (p: Progress) => void }
+  { resolve: (v: unknown) => void; reject: (e: Error) => void; progress?: (p: Progress) => void; dispose: () => void }
 >();
 let seq = 0;
 
@@ -56,6 +56,7 @@ worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
     return;
   }
   pending.delete(message.seq);
+  entry.dispose();
   onMemory(message.memory);
   if (message.response.ok) entry.resolve(message.response.value);
   else entry.reject(new Error(message.response.error));
@@ -69,10 +70,19 @@ function call<T>(
 ): Promise<T> {
   const id = ++seq;
   return new Promise<T>((resolve, reject) => {
-    pending.set(id, { resolve: resolve as (v: unknown) => void, reject, progress });
+    if (signal?.aborted) { reject(new Error("CANCELLED")); return; }
+    const abort = () => worker.postMessage({ cancel: id } satisfies UiMessage);
+    pending.set(id, { resolve: resolve as (v: unknown) => void, reject, progress,
+      dispose: () => signal?.removeEventListener("abort", abort) });
     const message: UiMessage = { seq: id, req };
-    worker.postMessage(message, { transfer });
-    signal?.addEventListener("abort", () => worker.postMessage({ cancel: id } satisfies UiMessage), { once: true });
+    try {
+      worker.postMessage(message, { transfer });
+      signal?.addEventListener("abort", abort, { once: true });
+    } catch (error) {
+      pending.delete(id);
+      signal?.removeEventListener("abort", abort);
+      reject(error);
+    }
   });
 }
 
@@ -97,8 +107,15 @@ export function loadUrl(
   maxPoints: number,
   progress?: (p: Progress) => void,
   signal?: AbortSignal,
+  etag?: string,
 ): Promise<LoadedCloud> {
-  return call({ kind: "load-url", url, name, size, maxPoints }, [], progress, signal);
+  return call({ kind: "load-url", url, name, size, maxPoints, etag }, [], progress, signal);
+}
+
+/** Every density level of the original COPC inside an inclusive XYZ box. */
+export function readCopcBox(id: number, min: Vec3, max: Vec3, maxPoints: number,
+  progress?: (p: Progress) => void, signal?: AbortSignal): Promise<LoadedCloud> {
+  return call({ kind: "copc-box", id, min, max, maxPoints }, [], progress, signal);
 }
 
 /** Every point of one chunk of a thinned LAS/LAZ cloud's file, relative to `shift`. */

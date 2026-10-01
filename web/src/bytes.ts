@@ -1,5 +1,5 @@
 // Bounded byte ranges. Full download fallback is unsafe for large sources.
-export type ByteSource = { file: File } | { url: string };
+export type ByteSource = { file: File } | { url: string; total?: number; etag?: string };
 export const MAX_RANGE_BYTES = 64 * 1024 * 1024;
 
 function validateRange(offset: number, length: number, bounded = true): void {
@@ -10,7 +10,8 @@ function validateRange(offset: number, length: number, bounded = true): void {
 }
 
 /** Check headers before reading, then consume at most the declared span. */
-export async function readRangeResponse(response: Response, offset: number, length: number): Promise<{ bytes: Uint8Array; total: number }> {
+export async function readRangeResponse(response: Response, offset: number, length: number,
+    identity?: { total?: number; etag?: string }): Promise<{ bytes: Uint8Array; total: number; etag?: string }> {
   validateRange(offset, length);
   const reject = async (message: string): Promise<never> => {
     await response.body?.cancel();
@@ -23,6 +24,10 @@ export async function readRangeResponse(response: Response, offset: number, leng
   if (![start, stop, total].every(Number.isSafeInteger) || total <= offset || start !== offset || stop !== Math.min(offset + length, total) - 1) {
     return reject("Content-Range does not match the requested byte span");
   }
+  const tag = response.headers.get("etag");
+  if (identity?.total !== undefined && identity.total !== total) return reject("remote file size changed during reading");
+  if (identity?.etag !== undefined && identity.etag !== tag) return reject("remote file ETag changed during reading");
+  const etag = tag && /^"[^"\r\n]*"$/.test(tag) ? tag : undefined;
   const expected = stop - start + 1;
   const encoding = response.headers.get("content-encoding");
   if (encoding && encoding.toLowerCase() !== "identity") return reject("encoded HTTP range responses are unsupported");
@@ -41,7 +46,7 @@ export async function readRangeResponse(response: Response, offset: number, leng
       at += value.length;
     }
     if (at !== expected) throw new Error("HTTP range body is truncated");
-    return { bytes, total };
+    return { bytes, total, etag };
   } catch (error) {
     await reader.cancel();
     throw error;
@@ -54,6 +59,11 @@ export async function readRange(source: ByteSource, offset: number, length: numb
   validateRange(offset, length, !("file" in source));
   if (length === 0) return new Uint8Array();
   if ("file" in source) return new Uint8Array(await source.file.slice(offset, offset + length).arrayBuffer());
-  const response = await fetch(source.url, { signal, cache: "no-store", headers: { Range: `bytes=${offset}-${offset + length - 1}` } });
-  return (await readRangeResponse(response, offset, length)).bytes;
+  const headers: Record<string, string> = { Range: `bytes=${offset}-${offset + length - 1}` };
+  if (source.etag) headers["If-Match"] = source.etag;
+  const response = await fetch(source.url, { signal, cache: "no-store", headers });
+  const result = await readRangeResponse(response, offset, length, source);
+  source.total = result.total;
+  if (result.etag) source.etag = result.etag;
+  return result.bytes;
 }

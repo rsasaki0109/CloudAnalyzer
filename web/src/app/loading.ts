@@ -17,6 +17,7 @@ interface RemoteFile {
   url: string;
   name: string;
   size: number;
+  etag?: string;
 }
 
 /** Extensions a trajectory can have; `.txt` and `.csv` may also be point clouds (the worker tells). */
@@ -67,7 +68,7 @@ export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]
       const cloud =
         file instanceof File
           ? await loadCloud(file, maxPoints, onProgress, signal)
-          : await loadUrl(file.url, file.name, file.size, maxPoints, onProgress, signal);
+          : await loadUrl(file.url, file.name, file.size, maxPoints, onProgress, signal, file.etag);
       addEntry(cloud, origins?.[i] ?? { kind: "file" });
       if (entries.size === 1) viewer.fit();
       const [sx, sy, sz] = globalShift();
@@ -126,9 +127,9 @@ export async function loadUrls(urls: string[]): Promise<void> {
       const probe = await fetch(url, { signal, cache: "no-store", headers: { Range: "bytes=0-1023" } });
       if (!probe.ok) throw new Error(`HTTP ${probe.status}`);
       if (probe.status === 206) {
-        const { bytes: head, total: size } = await readRangeResponse(probe, 0, 1024);
+        const { bytes: head, total: size, etag } = await readRangeResponse(probe, 0, 1024);
         if (isLasHead(head) && size > 0) {
-          files.push({ url, name, size });
+          files.push({ url, name, size, etag });
         } else {
           const response = await fetch(url, { signal });
           if (!response.ok) throw new Error(`HTTP ${response.status}`);

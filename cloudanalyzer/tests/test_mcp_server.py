@@ -50,7 +50,13 @@ def test_the_server_answers_over_stdio(tmp_path):
         async with stdio_client(server) as (read, write):
             async with ClientSession(read, write) as session:
                 await session.initialize()
-                names = {t.name for t in (await session.list_tools()).tools}
+                tools = (await session.list_tools()).tools
+                names = {t.name for t in tools}
+                build = next(t for t in tools if t.name == "build_vector_map")
+                properties = build.model_dump(by_alias=True)["inputSchema"]["properties"]
+                for field in ("track_boundaries", "fit_boundaries"):
+                    assert properties[field]["type"] == "boolean"
+                    assert properties[field]["default"] is True
                 result = await session.call_tool("session_layout", {"folder": str(folder)})
                 return names, result
 

@@ -319,6 +319,11 @@ interface BuildReport {
   roads: number;
   lanes: number;
   generated_length: number;
+  added_length: number;
+  reused_length: number;
+  tracked_vertices: number;
+  fitted_vertices: number;
+  maximum_fit_displacement: number;
   observed_fraction: number[];
   warnings: string[];
 }
@@ -356,6 +361,9 @@ buildButton.onclick = async () => {
       speed_limit: Number($<HTMLInputElement>("vm-speed").value),
       segment_length: Number($<HTMLInputElement>("vm-segment").value),
       anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
+      track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
+      fit_boundaries: $<HTMLInputElement>("vm-fit-boundaries").checked,
+      merge_repeated_passes: $<HTMLInputElement>("vm-merge-passes").checked,
     };
     const edited = await vectorMap<Edited>("build", {
       id: Number(cloudInput.value), positions: trajectory.poses.positions, text: JSON.stringify(options),
@@ -364,9 +372,11 @@ buildButton.onclick = async () => {
     const report = edited.result as BuildReport;
     $("vm-build-report").textContent =
       `${report.roads} road stretches, ${report.lanes} lanes, ${fmt(report.generated_length)} m. ` +
-      `Measured boundary vertices, left to right: ${report.observed_fraction.map((f) => `${Math.round(f * 100)}%`).join(", ")}. ` +
+      `Added ${fmt(report.added_length)} m; reused ${fmt(report.reused_length)} m of existing lanes. ` +
+      `Measured sources before fitting, left to right: ${report.observed_fraction.map((f) => `${Math.round(f * 100)}%`).join(", ")}. ` +
+      `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +
       report.warnings.join(" ");
-    setStatus("Draft roads added. Review the boundaries, lane directions and junctions before export.");
+    setStatus(report.lanes ? "Draft roads added. Review the boundaries, lane directions and junctions before export." : "Existing lanes matched; no new geometry added. Review the report before export.");
   } catch (err) {
     setStatus(`Could not build draft roads: ${errorText(err)}`);
   } finally {

@@ -5,7 +5,8 @@ It assumes the trajectory follows the outside forward lane, uses configured lane
 widths, and estimates road elevation from the cloud. It detects intensity peaks, curb steps
 and ground coverage edges within a limited distance of each nominal boundary. Missing
 features use the explicit width prior. Detected features are candidates, not proof of a correct
-lane boundary. Repeated passes and junctions require manual review and connection.
+lane boundary. Repeated passes must already be aligned and require review; junctions
+require manual review and connection.
 
 ## Recorded Autoware drive and reference map
 
@@ -47,7 +48,7 @@ The original width prior placed missing lane lines relative to the trajectory, a
 was at the outside forward lane's centre. The recorded drive is often off the reference
 centreline, so this assumption displaces otherwise plausible lines. The builder now uses
 detected outer-edge offsets to position inferred boundaries, with a five-section median
-to reject isolated candidates. Detected vertices stay fixed and inferred vertices remain
+to reject isolated candidates. In this anchoring ablation, detected vertices stay fixed and inferred vertices remain
 labelled as width priors. This cannot recover unobserved paint or establish lane counts.
 
 On the same files, lane counts and sampling method, with no reference geometry supplied
@@ -79,7 +80,9 @@ data artifacts outside version control. The original candidate errors were media
 for curbs, 0.52 m for coverage edges and 0.74 m for width priors. These are distances to
 the selected reference, not a measured GNSS sensor error. To reproduce the ablation,
 pass a fifth argument to the Rust example: a JSON options file containing
-`{"anchor_width_prior": false}`. CLI uses `--no-anchor-width-prior`; MCP accepts
+`{"anchor_width_prior": false, "track_boundaries": false, "fit_boundaries": false}`.
+Keep tracking and fitting disabled for both sides of this historical anchoring ablation.
+CLI uses `--no-anchor-width-prior`; MCP accepts
 `anchor_width_prior=false`; the Web build panel has the corresponding checkbox.
 
 To reproduce after downloading and extracting the two official archives:
@@ -99,7 +102,8 @@ reference geometry or captured sensor data.
 [PandaSet](https://github.com/scaleapi/pandaset-devkit) scene 019 (CC BY 4.0), Pandar64
 frames 0, 8, …, 72 in world coordinates, supplies approximately 1.07 million actual
 intensity-bearing points. The original 80 sensor poses supply an 87.20 m trajectory.
-With right-hand traffic and otherwise default options, the builder produced one stretch,
+Before continuity tracking and fitting, with right-hand traffic and then-default options,
+the builder produced one stretch,
 four lane sections, 29 intensity candidate vertices, 46 curb candidates and 60 width priors.
 No sections lacked ground support. Detected fractions were 77.78%, 20% and 68.89%.
 
@@ -109,8 +113,110 @@ Use `-` as the reference argument of the evaluation example to obtain counts wit
 that mode uses right-hand traffic and a Local projector. The existing
 `scripts/fetch_pandaset.py` documents the public archive and sensor/world transforms.
 
+## Boundary continuity and local curve fitting
+
+Independently chosen cross-section peaks caused visible zigzags. The default builder now
+selects a continuous candidate path, penalizing sudden lateral changes without consulting
+reference geometry. Selected candidates can be replaced by labelled width priors when
+evidence is inconsistent. Inferred candidates retain the original robust outer-edge anchor.
+The path is fitted with weighted local quadratic curves over up to five vertices. XY
+movement is capped at 0.5 m; ground heights stay fixed. Fits that cross adjacent boundaries
+at a sampled cross-section are rejected. This does not guarantee topology between samples.
+
+On the same recorded inputs, lane counts and 2 m cross-section sampling:
+
+| Metric | Independently selected, anchored | Tracking and fitting |
+|---|---:|---:|
+| Autoware boundary precision at 0.3 m | 26.56% | 29.00% |
+| Autoware boundary recall at 0.3 m | 9.55% | 10.16% |
+| Autoware F1 | 0.1404 | 0.1505 |
+| Autoware selected source vertex precision | 26.32% | 32.08% |
+| Autoware adjacent-segment heading change, P95 | 46.66 degrees | 11.14 degrees |
+| PandaSet adjacent-segment heading change, P95 | 35.92 degrees | 7.77 degrees |
+
+Fitting moved 192 Autoware vertices by at most 0.194 m, and 135 PandaSet vertices by at
+most 0.170 m. Tracking changed 103 and 41 selected sources respectively. Autoware source
+counts changed from 52 curbs, 24 coverage edges and 116 width priors to 42, 11 and 139;
+PandaSet counts changed from 29 intensity peaks, 46 curbs and 60 width priors to 27, 33
+and 75. Thus continuity can reject measurements; it does not create new observed evidence.
+Autoware scores still use the same nine reference lanes and 10,895 reference samples.
+Generated supported lengths and unsupported sections did not change.
+
+Heading variation measures zigzags, **not accuracy**. True corners can also be smoothed.
+PandaSet still has no independent lane-boundary reference, and Autoware position accuracy
+remains low. These two datasets informed development; there is no held-out generalization
+claim. Inspect the cloud and source observations before accepting a draft. The evaluation
+JSON retains `source_boundaries` before fitting; evidence scatter points and candidate
+errors use these sources, while the red overlay lines and polyline accuracy scores use
+fitted geometry.
+
+To reproduce, run the Rust evaluation example once with default options and once with
+`{"track_boundaries": false, "fit_boundaries": false}` in an options file. Include
+`"left_hand_traffic": false` in **both** options files for PandaSet. Then compare:
+
+```sh
+python scripts/vector_map_fit_evaluate.py baseline/comparison.json fitted/comparison.json heading-change.json
+python scripts/vector_map_diagnose.py fitted/comparison.json fitted/plots
+```
+
+The comparison checks identical input previews, references, trajectories, other options
+and cross-section sampling, and refuses to overwrite its result. Disable stages independently
+through Web, CLI or Python/MCP as described in the command documentation.
+
 The generated PandaSet map also exercises Web vertex editing: a shared internal boundary
 vertex was dragged with its cloud-relative height unchanged, both adjacent lanes updated,
 and one Undo restored the complete map view exactly. This checks editing behavior, not
 whether the new position matches a surveyed marking. A production E2E separately covers
 large coordinates, reversed shared boundaries, cancellation, export and reload.
+
+## Conservative repeated-pass integration
+
+Appending uses `existing_map` (editable IR JSON or Lanelet2 OSM), distinct from the
+metadata-only `reference_map`. Existing geometry, entity IDs, rules and projector metadata
+stay fixed. Corresponding centres and both boundaries must agree within 0.5 m, edge
+directions within 15 degrees and ground heights within 0.3 m. Uniquely connected sections
+are compared as continuous edges, with comparison centres sampled by normalized arc length
+at a fixed 0.5 m resolution. This avoids false mismatches caused by inserted split vertices,
+unequal edge lengths or comparing a trajectory heading against a derived lane centre.
+Explicit existing centreline geometry is respected. Ambiguous disconnected duplicates,
+opposite travel and different ground levels are not fused. Uncovered intervals are added;
+only coincident, unambiguous directed ends are connected automatically.
+OSM preservation applies to the imported IR: unsupported members/types are reported
+in `import_issues` and can be dropped on import. Prefer editable JSON for IR fidelity.
+
+On the same public inputs above, exact replay retained the complete IR document unchanged:
+
+| Recorded input | Incoming supported length | Reused length | Added length | Added lanes |
+|---|---:|---:|---:|---:|
+| PandaSet 019 | 87.199 m | 87.199 m | 0 m | 0 |
+| Autoware sample rosbag, MGRS 54SUE | 122.134 m | 122.134 m | 0 m | 0 |
+
+The PandaSet Web replay also exported byte-identical OSM, and one Undo removed the original
+build: the no-op replay did not create an Undo entry. Native tests cover retained speed
+rules, IR and OSM imports, rejected invalid imports, atomic failure, explicit centres,
+curved edges, sharp height changes, section cuts, partial extensions and ambiguity.
+
+For partial overlap, PandaSet poses 0–49 and 30–79 have 20.667 m of common recorded XY
+trajectory. With continuity tracking and fitting, the first subset generated 54.705 m;
+appending the second reused 20.000 m and added 33.161 m in one fragment (two lane sections).
+Existing lane and boundary documents
+remained unchanged. The conservative matcher did **not** remove all overlap: different
+sampling and extraction geometry retained unmatched fragments, and no endpoints coincided
+exactly enough to connect. Those duplicates and gaps require review. The same subset
+procedure on Autoware retained existing geometry and reused 13.864 m, adding 102.093 m
+in four fragments (eight lane sections);
+its stationary GNSS prefix and missing ground also limit this experiment.
+
+These are overlapping subsets of **one** drive, not independently recorded repeated
+surveys. They check reuse and preservation, not improved boundary accuracy or correction
+of frame drift. Evidence counts continue to describe the incoming pass. Reproduce with
+an installed CloudAnalyzer package and an updated native Rust core:
+
+```sh
+python scripts/vector_map_integrate_evaluate.py pandaset/map.pcd pandaset/trajectory.csv results/pandaset-integration --right-hand
+python scripts/vector_map_integrate_evaluate.py sample-map-rosbag/pointcloud_map.pcd trajectory.csv results/autoware-integration --reference-map sample-map-rosbag/lanelet2_map.osm
+```
+
+The input CSV must have `timestamp,x,y,z` columns. Results must be a new directory.
+The script writes maps and reports for first/replay/overlap, checks complete replay equality
+and retention of old lane/boundary documents, and records the limitations in `summary.json`.

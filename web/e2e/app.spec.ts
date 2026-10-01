@@ -2333,15 +2333,23 @@ test("vector map: trajectory builds a ground-level draft with an evidence report
   await expect(status(page)).toContainText("trajectory of 3 poses");
   await page.locator("#vector-map-panel").getByText("Build from a trajectory", { exact: true }).click();
   await expect(page.locator("#vm-build")).toBeEnabled();
+  await expect(page.locator("#vm-track-boundaries")).toBeChecked();
+  await expect(page.locator("#vm-fit-boundaries")).toBeChecked();
   await page.locator("#vm-build").click();
   await expect(status(page)).toContainText("Draft roads added");
   await expect(page.locator("#vm-build-report")).toContainText("configured lane width");
+  await expect(page.locator("#vm-build-report")).toContainText("Measured sources before fitting");
   await expect(page.locator("#vm-status")).toContainText("2 lanes");
   const saved = page.waitForEvent("download", (file) => file.suggestedFilename() === "lanelet2_map.osm");
   await page.locator("#vm-export").click();
   const xml = (await bytesOf(await saved)).toString();
   expect(xml).toMatch(/<tag k="ele" v="2(\.0+)?"\/>/);
   expect(xml).not.toContain('<tag k="ele" v="50"/>');
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Existing lanes matched");
+  await expect(page.locator("#vm-build-report")).toContainText("Added 0 m; reused 54 m");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  // A fully reused pass did not add an undo entry: undo still removes the build.
   await page.locator("#vm-undo").click();
   await expect(page.locator("#vm-status")).toContainText("No map yet");
 });

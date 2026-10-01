@@ -34,6 +34,10 @@ Use a new out_dir; the tool will not replace existing results. Choose lane count
 traffic side and speed. A reference_map supplies only coordinate metadata; otherwise
 specify a projection and origin, or use Local. Detected boundaries are candidates; read
 the evidence counts, warnings and validation issues and review the draft geometry.
+To append another pass, use existing_map (vector_map.json or Lanelet2 OSM), without
+reference_map or projection options. It preserves existing geometry, IDs and rules,
+reuses matching intervals and reports added/reused lengths. Both passes must already
+share a coordinate frame; this does not align survey drift. Ambiguous overlaps need review.
 After generation, edit with the separate vectormap MCP server: register it with
 `claude mcp add vectormap -- vectormap mcp <out_dir>/lanelet2_map.osm`.
 Use view_link([cloud, out_dir]) to show the point cloud and Lanelet2 map together.

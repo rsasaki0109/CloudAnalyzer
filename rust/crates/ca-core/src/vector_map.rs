@@ -13,6 +13,9 @@ use vectormap_core::{LaneDirection, Map, NewRoad, Point3, Polyline3, RoadLane, S
 
 use crate::{AttributeValues, INTENSITY, PointCloud};
 
+mod fitting;
+mod integration;
+
 /// Parameters in metres, except speed in km/h and lane counts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -30,6 +33,14 @@ pub struct BuildOptions {
     pub smoothing_window: usize,
     /// Place inferred lane lines relative to nearby detected outer boundaries.
     pub anchor_width_prior: bool,
+    /// Select boundary candidates as a continuous path across supported slices.
+    pub track_boundaries: bool,
+    /// Fit short local curves to suppress candidate jitter, with bounded XY movement.
+    pub fit_boundaries: bool,
+    /// Reuse matching lanes already in the map and add only uncovered intervals.
+    pub merge_repeated_passes: bool,
+    /// Maximum horizontal discrepancy for centre and both oriented boundaries.
+    pub merge_distance: f64,
     /// Half-length of each longitudinal slice.
     pub half_window: f64,
     /// How far a measured boundary can deviate from its nominal position.
@@ -51,6 +62,10 @@ impl Default for BuildOptions {
             sample_spacing: 2.0,
             smoothing_window: 2,
             anchor_width_prior: true,
+            track_boundaries: true,
+            fit_boundaries: true,
+            merge_repeated_passes: true,
+            merge_distance: 0.5,
             half_window: 2.0,
             search_margin: 1.5,
             bin_width: 0.2,
@@ -78,6 +93,9 @@ pub struct ExtractedRoad {
     pub boundaries: Vec<Vec<[f64; 3]>>,
     /// One evidence label per boundary vertex.
     pub evidence: Vec<Vec<Evidence>>,
+    /// Selected source positions before geometric fitting, including labelled
+    /// width priors. Evidence refers to these sources, not measured fit positions.
+    pub source_boundaries: Option<Vec<Vec<[f64; 3]>>>,
 }
 
 /// What was measured, what was inferred, and where data were missing.
@@ -95,6 +113,13 @@ pub struct BuildReport {
     pub support_edge_vertices: usize,
     pub width_prior_vertices: usize,
     pub anchored_prior_vertices: usize,
+    pub tracked_vertices: usize,
+    pub fitted_vertices: usize,
+    pub maximum_fit_displacement: f64,
+    pub reused_intervals: usize,
+    pub reused_length: f64,
+    pub added_length: f64,
+    pub joined_connections: usize,
     pub observed_fraction: Vec<f64>,
     pub warnings: Vec<String>,
 }
@@ -130,6 +155,7 @@ impl BuildOptions {
             ),
             ("bin_width", self.bin_width, 0.05, 0.5),
             ("curb_height", self.curb_height, 0.03, 0.5),
+            ("merge_distance", self.merge_distance, 0.05, 1.0),
         ] {
             if !value.is_finite() || !(min..=max).contains(&value) {
                 return Err(BuildError(format!(
@@ -278,6 +304,77 @@ struct Candidate {
     evidence: Evidence,
 }
 
+struct Section {
+    normal: [f64; 2],
+    choices: Vec<Vec<Candidate>>,
+}
+
+fn track_candidates(road: &mut ExtractedRoad, sections: &[Section], nominal: &[f64]) -> usize {
+    let mut changed = 0;
+    for (j, &prior) in nominal.iter().enumerate() {
+        let unary = |c: Candidate| {
+            let evidence = match c.evidence {
+                Evidence::Intensity => 0.0,
+                Evidence::Curb => 0.1,
+                Evidence::SupportEdge => 0.3,
+                Evidence::WidthPrior => 0.9,
+            };
+            evidence + 0.1 * (c.lateral - prior).powi(2)
+        };
+        let mut costs: Vec<_> = sections[0].choices[j].iter().map(|&c| unary(c)).collect();
+        let mut parents = Vec::new();
+        for k in 1..sections.len() {
+            let a = road.reference[k - 1];
+            let b = road.reference[k];
+            let distance = (b[0] - a[0]).hypot(b[1] - a[1]).max(0.1);
+            let mut next = Vec::new();
+            let mut parent = Vec::new();
+            for &candidate in &sections[k].choices[j] {
+                let (from, cost) = sections[k - 1].choices[j]
+                    .iter()
+                    .enumerate()
+                    .map(|(id, c)| {
+                        (
+                            id,
+                            costs[id] + 8.0 / distance * (candidate.lateral - c.lateral).powi(2),
+                        )
+                    })
+                    .min_by(|a, b| a.1.total_cmp(&b.1))
+                    .unwrap();
+                next.push(cost + unary(candidate));
+                parent.push(from);
+            }
+            costs = next;
+            parents.push(parent);
+        }
+        let mut choice = costs
+            .iter()
+            .enumerate()
+            .min_by(|a, b| a.1.total_cmp(b.1))
+            .unwrap()
+            .0;
+        for k in (0..sections.len()).rev() {
+            let c = sections[k].choices[j][choice];
+            let p = road.reference[k];
+            let n = sections[k].normal;
+            let point = [p[0] + n[0] * c.lateral, p[1] + n[1] * c.lateral, c.z];
+            let old = road.boundaries[j][k];
+            if (old[0] - point[0]).hypot(old[1] - point[1]) > 1e-6
+                || (old[2] - point[2]).abs() > 1e-6
+                || road.evidence[j][k] != c.evidence
+            {
+                changed += 1;
+            }
+            road.boundaries[j][k] = point;
+            road.evidence[j][k] = c.evidence;
+            if k > 0 {
+                choice = parents[k - 1][choice];
+            }
+        }
+    }
+    changed
+}
+
 /// Extract geometry without modifying a map. Separate stretches are returned
 /// when there is no observed road surface near the trajectory; gaps are not
 /// bridged with invented elevations.
@@ -342,14 +439,24 @@ pub fn extract(
         support_edge_vertices: 0,
         width_prior_vertices: 0,
         anchored_prior_vertices: 0,
+        tracked_vertices: 0,
+        fitted_vertices: 0,
+        maximum_fit_displacement: 0.0,
+        reused_intervals: 0,
+        reused_length: 0.0,
+        added_length: 0.0,
+        joined_connections: 0,
         observed_fraction: vec![0.0; nlanes + 1],
         warnings: Vec::new(),
     };
     let mut roads = Vec::new();
+    let mut observations = Vec::new();
+    let mut sections = Vec::new();
     let empty = || ExtractedRoad {
         reference: Vec::new(),
         boundaries: vec![Vec::new(); nlanes + 1],
         evidence: vec![Vec::new(); nlanes + 1],
+        source_boundaries: None,
     };
     let mut road = empty();
     let mut prior = nominal.clone();
@@ -392,8 +499,10 @@ pub fn extract(
             report.unsupported_sections += 1;
             if road.reference.len() >= 2 {
                 roads.push(road);
+                observations.push(sections);
             }
             road = empty();
+            sections = Vec::new();
             prior = nominal.clone();
             continue;
         };
@@ -467,6 +576,10 @@ pub fn extract(
             }
         }
         road.reference.push([p[0], p[1], ground]);
+        let mut section = Section {
+            normal: [-dir[1], dir[0]],
+            choices: Vec::new(),
+        };
         for j in 0..=nlanes {
             let target = prior[j] * 0.7 + nominal[j] * 0.3;
             let found = candidates
@@ -485,22 +598,71 @@ pub fn extract(
                 z: ground,
                 evidence: Evidence::WidthPrior,
             });
+            let mut choices: Vec<_> = candidates
+                .iter()
+                .copied()
+                .filter(|c| {
+                    (c.lateral - nominal[j]).abs() <= o.search_margin
+                        && (j == 0 || j == nlanes || c.evidence == Evidence::Intensity)
+                })
+                .collect();
+            choices.push(Candidate {
+                lateral: nominal[j],
+                z: ground,
+                evidence: Evidence::WidthPrior,
+            });
+            section.choices.push(choices);
             prior[j] = c.lateral;
             road.boundaries[j].push([p[0] - dir[1] * c.lateral, p[1] + dir[0] * c.lateral, c.z]);
             road.evidence[j].push(c.evidence);
         }
+        sections.push(section);
     }
     if road.reference.len() >= 2 {
         roads.push(road);
+        observations.push(sections);
     }
     if roads.is_empty() {
         return fail(
             "no continuous road surface found near the trajectory; check the coordinate frame and point density",
         );
     }
-    if o.anchor_width_prior {
+    if o.track_boundaries {
+        for (road, sections) in roads.iter_mut().zip(&mut observations) {
+            // Retain the original robust outer-edge offset when an unstable
+            // detection is replaced by an inferred point. Dropping the
+            // observation must not silently reset the lane to the pose centre.
+            let (_, offsets) = prior_offsets(road, &nominal);
+            if o.anchor_width_prior {
+                for (k, section) in sections.iter_mut().enumerate() {
+                    for (j, choices) in section.choices.iter_mut().enumerate() {
+                        choices.last_mut().unwrap().lateral =
+                            nominal[j] + offsets[k].unwrap_or(0.0);
+                    }
+                }
+            }
+            report.tracked_vertices += track_candidates(road, sections, &nominal);
+            if o.anchor_width_prior {
+                report.anchored_prior_vertices += road
+                    .evidence
+                    .iter()
+                    .flat_map(|line| line.iter().enumerate())
+                    .filter(|(k, e)| {
+                        **e == Evidence::WidthPrior && offsets[*k].is_some_and(|v| v.abs() > 1e-6)
+                    })
+                    .count();
+            }
+        }
+    } else if o.anchor_width_prior {
         for road in &mut roads {
             report.anchored_prior_vertices += anchor_priors(road, &nominal);
+        }
+    }
+    if o.fit_boundaries {
+        for road in &mut roads {
+            let (count, maximum) = fitting::fit(road);
+            report.fitted_vertices += count;
+            report.maximum_fit_displacement = report.maximum_fit_displacement.max(maximum);
         }
     }
     let mut totals = vec![0usize; nlanes + 1];
@@ -543,6 +705,12 @@ pub fn extract(
     if report.anchored_prior_vertices > 0 {
         report.warnings.push(format!("{} inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",report.anchored_prior_vertices));
     }
+    if report.tracked_vertices > 0 {
+        report.warnings.push(format!("{} vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",report.tracked_vertices));
+    }
+    if report.fitted_vertices > 0 {
+        report.warnings.push(format!("{} vertices were fitted to local boundary curves (maximum XY movement {:.3} m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",report.fitted_vertices,report.maximum_fit_displacement));
+    }
     if report.support_edge_vertices > 0 {
         report.warnings.push("Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.".into());
     }
@@ -557,7 +725,7 @@ pub fn extract(
 /// five-section median rejects single-section curb/coverage outliers. Only
 /// width-prior vertices move; measured candidates retain their geometry and
 /// inferred vertices keep their evidence label. No reference map is consulted.
-fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64]) -> usize {
+fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<Option<f64>>) {
     let n = road.reference.len();
     let last = nominal.len() - 1;
     let normals: Vec<_> = (0..n)
@@ -584,15 +752,25 @@ fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64]) -> usize {
             (sum / f64::from(count.max(1)), count > 0)
         })
         .collect();
+    let offsets = (0..n)
+        .map(|k| {
+            if !residuals[k].1 {
+                return None;
+            }
+            let start = k.saturating_sub(2);
+            let end = (k + 2).min(n - 1);
+            let mut values: Vec<_> = residuals[start..=end].iter().map(|r| r.0).collect();
+            quantile(&mut values, 0.5)
+        })
+        .collect();
+    (normals, offsets)
+}
+
+fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64]) -> usize {
+    let (normals, offsets) = prior_offsets(road, nominal);
     let mut moved = 0;
-    for k in 0..n {
-        if !residuals[k].1 {
-            continue;
-        }
-        let start = k.saturating_sub(2);
-        let end = (k + 2).min(n - 1);
-        let mut values: Vec<_> = residuals[start..=end].iter().map(|r| r.0).collect();
-        let offset = quantile(&mut values, 0.5).unwrap();
+    for (k, offset) in offsets.into_iter().enumerate() {
+        let Some(offset) = offset else { continue };
         for (j, &value) in nominal.iter().enumerate() {
             if road.evidence[j][k] == Evidence::WidthPrior && offset.abs() > 1e-6 {
                 road.boundaries[j][k][0] = road.reference[k][0] + normals[k][0] * (value + offset);
@@ -613,6 +791,7 @@ pub fn build(
     o: &BuildOptions,
 ) -> Result<BuildReport, BuildError> {
     let (roads, mut report) = extract(cloud, poses, o)?;
+    let had_existing = map.lanes().next().is_some();
     let mut draft = map.clone();
     let forward = || RoadLane::new(o.lane_width, LaneDirection::Forward);
     let backward = || RoadLane::new(o.lane_width, LaneDirection::Backward);
@@ -627,23 +806,45 @@ pub fn build(
             .chain((0..o.forward_lanes).map(|_| forward()))
             .collect()
     };
+    report.roads = 0;
+    let mut created = Vec::new();
     for road in roads {
-        let polyline = |points: Vec<[f64; 3]>| {
-            Polyline3::new(
-                points
-                    .into_iter()
-                    .map(|p| Point3::new(p[0], p[1], p[2]))
-                    .collect(),
-            )
+        let parts = if o.merge_repeated_passes {
+            integration::uncovered(&draft, road, &lanes, o.merge_distance, &mut report)
+        } else {
+            vec![road]
         };
-        let mut spec = NewRoad::new(polyline(road.reference), lanes.clone());
-        spec.boundaries = Some(road.boundaries.into_iter().map(polyline).collect());
-        spec.speed_limit = Some(SpeedLimit::from_kmh(o.speed_limit));
-        spec.segment_length = (o.segment_length > 0.0).then_some(o.segment_length);
-        let (built, _) = draft
-            .build_road(spec)
-            .map_err(|e| BuildError(e.to_string()))?;
-        report.lanes += built.lanes.iter().map(Vec::len).sum::<usize>();
+        for road in parts {
+            let added_length = length(&road.reference);
+            let polyline = |points: Vec<[f64; 3]>| {
+                Polyline3::new(
+                    points
+                        .into_iter()
+                        .map(|p| Point3::new(p[0], p[1], p[2]))
+                        .collect(),
+                )
+            };
+            let mut spec = NewRoad::new(polyline(road.reference), lanes.clone());
+            spec.boundaries = Some(road.boundaries.into_iter().map(polyline).collect());
+            spec.speed_limit = Some(SpeedLimit::from_kmh(o.speed_limit));
+            spec.segment_length = (o.segment_length > 0.0).then_some(o.segment_length);
+            let (built, _) = draft
+                .build_road(spec)
+                .map_err(|e| BuildError(e.to_string()))?;
+            report.lanes += built.lanes.iter().map(Vec::len).sum::<usize>();
+            report.roads += 1;
+            report.added_length += added_length;
+            created.extend(built.lanes.into_iter().flatten());
+        }
+    }
+    if o.merge_repeated_passes {
+        report.joined_connections = integration::link_touching(&mut draft, &created)?;
+    }
+    if report.reused_intervals > 0 {
+        report.warnings.push(format!("{} intervals ({:.3} m) reuse matching existing lanes; their geometry, IDs and traffic rules were preserved. Evidence counts describe the incoming pass, not additional surveyed accuracy.",report.reused_intervals,report.reused_length));
+    }
+    if had_existing && o.merge_repeated_passes {
+        report.warnings.push("Matching requires centre, both boundaries, travel direction and ground height to agree. Unmatched or ambiguous overlaps may remain and need review; this does not align drifting survey frames.".into());
     }
     *map = draft;
     Ok(report)
@@ -653,6 +854,67 @@ pub fn build(
 mod tests {
     use super::*;
     use crate::Attribute;
+
+    #[test]
+    fn tracking_rejects_an_isolated_peak_and_labels_missing_evidence_as_prior() {
+        let reference: Vec<_> = (0..11).map(|k| [k as f64 * 2.0, 0.0, 2.0]).collect();
+        let mut road = ExtractedRoad {
+            boundaries: vec![
+                reference
+                    .iter()
+                    .enumerate()
+                    .map(|(k, p)| [p[0], if k == 5 { 1.2 } else { k as f64 * 0.02 }, p[2]])
+                    .collect(),
+            ],
+            evidence: vec![vec![Evidence::Curb; reference.len()]],
+            reference,
+            source_boundaries: None,
+        };
+        road.evidence[0][5] = Evidence::Intensity;
+        let sections: Vec<_> = (0..11)
+            .map(|k| {
+                let mut choices = vec![Candidate {
+                    lateral: 0.0,
+                    z: 2.0,
+                    evidence: Evidence::WidthPrior,
+                }];
+                if k != 7 {
+                    choices.push(Candidate {
+                        lateral: k as f64 * 0.02,
+                        z: 2.0,
+                        evidence: Evidence::Curb,
+                    });
+                }
+                if k == 5 {
+                    choices.push(Candidate {
+                        lateral: 1.2,
+                        z: 2.0,
+                        evidence: Evidence::Intensity,
+                    });
+                }
+                Section {
+                    normal: [0.0, 1.0],
+                    choices: vec![choices],
+                }
+            })
+            .collect();
+        assert!(track_candidates(&mut road, &sections, &[0.0]) >= 2);
+        for k in 0..11 {
+            assert_eq!(
+                road.evidence[0][k],
+                if k == 7 {
+                    Evidence::WidthPrior
+                } else {
+                    Evidence::Curb
+                }
+            );
+            assert!(
+                (road.boundaries[0][k][1] - if k == 7 { 0.0 } else { k as f64 * 0.02 }).abs()
+                    < 1e-12
+            );
+            assert_eq!(road.boundaries[0][k][2], 2.0);
+        }
+    }
 
     fn marked_road() -> PointCloud {
         let mut cloud = PointCloud::default();
@@ -772,5 +1034,202 @@ mod tests {
         );
         assert!(report.anchored_prior_vertices > 0);
         assert!(!report.intensity_used);
+    }
+
+    #[test]
+    fn replay_reuses_geometry_ids_and_rules_without_adding_lanes() {
+        let cloud = marked_road();
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let mut map = Map::new();
+        let options = BuildOptions {
+            segment_length: 10.0,
+            ..Default::default()
+        };
+        build(&mut map, &cloud, &poses, &options).unwrap();
+        let ids: Vec<_> = map.lanes().map(|l| l.id).collect();
+        map.set_speed_limit(&ids, Some(SpeedLimit::from_kmh(20.0)))
+            .unwrap();
+        let before = map.clone();
+        let report = build(&mut map, &cloud, &poses, &options).unwrap();
+        assert_eq!(map, before);
+        assert_eq!(report.lanes, 0);
+        assert_eq!(report.roads, 0);
+        assert_eq!(report.added_length, 0.0);
+        assert!((report.reused_length - 28.0).abs() < 1e-6);
+        assert!(report.reused_intervals > 0);
+        let disabled = BuildOptions {
+            merge_repeated_passes: false,
+            ..options
+        };
+        let report = build(&mut map, &cloud, &poses, &disabled).unwrap();
+        assert_eq!(report.reused_intervals, 0);
+        assert_eq!(map.lanes().count(), ids.len() * 2);
+    }
+
+    #[test]
+    fn overlap_adds_only_the_extension_and_links_both_travel_directions() {
+        let cloud = marked_road();
+        let mut map = Map::new();
+        let o = BuildOptions::default();
+        build(&mut map, &cloud, &[[1.0, 0.0, 50.0], [21.0, 0.0, 50.0]], &o).unwrap();
+        let before: Vec<_> = map.lanes().cloned().collect();
+        let report = build(
+            &mut map,
+            &cloud,
+            &[[13.0, 0.0, 50.0], [29.0, 0.0, 50.0]],
+            &o,
+        )
+        .unwrap();
+        assert_eq!(report.roads, 1);
+        assert_eq!(report.lanes, 2);
+        assert!((report.reused_length - 8.0).abs() < 1e-6, "{report:?}");
+        assert!((report.added_length - 8.0).abs() < 1e-6, "{report:?}");
+        assert_eq!(report.joined_connections, 2);
+        for old in before {
+            assert_eq!(map.lane(old.id), Some(&old));
+        }
+        assert_eq!(map.lanes().count(), 4);
+        let unchanged = map.clone();
+        assert_eq!(
+            build(
+                &mut map,
+                &cloud,
+                &[[13.0, 0.0, 50.0], [29.0, 0.0, 50.0]],
+                &o
+            )
+            .unwrap()
+            .lanes,
+            0
+        );
+        assert_eq!(map, unchanged);
+    }
+
+    #[test]
+    fn opposite_direction_parallel_roads_and_other_levels_are_not_fused() {
+        for (y, z, reverse) in [(0.0, 0.0, true), (10.0, 0.0, false), (0.0, 5.0, false)] {
+            let mut cloud = marked_road();
+            let mut map = Map::new();
+            let o = BuildOptions {
+                backward_lanes: 0,
+                ..Default::default()
+            };
+            let a = [1.0, 0.0, 50.0];
+            let b = [29.0, 0.0, 50.0];
+            build(&mut map, &cloud, &[a, b], &o).unwrap();
+            for p in &mut cloud.positions {
+                p[1] += y;
+                p[2] += z;
+            }
+            let mut poses = [[a[0], y, 50.0], [b[0], y, 50.0]];
+            if reverse {
+                poses.reverse();
+            }
+            let report = build(&mut map, &cloud, &poses, &o).unwrap();
+            assert_eq!(report.reused_intervals, 0, "{report:?}");
+            assert_eq!(report.lanes, 1);
+            assert_eq!(report.joined_connections, 0);
+            assert_eq!(map.lanes().count(), 2);
+        }
+    }
+
+    #[test]
+    fn repeat_matching_handles_edge_heading_and_staggered_section_cuts() {
+        let reference: Vec<_> = (0..=30).map(|k| [k as f64 * 2.0, 0.0, 0.0]).collect();
+        let boundaries: Vec<Vec<_>> = [3.5, 0.0, -3.5]
+            .into_iter()
+            .enumerate()
+            .map(|(j, y)| {
+                reference
+                    .iter()
+                    .enumerate()
+                    .map(|(k, p)| {
+                        let offset = if j == 1 {
+                            0.0
+                        } else {
+                            (k as f64 * 0.9).sin() * 0.9
+                        };
+                        // A sharp ground-height change also exposes different
+                        // arc-length interpolation after a section is split.
+                        [p[0], y + offset, if k == 15 { 2.0 } else { 0.0 }]
+                    })
+                    .collect()
+            })
+            .collect();
+        let road = ExtractedRoad {
+            reference: reference.clone(),
+            boundaries: boundaries.clone(),
+            evidence: vec![vec![Evidence::Curb; reference.len()]; 3],
+            source_boundaries: None,
+        };
+        let lanes = vec![
+            RoadLane::new(3.5, LaneDirection::Backward),
+            RoadLane::new(3.5, LaneDirection::Forward),
+        ];
+        let line = |p: Vec<[f64; 3]>| {
+            Polyline3::new(
+                p.into_iter()
+                    .map(|p| Point3::new(p[0], p[1], p[2]))
+                    .collect(),
+            )
+        };
+        let mut spec = NewRoad::new(line(reference), lanes.clone());
+        spec.boundaries = Some(boundaries.into_iter().map(line).collect());
+        spec.segment_length = Some(10.0);
+        let mut map = Map::new();
+        map.build_road(spec).unwrap();
+        let before = map.clone();
+        let (_, mut report) = extract(
+            &marked_road(),
+            &[[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]],
+            &BuildOptions::default(),
+        )
+        .unwrap();
+        let parts = integration::uncovered(&map, road, &lanes, 0.5, &mut report);
+        assert!(parts.is_empty(), "unmatched geometry: {parts:?}");
+        assert!((report.reused_length - 60.0).abs() < 1e-6);
+        assert_eq!(map, before);
+    }
+
+    #[test]
+    fn malformed_existing_edges_are_not_used_as_matching_candidates() {
+        let cloud = marked_road();
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let options = BuildOptions::default();
+        let mut map = Map::new();
+        build(&mut map, &cloud, &poses, &options).unwrap();
+        let mut doc = map.to_document();
+        // An imported map can carry a usable explicit centre but a one-point
+        // edge. Such an edge has no segment or direction to compare.
+        for lane in &mut doc.lanes {
+            lane.centerline = map.centerline(lane.id);
+        }
+        for edge in &mut doc.boundaries {
+            edge.geometry.points.truncate(1);
+        }
+        let (mut map, _) = doc.into_map().unwrap();
+        let before = map.clone();
+        let report = build(&mut map, &cloud, &poses, &options).unwrap();
+        assert_eq!(report.reused_intervals, 0);
+        assert_eq!(report.lanes, 2);
+        for edge in before.boundaries() {
+            assert_eq!(map.boundary(edge.id), Some(edge));
+        }
+    }
+
+    #[test]
+    fn competing_unlinked_lane_geometries_are_not_silently_chosen() {
+        let cloud = marked_road();
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let mut map = Map::new();
+        let disabled = BuildOptions {
+            merge_repeated_passes: false,
+            ..Default::default()
+        };
+        build(&mut map, &cloud, &poses, &disabled).unwrap();
+        build(&mut map, &cloud, &poses, &disabled).unwrap();
+        let report = build(&mut map, &cloud, &poses, &BuildOptions::default()).unwrap();
+        assert_eq!(report.reused_intervals, 0);
+        assert_eq!(report.joined_connections, 0);
+        assert!(report.warnings.iter().any(|w| w.contains("ambiguous")));
     }
 }

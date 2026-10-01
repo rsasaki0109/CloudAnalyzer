@@ -71,16 +71,18 @@ def main():
     for road in data["generated"]:
         ground = np.asarray(road["reference"])
         generated_z.extend(ground[:, 2])
-        for line, labels in zip(road["boundaries"], road["evidence"]):
+        sources = road.get("source_boundaries") or road["boundaries"]
+        for line, source, labels in zip(road["boundaries"], sources, road["evidence"]):
             line = np.asarray(line)
             axes[0].plot(*(line[:, :2] - origin).T, c="#cc3311", lw=1.2, alpha=0.65)
-            error = tree.query(line[:, :2])[0]
+            source = np.asarray(source)
+            error = tree.query(source[:, :2])[0]
             for evidence, color in colors.items():
                 mask = np.array(labels) == evidence
                 distances[evidence].extend(error[mask])
                 if mask.any():
                     axes[0].scatter(
-                        *(line[mask, :2] - origin).T,
+                        *(source[mask, :2] - origin).T,
                         c=color,
                         s=9,
                         label=evidence.replace("_", " ")
@@ -120,7 +122,7 @@ def main():
         ylim=(0, 1),
         xlabel="Distance to reference boundary (m)",
         ylabel="Fraction of vertices",
-        title="Candidate errors by evidence",
+        title="Selected source errors before fitting",
     )
     axes[1].legend(fontsize=8)
     groups = [trajectory[:, 2], np.asarray(generated_z), truth[:, 2]]

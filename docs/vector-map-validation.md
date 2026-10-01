@@ -128,6 +128,8 @@ unequal edge lengths or comparing a trajectory heading against a derived lane ce
 Explicit existing centreline geometry is respected. Ambiguous disconnected duplicates,
 opposite travel and different ground levels are not fused. Uncovered intervals are added;
 only coincident, unambiguous directed ends are connected automatically.
+OSM preservation applies to the imported IR: unsupported members/types are reported
+in `import_issues` and can be dropped on import. Prefer editable JSON for IR fidelity.
 
 On the same public inputs above, exact replay retained the complete IR document unchanged:
 

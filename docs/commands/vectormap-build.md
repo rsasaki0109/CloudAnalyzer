@@ -49,8 +49,11 @@ ca vectormap-build map.pcd next-drive.csv --existing-map draft-map/vector_map.js
 
 Lanelet2 OSM is also accepted. `--existing-map` keeps the existing geometry, IDs, traffic
 rules and coordinate metadata; omit `--reference-map` and explicit projection options.
-Use the editable JSON to retain all IR editing information. Matching is enabled by default,
-including in the Web build panel and MCP tool (`existing_map`, `merge_repeated_passes`).
+Use the editable JSON to retain all IR editing information.
+OSM imports report unsupported members and types in `import_issues`; preservation applies
+to the imported IR, so review those issues before appending an external OSM map.
+Matching is enabled by default, including in the Web build panel and MCP tool
+(`existing_map`, `merge_repeated_passes`).
 `--no-merge-repeated-passes` explicitly adds the entire pass instead.
 
 Reuse requires the lane centre and both corresponding boundaries to agree within 0.5 m,

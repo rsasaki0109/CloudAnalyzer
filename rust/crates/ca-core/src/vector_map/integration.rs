@@ -59,7 +59,7 @@ impl Index {
             ) else {
                 continue;
             };
-            if center.points.len() < 2 {
+            if center.points.len() < 2 || left.points.len() < 2 || right.points.len() < 2 {
                 continue;
             }
             lanes.push(Lane {

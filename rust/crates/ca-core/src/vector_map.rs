@@ -968,6 +968,32 @@ mod tests {
     }
 
     #[test]
+    fn malformed_existing_edges_are_not_used_as_matching_candidates() {
+        let cloud = marked_road();
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let options = BuildOptions::default();
+        let mut map = Map::new();
+        build(&mut map, &cloud, &poses, &options).unwrap();
+        let mut doc = map.to_document();
+        // An imported map can carry a usable explicit centre but a one-point
+        // edge. Such an edge has no segment or direction to compare.
+        for lane in &mut doc.lanes {
+            lane.centerline = map.centerline(lane.id);
+        }
+        for edge in &mut doc.boundaries {
+            edge.geometry.points.truncate(1);
+        }
+        let (mut map, _) = doc.into_map().unwrap();
+        let before = map.clone();
+        let report = build(&mut map, &cloud, &poses, &options).unwrap();
+        assert_eq!(report.reused_intervals, 0);
+        assert_eq!(report.lanes, 2);
+        for edge in before.boundaries() {
+            assert_eq!(map.boundary(edge.id), Some(edge));
+        }
+    }
+
+    #[test]
     fn competing_unlinked_lane_geometries_are_not_silently_chosen() {
         let cloud = marked_road();
         let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];

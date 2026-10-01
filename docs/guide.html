@@ -433,6 +433,17 @@
 
     <h2 id="vector-map">Vector map (Lanelet2)</h2>
     <p>
+      To draft roads from measurements, open a point cloud and a TUM, KITTI or CSV trajectory,
+      then choose them under <b>Build from a trajectory</b>. Both must use the same coordinate
+      frame in metres. Set lane counts, width, traffic side and speed under <b>Road options</b>.
+      The trajectory must follow the outside forward lane. Elevations come from the point cloud.
+      The builder follows intensity peaks, curb steps and the end of ground coverage; boundaries
+      without a detected feature use the configured width. The report gives the measured fraction
+      for each boundary and warns about missing data. Scan gaps can look like road edges.
+      Review the draft, especially repeated passes, lane changes and junctions; use <b>Connect</b>
+      to add junction links. A whole build can be undone in one step.
+    </p>
+    <p>
       Open a point cloud, choose <b>Top</b>, and expand <b>Vector map (Lanelet2)</b>. Use <b>Draw road</b>
       to click along a road and press <kbd>Enter</kbd> or double-click to build it. <kbd>Backspace</kbd>
       removes the last point; <kbd>Esc</kbd> cancels. Clicked cloud points supply the road's elevation;

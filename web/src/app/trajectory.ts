@@ -31,6 +31,11 @@ const ALIGNMENT_NAMES: Record<TrajectoryAlignment, string> = {
 };
 
 const trajectories = new Map<number, Trajectory>();
+export const trajectoryChanged = new Set<() => void>();
+/** Loaded input trajectories, excluding evaluation result lines. */
+export function inputTrajectories(): Trajectory[] {
+  return [...trajectories.values()].filter((t) => !t.errors);
+}
 let nextId = 1;
 /** The latest evaluation, for the CSV and applying its alignment; `id` is its result line. */
 let last: { result: TrajectoryEvaluation; alignment: TrajectoryAlignment; name: string; id: number } | null = null;
@@ -118,6 +123,7 @@ function removeTrajectory(id: number): void {
 }
 
 function renderList(): void {
+  for (const fn of trajectoryChanged) fn();
   $("trajectory-hint").hidden = trajectories.size > 0;
   $("trajectory-list").replaceChildren(
     ...[...trajectories.values()].map((t) => {

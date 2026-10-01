@@ -70,6 +70,37 @@ impl VectorMapSession {
         serde_json::to_string(&changes).map_err(error)
     }
 
+    /// Draft roads from cloud cross-sections along original-coordinate poses.
+    /// All generated roads are one undo step; construction failures keep the map.
+    #[wasm_bindgen(js_name = buildFromTrajectory)]
+    pub fn build_from_trajectory(
+        &mut self,
+        cloud: &crate::Cloud,
+        positions: &[f64],
+        options: &str,
+    ) -> Result<String, JsError> {
+        if !positions.len().is_multiple_of(3) {
+            return Err(JsError::new(
+                "trajectory positions must contain XYZ triples",
+            ));
+        }
+        let o: ca_core::vector_map::BuildOptions = serde_json::from_str(options).map_err(error)?;
+        let poses: Vec<_> = positions
+            .as_chunks::<3>()
+            .0
+            .iter()
+            .map(|p| [p[0], p[1], p[2]])
+            .collect();
+        let before = self.map.clone();
+        let report =
+            ca_core::vector_map::build(&mut self.map, &cloud.inner, &poses, &o).map_err(error)?;
+        self.undo.push(before);
+        if self.undo.len() > UNDO_DEPTH {
+            self.undo.remove(0);
+        }
+        serde_json::to_string(&report).map_err(error)
+    }
+
     /// Undo the last edit; false if there is none.
     pub fn undo(&mut self) -> bool {
         match self.undo.pop() {

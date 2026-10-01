@@ -772,6 +772,15 @@
           </div>
         </details>
         <p id="vm-status" class="small"></p>
+        <details class="options">
+          <summary>Build from a trajectory</summary>
+          <label>Point cloud <select id="vm-cloud"></select></label>
+          <label>Trajectory <select id="vm-trajectory"></select></label>
+          <p class="hint small">Both inputs must use the same coordinates in metres. The trajectory follows
+            the outside forward lane. Lane counts, widths and speed use Road options.</p>
+          <button id="vm-build" disabled>Build draft roads</button>
+          <p id="vm-build-report" class="small"></p>
+        </details>
         <ol id="vm-issues" class="issue-list small"></ol>
         <details id="vm-import-notes" hidden>
           <summary>Import notes</summary>

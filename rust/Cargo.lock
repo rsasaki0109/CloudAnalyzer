@@ -47,7 +47,9 @@ dependencies = [
  "rayon",
  "rusqlite",
  "ruzstd",
+ "serde",
  "thiserror",
+ "vectormap-core",
 ]
 
 [[package]]

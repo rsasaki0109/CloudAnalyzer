@@ -330,6 +330,12 @@ pub(super) fn uncovered(
             .iter()
             .map(|line| line[start..=end].to_vec())
             .collect(),
+        source_boundaries: road.source_boundaries.as_ref().map(|lines| {
+            lines
+                .iter()
+                .map(|line| line[start..=end].to_vec())
+                .collect()
+        }),
     };
     let mut parts = Vec::new();
     let mut start = None;

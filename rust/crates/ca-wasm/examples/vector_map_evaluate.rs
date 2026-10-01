@@ -61,7 +61,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (extracted, _) = vector_map::extract(&cloud, &poses.positions, &options)?;
     let observed: Vec<_> = extracted
         .iter()
-        .flat_map(|road| road.boundaries.iter().zip(&road.evidence))
+        .flat_map(|road| {
+            road.source_boundaries
+                .as_ref()
+                .unwrap_or(&road.boundaries)
+                .iter()
+                .zip(&road.evidence)
+        })
         .flat_map(|(points, labels)| points.iter().zip(labels))
         .filter(|(_, e)| **e != vector_map::Evidence::WidthPrior)
         .map(|(p, _)| [p[0], p[1], 0.0])
@@ -103,7 +109,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "reference":truth.boundaries().map(|b| json!({"id":b.id,"kind":b.kind,"points":b.geometry,
             "scored":boundary_ids.contains(&b.id)})).collect::<Vec<_>>(),
         "reference_centers":truth.lanes().filter_map(|l|truth.centerline(l.id).map(|line|json!({"id":l.id,"points":line,"left":l.left.boundary,"right":l.right.boundary}))).collect::<Vec<_>>(),
-        "generated":extracted.iter().map(|r|json!({"reference":r.reference,"boundaries":r.boundaries,"evidence":r.evidence})).collect::<Vec<_>>()
+        "generated":extracted.iter().map(|r|json!({"reference":r.reference,"boundaries":r.boundaries,"source_boundaries":r.source_boundaries,"evidence":r.evidence})).collect::<Vec<_>>()
     });
     fs::write(
         out.join("comparison.json"),

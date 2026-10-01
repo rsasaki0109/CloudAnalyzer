@@ -24,6 +24,16 @@ Inferred lines are anchored to detected outer edges when available, while keepin
 inferred label. This reduces dependence on the trajectory being exactly at the lane centre.
 `--no-anchor-width-prior` disables that adjustment; the MCP option is `anchor_width_prior`.
 
+Boundary candidates are tracked across supported slices to reject isolated peaks. Missing
+evidence can become a labelled width prior. Short local quadratic curves then reduce jitter,
+with at most 0.5 m XY movement per vertex and unchanged ground heights. This is geometry
+fitting, not detection of additional lane markings. Source counts and observed fractions
+refer to selected positions **before** fitting. The report also includes `tracked_vertices`,
+`fitted_vertices` and `maximum_fit_displacement`.
+`--no-track-boundaries` and `--no-fit-boundaries` disable these stages independently;
+Python/MCP use `track_boundaries=false` and `fit_boundaries=false`. Web has corresponding
+checkboxes. Disable both to reproduce the earlier independently selected boundary geometry.
+
 Traffic keeps left by default. Options include `--right-hand`, `--forward-lanes 1`,
 `--backward-lanes 1`, `--lane-width 3.5` (metres), `--speed-limit 40` (km/h) and
 `--segment-length 50` (metres; zero keeps each stretch whole).

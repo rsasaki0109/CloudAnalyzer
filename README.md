@@ -200,6 +200,9 @@ validation reports. Review the draft with `ca web-view map.pcd draft-map` and ed
 [`ca vectormap-connect`](docs/commands/vectormap-connect.md) and its MCP tool preview or
 add ground-supported branching connections; the Web panel lets you select candidates
 and undo the batch. Review turns, clearance and traffic rules before use.
+[`ca vectormap-signal`](docs/commands/vectormap-signal.md) measures a user-identified
+signal head from a point-cloud box. Preview its measured housing and explicitly
+confirm controlled lanes; the Web panel and MCP tool use the same fitting.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

@@ -23,6 +23,7 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 | `posegraph_compare(first, second, here, there, out_dir?, gravity_first?, gravity_second?, reach?, min_change?)` | [`ca posegraph-compare`](posegraph-compare.md): two drives joined, M3C2, the changed objects |
 | `build_vector_map(cloud, trajectory, out_dir, forward_lanes?, backward_lanes?, left_hand_traffic?, lane_width?, speed_limit?, segment_length?, anchor_width_prior?, reference_map?, projection?, origin_lat?, origin_lon?)` | Draft Autoware Lanelet2 roads, coordinate metadata and an evidence/validation report in a new directory ([details](vectormap-build.md)) |
 | `connect_vector_map_junctions(cloud, vector_map, out_dir, max_gap?, min_ground_support?, lane_pairs?, preview_only?)` | Preview or add ground-supported branching junction drafts, retaining existing IR geometry, rules and coordinates ([details](vectormap-connect.md)) |
+| `measure_vector_map_signal(cloud, vector_map, out_dir, bounds, lanes, kind?, preview_only?)` | Measure a user-identified signal head from a 3D box and explicitly selected lanes; preview defaults to true ([details](vectormap-signal.md)) |
 | `view_link(paths)` | A link that opens results (a folder or files) in the web app for the person, served from this machine while the server runs ([`ca web-view`](web-view.md)) |
 | `cloud_info(path)` | A cloud's size, bounds, centroid and density |
 | `evaluate_map(candidate, reference, thresholds?)` | Chamfer, Hausdorff, F1 at thresholds, AUC |
@@ -78,3 +79,12 @@ gravity and dynamic removal 13 s, 7 loops, ATE 2.147 → 1.150 m, the same as fr
 The agent calls `session_layout("runs/0929")` (1,101 poses, an `oxts` folder next to it), then
 `posegraph_fix("runs/0929", "runs/0929/fixed", gravity="runs/oxts", remove_dynamic=True)`, and reads
 the loops, the dynamic share and the files written from the report.
+
+## Measured signal heads
+
+`measure_vector_map_signal` accepts a cloud, editable map, new `out_dir`, six
+original-coordinate `bounds`, and user-confirmed `lanes`. Preview defaults to true;
+after reviewing the measured housing, add with `preview_only=false` in another new
+directory. See [signal measurement](vectormap-signal.md) for limits. This measures
+an identified object's shape; signal classification, lamps and control relationships
+are not inferred from the point cloud.

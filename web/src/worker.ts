@@ -946,6 +946,10 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
     case "junction-preview":
       if (req.id === undefined) throw new Error("Choose a point cloud.");
       return map.previewJunctions(getCloud(req.id), req.text ?? "{}");
+    case "signal-preview":
+    case "signal-add":
+      if (req.id === undefined) throw new Error("Choose a point cloud.");
+      return withView(map.measureSignal(getCloud(req.id), req.text ?? "{}", req.op === "signal-preview"));
     case "junction-connect":
       if (req.id === undefined) throw new Error("Choose a point cloud.");
       return withView(map.connectJunctions(getCloud(req.id), req.text ?? "{}", JSON.stringify(req.pairs ?? null)));

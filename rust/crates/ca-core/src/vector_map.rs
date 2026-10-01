@@ -16,6 +16,7 @@ use crate::{AttributeValues, INTENSITY, PointCloud};
 mod fitting;
 mod integration;
 pub mod junctions;
+pub mod signals;
 
 /// Parameters in metres, except speed in km/h and lane counts.
 #[derive(Debug, Clone, Serialize, Deserialize)]

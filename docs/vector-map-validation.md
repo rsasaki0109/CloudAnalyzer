@@ -270,3 +270,45 @@ An optional fourth argument supplies a JSON options file. The example writes abl
 generated, incorrect and missed pairs, preservation/replay checks and validation issues.
 Use the [preview and selection workflow](commands/vectormap-connect.md) to review drafts
 on your own map; neither reference maps nor ground support establish driving permission.
+
+## Assisted signal-head measurement on the public planning survey
+
+The same official planning cloud (1,757,841 original points, MGRS 54SVE) was used
+to measure a selected signal head. The input IR retained the ablated road legs
+but removed signal entities and traffic-light rules. Reference head 353 guided
+selection of the box `[3832.1,73770.1,24.74]`–`[3833.9,73771.4,25.27]`; object
+kind and lane 85 were explicit inputs. **Lane 85 exercises publication only: its
+control relationship was not verified.** Housing geometry was fitted from XYZ
+returns, not copied from the reference. Because the box was reference-assisted
+and this sample informed development, this is a measurement workflow check,
+not automatic-detection precision/recall or a held-out accuracy estimate.
+
+The box supplied 61 points: measured width 1.42061 m, height 0.45651 m,
+5th–95th-percentile thickness 0.44356 m and vertical-plane RMS 0.14842 m.
+The broad box `[3822.5,73783.1,24.65]`–`[3824.1,73784.5,25.5]` at another
+head was rejected (thickness 0.512 m); tightening its height still produced
+0.503 m thickness and was rejected. Bounds/background matter, and a valid
+signal can fail these conservative shape checks.
+
+MGRS Lanelet2 export/reimport retained the measured head, height and source
+tags. Existing unsupported-member export warnings remained visible. Unit tests
+also check existing lane/boundary/stop-rule preservation, no fabricated lamps or
+stop lines, atomic rejection, replay after IR/OSM import, and exact Undo.
+The production Web app reproduced the same 61-point measurement. Inspection copied
+the selected points into a separate cloud with unchanged fit statistics; preview
+kept the map unchanged, adding changed the export, and Undo restored it byte for
+byte. The isolated head and housing overlay were visually reviewed; no JS errors
+were reported. This checks the assisted workflow, not the unverified lane assignment.
+
+Reproduce a selected-box measurement with your input map and an options JSON
+containing `min`, `max`, `lanes` and `kind`:
+
+```sh
+cargo run --manifest-path rust/Cargo.toml -p ca-wasm --example vector_map_signal_measure -- sample-map-planning/pointcloud_map.pcd input.json signal-box.json
+```
+
+The example prints fitted support, import/export issues and roundtrip geometry;
+it checks the source tag and rejects roundtrip displacement above 5 mm.
+See [the assisted workflow](commands/vectormap-signal.md) for Web/CLI/Python/MCP
+use. This path currently loads the complete cloud: no 10-billion-point benchmark
+or automatic object-classification claim is implied.

@@ -2267,7 +2267,13 @@ test("vector map: a shared reversed boundary can be dragged, cancelled, exported
   await page.waitForTimeout(1000);
   const box = (await page.locator("#viewport > canvas").boundingBox())!;
   const [x, y] = [box.x + box.width / 2, box.y + box.height / 2];
+  let exports = 0;
   const exportXml = async () => {
+    // Each export downloads two files. Chromium throttles bursts beyond ten
+    // requests in a second; fast CI can reach that limit in this round-trip test.
+    // Pace only after a full burst, keeping actual downloads and all assertions.
+    if (exports > 0 && exports % 5 === 0) await page.waitForTimeout(1100);
+    exports++;
     const file = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
     await page.locator("#vm-export").click();
     return (await bytesOf(await file)).toString();

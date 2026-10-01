@@ -8,6 +8,7 @@ import os
 import tempfile
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit, urlunsplit
 
 from ca._rust import core
 
@@ -193,28 +194,74 @@ def measure_vector_map_signal(
     bounds is xmin,ymin,zmin,xmax,ymax,zmax. Classification and controlled lanes
     are user supplied. Preview writes unchanged map artifacts; adding recomputes
     support and uses measured housing geometry without invented lamps/stop lines.
+    LAS/LAZ/CSV stream selected points; local/HTTP COPC reads full-density boxes.
+    Other formats retain the whole-file reader. No coordinate conversion occurs.
     """
     module = core()
     if module is None or not hasattr(module, "measure_vector_map_signal"):
         raise RuntimeError("signal measurement needs an updated Rust core")
-    for path in [Path(cloud), Path(vector_map)]:
-        if not path.is_file():
-            raise FileNotFoundError(str(path))
+    if not Path(vector_map).is_file():
+        raise FileNotFoundError(vector_map)
+    parsed = urlsplit(cloud)
+    remote = parsed.scheme in {"http", "https"}
+    if not remote and not Path(cloud).is_file():
+        raise FileNotFoundError(cloud)
     out = Path(out_dir).resolve()
     if out.exists():
         raise FileExistsError(
             f"output directory already exists: {out}; choose a new directory"
         )
-    if len(bounds) != 6 or kind not in {"vehicle", "pedestrian"}:
-        raise ValueError("bounds requires six coordinates; kind must be vehicle or pedestrian")
+    if len(bounds) != 6 or not all(math.isfinite(v) for v in bounds) or any(
+        bounds[i] >= bounds[i + 3] or bounds[i + 3] - bounds[i] > 10
+        for i in range(3)
+    ):
+        raise ValueError("signal box requires six finite increasing bounds, at most 10 m per axis")
+    if kind not in {"vehicle", "pedestrian"}:
+        raise ValueError("kind must be vehicle or pedestrian")
+    if (not lanes or any(type(lane) is not int or lane < 1 for lane in lanes)
+            or len(set(lanes)) != len(lanes)):
+        raise ValueError("select distinct positive controlled lane IDs explicitly")
+    if remote and not parsed.path.lower().endswith(".laz"):
+        raise ValueError("HTTP signal input must be a range-capable COPC .laz URL")
     options = {"min": bounds[:3], "max": bounds[3:], "lanes": lanes, "kind": kind}
-    payload = json.loads(
-        module.measure_vector_map_signal(
-            cloud, vector_map, json.dumps(options, allow_nan=False), preview_only
-        )
-    )
+    streaming = remote or Path(cloud).suffix.lower() in {".las", ".laz", ".csv"}
+    encoded = json.dumps(options, allow_nan=False)
+    if streaming:
+        if not hasattr(module, "measure_vector_map_signal_points"):
+            raise RuntimeError("spatial signal measurement needs an updated Rust core")
+        import numpy as np
+
+        from ca.io import iter_point_chunks
+
+        box = (bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5])
+        chunks = iter_point_chunks(cloud, chunk_size=10_000, bounds=box)
+        selected = []
+        count = 0
+        try:
+            for chunk in chunks:
+                count += len(chunk)
+                if count > 200_000:
+                    raise ValueError("signal box exceeds 200000 points; isolate a smaller head")
+                selected.append(chunk)
+        finally:
+            chunks.close()
+        points = np.concatenate(selected) if selected else np.empty((0, 3), dtype=np.float64)
+        payload = json.loads(module.measure_vector_map_signal_points(
+            points, vector_map, encoded, preview_only
+        ))
+        strategy = ("copc-full-density-box" if remote or cloud.lower().endswith(".copc.laz")
+                    else "sequential-filtered-chunks")
+        payload["report"]["processing"] = {
+            "strategy": strategy, "selected_points": count,
+            "selected_limit": 200_000, "chunk_points": 10_000,
+        }
+    else:
+        payload = json.loads(module.measure_vector_map_signal(cloud, vector_map, encoded, preview_only))
+        payload["report"]["processing"] = {"strategy": "whole-file-compatibility", "selected_limit": 200_000}
+    source_input = (urlunsplit((parsed.scheme, parsed.netloc.split("@")[-1], parsed.path, "", ""))
+                    if remote else str(Path(cloud).resolve()))
     payload["report"]["inputs"] = {
-        "cloud": str(Path(cloud).resolve()),
+        "cloud": source_input,
         "vector_map": str(Path(vector_map).resolve()),
     }
     payload["report"]["options"] = options

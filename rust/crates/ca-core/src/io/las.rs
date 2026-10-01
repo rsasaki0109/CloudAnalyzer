@@ -49,7 +49,7 @@ pub(crate) struct LasHeader {
     pub record_len: usize,
     pub count: u64,
     pub compressed: bool,
-    format: u8,
+    pub(crate) format: u8,
     pub scale: [f64; 3],
     pub offset: [f64; 3],
 }

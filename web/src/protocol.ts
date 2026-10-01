@@ -38,6 +38,9 @@ export interface LoadedCloud {
   filePoints: number;
   /** For a COPC file read to a budget: how many octree levels were read. */
   copcLevels: number | null;
+  /** Original COPC source is still valid for a bounded full-density box. */
+  copcBoxAvailable?: boolean;
+  copcBox?: { sourcePoints: number; sourceReadBytes: number; nodes: number };
   /**
    * For a thinned LAS/LAZ file: its chunks, which the worker can decode at
    * full density on demand (see `DetailChunk`), as `minX, minY, minZ, maxX,
@@ -430,6 +433,7 @@ export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "spla
 export type VectorMapOp = "open" | "apply" | "build" | "junction-preview" | "junction-connect" | "signal-preview" | "signal-add" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
 
 export type Request =
+  | { kind: "copc-box"; id: number; min: Vec3; max: Vec3; maxPoints: number }
   | ({
       /** Open a pose graph (g2o, or a TUM / KITTI trajectory as an odometry chain) with a scan per node. */
       kind: "pg-open";
@@ -636,6 +640,7 @@ export type Request =
       name: string;
       /** File size in bytes. */
       size: number;
+      etag?: string;
       /** As for `load`. */
       maxPoints: number;
     }

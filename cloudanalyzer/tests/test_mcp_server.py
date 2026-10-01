@@ -68,6 +68,13 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert properties["preview_only"]["default"] is True
                 assert properties["bounds"]["type"] == "array"
                 assert properties["lanes"]["type"] == "array"
+                tiles = next(t for t in tools if t.name == "tile_copc")
+                properties = tiles.model_dump(by_alias=True)["inputSchema"]["properties"]
+                assert properties["resume"]["default"] is False
+                assert properties["chunk_size"]["default"] == 10000
+                assert "stop_after_nodes" in properties
+                export = next(t for t in tools if t.name == "export_copc_tile")
+                assert export.model_dump(by_alias=True)["inputSchema"]["properties"]["include_halo"]["default"] is False
                 result = await session.call_tool("session_layout", {"folder": str(folder)})
                 return names, result
 

@@ -32,6 +32,23 @@ pub struct CopcHeader {
 }
 
 impl CopcHeader {
+    /// Bytes in each uncompressed LAS point record.
+    pub fn record_len(&self) -> usize {
+        self.las.record_len
+    }
+
+    pub fn point_format(&self) -> u8 {
+        self.las.format
+    }
+
+    pub fn scale(&self) -> [f64; 3] {
+        self.las.scale
+    }
+
+    pub fn offset(&self) -> [f64; 3] {
+        self.las.offset
+    }
+
     /// Bytes from the start of the file needed by [`CopcHeader::parse`], or
     /// `None` if `head` is too short to tell (read at least 100 bytes).
     pub fn needed(head: &[u8]) -> Option<usize> {
@@ -83,13 +100,102 @@ impl CopcHeader {
     /// Decompress one node's chunk of `count` points.
     pub fn decode_node(&self, chunk: &[u8], count: usize) -> Result<CopcPoints, IoError> {
         let record_len = self.las.record_len;
-        let mut decompressor = LayeredPointRecordDecompressor::new(std::io::Cursor::new(chunk));
-        decompressor
-            .set_fields_from(self.laz.items())
-            .map_err(|e| IoError::Unsupported(format!("COPC: {e}")))?;
+        let records = self.decode_records(chunk, count, isize::MAX as u64)?;
+        let mut decoder = LasDecoder::new(self.las.clone(), count)?;
+        for record in records.chunks_exact(record_len) {
+            decoder.decode(record);
+        }
+        Ok(decoder.into_raw())
+    }
+
+    /// Original LAS records, including GPS time, return flags, 16-bit RGB,
+    /// NIR and extra bytes. Validate layer sizes before laz can allocate from
+    /// them. `max_raw_bytes` bounds the output; compressed input and decoder
+    /// models remain separate costs. COPC point formats 6/7/8 are supported.
+    pub fn decode_records(
+        &self,
+        chunk: &[u8],
+        count: usize,
+        max_raw_bytes: u64,
+    ) -> Result<Vec<u8>, IoError> {
+        use laz::LazItemType;
+        let record_len = self.las.record_len;
         let size = count
             .checked_mul(record_len)
             .ok_or_else(|| IoError::header(FORMAT, "node record span overflow"))?;
+        if count == 0 || size as u64 > max_raw_bytes {
+            return Err(IoError::header(
+                FORMAT,
+                "empty node or raw node exceeds byte limit",
+            ));
+        }
+        let items = self.laz.items();
+        let mut item_bytes = 0usize;
+        let mut layers = 0usize;
+        let base_items = if self.las.format == 6 { 1 } else { 2 };
+        if !(6..=8).contains(&self.las.format)
+            || !(base_items..=base_items + 1).contains(&items.len())
+        {
+            return Err(IoError::header(FORMAT, "unsupported COPC LASzip items"));
+        }
+        for (index, item) in items.iter().enumerate() {
+            if !matches!(item.version(), 3 | 4) {
+                return Err(IoError::header(
+                    FORMAT,
+                    "unsupported layered LASzip version",
+                ));
+            }
+            let n = match (index, self.las.format, item.item_type()) {
+                (0, _, LazItemType::Point14) if item.size() == 30 => 9,
+                (1, 7, LazItemType::RGB14) if item.size() == 6 => 1,
+                (1, 8, LazItemType::RGBNIR14) if item.size() == 8 => 2,
+                (i, _, LazItemType::Byte14(n)) if i == base_items && n > 0 && item.size() == n => {
+                    n as usize
+                }
+                _ => {
+                    return Err(IoError::header(
+                        FORMAT,
+                        "LASzip item does not match the point format",
+                    ));
+                }
+            };
+            layers += n;
+            item_bytes += item.size() as usize;
+        }
+        if item_bytes != record_len {
+            return Err(IoError::header(
+                FORMAT,
+                "LASzip record size does not match LAS header",
+            ));
+        }
+        let prefix = record_len + 4 + layers * 4;
+        let header = chunk.get(..prefix).ok_or(IoError::Truncated(FORMAT))?;
+        let encoded_count =
+            u32::from_le_bytes(header[record_len..record_len + 4].try_into().unwrap());
+        if encoded_count as u64 != count as u64 {
+            return Err(IoError::header(
+                FORMAT,
+                "layered chunk count does not match hierarchy",
+            ));
+        }
+        let end = header[record_len + 4..]
+            .as_chunks::<4>()
+            .0
+            .iter()
+            .try_fold(prefix as u64, |sum, word| {
+                sum.checked_add(u32::from_le_bytes(*word) as u64)
+            })
+            .ok_or_else(|| IoError::header(FORMAT, "layer byte span overflow"))?;
+        if end > chunk.len() as u64 {
+            return Err(IoError::header(
+                FORMAT,
+                "layer sizes exceed the compressed node",
+            ));
+        }
+        let mut decompressor = LayeredPointRecordDecompressor::new(std::io::Cursor::new(chunk));
+        decompressor
+            .set_fields_from(items)
+            .map_err(|e| IoError::Unsupported(format!("COPC: {e}")))?;
         let mut records = Vec::new();
         records
             .try_reserve_exact(size)
@@ -98,11 +204,7 @@ impl CopcHeader {
         decompressor
             .decompress_many(&mut records)
             .map_err(|e| IoError::Unsupported(format!("COPC: {e}")))?;
-        let mut decoder = LasDecoder::new(self.las.clone(), count)?;
-        for record in records.chunks_exact(record_len) {
-            decoder.decode(record);
-        }
-        Ok(decoder.into_raw())
+        Ok(records)
     }
 }
 
@@ -425,6 +527,88 @@ mod tests {
         las[..4].copy_from_slice(b"LASF");
         assert!(!CopcHeader::is_copc(&las));
         assert!(CopcHeader::parse(&las).is_err());
+    }
+
+    #[test]
+    fn raw_decode_preserves_fields_and_rejects_untrusted_layer_sizes() {
+        let file = write_minimal_copc(&[(key(0, 0, 0, 0), grid(2, 0.0))], [0.0; 3], 8.0);
+        let header = CopcHeader::parse(&file).unwrap();
+        let (offset, size) = header.root_page;
+        let entry = parse_page(&file[offset as usize..(offset + size) as usize])[0];
+        let chunk = &file[entry.offset as usize..entry.offset as usize + entry.byte_size as usize];
+        let raw = header.decode_records(chunk, 4, 144).unwrap();
+        assert_eq!(raw.len(), 4 * 36);
+        assert_eq!(
+            u16::from_le_bytes(raw[36 + 12..36 + 14].try_into().unwrap()),
+            1
+        );
+        assert_eq!(
+            u16::from_le_bytes(raw[36 + 30..36 + 32].try_into().unwrap()),
+            256
+        );
+        assert_eq!(raw[36 + 16], 3);
+        assert!(header.decode_records(chunk, 4, 143).is_err());
+        assert!(header.decode_records(chunk, 3, 144).is_err());
+        let mut corrupt = chunk.to_vec();
+        corrupt[40..44].copy_from_slice(&u32::MAX.to_le_bytes());
+        assert!(header.decode_records(&corrupt, 4, 144).is_err());
+    }
+
+    #[test]
+    fn raw_formats_6_7_8_keep_extra_bytes_gps_flags_and_nir() {
+        use laz::record::{LayeredPointRecordCompressor, RecordCompressor};
+        for format in 6..=8 {
+            let extra = 5;
+            let vlr = laz::LazVlrBuilder::new(
+                laz::LazItemRecordBuilder::default_for_point_format_id(format, extra).unwrap(),
+            )
+            .with_variable_chunk_size()
+            .build();
+            let record_len = match format {
+                6 => 30,
+                7 => 36,
+                _ => 38,
+            } + extra as usize;
+            let mut raw = vec![0u8; 5 * record_len];
+            for (k, record) in raw.chunks_exact_mut(record_len).enumerate() {
+                record[..4].copy_from_slice(&(k as i32 * 123).to_le_bytes());
+                record[12..14].copy_from_slice(&(k as u16 * 117).to_le_bytes());
+                record[14] = 0x11;
+                record[15] = k as u8;
+                record[16] = 2;
+                record[22..30].copy_from_slice(&(1_000_000.123 + k as f64).to_le_bytes());
+                for (j, byte) in record[30..].iter_mut().enumerate() {
+                    *byte = (k * 31 + j) as u8;
+                }
+            }
+            let mut output = std::io::Cursor::new(Vec::new());
+            let mut compressor = LayeredPointRecordCompressor::new(&mut output);
+            compressor.set_fields_from(vlr.items()).unwrap();
+            compressor.compress_many(&raw).unwrap();
+            compressor.done().unwrap();
+            drop(compressor);
+            let header = CopcHeader {
+                las: LasHeader {
+                    data_offset: 0,
+                    record_len,
+                    count: 5,
+                    compressed: true,
+                    format,
+                    scale: [0.01; 3],
+                    offset: [0.0; 3],
+                },
+                laz: vlr,
+                center: [0.0; 3],
+                halfsize: 8.,
+                spacing: 1.,
+                root_page: (0, 0),
+                total_points: 5,
+            };
+            let decoded = header
+                .decode_records(&output.into_inner(), 5, raw.len() as u64)
+                .unwrap();
+            assert_eq!(decoded, raw, "point format {format}");
+        }
     }
 
     #[test]

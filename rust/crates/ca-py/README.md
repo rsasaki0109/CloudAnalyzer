@@ -41,6 +41,24 @@ the Open3D implementation.
 
 Build from source with [maturin](https://www.maturin.rs/): `maturin develop --release`.
 
+For full-density spatial batches install `cloudanalyzer-core[copc]` (CloudAnalyzer
+already includes laspy). Use a context to close a local file on early exit:
+
+```python
+with cc.CopcStream("survey.copc.laz", bounds=(0, 0, -5, 100, 100, 20), chunk_size=10000) as stream:
+    for batch in stream:
+        xyz = batch.positions  # float64, in the source coordinate system
+        classification = batch.records.classification
+        # Consume and discard: retaining batches grows caller memory.
+```
+
+Local files and HTTP(S)/presigned URLs use the same bounded full-density walker.
+`CopcLimits` sets per-page/node/metadata limits; oversized required items fail.
+`CopcBatch.records` retains all LAS fields and `node_offset`/`ordinals` identify
+source records. `cancel=event.is_set` raises `CopcCancelled` at range/node/batch
+boundaries. [Large-cloud conditions and real measurements](../../../docs/large-point-clouds.md)
+distinguish this iterator from the LOD display API and a resumable tile job.
+
 `build_vector_map(cloud, trajectory, options="{}", reference_map=None, georeference=None)`
 returns a JSON string containing a draft Lanelet2 map, projector metadata, editable map IR
 and evidence/validation report. Inputs must already share a metre frame. For publication
@@ -61,3 +79,10 @@ and optional `kind`. It returns measured geometry and support plus the usual map
 artifacts. Classification, controlled lanes, lamps and stop lines are not inferred.
 Use [`ca vectormap-signal`](../../../docs/commands/vectormap-signal.md) or its MCP
 tool to preview and publish the artifacts together.
+The low-level file method reads the complete source. For bounded spatial input,
+`measure_vector_map_signal_points(points, vector_map, options, preview_only=True)`
+accepts at most 200,000 finite `(N,3)` float64 points (including strided arrays).
+Use the high-level CLI/Python/MCP method to stream local LAS/LAZ/CSV or read an
+inclusive full-density local/HTTP COPC box before fitting. Other high-level source
+formats retain the whole-file compatibility reader. All coordinates must already
+share the map's metre frame; neither path transforms CRS metadata.

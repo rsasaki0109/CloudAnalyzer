@@ -1,8 +1,7 @@
 """Point cloud I/O module."""
 
 import csv
-import json
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
 from dataclasses import dataclass, field
 from itertools import chain
 from pathlib import Path
@@ -69,47 +68,24 @@ def _iter_remote_copc_chunks(
     chunk_size: int,
     bounds: np.ndarray | None,
 ) -> Iterator[np.ndarray]:
-    """Read a remote COPC resource through optional PDAL.
-
-    PDAL owns the HTTP Range/COPC spatial-index details.  The dependency is
-    intentionally optional because its binary wheels are platform-specific.
-    """
-    try:
-        import pdal
-    except ImportError as exc:
+    """Read full-density COPC through the bounded native range iterator."""
+    rust = core()
+    if rust is None or not hasattr(rust, "iter_copc_batches"):
         raise ValueError(
-            "Remote COPC input requires the optional PDAL Python package; "
-            "install PDAL and retry"
-        ) from exc
-
-    stages: list[dict[str, object]] = [{"type": "readers.copc", "filename": path}]
-    if bounds is not None:
-        stages.append(
-            {
-                "type": "filters.crop",
-                "bounds": (
-                    f"([{bounds[0]},{bounds[3]}],"
-                    f"[{bounds[1]},{bounds[4]}],"
-                    f"[{bounds[2]},{bounds[5]}])"
-                ),
-            }
+            "COPC spatial streaming requires an updated Rust core; "
+            'install/upgrade "cloudanalyzer[fast]" and retry'
         )
-
-    pipeline = pdal.Pipeline(json.dumps(stages))
-    pipeline.execute()
-    arrays = getattr(pipeline, "arrays", [])
+    if urlparse(path).scheme == "s3":
+        raise ValueError("use an HTTP(S) COPC URL, including a presigned S3 URL")
+    box = tuple(float(value) for value in bounds) if bounds is not None else None
+    batches = rust.iter_copc_batches(path, chunk_size=chunk_size, bounds=box)
     yielded = False
-    for array in arrays:
-        names = {name.lower(): name for name in getattr(array.dtype, "names", ()) or ()}
-        if not all(axis in names for axis in ("x", "y", "z")):
-            raise ValueError("COPC data must expose X/Y/Z dimensions")
-        points = np.column_stack(
-            (array[names["x"]], array[names["y"]], array[names["z"]])
-        )
-        filtered = _filter_chunk(points, bounds)
-        for chunk in _yield_array_chunks(filtered, chunk_size):
+    try:
+        for batch in batches:
             yielded = True
-            yield chunk
+            yield np.asarray(batch.positions, dtype=np.float64)
+    finally:
+        batches.close()
     if not yielded:
         raise ValueError(f"COPC resource is empty after filtering: {path}")
 
@@ -174,9 +150,9 @@ class PointChunkReader:
 
     LAS/LAZ is read with laspy's chunk iterator.  PCD/PLY remain compatible
     through Open3D and are split after loading because Open3D does not expose
-    a portable streaming reader for those formats.  Remote HTTP(S)/S3
-    ``.laz``/COPC paths use the optional PDAL adapter and preserve the same
-    iterator contract.
+    a portable streaming reader for those formats. Local ``.copc.laz`` and
+    HTTP(S) COPC use the Rust spatial stream, reading all overlapping levels
+    without retaining the whole cloud. S3 input uses an HTTP(S)/presigned URL.
     """
 
     path: str
@@ -259,7 +235,7 @@ def iter_point_chunks(
     *,
     chunk_size: int = 100_000,
     bounds: tuple[float, float, float, float, float, float] | None = None,
-) -> Iterator[np.ndarray]:
+) -> Generator[np.ndarray, None, None]:
     """Yield finite XYZ chunks without requiring one in-memory point array.
 
     ``bounds`` is an inclusive axis-aligned box.  LAS/LAZ uses laspy's native
@@ -268,7 +244,7 @@ def iter_point_chunks(
     """
     chunk_size = _validate_chunk_size(chunk_size)
     validated_bounds = _validate_bounds(bounds)
-    if _is_remote_copc_path(path):
+    if _is_remote_copc_path(path) or path.lower().endswith(".copc.laz"):
         yield from _iter_remote_copc_chunks(path, chunk_size, validated_bounds)
         return
 

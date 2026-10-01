@@ -312,3 +312,26 @@ it checks the source tag and rejects roundtrip displacement above 5 mm.
 See [the assisted workflow](commands/vectormap-signal.md) for Web/CLI/Python/MCP
 use. This path currently loads the complete cloud: no 10-billion-point benchmark
 or automatic object-classification claim is implied.
+
+On 2026-10-02 the high-level Python/CLI/MCP spatial path was checked on a
+derived LAS of this same 1,757,841-point PCD. LAS scales were binary powers
+`[2^-12,2^-7,2^-20]` with zero offsets: all 61 selected signal XYZ coordinates
+were preserved exactly; the maximum quantization error elsewhere was
+0.000000477 m. The conversion used a whole-file PCD read outside the measured
+signal call and is not a bounded PCD conversion or an archival CRS export.
+The 10,000-point sequential LAS reader retained only the selected 61 points.
+Housing geometry, all fit statistics and the unchanged preview map were
+exactly equal to the native whole-PCD result.
+
+Separate warm processes on the same Windows laptop, sampled externally every
+2 ms including `peak_wset`, observed 191.7 MB peak for the whole-PCD call and
+125.9 MB for streamed LAS, with approximately 111.7 MB common library baseline.
+Wall times were 0.18 s and 0.61 s respectively. The formats and decode paths
+differ, so these are memory/workflow observations, not a speed guarantee or GPU
+comparison. Library startup and source conversion were outside timing.
+A separate 5,275-point synthetic multi-level COPC fixture checks local and HTTP
+selection against an independent laspy/lazrs full-source read; all 275 head
+points and the fit agree. Overflow stops and closes the reader before publishing;
+invalid boxes are rejected before point IO. Actual full-density COPC range IO and
+larger-source memory checks are documented in [large clouds](large-point-clouds.md).
+Physical ten-billion-point signal processing remains unbenchmarked.

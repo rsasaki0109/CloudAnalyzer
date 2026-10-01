@@ -401,6 +401,19 @@
         </div>
       </section>
 
+      <section id="copc-box-panel">
+        <h2>COPC full-density box</h2>
+        <p class="hint">Read every density level inside this box in original source coordinates. A point limit stops oversized selections.</p>
+        <label>Source <select id="copc-box-source"></select></label>
+        <label>X min <input id="copc-box-xmin" type="number" step="any"> max <input id="copc-box-xmax" type="number" step="any"></label>
+        <label>Y min <input id="copc-box-ymin" type="number" step="any"> max <input id="copc-box-ymax" type="number" step="any"></label>
+        <label>Z min <input id="copc-box-zmin" type="number" step="any"> max <input id="copc-box-zmax" type="number" step="any"></label>
+        <label>Point limit <input id="copc-box-limit" type="number" min="1" max="1000000" step="1" value="200000"></label>
+        <button id="copc-box-use-clip">Use clipping box</button>
+        <button id="copc-box-run" class="primary" disabled>Read full-density box</button>
+        <p id="copc-box-result" class="hint"></p>
+      </section>
+
       <section id="align-panel">
         <h2>Manual alignment</h2>
         <label>Moved <select id="align-moving"></select></label>

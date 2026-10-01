@@ -66,6 +66,9 @@ ca align scan1.pcd scan2.pcd scan3.pcd -o aligned.pcd -m gicp
 
 Split a point cloud into grid tiles.
 
+For bounded full-density COPC with halo and durable resume, use
+[`ca copc-tile`](copc-tile.md). The existing `split` command loads the input cloud.
+
 ```bash
 ca split large_map.pcd -o tiles/ -g 100
 ```

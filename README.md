@@ -108,6 +108,8 @@ coordinates stay exact to the millimetre. **Saves** PLY, LAS / LAZ, E57, CSV and
 
 See [large point cloud IO limits](docs/large-point-clouds.md) for HTTP range
 requirements, 64-bit counts, and the distinction between display LOD and full-density processing.
+[`ca copc-tile`](docs/commands/copc-tile.md) saves full-density COPC tiles with
+halo and resumable checkpoints; physical ten-billion-point processing remains unbenchmarked.
 
 ## Proven on real data
 

@@ -73,8 +73,8 @@ Raw records are a verification artifact, not a standalone LAS file. The example
 may leave a partial raw output on an error; it is not a resumable tile job.
 The published Web/Python display APIs still use their existing LOD behavior.
 Python full-density batches are available separately as described below. Web
-selections and tile processing with halo and durable checkpoints are the next
-stage. Accuracy-sensitive
+selections are the next stage. Python tile processing with halo and durable
+checkpoints is described below. Accuracy-sensitive
 operations must specify their neighborhood requirements; a display subsample
 cannot substitute for the full-density input. GPU work follows measured kernel
 costs after the IO and memory limits are in place.
@@ -140,7 +140,7 @@ ranges pin the open descriptor's file identity, size and timestamps. HTTP ranges
 pin size and an available strong ETag. Without a strong ETag, size checks alone
 cannot prove immutable contents for resumption. The low-level `nodes()` iterator
 can skip committed nodes without reading their point bytes, but this API does not
-yet persist a tile checkpoint.
+itself persist a tile checkpoint; the separate job API below does.
 
 `ca.io.iter_point_chunks` uses this path for local `.copc.laz` and remote COPC
 HTTP(S) inputs. It yields only XYZ under its existing inclusive-box/empty-result
@@ -160,3 +160,51 @@ psutil every 2 ms plus Windows `peak_wset`; each mode ran in a separate process.
 Only the small ROI records were retained for equality verification. These are
 single-machine observations under varying load, not controlled comparisons with
 the earlier Rust run, hard process memory caps, or a ten-billion-point benchmark.
+
+[`ca copc-tile`](commands/copc-tile.md), its Python API and MCP tool now persist
+bounded full-density XY tile jobs with unique core ownership, flagged halo
+copies and source node/ordinal identities. One node pack is published atomically
+before its SQLite transaction commits. Resume replays bounded hierarchy pages,
+hashes committed packs and skips their compressed point reads. Output metadata,
+tile fragments and counters remain on disk. The default batch has 10,000 points,
+frame payloads are capped at 8 MiB, SQLite's cache at 8 MiB, and per-node output
+at 256 MiB / 65,536 fragments. The underlying stream retains its separate item
+limits and temporary raw-byte copy; these are working-data limits, not an RSS cap.
+
+The real Autzen test used grid width 100, halo 2 and origin `(0,0)` in source
+units. The ROI retained all 3,708 uniquely owned records, plus 976 halo copies
+across four target cells. Independent sequential laspy queries checked each
+cell's complete raw-record/halo multiset, and no cell duplicated a source
+identity. Core LAS export returned 3,708 original records; halo LAZ export
+returned 4,166 records with explicit identities. CRS VLR bytes were preserved.
+Non-index EVLR byte snapshots and export are covered separately by regressions.
+Actual HTTP pause after two nodes and subsequent resume also returned the same
+3,708 original records / 976 halo copies with the source's strong ETag pinned.
+
+On the same Windows i7 laptop, final ROI saving took 0.39 s, wrote 211,086 pack
+bytes and observed 62.1 MB peak process RSS. The full job wrote 518,545,937 pack
+bytes / 82,631 fragment rows across 278 nodes and 1,580 cells. Core ownership
+totaled all 10,653,336 source points; halo copies totaled 869,697. A test worker
+was forcibly terminated after publishing its first pack but before committing
+the node. A separate process resumed the job, recovered the uncommitted pack,
+and completed the full output in 48.33 s with 75.4 MB peak RSS (about 54.6 MB
+baseline) and 81,185,534 source bytes read. This tests process interruption;
+it is not a power-loss or storage-failure guarantee.
+
+Resuming the completed full job took 3.53 s with 58.5 MB peak RSS. It read
+74,492 source bytes in three ranges and verified all 518.5 MB of output packs;
+it committed/decoded no new nodes. External psutil sampled every 2 ms including
+Windows `peak_wset`; independent oracle/export checks ran separately from the
+timed worker. Cache and machine load affect these observations. Raw inputs,
+outputs and measurement scripts remain ignored. The full job checks actual
+point ownership and writes its output, while the earlier whole-query benchmarks
+only counted points; their wall times are not interchangeable.
+
+Physical ten-billion-point input remains unbenchmarked. Node/page shape must
+fit configured limits, and persistent output/storage must fit the chosen disk
+and filesystem. With 36-byte original records, raw packs use 45 bytes per
+record before halo: ten billion records alone require about 450 GB plus pack,
+SQLite, halo and exported-artifact costs. This is format arithmetic, not a
+measured storage result or runtime extrapolation. Current Web loading remains
+LOD output in memory, and native vector-map whole-cloud paths still need a
+bounded spatial selection. GPU work is reserved for measured kernel needs.

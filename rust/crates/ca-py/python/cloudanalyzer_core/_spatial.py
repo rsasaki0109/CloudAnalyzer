@@ -195,6 +195,7 @@ class CopcStream:
             raise ValueError("invalid EVLR count or offset")
         used = len(self.raw_header)
         kept = VLRList()
+        raw_metadata: list[bytes] = []
         self.index_evlrs: list[tuple[int, int]] = []
         for _ in range(count):
             if offset + 60 > self.file_size:
@@ -212,9 +213,12 @@ class CopcStream:
                 if used > self.limits.metadata_bytes:
                     raise ValueError("non-index EVLRs exceed the metadata byte limit")
                 payload = self._read(offset + 60, size)
+                raw_metadata.append(header + payload)
                 kept.extend(VLRList.read_from(io.BytesIO(header + payload), 1, extended=True))
             offset = end
         self.header.evlrs = kept
+        # Preserve original bytes as well as parsed metadata for durable jobs.
+        self.raw_metadata_evlrs = b"".join(raw_metadata)
 
     @property
     def identity(self) -> dict[str, Any]:

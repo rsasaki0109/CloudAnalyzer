@@ -8,7 +8,7 @@ use vectormap_io::{autoware, lanelet2};
 /// Input positions must already use the same metre frame; metadata does not
 /// transform the cloud or the trajectory. Reference geometry is never copied.
 #[pyfunction]
-#[pyo3(signature = (cloud, trajectory, options="{}", reference_map=None, georeference=None))]
+#[pyo3(signature = (cloud, trajectory, options="{}", reference_map=None, georeference=None, existing_map=None))]
 pub fn build_vector_map(
     py: Python<'_>,
     cloud: &str,
@@ -16,9 +16,19 @@ pub fn build_vector_map(
     options: &str,
     reference_map: Option<&str>,
     georeference: Option<&str>,
+    existing_map: Option<&str>,
 ) -> PyResult<String> {
-    py.detach(|| generate(cloud, trajectory, options, reference_map, georeference))
-        .map_err(PyValueError::new_err)
+    py.detach(|| {
+        generate(
+            cloud,
+            trajectory,
+            options,
+            reference_map,
+            georeference,
+            existing_map,
+        )
+    })
+    .map_err(PyValueError::new_err)
 }
 
 fn generate(
@@ -27,13 +37,35 @@ fn generate(
     options: &str,
     reference_map: Option<&str>,
     georeference: Option<&str>,
+    existing_map: Option<&str>,
 ) -> Result<String, String> {
     let read = |path: &str| std::fs::read_to_string(path).map_err(|e| format!("{path}: {e}"));
     if reference_map.is_some() && georeference.is_some() {
         return Err("choose reference_map or explicit georeference, not both".into());
     }
+    if existing_map.is_some() && (reference_map.is_some() || georeference.is_some()) {
+        return Err("existing_map retains its own coordinates; choose it without reference_map or georeference".into());
+    }
     let parameters = serde_json::from_str(options).map_err(|e| e.to_string())?;
     let mut map = Map::new();
+    let mut import_issues = Vec::new();
+    if let Some(path) = existing_map {
+        let loaded = if path.to_ascii_lowercase().ends_with(".json") {
+            vectormap_io::json::from_str(&read(path)?)
+        } else {
+            lanelet2::read_str(&read(path)?, &Default::default())
+        }
+        .map_err(|e| e.to_string())?;
+        if let Some(issue) = loaded
+            .issues
+            .iter()
+            .find(|i| i.severity == vectormap_core::Severity::Error)
+        {
+            return Err(format!("cannot retain existing_map: {}", issue.message));
+        }
+        map = loaded.map;
+        import_issues = loaded.issues;
+    }
     if let Some(path) = reference_map {
         let reference =
             lanelet2::read_str(&read(path)?, &Default::default()).map_err(|e| e.to_string())?;
@@ -78,7 +110,7 @@ fn generate(
     Ok(json!({
         "osm":osm, "projector_info":autoware::projector_info_yaml(map.metadata().georeference),
         "map_json":vectormap_io::json::to_string(&map),
-        "report":{"status":"draft","extraction":extraction,"autoware_issues":issues,
+        "report":{"status":"draft","extraction":extraction,"autoware_issues":issues,"import_issues":import_issues,
             "validation":validation,"georeference":map.metadata().georeference}
     })
     .to_string())

@@ -41,6 +41,37 @@ origin. These options describe the input frame; they do not transform either inp
 Without coordinate metadata the map uses Autoware Local. Multi-tile MGRS and polar UPS
 frames are unsupported.
 
+Append another recorded pass to an editable map:
+
+```sh
+ca vectormap-build map.pcd next-drive.csv --existing-map draft-map/vector_map.json --out combined-map
+```
+
+Lanelet2 OSM is also accepted. `--existing-map` keeps the existing geometry, IDs, traffic
+rules and coordinate metadata; omit `--reference-map` and explicit projection options.
+Use the editable JSON to retain all IR editing information.
+OSM imports report unsupported members and types in `import_issues`; preservation applies
+to the imported IR, so review those issues before appending an external OSM map.
+Matching is enabled by default, including in the Web build panel and MCP tool
+(`existing_map`, `merge_repeated_passes`).
+`--no-merge-repeated-passes` explicitly adds the entire pass instead.
+
+Reuse requires the lane centre and both corresponding boundaries to agree within 0.5 m,
+both boundary directions within 15 degrees and ground heights within 0.3 m. Uniquely
+connected sections are compared as continuous edges; comparison centres use normalized
+arc length at a fixed 0.5 m resolution so inserted split vertices do not change the test.
+Explicit existing centreline geometry is respected. Nearby parallel lanes, opposite
+travel, different ground levels and ambiguous disconnected duplicates are not fused.
+Only uncovered trajectory intervals are added; existing geometry and rules stay fixed.
+Coincident unambiguous endpoints can be connected, but gaps are not snapped.
+
+`report.json` records incoming supported length, `reused_length`, `added_length`,
+`reused_intervals` and `joined_connections`. Evidence counts describe the incoming pass;
+they do not establish better survey accuracy. Partial overlap can retain duplicate or
+disconnected fragments when extraction differs, so inspect validation and geometry.
+Inputs must already be aligned; this operation does not correct drift between surveys.
+An exact replay adds no geometry and creates no additional Web Undo entry.
+
 To inspect and edit:
 
 ```sh

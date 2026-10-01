@@ -13,6 +13,8 @@ use vectormap_core::{LaneDirection, Map, NewRoad, Point3, Polyline3, RoadLane, S
 
 use crate::{AttributeValues, INTENSITY, PointCloud};
 
+mod integration;
+
 /// Parameters in metres, except speed in km/h and lane counts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -30,6 +32,10 @@ pub struct BuildOptions {
     pub smoothing_window: usize,
     /// Place inferred lane lines relative to nearby detected outer boundaries.
     pub anchor_width_prior: bool,
+    /// Reuse matching lanes already in the map and add only uncovered intervals.
+    pub merge_repeated_passes: bool,
+    /// Maximum horizontal discrepancy for centre and both oriented boundaries.
+    pub merge_distance: f64,
     /// Half-length of each longitudinal slice.
     pub half_window: f64,
     /// How far a measured boundary can deviate from its nominal position.
@@ -51,6 +57,8 @@ impl Default for BuildOptions {
             sample_spacing: 2.0,
             smoothing_window: 2,
             anchor_width_prior: true,
+            merge_repeated_passes: true,
+            merge_distance: 0.5,
             half_window: 2.0,
             search_margin: 1.5,
             bin_width: 0.2,
@@ -95,6 +103,10 @@ pub struct BuildReport {
     pub support_edge_vertices: usize,
     pub width_prior_vertices: usize,
     pub anchored_prior_vertices: usize,
+    pub reused_intervals: usize,
+    pub reused_length: f64,
+    pub added_length: f64,
+    pub joined_connections: usize,
     pub observed_fraction: Vec<f64>,
     pub warnings: Vec<String>,
 }
@@ -130,6 +142,7 @@ impl BuildOptions {
             ),
             ("bin_width", self.bin_width, 0.05, 0.5),
             ("curb_height", self.curb_height, 0.03, 0.5),
+            ("merge_distance", self.merge_distance, 0.05, 1.0),
         ] {
             if !value.is_finite() || !(min..=max).contains(&value) {
                 return Err(BuildError(format!(
@@ -342,6 +355,10 @@ pub fn extract(
         support_edge_vertices: 0,
         width_prior_vertices: 0,
         anchored_prior_vertices: 0,
+        reused_intervals: 0,
+        reused_length: 0.0,
+        added_length: 0.0,
+        joined_connections: 0,
         observed_fraction: vec![0.0; nlanes + 1],
         warnings: Vec::new(),
     };
@@ -613,6 +630,7 @@ pub fn build(
     o: &BuildOptions,
 ) -> Result<BuildReport, BuildError> {
     let (roads, mut report) = extract(cloud, poses, o)?;
+    let had_existing = map.lanes().next().is_some();
     let mut draft = map.clone();
     let forward = || RoadLane::new(o.lane_width, LaneDirection::Forward);
     let backward = || RoadLane::new(o.lane_width, LaneDirection::Backward);
@@ -627,23 +645,45 @@ pub fn build(
             .chain((0..o.forward_lanes).map(|_| forward()))
             .collect()
     };
+    report.roads = 0;
+    let mut created = Vec::new();
     for road in roads {
-        let polyline = |points: Vec<[f64; 3]>| {
-            Polyline3::new(
-                points
-                    .into_iter()
-                    .map(|p| Point3::new(p[0], p[1], p[2]))
-                    .collect(),
-            )
+        let parts = if o.merge_repeated_passes {
+            integration::uncovered(&draft, road, &lanes, o.merge_distance, &mut report)
+        } else {
+            vec![road]
         };
-        let mut spec = NewRoad::new(polyline(road.reference), lanes.clone());
-        spec.boundaries = Some(road.boundaries.into_iter().map(polyline).collect());
-        spec.speed_limit = Some(SpeedLimit::from_kmh(o.speed_limit));
-        spec.segment_length = (o.segment_length > 0.0).then_some(o.segment_length);
-        let (built, _) = draft
-            .build_road(spec)
-            .map_err(|e| BuildError(e.to_string()))?;
-        report.lanes += built.lanes.iter().map(Vec::len).sum::<usize>();
+        for road in parts {
+            let added_length = length(&road.reference);
+            let polyline = |points: Vec<[f64; 3]>| {
+                Polyline3::new(
+                    points
+                        .into_iter()
+                        .map(|p| Point3::new(p[0], p[1], p[2]))
+                        .collect(),
+                )
+            };
+            let mut spec = NewRoad::new(polyline(road.reference), lanes.clone());
+            spec.boundaries = Some(road.boundaries.into_iter().map(polyline).collect());
+            spec.speed_limit = Some(SpeedLimit::from_kmh(o.speed_limit));
+            spec.segment_length = (o.segment_length > 0.0).then_some(o.segment_length);
+            let (built, _) = draft
+                .build_road(spec)
+                .map_err(|e| BuildError(e.to_string()))?;
+            report.lanes += built.lanes.iter().map(Vec::len).sum::<usize>();
+            report.roads += 1;
+            report.added_length += added_length;
+            created.extend(built.lanes.into_iter().flatten());
+        }
+    }
+    if o.merge_repeated_passes {
+        report.joined_connections = integration::link_touching(&mut draft, &created)?;
+    }
+    if report.reused_intervals > 0 {
+        report.warnings.push(format!("{} intervals ({:.3} m) reuse matching existing lanes; their geometry, IDs and traffic rules were preserved. Evidence counts describe the incoming pass, not additional surveyed accuracy.",report.reused_intervals,report.reused_length));
+    }
+    if had_existing && o.merge_repeated_passes {
+        report.warnings.push("Matching requires centre, both boundaries, travel direction and ground height to agree. Unmatched or ambiguous overlaps may remain and need review; this does not align drifting survey frames.".into());
     }
     *map = draft;
     Ok(report)
@@ -772,5 +812,201 @@ mod tests {
         );
         assert!(report.anchored_prior_vertices > 0);
         assert!(!report.intensity_used);
+    }
+
+    #[test]
+    fn replay_reuses_geometry_ids_and_rules_without_adding_lanes() {
+        let cloud = marked_road();
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let mut map = Map::new();
+        let options = BuildOptions {
+            segment_length: 10.0,
+            ..Default::default()
+        };
+        build(&mut map, &cloud, &poses, &options).unwrap();
+        let ids: Vec<_> = map.lanes().map(|l| l.id).collect();
+        map.set_speed_limit(&ids, Some(SpeedLimit::from_kmh(20.0)))
+            .unwrap();
+        let before = map.clone();
+        let report = build(&mut map, &cloud, &poses, &options).unwrap();
+        assert_eq!(map, before);
+        assert_eq!(report.lanes, 0);
+        assert_eq!(report.roads, 0);
+        assert_eq!(report.added_length, 0.0);
+        assert!((report.reused_length - 28.0).abs() < 1e-6);
+        assert!(report.reused_intervals > 0);
+        let disabled = BuildOptions {
+            merge_repeated_passes: false,
+            ..options
+        };
+        let report = build(&mut map, &cloud, &poses, &disabled).unwrap();
+        assert_eq!(report.reused_intervals, 0);
+        assert_eq!(map.lanes().count(), ids.len() * 2);
+    }
+
+    #[test]
+    fn overlap_adds_only_the_extension_and_links_both_travel_directions() {
+        let cloud = marked_road();
+        let mut map = Map::new();
+        let o = BuildOptions::default();
+        build(&mut map, &cloud, &[[1.0, 0.0, 50.0], [21.0, 0.0, 50.0]], &o).unwrap();
+        let before: Vec<_> = map.lanes().cloned().collect();
+        let report = build(
+            &mut map,
+            &cloud,
+            &[[13.0, 0.0, 50.0], [29.0, 0.0, 50.0]],
+            &o,
+        )
+        .unwrap();
+        assert_eq!(report.roads, 1);
+        assert_eq!(report.lanes, 2);
+        assert!((report.reused_length - 8.0).abs() < 1e-6, "{report:?}");
+        assert!((report.added_length - 8.0).abs() < 1e-6, "{report:?}");
+        assert_eq!(report.joined_connections, 2);
+        for old in before {
+            assert_eq!(map.lane(old.id), Some(&old));
+        }
+        assert_eq!(map.lanes().count(), 4);
+        let unchanged = map.clone();
+        assert_eq!(
+            build(
+                &mut map,
+                &cloud,
+                &[[13.0, 0.0, 50.0], [29.0, 0.0, 50.0]],
+                &o
+            )
+            .unwrap()
+            .lanes,
+            0
+        );
+        assert_eq!(map, unchanged);
+    }
+
+    #[test]
+    fn opposite_direction_parallel_roads_and_other_levels_are_not_fused() {
+        for (y, z, reverse) in [(0.0, 0.0, true), (10.0, 0.0, false), (0.0, 5.0, false)] {
+            let mut cloud = marked_road();
+            let mut map = Map::new();
+            let o = BuildOptions {
+                backward_lanes: 0,
+                ..Default::default()
+            };
+            let a = [1.0, 0.0, 50.0];
+            let b = [29.0, 0.0, 50.0];
+            build(&mut map, &cloud, &[a, b], &o).unwrap();
+            for p in &mut cloud.positions {
+                p[1] += y;
+                p[2] += z;
+            }
+            let mut poses = [[a[0], y, 50.0], [b[0], y, 50.0]];
+            if reverse {
+                poses.reverse();
+            }
+            let report = build(&mut map, &cloud, &poses, &o).unwrap();
+            assert_eq!(report.reused_intervals, 0, "{report:?}");
+            assert_eq!(report.lanes, 1);
+            assert_eq!(report.joined_connections, 0);
+            assert_eq!(map.lanes().count(), 2);
+        }
+    }
+
+    #[test]
+    fn repeat_matching_handles_edge_heading_and_staggered_section_cuts() {
+        let reference: Vec<_> = (0..=30).map(|k| [k as f64 * 2.0, 0.0, 0.0]).collect();
+        let boundaries: Vec<Vec<_>> = [3.5, 0.0, -3.5]
+            .into_iter()
+            .enumerate()
+            .map(|(j, y)| {
+                reference
+                    .iter()
+                    .enumerate()
+                    .map(|(k, p)| {
+                        let offset = if j == 1 {
+                            0.0
+                        } else {
+                            (k as f64 * 0.9).sin() * 0.9
+                        };
+                        // A sharp ground-height change also exposes different
+                        // arc-length interpolation after a section is split.
+                        [p[0], y + offset, if k == 15 { 2.0 } else { 0.0 }]
+                    })
+                    .collect()
+            })
+            .collect();
+        let road = ExtractedRoad {
+            reference: reference.clone(),
+            boundaries: boundaries.clone(),
+            evidence: vec![vec![Evidence::Curb; reference.len()]; 3],
+        };
+        let lanes = vec![
+            RoadLane::new(3.5, LaneDirection::Backward),
+            RoadLane::new(3.5, LaneDirection::Forward),
+        ];
+        let line = |p: Vec<[f64; 3]>| {
+            Polyline3::new(
+                p.into_iter()
+                    .map(|p| Point3::new(p[0], p[1], p[2]))
+                    .collect(),
+            )
+        };
+        let mut spec = NewRoad::new(line(reference), lanes.clone());
+        spec.boundaries = Some(boundaries.into_iter().map(line).collect());
+        spec.segment_length = Some(10.0);
+        let mut map = Map::new();
+        map.build_road(spec).unwrap();
+        let before = map.clone();
+        let (_, mut report) = extract(
+            &marked_road(),
+            &[[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]],
+            &BuildOptions::default(),
+        )
+        .unwrap();
+        let parts = integration::uncovered(&map, road, &lanes, 0.5, &mut report);
+        assert!(parts.is_empty(), "unmatched geometry: {parts:?}");
+        assert!((report.reused_length - 60.0).abs() < 1e-6);
+        assert_eq!(map, before);
+    }
+
+    #[test]
+    fn malformed_existing_edges_are_not_used_as_matching_candidates() {
+        let cloud = marked_road();
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let options = BuildOptions::default();
+        let mut map = Map::new();
+        build(&mut map, &cloud, &poses, &options).unwrap();
+        let mut doc = map.to_document();
+        // An imported map can carry a usable explicit centre but a one-point
+        // edge. Such an edge has no segment or direction to compare.
+        for lane in &mut doc.lanes {
+            lane.centerline = map.centerline(lane.id);
+        }
+        for edge in &mut doc.boundaries {
+            edge.geometry.points.truncate(1);
+        }
+        let (mut map, _) = doc.into_map().unwrap();
+        let before = map.clone();
+        let report = build(&mut map, &cloud, &poses, &options).unwrap();
+        assert_eq!(report.reused_intervals, 0);
+        assert_eq!(report.lanes, 2);
+        for edge in before.boundaries() {
+            assert_eq!(map.boundary(edge.id), Some(edge));
+        }
+    }
+
+    #[test]
+    fn competing_unlinked_lane_geometries_are_not_silently_chosen() {
+        let cloud = marked_road();
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let mut map = Map::new();
+        let disabled = BuildOptions {
+            merge_repeated_passes: false,
+            ..Default::default()
+        };
+        build(&mut map, &cloud, &poses, &disabled).unwrap();
+        build(&mut map, &cloud, &poses, &disabled).unwrap();
+        let report = build(&mut map, &cloud, &poses, &BuildOptions::default()).unwrap();
+        assert_eq!(report.reused_intervals, 0);
+        assert_eq!(report.joined_connections, 0);
+        assert!(report.warnings.iter().any(|w| w.contains("ambiguous")));
     }
 }

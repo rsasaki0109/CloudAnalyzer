@@ -94,9 +94,11 @@ impl VectorMapSession {
         let before = self.map.clone();
         let report =
             ca_core::vector_map::build(&mut self.map, &cloud.inner, &poses, &o).map_err(error)?;
-        self.undo.push(before);
-        if self.undo.len() > UNDO_DEPTH {
-            self.undo.remove(0);
+        if self.map != before {
+            self.undo.push(before);
+            if self.undo.len() > UNDO_DEPTH {
+                self.undo.remove(0);
+            }
         }
         serde_json::to_string(&report).map_err(error)
     }

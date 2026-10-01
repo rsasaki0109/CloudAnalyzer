@@ -2342,6 +2342,11 @@ test("vector map: trajectory builds a ground-level draft with an evidence report
   const xml = (await bytesOf(await saved)).toString();
   expect(xml).toMatch(/<tag k="ele" v="2(\.0+)?"\/>/);
   expect(xml).not.toContain('<tag k="ele" v="50"/>');
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Existing lanes matched");
+  await expect(page.locator("#vm-build-report")).toContainText("Added 0 m; reused 54 m");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  // A fully reused pass did not add an undo entry: undo still removes the build.
   await page.locator("#vm-undo").click();
   await expect(page.locator("#vm-status")).toContainText("No map yet");
 });

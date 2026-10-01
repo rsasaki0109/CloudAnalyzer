@@ -1859,6 +1859,8 @@ def vectormap_build_cmd(
     speed_limit: float = typer.Option(40.0, "--speed-limit", help="Speed in km/h"),
     segment_length: float = typer.Option(50.0, "--segment-length", help="Lane piece length in metres; 0 keeps whole roads"),
     no_anchor_width_prior: bool = typer.Option(False, "--no-anchor-width-prior", help="Keep inferred lines relative to the trajectory instead of detected outer edges"),
+    no_merge_repeated_passes: bool = typer.Option(False, "--no-merge-repeated-passes", help="Add roads without reusing matching existing intervals"),
+    existing_map: Optional[str] = typer.Option(None, "--existing-map", help="Keep this IR JSON or Lanelet2 map and add uncovered intervals"),
     reference_map: Optional[str] = typer.Option(None, "--reference-map", help="Lanelet2 map supplying coordinate metadata only"),
     projection: Optional[str] = typer.Option(None, "--projection", help="mgrs, utm or transverse_mercator; omit for Local"),
     origin_lat: Optional[float] = typer.Option(None, "--origin-lat", help="Latitude of origin or MGRS tile representative"),
@@ -1873,6 +1875,7 @@ def vectormap_build_cmd(
             left_hand_traffic=not right_hand, lane_width=lane_width, speed_limit=speed_limit,
             segment_length=segment_length, reference_map=reference_map, projection=projection,
             anchor_width_prior=not no_anchor_width_prior,
+            merge_repeated_passes=not no_merge_repeated_passes, existing_map=existing_map,
             origin_lat=origin_lat, origin_lon=origin_lon,
         )
     except (OSError, ValueError, RuntimeError) as error:

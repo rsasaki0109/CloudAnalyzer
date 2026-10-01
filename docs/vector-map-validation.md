@@ -5,7 +5,8 @@ It assumes the trajectory follows the outside forward lane, uses configured lane
 widths, and estimates road elevation from the cloud. It detects intensity peaks, curb steps
 and ground coverage edges within a limited distance of each nominal boundary. Missing
 features use the explicit width prior. Detected features are candidates, not proof of a correct
-lane boundary. Repeated passes and junctions require manual review and connection.
+lane boundary. Repeated passes must already be aligned and require review; junctions
+require manual review and connection.
 
 ## Recorded Autoware drive and reference map
 
@@ -114,3 +115,51 @@ vertex was dragged with its cloud-relative height unchanged, both adjacent lanes
 and one Undo restored the complete map view exactly. This checks editing behavior, not
 whether the new position matches a surveyed marking. A production E2E separately covers
 large coordinates, reversed shared boundaries, cancellation, export and reload.
+
+## Conservative repeated-pass integration
+
+Appending uses `existing_map` (editable IR JSON or Lanelet2 OSM), distinct from the
+metadata-only `reference_map`. Existing geometry, entity IDs, rules and projector metadata
+stay fixed. Corresponding centres and both boundaries must agree within 0.5 m, edge
+directions within 15 degrees and ground heights within 0.3 m. Uniquely connected sections
+are compared as continuous edges, with comparison centres sampled by normalized arc length
+at a fixed 0.5 m resolution. This avoids false mismatches caused by inserted split vertices,
+unequal edge lengths or comparing a trajectory heading against a derived lane centre.
+Explicit existing centreline geometry is respected. Ambiguous disconnected duplicates,
+opposite travel and different ground levels are not fused. Uncovered intervals are added;
+only coincident, unambiguous directed ends are connected automatically.
+
+On the same public inputs above, exact replay retained the complete IR document unchanged:
+
+| Recorded input | Incoming supported length | Reused length | Added length | Added lanes |
+|---|---:|---:|---:|---:|
+| PandaSet 019 | 87.199 m | 87.199 m | 0 m | 0 |
+| Autoware sample rosbag, MGRS 54SUE | 122.134 m | 122.134 m | 0 m | 0 |
+
+The PandaSet Web replay also exported byte-identical OSM, and one Undo removed the original
+build: the no-op replay did not create an Undo entry. Native tests cover retained speed
+rules, IR and OSM imports, rejected invalid imports, atomic failure, explicit centres,
+curved edges, sharp height changes, section cuts, partial extensions and ambiguity.
+
+For partial overlap, PandaSet poses 0–49 and 30–79 have 20.667 m of common recorded XY
+trajectory. The first subset generated 54.705 m; appending the second reused 13.500 m and
+added 39.661 m in three fragments (six lane sections). Existing lane and boundary documents
+remained unchanged. The conservative matcher did **not** remove all overlap: different
+sampling and extraction geometry retained unmatched fragments, and no endpoints coincided
+exactly enough to connect. Those duplicates and gaps require review. The same subset
+procedure on Autoware retained existing geometry and reused 7.919 m, adding 108.038 m;
+its stationary GNSS prefix and missing ground also limit this experiment.
+
+These are overlapping subsets of **one** drive, not independently recorded repeated
+surveys. They check reuse and preservation, not improved boundary accuracy or correction
+of frame drift. Evidence counts continue to describe the incoming pass. Reproduce with
+an installed CloudAnalyzer package and an updated native Rust core:
+
+```sh
+python scripts/vector_map_integrate_evaluate.py pandaset/map.pcd pandaset/trajectory.csv results/pandaset-integration --right-hand
+python scripts/vector_map_integrate_evaluate.py sample-map-rosbag/pointcloud_map.pcd trajectory.csv results/autoware-integration --reference-map sample-map-rosbag/lanelet2_map.osm
+```
+
+The input CSV must have `timestamp,x,y,z` columns. Results must be a new directory.
+The script writes maps and reports for first/replay/overlap, checks complete replay equality
+and retention of old lane/boundary documents, and records the limitations in `summary.json`.

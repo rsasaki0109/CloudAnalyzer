@@ -24,6 +24,8 @@ def build_vector_map(
     speed_limit: float = 40.0,
     segment_length: float = 50.0,
     anchor_width_prior: bool = True,
+    merge_repeated_passes: bool = True,
+    existing_map: str | None = None,
     reference_map: str | None = None,
     projection: str | None = None,
     origin_lat: float | None = None,
@@ -32,7 +34,9 @@ def build_vector_map(
     """Write a draft, projector metadata, editable IR and evidence report in a NEW directory.
 
     Inputs must already share a metre coordinate frame. The trajectory follows the outside
-    forward lane. Reference maps supply coordinate metadata only, never geometry. Explicit
+    forward lane. existing_map retains its geometry, IDs, rules and coordinates; matching
+    intervals are reused and uncovered intervals are added. It can be editable IR JSON or OSM.
+    Reference maps supply coordinate metadata only, never geometry. Explicit
     projections are mgrs, utm or transverse_mercator; an origin selects the MGRS tile or
     defines the local origin of the other projections. Omitted metadata uses Autoware Local.
     Review boundaries, repeated passes, travel directions and junctions before using the map.
@@ -42,8 +46,10 @@ def build_vector_map(
         raise RuntimeError(
             'vector map drafting needs an updated Rust core: pip install "cloudanalyzer[fast]" (or build rust/crates/ca-py with maturin)'
         )
-    inputs = [Path(cloud), Path(trajectory)] + (
-        [Path(reference_map)] if reference_map else []
+    inputs = (
+        [Path(cloud), Path(trajectory)]
+        + ([Path(reference_map)] if reference_map else [])
+        + ([Path(existing_map)] if existing_map else [])
     )
     for path in inputs:
         if not path.is_file():
@@ -54,6 +60,12 @@ def build_vector_map(
             f"output directory already exists: {out}; choose a new directory"
         )
     geo = None
+    if existing_map and (
+        reference_map or projection or origin_lat is not None or origin_lon is not None
+    ):
+        raise ValueError(
+            "existing_map retains its coordinates; omit reference_map, projection and origin"
+        )
     if reference_map and (
         projection or origin_lat is not None or origin_lon is not None
     ):
@@ -88,12 +100,13 @@ def build_vector_map(
             "speed_limit": speed_limit,
             "segment_length": segment_length,
             "anchor_width_prior": anchor_width_prior,
+            "merge_repeated_passes": merge_repeated_passes,
         },
         allow_nan=False,
     )
     payload = json.loads(
         module.build_vector_map(
-            str(inputs[0]), str(inputs[1]), options, reference_map, geo
+            str(inputs[0]), str(inputs[1]), options, reference_map, geo, existing_map
         )
     )
     report: dict[str, Any] = payload["report"]
@@ -101,6 +114,7 @@ def build_vector_map(
         "cloud": str(inputs[0].resolve()),
         "trajectory": str(inputs[1].resolve()),
         "reference_map": str(Path(reference_map).resolve()) if reference_map else None,
+        "existing_map": str(Path(existing_map).resolve()) if existing_map else None,
     }
     report["options"] = json.loads(options)
     names = {

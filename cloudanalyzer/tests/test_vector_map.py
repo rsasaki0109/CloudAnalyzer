@@ -124,3 +124,140 @@ def test_mgrs_outside_selected_tile_leaves_no_output(survey, tmp_path):
             origin_lon=139.767125,
         )
     assert not out.exists()
+
+
+def test_existing_ir_reuses_lanes_rules_coordinates_and_does_not_touch_inputs(
+    survey, tmp_path
+):
+    cloud, trajectory = survey
+    first = tmp_path / "first"
+    build_vector_map(
+        str(cloud),
+        str(trajectory),
+        str(first),
+        projection="mgrs",
+        origin_lat=35.681236,
+        origin_lon=139.767125,
+    )
+    existing = first / "vector_map.json"
+    document = json.loads(existing.read_text())
+    for lane in document["lanes"]:
+        lane["speed_limit"] = {"kmh": 18.0}
+    existing.write_text(json.dumps(document))
+    before = {p.name: p.read_bytes() for p in first.iterdir()}
+    out = tmp_path / "replayed"
+    result = CliRunner().invoke(
+        app,
+        [
+            "vectormap-build",
+            str(cloud),
+            str(trajectory),
+            "--out",
+            str(out),
+            "--existing-map",
+            str(existing),
+        ],
+    )
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report["extraction"]["lanes"] == 0
+    assert report["extraction"]["reused_length"] > 30
+    assert json.loads((out / "vector_map.json").read_text()) == document
+    assert (out / "map_projector_info.yaml").read_bytes() == before[
+        "map_projector_info.yaml"
+    ]
+    assert {p.name: p.read_bytes() for p in first.iterdir()} == before
+    assert report["inputs"]["existing_map"] == str(existing.resolve())
+    assert report["import_issues"] == []
+    # Lanelet2 remains a supported append input; IDs/projector survive a replay.
+    third = tmp_path / "osm-replay"
+    osm_report = build_vector_map(
+        str(cloud),
+        str(trajectory),
+        str(third),
+        existing_map=str(out / "lanelet2_map.osm"),
+    )
+    assert osm_report["extraction"]["lanes"] == 0
+    assert (third / "map_projector_info.yaml").read_bytes() == before[
+        "map_projector_info.yaml"
+    ]
+    conflict = tmp_path / "conflict"
+    with pytest.raises(ValueError, match="existing_map retains its coordinates"):
+        build_vector_map(
+            str(cloud),
+            str(trajectory),
+            str(conflict),
+            existing_map=str(existing),
+            projection="mgrs",
+        )
+    assert not conflict.exists()
+    with pytest.raises(ValueError, match="choose it without"):
+        import cloudanalyzer_core
+
+        cloudanalyzer_core.build_vector_map(
+            str(cloud),
+            str(trajectory),
+            "{}",
+            str(out / "lanelet2_map.osm"),
+            None,
+            str(existing),
+        )
+    # An explicitly disabled merge adds lanes but still preserves old IDs/rules.
+    off = tmp_path / "off"
+    disabled = build_vector_map(
+        str(cloud),
+        str(trajectory),
+        str(off),
+        existing_map=str(existing),
+        merge_repeated_passes=False,
+    )
+    assert disabled["extraction"]["lanes"] == 2
+    assert disabled["extraction"]["reused_intervals"] == 0
+
+
+def test_existing_map_failure_is_atomic(survey, tmp_path):
+    cloud, trajectory = survey
+    first = tmp_path / "first"
+    build_vector_map(str(cloud), str(trajectory), str(first))
+    existing = first / "vector_map.json"
+    before = existing.read_bytes()
+    trajectory.write_text("timestamp,x,y,z\n0,3000,0,50\n1,3037,0,50\n")
+    out = tmp_path / "failure"
+    with pytest.raises(ValueError, match="no continuous road surface"):
+        build_vector_map(
+            str(cloud), str(trajectory), str(out), existing_map=str(existing)
+        )
+    assert existing.read_bytes() == before
+    assert not out.exists()
+
+
+def test_existing_explicit_centres_are_respected_and_invalid_imports_rejected(
+    survey, tmp_path
+):
+    cloud, trajectory = survey
+    first = tmp_path / "explicit"
+    build_vector_map(str(cloud), str(trajectory), str(first))
+    existing = first / "vector_map.json"
+    document = json.loads(existing.read_text())
+    boundaries = {b["id"]: b["geometry"] for b in document["boundaries"]}
+    for lane in document["lanes"]:
+        ref = lane["left"]
+        line = boundaries[ref if isinstance(ref, int) else ref["boundary"]]
+        lane["centerline"] = [[x, y, z + 3] for x, y, z in line]
+        if isinstance(ref, dict) and ref.get("reversed"):
+            lane["centerline"].reverse()
+    existing.write_text(json.dumps(document))
+    report = build_vector_map(
+        str(cloud), str(trajectory), str(tmp_path / "new"), existing_map=str(existing)
+    )
+    assert report["extraction"]["reused_intervals"] == 0
+    document["lanes"].append(document["lanes"][0])
+    existing.write_text(json.dumps(document))
+    before = existing.read_bytes()
+    out = tmp_path / "duplicate-id"
+    with pytest.raises(ValueError, match="cannot retain existing_map"):
+        build_vector_map(
+            str(cloud), str(trajectory), str(out), existing_map=str(existing)
+        )
+    assert not out.exists()
+    assert existing.read_bytes() == before

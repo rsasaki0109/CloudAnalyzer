@@ -33,7 +33,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     level,
                     x: i,
                     y: j,
-                    z: 0,
+                    // The root Z range is [-32, 32]; positive slope points
+                    // belong to its upper child, then [0, 16] at level 2.
+                    z: if level == 0 { 0 } else { 1 << (level - 1) },
                 };
                 nodes.push((key, points));
             }

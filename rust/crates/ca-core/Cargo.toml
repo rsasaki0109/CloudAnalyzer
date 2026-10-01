@@ -22,6 +22,8 @@ thiserror = "2.0.21"
 bzip2 = "0.6"
 lz4_flex = "0.14"
 ruzstd = "0.9"
+serde = { version = "1.0", features = ["derive"] }
+vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "b59b6424603c78ff4826e0bc8659cf1c86ecef32" }
 
 [features]
 # Multi-threaded variants of the heavy queries (native builds only; WASM

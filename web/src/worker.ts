@@ -940,6 +940,9 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
       return withView(map.open(req.name ?? "", req.text ?? ""));
     case "apply":
       return withView(map.apply(req.text ?? "[]"));
+    case "build":
+      if (req.id === undefined || !req.positions) throw new Error("Choose a point cloud and trajectory.");
+      return withView(map.buildFromTrajectory(getCloud(req.id), req.positions, req.text ?? "{}"));
     case "undo":
       return withView(String(map.undo()));
     case "clear":

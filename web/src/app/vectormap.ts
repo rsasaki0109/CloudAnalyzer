@@ -13,7 +13,8 @@ import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 import { vectorMap } from "../api";
 import { $, download, errorText, fmt, setStatus } from "./dom";
-import { entries, globalShift, listChanged, viewer } from "./state";
+import { clouds, entries, globalShift, listChanged, viewer } from "./state";
+import { inputTrajectories, trajectoryChanged } from "./trajectory";
 import { activeTool, pickPoint, setTool, toggleTool, type Tool } from "./tools";
 
 type XYZ = [number, number, number];
@@ -290,6 +291,65 @@ interface Edited {
   view: MapView;
   undo: number;
 }
+
+interface BuildReport {
+  roads: number;
+  lanes: number;
+  generated_length: number;
+  observed_fraction: number[];
+  warnings: string[];
+}
+
+const buildButton = $<HTMLButtonElement>("vm-build");
+const cloudInput = $<HTMLSelectElement>("vm-cloud");
+const trajectoryInput = $<HTMLSelectElement>("vm-trajectory");
+function buildInputs(): void {
+  const fill = (select: HTMLSelectElement, items: { id: number; name: string }[]) => {
+    const value = select.value;
+    select.replaceChildren(...items.map((item) => new Option(item.name, String(item.id))));
+    if (items.some((item) => String(item.id) === value)) select.value = value;
+  };
+  fill(cloudInput, clouds().map((entry) => entry.cloud));
+  fill(trajectoryInput, inputTrajectories());
+  buildButton.disabled = busy || !cloudInput.value || !trajectoryInput.value;
+}
+listChanged.add(buildInputs);
+trajectoryChanged.add(buildInputs);
+buildInputs();
+buildButton.onclick = async () => {
+  if (busy) return;
+  const trajectory = inputTrajectories().find((t) => String(t.id) === trajectoryInput.value);
+  if (!trajectory || !cloudInput.value) return;
+  busy = true;
+  buildInputs();
+  setTool(null);
+  setStatus("Building draft roads from the point cloud and trajectory…");
+  try {
+    const options = {
+      forward_lanes: Number($<HTMLInputElement>("vm-forward").value),
+      backward_lanes: Number($<HTMLInputElement>("vm-backward").value),
+      left_hand_traffic: $<HTMLSelectElement>("vm-traffic").value === "left",
+      lane_width: Number($<HTMLInputElement>("vm-width").value),
+      speed_limit: Number($<HTMLInputElement>("vm-speed").value),
+      segment_length: Number($<HTMLInputElement>("vm-segment").value),
+    };
+    const edited = await vectorMap<Edited>("build", {
+      id: Number(cloudInput.value), positions: trajectory.poses.positions, text: JSON.stringify(options),
+    });
+    takeView(edited);
+    const report = edited.result as BuildReport;
+    $("vm-build-report").textContent =
+      `${report.roads} road stretches, ${report.lanes} lanes, ${fmt(report.generated_length)} m. ` +
+      `Measured boundary vertices, left to right: ${report.observed_fraction.map((f) => `${Math.round(f * 100)}%`).join(", ")}. ` +
+      report.warnings.join(" ");
+    setStatus("Draft roads added. Review the boundaries, lane directions and junctions before export.");
+  } catch (err) {
+    setStatus(`Could not build draft roads: ${errorText(err)}`);
+  } finally {
+    busy = false;
+    buildInputs();
+  }
+};
 
 function takeView(edited: Edited): void {
   view = edited.view;

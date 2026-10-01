@@ -427,7 +427,7 @@ export const isBag = (name: string) => /\.(bag|mcap)$/i.test(name);
 export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
 
 /** What a "vm" request does. */
-export type VectorMapOp = "open" | "apply" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
+export type VectorMapOp = "open" | "apply" | "build" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
 
 export type Request =
   | ({
@@ -590,6 +590,8 @@ export type Request =
        */
       kind: "vm";
       op: VectorMapOp;
+      id?: number;
+      positions?: Float64Array;
       name?: string;
       text?: string;
       x?: number;

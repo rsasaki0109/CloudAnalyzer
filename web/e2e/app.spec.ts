@@ -2242,3 +2242,26 @@ test("vector map: roads drawn over a cloud, a turn, a traffic light and a crossw
   await open(page, [{ name: "lanelet2_map.osm", buffer: Buffer.from(xml) }]);
   await expect(status(page)).toContainText("Opened lanelet2_map.osm: 4 lanes");
 });
+
+test("vector map: trajectory builds a ground-level draft with an evidence report and one-step undo", async ({ page }) => {
+  const ground: [number, number, number][] = [];
+  for (let x = 0; x <= 60; x += 0.2) for (let y = -8; y <= 4; y += 0.2) ground.push([x, y, 2]);
+  await open(page, [
+    { name: "survey.ply", buffer: ply(ground) },
+    { name: "drive.csv", buffer: Buffer.from("timestamp,x,y,z\n0,3,0,50\n1,30,0,50\n2,57,0,50\n") },
+  ]);
+  await expect(status(page)).toContainText("trajectory of 3 poses");
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory", { exact: true }).click();
+  await expect(page.locator("#vm-build")).toBeEnabled();
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("configured lane width");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  const saved = page.waitForEvent("download", (file) => file.suggestedFilename() === "lanelet2_map.osm");
+  await page.locator("#vm-export").click();
+  const xml = (await bytesOf(await saved)).toString();
+  expect(xml).toMatch(/<tag k="ele" v="2(\.0+)?"\/>/);
+  expect(xml).not.toContain('<tag k="ele" v="50"/>');
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-status")).toContainText("No map yet");
+});

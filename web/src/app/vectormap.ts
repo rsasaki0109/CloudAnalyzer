@@ -128,7 +128,10 @@ const selectedFill = new THREE.MeshBasicMaterial({
 const vertexMaterial = new THREE.PointsMaterial({ color: 0xffeb3b, size: 7, sizeAttenuation: false, depthTest: false });
 let editingVertices = false;
 let activeBoundary: number | null = null;
-let drag: { before: MapView; boundary: number; index: number; point: XYZ; moved: boolean } | null = null;
+let drag: {
+  before: MapView; boundary: number; index: number; point: XYZ;
+  offset: [number, number]; start: [number, number]; moved: boolean;
+} | null = null;
 
 // ---------------------------------------------------------------------------
 // Drawing
@@ -707,7 +710,12 @@ const vertexTool: Tool = {
       }
     }
     if (!hit) return false;
-    drag = { before: structuredClone(view), ...hit, moved: false };
+    const ground = viewer.groundPoint(x, y, hit.point[2] - shift[2]);
+    if (!ground) return false;
+    drag = {
+      before: structuredClone(view), ...hit, start: [x, y], moved: false,
+      offset: [hit.point[0] - shift[0] - ground.x, hit.point[1] - shift[1] - ground.y],
+    };
     activeBoundary = hit.boundary;
     hint.textContent = `Boundary ${hit.boundary}, vertex ${hit.index + 1}: drag to move; Escape cancels.`;
     draw();
@@ -715,10 +723,11 @@ const vertexTool: Tool = {
   },
   pointerMove(x, y) {
     if (!drag) return;
+    if (!drag.moved && Math.hypot(x - drag.start[0], y - drag.start[1]) < 2) return;
     const shift = globalShift();
     const p = viewer.groundPoint(x, y, drag.point[2] - shift[2]);
     if (!p) return;
-    const next: XYZ = [p.x + shift[0], p.y + shift[1], drag.point[2]];
+    const next: XYZ = [p.x + shift[0] + drag.offset[0], p.y + shift[1] + drag.offset[1], drag.point[2]];
     const b = view.boundaries.find((b) => b.id === drag!.boundary)!;
     b.points[drag.index] = next;
     drag.moved = Math.hypot(next[0] - drag.point[0], next[1] - drag.point[1]) > 1e-4;

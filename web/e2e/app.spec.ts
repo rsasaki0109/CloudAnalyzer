@@ -2274,6 +2274,10 @@ test("vector map: a shared reversed boundary can be dragged, cancelled, exported
   };
   const before = await exportXml();
   await page.locator("#vm-vertices").click();
+  // Pressing off the centre of a handle must not snap it or add undo history.
+  await page.mouse.click(x + 3, y + 2);
+  expect(await exportXml()).toBe(before);
+  await expect(page.locator("#vm-undo")).toBeDisabled();
   await page.mouse.move(x, y);
   await page.mouse.down();
   await expect(page.locator("#vm-hint")).toContainText("Boundary 2, vertex 2");

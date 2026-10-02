@@ -34,6 +34,9 @@ class IcpResult(TypedDict):
     converged: bool
 
 def read(path: str, keep_every: int = 1) -> PointData: ...
+def measure_vector_map_crosswalk(
+    cloud: str, vector_map: str, options: str, preview_only: bool = True
+) -> str: ...
 def measure_vector_map_signal(
     cloud: str, vector_map: str, options: str, preview_only: bool = True,
 ) -> str: ...

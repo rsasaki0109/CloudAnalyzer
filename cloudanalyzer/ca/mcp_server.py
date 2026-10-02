@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal
+from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
@@ -45,6 +45,9 @@ Omitting lane_pairs adds all proposals; [] adds none. Prefer editable IR to reta
 rules and metadata. Ground support cannot establish legal turns, lane clearance or signal
 rules. Existing rules remain, but new connections require traffic-rule review.
 measure_vector_map_signal fits housing geometry from a user-identified head's 3D box.
+measure_vector_map_crosswalk previews measured bright ground bands and adds a
+user-confirmed crossing with explicitly selected lane IDs. Retained RGB or
+intensity is required; paint patterns alone do not classify an object.
 Supply original-coordinate bounds and explicitly confirmed controlled lane IDs. Preview
 first, then add with preview_only=false in another new out_dir. This measures shape;
 it does not classify an unlabelled object or infer lamps, stop lines or controlled lanes.
@@ -271,7 +274,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

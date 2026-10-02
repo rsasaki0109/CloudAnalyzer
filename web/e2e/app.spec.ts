@@ -2431,6 +2431,71 @@ test("vector map: tall roadside returns are rejected as curbs and the check can 
   await expect(page.locator("#vm-build-report")).not.toContainText("height transitions");
 });
 
+test("vector map: point paint candidates require confirmation, invalidate, export, roundtrip and undo", async ({ page }) => {
+  const points: { xyz: [number, number, number]; intensity: number; cls: number }[] = [];
+  for (let i = 0; i <= 200; i++) for (let j = 0; j <= 160; j++) {
+    const x = -5 + i * .05, y = -4 + j * .05;
+    const white = x >= -2 && x < 2 && (x + 2) % 1 < .5 && Math.abs(y) <= 3;
+    points.push({ xyz: [50000 + x, 70000 + y, 2 + .03 * x - .02 * y], intensity: white ? 210 : 70, cls: 2 });
+  }
+  await open(page, [{ name: "paint.las", buffer: las(points, [50000, 70000, 2]) }]);
+  await expect(status(page)).toContainText("Loaded paint.las");
+  const map = { format: "vectormap-ir", version: 1,
+    metadata: { georeference: { projection: "mgrs", origin: { lat: 35.681236, lon: 139.767125 } } },
+    lanes: [{ id: 3, kind: "driving", left: 1, right: 2 }],
+    boundaries: [{ id: 1, kind: { type: "virtual" }, geometry: [[49995, 70001.75, 2], [50005, 70001.75, 2]] },
+      { id: 2, kind: { type: "virtual" }, geometry: [[49995, 69998.25, 2], [50005, 69998.25, 2]] }] };
+  await page.locator("#vm-file").setInputFiles({ name: "lane.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(map)) });
+  await expect(status(page)).toContainText("Opened lane.json");
+  const exportXml = async () => {
+    const file = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
+    await page.locator("#vm-export").click(); return (await bytesOf(await file)).toString();
+  };
+  const before = await exportXml();
+  await page.locator("#vm-crosswalk-measure summary").click();
+  await page.locator("#vm-crosswalk-bounds").click();
+  await page.locator("#vm-crosswalk-preview").click();
+  await expect(status(page)).toContainText("paint candidates");
+  await expect(page.locator("#vm-crosswalk-candidates")).toContainText("4 bands");
+  await expect(page.locator("#vm-crosswalk-report")).toContainText("intensity");
+  await page.locator("input[name=crosswalk-candidate]").first().check();
+  await expect(page.locator("#vm-crosswalk-add")).toBeDisabled();
+  expect(await exportXml()).toBe(before);
+  // Entering the confirmed lanes invalidates the earlier preview.
+  await page.locator("#vm-crosswalk-lanes").fill("3");
+  await expect(page.locator("#vm-crosswalk-candidates")).toBeEmpty();
+  await page.locator("#vm-crosswalk-preview").click();
+  await expect(page.locator("#vm-crosswalk-add")).toBeDisabled();
+  await page.locator("#vm-crosswalk-inspect").click();
+  await expect(status(page)).toContainText("paint-box points copied with their attributes");
+  await expect(page.locator("#vm-crosswalk-add")).toBeDisabled();
+  await page.locator("#vm-crosswalk-preview").click();
+  await expect(page.locator("#vm-crosswalk-report")).toContainText("intensity");
+  await page.locator("input[name=crosswalk-candidate]").first().check();
+  await expect(page.locator("#vm-crosswalk-add")).toBeEnabled();
+  await page.locator("#vm-crosswalk-add").click();
+  await expect(status(page)).toContainText("Measured crossing");
+  const added = await exportXml();
+  expect(added).toContain('k="cloudanalyzer_geometry_source" v="point_cloud_brightness_stripes"');
+  expect(added).toContain('k="cloudanalyzer_lanes_source" v="user_selected"');
+  expect(added).toContain('k="cloudanalyzer_paint_bands"');
+  expect(added).not.toContain('v="stop_line"');
+  await page.locator("#vm-crosswalk-preview").click();
+  await page.locator("input[name=crosswalk-candidate]").first().check();
+  await page.locator("#vm-crosswalk-add").click();
+  await expect(status(page)).toContainText("already measured");
+  expect(await exportXml()).toBe(added);
+  await page.locator("#vm-undo").click();
+  expect(await exportXml()).toBe(before);
+  await page.locator("#vm-file").setInputFiles({ name: "measured.osm", mimeType: "application/xml", buffer: Buffer.from(added) });
+  await expect(status(page)).toContainText("Opened measured.osm");
+  await page.locator("#vm-crosswalk-preview").click();
+  await page.locator("input[name=crosswalk-candidate]").first().check();
+  await page.locator("#vm-crosswalk-add").click();
+  await expect(status(page)).toContainText("already measured");
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+});
+
 test("vector map: measured signal preview, stale inputs, export, replay and undo", async ({ page }) => {
   const points: [number, number, number][] = [];
   for (let x = 0; x <= 24; x++) for (let z = 0; z <= 10; z++) points.push([50000 - .6 + x * .05, 11, 7 + z * .05]);

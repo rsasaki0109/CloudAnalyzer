@@ -66,3 +66,26 @@ test('signal face uses only the stored polyline and known positive height', () =
   for (const height of [null,NaN,Infinity,0,-1]) assert.deepEqual(signalTriangles(bottom,height,origin),[]);
   assert.deepEqual(signalTriangles([],0.45,origin),[]);
 });
+
+test('measured paint keeps observed bands along the shorter axis, clips ends and preserves ground height', () => {
+  const origin = [50000, 70000, 19];
+  const at = (x,y) => [origin[0]+x,origin[1]+y,origin[2]+.03*x-.02*y];
+  const outline = [[0,0],[4,0],[4,8],[0,8]].map(([x,y])=>at(x,y));
+  const bands = [
+    [[1,-1],[1.5,-1],[1.5,9],[1,9]],
+    [[2.2,-1],[2.55,-1],[2.55,9],[2.2,9]],
+  ].map(b=>b.map(([x,y])=>at(x,y)));
+  const original = structuredClone({outline,bands});
+  const positions = crosswalkTriangles(outline,origin,bands);
+  assert.ok(Math.abs(area(positions)-6.8)<1e-7);
+  for(let i=0;i<positions.length;i+=3) {
+    const [x,y,z]=positions.slice(i,i+3);
+    assert.ok(y>=-1e-9 && y<=8+1e-9);
+    assert.ok((x>=1-1e-9&&x<=1.5+1e-9)||(x>=2.2-1e-9&&x<=2.55+1e-9));
+    assert.ok(Math.abs(z-(.03*x-.02*y))<1e-10);
+  }
+  assert.deepEqual({outline,bands},original);
+  assert.deepEqual(crosswalkTriangles(outline,origin,[]),[]);
+  assert.deepEqual(crosswalkTriangles(outline,origin,[[[NaN,0,0]]]),[]);
+  assert.ok(crosswalkTriangles(outline,origin).length>0); // Unmeasured context still has a convention.
+});

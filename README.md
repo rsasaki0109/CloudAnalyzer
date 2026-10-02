@@ -203,6 +203,9 @@ and undo the batch. Review turns, clearance and traffic rules before use.
 [`ca vectormap-signal`](docs/commands/vectormap-signal.md) measures a user-identified
 signal head from a point-cloud box. Preview its measured housing and explicitly
 confirm controlled lanes; the Web panel and MCP tool use the same fitting.
+[`ca vectormap-crosswalk`](docs/commands/vectormap-crosswalk.md) proposes measured
+ground-paint bands from RGB or intensity. Preview the observed footprint, then
+confirm the crossing and its lane IDs; Web additions support Undo and Lanelet2 export.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

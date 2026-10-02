@@ -1,0 +1,33 @@
+{
+  "readonlyProposals": true,
+  "noAutomaticSelection": true,
+  "nearestWrongOrientationHeld": true,
+  "explicitAdoptions": [
+    "stop_line:164",
+    "crosswalk:156"
+  ],
+  "nativeOsmByteExact": true,
+  "physicalMapNativeExact": true,
+  "sourceQualityCheckedFullCloud": true,
+  "lanes": 59,
+  "sourceReviewLanes": 0,
+  "noOpUndoExact": true,
+  "allEditsUndoExact": true,
+  "controlTargetsReload": true,
+  "warningsReloadExact": true,
+  "warningsBefore": 19,
+  "warningsAfter": 18,
+  "unresolvedRules": [
+    167,
+    171
+  ],
+  "pageErrors": [],
+  "runtime_commit": "a4aa3d7c97e6bada6277289a2a096dabfe14d8c4",
+  "wasm_sha256": "aa94897886a9d32d16b1a738a16fafcc66203e7b51dd14651961a277f11c0b05",
+  "native_sha256": "298cc7e4ad03ece0af2a5a223b281cea4d262fa7c3ec03892d5a6d1f0392a118",
+  "osm_sha256": "e60ea0fe9fcc5dbca5b6b2c7d57a78e7bbfcbc25f2be11b278fdbafff88beb77",
+  "screenshots_sha256": {
+    "docs/images/web/vector-map-relation-proposal-169.png": "d032f281f60fc7fefbbe58ad86328f227d90e6e888e3591030f4fd1c3c24ea41",
+    "docs/images/web/vector-map-relation-proposal-173.png": "e0eed279a693e3000c281d260768dbf408a68f4d0115b321f862fa5ecafcdb1b"
+  }
+}

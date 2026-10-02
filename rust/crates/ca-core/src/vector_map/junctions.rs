@@ -12,6 +12,10 @@ use crate::PointCloud;
 
 const RADIUS: f64 = 0.75;
 const HEIGHT: f64 = 0.3;
+// An endpoint rise alone cannot distinguish a graded street from another level.
+// Retain the short-gap tolerance, then require a modest grade and observed ground
+// at both ends and along the actual connector. This is not a legal road-grade test.
+const MAX_GRADE: f64 = 0.12;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -205,7 +209,8 @@ pub fn propose(
             if a.id == b.id || !(0.5..=o.max_gap).contains(&gap) {
                 continue;
             }
-            if (a.point.z - b.point.z).abs() > HEIGHT {
+            let rise = (a.point.z - b.point.z).abs();
+            if rise > HEIGHT && rise / gap > MAX_GRADE {
                 report.rejected_height += 1;
                 continue;
             }
@@ -215,6 +220,12 @@ pub fn propose(
             let angle = cross.atan2(dot).to_degrees();
             if toward(a.heading) < 0.25 || toward(b.heading) < 0.25 || angle.abs() > 135.0 {
                 report.rejected_heading += 1;
+                continue;
+            }
+            // A supported interior alone can mask a floating end at the preview's
+            // fractional support threshold. Never relax the endpoint ground test.
+            if !ground.supports(a.point) || !ground.supports(b.point) {
+                report.unsupported_candidates += 1;
                 continue;
             }
             // Score the exact geometry produced by the shared connector builder,
@@ -433,6 +444,65 @@ mod tests {
         };
         assert!(propose(&map, &cloud, &invalid).is_err());
         assert!(propose(&map, &PointCloud::default(), &Default::default()).is_err());
+    }
+
+    #[test]
+    fn graded_street_ends_connect_only_when_both_ends_and_the_gap_have_ground() {
+        let mut map = Map::new();
+        let a = road(&mut map, [-20.0, 0.0, 0.8], [-10.0, 0.0, 1.4]);
+        let b = road(&mut map, [0.0, 0.0, 2.0], [10.0, 0.0, 2.6]);
+        let before = map.clone();
+        let mut cloud = PointCloud::default();
+        for x in -105..=55 {
+            for y in -20..=20 {
+                let x = x as f64 * 0.2;
+                cloud.positions.push([x, y as f64 * 0.2, 2.0 + x * 0.06]);
+            }
+        }
+        let preview = propose(&map, &cloud, &Default::default()).unwrap();
+        assert_eq!(map, before);
+        assert_eq!(preview.candidates.len(), 1, "{preview:?}");
+        assert_eq!(
+            (preview.candidates[0].from, preview.candidates[0].to),
+            (a, b)
+        );
+        assert_eq!(preview.candidates[0].ground_support, 1.0);
+        let connected = connect(&mut map, &cloud, &Default::default(), None).unwrap();
+        assert_eq!(connected.added.len(), 1);
+        assert_eq!(map.successors(a), connected.added);
+        for boundary in before.boundaries() {
+            assert_eq!(map.boundary(boundary.id), Some(boundary));
+        }
+        // A plausible endpoint rise must not bridge a void in the actual street.
+        cloud.positions.retain(|p| p[0] < -8.0 || p[0] > -2.0);
+        let unsupported = propose(&before, &cloud, &Default::default()).unwrap();
+        assert!(unsupported.candidates.is_empty());
+        assert_eq!(unsupported.unsupported_candidates, 1);
+    }
+
+    #[test]
+    fn floating_end_and_excessive_grade_are_rejected_even_with_supported_interior() {
+        let mut map = Map::new();
+        road(&mut map, [-20.0, 0.0, 2.0], [-10.0, 0.0, 2.0]);
+        road(&mut map, [0.0, 0.0, 2.35], [10.0, 0.0, 2.35]);
+        let mut cloud = PointCloud::default();
+        for x in -105..=55 {
+            for y in -20..=20 {
+                cloud.positions.push([x as f64 * 0.2, y as f64 * 0.2, 2.0]);
+            }
+        }
+        let report = propose(&map, &cloud, &Default::default()).unwrap();
+        assert!(report.candidates.is_empty());
+        assert_eq!(report.unsupported_candidates, 1);
+        let mut steep = Map::new();
+        road(&mut steep, [-20.0, 0.0, 0.0], [-10.0, 0.0, 2.0]);
+        road(&mut steep, [0.0, 0.0, 4.0], [10.0, 0.0, 6.0]);
+        for p in &mut cloud.positions {
+            p[2] = 4.0 + p[0] * 0.2;
+        }
+        let report = propose(&steep, &cloud, &Default::default()).unwrap();
+        assert!(report.candidates.is_empty());
+        assert!(report.rejected_height > 0);
     }
 
     #[test]

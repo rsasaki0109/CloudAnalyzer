@@ -1,5 +1,9 @@
 # Large point clouds
 
+For independent full-source counts, spatial raw-record/halo checks, process
+memory sampling and interruption/recovery measurements on larger real inputs,
+see [reproducing COPC scale measurements](copc-scale-validation.md).
+
 ## Web full-density working box
 
 Open a COPC file, then use **COPC full-density box** to select its original

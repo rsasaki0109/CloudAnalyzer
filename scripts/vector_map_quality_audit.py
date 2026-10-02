@@ -12,8 +12,6 @@ import json
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-import numpy as np
-
 from hard_intersection_evaluate import (
     gated_assignment,
     read_reference,
@@ -23,8 +21,10 @@ from hard_intersection_evaluate import (
 
 
 def digest(path: Path) -> str:
+    result = hashlib.sha256()
     with path.open("rb") as stream:
-        result = hashlib.file_digest(stream, "sha256")
+        for chunk in iter(lambda: stream.read(4 * 1024 * 1024), b""):
+            result.update(chunk)
     return result.hexdigest()
 
 

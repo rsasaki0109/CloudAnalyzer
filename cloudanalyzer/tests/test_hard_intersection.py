@@ -15,6 +15,37 @@ import hard_intersection_fetch as fetch
 import hard_intersection_prepare as prep
 import hard_intersection_generate as gen
 import hard_intersection_evaluate as audit
+import vector_map_quality_audit as quality
+
+
+def test_quality_audit_uses_generated_local_coordinates_and_closed_paint(tmp_path):
+    path = tmp_path / "map.osm"
+    nodes = "".join(f'<node id="{i}" lat="0" lon="0"><tag k="local_x" v="{x}"/><tag k="local_y" v="{y}"/><tag k="ele" v="2"/></node>' for i, (x,y) in enumerate([(100,200),(100,204),(106,200),(106,204)],1))
+    path.write_text('<osm>'+nodes+'<way id="10"><nd ref="1"/><nd ref="2"/></way><way id="11"><nd ref="3"/><nd ref="4"/></way><relation id="12"><member type="way" ref="10" role="left"/><member type="way" ref="11" role="right"/><tag k="type" v="lanelet"/><tag k="subtype" v="crosswalk"/></relation></osm>', encoding="utf-8")
+    objects = quality.generated_equipment(path)
+    ring = objects["repeated_paint"][0]["geometry"]
+    assert ring[0] == ring[-1] == [100,200,2]
+    assert len(ring) == 5
+    comparison = quality.equipment_comparison(objects, objects)
+    assert comparison["repeated_paint"]["nearby_correspondences"] == 1
+    assert comparison["repeated_paint"]["matches"][0]["geometry"]["hausdorff_m"] == 0
+
+
+def test_quality_frozen_map_guard_rejects_changed_map_and_reference_inputs(tmp_path):
+    osm = tmp_path / "reviewed.osm"
+    osm.write_bytes(b"<osm/>")
+    manifest = {"reference_inputs": [], "generated_sha256": hashlib.sha256(osm.read_bytes()).hexdigest()}
+    path = tmp_path / "manifest.json"
+    path.write_text(json.dumps(manifest))
+    assert quality.verify_frozen_map(tmp_path)[0] == osm
+    osm.write_bytes(b"changed")
+    with pytest.raises(ValueError, match="changed after freezing"):
+        quality.verify_frozen_map(tmp_path)
+    osm.write_bytes(b"<osm/>")
+    manifest["reference_inputs"] = ["reference.osm"]
+    path.write_text(json.dumps(manifest))
+    with pytest.raises(ValueError, match="used reference"):
+        quality.verify_frozen_map(tmp_path)
 
 
 def test_closed_outline_sampling_includes_last_edge_without_mutating_prediction():

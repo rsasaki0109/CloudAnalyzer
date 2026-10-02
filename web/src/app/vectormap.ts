@@ -19,6 +19,7 @@ import { $, download, errorText, fmt, setStatus } from "./dom";
 import { clouds, entries, globalShift, listChanged, pointsInvalidated, viewer } from "./state";
 import { inputTrajectories, trajectoryChanged } from "./trajectory";
 import { activeTool, pickPoint, setTool, toggleTool, type Tool } from "./tools";
+import { crosswalkTriangles, signalTriangles } from "./vectormap-geometry";
 
 type XYZ = [number, number, number];
 
@@ -133,18 +134,21 @@ const materials = {
   solid: viewer.lineMaterial({ color: 0xf5f5f5, linewidth: 2, depthTest: false }),
   dashed: viewer.lineMaterial({ color: 0xe0e0e0, linewidth: 2, depthTest: false }),
   edge: viewer.lineMaterial({ color: 0xffa726, linewidth: 2.5, depthTest: false }),
-  virtual: viewer.lineMaterial({ color: 0x78909c, linewidth: 1, depthTest: false }),
-  arrow: viewer.lineMaterial({ color: 0x4dd0e1, linewidth: 2, depthTest: false }),
-  stop: viewer.lineMaterial({ color: 0xff1744, linewidth: 4, depthTest: false }),
-  signal: viewer.lineMaterial({ color: 0xffea00, linewidth: 5, depthTest: false }),
+  virtual: viewer.lineMaterial({ color: 0x5d899c, linewidth: 1, depthTest: false }),
+  arrow: viewer.lineMaterial({ color: 0x8de8ff, linewidth: 2.5, depthTest: false }),
+  stop: viewer.lineMaterial({ color: 0xff6375, linewidth: 5, depthTest: false }),
+  signal: viewer.lineMaterial({ color: 0xffd166, linewidth: 3, depthTest: false }),
   crosswalk: viewer.lineMaterial({ color: 0xffffff, linewidth: 1.5, depthTest: false }),
   sketch: viewer.lineMaterial({ color: 0xffeb3b, linewidth: 3, depthTest: false }),
   proposal: viewer.lineMaterial({ color: 0x00e5ff, linewidth: 3, depthTest: false }),
+  selectedRoute: viewer.lineMaterial({ color: 0xffeb3b, linewidth: 4, depthTest: false }),
+  incomingRoute: viewer.lineMaterial({ color: 0xa894fa, linewidth: 3, depthTest: false }),
+  outgoingRoute: viewer.lineMaterial({ color: 0x48dfaf, linewidth: 3, depthTest: false }),
 };
 const laneFill = new THREE.MeshBasicMaterial({
-  color: 0x42a5f5,
+  color: 0x2485bf,
   transparent: true,
-  opacity: 0.18,
+  opacity: 0.28,
   side: THREE.DoubleSide,
   depthTest: false,
   depthWrite: false,
@@ -157,7 +161,26 @@ const selectedFill = new THREE.MeshBasicMaterial({
   depthTest: false,
   depthWrite: false,
 });
-const vertexMaterial = new THREE.PointsMaterial({ color: 0xffeb3b, size: 7, sizeAttenuation: false, depthTest: false });
+const turnFill = laneFill.clone();
+turnFill.color.setHex(0x18b8a6);
+turnFill.opacity = 0.18;
+const predecessorFill = laneFill.clone();
+predecessorFill.color.setHex(0xa894fa);
+predecessorFill.opacity = 0.42;
+const successorFill = laneFill.clone();
+successorFill.color.setHex(0x48dfaf);
+successorFill.opacity = 0.42;
+const walkFill = new THREE.MeshBasicMaterial({ color: 0xf3f5f0, transparent: true, side: THREE.DoubleSide, depthTest: false, depthWrite: false });
+const signalFill = walkFill.clone();
+signalFill.color.setHex(0xffd166);
+const proposalFill = turnFill.clone();
+proposalFill.color.setHex(0x00e5ff);
+proposalFill.opacity = 0.22;
+const display = { surfaces: true, directions: true, markings: true, virtual: false, regulations: true, labels: true };
+const labelLayer = $("vm-labels");
+const legend = $("vm-legend");
+const mapLabels: { element: HTMLElement; point: XYZ; priority: number }[] = [];
+const vertexMaterial = new THREE.PointsMaterial({ color: 0xffeb3b, size: 7, sizeAttenuation: false, transparent: true, depthTest: false });
 let editingVertices = false;
 let activeBoundary: number | null = null;
 let drag: {
@@ -218,6 +241,8 @@ function dashedPairs(points: XYZ[], out: number[]): void {
 
 /** Resample a polyline to `n` points evenly spaced along it. */
 function resample(points: XYZ[], n: number): XYZ[] {
+  if (points.length === 0) return [];
+  if (points.length === 1) return Array.from({ length: n }, () => [...points[0]] as XYZ);
   const cumulative = [0];
   for (let i = 1; i < points.length; i++) {
     const [a, b] = [points[i - 1], points[i]];
@@ -238,12 +263,12 @@ function resample(points: XYZ[], n: number): XYZ[] {
 }
 
 /** The area between a lane's boundaries as a triangle strip. */
-function laneMesh(lane: LaneView, material: THREE.Material): THREE.Mesh {
+function laneMesh(lane: Pick<LaneView, "left" | "right">, material: THREE.Material): THREE.Mesh {
   const n = Math.max(lane.left.length, lane.right.length, 2);
   const left = resample(lane.left, n);
   const right = resample(lane.right, n);
   const positions: number[] = [];
-  for (let i = 1; i < n; i++) {
+  for (let i = 1; i < Math.min(left.length, right.length); i++) {
     const [l0, l1, r0, r1] = [left[i - 1], left[i], right[i - 1], right[i]].map(local);
     positions.push(...l0, ...r0, ...l1, ...l1, ...r0, ...r1);
   }
@@ -257,6 +282,7 @@ function laneMesh(lane: LaneView, material: THREE.Material): THREE.Mesh {
 /** Chevrons pointing along a lane's centreline. */
 function arrowPairs(lane: LaneView, out: number[]): void {
   const c = lane.center;
+  if (c.length < 2) return;
   let length = 0;
   for (let i = 1; i < c.length; i++) length += Math.hypot(c[i][0] - c[i - 1][0], c[i][1] - c[i - 1][1]);
   const count = Math.max(1, Math.floor(length / ARROW_EVERY));
@@ -283,29 +309,53 @@ function draw(): void {
   const first = view.boundaries[0]?.points[0] ?? sketch[0];
   if (first) origin = [first[0], first[1], first[2]];
   group.position.set(origin[0] - shift[0], origin[1] - shift[1], origin[2] - shift[2]);
-  for (const lane of view.lanes) group.add(laneMesh(lane, lane.id === selected ? selectedFill : laneFill));
+  const focused = view.lanes.find((l) => l.id === selected);
+  if (display.surfaces) for (const lane of view.lanes) {
+    const material = lane.id === selected ? selectedFill : focused?.successors.includes(lane.id) ? successorFill :
+      focused?.predecessors.includes(lane.id) ? predecessorFill : lane.turn && lane.turn !== "straight" ? turnFill : laneFill;
+    group.add(laneMesh(lane, material));
+  }
   const byKind: Record<"solid" | "dashed" | "edge" | "virtual", number[]> = { solid: [], dashed: [], edge: [], virtual: [] };
-  for (const b of view.boundaries) {
+  if (display.markings) for (const b of view.boundaries) {
     const type = b.kind.type;
     if (type === "lane_marking" && b.kind.pattern === "dashed") dashedPairs(b.points, byKind.dashed);
     else if (type === "lane_marking") polylinePairs(b.points, byKind.solid);
     else if (type === "curb" || type === "road_edge") polylinePairs(b.points, byKind.edge);
-    else polylinePairs(b.points, byKind.virtual);
+    else if (display.virtual) polylinePairs(b.points, byKind.virtual);
   }
   for (const kind of ["solid", "dashed", "edge", "virtual"] as const) segments(byKind[kind], materials[kind]);
   const arrows: number[] = [];
-  for (const lane of view.lanes) arrowPairs(lane, arrows);
+  if (display.directions) for (const lane of view.lanes) arrowPairs(lane, arrows);
   segments(arrows, materials.arrow, 2);
+  if (focused && display.directions) {
+    for (const [ids, material] of [
+      [[focused.id], materials.selectedRoute], [focused.predecessors, materials.incomingRoute],
+      [focused.successors, materials.outgoingRoute],
+    ] as const) {
+      const route: number[] = [];
+      for (const lane of view.lanes) if (ids.includes(lane.id)) polylinePairs(lane.center, route);
+      segments(route, material, 2);
+    }
+  }
   const stops: number[] = [];
-  for (const s of view.stopLines) polylinePairs(s.points, stops);
+  if (display.regulations) for (const s of view.stopLines) polylinePairs(s.points, stops);
   segments(stops, materials.stop, 3);
   const walks: number[] = [];
-  for (const c of view.crosswalks) polylinePairs([...c.outline, c.outline[0]], walks);
+  const stripes: number[] = [];
+  if (display.regulations) for (const c of view.crosswalks) {
+    if (c.outline.length < 3) continue;
+    polylinePairs([...c.outline, c.outline[0]], walks);
+    for (const value of crosswalkTriangles(c.outline, origin)) stripes.push(value);
+  }
+  triangles(stripes, walkFill, 3);
   segments(walks, materials.crosswalk, 3);
   const signals: number[] = [];
-  for (const s of view.signals) {
+  const faces: number[] = [];
+  if (display.regulations) for (const s of view.signals) {
     polylinePairs(s.points, signals);
-    const h = s.height ?? 0.5;
+    faces.push(...signalTriangles(s.points, s.height, origin));
+    const h = s.height;
+    if (h === null || !Number.isFinite(h) || h <= 0) continue;
     polylinePairs(
       s.points.map(([x, y, z]) => [x, y, z + h] as XYZ),
       signals,
@@ -314,6 +364,7 @@ function draw(): void {
       if (p) polylinePairs([p, [p[0], p[1], p[2] + h]], signals);
     }
   }
+  triangles(faces, signalFill, 3);
   segments(signals, materials.signal, 3);
   if (signalPreview) {
     const [a, b] = signalPreview.geometry;
@@ -327,6 +378,7 @@ function draw(): void {
     const other: number[] = [];
     junctionPreview.candidates.forEach((candidate, index) => {
       if (junctionSelection.has(index)) {
+        group.add(laneMesh(candidate, proposalFill));
         polylinePairs(candidate.left, chosen);
         polylinePairs(candidate.right, chosen);
         dashedPairs(candidate.center, chosen);
@@ -355,8 +407,85 @@ function draw(): void {
       segments(pairs, materials.sketch, 4);
     }
   }
+  buildMapLabels();
+  legend.hidden = view.lanes.length === 0;
+  $("vm-route-legend").hidden = !focused || !display.surfaces;
   viewer.requestRender();
 }
+
+function triangles(positions: number[], material: THREE.Material, order: number): void {
+  if (!positions.length) return;
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.renderOrder = order;
+  group.add(mesh);
+}
+
+function buildMapLabels(): void {
+  labelLayer.replaceChildren();
+  mapLabels.length = 0;
+  if (!display.labels) return;
+  const add = (text: string, point: XYZ, kind: string, priority = 1) => {
+    const element = document.createElement("span");
+    element.className = `vm-map-label ${kind}`;
+    element.textContent = text;
+    element.hidden = true;
+    labelLayer.append(element);
+    mapLabels.push({ element, point, priority });
+  };
+  const lane = view.lanes.find((l) => l.id === selected);
+  if (lane?.center.length) {
+    const center = resample(lane.center, 3)[1];
+    add(`Lane ${lane.id}${lane.turn ? ` · ${lane.turn}` : ""}${lane.speedLimit === null ? "" : ` · ${lane.speedLimit} km/h`}`, center, "selected", 0);
+  }
+  if (!display.regulations) return;
+  for (const signal of view.signals) {
+    if (!signal.points.length) continue;
+    const mid = resample(signal.points, 3)[1];
+    add(`Signal ${signal.id}`, [mid[0], mid[1], mid[2] + (signal.height ?? 0)], "signal");
+  }
+  for (const walk of view.crosswalks) {
+    if (!walk.outline.length) continue;
+    const center = walk.outline.reduce((a, p) => a.map((v, k) => v + p[k] / walk.outline.length) as XYZ, [0, 0, 0] as XYZ);
+    add(`Crosswalk ${walk.id}`, center, "crosswalk", 2);
+  }
+}
+
+viewer.afterRenderListeners.add(() => {
+  const shift = globalShift();
+  const viewport = $("viewport");
+  const occupied: { x: number; y: number; width: number; height: number }[] = [];
+  const sorted = mapLabels.map((label) => ({ ...label, at: viewer.project(new THREE.Vector3(
+    label.point[0] - shift[0], label.point[1] - shift[1], label.point[2] - shift[2],
+  )) })).sort((a, b) => a.priority - b.priority ||
+    (a.at ? Math.hypot(a.at.x - viewport.clientWidth / 2, a.at.y - viewport.clientHeight / 2) : Infinity) -
+    (b.at ? Math.hypot(b.at.x - viewport.clientWidth / 2, b.at.y - viewport.clientHeight / 2) : Infinity));
+  for (const { element, at } of sorted) {
+    element.hidden = true;
+    if (!at || occupied.length >= 16) continue;
+    // Measure before hiding to use actual text widths, not an assumed label size.
+    element.hidden = false;
+    const width = element.offsetWidth, height = element.offsetHeight;
+    const x = at.x - width / 2, y = at.y - height - 10;
+    if (x < 8 || y < 8 || x + width > viewport.clientWidth - 8 || y + height > viewport.clientHeight - 64 ||
+      occupied.some((b) => x < b.x + b.width + 6 && x + width + 6 > b.x && y < b.y + b.height + 6 && y + height + 6 > b.y)) {
+      element.hidden = true;
+      continue;
+    }
+    element.style.left = `${x}px`;
+    element.style.top = `${y}px`;
+    occupied.push({ x, y, width, height });
+  }
+});
+
+for (const key of Object.keys(display) as (keyof typeof display)[]) {
+  $<HTMLInputElement>(`vm-show-${key}`).onchange = (event) => {
+    display[key] = (event.target as HTMLInputElement).checked;
+    draw();
+  };
+}
+$<HTMLInputElement>("vm-context").oninput = (event) => viewer.setCloudBrightness(Number((event.target as HTMLInputElement).value) / 100);
 
 listChanged.add(() => draw());
 
@@ -676,6 +805,7 @@ function takeView(edited: Edited): void {
   undoButton.disabled = undoDepth === 0;
   exportButton.disabled = view.lanes.length === 0;
   $<HTMLButtonElement>("vm-fit").disabled = view.boundaries.length === 0;
+  $<HTMLButtonElement>("vm-plan").disabled = $<HTMLButtonElement>("vm-iso").disabled = view.boundaries.length === 0;
   renderLane();
   void renderIssues();
 }
@@ -1120,9 +1250,17 @@ function frameMap(): void {
   for (const b of view.boundaries) {
     for (const p of b.points) box.expandByPoint(new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] - shift[2]));
   }
+  for (const s of view.signals) for (const p of s.points) {
+    box.expandByPoint(new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] - shift[2] + (s.height ?? 0)));
+  }
+  for (const c of view.crosswalks) for (const p of c.outline) {
+    box.expandByPoint(new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] - shift[2]));
+  }
   viewer.frameBox(box);
 }
 $("vm-fit").onclick = frameMap;
+$("vm-plan").onclick = () => { viewer.view({ x: 0, y: 0, z: 1 }); frameMap(); };
+$("vm-iso").onclick = () => { viewer.view({ x: 0.65, y: -0.9, z: 1.2 }); frameMap(); };
 
 undoButton.onclick = async () => {
   if (busy) return;

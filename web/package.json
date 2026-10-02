@@ -9,6 +9,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
+    "test:map-geometry": "node --experimental-strip-types --test tests/vectormap-geometry.test.mjs",
     "media": "playwright test --config playwright.media.config.ts && node scripts/readme-gif.mjs"
   },
   "dependencies": {

@@ -97,6 +97,7 @@ export class Viewer {
   /** Wide-line materials whose pixel width needs the drawing size. */
   private readonly lineMaterials = new Set<LineMaterial>();
   private pointSize = 2;
+  private cloudBrightness = 1;
   /** Fixed: every point `pointSize` pixels. Adaptive: as large as the local point spacing, in world units. */
   private sizeMode: "fixed" | "adaptive" = "fixed";
   private pointBudget = 3_000_000;
@@ -122,6 +123,8 @@ export class Viewer {
   private toolDrag: { pointer: number; controlsEnabled: boolean } | null = null;
   /** Called after every rendered frame, e.g. to move HTML overlays. */
   onAfterRender: () => void = () => {};
+  /** Independent overlay listeners alongside the picking annotations. */
+  readonly afterRenderListeners = new Set<() => void>();
   private readonly annotations = new THREE.Group();
   private readonly profileGroup = new THREE.Group();
   /** Clipping box in render coordinates, or null when clipping is off. */
@@ -294,6 +297,7 @@ export class Viewer {
     }
     this.draw();
     this.onAfterRender();
+    for (const listener of this.afterRenderListeners) listener();
   };
 
   private draw(): void {
@@ -545,6 +549,16 @@ export class Viewer {
     return [cloud.material, ...cloud.sized.values()];
   }
 
+  /** Dim point-cloud context for map review without changing colors or visibility. */
+  setCloudBrightness(value: number): void {
+    if (!Number.isFinite(value)) return;
+    this.cloudBrightness = Math.min(1, Math.max(0, value));
+    for (const cloud of this.clouds.values()) for (const material of this.materials(cloud)) {
+      material.color.setScalar(this.cloudBrightness);
+    }
+    this.requestRender();
+  }
+
   /**
    * EDL shades depth steps between neighbouring pixels; adaptive points are
    * wide squares with a step at every edge, which it would turn dark.
@@ -600,6 +614,7 @@ export class Viewer {
     const material = this.shaped(
       roundable(
         new THREE.PointsMaterial({
+          color: new THREE.Color().setScalar(this.cloudBrightness),
           size: this.pointSize,
           sizeAttenuation: false,
           vertexColors: true,

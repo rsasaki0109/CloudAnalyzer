@@ -54,17 +54,23 @@ inputs are not included in this repository. The sample-map archive's software
 license is not inferred from the Autoware code repository's license. See
 [reproduction, provenance and limitations](../vector-map-media.md).
 
-`web/vector-map-equipment.gif` uses the same Autoware planning point cloud, with
-the TIER IV copyright/source notice above. No vector map is loaded. Three explicit
-operator paths and lane-width priors guide ground-supported road drafting; the
-app generates junction proposals and searches point geometry/brightness for
-equipment without feature boxes. A false paint proposal is discarded. Stop-line
-marking and signal housing geometry come from original returns; object types and
-lane assignments are human-reviewed drafts. Editing, exact Undo and Local
-Lanelet2 reload are captured through the production UI. Captions and crop/scale
-are added to screenshots; no invented lamps or reference geometry are rendered.
-Raw survey inputs are not redistributed. See
-[source-only reproduction](../vector-map-media.md#source-only-equipment-discovery).
+## Source-only hard-intersection capture
+
+`web/vector-map-hard-intersection.gif` is adapted from Hard Intersection Multimodal
+Samples, Dynamic Map Platform Co., Ltd. (2026),
+[source and revision](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c),
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+CloudAnalyzer uses first-original points retained at 0.1 m voxels, with original
+coordinates, intensity and RGB and cleared semantic fields. No reference map or
+semantic labels are loaded. Three recorded arterial clips and three explicit
+operator traces guide road drafting; lane counts, widths, selected connections,
+equipment types and lane associations are operator inputs. Paint footprints and
+signal housing geometry come from original returns. The animation records the
+production app, with captions and crop/scale added to screenshots. Display-only
+height clipping and a final working-cloud crop remove roof clutter; map fitting
+uses the full retained cloud. No missing paint or lamps are invented. Raw inputs
+are not redistributed. No claim of original survey authorship or endorsement.
+See [reproduction and limitations](../vector-map-media.md#source-only-hard-intersection).
 
 ## Web App Pictures from NCLT
 

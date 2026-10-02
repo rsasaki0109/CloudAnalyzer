@@ -1,0 +1,47 @@
+{
+  "kind": "production-ui-workflow-verification",
+  "accuracy_test": false,
+  "limitations": [
+    "Development intersection, not independent generalization.",
+    "Paths, lane counts, widths, speeds, equipment types, lane associations and selected connections are operator inputs.",
+    "Geometric ground support does not certify legal turns or full-width clearance.",
+    "Partial measured paint remains partial; no reference shape completion."
+  ],
+  "dataset_revision": "e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+  "source_commit": "443e272485cedad47d9b088b5b213c0aa825fef1",
+  "native_sha256": "97a9f9cee0a58d7fc5c59e5efc8e2dbc6dbb35ff6edcf44e89a150864bb4e877",
+  "input_cloud_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+  "reference_inputs": [],
+  "operator_inputs": "../web/media/vector-map-hard-intersection-inputs.json",
+  "operator_inputs_sha256": "731a53d852dadff53190c6b2cfd76acce7f0ca6d003d312891d52409a24d45d0",
+  "verification": {
+    "inputMap": false,
+    "pointCount": 1883866,
+    "recordedDriveIndex": 1,
+    "clipDisplayZ": "26.04 \u7ab6\uff66 35.526",
+    "roadLanes": 49,
+    "proposals": 145,
+    "detected": 328,
+    "unsupported": 1,
+    "crosswalks": 7,
+    "stopMarkings": 2,
+    "signalHousings": 4,
+    "maximumNativeDifference": 7.275957614183426e-12,
+    "exactEditUndo": true,
+    "exactAllAdditionUndo": true,
+    "localOsmRoundtrip": true,
+    "errors": []
+  },
+  "native_generated_osm_sha256": "4765a1e0e33e874377ee48e564e37441c9f3e43e91f781e9b963992fb9e5979e",
+  "web_generated_osm_sha256": "729cad3265a40ac9dd7201657be9456d6ad188ffc4b3c81f0fc4407644be6cac",
+  "gif": {
+    "path": "images/web/vector-map-hard-intersection.gif",
+    "sha256": "83dfcf852c6e327416092da03a85702bf1fbcc8f7ad79aad8012881493aa808b",
+    "bytes": 1367611,
+    "width": 800,
+    "height": 528,
+    "frames": 13,
+    "duration_seconds": 24.24
+  },
+  "visual_review": "Generated GIF frames, final plan/3D views and rendered README inspected."
+}

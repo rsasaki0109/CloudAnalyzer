@@ -62,11 +62,11 @@ and confirm its controlled lanes. For COPC surveys,
 [read a full-density working box](docs/large-point-clouds.md#web-full-density-working-box) first.
 
 <p align="center">
-  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map-equipment.gif" alt="Real point clouds and operator paths generate road drafts without an input map; automatic equipment proposals are reviewed, a false paint pattern discarded, a measured stop marking and signal housing added, edited, undone and saved" width="800"></a><br>
-  <b>Points to roads. Find equipment. Review, edit, undo, export.</b><br>
-  No input vector map: real Autoware points supply road support and equipment geometry.<br>
-  Paths, lane widths, object types and lane assignments are operator inputs. False candidates are discarded.<br>
-  <a href="docs/vector-map-validation.md">Measured accuracy and limitations</a> ·
+  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map-hard-intersection.gif" alt="Original Tokyo points and recorded arterial poses with operator-traced branches generate a complex road draft, measured crossing and stop-marking candidates and signal housings; review, edit, Undo and reopen Lanelet2" width="800"></a><br>
+  <b>Build a complex intersection from points. Review, edit, undo, export.</b><br>
+  49 road lanes including connection drafts · 7 paint crossings · 2 stop-marking drafts · 4 signal housings.<br>
+  No input map: recorded arterial segments and traced branches; lane widths, object types and lane links are operator inputs.<br>
+  <a href="docs/vector-map-hard-intersection.md">Fixed source-only evaluation and limitations</a> ·
   <a href="docs/vector-map-media.md">Reproduce this GIF</a>
 </p>
 

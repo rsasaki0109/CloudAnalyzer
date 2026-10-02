@@ -50,6 +50,8 @@ pose graph with one scan per pose.
   add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
   [vectormap-rs](https://github.com/rsasaki0109/vectormap-rs), checks the map for Autoware, and saves
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
+  [Map display](docs/vector-map-display.md) shows road surfaces, direction arrows, clipped crosswalk
+  bands and signal faces; selecting a lane highlights its incoming and outgoing connections.
 
 ## 2. Clean it and see what changed
 

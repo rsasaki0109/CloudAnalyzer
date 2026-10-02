@@ -27,6 +27,7 @@ def build_vector_map(
     anchor_width_prior: bool = True,
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
+    verify_curb_profiles: bool = True,
     merge_repeated_passes: bool = True,
     existing_map: str | None = None,
     reference_map: str | None = None,
@@ -44,7 +45,9 @@ def build_vector_map(
     defines the local origin of the other projections. Omitted metadata uses Autoware Local.
     Candidate tracking rejects isolated peaks; local curve fitting moves XY by at most
     0.5 m and preserves ground heights. Evidence counts describe selected sources before
-    fitting, including explicit width priors. Both stages can be disabled independently.
+    fitting, including explicit width priors. Curb profile checks reject tall raised
+    surfaces and isolated low returns; this can leave more width assumptions and does
+    not guarantee better lane geometry. Stages can be disabled independently.
     Review boundaries, repeated passes, travel directions and junctions before using the map.
     """
     module = core()
@@ -108,6 +111,7 @@ def build_vector_map(
             "anchor_width_prior": anchor_width_prior,
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
+            "verify_curb_profiles": verify_curb_profiles,
             "merge_repeated_passes": merge_repeated_passes,
         },
         allow_nan=False,

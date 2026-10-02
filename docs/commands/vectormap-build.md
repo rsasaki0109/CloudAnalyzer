@@ -23,6 +23,18 @@ lane counts, directions, repeated passes and junctions before using it.
 Inferred lines are anchored to detected outer edges when available, while keeping their
 inferred label. This reduces dependence on the trajectory being exactly at the lane centre.
 `--no-anchor-width-prior` disables that adjustment; the MCP option is `anchor_width_prior`.
+Missing observations are excluded from the five-section offset median. An anchor can
+extend to two neighbouring sampled sections with decreasing strength; farther missing
+slices retain the trajectory-centred width prior. This does not bridge missing ground.
+
+Curb candidates must have nearby road-side support and two raised outside bins no taller
+than `curb_height + 0.3 m` above the candidate. This rejects wall/vehicle steps and isolated
+low returns, but can also reject genuine curbs in sparse or cluttered scans. The report's
+`rejected_curb_candidates` counts rejected cross-section height-step candidates, not
+selected vertices or known false detections. Disable with `--no-verify-curb-profiles`,
+Python/MCP `verify_curb_profiles=false`, or Web's **Check curb profiles** checkbox.
+Remaining candidates and inferred lines still need review; filtering does not guarantee
+better geometry. See the [fixed-input measurements](../vector-map-validation.md#curb-profile-checks-and-missing-observation-anchors).
 
 Boundary candidates are tracked across supported slices to reject isolated peaks. Missing
 evidence can become a labelled width prior. Short local quadratic curves then reduce jitter,

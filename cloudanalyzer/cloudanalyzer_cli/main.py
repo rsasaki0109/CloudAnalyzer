@@ -1861,6 +1861,7 @@ def vectormap_build_cmd(
     no_anchor_width_prior: bool = typer.Option(False, "--no-anchor-width-prior", help="Keep inferred lines relative to the trajectory instead of detected outer edges"),
     no_track_boundaries: bool = typer.Option(False, "--no-track-boundaries", help="Choose each boundary slice independently without continuity tracking"),
     no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without local curve fitting"),
+    no_verify_curb_profiles: bool = typer.Option(False, "--no-verify-curb-profiles", help="Keep unchecked height-step candidates, including tall objects and isolated returns"),
     no_merge_repeated_passes: bool = typer.Option(False, "--no-merge-repeated-passes", help="Add roads without reusing matching existing intervals"),
     existing_map: Optional[str] = typer.Option(None, "--existing-map", help="Keep this IR JSON or Lanelet2 map and add uncovered intervals"),
     reference_map: Optional[str] = typer.Option(None, "--reference-map", help="Lanelet2 map supplying coordinate metadata only"),
@@ -1878,6 +1879,7 @@ def vectormap_build_cmd(
             segment_length=segment_length, reference_map=reference_map, projection=projection,
             anchor_width_prior=not no_anchor_width_prior,
             track_boundaries=not no_track_boundaries, fit_boundaries=not no_fit_boundaries,
+            verify_curb_profiles=not no_verify_curb_profiles,
             merge_repeated_passes=not no_merge_repeated_passes, existing_map=existing_map,
             origin_lat=origin_lat, origin_lon=origin_lon,
         )

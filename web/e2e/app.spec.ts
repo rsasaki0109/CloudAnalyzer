@@ -2775,6 +2775,29 @@ test("vector map: selected feature dragging cancels, keeps Z and undoes exactly"
   await expect(page.locator("#vm-undo")).toBeDisabled();
 });
 
+test("vector map: junction boundary support rejects centre-only ground without editing", async ({ page }) => {
+  const ground: [number, number, number][] = [];
+  for (let x = -21; x <= 11; x += .2) for (const y of [-.2, 0, .2]) ground.push([50000+x, 50000+y, 2]);
+  await open(page, [{ name: "centre.ply", buffer: ply(ground) }]);
+  await expect(status(page)).toContainText("Loaded centre.ply");
+  const map = {format:"vectormap-ir",version:1,
+    lanes:[{id:5,kind:"driving",left:1,right:2},{id:6,kind:"driving",left:3,right:4}],
+    boundaries:[[-20,-10,1.75],[-20,-10,-1.75],[0,10,1.75],[0,10,-1.75]].map(([a,b,y],i)=>({id:i+1,kind:{type:"virtual"},geometry:[[50000+a,50000+y,2],[50000+b,50000+y,2]]}))};
+  await page.locator("#vm-file").setInputFiles({name:"roads.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(map))});
+  await expect(status(page)).toContainText("Opened roads.json: 2 lanes");
+  await page.locator("#vector-map-panel").getByText("Draft junction connections",{exact:true}).click();
+  await expect(page.locator("#vm-junction-boundaries")).not.toBeChecked();
+  await page.locator("#vm-junction-preview").click();
+  await expect(page.locator("#vm-junction-report")).toContainText("1 ground-supported candidates");
+  await page.locator("#vm-junction-boundaries").check();
+  await expect(page.locator("#vm-junction-apply")).toBeDisabled();
+  await page.locator("#vm-junction-support").fill("100");
+  await page.locator("#vm-junction-preview").click();
+  await expect(page.locator("#vm-junction-report")).toContainText("0 ground-supported candidates");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+});
+
 test("vector map: branching junction preview, selection, invalidation and batch undo", async ({ page }) => {
   const ground: [number, number, number][] = [];
   for (let x = -22; x <= 2; x += 0.2) for (let y = -22; y <= 22; y += 0.2) ground.push([50000 + x, 50000 + y, 2]);

@@ -80,6 +80,7 @@ interface JunctionCandidate {
   gap: number;
   turn_degrees: number;
   ground_support: number;
+  boundary_support?: [number, number];
   ambiguous: boolean;
   center: XYZ[];
   left: XYZ[];
@@ -561,6 +562,7 @@ const trajectoryInput = $<HTMLSelectElement>("vm-trajectory");
 const junctionCloud = $<HTMLSelectElement>("vm-junction-cloud");
 const junctionGap = $<HTMLInputElement>("vm-junction-gap");
 const junctionSupport = $<HTMLInputElement>("vm-junction-support");
+const junctionBoundaries = $<HTMLInputElement>("vm-junction-boundaries");
 const junctionPreviewButton = $<HTMLButtonElement>("vm-junction-preview");
 const junctionApplyButton = $<HTMLButtonElement>("vm-junction-apply");
 const junctionAll = $<HTMLButtonElement>("vm-junction-all");
@@ -573,7 +575,7 @@ function junctionInputs(): void {
   featureInputs();
   signalInputs();
   crosswalkInputs();
-  junctionCloud.disabled = junctionGap.disabled = junctionSupport.disabled = busy;
+  junctionCloud.disabled = junctionGap.disabled = junctionSupport.disabled = junctionBoundaries.disabled = busy;
   junctionPreviewButton.disabled = busy || !junctionCloud.value || !view.lanes.length;
   junctionApplyButton.disabled = busy || !junctionPreview || !junctionSelection.size;
   junctionAll.disabled = junctionNone.disabled = busy || !junctionPreview?.candidates.length;
@@ -597,7 +599,7 @@ function renderJunctionSelection(): void {
   junctionInputs();
   draw();
 }
-for (const input of [junctionCloud, junctionGap, junctionSupport]) input.onchange = () => {
+for (const input of [junctionCloud, junctionGap, junctionSupport, junctionBoundaries]) input.onchange = () => {
   clearJunctionPreview();
   draw();
 };
@@ -617,7 +619,7 @@ junctionPreviewButton.onclick = async () => {
   clearJunctionPreview();
   const snapshot = {
     id: Number(junctionCloud.value),
-    text: JSON.stringify({ max_gap: Number(junctionGap.value), min_ground_support: Number(junctionSupport.value) / 100 }),
+    text: JSON.stringify({ max_gap: Number(junctionGap.value), min_ground_support: Number(junctionSupport.value) / 100, check_boundary_support: junctionBoundaries.checked }),
   };
   const revision = junctionRevision;
   busy = true;
@@ -641,7 +643,8 @@ junctionPreviewButton.onclick = async () => {
         if (checkbox.checked) junctionSelection.add(index); else junctionSelection.delete(index);
         renderJunctionSelection();
       };
-      label.append(checkbox, ` ${candidate.from} → ${candidate.to}: ${fmt(candidate.gap)} m, ${Math.round(candidate.turn_degrees)}°, ground ${Math.round(candidate.ground_support * 100)}%${candidate.ambiguous ? "; shared branch" : ""}`);
+      const boundaries = candidate.boundary_support ? `, boundaries ${candidate.boundary_support.map(s => `${Math.round(s * 100)}%`).join(" / ")}` : "";
+      label.append(checkbox, ` ${candidate.from} → ${candidate.to}: ${fmt(candidate.gap)} m, ${Math.round(candidate.turn_degrees)}°, ground ${Math.round(candidate.ground_support * 100)}%${boundaries}${candidate.ambiguous ? "; shared branch" : ""}`);
       const focus = document.createElement("button");
       focus.textContent = "Show";
       focus.onclick = () => {

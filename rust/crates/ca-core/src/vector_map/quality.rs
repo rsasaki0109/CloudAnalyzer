@@ -92,6 +92,13 @@ fn curve_support(ground: &Ground<'_>, line: &Polyline3, count: usize) -> CurveSu
     }
 }
 
+/// Use the audit's endpoint-inclusive spacing for junction support as well.
+/// Reject over-budget curves rather than allocating unbounded samples.
+pub(super) fn checked_curve_support(ground: &Ground<'_>, line: &Polyline3) -> Option<CurveSupport> {
+    let count = sample_count(line)?;
+    (count <= MAX_SAMPLES).then(|| curve_support(ground, line, count))
+}
+
 /// Check every driving lane's centre and both boundaries in the chosen source
 /// frame. Sparse/occluded support is an uncertainty, not proof of a wrong road.
 /// No geometry, topology, attributes or Undo state are changed.

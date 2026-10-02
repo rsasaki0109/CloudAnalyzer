@@ -24,6 +24,8 @@ pub struct JunctionOptions {
     pub max_gap: f64,
     /// Minimum fraction of connector centre samples supported by ground (0.5..1).
     pub min_ground_support: f64,
+    /// Also require source support along both actual boundary curves and all ends.
+    pub check_boundary_support: bool,
 }
 
 impl Default for JunctionOptions {
@@ -31,6 +33,7 @@ impl Default for JunctionOptions {
         Self {
             max_gap: 30.0,
             min_ground_support: 0.9,
+            check_boundary_support: false,
         }
     }
 }
@@ -58,6 +61,9 @@ pub struct JunctionCandidate {
     pub gap: f64,
     pub turn_degrees: f64,
     pub ground_support: f64,
+    /// Left/right fractions checked with the source-audit protocol when enabled.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub boundary_support: Option<[f64; 2]>,
     pub samples: usize,
     /// Multiple supported choices share this incoming or outgoing road end.
     pub ambiguous: bool,
@@ -249,13 +255,30 @@ pub fn propose(
                 report.rejected_geometry += 1;
                 continue;
             };
-            let samples = center.resample(0.5);
-            let support = samples
-                .points
-                .iter()
-                .filter(|&&p| ground.supports(p))
-                .count() as f64
-                / samples.points.len().max(1) as f64;
+            let (support, samples, boundary_support) = if o.check_boundary_support {
+                let [Some(c), Some(l), Some(r)] = [&center, &left, &right]
+                    .map(|line| super::quality::checked_curve_support(&ground, line))
+                else {
+                    report.unsupported_candidates += 1;
+                    continue;
+                };
+                if [&c, &l, &r].iter().any(|s| {
+                    !s.start_supported || !s.end_supported || s.fraction < o.min_ground_support
+                }) {
+                    report.unsupported_candidates += 1;
+                    continue;
+                }
+                (c.fraction, c.samples, Some([l.fraction, r.fraction]))
+            } else {
+                let samples = center.resample(0.5);
+                let support = samples
+                    .points
+                    .iter()
+                    .filter(|&&p| ground.supports(p))
+                    .count() as f64
+                    / samples.points.len().max(1) as f64;
+                (support, samples.points.len(), None)
+            };
             if support < o.min_ground_support {
                 report.unsupported_candidates += 1;
                 continue;
@@ -266,7 +289,8 @@ pub fn propose(
                 gap,
                 turn_degrees: angle,
                 ground_support: support,
-                samples: samples.points.len(),
+                boundary_support,
+                samples,
                 ambiguous: false,
                 center: coordinates(&center),
                 left: coordinates(&left),
@@ -358,6 +382,94 @@ mod tests {
             }
         }
         (map, cloud, [a, b, c])
+    }
+
+    #[test]
+    fn supported_centre_does_not_certify_missing_boundaries_and_rejection_is_atomic() {
+        let mut map = Map::new();
+        let a = road(&mut map, [-20.0, 0.0, 2.0], [-10.0, 0.0, 2.0]);
+        let b = road(&mut map, [0.0, 0.0, 2.0], [10.0, 0.0, 2.0]);
+        let mut cloud = PointCloud::default();
+        for x in -105..=55 {
+            for y in -1..=1 {
+                cloud.positions.push([x as f64 * 0.2, y as f64 * 0.2, 2.0]);
+            }
+        }
+        let before = map.clone();
+        let legacy = propose(&map, &cloud, &Default::default()).unwrap();
+        assert_eq!(legacy.candidates.len(), 1);
+        assert_eq!(legacy.candidates[0].boundary_support, None);
+        let options = JunctionOptions {
+            check_boundary_support: true,
+            min_ground_support: 1.0,
+            ..Default::default()
+        };
+        let checked = propose(&map, &cloud, &options).unwrap();
+        assert!(checked.candidates.is_empty());
+        assert!(connect(&mut map, &cloud, &options, Some(&[[a.0, b.0]])).is_err());
+        assert_eq!(map, before);
+        for x in -105..=55 {
+            for y in -10..=10 {
+                cloud.positions.push([x as f64 * 0.2, y as f64 * 0.2, 2.0]);
+            }
+        }
+        let checked = propose(&map, &cloud, &options).unwrap();
+        assert_eq!(checked.candidates.len(), 1);
+        assert_eq!(checked.candidates[0].boundary_support, Some([1.0, 1.0]));
+        let added = connect(&mut map, &cloud, &options, Some(&[[a.0, b.0]])).unwrap();
+        let quality = super::super::quality::audit(&map, &cloud).unwrap();
+        let lane = quality
+            .lanes
+            .iter()
+            .find(|l| l.lane == added.added[0])
+            .unwrap();
+        assert_eq!(
+            [
+                lane.center.fraction,
+                lane.left.fraction,
+                lane.right.fraction
+            ],
+            [1.0; 3]
+        );
+    }
+
+    #[test]
+    fn boundary_interior_gap_is_rejected_even_when_all_endpoints_have_ground() {
+        let mut map = Map::new();
+        road(&mut map, [-20.0, 0.0, 2.0], [-10.0, 0.0, 2.0]);
+        road(&mut map, [0.0, 0.0, 2.0], [10.0, 0.0, 2.0]);
+        let mut cloud = PointCloud::default();
+        for x in -105..=55 {
+            for y in -15..=15 {
+                let (x, y) = (x as f64 * 0.2, y as f64 * 0.2);
+                if !((-8.0..=-2.0).contains(&x) && y > 0.9) {
+                    cloud.positions.push([x, y, 2.0]);
+                }
+            }
+        }
+        let legacy = propose(&map, &cloud, &Default::default()).unwrap();
+        assert_eq!(legacy.candidates.len(), 1);
+        let candidate = &legacy.candidates[0];
+        let ground = Ground::new(&cloud).unwrap();
+        assert!(
+            candidate
+                .left
+                .first()
+                .into_iter()
+                .chain(candidate.left.last())
+                .all(|p| ground.supports(Point3::new(p[0], p[1], p[2])))
+        );
+        let options = JunctionOptions {
+            check_boundary_support: true,
+            min_ground_support: 1.0,
+            ..Default::default()
+        };
+        assert!(
+            propose(&map, &cloud, &options)
+                .unwrap()
+                .candidates
+                .is_empty()
+        );
     }
 
     #[test]

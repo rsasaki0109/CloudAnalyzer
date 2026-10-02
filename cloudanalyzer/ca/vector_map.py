@@ -147,6 +147,7 @@ def connect_vector_map_junctions(
     *,
     max_gap: float = 30.0,
     min_ground_support: float = 0.9,
+    check_boundary_support: bool = False,
     lane_pairs: list[tuple[int, int]] | None = None,
     preview_only: bool = False,
 ) -> dict[str, Any]:
@@ -159,6 +160,9 @@ def connect_vector_map_junctions(
     preview_only keeps the map unchanged and returns candidate geometry in the report.
     lane_pairs selects (from,to) pairs; omit to add all proposals, or [] for a no-op.
     Use the original input map and a new output directory after reviewing a preview.
+    check_boundary_support also checks both actual boundary curves and all endpoints
+    with the source-audit protocol. Use min_ground_support=1.0 to defer every unsupported
+    sampled interval. Full support is not certification of legal turns or road semantics.
     """
     module = core()
     if module is None or not hasattr(module, "connect_vector_map_junctions"):
@@ -172,9 +176,10 @@ def connect_vector_map_junctions(
         raise FileExistsError(
             f"output directory already exists: {out}; choose a new directory"
         )
-    options = json.dumps(
-        {"max_gap": max_gap, "min_ground_support": min_ground_support}, allow_nan=False
-    )
+    parameters = {"max_gap": max_gap, "min_ground_support": min_ground_support}
+    if check_boundary_support:
+        parameters["check_boundary_support"] = True
+    options = json.dumps(parameters, allow_nan=False)
     pairs = json.dumps(lane_pairs, allow_nan=False) if lane_pairs is not None else None
     payload = json.loads(
         module.connect_vector_map_junctions(

@@ -182,20 +182,22 @@ with the original baseline. No raw-cloud copies or additional downloads were mad
 | Elevated panel / signal housing | 5 / 19 | 5 / 19 | 227 / 227 | 222 / 222 |
 
 This reduces mapped crossing misses from six to three, with IDs `11670`, `12630`
-and `12662` still missed. The three new center correspondences (`12664`, `12637`,
-`12599`) have center distances 0.254–0.572 m, symmetric mean outline errors
-0.871–1.210 m and outline samples within 0.25 m of crossing-labelled points for
-100% of their sampled outlines. That annotation proximity is spatial agreement,
-not an independent test of correct object classification.
+and `12662` still missed. The three newly matched footprints are `12664`, `12637`
+and `12772`; their symmetric mean outline errors range from 0.912 to 2.513 m.
+Their outline annotation proximity ranges from 81.77% to 100%. Spatial proximity
+is not an independent test of correct object classification.
 
-There are also **six more unmatched crossing proposals**, and the previously
-matched crossing `12772` has **worse** outline agreement: symmetric mean error
-2.106 → 2.513 m and Hausdorff error 6.254 → 8.267 m. Its updated outline annotation
-proximity is 81.77%. Observed paint extents and the mapped pedestrian footprint
-differ, and the detector still outputs rectangular, sometimes partial extents.
-This change improves candidate correspondence; it does not establish better
-complete footprints or lower false-positive rates. As before, unmatched proposals
-cannot all be treated as false positives under incomplete map-derived annotations.
+There are also **six more unmatched crossing proposals**. The original baseline's
+one matched footprint is `12599`, whose legacy-sampler mean outline error improves
+from 2.106 to 0.871 m, with Hausdorff error 6.254 → 2.665 m. Newly matched `12772`
+still has a partial outline, with mean error 2.513 m and Hausdorff error 8.267 m.
+An earlier description incorrectly compared errors from these two different
+footprints; the machine-readable baseline and development reports retain the
+correct identities and are unchanged. Observed paint extents and the mapped
+pedestrian footprint differ, and this stage still outputs rectangular, sometimes
+partial extents. Better candidate correspondence does not establish complete
+footprints or lower false-positive rates. Unmatched proposals cannot all be
+treated as false positives under incomplete map-derived annotations.
 
 Native generation took 21.7 s versus 23.3 s for the original recorded run on the
 same PC. These are individual timings, not a repeated performance benchmark.
@@ -217,4 +219,86 @@ records which native source was used; the installed binary hash is also recorded
 python scripts/hard_intersection_generate.py notes/hard-intersection-prepared notes/hard-intersection-local-generated --source-commit 81a4353cfa4dff9d707328de95464d0e56ed6f56
 python scripts/hard_intersection_evaluate.py demo_data/hard-intersection notes/hard-intersection-local-generated notes/hard-intersection-local-evaluation --development
 python scripts/hard_intersection_plot.py demo_data/hard-intersection notes/hard-intersection-prepared notes/hard-intersection-local-generated notes/hard-intersection-local-evaluation notes/hard-intersection-local-audit.png --development
+```
+
+## Observed paint envelopes and clipped-window refinement
+
+Source commit `b778d15e8eb96876733d0d6fc0638c07755fb66b` measures individual paint
+bands from source ground cells with predominantly bright returns. Sparse bright
+asphalt returns no longer connect all bands into one large seed. Source-supported
+bands can form a chain only with overlapping transverse support and observed,
+contrasting ground returns in every intervening gap. The photometric option and
+fixed prepared clouds, tile ownership, recorded drives and matching gates remain
+unchanged. Reference-map geometry and semantic labels remain outside generation.
+
+Opposing polylines follow observed band ends, simplified with a 0.2 m XY tolerance;
+this is a construction tolerance, not an accuracy guarantee. The actual measured
+band rectangles are retained separately. Nearby windows can contain overlapping
+slices of the same bands; shared-band evidence suppresses those fragments. Paint
+clipped by a source window is remeasured in a larger source box, rather than joined
+by guessing a rectangle. Search budgets remain explicit: 64 band/profile seeds,
+32 refinement windows, 200,000 points per measurement and 64 previews per family.
+
+![Source-only paint envelope development audit](images/vector-map-hard-intersection-envelope.png)
+
+The rebuilt native result uses binary SHA256
+`ef4dbbbd58e65035e1265b7f7404ba4f9123223aa6cf7589aa79c7b47c8e822b` and frozen
+generation SHA256 `28fb56e5e7a9a2231372534d40f710865577c86fca48be4ce628c2a344c119d7`.
+Its proposals are identical to the separate Rust development executable run.
+All four road JSONs remain equal to the original baseline. No source-cloud copies
+or new downloads were required.
+
+| Proposal family | Previous nearby / total | Envelope nearby / total | Previous / envelope owned | Previous / envelope unmatched |
+|---|---:|---:|---:|---:|
+| Repeated paint / crossing footprint | 4 / 7 | 7 / 7 | 18 / 16 | 14 / 9 |
+| Bright bar / stop line | 4 / 8 | 4 / 8 | 91 / 75 | 87 / 71 |
+| Elevated panel / signal housing | 5 / 19 | 5 / 19 | 227 / 227 | 222 / 222 |
+
+These are 2 m center correspondences, not semantic accuracy or complete footprint
+coverage. The three previously missed crossing footprints now have nearby
+proposals. Nine unmatched paint proposals remain, and the other equipment still
+has many unmatched candidates and missed references. Incomplete map-derived
+annotations do not establish that every unmatched candidate is a false positive.
+This remains a development intersection, with no independent generalization test.
+
+The earlier outline sampler omitted the closing edge of generated paint rings.
+The new `--closed-paint-outlines` option samples every edge. To compare fairly,
+all three frozen prediction snapshots were rescored using that option and the
+same gates: [original snapshot](../benchmarks/vector-map/hard-intersection/original-closed-development.json),
+[previous local-paint snapshot](../benchmarks/vector-map/hard-intersection/local-paint-closed-development.json)
+and [new envelope result](../benchmarks/vector-map/hard-intersection/paint-envelope-development.json).
+The original legacy report and figure files remain unchanged; the option is
+recorded as `outline_sampling=closed_paint_rings` in the new audits.
+
+| Footprint | Previous / envelope mean error (m) | Previous / envelope Hausdorff (m) |
+|---|---:|---:|
+| `12664` | 0.912 / 0.930 | 2.146 / 2.139 |
+| `12637` | 1.138 / 0.646 | 2.252 / 1.406 |
+| `12772` | 2.563 / 1.580 | 8.267 / 6.045 |
+| `12599` | 0.888 / 0.688 | 2.172 / 1.875 |
+
+Improvement is not uniform: `12664` has a slightly larger mean error, and `12772`
+remains partial despite retaining 15 observed bands instead of 10. The three new
+correspondences have mean errors 0.570–1.216 m and Hausdorff errors 1.425–3.559 m.
+Mapped pedestrian footprints and observed paint extents differ; review extents,
+classification, lane association and traffic rules over the source data.
+
+Native generation took 42.4 s versus 21.7 s for the previous recorded run. These
+single timings are not a repeated benchmark. The added measurement/refinement
+work trades time for coverage. There were 18 refinement windows, no unsupported
+or budget-limited refinements, four preview-limited tiles, eight unsupported
+initial windows and the same sparse unsupported tile. No source seed cap was hit.
+Core regressions include bright asphalt noise, curved/tapered envelopes, rejection
+of missing-gap returns and a 24-band crossing consolidated from clipped windows.
+The WASM session regression checks nonrectangular confirmation, Lanelet2 reload,
+geometry editing and exact Undo; Lanelet2 may normalize edge travel direction.
+
+Build/install the native core from the commit above and reuse the prepared raw
+input. Use new output directories and apply the closed-outline option to any
+comparison snapshot too:
+
+```powershell
+python scripts/hard_intersection_generate.py notes/hard-intersection-prepared-v2 notes/hard-intersection-envelope-generated --source-commit b778d15e8eb96876733d0d6fc0638c07755fb66b
+python scripts/hard_intersection_evaluate.py demo_data/hard-intersection notes/hard-intersection-envelope-generated notes/hard-intersection-envelope-evaluation --development --closed-paint-outlines
+python scripts/hard_intersection_plot.py demo_data/hard-intersection notes/hard-intersection-prepared-v2 notes/hard-intersection-envelope-generated notes/hard-intersection-envelope-evaluation notes/hard-intersection-envelope-audit.png --development
 ```

@@ -92,7 +92,8 @@ python3 ../scripts/build_readme_pointcloud_figure.py
 
 ## Hard Intersection vector-map audit
 
-`vector-map-hard-intersection.png` and `vector-map-hard-intersection-local-paint.png`
+`vector-map-hard-intersection.png`, `vector-map-hard-intersection-local-paint.png`
+and `vector-map-hard-intersection-envelope.png`
 plot actual source geometry, generated proposals
 and a separately evaluated reference map. Data: Hard Intersection Multimodal Samples,
 Dynamic Map Platform Co., Ltd. (2026),

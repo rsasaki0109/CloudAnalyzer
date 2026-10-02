@@ -43,7 +43,7 @@ def build_vector_map(
     Reference maps supply coordinate metadata only, never geometry. Explicit
     projections are mgrs, utm or transverse_mercator; an origin selects the MGRS tile or
     defines the local origin of the other projections. Omitted metadata uses Autoware Local.
-    Candidate tracking rejects isolated peaks; local curve fitting moves XY by at most
+    Candidate tracking rejects isolated peaks; trajectory-relative curve fitting moves XY by at most
     0.5 m and preserves ground heights. Evidence counts describe selected sources before
     fitting, including explicit width priors. Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does

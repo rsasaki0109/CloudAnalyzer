@@ -1860,7 +1860,7 @@ def vectormap_build_cmd(
     segment_length: float = typer.Option(50.0, "--segment-length", help="Lane piece length in metres; 0 keeps whole roads"),
     no_anchor_width_prior: bool = typer.Option(False, "--no-anchor-width-prior", help="Keep inferred lines relative to the trajectory instead of detected outer edges"),
     no_track_boundaries: bool = typer.Option(False, "--no-track-boundaries", help="Choose each boundary slice independently without continuity tracking"),
-    no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without local curve fitting"),
+    no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without trajectory-relative curve fitting"),
     no_verify_curb_profiles: bool = typer.Option(False, "--no-verify-curb-profiles", help="Keep unchecked height-step candidates, including tall objects and isolated returns"),
     no_merge_repeated_passes: bool = typer.Option(False, "--no-merge-repeated-passes", help="Add roads without reusing matching existing intervals"),
     existing_map: Optional[str] = typer.Option(None, "--existing-map", help="Keep this IR JSON or Lanelet2 map and add uncovered intervals"),

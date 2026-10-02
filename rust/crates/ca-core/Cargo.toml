@@ -24,7 +24,7 @@ lz4_flex = "0.14"
 ruzstd = "0.9"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "b59b6424603c78ff4826e0bc8659cf1c86ecef32" }
+vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "70893d75ff579e51e10a93bab0f82fa81f2aca8b" }
 
 [features]
 # Multi-threaded variants of the heavy queries (native builds only; WASM

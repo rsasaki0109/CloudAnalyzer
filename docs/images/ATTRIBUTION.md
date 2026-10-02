@@ -36,6 +36,24 @@ and Hesai provided the source data. Preparation uses
 recording uses `VECTOR_MAP_DEMO_DIR=<dir> npm run media:vectormap` in `web/`.
 See [reproduction and accuracy limits](../vector-map-media.md).
 
+## Vector map intersection capture
+
+`web/vector-map-intersection.gif` shows the production app using the public
+Autoware `sample-map-planning` survey. **Sample map: Copyright 2020 TIER IV, Inc.**
+The source and copyright notice are documented in the official
+[planning simulation instructions](https://docs.autoware.org/main/demos/planning-sim/).
+The [official demo-artifact configuration](https://github.com/autowarefoundation/autoware/blob/main/ansible/roles/demo_artifacts/tasks/main.yaml)
+provides the download URL and SHA256 for the planning map archive.
+
+The animation is a cropped/scaled screenshot sequence of CloudAnalyzer, with
+explanatory captions and a cursor ring. Surveyed road approaches, crosswalks,
+stop lines and signal geometries are imported context. The app generates and
+adds twelve point-supported connection drafts, highlights topology, edits a
+shared boundary, undoes the edit and exports the map. Raw point clouds and map
+inputs are not included in this repository. The sample-map archive's software
+license is not inferred from the Autoware code repository's license. See
+[reproduction, provenance and limitations](../vector-map-media.md).
+
 ## Web App Pictures from NCLT
 
 `web/loop.gif`, `web/posegraph.jpg` and the pose graph part of `web/demo.gif` show the web app on session

@@ -58,11 +58,20 @@ and confirm its controlled lanes. For COPC surveys,
 [read a full-density working box](docs/large-point-clouds.md#web-full-density-working-box) first.
 
 <p align="center">
-  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map.gif" alt="Real PandaSet LiDAR and recorded poses become a continuous lane draft; a shared boundary vertex is dragged, undone and the generated map is saved for Autoware" width="800"></a><br>
-  <b>Draft, review, edit, undo, export.</b> Real PandaSet scene 019 data; inferred boundaries need manual review.<br>
+  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map-intersection.gif" alt="A real surveyed intersection: point-supported connection proposals are added, incoming and outgoing lanes highlighted, a shared boundary edited and undone, and the map saved for Autoware" width="800"></a><br>
+  <b>Connect an intersection. Trace a turn. Edit, undo, export.</b><br>
+  Twelve new connection drafts over real Autoware survey points. Approaches, crossings and signal geometries are imported surveyed context.<br>
   <a href="docs/vector-map-validation.md">Measured accuracy and limitations</a> ·
   <a href="docs/vector-map-media.md">Reproduce this GIF</a>
 </p>
+
+<details>
+  <summary>Road boundaries drafted directly from real LiDAR and recorded poses</summary>
+  <p align="center">
+    <img src="docs/images/web/vector-map.gif" alt="Real PandaSet LiDAR and recorded poses become a continuous lane draft; a shared boundary is edited, undone and saved" width="800"><br>
+    PandaSet scene 019: generated boundaries remain drafts requiring manual review.
+  </p>
+</details>
 
 ## 2. Clean it and see what changed
 

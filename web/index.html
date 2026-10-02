@@ -888,6 +888,24 @@
             </div>
             <p id="vm-crosswalk-report" class="small"></p>
           </details>
+          <details class="options" id="vm-feature-editor">
+            <summary>Edit crossing or signal geometry</summary>
+            <label>Feature <select id="vm-feature"><option value="">Choose a crossing or signal</option></select></label>
+            <p id="vm-feature-source" class="hint small"></p>
+            <div class="button-row">
+              <button id="vm-feature-focus" disabled>Focus feature</button>
+              <button id="vm-feature-drag" disabled aria-pressed="false">Drag feature vertices</button>
+            </div>
+            <label>Vertex <select id="vm-feature-vertex"></select></label>
+            <div class="param-grid">
+              <label>X (m) <input id="vm-feature-x" type="number" step="any" /></label>
+              <label>Y (m) <input id="vm-feature-y" type="number" step="any" /></label>
+              <label>Z (m) <input id="vm-feature-z" type="number" step="any" /></label>
+            </div>
+            <label id="vm-feature-height-row" hidden>Housing height (m) <input id="vm-feature-height" type="number" min="0" max="20" step="any" /></label>
+            <button id="vm-feature-apply" disabled>Apply geometry edit</button>
+            <p class="hint small">Coordinates use the original map frame. Drag keeps Z; numeric edits can change it. Observed paint, stored lamps and lane assignments stay at their original values. Review them after editing. Undo restores the complete previous map.</p>
+          </details>
         <div id="vm-lane" hidden>
           <h3 id="vm-lane-title"></h3>
           <p id="vm-lane-info" class="small"></p>

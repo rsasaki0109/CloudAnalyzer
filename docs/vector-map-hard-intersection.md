@@ -5,6 +5,10 @@ point cloud and four recorded drives. It then opens the annotated LAS and Lanele
 map in a separate evaluation command. This establishes a repeatable failure audit;
 it does not train a model or establish automatic semantic mapping accuracy.
 
+The original baseline below is preserved. See the
+[local paint development comparison](#local-paint-development-comparison)
+for the subsequent detector change and its remaining failures.
+
 ![Actual source geometry, proposals and held-out mapped objects](images/vector-map-hard-intersection.png)
 
 Solid colored outlines are generated proposals. Dark dashed outlines are held-out
@@ -144,3 +148,73 @@ bright-bar and panel proposals, preview truncation and width-prior boundaries,
 then rerun the same baseline protocol. This one intersection is useful for
 development; adjacent patches or frames are not independent held-out scenes.
 Learning or generalization claims require additional independently annotated scenes.
+
+## Local paint development comparison
+
+Source commit `81a4353cfa4dff9d707328de95464d0e56ed6f56` adds connected bright-ground
+components as orientation and transverse-profile seeds. It preserves full-window
+angle hypotheses and the requirements for continuous bright bands and observed
+contrasting dark gaps. A source-only seed does not assign a semantic object type.
+Local profiles prevent distant road paint and background from diluting a smaller
+pattern. The brightness upper-tail reference changes from P95 to P99.5 so sparse
+paint is not discarded simply because it occupies less than 5% of a window.
+
+The measured crossing span can reach 35 m rather than the previous 8 m limit.
+Near-exact 10 cm profile bin boundaries are stabilized for floating-point origin
+subtraction; this does not interpolate or bridge unobserved bins. Ranking includes
+measured stripe length to favor full supported stripes over clipped local slices.
+Localized profiles are capped at 64 source-supported seeds per window; manual
+measurement and scene discovery both report omitted seeds when the cap is reached.
+Neither generation options nor the fixed evaluation gates were changed.
+
+![Source-only local paint development result](images/vector-map-hard-intersection-local-paint.png)
+
+The new [machine-readable development audit](../benchmarks/vector-map/hard-intersection/local-paint-development.json)
+contains the rebuilt native binary hash, frozen generation hash and all misses and
+shape/proximity errors. The same prepared geometry, ownership tiles and four
+recorded drives were reused. All four generated road JSONs are unchanged compared
+with the original baseline. No raw-cloud copies or additional downloads were made.
+
+| Proposal family | Original nearby / total | Updated nearby / total | Original / updated owned proposals | Original / updated unmatched |
+|---|---:|---:|---:|---:|
+| Repeated paint / crossing footprint | 1 / 7 | 4 / 7 | 9 / 18 | 8 / 14 |
+| Bright bar / stop line | 4 / 8 | 4 / 8 | 126 / 91 | 122 / 87 |
+| Elevated panel / signal housing | 5 / 19 | 5 / 19 | 227 / 227 | 222 / 222 |
+
+This reduces mapped crossing misses from six to three, with IDs `11670`, `12630`
+and `12662` still missed. The three new center correspondences (`12664`, `12637`,
+`12599`) have center distances 0.254–0.572 m, symmetric mean outline errors
+0.871–1.210 m and outline samples within 0.25 m of crossing-labelled points for
+100% of their sampled outlines. That annotation proximity is spatial agreement,
+not an independent test of correct object classification.
+
+There are also **six more unmatched crossing proposals**, and the previously
+matched crossing `12772` has **worse** outline agreement: symmetric mean error
+2.106 → 2.513 m and Hausdorff error 6.254 → 8.267 m. Its updated outline annotation
+proximity is 81.77%. Observed paint extents and the mapped pedestrian footprint
+differ, and the detector still outputs rectangular, sometimes partial extents.
+This change improves candidate correspondence; it does not establish better
+complete footprints or lower false-positive rates. As before, unmatched proposals
+cannot all be treated as false positives under incomplete map-derived annotations.
+
+Native generation took 21.7 s versus 23.3 s for the original recorded run on the
+same PC. These are individual timings, not a repeated performance benchmark.
+The sparse unsupported tile, four preview-limited tiles and eight unsupported
+windows remain. No localized-profile seed limit was reached in this scene.
+
+This intersection was inspected to develop the detector and is now a
+**development scene**, not an independent held-out generalization test. The map
+and UserData still remain outside generation. The original baseline files and
+figure remain unchanged for comparisons. Synthetic regressions separately cover
+a 16-band long crossing, four short bands in a broad window, rejection after dark
+gap returns are removed, and the source-profile budget.
+
+To reproduce, build/install the native core from the source commit above and reuse
+the prepared input from the earlier recipe. The explicit source-commit argument
+records which native source was used; the installed binary hash is also recorded.
+
+```powershell
+python scripts/hard_intersection_generate.py notes/hard-intersection-prepared notes/hard-intersection-local-generated --source-commit 81a4353cfa4dff9d707328de95464d0e56ed6f56
+python scripts/hard_intersection_evaluate.py demo_data/hard-intersection notes/hard-intersection-local-generated notes/hard-intersection-local-evaluation --development
+python scripts/hard_intersection_plot.py demo_data/hard-intersection notes/hard-intersection-prepared notes/hard-intersection-local-generated notes/hard-intersection-local-evaluation notes/hard-intersection-local-audit.png --development
+```

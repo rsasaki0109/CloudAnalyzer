@@ -1,4 +1,4 @@
-"""Post-generation, held-out reference audit of one annotated intersection.
+"""Post-generation reference audit of an untuned baseline or development scene.
 
 Unmatched proposals are NOT proven false positives: annotations derive from an
 incomplete HDMap. Counts are proposal coverage, not semantic detector accuracy.
@@ -151,7 +151,7 @@ def symmetric_error(prediction, reference):
             "hausdorff_m": float(max(a.max(), b.max()))}
 
 
-def evaluate(dataset: Path, generated: Path, out: Path):
+def evaluate(dataset: Path, generated: Path, out: Path, development: bool = False):
     genfile = generated / "generation.json"
     expected = (generated / "generation.sha256").read_text(encoding="utf-8").strip()
     if hashlib.sha256(genfile.read_bytes()).hexdigest() != expected:
@@ -167,11 +167,13 @@ def evaluate(dataset: Path, generated: Path, out: Path):
     report = {"source": json.loads((dataset / "manifest.json").read_text(encoding="utf-8")),
               "baseline_commit": gen["baseline_commit"], "generation_sha256": expected, "coordinate_audit": audit,
               "runtime": gen["runtime"],
+              "evaluation_role": "development_scene" if development else "untuned_baseline",
               "raw_points": raw_count, "annotated_points": sum(counts.values()), "index_join": False,
               "user_data_counts": counts, "instance_gate_m": 2., "surface_z_gate_m": .75,
               "limitations": ["one intersection, no independent generalization estimate", "annotations derived from HDMap and incomplete",
                               "unmatched proposals are not proven negatives", "geometry proposals, no automatic semantic classification",
-                              "no training, tuning, ground-truth registration or reference geometry supplied to generation",
+                              "no training, ground-truth registration or reference geometry supplied to generation",
+                              "detector developed using this scene; not independent held-out generalization" if development else "untuned original baseline",
                               "10cm original-point decimation; fixed tile halos can still cause proposal differences",
                               "crosswalk outline is observed paint extent, reference is mapped crossing footprint"],
               "instances": {}, "road_drafts": []}
@@ -237,5 +239,6 @@ if __name__ == "__main__":
     parser.add_argument("dataset", type=Path)
     parser.add_argument("generated", type=Path)
     parser.add_argument("output", type=Path, help="NEW directory")
+    parser.add_argument("--development", action="store_true", help="Mark a scene used to develop the detector, not an independent held-out test")
     args = parser.parse_args()
-    evaluate(args.dataset, args.generated, args.output)
+    evaluate(args.dataset, args.generated, args.output, args.development)

@@ -28,12 +28,12 @@ def save(path, value):
     path.write_text(json.dumps(value, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
 
-def generate(prepared: Path, out: Path):
+def generate(prepared: Path, out: Path, source_commit: str = BASELINE):
     import cloudanalyzer_core as core
     out.mkdir(exist_ok=False)
     prep = json.loads((prepared / "preparation.json").read_text(encoding="utf-8"))
     binaries = list(Path(core.__file__).parent.glob("*.pyd")) + list(Path(core.__file__).parent.glob("*.so"))
-    report = {"baseline_commit": BASELINE, "options": OPTIONS, "reference_inputs": [],
+    report = {"baseline_commit": source_commit, "options": OPTIONS, "reference_inputs": [],
               "semantic_classification": "none; geometry proposals require review",
               "preparation": prep, "tiles": [], "candidates": [], "drives": []}
     report["runtime"] = {"python": platform.python_version(), "numpy": np.__version__,
@@ -79,5 +79,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("prepared", type=Path)
     parser.add_argument("output", type=Path, help="NEW directory")
+    parser.add_argument("--source-commit", default=BASELINE, help="Source commit used to build the installed native binary (original baseline by default)")
     args = parser.parse_args()
-    generate(args.prepared, args.output)
+    generate(args.prepared, args.output, args.source_commit)

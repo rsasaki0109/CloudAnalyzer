@@ -50,6 +50,8 @@ pub struct CrosswalkReport {
     pub ground_points: usize,
     pub plane_rms: f64,
     pub brightness_source: &'static str,
+    pub local_profile_seeds: usize,
+    pub local_profiles_limited: bool,
     pub added: Option<CrosswalkId>,
     pub reused: Option<CrosswalkId>,
     pub classification_source: &'static str,
@@ -96,6 +98,90 @@ fn plane(points: &[[f64; 3]]) -> Option<[f64; 3]> {
         }
     }
     Some([a[0][3], a[1][3], a[2][3]])
+}
+
+/// Source-only orientation/localization seeds from connected bright ground
+/// cells. A seed is not a crossing: the profile still needs >=3 continuous
+/// bands and contrasting observed gaps. Keeping full-window hypotheses makes
+/// connected or damaged paint usable even when no individual band is a seed.
+fn local_profiles(ground: &[([f64; 3], usize)], bright: &[bool]) -> (Vec<(f64, [f64; 2])>, bool) {
+    let mut cells: BTreeMap<(i64, i64), Vec<usize>> = BTreeMap::new();
+    for (i, ((p, _), white)) in ground.iter().zip(bright).enumerate() {
+        if *white {
+            cells
+                .entry(((p[0] / 0.25).floor() as i64, (p[1] / 0.25).floor() as i64))
+                .or_default()
+                .push(i);
+        }
+    }
+    let mut profiles = BTreeMap::<(i64, i64, i64), usize>::new();
+    while let Some((&first, _)) = cells.first_key_value() {
+        let mut stack = vec![first];
+        let mut component = Vec::new();
+        while let Some(cell) = stack.pop() {
+            let Some(indices) = cells.remove(&cell) else {
+                continue;
+            };
+            component.extend(indices);
+            for x in -1..=1 {
+                for y in -1..=1 {
+                    if x != 0 || y != 0 {
+                        stack.push((cell.0 + x, cell.1 + y));
+                    }
+                }
+            }
+        }
+        if component.len() < 12 {
+            continue;
+        }
+        let mean = [0, 1].map(|j| {
+            component.iter().map(|&i| ground[i].0[j]).sum::<f64>() / component.len() as f64
+        });
+        let (mut xx, mut xy, mut yy) = (0., 0., 0.);
+        for &i in &component {
+            let p = ground[i].0;
+            xx += (p[0] - mean[0]).powi(2);
+            xy += (p[0] - mean[0]) * (p[1] - mean[1]);
+            yy += (p[1] - mean[1]).powi(2);
+        }
+        let major = 0.5 * (2. * xy).atan2(xx - yy);
+        let angle = ((major.to_degrees() + 90.).rem_euclid(180.) / 2.).round() as i64 * 2 % 180;
+        let a = (angle as f64).to_radians();
+        let (sin, cos) = a.sin_cos();
+        let mut s = Vec::new();
+        let mut t = Vec::new();
+        for &i in &component {
+            let p = ground[i].0;
+            s.push(p[0] * cos + p[1] * sin);
+            t.push(-p[0] * sin + p[1] * cos);
+        }
+        let width = quantile(&mut s.clone(), 0.95) - quantile(&mut s, 0.05);
+        let left = quantile(&mut t.clone(), 0.05);
+        let right = quantile(&mut t, 0.95);
+        if !(0.15..=1.1).contains(&width) || !(1.5..=35.).contains(&(right - left)) {
+            continue;
+        }
+        let key = (
+            angle,
+            ((left - 0.5) / 0.5).floor() as i64,
+            ((right + 0.5) / 0.5).ceil() as i64,
+        );
+        profiles
+            .entry(key)
+            .and_modify(|n| *n = (*n).max(component.len()))
+            .or_insert(component.len());
+    }
+    let mut profiles: Vec<_> = profiles.into_iter().collect();
+    profiles.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+    let limited = profiles.len() > 64;
+    profiles.truncate(64);
+    (
+        profiles
+            .into_iter()
+            .map(|((a, l, r), _)| (a as f64, [l as f64 * 0.5, r as f64 * 0.5]))
+            .collect(),
+        limited,
+    )
 }
 
 /// Read-only, deterministic proposal search using retained RGB/intensity.
@@ -223,7 +309,7 @@ pub fn propose(
     let usable = brightness.iter().all(Option::is_some)
         && (cloud.colors.is_none() || {
             let mut v: Vec<_> = brightness.iter().flatten().copied().collect();
-            quantile(&mut v, 0.95) > quantile(&mut v, 0.1)
+            quantile(&mut v, 0.995) > quantile(&mut v, 0.1)
         });
     let source = if usable {
         "intensity"
@@ -241,10 +327,13 @@ pub fn propose(
     };
     let mut values: Vec<_> = brightness.into_iter().flatten().collect();
     let base = quantile(&mut values.clone(), 0.1);
-    let peak = quantile(&mut values.clone(), 0.95);
+    // Sparse paint can occupy less than 5% of a broad road window. A robust
+    // upper tail seeds local profiles; isolated bright points cannot satisfy
+    // the component, band continuity and observed-gap checks below.
+    let peak = quantile(&mut values.clone(), 0.995);
     let mut report = CrosswalkReport {
         candidates: vec![], points: points.len(), ground_points: ground.len(), plane_rms: rms,
-        brightness_source: source, added: None, reused: None,
+        brightness_source: source, local_profile_seeds: 0, local_profiles_limited: false, added: None, reused: None,
         classification_source: "unconfirmed_paint_pattern", lanes_source: if o.lanes.is_empty() { "unassigned" } else { "user_selected" },
         warnings: vec!["Repeated bright ground bands are draft candidates, not an object classifier. Missing paint can shorten the measured outline. Confirm paint extents, crossing lanes and legal priority; stop lines are not inferred. Scores are uncalibrated ranking statistics.".into()],
     };
@@ -269,10 +358,22 @@ pub fn propose(
         .iter()
         .map(|v| *v > base + o.brightness_fraction * (peak - base))
         .collect();
-    for angle in (0..180).step_by(2) {
-        let a = (angle as f64).to_radians();
+    let (local, limited) = local_profiles(&ground, &bright);
+    report.local_profile_seeds = local.len();
+    report.local_profiles_limited = limited;
+    if limited {
+        report.warnings.push("Local paint profile search limited to 64 source-supported seeds; smaller components may be omitted.".into());
+    }
+    let mut profiles: Vec<_> = (0..180).step_by(2).map(|a| (a as f64, None)).collect();
+    profiles.extend(local.into_iter().map(|(a, range)| (a, Some(range))));
+    for (angle, region) in profiles {
+        let a = angle.to_radians();
         let axis = [a.cos(), a.sin()];
         let normal = [-axis[1], axis[0]];
+        let t: Vec<_> = ground
+            .iter()
+            .map(|(p, _)| p[0] * normal[0] + p[1] * normal[1])
+            .collect();
         let s: Vec<_> = ground
             .iter()
             .map(|(p, _)| p[0] * axis[0] + p[1] * axis[1])
@@ -280,11 +381,16 @@ pub fn propose(
         let low = s.iter().copied().fold(f64::INFINITY, f64::min);
         let bins: Vec<_> = s
             .iter()
-            .map(|v| ((v - low) / 0.1).floor() as usize)
+            // Metre coordinates lose a few low bits on origin subtraction.
+            // Stabilize exact 10 cm bin edges without bridging real gaps.
+            .map(|v| (((v - low) / 0.1) + 1e-7).floor() as usize)
             .collect();
         let mut counts = vec![0usize; bins.iter().max().unwrap() + 1];
         let mut whites = vec![0usize; counts.len()];
-        for (&i, &b) in bins.iter().zip(&bright) {
+        for ((&i, &b), &transverse) in bins.iter().zip(&bright).zip(&t) {
+            if region.is_some_and(|r| transverse < r[0] || transverse > r[1]) {
+                continue;
+            }
             counts[i] += 1;
             whites[i] += usize::from(b);
         }
@@ -336,7 +442,14 @@ pub fn propose(
                     .iter()
                     .zip(&bins)
                     .zip(&bright)
-                    .filter(|((_, bin), b)| **b && **bin >= start && **bin < end)
+                    .filter(|(((p, _), bin), b)| {
+                        **b && **bin >= start
+                            && **bin < end
+                            && region.is_none_or(|r| {
+                                let t = p[0] * normal[0] + p[1] * normal[1];
+                                t >= r[0] && t <= r[1]
+                            })
+                    })
                     .map(|(((p, _), _), _)| p[0] * normal[0] + p[1] * normal[1])
                     .collect();
                 if t.len() < 12 {
@@ -409,7 +522,10 @@ pub fn propose(
             }
             let s0 = low + chain[0].0 as f64 * 0.1;
             let s1 = low + chain.last().unwrap().1 as f64 * 0.1;
-            if s1 - s0 > 8.0 || t1 - t0 > 35.0 {
+            // A crossing can span several traffic lanes. Keep both measured
+            // dimensions bounded by the supported ROI, rather than imposing
+            // an 8 m pedestrian-travel limit that rejects long zebra patterns.
+            if s1 - s0 > 35.0 || t1 - t0 > 35.0 {
                 continue;
             }
             let at = |s: f64, t: f64| {
@@ -426,7 +542,8 @@ pub fn propose(
                 .iter()
                 .map(|&(l, r)| ratio[l..r].iter().sum::<f64>() / (r - l) as f64)
                 .sum::<f64>()
-                * chain.len() as f64;
+                * chain.len() as f64
+                * (t1 - t0);
             report.candidates.push(CrosswalkCandidate {
                 outline: rectangle(s0, s1, t0, t1),
                 stripes: chain
@@ -439,7 +556,7 @@ pub fn propose(
                 stripe_count: chain.len(),
                 width: s1 - s0,
                 length: t1 - t0,
-                angle_degrees: angle as f64,
+                angle_degrees: angle,
                 score,
             });
         }
@@ -621,6 +738,98 @@ mod tests {
                 brightness_fraction: default_brightness_fraction(),
             },
         )
+    }
+
+    #[test]
+    fn source_profile_budget_is_bounded_and_reported() {
+        let mut ground = Vec::new();
+        for i in 0..80 {
+            for x in 0..5 {
+                for y in 0..11 {
+                    ground.push((
+                        [
+                            i as f64 * 3.0 + x as f64 * 0.1,
+                            i as f64 * 3.0 + y as f64 * 0.2,
+                            0.0,
+                        ],
+                        0,
+                    ));
+                }
+            }
+        }
+        let (profiles, limited) = local_profiles(&ground, &vec![true; ground.len()]);
+        assert_eq!(profiles.len(), 64);
+        assert!(limited);
+    }
+
+    #[test]
+    fn sparse_narrow_paint_in_wide_window_is_localized_without_dark_gap_fabrication() {
+        let (map, mut cloud, mut o) = fixture(0.0, false);
+        cloud.positions.clear();
+        cloud.colors.as_mut().unwrap().clear();
+        for i in 0..=200 {
+            for j in 0..=200 {
+                let s = -10.0 + i as f64 * 0.1;
+                let t = -10.0 + j as f64 * 0.1;
+                let paint = (-2.0..2.0).contains(&s) && (s + 2.0) % 1.0 < 0.5 && t.abs() <= 1.0;
+                cloud.positions.push([50005.0 + s, 70000.0 + t, 19.0]);
+                cloud
+                    .colors
+                    .as_mut()
+                    .unwrap()
+                    .push([if paint { 210 } else { 70 }; 3]);
+            }
+        }
+        o.min = [49994.0, 69989.0, 18.5];
+        o.max = [50016.0, 70011.0, 19.5];
+        let report = propose(&map, &cloud, &o).unwrap();
+        let c = &report.candidates[0];
+        assert_eq!(c.stripe_count, 4, "{c:?}");
+        assert!(
+            (c.width - 3.5).abs() < 0.3 && (c.length - 2.).abs() < 0.3,
+            "{c:?}"
+        );
+        // Delete every dark return between the same bright bands. Sampling
+        // holes must not be accepted as evidence of contrasting dark paint.
+        let selected: Vec<_> = cloud
+            .positions
+            .iter()
+            .zip(cloud.colors.as_ref().unwrap())
+            .enumerate()
+            .filter(|(_, (p, c))| {
+                c[0] == 210 || !(p[0] > 50003.0 && p[0] < 50007.0 && (p[1] - 70000.0).abs() <= 1.05)
+            })
+            .map(|(i, _)| i)
+            .collect();
+        let missing = cloud.select(&selected);
+        assert!(propose(&map, &missing, &o).unwrap().candidates.is_empty());
+    }
+
+    #[test]
+    fn long_crossing_retains_all_observed_stripes() {
+        let (map, mut cloud, mut o) = fixture(0.0, false);
+        cloud.positions.clear();
+        cloud.colors.as_mut().unwrap().clear();
+        for i in 0..=400 {
+            for j in 0..=160 {
+                let s = -10.0 + i as f64 * 0.05;
+                let t = -4.0 + j as f64 * 0.05;
+                cloud.positions.push([50005.0 + s, 70000.0 + t, 19.0]);
+                let white = (-8.0..8.0).contains(&s) && (s + 8.0) % 1.0 < 0.5 && t.abs() <= 3.0;
+                cloud
+                    .colors
+                    .as_mut()
+                    .unwrap()
+                    .push([if white { 210 } else { 70 }; 3]);
+            }
+        }
+        o.min = [49994.0, 69995.0, 18.5];
+        o.max = [50016.0, 70005.0, 19.5];
+        let report = propose(&map, &cloud, &o).unwrap();
+        let c = &report.candidates[0];
+        assert_eq!(c.stripe_count, 16);
+        assert!((c.width - 15.5).abs() < 0.3, "{c:?}");
+        assert!((c.length - 6.0).abs() < 0.7);
     }
 
     #[test]

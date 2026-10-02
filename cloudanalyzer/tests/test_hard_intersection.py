@@ -177,7 +177,8 @@ def test_generation_never_supplies_reference_or_confirmation_and_freezes_maps(tm
     monkeypatch.setitem(sys.modules, "cloudanalyzer_core", SimpleNamespace(__file__=str(tmp_path / "__init__.py"), discover_vector_map_features=discover, build_vector_map=build))
     monkeypatch.setattr(gen.importlib.metadata, "version", lambda _: "0.1.0")
     out = tmp_path / "generated"
-    result = gen.generate(prepared, out)
+    result = gen.generate(prepared, out, source_commit="1" * 40)
+    assert result["baseline_commit"] == "1" * 40
     assert calls == ["discover", "build"] and result["reference_inputs"] == []
     assert len(result["candidates"]) == 1
     (out / "drive.csv.map.json").write_text("tampered", encoding="utf-8")

@@ -237,3 +237,5 @@ Bounded COPC working-box and spatial signal workflows are described in
 [large clouds](large-point-clouds.md) and [signal measurement](commands/vectormap-signal.md);
 the road animation demonstrates drafting and editing on the recorded PandaSet
 drive. It is not a large-source benchmark or automatic signal-classification demo.
+
+Related workflow: [review equipment associations](vector-map-equipment-relations.md) keeps signal control targets through Undo and JSON/Lanelet2 reload. The current published GIF is an earlier capture, not this later relationship review.

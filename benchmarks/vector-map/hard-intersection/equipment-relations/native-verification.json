@@ -1,0 +1,543 @@
+{
+  "reference_inputs": [],
+  "input_map_sha256": "51a22c71a10811f96b5c54de839e7a50d58d7ac67baa01e1a189e887be3ede38",
+  "input_cloud_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+  "operator_inputs_sha256": "32007f1b34c40bf6e402e5c7c99606bbc0efeb4057dfb26ca390c79b0495451d",
+  "native_sha256": "bd42d9827e15b9d74b2a601b55fad684a848b2a8e42ffa30699c129d2e493c5b",
+  "edits": [
+    {
+      "changed": true,
+      "rule_id": 169,
+      "warnings": [
+        "Associations are operator-reviewed drafts. Geometry and lamps are unchanged; legal control and phases require independent evidence."
+      ]
+    },
+    {
+      "changed": true,
+      "rule_id": 173,
+      "warnings": [
+        "Associations are operator-reviewed drafts. Geometry and lamps are unchanged; legal control and phases require independent evidence."
+      ]
+    },
+    {
+      "changed": true,
+      "rule_id": 171,
+      "warnings": [
+        "Associations are operator-reviewed drafts. Geometry and lamps are unchanged; legal control and phases require independent evidence."
+      ]
+    }
+  ],
+  "physical_map_exact": true,
+  "unmodified_rules_exact": true,
+  "repeated_edits_exact_noop": true,
+  "lanelet2_targets_and_warnings_roundtrip": true,
+  "source_quality_before_after_equal": true,
+  "source_quality": {
+    "cloud_points": 1883866,
+    "ground_height_tolerance_m": 0.3,
+    "ground_radius_m": 0.75,
+    "limited": false,
+    "low_support_lanes": [],
+    "malformed_lanes": [],
+    "minimum_support_fraction": 0.9,
+    "omitted_lanes": [],
+    "sample_budget": 100000,
+    "sampled_points": 6752,
+    "sampling_step_m": 0.5,
+    "warnings": [
+      "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+    ]
+  },
+  "warnings_before": [
+    {
+      "code": "disconnected_topology",
+      "entity": {
+        "id": 8,
+        "kind": "lane"
+      },
+      "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+      "related": [
+        {
+          "id": 9,
+          "kind": "lane"
+        },
+        {
+          "id": 10,
+          "kind": "lane"
+        },
+        {
+          "id": 11,
+          "kind": "lane"
+        },
+        {
+          "id": 12,
+          "kind": "lane"
+        },
+        {
+          "id": 13,
+          "kind": "lane"
+        }
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "disconnected_topology",
+      "entity": {
+        "id": 60,
+        "kind": "lane"
+      },
+      "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+      "related": [
+        {
+          "id": 61,
+          "kind": "lane"
+        },
+        {
+          "id": 62,
+          "kind": "lane"
+        },
+        {
+          "id": 63,
+          "kind": "lane"
+        },
+        {
+          "id": 64,
+          "kind": "lane"
+        },
+        {
+          "id": 65,
+          "kind": "lane"
+        }
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 8,
+        "kind": "lane"
+      },
+      "message": "lane:8 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 9,
+        "kind": "lane"
+      },
+      "message": "lane:9 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 10,
+        "kind": "lane"
+      },
+      "message": "lane:10 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 11,
+        "kind": "lane"
+      },
+      "message": "lane:11 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 12,
+        "kind": "lane"
+      },
+      "message": "lane:12 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 13,
+        "kind": "lane"
+      },
+      "message": "lane:13 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 24,
+        "kind": "lane"
+      },
+      "message": "lane:24 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 60,
+        "kind": "lane"
+      },
+      "message": "lane:60 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 61,
+        "kind": "lane"
+      },
+      "message": "lane:61 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 62,
+        "kind": "lane"
+      },
+      "message": "lane:62 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 63,
+        "kind": "lane"
+      },
+      "message": "lane:63 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 64,
+        "kind": "lane"
+      },
+      "message": "lane:64 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 65,
+        "kind": "lane"
+      },
+      "message": "lane:65 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "autoware.traffic_light_without_stop_line",
+      "entity": {
+        "id": 167,
+        "kind": "regulatory_element"
+      },
+      "message": "traffic light regulatory_element:167 has no stop line",
+      "severity": "warning"
+    },
+    {
+      "code": "autoware.traffic_light_without_stop_line",
+      "entity": {
+        "id": 169,
+        "kind": "regulatory_element"
+      },
+      "message": "traffic light regulatory_element:169 has no stop line",
+      "severity": "warning"
+    },
+    {
+      "code": "autoware.traffic_light_without_stop_line",
+      "entity": {
+        "id": 171,
+        "kind": "regulatory_element"
+      },
+      "message": "traffic light regulatory_element:171 has no stop line",
+      "severity": "warning"
+    },
+    {
+      "code": "autoware.traffic_light_without_stop_line",
+      "entity": {
+        "id": 173,
+        "kind": "regulatory_element"
+      },
+      "message": "traffic light regulatory_element:173 has no stop line",
+      "severity": "warning"
+    }
+  ],
+  "warnings_after": [
+    {
+      "code": "disconnected_topology",
+      "entity": {
+        "id": 8,
+        "kind": "lane"
+      },
+      "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+      "related": [
+        {
+          "id": 9,
+          "kind": "lane"
+        },
+        {
+          "id": 10,
+          "kind": "lane"
+        },
+        {
+          "id": 11,
+          "kind": "lane"
+        },
+        {
+          "id": 12,
+          "kind": "lane"
+        },
+        {
+          "id": 13,
+          "kind": "lane"
+        }
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "disconnected_topology",
+      "entity": {
+        "id": 60,
+        "kind": "lane"
+      },
+      "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+      "related": [
+        {
+          "id": 61,
+          "kind": "lane"
+        },
+        {
+          "id": 62,
+          "kind": "lane"
+        },
+        {
+          "id": 63,
+          "kind": "lane"
+        },
+        {
+          "id": 64,
+          "kind": "lane"
+        },
+        {
+          "id": 65,
+          "kind": "lane"
+        }
+      ],
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 8,
+        "kind": "lane"
+      },
+      "message": "lane:8 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 9,
+        "kind": "lane"
+      },
+      "message": "lane:9 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 10,
+        "kind": "lane"
+      },
+      "message": "lane:10 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 11,
+        "kind": "lane"
+      },
+      "message": "lane:11 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 12,
+        "kind": "lane"
+      },
+      "message": "lane:12 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 13,
+        "kind": "lane"
+      },
+      "message": "lane:13 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 24,
+        "kind": "lane"
+      },
+      "message": "lane:24 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 60,
+        "kind": "lane"
+      },
+      "message": "lane:60 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 61,
+        "kind": "lane"
+      },
+      "message": "lane:61 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 62,
+        "kind": "lane"
+      },
+      "message": "lane:62 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 63,
+        "kind": "lane"
+      },
+      "message": "lane:63 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 64,
+        "kind": "lane"
+      },
+      "message": "lane:64 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "isolated_lane",
+      "entity": {
+        "id": 65,
+        "kind": "lane"
+      },
+      "message": "lane:65 has neither predecessors nor successors",
+      "severity": "warning"
+    },
+    {
+      "code": "orphan_rule",
+      "entity": {
+        "id": 171,
+        "kind": "regulatory_element"
+      },
+      "fix": {
+        "entity": {
+          "id": 171,
+          "kind": "regulatory_element"
+        },
+        "op": "remove_entity"
+      },
+      "message": "regulatory_element:171 does not apply to any lane or crosswalk",
+      "severity": "warning"
+    },
+    {
+      "code": "autoware.traffic_light_without_stop_line",
+      "entity": {
+        "id": 167,
+        "kind": "regulatory_element"
+      },
+      "message": "traffic light regulatory_element:167 has no stop line",
+      "severity": "warning"
+    },
+    {
+      "code": "autoware.traffic_light_without_stop_line",
+      "entity": {
+        "id": 171,
+        "kind": "regulatory_element"
+      },
+      "message": "traffic light regulatory_element:171 has no stop line",
+      "severity": "warning"
+    }
+  ],
+  "export_warnings": [
+    {
+      "code": "lanelet2.no_georeference",
+      "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+      "severity": "warning"
+    }
+  ],
+  "unresolved_rules": [
+    167,
+    171
+  ],
+  "pedestrian172_candidates": [
+    {
+      "crosswalk": 152,
+      "nearest_edge_endpoint_xy_m": 3.3898958724744577,
+      "unsigned_housing_normal_vs_walking_degrees": 88.67352698584445
+    },
+    {
+      "crosswalk": 156,
+      "nearest_edge_endpoint_xy_m": 3.491631095824416,
+      "unsigned_housing_normal_vs_walking_degrees": 12.461566894234599
+    },
+    {
+      "crosswalk": 158,
+      "nearest_edge_endpoint_xy_m": 19.039559258854187,
+      "unsigned_housing_normal_vs_walking_degrees": 8.308611177811501
+    },
+    {
+      "crosswalk": 148,
+      "nearest_edge_endpoint_xy_m": 24.347676816046242,
+      "unsigned_housing_normal_vs_walking_degrees": 83.92219309561547
+    },
+    {
+      "crosswalk": 150,
+      "nearest_edge_endpoint_xy_m": 32.63065202920845,
+      "unsigned_housing_normal_vs_walking_degrees": 7.962159676293927
+    },
+    {
+      "crosswalk": 160,
+      "nearest_edge_endpoint_xy_m": 34.308853468483534,
+      "unsigned_housing_normal_vs_walking_degrees": 80.99174967057512
+    },
+    {
+      "crosswalk": 154,
+      "nearest_edge_endpoint_xy_m": 39.09146673422764,
+      "unsigned_housing_normal_vs_walking_degrees": 8.174649779437685
+    }
+  ],
+  "limitations": [
+    "Operator-reviewed geometric draft; not independently established legal control.",
+    "Signal kind was manually classified during source proposal confirmation; no bulb/state inference.",
+    "No ground-truth geometry or relationships were copied into edits.",
+    "Unresolved pedestrian 170 has competing nearby crossings and ambiguous facing geometry; legacy vehicle-lane reference explicitly cleared."
+  ],
+  "output_map_sha256": "e60ea0fe9fcc5dbca5b6b2c7d57a78e7bbfcbc25f2be11b278fdbafff88beb77",
+  "runtime_source_commit": "1b59c4b3de9fcc9e1f3dd9a5cc2b4e23168ec0f3",
+  "vectormap_revision": "70893d75ff579e51e10a93bab0f82fa81f2aca8b",
+  "wasm_sha256": "ddafceb9e4ea5b030060444e8987e47c3578bc0f25c14a449b6a39f5c04b0877",
+  "input_generation_media_commit": "3f93de0f4100e2bb09de6d0e985aa411a7c6a63d",
+  "input_map_url": "https://github.com/rsasaki0109/CloudAnalyzer/blob/3f93de0f4100e2bb09de6d0e985aa411a7c6a63d/benchmarks/vector-map/hard-intersection/supported-intersection/reviewed.json"
+}

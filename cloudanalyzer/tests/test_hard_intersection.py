@@ -258,3 +258,28 @@ def test_generation_never_supplies_reference_or_confirmation_and_freezes_maps(tm
     (out / "generation.json").write_text("{}", encoding="utf-8")
     with pytest.raises(ValueError, match="generation changed"):
         audit.evaluate(tmp_path / "absent-dataset", out, tmp_path / "evaluation")
+
+
+@pytest.mark.parametrize("tamper", ["map", "cloud", "existing_output"])
+def test_equipment_review_refuses_stale_scene_or_existing_output_before_edit(tmp_path, monkeypatch, tamper):
+    import review_vector_map_relations as relations
+    source = tmp_path / "generated.json"
+    cloud = tmp_path / "geometry.las"
+    source.write_text("{}", encoding="utf-8")
+    cloud.write_bytes(b"original source returns")
+    config = tmp_path / "operator.json"
+    config.write_text(json.dumps({"input_map_sha256": relations.digest(source), "input_cloud_sha256": relations.digest(cloud)}), encoding="utf-8")
+    monkeypatch.setattr(relations, "CONFIG", config)
+    calls = []
+    monkeypatch.setitem(sys.modules, "cloudanalyzer_core", SimpleNamespace(edit_vector_map_relations=lambda *args: calls.append(args)))
+    out = tmp_path / "result"
+    if tamper == "map":
+        source.write_text('{"changed":true}', encoding="utf-8")
+    elif tamper == "cloud":
+        cloud.write_bytes(b"another indexed scene")
+    else:
+        out.mkdir()
+    with pytest.raises(FileExistsError if tamper == "existing_output" else ValueError):
+        relations.review(source, cloud, out)
+    assert not calls
+    assert out.exists() == (tamper == "existing_output")

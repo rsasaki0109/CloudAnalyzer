@@ -247,6 +247,9 @@ confirm the crossing and its lane IDs; Web additions support Undo and Lanelet2 e
 corridors or supported ground surfaces without feature boxes. Review paint/panel
 proposals, then explicitly confirm object types and lane assignments; the Web panel
 supports inspection, rejection, measured additions, geometry editing and map Undo.
+[Equipment association review](docs/vector-map-equipment-relations.md) links vehicle
+signals to reviewed stop markings and pedestrian signals to crosswalks, retaining
+physical geometry and unresolved controls through Undo and Lanelet2 reload.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

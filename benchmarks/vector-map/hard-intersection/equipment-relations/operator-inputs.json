@@ -1,0 +1,43 @@
+{
+  "input_map": "notes/supported-intersection-proof/reviewed.json",
+  "input_cloud": "notes/hard-intersection-prepared-v2/geometry.las",
+  "edits": [
+    {
+      "rule_id": 169,
+      "lanes": [
+        76,
+        77
+      ],
+      "controlled_crosswalks": [],
+      "stop_lines": [
+        164
+      ]
+    },
+    {
+      "rule_id": 173,
+      "lanes": [],
+      "controlled_crosswalks": [
+        156
+      ],
+      "stop_lines": []
+    },
+    {
+      "rule_id": 171,
+      "lanes": [],
+      "controlled_crosswalks": [],
+      "stop_lines": []
+    }
+  ],
+  "unresolved_rules": [
+    167,
+    171
+  ],
+  "limitations": [
+    "Operator-reviewed geometric draft; not independently established legal control.",
+    "Signal kind was manually classified during source proposal confirmation; no bulb/state inference.",
+    "No ground-truth geometry or relationships were copied into edits.",
+    "Unresolved pedestrian 170 has competing nearby crossings and ambiguous facing geometry; legacy vehicle-lane reference explicitly cleared."
+  ],
+  "input_map_sha256": "51a22c71a10811f96b5c54de839e7a50d58d7ac67baa01e1a189e887be3ede38",
+  "input_cloud_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15"
+}

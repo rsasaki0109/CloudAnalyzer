@@ -853,6 +853,39 @@ mod tests {
     }
 
     #[test]
+    fn boundary_checked_junction_preview_and_empty_connect_keep_map_and_undo() {
+        let mut s = VectorMapSession::new();
+        s.apply(
+            r#"[
+          {"op":"build_road","reference":[[-20,0,2],[-10,0,2]],"lanes":[{"width":3.5}]},
+          {"op":"build_road","reference":[[0,0,2],[10,0,2]],"lanes":[{"width":3.5}]}
+        ]"#,
+        )
+        .unwrap();
+        s.undo.clear();
+        let before = s.to_json();
+        let mut ground = ca_core::PointCloud::default();
+        for x in -105..=55 {
+            for y in -1..=1 {
+                ground.positions.push([x as f64 * 0.2, y as f64 * 0.2, 2.0]);
+            }
+        }
+        let cloud = crate::Cloud::unindexed(ground);
+        let legacy: Value =
+            serde_json::from_str(&s.preview_junctions(&cloud, "{}").unwrap()).unwrap();
+        assert_eq!(legacy["candidates"].as_array().unwrap().len(), 1);
+        let options = r#"{"check_boundary_support":true,"min_ground_support":1}"#;
+        let checked: Value =
+            serde_json::from_str(&s.preview_junctions(&cloud, options).unwrap()).unwrap();
+        assert!(checked["candidates"].as_array().unwrap().is_empty());
+        // Native tests cannot construct JS errors; rejection atomicity is covered
+        // in ca-core/native tests. With no supported candidates this is a no-op.
+        s.connect_junctions(&cloud, options, "null").unwrap();
+        assert_eq!(s.to_json(), before);
+        assert!(s.undo.is_empty());
+    }
+
+    #[test]
     fn junction_preview_and_replay_do_not_add_undo_but_branch_batch_does() {
         let mut s = VectorMapSession::new();
         s.apply(r#"[

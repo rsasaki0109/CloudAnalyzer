@@ -64,6 +64,8 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert properties["preview_only"]["type"] == "boolean"
                 assert properties["preview_only"]["default"] is False
                 assert properties["max_gap"]["default"] == 30.0
+                assert properties["check_boundary_support"]["type"] == "boolean"
+                assert properties["check_boundary_support"]["default"] is False
                 assert "lane_pairs" in properties
                 signal = next(t for t in tools if t.name == "measure_vector_map_signal")
                 properties = signal.model_dump(by_alias=True)["inputSchema"]["properties"]

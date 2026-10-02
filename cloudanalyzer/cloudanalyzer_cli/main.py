@@ -1898,6 +1898,7 @@ def vectormap_connect_cmd(
     out: str = typer.Option(..., "--out", help="New output directory"),
     max_gap: float = typer.Option(30.0, "--max-gap", help="Maximum XY gap in metres, 1..100"),
     min_ground_support: float = typer.Option(0.9, "--min-ground-support", help="Supported centre sample fraction, 0.5..1"),
+    check_boundary_support: bool = typer.Option(False, "--check-boundary-support", help="Also require ground along both boundaries and all endpoints"),
     preview: bool = typer.Option(False, "--preview", help="Write candidates and the unchanged input map for review"),
     lane_pairs: Optional[List[str]] = typer.Option(None, "--pair", help="Select FROM:TO; repeat for branches. Omit to add all proposals"),
 ) -> None:
@@ -1915,6 +1916,7 @@ def vectormap_connect_cmd(
                 pairs.append((int(parts[0]), int(parts[1])))
         report = connect_vector_map_junctions(
             cloud, vector_map, out, max_gap=max_gap, min_ground_support=min_ground_support,
+            check_boundary_support=check_boundary_support,
             lane_pairs=pairs, preview_only=preview,
         )
     except (OSError, ValueError, RuntimeError) as error:

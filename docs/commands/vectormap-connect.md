@@ -44,6 +44,21 @@ Change the distance with `--max-gap` (1–100 m) and the fraction with
 `--min-ground-support` (0.5–1). Inputs are loaded into memory; this is not large-cloud
 streaming or registration.
 
+Opt in to **Check both boundaries against ground** in Web, CLI
+`--check-boundary-support`, or Python/MCP `check_boundary_support=True` to check
+the actual left and right curves as well as the centre. All three use the
+endpoint-inclusive [source-audit sampling](../vector-map-quality.md#source-coverage-in-the-app).
+Each curve must meet `min_ground_support`, and all six curve endpoints must pass.
+The report includes left/right `boundary_support` fractions when enabled;
+default centre-only output remains unchanged. Use `--min-ground-support 1`
+to reject every unsupported sampled position. This checks boundary curves,
+not the entire road interior, obstacle clearance or legal manoeuvres.
+
+```sh
+ca vectormap-connect map.pcd draft-map/vector_map.json --preview \
+  --check-boundary-support --min-ground-support 1 --out checked-preview
+```
+
 Connections use virtual boundaries and inherit the lower endpoint speed limit when
 available. New lanes carry `cloudanalyzer_geometry_source=ground_supported_connection`
 and `cloudanalyzer_review_required=yes`, including in OSM. Existing geometry, IDs,

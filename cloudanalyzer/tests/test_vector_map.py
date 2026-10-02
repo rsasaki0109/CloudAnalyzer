@@ -389,6 +389,28 @@ def test_junction_preview_selection_atomic_publication_and_replay(junction_surve
     assert json.loads((empty / "vector_map.json").read_text()) == original
 
 
+def test_junction_boundary_check_rejects_centre_only_ground_before_publication(tmp_path):
+    pytest.importorskip("cloudanalyzer_core")
+    cloud = tmp_path / "centre.xyz"
+    cloud.write_text("".join(f"{x / 5} {y / 5} 2\n" for x in range(-105,56) for y in range(-1,2)))
+    data = {"format": "vectormap-ir", "version": 1,
+            "lanes": [{"id": 5, "kind": "driving", "left": 1, "right": 2}, {"id": 6, "kind": "driving", "left": 3, "right": 4}],
+            "boundaries": [{"id": i+1, "kind": {"type":"virtual"}, "geometry": [[x,y,2] for x in interval]} for i,(interval,y) in enumerate([([-20,-10],1.75),([-20,-10],-1.75),([0,10],1.75),([0,10],-1.75)])]}
+    source = tmp_path / "roads.json"; source.write_text(json.dumps(data)); before = source.read_bytes()
+    legacy = connect_vector_map_junctions(str(cloud),str(source),str(tmp_path / "legacy"),preview_only=True)
+    assert len(legacy["junctions"]["candidates"]) == 1
+    checked = tmp_path / "checked"
+    result = CliRunner().invoke(app,["vectormap-connect",str(cloud),str(source),"--out",str(checked),"--preview","--check-boundary-support","--min-ground-support","1"])
+    assert result.exit_code == 0, result.output
+    report = json.loads((checked / "report.json").read_text())
+    assert report["junctions"]["candidates"] == []
+    assert report["junctions"]["unsupported_candidates"] == 1
+    failed = tmp_path / "failed"
+    with pytest.raises(ValueError,match="not supported"):
+        connect_vector_map_junctions(str(cloud),str(source),str(failed),check_boundary_support=True,min_ground_support=1,lane_pairs=[(5,6)])
+    assert not failed.exists() and source.read_bytes() == before
+
+
 def test_junction_cli_selects_branches_and_rejects_malformed_pairs(junction_survey, tmp_path):
     cloud, source = junction_survey
     runner = CliRunner()

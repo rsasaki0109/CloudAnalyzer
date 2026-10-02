@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk
+from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
@@ -45,6 +45,14 @@ Omitting lane_pairs adds all proposals; [] adds none. Prefer editable IR to reta
 rules and metadata. Ground support cannot establish legal turns, lane clearance or signal
 rules. Existing rules remain, but new connections require traffic-rule review.
 measure_vector_map_signal fits housing geometry from a user-identified head's 3D box.
+discover_vector_map_features searches generated road corridors, or all supported lower
+surfaces with scope=ground_surface and no map, without manually placing feature boxes.
+Preview into a NEW out_dir. Inspect unconfirmed paint/panel proposals over source points;
+then submit explicit candidate/key/classification/lanes confirmations against the
+original map and source. Nearby lanes are suggestions only. This loads the whole local
+attribute-bearing scene; export a smaller scene for large sources. No automatic object
+identity, lamp state, stop sign or signal/stop-line link is inferred. Limited previews
+are reported explicitly (64 highest-support proposals per evidence type).
 measure_vector_map_crosswalk previews measured bright ground bands and adds a
 user-confirmed crossing with explicitly selected lane IDs. Retained RGB or
 intensity is required; paint patterns alone do not classify an object.
@@ -274,7 +282,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

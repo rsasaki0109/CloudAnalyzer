@@ -785,6 +785,8 @@
         </div>
         <details class="options">
           <summary>Road options</summary>
+          <label><input id="vm-refine-sketch" type="checkbox" /> Fit drawn paths to the point cloud</label>
+          <p class="hint small">When fitting, trace the outside forward lane and choose its cloud under Build from a trajectory. The path, lane counts and nominal width are your inputs; points supply ground height and supported boundaries. Equipment can be searched after the roads are fitted.</p>
           <div class="range">
             <label title="Lanes going the way the road is drawn">Forward lanes <input id="vm-forward" type="number" min="0" step="1" value="1" /></label>
             <label title="Lanes going the other way">Backward lanes <input id="vm-backward" type="number" min="0" step="1" value="1" /></label>
@@ -817,6 +819,29 @@
             <label title="Reject tall raised surfaces and steps without nearby road support; rejected candidates become width assumptions"><input id="vm-verify-curbs" type="checkbox" checked /> Check curb profiles</label>
             <label title="Reuse lanes whose centre, boundaries, direction and height agree; retain existing geometry and rules"><input id="vm-merge-passes" type="checkbox" checked /> Merge matching existing lanes</label>
           <p id="vm-build-report" class="small"></p>
+          <label><input id="vm-discover-after-build" type="checkbox" checked /> Search road equipment after building</label>
+        </details>
+        <details class="options" id="vm-discovery">
+          <summary>Find road equipment automatically</summary>
+          <p class="hint small">Search using point-cloud brightness and geometry. No feature boxes are required. Proposals may be paint, signs, foliage or other objects; inspect points, discard false candidates, then confirm the type and lane IDs. Nearby lanes are suggestions only. Search uses retained points: load or export a full-density scene when the source display is sampled.</p>
+          <label>Point cloud <select id="vm-discovery-cloud"></select></label>
+          <label>Search region <select id="vm-discovery-scope"><option value="road_corridor">Around generated roads</option><option value="ground_surface">All supported ground in the source</option></select></label>
+          <label>Search radius (m) <input id="vm-discovery-radius" type="number" min="4" max="18" step="1" value="12" /></label>
+          <label>Bright-point threshold (%) <input id="vm-discovery-brightness" type="number" min="40" max="90" step="5" value="65" /></label>
+          <button id="vm-discovery-search" disabled>Search equipment candidates</button>
+          <label><input id="vm-discovery-show" type="checkbox" checked /> Show unconfirmed geometry</label>
+          <p id="vm-discovery-report" class="small"></p>
+          <div id="vm-discovery-candidates" class="small" style="max-height: 220px; overflow-y: auto"></div>
+          <div class="button-row">
+            <button id="vm-discovery-focus" disabled>Focus candidate</button>
+            <button id="vm-discovery-inspect" disabled>Inspect source points</button>
+            <button id="vm-discovery-reject" disabled>Discard candidate</button>
+          </div>
+          <label>Confirmed type <select id="vm-discovery-kind"><option value="">Identify the object first</option></select></label>
+          <label>Confirmed lane IDs <input id="vm-discovery-lanes" placeholder="Comma separated; inspect lane directions" /></label>
+          <button id="vm-discovery-selected" disabled>Use selected lane</button>
+          <button id="vm-discovery-add" disabled>Add reviewed equipment</button>
+          <p class="hint small">Adding stores measured geometry and your classification. No lamp states, stop signs, automatic signal/stop-line links or legal priority are inferred. Map Undo restores geometry and lane assignments together.</p>
         </details>
         <ol id="vm-issues" class="issue-list small"></ol>
         <details class="options">
@@ -889,7 +914,7 @@
             <p id="vm-crosswalk-report" class="small"></p>
           </details>
           <details class="options" id="vm-feature-editor">
-            <summary>Edit crossing or signal geometry</summary>
+            <summary>Edit crossing, stop line or signal geometry</summary>
             <label>Feature <select id="vm-feature"><option value="">Choose a crossing or signal</option></select></label>
             <p id="vm-feature-source" class="hint small"></p>
             <div class="button-row">

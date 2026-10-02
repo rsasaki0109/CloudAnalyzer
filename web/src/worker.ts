@@ -1018,6 +1018,12 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
       return withView(map.apply(req.text ?? "[]"));
     case "feature-edit":
       return withView(map.editFeatureGeometry(req.text ?? "{}"));
+    case "feature-discover":
+    case "feature-confirm": {
+      if(req.id === undefined) throw new Error("Choose a point cloud.");
+      const request=JSON.parse(req.text ?? "{}");
+      return req.op === "feature-discover" ? map.discoverFeatures(getCloud(req.id), JSON.stringify(request.options ?? {})) : withView(map.confirmFeatures(getCloud(req.id),JSON.stringify(request.options ?? {}),JSON.stringify(request.confirmations ?? [])));
+    }
     case "build":
       if (req.id === undefined || !req.positions) throw new Error("Choose a point cloud and trajectory.");
       return withView(map.buildFromTrajectory(getCloud(req.id), req.positions, req.text ?? "{}"));

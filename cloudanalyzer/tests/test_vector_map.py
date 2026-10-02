@@ -11,7 +11,63 @@ import pytest
 from typer.testing import CliRunner
 from cloudanalyzer_cli.main import app
 
-from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk
+from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features
+
+
+def test_source_only_equipment_preview_confirm_cli_replay_and_failed_publication(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "discover_vector_map_features"):
+        pytest.skip("installed core predates automatic equipment discovery")
+    x, y = np.meshgrid(np.arange(-5, 35.001, .1), np.arange(-5, 5.001, .1))
+    x, y = x.ravel(), y.ravel()
+    bright = (((x >= 8) & (x < 12) & (((x - 8) % 1) < .5)) | ((x >= 20) & (x < 20.6))) & (abs(y) <= 3)
+    head = np.array([[25., -.6 + i * .05, 6 + j * .05] for i in range(25) for j in range(13)])
+    points = np.vstack([np.column_stack([x, y, np.full(len(x), 2.)]), head])
+    colors = np.r_[np.where(bright, 220, 60), np.full(len(head), 80)].astype(np.uint16) * 256
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = np.full(3, .001)
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = points.T
+    data.red = data.green = data.blue = colors
+    cloud = tmp_path / "source.las"
+    data.write(cloud)
+    poses = tmp_path / "drive.csv"
+    poses.write_text("timestamp,x,y,z\n0,-5,0,4\n1,35,0,4\n")
+    built = build_vector_map(str(cloud), str(poses), str(tmp_path / "roads"))
+    source = Path(built["files"]["editable_map"])
+    preview = discover_vector_map_features(str(cloud), str(tmp_path / "preview"), vector_map=str(source))
+    before = source.read_text()
+    assert Path(preview["files"]["editable_map"]).read_text() == before
+    candidates = preview["discovery"]["candidates"]
+    assert {c["evidence"]["kind"] for c in candidates} == {"repeated_paint", "bright_bar", "elevated_panel"}
+    lanes = [json.loads(before)["lanes"][0]["id"]]
+    classifications = {"repeated_paint": "crosswalk", "bright_bar": "stop_line", "elevated_panel": "vehicle_signal"}
+    confirmations = [{"candidate": c["id"], "key": c["key"], "classification": classifications[c["evidence"]["kind"]], "lanes": lanes} for c in candidates]
+    selection = tmp_path / "reviewed.json"
+    selection.write_text(json.dumps(confirmations))
+    result = CliRunner().invoke(app, ["vectormap-discover", str(cloud), "--map", str(source), "--out", str(tmp_path / "added"), "--confirmations", str(selection)])
+    assert result.exit_code == 0, result.output
+    added = json.loads(result.stdout)
+    changed = json.loads(Path(added["files"]["editable_map"]).read_text())
+    assert changed["lanes"] == json.loads(before)["lanes"]
+    assert len(changed["traffic_signals"]) == 1 and len(changed["crosswalks"]) >= 1 and len(changed["stop_lines"]) >= 1
+    assert all(not s.get("bulbs") for s in changed["traffic_signals"])
+    assert "user_confirmed_automatic_proposal" in Path(added["files"]["map"]).read_text()
+    replay = discover_vector_map_features(str(cloud), str(tmp_path / "replay"), vector_map=added["files"]["map"], confirmations=confirmations)
+    assert all(a["reused"] for a in replay["additions"])
+    assert source.read_text() == before
+    bad = [{**confirmations[0], "key": "stale"}]
+    with pytest.raises(ValueError, match="changed"):
+        discover_vector_map_features(str(cloud), str(tmp_path / "invalid"), vector_map=str(source), confirmations=bad)
+    assert not (tmp_path / "invalid").exists()
+    full = discover_vector_map_features(str(cloud), str(tmp_path / "without-map"), scope="ground_surface")
+    assert full["status"] == "preview"
+    assert full["discovery"]["candidates"] and all(not c["nearby_lanes"] for c in full["discovery"]["candidates"])
+    with pytest.raises(FileExistsError):
+        discover_vector_map_features(str(cloud), str(tmp_path / "added"), vector_map=str(source))
+
 
 
 def test_crosswalk_rgb_preview_cli_add_replay_and_atomic_publication(junction_survey, tmp_path):

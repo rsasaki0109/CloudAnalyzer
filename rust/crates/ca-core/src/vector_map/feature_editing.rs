@@ -1,7 +1,7 @@
 //! Explicit geometry edits for existing crossings and signal heads. Observed
 //! paint, lamps and lane assignments are retained; editing does not remeasure.
 use serde::{Deserialize, Serialize};
-use vectormap_core::{Attributes, CrosswalkId, Map, Point3, Polyline3, Rule, SignalId};
+use vectormap_core::{Attributes, CrosswalkId, Map, Point3, Polyline3, Rule, SignalId, StopLineId};
 
 use super::BuildError;
 
@@ -10,6 +10,7 @@ use super::BuildError;
 pub enum FeatureKind {
     Crosswalk,
     Signal,
+    StopLine,
 }
 
 #[derive(Debug, Deserialize)]
@@ -257,6 +258,36 @@ pub fn edit(map: &mut Map, o: &FeatureEdit) -> Result<FeatureEditReport, BuildEr
                 );
             }
         }
+        FeatureKind::StopLine => {
+            if o.height.is_some() {
+                return Err(BuildError(
+                    "stop-line heights are vertex coordinates".into(),
+                ));
+            }
+            let stop = map
+                .stop_line(StopLineId(o.id))
+                .ok_or_else(|| BuildError("stop line does not exist".into()))?;
+            let old = coords(&stop.geometry);
+            if old.len() != o.points.len()
+                || o.points
+                    .windows(2)
+                    .any(|p| (p[0][0] - p[1][0]).hypot(p[0][1] - p[1][1]) < 1e-4)
+            {
+                return Err(BuildError(
+                    "retain the stop line's vertex count/order without collapsed segments".into(),
+                ));
+            }
+            movement(&old, &o.points, 100.0)?;
+            report.geometry_source = source(&stop.attributes).into();
+            if old == o.points {
+                return Ok(report);
+            }
+            let edited = draft.stop_line_mut(stop.id).expect("existing stop line");
+            edited.geometry = line(&o.points);
+            mark(&mut edited.attributes);
+            report.geometry_source = source(&edited.attributes).into();
+            report.warnings.push("Stop-line geometry was manually edited; review its paint support, lane assignments and legal meaning.".into());
+        }
     }
     let rules: Vec<_> = draft
         .regulatory_elements()
@@ -265,6 +296,7 @@ pub fn edit(map: &mut Map, o: &FeatureEdit) -> Result<FeatureEditReport, BuildEr
             (Rule::TrafficLight { signals, .. }, FeatureKind::Signal) => {
                 signals.iter().any(|s| s.0 == o.id)
             }
+            (rule, FeatureKind::StopLine) => rule.stop_lines().contains(&StopLineId(o.id)),
             _ => false,
         })
         .map(|r| r.id)

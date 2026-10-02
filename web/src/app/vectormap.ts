@@ -54,7 +54,7 @@ interface BoundaryView {
 export interface MapView {
   lanes: LaneView[];
   boundaries: BoundaryView[];
-  stopLines: { id: number; points: XYZ[] }[];
+  stopLines: { id: number; points: XYZ[]; geometrySource?: string }[];
   crosswalks: { id: number; outline: XYZ[]; paintBands?: XYZ[][] | null; editable?: boolean; geometrySource?: string }[];
   signals: { id: number; points: XYZ[]; height: number | null; geometrySource?: string }[];
   georeferenced: boolean;
@@ -99,6 +99,12 @@ interface CrosswalkReport {
   points: number; ground_points: number; plane_rms: number; brightness_source: string;
   added: number | null; reused: number | null; warnings: string[];
 }
+type DiscoveryEvidence =
+  | { kind: "repeated_paint"; measurement: CrosswalkReport["candidates"][number] }
+  | { kind: "bright_bar"; transverse_to_road: boolean; geometry: XYZ[]; width: number; thickness: number; points: number }
+  | { kind: "elevated_panel"; geometry: XYZ[]; height: number; width: number; thickness: number; points: number; plane_rms: number };
+interface DiscoveryCandidate { id: number; key: string; min: XYZ; max: XYZ; nearby_lanes: number[]; evidence: DiscoveryEvidence }
+interface DiscoveryReport { candidates: DiscoveryCandidate[]; detected_candidates: number; limited: boolean; source_points: number; corridor_points: number; windows: number; unsupported_windows: number; warnings: string[] }
 
 /** Dashes of dashed lane lines (metres). */
 const DASH = 3;
@@ -130,6 +136,12 @@ let crosswalkPreview: CrosswalkReport | null = null;
 let crosswalkSnapshot: string | null = null;
 let crosswalkRevision = 0;
 let crosswalkCandidate: number | null = null;
+let discoveryPreview: DiscoveryReport | null = null;
+let discoverySnapshot: { id: number; text: string } | null = null;
+let discoveryRevision = 0;
+let discoveryCandidate: number | null = null;
+const discardedCandidates = new Set<number>();
+const confirmedCandidates = new Set<number>();
 /** Points clicked so far while drawing a road (original coordinates). */
 let sketch: XYZ[] = [];
 
@@ -390,6 +402,18 @@ function draw(): void {
     for (const p of [candidate.outline, ...candidate.stripes]) polylinePairs([...p, p[0]], outline);
     segments(outline, materials.proposal, 4);
   }
+  if (discoveryPreview && $<HTMLInputElement>("vm-discovery-show").checked) {
+    const chosen: number[] = []; const other: number[] = [];
+    for (const c of discoveryPreview.candidates) {
+      if (discardedCandidates.has(c.id) || confirmedCandidates.has(c.id)) continue;
+      const target = c.id === discoveryCandidate ? chosen : other;
+      const e = c.evidence;
+      if (e.kind === "repeated_paint") for (const p of [e.measurement.outline, ...e.measurement.stripes]) polylinePairs([...p, p[0]], target);
+      else if (e.kind === "bright_bar") polylinePairs(e.geometry, target);
+      else { const [a,b] = e.geometry; const raised = (p: XYZ): XYZ => [p[0], p[1], p[2] + e.height]; polylinePairs([a,b,raised(b),raised(a),a], target); }
+    }
+    segments(other, materials.virtual, 4); segments(chosen, materials.proposal, 4);
+  }
   if (junctionPreview) {
     const chosen: number[] = [];
     const other: number[] = [];
@@ -541,6 +565,7 @@ const junctionAll = $<HTMLButtonElement>("vm-junction-all");
 const junctionNone = $<HTMLButtonElement>("vm-junction-none");
 const junctionList = $("vm-junction-candidates");
 function junctionInputs(): void {
+  discoveryInputs();
   featureInputs();
   signalInputs();
   crosswalkInputs();
@@ -866,6 +891,119 @@ $("vm-crosswalk-inspect").onclick = async () => {
   finally { busy = false; junctionInputs(); }
 };
 
+function discoveryInputs(): void {
+  const c = discoveryPreview?.candidates.find(c => c.id === discoveryCandidate);
+  for (const el of $("vm-discovery").querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>("input,select,button")) el.disabled = busy;
+  for (const radio of $("vm-discovery-candidates").querySelectorAll<HTMLInputElement>("input")) radio.disabled = busy || confirmedCandidates.has(Number(radio.value));
+  $<HTMLButtonElement>("vm-discovery-search").disabled = busy || (!$<HTMLSelectElement>("vm-discovery-scope").value.includes("ground_surface") && !view.lanes.length) || !$<HTMLSelectElement>("vm-discovery-cloud").value;
+  for (const id of ["focus", "inspect", "reject", "selected"]) $<HTMLButtonElement>(`vm-discovery-${id}`).disabled = busy || !c || confirmedCandidates.has(c.id);
+  $<HTMLButtonElement>("vm-discovery-add").disabled = busy || !c || confirmedCandidates.has(c.id) || !$<HTMLSelectElement>("vm-discovery-kind").value || !$<HTMLInputElement>("vm-discovery-lanes").value.trim();
+}
+function clearDiscovery(): void {
+  discoveryRevision++; discoveryPreview = null; discoverySnapshot = null; discoveryCandidate = null;
+  discardedCandidates.clear(); confirmedCandidates.clear();
+  $("vm-discovery-candidates").replaceChildren(); $("vm-discovery-report").textContent = "";
+  $<HTMLSelectElement>("vm-discovery-kind").replaceChildren(new Option("Identify the object first", ""));
+  $<HTMLInputElement>("vm-discovery-lanes").value = "";
+  discoveryInputs();
+}
+function discoveryRequest(): { id: number; text: string } {
+  const id = Number($<HTMLSelectElement>("vm-discovery-cloud").value);
+  if (!entries.has(id)) throw new Error("Choose the original point cloud.");
+  return { id, text: JSON.stringify({ options: { scope: $<HTMLSelectElement>("vm-discovery-scope").value, corridor_radius: Number($<HTMLInputElement>("vm-discovery-radius").value), brightness_fraction: Number($<HTMLInputElement>("vm-discovery-brightness").value)/100 } }) };
+}
+function focusDiscovery(): void {
+  const c = discoveryPreview?.candidates.find(c => c.id === discoveryCandidate); if (!c) return;
+  const shift = globalShift();
+  viewer.frameBox(new THREE.Box3(new THREE.Vector3(...c.min).sub(new THREE.Vector3(...shift)), new THREE.Vector3(...c.max).sub(new THREE.Vector3(...shift))).expandByScalar(2)); draw();
+}
+function renderDiscovery(): void {
+  $("vm-discovery-candidates").replaceChildren();
+  if (!discoveryPreview) return;
+  for (const c of discoveryPreview.candidates) {
+    if (discardedCandidates.has(c.id)) continue;
+    const label = document.createElement("label"); const radio = document.createElement("input");
+    radio.type = "radio"; radio.name = "discovered-feature"; radio.value = String(c.id); radio.checked = discoveryCandidate === c.id; radio.disabled = busy || confirmedCandidates.has(c.id);
+    const e = c.evidence;
+    const description = e.kind === "repeated_paint" ? `${e.measurement.stripe_count} repeated paint bands` : e.kind === "bright_bar" ? `${e.transverse_to_road ? "transverse paint" : "bright paint bar"} (${fmt(e.width)} m; ${e.points} points)` : `elevated panel (${fmt(e.width)} × ${fmt(e.height)} m; ${e.points} points)`;
+    label.append(radio, `#${c.id + 1} ${description}${confirmedCandidates.has(c.id) ? " — added" : " — unconfirmed"}. Nearby lane IDs: ${c.nearby_lanes.join(", ") || "none"}.`);
+    radio.onchange = () => chooseDiscovery(c);
+    $("vm-discovery-candidates").append(label);
+  }
+  const r = discoveryPreview;
+  $("vm-discovery-report").textContent = `${r.candidates.length} proposals shown${r.limited ? ` of ${r.detected_candidates} detected (preview limited)` : ""}; ${r.corridor_points} search points from ${r.source_points}; ${r.windows} windows (${r.unsupported_windows} unsupported). ${discardedCandidates.size} discarded; ${confirmedCandidates.size} added. ${r.warnings.join(" ")}`;
+  discoveryInputs(); draw();
+}
+function chooseDiscovery(c: DiscoveryCandidate): void {
+  discoveryCandidate = c.id;
+  const select = $<HTMLSelectElement>("vm-discovery-kind"); select.replaceChildren(new Option("Identify the object first", ""));
+  if (c.evidence.kind === "repeated_paint") select.add(new Option("Confirmed crosswalk", "crosswalk"));
+  else if (c.evidence.kind === "bright_bar") select.add(new Option("Confirmed stop-line marking", "stop_line"));
+  else { select.add(new Option("Confirmed vehicle signal", "vehicle_signal")); select.add(new Option("Confirmed pedestrian signal", "pedestrian_signal")); }
+  $<HTMLInputElement>("vm-discovery-lanes").value = ""; focusDiscovery(); discoveryInputs();
+}
+async function runDiscovery(): Promise<void> {
+  clearDiscovery(); const revision = discoveryRevision; const request = discoveryRequest();
+  setStatus("Searching road equipment around lane geometry…");
+  const report = await vectorMap<DiscoveryReport>("feature-discover", request);
+  if (revision !== discoveryRevision || !entries.has(request.id)) throw new Error("Point cloud or map changed; search again.");
+  discoveryPreview = report; discoverySnapshot = request;
+  $("vm-discovery").setAttribute("open", ""); renderDiscovery();
+}
+for (const id of ["cloud", "scope", "radius", "brightness"]) $("vm-discovery-" + id).addEventListener("input", () => { clearDiscovery(); draw(); });
+for (const id of ["kind", "lanes"]) $("vm-discovery-" + id).addEventListener("input", discoveryInputs);
+$("vm-discovery-show").addEventListener("input", draw);
+$("vm-discovery-search").onclick = async () => {
+  if (busy) return; busy = true; junctionInputs();
+  try { await runDiscovery(); setStatus(`Found ${discoveryPreview?.candidates.length ?? 0} unconfirmed equipment proposals. Inspect the points before adding.`); }
+  catch (err) { clearDiscovery(); draw(); setStatus(`Equipment search failed: ${errorText(err)}`); }
+  finally { busy = false; junctionInputs(); renderDiscovery(); }
+};
+$("vm-discovery-focus").onclick = focusDiscovery;
+$("vm-discovery-reject").onclick = () => { if (discoveryCandidate !== null) discardedCandidates.add(discoveryCandidate); discoveryCandidate = null; $<HTMLSelectElement>("vm-discovery-kind").value = ""; $<HTMLInputElement>("vm-discovery-lanes").value = ""; renderDiscovery(); };
+$("vm-discovery-selected").onclick = () => { if (selected !== null) $<HTMLInputElement>("vm-discovery-lanes").value = String(selected); discoveryInputs(); };
+function discoveryState() { return { report: discoveryPreview, snapshot: discoverySnapshot, discarded: [...discardedCandidates], confirmed: [...confirmedCandidates] }; }
+function restoreDiscovery(saved: ReturnType<typeof discoveryState>): void {
+  discoveryPreview = saved.report; discoverySnapshot = saved.snapshot;
+  discardedCandidates.clear(); saved.discarded.forEach(c => discardedCandidates.add(c));
+  confirmedCandidates.clear(); saved.confirmed.forEach(c => confirmedCandidates.add(c));
+  discoveryCandidate = null; renderDiscovery();
+}
+$("vm-discovery-add").onclick = async () => {
+  if (busy || discoveryCandidate === null || !discoverySnapshot) return;
+  const c = discoveryPreview?.candidates.find(c => c.id === discoveryCandidate); if (!c) return;
+  busy = true; junctionInputs();
+  try {
+    const request = discoveryRequest();
+    if (JSON.stringify(request) !== JSON.stringify(discoverySnapshot)) throw new Error("Search these inputs again before confirming.");
+    const classification = $<HTMLSelectElement>("vm-discovery-kind").value;
+    const lanes = $<HTMLInputElement>("vm-discovery-lanes").value.split(",").map(v => Number(v.trim()));
+    if (!classification || !lanes.length || lanes.some(id => !Number.isSafeInteger(id) || id <= 0)) throw new Error("Confirm the object type and positive lane IDs explicitly.");
+    const saved = discoveryState();
+    const edited = await vectorMap<Edited>("feature-confirm", { id: request.id, text: JSON.stringify({ ...JSON.parse(request.text), confirmations: [{ candidate: c.id, key: c.key, classification, lanes }] }) });
+    takeView(edited); saved.confirmed.push(c.id); restoreDiscovery(saved);
+    const added = (edited.result as { classification: string; id: number; reused: boolean }[])[0];
+    featureSelect.value = `${classification === "vehicle_signal" || classification === "pedestrian_signal" ? "signal" : classification}:${added.id}`; renderFeatureFields();
+    setStatus(`Reviewed ${classification.replaceAll("_", " ")} ${added.id} ${added.reused ? "already exists; no changes" : "added from point-cloud evidence"}. Geometry and lane assignments can be undone together.`);
+  } catch (err) { setStatus(`Could not add equipment: ${errorText(err)}`); }
+  finally { busy = false; junctionInputs(); renderDiscovery(); }
+};
+$("vm-discovery-inspect").onclick = async () => {
+  if (busy || !discoverySnapshot) return; const c = discoveryPreview?.candidates.find(c => c.id === discoveryCandidate); if (!c) return;
+  const revision = discoveryRevision; const request = discoverySnapshot; const saved = discoveryState();
+  busy = true; junctionInputs();
+  try {
+    const cloud = await cropCloud(request.id, c.min, c.max, true);
+    if (revision !== discoveryRevision || !entries.has(request.id)) { await removeCloud(cloud.id); throw new Error("Source changed; search again."); }
+    const source = entries.get(request.id)!; const added = addEntry(cloud);
+    if (c.evidence.kind === "elevated_panel") { added.mode = "solid"; refreshColors(added); }
+    record({ label: "automatic equipment proposal points", added: [added], hide: [source] }); renderList();
+    $<HTMLSelectElement>("vm-discovery-cloud").value = String(request.id); restoreDiscovery(saved); chooseDiscovery(c); renderDiscovery();
+    setStatus(`${cloud.count} original points isolated with attributes; source hidden. Confirm the object or discard it. Cloud Undo restores the source.`);
+  } catch (err) { setStatus(`Could not inspect equipment points: ${errorText(err)}`); }
+  finally { busy = false; junctionInputs(); renderDiscovery(); }
+};
+
 function buildInputs(): void {
   const fill = (select: HTMLSelectElement, items: { id: number; name: string }[]) => {
     const value = select.value;
@@ -876,14 +1014,36 @@ function buildInputs(): void {
   fill(junctionCloud, clouds().map((entry) => entry.cloud));
   fill($<HTMLSelectElement>("vm-signal-cloud"), clouds().map((entry) => entry.cloud));
   fill($<HTMLSelectElement>("vm-crosswalk-cloud"), clouds().map((entry) => entry.cloud));
+  fill($<HTMLSelectElement>("vm-discovery-cloud"), clouds().map((entry) => entry.cloud));
   fill(trajectoryInput, inputTrajectories());
   buildButton.disabled = busy || !cloudInput.value || !trajectoryInput.value;
   junctionInputs();
 }
-listChanged.add(() => { clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); buildInputs(); draw(); });
-pointsInvalidated.add(() => { clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); draw(); });
+listChanged.add(() => { clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); buildInputs(); draw(); });
+pointsInvalidated.add(() => { clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); draw(); });
 trajectoryChanged.add(buildInputs);
 buildInputs();
+function roadBuildOptions(): object {
+  return {
+    forward_lanes: Number($<HTMLInputElement>("vm-forward").value),
+    backward_lanes: Number($<HTMLInputElement>("vm-backward").value),
+    left_hand_traffic: $<HTMLSelectElement>("vm-traffic").value === "left",
+    lane_width: Number($<HTMLInputElement>("vm-width").value),
+    speed_limit: Number($<HTMLInputElement>("vm-speed").value),
+    segment_length: Number($<HTMLInputElement>("vm-segment").value),
+    anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
+    track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
+    fit_boundaries: $<HTMLInputElement>("vm-fit-boundaries").checked,
+    verify_curb_profiles: $<HTMLInputElement>("vm-verify-curbs").checked,
+    merge_repeated_passes: $<HTMLInputElement>("vm-merge-passes").checked,
+  };
+}
+function renderBuildReport(report: BuildReport): void {
+  $("vm-build-report").textContent = `${report.roads} road stretches, ${report.lanes} lanes, ${fmt(report.generated_length)} m. ` +
+    `Added ${fmt(report.added_length)} m; reused ${fmt(report.reused_length)} m of existing lanes. ` +
+    `Measured sources before fitting, left to right: ${report.observed_fraction.map(f => `${Math.round(f*100)}%`).join(", ")}. ` +
+    `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +report.warnings.join(" ");
+}
 buildButton.onclick = async () => {
   if (busy) return;
   const trajectory = inputTrajectories().find((t) => String(t.id) === trajectoryInput.value);
@@ -893,31 +1053,20 @@ buildButton.onclick = async () => {
   setTool(null);
   setStatus("Building draft roads from the point cloud and trajectory…");
   try {
-    const options = {
-      forward_lanes: Number($<HTMLInputElement>("vm-forward").value),
-      backward_lanes: Number($<HTMLInputElement>("vm-backward").value),
-      left_hand_traffic: $<HTMLSelectElement>("vm-traffic").value === "left",
-      lane_width: Number($<HTMLInputElement>("vm-width").value),
-      speed_limit: Number($<HTMLInputElement>("vm-speed").value),
-      segment_length: Number($<HTMLInputElement>("vm-segment").value),
-      anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
-      track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
-      fit_boundaries: $<HTMLInputElement>("vm-fit-boundaries").checked,
-      verify_curb_profiles: $<HTMLInputElement>("vm-verify-curbs").checked,
-      merge_repeated_passes: $<HTMLInputElement>("vm-merge-passes").checked,
-    };
+    const options = roadBuildOptions();
     const edited = await vectorMap<Edited>("build", {
       id: Number(cloudInput.value), positions: trajectory.poses.positions, text: JSON.stringify(options),
     });
     takeView(edited);
     const report = edited.result as BuildReport;
-    $("vm-build-report").textContent =
-      `${report.roads} road stretches, ${report.lanes} lanes, ${fmt(report.generated_length)} m. ` +
-      `Added ${fmt(report.added_length)} m; reused ${fmt(report.reused_length)} m of existing lanes. ` +
-      `Measured sources before fitting, left to right: ${report.observed_fraction.map((f) => `${Math.round(f * 100)}%`).join(", ")}. ` +
-      `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +
-      report.warnings.join(" ");
+    renderBuildReport(report);
     setStatus(report.lanes ? "Draft roads added. Review the boundaries, lane directions and junctions before export." : "Existing lanes matched; no new geometry added. Review the report before export.");
+    if ($<HTMLInputElement>("vm-discover-after-build").checked && view.lanes.length) {
+      $<HTMLSelectElement>("vm-discovery-cloud").value = cloudInput.value;
+      const built = report.lanes ? "Draft roads added." : "Existing lanes matched; no new geometry added.";
+      try { await runDiscovery(); setStatus(`${built} Equipment search found ${discoveryPreview?.candidates.length ?? 0} unconfirmed proposals; inspect classification and lane associations.`); }
+      catch (err) { setStatus(`${built} Equipment search failed: ${errorText(err)}`); }
+    }
   } catch (err) {
     setStatus(`Could not build draft roads: ${errorText(err)}`);
   } finally {
@@ -928,6 +1077,7 @@ buildButton.onclick = async () => {
 
 function takeView(edited: Edited): void {
   view = edited.view;
+  clearDiscovery();
   clearJunctionPreview();
   clearSignalPreview();
   clearCrosswalkPreview();
@@ -1137,13 +1287,25 @@ function roadCommand(reference: XYZ[]): object {
 }
 
 async function finishRoad(): Promise<void> {
+  if (busy) return;
   const reference = sketch;
   if (reference.length < 2) return setStatus("Click at least two points along the road.");
   const lanes = (roadCommand(reference) as { lanes: unknown[] }).lanes;
   if (lanes.length === 0) return setStatus("Give the road at least one lane.");
   sketch = [];
-  if (await apply([roadCommand(reference)], "Road built")) setTool(null);
-  else draw();
+  if (!$<HTMLInputElement>("vm-refine-sketch").checked) {
+    if (await apply([roadCommand(reference)], "Road built")) setTool(null);
+    else draw();
+    return;
+  }
+  busy = true; buildInputs();
+  try {
+    if (!cloudInput.value) throw new Error("Choose the point cloud for this drawn path.");
+    const edited = await vectorMap<Edited>("build", { id: Number(cloudInput.value), positions: new Float64Array(reference.flat()), text: JSON.stringify(roadBuildOptions()) });
+    takeView(edited); const report = edited.result as BuildReport; renderBuildReport(report); setTool(null);
+    setStatus(`Road built from the point cloud and your traced path: ${report.lanes} added lanes. The path and nominal widths are operator inputs; review the boundary evidence report.`);
+  } catch (err) { sketch = reference; draw(); setStatus(`Could not fit the drawn road: ${errorText(err)}`); }
+  finally { busy = false; buildInputs(); }
 }
 
 const roadTool: Tool = {
@@ -1230,13 +1392,13 @@ laneTool("vm-crosswalk", "Click a lane where the crosswalk crosses the road; sto
 );
 laneTool("vm-select", "Click a lane to see it, set its speed limit or remove it.", async () => {});
 
-function featureSelection(): { kind: "crosswalk" | "signal"; id: number } | null {
+function featureSelection(): { kind: "crosswalk" | "signal" | "stop_line"; id: number } | null {
   const [kind, id] = $<HTMLSelectElement>("vm-feature").value.split(":");
-  return kind === "crosswalk" || kind === "signal" ? { kind, id: Number(id) } : null;
+  return kind === "crosswalk" || kind === "signal" || kind === "stop_line" ? { kind, id: Number(id) } : null;
 }
 function featurePoints(): XYZ[] {
   const s = featureSelection();
-  return s?.kind === "crosswalk" ? view.crosswalks.find(c => c.id === s.id)?.outline ?? [] : view.signals.find(c => c.id === s?.id)?.points ?? [];
+  return s?.kind === "crosswalk" ? view.crosswalks.find(c => c.id === s.id)?.outline ?? [] : s?.kind === "stop_line" ? view.stopLines.find(c => c.id === s.id)?.points ?? [] : view.signals.find(c => c.id === s?.id)?.points ?? [];
 }
 function featureInputs(): void {
   const s = featureSelection();
@@ -1258,8 +1420,9 @@ function renderFeatureFields(): void {
   $("vm-feature-height-row").hidden = !signal;
   $<HTMLInputElement>("vm-feature-height").value = signal?.height == null ? "" : String(signal.height);
   const crossing = view.crosswalks.find(c => s?.kind === "crosswalk" && c.id === s.id);
-  const source = signal?.geometrySource ?? crossing?.geometrySource ?? "imported_or_manual";
-  const label = source.startsWith("point_cloud_brightness_stripes") ? "Measured ground-paint bands" : source.startsWith("point_cloud_box_fit") ? "Measured point-cloud housing" : "Imported or manually drawn geometry";
+  const stop = view.stopLines.find(c => s?.kind === "stop_line" && c.id === s.id);
+  const source = signal?.geometrySource ?? crossing?.geometrySource ?? stop?.geometrySource ?? "imported_or_manual";
+  const label = source.startsWith("point_cloud_brightness_stripes") ? "Measured ground-paint bands" : source.startsWith("point_cloud_brightness_bar") ? "Measured ground-paint bar" : source.startsWith("point_cloud_box_fit") ? "Measured point-cloud housing" : "Imported or manually drawn geometry";
   $("vm-feature-source").textContent = s ? `${label}${source.endsWith("_user_edited") ? "; manually edited" : ""}. ${crossing && !crossing.editable ? "Separate polygon/edge geometry requires a dedicated editor." : "Review lane associations and legal meaning after edits."}` : "Choose a feature explicitly before editing.";
   renderFeatureVertex(); featureInputs();
 }
@@ -1268,6 +1431,7 @@ function renderFeatures(): void {
   const old = select.value;
   select.replaceChildren(new Option("Choose a crossing or signal", ""),
     ...view.crosswalks.map(c => new Option(`Crossing ${c.id}`, `crosswalk:${c.id}`)),
+    ...view.stopLines.map(c => new Option(`Stop line ${c.id}`, `stop_line:${c.id}`)),
     ...view.signals.map(c => new Option(`Signal ${c.id}`, `signal:${c.id}`)));
   select.value = [...select.options].some(o => o.value === old) ? old : "";
   if (!select.value && editingFeature) setTool(null);
@@ -1439,7 +1603,7 @@ function renderHint(): void {
   if (activeTool() === roadTool) {
     hint.textContent = sketch.length
       ? `${sketch.length} point${sketch.length === 1 ? "" : "s"}; double-click or Enter to build the road, Backspace to take one back, Esc to cancel.`
-      : "Click points along the road (its centre line); double-click or Enter to build it.";
+      : $<HTMLInputElement>("vm-refine-sketch").checked ? "Trace the outside forward lane over the points; Enter fits ground height and boundary evidence. The path and lane widths remain your inputs." : "Click points along the road (its centre line); double-click or Enter to build it.";
     return;
   }
   if (activeTool() === null || !hint.textContent) {

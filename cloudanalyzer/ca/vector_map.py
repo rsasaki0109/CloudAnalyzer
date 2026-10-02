@@ -332,6 +332,60 @@ def measure_vector_map_crosswalk(
     return _publish(payload, out)
 
 
+def discover_vector_map_features(
+    cloud: str,
+    out_dir: str,
+    *,
+    vector_map: str | None = None,
+    scope: str = "road_corridor",
+    corridor_radius: float = 12.0,
+    brightness_fraction: float = 0.65,
+    confirmations: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Find paint and elevated-panel proposals without manually placed feature boxes.
+
+    Use roads generated from the cloud and trajectory as vector_map, or scan all
+    supported lower surfaces with scope='ground_surface' and no map. Surface
+    anchors may include other levels; shapes do not establish object identity.
+    Preview writes the unchanged map plus proposals to a NEW output directory.
+    To add, pass explicit candidate/key/classification/lanes confirmations from
+    the preview against the original map/source. Native code rechecks support
+    and adds atomically. Nearby lanes are suggestions, never traffic semantics.
+    Signal lamps, stop signs and signal/stop-line relationships are not inferred.
+
+    This local compatibility reader loads the whole attribute-bearing source.
+    Whole-ground search supports at most 2M source points; road corridors at
+    most 2M selected points. Export an attribute-preserving scene for larger
+    inputs. These caps do not bound the reader's peak memory.
+    """
+    if scope not in {"road_corridor", "ground_surface"}:
+        raise ValueError("scope must be road_corridor or ground_surface")
+    if scope == "road_corridor" and vector_map is None:
+        raise ValueError("road_corridor search requires generated roads")
+    if not math.isfinite(corridor_radius) or not 4 <= corridor_radius <= 18:
+        raise ValueError("corridor_radius must be finite and between 4 and 18 metres")
+    if not math.isfinite(brightness_fraction) or not 0.4 <= brightness_fraction <= 0.9:
+        raise ValueError("brightness_fraction must be finite and between 0.4 and 0.9")
+    if urlsplit(cloud).scheme in {"http", "https"}:
+        raise ValueError("feature discovery requires a local attribute-preserving scene")
+    for path in [cloud] + ([vector_map] if vector_map else []):
+        if not Path(path).is_file():
+            raise FileNotFoundError(path)
+    out = Path(out_dir).resolve()
+    if out.exists():
+        raise FileExistsError(f"output directory already exists: {out}; choose a new directory")
+    module = core()
+    if module is None or not hasattr(module, "discover_vector_map_features"):
+        raise RuntimeError("automatic feature discovery needs an updated Rust core")
+    options = {"scope": scope, "corridor_radius": corridor_radius, "brightness_fraction": brightness_fraction}
+    encoded = None if confirmations is None else json.dumps(confirmations, allow_nan=False)
+    payload = json.loads(module.discover_vector_map_features(cloud, vector_map, json.dumps(options, allow_nan=False), encoded))
+    payload["report"]["options"] = options
+    payload["report"]["inputs"] = {"cloud": str(Path(cloud).resolve()), "vector_map": str(Path(vector_map).resolve()) if vector_map else None}
+    payload["report"]["processing"] = {"strategy": "whole-file-compatibility-with-attributes", "corridor_point_limit": 2_000_000}
+    return _publish(payload, out)
+
+
 def _publish(payload: dict[str, Any], out: Path) -> dict[str, Any]:
     report: dict[str, Any] = payload["report"]
     names = {

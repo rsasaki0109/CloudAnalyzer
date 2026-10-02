@@ -129,6 +129,19 @@ python3 -m cloudanalyzer_cli.main downsample \
 python3 ../scripts/build_readme_pointcloud_figure.py
 ```
 
+## Hard Intersection vector-map audit
+
+`vector-map-hard-intersection.png`, `vector-map-hard-intersection-local-paint.png`
+and `vector-map-hard-intersection-envelope.png`
+plot actual source geometry, generated proposals
+and a separately evaluated reference map. Data: Hard Intersection Multimodal Samples,
+Dynamic Map Platform Co., Ltd. (2026),
+[source and revision](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c),
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+CloudAnalyzer creates the derived plot; colors, decimation, overlays and coverage
+metrics are added for evaluation. No claim of original survey authorship or endorsement.
+See [methods and reproduction](../vector-map-hard-intersection.md).
+
 ## Result Summary
 
 These commands produced the metrics shown in the root README:

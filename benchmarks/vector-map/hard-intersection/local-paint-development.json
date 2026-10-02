@@ -1,0 +1,3740 @@
+{
+  "source": {
+    "repository": "dynamic-maps/hard-intersection-multimodal-sample",
+    "revision": "e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+    "license": "CC-BY-4.0",
+    "attribution": "Hard Intersection Multimodal Samples, Dynamic Map Platform Co., Ltd., 2026",
+    "source_url": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample",
+    "files": [
+      {
+        "path": "README.md",
+        "bytes": 13924,
+        "sha256": "1d6bc5f35e0ee40f66297e57a94c9a05bd3b540ca4aa46a464a14a3d282ab092"
+      },
+      {
+        "path": "maps/lanelet2/jp_tokyo_takanawadai.osm",
+        "bytes": 1321518,
+        "sha256": "00e78f8bcaa1e6cdfb5226123a42ceaeadbf1907cb9cfca59f6a16674eb10ec2"
+      },
+      {
+        "path": "annotation/semantic_images/jp_tokyo_takanawadai_images_annotations.json",
+        "bytes": 1821528,
+        "sha256": "918d8f4dc53f6210729d5fb49e8ff1f2045d7c50e2a4ae6ce6190a38b96fb08c"
+      },
+      {
+        "path": "calibration/cameras.txt",
+        "bytes": 2333,
+        "sha256": "3b195b2d43894286ba277f871d5d6f9e20574b7582f4316cd1958448bd6e6f84"
+      },
+      {
+        "path": "calibration/images.txt",
+        "bytes": 165605,
+        "sha256": "b4d8e6ab3cf903bfc246771a9c56caa0b59dd4c16144b1a4c2cfcf2958ed6c75"
+      },
+      {
+        "path": "trajectory/26047_Record004_260217.txt",
+        "bytes": 357994,
+        "sha256": "a1f93f7ce5fa510c098ab3f4f41b908464698fd852d943603fa7c9cccd31aea9"
+      },
+      {
+        "path": "trajectory/26047_Record050_260217.txt",
+        "bytes": 349474,
+        "sha256": "09f02a818774608639743e62a7971dcd7981071b2132d0b8791842d1945343fc"
+      },
+      {
+        "path": "trajectory/26047a_Record004_260217.txt",
+        "bytes": 472438,
+        "sha256": "99df01e22836cf58920abe7f6f937353c4bda52fda5389accfef03702fa95e9b"
+      },
+      {
+        "path": "trajectory/26047a_Record084_260217.txt",
+        "bytes": 279974,
+        "sha256": "eea0e65097526c6118395e61d3037cf288c2119a04220543a18cef444911cff0"
+      },
+      {
+        "path": "pointcloud/jp_tokyo_takanawadai.las",
+        "bytes": 1212745887,
+        "sha256": "6be552eb9a6fa147be70680de18dca0075cd479084a3b416c5ef0cb22545040a"
+      },
+      {
+        "path": "annotation/semantic_pointcloud/jp_tokyo_takanawadai_class.las",
+        "bytes": 1210335627,
+        "sha256": "7d4e3dce5c3558b0ccb9859b55c4699b4d465492b6b7cb9113b626f154c3a1fc"
+      }
+    ],
+    "raw_cloud_and_labels_are_distinct": true
+  },
+  "baseline_commit": "81a4353cfa4dff9d707328de95464d0e56ed6f56",
+  "generation_sha256": "759373bab54b077e8dbc3c1c49a66ec4ca3a9761c7e61c9bd44feee92108dd50",
+  "coordinate_audit": {
+    "nodes": 5396,
+    "local_xy_compared_nodes": 5396,
+    "local_xy_vs_utm54_remainder_max_m": 6.215426456418595e-05,
+    "reference_transform": "OSM longitude/latitude -> EPSG:6677 (always_xy); no registration fit",
+    "local_xy_frame": "UTM54 100km remainders inferred by checking all tagged nodes",
+    "generator_frame": "source EPSG:6677; heights unchanged"
+  },
+  "runtime": {
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "core_version": "0.1.0",
+    "native_binaries": [
+      {
+        "name": "_core.pyd",
+        "sha256": "70d32d39e7896de06a447dd3d37e9985189c86ea9c60ad042c3229a09934990d"
+      }
+    ],
+    "note": "source commit is the intended baseline; installed binary provenance must be verified by its builder"
+  },
+  "evaluation_role": "development_scene",
+  "raw_points": 35668990,
+  "annotated_points": 35598100,
+  "index_join": false,
+  "user_data_counts": {
+    "11": 19524992,
+    "12": 518109,
+    "21": 286062,
+    "22": 485066,
+    "23": 164228,
+    "31": 88829,
+    "32": 6049,
+    "33": 5065,
+    "34": 11037,
+    "35": 93731,
+    "41": 1943356,
+    "42": 124832,
+    "43": 207477,
+    "44": 27587,
+    "51": 10351,
+    "52": 13912,
+    "53": 6778,
+    "61": 4719,
+    "62": 9727,
+    "63": 4380,
+    "71": 12061813
+  },
+  "instance_gate_m": 2.0,
+  "surface_z_gate_m": 0.75,
+  "limitations": [
+    "one intersection, no independent generalization estimate",
+    "annotations derived from HDMap and incomplete",
+    "unmatched proposals are not proven negatives",
+    "geometry proposals, no automatic semantic classification",
+    "no training, ground-truth registration or reference geometry supplied to generation",
+    "detector developed using this scene; not independent held-out generalization",
+    "10cm original-point decimation; fixed tile halos can still cause proposal differences",
+    "crosswalk outline is observed paint extent, reference is mapped crossing footprint"
+  ],
+  "instances": {
+    "repeated_paint": {
+      "reference_total": 7,
+      "reference_in_source_extent": 7,
+      "owned_proposals": 18,
+      "matched": 4,
+      "reference_misses": [
+        "11670",
+        "12630",
+        "12662"
+      ],
+      "unmatched_proposals": [
+        {
+          "tile": "tile-01-02.las",
+          "id": 41
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 60
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 30
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 21
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 37
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 12
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 15
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 16
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 18
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 22
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 13
+        }
+      ],
+      "matches": [
+        {
+          "proposal": {
+            "tile": "tile-01-03.las",
+            "id": 34
+          },
+          "reference": "12664",
+          "center_distance_m": 0.5724950627089089,
+          "geometry": {
+            "symmetric_mean_m": 0.9115712025628908,
+            "hausdorff_m": 2.817487621358477
+          },
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "proposal": {
+            "tile": "tile-02-01.las",
+            "id": 20
+          },
+          "reference": "12637",
+          "center_distance_m": 0.5081840457992849,
+          "geometry": {
+            "symmetric_mean_m": 1.209803722551777,
+            "hausdorff_m": 2.2516923805309617
+          },
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "proposal": {
+            "tile": "tile-03-02.las",
+            "id": 17
+          },
+          "reference": "12772",
+          "center_distance_m": 0.3946285020407868,
+          "geometry": {
+            "symmetric_mean_m": 2.512875434643488,
+            "hausdorff_m": 8.26670273009059
+          },
+          "annotated_class_near_geometry_fraction_25cm": 0.8177339901477833
+        },
+        {
+          "proposal": {
+            "tile": "tile-03-03.las",
+            "id": 16
+          },
+          "reference": "12599",
+          "center_distance_m": 0.25368219452110596,
+          "geometry": {
+            "symmetric_mean_m": 0.8708723602873958,
+            "hausdorff_m": 2.664802172435975
+          },
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        }
+      ],
+      "proposal_annotation_proximity": [
+        {
+          "tile": "tile-01-02.las",
+          "id": 41,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 60,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 20,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 30,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 21,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 37,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 12,
+          "annotated_class_near_geometry_fraction_25cm": 0.9133858267716536
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 15,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 16,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 17,
+          "annotated_class_near_geometry_fraction_25cm": 0.8177339901477833
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 18,
+          "annotated_class_near_geometry_fraction_25cm": 0.9042553191489362
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 16,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 22,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 13,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        }
+      ],
+      "annotated_class_spatial_sample_near_proposal_geometry_fraction_35cm": 0.2760948045832679,
+      "proximity_meaning": "distance to sampled outline/bottom edge; not area overlap or semantic accuracy"
+    },
+    "bright_bar": {
+      "reference_total": 8,
+      "reference_in_source_extent": 8,
+      "owned_proposals": 91,
+      "matched": 4,
+      "reference_misses": [
+        "48",
+        "96",
+        "5711",
+        "10719"
+      ],
+      "unmatched_proposals": [
+        {
+          "tile": "tile-00-00.las",
+          "id": 0
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 4
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 7
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 9
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 11
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 15
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 17
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 18
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 11
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 15
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 20
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 24
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 30
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 38
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 41
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 43
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 16
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 34
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 35
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 36
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 38
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 39
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 40
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 41
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 54
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 58
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 63
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 66
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 67
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 51
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 53
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 54
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 56
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 58
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 59
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 60
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 64
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 69
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 70
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 72
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 73
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 33
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 34
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 42
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 44
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 47
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 39
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 22
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 23
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 26
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 33
+        },
+        {
+          "tile": "tile-02-03.las",
+          "id": 33
+        },
+        {
+          "tile": "tile-02-03.las",
+          "id": 48
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 25
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 35
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 36
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 43
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 46
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 47
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 48
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 49
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 51
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 52
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 54
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 55
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 56
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 57
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 28
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 29
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 42
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 28
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 29
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 32
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 20
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 22
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 10
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 12
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 15
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 17
+        }
+      ],
+      "matches": [
+        {
+          "proposal": {
+            "tile": "tile-02-02.las",
+            "id": 27
+          },
+          "reference": "9943",
+          "center_distance_m": 1.2544944495880674,
+          "geometry": {
+            "symmetric_mean_m": 0.5927196489702626,
+            "hausdorff_m": 1.5876096941027287
+          },
+          "annotated_class_near_geometry_fraction_25cm": 0.4594594594594595
+        },
+        {
+          "proposal": {
+            "tile": "tile-02-02.las",
+            "id": 28
+          },
+          "reference": "9946",
+          "center_distance_m": 0.340617437205567,
+          "geometry": {
+            "symmetric_mean_m": 0.30522236501676353,
+            "hausdorff_m": 0.9195080926643423
+          },
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "proposal": {
+            "tile": "tile-02-03.las",
+            "id": 44
+          },
+          "reference": "8172",
+          "center_distance_m": 0.9196729441692576,
+          "geometry": {
+            "symmetric_mean_m": 0.42179862666188483,
+            "hausdorff_m": 1.9402911033678099
+          },
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "proposal": {
+            "tile": "tile-03-02.las",
+            "id": 37
+          },
+          "reference": "5879",
+          "center_distance_m": 0.2233256169064798,
+          "geometry": {
+            "symmetric_mean_m": 0.18234219589624934,
+            "hausdorff_m": 0.37676260669254047
+          },
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        }
+      ],
+      "proposal_annotation_proximity": [
+        {
+          "tile": "tile-00-00.las",
+          "id": 0,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 4,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 7,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 9,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 11,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 15,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 17,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-00.las",
+          "id": 18,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 11,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 15,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 20,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 24,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 30,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 38,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 41,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 43,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 16,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 35,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 36,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 38,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 39,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 40,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-01.las",
+          "id": 41,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 54,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 58,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 63,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 66,
+          "annotated_class_near_geometry_fraction_25cm": 0.7
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 67,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 51,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 53,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 54,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 56,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 58,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 59,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 60,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 64,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 69,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 70,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 72,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 73,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 33,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 42,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 44,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 47,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 39,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 22,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 23,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 26,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.4594594594594595
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 28,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-02-02.las",
+          "id": 33,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-03.las",
+          "id": 33,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-03.las",
+          "id": 44,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-02-03.las",
+          "id": 48,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 25,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 35,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 36,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 43,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 46,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 47,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 48,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 49,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 51,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 52,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 54,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 55,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 56,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 57,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 28,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 29,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 37,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 42,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 28,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 29,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 32,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 20,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 22,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 10,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 12,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 15,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 17,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        }
+      ],
+      "annotated_class_spatial_sample_near_proposal_geometry_fraction_35cm": 0.25267737617135205,
+      "proximity_meaning": "distance to sampled outline/bottom edge; not area overlap or semantic accuracy"
+    },
+    "elevated_panel": {
+      "reference_total": 19,
+      "reference_in_source_extent": 19,
+      "owned_proposals": 227,
+      "matched": 5,
+      "reference_misses": [
+        "12674",
+        "12686",
+        "12694",
+        "12703",
+        "12716",
+        "12723",
+        "12731",
+        "12741",
+        "12744",
+        "12753",
+        "12759",
+        "12762",
+        "12768",
+        "12771"
+      ],
+      "unmatched_proposals": [
+        {
+          "tile": "tile-00-01.las",
+          "id": 1
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 2
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 3
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 5
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 6
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 7
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 8
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 9
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 12
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 16
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 18
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 21
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 22
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 23
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 25
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 34
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 35
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 37
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 5
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 7
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 14
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 16
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 20
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 22
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 23
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 24
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 25
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 26
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 30
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 32
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 34
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 35
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 37
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 38
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 40
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 41
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 42
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 44
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 1
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 2
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 7
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 8
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 12
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 13
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 14
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 22
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 26
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 0
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 3
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 4
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 5
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 15
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 16
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 11
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 12
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 14
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 15
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 18
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 20
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 21
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 23
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 24
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 25
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 26
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 28
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 29
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 30
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 32
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 33
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 34
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 35
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 36
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 38
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 32
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 34
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 35
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 36
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 38
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 40
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 42
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 43
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 46
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 47
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 48
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 49
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 59
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 21
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 23
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 37
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 38
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 39
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 40
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 67
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 68
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 11
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 12
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 14
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 15
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 16
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 17
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 21
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 22
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 23
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 25
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 26
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 28
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 29
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 30
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 32
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 43
+        },
+        {
+          "tile": "tile-01-05.las",
+          "id": 8
+        },
+        {
+          "tile": "tile-01-05.las",
+          "id": 10
+        },
+        {
+          "tile": "tile-01-05.las",
+          "id": 21
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 24
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 26
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 28
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 29
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 30
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 32
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 33
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 34
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 35
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 36
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 37
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 44
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 47
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 34
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 35
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 37
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 38
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 39
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 40
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 42
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 43
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 44
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 45
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 47
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 49
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 50
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 28
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 9
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 11
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 12
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 13
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 14
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 15
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 18
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 20
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 21
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 24
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 26
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 27
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 41
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 42
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 45
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 46
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 50
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 53
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 55
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 56
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 60
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 62
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 63
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 65
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 28
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 29
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 30
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 32
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 33
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 36
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 37
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 38
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 39
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 40
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 41
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 42
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 43
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 44
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 45
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 46
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 50
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 51
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 52
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 53
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 54
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 55
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 57
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 58
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 59
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 60
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 63
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 64
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 65
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 67
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 68
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 69
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 70
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 73
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 74
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 30
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 36
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 29
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 31
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 33
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 19
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 21
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 22
+        }
+      ],
+      "matches": [
+        {
+          "proposal": {
+            "tile": "tile-01-02.las",
+            "id": 57
+          },
+          "reference": "12750",
+          "center_distance_m": 0.3794595609212266,
+          "geometry": {
+            "symmetric_mean_m": 0.1712466701371484,
+            "hausdorff_m": 0.197104933521394
+          },
+          "annotated_class_near_geometry_fraction_25cm": 0.0,
+          "height_error_m": 0.44908999999999843
+        },
+        {
+          "proposal": {
+            "tile": "tile-01-02.las",
+            "id": 62
+          },
+          "reference": "12738",
+          "center_distance_m": 0.08020922367295648,
+          "geometry": {
+            "symmetric_mean_m": 0.069928906375876,
+            "hausdorff_m": 0.14255074426622233
+          },
+          "annotated_class_near_geometry_fraction_25cm": 1.0,
+          "height_error_m": 0.09877999999999981
+        },
+        {
+          "proposal": {
+            "tile": "tile-01-03.las",
+            "id": 55
+          },
+          "reference": "12756",
+          "center_distance_m": 0.35834610097800146,
+          "geometry": {
+            "symmetric_mean_m": 0.33068049179793957,
+            "hausdorff_m": 0.4796103903201738
+          },
+          "annotated_class_near_geometry_fraction_25cm": 0.0,
+          "height_error_m": 0.3290799999999987
+        },
+        {
+          "proposal": {
+            "tile": "tile-03-02.las",
+            "id": 23
+          },
+          "reference": "12709",
+          "center_distance_m": 0.0758798561975269,
+          "geometry": {
+            "symmetric_mean_m": 0.055023181965059675,
+            "hausdorff_m": 0.1658603609546279
+          },
+          "annotated_class_near_geometry_fraction_25cm": 1.0,
+          "height_error_m": 0.10339000000000281
+        },
+        {
+          "proposal": {
+            "tile": "tile-03-03.las",
+            "id": 34
+          },
+          "reference": "12765",
+          "center_distance_m": 0.05567430418323221,
+          "geometry": {
+            "symmetric_mean_m": 0.04245261331968757,
+            "hausdorff_m": 0.05451270144910729
+          },
+          "annotated_class_near_geometry_fraction_25cm": 0.0,
+          "height_error_m": 0.04924499999999832
+        }
+      ],
+      "proposal_annotation_proximity": [
+        {
+          "tile": "tile-00-01.las",
+          "id": 1,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 2,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 3,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 5,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 6,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 7,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 8,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 9,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 12,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 16,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 18,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 21,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 22,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 23,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 25,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 35,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-01.las",
+          "id": 37,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 5,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 7,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 14,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 16,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 20,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 22,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 23,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 24,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 25,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 26,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 30,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 32,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 35,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 37,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 38,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 40,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 41,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 42,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-02.las",
+          "id": 44,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 1,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 2,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 7,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 8,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 12,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 13,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 14,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 22,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-03.las",
+          "id": 26,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 0,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 3,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 4,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 5,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 15,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-00-04.las",
+          "id": 16,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 11,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 12,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 14,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 15,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 18,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 20,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 21,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 23,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 24,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 25,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 26,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 28,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 29,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 30,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 32,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 33,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 35,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 36,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-00.las",
+          "id": 38,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 32,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 35,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 36,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 38,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 40,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 42,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 43,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 46,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 47,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 48,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 49,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 57,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 59,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-02.las",
+          "id": 62,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 21,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 23,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 37,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 38,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 39,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 40,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 55,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 67,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-03.las",
+          "id": 68,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 11,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 12,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 14,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 15,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 16,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 17,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 21,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 22,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 23,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 25,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 26,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 28,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 29,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 30,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 32,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-04.las",
+          "id": 43,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-05.las",
+          "id": 8,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-05.las",
+          "id": 10,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-01-05.las",
+          "id": 21,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 24,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 26,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 28,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 29,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 30,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 32,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 33,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 35,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 36,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 37,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 44,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-00.las",
+          "id": 47,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 35,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 37,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 38,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 39,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 40,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 42,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 43,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 44,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 45,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 47,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 49,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-01.las",
+          "id": 50,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-04.las",
+          "id": 28,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 9,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 11,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 12,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 13,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 14,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 15,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 18,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 20,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 21,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 24,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 26,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-02-05.las",
+          "id": 27,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 41,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 42,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 45,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 46,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 50,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 53,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 55,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 56,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 60,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 62,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 63,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-00.las",
+          "id": 65,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 28,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 29,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 30,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 32,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 33,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 36,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 37,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 38,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 39,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 40,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 41,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 42,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 43,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 44,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 45,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 46,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 50,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 51,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 52,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 53,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 54,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 55,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 57,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 58,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 59,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 60,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 63,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 64,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 65,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 67,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 68,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 69,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 70,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 73,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-01.las",
+          "id": 74,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-02.las",
+          "id": 23,
+          "annotated_class_near_geometry_fraction_25cm": 1.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 30,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 34,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-03.las",
+          "id": 36,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 29,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 31,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-04.las",
+          "id": 33,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 19,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 21,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        },
+        {
+          "tile": "tile-03-05.las",
+          "id": 22,
+          "annotated_class_near_geometry_fraction_25cm": 0.0
+        }
+      ],
+      "annotated_class_spatial_sample_near_proposal_geometry_fraction_35cm": 0.09824561403508772,
+      "proximity_meaning": "distance to sampled outline/bottom edge; not area overlap or semantic accuracy"
+    }
+  },
+  "road_drafts": [
+    {
+      "recording": "26047_Record004_260217.txt",
+      "trajectory": "26047_Record004_260217-00.csv",
+      "lanes": 6,
+      "extraction": {
+        "added_length": 141.4380251637748,
+        "anchored_prior_vertices": 104,
+        "curb_vertices": 23,
+        "fitted_vertices": 216,
+        "generated_length": 141.4380251637748,
+        "intensity_used": true,
+        "intensity_vertices": 86,
+        "joined_connections": 0,
+        "lanes": 6,
+        "maximum_fit_displacement": 0.50000000000129,
+        "observed_fraction": [
+          0.4722222222222222,
+          0.3055555555555556,
+          0.7777777777777778
+        ],
+        "rejected_curb_candidates": 1,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "roads": 1,
+        "sampled_sections": 72,
+        "support_edge_vertices": 3,
+        "tracked_vertices": 132,
+        "trajectory_length": 141.45485245763834,
+        "unsupported_sections": 0,
+        "warnings": [
+          "104 boundary vertices use the configured lane width rather than a detected feature.",
+          "1 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "104 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "132 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "216 vertices were fitted to trajectory-relative boundary curves (maximum XY movement 0.500 m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 104
+      },
+      "boundary_distance_to_explicit_white_reference": {
+        "median_m": 3.2596028421109704,
+        "p90_m": 21.1144475789756
+      },
+      "explicit_white_reference_length_sample_coverage_35cm": 0.4564811355995517,
+      "white_label_spatial_sample_coverage_35cm": 0.4292936802973978,
+      "meaning": "geometry agreement only; each drive has lane-count/width priors, no white-line semantic classifier"
+    },
+    {
+      "recording": "26047_Record050_260217.txt",
+      "trajectory": "26047_Record050_260217-00.csv",
+      "lanes": 6,
+      "extraction": {
+        "added_length": 129.96637839758696,
+        "anchored_prior_vertices": 115,
+        "curb_vertices": 3,
+        "fitted_vertices": 198,
+        "generated_length": 129.96637839758696,
+        "intensity_used": true,
+        "intensity_vertices": 68,
+        "joined_connections": 0,
+        "lanes": 6,
+        "maximum_fit_displacement": 0.49999999999935907,
+        "observed_fraction": [
+          0.4090909090909091,
+          0.15151515151515152,
+          0.6515151515151515
+        ],
+        "rejected_curb_candidates": 4,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "roads": 1,
+        "sampled_sections": 66,
+        "support_edge_vertices": 9,
+        "tracked_vertices": 128,
+        "trajectory_length": 129.97786935016117,
+        "unsupported_sections": 0,
+        "warnings": [
+          "118 boundary vertices use the configured lane width rather than a detected feature.",
+          "4 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "115 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "128 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "198 vertices were fitted to trajectory-relative boundary curves (maximum XY movement 0.500 m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 118
+      },
+      "boundary_distance_to_explicit_white_reference": {
+        "median_m": 7.106917934330115,
+        "p90_m": 21.051520544508975
+      },
+      "explicit_white_reference_length_sample_coverage_35cm": 0.05155024280911468,
+      "white_label_spatial_sample_coverage_35cm": 0.1318463444857497,
+      "meaning": "geometry agreement only; each drive has lane-count/width priors, no white-line semantic classifier"
+    },
+    {
+      "recording": "26047a_Record004_260217.txt",
+      "trajectory": "26047a_Record004_260217-00.csv",
+      "lanes": 6,
+      "extraction": {
+        "added_length": 142.4526728641634,
+        "anchored_prior_vertices": 122,
+        "curb_vertices": 0,
+        "fitted_vertices": 219,
+        "generated_length": 142.4526728641634,
+        "intensity_used": true,
+        "intensity_vertices": 78,
+        "joined_connections": 0,
+        "lanes": 6,
+        "maximum_fit_displacement": 0.5000000000003278,
+        "observed_fraction": [
+          0.4246575342465753,
+          0.4383561643835616,
+          0.2191780821917808
+        ],
+        "rejected_curb_candidates": 2,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "roads": 1,
+        "sampled_sections": 73,
+        "support_edge_vertices": 1,
+        "tracked_vertices": 140,
+        "trajectory_length": 142.4707680429453,
+        "unsupported_sections": 0,
+        "warnings": [
+          "140 boundary vertices use the configured lane width rather than a detected feature.",
+          "2 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "122 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "140 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "219 vertices were fitted to trajectory-relative boundary curves (maximum XY movement 0.500 m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 140
+      },
+      "boundary_distance_to_explicit_white_reference": {
+        "median_m": 3.264260291410393,
+        "p90_m": 20.356171879755355
+      },
+      "explicit_white_reference_length_sample_coverage_35cm": 0.17033993276055287,
+      "white_label_spatial_sample_coverage_35cm": 0.15008674101610905,
+      "meaning": "geometry agreement only; each drive has lane-count/width priors, no white-line semantic classifier"
+    },
+    {
+      "recording": "26047a_Record084_260217.txt",
+      "trajectory": "26047a_Record084_260217-00.csv",
+      "lanes": 6,
+      "extraction": {
+        "added_length": 136.35183865658718,
+        "anchored_prior_vertices": 116,
+        "curb_vertices": 5,
+        "fitted_vertices": 210,
+        "generated_length": 136.35183865658718,
+        "intensity_used": true,
+        "intensity_vertices": 80,
+        "joined_connections": 0,
+        "lanes": 6,
+        "maximum_fit_displacement": 0.5000000000012802,
+        "observed_fraction": [
+          0.1,
+          0.38571428571428573,
+          0.7428571428571429
+        ],
+        "rejected_curb_candidates": 5,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "roads": 1,
+        "sampled_sections": 70,
+        "support_edge_vertices": 1,
+        "tracked_vertices": 139,
+        "trajectory_length": 136.3641861232715,
+        "unsupported_sections": 0,
+        "warnings": [
+          "124 boundary vertices use the configured lane width rather than a detected feature.",
+          "5 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "116 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "139 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "210 vertices were fitted to trajectory-relative boundary curves (maximum XY movement 0.500 m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 124
+      },
+      "boundary_distance_to_explicit_white_reference": {
+        "median_m": 3.735134587840371,
+        "p90_m": 20.300321047203283
+      },
+      "explicit_white_reference_length_sample_coverage_35cm": 0.3014568546880837,
+      "white_label_spatial_sample_coverage_35cm": 0.1776456009913259,
+      "meaning": "geometry agreement only; each drive has lane-count/width priors, no white-line semantic classifier"
+    }
+  ],
+  "white_reference": {
+    "explicit_white_ways": 17,
+    "samples_total": 7150,
+    "samples_in_source_xy_extent": 2677,
+    "sampling_step_m": 0.1
+  },
+  "tile_status": [
+    {
+      "path": "tile-00-00.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 25,
+      "owned": 8
+    },
+    {
+      "path": "tile-00-01.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 30,
+      "owned": 29
+    },
+    {
+      "path": "tile-00-02.las",
+      "limited": true,
+      "unsupported_windows": 0,
+      "windows": 24,
+      "owned": 21
+    },
+    {
+      "path": "tile-00-03.las",
+      "limited": false,
+      "unsupported_windows": 1,
+      "windows": 22,
+      "owned": 10
+    },
+    {
+      "path": "tile-00-04.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 17,
+      "owned": 6
+    },
+    {
+      "path": "tile-00-05.las",
+      "limited": false,
+      "unsupported_windows": 1,
+      "windows": 7,
+      "owned": 0
+    },
+    {
+      "path": "tile-00-06.las",
+      "error": "whole-ground search needs supported surface tiles and at most 2000 tiles; split the source scene"
+    },
+    {
+      "path": "tile-01-00.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 30,
+      "owned": 24
+    },
+    {
+      "path": "tile-01-01.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 40,
+      "owned": 8
+    },
+    {
+      "path": "tile-01-02.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 34,
+      "owned": 22
+    },
+    {
+      "path": "tile-01-03.las",
+      "limited": false,
+      "unsupported_windows": 1,
+      "windows": 35,
+      "owned": 24
+    },
+    {
+      "path": "tile-01-04.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 27,
+      "owned": 23
+    },
+    {
+      "path": "tile-01-05.las",
+      "limited": false,
+      "unsupported_windows": 1,
+      "windows": 16,
+      "owned": 3
+    },
+    {
+      "path": "tile-01-06.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 3,
+      "owned": 0
+    },
+    {
+      "path": "tile-02-00.las",
+      "limited": true,
+      "unsupported_windows": 1,
+      "windows": 32,
+      "owned": 16
+    },
+    {
+      "path": "tile-02-01.las",
+      "limited": false,
+      "unsupported_windows": 1,
+      "windows": 46,
+      "owned": 17
+    },
+    {
+      "path": "tile-02-02.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 42,
+      "owned": 7
+    },
+    {
+      "path": "tile-02-03.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 46,
+      "owned": 3
+    },
+    {
+      "path": "tile-02-04.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 38,
+      "owned": 18
+    },
+    {
+      "path": "tile-02-05.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 27,
+      "owned": 15
+    },
+    {
+      "path": "tile-02-06.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 9,
+      "owned": 0
+    },
+    {
+      "path": "tile-03-00.las",
+      "limited": true,
+      "unsupported_windows": 0,
+      "windows": 19,
+      "owned": 12
+    },
+    {
+      "path": "tile-03-01.las",
+      "limited": true,
+      "unsupported_windows": 1,
+      "windows": 32,
+      "owned": 36
+    },
+    {
+      "path": "tile-03-02.las",
+      "limited": false,
+      "unsupported_windows": 1,
+      "windows": 30,
+      "owned": 9
+    },
+    {
+      "path": "tile-03-03.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 34,
+      "owned": 10
+    },
+    {
+      "path": "tile-03-04.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 30,
+      "owned": 7
+    },
+    {
+      "path": "tile-03-05.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 25,
+      "owned": 8
+    },
+    {
+      "path": "tile-03-06.las",
+      "limited": false,
+      "unsupported_windows": 0,
+      "windows": 10,
+      "owned": 0
+    }
+  ]
+}

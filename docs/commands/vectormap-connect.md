@@ -31,10 +31,15 @@ Requires the updated native Rust core, as [vectormap-build](vectormap-build.md) 
 
 Only driving lanes without turn labels and with open directed ends participate.
 Existing connections remain authoritative. Default gates are a 0.5–30 m XY gap,
-endpoint height difference at most 0.3 m, headings pointing into/out of the gap, and
+endpoint height difference at most 0.3 m **or** absolute rise/XY-gap ratio at most 12%,
+headings pointing into/out of the gap, and
 turn magnitude at most 135 degrees. The exact generated connector centre is sampled
 every 0.5 m. A sample requires at least three cloud points within 0.75 m XY; their 15th
-percentile height must be within 0.3 m of the sample. At least 90% of samples must pass.
+percentile height must be within 0.3 m of the sample. Both directed endpoints must pass
+this ground test, independently of the fraction. At least 90% of centre samples must pass.
+The grade allowance avoids excluding a supported sloping street solely because its ends
+are over 0.3 m apart vertically. It preserves the existing connector heights; it does
+not fit a vertical road profile, establish a permitted grade or check full lane width.
 Change the distance with `--max-gap` (1–100 m) and the fraction with
 `--min-ground-support` (0.5–1). Inputs are loaded into memory; this is not large-cloud
 streaming or registration.

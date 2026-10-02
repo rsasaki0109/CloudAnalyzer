@@ -1,0 +1,322 @@
+{
+  "workflow_verification": {
+    "inputMap": false,
+    "pointCount": 1883866,
+    "recordedDriveIndex": 1,
+    "operatorInputs": {
+      "description": "Explicit source-only development review. Path and lane priors reuse the original operator manifest. These types, lane associations and selected geometric manoeuvres are operator inputs, not recovered legal traffic rules.",
+      "road_operator_manifest": "vector-map-hard-intersection-inputs.json",
+      "build_overrides": {
+        "fit_source_surface": true
+      },
+      "junction_options": {
+        "max_gap": 50,
+        "min_ground_support": 1,
+        "check_boundary_support": true
+      },
+      "reviewed_pairs": [
+        [
+          21,
+          34
+        ],
+        [
+          22,
+          35
+        ],
+        [
+          23,
+          36
+        ],
+        [
+          34,
+          47
+        ],
+        [
+          35,
+          48
+        ],
+        [
+          36,
+          49
+        ],
+        [
+          50,
+          37
+        ],
+        [
+          51,
+          38
+        ],
+        [
+          52,
+          39
+        ],
+        [
+          38,
+          25
+        ],
+        [
+          39,
+          26
+        ],
+        [
+          69,
+          34
+        ],
+        [
+          21,
+          70
+        ],
+        [
+          37,
+          70
+        ],
+        [
+          77,
+          49
+        ],
+        [
+          23,
+          79
+        ],
+        [
+          52,
+          79
+        ],
+        [
+          83,
+          47
+        ],
+        [
+          50,
+          84
+        ],
+        [
+          76,
+          70
+        ],
+        [
+          69,
+          78
+        ]
+      ],
+      "deferred_requested_pairs": [
+        [
+          69,
+          26
+        ],
+        [
+          76,
+          24
+        ]
+      ],
+      "interval_policy": "No connections between fragments attributed to the same input path. Preserve the previously deferred 34.259 m, disconnected outer pieces and unsupported requested turns.",
+      "association_review": "Crossing lanes were reviewed against measured paint and the new road footprints, including partial overlaps at turn edges. Signal types and controlled approach lanes remain explicit operator choices. Signal stop-line relationships, lamps and lawful manoeuvres are not inferred.",
+      "discarded_candidates": [
+        75,
+        44,
+        110
+      ],
+      "confirmations": [
+        {
+          "candidate": 45,
+          "classification": "crosswalk",
+          "lanes": [
+            69,
+            111,
+            135,
+            138,
+            141
+          ]
+        },
+        {
+          "candidate": 50,
+          "classification": "crosswalk",
+          "lanes": [
+            87,
+            90,
+            93,
+            96,
+            99
+          ]
+        },
+        {
+          "candidate": 67,
+          "classification": "crosswalk",
+          "lanes": [
+            123,
+            147
+          ]
+        },
+        {
+          "candidate": 90,
+          "classification": "crosswalk",
+          "lanes": [
+            114,
+            117
+          ]
+        },
+        {
+          "candidate": 92,
+          "classification": "crosswalk",
+          "lanes": [
+            102,
+            147
+          ]
+        },
+        {
+          "candidate": 115,
+          "classification": "crosswalk",
+          "lanes": [
+            108,
+            120,
+            123,
+            126,
+            129,
+            132,
+            144
+          ]
+        },
+        {
+          "candidate": 122,
+          "classification": "crosswalk",
+          "lanes": [
+            99,
+            132,
+            138,
+            141,
+            144
+          ]
+        },
+        {
+          "candidate": 62,
+          "classification": "stop_line",
+          "lanes": [
+            83
+          ]
+        },
+        {
+          "candidate": 141,
+          "classification": "stop_line",
+          "lanes": [
+            76,
+            77
+          ]
+        },
+        {
+          "candidate": 56,
+          "classification": "vehicle_signal",
+          "lanes": [
+            69
+          ]
+        },
+        {
+          "candidate": 129,
+          "classification": "vehicle_signal",
+          "lanes": [
+            76,
+            77
+          ]
+        },
+        {
+          "candidate": 73,
+          "classification": "pedestrian_signal",
+          "lanes": [
+            69
+          ]
+        },
+        {
+          "candidate": 85,
+          "classification": "pedestrian_signal",
+          "lanes": [
+            83
+          ]
+        }
+      ]
+    },
+    "clipDisplayZ": "26.04 … 35.526",
+    "roadLanes": 59,
+    "proposals": 145,
+    "detected": 328,
+    "unsupported": 1,
+    "crosswalks": 7,
+    "stopMarkings": 2,
+    "signalHousings": 4,
+    "maximumNativeDifference": 7.275957614183426e-12,
+    "exactEditUndo": true,
+    "exactAllAdditionUndo": true,
+    "localOsmRoundtrip": true,
+    "exactRegulatoryLaneAssociations": true,
+    "beforeNativeDifference": 0,
+    "sourceRoadNativeDifference": 0,
+    "beforeSourceReviewLanes": 9,
+    "afterSourceReviewLanes": 0,
+    "approachFragments": 38,
+    "selectedConnections": 21,
+    "fullCurveCandidates": 115,
+    "deferredRoadLengthM": 34.25890841752784,
+    "structuralErrors": 0,
+    "connectivityWarnings": 15,
+    "autowareWarnings": 19,
+    "unreviewedSignalStopLinks": 4,
+    "exactWarningRoundtrip": true,
+    "generatedWarnings": [
+      "lane:10 has neither predecessors nor successors",
+      "lane:11 has neither predecessors nor successors",
+      "lane:12 has neither predecessors nor successors",
+      "lane:13 has neither predecessors nor successors",
+      "lane:24 has neither predecessors nor successors",
+      "lane:60 has neither predecessors nor successors",
+      "lane:61 has neither predecessors nor successors",
+      "lane:62 has neither predecessors nor successors",
+      "lane:63 has neither predecessors nor successors",
+      "lane:64 has neither predecessors nor successors",
+      "lane:65 has neither predecessors nor successors",
+      "lane:8 has neither predecessors nor successors",
+      "lane:9 has neither predecessors nor successors",
+      "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+      "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+      "traffic light regulatory_element:167 has no stop line",
+      "traffic light regulatory_element:169 has no stop line",
+      "traffic light regulatory_element:171 has no stop line",
+      "traffic light regulatory_element:173 has no stop line"
+    ],
+    "equipmentPreviewLimited": true,
+    "finalSourceReviewLanes": 0,
+    "referenceInputs": [],
+    "sourceSha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+    "sourceCommit": "a194c2157b5e5e74c3f684dd698d071dac67a6fd",
+    "nativeSha256": "fbe1c724cc0b1e75d84b017bf3d041bd87999f3cc2aead18690b81a790800ae3",
+    "errors": []
+  },
+  "gif": {
+    "width": 800,
+    "height": 528,
+    "frames": 14,
+    "duration_s": 27.96,
+    "bytes": 1492306,
+    "sha256": "8ed6719dc93d44bed2f26ccb73b9679d29edb044250585a73a2fadaefb0cbb33"
+  },
+  "runtime_source_commit": "a194c2157b5e5e74c3f684dd698d071dac67a6fd",
+  "native_module_sha256": "fbe1c724cc0b1e75d84b017bf3d041bd87999f3cc2aead18690b81a790800ae3",
+  "production_wasm_sha256": "1231a09038b93ee737ff81c8732d9354168bb36778020c9d2266369b02d42e12",
+  "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+  "generation_reference_inputs": [],
+  "operator_inputs_sha256": "6e2e7bb7e7ff9d3305f4de54ccdf7dda7ed05d4fe417386a8f8e5bdba3859a37",
+  "native_generated_osm_sha256": "834f3f9c9a349f2a421b092cb15c7021b787c72e7c4bd0ed365da5cf589c58df",
+  "actual_ui_generated_osm_sha256": "79a86fc19bb11cf655a895dc3c027f73d2509168406966c92eaf5284e035ed4f",
+  "frame_manifest_sha256": "96a84424e75371a3d3ae348b7294360e866e5118ecc68c6ceccf13c546784ff7",
+  "attribution": {
+    "source": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample",
+    "revision": "e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
+    "creator": "Dynamic Map Platform Co., Ltd.",
+    "year": 2026,
+    "license": "CC BY 4.0"
+  },
+  "limitations": [
+    "Same development scene; not independent accuracy",
+    "Zero source flags partly reflect deferred extent and the shared source gate",
+    "Preview cap, incomplete equipment and unreviewed traffic semantics remain",
+    "Native structural 15 warnings and app Autoware 19 warnings are different profiles, not reload loss"
+  ]
+}

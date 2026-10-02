@@ -17,6 +17,47 @@ import hard_intersection_generate as gen
 import hard_intersection_evaluate as audit
 import vector_map_quality_audit as quality
 import vector_map_surface_evaluate as surface
+import prepare_supported_intersection_media as intersection_media
+
+
+def test_intersection_review_never_reconnects_deferred_input_path():
+    comparison = {"cases": [{"name": "split road", "after": {"added_lane_ids": [1, 2]}},
+                            {"name": "branch", "after": {"added_lane_ids": [3]}}]}
+    supported = {"from": 1, "to": 2, "ground_support": 1.0, "boundary_support": [1.0, 1.0]}
+    config = {"reviewed_pairs": [[1, 2]], "deferred_requested_pairs": []}
+    with pytest.raises(ValueError, match="deferred interval"):
+        intersection_media.check_selection(config, comparison, {"candidates": [supported]})
+    supported["to"] = 3
+    config["reviewed_pairs"] = [[1, 3]]
+    intersection_media.check_selection(config, comparison, {"candidates": [supported]})
+    config["deferred_requested_pairs"] = [[1, 3]]
+    with pytest.raises(ValueError, match="review original points again"):
+        intersection_media.check_selection(config, comparison, {"candidates": [supported]})
+
+
+@pytest.mark.parametrize("changed", [None, {"ground_support": .99}, {"boundary_support": [1.0, .99]}])
+def test_intersection_review_rejects_stale_or_partial_source_support(changed):
+    comparison = {"cases": [{"name": "arterial", "after": {"added_lane_ids": [1]}},
+                            {"name": "branch", "after": {"added_lane_ids": [2]}}]}
+    candidates = [] if changed is None else [{"from": 1, "to": 2, "ground_support": 1.0,
+                                              "boundary_support": [1.0, 1.0], **changed}]
+    with pytest.raises(ValueError, match="full centre and boundary"):
+        intersection_media.check_selection({"reviewed_pairs": [[1, 2]], "deferred_requested_pairs": []},
+                                          comparison, {"candidates": candidates})
+
+
+def test_equipment_and_connections_preserve_all_existing_road_records():
+    original = {"lanes": [{"id": 1, "left": 2, "right": 3, "speed_limit": {"kmh": 40}}],
+                "boundaries": [{"id": 2, "geometry": [[0, 0, 0], [1, 0, 0]]}]}
+    changed = json.loads(json.dumps(original))
+    changed["lanes"].append({"id": 4, "left": 5, "right": 6})
+    changed["regulatory_elements"] = [{"id": 10, "lanes": [1]}]
+    assert intersection_media.retained_roads(original, changed)
+    changed["boundaries"][0]["geometry"][1][2] = .01
+    assert not intersection_media.retained_roads(original, changed)
+    changed = json.loads(json.dumps(original))
+    changed["lanes"][0]["speed_limit"]["kmh"] = 50
+    assert not intersection_media.retained_roads(original, changed)
 
 
 def test_surface_evaluation_reports_all_deferred_and_counts_only_added_lane_samples(tmp_path, monkeypatch):

@@ -1,12 +1,20 @@
 # Reproduce the vector map GIFs
 
-The main README animation builds two complex Tokyo junctions from source points,
-recorded arterial segments and operator-traced branches, then reviews measured
-road equipment. Another animation uses recorded PandaSet poses. The expandable
+The main README animation compares default and source-footprint roads in two
+complex Tokyo junctions, then reviews supported connections and measured equipment.
+Its [generation protocol and editable result](vector-map-supported-intersection.md)
+retain deferred extent, connectivity warnings and unreviewed signal-stop links.
+The earlier Tokyo animation below preserves its original geometry and quality
+audit. Another animation uses recorded PandaSet poses. The expandable
 surveyed-intersection example explicitly edits imported context. All captures
 operate the production app; captions and crop/scale are added to real screenshots.
 
 ## Source-only hard intersection
+
+This is the earlier 49-lane capture, retained for comparison and historical
+reproduction. The main README now uses
+`docs/images/web/vector-map-supported-intersection.gif`; see its separate
+[comparison, verification and reproduction](vector-map-supported-intersection.md).
 
 `docs/images/web/vector-map-hard-intersection.gif` is adapted from
 [Hard Intersection Multimodal Samples](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample),

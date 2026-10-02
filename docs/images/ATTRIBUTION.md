@@ -137,6 +137,13 @@ python3 ../scripts/build_readme_pointcloud_figure.py
 
 ## Hard Intersection vector-map audit
 
+`web/vector-map-supported-intersection.gif` captures actual source-footprint
+regeneration, reviewed connections and equipment, editing, Undo and reload over
+the same pinned Hard Intersection source credited below. Derived map geometry,
+operator review, captions, screen crop/scale and GIF palette conversion are added
+by CloudAnalyzer. The GIF and published generated-map artifacts use CC BY 4.0;
+see [protocol, limits and reproduction](../vector-map-supported-intersection.md).
+
 `vector-map-hard-intersection.png`, `vector-map-hard-intersection-local-paint.png`,
 `vector-map-hard-intersection-envelope.png` and `vector-map-quality.png`
 plot actual source geometry, generated proposals

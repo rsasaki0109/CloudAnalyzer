@@ -2494,6 +2494,35 @@ test("vector map: point paint candidates require confirmation, invalidate, expor
   await page.locator("#vm-crosswalk-add").click();
   await expect(status(page)).toContainText("already measured");
   await expect(page.locator("#vm-undo")).toBeDisabled();
+  const imported = await exportXml();
+  await page.locator("#vm-crosswalk-measure summary").click();
+  await page.locator("#vm-feature-editor summary").click();
+  await expect(page.locator("#vm-feature-height-row")).toBeHidden();
+  await page.locator("#vm-feature-apply").click();
+  await expect(status(page)).toContainText("Geometry unchanged");
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+  const x = Number(await page.locator("#vm-feature-x").inputValue());
+  await page.locator("#vm-feature-x").fill(String(x + .15));
+  await page.locator("#vm-feature-z").fill("2.1");
+  await page.locator("#vm-feature-apply").click();
+  await expect(status(page)).toContainText("edited");
+  await expect(page.locator("#vm-feature-source")).toContainText("Measured ground-paint bands; manually edited");
+  const changed = await exportXml();
+  const bandTag = (xml: string) => xml.match(/<tag k="cloudanalyzer_paint_bands" v="[^"]*"/g);
+  expect(bandTag(changed)).toEqual(bandTag(imported));
+  expect(changed).toContain('k="cloudanalyzer_user_edited" v="yes"');
+  await page.locator("#vm-undo").click();
+  expect(await exportXml()).toBe(imported);
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+  // Collapse the first side onto its next vertex: validation must keep the map.
+  await page.locator("#vm-feature-vertex").selectOption("1");
+  const next = await Promise.all(["x", "y", "z"].map(a => page.locator(`#vm-feature-${a}`).inputValue()));
+  await page.locator("#vm-feature-vertex").selectOption("0");
+  for (const [i, a] of ["x", "y", "z"].entries()) await page.locator(`#vm-feature-${a}`).fill(next[i]);
+  await page.locator("#vm-feature-apply").click();
+  await expect(status(page)).toContainText("Feature edit failed");
+  await expect(page.locator("#vm-undo")).toBeDisabled();
+  expect(await exportXml()).toBe(imported);
 });
 
 test("vector map: measured signal preview, stale inputs, export, replay and undo", async ({ page }) => {
@@ -2539,8 +2568,64 @@ test("vector map: measured signal preview, stale inputs, export, replay and undo
   await expect(page.locator("#vm-signal-add")).toBeEnabled();
   await page.locator("#vm-signal-add").click();
   await expect(status(page)).toContainText("already measured");
+  await page.locator("#vector-map-panel").getByText("Measure a signal from points", { exact: true }).click();
+  await page.locator("#vm-feature-editor summary").click();
+  await expect(page.locator("#vm-feature-height-row")).toBeVisible();
+  await page.locator("#vm-feature-z").fill("7.2");
+  await page.locator("#vm-feature-height").fill("0.7");
+  await page.locator("#vm-feature-apply").click();
+  await expect(status(page)).toContainText("edited");
+  await expect(page.locator("#vm-feature-source")).toContainText("Measured point-cloud housing; manually edited");
+  const editedFile = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
+  await page.locator("#vm-export").click();
+  const editedXml = (await bytesOf(await editedFile)).toString();
+  expect(editedXml).toContain('k="height" v="0.7"');
+  expect(editedXml).not.toContain('v="traffic_light_bulbs"');
+  await page.locator("#vm-undo").click();
+  const restoredFile = page.waitForEvent("download", (d) => d.suggestedFilename() === "lanelet2_map.osm");
+  await page.locator("#vm-export").click();
+  expect((await bytesOf(await restoredFile)).toString()).toBe(xml);
   await page.locator("#vm-undo").click();
   await expect(page.locator("#vm-status")).not.toContainText("traffic light");
+});
+
+test("vector map: selected feature dragging cancels, keeps Z and undoes exactly", async ({ page }) => {
+  await open(page, []);
+  const map = { format: "vectormap-ir", version: 1,
+    lanes: [{ id: 3, kind: "driving", left: 1, right: 2 }],
+    boundaries: [{ id: 1, kind: { type: "virtual" }, geometry: [[49995,69999,2],[50005,69999,2]] },
+      { id: 2, kind: { type: "virtual" }, geometry: [[49995,69997,2],[50005,69997,2]] }],
+    traffic_signals: [{ id: 4, kind: "vehicle", geometry: [[49999,70000,7],[50000,70000,7],[50001,70000,7]], height: .5 }] };
+  await page.locator("#vm-file").setInputFiles({ name: "feature.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(map)) });
+  await expect(status(page)).toContainText("Opened feature.json");
+  const exportXml = async () => {
+    await page.waitForTimeout(220);
+    const saved = page.waitForEvent("download", d => d.suggestedFilename() === "lanelet2_map.osm");
+    await page.locator("#vm-export").click(); return (await bytesOf(await saved)).toString();
+  };
+  const before = await exportXml();
+  await page.locator("#vm-feature-editor summary").click();
+  await page.locator("#vm-feature").selectOption("signal:4");
+  await page.locator('[data-view="top"]').click();
+  await page.locator("#vm-feature-focus").click();
+  await page.waitForTimeout(700);
+  const box = (await page.locator("#viewport > canvas").boundingBox())!;
+  const x = box.x+box.width/2, y = box.y+box.height/2;
+  await page.locator("#vm-feature-drag").click();
+  await page.mouse.move(x,y); await page.mouse.down();
+  await expect(page.locator("#vm-feature-vertex")).toHaveValue("1");
+  await page.mouse.move(x+20,y+25,{steps:5});
+  await page.keyboard.press("Escape"); await page.mouse.up();
+  expect(await exportXml()).toBe(before); await expect(page.locator("#vm-undo")).toBeDisabled();
+  await page.locator("#vm-feature-drag").click();
+  await page.mouse.move(x,y); await page.mouse.down();
+  await page.mouse.move(x+20,y+25,{steps:5}); await page.mouse.up();
+  await expect(status(page)).toContainText("Feature 4 edited");
+  await expect(page.locator("#vm-feature-z")).toHaveValue("7");
+  const changed = await exportXml(); expect(changed).not.toBe(before);
+  expect(changed).toContain('k="cloudanalyzer_user_edited" v="yes"');
+  await page.locator("#vm-undo").click(); expect(await exportXml()).toBe(before);
+  await expect(page.locator("#vm-undo")).toBeDisabled();
 });
 
 test("vector map: branching junction preview, selection, invalidation and batch undo", async ({ page }) => {

@@ -193,6 +193,22 @@ impl VectorMapSession {
         serde_json::to_string(&report).map_err(error)
     }
 
+    /// Explicitly edit existing crossing/signal geometry as one Undo step.
+    #[wasm_bindgen(js_name = editFeatureGeometry)]
+    pub fn edit_feature_geometry(&mut self, options: &str) -> Result<String, JsError> {
+        let o = serde_json::from_str(options).map_err(error)?;
+        let before = self.map.clone();
+        let report =
+            ca_core::vector_map::feature_editing::edit(&mut self.map, &o).map_err(error)?;
+        if report.changed {
+            self.undo.push(before);
+            if self.undo.len() > UNDO_DEPTH {
+                self.undo.remove(0);
+            }
+        }
+        serde_json::to_string(&report).map_err(error)
+    }
+
     /// Undo the last edit; false if there is none.
     pub fn undo(&mut self) -> bool {
         match self.undo.pop() {
@@ -276,12 +292,15 @@ impl VectorMapSession {
                             })
                             .unwrap_or_default()
                     });
-                json!({"id": c.id, "outline": ring, "paintBands":paint_bands})
+                json!({"id": c.id, "outline": ring, "paintBands":paint_bands,
+                    "editable": c.polygon.is_none() && c.left_edge.points.len() >= 2 && c.right_edge.points.len() >= 2 && ring.len() <= 256,
+                    "geometrySource": c.attributes.get("cloudanalyzer_geometry_source").or_else(|| c.attributes.get_prefixed("lanelet2", "cloudanalyzer_geometry_source")).unwrap_or("imported_or_manual")})
             })
             .collect();
         let signals: Vec<Value> = map
             .traffic_signals()
-            .map(|s| json!({"id": s.id, "points": points(&s.geometry), "height": s.height}))
+            .map(|s| json!({"id": s.id, "points": points(&s.geometry), "height": s.height,
+                "geometrySource": s.attributes.get("cloudanalyzer_geometry_source").or_else(|| s.attributes.get_prefixed("lanelet2", "cloudanalyzer_geometry_source")).unwrap_or("imported_or_manual")}))
             .collect();
         json!({
             "lanes": lanes,
@@ -427,6 +446,48 @@ mod tests {
         assert!(replay["reused"].is_number());
         assert_eq!(restored.to_json(), imported);
         assert_eq!(restored.undo.len(), 0);
+        let crossing = restored.map.crosswalks().next().unwrap();
+        let id = crossing.id;
+        let bands = crossing
+            .attributes
+            .get_prefixed("lanelet2", "cloudanalyzer_paint_bands")
+            .unwrap()
+            .to_string();
+        let mut vertices: Vec<_> = crossing
+            .outline()
+            .points
+            .iter()
+            .map(|p| [p.x, p.y, p.z])
+            .collect();
+        vertices[0][0] += 0.1;
+        let edit = serde_json::json!({"kind":"crosswalk","id":id,"points":vertices}).to_string();
+        restored.edit_feature_geometry(&edit).unwrap();
+        assert_eq!(restored.undo.len(), 1);
+        let changed = restored.to_json();
+        restored.edit_feature_geometry(&edit).unwrap();
+        assert_eq!(restored.to_json(), changed);
+        assert_eq!(restored.undo.len(), 1);
+        restored.measure_crosswalk(&cloud, &options, false).unwrap();
+        assert_eq!(restored.to_json(), changed); // measuring again preserves the explicit edit
+        let saved: serde_json::Value =
+            serde_json::from_str(&restored.export_lanelet2(true)).unwrap();
+        let mut reopened = super::VectorMapSession::new();
+        reopened
+            .open("edited.osm", saved["osm"].as_str().unwrap())
+            .unwrap();
+        let walk = reopened.map.crosswalk(id).unwrap();
+        assert_eq!(
+            walk.attributes
+                .get_prefixed("lanelet2", "cloudanalyzer_geometry_source"),
+            Some("point_cloud_brightness_stripes_user_edited")
+        );
+        assert_eq!(
+            walk.attributes
+                .get_prefixed("lanelet2", "cloudanalyzer_paint_bands"),
+            Some(bands.as_str())
+        );
+        assert!(restored.undo());
+        assert_eq!(restored.to_json(), imported);
         assert!(s.undo());
         assert_eq!(s.to_json(), before);
     }
@@ -471,6 +532,32 @@ mod tests {
         assert!(replay["reused"].is_number());
         assert_eq!(restored.to_json(), imported);
         assert_eq!(restored.undo.len(), 0);
+        let signal = restored.map.traffic_signals().next().unwrap();
+        let id = signal.id;
+        let mut vertices: Vec<_> = signal
+            .geometry
+            .points
+            .iter()
+            .map(|p| [p.x, p.y, p.z])
+            .collect();
+        vertices[0][2] += 0.1;
+        restored
+            .edit_feature_geometry(
+                &serde_json::json!({"kind":"signal","id":id,"points":vertices,"height":0.7})
+                    .to_string(),
+            )
+            .unwrap();
+        assert_eq!(restored.undo.len(), 1);
+        let saved: serde_json::Value =
+            serde_json::from_str(&restored.export_lanelet2(true)).unwrap();
+        let mut reopened = super::VectorMapSession::new();
+        reopened
+            .open("edited.osm", saved["osm"].as_str().unwrap())
+            .unwrap();
+        assert_eq!(reopened.map.traffic_signal(id).unwrap().height, Some(0.7));
+        assert!(reopened.map.traffic_signal(id).unwrap().bulbs.is_empty());
+        assert!(restored.undo());
+        assert_eq!(restored.to_json(), imported);
         assert!(s.undo());
         assert_eq!(s.to_json(), before);
     }

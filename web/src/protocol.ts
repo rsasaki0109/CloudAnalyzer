@@ -430,7 +430,7 @@ export const isBag = (name: string) => /\.(bag|mcap)$/i.test(name);
 export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
 
 /** What a "vm" request does. */
-export type VectorMapOp = "open" | "apply" | "build" | "junction-preview" | "junction-connect" | "signal-preview" | "signal-add" | "crosswalk-preview" | "crosswalk-add" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
+export type VectorMapOp = "open" | "apply" | "feature-edit" | "build" | "junction-preview" | "junction-connect" | "signal-preview" | "signal-add" | "crosswalk-preview" | "crosswalk-add" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
 
 export type Request =
   | { kind: "copc-box"; id: number; min: Vec3; max: Vec3; maxPoints: number }

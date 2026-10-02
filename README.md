@@ -52,6 +52,8 @@ pose graph with one scan per pose.
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
   [Map display](docs/vector-map-display.md) shows road surfaces, direction arrows, clipped crosswalk
   bands and signal faces; selecting a lane highlights its incoming and outgoing connections.
+  [Feature geometry editing](docs/vector-map-feature-editing.md) adjusts crossing vertices
+  and signal housings with complete-map Undo while retaining observed paint and lamps.
 
 ## 2. Clean it and see what changed
 

@@ -309,6 +309,35 @@ pub fn discover_vector_map_features(
     }).map_err(PyValueError::new_err)
 }
 
+/// Check source coverage without modifying or exporting the input map.
+#[pyfunction]
+pub fn audit_vector_map_quality(py: Python<'_>, cloud: &str, vector_map: &str) -> PyResult<String> {
+    py.detach(|| {
+        let text = std::fs::read_to_string(vector_map).map_err(|e| e.to_string())?;
+        let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
+            vectormap_io::json::from_str(&text)
+        } else {
+            lanelet2::read_str(&text, &Default::default())
+        }
+        .map_err(|e| e.to_string())?;
+        if loaded
+            .issues
+            .iter()
+            .any(|i| i.severity == vectormap_core::Severity::Error)
+        {
+            return Err("resolve map import errors before auditing source coverage".to_string());
+        }
+        let cloud = ca_core::read(cloud, &std::fs::read(cloud).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+        let quality =
+            ca_core::vector_map::quality::audit(&loaded.map, &cloud).map_err(|e| e.to_string())?;
+        serde_json::to_string(&json!({"quality":quality,"import_issues":loaded.issues,
+            "validation":vectormap_validation::validate(&loaded.map,&Default::default())}))
+        .map_err(|e| e.to_string())
+    })
+    .map_err(PyValueError::new_err)
+}
+
 fn artifacts(map: &Map, import_issues: Value, mut report: Value) -> Result<String, String> {
     let (osm, export_issues) = lanelet2::write_string(map, &lanelet2::SaveOptions::autoware());
     if let Some(issue) = export_issues

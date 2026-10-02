@@ -566,6 +566,8 @@ const junctionAll = $<HTMLButtonElement>("vm-junction-all");
 const junctionNone = $<HTMLButtonElement>("vm-junction-none");
 const junctionList = $("vm-junction-candidates");
 function junctionInputs(): void {
+  $<HTMLSelectElement>("vm-quality-cloud").disabled = busy;
+  $<HTMLButtonElement>("vm-quality-check").disabled = busy || !$<HTMLSelectElement>("vm-quality-cloud").value || !view.lanes.length;
   discoveryInputs();
   featureInputs();
   signalInputs();
@@ -1013,6 +1015,7 @@ function buildInputs(): void {
   };
   fill(cloudInput, clouds().map((entry) => entry.cloud));
   fill(junctionCloud, clouds().map((entry) => entry.cloud));
+  fill($<HTMLSelectElement>("vm-quality-cloud"), clouds().map((entry) => entry.cloud));
   fill($<HTMLSelectElement>("vm-signal-cloud"), clouds().map((entry) => entry.cloud));
   fill($<HTMLSelectElement>("vm-crosswalk-cloud"), clouds().map((entry) => entry.cloud));
   fill($<HTMLSelectElement>("vm-discovery-cloud"), clouds().map((entry) => entry.cloud));
@@ -1020,8 +1023,8 @@ function buildInputs(): void {
   buildButton.disabled = busy || !cloudInput.value || !trajectoryInput.value;
   junctionInputs();
 }
-listChanged.add(() => { clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); buildInputs(); draw(); });
-pointsInvalidated.add(() => { clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); draw(); });
+listChanged.add(() => { clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); buildInputs(); draw(); });
+pointsInvalidated.add(() => { clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); draw(); });
 trajectoryChanged.add(buildInputs);
 buildInputs();
 function roadBuildOptions(): object {
@@ -1077,6 +1080,7 @@ buildButton.onclick = async () => {
 };
 
 function takeView(edited: Edited): void {
+  clearQuality();
   view = edited.view;
   clearDiscovery();
   clearJunctionPreview();
@@ -1161,6 +1165,36 @@ function laneLength(lane: LaneView): number {
   for (let i = 1; i < c.length; i++) length += Math.hypot(c[i][0] - c[i - 1][0], c[i][1] - c[i - 1][1]);
   return length;
 }
+
+interface SourceCurveSupport { fraction: number; start_supported: boolean; end_supported: boolean; insufficient_returns: number; height_mismatches: number }
+interface SourceQualityReport {
+  lanes: {lane: number; center: SourceCurveSupport; left: SourceCurveSupport; right: SourceCurveSupport; needs_review: boolean}[];
+  low_support_lanes: number[]; omitted_lanes: number[]; malformed_lanes: number[]; limited: boolean; warnings: string[];
+}
+let qualityRevision = 0;
+function clearQuality(): void {
+  qualityRevision++;
+  $("vm-quality-report").textContent = "Source coverage has not been checked for the current map and cloud.";
+  $("vm-quality-lanes").replaceChildren();
+}
+$("vm-quality-cloud").onchange = clearQuality;
+$("vm-quality-check").onclick = async () => {
+  if (busy) return;
+  clearQuality(); const revision = qualityRevision;
+  busy = true; junctionInputs(); setStatus("Checking lane centres and boundaries against source points…");
+  try {
+    const report = await vectorMap<SourceQualityReport>("quality", {id: Number($<HTMLSelectElement>("vm-quality-cloud").value)});
+    if (revision !== qualityRevision) return;
+    $("vm-quality-report").textContent = `${report.lanes.length} lanes checked; ${report.low_support_lanes.length} need source review; ${report.omitted_lanes.length} omitted; ${report.malformed_lanes.length} malformed. ${report.limited ? "Coverage check limited. " : ""}` + report.warnings.join(" ");
+    const percentage = (s: SourceCurveSupport) => `${Math.round(s.fraction*100)}%${s.start_supported && s.end_supported ? "" : " (end support missing)"}`;
+    for (const lane of report.lanes.filter(l => l.needs_review)) {
+      const button = document.createElement("button"); button.textContent = `Lane ${lane.lane}: centre ${percentage(lane.center)}, left ${percentage(lane.left)}, right ${percentage(lane.right)}`;
+      button.onclick = () => selectLane(lane.lane, true); $("vm-quality-lanes").append(button);
+    }
+    setStatus(`Source coverage checked: ${report.low_support_lanes.length} lanes need review. The map is unchanged.`);
+  } catch (err) { setStatus(`Could not check source coverage: ${errorText(err)}`); }
+  finally { busy = false; junctionInputs(); }
+};
 
 function selectLane(id: number | null, frame = false): void {
   selected = id;

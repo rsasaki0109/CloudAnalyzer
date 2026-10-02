@@ -1027,6 +1027,9 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
     case "build":
       if (req.id === undefined || !req.positions) throw new Error("Choose a point cloud and trajectory.");
       return withView(map.buildFromTrajectory(getCloud(req.id), req.positions, req.text ?? "{}"));
+    case "quality":
+      if (req.id === undefined) throw new Error("Choose a point cloud.");
+      return map.auditQuality(getCloud(req.id));
     case "junction-preview":
       if (req.id === undefined) throw new Error("Choose a point cloud.");
       return map.previewJunctions(getCloud(req.id), req.text ?? "{}");

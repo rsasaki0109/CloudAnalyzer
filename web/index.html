@@ -844,6 +844,14 @@
           <p class="hint small">Adding stores measured geometry and your classification. No lamp states, stop signs, automatic signal/stop-line links or legal priority are inferred. Map Undo restores geometry and lane assignments together.</p>
         </details>
         <ol id="vm-issues" class="issue-list small"></ol>
+        <details class="options" id="vm-quality">
+          <summary>Check map against source points</summary>
+          <p class="hint small">Check ground coverage along lane centres and both boundaries. Format checks can pass while a draft lacks source support. Missing or occluded returns need review; support does not prove correct lanes, clear roads or legal turns. Choose the original retained cloud in the same coordinate frame.</p>
+          <label>Point cloud <select id="vm-quality-cloud"></select></label>
+          <button id="vm-quality-check" disabled>Check source coverage</button>
+          <p id="vm-quality-report" class="small">Source coverage has not been checked.</p>
+          <div id="vm-quality-lanes" class="small"></div>
+        </details>
         <details class="options">
           <summary>Draft junction connections</summary>
           <label>Point cloud <select id="vm-junction-cloud"></select></label>

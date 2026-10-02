@@ -17,7 +17,7 @@ import numpy as np
 from hard_intersection_evaluate import geometry, read_reference, reference_center
 
 
-def plot(dataset, prepared, generated, evaluation, output):
+def plot(dataset, prepared, generated, evaluation, output, development=False):
     gen = json.loads((generated / "generation.json").read_text(encoding="utf-8"))
     report = json.loads((evaluation / "evaluation.json").read_text(encoding="utf-8"))
     refs, _, _ = read_reference(dataset / "maps/lanelet2/jp_tokyo_takanawadai.osm")
@@ -50,11 +50,12 @@ def plot(dataset, prepared, generated, evaluation, output):
                     ax.scatter(*c, s=50, marker="x", color="#172c36", linewidths=1.2)
             stats = report["instances"][kind]
             ax.plot([], [], color=color, label=f"{kind}: {stats['owned_proposals']} proposals, {stats['matched']}/{stats['reference_in_source_extent']} nearby")
-        ax.plot([], [], "--", color="#172c36", label="Held-out map (circle: nearby; x: missed)")
+        ax.plot([], [], "--", color="#172c36", label=f"{'Reference' if development else 'Held-out'} map (circle: nearby; x: missed)")
         ax.set(xlim=(-2, hi[0] - lo[0] + 2), ylim=(-2, hi[1] - lo[1] + 2), xlabel="Source easting offset (m)", ylabel="Source northing offset (m)", title=title)
         ax.set_aspect("equal")
         ax.legend(loc="upper right", fontsize=7)
-    fig.suptitle("Hard Intersection: fixed source-only baseline\n2 m center gate; nearby geometry is not semantic correctness", fontsize=12)
+    title = "source-only development audit" if development else "fixed source-only baseline"
+    fig.suptitle(f"Hard Intersection: {title}\n2 m center gate; nearby geometry is not semantic correctness", fontsize=12)
     fig.text(.5, .012, "Data: Dynamic Map Platform Co., Ltd. (2026), CC BY 4.0 | one intersection; incomplete map-derived annotations", ha="center", fontsize=7)
     output.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output, dpi=130)
@@ -65,5 +66,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ["dataset", "prepared", "generated", "evaluation", "output"]:
         parser.add_argument(name, type=Path)
+    parser.add_argument("--development", action="store_true", help="Label a detector developed using this scene rather than an untouched baseline")
     args = parser.parse_args()
-    plot(args.dataset, args.prepared, args.generated, args.evaluation, args.output)
+    plot(args.dataset, args.prepared, args.generated, args.evaluation, args.output, args.development)

@@ -1045,6 +1045,14 @@ pub fn add(
                 "confirmed classification must match the measured proposal type".into(),
             ));
         }
+        if let (Evidence::TransversePaint { geometry, .. }, Classification::StopLine) =
+            (&candidate.evidence, c.classification)
+            && c.lanes
+                .iter()
+                .any(|&lane| !super::quality::transverse_stop(map, geometry, lane))
+        {
+            return Err(BuildError("A stop marking must be transverse (at least 45 degrees) to every selected lane's local direction. Longitudinal paint cannot be confirmed as a stop line; inspect the marking and lane IDs.".into()));
+        }
     }
     let mut draft = map.clone();
     let mut additions = Vec::new();

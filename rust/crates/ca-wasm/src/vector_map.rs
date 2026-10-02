@@ -103,6 +103,13 @@ impl VectorMapSession {
         serde_json::to_string(&report).map_err(error)
     }
 
+    /// Read-only coverage check of lane centres and both boundaries against source points.
+    #[wasm_bindgen(js_name = auditQuality)]
+    pub fn audit_quality(&self, cloud: &crate::Cloud) -> Result<String, JsError> {
+        let report = ca_core::vector_map::quality::audit(&self.map, &cloud.inner).map_err(error)?;
+        serde_json::to_string(&report).map_err(error)
+    }
+
     /// Preview ground-supported junction drafts without changing the map or undo history.
     #[wasm_bindgen(js_name = previewJunctions)]
     pub fn preview_junctions(
@@ -419,6 +426,34 @@ impl Default for VectorMapSession {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn quality_audit_keeps_geometry_and_undo_and_checks_both_edges() {
+        let mut source = ca_core::PointCloud::default();
+        for x in -5..=55 {
+            for y in -1..=1 {
+                source.positions.push([x as f64 * 0.2, y as f64 * 0.2, 2.]);
+            }
+        }
+        let cloud = crate::Cloud::unindexed(source);
+        let mut s = super::VectorMapSession::new();
+        s.apply(r#"[{"op":"build_road","reference":[[0,0,2],[10,0,2]],"lanes":[{"width":3.5}]}]"#)
+            .unwrap();
+        let before = s.to_json();
+        let undo = s.undo.len();
+        let r: serde_json::Value = serde_json::from_str(&s.audit_quality(&cloud).unwrap()).unwrap();
+        assert_eq!(r["low_support_lanes"].as_array().unwrap().len(), 1);
+        assert_eq!(r["lanes"][0]["center"]["fraction"], 1.0);
+        assert_eq!(r["lanes"][0]["left"]["fraction"], 0.0);
+        assert_eq!(s.to_json(), before);
+        assert_eq!(s.undo.len(), undo);
+        assert_eq!(
+            serde_json::from_str::<serde_json::Value>(&s.audit_quality(&cloud).unwrap()).unwrap(),
+            r
+        );
+        assert!(s.undo());
+        assert!(s.map.lanes().next().is_none());
+    }
+
     #[test]
     fn curved_paint_envelope_confirm_export_reload_edit_and_undo() {
         let mut source = ca_core::PointCloud {

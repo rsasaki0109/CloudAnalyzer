@@ -1,0 +1,28 @@
+{
+  "audit_source_commit": "c168c33dde3e52ae27e84ccd96f62cd9b460506d",
+  "audit_native_sha256": "55b04de4a9dcd840e7d1332432cbefb98b2786f56c0cac0be54d8359d5e65bfc",
+  "input_cloud_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+  "generated_osm_sha256": "4765a1e0e33e874377ee48e564e37441c9f3e43e91f781e9b963992fb9e5979e",
+  "reference_inputs": [],
+  "rejected_longitudinal_markings": [
+    {
+      "candidate": 44,
+      "selected_lanes": [
+        8
+      ],
+      "rejected": true,
+      "reason": "A stop marking must be transverse (at least 45 degrees) to every selected lane's local direction. Longitudinal paint cannot be confirmed as a stop line; inspect the marking and lane IDs."
+    },
+    {
+      "candidate": 110,
+      "selected_lanes": [
+        24,
+        25
+      ],
+      "rejected": true,
+      "reason": "A stop marking must be transverse (at least 45 degrees) to every selected lane's local direction. Longitudinal paint cannot be confirmed as a stop line; inspect the marking and lane IDs."
+    }
+  ],
+  "accepted_feature_count": 13,
+  "correct_feature_map_exactly_unchanged": true
+}

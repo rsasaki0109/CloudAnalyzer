@@ -10,8 +10,8 @@ use vectormap_core::{LaneId, LaneKind, Map, NewConnector, Point3, Polyline3, Sid
 use super::{BuildError, quantile};
 use crate::PointCloud;
 
-const RADIUS: f64 = 0.75;
-const HEIGHT: f64 = 0.3;
+pub(super) const RADIUS: f64 = 0.75;
+pub(super) const HEIGHT: f64 = 0.3;
 // An endpoint rise alone cannot distinguish a graded street from another level.
 // Retain the short-gap tolerance, then require a modest grade and observed ground
 // at both ends and along the actual connector. This is not a legal road-grade test.
@@ -110,7 +110,7 @@ fn coordinates(line: &Polyline3) -> Vec<[f64; 3]> {
     line.points.iter().map(|p| [p.x, p.y, p.z]).collect()
 }
 
-struct Ground<'a> {
+pub(super) struct Ground<'a> {
     cloud: &'a PointCloud,
     cells: HashMap<(i64, i64), Vec<usize>>,
 }
@@ -120,7 +120,7 @@ fn cell(x: f64, y: f64) -> (i64, i64) {
 }
 
 impl<'a> Ground<'a> {
-    fn new(cloud: &'a PointCloud) -> Result<Self, BuildError> {
+    pub(super) fn new(cloud: &'a PointCloud) -> Result<Self, BuildError> {
         if cloud.positions.is_empty() {
             return Err(BuildError(
                 "choose a nonempty point cloud in the map's metre frame".into(),
@@ -138,12 +138,12 @@ impl<'a> Ground<'a> {
         Ok(Self { cloud, cells })
     }
 
-    fn supports(&self, p: Point3) -> bool {
+    pub(super) fn height(&self, p: Point3) -> Option<f64> {
         if [p.x, p.y, p.z]
             .iter()
             .any(|v| !v.is_finite() || v.abs() > 1e15)
         {
-            return false;
+            return None;
         }
         let (x, y) = cell(p.x, p.y);
         let mut heights = Vec::new();
@@ -157,8 +157,14 @@ impl<'a> Ground<'a> {
                 }
             }
         }
-        heights.len() >= 3
-            && quantile(&mut heights, 0.15).is_some_and(|z| (z - p.z).abs() <= HEIGHT)
+        if heights.len() < 3 {
+            return None;
+        }
+        quantile(&mut heights, 0.15)
+    }
+
+    pub(super) fn supports(&self, p: Point3) -> bool {
+        self.height(p).is_some_and(|z| (z - p.z).abs() <= HEIGHT)
     }
 }
 

@@ -142,6 +142,55 @@ fn unpainted_or_invalid_sources_do_not_fabricate_features() {
 }
 
 #[test]
+fn longitudinal_stop_confirmation_uses_selected_branch_and_rejects_whole_batch() {
+    let (mut map, cloud) = scene();
+    let original_lane = map.lanes().next().unwrap().id;
+    let parallel_to_bar = map
+        .build_road(NewRoad::new(
+            Polyline3::new(vec![Point3::new(20.3, -5., 2.), Point3::new(20.3, 5., 2.)]),
+            vec![RoadLane::new(3.5, LaneDirection::Forward)],
+        ))
+        .unwrap()
+        .0
+        .lanes[0][0];
+    let report = propose(&map, &cloud, &Default::default()).unwrap();
+    let bar = report.candidates.iter().find(|c| matches!(&c.evidence,Evidence::TransversePaint{geometry,..} if (geometry[0][0]-20.3).abs()<0.3)).unwrap();
+    let paint = report
+        .candidates
+        .iter()
+        .find(|c| matches!(c.evidence, Evidence::RepeatedPaint { .. }))
+        .unwrap();
+    let good = Confirmation {
+        candidate: paint.id,
+        key: paint.key.clone(),
+        classification: Classification::Crosswalk,
+        lanes: vec![original_lane],
+    };
+    let bad = Confirmation {
+        candidate: bar.id,
+        key: bar.key.clone(),
+        classification: Classification::StopLine,
+        lanes: vec![original_lane, parallel_to_bar],
+    };
+    let before = map.clone();
+    let error = add(&mut map, &cloud, &Default::default(), &[good, bad]).unwrap_err();
+    assert!(error.to_string().contains("transverse"));
+    assert_eq!(map, before);
+    let good = Confirmation {
+        candidate: bar.id,
+        key: bar.key.clone(),
+        classification: Classification::StopLine,
+        lanes: vec![original_lane],
+    };
+    assert_eq!(
+        add(&mut map, &cloud, &Default::default(), &[good])
+            .unwrap()
+            .len(),
+        1
+    );
+}
+
+#[test]
 fn regularly_missing_returns_are_not_dark_crosswalk_gaps() {
     let (map, mut cloud) = scene();
     let keep: Vec<_> = cloud

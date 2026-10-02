@@ -21,6 +21,7 @@ pub mod feature_editing;
 mod fitting;
 mod integration;
 pub mod junctions;
+pub mod quality;
 pub mod signals;
 
 /// Parameters in metres, except speed in km/h and lane counts.

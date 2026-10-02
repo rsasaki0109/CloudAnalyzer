@@ -137,8 +137,8 @@ python3 ../scripts/build_readme_pointcloud_figure.py
 
 ## Hard Intersection vector-map audit
 
-`vector-map-hard-intersection.png`, `vector-map-hard-intersection-local-paint.png`
-and `vector-map-hard-intersection-envelope.png`
+`vector-map-hard-intersection.png`, `vector-map-hard-intersection-local-paint.png`,
+`vector-map-hard-intersection-envelope.png` and `vector-map-quality.png`
 plot actual source geometry, generated proposals
 and a separately evaluated reference map. Data: Hard Intersection Multimodal Samples,
 Dynamic Map Platform Co., Ltd. (2026),
@@ -147,6 +147,9 @@ Dynamic Map Platform Co., Ltd. (2026),
 CloudAnalyzer creates the derived plot; colors, decimation, overlays and coverage
 metrics are added for evaluation. No claim of original survey authorship or endorsement.
 See [methods and reproduction](../vector-map-hard-intersection.md).
+The generated-map quality figure shows the frozen README lane boundaries, source
+coverage flags and separately evaluated crossing outline distances; see
+[quality protocol and limitations](../vector-map-quality.md).
 
 ## Result Summary
 

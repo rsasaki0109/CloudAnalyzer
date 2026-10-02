@@ -14,6 +14,34 @@ from cloudanalyzer_cli.main import app
 from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features
 
 
+def test_native_source_quality_distinguishes_edges_and_preserves_files(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "audit_vector_map_quality"):
+        pytest.skip("installed core predates source quality audit")
+    x, y = np.meshgrid(np.arange(-1, 11.01, .2), np.arange(-.2, .201, .2))
+    header = laspy.LasHeader(point_format=3, version="1.2")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x.ravel(), y.ravel(), np.full(x.size, 2.)
+    cloud = tmp_path / "source.las"
+    data.write(cloud)
+    vector_map = tmp_path / "map.json"
+    vector_map.write_text(json.dumps({"format": "vectormap-ir", "version": 1,
+        "lanes": [{"id": 3, "kind": "driving", "left": 1, "right": 2}],
+        "boundaries": [{"id": i+1, "kind": {"type": "lane_marking", "pattern": "solid"},
+                        "geometry": [[0, offset, 2], [10, offset, 2]]} for i, offset in enumerate([2, -2])]}), encoding="utf-8")
+    original = [p.read_bytes() for p in (cloud, vector_map)]
+    result = json.loads(native.audit_vector_map_quality(str(cloud), str(vector_map)))
+    q = result["quality"]
+    assert q["low_support_lanes"] == [3] and not q["limited"]
+    assert q["lanes"][0]["center"]["fraction"] == 1
+    assert q["lanes"][0]["left"]["fraction"] == 0
+    assert q["lanes"][0]["left"]["insufficient_returns"] > 0
+    assert [p.read_bytes() for p in (cloud, vector_map)] == original
+
+
 def test_source_only_equipment_preview_confirm_cli_replay_and_failed_publication(tmp_path):
     import numpy as np
     import laspy

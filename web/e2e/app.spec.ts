@@ -2301,6 +2301,30 @@ test("vector map: roads drawn over a cloud, a turn, a traffic light and a crossw
   await expect(status(page)).toContainText("Opened lanelet2_map.osm: 4 lanes");
 });
 
+test("vector map: source quality exposes unsupported edges without editing and invalidates after changes", async ({page}) => {
+  const points: [number,number,number][]=[];
+  for(let x=-5;x<=55;x++)for(let y=-1;y<=1;y++)points.push([100000+x*.2,100000+y*.2,2]);
+  await open(page,[{name:"center-only.ply",buffer:ply(points)}]);
+  await expect(status(page)).toContainText("Loaded center-only.ply");
+  const map={format:"vectormap-ir",version:1,lanes:[{id:3,kind:"driving",left:1,right:2,speed_limit:{kmh:40}}],
+    boundaries:[2,-2].map((y,i)=>({id:i+1,kind:{type:"lane_marking",pattern:"solid"},geometry:[0,10].map(x=>[100000+x,100000+y,2])}))};
+  await page.locator("#vm-file").setInputFiles({name:"draft.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(map))});
+  await expect(status(page)).toContainText("Opened draft.json: 1 lanes");
+  const exportMap=async()=>{const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();return (await bytesOf(await wait)).toString();};
+  const before=await exportMap();await expect(page.locator("#vm-undo")).toBeDisabled();
+  await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("1 lanes checked; 1 need source review; 0 omitted; 0 malformed");
+  const issue=page.locator("#vm-quality-lanes button");await expect(issue).toContainText("centre 100%, left 0%");
+  await issue.click();await expect(page.locator("#vm-lane-title")).toHaveText("Lane 3");
+  expect(await exportMap()).toBe(before);await expect(page.locator("#vm-undo")).toBeDisabled();
+  await page.locator("#vm-lane-speed").fill("20");await page.locator("#vm-lane-apply").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("has not been checked");await expect(issue).toHaveCount(0);
+  await page.locator("#vm-undo").click();expect(await exportMap()).toBe(before);
+  await page.locator("#vm-quality-check").click();await expect(page.locator("#vm-quality-report")).toContainText("1 need source review");
+  await open(page,[{name:"other.ply",buffer:ply([[100000,100000,2]])}]);
+  await expect(page.locator("#vm-quality-report")).toContainText("has not been checked");
+});
+
 test("vector map: a shared reversed boundary can be dragged, cancelled, exported and undone", async ({ page }) => {
   // Large survey coordinates also exercise the overlay's render origin. Both
   // lanes use boundary 2, one in reverse; the midpoint is at the view centre.

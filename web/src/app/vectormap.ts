@@ -1474,7 +1474,7 @@ laneTool("vm-crosswalk", "Click a lane where the crosswalk crosses the road; sto
 laneTool("vm-select", "Click a lane to see it, set its speed limit or remove it.", async () => {});
 
 function chosenRelationCandidate(): RelationCandidate | undefined {
-  return relationPreview?.rule_id === relationSelection()?.id ? relationPreview.candidates.find(c=>c.key===relationCandidate) : undefined;
+  return relationPreview && relationPreview.rule_id === relationSelection()?.id ? relationPreview.candidates.find(c=>c.key===relationCandidate) : undefined;
 }
 function clearRelationPreview(): void {
   relationRevision++; relationPreview = null; relationCandidate = null;

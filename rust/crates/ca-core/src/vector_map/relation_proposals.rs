@@ -161,7 +161,18 @@ pub fn propose(map: &Map, rule_id: u64) -> Result<ProposalReport, BuildError> {
         .collect();
     let pedestrian = !heads.is_empty() && heads.iter().all(|h| h.kind == SignalKind::Pedestrian);
     let vehicle = !heads.is_empty() && heads.iter().all(|h| h.kind == SignalKind::Vehicle);
-    let mut report=ProposalReport{rule_id,kind:if pedestrian {"pedestrian"} else if vehicle {"vehicle"} else {"mixed"}.into(),map_snapshot:String::new(),candidates:vec![],eligible_count:0,ambiguous:false,limited:false,warnings:vec!["Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.".into()]};
+    let kind = if pedestrian {
+        "pedestrian"
+    } else if vehicle {
+        "vehicle"
+    } else {
+        "mixed"
+    };
+    let mut report = ProposalReport {
+        rule_id, kind: kind.into(), map_snapshot: String::new(), candidates: vec![],
+        eligible_count: 0, ambiguous: false, limited: false,
+        warnings: vec!["Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.".into()],
+    };
     let vertices = map
         .boundaries()
         .map(|b| b.geometry.points.len())
@@ -375,6 +386,12 @@ pub fn propose(map: &Map, rule_id: u64) -> Result<ProposalReport, BuildError> {
                     rejection(&mut candidate, "Lane direction is unavailable.");
                     continue;
                 };
+                if n.distance > 8. || (mid.z - n.point.z).abs() > 0.75 {
+                    rejection(
+                        &mut candidate,
+                        "Stop marking is distant from its road or on another level.",
+                    );
+                }
                 let tangent = Polyline3::new(
                     center
                         .points
@@ -622,6 +639,18 @@ mod tests {
         map.stop_line_mut(StopLineId(15)).unwrap().geometry =
             Polyline3::new(vec![Point3::new(6., 0., 0.), Point3::new(10., 0., 0.)]);
         assert_eq!(propose(&map, 23).unwrap().eligible_count, 0);
+        let mut map = fixture();
+        for p in &mut map.stop_line_mut(StopLineId(15)).unwrap().geometry.points {
+            p.z = 6.;
+        }
+        let p = propose(&map, 23).unwrap();
+        assert_eq!(p.eligible_count, 0);
+        assert!(
+            p.candidates[0]
+                .reasons
+                .iter()
+                .any(|r| r.contains("another level"))
+        );
         let mut map = fixture();
         map.regulatory_element_mut(RegulatoryElementId(32))
             .unwrap()

@@ -95,8 +95,9 @@ interface SignalReport {
   plane_rms: number; added: number | null; reused: number | null; warnings: string[];
 }
 interface CrosswalkReport {
-  candidates: { outline: XYZ[]; stripes: XYZ[][]; stripe_count: number; width: number; length: number; angle_degrees: number; score: number }[];
+  candidates: { outline: XYZ[]; left_edge: XYZ[]; right_edge: XYZ[]; stripes: XYZ[][]; stripe_count: number; width: number; length: number; angle_degrees: number; score: number }[];
   points: number; ground_points: number; plane_rms: number; brightness_source: string;
+  local_profile_seeds: number; local_profiles_limited: boolean; component_bands: number; component_bands_limited: boolean;
   added: number | null; reused: number | null; warnings: string[];
 }
 type DiscoveryEvidence =
@@ -104,7 +105,7 @@ type DiscoveryEvidence =
   | { kind: "bright_bar"; transverse_to_road: boolean; geometry: XYZ[]; width: number; thickness: number; points: number }
   | { kind: "elevated_panel"; geometry: XYZ[]; height: number; width: number; thickness: number; points: number; plane_rms: number };
 interface DiscoveryCandidate { id: number; key: string; min: XYZ; max: XYZ; nearby_lanes: number[]; evidence: DiscoveryEvidence }
-interface DiscoveryReport { candidates: DiscoveryCandidate[]; detected_candidates: number; limited: boolean; source_points: number; corridor_points: number; windows: number; unsupported_windows: number; warnings: string[] }
+interface DiscoveryReport { candidates: DiscoveryCandidate[]; detected_candidates: number; limited: boolean; source_points: number; corridor_points: number; windows: number; unsupported_windows: number; paint_refinement_windows: number; paint_refinement_unsupported_windows: number; paint_refinement_limited: boolean; warnings: string[] }
 
 /** Dashes of dashed lane lines (metres). */
 const DASH = 3;

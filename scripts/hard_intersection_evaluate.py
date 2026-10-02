@@ -35,9 +35,12 @@ def resample(points, step=.1):
     return np.asarray(result)
 
 
-def geometry(candidate):
+def geometry(candidate, close_paint=False):
     e = candidate["evidence"]
-    return np.asarray(e["measurement"]["outline"] if e["kind"] == "repeated_paint" else e["geometry"])
+    points = np.asarray(e["measurement"]["outline"] if e["kind"] == "repeated_paint" else e["geometry"])
+    if close_paint and e["kind"] == "repeated_paint" and len(points) > 1 and not np.array_equal(points[0], points[-1]):
+        points = np.vstack([points, points[0]])
+    return points
 
 
 def center(candidate):
@@ -151,7 +154,7 @@ def symmetric_error(prediction, reference):
             "hausdorff_m": float(max(a.max(), b.max()))}
 
 
-def evaluate(dataset: Path, generated: Path, out: Path, development: bool = False):
+def evaluate(dataset: Path, generated: Path, out: Path, development: bool = False, closed_paint_outlines: bool = False):
     genfile = generated / "generation.json"
     expected = (generated / "generation.sha256").read_text(encoding="utf-8").strip()
     if hashlib.sha256(genfile.read_bytes()).hexdigest() != expected:
@@ -168,6 +171,7 @@ def evaluate(dataset: Path, generated: Path, out: Path, development: bool = Fals
               "baseline_commit": gen["baseline_commit"], "generation_sha256": expected, "coordinate_audit": audit,
               "runtime": gen["runtime"],
               "evaluation_role": "development_scene" if development else "untuned_baseline",
+              "outline_sampling": "closed_paint_rings" if closed_paint_outlines else "legacy_open_outline_chain",
               "raw_points": raw_count, "annotated_points": sum(counts.values()), "index_join": False,
               "user_data_counts": counts, "instance_gate_m": 2., "surface_z_gate_m": .75,
               "limitations": ["one intersection, no independent generalization estimate", "annotations derived from HDMap and incomplete",
@@ -183,7 +187,7 @@ def evaluate(dataset: Path, generated: Path, out: Path, development: bool = Fals
         pairs = gated_assignment([center(p) for p in predictions], [reference_center(r, kind) for r in reference], surface=kind != "elevated_panel")
         labels = np.concatenate([samples[code] for code in codes])
         tree = cKDTree(labels) if len(labels) else None
-        proposal_curves = [resample(geometry(p)) for p in predictions]
+        proposal_curves = [resample(geometry(p, closed_paint_outlines)) for p in predictions]
         support_audit = [{"tile": p["tile"], "id": p["id"],
                           "annotated_class_near_geometry_fraction_25cm": float(np.mean(tree.query(curve)[0] <= .25)) if tree else None}
                          for p, curve in zip(predictions, proposal_curves)]
@@ -191,8 +195,8 @@ def evaluate(dataset: Path, generated: Path, out: Path, development: bool = Fals
         matched = []
         for pi, ri, distance in pairs:
             p, r = predictions[pi], reference[ri]
-            error = symmetric_error(geometry(p), r["geometry"])
-            support = float(np.mean(tree.query(resample(geometry(p)))[0] <= .25)) if tree else None
+            error = symmetric_error(geometry(p, closed_paint_outlines), r["geometry"])
+            support = float(np.mean(tree.query(resample(geometry(p, closed_paint_outlines)))[0] <= .25)) if tree else None
             item = {"proposal": {"tile": p["tile"], "id": p["id"]}, "reference": r["id"],
                     "center_distance_m": distance, "geometry": error, "annotated_class_near_geometry_fraction_25cm": support}
             if kind == "elevated_panel":
@@ -240,5 +244,6 @@ if __name__ == "__main__":
     parser.add_argument("generated", type=Path)
     parser.add_argument("output", type=Path, help="NEW directory")
     parser.add_argument("--development", action="store_true", help="Mark a scene used to develop the detector, not an independent held-out test")
+    parser.add_argument("--closed-paint-outlines", action="store_true", help="Sample the complete paint outline, including its closing edge; rerun comparison baselines with the same option")
     args = parser.parse_args()
-    evaluate(args.dataset, args.generated, args.output, args.development)
+    evaluate(args.dataset, args.generated, args.output, args.development, args.closed_paint_outlines)

@@ -83,6 +83,9 @@ pub struct DiscoveryReport {
     pub corridor_points: usize,
     pub windows: usize,
     pub unsupported_windows: usize,
+    pub paint_refinement_windows: usize,
+    pub paint_refinement_unsupported_windows: usize,
+    pub paint_refinement_limited: bool,
     pub warnings: Vec<String>,
 }
 
@@ -220,6 +223,13 @@ fn key(c: &Candidate) -> String {
 }
 fn same(a: &Candidate, b: &Candidate) -> bool {
     if let (
+        Evidence::RepeatedPaint { measurement: x, .. },
+        Evidence::RepeatedPaint { measurement: y, .. },
+    ) = (&a.evidence, &b.evidence)
+    {
+        return crosswalks::same_pattern(x, y);
+    }
+    if let (
         Evidence::TransversePaint {
             geometry: a,
             width: aw,
@@ -263,6 +273,19 @@ fn score(c: &Candidate) -> f64 {
     }
 }
 fn push(candidates: &mut Vec<Candidate>, c: Candidate) {
+    if matches!(c.evidence, Evidence::RepeatedPaint { .. }) {
+        let mut winner = c.clone();
+        for existing in candidates.iter().filter(|x| same(x, &c)) {
+            if score(existing) > score(&winner) {
+                winner = existing.clone();
+            }
+        }
+        // A full chain can contain several mutually disjoint fragments. Keep
+        // the strongest chain and remove every fragment it actually covers.
+        candidates.retain(|x| !same(x, &winner));
+        candidates.push(winner);
+        return;
+    }
     if let Some(existing) = candidates.iter_mut().find(|x| same(x, &c)) {
         if score(&c) > score(existing) {
             *existing = c;
@@ -415,7 +438,8 @@ pub fn propose(
         };
         match crosswalks::propose(map, &subset, &options) {
             Ok(report) => {
-                local_profiles_limited_windows += usize::from(report.local_profiles_limited);
+                local_profiles_limited_windows +=
+                    usize::from(report.local_profiles_limited || report.component_bands_limited);
                 for (i, measurement) in report.candidates.into_iter().enumerate() {
                     let support: Vec<_> = measurement
                         .outline
@@ -767,6 +791,102 @@ pub fn propose(
             });
         }
     }
+    // Remeasure paint clipped by a source window in one larger source window.
+    // This does not join guessed rectangles: the complete chain must satisfy
+    // the same observed-band/dark-gap tests over original cloud points.
+    let mut clipped: Vec<_> = candidates
+        .iter()
+        .filter_map(|c| {
+            let Evidence::RepeatedPaint { options, .. } = &c.evidence else {
+                return None;
+            };
+            (0..2)
+                .any(|i| c.min[i] <= options.min[i] + 1. || c.max[i] >= options.max[i] - 1.)
+                .then_some((score(c), options.clone()))
+        })
+        .collect();
+    clipped.sort_by(|a, b| b.0.total_cmp(&a.0));
+    let mut seen = BTreeSet::new();
+    let mut paint_refinement_windows = 0;
+    let mut paint_refinement_unsupported_windows = 0;
+    let mut paint_refinement_limited = false;
+    for (_, mut options) in clipped {
+        let snapshot: Vec<_> = options
+            .min
+            .iter()
+            .chain(&options.max)
+            .map(|v| (v * 1e6).round() as i64)
+            .collect();
+        if !seen.insert(snapshot) {
+            continue;
+        }
+        if paint_refinement_windows == 32 {
+            paint_refinement_limited = true;
+            break;
+        }
+        paint_refinement_windows += 1;
+        for i in 0..2 {
+            options.min[i] -= 8.;
+            options.max[i] += 8.;
+        }
+        options.candidate = 0;
+        let mut indices = Vec::new();
+        for x in (options.min[0] / 8.).floor() as i64..=(options.max[0] / 8.).floor() as i64 {
+            for y in (options.min[1] / 8.).floor() as i64..=(options.max[1] / 8.).floor() as i64 {
+                if let Some(v) = grid.get(&(x, y)) {
+                    indices.extend(v.iter().copied().filter(|&i| {
+                        (0..3).all(|j| {
+                            cloud.positions[i][j] >= options.min[j]
+                                && cloud.positions[i][j] <= options.max[j]
+                        })
+                    }));
+                }
+            }
+        }
+        if indices.len() < 100 || indices.len() > 200_000 {
+            paint_refinement_unsupported_windows += 1;
+            continue;
+        }
+        let subset = cloud.select(&indices);
+        let Ok(report) = crosswalks::propose(map, &subset, &options) else {
+            paint_refinement_unsupported_windows += 1;
+            continue;
+        };
+        local_profiles_limited_windows +=
+            usize::from(report.local_profiles_limited || report.component_bands_limited);
+        for (i, measurement) in report.candidates.into_iter().enumerate() {
+            let support: Vec<_> = measurement
+                .outline
+                .iter()
+                .chain(measurement.stripes.iter().flatten())
+                .copied()
+                .collect();
+            let (min, max) = bounds(&support, 0.1);
+            let mut options = options.clone();
+            options.candidate = i;
+            let c = Candidate {
+                id: 0,
+                key: String::new(),
+                min,
+                max,
+                nearby_lanes: nearby(
+                    &road_route,
+                    [
+                        (min[0] + max[0]) * 0.5,
+                        (min[1] + max[1]) * 0.5,
+                        (min[2] + max[2]) * 0.5,
+                    ],
+                    o.corridor_radius,
+                ),
+                evidence: Evidence::RepeatedPaint {
+                    measurement,
+                    options,
+                },
+                review_required: true,
+            };
+            push(&mut candidates, c);
+        }
+    }
     // Do not offer the observed crosswalk bands a second time as stop lines.
     let walks: Vec<_> = candidates
         .iter()
@@ -792,6 +912,12 @@ pub fn propose(
     let mut counts = [0usize; 3];
     if local_profiles_limited_windows > 0 {
         warnings.push(format!("Local paint profiles reached the 64 source-seed limit in {local_profiles_limited_windows} windows; smaller components may be omitted."));
+    }
+    if paint_refinement_limited {
+        warnings.push("Clipped-paint refinement limited to 32 source windows; lower-ranked partial chains may remain.".into());
+    }
+    if paint_refinement_unsupported_windows > 0 {
+        warnings.push(format!("{paint_refinement_unsupported_windows} expanded paint windows lack bounded supported source data; original partial proposals are retained."));
     }
     candidates.retain(|c| {
         let k = match c.evidence {
@@ -830,6 +956,9 @@ pub fn propose(
         corridor_points,
         windows: windows.len(),
         unsupported_windows,
+        paint_refinement_windows,
+        paint_refinement_unsupported_windows,
+        paint_refinement_limited,
         warnings,
     })
 }
@@ -957,12 +1086,11 @@ pub fn add(
         let rules: BTreeSet<_> = draft.regulatory_elements().map(|r| r.id).collect();
         let id = match &c.evidence {
             Evidence::RepeatedPaint { measurement, .. } => {
-                let p = &measurement.outline;
                 let id = draft
                     .add_crosswalk(NewCrosswalk {
                         geometry: CrosswalkGeometry::Edges {
-                            left_edge: line(&p[..2]),
-                            right_edge: line(&[p[3], p[2]]),
+                            left_edge: line(&measurement.left_edge),
+                            right_edge: line(&measurement.right_edge),
                         },
                         crossing_lanes: Some(confirmation.lanes.clone()),
                         stop_line_offset: None,
@@ -971,6 +1099,10 @@ pub fn add(
                     .0;
                 let a = &mut draft.crosswalk_mut(id).expect("new crossing").attributes;
                 provenance(a, &association, "point_cloud_brightness_stripes");
+                a.insert(
+                    "cloudanalyzer_outline_source",
+                    "observed_band_envelope_20cm_simplification",
+                );
                 a.insert(
                     "cloudanalyzer_paint_bands",
                     serde_json::to_string(&measurement.stripes)

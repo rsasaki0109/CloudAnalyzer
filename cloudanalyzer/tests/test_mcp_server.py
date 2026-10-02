@@ -54,7 +54,7 @@ def test_the_server_answers_over_stdio(tmp_path):
                 names = {t.name for t in tools}
                 build = next(t for t in tools if t.name == "build_vector_map")
                 properties = build.model_dump(by_alias=True)["inputSchema"]["properties"]
-                for field in ("track_boundaries", "fit_boundaries"):
+                for field in ("track_boundaries", "fit_boundaries", "verify_curb_profiles"):
                     assert properties[field]["type"] == "boolean"
                     assert properties[field]["default"] is True
                 junction = next(t for t in tools if t.name == "connect_vector_map_junctions")

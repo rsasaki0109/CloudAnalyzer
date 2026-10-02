@@ -20,6 +20,11 @@ NavSatFix measurements over about 127 m; they are projected into MGRS tile 54SUE
 PROJ. The reference Lanelet2 geometry is used only for scoring, never for extraction.
 The evaluation copies only its coordinate metadata into the generated map.
 
+The historical ablations below describe the builder before commit `5351c0f`.
+See [curb profile checks and missing-observation anchors](#curb-profile-checks-and-missing-observation-anchors)
+for current defaults and their accuracy/shape tradeoffs. Use `5351c0f` to reproduce
+those earlier anchor/tracking measurements exactly.
+
 With the original defaults (outer-edge anchoring disabled), the builder produced two supported stretches, six lane sections and
 122.13 m of reference line. One section lacked ground support. Of 192 boundary vertices,
 52 were curb candidates, 24 coverage edge candidates and 116 width priors. The measured
@@ -80,7 +85,7 @@ data artifacts outside version control. The original candidate errors were media
 for curbs, 0.52 m for coverage edges and 0.74 m for width priors. These are distances to
 the selected reference, not a measured GNSS sensor error. To reproduce the ablation,
 pass a fifth argument to the Rust example: a JSON options file containing
-`{"anchor_width_prior": false, "track_boundaries": false, "fit_boundaries": false}`.
+`{"anchor_width_prior": false, "track_boundaries": false, "fit_boundaries": false}` at that historical commit.
 Keep tracking and fitting disabled for both sides of this historical anchoring ablation.
 CLI uses `--no-anchor-width-prior`; MCP accepts
 `anchor_width_prior=false`; the Web build panel has the corresponding checkbox.
@@ -168,6 +173,59 @@ vertex was dragged with its cloud-relative height unchanged, both adjacent lanes
 and one Undo restored the complete map view exactly. This checks editing behavior, not
 whether the new position matches a surveyed marking. A production E2E separately covers
 large coordinates, reversed shared boundaries, cancellation, export and reload.
+
+## Curb profile checks and missing-observation anchors
+
+A positive height step alone also detects walls, vehicle bodies and isolated low returns.
+The default curb check now requires at least one of the two road-side bins to agree with
+the candidate height within `max(curb_height, 0.05 m)`, and both outside bins to rise by
+between `curb_height` and `curb_height + 0.3 m`. This is a profile consistency check,
+not semantic object classification. Sparse scans and clutter can hide real curbs.
+Coverage edges retain their separate label and warning.
+
+Missing outer-edge observations previously entered the five-section offset median as
+zero shifts, suppressing nearby evidence. They are now excluded. For a missing slice,
+the resulting anchor is scaled to 2/3 at one section from evidence and 1/3 at two;
+beyond two sections it is absent. At the default spacing this reaches about 4 m.
+Inferred points keep their width-prior label and cloud-derived heights. Missing ground
+still splits the road. This short extension reduces the abrupt return to the nominal
+width compared with a constant anchor followed by a hard cutoff, but does not remove
+all abrupt geometry or establish the actual lane markings.
+
+On the same recorded Autoware inputs and reference selection described above, with
+tracking and fitting enabled, the pre-change baseline is commit `5351c0f`:
+
+| Metric at 0.3 m | Previous default | Missing-anchor fix, curb check off | Both changes (default) |
+|---|---:|---:|---:|
+| Boundary precision | 29.00% | 36.51% | 33.27% |
+| Boundary recall | 10.16% | 12.91% | 11.73% |
+| F1 | 0.1505 | 0.1908 | 0.1735 |
+| Selected observed source vertex precision | 32.08% | 33.90% | 52.94% |
+| Selected curb / coverage / width-prior vertices | 42 / 11 / 139 | 49 / 10 / 133 | 18 / 16 / 158 |
+| Adjacent-segment heading change, P95 | 11.14 degrees | — | 18.74 degrees |
+
+The curb filter improves selected observation precision but sacrifices coverage and
+some overall precision relative to fixing the anchor alone. Both changes improve the
+reference-distance scores over the previous default, while increasing heading variation.
+This is **not** an across-the-board geometry improvement or a survey-accuracy claim.
+The six lane sections, 122.13 m supported length, one unsupported section, nine selected
+reference lanes and 10,895 reference samples remain identical. The candidate check rejects
+106 cross-section height transitions; this count is not a count of proven false curbs.
+Fitting moves 191 vertices by at most 0.360 m; all source heights stay unchanged.
+
+On the same PandaSet drive, counts change from 27 intensity / 33 curb / 75 prior vertices
+to 28 / 19 / 88 (no coverage-edge vertices). It rejects 59 height transitions. Heading
+change P95 rises from 7.77 to 8.45 degrees; maximum fit movement is 0.267 m. These are
+shape and evidence measurements only: an independent lane-boundary reference is still
+unavailable. Neither dataset is held out; both informed development.
+
+To reproduce the current curb-check ablation, run the evaluation example twice with
+`{"verify_curb_profiles": false}` and `{"verify_curb_profiles": true}` as fifth-argument
+options files. Keep other options identical, including `left_hand_traffic=false` for
+PandaSet. To reproduce the pre-change baseline, run the same inputs at commit `5351c0f`.
+Compare the `xy_boundary_metrics` in `report.json` and use `vector_map_diagnose.py` for
+source-error overlays. Reference geometry is used only for scoring and coordinate
+metadata, never for generation. Use fresh output directories and keep inputs external.
 
 ## Conservative repeated-pass integration
 

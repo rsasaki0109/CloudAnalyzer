@@ -2389,6 +2389,7 @@ test("vector map: trajectory builds a ground-level draft with an evidence report
   await expect(page.locator("#vm-build")).toBeEnabled();
   await expect(page.locator("#vm-track-boundaries")).toBeChecked();
   await expect(page.locator("#vm-fit-boundaries")).toBeChecked();
+  await expect(page.locator("#vm-verify-curbs")).toBeChecked();
   await page.locator("#vm-build").click();
   await expect(status(page)).toContainText("Draft roads added");
   await expect(page.locator("#vm-build-report")).toContainText("configured lane width");
@@ -2406,6 +2407,28 @@ test("vector map: trajectory builds a ground-level draft with an evidence report
   // A fully reused pass did not add an undo entry: undo still removes the build.
   await page.locator("#vm-undo").click();
   await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
+test("vector map: tall roadside returns are rejected as curbs and the check can be disabled", async ({ page }) => {
+  const points: [number, number, number][] = [];
+  for (let x = 0; x <= 30; x += .1) for (let y = -8; y <= 4; y += .1) {
+    points.push([x, y, y < -5.25 || y > 1.75 ? 3.5 : 2]);
+  }
+  await open(page, [
+    { name: "roadside.ply", buffer: ply(points) },
+    { name: "drive.csv", buffer: Buffer.from("timestamp,x,y,z\n0,1,0,50\n1,29,0,50\n") },
+  ]);
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory", { exact: true }).click();
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("height transitions");
+  await expect(page.locator("#vm-build-report")).toContainText("were rejected");
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-status")).toContainText("No map yet");
+  await page.locator("#vm-verify-curbs").uncheck();
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).not.toContainText("height transitions");
 });
 
 test("vector map: measured signal preview, stale inputs, export, replay and undo", async ({ page }) => {

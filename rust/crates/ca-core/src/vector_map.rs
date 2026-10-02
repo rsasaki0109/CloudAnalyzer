@@ -49,6 +49,9 @@ pub struct BuildOptions {
     pub search_margin: f64,
     pub bin_width: f64,
     pub curb_height: f64,
+    /// Require road-side support and a bounded raised surface, rejecting walls
+    /// and above-road objects that also create a positive height discontinuity.
+    pub verify_curb_profiles: bool,
     pub min_bin_points: usize,
 }
 
@@ -72,6 +75,7 @@ impl Default for BuildOptions {
             search_margin: 1.5,
             bin_width: 0.2,
             curb_height: 0.08,
+            verify_curb_profiles: true,
             min_bin_points: 3,
         }
     }
@@ -112,6 +116,7 @@ pub struct BuildReport {
     pub intensity_used: bool,
     pub intensity_vertices: usize,
     pub curb_vertices: usize,
+    pub rejected_curb_candidates: usize,
     pub support_edge_vertices: usize,
     pub width_prior_vertices: usize,
     pub anchored_prior_vertices: usize,
@@ -311,6 +316,17 @@ struct Section {
     choices: Vec<Vec<Candidate>>,
 }
 
+/// A step alone is not curb evidence: walls/vehicle bodies can be much taller
+/// and a low isolated return can sit between unrelated raised surfaces.
+fn supported_curb(surface: &[Option<f64>], i: usize, outward: isize, o: &BuildOptions) -> bool {
+    let z = surface[i].unwrap();
+    let at = |delta: isize| surface[(i as isize + delta * outward) as usize];
+    let max_step = o.curb_height + 0.3;
+    let tolerance = o.curb_height.max(0.05);
+    (1..=2).all(|k| at(k).is_some_and(|v| v - z <= max_step))
+        && (-2..=-1).any(|k| at(k).is_some_and(|v| (v - z).abs() <= tolerance))
+}
+
 fn track_candidates(road: &mut ExtractedRoad, sections: &[Section], nominal: &[f64]) -> usize {
     let mut changed = 0;
     for (j, &prior) in nominal.iter().enumerate() {
@@ -438,6 +454,7 @@ pub fn extract(
         intensity_used: false,
         intensity_vertices: 0,
         curb_vertices: 0,
+        rejected_curb_candidates: 0,
         support_edge_vertices: 0,
         width_prior_vertices: 0,
         anchored_prior_vertices: 0,
@@ -564,7 +581,14 @@ pub fn extract(
             let outside2 = if lateral(i) > 0.0 { i + 2 } else { i - 2 };
             let evidence = match (surface[outside], surface[outside2]) {
                 (Some(a), Some(b)) if a - z >= o.curb_height && b - z >= o.curb_height => {
-                    Some(Evidence::Curb)
+                    if o.verify_curb_profiles
+                        && !supported_curb(&surface, i, if lateral(i) > 0.0 { 1 } else { -1 }, o)
+                    {
+                        report.rejected_curb_candidates += 1;
+                        None
+                    } else {
+                        Some(Evidence::Curb)
+                    }
                 }
                 (None, None) => Some(Evidence::SupportEdge),
                 _ => None,
@@ -704,6 +728,9 @@ pub fn extract(
             report.width_prior_vertices
         ));
     }
+    if report.rejected_curb_candidates > 0 {
+        report.warnings.push(format!("{} curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.", report.rejected_curb_candidates));
+    }
     if report.anchored_prior_vertices > 0 {
         report.warnings.push(format!("{} inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",report.anchored_prior_vertices));
     }
@@ -727,6 +754,8 @@ pub fn extract(
 /// five-section median rejects single-section curb/coverage outliers. Only
 /// width-prior vertices move; measured candidates retain their geometry and
 /// inferred vertices keep their evidence label. No reference map is consulted.
+/// Missing slices are excluded from the median; up to two neighbouring slices
+/// receive an attenuated anchor rather than treating missing evidence as zero.
 fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<Option<f64>>) {
     let n = road.reference.len();
     let last = nominal.len() - 1;
@@ -756,13 +785,24 @@ fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<O
         .collect();
     let offsets = (0..n)
         .map(|k| {
-            if !residuals[k].1 {
-                return None;
-            }
             let start = k.saturating_sub(2);
             let end = (k + 2).min(n - 1);
-            let mut values: Vec<_> = residuals[start..=end].iter().map(|r| r.0).collect();
-            quantile(&mut values, 0.5)
+            // Missing observations are not zero-offset measurements. Bridge
+            // only this short neighbourhood, and retain the width-prior label.
+            let mut values: Vec<_> = residuals[start..=end]
+                .iter()
+                .filter(|r| r.1)
+                .map(|r| r.0)
+                .collect();
+            let offset = quantile(&mut values, 0.5)?;
+            let nearest = (start..=end)
+                .filter(|&i| residuals[i].1)
+                .map(|i| k.abs_diff(i))
+                .min()
+                .unwrap();
+            // Avoid an abrupt jump to the pose-centred prior at the edge of
+            // supported observations. Missing slices gradually lose the anchor.
+            Some(offset * (1.0 - nearest as f64 / 3.0))
         })
         .collect();
     (normals, offsets)
@@ -941,6 +981,95 @@ mod tests {
             values: AttributeValues::F32(intensities),
         });
         cloud
+    }
+
+    #[test]
+    fn tall_roadside_surfaces_are_not_reported_as_measured_curbs() {
+        let mut cloud = marked_road();
+        cloud.attributes.clear();
+        for p in &mut cloud.positions {
+            if !(-5.25..=1.75).contains(&p[1]) {
+                p[2] = 2.0 + 0.01 * p[0] + 1.5;
+            }
+        }
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let (_, legacy) = extract(
+            &cloud,
+            &poses,
+            &BuildOptions {
+                verify_curb_profiles: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(legacy.curb_vertices > 0);
+        let (roads, guarded) = extract(&cloud, &poses, &BuildOptions::default()).unwrap();
+        assert_eq!(guarded.curb_vertices, 0);
+        assert!(guarded.rejected_curb_candidates > 0);
+        assert!(
+            roads
+                .iter()
+                .flat_map(|r| &r.evidence)
+                .flatten()
+                .all(|e| *e == Evidence::WidthPrior)
+        );
+        // Guarded geometry still uses explicit width assumptions, never a
+        // made-up detection or an above-road elevation.
+        for r in roads {
+            for p in r.boundaries.iter().flatten() {
+                assert!((p[2] - (2.0 + 0.01 * p[0])).abs() < 0.04);
+            }
+        }
+    }
+
+    #[test]
+    fn real_height_curbs_survive_but_an_isolated_low_return_has_no_road_side_support() {
+        let valid = marked_road();
+        let poses = [[1.0, 0.0, 50.0], [29.0, 0.0, 50.0]];
+        let (roads, report) = extract(&valid, &poses, &BuildOptions::default()).unwrap();
+        let (legacy, _) = extract(
+            &valid,
+            &poses,
+            &BuildOptions {
+                verify_curb_profiles: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(report.curb_vertices > 0);
+        assert_eq!(report.rejected_curb_candidates, 0);
+        assert_eq!(roads[0].boundaries, legacy[0].boundaries);
+        // A low isolated bin amid raised returns is not the road/sidewalk step.
+        let surface = [Some(0.3), Some(0.3), Some(0.0), Some(0.2), Some(0.2)];
+        assert!(!supported_curb(&surface, 2, 1, &BuildOptions::default()));
+        let reversed: Vec<_> = surface.into_iter().rev().collect();
+        assert!(!supported_curb(&reversed, 2, -1, &BuildOptions::default()));
+    }
+
+    #[test]
+    fn short_observation_gaps_do_not_pull_the_width_prior_to_the_pose() {
+        let mut road = ExtractedRoad {
+            reference: (0..11).map(|k| [k as f64 * 2.0, 0.0, 2.0]).collect(),
+            boundaries: [1.75, -1.75, -5.25]
+                .into_iter()
+                .map(|y| (0..11).map(|k| [k as f64 * 2.0, y, 2.0]).collect())
+                .collect(),
+            evidence: vec![vec![Evidence::WidthPrior; 11]; 3],
+            source_boundaries: None,
+        };
+        // Only one actual outer-edge observation; surrounding missing slices
+        // used to count as zero offsets and overwhelm it in the median.
+        road.boundaries[0][5][1] += 0.8;
+        road.evidence[0][5] = Evidence::Curb;
+        anchor_priors(&mut road, &[1.75, -1.75, -5.25]);
+        for k in 0usize..11 {
+            let expected = -1.75 + 0.8 * (1.0 - k.abs_diff(5) as f64 / 3.0).max(0.0);
+            assert!((road.boundaries[1][k][1] - expected).abs() < 1e-12);
+            assert_eq!(road.evidence[1][k], Evidence::WidthPrior);
+            assert_eq!(road.boundaries[1][k][2], 2.0);
+        }
+        assert_eq!(road.boundaries[0][5][1], 2.55);
+        assert_eq!(road.evidence[0][5], Evidence::Curb);
     }
 
     #[test]

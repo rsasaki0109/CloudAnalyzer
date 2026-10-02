@@ -385,6 +385,24 @@ generated, incorrect and missed pairs, preservation/replay checks and validation
 Use the [preview and selection workflow](commands/vectormap-connect.md) to review drafts
 on your own map; neither reference maps nor ground support establish driving permission.
 
+### Supported grades between road ends
+
+The original junction gate rejected every endpoint rise above 0.3 m. This can omit a
+sloping street even when its connector follows observed ground. The gate now allows a
+larger rise when the absolute rise/XY-gap ratio is at most 12%. Both endpoints must
+independently pass the same 0.75 m neighbourhood / 0.3 m height ground test as the
+centre samples; the configured centre-support fraction still applies. Connector Z
+coordinates and existing road geometry remain unchanged. This is a geometric guard,
+not a road-grade regulation, vertical profile fit or full-width clearance check.
+
+A 6% synthetic road connects across a 0.6 m endpoint rise. Removing ground in the gap,
+a floating endpoint over flat ground and a 20% rise are rejected. The session test
+also checks preserved graded geometry through OSM export/import and exact batch Undo.
+Rechecking the Autoware ablation above on the same frozen input retains all 83 candidate
+pairs and their complete geometry; no pairs are added or removed. Prototype intersection
+drafts used while preparing the new source-only demo also exercise the graded case;
+their candidate counts are not a measure of legal-turn accuracy or independent accuracy.
+
 ## Assisted signal-head measurement on the public planning survey
 
 The same official planning cloud (1,757,841 original points, MGRS 54SVE) was used

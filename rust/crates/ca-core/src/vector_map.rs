@@ -14,6 +14,9 @@ use vectormap_core::{LaneDirection, Map, NewRoad, Point3, Polyline3, RoadLane, S
 use crate::{AttributeValues, INTENSITY, PointCloud};
 
 pub mod crosswalks;
+pub mod discovery;
+#[cfg(test)]
+mod discovery_tests;
 pub mod feature_editing;
 mod fitting;
 mod integration;

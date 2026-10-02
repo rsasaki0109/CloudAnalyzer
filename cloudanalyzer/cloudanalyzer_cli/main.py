@@ -1967,6 +1967,27 @@ def vectormap_crosswalk_cmd(
     typer.echo(json.dumps(report, indent=2))
 
 
+@app.command("vectormap-discover")
+def vectormap_discover_cmd(
+    cloud: str = typer.Argument(..., help="Local attribute-bearing scene; whole-file compatibility reader"),
+    out: str = typer.Option(..., "--out", help="New output directory"),
+    vector_map: Optional[str] = typer.Option(None, "--map", help="Roads generated from cloud/trajectory, IR JSON or OSM"),
+    scope: str = typer.Option("road_corridor", "--scope", help="road_corridor or ground_surface (no map required)"),
+    radius: float = typer.Option(12.0, "--radius", help="4–18 metre corridor radius"),
+    brightness_fraction: float = typer.Option(0.65, "--brightness-fraction", help="0.4–0.9 of ground contrast"),
+    confirmations: Optional[str] = typer.Option(None, "--confirmations", help="JSON file of explicitly reviewed candidate/key/classification/lanes; default previews"),
+) -> None:
+    """Automatically find equipment proposals; inspect and confirm semantics before adding."""
+    from ca.vector_map import discover_vector_map_features
+    try:
+        confirmed = json.loads(Path(confirmations).read_text(encoding="utf-8")) if confirmations else None
+        report = discover_vector_map_features(cloud, out, vector_map=vector_map, scope=scope, corridor_radius=radius, brightness_fraction=brightness_fraction, confirmations=confirmed)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+        return
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command("web-view")
 def web_view_cmd(
     paths: List[str] = typer.Argument(..., help="Files, or folders of results (their .ply, .pcd, .las/.laz, .tum ...)"),

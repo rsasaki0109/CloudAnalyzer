@@ -2377,6 +2377,106 @@ test("vector map: a shared reversed boundary can be dragged, cancelled, exported
   expect(await exportXml()).toBe(after);
 });
 
+test("vector map: source-only automatic equipment search, review, discard, inspect, edit and undo", async ({ page }) => {
+  test.setTimeout(120_000);
+  const points: { xyz: [number, number, number]; intensity: number; cls: number }[] = [];
+  for (let i = 0; i <= 400; i++) for (let j = 0; j <= 100; j++) {
+    const x = -5 + i * .1, y = -5 + j * .1;
+    const bright = ((x >= 8 && x < 12 && (x-8) % 1 < .5) || (x >= 20 && x < 20.6)) && Math.abs(y) <= 3;
+    points.push({ xyz: [x,y,2], intensity: bright ? 220 : 60, cls: 2 });
+  }
+  for (let i = 0; i <= 24; i++) for (let j = 0; j <= 12; j++) points.push({ xyz: [25,-.6+i*.05,6+j*.05], intensity: 80, cls: 0 });
+  await open(page, [
+    { name: "scene.las", buffer: las(points, [0,0,0]) },
+    { name: "drive.csv", buffer: Buffer.from("timestamp,x,y,z\n0,-5,0,4\n1,35,0,4\n") },
+  ]);
+  await expect(page.locator("#vm-status")).toContainText("No map yet");
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory", { exact: true }).click();
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Equipment search found");
+  const candidates = page.locator("#vm-discovery-candidates label");
+  await expect(candidates.filter({hasText:"repeated paint bands"})).not.toHaveCount(0);
+  await expect(candidates.filter({hasText:"transverse paint"})).not.toHaveCount(0);
+  await expect(candidates.filter({hasText:"elevated panel"})).toHaveCount(1);
+  const exportXml = async () => {
+    const saved = page.waitForEvent("download", d => d.suggestedFilename() === "lanelet2_map.osm");
+    await page.locator("#vm-export").click(); return (await bytesOf(await saved)).toString();
+  };
+  const before = await exportXml();
+  const lane = await page.evaluate(xml => {
+    const doc=new DOMParser().parseFromString(xml,"application/xml");
+    return [...doc.querySelectorAll("relation")].find(r=>r.querySelector('tag[k="subtype"][v="road"]'))!.getAttribute("id")!;
+  },before);
+  await candidates.filter({hasText:"repeated paint bands"}).first().locator("input").check();
+  await expect(page.locator("#vm-discovery-kind")).toHaveValue("");
+  await expect(page.locator("#vm-discovery-lanes")).toHaveValue("");
+  await expect(page.locator("#vm-discovery-add")).toBeDisabled();
+  // Source inspection retains the automatic proposal, but keeps classification explicit.
+  await page.locator("#vm-discovery-inspect").click();
+  await expect(status(page)).toContainText("original points isolated");
+  await expect(page.locator("#vm-discovery-kind")).toHaveValue("");
+  await page.locator("#vm-discovery-kind").selectOption("crosswalk");
+  await page.locator("#vm-discovery-lanes").fill(lane);
+  await page.locator("#vm-discovery-add").click();
+  await expect(status(page)).toContainText("added from point-cloud evidence");
+  const crossing = await exportXml();
+  expect(crossing).toContain("user_confirmed_automatic_proposal");
+  expect(crossing).toContain("cloudanalyzer_paint_bands");
+  // A panel can be discarded without changing the map or Undo depth.
+  await candidates.filter({hasText:"elevated panel"}).locator("input").check();
+  await page.locator("#vm-discovery-reject").click();
+  await expect(candidates.filter({hasText:"elevated panel"})).toHaveCount(0);
+  expect(await exportXml()).toBe(crossing);
+  await candidates.filter({hasText:"transverse paint"}).first().locator("input").check();
+  await page.locator("#vm-discovery-kind").selectOption("stop_line");
+  await page.locator("#vm-discovery-lanes").fill(lane);
+  await page.locator("#vm-discovery-add").click();
+  await expect(status(page)).toContainText("Reviewed stop line");
+  const added = await exportXml();
+  expect(added).toContain("point_cloud_brightness_bar"); expect(added).not.toContain("stop_sign");
+  await page.locator("#vm-feature-editor summary").click();
+  await expect(page.locator("#vm-feature-height-row")).toBeHidden();
+  const x = Number(await page.locator("#vm-feature-x").inputValue());
+  await page.locator("#vm-feature-x").fill(String(x+.1));
+  await page.locator("#vm-feature-apply").click();
+  await expect(status(page)).toContainText("edited");
+  expect(await exportXml()).toContain("point_cloud_brightness_bar_user_edited");
+  await page.locator("#vm-undo").click(); expect(await exportXml()).toBe(added);
+  await page.locator("#vm-undo").click(); expect(await exportXml()).toBe(crossing);
+  await page.locator("#vm-undo").click(); expect(await exportXml()).toBe(before);
+  // Changing search settings discards stale proposals. Map-free search is also available.
+  await page.locator("#vm-discovery-scope").selectOption("ground_surface");
+  await page.locator("#vm-discovery-search").click();
+  await expect(status(page)).toContainText("unconfirmed equipment proposals");
+  await page.locator("#vm-discovery-brightness").fill("70");
+  await expect(candidates).toHaveCount(0); await expect(page.locator("#vm-discovery-add")).toBeDisabled();
+});
+
+test("vector map: a traced path is fitted to source points without a trajectory file", async ({ page }) => {
+  const ground: [number, number, number][] = [];
+  for (let i=0;i<=120;i++) for (let j=0;j<=120;j++) ground.push([i*.5,j*.5,2]);
+  await open(page, [{name:"ground.ply",buffer:ply(ground)}]);
+  await expect(status(page)).toContainText("Loaded ground.ply");
+  await page.locator('[data-view="top"]').click(); await page.locator("#fit").click();
+  await page.locator("#vector-map-panel").getByText("Road options", {exact:true}).click();
+  await page.locator("#vm-refine-sketch").check();
+  await page.locator("#vm-road").click();
+  await expect(page.locator("#vm-hint")).toContainText("outside forward lane");
+  const canvas=page.locator("#viewport > canvas"),box=(await canvas.boundingBox())!;
+  await canvas.click({position:{x:box.width*.35,y:box.height*.5}});
+  await canvas.click({position:{x:box.width*.65,y:box.height*.5}});
+  await page.keyboard.press("Enter");
+  await expect(status(page)).toContainText("Road built from the point cloud and your traced path");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  const saved=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");
+  await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await saved)).toString();
+  expect(xml.match(/<tag k="subtype" v="road"\/>/g)).toHaveLength(2);
+  expect(xml).toMatch(/<tag k="ele" v="2(\.0+)?"\/>/);
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
 test("vector map: trajectory builds a ground-level draft with an evidence report and one-step undo", async ({ page }) => {
   const ground: [number, number, number][] = [];
   for (let x = 0; x <= 60; x += 0.2) for (let y = -8; y <= 4; y += 0.2) ground.push([x, y, 2]);

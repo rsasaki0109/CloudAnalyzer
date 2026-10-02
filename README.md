@@ -56,6 +56,8 @@ pose graph with one scan per pose.
   panel proposals without feature boxes; inspect them and confirm their type and lane IDs.
   [Feature geometry editing](docs/vector-map-feature-editing.md) adjusts crossings, stop lines
   and signal housings with complete-map Undo while retaining observed paint and lamps.
+  [Source quality checks](docs/vector-map-quality.md) expose lanes whose centres or boundaries
+  lack nearby ground support; passing format validation does not establish map accuracy.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

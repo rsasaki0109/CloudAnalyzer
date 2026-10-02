@@ -78,6 +78,13 @@ paint objects are **not** a new 7/7 accuracy claim. Consult the separate fixed
 for misses, unmatched proposals and outline errors. This scene informed development;
 no independent generalization result is claimed.
 
+The generated README map has also undergone a separate
+[source coverage and equipment geometry audit](vector-map-quality.md): nine of
+49 lanes need source review despite zero structural errors. Crossing outline
+errors and unmatched reviewed equipment remain. The animation demonstrates the
+workflow; inspect these quality results before interpreting its visual appearance
+as map accuracy.
+
 Build the native core from the same checkout before preparing proof in a **new**
 ignored directory. With the existing source preparation and updated native module:
 

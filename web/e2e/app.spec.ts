@@ -2305,6 +2305,7 @@ test("vector map: source quality exposes unsupported edges without editing and i
   const points: [number,number,number][]=[];
   for(let x=-5;x<=55;x++)for(let y=-1;y<=1;y++)points.push([100000+x*.2,100000+y*.2,2]);
   await open(page,[{name:"center-only.ply",buffer:ply(points)}]);
+  await expect(status(page)).toContainText("Loaded center-only.ply");
   const map={format:"vectormap-ir",version:1,lanes:[{id:3,kind:"driving",left:1,right:2,speed_limit:{kmh:40}}],
     boundaries:[2,-2].map((y,i)=>({id:i+1,kind:{type:"lane_marking",pattern:"solid"},geometry:[0,10].map(x=>[100000+x,100000+y,2])}))};
   await page.locator("#vm-file").setInputFiles({name:"draft.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(map))});

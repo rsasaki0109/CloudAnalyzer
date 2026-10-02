@@ -180,7 +180,7 @@ const display = { surfaces: true, directions: true, markings: true, virtual: fal
 const labelLayer = $("vm-labels");
 const legend = $("vm-legend");
 const mapLabels: { element: HTMLElement; point: XYZ; priority: number }[] = [];
-const vertexMaterial = new THREE.PointsMaterial({ color: 0xffeb3b, size: 7, sizeAttenuation: false, depthTest: false });
+const vertexMaterial = new THREE.PointsMaterial({ color: 0xffeb3b, size: 7, sizeAttenuation: false, transparent: true, depthTest: false });
 let editingVertices = false;
 let activeBoundary: number | null = null;
 let drag: {

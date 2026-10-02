@@ -111,6 +111,9 @@ fn near_context(map: &Map, p: Point3) -> Vec<LaneId> {
     lanes.into_iter().take(3).map(|(_, id)| id).collect()
 }
 fn linked(map: &Map, a: LaneId, b: LaneId) -> bool {
+    if map.lane(a).is_none() || map.lane(b).is_none() {
+        return false;
+    }
     let mut seen = BTreeSet::from([a]);
     let mut frontier = vec![a];
     for _ in 0..2 {
@@ -133,7 +136,10 @@ fn linked(map: &Map, a: LaneId, b: LaneId) -> bool {
     false
 }
 fn context(map: &Map, from: &[LaneId], to: &[LaneId]) -> &'static str {
-    if from.iter().any(|id| to.contains(id)) {
+    if from
+        .iter()
+        .any(|id| map.lane(*id).is_some() && to.contains(id))
+    {
         "same_lane"
     } else if from.iter().any(|&a| to.iter().any(|&b| linked(map, a, b))) {
         "connected_lanes"
@@ -623,6 +629,14 @@ mod tests {
             .unwrap()
             .lanes
             .clear();
+        assert_eq!(propose(&map, 21).unwrap().eligible_count, 0);
+        let mut map = fixture();
+        map.regulatory_element_mut(RegulatoryElementId(21))
+            .unwrap()
+            .lanes = vec![LaneId(9999)];
+        map.regulatory_element_mut(RegulatoryElementId(30))
+            .unwrap()
+            .lanes = vec![LaneId(9999)];
         assert_eq!(propose(&map, 21).unwrap().eligible_count, 0);
     }
     #[test]

@@ -498,7 +498,7 @@ def propose_vector_map_relations(
     adopting = any(v is not None for v in (candidate_key, map_snapshot, out_dir))
     encoded = None
     if adopting:
-        if not all(isinstance(v, str) and v for v in (candidate_key, map_snapshot, out_dir)):
+        if not isinstance(candidate_key, str) or not candidate_key or not isinstance(map_snapshot, str) or not map_snapshot or not isinstance(out_dir, str) or not out_dir:
             raise ValueError("adoption requires candidate_key, map_snapshot and a new output directory together")
         out = Path(out_dir).resolve()
         if out.exists():

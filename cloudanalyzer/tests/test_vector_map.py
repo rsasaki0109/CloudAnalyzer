@@ -295,6 +295,24 @@ def test_native_draft_is_published_together_and_never_replaced(survey, tmp_path)
     assert before == {p.name: p.read_bytes() for p in out.iterdir()}
 
 
+def test_tall_roadside_returns_are_rejected_through_the_public_builder(survey, tmp_path):
+    cloud, trajectory = survey
+    # Roadside vehicle/wall returns produce positive steps but not curb profiles.
+    cloud.write_text("".join(
+        f"{50000 + x / 5} {50000 + y / 5} {2 if -5.25 <= y / 5 <= 1.75 else 3.5}\n"
+        for x in range(201) for y in range(-40, 21)
+    ))
+    legacy = build_vector_map(str(cloud), str(trajectory), str(tmp_path / "unchecked"),
+                              verify_curb_profiles=False)
+    guarded = build_vector_map(str(cloud), str(trajectory), str(tmp_path / "checked"))
+    assert legacy["extraction"]["curb_vertices"] > 0
+    assert guarded["options"]["verify_curb_profiles"] is True
+    assert guarded["extraction"]["curb_vertices"] == 0
+    assert guarded["extraction"]["rejected_curb_candidates"] > 0
+    assert guarded["extraction"]["width_prior_vertices"] > 0
+    assert any("height transitions" in warning for warning in guarded["extraction"]["warnings"])
+
+
 def test_cli_writes_the_same_report_with_mgrs_and_reference_metadata_only(
     survey, tmp_path
 ):
@@ -316,6 +334,7 @@ def test_cli_writes_the_same_report_with_mgrs_and_reference_metadata_only(
             "139.767125",
             "--no-track-boundaries",
             "--no-fit-boundaries",
+            "--no-verify-curb-profiles",
         ],
     )
     assert result.exit_code == 0, result.output
@@ -323,6 +342,8 @@ def test_cli_writes_the_same_report_with_mgrs_and_reference_metadata_only(
     report = json.loads(result.stdout)
     assert report["options"]["track_boundaries"] is False
     assert report["options"]["fit_boundaries"] is False
+    assert report["options"]["verify_curb_profiles"] is False
+    assert report["extraction"]["rejected_curb_candidates"] == 0
     assert report["extraction"]["tracked_vertices"] == 0
     assert report["extraction"]["fitted_vertices"] == 0
     assert "projector_type: MGRS" in (out / "map_projector_info.yaml").read_text()

@@ -773,6 +773,7 @@ buildButton.onclick = async () => {
       anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
       track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
       fit_boundaries: $<HTMLInputElement>("vm-fit-boundaries").checked,
+      verify_curb_profiles: $<HTMLInputElement>("vm-verify-curbs").checked,
       merge_repeated_passes: $<HTMLInputElement>("vm-merge-passes").checked,
     };
     const edited = await vectorMap<Edited>("build", {

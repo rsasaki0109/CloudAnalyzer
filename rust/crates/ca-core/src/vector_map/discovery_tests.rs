@@ -180,3 +180,45 @@ fn regularly_missing_returns_are_not_dark_crosswalk_gaps() {
         "sampling gaps must not be invented as dark paint"
     );
 }
+
+#[test]
+fn long_source_crossing_is_remeasured_without_retaining_window_fragments() {
+    let mut cloud = PointCloud {
+        colors: Some(vec![]),
+        ..Default::default()
+    };
+    for i in 0..=400 {
+        for j in 0..=120 {
+            let x = -20. + i as f64 * 0.1;
+            let y = -6. + j as f64 * 0.1;
+            let bright = (-12.0..12.0).contains(&x) && (x + 12.) % 1. < 0.5 && y.abs() <= 3.;
+            cloud.positions.push([x, y, 2.]);
+            cloud
+                .colors
+                .as_mut()
+                .unwrap()
+                .push([if bright { 210 } else { 70 }; 3]);
+        }
+    }
+    let r = propose(
+        &Map::new(),
+        &cloud,
+        &DiscoveryOptions {
+            scope: SearchScope::GroundSurface,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert!(r.paint_refinement_windows > 0);
+    let patterns: Vec<_> = r
+        .candidates
+        .iter()
+        .filter_map(|c| match &c.evidence {
+            Evidence::RepeatedPaint { measurement, .. } => Some(measurement),
+            _ => None,
+        })
+        .collect();
+    assert_eq!(patterns.len(), 1, "partial windows remained: {patterns:?}");
+    assert_eq!(patterns[0].stripe_count, 24);
+    assert!((patterns[0].width - 23.5).abs() < 0.3);
+}

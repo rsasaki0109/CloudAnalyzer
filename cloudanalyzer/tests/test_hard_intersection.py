@@ -17,6 +17,21 @@ import hard_intersection_generate as gen
 import hard_intersection_evaluate as audit
 
 
+def test_closed_outline_sampling_includes_last_edge_without_mutating_prediction():
+    candidate = {"evidence": {"kind": "repeated_paint", "measurement": {"outline": [[0, 0, 0], [2, 0, 0], [2, 2, 0], [0, 2, 0]]}}}
+    original = json.dumps(candidate)
+    closed = audit.geometry(candidate, True)
+    np.testing.assert_array_equal(closed[0], closed[-1])
+    target = np.array([0, 1, 0])
+    assert np.min(np.linalg.norm(audit.resample(closed) - target, axis=1)) < 1e-9
+    assert np.min(np.linalg.norm(audit.resample(audit.geometry(candidate)) - target, axis=1)) >= 1.
+    assert json.dumps(candidate) == original
+    candidate["evidence"]["measurement"]["outline"].append([0, 0, 0])
+    assert len(audit.geometry(candidate, True)) == 5
+    line = {"evidence": {"kind": "bright_bar", "geometry": [[0, 0, 0], [2, 0, 0]]}}
+    assert len(audit.geometry(line, True)) == 2
+
+
 def test_voxel_selection_is_chunk_invariant_original_and_bounded():
     xyz = np.array([[0, 0, 0], [.05, 0, 0], [.2, .1, .1], [.25, .1, .1], [.1, .2, .2], [0, 0, 0]])
     whole = prep.FirstVoxel([0, 0, 0], [1, 1, 1]).retain(xyz)

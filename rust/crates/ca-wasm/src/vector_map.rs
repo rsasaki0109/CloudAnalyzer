@@ -420,6 +420,91 @@ impl Default for VectorMapSession {
 #[cfg(test)]
 mod tests {
     #[test]
+    fn curved_paint_envelope_confirm_export_reload_edit_and_undo() {
+        let mut source = ca_core::PointCloud {
+            colors: Some(vec![]),
+            ..Default::default()
+        };
+        for i in 0..=200 {
+            for j in 0..=160 {
+                let x = -10. + i as f64 * 0.1;
+                let y = -8. + j as f64 * 0.1;
+                let bright = (-8.0..8.0).contains(&x)
+                    && (x + 8.) % 1. < 0.5
+                    && (y - 0.2 * x - 0.015 * x * x).abs() <= 3. + 0.05 * x;
+                source.positions.push([x, y, 2. + 0.02 * x]);
+                source
+                    .colors
+                    .as_mut()
+                    .unwrap()
+                    .push([if bright { 210 } else { 70 }; 3]);
+            }
+        }
+        let cloud = crate::Cloud::unindexed(source);
+        let mut s = super::VectorMapSession::new();
+        s.apply(r#"[{"op":"build_road","reference":[[-10,0,2],[10,0,2]],"lanes":[{"width":3.5,"direction":"forward"}]}]"#).unwrap();
+        let lane = s.map.lanes().next().unwrap().id;
+        let options =
+            serde_json::json!({"min":[-11,-9,1.5],"max":[11,9,2.5],"lanes":[lane]}).to_string();
+        let before = s.to_json();
+        let preview: serde_json::Value =
+            serde_json::from_str(&s.measure_crosswalk(&cloud, &options, true).unwrap()).unwrap();
+        assert_eq!(s.to_json(), before);
+        assert!(
+            preview["candidates"][0]["outline"]
+                .as_array()
+                .unwrap()
+                .len()
+                > 4
+        );
+        s.measure_crosswalk(&cloud, &options, false).unwrap();
+        let walk = s.map.crosswalks().next().unwrap().clone();
+        let added = s.to_json();
+        let saved: serde_json::Value = serde_json::from_str(&s.export_lanelet2(true)).unwrap();
+        let mut restored = super::VectorMapSession::new();
+        restored
+            .open("curved.osm", saved["osm"].as_str().unwrap())
+            .unwrap();
+        let loaded = restored.map.crosswalk(walk.id).unwrap().clone();
+        assert_eq!(loaded.left_edge.points.len(), walk.left_edge.points.len());
+        assert_eq!(loaded.right_edge.points.len(), walk.right_edge.points.len());
+        // Lanelet2 normalizes travel direction; all envelope vertices and
+        // segments must survive, allowing reversal of the entire edge.
+        for (a, b) in [
+            (&loaded.left_edge.points, &walk.left_edge.points),
+            (&loaded.right_edge.points, &walk.right_edge.points),
+        ] {
+            let equal = |x: &vectormap_core::Point3, y: &vectormap_core::Point3| {
+                (x.x - y.x).hypot(x.y - y.y) < 1e-7 && (x.z - y.z).abs() < 1e-7
+            };
+            assert!(
+                a.iter().zip(b).all(|(x, y)| equal(x, y))
+                    || a.iter().zip(b.iter().rev()).all(|(x, y)| equal(x, y))
+            );
+        }
+        let imported = restored.to_json();
+        restored.measure_crosswalk(&cloud, &options, false).unwrap();
+        assert_eq!(restored.to_json(), imported);
+        let mut vertices: Vec<_> = loaded
+            .outline()
+            .points
+            .iter()
+            .map(|p| [p.x, p.y, p.z])
+            .collect();
+        vertices[0][2] += 0.02;
+        restored
+            .edit_feature_geometry(
+                &serde_json::json!({"kind":"crosswalk","id":walk.id,"points":vertices}).to_string(),
+            )
+            .unwrap();
+        assert!(restored.undo());
+        assert_eq!(restored.to_json(), imported);
+        assert!(s.undo());
+        assert_eq!(s.to_json(), before);
+        assert_ne!(added, before);
+    }
+
+    #[test]
     fn source_only_scene_discovery_confirm_edit_roundtrip_and_undo() {
         let mut source = ca_core::PointCloud {
             colors: Some(vec![]),

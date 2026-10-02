@@ -33,3 +33,23 @@ Crossings and stop lines are limited to 256 vertices and 100 m extent/movement; 
 to 256 vertices and 20 m extent/movement, with a positive housing height at
 most 20 m. These are input sanity limits, not survey-quality acceptance criteria.
 All geometry still requires operator review before use in Autoware.
+
+## Measured paint envelopes
+
+New paint proposals retain opposing polylines through the observed band ends,
+instead of forcing every crossing into a rectangle. The envelope is simplified
+with a 0.2 m displacement tolerance in XY; this is a display/geometry tolerance,
+not a survey accuracy claim. The measured band rectangles remain unchanged.
+Both envelope edges survive confirmation, Lanelet2 export and reimport, geometry
+editing and Undo. The `cloudanalyzer_outline_source` extension tag records this
+construction separately from operator-confirmed object classification.
+
+Source-supported bright cells seed individual bands. Nearby bands are chained
+only when the original ground returns support their extents and contrasting gaps.
+Missing returns cannot supply dark-gap evidence. Each measurement reports its
+64-band and 64-profile seed limits. Discovery remeasures window-clipped paint over
+a larger source box, up to 32 additional windows, and reports unsupported or
+omitted refinements. A longer source-supported chain suppresses the fragments
+whose observed bands it covers; separate or differently oriented patterns remain
+available for review. No reference-map outlines or semantic labels supply these
+geometry steps.

@@ -35,7 +35,7 @@ def plot(dataset, prepared, generated, evaluation, output, development=False):
             matched_ids = {m["reference"] for m in report["instances"][kind]["matches"]}
             for c in gen["candidates"]:
                 if c["evidence"]["kind"] == kind:
-                    points = geometry(c)[:, :2] - lo[:2]
+                    points = geometry(c, report.get("outline_sampling") == "closed_paint_rings")[:, :2] - lo[:2]
                     ax.plot(*points.T, color=color, alpha=.45, linewidth=.65)
             for reference in refs[kind]:
                 c = reference_center(reference, kind)

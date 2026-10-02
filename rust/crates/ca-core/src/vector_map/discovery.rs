@@ -383,6 +383,7 @@ pub fn propose(
     }
     let mut candidates = Vec::new();
     let mut unsupported_windows = 0;
+    let mut local_profiles_limited_windows = 0;
     let rgb = cloud.colors.as_ref();
     for p in &windows {
         let radius = o.corridor_radius.min(10.0);
@@ -414,6 +415,7 @@ pub fn propose(
         };
         match crosswalks::propose(map, &subset, &options) {
             Ok(report) => {
+                local_profiles_limited_windows += usize::from(report.local_profiles_limited);
                 for (i, measurement) in report.candidates.into_iter().enumerate() {
                     let support: Vec<_> = measurement
                         .outline
@@ -788,6 +790,9 @@ pub fn propose(
             .then(a.min[0].total_cmp(&b.min[0]))
     });
     let mut counts = [0usize; 3];
+    if local_profiles_limited_windows > 0 {
+        warnings.push(format!("Local paint profiles reached the 64 source-seed limit in {local_profiles_limited_windows} windows; smaller components may be omitted."));
+    }
     candidates.retain(|c| {
         let k = match c.evidence {
             Evidence::RepeatedPaint { .. } => 0,

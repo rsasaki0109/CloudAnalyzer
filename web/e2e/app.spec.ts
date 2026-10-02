@@ -2861,3 +2861,35 @@ test("vector map: branching junction preview, selection, invalidation and batch 
   await page.waitForTimeout(1100);
   expect(await exportXml()).toBe(before);
 });
+
+
+test("vector map: reviewed signal targets reject invalid IDs, undo exactly and survive Lanelet2 reload", async ({page}) => {
+  await open(page, []);
+  const map = {format:"vectormap-ir",version:1,
+    boundaries:[{id:1,kind:{type:"virtual"},geometry:[[0,2,2],[20,2,2]]},{id:2,kind:{type:"virtual"},geometry:[[0,-2,2],[20,-2,2]]}],
+    lanes:[{id:3,kind:"driving",left:1,right:2}],
+    crosswalks:[{id:10,left_edge:[[8,-3,2],[8,3,2]],right_edge:[[12,-3,2],[12,3,2]]}],
+    traffic_signals:[{id:20,kind:"pedestrian",geometry:[[7,-4,4],[8,-4,4]],height:0.5,bulbs:[]}],
+    regulatory_elements:[{id:21,rule:{type:"traffic_light",signals:[20]},lanes:[3]}]};
+  await page.locator("#vm-file").setInputFiles({name:"targets.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(map))});
+  await expect(status(page)).toContainText("Opened targets.json");
+  let exportCount = 0;
+  const exported = async () => {if(exportCount++ > 0) await page.waitForTimeout(1100);const file=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();return (await bytesOf(await file)).toString();};
+  const before = await exported();
+  await page.locator("#vm-relations-editor summary").click();await page.locator("#vm-relation").selectOption("21");
+  await expect(page.locator("#vm-relation-current")).toContainText("Legacy vehicle-lane references require review");
+  await expect(page.locator("#vm-relation-lanes-row")).toBeHidden();
+  await page.locator("#vm-relation-crosswalks").fill("99999");await page.locator("#vm-relation-apply").click();
+  await expect(status(page)).toContainText("Association edit failed");await expect(page.locator("#vm-undo")).toBeDisabled();expect(await exported()).toBe(before);
+  await page.locator("#vm-relation-crosswalks").fill("10");await page.locator("#vm-relation-apply").click();
+  await expect(status(page)).toContainText("associations updated");await expect(page.locator("#vm-relation-current")).toContainText("crosswalks: 10");
+  await expect(page.locator("#vm-relation-current")).toContainText("lanes: none");
+  const reviewed = await exported();expect(reviewed).toContain('k="cloudanalyzer_relationships_source" v="user_reviewed"');expect(reviewed).not.toContain('v="traffic_light_bulbs"');
+  await page.locator("#vm-relation-apply").click();await expect(status(page)).toContainText("no Undo step added");expect(await exported()).toBe(reviewed);
+  await page.locator("#vm-undo").click();expect(await exported()).toBe(before);await expect(page.locator("#vm-undo")).toBeDisabled();
+  await page.locator("#vm-relation-crosswalks").fill("10");await page.locator("#vm-relation-apply").click();await expect(status(page)).toContainText("associations updated");
+  await page.locator("#vm-file").setInputFiles({name:"reviewed.osm",mimeType:"application/xml",buffer:Buffer.from(await exported())});
+  await expect(status(page)).toContainText("Opened reviewed.osm");await page.locator("#vm-relation").selectOption("21");
+  await expect(page.locator("#vm-relation-current")).toContainText("crosswalks: 10");await expect(page.locator("#vm-relation-current")).toContainText("lanes: none");
+  expect(await exported()).not.toContain('v="traffic_light_bulbs"');
+});

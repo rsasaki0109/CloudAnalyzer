@@ -430,3 +430,45 @@ def _publish(payload: dict[str, Any], out: Path) -> dict[str, Any]:
                 file.write(text)
         os.rename(stage, out)
     return report
+
+
+def edit_vector_map_relations(
+    vector_map: str,
+    *,
+    rule_id: int | None = None,
+    lanes: list[int] | None = None,
+    controlled_crosswalks: list[int] | None = None,
+    stop_lines: list[int] | None = None,
+    out_dir: str | None = None,
+) -> dict[str, Any]:
+    """Inspect equipment associations, or explicitly replace targets into a NEW directory.
+
+    Omit rule_id and out_dir for read-only inspection. Editing requires both.
+    Pedestrian signals control crosswalks; vehicle signals control lanes and an
+    optional previously reviewed transverse stop marking. Empty lists retain
+    unresolved targets. Physical geometry, lamps and source provenance stay fixed.
+    These are operator-reviewed drafts, not inferred legal control or phases.
+    """
+    source = Path(vector_map)
+    if not source.is_file():
+        raise FileNotFoundError(str(source))
+    values = {"lanes": lanes or [], "controlled_crosswalks": controlled_crosswalks or [], "stop_lines": stop_lines or []}
+    if rule_id is None:
+        if out_dir is not None or any(values.values()):
+            raise ValueError("inspection omits output and edit targets")
+        encoded = None
+    else:
+        if type(rule_id) is not int or rule_id <= 0 or not out_dir:
+            raise ValueError("editing requires a positive rule_id and a new output directory")
+        if any(len(v) > 128 or any(type(i) is not int or i <= 0 for i in v) for v in values.values()):
+            raise ValueError("targets must contain at most 128 positive integer IDs")
+        out = Path(out_dir).resolve()
+        if out.exists():
+            raise FileExistsError(str(out))
+        encoded = json.dumps({"rule_id": rule_id, **values}, allow_nan=False)
+    module = core()
+    if module is None or not hasattr(module, "edit_vector_map_relations"):
+        raise RuntimeError("association review needs an updated CloudAnalyzer Rust core")
+    payload = json.loads(module.edit_vector_map_relations(str(source), encoded))
+    payload["report"]["input"] = str(source.resolve())
+    return _publish(payload, out) if rule_id is not None else payload["report"]

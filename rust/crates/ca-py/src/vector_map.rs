@@ -363,3 +363,44 @@ fn artifacts(map: &Map, import_issues: Value, mut report: Value) -> Result<Strin
     })
     .to_string())
 }
+
+/// Inspect or explicitly edit equipment associations without point-cloud copies.
+#[pyfunction]
+#[pyo3(signature=(vector_map, options=None))]
+pub fn edit_vector_map_relations(
+    py: Python<'_>,
+    vector_map: &str,
+    options: Option<&str>,
+) -> PyResult<String> {
+    py.detach(|| -> Result<String, String> {
+        let text = std::fs::read_to_string(vector_map).map_err(|e| e.to_string())?;
+        let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
+            vectormap_io::json::from_str(&text).map_err(|e| e.to_string())?
+        } else {
+            lanelet2::read_str(&text, &Default::default()).map_err(|e| e.to_string())?
+        };
+        if let Some(issue) = loaded
+            .issues
+            .iter()
+            .find(|i| i.severity == vectormap_core::Severity::Error)
+        {
+            return Err(format!("cannot retain vector_map: {}", issue.message));
+        }
+        let mut map = loaded.map;
+        let edits = options
+            .map(serde_json::from_str::<ca_core::vector_map::relations::LinkEdit>)
+            .transpose()
+            .map_err(|e| e.to_string())?;
+        let edit = edits
+            .as_ref()
+            .map(|o| ca_core::vector_map::relations::edit(&mut map, o))
+            .transpose()
+            .map_err(|e| e.to_string())?;
+        artifacts(
+            &map,
+            json!(loaded.issues),
+            json!({"edit":edit,"relationships":ca_core::vector_map::relations::inspect(&map)}),
+        )
+    })
+    .map_err(PyValueError::new_err)
+}

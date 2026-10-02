@@ -292,7 +292,10 @@ pub fn edit(map: &mut Map, o: &FeatureEdit) -> Result<FeatureEditReport, BuildEr
     let rules: Vec<_> = draft
         .regulatory_elements()
         .filter(|r| match (&r.rule, o.kind) {
-            (Rule::Crosswalk { crosswalk, .. }, FeatureKind::Crosswalk) => crosswalk.0 == o.id,
+            (_, FeatureKind::Crosswalk) => {
+                r.controlled_crosswalks.contains(&CrosswalkId(o.id))
+                    || r.rule.crosswalk().is_some_and(|c| c.0 == o.id)
+            }
             (Rule::TrafficLight { signals, .. }, FeatureKind::Signal) => {
                 signals.iter().any(|s| s.0 == o.id)
             }
@@ -302,6 +305,21 @@ pub fn edit(map: &mut Map, o: &FeatureEdit) -> Result<FeatureEditReport, BuildEr
         .map(|r| r.id)
         .collect();
     for id in rules {
+        let attrs = &mut draft
+            .regulatory_element_mut(id)
+            .expect("existing rule")
+            .attributes;
+        if attrs
+            .get("cloudanalyzer_relationships_source")
+            .or_else(|| attrs.get_prefixed("lanelet2", "cloudanalyzer_relationships_source"))
+            .is_some()
+        {
+            tag(
+                attrs,
+                "cloudanalyzer_relationships_source",
+                "needs_rereview_after_geometry_edit",
+            );
+        }
         tag(
             &mut draft
                 .regulatory_element_mut(id)

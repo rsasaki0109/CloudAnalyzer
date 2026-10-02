@@ -51,12 +51,23 @@ interface BoundaryView {
   points: XYZ[];
 }
 
+interface EquipmentRule {
+  id: number;
+  kind: "vehicle" | "pedestrian" | "crosswalk" | "stop_line" | "mixed";
+  signals: number[];
+  crosswalk: number | null;
+  lanes: number[];
+  controlled_crosswalks: number[];
+  stop_lines: number[];
+  review_source: string;
+}
 export interface MapView {
   lanes: LaneView[];
   boundaries: BoundaryView[];
   stopLines: { id: number; points: XYZ[]; geometrySource?: string }[];
   crosswalks: { id: number; outline: XYZ[]; paintBands?: XYZ[][] | null; editable?: boolean; geometrySource?: string }[];
-  signals: { id: number; points: XYZ[]; height: number | null; geometrySource?: string }[];
+  signals: { id: number; points: XYZ[]; height: number | null; kind?: string; geometrySource?: string }[];
+  regulatoryElements?: EquipmentRule[];
   georeferenced: boolean;
 }
 
@@ -573,6 +584,7 @@ function junctionInputs(): void {
   $<HTMLButtonElement>("vm-quality-check").disabled = busy || !$<HTMLSelectElement>("vm-quality-cloud").value || !view.lanes.length;
   discoveryInputs();
   featureInputs();
+  relationInputs();
   signalInputs();
   crosswalkInputs();
   junctionCloud.disabled = junctionGap.disabled = junctionSupport.disabled = junctionBoundaries.disabled = busy;
@@ -1094,6 +1106,7 @@ function takeView(edited: Edited): void {
   clearCrosswalkPreview();
   undoDepth = edited.undo;
   renderFeatures();
+  renderRelations();
   if (selected !== null && !view.lanes.some((l) => l.id === selected)) selected = null;
   draw();
   undoButton.disabled = undoDepth === 0;
@@ -1432,6 +1445,62 @@ laneTool("vm-crosswalk", "Click a lane where the crosswalk crosses the road; sto
   ),
 );
 laneTool("vm-select", "Click a lane to see it, set its speed limit or remove it.", async () => {});
+
+function relationSelection(): EquipmentRule | undefined {
+  return view.regulatoryElements?.find(r => String(r.id) === $<HTMLSelectElement>("vm-relation").value);
+}
+function relationInputs(): void {
+  const r = relationSelection();
+  for (const el of $("vm-relations-editor").querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>("input,select,button")) el.disabled = busy || !!featureDrag || (!r && el.id !== "vm-relation") || r?.kind === "mixed";
+  $<HTMLSelectElement>("vm-relation").disabled = busy || !!featureDrag;
+  $<HTMLInputElement>("vm-relation-stops").readOnly = r?.kind === "stop_line";
+}
+function renderRelationFields(): void {
+  const r = relationSelection(); const pedestrian = r?.kind === "pedestrian";
+  $("vm-relation-lanes-row").hidden = pedestrian;
+  $("vm-relation-crosswalks-row").hidden = !pedestrian;
+  $("vm-relation-stops-row").hidden = pedestrian;
+  $<HTMLInputElement>("vm-relation-lanes").value = pedestrian ? "" : r?.lanes.join(",") ?? "";
+  $<HTMLInputElement>("vm-relation-crosswalks").value = r?.controlled_crosswalks.join(",") ?? "";
+  $<HTMLInputElement>("vm-relation-stops").value = pedestrian ? "" : r?.stop_lines.join(",") ?? "";
+  $("vm-relation-current").textContent = r ? `Rule ${r.id} (${r.kind}); ${r.review_source}. Current lanes: ${r.lanes.join(",") || "none"}; crosswalks: ${r.controlled_crosswalks.join(",") || "none"}; stops: ${r.stop_lines.join(",") || "none"}.${pedestrian && r.lanes.length ? " Legacy vehicle-lane references require review; Apply replaces them with the chosen crosswalk targets." : ""}` : "Choose an equipment rule explicitly.";
+  $("vm-relation-targets").textContent = r ? pedestrian ? `Available crossings: ${view.crosswalks.map(c => c.id).join(", ")}. No crossing is selected automatically.` : `Available stop lines: ${view.stopLines.map(c => c.id).join(", ") || "none"}. Review a marking's lane context before attaching a vehicle signal.` : "";
+  relationInputs();
+}
+function renderRelations(): void {
+  const select = $<HTMLSelectElement>("vm-relation"); const old = select.value;
+  select.replaceChildren(new Option("Choose an equipment rule", ""), ...(view.regulatoryElements ?? []).map(r => new Option(`Rule ${r.id}: ${r.kind}${r.signals.length ? ` signal ${r.signals.join(",")}` : r.crosswalk ? ` crossing ${r.crosswalk}` : ` stop ${r.stop_lines.join(",")}`}`, String(r.id))));
+  select.value = [...select.options].some(o => o.value === old) ? old : "";
+  renderRelationFields();
+}
+$<HTMLSelectElement>("vm-relation").onchange = renderRelationFields;
+$("vm-relation-focus").onclick = () => {
+  const r = relationSelection(); if (!r) return;
+  const box = new THREE.Box3(); const shift = globalShift();
+  const add = (points: XYZ[], height = 0) => { for (const p of points) { box.expandByPoint(new THREE.Vector3(p[0]-shift[0],p[1]-shift[1],p[2]-shift[2])); box.expandByPoint(new THREE.Vector3(p[0]-shift[0],p[1]-shift[1],p[2]-shift[2]+height)); } };
+  for (const c of view.signals) if (r.signals.includes(c.id)) add(c.points,c.height ?? 0);
+  for (const c of view.crosswalks) if (r.controlled_crosswalks.includes(c.id) || r.crosswalk === c.id) add(c.outline);
+  for (const c of view.stopLines) if (r.stop_lines.includes(c.id)) add(c.points);
+  for (const lane of view.lanes) if (r.lanes.includes(lane.id)) add(lane.center);
+  if (!box.isEmpty()) viewer.frameBox(box.expandByScalar(2));
+};
+function relationIds(id: string): number[] {
+  const text = $<HTMLInputElement>(id).value.trim();
+  if (!text) return [];
+  const parts = text.split(/[\s,]+/);
+  if (parts.some(p => !/^\d+$/.test(p) || !Number.isSafeInteger(Number(p)) || Number(p) <= 0)) throw new Error("Enter positive integer IDs separated by commas or spaces.");
+  return parts.map(Number);
+}
+$("vm-relation-apply").onclick = async () => {
+  const r = relationSelection(); if (busy || !r) return;
+  busy = true; junctionInputs();
+  try {
+    const edited = await vectorMap<Edited>("relations-edit", { text:JSON.stringify({rule_id:r.id,lanes:r.kind === "pedestrian" ? [] : relationIds("vm-relation-lanes"),controlled_crosswalks:r.kind === "pedestrian" ? relationIds("vm-relation-crosswalks") : [],stop_lines:r.kind === "pedestrian" ? [] : relationIds("vm-relation-stops")}) });
+    takeView(edited); const report = edited.result as {changed:boolean;warnings:string[]};
+    setStatus(report.changed ? `Rule ${r.id} associations updated. ${report.warnings.join(" ")}` : "Associations unchanged; no Undo step added.");
+  } catch (err) { setStatus(`Association edit failed: ${errorText(err)}`); }
+  finally { busy = false; junctionInputs(); }
+};
 
 function featureSelection(): { kind: "crosswalk" | "signal" | "stop_line"; id: number } | null {
   const [kind, id] = $<HTMLSelectElement>("vm-feature").value.split(":");

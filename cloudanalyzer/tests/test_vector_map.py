@@ -753,3 +753,45 @@ def test_existing_explicit_centres_are_respected_and_invalid_imports_rejected(
         )
     assert not out.exists()
     assert existing.read_bytes() == before
+
+
+def test_reviewed_equipment_targets_cli_preserves_input_and_roundtrips(tmp_path):
+    from ca.vector_map import edit_vector_map_relations
+    pytest.importorskip("cloudanalyzer_core")
+    data = {"format": "vectormap-ir", "version": 1,
+        "boundaries": [{"id": 1, "kind": {"type": "virtual"}, "geometry": [[0, 2, 2], [20, 2, 2]]}, {"id": 2, "kind": {"type": "virtual"}, "geometry": [[0, -2, 2], [20, -2, 2]]}],
+        "lanes": [{"id": 3, "kind": "driving", "left": 1, "right": 2}],
+        "crosswalks": [{"id": 10, "left_edge": [[8, -3, 2], [8, 3, 2]], "right_edge": [[12, -3, 2], [12, 3, 2]]}],
+        "traffic_signals": [{"id": 20, "kind": "pedestrian", "geometry": [[7, -4, 4], [8, -4, 4]], "height": 0.5}],
+        "regulatory_elements": [{"id": 21, "rule": {"type": "traffic_light", "signals": [20]}, "lanes": [3]}]}
+    source = tmp_path / "source.json"
+    source.write_text(json.dumps(data), encoding="utf-8")
+    original = source.read_bytes()
+    inspected = edit_vector_map_relations(str(source))
+    assert inspected["edit"] is None and inspected["relationships"][0]["lanes"] == [3]
+    output = tmp_path / "reviewed"
+    args = ["vectormap-relate", str(source), "--rule", "21", "--crosswalk", "10", "--out", str(output)]
+    result = CliRunner().invoke(app, args)
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report["edit"]["changed"] and report["validation"]["counts"]["errors"] == 0
+    saved = json.loads(Path(report["files"]["editable_map"]).read_text(encoding="utf-8"))
+    for field in ("boundaries", "lanes", "traffic_signals", "crosswalks"):
+        assert saved[field] == data[field]
+    rule = saved["regulatory_elements"][0]
+    assert rule["lanes"] == [] and rule["controlled_crosswalks"] == [10]
+    osm = Path(report["files"]["map"])
+    restored = edit_vector_map_relations(str(osm))
+    assert restored["relationships"][0]["controlled_crosswalks"] == [10]
+    assert restored["relationships"][0]["lanes"] == []
+    assert not any("without_stop_line" in i["code"] for i in restored["autoware_issues"])
+    repeat = edit_vector_map_relations(str(osm), rule_id=21, controlled_crosswalks=[10], out_dir=str(tmp_path / "repeat"))
+    assert not repeat["edit"]["changed"]
+    invalid = tmp_path / "invalid"
+    result = CliRunner().invoke(app, ["vectormap-relate", str(source), "--rule", "21", "--lane", "3", "--out", str(invalid)])
+    assert result.exit_code != 0 and not invalid.exists()
+    with pytest.raises(ValueError):
+        edit_vector_map_relations(str(source), rule_id=21, controlled_crosswalks=[True], out_dir=str(invalid))
+    with pytest.raises(FileExistsError):
+        edit_vector_map_relations(str(source), rule_id=21, controlled_crosswalks=[10], out_dir=str(output))
+    assert source.read_bytes() == original

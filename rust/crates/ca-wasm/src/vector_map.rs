@@ -201,6 +201,21 @@ impl VectorMapSession {
     }
 
     /// Explicitly edit existing crossing/signal geometry as one Undo step.
+    #[wasm_bindgen(js_name = editRelations)]
+    pub fn edit_relations(&mut self, options: &str) -> Result<String, JsError> {
+        let o: ca_core::vector_map::relations::LinkEdit =
+            serde_json::from_str(options).map_err(error)?;
+        let before = self.map.clone();
+        let report = ca_core::vector_map::relations::edit(&mut self.map, &o).map_err(error)?;
+        if report.changed {
+            self.undo.push(before);
+            if self.undo.len() > UNDO_DEPTH {
+                self.undo.remove(0);
+            }
+        }
+        serde_json::to_string(&report).map_err(error)
+    }
+
     #[wasm_bindgen(js_name = editFeatureGeometry)]
     pub fn edit_feature_geometry(&mut self, options: &str) -> Result<String, JsError> {
         let o = serde_json::from_str(options).map_err(error)?;
@@ -343,7 +358,7 @@ impl VectorMapSession {
             .collect();
         let signals: Vec<Value> = map
             .traffic_signals()
-            .map(|s| json!({"id": s.id, "points": points(&s.geometry), "height": s.height,
+            .map(|s| json!({"id": s.id, "kind":s.kind, "points": points(&s.geometry), "height": s.height,
                 "geometrySource": s.attributes.get("cloudanalyzer_geometry_source").or_else(|| s.attributes.get_prefixed("lanelet2", "cloudanalyzer_geometry_source")).unwrap_or("imported_or_manual")}))
             .collect();
         json!({
@@ -352,6 +367,7 @@ impl VectorMapSession {
             "stopLines": stop_lines,
             "crosswalks": crosswalks,
             "signals": signals,
+            "regulatoryElements": ca_core::vector_map::relations::inspect(map),
             "georeferenced": map.metadata().georeference.is_some(),
         })
         .to_string()
@@ -426,6 +442,57 @@ impl Default for VectorMapSession {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn pedestrian_associations_undo_noop_and_json_osm_roundtrip() {
+        use vectormap_core::{Rule, SignalKind};
+        let (mut map, _) = vectormap_core::samples::intersection();
+        let crossing = map.crosswalks().next().unwrap().id;
+        let signal = map.traffic_signals().next().unwrap().id;
+        map.traffic_signal_mut(signal).unwrap().kind = SignalKind::Pedestrian;
+        let rule = map
+            .regulatory_elements()
+            .find(|r| r.rule.signals().contains(&signal))
+            .unwrap()
+            .id;
+        let mut session = super::VectorMapSession { map, undo: vec![] };
+        let before = session.to_json();
+        let options =
+            serde_json::json!({"rule_id":rule,"controlled_crosswalks":[crossing]}).to_string();
+        let report: serde_json::Value =
+            serde_json::from_str(&session.edit_relations(&options).unwrap()).unwrap();
+        assert_eq!(report["changed"], true);
+        assert_eq!(session.undo.len(), 1);
+        let reviewed = session.to_json();
+        session.edit_relations(&options).unwrap();
+        assert_eq!(session.undo.len(), 1);
+        assert_eq!(session.to_json(), reviewed);
+        let output: serde_json::Value =
+            serde_json::from_str(&session.export_lanelet2(true)).unwrap();
+        let mut restored = super::VectorMapSession::new();
+        restored
+            .open("map.osm", output["osm"].as_str().unwrap())
+            .unwrap();
+        let re = restored.map.regulatory_element(rule).unwrap();
+        assert_eq!(re.controlled_crosswalks, vec![crossing]);
+        assert!(re.lanes.is_empty());
+        assert!(matches!(
+            re.rule,
+            Rule::TrafficLight {
+                stop_line: None,
+                ..
+            }
+        ));
+        assert!(
+            restored.map.traffic_signal(signal).unwrap().bulbs
+                == session.map.traffic_signal(signal).unwrap().bulbs
+        );
+        restored.open("map.json", &reviewed).unwrap();
+        assert_eq!(restored.to_json(), reviewed);
+        assert!(session.undo());
+        assert_eq!(session.to_json(), before);
+        assert!(session.undo.is_empty());
+    }
+
     #[test]
     fn quality_audit_keeps_geometry_and_undo_and_checks_both_edges() {
         let mut source = ca_core::PointCloud::default();

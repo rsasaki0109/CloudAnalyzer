@@ -561,7 +561,7 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
 [[package]]
 name = "vectormap-core"
 version = "0.1.0"
-source = "git+https://github.com/rsasaki0109/vectormap-rs?rev=b59b6424603c78ff4826e0bc8659cf1c86ecef32#b59b6424603c78ff4826e0bc8659cf1c86ecef32"
+source = "git+https://github.com/rsasaki0109/vectormap-rs?rev=70893d75ff579e51e10a93bab0f82fa81f2aca8b#70893d75ff579e51e10a93bab0f82fa81f2aca8b"
 dependencies = [
  "serde",
  "thiserror",
@@ -570,7 +570,7 @@ dependencies = [
 [[package]]
 name = "vectormap-io"
 version = "0.1.0"
-source = "git+https://github.com/rsasaki0109/vectormap-rs?rev=b59b6424603c78ff4826e0bc8659cf1c86ecef32#b59b6424603c78ff4826e0bc8659cf1c86ecef32"
+source = "git+https://github.com/rsasaki0109/vectormap-rs?rev=70893d75ff579e51e10a93bab0f82fa81f2aca8b#70893d75ff579e51e10a93bab0f82fa81f2aca8b"
 dependencies = [
  "roxmltree",
  "serde",
@@ -582,7 +582,7 @@ dependencies = [
 [[package]]
 name = "vectormap-validation"
 version = "0.1.0"
-source = "git+https://github.com/rsasaki0109/vectormap-rs?rev=b59b6424603c78ff4826e0bc8659cf1c86ecef32#b59b6424603c78ff4826e0bc8659cf1c86ecef32"
+source = "git+https://github.com/rsasaki0109/vectormap-rs?rev=70893d75ff579e51e10a93bab0f82fa81f2aca8b#70893d75ff579e51e10a93bab0f82fa81f2aca8b"
 dependencies = [
  "serde",
  "vectormap-core",

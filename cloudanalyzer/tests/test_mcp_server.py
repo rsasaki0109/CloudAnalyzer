@@ -67,6 +67,9 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert properties["check_boundary_support"]["type"] == "boolean"
                 assert properties["check_boundary_support"]["default"] is False
                 assert "lane_pairs" in properties
+                association = next(t for t in tools if t.name == "edit_vector_map_relations")
+                properties = association.model_dump(by_alias=True)["inputSchema"]["properties"]
+                assert {"rule_id", "lanes", "controlled_crosswalks", "stop_lines", "out_dir"} <= properties.keys()
                 signal = next(t for t in tools if t.name == "measure_vector_map_signal")
                 properties = signal.model_dump(by_alias=True)["inputSchema"]["properties"]
                 assert properties["preview_only"]["default"] is True

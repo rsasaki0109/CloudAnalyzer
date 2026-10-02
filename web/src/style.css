@@ -269,7 +269,7 @@ textarea {
 .vm-legend .selected { background: #ffeb3b; }
 .vm-legend .outgoing { background: #48dfaf; }
 .vm-map-label[hidden], .vm-legend[hidden], .vm-legend span[hidden] { display: none; }
-#vm-feature-height-row[hidden] { display: none; }
+#vm-feature-height-row[hidden], #vm-relations-editor [hidden] { display: none; }
 .drop-overlay {
   position: absolute;
   inset: 12px;

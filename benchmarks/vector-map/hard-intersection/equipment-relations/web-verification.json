@@ -1,0 +1,19 @@
+{
+  "nativeOsmByteExact": true,
+  "physicalMapNativeExact": true,
+  "sourceQualityCheckedFullCloud": true,
+  "lanes": 59,
+  "sourceReviewLanes": 0,
+  "noOpUndoExact": true,
+  "allEditsUndoExact": true,
+  "controlTargetsReload": true,
+  "warningsReloadExact": true,
+  "warningsBefore": 19,
+  "warningsAfter": 18,
+  "unresolvedRules": [
+    167,
+    171
+  ],
+  "pageErrors": [],
+  "runtime_source_commit": "1b59c4b3de9fcc9e1f3dd9a5cc2b4e23168ec0f3"
+}

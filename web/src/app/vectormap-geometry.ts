@@ -4,9 +4,10 @@ export type XYZ = [number, number, number];
 
 /** Zebra bands clipped to the surveyed outline, including its interpolated heights.
  * Work in doubles relative to a nearby origin before converting to GPU floats.
- * The bands are a display convention; they never replace the map's geometry.
+ * Imported/manual outlines use decorative bands. Measured paint, when supplied,
+ * retains its observed orientation and gaps. Neither changes map geometry.
  */
-export function crosswalkTriangles(outline: XYZ[], origin: XYZ): number[] {
+export function crosswalkTriangles(outline: XYZ[], origin: XYZ, measuredBands?: XYZ[][] | null): number[] {
   if (outline.some((p) => !p.every(Number.isFinite))) return [];
   const points: XYZ[] = [];
   for (const p of outline) {
@@ -18,6 +19,7 @@ export function crosswalkTriangles(outline: XYZ[], origin: XYZ): number[] {
   if (points.length < 3) return [];
   const contour = points.map((p) => new Vector2(p[0], p[1]));
   if (Math.abs(ShapeUtils.area(contour)) < 1e-8) return [];
+  if (measuredBands != null) return measuredPaint(points, contour, measuredBands, origin);
   let length = 0;
   let direction = [1, 0];
   points.forEach((p, i) => {
@@ -54,6 +56,49 @@ export function crosswalkTriangles(outline: XYZ[], origin: XYZ): number[] {
     for (let i = low; i < high; i++) {
       const band = clip(clip(triangle, min + i, true), min + i + 0.5, false);
       for (let j = 2; j < band.length; j++) positions.push(...band[0], ...band[j - 1], ...band[j]);
+    }
+  }
+  return positions;
+}
+
+/** Clip observed paint rectangles to the saved crossing outline. Triangulating
+ * the outline first also supports concave user geometry. Heights come from the
+ * map surface; missing bands stay missing rather than becoming regular stripes.
+ */
+function measuredPaint(points: XYZ[], contour: Vector2[], bands: XYZ[][], origin: XYZ): number[] {
+  if (bands.length > 32 || points.length > 4096) return [];
+  const faces = ShapeUtils.triangulateShape(contour, []).map((v) => v.map((i) => points[i]));
+  const positions: number[] = [];
+  for (const input of bands) {
+    if (input.length !== 4 || input.some((p) => !p.every(Number.isFinite))) continue;
+    const band = input.map((p) => p.map((v, i) => v - origin[i]) as XYZ);
+    const signedArea = ShapeUtils.area(band.map((p) => new Vector2(p[0], p[1])));
+    if (!Number.isFinite(signedArea) || Math.abs(signedArea) < 1e-8) continue;
+    const sign = Math.sign(signedArea);
+    if (band.some((a, i) => {
+      const b = band[(i + 1) % 4], c = band[(i + 2) % 4];
+      return Math.hypot(b[0] - a[0], b[1] - a[1]) > 60 ||
+        sign * ((b[0] - a[0]) * (c[1] - b[1]) - (b[1] - a[1]) * (c[0] - b[0])) < -1e-10;
+    })) continue;
+    for (const face of faces) {
+      let polygon = face;
+      for (let i = 0; i < 4 && polygon.length; i++) {
+        const a = band[i], b = band[(i + 1) % 4];
+        const distance = (p: XYZ) => sign * ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0]));
+        const clipped: XYZ[] = [];
+        for (let j = 0; j < polygon.length; j++) {
+          const p = polygon[j], q = polygon[(j + 1) % polygon.length];
+          const dp = distance(p), dq = distance(q);
+          const inP = dp >= 0, inQ = dq >= 0;
+          if (inP) clipped.push(p);
+          if (inP !== inQ) {
+            const t = dp / (dp - dq);
+            clipped.push(p.map((v, k) => v + (q[k] - v) * t) as XYZ);
+          }
+        }
+        polygon = clipped;
+      }
+      for (let j = 2; j < polygon.length; j++) positions.push(...polygon[0], ...polygon[j - 1], ...polygon[j]);
     }
   }
   return positions;

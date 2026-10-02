@@ -54,16 +54,17 @@ inputs are not included in this repository. The sample-map archive's software
 license is not inferred from the Autoware code repository's license. See
 [reproduction, provenance and limitations](../vector-map-media.md).
 
-`web/vector-map-features.gif` uses separate paint and signal regions from the
-same Autoware planning survey, with the same TIER IV copyright notice and source
-above. It is a cropped/scaled production-app capture with explanatory captions.
-The crossing bands and signal housing are measured from point-cloud returns in
-operator-selected boxes. One imported signal and its empty-lanes rule are
-removed from the demo input to avoid duplication; their geometry is not supplied
-to the fit. Surrounding roads, stops and other signals remain imported context.
-Feature classification, lane assignments and geometry adjustments are explicit
-operator actions. Raw survey inputs are not redistributed. See the
-[point-feature reproduction](../vector-map-media.md#paint-and-signal-housing-measured-from-points).
+`web/vector-map-equipment.gif` uses the same Autoware planning point cloud, with
+the TIER IV copyright/source notice above. No vector map is loaded. Three explicit
+operator paths and lane-width priors guide ground-supported road drafting; the
+app generates junction proposals and searches point geometry/brightness for
+equipment without feature boxes. A false paint proposal is discarded. Stop-line
+marking and signal housing geometry come from original returns; object types and
+lane assignments are human-reviewed drafts. Editing, exact Undo and Local
+Lanelet2 reload are captured through the production UI. Captions and crop/scale
+are added to screenshots; no invented lamps or reference geometry are rendered.
+Raw survey inputs are not redistributed. See
+[source-only reproduction](../vector-map-media.md#source-only-equipment-discovery).
 
 ## Web App Pictures from NCLT
 

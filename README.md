@@ -62,9 +62,10 @@ and confirm its controlled lanes. For COPC surveys,
 [read a full-density working box](docs/large-point-clouds.md#web-full-density-working-box) first.
 
 <p align="center">
-  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map-intersection.gif" alt="A real surveyed intersection: point-supported connection proposals are added, incoming and outgoing lanes highlighted, a shared boundary edited and undone, and the map saved for Autoware" width="800"></a><br>
-  <b>Connect an intersection. Trace a turn. Edit, undo, export.</b><br>
-  Twelve new connection drafts over real Autoware survey points. Approaches, crossings and signal geometries are imported surveyed context.<br>
+  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map-equipment.gif" alt="Real point clouds and operator paths generate road drafts without an input map; automatic equipment proposals are reviewed, a false paint pattern discarded, a measured stop marking and signal housing added, edited, undone and saved" width="800"></a><br>
+  <b>Points to roads. Find equipment. Review, edit, undo, export.</b><br>
+  No input vector map: real Autoware points supply road support and equipment geometry.<br>
+  Paths, lane widths, object types and lane assignments are operator inputs. False candidates are discarded.<br>
   <a href="docs/vector-map-validation.md">Measured accuracy and limitations</a> ·
   <a href="docs/vector-map-media.md">Reproduce this GIF</a>
 </p>
@@ -77,12 +78,13 @@ and confirm its controlled lanes. For COPC surveys,
   </p>
 </details>
 
-<p align="center">
-  <a href="docs/vector-map-media.md#paint-and-signal-housing-measured-from-points"><img src="docs/images/web/vector-map-features.gif" alt="Actual Autoware point-cloud regions become a measured crossing and a user-identified signal housing; vertices and height are edited, undone, exported and reimported" width="800"></a><br>
-  <b>Measure paint. Fit a signal housing. Refine geometry, undo, export.</b><br>
-  Separate regions in the same survey: observed paint and housing geometry come from points.<br>
-  Object identity and lane associations are explicitly reviewed drafts; imported surroundings remain survey context.
-</p>
+<details>
+  <summary>Edit an existing surveyed intersection and draft its connections</summary>
+  <p align="center">
+    <img src="docs/images/web/vector-map-intersection.gif" alt="An imported surveyed intersection gains twelve reviewed connection drafts; shared vertices are edited and undone" width="800"><br>
+    Approaches, crossings and signals are imported context. This example demonstrates connection drafting and existing-map editing.
+  </p>
+</details>
 
 ## 2. Clean it and see what changed
 

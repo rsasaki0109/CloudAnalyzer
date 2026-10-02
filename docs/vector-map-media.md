@@ -1,11 +1,60 @@
 # Reproduce the vector map GIFs
 
-The main README animation shows a real four-way intersection. The expandable
-animation shows road drafting directly from PandaSet LiDAR and recorded poses.
-An additional animation measures paint and a signal housing in separate regions
-of the same Autoware survey. All are captures of the production Web app with captions;
-all point-cloud and map geometry is rendered by the app. Raw inputs are external
-and are not redistributed in this repository.
+The main README animation generates roads from real planning points and operator
+paths, then reviews automatically discovered equipment. Another animation uses
+recorded PandaSet poses. An expandable example edits imported survey context.
+All geometry comes from the production app. Raw inputs stay external.
+
+## Source-only equipment discovery
+
+`docs/images/web/vector-map-equipment.gif` uses the Autoware planning point cloud
+(1,757,841 points), with the copyright/source notice below. **No vector map or
+surveyed feature geometry is loaded into the generator.** This sample has no
+recorded drive: the three paths in `web/media/vector-map-operator-paths.json` were
+specified by an operator over the points. They are not automatically recovered
+trajectories. Lane counts, nominal widths and speed are priors. Points supply
+ground height and supported boundaries; missing evidence remains inferred.
+
+The capture builds six approach lanes and previews five point-supported junction
+connections. The operator adds these drafts; ground support does not establish
+permitted turns or clearance. Whole-ground search locates equipment without
+feature boxes: 806 detected proposals, 129 retained (64 bars, 64 panels, one
+repeated-paint pattern), 906 windows and 71 unsupported windows. The paint pattern
+is a false crossing and is discarded. The capture adds a 36-point, approximately
+2.994 m stop marking and a 47-point panel fitted to a 1.013 × 0.712 m housing.
+Its inspection box contains 54 original points, including nearby returns excluded
+from fitting. Types and lane 14 are explicit human reviews. The result has 11
+road lanes, one stop marking and one signal face, with no invented lamps or sign.
+
+A 0.02 m signal adjustment demonstrates editing; Undo restores byte-identical
+OSM. Removing both additions restores the road-only map exactly. Export/reload
+preserves measured provenance with the Local projector: original MGRS metre
+coordinates stay in local_x/local_y without an assumed geographic origin.
+Native/Web measured coordinates agree within 1e-7 m. These checks establish
+workflow consistency, not classification or survey accuracy. There are many
+uncertain panels, missed road-corridor heads and truncated proposals; see
+[search methods and limitations](commands/vectormap-discover.md).
+
+Prepare an updated native core (maturin or `cloudanalyzer[fast]`) and the external
+cloud, then generate proof in a **new ignored directory**. Points are read in place:
+
+```powershell
+python scripts/prepare_vector_map_discovery_media.py demo_data/autoware/sample-map-planning/pointcloud_map.pcd notes/equipment-media
+cd web
+npm run wasm
+npm run build
+$env:VECTOR_MAP_PLANNING_DIR='../demo_data/autoware/sample-map-planning'
+$env:VECTOR_MAP_DISCOVERY_DIR='../notes/equipment-media'
+$env:PW_PORT='4174'
+npm run media:equipment
+```
+
+Playwright operates the production app and closes its own server. Frames,
+verification and timings stay ignored in `web/media-frames/vector-map-equipment/`.
+ffmpeg crops/scales screenshots to an 800 × 528 looping GIF, about 22 seconds and
+0.87 MB. The preparation script and capture never read a surveyed map, including
+the separate post-hoc evaluation reference. The retired box-selected paint GIF
+is removed because sampling patterns cannot be described as confirmed crossings.
 
 ## Intersection: surveyed context and new connection drafts
 
@@ -63,55 +112,6 @@ fails the capture. `verification.json`, source frames and timings are ignored in
 `web/media-frames/vector-map-intersection/`. ffmpeg produces an 800 × 528 looping
 animation (17 seconds, 19 encoded frames, approximately 1.04 MB). None of these
 checks constitutes a held-out extraction accuracy test.
-
-## Paint and signal housing measured from points
-
-`docs/images/web/vector-map-features.gif` uses the same official planning survey
-and copyright/source notice above. These are **separate regions from the main
-intersection**: a paint box at `[3882, 73743, 18.5]`–`[3899, 73764, 20.5]` and a
-signal box at `[3832.1, 73770.1, 24.74]`–`[3833.9, 73771.4, 25.27]`, in original
-MGRS metre coordinates. Boxes, object identity and lane associations are explicit
-operator inputs. Fits use cloud returns; reference paint corners and the imported
-signal housing are not supplied to the measurement algorithms.
-
-The capture imports the 72-approach ablation above, removing only surveyed signal
-353 and its empty-lanes traffic-light rule 1008 to avoid duplication. Remaining
-roads, stops, crossings and signals remain surveyed context. It retains RGB and
-previews four observed bands from 7,434 box points / 5,568 ground returns with a
-65% bright-point threshold. Observed paint determines the measured footprint,
-including missing/worn ends; it is not filled with decorative stripes. Crossing
-lanes 133/134 are explicitly selected drafts, not inferred legal priority.
-
-A separate 61-point ROI supplies a user-identified signal housing's bottom edge
-and height. Controlled lane 85 is explicitly selected and remains unverified.
-Housing shape alone does not classify signals versus signs/background, and no
-lamps, states, arrows or poles are synthesized. The capture changes a crossing
-vertex by 0.1 m, then adjusts the signal's first vertex Z and housing height by
-0.02 m; these demonstrate manual editing, not independently validated corrections.
-Observed paint stays fixed, and both edits Undo to byte-identical previous OSM.
-Export/reimport retains measured paint metadata and housing provenance.
-
-After preparing the external planning survey and junction ablation above:
-
-```powershell
-cd web
-$env:VECTOR_MAP_PLANNING_DIR='../demo_data/autoware/sample-map-planning'
-$env:VECTOR_MAP_JUNCTION_DIR='../notes/junction-media'
-$env:PW_PORT='4174'
-npm run media:features
-```
-
-The capture uses full-density box inspection, disables EDL for sparse returns,
-shows actual RGB paint and a 3D signal housing, then edits and saves through the
-normal UI. Signal point size and camera zoom are increased for readability;
-these display changes do not alter measurements. Captions are added over the
-app capture. Source frames, verification and timing manifests stay ignored in
-`web/media-frames/vector-map-features/`. The looping GIF is 800 × 528, about
-16.4 seconds. It is a reproducible feature workflow, not a held-out classification,
-survey-accuracy or traffic-rule benchmark. See
-[paint measurement](commands/vectormap-crosswalk.md),
-[signal measurement](commands/vectormap-signal.md) and
-[geometry editing](vector-map-feature-editing.md).
 
 ## Road drafting: real PandaSet points and recorded trajectory
 

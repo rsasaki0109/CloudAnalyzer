@@ -371,6 +371,42 @@ pub fn propose(
             }
             let t0 = quantile(&mut extents.iter().map(|v| v.0).collect::<Vec<_>>(), 0.5);
             let t1 = quantile(&mut extents.iter().map(|v| v.1).collect::<Vec<_>>(), 0.5);
+            // Missing returns are not dark paint. Require contrasting *observed*
+            // gaps over the same transverse footprint as both neighbouring
+            // bands; a regularly sampled reflective surface must not acquire
+            // stripes merely because some 0.1 m profile bins have no points.
+            let local_fraction = |start: usize, end: usize, left: f64, right: f64| {
+                let mut n = 0usize;
+                let mut white = 0usize;
+                for (((p, _), bin), b) in ground.iter().zip(&bins).zip(&bright) {
+                    let t = p[0] * normal[0] + p[1] * normal[1];
+                    if *bin >= start && *bin < end && t >= left && t <= right {
+                        n += 1;
+                        white += usize::from(*b);
+                    }
+                }
+                (n, if n > 0 { white as f64 / n as f64 } else { 0.0 })
+            };
+            if chain.iter().enumerate().any(|(i, &(start, end))| {
+                let (n, f) = local_fraction(start, end, extents[i].0, extents[i].1);
+                n < 12 || f < 0.4
+            }) {
+                continue;
+            }
+            if chain.windows(2).enumerate().any(|(i, pair)| {
+                let left = extents[i].0.max(extents[i + 1].0);
+                let right = extents[i].1.min(extents[i + 1].1);
+                if right - left < 1.5 {
+                    return true;
+                }
+                let (n, gap) = local_fraction(pair[0].1, pair[1].0, left, right);
+                let band = local_fraction(pair[0].0, pair[0].1, left, right)
+                    .1
+                    .min(local_fraction(pair[1].0, pair[1].1, left, right).1);
+                n < 12 || gap > 0.35 || gap > band * 0.45
+            }) {
+                continue;
+            }
             let s0 = low + chain[0].0 as f64 * 0.1;
             let s1 = low + chain.last().unwrap().1 as f64 * 0.1;
             if s1 - s0 > 8.0 || t1 - t0 > 35.0 {

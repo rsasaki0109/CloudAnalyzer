@@ -209,6 +209,43 @@ impl VectorMapSession {
         serde_json::to_string(&report).map_err(error)
     }
 
+    /// Search the generated roads' surroundings without manual feature boxes.
+    #[wasm_bindgen(js_name = discoverFeatures)]
+    pub fn discover_features(
+        &self,
+        cloud: &crate::Cloud,
+        options: &str,
+    ) -> Result<String, JsError> {
+        let o = serde_json::from_str(options).map_err(error)?;
+        serde_json::to_string(
+            &ca_core::vector_map::discovery::propose(&self.map, &cloud.inner, &o).map_err(error)?,
+        )
+        .map_err(error)
+    }
+
+    /// Add explicit reviewed classifications/associations as one atomic Undo step.
+    #[wasm_bindgen(js_name = confirmFeatures)]
+    pub fn confirm_features(
+        &mut self,
+        cloud: &crate::Cloud,
+        options: &str,
+        confirmations: &str,
+    ) -> Result<String, JsError> {
+        let o = serde_json::from_str(options).map_err(error)?;
+        let confirmations: Vec<_> = serde_json::from_str(confirmations).map_err(error)?;
+        let before = self.map.clone();
+        let report =
+            ca_core::vector_map::discovery::add(&mut self.map, &cloud.inner, &o, &confirmations)
+                .map_err(error)?;
+        if self.map != before {
+            self.undo.push(before);
+            if self.undo.len() > UNDO_DEPTH {
+                self.undo.remove(0);
+            }
+        }
+        serde_json::to_string(&report).map_err(error)
+    }
+
     /// Undo the last edit; false if there is none.
     pub fn undo(&mut self) -> bool {
         match self.undo.pop() {
@@ -260,7 +297,7 @@ impl VectorMapSession {
             .collect();
         let stop_lines: Vec<Value> = map
             .stop_lines()
-            .map(|s| json!({"id": s.id, "points": points(&s.geometry)}))
+            .map(|s| json!({"id": s.id, "points": points(&s.geometry),"geometrySource":s.attributes.get("cloudanalyzer_geometry_source").or_else(||s.attributes.get_prefixed("lanelet2","cloudanalyzer_geometry_source")).unwrap_or("imported_or_manual")}))
             .collect();
         let crosswalks: Vec<Value> = map
             .crosswalks()
@@ -382,6 +419,88 @@ impl Default for VectorMapSession {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn source_only_scene_discovery_confirm_edit_roundtrip_and_undo() {
+        let mut source = ca_core::PointCloud {
+            colors: Some(vec![]),
+            ..Default::default()
+        };
+        for i in 0..=400 {
+            for j in 0..=100 {
+                let x = -5.0 + i as f64 * 0.1;
+                let y = -5.0 + j as f64 * 0.1;
+                let white = ((8.0..12.0).contains(&x) && (x - 8.0) % 1.0 < 0.5
+                    || (20.0..20.6).contains(&x))
+                    && y.abs() <= 3.0;
+                source.positions.push([x, y, 2.0]);
+                source
+                    .colors
+                    .as_mut()
+                    .unwrap()
+                    .push([if white { 220 } else { 60 }; 3]);
+            }
+        }
+        for i in 0..=24 {
+            for j in 0..=12 {
+                source
+                    .positions
+                    .push([25.0, -0.6 + i as f64 * 0.05, 6.0 + j as f64 * 0.05]);
+                source.colors.as_mut().unwrap().push([80; 3]);
+            }
+        }
+        let cloud = crate::Cloud::unindexed(source);
+        let mut s = super::VectorMapSession::new();
+        s.build_from_trajectory(&cloud, &[-5.0, 0.0, 4.0, 35.0, 0.0, 4.0], "{}")
+            .unwrap();
+        let before = s.to_json();
+        let depth = s.undo.len();
+        let r: serde_json::Value =
+            serde_json::from_str(&s.discover_features(&cloud, "{}").unwrap()).unwrap();
+        assert_eq!(s.to_json(), before);
+        assert_eq!(s.undo.len(), depth);
+        let lane = s.map.lanes().next().unwrap().id;
+        let confirmations:Vec<_>=r["candidates"].as_array().unwrap().iter().map(|c|serde_json::json!({"candidate":c["id"],"key":c["key"],"lanes":[lane],"classification":match c["evidence"]["kind"].as_str().unwrap(){"repeated_paint"=>"crosswalk","bright_bar"=>"stop_line",_=>"vehicle_signal"}})).collect();
+        let confirmed = serde_json::to_string(&confirmations).unwrap();
+        s.confirm_features(&cloud, "{}", &confirmed).unwrap();
+        assert_eq!(s.undo.len(), depth + 1);
+        let added = s.to_json();
+        s.confirm_features(&cloud, "{}", &confirmed).unwrap();
+        assert_eq!(s.to_json(), added);
+        assert_eq!(s.undo.len(), depth + 1);
+        let stop = s.map.stop_lines().next().expect("measured stop line");
+        let id = stop.id;
+        let mut points: Vec<_> = stop
+            .geometry
+            .points
+            .iter()
+            .map(|p| [p.x, p.y, p.z])
+            .collect();
+        points[0][0] += 0.1;
+        s.edit_feature_geometry(
+            &serde_json::json!({"kind":"stop_line","id":id,"points":points}).to_string(),
+        )
+        .unwrap();
+        assert_eq!(s.undo.len(), depth + 2);
+        assert!(s.undo());
+        assert_eq!(s.to_json(), added);
+        let saved: serde_json::Value = serde_json::from_str(&s.export_lanelet2(true)).unwrap();
+        let mut reopened = super::VectorMapSession::new();
+        reopened
+            .open("map.osm", saved["osm"].as_str().unwrap())
+            .unwrap();
+        let imported = reopened.to_json();
+        reopened.confirm_features(&cloud, "{}", &confirmed).unwrap();
+        assert_eq!(reopened.to_json(), imported);
+        assert_eq!(reopened.undo.len(), 0);
+        assert_eq!(
+            reopened.map.crosswalks().count(),
+            s.map.crosswalks().count()
+        );
+        assert_eq!(reopened.map.traffic_signals().count(), 1);
+        assert!(s.undo());
+        assert_eq!(s.to_json(), before);
+    }
+
     #[test]
     fn paint_preview_add_replay_osm_roundtrip_and_undo() {
         let mut s = super::VectorMapSession::new();

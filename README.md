@@ -52,7 +52,9 @@ pose graph with one scan per pose.
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
   [Map display](docs/vector-map-display.md) shows road surfaces, direction arrows, clipped crosswalk
   bands and signal faces; selecting a lane highlights its incoming and outgoing connections.
-  [Feature geometry editing](docs/vector-map-feature-editing.md) adjusts crossing vertices
+  [Automatic equipment search](docs/commands/vectormap-discover.md) finds paint and elevated
+  panel proposals without feature boxes; inspect them and confirm their type and lane IDs.
+  [Feature geometry editing](docs/vector-map-feature-editing.md) adjusts crossings, stop lines
   and signal housings with complete-map Undo while retaining observed paint and lamps.
 
 ## 2. Clean it and see what changed
@@ -208,6 +210,10 @@ confirm controlled lanes; the Web panel and MCP tool use the same fitting.
 [`ca vectormap-crosswalk`](docs/commands/vectormap-crosswalk.md) proposes measured
 ground-paint bands from RGB or intensity. Preview the observed footprint, then
 confirm the crossing and its lane IDs; Web additions support Undo and Lanelet2 export.
+[`ca vectormap-discover`](docs/commands/vectormap-discover.md) searches generated road
+corridors or supported ground surfaces without feature boxes. Review paint/panel
+proposals, then explicitly confirm object types and lane assignments; the Web panel
+supports inspection, rejection, measured additions, geometry editing and map Undo.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

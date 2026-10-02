@@ -81,11 +81,22 @@ pub fn measure(
     if heading[0].hypot(heading[1]) < 1e-6 {
         return Err(BuildError("first controlled lane has no heading".into()));
     }
+    measure_geometry(cloud, o.min, o.max, heading)
+}
+
+/// Geometry-only fitting for automatic proposals. The caller must not infer
+/// semantic identity or lane control from this result.
+pub(super) fn measure_geometry(
+    cloud: &PointCloud,
+    min: [f64; 3],
+    max: [f64; 3],
+    heading: [f64; 2],
+) -> Result<SignalReport, BuildError> {
     let points: Vec<_> = cloud
         .positions
         .iter()
-        .filter(|p| (0..3).all(|i| p[i].is_finite() && p[i] >= o.min[i] && p[i] <= o.max[i]))
-        .map(|p| std::array::from_fn::<_, 3, _>(|i| p[i] - o.min[i]))
+        .filter(|p| (0..3).all(|i| p[i].is_finite() && p[i] >= min[i] && p[i] <= max[i]))
+        .map(|p| std::array::from_fn::<_, 3, _>(|i| p[i] - min[i]))
         .take(200_001)
         .collect();
     if points.len() > 200_000 {
@@ -141,9 +152,9 @@ pub fn measure(
     }
     let at = |s: f64| {
         [
-            o.min[0] + mean[0] + axis[0] * s + normal[0] * plane,
-            o.min[1] + mean[1] + axis[1] * s + normal[1] * plane,
-            o.min[2] + z0,
+            min[0] + mean[0] + axis[0] * s + normal[0] * plane,
+            min[1] + mean[1] + axis[1] * s + normal[1] * plane,
+            min[2] + z0,
         ]
     };
     Ok(SignalReport {

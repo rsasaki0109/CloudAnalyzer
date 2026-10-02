@@ -282,6 +282,33 @@ pub fn measure_vector_map_crosswalk(
     .map_err(PyValueError::new_err)
 }
 
+/// Attribute-preserving whole-file discovery; does not require feature boxes.
+#[pyfunction]
+#[pyo3(signature=(cloud,vector_map=None,options="{}",confirmations=None))]
+pub fn discover_vector_map_features(
+    py: Python<'_>,
+    cloud: &str,
+    vector_map: Option<&str>,
+    options: &str,
+    confirmations: Option<&str>,
+) -> PyResult<String> {
+    py.detach(||{
+        let options=serde_json::from_str(options).map_err(|e|e.to_string())?;
+        let confirmed:Option<Vec<ca_core::vector_map::discovery::Confirmation>>=confirmations.map(serde_json::from_str).transpose().map_err(|e|e.to_string())?;
+        let mut map=Map::new(); let mut issues=vec![];
+        if let Some(path)=vector_map {
+            let text=std::fs::read_to_string(path).map_err(|e|format!("{path}: {e}"))?;
+            let loaded=if path.to_ascii_lowercase().ends_with(".json"){vectormap_io::json::from_str(&text)}else{lanelet2::read_str(&text,&Default::default())}.map_err(|e|e.to_string())?;
+            if let Some(issue)=loaded.issues.iter().find(|i|i.severity==vectormap_core::Severity::Error) {return Err(format!("cannot retain vector_map: {}",issue.message));}
+            map=loaded.map; issues=loaded.issues;
+        }
+        let cloud=ca_core::read(cloud,&std::fs::read(cloud).map_err(|e|format!("{cloud}: {e}"))?).map_err(|e|e.to_string())?;
+        let discovery=ca_core::vector_map::discovery::propose(&map,&cloud,&options).map_err(|e|e.to_string())?;
+        let additions=confirmed.as_ref().map(|c|ca_core::vector_map::discovery::add(&mut map,&cloud,&options,c)).transpose().map_err(|e|e.to_string())?;
+        artifacts(&map,json!(issues),json!({"status":if confirmed.is_some(){"draft"}else{"preview"},"discovery":discovery,"additions":additions}))
+    }).map_err(PyValueError::new_err)
+}
+
 fn artifacts(map: &Map, import_issues: Value, mut report: Value) -> Result<String, String> {
     let (osm, export_issues) = lanelet2::write_string(map, &lanelet2::SaveOptions::autoware());
     if let Some(issue) = export_issues

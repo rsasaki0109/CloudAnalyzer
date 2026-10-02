@@ -23,6 +23,7 @@ bzip2 = "0.6"
 lz4_flex = "0.14"
 ruzstd = "0.9"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "b59b6424603c78ff4826e0bc8659cf1c86ecef32" }
 
 [features]
@@ -31,6 +32,3 @@ vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "b
 parallel = ["dep:rayon"]
 # rosbag2 SQLite recordings (`.db3` files and folders).
 sqlite = ["dep:rusqlite"]
-
-[dev-dependencies]
-serde_json = "1.0"

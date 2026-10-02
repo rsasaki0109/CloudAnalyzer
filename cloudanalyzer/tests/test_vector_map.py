@@ -11,7 +11,61 @@ import pytest
 from typer.testing import CliRunner
 from cloudanalyzer_cli.main import app
 
-from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal
+from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk
+
+
+def test_crosswalk_rgb_preview_cli_add_replay_and_atomic_publication(junction_survey, tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "measure_vector_map_crosswalk"):
+        pytest.skip("installed core predates paint measurement")
+    _, source = junction_survey
+    s, t = np.meshgrid(np.arange(-5, 5.001, .05), np.arange(-4, 4.001, .05))
+    s, t = s.ravel(), t.ravel()
+    a = np.deg2rad(28)
+    x, y = s * np.cos(a) - t * np.sin(a), s * np.sin(a) + t * np.cos(a)
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = np.full(3, .001)
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = 49985 + x, 50000 + y, 2 + .03 * x - .02 * y
+    white = (s >= -2) & (s < 2) & (((s + 2) % 1) < .5) & (np.abs(t) <= 3)
+    data.red = data.green = data.blue = np.where(white, 210, 70).astype(np.uint16) * 256
+    cloud = tmp_path / "paint.las"
+    data.write(cloud)
+    bounds = [49978, 49993, 1.5, 49992, 50007, 2.5]
+    preview = tmp_path / "preview"
+    report = measure_vector_map_crosswalk(str(cloud), str(source), str(preview), bounds=bounds)
+    candidate = report["crosswalk"]["candidates"][0]
+    assert candidate["stripe_count"] == 4
+    assert abs(candidate["angle_degrees"] - 28) <= 2
+    before = json.loads((preview / "vector_map.json").read_text())
+    result = CliRunner().invoke(app, ["vectormap-crosswalk", str(cloud), str(source), "--out", str(tmp_path / "added"),
+                                    "--box", ",".join(map(str, bounds)), "--lane", "7", "--candidate", "0", "--add"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    added = tmp_path / "added"
+    changed = json.loads((added / "vector_map.json").read_text())
+    for key in ("lanes", "boundaries", "metadata"):
+        assert changed[key] == before[key]
+    assert len(changed["crosswalks"]) == 1 and not changed.get("stop_lines")
+    assert "point_cloud_brightness_stripes" in (added / "lanelet2_map.osm").read_text()
+    assert "cloudanalyzer_lanes_source" in (added / "lanelet2_map.osm").read_text()
+    assert "cloudanalyzer_paint_bands" in (added / "lanelet2_map.osm").read_text()
+    replay = tmp_path / "replay"
+    again = measure_vector_map_crosswalk(str(cloud), str(added / "lanelet2_map.osm"), str(replay),
+        bounds=bounds, lanes=[7], preview_only=False)
+    assert again["crosswalk"]["reused"] == report["crosswalk"]["added"]
+    assert "cloudanalyzer_paint_bands" in Path(again["files"]["map"]).read_text()
+    # Reject invalid confirmation without creating even a partial artifact dir.
+    for options in ({"lanes": []}, {"lanes": [7], "candidate": 99}, {"lanes": [7, 7]}, {"lanes": [7], "brightness_fraction": float("nan")}, {"lanes": [7], "brightness_fraction": 0.99}):
+        with pytest.raises(ValueError):
+            measure_vector_map_crosswalk(str(cloud), str(source), str(tmp_path / "invalid"),
+                bounds=bounds, preview_only=False, **options)
+        assert not (tmp_path / "invalid").exists()
+    with pytest.raises(FileExistsError):
+        measure_vector_map_crosswalk(str(cloud), str(source), str(added), bounds=bounds)
+    assert json.loads((added / "vector_map.json").read_text()) == changed
 
 
 def test_signal_las_spatial_reader_matches_native_file_and_cli(junction_survey, tmp_path):

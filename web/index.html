@@ -813,7 +813,7 @@
             <button id="vm-build" disabled>Build draft roads</button>
             <label><input id="vm-anchor-prior" type="checkbox" checked /> Anchor inferred lines to detected outer edges</label>
             <label title="Choose a continuous path through candidate edges; rejected observations can become width priors"><input id="vm-track-boundaries" type="checkbox" checked /> Track continuous boundaries</label>
-            <label title="Fit local curves with at most 0.5 m horizontal movement; keep ground heights"><input id="vm-fit-boundaries" type="checkbox" checked /> Reduce boundary jitter</label>
+            <label title="Fit trajectory-relative curves with at most 0.5 m horizontal movement; preserve supported corners and ground heights"><input id="vm-fit-boundaries" type="checkbox" checked /> Reduce boundary jitter</label>
             <label title="Reject tall raised surfaces and steps without nearby road support; rejected candidates become width assumptions"><input id="vm-verify-curbs" type="checkbox" checked /> Check curb profiles</label>
             <label title="Reuse lanes whose centre, boundaries, direction and height agree; retain existing geometry and rules"><input id="vm-merge-passes" type="checkbox" checked /> Merge matching existing lanes</label>
           <p id="vm-build-report" class="small"></p>
@@ -859,10 +859,53 @@
           </div>
           <p id="vm-signal-report" class="small"></p>
         </details>
-        <details id="vm-import-notes" hidden>
-          <summary>Import notes</summary>
-          <ol id="vm-import-issues" class="issue-list small"></ol>
-        </details>
+          <details id="vm-import-notes" hidden>
+            <summary>Import notes</summary>
+            <ol id="vm-import-issues" class="issue-list small"></ol>
+          </details>
+          <details class="options" id="vm-crosswalk-measure">
+            <summary>Measure crosswalk paint from points</summary>
+            <p class="hint small">Select a road-paint box in original metre coordinates. Retained RGB or intensity is required. Preview measured bands, identify the crossing and confirm its lane IDs before adding. Missing paint can shorten the observed footprint.</p>
+            <label>Point cloud <select id="vm-crosswalk-cloud"></select></label>
+            <button id="vm-crosswalk-bounds">Use cloud bounds</button>
+            <div class="param-grid">
+              <label>Min X <input id="vm-crosswalk-min-x" type="number" step="any" /></label>
+              <label>Max X <input id="vm-crosswalk-max-x" type="number" step="any" /></label>
+              <label>Min Y <input id="vm-crosswalk-min-y" type="number" step="any" /></label>
+              <label>Max Y <input id="vm-crosswalk-max-y" type="number" step="any" /></label>
+              <label>Min Z <input id="vm-crosswalk-min-z" type="number" step="any" /></label>
+              <label>Max Z <input id="vm-crosswalk-max-z" type="number" step="any" /></label>
+            </div>
+            <label>Confirmed crossing lane IDs <input id="vm-crosswalk-lanes" placeholder="Comma separated; optional for preview" /></label>
+            <label>Bright-point threshold (% of ground contrast) <input id="vm-crosswalk-brightness" type="number" min="40" max="90" step="5" value="75" /></label>
+            <p class="hint small">Lower the threshold to include dim paint. More background can pass; review the measured bands over full-density points.</p>
+            <button id="vm-crosswalk-selected">Use selected lane</button>
+            <div id="vm-crosswalk-candidates" class="small"></div>
+            <div class="button-row">
+              <button id="vm-crosswalk-preview">Find paint candidates</button>
+              <button id="vm-crosswalk-inspect" disabled>Inspect box points</button>
+              <button id="vm-crosswalk-add" disabled>Add reviewed crossing</button>
+            </div>
+            <p id="vm-crosswalk-report" class="small"></p>
+          </details>
+          <details class="options" id="vm-feature-editor">
+            <summary>Edit crossing or signal geometry</summary>
+            <label>Feature <select id="vm-feature"><option value="">Choose a crossing or signal</option></select></label>
+            <p id="vm-feature-source" class="hint small"></p>
+            <div class="button-row">
+              <button id="vm-feature-focus" disabled>Focus feature</button>
+              <button id="vm-feature-drag" disabled aria-pressed="false">Drag feature vertices</button>
+            </div>
+            <label>Vertex <select id="vm-feature-vertex"></select></label>
+            <div class="param-grid">
+              <label>X (m) <input id="vm-feature-x" type="number" step="any" /></label>
+              <label>Y (m) <input id="vm-feature-y" type="number" step="any" /></label>
+              <label>Z (m) <input id="vm-feature-z" type="number" step="any" /></label>
+            </div>
+            <label id="vm-feature-height-row" hidden>Housing height (m) <input id="vm-feature-height" type="number" min="0" max="20" step="any" /></label>
+            <button id="vm-feature-apply" disabled>Apply geometry edit</button>
+            <p class="hint small">Coordinates use the original map frame. Drag keeps Z; numeric edits can change it. Observed paint, stored lamps and lane assignments stay at their original values. Review them after editing. Undo restores the complete previous map.</p>
+          </details>
         <div id="vm-lane" hidden>
           <h3 id="vm-lane-title"></h3>
           <p id="vm-lane-info" class="small"></p>

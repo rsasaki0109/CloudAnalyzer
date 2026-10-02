@@ -52,6 +52,8 @@ pose graph with one scan per pose.
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
   [Map display](docs/vector-map-display.md) shows road surfaces, direction arrows, clipped crosswalk
   bands and signal faces; selecting a lane highlights its incoming and outgoing connections.
+  [Feature geometry editing](docs/vector-map-feature-editing.md) adjusts crossing vertices
+  and signal housings with complete-map Undo while retaining observed paint and lamps.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,
@@ -223,6 +225,9 @@ and undo the batch. Review turns, clearance and traffic rules before use.
 [`ca vectormap-signal`](docs/commands/vectormap-signal.md) measures a user-identified
 signal head from a point-cloud box. Preview its measured housing and explicitly
 confirm controlled lanes; the Web panel and MCP tool use the same fitting.
+[`ca vectormap-crosswalk`](docs/commands/vectormap-crosswalk.md) proposes measured
+ground-paint bands from RGB or intensity. Preview the observed footprint, then
+confirm the crossing and its lane IDs; Web additions support Undo and Lanelet2 export.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

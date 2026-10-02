@@ -666,6 +666,10 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(vector_map::build_vector_map, m)?)?;
     m.add_function(wrap_pyfunction!(vector_map::measure_vector_map_signal, m)?)?;
     m.add_function(wrap_pyfunction!(
+        vector_map::measure_vector_map_crosswalk,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
         vector_map::measure_vector_map_signal_points,
         m
     )?)?;

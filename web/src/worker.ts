@@ -1016,6 +1016,8 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
       return withView(map.open(req.name ?? "", req.text ?? ""));
     case "apply":
       return withView(map.apply(req.text ?? "[]"));
+    case "feature-edit":
+      return withView(map.editFeatureGeometry(req.text ?? "{}"));
     case "build":
       if (req.id === undefined || !req.positions) throw new Error("Choose a point cloud and trajectory.");
       return withView(map.buildFromTrajectory(getCloud(req.id), req.positions, req.text ?? "{}"));
@@ -1026,6 +1028,10 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
     case "signal-add":
       if (req.id === undefined) throw new Error("Choose a point cloud.");
       return withView(map.measureSignal(getCloud(req.id), req.text ?? "{}", req.op === "signal-preview"));
+    case "crosswalk-preview":
+    case "crosswalk-add":
+      if (req.id === undefined) throw new Error("Choose a point cloud.");
+      return withView(map.measureCrosswalk(getCloud(req.id), req.text ?? "{}", req.op === "crosswalk-preview"));
     case "junction-connect":
       if (req.id === undefined) throw new Error("Choose a point cloud.");
       return withView(map.connectJunctions(getCloud(req.id), req.text ?? "{}", JSON.stringify(req.pairs ?? null)));

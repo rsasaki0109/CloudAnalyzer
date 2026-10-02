@@ -1860,7 +1860,7 @@ def vectormap_build_cmd(
     segment_length: float = typer.Option(50.0, "--segment-length", help="Lane piece length in metres; 0 keeps whole roads"),
     no_anchor_width_prior: bool = typer.Option(False, "--no-anchor-width-prior", help="Keep inferred lines relative to the trajectory instead of detected outer edges"),
     no_track_boundaries: bool = typer.Option(False, "--no-track-boundaries", help="Choose each boundary slice independently without continuity tracking"),
-    no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without local curve fitting"),
+    no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without trajectory-relative curve fitting"),
     no_verify_curb_profiles: bool = typer.Option(False, "--no-verify-curb-profiles", help="Keep unchecked height-step candidates, including tall objects and isolated returns"),
     no_merge_repeated_passes: bool = typer.Option(False, "--no-merge-repeated-passes", help="Add roads without reusing matching existing intervals"),
     existing_map: Optional[str] = typer.Option(None, "--existing-map", help="Keep this IR JSON or Lanelet2 map and add uncovered intervals"),
@@ -1937,6 +1937,30 @@ def vectormap_signal_cmd(
     try:
         report = measure_vector_map_signal(cloud, vector_map, out, bounds=[float(v) for v in box.split(",")],
                                           lanes=lanes, kind=kind, preview_only=not add)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+        return
+    typer.echo(json.dumps(report, indent=2))
+
+
+@app.command("vectormap-crosswalk")
+def vectormap_crosswalk_cmd(
+    cloud: str = typer.Argument(..., help="Local cloud retaining RGB or intensity; whole-file compatibility reader"),
+    vector_map: str = typer.Argument(..., help="Editable IR JSON or Lanelet2 map in the same metre frame"),
+    out: str = typer.Option(..., "--out", help="New output directory"),
+    box: str = typer.Option(..., "--box", help="xmin,ymin,zmin,xmax,ymax,zmax enclosing road paint"),
+    lanes: List[int] = typer.Option([], "--lane", help="Confirmed crossing lane ID; repeat as needed, optional for preview"),
+    candidate: int = typer.Option(0, "--candidate", help="Reviewed candidate index (zero based)"),
+    brightness_fraction: float = typer.Option(0.75, "--brightness-fraction", help="0.4–0.9 of ground contrast; lower includes dim paint and more background"),
+    add: bool = typer.Option(False, "--add", help="Add the reviewed crossing; default only previews bands"),
+) -> None:
+    """Measure paint bands; confirm the object and crossing lanes before adding."""
+    from ca.vector_map import measure_vector_map_crosswalk
+
+    try:
+        report = measure_vector_map_crosswalk(cloud, vector_map, out,
+            bounds=[float(v) for v in box.split(",")], lanes=lanes,
+            candidate=candidate, brightness_fraction=brightness_fraction, preview_only=not add)
     except (OSError, ValueError, RuntimeError) as error:
         _handle_error(error)
         return

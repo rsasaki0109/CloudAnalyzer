@@ -69,6 +69,13 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert properties["bounds"]["type"] == "array"
                 assert properties["lanes"]["type"] == "array"
                 tiles = next(t for t in tools if t.name == "tile_copc")
+                crossing = next(t for t in tools if t.name == "measure_vector_map_crosswalk")
+                properties = crossing.model_dump(by_alias=True)["inputSchema"]["properties"]
+                assert properties["preview_only"]["default"] is True
+                assert properties["candidate"]["default"] == 0
+                assert properties["brightness_fraction"]["default"] == 0.75
+                assert "lanes" in properties
+                assert "bounds" in properties
                 properties = tiles.model_dump(by_alias=True)["inputSchema"]["properties"]
                 assert properties["resume"]["default"] is False
                 assert properties["chunk_size"]["default"] == 10000

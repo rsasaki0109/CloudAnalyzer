@@ -1,113 +1,179 @@
-//! Local geometry fitting, independent of any reference map. Candidate source
-//! positions are retained; only XY is fitted, with at most 0.5 m displacement.
+//! Fit lateral deviations in the trajectory frame, without a reference map.
+//! Source positions/heights are retained and XY movement is capped at 0.5 m.
+use super::{Evidence, ExtractedRoad};
 
-use super::ExtractedRoad;
-
-fn solve(mut a: [[f64; 4]; 3]) -> Option<[f64; 3]> {
-    for k in 0..3 {
-        let pivot = (k..3).max_by(|&i, &j| a[i][k].abs().total_cmp(&a[j][k].abs()))?;
-        if a[pivot][k].abs() < 1e-9 {
+/// SPD pentadiagonal Cholesky solve; O(n) time and storage.
+/// Each row stores its diagonal and the two lower diagonals.
+fn solve(mut a: Vec<[f64; 3]>, mut rhs: Vec<f64>) -> Option<Vec<f64>> {
+    for k in 0..a.len() {
+        if k >= 2 {
+            a[k][2] /= a[k - 2][0];
+        }
+        if k >= 1 {
+            a[k][1] = (a[k][1] - a[k][2] * a[k - 1][1]) / a[k - 1][0];
+        }
+        let diagonal = a[k][0] - a[k][1].powi(2) - a[k][2].powi(2);
+        if !diagonal.is_finite() || diagonal <= 0.0 {
             return None;
         }
-        a.swap(k, pivot);
-        let scale = a[k][k];
-        for v in &mut a[k][k..] {
-            *v /= scale;
+        a[k][0] = diagonal.sqrt();
+        if k >= 1 {
+            rhs[k] -= a[k][1] * rhs[k - 1];
         }
-        let pivot_row = a[k];
-        for (i, row) in a.iter_mut().enumerate() {
-            if i == k {
-                continue;
-            }
-            let scale = row[k];
-            for (value, pivot) in row[k..].iter_mut().zip(&pivot_row[k..]) {
-                *value -= scale * pivot;
-            }
+        if k >= 2 {
+            rhs[k] -= a[k][2] * rhs[k - 2];
         }
+        rhs[k] /= a[k][0];
     }
-    Some([a[0][3], a[1][3], a[2][3]])
+    for k in (0..a.len()).rev() {
+        if k + 1 < a.len() {
+            rhs[k] -= a[k + 1][1] * rhs[k + 1];
+        }
+        if k + 2 < a.len() {
+            rhs[k] -= a[k + 2][2] * rhs[k + 2];
+        }
+        rhs[k] /= a[k][0];
+    }
+    rhs.iter().all(|v| v.is_finite()).then_some(rhs)
 }
 
-fn local(points: &[[f64; 3]], k: usize) -> Option<[f64; 2]> {
-    let start = k.saturating_sub(2);
-    let end = (k + 2).min(points.len() - 1);
-    let weight = |i: usize| (3 - k.abs_diff(i)) as f64;
-    let sum: f64 = (start..=end).map(weight).sum();
-    let mean: [f64; 2] =
-        std::array::from_fn(|j| (start..=end).map(|i| points[i][j] * weight(i)).sum::<f64>() / sum);
-    let mut xx = 0.0;
-    let mut xy = 0.0;
-    let mut yy = 0.0;
-    for (i, p) in points.iter().enumerate().take(end + 1).skip(start) {
-        let x = p[0] - mean[0];
-        let y = p[1] - mean[1];
-        xx += weight(i) * x * x;
-        xy += weight(i) * x * y;
-        yy += weight(i) * y * y;
+/// Protect observed sharp corners with locally straight support on both sides.
+/// An isolated spike fails straightness; inferred zigzags are not corners.
+fn corners(points: &[[f64; 3]], labels: &[Evidence]) -> Vec<bool> {
+    let mut result = vec![false; points.len()];
+    if points.len() < 5 {
+        return result;
     }
-    if xx + yy < 1e-12 {
-        return None;
+    for k in 2..points.len() - 2 {
+        if labels[k - 2..=k + 2].contains(&Evidence::WidthPrior) {
+            continue;
+        }
+        let chord = |a: usize, b: usize| {
+            let d = [points[b][0] - points[a][0], points[b][1] - points[a][1]];
+            let length = d[0].hypot(d[1]);
+            (length > 0.1).then_some([d[0] / length, d[1] / length])
+        };
+        let (Some(incoming), Some(outgoing)) = (chord(k - 2, k), chord(k, k + 2)) else {
+            continue;
+        };
+        let angle = (incoming[0] * outgoing[1] - incoming[1] * outgoing[0])
+            .atan2(incoming[0] * outgoing[0] + incoming[1] * outgoing[1])
+            .abs();
+        let straight = |a: usize, mid: usize, direction: [f64; 2]| {
+            let d = [points[mid][0] - points[a][0], points[mid][1] - points[a][1]];
+            (d[0] * direction[1] - d[1] * direction[0]).abs() <= 0.1
+        };
+        if angle >= 35.0_f64.to_radians()
+            && straight(k - 2, k - 1, incoming)
+            && straight(k, k + 1, outgoing)
+        {
+            result[k] = true;
+        }
     }
-    let angle = 0.5 * (2.0 * xy).atan2(xx - yy);
-    let axis = [angle.cos(), angle.sin()];
-    let normal = [-axis[1], axis[0]];
-    let project =
-        |p: [f64; 3], dir: [f64; 2]| (p[0] - mean[0]) * dir[0] + (p[1] - mean[1]) * dir[1];
-    let xp = project(points[k], axis);
-    let mut yp = 0.0;
-    if end - start >= 3 {
-        let scale = (start..=end)
-            .map(|i| project(points[i], axis).abs())
-            .fold(0.0, f64::max)
-            .max(1e-6);
-        let mut matrix = [[0.0; 4]; 3];
-        for (i, &p) in points.iter().enumerate().take(end + 1).skip(start) {
-            let x = project(p, axis) / scale;
-            let y = project(p, normal);
-            let row = [1.0, x, x * x];
-            for a in 0..3 {
-                for b in 0..3 {
-                    matrix[a][b] += weight(i) * row[a] * row[b];
-                }
-                matrix[a][3] += weight(i) * row[a] * y;
+    result
+}
+
+fn corrections(
+    reference: &[[f64; 3]],
+    normals: &[[f64; 2]],
+    points: &[[f64; 3]],
+    labels: &[Evidence],
+) -> Option<Vec<f64>> {
+    let offsets: Vec<_> = points
+        .iter()
+        .zip(reference)
+        .zip(normals)
+        .map(|((p, r), n)| (p[0] - r[0]) * n[0] + (p[1] - r[1]) * n[1])
+        .collect();
+    let weights = labels.iter().map(|label| match label {
+        Evidence::Intensity => 2.0,
+        Evidence::Curb => 1.0,
+        Evidence::SupportEdge => 0.5,
+        Evidence::WidthPrior => 0.25,
+    });
+    let mut matrix: Vec<_> = weights.map(|w| [w, 0.0, 0.0]).collect();
+    let mut rhs = vec![0.0; points.len()];
+    let corner = corners(points, labels);
+    let mut fixed = vec![false; points.len()];
+    for (k, &is_corner) in corner.iter().enumerate() {
+        if is_corner {
+            fixed[k - 2..=k + 2].fill(true);
+        }
+    }
+    for k in 1..points.len() - 1 {
+        if corner[k] {
+            continue;
+        }
+        let distance = |a: usize, b: usize| {
+            (reference[a][0] - reference[b][0])
+                .hypot(reference[a][1] - reference[b][1])
+                .max(0.1)
+        };
+        let a = distance(k - 1, k);
+        let b = distance(k, k + 1);
+        let scale = 2.0 / (a + b);
+        let row = [scale / a, -scale / a - scale / b, scale / b];
+        let curvature: f64 = row
+            .iter()
+            .zip(&offsets[k - 1..=k + 1])
+            .map(|(c, v)| c * v)
+            .sum();
+        // Physical strength (2 m)^4; variable sampling uses metre distances.
+        for (j, &c) in row.iter().enumerate() {
+            matrix[k - 1 + j][0] += 16.0 * c * c;
+            rhs[k - 1 + j] -= 16.0 * c * curvature;
+        }
+        matrix[k][1] += 16.0 * row[0] * row[1];
+        matrix[k + 1][1] += 16.0 * row[1] * row[2];
+        matrix[k + 1][2] += 16.0 * row[0] * row[2];
+    }
+    // Corrections of observed corner neighbourhoods are exactly zero.
+    for k in 0..matrix.len() {
+        for d in 1..=2 {
+            if k >= d && (fixed[k] || fixed[k - d]) {
+                matrix[k][d] = 0.0;
             }
         }
-        let beta = solve(matrix)?;
-        let x = xp / scale;
-        yp = beta[0] + beta[1] * x + beta[2] * x * x;
+        if fixed[k] {
+            matrix[k][0] = 1.0;
+            rhs[k] = 0.0;
+        }
     }
-    Some([
-        mean[0] + axis[0] * xp + normal[0] * yp,
-        mean[1] + axis[1] * xp + normal[1] * yp,
-    ])
+    solve(matrix, rhs)
 }
 
 pub(super) fn fit(road: &mut ExtractedRoad) -> (usize, f64) {
     if road.reference.len() < 3 {
         return (0, 0.0);
     }
+    let normals: Vec<_> = (0..road.reference.len())
+        .map(|k| {
+            let a = road.reference[k.saturating_sub(1)];
+            let b = road.reference[(k + 1).min(road.reference.len() - 1)];
+            let length = (b[0] - a[0]).hypot(b[1] - a[1]).max(1e-12);
+            [-(b[1] - a[1]) / length, (b[0] - a[0]) / length]
+        })
+        .collect();
     let original = road.boundaries.clone();
-    for (line, source) in road.boundaries.iter_mut().zip(&original) {
-        for (k, p) in line.iter_mut().enumerate() {
-            let Some(target) = local(source, k) else {
-                continue;
-            };
-            let delta = [target[0] - p[0], target[1] - p[1]];
-            let length = delta[0].hypot(delta[1]);
-            if length <= 1e-6 {
-                continue;
+    for ((line, source), labels) in road
+        .boundaries
+        .iter_mut()
+        .zip(&original)
+        .zip(&road.evidence)
+    {
+        let Some(delta) = corrections(&road.reference, &normals, source, labels) else {
+            continue;
+        };
+        for ((p, &d), n) in line.iter_mut().zip(&delta).zip(&normals) {
+            let d = d.clamp(-0.5, 0.5);
+            if d.abs() > 1e-6 {
+                p[0] += n[0] * d;
+                p[1] += n[1] * d;
             }
-            let scale = (0.5 / length).min(1.0);
-            p[0] += delta[0] * scale;
-            p[1] += delta[1] * scale;
         }
     }
-    // Reject fits that cross neighboring lines at a sampled cross-section.
-    for k in 0..road.reference.len() {
-        let a = road.reference[k.saturating_sub(1)];
-        let b = road.reference[(k + 1).min(road.reference.len() - 1)];
-        let length = (b[0] - a[0]).hypot(b[1] - a[1]).max(1e-12);
-        let n = [-(b[1] - a[1]) / length, (b[0] - a[0]) / length];
+    // Reject fits that cross neighbouring lines at a sampled cross-section.
+    for (k, n) in normals.iter().enumerate() {
         if road.boundaries.windows(2).any(|pair| {
             (pair[0][k][0] - pair[1][k][0]) * n[0] + (pair[0][k][1] - pair[1][k][1]) * n[1] <= 0.1
         }) {
@@ -187,5 +253,101 @@ mod tests {
         let (_, maximum) = fit(&mut r);
         assert!((maximum - 0.5).abs() < 1e-12);
         assert_eq!(r.boundaries[0][5][2], 4.0);
+    }
+
+    #[test]
+    fn supported_sharp_corner_is_not_rounded_like_an_inferred_kink() {
+        let source: Vec<_> = (0..=12)
+            .map(|k| {
+                let x = k as f64 * 2.0;
+                [x, (x - 12.0).max(0.0), 4.0]
+            })
+            .collect();
+        let mut measured = road(source.clone());
+        fit(&mut measured);
+        assert_eq!(measured.boundaries[0], source);
+        let mut inferred = road(source);
+        inferred.evidence[0].fill(Evidence::WidthPrior);
+        assert!(fit(&mut inferred).0 > 0);
+        assert!(inferred.boundaries[0][6][1] > 0.1);
+        assert_eq!(inferred.evidence[0][6], Evidence::WidthPrior);
+    }
+
+    #[test]
+    fn reference_curve_and_parallel_arc_are_preserved() {
+        let arc = |radius: f64| {
+            (0..21)
+                .map(|k| {
+                    let angle = k as f64 * 0.05;
+                    [radius * angle.cos(), radius * angle.sin(), k as f64 * 0.01]
+                })
+                .collect::<Vec<_>>()
+        };
+        let mut r = road(arc(20.0));
+        r.reference = arc(20.0);
+        let source = r.boundaries.clone();
+        assert_eq!(fit(&mut r), (0, 0.0));
+        assert_eq!(r.boundaries, source);
+        r.boundaries = vec![arc(22.0)];
+        fit(&mut r);
+        for (k, p) in r.boundaries[0].iter().enumerate() {
+            assert!((p[0].hypot(p[1]) - 22.0).abs() < 0.001);
+            assert_eq!(p[2], k as f64 * 0.01);
+        }
+    }
+
+    #[test]
+    fn irregular_station_spacing_and_large_rotated_coordinates_keep_the_same_fit() {
+        let source: Vec<_> = (0..17)
+            .map(|k| {
+                let x = k as f64 + (k as f64 * 0.7).sin() * 0.2;
+                [x, 1.75 + if k % 2 == 0 { 0.2 } else { -0.2 }, 4.0]
+            })
+            .collect();
+        let mut local = road(source);
+        let mut rotated = local.clone();
+        let transform = |p: [f64; 3]| {
+            let angle = 1.3_f64;
+            [
+                50000.0 + angle.cos() * p[0] - angle.sin() * p[1],
+                70000.0 + angle.sin() * p[0] + angle.cos() * p[1],
+                p[2],
+            ]
+        };
+        for p in &mut rotated.reference {
+            *p = transform(*p);
+        }
+        for p in &mut rotated.boundaries[0] {
+            *p = transform(*p);
+        }
+        fit(&mut local);
+        fit(&mut rotated);
+        for (a, b) in local.boundaries[0].iter().zip(&rotated.boundaries[0]) {
+            let a = transform(*a);
+            assert!((a[0] - b[0]).hypot(a[1] - b[1]) < 1e-8);
+            assert_eq!(a[2], b[2]);
+        }
+    }
+
+    #[test]
+    fn different_evidence_weights_never_invert_neighbouring_boundaries() {
+        let source: Vec<_> = (0..17)
+            .map(|k| {
+                [
+                    k as f64 * 2.0,
+                    1.0 + if k % 2 == 0 { 0.4 } else { -0.4 },
+                    4.0,
+                ]
+            })
+            .collect();
+        let mut r = road(source.clone());
+        r.boundaries
+            .push(source.iter().map(|p| [p[0], p[1] - 0.2, p[2]]).collect());
+        r.evidence[0].fill(Evidence::WidthPrior);
+        r.evidence.push(vec![Evidence::Curb; source.len()]);
+        fit(&mut r);
+        for (a, b) in r.boundaries[0].iter().zip(&r.boundaries[1]) {
+            assert!(a[1] - b[1] > 0.1);
+        }
     }
 }

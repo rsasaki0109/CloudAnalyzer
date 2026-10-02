@@ -13,6 +13,8 @@ use vectormap_core::{LaneDirection, Map, NewRoad, Point3, Polyline3, RoadLane, S
 
 use crate::{AttributeValues, INTENSITY, PointCloud};
 
+pub mod crosswalks;
+pub mod feature_editing;
 mod fitting;
 mod integration;
 pub mod junctions;
@@ -37,7 +39,7 @@ pub struct BuildOptions {
     pub anchor_width_prior: bool,
     /// Select boundary candidates as a continuous path across supported slices.
     pub track_boundaries: bool,
-    /// Fit short local curves to suppress candidate jitter, with bounded XY movement.
+    /// Regularize trajectory-relative lateral deviations with bounded XY movement.
     pub fit_boundaries: bool,
     /// Reuse matching lanes already in the map and add only uncovered intervals.
     pub merge_repeated_passes: bool,
@@ -738,7 +740,7 @@ pub fn extract(
         report.warnings.push(format!("{} vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",report.tracked_vertices));
     }
     if report.fitted_vertices > 0 {
-        report.warnings.push(format!("{} vertices were fitted to local boundary curves (maximum XY movement {:.3} m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",report.fitted_vertices,report.maximum_fit_displacement));
+        report.warnings.push(format!("{} vertices were fitted to trajectory-relative boundary curves (maximum XY movement {:.3} m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",report.fitted_vertices,report.maximum_fit_displacement));
     }
     if report.support_edge_vertices > 0 {
         report.warnings.push("Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.".into());

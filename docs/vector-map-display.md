@@ -50,3 +50,7 @@ or traffic-rule correctness. See [draft validation](vector-map-validation.md),
 [junction proposals](commands/vectormap-connect.md) and
 [measuring a signal housing](commands/vectormap-signal.md) for the distinct inputs,
 review requirements and limitations of each workflow.
+
+[Feature geometry editing](vector-map-feature-editing.md) supports XY dragging,
+numeric XYZ changes and signal housing height adjustments. Observed paint and
+stored lamps retain their source coordinates; edits are marked for review.

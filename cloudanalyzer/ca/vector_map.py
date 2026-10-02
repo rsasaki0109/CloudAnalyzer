@@ -43,7 +43,7 @@ def build_vector_map(
     Reference maps supply coordinate metadata only, never geometry. Explicit
     projections are mgrs, utm or transverse_mercator; an origin selects the MGRS tile or
     defines the local origin of the other projections. Omitted metadata uses Autoware Local.
-    Candidate tracking rejects isolated peaks; local curve fitting moves XY by at most
+    Candidate tracking rejects isolated peaks; trajectory-relative curve fitting moves XY by at most
     0.5 m and preserves ground heights. Evidence counts describe selected sources before
     fitting, including explicit width priors. Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does
@@ -269,6 +269,66 @@ def measure_vector_map_signal(
         "vector_map": str(Path(vector_map).resolve()),
     }
     payload["report"]["options"] = options
+    return _publish(payload, out)
+
+
+def measure_vector_map_crosswalk(
+    cloud: str,
+    vector_map: str,
+    out_dir: str,
+    *,
+    bounds: list[float],
+    lanes: list[int] | None = None,
+    candidate: int = 0,
+    brightness_fraction: float = 0.75,
+    preview_only: bool = True,
+) -> dict[str, Any]:
+    """Propose ground-paint bands, then add an explicitly confirmed crossing.
+
+    bounds is xmin,ymin,zmin,xmax,ymax,zmax in the map's metre frame. Retained
+    RGB/intensity determines the band geometry; the map is used only to check
+    user-supplied lane IDs. Preview is read-only and may omit lanes. Adding
+    requires confirmed crossing lanes and a reviewed candidate index from the
+    preview. No stop line or legal priority is inferred. Missing paint may
+    shorten the measured footprint. Use the original map when adding.
+
+    This local compatibility reader loads the complete attribute-bearing input;
+    the 200000-point cap applies to the selected box, not total reader memory.
+    Export an attribute-preserving ROI first for a large source. XYZ-only and
+    HTTP inputs are not supported for paint measurement.
+    """
+    selected_lanes = [] if lanes is None else lanes
+    if len(bounds) != 6 or not all(math.isfinite(v) for v in bounds) or any(
+        bounds[i] >= bounds[i + 3] or bounds[i + 3] - bounds[i] > (5 if i == 2 else 40)
+        for i in range(3)
+    ):
+        raise ValueError("crosswalk box requires six finite increasing bounds, XY at most 40 m and Z at most 5 m")
+    if (any(type(lane) is not int or lane < 1 for lane in selected_lanes)
+            or len(set(selected_lanes)) != len(selected_lanes)
+            or (not preview_only and not selected_lanes)):
+        raise ValueError("confirm distinct positive crossing lane IDs before adding")
+    if type(candidate) is not int or candidate < 0:
+        raise ValueError("candidate must be a nonnegative preview index")
+    if not math.isfinite(brightness_fraction) or not 0.4 <= brightness_fraction <= 0.9:
+        raise ValueError("brightness_fraction must be finite and between 0.4 and 0.9")
+    if urlsplit(cloud).scheme in {"http", "https"}:
+        raise ValueError("paint measurement requires a local attribute-preserving ROI or cloud")
+    for path in (cloud, vector_map):
+        if not Path(path).is_file():
+            raise FileNotFoundError(path)
+    out = Path(out_dir).resolve()
+    if out.exists():
+        raise FileExistsError(f"output directory already exists: {out}; choose a new directory")
+    module = core()
+    if module is None or not hasattr(module, "measure_vector_map_crosswalk"):
+        raise RuntimeError("crosswalk paint measurement needs an updated Rust core")
+    options = {"min": bounds[:3], "max": bounds[3:], "lanes": selected_lanes, "candidate": candidate, "brightness_fraction": brightness_fraction}
+    payload = json.loads(module.measure_vector_map_crosswalk(
+        cloud, vector_map, json.dumps(options, allow_nan=False), preview_only
+    ))
+    payload["report"]["options"] = options
+    payload["report"]["inputs"] = {"cloud": str(Path(cloud).resolve()), "vector_map": str(Path(vector_map).resolve())}
+    payload["report"]["processing"] = {"strategy": "whole-file-compatibility-with-attributes", "selected_limit": 200_000}
     return _publish(payload, out)
 
 

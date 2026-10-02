@@ -176,6 +176,10 @@ large coordinates, reversed shared boundaries, cancellation, export and reload.
 
 ## Curb profile checks and missing-observation anchors
 
+The measurements in this section describe commit `11d5c3f`; the following
+[trajectory-relative fitting comparison](#trajectory-relative-boundary-stability)
+describes the subsequent shape improvement with the same detector and anchors.
+
 A positive height step alone also detects walls, vehicle bodies and isolated low returns.
 The default curb check now requires at least one of the two road-side bins to agree with
 the candidate height within `max(curb_height, 0.05 m)`, and both outside bins to rise by
@@ -211,7 +215,7 @@ This is **not** an across-the-board geometry improvement or a survey-accuracy cl
 The six lane sections, 122.13 m supported length, one unsupported section, nine selected
 reference lanes and 10,895 reference samples remain identical. The candidate check rejects
 106 cross-section height transitions; this count is not a count of proven false curbs.
-Fitting moves 191 vertices by at most 0.360 m; all source heights stay unchanged.
+Fitting moves 192 vertices by at most 0.360 m; all source heights stay unchanged.
 
 On the same PandaSet drive, counts change from 27 intensity / 33 curb / 75 prior vertices
 to 28 / 19 / 88 (no coverage-edge vertices). It rejects 59 height transitions. Heading
@@ -226,6 +230,53 @@ PandaSet. To reproduce the pre-change baseline, run the same inputs at commit `5
 Compare the `xy_boundary_metrics` in `report.json` and use `vector_map_diagnose.py` for
 source-error overlays. Reference geometry is used only for scoring and coordinate
 metadata, never for generation. Use fresh output directories and keep inputs external.
+
+## Trajectory-relative boundary stability
+
+The earlier fitter independently smoothed each boundary's XY coordinates. This combined
+trajectory curvature with lateral candidate jitter, and gave width assumptions the same
+influence as observed candidates. The current fitter regularizes only lateral deviations
+in the trajectory frame using a second-derivative penalty and actual metre spacing.
+Its fixed physical strength is `(2 m)^4`; data weights are intensity 2, curb 1, coverage
+edge 0.5 and width prior 0.25. These are heuristic weights, not calibrated probabilities.
+A banded solve uses linear time and storage in the number of sampled vertices.
+
+Sharp source corners of at least 35 degrees are protected when three points on each side
+have observed labels and lie within 0.1 m of their side's chord. The five supporting
+vertices remain fixed. An isolated spike or an inferred width kink is not sufficient
+support. The trajectory's own curvature remains the base geometry. Unit checks cover
+sharp measured corners, inferred kinks, parallel arcs, noise, unequal station spacing,
+large rotated coordinates, source retention and the 0.5 m movement bound.
+Sparse or noisy true corners can fail these support checks and still require review.
+
+On exactly the same Autoware and PandaSet inputs and selected source geometry, compared
+with commit `11d5c3f`, with default tracking, profile checks and fitting enabled:
+
+| Metric | Previous XY fitter | Trajectory-relative fitter |
+|---|---:|---:|
+| Autoware boundary precision at 0.3 m | 33.27% | 35.55% |
+| Autoware boundary recall | 11.73% | 12.47% |
+| Autoware F1 | 0.1735 | 0.1847 |
+| Autoware selected observed source precision | 52.94% | 52.94% |
+| Autoware adjacent-segment heading change, P95 | 18.74 degrees | 10.07 degrees |
+| Autoware maximum heading change | 35.58 degrees | 21.62 degrees |
+| PandaSet adjacent-segment heading change, P95 | 8.45 degrees | 3.25 degrees |
+| PandaSet maximum heading change | 15.44 degrees | 5.27 degrees |
+
+Sources, evidence labels, reference line samples, unsupported sections, lane counts,
+reference selection and all source heights remain identical. The new fitter moves 192
+Autoware and 135 PandaSet vertices, by at most 0.5 m (within floating-point roundoff).
+As before, fits crossing neighbouring lines at a sampled section are rejected; topology
+between samples is not guaranteed. Lower heading variation alone does not prove correct
+lane geometry. The Autoware reference-distance scores also improve, but remain low;
+PandaSet still has no independent lane-boundary reference. Neither drive is held out.
+Reference geometry is never supplied to the fitter or used for position alignment.
+
+Reproduce the comparison by running the evaluation example at `11d5c3f` and the current
+commit with identical inputs/options, then inspecting `report.json` and the diagnostics.
+Keep `fit_boundaries=true` in both runs; `false` disables fitting rather than selecting
+the earlier fitter. The unchanged-source assertion makes this a fitting comparison,
+not a comparison of newly detected features. Use fresh external output directories.
 
 ## Conservative repeated-pass integration
 

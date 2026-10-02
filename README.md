@@ -47,7 +47,7 @@ pose graph with one scan per pose.
   and tied in with loops.
 - **Export** the graph as g2o, the poses as KITTI / TUM, and the map as a cloud.
 - **Build a vector map** over the point cloud: draft boundaries from a cloud and a trajectory with measured/inferred counts, draw roads with lanes in either direction, connect junctions,
-  add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
+  drag shared boundary vertices, add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
   [vectormap-rs](https://github.com/rsasaki0109/vectormap-rs), checks the map for Autoware, and saves
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
   [Map display](docs/vector-map-display.md) shows road surfaces, direction arrows, clipped crosswalk
@@ -56,6 +56,35 @@ pose graph with one scan per pose.
   panel proposals without feature boxes; inspect them and confirm their type and lane IDs.
   [Feature geometry editing](docs/vector-map-feature-editing.md) adjusts crossings, stop lines
   and signal housings with complete-map Undo while retaining observed paint and lamps.
+
+To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
+and confirm its controlled lanes. For COPC surveys,
+[read a full-density working box](docs/large-point-clouds.md#web-full-density-working-box) first.
+
+<p align="center">
+  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map-hard-intersection.gif" alt="Original Tokyo points and recorded arterial poses with operator-traced branches generate a complex road draft, measured crossing and stop-marking candidates and signal housings; review, edit, Undo and reopen Lanelet2" width="800"></a><br>
+  <b>Build a complex intersection from points. Review, edit, undo, export.</b><br>
+  49 road lanes including connection drafts · 7 paint crossings · 2 stop-marking drafts · 4 signal housings.<br>
+  No input map: recorded arterial segments and traced branches; lane widths, object types and lane links are operator inputs.<br>
+  <a href="docs/vector-map-hard-intersection.md">Fixed source-only evaluation and limitations</a> ·
+  <a href="docs/vector-map-media.md">Reproduce this GIF</a>
+</p>
+
+<details>
+  <summary>Road boundaries drafted directly from real LiDAR and recorded poses</summary>
+  <p align="center">
+    <img src="docs/images/web/vector-map.gif" alt="Real PandaSet LiDAR and recorded poses become a continuous lane draft; a shared boundary is edited, undone and saved" width="800"><br>
+    PandaSet scene 019: generated boundaries remain drafts requiring manual review.
+  </p>
+</details>
+
+<details>
+  <summary>Edit an existing surveyed intersection and draft its connections</summary>
+  <p align="center">
+    <img src="docs/images/web/vector-map-intersection.gif" alt="An imported surveyed intersection gains twelve reviewed connection drafts; shared vertices are edited and undone" width="800"><br>
+    Approaches, crossings and signals are imported context. This example demonstrates connection drafting and existing-map editing.
+  </p>
+</details>
 
 ## 2. Clean it and see what changed
 
@@ -249,5 +278,6 @@ The pose graph pictures are of real drives: [NCLT](http://robots.engin.umich.edu
 [`scripts/prepare_nclt.py`](scripts/prepare_nclt.py)) and 2012-06-15 / 2012-12-01 for the loops, corrections and seasons,
 with the ROS bag demos made from 2012-04-29 and 2012-06-15 by [`scripts/make_nclt_bag.py`](scripts/make_nclt_bag.py); and [PandaSet](https://pandaset.org)
 scene 019 (Scale AI and Hesai, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), fetched with
-[`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects.
+[`scripts/fetch_pandaset.py`](scripts/fetch_pandaset.py)) for the odometry and dynamic objects,
+and [`scripts/prepare_vector_map_pandaset.py`](scripts/prepare_vector_map_pandaset.py) for the vector map GIF.
 KITTI data is not redistributed here.

@@ -27,6 +27,51 @@ upstream dataset terms.
 with `scripts/fetch_pandaset.py` (the 360° Pandar64 only, moved into its own frame) and recorded with
 `PANDASET_DIR=<dir> npm run media` in `web/`. The GIFs are adapted from PandaSet.
 
+`web/vector-map.gif` is also adapted from PandaSet 019 under CC BY 4.0, using
+Pandar64 frames 0, 8, …, 72 with original world coordinates and intensity and
+all 80 recorded positions. It adds generated draft lane geometry, explanatory
+captions and a cursor ring, and crops/scales the real Web app capture. Scale AI
+and Hesai provided the source data. Preparation uses
+[`scripts/prepare_vector_map_pandaset.py`](../../scripts/prepare_vector_map_pandaset.py);
+recording uses `VECTOR_MAP_DEMO_DIR=<dir> npm run media:vectormap` in `web/`.
+See [reproduction and accuracy limits](../vector-map-media.md).
+
+## Vector map intersection capture
+
+`web/vector-map-intersection.gif` shows the production app using the public
+Autoware `sample-map-planning` survey. **Sample map: Copyright 2020 TIER IV, Inc.**
+The source and copyright notice are documented in the official
+[planning simulation instructions](https://docs.autoware.org/main/demos/planning-sim/).
+The [official demo-artifact configuration](https://github.com/autowarefoundation/autoware/blob/main/ansible/roles/demo_artifacts/tasks/main.yaml)
+provides the download URL and SHA256 for the planning map archive.
+
+The animation is a cropped/scaled screenshot sequence of CloudAnalyzer, with
+explanatory captions and a cursor ring. Surveyed road approaches, crosswalks,
+stop lines and signal geometries are imported context. The app generates and
+adds twelve point-supported connection drafts, highlights topology, edits a
+shared boundary, undoes the edit and exports the map. Raw point clouds and map
+inputs are not included in this repository. The sample-map archive's software
+license is not inferred from the Autoware code repository's license. See
+[reproduction, provenance and limitations](../vector-map-media.md).
+
+## Source-only hard-intersection capture
+
+`web/vector-map-hard-intersection.gif` is adapted from Hard Intersection Multimodal
+Samples, Dynamic Map Platform Co., Ltd. (2026),
+[source and revision](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c),
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+CloudAnalyzer uses first-original points retained at 0.1 m voxels, with original
+coordinates, intensity and RGB and cleared semantic fields. No reference map or
+semantic labels are loaded. Three recorded arterial clips and three explicit
+operator traces guide road drafting; lane counts, widths, selected connections,
+equipment types and lane associations are operator inputs. Paint footprints and
+signal housing geometry come from original returns. The animation records the
+production app, with captions and crop/scale added to screenshots. Display-only
+height clipping and a final working-cloud crop remove roof clutter; map fitting
+uses the full retained cloud. No missing paint or lamps are invented. Raw inputs
+are not redistributed. No claim of original survey authorship or endorsement.
+See [reproduction and limitations](../vector-map-media.md#source-only-hard-intersection).
+
 ## Web App Pictures from NCLT
 
 `web/loop.gif`, `web/posegraph.jpg` and the pose graph part of `web/demo.gif` show the web app on session

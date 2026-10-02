@@ -768,6 +768,56 @@ mod tests {
     use super::*;
 
     #[test]
+    fn graded_junction_survives_export_reload_and_exact_undo() {
+        let mut s = VectorMapSession::new();
+        s.apply(
+            r#"[
+          {"op":"build_road","reference":[[-20,0,0.8],[-10,0,1.4]],"lanes":[{"width":3.5}]},
+          {"op":"build_road","reference":[[0,0,2],[10,0,2.6]],"lanes":[{"width":3.5}]}
+        ]"#,
+        )
+        .unwrap();
+        s.undo.clear();
+        let before = s.to_json();
+        let mut ground = ca_core::PointCloud::default();
+        for x in -105..=55 {
+            for y in -20..=20 {
+                let x = x as f64 * 0.2;
+                ground.positions.push([x, y as f64 * 0.2, 2.0 + x * 0.06]);
+            }
+        }
+        let cloud = crate::Cloud::unindexed(ground);
+        let preview: Value =
+            serde_json::from_str(&s.preview_junctions(&cloud, "{}").unwrap()).unwrap();
+        assert_eq!(preview["candidates"].as_array().unwrap().len(), 1);
+        assert_eq!(s.to_json(), before);
+        assert!(s.undo.is_empty());
+        let report: Value =
+            serde_json::from_str(&s.connect_junctions(&cloud, "{}", "null").unwrap()).unwrap();
+        let id = vectormap_core::LaneId(report["added"][0].as_u64().unwrap());
+        let original = s.map.centerline(id).unwrap();
+        assert!(original.points.last().unwrap().z - original.points[0].z > 0.3);
+        let saved: Value = serde_json::from_str(&s.export_lanelet2(true)).unwrap();
+        let mut reopened = VectorMapSession::new();
+        reopened
+            .open("graded.osm", saved["osm"].as_str().unwrap())
+            .unwrap();
+        assert_eq!(reopened.map.centerline(id), Some(original));
+        assert_eq!(
+            reopened
+                .map
+                .lane(id)
+                .unwrap()
+                .attributes
+                .get_prefixed("lanelet2", "cloudanalyzer_review_required"),
+            Some("yes")
+        );
+        assert_eq!(s.undo.len(), 1);
+        assert!(s.undo());
+        assert_eq!(s.to_json(), before);
+    }
+
+    #[test]
     fn junction_preview_and_replay_do_not_add_undo_but_branch_batch_does() {
         let mut s = VectorMapSession::new();
         s.apply(r#"[

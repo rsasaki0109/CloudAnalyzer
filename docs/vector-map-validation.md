@@ -8,6 +8,11 @@ features use the explicit width prior. Detected features are candidates, not pro
 lane boundary. Repeated passes must already be aligned and require review. Ground-supported
 junction connections can be drafted automatically; geometry and traffic rules require review.
 
+For a separate real intersection with semantic annotations and recorded MMS drives,
+see the [Hard Intersection source-only baseline](vector-map-hard-intersection.md).
+It evaluates equipment proposal coverage and whole-draft boundary agreement without
+using the reference map or annotation labels as generation inputs.
+
 ## Recorded Autoware drive and reference map
 
 Inputs are the official [Autoware demo artifacts](https://github.com/autowarefoundation/autoware/blob/main/ansible/roles/demo_artifacts/tasks/main.yaml):

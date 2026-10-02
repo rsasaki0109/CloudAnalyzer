@@ -12,7 +12,8 @@
     "test:map-geometry": "node --experimental-strip-types --test tests/vectormap-geometry.test.mjs",
     "media": "playwright test --config playwright.media.config.ts && node scripts/readme-gif.mjs",
     "media:vectormap": "playwright test --config playwright.media.config.ts vector-map.spec.ts && node scripts/vector-map-gif.mjs",
-    "media:intersection": "playwright test --config playwright.media.config.ts vector-map-intersection.spec.ts && node scripts/vector-map-intersection-gif.mjs"
+    "media:intersection": "playwright test --config playwright.media.config.ts vector-map-intersection.spec.ts && node scripts/vector-map-intersection-gif.mjs",
+    "media:features": "playwright test --config playwright.media.config.ts vector-map-features.spec.ts && node scripts/vector-map-features-gif.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"

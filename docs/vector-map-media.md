@@ -2,7 +2,8 @@
 
 The main README animation shows a real four-way intersection. The expandable
 animation shows road drafting directly from PandaSet LiDAR and recorded poses.
-Both are captures of the production Web app with captions and a cursor ring;
+An additional animation measures paint and a signal housing in separate regions
+of the same Autoware survey. All are captures of the production Web app with captions;
 all point-cloud and map geometry is rendered by the app. Raw inputs are external
 and are not redistributed in this repository.
 
@@ -63,6 +64,55 @@ fails the capture. `verification.json`, source frames and timings are ignored in
 animation (17 seconds, 19 encoded frames, approximately 1.04 MB). None of these
 checks constitutes a held-out extraction accuracy test.
 
+## Paint and signal housing measured from points
+
+`docs/images/web/vector-map-features.gif` uses the same official planning survey
+and copyright/source notice above. These are **separate regions from the main
+intersection**: a paint box at `[3882, 73743, 18.5]`–`[3899, 73764, 20.5]` and a
+signal box at `[3832.1, 73770.1, 24.74]`–`[3833.9, 73771.4, 25.27]`, in original
+MGRS metre coordinates. Boxes, object identity and lane associations are explicit
+operator inputs. Fits use cloud returns; reference paint corners and the imported
+signal housing are not supplied to the measurement algorithms.
+
+The capture imports the 72-approach ablation above, removing only surveyed signal
+353 and its empty-lanes traffic-light rule 1008 to avoid duplication. Remaining
+roads, stops, crossings and signals remain surveyed context. It retains RGB and
+previews four observed bands from 7,434 box points / 5,568 ground returns with a
+65% bright-point threshold. Observed paint determines the measured footprint,
+including missing/worn ends; it is not filled with decorative stripes. Crossing
+lanes 133/134 are explicitly selected drafts, not inferred legal priority.
+
+A separate 61-point ROI supplies a user-identified signal housing's bottom edge
+and height. Controlled lane 85 is explicitly selected and remains unverified.
+Housing shape alone does not classify signals versus signs/background, and no
+lamps, states, arrows or poles are synthesized. The capture changes a crossing
+vertex by 0.1 m, then adjusts the signal's first vertex Z and housing height by
+0.02 m; these demonstrate manual editing, not independently validated corrections.
+Observed paint stays fixed, and both edits Undo to byte-identical previous OSM.
+Export/reimport retains measured paint metadata and housing provenance.
+
+After preparing the external planning survey and junction ablation above:
+
+```powershell
+cd web
+$env:VECTOR_MAP_PLANNING_DIR='../demo_data/autoware/sample-map-planning'
+$env:VECTOR_MAP_JUNCTION_DIR='../notes/junction-media'
+$env:PW_PORT='4174'
+npm run media:features
+```
+
+The capture uses full-density box inspection, disables EDL for sparse returns,
+shows actual RGB paint and a 3D signal housing, then edits and saves through the
+normal UI. Signal point size and camera zoom are increased for readability;
+these display changes do not alter measurements. Captions are added over the
+app capture. Source frames, verification and timing manifests stay ignored in
+`web/media-frames/vector-map-features/`. The looping GIF is 800 × 528, about
+16.4 seconds. It is a reproducible feature workflow, not a held-out classification,
+survey-accuracy or traffic-rule benchmark. See
+[paint measurement](commands/vectormap-crosswalk.md),
+[signal measurement](commands/vectormap-signal.md) and
+[geometry editing](vector-map-feature-editing.md).
+
 ## Road drafting: real PandaSet points and recorded trajectory
 
 The expandable README animation (`docs/images/web/vector-map.gif`) uses real
@@ -73,7 +123,7 @@ sensor positions. PandaSet is provided by Scale AI and Hesai under
 scaled capture with explanatory captions and a cursor ring. Raw inputs are not
 included in this repository.
 
-It shows generation with continuity tracking and local curve fitting, manual movement
+It shows generation with continuity tracking and trajectory-relative lateral fitting, manual movement
 of an interior vertex on a shared boundary, one-step Undo, and export of
 `lanelet2_map.osm` plus `map_projector_info.yaml`. Undo restores the generated draft
 before the final export; the capture verifies byte-identical OSM before editing and after
@@ -83,11 +133,13 @@ come from the app. The vertex move demonstrates editing, rather than a correctio
 validated against a surveyed marking. Generated lines remain a draft: see
 [the real-data evaluation](vector-map-validation.md) for measured accuracy and limitations.
 
-The current capture includes curb-profile checks and the short missing-observation
-anchor fix. It verifies 78 tracked source changes, 135 fitted vertices and 59 rejected
+The current capture includes curb-profile checks, short missing-observation
+anchors and trajectory-relative shape stabilization, retaining observed corners. It verifies 78 tracked source changes, 135 fitted vertices and 59 rejected
 height-step candidates before editing. Rejection counts are not known false-detection
 counts; the drive has no independent lane-boundary reference. The evaluation documents
-both accuracy and heading-variation tradeoffs.
+the same-input boundary accuracy and reduced heading variation after stabilization.
+PandaSet heading-change P95 decreased from 8.45° to 3.25°; it has no independent
+lane-boundary reference, and both real inputs were used during development.
 
 Prepare the public inputs in an ignored directory:
 

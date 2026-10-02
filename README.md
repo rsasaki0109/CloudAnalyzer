@@ -75,6 +75,13 @@ and confirm its controlled lanes. For COPC surveys,
   </p>
 </details>
 
+<p align="center">
+  <a href="docs/vector-map-media.md#paint-and-signal-housing-measured-from-points"><img src="docs/images/web/vector-map-features.gif" alt="Actual Autoware point-cloud regions become a measured crossing and a user-identified signal housing; vertices and height are edited, undone, exported and reimported" width="800"></a><br>
+  <b>Measure paint. Fit a signal housing. Refine geometry, undo, export.</b><br>
+  Separate regions in the same survey: observed paint and housing geometry come from points.<br>
+  Object identity and lane associations are explicitly reviewed drafts; imported surroundings remain survey context.
+</p>
+
 ## 2. Clean it and see what changed
 
 <p align="center">

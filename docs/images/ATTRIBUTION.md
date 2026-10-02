@@ -54,6 +54,17 @@ inputs are not included in this repository. The sample-map archive's software
 license is not inferred from the Autoware code repository's license. See
 [reproduction, provenance and limitations](../vector-map-media.md).
 
+`web/vector-map-features.gif` uses separate paint and signal regions from the
+same Autoware planning survey, with the same TIER IV copyright notice and source
+above. It is a cropped/scaled production-app capture with explanatory captions.
+The crossing bands and signal housing are measured from point-cloud returns in
+operator-selected boxes. One imported signal and its empty-lanes rule are
+removed from the demo input to avoid duplication; their geometry is not supplied
+to the fit. Surrounding roads, stops and other signals remain imported context.
+Feature classification, lane assignments and geometry adjustments are explicit
+operator actions. Raw survey inputs are not redistributed. See the
+[point-feature reproduction](../vector-map-media.md#paint-and-signal-housing-measured-from-points).
+
 ## Web App Pictures from NCLT
 
 `web/loop.gif`, `web/posegraph.jpg` and the pose graph part of `web/demo.gif` show the web app on session

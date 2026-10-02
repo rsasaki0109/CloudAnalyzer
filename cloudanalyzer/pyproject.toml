@@ -60,6 +60,7 @@ dev = [
     "mypy",
     "pkginfo>=1.12.0",
     "pytest",
+    "pyproj>=3.6",
     "twine>=6.0.0",
 ]
 fast = [

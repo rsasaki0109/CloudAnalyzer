@@ -83,6 +83,12 @@ come from the app. The vertex move demonstrates editing, rather than a correctio
 validated against a surveyed marking. Generated lines remain a draft: see
 [the real-data evaluation](vector-map-validation.md) for measured accuracy and limitations.
 
+The current capture includes curb-profile checks and the short missing-observation
+anchor fix. It verifies 78 tracked source changes, 135 fitted vertices and 59 rejected
+height-step candidates before editing. Rejection counts are not known false-detection
+counts; the drive has no independent lane-boundary reference. The evaluation documents
+both accuracy and heading-variation tradeoffs.
+
 Prepare the public inputs in an ignored directory:
 
 ```sh

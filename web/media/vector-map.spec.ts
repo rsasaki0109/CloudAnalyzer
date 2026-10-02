@@ -56,7 +56,8 @@ test("vector map README GIF on real PandaSet", async ({ page }) => {
   await shot("1. Real LiDAR + recorded trajectory", 1.5);
   await page.locator("#vm-build").click();
   await expect(status).toContainText("Draft roads added", { timeout: 120_000 });
-  await expect(page.locator("#vm-build-report")).toContainText("Tracking changed 41 sources; fitted 135 vertices");
+  await expect(page.locator("#vm-build-report")).toContainText("Tracking changed 78 sources; fitted 135 vertices");
+  await expect(page.locator("#vm-build-report")).toContainText("59 curb-like height transitions");
   const original = await exportMap();
   await page.locator("#vm-fit").click();
   await page.waitForTimeout(1200);

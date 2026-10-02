@@ -57,6 +57,19 @@ Traffic keeps left by default. Options include `--right-hand`, `--forward-lanes 
 `--backward-lanes 1`, `--lane-width 3.5` (metres), `--speed-limit 40` (km/h) and
 `--segment-length 50` (metres; zero keeps each stretch whole).
 
+Opt in to source-footprint drafting with `--fit-source-surface`, Python/MCP
+`fit_source_surface=True`, or Web's **Fit road footprint to source points** under
+**Build from a trajectory**. Source-backed incoming candidates are preserved and
+clipped first; weak candidates use a coherent low surface to infer widths and
+heights. Missing intervals and short fragments are deferred, not filled. Lane
+counts remain your input, and existing maps are not refitted automatically.
+`extraction.surface_fit` reports retained width range and deferred/evaluated length.
+The mode defaults to off. See the [same-input maps and coverage losses](../vector-map-source-footprint.md).
+
+```sh
+ca vectormap-build cloud.las trajectory.csv --out footprint-draft --fit-source-surface
+```
+
 For an existing map frame, copy only its coordinate metadata:
 
 ```sh

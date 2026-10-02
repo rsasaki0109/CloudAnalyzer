@@ -2533,6 +2533,29 @@ test("vector map: trajectory builds a ground-level draft with an evidence report
   await expect(page.locator("#vm-status")).toContainText("No map yet");
 });
 
+test("vector map: source footprint fits narrow ground, defers missing coverage and undoes exactly", async ({ page }) => {
+  const points: [number,number,number][]=[];
+  for(let x=0;x<=200;x++)for(let y=-45;y<=20;y++){
+    if(x>80&&x<120)continue;
+    points.push([x*.1,y*.1,y*.1>.2?4:2]);
+  }
+  await open(page,[{name:"narrow.ply",buffer:ply(points)},{name:"drive.csv",buffer:Buffer.from("timestamp,x,y,z\n0,0,0,50\n1,20,0,50\n")}]);
+  await expect(status(page)).toContainText("trajectory of 2 poses");
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await expect(page.locator("#vm-source-surface")).not.toBeChecked();
+  await page.locator("#vm-source-surface").check();await page.locator("#vm-discover-after-build").uncheck();
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("Source footprint:");
+  await expect(page.locator("#vm-build-report")).toContainText("deferred");
+  await expect(page.locator("#vm-status")).toContainText("4 lanes");
+  await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("4 lanes checked; 0 need source review; 0 omitted");
+  const download=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await download)).toString();expect(xml).not.toContain('<tag k="ele" v="50"/>');expect(xml).not.toContain('<tag k="ele" v="4"/>');
+  await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
 test("vector map: tall roadside returns are rejected as curbs and the check can be disabled", async ({ page }) => {
   const points: [number, number, number][] = [];
   for (let x = 0; x <= 30; x += .1) for (let y = -8; y <= 4; y += .1) {

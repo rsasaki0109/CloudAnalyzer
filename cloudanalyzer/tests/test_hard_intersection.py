@@ -16,6 +16,30 @@ import hard_intersection_prepare as prep
 import hard_intersection_generate as gen
 import hard_intersection_evaluate as audit
 import vector_map_quality_audit as quality
+import vector_map_surface_evaluate as surface
+
+
+def test_surface_evaluation_reports_all_deferred_and_counts_only_added_lane_samples(tmp_path, monkeypatch):
+    source = tmp_path / "cloud"
+    trajectory = tmp_path / "trajectory"
+    source.write_bytes(b"fixed source"); trajectory.write_bytes(b"fixed path")
+    ids = []
+    def build(cloud, path, options, existing_map=None):
+        if json.loads(options)["fit_source_surface"]:
+            raise ValueError("No source-supported road stretches")
+        ids.append(len(ids) + 1)
+        return json.dumps({"map_json": json.dumps({"lanes": [{"id": i} for i in ids]}), "osm": "<osm/>", "projector_info": "projector_type: Local\n", "report": {"extraction": {"generated_length": 10, "surface_fit": None}}})
+    def audit(cloud, path):
+        sides = {s: {"samples": 1} for s in ("center", "left", "right")}
+        return json.dumps({"quality": {"lanes": [{"lane": i, **sides} for i in ids], "low_support_lanes": ids, "sampled_points": 3 * len(ids), "omitted_lanes": [], "malformed_lanes": [], "limited": False}, "validation": {"counts": {"errors": 0}}})
+    monkeypatch.setitem(sys.modules, "cloudanalyzer_core", SimpleNamespace(_core=SimpleNamespace(__file__=str(source)), build_vector_map=build, audit_vector_map_quality=audit))
+    result = surface.evaluate(source, [{"name": name, "trajectory": trajectory, "options": {}} for name in ("a", "b")], tmp_path / "out", "test")
+    assert result["after"]["final_map"] is None
+    assert result["after"]["source_quality"] is None
+    assert result["after"]["evaluated_path_length_m"] is None
+    assert result["after"]["entire_path_deferred_cases"] == ["a", "b"]
+    assert [c["before"]["source_quality"]["sampled_points"] for c in result["cases"]] == [3, 3]
+    assert result["before"]["source_quality"]["sampled_points"] == 6
 
 
 def test_quality_audit_uses_generated_local_coordinates_and_closed_paint(tmp_path):

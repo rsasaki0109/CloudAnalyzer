@@ -1,0 +1,3 @@
+# Keep hashed source-footprint artifacts byte-identical across checkouts.
+benchmarks/vector-map/hard-intersection/source-footprint/* text eol=lf
+benchmarks/vector-map/source-footprint-*-development.json text eol=lf

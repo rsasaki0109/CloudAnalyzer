@@ -1,5 +1,9 @@
 # Check a generated vector map against its source
 
+For an opt-in way to improve weak incoming road candidates, see
+[source-footprint drafting and its before/after coverage losses](vector-map-source-footprint.md).
+The audit below describes the frozen published map; that map and its GIF are unchanged.
+
 The README map is an editable draft. Its structural validation has zero errors,
 but that does not establish accurate lanes, complete paint or correct equipment
 types. Source coverage and reference geometry are checked separately.

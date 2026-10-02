@@ -1488,7 +1488,7 @@ function relationCandidateGeometry(c: RelationCandidate): XYZ[][] {
     const [a,b]=[h.points[0],h.points.at(-1)];
     if(a&&b) {const hgt=h.height??0;lines.push([a,b,[b[0],b[1],b[2]+hgt],[a[0],a[1],a[2]+hgt],a]);}
   }
-  for (const x of view.crosswalks) if(c.controlled_crosswalks.includes(x.id)) lines.push([...x.outline,x.outline[0]]);
+  for (const x of view.crosswalks) if(c.controlled_crosswalks.includes(x.id) && x.outline.length) lines.push([...x.outline,x.outline[0]]);
   for (const x of view.stopLines) if(c.stop_lines.includes(x.id)) lines.push(x.points);
   for (const x of view.lanes) if(c.lanes.includes(x.id)) lines.push(x.center);
   return lines;

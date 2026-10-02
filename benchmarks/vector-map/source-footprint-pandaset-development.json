@@ -1,0 +1,127 @@
+{
+  "source_commit": "fd6b1e15b55ac4a2240eed1ca1302535474e11f3",
+  "native_sha256": "ab05393836f49c3d9f55dbf9351162734de41a55c92bf785f5344ed3b0f3a818",
+  "source_sha256": "3a5c6f55c6c18762b61c1c9ad826e37c894537c41d39df908cf55ab18bdf0efc",
+  "reference_inputs": [],
+  "artifact_newlines": "LF",
+  "cases": [
+    {
+      "name": "pandaset",
+      "trajectory_sha256": "493fc6bec454ab927f0e627d794974c29d9517cf6391d9b816afb60ffe8dfacf",
+      "options": {
+        "left_hand_traffic": false,
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "lane_width": 3.5,
+        "segment_length": 50
+      },
+      "before": {
+        "map": "before-road-0.json",
+        "map_sha256": "004b5f346ee2732e4f170e35f571cecbe1876dc2e54bf5f46a975c75fa41f127",
+        "generated_length_m": 87.19938081920355,
+        "surface_fit": null,
+        "added_lane_ids": [
+          4,
+          5,
+          9,
+          10
+        ],
+        "source_quality": {
+          "checked_lanes": 4,
+          "source_review_lane_ids": [
+            9
+          ],
+          "sampled_points": 1069,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 0
+        }
+      },
+      "after": {
+        "map": "after-road-0.json",
+        "map_sha256": "9d2721928411c2163272a11821b3a63eeff413e8b6521f9463316a9db1c47593",
+        "generated_length_m": 68.79961022856742,
+        "surface_fit": {
+          "candidate_sections": 45,
+          "deferred_length_m": 18.399770590636138,
+          "discarded_short_stretches": 0,
+          "evaluated_path_length_m": 87.19938081920355,
+          "maximum_lane_width_m": 4.049350528285691,
+          "minimum_lane_width_m": 3.2212000195466577,
+          "preserved_candidate_geometry": true,
+          "rejected_intervals": 9
+        },
+        "added_lane_ids": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          20,
+          24,
+          25
+        ],
+        "source_quality": {
+          "checked_lanes": 10,
+          "source_review_lane_ids": [],
+          "sampled_points": 881,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 14
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Road-only regeneration; frozen junctions/equipment and associations are not transferred.",
+    "Support is the generation gate, not independent accuracy or road semantics.",
+    "Lower review counts include omission of unsupported extent; inspect deferred length and fragments.",
+    "Lane counts, traffic directions and width priors remain explicit operator inputs.",
+    "Existing project development scenes, not strictly held-out generalization evidence."
+  ],
+  "before": {
+    "final_map": "before-road-0.json",
+    "final_osm": "before-road-0.osm",
+    "final_projector": "before-projector-info.yaml",
+    "source_quality": {
+      "checked_lanes": 4,
+      "source_review_lane_ids": [
+        9
+      ],
+      "sampled_points": 1069,
+      "omitted_lanes": [],
+      "malformed_lanes": [],
+      "limited": false
+    },
+    "generated_length_m": 87.19938081920355
+  },
+  "after": {
+    "final_map": "after-road-0.json",
+    "final_osm": "after-road-0.osm",
+    "final_projector": "after-projector-info.yaml",
+    "source_quality": {
+      "checked_lanes": 10,
+      "source_review_lane_ids": [],
+      "sampled_points": 881,
+      "omitted_lanes": [],
+      "malformed_lanes": [],
+      "limited": false
+    },
+    "generated_length_m": 68.79961022856742,
+    "reported_deferred_length_m": 18.399770590636138,
+    "entire_path_deferred_cases": [],
+    "evaluated_path_length_m": 87.19938081920355
+  }
+}

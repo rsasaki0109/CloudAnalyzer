@@ -151,6 +151,14 @@ The generated-map quality figure shows the frozen README lane boundaries, source
 coverage flags and separately evaluated crossing outline distances; see
 [quality protocol and limitations](../vector-map-quality.md).
 
+`vector-map-source-footprint.png` overlays actual before/after regenerated road
+boundaries on the same original source points. Display-only filtering uses
+Z < 32 m and 1:8 decimation; native generation/audits use the entire prepared
+cloud. It uses the same pinned Hard Intersection data and CC BY 4.0 attribution
+above. No reference map guides those curves. The new road draft and comparison
+artifacts are derived from that source; see the
+[generation protocol, retained/deferred extent and reproduction](../vector-map-source-footprint.md).
+
 ## Result Summary
 
 These commands produced the metrics shown in the root README:

@@ -58,6 +58,8 @@ pose graph with one scan per pose.
   and signal housings with complete-map Undo while retaining observed paint and lamps.
   [Source quality checks](docs/vector-map-quality.md) expose lanes whose centres or boundaries
   lack nearby ground support; passing format validation does not establish map accuracy.
+  [Source-footprint drafting](docs/vector-map-source-footprint.md) fits weak road candidates
+  to supported low surfaces and reports missing extent explicitly, with actual before/after maps.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

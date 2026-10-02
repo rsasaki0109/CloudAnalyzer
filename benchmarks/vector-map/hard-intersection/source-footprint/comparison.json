@@ -1,0 +1,504 @@
+{
+  "source_commit": "fd6b1e15b55ac4a2240eed1ca1302535474e11f3",
+  "native_sha256": "ab05393836f49c3d9f55dbf9351162734de41a55c92bf785f5344ed3b0f3a818",
+  "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+  "reference_inputs": [],
+  "artifact_newlines": "LF",
+  "cases": [
+    {
+      "name": "arterial-south",
+      "trajectory_sha256": "fcdfd2c453fd7fa5b4d458d100806533cee59f225aea56e986286cc896ae1ca9",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 3,
+        "backward_lanes": 3,
+        "lane_width": 3.5
+      },
+      "before": {
+        "map": "before-road-0.json",
+        "map_sha256": "7fc46e3ac97dbbb36f06ff0046b2c80e985691bd0c7805291571fdc093e899e3",
+        "generated_length_m": 44.83873385015333,
+        "surface_fit": null,
+        "added_lane_ids": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13
+        ],
+        "source_quality": {
+          "checked_lanes": 6,
+          "source_review_lane_ids": [
+            8,
+            12,
+            13
+          ],
+          "sampled_points": 1711,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 6
+        }
+      },
+      "after": {
+        "map": "after-road-0.json",
+        "map_sha256": "da00fa42a83cebd1f9a911ae5109ac69d85f1a04403fe38bbb053d98c40e99be",
+        "generated_length_m": 34.839048374650176,
+        "surface_fit": {
+          "candidate_sections": 24,
+          "deferred_length_m": 9.999685475503156,
+          "discarded_short_stretches": 0,
+          "evaluated_path_length_m": 44.83873385015333,
+          "maximum_lane_width_m": 5.211819940458995,
+          "minimum_lane_width_m": 2.1695915569496824,
+          "preserved_candidate_geometry": true,
+          "rejected_intervals": 5
+        },
+        "added_lane_ids": [
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26
+        ],
+        "source_quality": {
+          "checked_lanes": 12,
+          "source_review_lane_ids": [],
+          "sampled_points": 1371,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 13
+        }
+      }
+    },
+    {
+      "name": "arterial-middle",
+      "trajectory_sha256": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 3,
+        "backward_lanes": 3,
+        "lane_width": 3.5
+      },
+      "before": {
+        "map": "before-road-1.json",
+        "map_sha256": "108e5c61c2490c65865493fc89a43555670bc301cafd42ec4c341c9622e7fc28",
+        "generated_length_m": 10.604659714987088,
+        "surface_fit": null,
+        "added_lane_ids": [
+          21,
+          22,
+          23,
+          24,
+          25,
+          26
+        ],
+        "source_quality": {
+          "checked_lanes": 6,
+          "source_review_lane_ids": [],
+          "sampled_points": 426,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 13
+        }
+      },
+      "after": {
+        "map": "after-road-1.json",
+        "map_sha256": "6f069931cb441394e2d5eaaf56e289d0da02b90f425e2f87728a3e8d462f63c6",
+        "generated_length_m": 10.604659714987088,
+        "surface_fit": {
+          "candidate_sections": 7,
+          "deferred_length_m": 0.0,
+          "discarded_short_stretches": 0,
+          "evaluated_path_length_m": 10.604659714987088,
+          "maximum_lane_width_m": 4.149350275519098,
+          "minimum_lane_width_m": 2.850649724480042,
+          "preserved_candidate_geometry": true,
+          "rejected_intervals": 0
+        },
+        "added_lane_ids": [
+          34,
+          35,
+          36,
+          37,
+          38,
+          39
+        ],
+        "source_quality": {
+          "checked_lanes": 6,
+          "source_review_lane_ids": [],
+          "sampled_points": 426,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 20
+        }
+      }
+    },
+    {
+      "name": "arterial-north",
+      "trajectory_sha256": "db591b8a2ab77281b967583f704bf3224454120b9a00b5d8c3a59a0694bb989b",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 3,
+        "backward_lanes": 3,
+        "lane_width": 3.5
+      },
+      "before": {
+        "map": "before-road-2.json",
+        "map_sha256": "e1f5b8bf2f0265b780a3c350c58eac8661b77ee4ca4b59e4782921f3872947e5",
+        "generated_length_m": 31.525459446667558,
+        "surface_fit": null,
+        "added_lane_ids": [
+          34,
+          35,
+          36,
+          37,
+          38,
+          39
+        ],
+        "source_quality": {
+          "checked_lanes": 6,
+          "source_review_lane_ids": [],
+          "sampled_points": 1195,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 20
+        }
+      },
+      "after": {
+        "map": "after-road-2.json",
+        "map_sha256": "1708c7522f79799c24bdcacb1c995d92a360e0da324daff4a491671dd377a9cf",
+        "generated_length_m": 27.52554784442824,
+        "surface_fit": {
+          "candidate_sections": 17,
+          "deferred_length_m": 3.999911602239319,
+          "discarded_short_stretches": 0,
+          "evaluated_path_length_m": 31.525459446667558,
+          "maximum_lane_width_m": 5.023495392344188,
+          "minimum_lane_width_m": 2.418869099353294,
+          "preserved_candidate_geometry": true,
+          "rejected_intervals": 2
+        },
+        "added_lane_ids": [
+          47,
+          48,
+          49,
+          50,
+          51,
+          52,
+          60,
+          61,
+          62,
+          63,
+          64,
+          65
+        ],
+        "source_quality": {
+          "checked_lanes": 12,
+          "source_review_lane_ids": [],
+          "sampled_points": 1080,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 34
+        }
+      }
+    },
+    {
+      "name": "west-south",
+      "trajectory_sha256": "6cffc6ff3d8f545f998f45b6893408c28c0e39e95f7ca484beef309e23583ca4",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "lane_width": 3.5
+      },
+      "before": {
+        "map": "before-road-3.json",
+        "map_sha256": "ad85545d4f08d78da20ce245acb3ada3b80e0480ab645d3203b21d006038b6ab",
+        "generated_length_m": 17.99999999999839,
+        "surface_fit": null,
+        "added_lane_ids": [
+          43,
+          44
+        ],
+        "source_quality": {
+          "checked_lanes": 2,
+          "source_review_lane_ids": [
+            43,
+            44
+          ],
+          "sampled_points": 228,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 23
+        }
+      },
+      "after": {
+        "map": "after-road-3.json",
+        "map_sha256": "809a05593984a52016e392bad4baed6777d947d5064b911d01ad06596dd7e48a",
+        "generated_length_m": 7.9999999999979945,
+        "surface_fit": {
+          "candidate_sections": 10,
+          "deferred_length_m": 10.000000000000396,
+          "discarded_short_stretches": 0,
+          "evaluated_path_length_m": 17.99999999999839,
+          "maximum_lane_width_m": 2.378875663699869,
+          "minimum_lane_width_m": 1.9000000000012705,
+          "preserved_candidate_geometry": false,
+          "rejected_intervals": 5
+        },
+        "added_lane_ids": [
+          69,
+          70
+        ],
+        "source_quality": {
+          "checked_lanes": 2,
+          "source_review_lane_ids": [],
+          "sampled_points": 108,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 37
+        }
+      }
+    },
+    {
+      "name": "east-south",
+      "trajectory_sha256": "34a86c58a094080d9693ef5cb7073794fe51a3581592da2d2be9c962f5005b38",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 2,
+        "backward_lanes": 2,
+        "lane_width": 3.5
+      },
+      "before": {
+        "map": "before-road-4.json",
+        "map_sha256": "77ac5163814ac58521d13f8c5803f599c552834146cbc4dc22a4c706379c5daf",
+        "generated_length_m": 7.282003696471323,
+        "surface_fit": null,
+        "added_lane_ids": [
+          50,
+          51,
+          52,
+          53
+        ],
+        "source_quality": {
+          "checked_lanes": 4,
+          "source_review_lane_ids": [
+            52,
+            53
+          ],
+          "sampled_points": 187,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 28
+        }
+      },
+      "after": {
+        "map": "after-road-4.json",
+        "map_sha256": "eed8db72f1e0fa4140c4d8177c73eb16146f8975b696c09818bc270a6b870b90",
+        "generated_length_m": 4.782629975743308,
+        "surface_fit": {
+          "candidate_sections": 5,
+          "deferred_length_m": 2.4993737207280144,
+          "discarded_short_stretches": 0,
+          "evaluated_path_length_m": 7.282003696471323,
+          "maximum_lane_width_m": 3.6775974724471303,
+          "minimum_lane_width_m": 3.493579215776347,
+          "preserved_candidate_geometry": true,
+          "rejected_intervals": 1
+        },
+        "added_lane_ids": [
+          76,
+          77,
+          78,
+          79
+        ],
+        "source_quality": {
+          "checked_lanes": 4,
+          "source_review_lane_ids": [],
+          "sampled_points": 127,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 42
+        }
+      }
+    },
+    {
+      "name": "west-north",
+      "trajectory_sha256": "7cae83e443960483cd1b22e21293b02ef75da381bdaa3b86a097a6315359b8c1",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "lane_width": 3.5
+      },
+      "before": {
+        "map": "before-road-5.json",
+        "map_sha256": "90f9866ab9a7123c281e68808ee0544119fe9c67c9af1ae5ee90bd5e5b9d1fa5",
+        "generated_length_m": 10.086129768901213,
+        "surface_fit": null,
+        "added_lane_ids": [
+          57,
+          58
+        ],
+        "source_quality": {
+          "checked_lanes": 2,
+          "source_review_lane_ids": [
+            57,
+            58
+          ],
+          "sampled_points": 143,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 31
+        }
+      },
+      "after": {
+        "map": "after-road-5.json",
+        "map_sha256": "241350dbc622ed2b55c9d00725fccf890819e918baf89c5df32a40d58a24d491",
+        "generated_length_m": 2.326192149844256,
+        "surface_fit": {
+          "candidate_sections": 4,
+          "deferred_length_m": 7.759937619056957,
+          "discarded_short_stretches": 0,
+          "evaluated_path_length_m": 10.086129768901213,
+          "maximum_lane_width_m": 2.543508756678866,
+          "minimum_lane_width_m": 2.116944714898287,
+          "preserved_candidate_geometry": false,
+          "rejected_intervals": 1
+        },
+        "added_lane_ids": [
+          83,
+          84
+        ],
+        "source_quality": {
+          "checked_lanes": 2,
+          "source_review_lane_ids": [],
+          "sampled_points": 42,
+          "omitted_lanes": [],
+          "malformed_lanes": [],
+          "limited": false
+        },
+        "validation": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 45
+        }
+      }
+    }
+  ],
+  "limitations": [
+    "Road-only regeneration; frozen junctions/equipment and associations are not transferred.",
+    "Support is the generation gate, not independent accuracy or road semantics.",
+    "Lower review counts include omission of unsupported extent; inspect deferred length and fragments.",
+    "Lane counts, traffic directions and width priors remain explicit operator inputs.",
+    "Existing project development scenes, not strictly held-out generalization evidence."
+  ],
+  "before": {
+    "final_map": "before-road-5.json",
+    "final_osm": "before-road-5.osm",
+    "final_projector": "before-projector-info.yaml",
+    "source_quality": {
+      "checked_lanes": 26,
+      "source_review_lane_ids": [
+        8,
+        12,
+        13,
+        43,
+        44,
+        52,
+        53,
+        57,
+        58
+      ],
+      "sampled_points": 3890,
+      "omitted_lanes": [],
+      "malformed_lanes": [],
+      "limited": false
+    },
+    "generated_length_m": 122.3369864771789,
+    "final_map_sha256": "90f9866ab9a7123c281e68808ee0544119fe9c67c9af1ae5ee90bd5e5b9d1fa5"
+  },
+  "after": {
+    "final_map": "after-road-5.json",
+    "final_osm": "after-road-5.osm",
+    "final_projector": "after-projector-info.yaml",
+    "source_quality": {
+      "checked_lanes": 38,
+      "source_review_lane_ids": [],
+      "sampled_points": 3154,
+      "omitted_lanes": [],
+      "malformed_lanes": [],
+      "limited": false
+    },
+    "generated_length_m": 88.07807805965106,
+    "reported_deferred_length_m": 34.25890841752784,
+    "entire_path_deferred_cases": [],
+    "evaluated_path_length_m": 122.3369864771789,
+    "final_map_sha256": "241350dbc622ed2b55c9d00725fccf890819e918baf89c5df32a40d58a24d491"
+  },
+  "legacy_generated_roads_exact": true,
+  "frozen_media_osm_sha256": "4765a1e0e33e874377ee48e564e37441c9f3e43e91f781e9b963992fb9e5979e"
+}

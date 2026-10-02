@@ -86,6 +86,7 @@
     ],
     "note": "source commit is the intended baseline; installed binary provenance must be verified by its builder"
   },
+  "evaluation_role": "development_scene",
   "raw_points": 35668990,
   "annotated_points": 35598100,
   "index_join": false,
@@ -119,7 +120,8 @@
     "annotations derived from HDMap and incomplete",
     "unmatched proposals are not proven negatives",
     "geometry proposals, no automatic semantic classification",
-    "no training, tuning, ground-truth registration or reference geometry supplied to generation",
+    "no training, ground-truth registration or reference geometry supplied to generation",
+    "detector developed using this scene; not independent held-out generalization",
     "10cm original-point decimation; fixed tile halos can still cause proposal differences",
     "crosswalk outline is observed paint extent, reference is mapped crossing footprint"
   ],

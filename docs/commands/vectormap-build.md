@@ -37,7 +37,7 @@ Remaining candidates and inferred lines still need review; filtering does not gu
 better geometry. See the [fixed-input measurements](../vector-map-validation.md#curb-profile-checks-and-missing-observation-anchors).
 
 Boundary candidates are tracked across supported slices to reject isolated peaks. Missing
-evidence can become a labelled width prior. Short local quadratic curves then reduce jitter,
+evidence can become a labelled width prior. Trajectory-relative lateral curve fitting then reduces jitter,
 with at most 0.5 m XY movement per vertex and unchanged ground heights. This is geometry
 fitting, not detection of additional lane markings. Source counts and observed fractions
 refer to selected positions **before** fitting. The report also includes `tracked_vertices`,
@@ -45,6 +45,13 @@ refer to selected positions **before** fitting. The report also includes `tracke
 `--no-track-boundaries` and `--no-fit-boundaries` disable these stages independently;
 Python/MCP use `track_boundaries=false` and `fit_boundaries=false`. Web has corresponding
 checkboxes. Disable both to reproduce the earlier independently selected boundary geometry.
+
+The fitter smooths lateral deviations from the sampled trajectory instead of independently
+fitting XY coordinates. It uses metre spacing, gives observed candidates more weight than
+width assumptions, and preserves sharp corners with straight observed support on both sides.
+Those weights are heuristics, not calibrated confidence probabilities. Heights, source
+positions and evidence labels stay fixed; fitted positions are inferred geometry. See the
+[fixed-input shape comparison](../vector-map-validation.md#trajectory-relative-boundary-stability).
 
 Traffic keeps left by default. Options include `--right-hand`, `--forward-lanes 1`,
 `--backward-lanes 1`, `--lane-width 3.5` (metres), `--speed-limit 40` (km/h) and

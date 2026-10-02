@@ -2258,6 +2258,32 @@ test("vector map: roads drawn over a cloud, a turn, a traffic light and a crossw
   // Heights come from the cloud.
   expect(xml).toMatch(/<tag k="ele" v="2(\.0+)?"\/>/);
 
+  // Map display controls are presentation only: labels track the camera,
+  // layer switches leave the saved geometry, rules and undo history intact.
+  await expect(page.locator("#vm-legend")).toBeVisible();
+  await expect(page.locator("#vm-route-legend")).toBeVisible();
+  await expect(page.locator(".vm-map-label.selected")).toContainText("20 km/h");
+  await expect(page.locator(".vm-map-label.signal")).toHaveCount(1);
+  await expect(page.locator(".vm-map-label.crosswalk")).toHaveCount(1);
+  await page.locator("#vector-map-panel").getByText("Map display", { exact: true }).click();
+  await page.locator("#vm-iso").click();
+  await page.locator("#vm-plan").click();
+  await page.locator("#vm-context").fill("35");
+  await expect(page.locator(".vm-map-label.selected")).toBeVisible();
+  for (const key of ["surfaces", "directions", "markings", "regulations", "labels"]) {
+    await page.locator(`#vm-show-${key}`).uncheck();
+  }
+  await expect(page.locator("#vm-labels")).toBeEmpty();
+  await expect(page.locator("#vm-route-legend")).toBeHidden();
+  const displayOnlyExport = page.waitForEvent("download", (file) => file.suggestedFilename() === "lanelet2_map.osm");
+  await page.locator("#vm-export").click();
+  expect((await bytesOf(await displayOnlyExport)).toString()).toBe(xml);
+  for (const key of ["surfaces", "directions", "markings", "regulations", "labels"]) {
+    await page.locator(`#vm-show-${key}`).check();
+  }
+  await expect(page.locator(".vm-map-label.signal")).toHaveCount(1);
+  await expect(page.locator("#vm-undo")).toBeEnabled();
+
   // Reopening the saved map shows the same lanes.
   await page.locator("#vm-clear").click();
   await expect(page.locator("#vm-status")).toContainText("No map yet");

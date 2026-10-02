@@ -754,6 +754,23 @@
           <button id="vm-clear" title="Start a new map">Clear</button>
         </div>
         <input id="vm-file" type="file" accept=".osm,.xml,.json" hidden />
+        <details class="options">
+          <summary>Map display</summary>
+          <div class="button-row">
+            <button id="vm-plan" disabled>Plan view</button>
+            <button id="vm-iso" disabled>3D overview</button>
+          </div>
+          <div class="vm-layer-controls">
+            <label><input id="vm-show-surfaces" type="checkbox" checked /> Road surfaces</label>
+            <label><input id="vm-show-directions" type="checkbox" checked /> Directions</label>
+            <label><input id="vm-show-markings" type="checkbox" checked /> Boundaries</label>
+            <label><input id="vm-show-virtual" type="checkbox" /> Virtual boundaries</label>
+            <label><input id="vm-show-regulations" type="checkbox" checked /> Stops, crossings &amp; signals</label>
+            <label><input id="vm-show-labels" type="checkbox" checked /> Object labels</label>
+          </div>
+          <label class="small">Point cloud brightness <input id="vm-context" type="range" min="10" max="100" value="100" aria-label="Point cloud brightness" /></label>
+          <p class="hint small">Select a lane to highlight its incoming and outgoing connections. Signal faces show geometry, not lamp states. Crosswalk stripes are a display convention.</p>
+        </details>
         <div class="button-row">
           <button id="vm-road" aria-pressed="false" title="Click points along a road; its lanes are built around them">Draw road</button>
           <button id="vm-connect" aria-pressed="false" title="Join the end of one lane to the start of another with a turning lane">Connect</button>
@@ -913,6 +930,12 @@
     <main id="viewport" class="viewport">
       <div id="drop-overlay" class="drop-overlay" hidden>Drop to load</div>
       <div id="labels" class="labels"></div>
+      <div id="vm-labels" class="vm-map-labels"></div>
+      <div id="vm-legend" class="vm-legend" hidden aria-label="Vector map legend">
+        <span><i class="road"></i>Road</span><span><i class="turn"></i>Turn</span>
+        <span><i class="stop"></i>Stop</span><span><i class="walk"></i>Crosswalk</span><span><i class="signal"></i>Signal geometry</span>
+        <span id="vm-route-legend" hidden><i class="incoming"></i>Incoming <i class="selected"></i>Selected <i class="outgoing"></i>Outgoing</span>
+      </div>
       <svg id="lasso" class="lasso" hidden><polygon points="" /></svg>
       <div id="segment-bar" class="segment-bar" hidden>
         <span id="segment-hint" class="hint"></span>

@@ -1,5 +1,15 @@
 # Large point clouds
 
+For independent full-source counts, spatial raw-record/halo checks, process
+memory sampling and interruption/recovery measurements on larger real inputs,
+see [reproducing COPC scale measurements](copc-scale-validation.md).
+The 2026-10-02 physical SoFi run processed 364,384,576 source points and saved
+all uniquely owned records plus halo copies in resumable tiles: 15.38 GB of
+packs, 23 min 29 s, and 84.4 MB observed peak child RSS. A completed resume
+verified all packs without decoding/writing new nodes. These measurements
+have the source/node/cache/consumer conditions documented in that report;
+physical ten-billion-point input remains unbenchmarked.
+
 ## Web full-density working box
 
 Open a COPC file, then use **COPC full-density box** to select its original

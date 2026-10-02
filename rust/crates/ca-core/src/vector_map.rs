@@ -23,11 +23,16 @@ mod integration;
 pub mod junctions;
 pub mod quality;
 pub mod signals;
+mod surface;
+pub use surface::SurfaceFitReport;
 
 /// Parameters in metres, except speed in km/h and lane counts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BuildOptions {
+    /// Fit a source-supported road footprint and defer unobserved intervals.
+    /// Lane counts stay explicit; coverage edges are not certified road edges.
+    pub fit_source_surface: bool,
     pub forward_lanes: usize,
     pub backward_lanes: usize,
     /// The trajectory occupies the outside forward lane: leftmost for left-hand
@@ -64,6 +69,7 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            fit_source_surface: false,
             forward_lanes: 1,
             backward_lanes: 1,
             left_hand_traffic: true,
@@ -113,6 +119,7 @@ pub struct ExtractedRoad {
 /// What was measured, what was inferred, and where data were missing.
 #[derive(Debug, Clone, Serialize)]
 pub struct BuildReport {
+    pub surface_fit: Option<SurfaceFitReport>,
     pub roads: usize,
     pub lanes: usize,
     pub trajectory_length: f64,
@@ -451,6 +458,7 @@ pub fn extract(
     let high = nominal[0] + o.search_margin + o.bin_width * 3.0;
     let index = SurfaceIndex::new(cloud, &line, low.abs().max(high.abs()) + o.half_window);
     let mut report = BuildReport {
+        surface_fit: None,
         roads: 0,
         lanes: 0,
         trajectory_length,
@@ -655,6 +663,9 @@ pub fn extract(
         observations.push(sections);
     }
     if roads.is_empty() {
+        if o.fit_source_surface {
+            return surface::extract(cloud, &line, &index, low, high, o, report);
+        }
         return fail(
             "no continuous road surface found near the trajectory; check the coordinate frame and point density",
         );
@@ -753,6 +764,9 @@ pub fn extract(
         report.warnings.push(format!("{} sections lack ground support and were omitted; disconnected stretches require review.",report.unsupported_sections));
     }
     report.warnings.push("Draft map: verify lane counts, travel directions, junctions and boundary geometry before use.".into());
+    if o.fit_source_surface {
+        return surface::refine(cloud, &line, &index, [low, high], o, report, roads);
+    }
     Ok((roads, report))
 }
 

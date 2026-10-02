@@ -813,6 +813,7 @@
           <p class="hint small">Both inputs must use the same coordinates in metres. The trajectory follows
             the outside forward lane. Lane counts, widths and speed use Road options.</p>
             <button id="vm-build" disabled>Build draft roads</button>
+            <label title="Fit inferred widths and heights to a coherent low surface. Defer missing or occluded intervals; lane counts remain your input."><input id="vm-source-surface" type="checkbox" /> Fit road footprint to source points</label>
             <label><input id="vm-anchor-prior" type="checkbox" checked /> Anchor inferred lines to detected outer edges</label>
             <label title="Choose a continuous path through candidate edges; rejected observations can become width priors"><input id="vm-track-boundaries" type="checkbox" checked /> Track continuous boundaries</label>
             <label title="Fit trajectory-relative curves with at most 0.5 m horizontal movement; preserve supported corners and ground heights"><input id="vm-fit-boundaries" type="checkbox" checked /> Reduce boundary jitter</label>

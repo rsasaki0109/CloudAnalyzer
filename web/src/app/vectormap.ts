@@ -542,6 +542,7 @@ interface Edited {
 }
 
 interface BuildReport {
+  surface_fit?: { deferred_length_m: number; minimum_lane_width_m: number | null; maximum_lane_width_m: number | null } | null;
   roads: number;
   lanes: number;
   generated_length: number;
@@ -1038,6 +1039,7 @@ function roadBuildOptions(): object {
     anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
     track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
     fit_boundaries: $<HTMLInputElement>("vm-fit-boundaries").checked,
+    fit_source_surface: $<HTMLInputElement>("vm-source-surface").checked,
     verify_curb_profiles: $<HTMLInputElement>("vm-verify-curbs").checked,
     merge_repeated_passes: $<HTMLInputElement>("vm-merge-passes").checked,
   };
@@ -1046,7 +1048,8 @@ function renderBuildReport(report: BuildReport): void {
   $("vm-build-report").textContent = `${report.roads} road stretches, ${report.lanes} lanes, ${fmt(report.generated_length)} m. ` +
     `Added ${fmt(report.added_length)} m; reused ${fmt(report.reused_length)} m of existing lanes. ` +
     `Measured sources before fitting, left to right: ${report.observed_fraction.map(f => `${Math.round(f*100)}%`).join(", ")}. ` +
-    `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +report.warnings.join(" ");
+    `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +
+    (report.surface_fit ? `Source footprint: ${fmt(report.surface_fit.deferred_length_m)} m deferred; inferred lane widths ${fmt(report.surface_fit.minimum_lane_width_m ?? 0)}–${fmt(report.surface_fit.maximum_lane_width_m ?? 0)} m. ` : "") +report.warnings.join(" ");
 }
 buildButton.onclick = async () => {
   if (busy) return;

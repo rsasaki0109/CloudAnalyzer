@@ -14,6 +14,29 @@ from cloudanalyzer_cli.main import app
 from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features
 
 
+def test_source_footprint_cli_keeps_explicit_lanes_and_failed_build_publishes_nothing(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(0,20.01,.1),np.arange(-4.5,2.01,.1))
+    header=laspy.LasHeader(point_format=3,version="1.2");header.scales=[.001]*3
+    data=laspy.LasData(header);data.x=x.ravel();data.y=y.ravel();data.z=np.where(y.ravel()>.2,4.,2.)
+    cloud=tmp_path/"narrow.las";data.write(cloud)
+    poses=tmp_path/"drive.csv";poses.write_text("timestamp,x,y,z\n0,0,0,50\n1,20,0,50\n")
+    output=tmp_path/"fitted"
+    result=CliRunner().invoke(app,["vectormap-build",str(cloud),str(poses),"--out",str(output),"--fit-source-surface"])
+    assert result.exit_code==0,result.output
+    report=json.loads(result.stdout);fit=report["extraction"]["surface_fit"]
+    assert fit["maximum_lane_width_m"]<3.5 and report["extraction"]["lanes"]==2
+    quality=json.loads(native.audit_vector_map_quality(str(cloud),report["files"]["editable_map"]))
+    assert not quality["quality"]["low_support_lanes"]
+    original=cloud.read_bytes()
+    rejected=tmp_path/"unsupported"
+    result=CliRunner().invoke(app,["vectormap-build",str(cloud),str(poses),"--out",str(rejected),"--fit-source-surface","--forward-lanes","8","--backward-lanes","0"])
+    assert result.exit_code!=0 and not rejected.exists()
+    assert cloud.read_bytes()==original
+
+
 def test_native_source_quality_distinguishes_edges_and_preserves_files(tmp_path):
     import numpy as np
     import laspy

@@ -27,6 +27,7 @@ def build_vector_map(
     anchor_width_prior: bool = True,
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
+    fit_source_surface: bool = False,
     verify_curb_profiles: bool = True,
     merge_repeated_passes: bool = True,
     existing_map: str | None = None,
@@ -48,6 +49,12 @@ def build_vector_map(
     fitting, including explicit width priors. Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does
     not guarantee better lane geometry. Stages can be disabled independently.
+    fit_source_surface instead fits inferred widths/heights to a coherent low-surface
+    band, keeps lane counts explicit and defers unobserved intervals/short fragments.
+    Coverage edges can be occlusion, not road boundaries; reduced extent is not an
+    accuracy improvement by itself. Existing maps are retained, not automatically refitted.
+    Source-backed candidates are retained and clipped first. If less than 60% of their
+    length is supported, low-surface footprint fitting replaces those candidates.
     Review boundaries, repeated passes, travel directions and junctions before using the map.
     """
     module = core()
@@ -111,6 +118,7 @@ def build_vector_map(
             "anchor_width_prior": anchor_width_prior,
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
+            **({"fit_source_surface": True} if fit_source_surface else {}),
             "verify_curb_profiles": verify_curb_profiles,
             "merge_repeated_passes": merge_repeated_passes,
         },

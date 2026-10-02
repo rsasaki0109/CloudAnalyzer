@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
-from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations
+from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
@@ -282,7 +282,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

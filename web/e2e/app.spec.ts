@@ -2893,3 +2893,37 @@ test("vector map: reviewed signal targets reject invalid IDs, undo exactly and s
   await expect(page.locator("#vm-relation-current")).toContainText("crosswalks: 10");await expect(page.locator("#vm-relation-current")).toContainText("lanes: none");
   expect(await exported()).not.toContain('v="traffic_light_bulbs"');
 });
+
+
+test("vector map: geometric target suggestions hold nearest wrong crossing, require explicit adoption and invalidate", async ({page}) => {
+  await open(page, []);
+  const map={format:"vectormap-ir",version:1,
+    boundaries:[{id:1,kind:{type:"virtual"},geometry:[[0,2,0],[20,2,0]]},{id:2,kind:{type:"virtual"},geometry:[[0,-2,0],[20,-2,0]]}],
+    lanes:[{id:3,kind:"driving",left:1,right:2}],
+    crosswalks:[{id:10,left_edge:[[8,-3,0],[8,3,0]],right_edge:[[12,-3,0],[12,3,0]]},{id:11,left_edge:[[8,-4,0],[14,-4,0]],right_edge:[[8,-6,0],[14,-6,0]]}],
+    traffic_signals:[{id:20,kind:"pedestrian",geometry:[[7,-5,3],[8,-5,3]],height:0.5,bulbs:[]}],
+    regulatory_elements:[{id:21,rule:{type:"traffic_light",signals:[20]},lanes:[3]},{id:30,rule:{type:"crosswalk",crosswalk:10},lanes:[3]},{id:31,rule:{type:"crosswalk",crosswalk:11},lanes:[3]}]};
+  await page.locator("#vm-file").setInputFiles({name:"suggestions.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(map))});
+  await expect(status(page)).toContainText("Opened suggestions.json");
+  let exports=0;
+  const exported=async()=>{if(exports++>0)await page.waitForTimeout(1100);const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();return(await bytesOf(await wait)).toString();};
+  const before=await exported();
+  await page.locator("#vm-relations-editor summary").click();await page.locator("#vm-relation").selectOption("21");
+  await page.locator("#vm-relation-preview").click();await expect(page.locator("#vm-relation-proposal-report")).toContainText("1 supported draft candidate; 1 nearby alternatives held");
+  await expect(page.locator("#vm-relation-adopt")).toBeDisabled();await expect(page.locator("#vm-undo")).toBeDisabled();
+  expect(await page.locator("#vm-relation-candidates input:checked").count()).toBe(0);expect(await exported()).toBe(before);
+  const held=page.locator('#vm-relation-candidates input[value="crosswalk:11"]');await held.check();
+  await expect(page.locator("#vm-relation-candidates")).toContainText("direction disagree");await expect(page.locator("#vm-relation-adopt")).toBeDisabled();
+  await expect(page.locator("#vm-relation-candidate-focus")).toBeEnabled();await page.locator("#vm-relation-candidate-focus").click();
+  await page.locator('#vm-relation-candidates input[value="crosswalk:10"]').check();await expect(page.locator("#vm-relation-adopt")).toBeEnabled();
+  await page.locator("#vm-relation-adopt").click();await expect(status(page)).toContainText("reviewed candidate adopted");
+  await expect(page.locator("#vm-relation-current")).toContainText("crosswalks: 10");await expect(page.locator("#vm-relation-current")).toContainText("lanes: none");
+  await expect(page.locator("#vm-relation-adopt")).toBeDisabled();expect(await page.locator("#vm-relation-candidates input").count()).toBe(0);
+  const reviewed=await exported();await page.locator("#vm-relation-preview").click();await expect(page.locator("#vm-relation-candidates")).toContainText("already linked");
+  await page.locator('#vm-relation-candidates input[value="crosswalk:10"]').check();await page.locator("#vm-relation-adopt").click();await expect(status(page)).toContainText("no Undo step added");
+  await page.locator("#vm-undo").click();expect(await exported()).toBe(before);await expect(page.locator("#vm-undo")).toBeDisabled();await expect(page.locator("#vm-relation-adopt")).toBeDisabled();
+  await page.locator("#vm-file").setInputFiles({name:"reviewed.osm",mimeType:"application/xml",buffer:Buffer.from(reviewed)});
+  await expect(status(page)).toContainText("Opened reviewed.osm");await page.locator("#vm-relation").selectOption("21");await page.locator("#vm-relation-preview").click();await expect(page.locator("#vm-relation-candidates")).toContainText("already linked");
+  await page.locator("#vm-relation").selectOption("30");await expect(page.locator("#vm-relation-preview")).toBeDisabled();expect(await page.locator("#vm-relation-candidates input").count()).toBe(0);
+  expect(await exported()).toBe(reviewed);
+});

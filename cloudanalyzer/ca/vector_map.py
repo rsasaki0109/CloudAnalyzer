@@ -7,7 +7,7 @@ import math
 import os
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlsplit, urlunsplit
 
 from ca._rust import core
@@ -30,6 +30,7 @@ def build_vector_map(
     infer_lane_edges: bool = False,
     fit_paint_divider: bool = False,
     fit_paint_corridor: bool = False,
+    paint_channel: Literal["rgb", "intensity"] = "rgb",
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
     fit_source_surface: bool = False,
@@ -63,9 +64,11 @@ def build_vector_map(
     inside distant verified curbs after an applied paint-divider correction.
     Original curb candidates stay in the report; outer paint is not observed.
     fit_paint_divider optionally corrects only a two-lane interior boundary
-    from one strong RGB track guarded by paired physical curbs. Outside geometry
+    from one strong source-paint track guarded by paired physical curbs. Outside geometry
     remains unchanged; missing paint is inferred and lane roles remain manual.
-    fit_paint_corridor optionally fits straight parallel boundaries from thin RGB
+    paint_channel explicitly selects retained RGB (default) or intensity for paint fits.
+    Intensity is normalized to ROI P10/P99.9; no automatic fallback or channel mutation.
+    fit_paint_corridor optionally fits straight parallel boundaries from thin source
     paint with dark source returns on both sides. It measures heading and spacing
     but keeps lane counts/directions manual. Sparse outer paint and dash gaps can
     be extended; those vertices remain inferred. The report separates observed
@@ -82,6 +85,8 @@ def build_vector_map(
     length is supported, low-surface footprint fitting replaces those candidates.
     Review boundaries, repeated passes, travel directions and junctions before using the map.
     """
+    if paint_channel not in ("rgb", "intensity"):
+        raise ValueError("paint_channel must be rgb or intensity")
     module = core()
     if module is None or not hasattr(module, "build_vector_map"):
         raise RuntimeError(
@@ -146,6 +151,7 @@ def build_vector_map(
             **({"infer_lane_edges": True} if infer_lane_edges else {}),
             **({"fit_paint_divider": True} if fit_paint_divider else {}),
             **({"fit_paint_corridor": True} if fit_paint_corridor else {}),
+            **({"paint_channel": "intensity"} if paint_channel == "intensity" else {}),
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
             **({"fit_source_surface": True} if fit_source_surface else {}),

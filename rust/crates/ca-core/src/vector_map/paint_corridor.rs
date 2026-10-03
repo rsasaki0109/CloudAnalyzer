@@ -1,13 +1,33 @@
 //! Source-only parallel paint fits. This does not infer lane legality or counts.
 use super::{BuildOptions, BuildReport, Evidence, ExtractedRoad, quantile};
 use crate::PointCloud;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 const MAX_ROI: usize = 250_000;
 const MAX_WHITE: usize = 50_000;
 const MAX_PAINT: usize = 10_000;
 const MAX_NEIGHBOURS: usize = 4096;
+
+/// Select one retained channel explicitly; no automatic fallback or synthetic RGB.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PaintChannel {
+    #[default]
+    Rgb,
+    Intensity,
+}
+impl PaintChannel {
+    pub fn is_rgb(&self) -> bool {
+        *self == Self::Rgb
+    }
+    pub(super) fn evidence(self) -> Evidence {
+        match self {
+            Self::Rgb => Evidence::RgbPaint,
+            Self::Intensity => Evidence::Intensity,
+        }
+    }
+}
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PaintTrackReport {
@@ -23,6 +43,11 @@ pub struct PaintTrackReport {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct PaintCorridorReport {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_channel: Option<PaintChannel>,
+    /// Raw ROI intensity P10/P99.9 used only for local contrast normalization.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub intensity_range: Option<[f64; 2]>,
     pub applied: bool,
     pub reason: String,
     pub limited: bool,
@@ -41,6 +66,8 @@ pub struct PaintCorridorReport {
 impl Default for PaintCorridorReport {
     fn default() -> Self {
         Self {
+            source_channel: None,
+            intensity_range: None,
             applied: false,
             reason: "no uniquely supported parallel paint corridor".into(),
             limited: false,
@@ -243,7 +270,11 @@ pub(super) fn scan(
     o: &BuildOptions,
     minimum_parts: usize,
 ) -> Result<Scan, Box<PaintCorridorReport>> {
-    let mut report = PaintCorridorReport::default();
+    let mut report = PaintCorridorReport {
+        source_channel: (o.paint_channel == PaintChannel::Intensity)
+            .then_some(PaintChannel::Intensity),
+        ..Default::default()
+    };
     let hold = |reason: &str, mut r: PaintCorridorReport| {
         r.reason = reason.into();
         Err(Box::new(r))
@@ -255,9 +286,13 @@ pub(super) fn scan(
             r,
         )
     };
-    let Some(colors) = &cloud.colors else {
+    let colors = cloud.colors.as_ref();
+    if o.paint_channel == PaintChannel::Rgb && colors.is_none() {
         return hold("source has no RGB colors", report);
-    };
+    }
+    if o.paint_channel == PaintChannel::Intensity && cloud.attribute(crate::INTENSITY).is_none() {
+        return hold("source has no retained intensity", report);
+    }
     let origin = line[0];
     let end = line[line.len() - 1];
     let length = (end[0] - origin[0]).hypot(end[1] - origin[1]);
@@ -275,7 +310,7 @@ pub(super) fn scan(
     }
     let count = o.forward_lanes + o.backward_lanes;
     let reach = 2.0 * count as f64 * o.lane_width;
-    let brightness = |i: usize| f64::from(*colors[i].iter().min().unwrap());
+
     let mut points = vec![];
     let mut ids = vec![];
     let mut bright_min = f64::INFINITY;
@@ -291,12 +326,42 @@ pub(super) fn scan(
         if (-3.0..=length + 3.0).contains(&s) && t.abs() <= reach {
             points.push([s, t, p[2]]);
             ids.push(id);
-            bright_min = bright_min.min(brightness(id));
-            bright_max = bright_max.max(brightness(id));
             report.roi_points += 1;
             if points.len() > MAX_ROI {
                 return limited(report);
             }
+        }
+    }
+    // Normalize only the chosen intensity channel, using a bounded ROI and
+    // robust upper tail. A single dashed divider can occupy less than 0.5%
+    // of a two-lane ROI, so P99.9 retains its tail. Missing values never count
+    // as dark flanks. Geometry, raw channels and RGB thresholds remain untouched.
+    let range = if o.paint_channel == PaintChannel::Intensity {
+        let mut values: Vec<_> = ids
+            .iter()
+            .filter_map(|&i| super::intensity(cloud, i))
+            .collect();
+        let low = quantile(&mut values, 0.1);
+        let high = quantile(&mut values, 0.999);
+        let Some((low, high)) = low.zip(high).filter(|(l, h)| h - l > 1e-6) else {
+            return hold("intensity has no usable ROI contrast", report);
+        };
+        report.intensity_range = Some([low, high]);
+        Some([low, high])
+    } else {
+        None
+    };
+    let brightness = |i: usize| -> Option<f64> {
+        match range {
+            Some([low, high]) => super::intensity(cloud, i)
+                .map(|v| (255.0 * (v - low) / (high - low)).clamp(0.0, 255.0)),
+            None => Some(f64::from(*colors.unwrap()[i].iter().min().unwrap())),
+        }
+    };
+    for &id in &ids {
+        if let Some(v) = brightness(id) {
+            bright_min = bright_min.min(v);
+            bright_max = bright_max.max(v);
         }
     }
     if bright_max - bright_min < 40.0 {
@@ -306,7 +371,9 @@ pub(super) fn scan(
     let mut paint_points = vec![];
     let mut paint_ids = vec![];
     for (i, p) in samples.points.iter().enumerate() {
-        let value = brightness(samples.ids[i]);
+        let Some(value) = brightness(samples.ids[i]) else {
+            continue;
+        };
         if value < 180.0 {
             continue;
         }
@@ -338,7 +405,9 @@ pub(super) fn scan(
             if dist <= 0.3 || (q[2] - p[2]).abs() > 0.12 || (q[1] - p[1]).abs() <= 0.15 {
                 continue;
             }
-            sides[usize::from(q[1] > p[1])].push(brightness(samples.ids[j]));
+            if let Some(value) = brightness(samples.ids[j]) {
+                sides[usize::from(q[1] > p[1])].push(value);
+            }
         }
         if sides
             .iter_mut()
@@ -573,7 +642,7 @@ pub(super) fn fit(
                         .total_cmp(&(paint.points[b][0] - s).abs())
                 });
             let (label, source) = near.map_or((Evidence::WidthPrior, point), |i| {
-                (Evidence::RgbPaint, cloud.positions[paint.ids[i]])
+                (o.paint_channel.evidence(), cloud.positions[paint.ids[i]])
             });
             vertices.push((point, label, source));
         }
@@ -606,11 +675,21 @@ pub(super) fn fit(
 
 pub(super) fn warnings(report: &mut BuildReport) {
     if let Some(paint) = &report.paint_corridor {
-        report.warnings.push(if paint.applied {
+        let warning: String = if paint.applied {
             "RGB paint set parallel boundary spacing and heading. Only nearby observed paint vertices have RGB evidence; gaps and extensions remain inferred. Track interval statistics describe the source fit before source-footprint trimming. Lane counts, boundary roles and travel directions still require review.".into()
         } else {
-            format!("RGB paint corridor was held: {}. Existing extraction rules were used; this is not a negative road-marking diagnosis.", paint.reason)
-        });
+            format!(
+                "RGB paint corridor was held: {}. Existing extraction rules were used; this is not a negative road-marking diagnosis.",
+                paint.reason
+            )
+        };
+        report
+            .warnings
+            .push(if paint.source_channel == Some(PaintChannel::Intensity) {
+                warning.replace("RGB", "intensity")
+            } else {
+                warning
+            });
     }
 }
 
@@ -620,7 +699,7 @@ mod tests {
     use super::*;
     use vectormap_core::Map;
 
-    fn scene(lines: &[f64], sparse_outer: bool) -> PointCloud {
+    pub(super) fn scene(lines: &[f64], sparse_outer: bool) -> PointCloud {
         let mut cloud = PointCloud::default();
         let mut colors = vec![];
         for sx in -20_i32..=320 {
@@ -642,7 +721,7 @@ mod tests {
         cloud.colors = Some(colors);
         cloud
     }
-    fn options() -> BuildOptions {
+    pub(super) fn options() -> BuildOptions {
         BuildOptions {
             fit_paint_corridor: true,
             fit_source_surface: true,
@@ -650,7 +729,7 @@ mod tests {
             ..Default::default()
         }
     }
-    fn trace() -> [[f64; 3]; 2] {
+    pub(super) fn trace() -> [[f64; 3]; 2] {
         [[0.0, 0.0, 100.0], [30.0, 0.0, 100.0]]
     }
 
@@ -792,5 +871,83 @@ mod tests {
         let mut map = Map::new();
         assert!(build(&mut map, &cloud, &trace(), &options()).is_err());
         assert_eq!(map.lanes().count(), 0);
+    }
+}
+
+#[cfg(test)]
+mod intensity_tests {
+    use super::tests::{options, scene, trace};
+    use super::*;
+    use crate::{Attribute, AttributeValues, INTENSITY};
+    fn from_rgb(mut cloud: PointCloud, scale: f32, offset: f32) -> PointCloud {
+        let values: Vec<_> = cloud
+            .colors
+            .as_ref()
+            .unwrap()
+            .iter()
+            .map(|c| offset + scale * f32::from(c[0]))
+            .collect();
+        cloud.attributes.push(Attribute {
+            name: INTENSITY.into(),
+            values: AttributeValues::F32(values),
+        });
+        cloud.colors = Some(vec![[255; 3]; cloud.len()]);
+        cloud
+    }
+    #[test]
+    fn explicit_intensity_fits_widths_and_heading_without_rgb_or_observing_gaps() {
+        let rgb = scene(&[-0.25, 2.75, 5.75], true);
+        let rgb_fit = super::super::extract(&rgb, &trace(), &options()).unwrap();
+        for (scale, offset) in [(1., 0.), (256., 10000.), (0.01, 5.)] {
+            let cloud = from_rgb(rgb.clone(), scale, offset);
+            let original = cloud.clone();
+            let (_, default) = super::super::extract(&cloud, &trace(), &options()).unwrap();
+            assert!(!default.paint_corridor.unwrap().applied);
+            let mut o = options();
+            o.paint_channel = PaintChannel::Intensity;
+            let (roads, report) = super::super::extract(&cloud, &trace(), &o).unwrap();
+            let fit = report.paint_corridor.as_ref().unwrap();
+            assert!(fit.applied, "{}", fit.reason);
+            assert_eq!(fit.source_channel, Some(PaintChannel::Intensity));
+            assert!(fit.intensity_range.unwrap()[1] > fit.intensity_range.unwrap()[0]);
+            assert!(
+                fit.measured_lane_widths_m
+                    .iter()
+                    .all(|w| (w - 3.).abs() < 0.04)
+            );
+            assert!(fit.tracks[0].extrapolated_length_m > 25.);
+            assert_eq!(
+                roads.iter().map(|r| &r.boundaries).collect::<Vec<_>>(),
+                rgb_fit.0.iter().map(|r| &r.boundaries).collect::<Vec<_>>()
+            );
+            assert_eq!(report.rgb_paint_vertices, 0);
+            assert_eq!(report.intensity_vertices, rgb_fit.1.rgb_paint_vertices);
+            assert!(report.width_prior_vertices > 0);
+            assert_eq!(cloud, original);
+        }
+    }
+    #[test]
+    fn missing_uniform_nonfinite_and_wide_intensity_never_invent_a_corridor() {
+        let rgb = scene(&[-0.25, 2.75, 5.75], false);
+        let mut cases = vec![rgb.clone()];
+        for v in [65535., f32::NAN] {
+            let mut cloud = rgb.clone();
+            cloud.attributes.push(Attribute {
+                name: INTENSITY.into(),
+                values: AttributeValues::F32(vec![v; cloud.len()]),
+            });
+            cases.push(cloud);
+        }
+        let mut wide = rgb;
+        wide.colors.as_mut().unwrap().fill([230; 3]);
+        cases.push(from_rgb(wide, 1., 0.));
+        for cloud in cases {
+            let (_, before) = super::super::extract(&cloud, &trace(), &options()).unwrap();
+            let mut o = options();
+            o.paint_channel = PaintChannel::Intensity;
+            let (_, after) = super::super::extract(&cloud, &trace(), &o).unwrap();
+            assert!(!after.paint_corridor.unwrap().applied);
+            assert_eq!(after.generated_length, before.generated_length);
+        }
     }
 }

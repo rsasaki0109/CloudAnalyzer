@@ -44,12 +44,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let align = config["comparison"].as_str() == Some("curb_trace_alignment");
             let paint = config["comparison"].as_str() == Some("paint_corridor");
             let edges = config["comparison"].as_str() == Some("lane_edge_inference");
+            let intensity = config["comparison"].as_str() == Some("intensity_paint");
+            if intensity {
+                options.paint_channel = if mode == 1 {
+                    vector_map::PaintChannel::Intensity
+                } else {
+                    vector_map::PaintChannel::Rgb
+                };
+            }
             options.infer_lane_edges = edges && mode == 1;
             let divider = config["comparison"].as_str() == Some("paint_divider");
-            options.fit_paint_divider = edges || (divider && mode == 1);
-            options.physical_anchors_only = align || paint || divider || edges || mode == 1;
-            options.align_trace_to_curbs = paint || divider || edges || (align && mode == 1);
-            options.fit_paint_corridor = edges || divider || (paint && mode == 1);
+            options.fit_paint_divider = intensity || edges || (divider && mode == 1);
+            options.physical_anchors_only =
+                intensity || align || paint || divider || edges || mode == 1;
+            options.align_trace_to_curbs =
+                intensity || paint || divider || edges || (align && mode == 1);
+            options.fit_paint_corridor = intensity || edges || divider || (paint && mode == 1);
             let (roads, extracted) = vector_map::extract(&cloud, &poses.positions, &options)?;
             let shift = extracted
                 .trace_alignment

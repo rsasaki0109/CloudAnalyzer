@@ -31,6 +31,7 @@ test("actual planning points build a physical-anchor draft matching native geome
   await expect(page.locator("#vm-align-curbs")).not.toBeChecked();
   if(ALIGN)await page.locator("#vm-align-curbs").check();
   await expect(page.locator("#vm-paint-corridor")).not.toBeChecked();
+  await expect(page.locator("#vm-paint-channel")).toHaveValue("rgb");
   if(PAINT)await page.locator("#vm-paint-corridor").check();
   await expect(page.locator("#vm-paint-divider")).not.toBeChecked();
   if(DIVIDER)await page.locator("#vm-paint-divider").check();

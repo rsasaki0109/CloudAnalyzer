@@ -341,17 +341,16 @@ pub fn propose(map: &Map, rule_id: u64) -> Result<ProposalReport, BuildError> {
             if distance.is_finite() && distance > MAX_DISTANCE {
                 continue;
             }
-            let mut lanes: BTreeSet<_> = map
+            let stop_lanes: BTreeSet<_> = map
                 .regulatory_elements()
                 .filter(|r| r.rule.stop_lines().contains(&stop.id))
                 .flat_map(|r| r.lanes.iter().copied())
                 .collect();
-            // Keep the existing reviewed movement; topology supports a candidate
-            // on connected approaches but never chooses unrelated nearby lanes.
-            lanes.retain(|lane| {
-                road_hint.contains(lane) || road_hint.iter().any(|&hint| linked(map, *lane, hint))
-            });
-            let lanes: Vec<_> = lanes.into_iter().collect();
+            // A topology connection can reach a different/opposing approach.
+            // Suggest a stop for the reviewed movement, never replace that
+            // movement with the target marking's lanes (or drop some lanes).
+            let lanes = rule.lanes.clone();
+            let stop_context: Vec<_> = stop_lanes.iter().copied().collect();
             let mut candidate = Candidate {
                 key: format!("stop_line:{}", stop.id.0),
                 target_kind: "stop_line".into(),
@@ -361,7 +360,7 @@ pub fn propose(map: &Map, rule_id: u64) -> Result<ProposalReport, BuildError> {
                 stop_lines: vec![stop.id.0],
                 distance_m: distance.is_finite().then_some(distance),
                 axis_degrees: None,
-                road_context: context(map, &road_hint, &lanes).into(),
+                road_context: context(map, &lanes, &stop_context).into(),
                 eligible: true,
                 already_linked: false,
                 reasons: vec![],
@@ -376,6 +375,12 @@ pub fn propose(map: &Map, rule_id: u64) -> Result<ProposalReport, BuildError> {
                 rejection(
                     &mut candidate,
                     "Reviewed vehicle lanes and compatible stop-marking context are required.",
+                );
+            }
+            if lanes.iter().any(|lane| !stop_lanes.contains(lane)) {
+                rejection(
+                    &mut candidate,
+                    "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
                 );
             }
             let mut maximum = 0f64;
@@ -685,6 +690,55 @@ mod tests {
         map.traffic_signal_mut(SignalId(22)).unwrap().geometry =
             Polyline3::new(vec![Point3::new(6., 0., 5.), Point3::new(7., 0., 5.)]);
         assert_eq!(propose(&map, 23).unwrap().eligible_count, 0);
+    }
+    #[test]
+    fn connected_other_movement_and_partial_lane_coverage_are_held_atomically() {
+        let mut doc = serde_json::to_value(fixture()).unwrap();
+        doc["boundaries"].as_array_mut().unwrap().extend([
+            serde_json::json!({"id":40,"kind":{"type":"virtual"},"geometry":[[20,-2,0],[0,-2,0]]}),
+            serde_json::json!({"id":41,"kind":{"type":"virtual"},"geometry":[[20,2,0],[0,2,0]]}),
+        ]);
+        doc["lanes"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({"id":43,"kind":"driving","left":40,"right":41}));
+        doc["topology"] = serde_json::json!([
+            {"lane":3,"successors":[43]}, {"lane":43,"predecessors":[3]}
+        ]);
+        doc["stop_lines"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({"id":16,"geometry":[[7,-2,0],[7,2,0]]}));
+        doc["regulatory_elements"].as_array_mut().unwrap().push(
+            serde_json::json!({"id":33,"rule":{"type":"stop_line","stop_line":16},"lanes":[43]}),
+        );
+        let mut map: Map = serde_json::from_value(doc).unwrap();
+        assert!(linked(&map, LaneId(3), LaneId(43)));
+        let before = map.clone();
+        let p = propose(&map, 23).unwrap();
+        let wrong = p.candidates.iter().find(|c| c.target_id == 16).unwrap();
+        assert_eq!(wrong.road_context, "connected_lanes");
+        assert_eq!(wrong.lanes, vec![3]);
+        assert!(!wrong.eligible);
+        assert!(
+            wrong
+                .reasons
+                .iter()
+                .any(|r| r.contains("every reviewed vehicle lane"))
+        );
+        assert_eq!(p.eligible_count, 1);
+        assert!(adopt(&mut map, &choice(&p, "stop_line:16")).is_err());
+        assert_eq!(map, before);
+        map.regulatory_element_mut(RegulatoryElementId(23))
+            .unwrap()
+            .lanes
+            .push(LaneId(43));
+        let before = map.clone();
+        let p = propose(&map, 23).unwrap();
+        assert_eq!(p.eligible_count, 0);
+        assert!(p.candidates.iter().all(|c| c.lanes == vec![3, 43]));
+        assert!(adopt(&mut map, &choice(&p, "stop_line:15")).is_err());
+        assert_eq!(map, before);
     }
     #[test]
     fn over_budget_map_never_offers_a_partial_adoptable_list() {

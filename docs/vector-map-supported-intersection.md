@@ -39,16 +39,18 @@ deferred interval. Two requested branch-to-south connections also lack sufficien
 support and remain deferred. Selected connections establish geometry, not
 permission to turn. The final 59 driving-lane records have zero source-review
 flags across 6,752 samples, no omitted/malformed lanes and no audit-budget limit.
-Structural validation reports zero errors and **15 warnings**: two disconnected
-components and 13 isolated lane records. Missing intervals are not filled to
+The road graph has zero structural errors and **15 connectivity warnings**:
+two disconnected components and 13 isolated lane records. Equipment review later
+adds the unresolved pedestrian rule warning. Missing intervals are not filled to
 remove these warnings.
 
-The app adds Autoware compatibility checks: four signal rules lack reviewed
-stop-line relationships, so its total is **19 warnings**, both immediately after
-generation and after reload. Two informational notices also describe the export
-of stop-marking drafts as road_marking rules. These checks use a different profile
-from the native structural audit; the additional warnings do not imply a reload
-geometry change. The capture verifies identical warning messages through reload.
+The app initially reports **19 warnings**, including four unresolved signal rules.
+After explicit target review it reports **18 warnings**: the same 15 connectivity
+warnings, one orphan pedestrian rule and two unresolved control/stop warnings.
+The source's Local export separately reports missing geographic reference
+metadata. Two informational notices describe stop-marking drafts as road_marking
+rules. The final capture verifies identical target IDs and warning messages
+through reload.
 
 ## Equipment is reviewed against the new lane IDs
 
@@ -63,9 +65,15 @@ the new road and connector footprints; some overlaps are partial edge overlaps.
 Two transverse branch markings replace doubtful longitudinal bars. Four elevated
 housing candidates are explicitly identified as two vehicle and two pedestrian
 types. Types and controlled lanes are operator choices. No signal lamp, state,
-priority, permitted turn or relationship between a signal and stop line is inferred.
+priority or permitted turn is inferred. Geometric target suggestions are reviewed
+explicitly after generation: vehicle rule 169 adopts stop 164 on lanes 76/77, and
+pedestrian rule 173 adopts crossing 156. The slightly closer crossing 152 is held
+for an incompatible walking axis. Two signals remain unresolved, with legacy
+pedestrian rule 171 explicitly cleared. Unsigned housing normals do not prove
+front face or legal control. See [target evidence and limits](vector-map-relation-proposals.md).
 The [operator manifest](../web/media/vector-map-supported-intersection-inputs.json)
-records every selected pair, deferred pair, discarded proposal and confirmation.
+records selected/deferred connections, discarded proposals, type/lane confirmations,
+explicit target adoptions and the unresolved-rule edit.
 The older 49-lane map's equipment rules are not copied into this result.
 
 ## What the actual UI capture checks
@@ -73,23 +81,25 @@ The older 49-lane map's equipment rules are not copied into this result.
 The production app loads the original retained points and frozen source CSVs,
 builds the default six paths, checks their source coverage, then undoes all six
 builds to an empty map. It repeats generation with source-footprint fitting,
-reviews strict junction proposals and confirms the 13 equipment objects.
+reviews strict junction proposals and confirms the 13 equipment objects. It then
+previews signal targets without selecting any automatically, inspects the held
+nearest crossing and explicitly adopts two geometric drafts.
 Native/Web comparison checks all generated boundary, marking, housing and
 crosswalk-edge coordinates, allowing whole-way reversal. Regulatory lane
-associations must match the newly generated native map both before and after
-Lanelet2 reload.
+associations and controlled crosswalk targets must match the newly generated native
+map both before and after Lanelet2 reload.
 
 The capture edits a housing vertex by 0.08 m, undoes to the byte-identical map,
-undoes all 13 equipment additions to the exact road-only result, then opens its
-own exported Lanelet2 file. Read-only source audits and display operations also
+undoes all three association edits to the exact generated map and all 13 equipment
+additions to the exact road-only result, then opens its own exported Lanelet2 file. Read-only source audits and display operations also
 leave exports unchanged. The compact [capture verification](vector-map-supported-intersection-media.json)
 records actual errors, hashes and checks. Captions, screenshot crop/scale and GIF
 palette conversion are the only changes to the real screen frames.
 
 The captured default and fitted road coordinates match native generation exactly;
 the final map's maximum coordinate difference is 7.28 × 10⁻¹² m. The GIF is
-800 × 528 pixels, 27.96 seconds and 1,492,306 bytes, with 14 encoded frames
-from 13 actual screen captures. The final repeat is created by the concat/GIF
+800 × 528 pixels, 37.44 seconds and 2,213,661 bytes, with 18 encoded frames
+from 17 actual screen captures. The final repeat is created by the concat/GIF
 conversion. These checks establish consistency, not independent map accuracy.
 
 All generation, discovery and source audits use the full retained source.
@@ -111,7 +121,8 @@ scene informed development; it is not a held-out performance test. Previous
 Use the existing prepared source and original frozen CSV proof in place; see
 [preparation and licensing](vector-map-hard-intersection.md). Build the native
 core and production WASM from the same checkout. The captured runtime is
-`a194c2157b5e5e74c3f684dd698d071dac67a6fd`, reflected on main by PR #197.
+`a4aa3d7c97e6bada6277289a2a096dabfe14d8c4`, reflected on main by
+[PR #200](https://github.com/rsasaki0109/CloudAnalyzer/pull/200).
 The supplied commit is a declaration, not embedded binary attestation;
 the proof separately hashes the installed native module, source and outputs.
 
@@ -131,7 +142,9 @@ Choose a new native proof directory. The helper generates roads first; previous
 generated maps are opened afterwards only for regression identity checks, never
 as fitting inputs. It rejects changed roads or stale selections that require
 fresh source review. Native Lanelet2 import and confirmation replay must reuse
-all 13 objects without duplication. Optional media captures skip without the
+all 13 objects without duplication. Signal targets are proposed against each
+current generated map, then adopted only after explicit configured review. Target
+adoption retains physical geometry and full-source coverage. Optional media captures skip without the
 configured cached source; normal CI does not download this dataset.
 
 Data and derived map/GIF attribution: [Hard Intersection Multimodal Samples](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c),

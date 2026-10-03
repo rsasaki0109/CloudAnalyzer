@@ -9989,6 +9989,7 @@
     <member type="way" ref="67" role="right"/>
     <member type="relation" ref="149" role="regulatory_element"/>
     <member type="relation" ref="167" role="regulatory_element"/>
+    <member type="relation" ref="171" role="regulatory_element"/>
     <tag k="location" v="urban"/>
     <tag k="one_way" v="yes"/>
     <tag k="participant:vehicle" v="yes"/>
@@ -10054,6 +10055,7 @@
     <member type="way" ref="80" role="left"/>
     <member type="way" ref="81" role="right"/>
     <member type="relation" ref="163" role="regulatory_element"/>
+    <member type="relation" ref="173" role="regulatory_element"/>
     <tag k="location" v="urban"/>
     <tag k="one_way" v="yes"/>
     <tag k="participant:vehicle" v="yes"/>
@@ -10462,7 +10464,6 @@
   <relation id="156" visible="true" version="1">
     <member type="way" ref="182" role="left"/>
     <member type="way" ref="183" role="right"/>
-    <member type="relation" ref="173" role="regulatory_element"/>
     <tag k="cloudanalyzer_classification_source" v="user_confirmed_automatic_proposal"/>
     <tag k="cloudanalyzer_discovery" v="[&quot;[[-9295.991546,-40785.318924,28.413016],[-9286.880253,-40779.834807,28.741691],{\&quot;kind\&quot;:\&quot;repeated_paint\&quot;,\&quot;measurement\&quot;:{\&quot;angle_degrees\&quot;:170.0,\&quot;left_edge\&quot;:[[-9286.980253,-40781.613717,28.573625],[-9291.321332,-40780.318736,28.53199],[-9294.299915,-40779.934807,28.513284],[-9295.243399,-40780.102678,28.513016]],\&quot;length\&quot;:3.976468,\&quot;outline\&quot;:[[-9286.980253,-40781.613717,28.573625],[-9291.321332,-40780.318736,28.53199],[-9294.299915,-40779.934807,28.513284],[-9295.243399,-40780.102678,28.513016],[-9295.891546,-40783.778501,28.582415],[-9290.52846,-40784.460288,28.615911],[-9289.699967,-40784.944566,28.628491],[-9287.615948,-40785.218924,28.641691]],\&quot;right_edge\&quot;:[[-9287.615948,-40785.218924,28.641691],[-9289.699967,-40784.944566,28.628491],[-9290.52846,-40784.460288,28.615911],[-9295.891546,-40783.778501,28.582415]],\&quot;score\&quot;:309.186374,\&quot;stripe_count\&quot;:10,\&quot;stripes\&quot;:[[[-9286.980253,-40781.613717,28.573625],[-9287.275695,-40781.561623,28.571496],[-9287.91139,-40785.166829,28.639562],[-9287.615948,-40785.218924,28.641691]],[[-9287.84974,-40781.361934,28.565435],[-9288.243663,-40781.292474,28.562596],[-9288.899882,-40785.014074,28.632859],[-9288.505959,-40785.083534,28.635698]],[[-9288.722346,-40781.127833,28.557578],[-9289.017788,-40781.075738,28.555448],[-9289.699967,-40784.944566,28.628491],[-9289.404525,-40784.996661,28.63062]],[[-9289.474693,-40780.787589,28.548098],[-9289.868616,-40780.718129,28.545259],[-9290.52846,-40784.460288,28.615911],[-9290.134537,-40784.529747,28.61875]],[[-9290.355039,-40780.597386,28.54107],[-9290.748962,-40780.527927,28.538231],[-9291.430188,-40784.39135,28.611172],[-9291.036265,-40784.460809,28.614011]],[[-9291.321332,-40780.318736,28.53199],[-9291.715255,-40780.249276,28.529151],[-9292.433746,-40784.324039,28.606082],[-9292.039823,-40784.393498,28.608921]],[[-9292.129715,-40780.296285,28.528511],[-9292.523638,-40780.226826,28.525672],[-9293.204054,-40784.085654,28.598526],[-9292.81013,-40784.155114,28.601365]],[[-9293.017334,-40780.147332,28.522262],[-9293.509738,-40780.060508,28.518713],[-9294.196841,-40783.957264,28.592283],[-9293.704438,-40784.044088,28.595832]],[[-9293.905992,-40780.004266,28.516123],[-9294.299915,-40779.934807,28.513284],[-9294.986933,-40783.831079,28.586845],[-9294.59301,-40783.900539,28.589684]],[[-9294.947957,-40780.154773,28.515146],[-9295.243399,-40780.102678,28.513016],[-9295.891546,-40783.778501,28.582415],[-9295.596104,-40783.830596,28.584545]]],\&quot;width\&quot;:8.4},\&quot;options\&quot;:{\&quot;brightness_fraction\&quot;:0.65,\&quot;candidate\&quot;:0,\&quot;lanes\&quot;:[],\&quot;max\&quot;:[-9282.0,-40770.0,29.936275],\&quot;min\&quot;:[-9302.0,-40790.0,26.936275]}}]&quot;,&quot;crosswalk&quot;,[102,147]]"/>
     <tag k="cloudanalyzer_geometry_source" v="point_cloud_brightness_stripes"/>
@@ -10549,9 +10550,7 @@
   </relation>
   <relation id="169" visible="true" version="1">
     <member type="way" ref="168" role="refers"/>
-    <member type="way" ref="164" role="ref_line"/>
     <tag k="cloudanalyzer_lanes_source" v="user_selected"/>
-    <tag k="cloudanalyzer_relationships_source" v="user_reviewed"/>
     <tag k="cloudanalyzer_review_required" v="yes"/>
     <tag k="subtype" v="traffic_light"/>
     <tag k="type" v="regulatory_element"/>
@@ -10559,7 +10558,6 @@
   <relation id="171" visible="true" version="1">
     <member type="way" ref="170" role="refers"/>
     <tag k="cloudanalyzer_lanes_source" v="user_selected"/>
-    <tag k="cloudanalyzer_relationships_source" v="user_reviewed"/>
     <tag k="cloudanalyzer_review_required" v="yes"/>
     <tag k="subtype" v="traffic_light"/>
     <tag k="type" v="regulatory_element"/>
@@ -10567,7 +10565,6 @@
   <relation id="173" visible="true" version="1">
     <member type="way" ref="172" role="refers"/>
     <tag k="cloudanalyzer_lanes_source" v="user_selected"/>
-    <tag k="cloudanalyzer_relationships_source" v="user_reviewed"/>
     <tag k="cloudanalyzer_review_required" v="yes"/>
     <tag k="subtype" v="traffic_light"/>
     <tag k="type" v="regulatory_element"/>

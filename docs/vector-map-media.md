@@ -1,9 +1,10 @@
 # Reproduce the vector map GIFs
 
 The main README animation compares default and source-footprint roads in two
-complex Tokyo junctions, then reviews supported connections and measured equipment.
+complex Tokyo junctions, then reviews supported connections, measured equipment
+and geometric signal-target suggestions with explicit adoption.
 Its [generation protocol and editable result](vector-map-supported-intersection.md)
-retain deferred extent, connectivity warnings and unreviewed signal-stop links.
+retain deferred extent, connectivity warnings and two unresolved signals.
 The earlier Tokyo animation below preserves its original geometry and quality
 audit. Another animation uses recorded PandaSet poses. The expandable
 surveyed-intersection example explicitly edits imported context. All captures

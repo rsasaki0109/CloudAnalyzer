@@ -3479,13 +3479,11 @@
       "id": 169,
       "rule": {
         "type": "traffic_light",
-        "signals": [168],
-        "stop_line": 164
+        "signals": [168]
       },
       "lanes": [76, 77],
       "attributes": {
         "cloudanalyzer_lanes_source": "user_selected",
-        "cloudanalyzer_relationships_source": "user_reviewed",
         "cloudanalyzer_review_required": "yes"
       }
     },
@@ -3495,10 +3493,9 @@
         "type": "traffic_light",
         "signals": [170]
       },
-      "lanes": [],
+      "lanes": [69],
       "attributes": {
         "cloudanalyzer_lanes_source": "user_selected",
-        "cloudanalyzer_relationships_source": "user_reviewed",
         "cloudanalyzer_review_required": "yes"
       }
     },
@@ -3508,11 +3505,9 @@
         "type": "traffic_light",
         "signals": [172]
       },
-      "lanes": [],
-      "controlled_crosswalks": [156],
+      "lanes": [83],
       "attributes": {
         "cloudanalyzer_lanes_source": "user_selected",
-        "cloudanalyzer_relationships_source": "user_reviewed",
         "cloudanalyzer_review_required": "yes"
       }
     }

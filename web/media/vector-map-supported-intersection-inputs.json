@@ -1,26 +1,251 @@
 {
   "description": "Explicit source-only development review. Path and lane priors reuse the original operator manifest. These types, lane associations and selected geometric manoeuvres are operator inputs, not recovered legal traffic rules.",
   "road_operator_manifest": "vector-map-hard-intersection-inputs.json",
-  "build_overrides": {"fit_source_surface": true},
-  "junction_options": {"max_gap": 50, "min_ground_support": 1, "check_boundary_support": true},
-  "reviewed_pairs": [[21,34],[22,35],[23,36],[34,47],[35,48],[36,49],[50,37],[51,38],[52,39],[38,25],[39,26],[69,34],[21,70],[37,70],[77,49],[23,79],[52,79],[83,47],[50,84],[76,70],[69,78]],
-  "deferred_requested_pairs": [[69,26],[76,24]],
+  "build_overrides": {
+    "fit_source_surface": true
+  },
+  "junction_options": {
+    "max_gap": 50,
+    "min_ground_support": 1,
+    "check_boundary_support": true
+  },
+  "reviewed_pairs": [
+    [
+      21,
+      34
+    ],
+    [
+      22,
+      35
+    ],
+    [
+      23,
+      36
+    ],
+    [
+      34,
+      47
+    ],
+    [
+      35,
+      48
+    ],
+    [
+      36,
+      49
+    ],
+    [
+      50,
+      37
+    ],
+    [
+      51,
+      38
+    ],
+    [
+      52,
+      39
+    ],
+    [
+      38,
+      25
+    ],
+    [
+      39,
+      26
+    ],
+    [
+      69,
+      34
+    ],
+    [
+      21,
+      70
+    ],
+    [
+      37,
+      70
+    ],
+    [
+      77,
+      49
+    ],
+    [
+      23,
+      79
+    ],
+    [
+      52,
+      79
+    ],
+    [
+      83,
+      47
+    ],
+    [
+      50,
+      84
+    ],
+    [
+      76,
+      70
+    ],
+    [
+      69,
+      78
+    ]
+  ],
+  "deferred_requested_pairs": [
+    [
+      69,
+      26
+    ],
+    [
+      76,
+      24
+    ]
+  ],
   "interval_policy": "No connections between fragments attributed to the same input path. Preserve the previously deferred 34.259 m, disconnected outer pieces and unsupported requested turns.",
-  "association_review": "Crossing lanes were reviewed against measured paint and the new road footprints, including partial overlaps at turn edges. Signal types and controlled approach lanes remain explicit operator choices. Signal stop-line relationships, lamps and lawful manoeuvres are not inferred.",
-  "discarded_candidates": [75,44,110],
+  "association_review": "Object types and crossing/approach lanes remain explicit operator inputs. After generation, geometric signal-target suggestions are inspected and explicitly adopted; unsigned normals do not prove front face, legal control or phases.",
+  "discarded_candidates": [
+    75,
+    44,
+    110
+  ],
   "confirmations": [
-    {"candidate":45,"classification":"crosswalk","lanes":[69,111,135,138,141]},
-    {"candidate":50,"classification":"crosswalk","lanes":[87,90,93,96,99]},
-    {"candidate":67,"classification":"crosswalk","lanes":[123,147]},
-    {"candidate":90,"classification":"crosswalk","lanes":[114,117]},
-    {"candidate":92,"classification":"crosswalk","lanes":[102,147]},
-    {"candidate":115,"classification":"crosswalk","lanes":[108,120,123,126,129,132,144]},
-    {"candidate":122,"classification":"crosswalk","lanes":[99,132,138,141,144]},
-    {"candidate":62,"classification":"stop_line","lanes":[83]},
-    {"candidate":141,"classification":"stop_line","lanes":[76,77]},
-    {"candidate":56,"classification":"vehicle_signal","lanes":[69]},
-    {"candidate":129,"classification":"vehicle_signal","lanes":[76,77]},
-    {"candidate":73,"classification":"pedestrian_signal","lanes":[69]},
-    {"candidate":85,"classification":"pedestrian_signal","lanes":[83]}
-  ]
+    {
+      "candidate": 45,
+      "classification": "crosswalk",
+      "lanes": [
+        69,
+        111,
+        135,
+        138,
+        141
+      ]
+    },
+    {
+      "candidate": 50,
+      "classification": "crosswalk",
+      "lanes": [
+        87,
+        90,
+        93,
+        96,
+        99
+      ]
+    },
+    {
+      "candidate": 67,
+      "classification": "crosswalk",
+      "lanes": [
+        123,
+        147
+      ]
+    },
+    {
+      "candidate": 90,
+      "classification": "crosswalk",
+      "lanes": [
+        114,
+        117
+      ]
+    },
+    {
+      "candidate": 92,
+      "classification": "crosswalk",
+      "lanes": [
+        102,
+        147
+      ]
+    },
+    {
+      "candidate": 115,
+      "classification": "crosswalk",
+      "lanes": [
+        108,
+        120,
+        123,
+        126,
+        129,
+        132,
+        144
+      ]
+    },
+    {
+      "candidate": 122,
+      "classification": "crosswalk",
+      "lanes": [
+        99,
+        132,
+        138,
+        141,
+        144
+      ]
+    },
+    {
+      "candidate": 62,
+      "classification": "stop_line",
+      "lanes": [
+        83
+      ]
+    },
+    {
+      "candidate": 141,
+      "classification": "stop_line",
+      "lanes": [
+        76,
+        77
+      ]
+    },
+    {
+      "candidate": 56,
+      "classification": "vehicle_signal",
+      "lanes": [
+        69
+      ]
+    },
+    {
+      "candidate": 129,
+      "classification": "vehicle_signal",
+      "lanes": [
+        76,
+        77
+      ]
+    },
+    {
+      "candidate": 73,
+      "classification": "pedestrian_signal",
+      "lanes": [
+        69
+      ]
+    },
+    {
+      "candidate": 85,
+      "classification": "pedestrian_signal",
+      "lanes": [
+        83
+      ]
+    }
+  ],
+  "relation_adoptions": [
+    {
+      "rule_id": 169,
+      "candidate_key": "stop_line:164"
+    },
+    {
+      "rule_id": 173,
+      "candidate_key": "crosswalk:156"
+    }
+  ],
+  "unresolved_signal_rules": [
+    167,
+    171
+  ],
+  "explicit_legacy_clear": {
+    "rule_id": 171,
+    "lanes": [],
+    "controlled_crosswalks": [],
+    "stop_lines": []
+  }
 }

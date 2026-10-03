@@ -169,6 +169,43 @@ def freeze(prepared: Path, proof: Path, out: Path, source_commit: str) -> dict:
     )
     if not all(a["reused"] for a in replay["report"]["additions"]):
         raise AssertionError("equipment replay after OSM import was not a no-op")
+    # New geometric target previews are read-only; these configured choices
+    # remain explicit operator review after actual road/equipment generation.
+    current = out / "reviewed.json"
+    proposal_reports = []
+    for rule_id in config["unresolved_signal_rules"]:
+        p = json.loads(core.propose_vector_map_relations(str(current), rule_id))["report"]["proposal"]
+        if p["eligible_count"] or p["limited"]:
+            raise ValueError("previously unsupported control changed; review the source again")
+        proposal_reports.append(p)
+    for choice in config["relation_adoptions"]:
+        p = json.loads(core.propose_vector_map_relations(str(current), choice["rule_id"]))["report"]["proposal"]
+        matching = [c for c in p["candidates"] if c["key"] == choice["candidate_key"] and c["eligible"]]
+        if p["limited"] or p["eligible_count"] != 1 or len(matching) != 1:
+            raise ValueError("configured geometric target changed; inspect the scene again")
+        proposal_reports.append(p)
+        associated = json.loads(core.propose_vector_map_relations(str(current), choice["rule_id"], json.dumps({**choice,"map_snapshot":p["map_snapshot"]})))
+        if not associated["report"]["edit"]["changed"]:
+            raise AssertionError("generated control unexpectedly already linked")
+        current = out / f"associated-{choice['rule_id']}.json"
+        save(current, associated["map_json"])
+    associated = json.loads(core.edit_vector_map_relations(str(current), json.dumps(config["explicit_legacy_clear"])))
+    associated_map = json.loads(associated["map_json"])
+    for key in ("metadata","boundaries","lanes","roads","junctions","crosswalks","stop_lines","traffic_signals"):
+        if associated_map.get(key,[]) != final.get(key,[]):
+            raise AssertionError(f"association review changed physical map {key}")
+    modified = {c["rule_id"] for c in config["relation_adoptions"]} | {config["explicit_legacy_clear"]["rule_id"]}
+    original_rules = {r["id"]:r for r in final["regulatory_elements"]}
+    if any(r != original_rules[r["id"]] for r in associated_map["regulatory_elements"] if r["id"] not in modified):
+        raise AssertionError("review changed unrelated rules")
+    save(out / "associated.json", associated["map_json"])
+    save(out / "associated.osm", associated["osm"])
+    save(out / "associated-report.json", associated["report"])
+    save(out / "relation-proposals.json", proposal_reports)
+    associated_quality = json.loads(core.audit_vector_map_quality(str(source), str(out / "associated.osm")))
+    if associated_quality["quality"] != quality["quality"]:
+        raise AssertionError("association review changed full-source quality")
+    save(out / "associated-quality.json", associated_quality)
     manifest = {
         "reference_inputs": [],
         "source_commit": source_commit,
@@ -191,13 +228,21 @@ def freeze(prepared: Path, proof: Path, out: Path, source_commit: str) -> dict:
         "source_quality": quality["quality"],
         "validation": quality["validation"],
         "generated_sha256": digest(out / "reviewed.osm"),
+        "associated_sha256": digest(out / "associated.osm"),
+        "generated_validation": quality["validation"],
+        "associated_validation": associated["report"]["validation"],
+        "association_physical_map_exact": True,
+        "association_source_quality_unchanged": True,
+        "relation_adoptions": config["relation_adoptions"],
+        "unresolved_signal_rules": config["unresolved_signal_rules"],
         "roundtrip_replay": replay["report"],
         "limitations": [
             "Same development scene, not independent accuracy",
             "Missing road extent and disconnected fragments are retained as uncertainty",
             "Ground curves do not certify road interiors, clearance or lawful manoeuvres",
             "Paint geometry is observed; object types, controlled lanes and permitted turns need semantic review",
-            "Proposal cap and unmatched/omitted equipment remain; signal lamps, states and stop associations are not inferred",
+            "Proposal cap and unmatched/omitted equipment remain; signal lamps, states and legal control are not inferred",
+            "Two geometric target suggestions are explicitly reviewed and adopted; two signals remain unresolved",
         ],
     }
     save(out / "manifest.json", manifest)

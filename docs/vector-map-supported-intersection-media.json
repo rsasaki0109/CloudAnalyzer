@@ -111,7 +111,7 @@
         ]
       ],
       "interval_policy": "No connections between fragments attributed to the same input path. Preserve the previously deferred 34.259 m, disconnected outer pieces and unsupported requested turns.",
-      "association_review": "Crossing lanes were reviewed against measured paint and the new road footprints, including partial overlaps at turn edges. Signal types and controlled approach lanes remain explicit operator choices. Signal stop-line relationships, lamps and lawful manoeuvres are not inferred.",
+      "association_review": "Object types and crossing/approach lanes remain explicit operator inputs. After generation, geometric signal-target suggestions are inspected and explicitly adopted; unsigned normals do not prove front face, legal control or phases.",
       "discarded_candidates": [
         75,
         44,
@@ -232,9 +232,29 @@
             83
           ]
         }
-      ]
+      ],
+      "relation_adoptions": [
+        {
+          "rule_id": 169,
+          "candidate_key": "stop_line:164"
+        },
+        {
+          "rule_id": 173,
+          "candidate_key": "crosswalk:156"
+        }
+      ],
+      "unresolved_signal_rules": [
+        167,
+        171
+      ],
+      "explicit_legacy_clear": {
+        "rule_id": 171,
+        "lanes": [],
+        "controlled_crosswalks": [],
+        "stop_lines": []
+      }
     },
-    "clipDisplayZ": "26.04 … 35.526",
+    "clipDisplayZ": "26.04 \u2026 35.526",
     "roadLanes": 59,
     "proposals": 145,
     "detected": 328,
@@ -257,8 +277,46 @@
     "deferredRoadLengthM": 34.25890841752784,
     "structuralErrors": 0,
     "connectivityWarnings": 15,
-    "autowareWarnings": 19,
-    "unreviewedSignalStopLinks": 4,
+    "autowareWarnings": 18,
+    "unreviewedSignalStopLinks": 2,
+    "geometricTargetAdoptions": [
+      {
+        "rule_id": 169,
+        "candidate_key": "stop_line:164"
+      },
+      {
+        "rule_id": 173,
+        "candidate_key": "crosswalk:156"
+      }
+    ],
+    "unresolvedSignalRules": [
+      167,
+      171
+    ],
+    "nearestWrongOrientationHeld": true,
+    "noAutomaticTargetSelection": true,
+    "exactAssociationUndo": true,
+    "associatedNativeDifference": 7.275957614183426e-12,
+    "reviewedWarnings": [
+      "lane:10 has neither predecessors nor successors",
+      "lane:11 has neither predecessors nor successors",
+      "lane:12 has neither predecessors nor successors",
+      "lane:13 has neither predecessors nor successors",
+      "lane:24 has neither predecessors nor successors",
+      "lane:60 has neither predecessors nor successors",
+      "lane:61 has neither predecessors nor successors",
+      "lane:62 has neither predecessors nor successors",
+      "lane:63 has neither predecessors nor successors",
+      "lane:64 has neither predecessors nor successors",
+      "lane:65 has neither predecessors nor successors",
+      "lane:8 has neither predecessors nor successors",
+      "lane:9 has neither predecessors nor successors",
+      "regulatory_element:171 does not apply to any lane or crosswalk",
+      "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+      "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+      "traffic light regulatory_element:167 has no stop line",
+      "traffic light regulatory_element:171 has no stop line"
+    ],
     "exactWarningRoundtrip": true,
     "generatedWarnings": [
       "lane:10 has neither predecessors nor successors",
@@ -285,27 +343,27 @@
     "finalSourceReviewLanes": 0,
     "referenceInputs": [],
     "sourceSha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
-    "sourceCommit": "a194c2157b5e5e74c3f684dd698d071dac67a6fd",
-    "nativeSha256": "fbe1c724cc0b1e75d84b017bf3d041bd87999f3cc2aead18690b81a790800ae3",
+    "sourceCommit": "a4aa3d7c97e6bada6277289a2a096dabfe14d8c4",
+    "nativeSha256": "298cc7e4ad03ece0af2a5a223b281cea4d262fa7c3ec03892d5a6d1f0392a118",
     "errors": []
   },
   "gif": {
     "width": 800,
     "height": 528,
-    "frames": 14,
-    "duration_s": 27.96,
-    "bytes": 1492306,
-    "sha256": "8ed6719dc93d44bed2f26ccb73b9679d29edb044250585a73a2fadaefb0cbb33"
+    "frames": 18,
+    "duration_s": 37.44,
+    "bytes": 2213661,
+    "sha256": "6e19effb3be8bf3607422f5c0c329eb941ce86c3763863c326c240579b4042f5"
   },
-  "runtime_source_commit": "a194c2157b5e5e74c3f684dd698d071dac67a6fd",
-  "native_module_sha256": "fbe1c724cc0b1e75d84b017bf3d041bd87999f3cc2aead18690b81a790800ae3",
-  "production_wasm_sha256": "1231a09038b93ee737ff81c8732d9354168bb36778020c9d2266369b02d42e12",
+  "runtime_source_commit": "a4aa3d7c97e6bada6277289a2a096dabfe14d8c4",
+  "native_module_sha256": "298cc7e4ad03ece0af2a5a223b281cea4d262fa7c3ec03892d5a6d1f0392a118",
+  "production_wasm_sha256": "aa94897886a9d32d16b1a738a16fafcc66203e7b51dd14651961a277f11c0b05",
   "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
   "generation_reference_inputs": [],
-  "operator_inputs_sha256": "6e2e7bb7e7ff9d3305f4de54ccdf7dda7ed05d4fe417386a8f8e5bdba3859a37",
+  "operator_inputs_sha256": "72f9a6336c239a130bc170b0c5927baa835792da5f07e85149e29e306c65c55c",
   "native_generated_osm_sha256": "834f3f9c9a349f2a421b092cb15c7021b787c72e7c4bd0ed365da5cf589c58df",
   "actual_ui_generated_osm_sha256": "79a86fc19bb11cf655a895dc3c027f73d2509168406966c92eaf5284e035ed4f",
-  "frame_manifest_sha256": "96a84424e75371a3d3ae348b7294360e866e5118ecc68c6ceccf13c546784ff7",
+  "frame_manifest_sha256": "acf9c6298ea7f018daef40719bd4b78dff2520768db43ae2ccb66e939ee0df84",
   "attribution": {
     "source": "https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample",
     "revision": "e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c",
@@ -316,7 +374,30 @@
   "limitations": [
     "Same development scene; not independent accuracy",
     "Zero source flags partly reflect deferred extent and the shared source gate",
-    "Preview cap, incomplete equipment and unreviewed traffic semantics remain",
-    "Native structural 15 warnings and app Autoware 19 warnings are different profiles, not reload loss"
-  ]
+    "Preview cap and incomplete equipment remain; types, lane counts and legal control need review",
+    "Two unsigned geometric target suggestions are explicitly adopted; two signals remain unresolved",
+    "Generated road graph has 15 connectivity warnings; reviewed map adds one orphan rule and two compatibility warnings (18 UI warnings)",
+    "Local export separately warns about missing geographic reference metadata"
+  ],
+  "native_reviewed_osm_sha256": "e60ea0fe9fcc5dbca5b6b2c7d57a78e7bbfcbc25f2be11b278fdbafff88beb77",
+  "actual_ui_reviewed_osm_sha256": "f46df03f0697f1b3b8925ed47dae63b391e9f0fe5842b53cb196eec809234a7f",
+  "frame_sha256": {
+    "000.png": "7b4e31aa5db4113f682453db83d92f0ae915dbbd1988dcb5399b3cf60a947dfe",
+    "001.png": "eb3446df286c470344f4c797c856f8801cb595935d7af6c8fae857528d670380",
+    "002.png": "c954a3100448ae9d6c1ad7077adcffee378fbe79f6c815f81172fbba65402027",
+    "003.png": "df787028b43754868a55552b32f9c51091202b0bc5eb375bb0a7126fb5c4bd7f",
+    "004.png": "7a27b53ebf5dac21e25051ab2def58f7d5ed3fa69f10cff1e099d605ecbabaa8",
+    "005.png": "c53d8f903272d84772969eb91ddb9953a0099689e98c31f65a490f153abe4974",
+    "006.png": "2a510e474e114e60c63d80bca56ffdf32269109ac1069d4032a23111683ee2e6",
+    "007.png": "2d084b8e18916c4532232c365c3089c17a34d047a2defb7d26387cd9b8b715f8",
+    "008.png": "c5563f5af862ff297e9a7810c1d7492ec4315e7737a907ac1066d62bbc7af6ce",
+    "009.png": "d5adce36c36a2241cba74264779a4b6d8bca9db3070409fb7052d36d891c1e7e",
+    "010.png": "a8830c3802f7ea17c51ee4f0caf8423de9f8b924e0ea4b41969b7e93e1a71f6f",
+    "011.png": "92306bc2762ea7417cf3b6cfe759e84eb44cd434e45739f2092963daf1c3e5b0",
+    "012.png": "8a1611ca0aeb808d2ee815fc8589a7a3959b56265df9a5f3e2717fae9b11c7ad",
+    "013.png": "ac5e7306fc282da5a259eeb211a2e7d8d2e67bdaf89531c509d257eb924529fe",
+    "014.png": "ae9a95c115bdd8a132b460d819a7befac78adfb1fd00369fea1100da0f684511",
+    "015.png": "24283f797a125a03fe5e7c7b56747d74891db1e41aec29c068de12adb3ad3613",
+    "016.png": "82197649a318e5fc572e51cf4947377c53717e73cd11b6c6fb20094eff48270d"
+  }
 }

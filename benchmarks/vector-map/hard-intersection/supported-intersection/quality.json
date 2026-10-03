@@ -1,5 +1,11 @@
 {
-  "import_issues": [],
+  "import_issues": [
+    {
+      "code": "lanelet2.projection",
+      "message": "coordinates taken from local_x/local_y (lat/lon are placeholders); the map has no georeference",
+      "severity": "info"
+    }
+  ],
   "quality": {
     "cloud_points": 1883866,
     "ground_height_tolerance_m": 0.3,
@@ -1851,7 +1857,7 @@
     "counts": {
       "errors": 0,
       "infos": 0,
-      "warnings": 15
+      "warnings": 16
     },
     "issues": [
       {
@@ -2031,6 +2037,22 @@
           "kind": "lane"
         },
         "message": "lane:65 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "orphan_rule",
+        "entity": {
+          "id": 171,
+          "kind": "regulatory_element"
+        },
+        "fix": {
+          "entity": {
+            "id": 171,
+            "kind": "regulatory_element"
+          },
+          "op": "remove_entity"
+        },
+        "message": "regulatory_element:171 does not apply to any lane or crosswalk",
         "severity": "warning"
       }
     ]

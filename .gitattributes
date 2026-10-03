@@ -7,3 +7,5 @@ benchmarks/vector-map/cross-scene/* text eol=lf
 benchmarks/vector-map/physical-anchors/** text eol=lf
 benchmarks/vector-map/curb-trace-alignment/** text eol=lf
 benchmarks/vector-map/paint-corridor/** text eol=lf
+# Preserve the exact original config bytes recorded before generation.
+benchmarks/vector-map/paint-corridor/**/inputs.json -text

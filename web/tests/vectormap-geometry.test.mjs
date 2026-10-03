@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { crosswalkTriangles, signalTriangles } from '../src/app/vectormap-geometry.ts';
+import { appendDashedPairs, crosswalkTriangles, signalTriangles } from '../src/app/vectormap-geometry.ts';
 
 const area = (positions) => {
   let sum = 0;
@@ -88,4 +88,35 @@ test('measured paint keeps observed bands along the shorter axis, clips ends and
   assert.deepEqual(crosswalkTriangles(outline,origin,[]),[]);
   assert.deepEqual(crosswalkTriangles(outline,origin,[[[NaN,0,0]]]),[]);
   assert.ok(crosswalkTriangles(outline,origin).length>0); // Unmeasured context still has a convention.
+});
+
+test('fine road-edge dashes finish across floating-point dash endpoints at survey coordinates', () => {
+  const origin = [3820, 73823, 20];
+  const points = Array.from({length: 302}, (_, i) => [origin[0] + i * .1, origin[1], origin[2]]);
+  points.splice(1, 0, points[0]); // A duplicate vertex has no station length.
+  const original = structuredClone(points), out = [];
+  assert.equal(appendDashedPairs(points, origin, out, .12, .35), true);
+  assert.ok(out.length > 0 && out.length < 2000);
+  let length = 0;
+  for (let i = 0; i < out.length; i += 6) {
+    assert.ok(out.slice(i, i + 6).every(Number.isFinite));
+    const [a, , , b] = out.slice(i, i + 6);
+    assert.ok(b > a && b - a <= .12 + 1e-10);
+    length += b - a;
+  }
+  // 64 complete dashes and .02 m from the final dash on a 30.1 m line.
+  assert.ok(Math.abs(length - (64 * .12 + .02)) < 1e-8);
+  assert.deepEqual(points, original);
+});
+
+test('dash display is bounded and declares incomplete geometry for extreme inputs', () => {
+  const out = [];
+  assert.equal(appendDashedPairs([[0,0,0],[1e6,0,0]], [0,0,0], out, .12, .35, 7), false);
+  assert.equal(out.length, 42);
+  assert.ok(out.every(Number.isFinite));
+  for (const points of [[[0,0,0],[1e100,0,0]], [[0,0,0],[Infinity,0,0]]]) {
+    const empty = [];
+    assert.equal(appendDashedPairs(points, [0,0,0], empty, .12, .35), false);
+    assert.deepEqual(empty, []);
+  }
 });

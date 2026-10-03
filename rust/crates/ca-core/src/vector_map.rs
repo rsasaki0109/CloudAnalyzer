@@ -17,8 +17,10 @@ pub mod crosswalks;
 pub mod discovery;
 #[cfg(test)]
 mod discovery_tests;
+mod evidence;
 pub mod feature_editing;
 mod fitting;
+pub use evidence::{BoundaryEvidenceProfile, BuildEvidence};
 mod paint_corridor;
 pub use paint_corridor::{PaintCorridorReport, PaintTrackReport};
 mod paint_divider;
@@ -980,6 +982,29 @@ pub fn build(
     poses: &[[f64; 3]],
     o: &BuildOptions,
 ) -> Result<BuildReport, BuildError> {
+    build_inner(map, cloud, poses, o, None)
+}
+
+/// Generate the same map/report and a bounded, read-only source-evidence snapshot.
+/// Reused geometry has no new annotation. Exports and ordinary builds are unchanged.
+pub fn build_with_evidence(
+    map: &mut Map,
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    o: &BuildOptions,
+) -> Result<(BuildReport, BuildEvidence), BuildError> {
+    let mut evidence = BuildEvidence::default();
+    let report = build_inner(map, cloud, poses, o, Some(&mut evidence))?;
+    Ok((report, evidence))
+}
+
+fn build_inner(
+    map: &mut Map,
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    o: &BuildOptions,
+    mut evidence: Option<&mut BuildEvidence>,
+) -> Result<BuildReport, BuildError> {
     let (roads, mut report) = extract(cloud, poses, o)?;
     let had_existing = map.lanes().next().is_some();
     let mut draft = map.clone();
@@ -1005,6 +1030,9 @@ pub fn build(
             vec![road]
         };
         for road in parts {
+            let snapshot = evidence
+                .as_deref_mut()
+                .and_then(|e| e.can_accept(&road).then(|| road.clone()));
             let added_length = length(&road.reference);
             let polyline = |points: Vec<[f64; 3]>| {
                 Polyline3::new(
@@ -1021,6 +1049,9 @@ pub fn build(
             let (built, _) = draft
                 .build_road(spec)
                 .map_err(|e| BuildError(e.to_string()))?;
+            if let (Some(evidence), Some(snapshot)) = (evidence.as_deref_mut(), snapshot) {
+                evidence.capture(&draft, &built, &lanes, snapshot);
+            }
             report.lanes += built.lanes.iter().map(Vec::len).sum::<usize>();
             report.roads += 1;
             report.added_length += added_length;

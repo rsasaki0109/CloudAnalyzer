@@ -766,10 +766,18 @@
             <label><input id="vm-show-markings" type="checkbox" checked /> Boundaries</label>
             <label><input id="vm-show-virtual" type="checkbox" /> Virtual boundaries</label>
             <label><input id="vm-show-regulations" type="checkbox" checked /> Stops, crossings &amp; signals</label>
+            <label><input id="vm-show-evidence" type="checkbox" /> Build evidence: source dots &amp; inferred connectors</label>
+            <label><input id="vm-show-roadEdges" type="checkbox" /> Saved road-edge drafts (before trimming)</label>
             <label><input id="vm-show-labels" type="checkbox" checked /> Object labels</label>
           </div>
           <label class="small">Point cloud brightness <input id="vm-context" type="range" min="10" max="100" value="100" aria-label="Point cloud brightness" /></label>
           <p class="hint small">Select a lane to highlight its incoming and outgoing connections. Signal faces show geometry, not lamp states. Crosswalk stripes are a display convention.</p>
+          <p class="small" id="vm-evidence-summary"></p>
+          <button id="vm-evidence-inspect" disabled>Inspect source</button>
+          <select id="vm-evidence-profile" aria-label="Build evidence profile" disabled></select>
+          <select id="vm-evidence-vertex" aria-label="Build evidence vertex" disabled></select>
+          <p class="small" id="vm-evidence-detail">No build snapshot yet.</p>
+          <p class="small" id="vm-evidence-render-limit" hidden>Partial display: dash rendering budget or numeric range reached. Map geometry is unchanged.</p>
         </details>
         <div class="button-row">
           <button id="vm-road" aria-pressed="false" title="Click points along a road; its lanes are built around them">Draw road</button>
@@ -1034,6 +1042,7 @@
       <div id="vm-legend" class="vm-legend" hidden aria-label="Vector map legend">
         <span><i class="road"></i>Road</span><span><i class="turn"></i>Turn</span>
         <span><i class="stop"></i>Stop</span><span><i class="walk"></i>Crosswalk</span><span><i class="signal"></i>Signal geometry</span>
+        <span id="vm-evidence-legend" hidden><i class="source-paint"></i>Paint source <i class="source-intensity"></i>Intensity source <i class="source-curb"></i>Curb source <i class="source-coverage"></i>Coverage limit <i class="inferred-line"></i>Inferred connectors <i class="no-evidence"></i>No build snapshot <i class="saved-edge"></i>Road-edge draft (pre-trim)</span>
         <span id="vm-route-legend" hidden><i class="incoming"></i>Incoming <i class="selected"></i>Selected <i class="outgoing"></i>Outgoing</span>
       </div>
       <svg id="lasso" class="lasso" hidden><polygon points="" /></svg>

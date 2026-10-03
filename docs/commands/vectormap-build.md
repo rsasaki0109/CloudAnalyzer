@@ -27,6 +27,19 @@ Missing observations are excluded from the five-section offset median. An anchor
 extend to two neighbouring sampled sections with decreasing strength; farther missing
 slices retain the trajectory-centred width prior. This does not bridge missing ground.
 
+Opt in with `--physical-anchors-only`, Python/MCP `physical_anchors_only=True`,
+or Web's **Anchor inferred lane widths to paint and curbs only** under **Build from a trajectory**.
+This excludes outside point-coverage candidates from the offset median for inferred
+width lines. Curb and intensity observations can still supply offsets. Direct
+coverage-edge geometry remains selectable; the option does not certify road edges.
+Later source-footprint fitting remains independent and can still infer a footprint
+from low-surface coverage.
+`coverage_edge_anchor_candidates_ignored` counts excluded outside candidates before
+tracking and surface deferral, including candidates that are later dropped. It is
+not a false-detection or removed-geometry count. The option defaults to off and has
+no effect with `--no-anchor-width-prior`. See the [same-interval gains, losses and
+coverage changes](../vector-map-physical-anchors.md).
+
 Curb candidates must have nearby road-side support and two raised outside bins no taller
 than `curb_height + 0.3 m` above the candidate. This rejects wall/vehicle steps and isolated
 low returns, but can also reject genuine curbs in sparse or cluttered scans. The report's

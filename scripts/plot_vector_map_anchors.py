@@ -77,7 +77,7 @@ def plot(source: Path, reference: Path, planning: Path, tokyo: Path, output: Pat
     ax.set_yticks(y, ["Planning path 0\n36.61 m / 297 samples", "Tokyo east-south\n4.78 m / 65 samples"])
     ax.set_xlim(0, 2.4)
     ax.set_ylim(-.55, 1.55)
-    ax.set_xlabel("Mean distance to fixed before-selected survey samples (m)")
+    ax.set_xlabel("Mean XY distance to fixed survey samples (m)")
     ax.set_title("Identical source intervals and boundary slots\nFixed survey targets; no lane identity claim", fontsize=10)
     ax.legend(loc="upper right", fontsize=9)
     ax.grid(axis="x", alpha=.15)

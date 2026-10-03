@@ -60,6 +60,8 @@ pose graph with one scan per pose.
   lack nearby ground support; passing format validation does not establish map accuracy.
   [Source-footprint drafting](docs/vector-map-source-footprint.md) fits weak road candidates
   to supported low surfaces and reports missing extent explicitly, with actual before/after maps.
+  [Physical boundary anchors](docs/vector-map-physical-anchors.md) optionally keep scan limits
+  from shifting inferred lanes, with fixed-interval comparisons that expose gains and regressions.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

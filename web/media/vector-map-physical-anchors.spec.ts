@@ -18,10 +18,11 @@ test("actual planning points build a physical-anchor draft matching native geome
   await expect(page.locator("#vm-status")).toContainText("No map yet");
   await page.locator("#file-input").setInputFiles(`${PROOF}/trajectory-0.csv`);
   await expect(page.locator("#status")).toContainText("trajectory of 2 poses");
-  await page.locator("#vector-map-panel").getByText("Road options",{exact:true}).click();
+  if(!await page.locator("#vm-segment").isVisible())await page.locator("#vector-map-panel").getByText("Road options",{exact:true}).click();
+  await page.locator("#vm-segment").fill("0");
+  if(!await page.locator("#vm-physical-anchors").isVisible())await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
   await expect(page.locator("#vm-physical-anchors")).not.toBeChecked();
-  await page.locator("#vm-physical-anchors").check();await page.locator("#vm-segment").fill("0");
-  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await page.locator("#vm-physical-anchors").check();
   await page.locator("#vm-source-surface").check();await page.locator("#vm-discover-after-build").uncheck();
   await page.locator("#vm-build").click();await expect(page.locator("#status")).toContainText("Draft roads added",{timeout:120000});
   await expect(page.locator("#vm-status")).toContainText(`${native.lanes.length} lanes`);

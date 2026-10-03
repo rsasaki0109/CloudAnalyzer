@@ -1,0 +1,156 @@
+{
+  "source_commit": "47ea65a6e5e033238fadd3fbdfb35688bf036565",
+  "executable_sha256": "e4444856309b6b512015149c42e67240bf49c866621160a4f6fff2f1d395b45d",
+  "evaluation_script_sha256": "5510db2fc5d62e6f4b2508552ac9422b03734b1c125fff4017b98df1787ef67b",
+  "source_sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+  "config_sha256": "89a31d3b91bde22e5e61e2fe84dd8c41a85234b9b8341261663576026170ef66",
+  "reference_sha256": "4fe358f2d1e182dc76de296e5619086f8d8ad2fcab3e6d8f99f6e3d724a84e6d",
+  "reference_transform": "native coordinates",
+  "generation_reference_inputs": [],
+  "profile_geometry_verified_in_built_maps": true,
+  "generation_artifact_sha256": {
+    "after-0-audit.json": "ac8b2f5d5b3bddcb26c61d390e3ebd943246aabd86eec5af2e819cdfc82bafce",
+    "after-0-profiles.json": "fdbbf97b9dcf168bc5786a317747e8ab9305d95e80a9ed26ec7fb38371e07e12",
+    "after-0.json": "829bfb3ffc5f76562e2053a7490a8a4cae6a285468cef85081d22ef03b230a5e",
+    "after-0.osm": "b689d2ed074c58ddd256f4793592f879044c13f2875206270b529293b68bde31",
+    "after-1-audit.json": "757cdfeffe095ddc561341dc09d15b0a5cf4b1de07527282ec9e412bd408ba53",
+    "after-1-profiles.json": "f22fd37988e973f1c2566b579c26ba1209f2ab5026c1c4ecfec15bad40badaff",
+    "after-1.json": "94d67824c10da6e515f5ed6a35b8f1a1090276be599519660a25df0d8b587449",
+    "after-1.osm": "c13c186f35857ec1838c4e2d376002ca22111d801f26ec0140cd4eec06f72535",
+    "after-2-audit.json": "8361c7fbb26a2ae90aea6ef982edb959bd9923ce4d9202b4ba04615723a038b4",
+    "after-2-profiles.json": "abd460b8601574cefeab6ccfeda1844e1eb9208c8625c8588353b77cdd99c2a8",
+    "after-2.json": "9bbd4320f0c20192ebecabaa63c2d213ee76e0513ebc2c4cab78d3438853ef55",
+    "after-2.osm": "3101144900bf57f2cba8047cea59298ed33ed2fa86349a5ee7508e37c1b86ae4",
+    "before-0-audit.json": "b06643ed730bde9d2b6b9f43f2be63e438a961dd0c74cd55dfaef710f97cadb3",
+    "before-0-profiles.json": "82b9c5a46177635e781425898f763957a36e8c1823b3ced0e4af999d2860df49",
+    "before-0.json": "d1d222824017cea3b9b775b721a8752fa351644099798754be40417f19abf037",
+    "before-0.osm": "1af76b72a5af28a9a942e005bcee8644b881a0f2b133af75077a880eacfa67fc",
+    "before-1-audit.json": "c6661bdec41ae0e2671612248053003a40c0aa40f29f97700591a093b594f8ec",
+    "before-1-profiles.json": "f22fd37988e973f1c2566b579c26ba1209f2ab5026c1c4ecfec15bad40badaff",
+    "before-1.json": "692832ec9a5cfe4ad59b079e4fbbc77f9006cc02b8e9ade6e05317d06300bc17",
+    "before-1.osm": "b2531a0d58f88efa30a5e9df80a654b5c4437ab3b937d349d1d82c277949b076",
+    "before-2-audit.json": "c26bcba8355c0add2673fcc961692ba6805522a0ab2d32a8df8a922a5c706ae6",
+    "before-2-profiles.json": "abd460b8601574cefeab6ccfeda1844e1eb9208c8625c8588353b77cdd99c2a8",
+    "before-2.json": "6053e683937ec42e2a330afd8c1b26401c71c87a8ce0870a4171ddf4f50171a2",
+    "before-2.osm": "d37a99062a8abac074b4927c6da89030ba7d4ac0656656cc7d98cf30e62c2ad1",
+    "comparison.json": "07003211f8d2755cc0bc4787bdd5c377104939c0f6d96d6c1797f873398b2458",
+    "trajectory-0.csv": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+    "trajectory-1.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+    "trajectory-2.csv": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9"
+  },
+  "metrics": {
+    "before": {
+      "boundary_distance": {
+        "generated_samples": 837,
+        "mean_xy_m": 1.4182599657984172,
+        "p90_xy_m": 3.792687705723844,
+        "maximum_xy_m": 5.801628785214397,
+        "fraction_within_0_5m": 0.35603345280764637,
+        "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+      },
+      "generated_path_m": 111.01217204428843,
+      "deferred_path_m": 17.50000000000604,
+      "ignored_coverage_anchor_candidates": 0,
+      "lane_fragments": 12,
+      "source_flags": [],
+      "source_samples": 1398,
+      "limited": false
+    },
+    "after": {
+      "boundary_distance": {
+        "generated_samples": 801,
+        "mean_xy_m": 1.2384279495993369,
+        "p90_xy_m": 3.5243331141033845,
+        "maximum_xy_m": 5.6737068171747165,
+        "fraction_within_0_5m": 0.4419475655430712,
+        "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+      },
+      "generated_path_m": 106.51217204428228,
+      "deferred_path_m": 22.000000000012193,
+      "ignored_coverage_anchor_candidates": 8,
+      "lane_fragments": 10,
+      "source_flags": [],
+      "source_samples": 1332,
+      "limited": false
+    }
+  },
+  "paired_source_intervals": [
+    {
+      "name": "planning-0",
+      "common_source_path_m": 36.606323715514186,
+      "before_only_source_path_m": 4.500000000006155,
+      "after_only_source_path_m": 0,
+      "common_intervals": 19,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 297,
+      "before": {
+        "mean_xy_m": 1.9972811571222828,
+        "p90_xy_m": 4.778213458399742,
+        "maximum_xy_m": 5.759843265896383,
+        "fraction_within_0_5m": 0.19528619528619529
+      },
+      "after": {
+        "mean_xy_m": 1.649521325647646,
+        "p90_xy_m": 4.063579705378593,
+        "maximum_xy_m": 5.6737068171747165,
+        "fraction_within_0_5m": 0.4006734006734007
+      },
+      "mean_boundary_displacement_m": 0.49178838860264684,
+      "maximum_height_change_m": 0.21458053588867188
+    },
+    {
+      "name": "planning-1",
+      "common_source_path_m": 38.14108798023091,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 20,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 312,
+      "before": {
+        "mean_xy_m": 0.7124978962343269,
+        "p90_xy_m": 1.334786648180062,
+        "maximum_xy_m": 1.5296865659424834,
+        "fraction_within_0_5m": 0.5032051282051282
+      },
+      "after": {
+        "mean_xy_m": 0.7124978962343269,
+        "p90_xy_m": 1.334786648180062,
+        "maximum_xy_m": 1.5296865659424834,
+        "fraction_within_0_5m": 0.5032051282051282
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    },
+    {
+      "name": "planning-2",
+      "common_source_path_m": 31.76476034853718,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 16,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 255,
+      "before": {
+        "mean_xy_m": 1.3685542728375155,
+        "p90_xy_m": 3.395994858738224,
+        "maximum_xy_m": 3.5689695371123213,
+        "fraction_within_0_5m": 0.4235294117647059
+      },
+      "after": {
+        "mean_xy_m": 1.3685542728375155,
+        "p90_xy_m": 3.395994858738224,
+        "maximum_xy_m": 3.5689695371123213,
+        "fraction_within_0_5m": 0.4235294117647059
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    }
+  ],
+  "limitations": [
+    "Known development scenes, not held-out accuracy.",
+    "Full-map distances are unpaired nearest sampled surveyed driving-boundary XY.",
+    "Common intervals are matched using source coordinates; survey targets selected for before points stay fixed for after points. Lane identities are not established.",
+    "Endpoint samples repeat across intervals; sampled reference discretization affects distances.",
+    "Source support is also a generation gate; report deferred extent separately.",
+    "Coverage-edge candidate geometry remains available; only its use to shift inferred lanes is disabled."
+  ]
+}

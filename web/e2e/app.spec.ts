@@ -2927,3 +2927,33 @@ test("vector map: geometric target suggestions hold nearest wrong crossing, requ
   await page.locator("#vm-relation").selectOption("30");await expect(page.locator("#vm-relation-preview")).toBeDisabled();expect(await page.locator("#vm-relation-candidates input").count()).toBe(0);
   expect(await exported()).toBe(reviewed);
 });
+
+test("vector map: connected stop targets cannot replace the reviewed vehicle movement", async ({page}) => {
+  await open(page, []);
+  const map={format:"vectormap-ir",version:1,
+    boundaries:[{id:1,kind:{type:"virtual"},geometry:[[0,2,0],[20,2,0]]},{id:2,kind:{type:"virtual"},geometry:[[0,-2,0],[20,-2,0]]},
+      {id:40,kind:{type:"virtual"},geometry:[[20,-2,0],[0,-2,0]]},{id:41,kind:{type:"virtual"},geometry:[[20,2,0],[0,2,0]]}],
+    lanes:[{id:3,kind:"driving",left:1,right:2},{id:43,kind:"driving",left:40,right:41}],
+    topology:[{lane:3,successors:[43]},{lane:43,predecessors:[3]}],
+    stop_lines:[{id:15,geometry:[[6,-2,0],[6,2,0]]},{id:16,geometry:[[7,-2,0],[7,2,0]]}],
+    traffic_signals:[{id:22,kind:"vehicle",geometry:[[6,-.5,5],[6,.5,5]],height:.5}],
+    regulatory_elements:[{id:23,rule:{type:"traffic_light",signals:[22]},lanes:[3]},
+      {id:32,rule:{type:"stop_line",stop_line:15},lanes:[3]},{id:33,rule:{type:"stop_line",stop_line:16},lanes:[43]}]};
+  await page.locator("#vm-file").setInputFiles({name:"movements.json",mimeType:"application/json",buffer:Buffer.from(JSON.stringify(map))});
+  await expect(status(page)).toContainText("Opened movements.json");
+  let exports=0;
+  const exported=async()=>{if(exports++>0)await page.waitForTimeout(1100);const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();return(await bytesOf(await wait)).toString();};
+  const before=await exported();
+  await page.locator("#vm-relations-editor summary").click();await page.locator("#vm-relation").selectOption("23");
+  await page.locator("#vm-relation-preview").click();
+  await expect(page.locator("#vm-relation-proposal-report")).toContainText("1 supported draft candidate");
+  await page.locator('#vm-relation-candidates input[value="stop_line:16"]').check();
+  await expect(page.locator("#vm-relation-candidates")).toContainText("every reviewed vehicle lane");
+  await expect(page.locator("#vm-relation-adopt")).toBeDisabled();await expect(page.locator("#vm-undo")).toBeDisabled();
+  expect(await exported()).toBe(before);
+  await page.locator('#vm-relation-candidates input[value="stop_line:15"]').check();
+  await page.locator("#vm-relation-adopt").click();await expect(status(page)).toContainText("reviewed candidate adopted");
+  await expect(page.locator("#vm-relation-current")).toContainText("lanes: 3;");
+  await expect(page.locator("#vm-relation-current")).toContainText("stops: 15");
+  await page.locator("#vm-undo").click();expect(await exported()).toBe(before);
+});

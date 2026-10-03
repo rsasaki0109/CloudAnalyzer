@@ -1,0 +1,49 @@
+{
+  "reference_inputs": [],
+  "description": "Reuse three prior operator traces reviewed from the planning sample point cloud, not surveyed road shapes. Two lanes of configured width remain assumptions.",
+  "operator_paths": [
+    [
+      [
+        3755,
+        73786,
+        20
+      ],
+      [
+        3799,
+        73811,
+        20
+      ]
+    ],
+    [
+      [
+        3820,
+        73823,
+        20
+      ],
+      [
+        3860,
+        73846,
+        20
+      ]
+    ],
+    [
+      [
+        3830,
+        73778,
+        20
+      ],
+      [
+        3815,
+        73806,
+        20
+      ]
+    ]
+  ],
+  "build_options": {
+    "forward_lanes": 1,
+    "backward_lanes": 1,
+    "left_hand_traffic": true,
+    "lane_width": 3.5,
+    "segment_length": 0
+  }
+}

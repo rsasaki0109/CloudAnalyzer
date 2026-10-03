@@ -21,8 +21,10 @@ Reference targets are selected using BEFORE only and remain fixed after.
 Planning path 2 translates +3.550 m laterally from nine of seventeen source
 sections. All 31.765 m remain generated. Ordered three-boundary correspondence
 on 29.765 m gives mean 2.877 → 0.352 m, P90 3.411 → 0.566 m and maximum
-3.569 → 0.581 m. **2.000 m of reference coverage are held**, not counted as zero
-error. Original before-nearest targets on 31.765 m give mean **1.369 → 2.296 m**,
+3.569 → 0.581 m. **2.000 m across a reference-pair seam are held**, not counted as zero
+error. The seam is between surveyed lane pairs 31/32 and 129/130: no single
+pair covers the whole sampled interval. This is a correspondence limitation,
+not absent generated road or absent surveyed geometry. Original before-nearest targets on 31.765 m give mean **1.369 → 2.296 m**,
 a regression under that diagnostic; nearby boundary roles differ. Both results
 are retained. Planning path 0 still has a **5.674 m** maximum. Tokyo's ordered
 lane-pair correspondence holds all 88.078 m, including unsupported lane counts;

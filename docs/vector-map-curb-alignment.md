@@ -71,7 +71,7 @@ Targets are never selected again using after geometry.
 Reference curves must be monotone and within 15 degrees of the source axis,
 cover the whole interval, and keep their boundary order. A candidate more than
 one configured road width from any before slot is rejected. Nearly tied pairs
-within 0.05 m joint mean distance are held. Reference junction gaps and
+within 0.05 m joint mean distance are held. Reference pair seams, coverage gaps and
 unsupported lane-count configurations are also held, with their extent reported.
 This correspondence is a development diagnostic, not certified lane identity.
 
@@ -79,11 +79,15 @@ This correspondence is a development diagnostic, not certified lane identity.
 |---|---:|---:|---:|---:|
 | 0 | Held: no pair, 0/27 sections | 36.606 m | 3.357 → 3.357 m | 5.674 → 5.674 m |
 | 1 | Held: layout already fits, 13/25 | 38.141 m | 0.695 → 0.695 m | 1.531 → 1.531 m |
-| 2 | +3.550 m laterally, 9/17 | 29.765 m; **2.000 m reference gap held** | **2.877 → 0.352 m** | **3.569 → 0.581 m** |
+| 2 | +3.550 m laterally, 9/17 | 29.765 m; **2.000 m at a reference-pair seam held** | **2.877 → 0.352 m** | **3.569 → 0.581 m** |
 
 Path 2 keeps all **31.765 m** of generated road, defers zero and preserves its
 two explicit lanes. On the fixed lane-pair cohort, P90 changes 3.411 → 0.566 m
-and the fraction within 0.5 m changes 0 → 59.5%. Source-derived elevations change
+and the fraction within 0.5 m changes 0 → 59.5%. The held 2 m straddle the seam
+between surveyed lane pairs 31/32 and 129/130: neither single pair covers the
+entire sampled interval. This is a correspondence-method limitation, not missing
+generated road or proof that the surveyed boundaries themselves are absent.
+Source-derived elevations change
 by up to 0.428 m; the corrected draft samples different source positions.
 
 The old before-nearest targets tell a different story on the full common path:

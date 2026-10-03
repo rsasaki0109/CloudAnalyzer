@@ -1,0 +1,185 @@
+{
+  "extraction": {
+    "added_length": 0.0,
+    "anchored_prior_vertices": 0,
+    "coverage_edge_anchor_candidates_ignored": 0,
+    "curb_vertices": 0,
+    "fitted_vertices": 9,
+    "generated_length": 2.326192149844256,
+    "intensity_used": false,
+    "intensity_vertices": 0,
+    "joined_connections": 0,
+    "lanes": 0,
+    "maximum_fit_displacement": 0.46575139843501384,
+    "observed_fraction": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "paint_corridor": {
+      "applied": false,
+      "contrasted_points": 0,
+      "eligible_bundles": 0,
+      "heading_correction_degrees": null,
+      "limited": false,
+      "longitudinal_components": 0,
+      "measured_lane_widths_m": [],
+      "reason": "trace is not straight within five degrees",
+      "residual_p90_m": null,
+      "roi_points": 0,
+      "source_channel": "intensity",
+      "tracks": [],
+      "white_candidates": 0
+    },
+    "paint_divider": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "contrasted_points": 0,
+      "curb_pair_sections": 0,
+      "eligible_tracks": 0,
+      "heading_correction_degrees": null,
+      "limited": false,
+      "longest_supported_run": 0,
+      "maximum_divider_movement_m": 0.0,
+      "reason": "trace is not straight within five degrees",
+      "residual_p90_m": null,
+      "roi_points": 0,
+      "sampled_sections": 0,
+      "source_channel": "intensity",
+      "track": null
+    },
+    "rejected_curb_candidates": 16,
+    "reused_intervals": 0,
+    "reused_length": 0.0,
+    "rgb_paint_vertices": 0,
+    "roads": 1,
+    "sampled_sections": 7,
+    "support_edge_vertices": 0,
+    "surface_fit": {
+      "candidate_sections": 4,
+      "deferred_length_m": 7.759937619056957,
+      "discarded_short_stretches": 0,
+      "evaluated_path_length_m": 10.086129768901213,
+      "maximum_lane_width_m": 2.543508756678866,
+      "minimum_lane_width_m": 2.116944714898287,
+      "preserved_candidate_geometry": false,
+      "rejected_intervals": 1
+    },
+    "trace_alignment": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "curb_pair_sections": 0,
+      "interquartile_range_m": null,
+      "longest_supported_run": 0,
+      "median_lateral_shift_m": null,
+      "reason": "trace is not straight within five degrees",
+      "sampled_sections": 7,
+      "shift_xy": [
+        0.0,
+        0.0
+      ]
+    },
+    "tracked_vertices": 0,
+    "trajectory_length": 10.12310562561766,
+    "unsupported_sections": 3,
+    "warnings": [
+      "Source-footprint mode keeps explicit lane counts but fits inferred widths to a coherent low-surface band. Coverage limits can be occlusion or scan gaps, not road edges. Internal lane lines remain width assumptions; this does not identify road semantics or permitted turns.",
+      "7.76 m of the traced/recorded path was deferred; 1 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",
+      "intensity paint corridor was held: trace is not straight within five degrees. Existing extraction rules were used; this is not a negative road-marking diagnosis.",
+      "Interior intensity paint correction held: trace is not straight within five degrees. Existing geometry retained."
+    ],
+    "width_prior_vertices": 9
+  },
+  "reference_inputs": [],
+  "roads": [
+    {
+      "boundaries": [
+        [
+          [
+            -9309.260230811997,
+            -40789.55979242734,
+            28.596749999999997
+          ],
+          [
+            -9308.174998014993,
+            -40788.75372263776,
+            28.566999999999997
+          ],
+          [
+            -9307.248537717845,
+            -40788.00584912862,
+            28.612
+          ]
+        ],
+        [
+          [
+            -9308.895113649545,
+            -40791.64501289137,
+            28.755499999999998
+          ],
+          [
+            -9307.65944115122,
+            -40791.03988612232,
+            28.572999999999997
+          ],
+          [
+            -9306.631646231757,
+            -40790.473415072964,
+            28.582499999999996
+          ]
+        ],
+        [
+          [
+            -9308.512972315351,
+            -40793.82746009507,
+            28.652749999999997
+          ],
+          [
+            -9307.140253731823,
+            -40793.342148788724,
+            28.607999999999997
+          ],
+          [
+            -9306.028066427827,
+            -40792.88773428866,
+            28.610249999999997
+          ]
+        ]
+      ],
+      "evidence": [
+        [
+          "width_prior",
+          "width_prior",
+          "width_prior"
+        ],
+        [
+          "width_prior",
+          "width_prior",
+          "width_prior"
+        ],
+        [
+          "width_prior",
+          "width_prior",
+          "width_prior"
+        ]
+      ],
+      "reference": [
+        [
+          -9309.268667221995,
+          -40789.511611249945,
+          28.584249999999997
+        ],
+        [
+          -9308.05971499971,
+          -40789.26492874993,
+          28.593249999999998
+        ],
+        [
+          -9307.0,
+          -40789.0,
+          28.590249999999997
+        ]
+      ]
+    }
+  ]
+}

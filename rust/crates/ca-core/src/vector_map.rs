@@ -17,10 +17,12 @@ pub mod crosswalks;
 pub mod discovery;
 #[cfg(test)]
 mod discovery_tests;
+mod evidence;
 pub mod feature_editing;
 mod fitting;
+pub use evidence::{BoundaryEvidenceProfile, BuildEvidence};
 mod paint_corridor;
-pub use paint_corridor::{PaintCorridorReport, PaintTrackReport};
+pub use paint_corridor::{PaintChannel, PaintCorridorReport, PaintTrackReport};
 mod paint_divider;
 pub use paint_divider::PaintDividerReport;
 mod lane_edge_inference;
@@ -49,6 +51,9 @@ pub struct BuildOptions {
     /// Fit parallel boundaries to locally contrasted RGB paint on straight traces.
     /// Counts/directions remain explicit; unobserved paint remains inferred.
     pub fit_paint_corridor: bool,
+    /// Explicit source channel for corridor/divider fitting; RGB remains default.
+    #[serde(skip_serializing_if = "PaintChannel::is_rgb")]
+    pub paint_channel: PaintChannel,
     /// Translate a straight trace only when a stable pair of source curbs can
     /// contain the entire configured lane width. Lane counts remain explicit.
     pub align_trace_to_curbs: bool,
@@ -97,6 +102,7 @@ impl Default for BuildOptions {
             infer_lane_edges: false,
             fit_paint_divider: false,
             fit_paint_corridor: false,
+            paint_channel: PaintChannel::Rgb,
             align_trace_to_curbs: false,
             fit_source_surface: false,
             forward_lanes: 1,
@@ -980,6 +986,29 @@ pub fn build(
     poses: &[[f64; 3]],
     o: &BuildOptions,
 ) -> Result<BuildReport, BuildError> {
+    build_inner(map, cloud, poses, o, None)
+}
+
+/// Generate the same map/report and a bounded, read-only source-evidence snapshot.
+/// Reused geometry has no new annotation. Exports and ordinary builds are unchanged.
+pub fn build_with_evidence(
+    map: &mut Map,
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    o: &BuildOptions,
+) -> Result<(BuildReport, BuildEvidence), BuildError> {
+    let mut evidence = BuildEvidence::default();
+    let report = build_inner(map, cloud, poses, o, Some(&mut evidence))?;
+    Ok((report, evidence))
+}
+
+fn build_inner(
+    map: &mut Map,
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    o: &BuildOptions,
+    mut evidence: Option<&mut BuildEvidence>,
+) -> Result<BuildReport, BuildError> {
     let (roads, mut report) = extract(cloud, poses, o)?;
     let had_existing = map.lanes().next().is_some();
     let mut draft = map.clone();
@@ -1005,6 +1034,9 @@ pub fn build(
             vec![road]
         };
         for road in parts {
+            let snapshot = evidence
+                .as_deref_mut()
+                .and_then(|e| e.can_accept(&road).then(|| road.clone()));
             let added_length = length(&road.reference);
             let polyline = |points: Vec<[f64; 3]>| {
                 Polyline3::new(
@@ -1021,6 +1053,9 @@ pub fn build(
             let (built, _) = draft
                 .build_road(spec)
                 .map_err(|e| BuildError(e.to_string()))?;
+            if let (Some(evidence), Some(snapshot)) = (evidence.as_deref_mut(), snapshot) {
+                evidence.capture(&draft, &built, &lanes, snapshot);
+            }
             report.lanes += built.lanes.iter().map(Vec::len).sum::<usize>();
             report.roads += 1;
             report.added_length += added_length;

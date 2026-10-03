@@ -1,0 +1,16 @@
+{
+  "reference_inputs": [],
+  "comparison": "intensity_paint",
+  "cases": [
+    {
+      "name": "rosbag-xyz-only-north",
+      "options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "lane_width": 3.5,
+        "segment_length": 0
+      },
+      "trajectory_csv": "timestamp,x,y,z\n0,89487,42525,10\n1,89537,42415,10\n"
+    }
+  ]
+}

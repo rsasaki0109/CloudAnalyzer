@@ -69,6 +69,8 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert properties["fit_paint_divider"]["default"] is False
                 assert properties["fit_paint_corridor"]["type"] == "boolean"
                 assert properties["fit_paint_corridor"]["default"] is False
+                assert properties["paint_channel"]["default"] == "rgb"
+                assert properties["paint_channel"]["enum"] == ["rgb", "intensity"]
                 junction = next(t for t in tools if t.name == "connect_vector_map_junctions")
                 properties = junction.model_dump(by_alias=True)["inputSchema"]["properties"]
                 assert properties["preview_only"]["type"] == "boolean"

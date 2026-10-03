@@ -19,7 +19,7 @@ import { $, download, errorText, fmt, setStatus } from "./dom";
 import { clouds, entries, globalShift, listChanged, pointsInvalidated, viewer } from "./state";
 import { inputTrajectories, trajectoryChanged } from "./trajectory";
 import { activeTool, pickPoint, setTool, toggleTool, type Tool } from "./tools";
-import { crosswalkTriangles, signalTriangles } from "./vectormap-geometry";
+import { appendDashedPairs, crosswalkTriangles, signalTriangles } from "./vectormap-geometry";
 
 type XYZ = [number, number, number];
 
@@ -71,7 +71,13 @@ interface RelationProposal {
   rule_id: number; kind: string; map_snapshot: string; candidates: RelationCandidate[];
   eligible_count: number; ambiguous: boolean; limited: boolean; warnings: string[];
 }
+type BoundarySource = "rgb_paint" | "intensity" | "curb" | "support_edge" | "width_prior";
+interface EvidenceProfile { boundary_ids: number[]; geometry: XYZ[]; evidence: BoundarySource[]; source_before_fitting: XYZ[] }
+interface RoadEdgeSnapshot { geometry: XYZ[]; evidence: BoundarySource[]; source_before_fitting: XYZ[]; boundary_slot: number }
+interface BoundaryEvidenceView { profiles: EvidenceProfile[]; roadEdges: RoadEdgeSnapshot[]; limited: boolean }
+
 export interface MapView {
+  boundaryEvidence?: BoundaryEvidenceView;
   lanes: LaneView[];
   boundaries: BoundaryView[];
   stopLines: { id: number; points: XYZ[]; geometrySource?: string }[];
@@ -189,6 +195,8 @@ const materials = {
   sketch: viewer.lineMaterial({ color: 0xffeb3b, linewidth: 3, depthTest: false }),
   proposal: viewer.lineMaterial({ color: 0x00e5ff, linewidth: 3, depthTest: false }),
   selectedRoute: viewer.lineMaterial({ color: 0xffeb3b, linewidth: 4, depthTest: false }),
+  inferred: viewer.lineMaterial({ color: 0xb69cff, linewidth: 2.5, depthTest: false }),
+  savedEdge: viewer.lineMaterial({ color: 0xffad58, linewidth: 2.5, depthTest: false }),
   incomingRoute: viewer.lineMaterial({ color: 0xa894fa, linewidth: 3, depthTest: false }),
   outgoingRoute: viewer.lineMaterial({ color: 0x48dfaf, linewidth: 3, depthTest: false }),
 };
@@ -223,7 +231,7 @@ signalFill.color.setHex(0xffd166);
 const proposalFill = turnFill.clone();
 proposalFill.color.setHex(0x00e5ff);
 proposalFill.opacity = 0.22;
-const display = { surfaces: true, directions: true, markings: true, virtual: false, regulations: true, labels: true };
+const display = { evidence: false, roadEdges: false, surfaces: true, directions: true, markings: true, virtual: false, regulations: true, labels: true };
 const labelLayer = $("vm-labels");
 const legend = $("vm-legend");
 const mapLabels: { element: HTMLElement; point: XYZ; priority: number }[] = [];
@@ -264,28 +272,10 @@ function polylinePairs(points: XYZ[], out: number[]): void {
   for (let i = 1; i < points.length; i++) out.push(...local(points[i - 1]), ...local(points[i]));
 }
 
-/** A polyline cut into dashes. */
-function dashedPairs(points: XYZ[], out: number[]): void {
-  let along = 0;
-  for (let i = 1; i < points.length; i++) {
-    const a = points[i - 1];
-    const b = points[i];
-    const length = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
-    let s = 0;
-    while (s < length) {
-      const phase = along % (DASH + GAP);
-      const step = Math.min(length - s, phase < DASH ? DASH - phase : DASH + GAP - phase);
-      if (phase < DASH && step > 0) {
-        const t0 = s / length;
-        const t1 = (s + step) / length;
-        const at = (t: number): XYZ => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
-        out.push(...local(at(t0)), ...local(at(t1)));
-      }
-      s += step;
-      along += step;
-      if (step <= 0) break;
-    }
-  }
+let dashDisplayLimited = false;
+/** A polyline cut into bounded display dashes. */
+function dashedPairs(points: XYZ[], out: number[], dash = DASH, gap = GAP): void {
+  if (!appendDashedPairs(points, origin, out, dash, gap)) dashDisplayLimited = true;
 }
 
 /** Resample a polyline to `n` points evenly spaced along it. */
@@ -353,6 +343,7 @@ function arrowPairs(lane: LaneView, out: number[]): void {
 }
 
 function draw(): void {
+  dashDisplayLimited = false;
   clearGroup();
   const shift = globalShift();
   const first = view.boundaries[0]?.points[0] ?? sketch[0];
@@ -364,8 +355,12 @@ function draw(): void {
       focused?.predecessors.includes(lane.id) ? predecessorFill : lane.turn && lane.turn !== "straight" ? turnFill : laneFill;
     group.add(laneMesh(lane, material));
   }
+  const annotated = new Set(display.evidence && !drag?.moved ? view.boundaryEvidence?.profiles.flatMap(p => p.boundary_ids) : []);
+  const unknownEvidence: number[] = [];
   const byKind: Record<"solid" | "dashed" | "edge" | "virtual", number[]> = { solid: [], dashed: [], edge: [], virtual: [] };
   if (display.markings) for (const b of view.boundaries) {
+    if (annotated.has(b.id)) continue;
+    if (display.evidence) { dashedPairs(b.points,unknownEvidence,.8,.5); continue; }
     const type = b.kind.type;
     if (type === "lane_marking" && b.kind.pattern === "dashed") dashedPairs(b.points, byKind.dashed);
     else if (type === "lane_marking") polylinePairs(b.points, byKind.solid);
@@ -373,6 +368,9 @@ function draw(): void {
     else if (display.virtual) polylinePairs(b.points, byKind.virtual);
   }
   for (const kind of ["solid", "dashed", "edge", "virtual"] as const) segments(byKind[kind], materials[kind]);
+  segments(unknownEvidence,materials.virtual,3);
+  drawBoundaryEvidence();
+  $("vm-evidence-render-limit").hidden = !dashDisplayLimited;
   const arrows: number[] = [];
   if (display.directions) for (const lane of view.lanes) arrowPairs(lane, arrows);
   segments(arrows, materials.arrow, 2);
@@ -489,6 +487,7 @@ function draw(): void {
   }
   buildMapLabels();
   legend.hidden = view.lanes.length === 0;
+  $("vm-evidence-legend").hidden = !display.evidence && !display.roadEdges;
   $("vm-route-legend").hidden = !focused || !display.surfaces;
   viewer.requestRender();
 }
@@ -569,6 +568,88 @@ $<HTMLInputElement>("vm-context").oninput = (event) => viewer.setCloudBrightness
 
 listChanged.add(() => draw());
 
+// Build evidence is session-only, not map geometry or exported lane-marking semantics.
+const sourceLabels: Record<BoundarySource,string> = {rgb_paint:"Selected RGB paint source",intensity:"Selected intensity source",curb:"Selected curb source",support_edge:"Coverage-limit candidate",width_prior:"Inferred width prior"};
+const sourceColors: Record<BoundarySource,number> = {rgb_paint:0x31e4df,intensity:0xffe066,curb:0xffad58,support_edge:0x8b98a5,width_prior:0xb69cff};
+const sourceMaterials = Object.fromEntries(Object.entries(sourceColors).map(([key,color])=>[key,new THREE.PointsMaterial({color,size:6,sizeAttenuation:false,depthTest:false})])) as Record<BoundarySource,THREE.PointsMaterial>;
+const evidenceProfiles = () => drag?.moved ? [] : view.boundaryEvidence?.profiles ?? [];
+const savedEdges = () => drag?.moved ? [] : view.boundaryEvidence?.roadEdges ?? [];
+function drawBoundaryEvidence(): void {
+  const markers: Record<BoundarySource,number[]> = {rgb_paint:[],intensity:[],curb:[],support_edge:[],width_prior:[]};
+  const lines:number[]=[];
+  if(display.evidence) for(const p of evidenceProfiles()) {
+    for(const id of p.boundary_ids) { const b=view.boundaries.find(b=>b.id===id);if(b)dashedPairs(b.points,lines,.8,.5); }
+    p.evidence.forEach((label,i)=>markers[label].push(...local(label==="width_prior" ? p.geometry[i] : p.source_before_fitting[i])));
+  }
+  segments(lines,materials.inferred,4);
+  const edges:number[]=[];
+  if(display.roadEdges) for(const p of savedEdges())dashedPairs(p.geometry,edges,.12,.35);
+  segments(edges,materials.savedEdge,3);
+  for(const key of Object.keys(markers) as BoundarySource[]) {
+    if(!markers[key].length)continue;
+    const geometry=new THREE.BufferGeometry();geometry.setAttribute("position",new THREE.Float32BufferAttribute(markers[key],3));
+    const dots=new THREE.Points(geometry,sourceMaterials[key]);dots.renderOrder=5;group.add(dots);
+  }
+}
+function renderBoundaryEvidence(): void {
+  const profiles=evidenceProfiles(),edges=savedEdges();
+  const counts:Record<BoundarySource,number>={rgb_paint:0,intensity:0,curb:0,support_edge:0,width_prior:0};
+  for(const p of profiles)for(const e of p.evidence)counts[e]++;
+  $("vm-evidence-summary").textContent=profiles.length ? `${profiles.length} build profiles: ${counts.rgb_paint} RGB paint, ${counts.intensity} intensity, ${counts.curb} curb, ${counts.support_edge} coverage-limit and ${counts.width_prior} inferred vertices. ${edges.length} saved road-edge drafts before trimming. ${view.boundaryEvidence?.limited ? "Partial snapshot: evidence budget reached. " : ""}Selected sources precede fitting; connecting lines are inferred. This is a build snapshot, not a live source audit.` : `No current build snapshot: imported/manual or edited boundaries have no observed-source label. ${view.boundaryEvidence?.limited ? "Evidence budget reached." : ""}`;
+  const select=$<HTMLSelectElement>("vm-evidence-profile");select.replaceChildren();
+  profiles.forEach((p,i)=>select.add(new Option(`Boundary ${p.boundary_ids.join(", ")}`,`b:${i}`)));
+  edges.forEach((_,i)=>select.add(new Option(`Saved road edge ${i+1} (before trimming)`,`e:${i}`)));
+  select.disabled=profiles.length+edges.length===0;
+  $<HTMLButtonElement>("vm-evidence-inspect").disabled=select.disabled;
+  renderEvidenceVertices();$("vm-evidence-detail").textContent="Choose a source vertex or inspect a visible dot / connector.";
+}
+function renderEvidenceVertices(): void {
+  const [type,index]=$<HTMLSelectElement>("vm-evidence-profile").value.split(":");
+  const p=type==="e" ? savedEdges()[Number(index)] : evidenceProfiles()[Number(index)];
+  const select=$<HTMLSelectElement>("vm-evidence-vertex");select.replaceChildren();
+  p?.evidence.forEach((label,i)=>select.add(new Option(`${i+1}: ${sourceLabels[label]}`,String(i))));select.disabled=!p;
+}
+function inspectEvidence(saved:boolean,profile:number,vertex:number,connector=false): void {
+  const p=saved ? savedEdges()[profile] : evidenceProfiles()[profile];if(!p)return;
+  $<HTMLSelectElement>("vm-evidence-profile").value=`${saved ? "e" : "b"}:${profile}`;renderEvidenceVertices();
+  $<HTMLSelectElement>("vm-evidence-vertex").value=String(vertex);
+  const source=p.source_before_fitting[vertex],fitted=p.geometry[vertex],label=p.evidence[vertex];
+  $("vm-evidence-detail").textContent=`${saved ? "Saved road-edge draft BEFORE trimming; not an exported lane boundary. " : "Generated boundary source snapshot. "}${connector ? "Inferred connector, not continuously observed paint. Nearest endpoint: " : ""}${sourceLabels[label]}. Selected source XYZ (${source.map(v=>v.toFixed(3)).join(", ")}); fitted draft before map splitting XYZ (${fitted.map(v=>v.toFixed(3)).join(", ")}); XY movement ${Math.hypot(fitted[0]-source[0],fitted[1]-source[1]).toFixed(3)} m. ${label==="width_prior" ? "Position inferred; no observed outer paint or legal lane-width certification." : "Evidence labels the selected source before fitting, not a surveyed or legal boundary."}`;
+}
+$("vm-evidence-profile").onchange=()=>{renderEvidenceVertices();$("vm-evidence-vertex").dispatchEvent(new Event("change"));};
+$("vm-evidence-vertex").onchange=()=>{const [type,index]=$<HTMLSelectElement>("vm-evidence-profile").value.split(":");inspectEvidence(type==="e",Number(index),Number($<HTMLSelectElement>("vm-evidence-vertex").value));};
+const evidenceTool:Tool={
+  click(x,y){
+    const rect=$("viewport").querySelector(":scope > canvas")!.getBoundingClientRect(),shift=globalShift();
+    const project=(p:XYZ)=>viewer.project(new THREE.Vector3(p[0]-shift[0],p[1]-shift[1],p[2]-shift[2]));
+    let hit:{saved:boolean;profile:number;vertex:number;connector:boolean}|null=null,best=12;
+    const collections:[boolean,(EvidenceProfile|RoadEdgeSnapshot)[]][]=[[false,display.evidence ? evidenceProfiles():[]],[true,display.roadEdges ? savedEdges():[]]];
+    for(const [saved,rows] of collections)if(!saved)rows.forEach((p,profile)=>p.evidence.forEach((label,vertex)=>{
+      const point=project(saved||label==="width_prior" ? p.geometry[vertex]:p.source_before_fitting[vertex]);if(!point)return;
+      const distance=Math.hypot(point.x+rect.left-x,point.y+rect.top-y);if(distance<best){best=distance;hit={saved,profile,vertex,connector:false};}
+    }));
+    if(!hit)for(const [saved,rows] of collections)rows.forEach((p,profile)=>{
+      const curves=saved ? [p.geometry] : (p as EvidenceProfile).boundary_ids.flatMap(id=>{const b=view.boundaries.find(b=>b.id===id);return b?[b.points]:[];});
+      for(const curve of curves)for(let i=1;i<curve.length;i++){
+        const a=project(curve[i-1]),b=project(curve[i]);if(!a||!b)continue;
+        const dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy;if(den===0)continue;
+        const t=Math.max(0,Math.min(1,((x-rect.left-a.x)*dx+(y-rect.top-a.y)*dy)/den));
+        const distance=Math.hypot(a.x+t*dx+rect.left-x,a.y+t*dy+rect.top-y);
+        if(distance<best){
+          const q=curve[t<.5 ? i-1:i];let vertex=0,nearest=Infinity;
+          p.geometry.forEach((v,j)=>{const d=Math.hypot(v[0]-q[0],v[1]-q[1]);if(d<nearest){nearest=d;vertex=j;}});
+          best=distance;hit={saved,profile,vertex,connector:true};
+        }
+      }
+    });
+    if(hit){const h=hit as {saved:boolean;profile:number;vertex:number;connector:boolean};inspectEvidence(h.saved,h.profile,h.vertex,h.connector);}
+    else $("vm-evidence-detail").textContent="No visible evidence dot or connector here. Enable build evidence / saved road edges, or choose a vertex from the list.";
+  },
+  enter(){ $("vm-evidence-inspect").setAttribute("aria-pressed","true");hint.textContent="Click a source dot or an inferred connector to inspect its build evidence."; },
+  exit(){ $("vm-evidence-inspect").setAttribute("aria-pressed","false");renderHint(); }
+};
+$("vm-evidence-inspect").onclick=()=>toggleTool(evidenceTool);
+
 // ---------------------------------------------------------------------------
 // Map state
 // ---------------------------------------------------------------------------
@@ -581,8 +662,8 @@ interface Edited {
 
 interface BuildReport {
   lane_edge_inference?: { applied: boolean; reason: string; limited: boolean; configured_lane_width_m: number; retained_road_edges: unknown[]; sides: { boundary_slot: number; applied: boolean; reason: string; inferred_vertices_before_trimming: number; maximum_movement_m: number }[] } | null;
-  paint_divider?: { applied: boolean; reason: string; limited: boolean; curb_pair_sections: number; sampled_sections: number; maximum_divider_movement_m: number; track: { observed_length_m: number; interpolated_length_m: number; extrapolated_length_m: number } | null } | null;
-  paint_corridor?: { applied: boolean; reason: string; limited: boolean; measured_lane_widths_m: number[]; tracks: { observed_length_m: number; interpolated_length_m: number; extrapolated_length_m: number }[] } | null;
+  paint_divider?: { source_channel?: "intensity"; applied: boolean; reason: string; limited: boolean; curb_pair_sections: number; sampled_sections: number; maximum_divider_movement_m: number; track: { observed_length_m: number; interpolated_length_m: number; extrapolated_length_m: number } | null } | null;
+  paint_corridor?: { source_channel?: "intensity"; intensity_range?: [number,number]; applied: boolean; reason: string; limited: boolean; measured_lane_widths_m: number[]; tracks: { observed_length_m: number; interpolated_length_m: number; extrapolated_length_m: number }[] } | null;
   trace_alignment?: { applied: boolean; reason: string; shift_xy: [number, number]; curb_pair_sections: number; sampled_sections: number } | null;
   surface_fit?: { deferred_length_m: number; minimum_lane_width_m: number | null; maximum_lane_width_m: number | null } | null;
   roads: number;
@@ -1088,6 +1169,7 @@ function roadBuildOptions(): object {
     infer_lane_edges: $<HTMLInputElement>("vm-lane-edges").checked,
     fit_paint_divider: $<HTMLInputElement>("vm-paint-divider").checked,
     fit_paint_corridor: $<HTMLInputElement>("vm-paint-corridor").checked,
+    ...($<HTMLSelectElement>("vm-paint-channel").value === "intensity" ? {paint_channel:"intensity"} : {}),
     track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
     fit_boundaries: $<HTMLInputElement>("vm-fit-boundaries").checked,
     fit_source_surface: $<HTMLInputElement>("vm-source-surface").checked,
@@ -1102,8 +1184,8 @@ function renderBuildReport(report: BuildReport): void {
     `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +
     (report.trace_alignment ? `Trace alignment ${report.trace_alignment.applied ? "applied" : "held"}: XY shift (${fmt(report.trace_alignment.shift_xy[0])}, ${fmt(report.trace_alignment.shift_xy[1])}) m; paired curbs ${report.trace_alignment.curb_pair_sections}/${report.trace_alignment.sampled_sections} sections. ${report.trace_alignment.reason}. ` : "") +
     (report.lane_edge_inference ? `Outer lane-edge inference ${report.lane_edge_inference.applied ? "applied" : "held"}${report.lane_edge_inference.limited ? " (scan limit reached)" : ""}: ${report.lane_edge_inference.reason}. Configured width ${fmt(report.lane_edge_inference.configured_lane_width_m)} m. ` + report.lane_edge_inference.sides.map(s => `${s.boundary_slot === 0 ? "Left" : "Right"}: ${s.applied ? `${s.inferred_vertices_before_trimming} inferred vertices before footprint trimming; maximum movement ${fmt(s.maximum_movement_m)} m` : s.reason}. `).join("") : "") +
-    (report.paint_divider ? `Interior paint correction ${report.paint_divider.applied ? "applied" : "held"}${report.paint_divider.limited ? " (scan limit reached)" : ""}: ${report.paint_divider.reason}. Curb pairs: ${report.paint_divider.curb_pair_sections}/${report.paint_divider.sampled_sections}. ` + (report.paint_divider.applied && report.paint_divider.track ? `Maximum divider movement ${fmt(report.paint_divider.maximum_divider_movement_m)} m. Paint lengths before footprint trimming (observed / interpolated / extended): ${fmt(report.paint_divider.track.observed_length_m)} / ${fmt(report.paint_divider.track.interpolated_length_m)} / ${fmt(report.paint_divider.track.extrapolated_length_m)} m. ` : "") : "") +
-    (report.paint_corridor ? `White paint fit ${report.paint_corridor.applied ? "applied" : "held"}${report.paint_corridor.limited ? " (scan limit reached)" : ""}: ${report.paint_corridor.reason}. ` + (report.paint_corridor.applied ? `Measured widths: ${report.paint_corridor.measured_lane_widths_m.map(fmt).join(", ")} m. Source track lengths before footprint trimming (observed / interpolated / extended), left to right: ${report.paint_corridor.tracks.map(t => `${fmt(t.observed_length_m)} / ${fmt(t.interpolated_length_m)} / ${fmt(t.extrapolated_length_m)} m`).join("; ")}. ` : "") : "") +
+    (report.paint_divider ? `Interior paint correction ${report.paint_divider.applied ? "applied" : "held"}${report.paint_divider.limited ? " (scan limit reached)" : ""}: ${report.paint_divider.reason}. ${report.paint_divider.source_channel === "intensity" ? "Source: retained intensity. " : ""}Curb pairs: ${report.paint_divider.curb_pair_sections}/${report.paint_divider.sampled_sections}. ` + (report.paint_divider.applied && report.paint_divider.track ? `Maximum divider movement ${fmt(report.paint_divider.maximum_divider_movement_m)} m. Paint lengths before footprint trimming (observed / interpolated / extended): ${fmt(report.paint_divider.track.observed_length_m)} / ${fmt(report.paint_divider.track.interpolated_length_m)} / ${fmt(report.paint_divider.track.extrapolated_length_m)} m. ` : "") : "") +
+    (report.paint_corridor ? `White paint fit ${report.paint_corridor.applied ? "applied" : "held"}${report.paint_corridor.limited ? " (scan limit reached)" : ""}: ${report.paint_corridor.reason}. ${report.paint_corridor.source_channel === "intensity" ? `Source: retained intensity; ROI normalization P10/P99.9 ${report.paint_corridor.intensity_range?.map(fmt).join(" / ") ?? "unavailable"}. ` : ""}` + (report.paint_corridor.applied ? `Measured widths: ${report.paint_corridor.measured_lane_widths_m.map(fmt).join(", ")} m. Source track lengths before footprint trimming (observed / interpolated / extended), left to right: ${report.paint_corridor.tracks.map(t => `${fmt(t.observed_length_m)} / ${fmt(t.interpolated_length_m)} / ${fmt(t.extrapolated_length_m)} m`).join("; ")}. ` : "") : "") +
     `Coverage-edge anchor candidates ignored: ${report.coverage_edge_anchor_candidates_ignored}. ` +
     (report.surface_fit ? `Source footprint: ${fmt(report.surface_fit.deferred_length_m)} m deferred; inferred lane widths ${fmt(report.surface_fit.minimum_lane_width_m ?? 0)}–${fmt(report.surface_fit.maximum_lane_width_m ?? 0)} m. ` : "") +report.warnings.join(" ");
 }
@@ -1141,6 +1223,7 @@ buildButton.onclick = async () => {
 function takeView(edited: Edited): void {
   clearQuality();
   view = edited.view;
+  renderBoundaryEvidence();
   clearRelationPreview();
   clearDiscovery();
   clearJunctionPreview();

@@ -116,3 +116,34 @@ export function signalTriangles(points: XYZ[], height: number | null, origin: XY
   }
   return positions;
 }
+
+/** Append display dashes with a continuous station across vertices. Return false
+ * when the display budget/range prevents drawing all segments. Source geometry
+ * is untouched; integer dash indices avoid floating-modulo stalls at dash ends.
+ */
+export function appendDashedPairs(points: XYZ[], origin: XYZ, out: number[], dash: number, gap: number, limit = 20_000): boolean {
+  const period = dash + gap;
+  if (!Number.isFinite(period) || dash <= 0 || gap < 0 || !Number.isSafeInteger(limit) || limit < 0) return false;
+  let along = 0;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1], b = points[i];
+    if (!a.every(Number.isFinite) || !b.every(Number.isFinite)) return false;
+    const length = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+    if (length === 0) continue;
+    const end = along + length;
+    if (!Number.isFinite(end) || !Number.isSafeInteger(Math.ceil(end / period))) return false;
+    for (let n = Math.floor(along / period); n * period < end; n++) {
+      const start = Math.max(along, n * period), stop = Math.min(end, n * period + dash);
+      if (stop <= start) continue;
+      if (out.length / 6 >= limit) return false;
+      for (const station of [start, stop]) {
+        const t = (station - along) / length;
+        out.push(a[0] - origin[0] + (b[0] - a[0]) * t,
+          a[1] - origin[1] + (b[1] - a[1]) * t,
+          a[2] - origin[2] + (b[2] - a[2]) * t);
+      }
+    }
+    along = end;
+  }
+  return true;
+}

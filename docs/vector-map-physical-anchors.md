@@ -96,6 +96,10 @@ Rust diagnostic JSON, Lanelet2, extraction reports and source audits byte-for-by
 (or exactly as decoded reports). Both legacy final maps remain byte-identical to
 the earlier frozen source-footprint baselines.
 
+A subsequent optional [paired-curb trace correction](vector-map-curb-alignment.md)
+addresses a different failure on planning path 2. These measurements and frozen
+artifacts describe this earlier width-anchor stage and remain unchanged.
+
 ## Use and reproduce
 
 ```sh

@@ -62,6 +62,8 @@ pose graph with one scan per pose.
   to supported low surfaces and reports missing extent explicitly, with actual before/after maps.
   [Physical boundary anchors](docs/vector-map-physical-anchors.md) optionally keep scan limits
   from shifting inferred lanes, with fixed-interval comparisons that expose gains and regressions.
+  [Paired-curb trace correction](docs/vector-map-curb-alignment.md) optionally fixes straight traces
+  using source observations, with ordered lane-pair comparisons and explicit held intervals.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

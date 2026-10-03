@@ -40,6 +40,16 @@ not a false-detection or removed-geometry count. The option defaults to off and 
 no effect with `--no-anchor-width-prior`. See the [same-interval gains, losses and
 coverage changes](../vector-map-physical-anchors.md).
 
+Opt in with `--align-trace-to-curbs`, Python/MCP `align_trace_to_curbs=True`,
+or Web's **Align straight traces using paired curbs**. This independently translates
+a straight trace when a stable pair of source curbs encloses the configured road
+width. It requires a majority of sections, three consecutive pairs, consistent
+offsets and no ambiguous sections; curved or unconfirmed traces stay unchanged.
+Lane counts and widths remain explicit priors. `trace_alignment` records the
+shift and held reason. This translation precedes the separate 0.5 m local curve
+fit, so its reported movement may exceed that cap. The option is off by default.
+See the [actual maps and correspondence-aware evaluation](../vector-map-curb-alignment.md).
+
 Curb candidates must have nearby road-side support and two raised outside bins no taller
 than `curb_height + 0.3 m` above the candidate. This rejects wall/vehicle steps and isolated
 low returns, but can also reject genuine curbs in sparse or cluttered scans. The report's

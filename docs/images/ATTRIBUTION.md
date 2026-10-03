@@ -181,3 +181,13 @@ CloudAnalyzer adds generated geometry, measured offsets and annotations. Grey
 surveyed geometry is comparison context opened after generation, not generated
 output or a fitting input. No source or survey files are redistributed here.
 See the [protocol and hashes](../vector-map-cross-scene.md).
+
+## RGB boundary experiment
+
+`vector-map-boundary-errors.png` overlays source-only generated boundaries on the
+original cached point returns and later surveyed comparison shapes. Autoware:
+Copyright 2020 TIER IV, Inc., [official source context](https://docs.autoware.org/main/demos/planning-sim/).
+Tokyo: DynamicMapPlatform Co., Ltd. (2026), [pinned sample](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c),
+CC BY 4.0. Display RGB is darkened for visibility; source geometry/heights are unchanged.
+CloudAnalyzer adds error colouring and measured annotations; no real-scene accuracy
+improvement is claimed. See [protocol](../vector-map-rgb-boundaries.md).

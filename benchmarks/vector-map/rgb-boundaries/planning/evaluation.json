@@ -1,0 +1,421 @@
+{
+  "source_commit": "e8a2697256a1e698abf4ec64846669c70416d11f",
+  "native_sha256": "ff7b984f5a2e99c115b87194fd7c7d78da9b83f0be6a29fc6a5ac36ae1110268",
+  "source_sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+  "config_sha256": "89a31d3b91bde22e5e61e2fe84dd8c41a85234b9b8341261663576026170ef66",
+  "reference_sha256": "4fe358f2d1e182dc76de296e5619086f8d8ad2fcab3e6d8f99f6e3d724a84e6d",
+  "reference_transform": "native coordinate metadata",
+  "generation_reference_inputs": [],
+  "generation_artifact_sha256": {
+    "prior-0-audit.json": "1cc4163b78bde079c6e0ac2f484805196b91277b2abfdf097e8afdbaf1bf52f8",
+    "prior-0.json": "d1d222824017cea3b9b775b721a8752fa351644099798754be40417f19abf037",
+    "prior-0.osm": "1af76b72a5af28a9a942e005bcee8644b881a0f2b133af75077a880eacfa67fc",
+    "prior-1-audit.json": "61bcdb3c7b29088c4461112788426e02f56114e7c466d19a3b186fe9c04340cd",
+    "prior-1.json": "692832ec9a5cfe4ad59b079e4fbbc77f9006cc02b8e9ade6e05317d06300bc17",
+    "prior-1.osm": "b2531a0d58f88efa30a5e9df80a654b5c4437ab3b937d349d1d82c277949b076",
+    "prior-2-audit.json": "0346921e32696e038c99053dedeb6045f41e79f758597e7772a5c16d5c6262af",
+    "prior-2.json": "6053e683937ec42e2a330afd8c1b26401c71c87a8ce0870a4171ddf4f50171a2",
+    "prior-2.osm": "d37a99062a8abac074b4927c6da89030ba7d4ac0656656cc7d98cf30e62c2ad1",
+    "rgb-0-audit.json": "1cc4163b78bde079c6e0ac2f484805196b91277b2abfdf097e8afdbaf1bf52f8",
+    "rgb-0.json": "d1d222824017cea3b9b775b721a8752fa351644099798754be40417f19abf037",
+    "rgb-0.osm": "1af76b72a5af28a9a942e005bcee8644b881a0f2b133af75077a880eacfa67fc",
+    "rgb-1-audit.json": "61bcdb3c7b29088c4461112788426e02f56114e7c466d19a3b186fe9c04340cd",
+    "rgb-1.json": "692832ec9a5cfe4ad59b079e4fbbc77f9006cc02b8e9ade6e05317d06300bc17",
+    "rgb-1.osm": "b2531a0d58f88efa30a5e9df80a654b5c4437ab3b937d349d1d82c277949b076",
+    "rgb-2-audit.json": "0346921e32696e038c99053dedeb6045f41e79f758597e7772a5c16d5c6262af",
+    "rgb-2.json": "6053e683937ec42e2a330afd8c1b26401c71c87a8ce0870a4171ddf4f50171a2",
+    "rgb-2.osm": "d37a99062a8abac074b4927c6da89030ba7d4ac0656656cc7d98cf30e62c2ad1",
+    "trajectory-0.csv": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+    "trajectory-1.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+    "trajectory-2.csv": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9"
+  },
+  "cases": {
+    "prior": [
+      {
+        "name": "planning-0",
+        "trajectory_sha256": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0,
+          "fit_source_surface": true,
+          "observe_rgb_boundaries": false
+        },
+        "extraction": {
+          "added_length": 41.10632371552034,
+          "anchored_prior_vertices": 52,
+          "curb_vertices": 3,
+          "fitted_vertices": 72,
+          "generated_length": 41.10632371552034,
+          "intensity_used": false,
+          "intensity_vertices": 0,
+          "joined_connections": 0,
+          "lanes": 6,
+          "maximum_fit_displacement": 0.4999999999958344,
+          "observed_fraction": [
+            0.0,
+            0.0,
+            0.3333333333333333
+          ],
+          "rejected_curb_candidates": 15,
+          "reused_intervals": 0,
+          "reused_length": 0.0,
+          "rgb_paint_vertices": 0,
+          "roads": 3,
+          "sampled_sections": 27,
+          "support_edge_vertices": 5,
+          "surface_fit": {
+            "candidate_sections": 27,
+            "deferred_length_m": 9.49999999999963,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 50.60632371551997,
+            "maximum_lane_width_m": 4.069509596259146,
+            "minimum_lane_width_m": 3.279844005530244,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 5
+          },
+          "tracked_vertices": 53,
+          "trajectory_length": 50.60632371551997,
+          "unsupported_sections": 0,
+          "warnings": [
+            "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+            "9.50 m of the traced/recorded path was deferred; 5 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used."
+          ],
+          "width_prior_vertices": 64
+        },
+        "map": "prior-0.json"
+      },
+      {
+        "name": "planning-1",
+        "trajectory_sha256": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0,
+          "fit_source_surface": true,
+          "observe_rgb_boundaries": false
+        },
+        "extraction": {
+          "added_length": 38.14108798023091,
+          "anchored_prior_vertices": 44,
+          "curb_vertices": 28,
+          "fitted_vertices": 66,
+          "generated_length": 38.14108798023091,
+          "intensity_used": false,
+          "intensity_vertices": 0,
+          "joined_connections": 0,
+          "lanes": 4,
+          "maximum_fit_displacement": 0.34689868107707494,
+          "observed_fraction": [
+            0.5454545454545454,
+            0.0,
+            0.7272727272727273
+          ],
+          "rejected_curb_candidates": 44,
+          "reused_intervals": 0,
+          "reused_length": 0.0,
+          "rgb_paint_vertices": 0,
+          "roads": 2,
+          "sampled_sections": 25,
+          "support_edge_vertices": 0,
+          "surface_fit": {
+            "candidate_sections": 25,
+            "deferred_length_m": 8.000000000006409,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 46.141087980237316,
+            "maximum_lane_width_m": 3.907619223641965,
+            "minimum_lane_width_m": 3.4712869200281475,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 4
+          },
+          "tracked_vertices": 47,
+          "trajectory_length": 46.14108798023733,
+          "unsupported_sections": 0,
+          "warnings": [
+            "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+            "8.00 m of the traced/recorded path was deferred; 4 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",
+            "Matching requires centre, both boundaries, travel direction and ground height to agree. Unmatched or ambiguous overlaps may remain and need review; this does not align drifting survey frames."
+          ],
+          "width_prior_vertices": 38
+        },
+        "map": "prior-1.json"
+      },
+      {
+        "name": "planning-2",
+        "trajectory_sha256": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0,
+          "fit_source_surface": true,
+          "observe_rgb_boundaries": false
+        },
+        "extraction": {
+          "added_length": 31.764760348537187,
+          "anchored_prior_vertices": 40,
+          "curb_vertices": 11,
+          "fitted_vertices": 51,
+          "generated_length": 31.764760348537187,
+          "intensity_used": false,
+          "intensity_vertices": 0,
+          "joined_connections": 0,
+          "lanes": 2,
+          "maximum_fit_displacement": 0.2621715940398516,
+          "observed_fraction": [
+            0.0,
+            0.0,
+            0.6470588235294118
+          ],
+          "rejected_curb_candidates": 3,
+          "reused_intervals": 0,
+          "reused_length": 0.0,
+          "rgb_paint_vertices": 0,
+          "roads": 1,
+          "sampled_sections": 17,
+          "support_edge_vertices": 0,
+          "surface_fit": {
+            "candidate_sections": 17,
+            "deferred_length_m": 0.0,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 31.764760348537187,
+            "maximum_lane_width_m": 3.5288172724745763,
+            "minimum_lane_width_m": 3.3652391999937277,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 0
+          },
+          "tracked_vertices": 40,
+          "trajectory_length": 31.764760348537184,
+          "unsupported_sections": 0,
+          "warnings": [
+            "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+            "0.00 m of the traced/recorded path was deferred; 0 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",
+            "Matching requires centre, both boundaries, travel direction and ground height to agree. Unmatched or ambiguous overlaps may remain and need review; this does not align drifting survey frames."
+          ],
+          "width_prior_vertices": 40
+        },
+        "map": "prior-2.json"
+      }
+    ],
+    "rgb": [
+      {
+        "name": "planning-0",
+        "trajectory_sha256": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0,
+          "fit_source_surface": true,
+          "observe_rgb_boundaries": true
+        },
+        "extraction": {
+          "added_length": 41.10632371552034,
+          "anchored_prior_vertices": 52,
+          "curb_vertices": 3,
+          "fitted_vertices": 72,
+          "generated_length": 41.10632371552034,
+          "intensity_used": false,
+          "intensity_vertices": 0,
+          "joined_connections": 0,
+          "lanes": 6,
+          "maximum_fit_displacement": 0.4999999999958344,
+          "observed_fraction": [
+            0.0,
+            0.0,
+            0.3333333333333333
+          ],
+          "rejected_curb_candidates": 15,
+          "reused_intervals": 0,
+          "reused_length": 0.0,
+          "rgb_paint_vertices": 0,
+          "roads": 3,
+          "sampled_sections": 27,
+          "support_edge_vertices": 5,
+          "surface_fit": {
+            "candidate_sections": 27,
+            "deferred_length_m": 9.49999999999963,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 50.60632371551997,
+            "maximum_lane_width_m": 4.069509596259146,
+            "minimum_lane_width_m": 3.279844005530244,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 5
+          },
+          "tracked_vertices": 53,
+          "trajectory_length": 50.60632371551997,
+          "unsupported_sections": 0,
+          "warnings": [
+            "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+            "9.50 m of the traced/recorded path was deferred; 5 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used."
+          ],
+          "width_prior_vertices": 64
+        },
+        "map": "rgb-0.json"
+      },
+      {
+        "name": "planning-1",
+        "trajectory_sha256": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0,
+          "fit_source_surface": true,
+          "observe_rgb_boundaries": true
+        },
+        "extraction": {
+          "added_length": 38.14108798023091,
+          "anchored_prior_vertices": 44,
+          "curb_vertices": 28,
+          "fitted_vertices": 66,
+          "generated_length": 38.14108798023091,
+          "intensity_used": false,
+          "intensity_vertices": 0,
+          "joined_connections": 0,
+          "lanes": 4,
+          "maximum_fit_displacement": 0.34689868107707494,
+          "observed_fraction": [
+            0.5454545454545454,
+            0.0,
+            0.7272727272727273
+          ],
+          "rejected_curb_candidates": 44,
+          "reused_intervals": 0,
+          "reused_length": 0.0,
+          "rgb_paint_vertices": 0,
+          "roads": 2,
+          "sampled_sections": 25,
+          "support_edge_vertices": 0,
+          "surface_fit": {
+            "candidate_sections": 25,
+            "deferred_length_m": 8.000000000006409,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 46.141087980237316,
+            "maximum_lane_width_m": 3.907619223641965,
+            "minimum_lane_width_m": 3.4712869200281475,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 4
+          },
+          "tracked_vertices": 47,
+          "trajectory_length": 46.14108798023733,
+          "unsupported_sections": 0,
+          "warnings": [
+            "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+            "8.00 m of the traced/recorded path was deferred; 4 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",
+            "Matching requires centre, both boundaries, travel direction and ground height to agree. Unmatched or ambiguous overlaps may remain and need review; this does not align drifting survey frames."
+          ],
+          "width_prior_vertices": 38
+        },
+        "map": "rgb-1.json"
+      },
+      {
+        "name": "planning-2",
+        "trajectory_sha256": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0,
+          "fit_source_surface": true,
+          "observe_rgb_boundaries": true
+        },
+        "extraction": {
+          "added_length": 31.764760348537187,
+          "anchored_prior_vertices": 40,
+          "curb_vertices": 11,
+          "fitted_vertices": 51,
+          "generated_length": 31.764760348537187,
+          "intensity_used": false,
+          "intensity_vertices": 0,
+          "joined_connections": 0,
+          "lanes": 2,
+          "maximum_fit_displacement": 0.2621715940398516,
+          "observed_fraction": [
+            0.0,
+            0.0,
+            0.6470588235294118
+          ],
+          "rejected_curb_candidates": 3,
+          "reused_intervals": 0,
+          "reused_length": 0.0,
+          "rgb_paint_vertices": 0,
+          "roads": 1,
+          "sampled_sections": 17,
+          "support_edge_vertices": 0,
+          "surface_fit": {
+            "candidate_sections": 17,
+            "deferred_length_m": 0.0,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 31.764760348537187,
+            "maximum_lane_width_m": 3.5288172724745763,
+            "minimum_lane_width_m": 3.3652391999937277,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 0
+          },
+          "tracked_vertices": 40,
+          "trajectory_length": 31.764760348537184,
+          "unsupported_sections": 0,
+          "warnings": [
+            "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+            "0.00 m of the traced/recorded path was deferred; 0 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",
+            "Matching requires centre, both boundaries, travel direction and ground height to agree. Unmatched or ambiguous overlaps may remain and need review; this does not align drifting survey frames."
+          ],
+          "width_prior_vertices": 40
+        },
+        "map": "rgb-2.json"
+      }
+    ]
+  },
+  "metrics": {
+    "prior": {
+      "boundary_distance": {
+        "generated_samples": 837,
+        "mean_xy_m": 1.4182599657984172,
+        "p90_xy_m": 3.792687705723844,
+        "maximum_xy_m": 5.801628785214397,
+        "fraction_within_0_5m": 0.35603345280764637,
+        "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+      },
+      "generated_path_m": 111.01217204428843,
+      "deferred_path_m": 17.50000000000604,
+      "rgb_source_vertices": 0,
+      "lane_fragments": 12,
+      "source_flags": [],
+      "source_samples": 1398,
+      "limited": false
+    },
+    "rgb": {
+      "boundary_distance": {
+        "generated_samples": 837,
+        "mean_xy_m": 1.4182599657984172,
+        "p90_xy_m": 3.792687705723844,
+        "maximum_xy_m": 5.801628785214397,
+        "fraction_within_0_5m": 0.35603345280764637,
+        "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+      },
+      "generated_path_m": 111.01217204428843,
+      "deferred_path_m": 17.50000000000604,
+      "rgb_source_vertices": 0,
+      "lane_fragments": 12,
+      "source_flags": [],
+      "source_samples": 1398,
+      "limited": false
+    }
+  },
+  "limitations": [
+    "Known development scenes; no held-out or semantic accuracy claim.",
+    "Unpaired nearest surveyed boundary XY distances; no registration or paired lane identity.",
+    "Generation extent can change: compare deferred length and fragments alongside distances.",
+    "Source support is the generation gate, not independent accuracy.",
+    "Only narrow longitudinal RGB paint with observed dark flanks; short/dashed/occluded marks may be missed."
+  ]
+}

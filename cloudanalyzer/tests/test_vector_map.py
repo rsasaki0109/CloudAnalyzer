@@ -14,6 +14,35 @@ from cloudanalyzer_cli.main import app
 from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features
 
 
+def test_rgb_white_line_is_opt_in_and_retains_source_file(tmp_path):
+    import numpy as np
+    import laspy
+    pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(0,20.01,.1),np.arange(-7,3.01,.1))
+    header = laspy.LasHeader(point_format=3,version="1.2")
+    header.scales = [.001]*3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x.ravel(), y.ravel(), np.full(x.size,2.)
+    colors = np.where(abs(y.ravel()+2.3)<.11,230,40).astype(np.uint16)*257
+    data.red = data.green = data.blue = colors
+    source = tmp_path/"paint.las"
+    data.write(source)
+    original = source.read_bytes()
+    trajectory = tmp_path/"drive.csv"
+    trajectory.write_text("timestamp,x,y,z\n0,3,0,50\n1,17,0,50\n")
+    prior = build_vector_map(str(source),str(trajectory),str(tmp_path/"prior"),segment_length=0)
+    rgb = build_vector_map(str(source),str(trajectory),str(tmp_path/"rgb"),segment_length=0,observe_rgb_boundaries=True)
+    assert prior["extraction"]["rgb_paint_vertices"]==0
+    assert rgb["extraction"]["rgb_paint_vertices"]>0
+    maps = [json.loads(Path(r["files"]["editable_map"]).read_text()) for r in (prior,rgb)]
+    middle = [m["boundaries"][1]["geometry"] for m in maps]
+    # Scan coverage can anchor the prior at a different lateral offset; it is
+    # still an assumption and must not be called an observed white line.
+    assert all(abs(p[1]+2.3)>.5 for p in middle[0])
+    assert all(abs(p[1]+2.3)<.2 for p in middle[1])
+    assert source.read_bytes()==original
+
+
 def test_source_footprint_cli_keeps_explicit_lanes_and_failed_build_publishes_nothing(tmp_path):
     import numpy as np
     import laspy

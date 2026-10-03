@@ -47,7 +47,11 @@ def run(source: Path, config_path: Path, reference: Path, out: Path, commit: str
     for mode in modes:
         previous = None
         for i, case in enumerate(config["cases"]):
-            trajectory = Path(case["trajectory"])
+            if "trajectory_csv" in case:
+                trajectory = out / f"trajectory-{i}.csv"
+                trajectory.write_text(case["trajectory_csv"], encoding="utf-8", newline="\n")
+            else:
+                trajectory = Path(case["trajectory"])
             options = {**case["options"], "fit_source_surface": True, "observe_rgb_boundaries": mode == "rgb"}
             payload = json.loads(core.build_vector_map(str(source), str(trajectory), json.dumps(options), existing_map=str(previous) if previous else None))
             previous = out / f"{mode}-{i}.json"

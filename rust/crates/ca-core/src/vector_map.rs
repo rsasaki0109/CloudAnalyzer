@@ -27,11 +27,16 @@ pub mod relations;
 pub mod signals;
 mod surface;
 pub use surface::SurfaceFitReport;
+mod trace_alignment;
+pub use trace_alignment::TraceAlignmentReport;
 
 /// Parameters in metres, except speed in km/h and lane counts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BuildOptions {
+    /// Translate a straight trace only when a stable pair of source curbs can
+    /// contain the entire configured lane width. Lane counts remain explicit.
+    pub align_trace_to_curbs: bool,
     /// Fit a source-supported road footprint and defer unobserved intervals.
     /// Lane counts stay explicit; coverage edges are not certified road edges.
     pub fit_source_surface: bool,
@@ -74,6 +79,7 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            align_trace_to_curbs: false,
             fit_source_surface: false,
             forward_lanes: 1,
             backward_lanes: 1,
@@ -125,6 +131,7 @@ pub struct ExtractedRoad {
 /// What was measured, what was inferred, and where data were missing.
 #[derive(Debug, Clone, Serialize)]
 pub struct BuildReport {
+    pub trace_alignment: Option<TraceAlignmentReport>,
     pub surface_fit: Option<SurfaceFitReport>,
     pub roads: usize,
     pub lanes: usize,
@@ -435,6 +442,9 @@ pub fn extract(
         return fail("cloud attributes do not match its points");
     }
     let mut line = resample(poses, o.sample_spacing)?;
+    let trace_alignment = o
+        .align_trace_to_curbs
+        .then(|| trace_alignment::align(cloud, &mut line, o));
     let trajectory_length = length(&line);
     if o.smoothing_window > 0 {
         let original = line.clone();
@@ -467,6 +477,7 @@ pub fn extract(
     let high = nominal[0] + o.search_margin + o.bin_width * 3.0;
     let index = SurfaceIndex::new(cloud, &line, low.abs().max(high.abs()) + o.half_window);
     let mut report = BuildReport {
+        trace_alignment,
         surface_fit: None,
         roads: 0,
         lanes: 0,

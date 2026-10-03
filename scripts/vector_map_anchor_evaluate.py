@@ -45,6 +45,12 @@ def intervals(profiles: dict) -> dict:
     result={}
     for road in profiles["roads"]:
         reference=np.asarray(road["reference"])
+        if "operator_reference" in road:
+            operator=np.asarray(road["operator_reference"])
+            shift=np.asarray((profiles["extraction"].get("trace_alignment") or {}).get("shift_xy", [0.,0.]))
+            if operator.shape != reference.shape or not np.allclose(reference[:,:2]-operator[:,:2], shift, rtol=0, atol=1e-8):
+                raise ValueError("operator reference does not invert the reported source translation")
+            reference=operator
         lines=np.asarray(road["boundaries"])
         for k in range(len(reference)-1):
             key=tuple(np.round(reference[k:k+2,:2].ravel(),6))
@@ -117,10 +123,14 @@ def run(source: Path, config: Path, reference: Path, out: Path, executable: Path
     target=cKDTree(np.concatenate([resample(b["geometry"],.5) for b in surveyed["boundaries"] if b["id"] in used])[:,:2])
     count=len(configuration["cases"])
     paired_cases=[]
+    corridors=[]
     metrics={}
     for i,case in enumerate(configuration["cases"]):
         p=[json.loads((out/f"{mode}-{i}-profiles.json").read_text()) for mode in ("before","after")]
         paired_cases.append({"name":case["name"],**paired(*p,target)})
+        if configuration.get("comparison") == "curb_trace_alignment":
+            from vector_map_corridor_evaluate import corridor_comparison
+            corridors.append({"name":case["name"], **corridor_comparison(*p, surveyed, case["options"])})
     for mode in ("before","after"):
         audits=[json.loads((out/f"{mode}-{i}-audit.json").read_text()) for i in range(count)]
         final=json.loads((out/f"{mode}-{count-1}.json").read_text())
@@ -137,6 +147,10 @@ def run(source: Path, config: Path, reference: Path, out: Path, executable: Path
                 "Common intervals are matched using source coordinates; survey targets selected for before points stay fixed for after points. Lane identities are not established.",
                 "Endpoint samples repeat across intervals; sampled reference discretization affects distances.","Source support is also a generation gate; report deferred extent separately.",
                 "Coverage-edge candidate geometry remains available; only its use to shift inferred lanes is disabled."]}
+    if corridors:
+        report["fixed_reference_corridors"] = corridors
+        report["corridor_evaluation_script_sha256"] = digest(Path(__file__).with_name("vector_map_corridor_evaluate.py"))
+        report["limitations"] += ["Trace translation can change which nearby survey boundary is closest. Retained before-nearest targets and ordered adjacent-lane correspondences are different diagnostics; report both.", "Corridor assignment is selected jointly using BEFORE only; incomplete reference intervals and unsupported configurations are held and their extent reported."]
     assert digest(source)==source_hash and digest(config)==config_hash and digest(executable)==executable_hash
     assert all(digest(out/k)==v for k,v in frozen.items())
     save(out/"evaluation.json",report)

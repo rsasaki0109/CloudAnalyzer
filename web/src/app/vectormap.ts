@@ -580,6 +580,7 @@ interface Edited {
 }
 
 interface BuildReport {
+  trace_alignment?: { applied: boolean; reason: string; shift_xy: [number, number]; curb_pair_sections: number; sampled_sections: number } | null;
   surface_fit?: { deferred_length_m: number; minimum_lane_width_m: number | null; maximum_lane_width_m: number | null } | null;
   roads: number;
   lanes: number;
@@ -1080,6 +1081,7 @@ function roadBuildOptions(): object {
     segment_length: Number($<HTMLInputElement>("vm-segment").value),
     anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
     physical_anchors_only: $<HTMLInputElement>("vm-physical-anchors").checked,
+    align_trace_to_curbs: $<HTMLInputElement>("vm-align-curbs").checked,
     track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
     fit_boundaries: $<HTMLInputElement>("vm-fit-boundaries").checked,
     fit_source_surface: $<HTMLInputElement>("vm-source-surface").checked,
@@ -1092,6 +1094,7 @@ function renderBuildReport(report: BuildReport): void {
     `Added ${fmt(report.added_length)} m; reused ${fmt(report.reused_length)} m of existing lanes. ` +
     `Measured sources before fitting, left to right: ${report.observed_fraction.map(f => `${Math.round(f*100)}%`).join(", ")}. ` +
     `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +
+    (report.trace_alignment ? `Trace alignment ${report.trace_alignment.applied ? "applied" : "held"}: XY shift (${fmt(report.trace_alignment.shift_xy[0])}, ${fmt(report.trace_alignment.shift_xy[1])}) m; paired curbs ${report.trace_alignment.curb_pair_sections}/${report.trace_alignment.sampled_sections} sections. ${report.trace_alignment.reason}. ` : "") +
     `Coverage-edge anchor candidates ignored: ${report.coverage_edge_anchor_candidates_ignored}. ` +
     (report.surface_fit ? `Source footprint: ${fmt(report.surface_fit.deferred_length_m)} m deferred; inferred lane widths ${fmt(report.surface_fit.minimum_lane_width_m ?? 0)}–${fmt(report.surface_fit.maximum_lane_width_m ?? 0)} m. ` : "") +report.warnings.join(" ");
 }

@@ -41,9 +41,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for (mode, map) in maps.iter_mut().enumerate() {
             let mut options: BuildOptions = serde_json::from_value(case["options"].clone())?;
             options.fit_source_surface = true;
-            options.physical_anchors_only = mode == 1;
+            let align = config["comparison"].as_str() == Some("curb_trace_alignment");
+            options.physical_anchors_only = align || mode == 1;
+            options.align_trace_to_curbs = align && mode == 1;
             let (roads, extracted) = vector_map::extract(&cloud, &poses.positions, &options)?;
-            let geometry:Vec<_>=roads.iter().map(|r|json!({"reference":r.reference,"boundaries":r.boundaries,"evidence":r.evidence})).collect();
+            let shift = extracted
+                .trace_alignment
+                .as_ref()
+                .map(|r| r.shift_xy)
+                .unwrap_or([0.0; 2]);
+            let geometry: Vec<_> = roads.iter().map(|r| {
+                let operator_reference: Vec<_> = r.reference.iter().map(|p| [p[0]-shift[0], p[1]-shift[1], p[2]]).collect();
+                if align { json!({"reference":r.reference,"operator_reference":operator_reference,"boundaries":r.boundaries,"evidence":r.evidence}) }
+                else { json!({"reference":r.reference,"boundaries":r.boundaries,"evidence":r.evidence}) }
+            }).collect();
             let report = vector_map::build(map, &cloud, &poses.positions, &options)?;
             let quality = vector_map::quality::audit(map, &cloud)?;
             if report.reused_intervals != 0 {

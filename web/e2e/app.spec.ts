@@ -2987,3 +2987,27 @@ test("vector map: scan limits do not move inferred lane priors in physical ancho
   await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
   await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
 });
+
+
+test("vector map: paired source curbs align a straight trace with reviewed lane priors", async ({page}) => {
+  const points: [number,number,number][]=[];
+  for(let x=0;x<=320;x++)for(let j=-140;j<=140;j++) {
+    const y=j*.1+.03; points.push([x*.1,y,y < -1.8 || y > 5.4 ? 2.2 : 2]);
+  }
+  await open(page,[{name:"curbs.ply",buffer:ply(points)},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,2,0,80\n1,30,0,80\n")}]);
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await expect(page.locator("#vm-align-curbs")).not.toBeChecked();
+  await page.locator("#vm-align-curbs").check(); await page.locator("#vm-physical-anchors").check();
+  await page.locator("#vm-source-surface").check(); await page.locator("#vm-discover-after-build").uncheck();
+  await page.locator("#vm-build").click(); await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  await expect(page.locator("#vm-build-report")).toContainText("Trace alignment applied");
+  const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm"); await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await wait)).toString();
+  const ys=[...xml.matchAll(/<tag k="local_y" v="([^"]+)"/g)].map(m=>Number(m[1]));
+  expect(Math.min(...ys)).toBeGreaterThan(-2.1); expect(Math.max(...ys)).toBeGreaterThan(5);
+  expect(xml).not.toContain('<tag k="ele" v="80"');
+  await page.locator("#vm-quality summary").click(); await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
+  await page.locator("#vm-undo").click(); await expect(page.locator("#vm-status")).toContainText("No map yet");
+});

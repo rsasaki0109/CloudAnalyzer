@@ -76,3 +76,38 @@ def test_all_source_outputs_frozen_before_reference_is_opened(tmp_path, monkeypa
     r = audit.run(source, config, reference, out, exe, "test", None)
     assert r["generation_reference_inputs"] == [] and r["profile_geometry_verified_in_built_maps"]
     assert r["paired_source_intervals"][0]["after"]["mean_xy_m"] == 0
+
+
+def test_operator_coordinates_must_invert_the_reported_source_translation():
+    p = profile()
+    p["roads"][0]["operator_reference"] = [[0,-2,2],[1,-2,2]]
+    p["extraction"] = {"trace_alignment": {"shift_xy": [0,2]}}
+    from vector_map_anchor_evaluate import intervals
+    assert list(intervals(p))[0] == (0.,-2.,1.,-2.)
+    p["extraction"]["trace_alignment"]["shift_xy"] = [0,1]
+    with pytest.raises(ValueError,match="invert"):
+        intervals(p)
+
+
+def test_corridor_correspondence_keeps_slots_targets_and_reports_missing_reference():
+    from vector_map_corridor_evaluate import corridor_comparison
+    p = {"roads": [{"reference": [[0,0,2],[2,0,2]],
+                    "boundaries": [[[0,y,2],[2,y,2]] for y in (1.75,-1.75,-5.25)]}]}
+    q = copy.deepcopy(p)
+    for line in q["roads"][0]["boundaries"]:
+        for point in line:
+            point[1] += 3.5
+    survey = {"lanes": [{"id":1,"kind":"driving","left":1,"right":2},
+                         {"id":2,"kind":"driving","left":{"boundary":3,"reversed":True},"right":{"boundary":2,"reversed":True}}],
+              "boundaries": [{"id":i,"geometry":[[0,y,2],[2,y,2]]} for i,y in enumerate((5.25,1.75,-1.75),1)]}
+    result = corridor_comparison(p,q,survey,{})
+    assert result["evaluated_path_m"] == 2 and result["held_path_m"] == 0
+    assert result["assignments"][0]["survey_boundaries_left_to_right"] == [1,2,3]
+    assert result["before"]["mean_xy_m"] == 3.5 and result["after"]["mean_xy_m"] == 0
+    bad = copy.deepcopy(survey)
+    for boundary in bad["boundaries"]:
+        boundary["geometry"][0][0] = .2
+    held = corridor_comparison(p,q,bad,{})
+    assert held["held_path_m"] == 2 and held["before"] is None
+    assert corridor_comparison(p,q,survey,{"forward_lanes":3})["before"] is None
+    assert corridor_comparison(p,q,survey,{"left_hand_traffic":False})["before"] is None

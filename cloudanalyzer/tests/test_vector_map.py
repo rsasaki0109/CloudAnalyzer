@@ -875,3 +875,27 @@ def test_scan_limits_do_not_shift_inferred_lanes_with_physical_anchors(tmp_path)
     assert report["options"]["physical_anchors_only"] is True
     assert internal(report) == pytest.approx(-1.75, abs=.02)
     assert cloud.read_bytes() == original
+
+
+def test_paired_source_curbs_translate_a_straight_trace_only_when_requested(tmp_path):
+    native = pytest.importorskip("cloudanalyzer_core")
+    cloud, trace = tmp_path / "curbs.xyz", tmp_path / "drive.csv"
+    cloud.write_text("".join(f"{x/10} {y/10+.03} {2.2 if not -1.8 <= y/10+.03 <= 5.4 else 2}\n"
+                           for x in range(321) for y in range(-140,141)))
+    trace.write_text("timestamp,x,y,z\n0,2,0,80\n1,30,0,80\n")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "default"))
+    assert "align_trace_to_curbs" not in default["options"]
+    assert default["extraction"]["trace_alignment"] is None
+    result = CliRunner().invoke(app,["vectormap-build",str(cloud),str(trace),"--out",str(tmp_path / "aligned"),
+                                    "--align-trace-to-curbs","--fit-source-surface","--physical-anchors-only"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    alignment = report["extraction"]["trace_alignment"]
+    assert alignment["applied"] and alignment["shift_xy"][1] == pytest.approx(3.55, abs=.21)
+    assert report["extraction"]["lanes"] == 2 and report["options"]["align_trace_to_curbs"] is True
+    quality = json.loads(native.audit_vector_map_quality(str(cloud),report["files"]["editable_map"]))
+    assert not quality["quality"]["low_support_lanes"] and not quality["quality"]["limited"]
+    document = json.loads(Path(report["files"]["editable_map"]).read_text(encoding="utf-8"))
+    assert all(p[2] < 2.3 for b in document["boundaries"] for p in b["geometry"])
+    assert (cloud.read_bytes(), trace.read_bytes()) == original

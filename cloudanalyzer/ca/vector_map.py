@@ -26,6 +26,7 @@ def build_vector_map(
     segment_length: float = 50.0,
     anchor_width_prior: bool = True,
     physical_anchors_only: bool = False,
+    align_trace_to_curbs: bool = False,
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
     fit_source_surface: bool = False,
@@ -51,6 +52,10 @@ def build_vector_map(
     coverage limits from offsets for inferred lines; curb/intensity observations
     remain anchors. Coverage-edge geometry can still be selected and needs review.
     The ignored-candidate counter is before tracking and surface deferral.
+    align_trace_to_curbs optionally translates straight traces into a stable pair
+    of source curbs enclosing the configured total width. It preserves lane counts,
+    requires a majority of sections and holds curved or unconfirmed traces.
+    The report records the translation; this does not certify lane identity.
     Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does
     not guarantee better lane geometry. Stages can be disabled independently.
@@ -122,6 +127,7 @@ def build_vector_map(
             "segment_length": segment_length,
             "anchor_width_prior": anchor_width_prior,
             **({"physical_anchors_only": True} if physical_anchors_only else {}),
+            **({"align_trace_to_curbs": True} if align_trace_to_curbs else {}),
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
             **({"fit_source_surface": True} if fit_source_surface else {}),

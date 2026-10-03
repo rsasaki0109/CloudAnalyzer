@@ -64,6 +64,8 @@ pose graph with one scan per pose.
   from shifting inferred lanes, with fixed-interval comparisons that expose gains and regressions.
   [Paired-curb trace correction](docs/vector-map-curb-alignment.md) optionally fixes straight traces
   using source observations, with ordered lane-pair comparisons and explicit held intervals.
+  [Straight RGB paint fits](docs/vector-map-paint-corridor.md) optionally measure heading and spacing,
+  distinguishing observed paint from inferred gaps and extensions in actual map comparisons.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

@@ -50,6 +50,17 @@ shift and held reason. This translation precedes the separate 0.5 m local curve
 fit, so its reported movement may exceed that cap. The option is off by default.
 See the [actual maps and correspondence-aware evaluation](../vector-map-curb-alignment.md).
 
+Opt in with `--fit-paint-corridor`, Python/MCP `fit_paint_corridor=True`, or Web's
+**Fit straight lanes using observed white paint**. This independently fits
+straight parallel boundary heading and spacing from thin source RGB paint with
+dark ground on both sides. Counts, directions and marking roles remain manual.
+`paint_corridor` reports measured widths and each line's source observation
+intervals, interpolation and extrapolation before source-footprint trimming.
+Sparse outer lines can be extended; unobserved vertices remain inferred.
+Missing/ambiguous bundles and scan limits hold the fit. It is off by default,
+and its separate relocation is not bounded by the later local curve-fit cap.
+See [actual maps, retained extent and both fixed-target diagnostics](../vector-map-paint-corridor.md).
+
 Curb candidates must have nearby road-side support and two raised outside bins no taller
 than `curb_height + 0.3 m` above the candidate. This rejects wall/vehicle steps and isolated
 low returns, but can also reject genuine curbs in sparse or cluttered scans. The report's

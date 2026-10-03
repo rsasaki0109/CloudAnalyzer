@@ -1,0 +1,436 @@
+{
+  "generation_runtime_commit": "c6c147c3405a1468540d5f3255520a13e5b2aba8",
+  "native_runtime_commit": "3da7f5badaaf41eff9e85043ceb28da16a3dcc14",
+  "web_ui_source_commit": "3da7f5badaaf41eff9e85043ceb28da16a3dcc14",
+  "runtime_difference": "Native/Web follow-up restores default width-evidence messages. All eighteen original frozen IR/OSM outputs, extraction reports and source audits reproduce exactly.",
+  "provenance_role": "Declared source commits and measured binary hashes, not embedded binary attestation",
+  "native_sha256": "a64f16461c8a1e05df0c181401316a8ebfe26c1e2f876215e85b2024820a466d",
+  "executable_sha256": "78819bb671ecee878fd29130cef3c3c4f7eef65465ac071886720f70b72a3f07",
+  "wasm_sha256": "59dd934a3b575ac1b728623a252e441fe4dba5cf1c94f0b9b3497e3b4829b75d",
+  "production_wasm_sha256": "59dd934a3b575ac1b728623a252e441fe4dba5cf1c94f0b9b3497e3b4829b75d",
+  "generation_reference_inputs": [],
+  "both_scene_generations_frozen_before_any_reference": true,
+  "figure_sha256": "d97b775435c1ade89533182e62af7c0fe9725810980a5d1002e1ec2a54048a74",
+  "plot_script_sha256": "c32bf67c8876d36318a99c2c5ec6c4a2807fc51af06476413b56c9880b209b5c",
+  "browser_screenshot": "docs/images/web/vector-map-paint-corridor-source.png",
+  "browser_screenshot_sha256": "e53ed3743f3d5bd1f09a2fdf6f8e99532c9ad228d4163dacce4834c8c101bd47",
+  "browser_harness_sha256": "a9ad62427a5353bbd498108afc75e108c2a220a68fea9236e1e5227ab429b5f5",
+  "browser_harness_source_commit": "6e94a306f80c3a12a085e2981b151e17d37b0752",
+  "generation_source_files_sha256": {
+    "rust/crates/ca-core/src/vector_map.rs": "a6a212bfe06ab1c2c55f096912b192e75e5351f0c0318fc1976437daa055ff5a",
+    "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "5386da59afad70daeb1b8f9137636c16b55145c25383045a05e8ed7d34f540a4",
+    "rust/crates/ca-core/src/vector_map/surface.rs": "88c1a89a597a958d0d64337d96019d69c9675766c459873ca60d77884fc4758b",
+    "rust/crates/ca-core/src/vector_map/fitting.rs": "65de5845e46aec2b53fd1fb8618d817a895ebbea29b90534fd39f9378d4deb60",
+    "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "8bb35274d8fa3339986b2010ca557c99ccf854ca14a6c82051349b7bb5ddf675",
+    "rust/crates/ca-wasm/examples/vector_map_anchor_compare.rs": "b2c1d107732cc698809fcb337beed8f3de4743dc6c9877c8168da78ba5aed308",
+    "rust/crates/ca-py/src/lib.rs": "04827115af51434c2064153bc91dfa7ad8172b285e78382fb0643487f38c7714",
+    "rust/crates/ca-wasm/src/vector_map.rs": "7737beeb9ebbab4cc27a70538190ed8ab8c4d84650567f5c61c2398a5d6561c8",
+    "cloudanalyzer/ca/vector_map.py": "aed44701e0f7ebe8a6631d8e84b569127c9f8ba525a5f80ad60478ac4a8567e0",
+    "cloudanalyzer/cloudanalyzer_cli/main.py": "841d5c1d60c2a2e258c96bf89d5f5ad7c65764402b9f011de8744c75255c9198",
+    "web/index.html": "3904a230aecc0421b3fb1520d910f9c4240ec3ad004fcfd1d4d15f8a14a621de",
+    "web/src/app/vectormap.ts": "fc7f5f58e6d6dfd0523e79be358a2803cc2981db4519bdd590d11b612fd52215"
+  },
+  "native_web_source_files_sha256": {
+    "rust/crates/ca-core/src/vector_map.rs": "cff2d13ee532a3d31337169b2582e24afe054e71d527513fab8ac90acf2020fc",
+    "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "5386da59afad70daeb1b8f9137636c16b55145c25383045a05e8ed7d34f540a4",
+    "rust/crates/ca-core/src/vector_map/surface.rs": "88c1a89a597a958d0d64337d96019d69c9675766c459873ca60d77884fc4758b",
+    "rust/crates/ca-core/src/vector_map/fitting.rs": "65de5845e46aec2b53fd1fb8618d817a895ebbea29b90534fd39f9378d4deb60",
+    "rust/crates/ca-core/src/vector_map/trace_alignment.rs": "8bb35274d8fa3339986b2010ca557c99ccf854ca14a6c82051349b7bb5ddf675",
+    "rust/crates/ca-wasm/examples/vector_map_anchor_compare.rs": "b2c1d107732cc698809fcb337beed8f3de4743dc6c9877c8168da78ba5aed308",
+    "rust/crates/ca-py/src/lib.rs": "04827115af51434c2064153bc91dfa7ad8172b285e78382fb0643487f38c7714",
+    "rust/crates/ca-wasm/src/vector_map.rs": "7737beeb9ebbab4cc27a70538190ed8ab8c4d84650567f5c61c2398a5d6561c8",
+    "cloudanalyzer/ca/vector_map.py": "aed44701e0f7ebe8a6631d8e84b569127c9f8ba525a5f80ad60478ac4a8567e0",
+    "cloudanalyzer/cloudanalyzer_cli/main.py": "841d5c1d60c2a2e258c96bf89d5f5ad7c65764402b9f011de8744c75255c9198",
+    "web/index.html": "3904a230aecc0421b3fb1520d910f9c4240ec3ad004fcfd1d4d15f8a14a621de",
+    "web/src/app/vectormap.ts": "fc7f5f58e6d6dfd0523e79be358a2803cc2981db4519bdd590d11b612fd52215"
+  },
+  "source_digest_encoding": "Canonical Git bytes (LF), not a filesystem newline attestation",
+  "native_reproduction": {
+    "generation_runtime_commit": "c6c147c3405a1468540d5f3255520a13e5b2aba8",
+    "native_runtime_commit": "3da7f5badaaf41eff9e85043ceb28da16a3dcc14",
+    "native_sha256": "a64f16461c8a1e05df0c181401316a8ebfe26c1e2f876215e85b2024820a466d",
+    "generation_reference_inputs": [],
+    "cases": [
+      {
+        "scene": "planning",
+        "mode": "before",
+        "case": "planning-0",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "planning",
+        "mode": "before",
+        "case": "planning-1",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "planning",
+        "mode": "before",
+        "case": "planning-2",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "planning",
+        "mode": "after",
+        "case": "planning-0",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "planning",
+        "mode": "after",
+        "case": "planning-1",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "planning",
+        "mode": "after",
+        "case": "planning-2",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "before",
+        "case": "arterial-south",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "before",
+        "case": "arterial-middle",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "before",
+        "case": "arterial-north",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "before",
+        "case": "west-south",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "before",
+        "case": "east-south",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "before",
+        "case": "west-north",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "after",
+        "case": "arterial-south",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "after",
+        "case": "arterial-middle",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "after",
+        "case": "arterial-north",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "after",
+        "case": "west-south",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "after",
+        "case": "east-south",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      },
+      {
+        "scene": "tokyo",
+        "mode": "after",
+        "case": "west-north",
+        "json_osm_byte_exact": true,
+        "extraction_exact": true,
+        "source_audit_exact": true
+      }
+    ],
+    "all_previous_curb_aligned_maps_byte_exact": true,
+    "tokyo_all_held_maps_byte_exact": true
+  },
+  "production_browser": {
+    "sourcePoints": 1757841,
+    "generationReferenceInputs": [],
+    "physicalAnchorsOnly": true,
+    "traceAlignment": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "curb_pair_sections": 0,
+      "interquartile_range_m": null,
+      "longest_supported_run": 0,
+      "median_lateral_shift_m": null,
+      "reason": "paired curbs need a majority of sections and three consecutive observations",
+      "sampled_sections": 27,
+      "shift_xy": [
+        0,
+        0
+      ]
+    },
+    "paintCorridor": {
+      "applied": true,
+      "contrasted_points": 411,
+      "eligible_bundles": 1,
+      "heading_correction_degrees": -2.0409856881453967,
+      "limited": false,
+      "longitudinal_components": 15,
+      "measured_lane_widths_m": [
+        2.9003523073130224,
+        2.8939343781439986
+      ],
+      "reason": "unique locally contrasted parallel paint bundle; counts and directions remain manual",
+      "residual_p90_m": 0.06753379094232903,
+      "roi_points": 88688,
+      "tracks": [
+        {
+          "extrapolated_length_m": 48.81075389679923,
+          "interpolated_length_m": 0,
+          "lateral_intercept_m": 5.552737262025015,
+          "observed_intervals_m": [
+            [
+              12.674602539164301,
+              14.470172357885055
+            ]
+          ],
+          "observed_length_m": 1.7955698187207538,
+          "source_points": 9,
+          "strong": false
+        },
+        {
+          "extrapolated_length_m": 0.9719635094717347,
+          "interpolated_length_m": 27.6103015747514,
+          "lateral_intercept_m": 2.6505438220180384,
+          "observed_intervals_m": [
+            [
+              0,
+              2.510783516932938
+            ],
+            [
+              9.470121749389671,
+              12.427578538117052
+            ],
+            [
+              17.616568447780594,
+              22.548885735154514
+            ],
+            [
+              27.704182659439688,
+              32.53131067802925
+            ],
+            [
+              37.63857676576989,
+              42.374293746709206
+            ],
+            [
+              47.57370416731452,
+              49.63436020604824
+            ]
+          ],
+          "observed_length_m": 22.024058631296842,
+          "source_points": 177,
+          "strong": true
+        },
+        {
+          "extrapolated_length_m": 13.413706223572596,
+          "interpolated_length_m": 29.111337581427442,
+          "lateral_intercept_m": -0.24522761474270904,
+          "observed_intervals_m": [
+            [
+              10.129238363698695,
+              11.907923095245295
+            ],
+            [
+              24.534880742714755,
+              25.68551742035277
+            ],
+            [
+              30.889308315002115,
+              31.766252202478967
+            ],
+            [
+              36.50752678925389,
+              37.39749631540795
+            ],
+            [
+              40.06989423815064,
+              42.13618507168991
+            ],
+            [
+              46.003101601480935,
+              47.32185585564608
+            ]
+          ],
+          "observed_length_m": 8.08127991051994,
+          "source_points": 42,
+          "strong": true
+        }
+      ],
+      "white_candidates": 7976
+    },
+    "defaultOff": true,
+    "lanes": 4,
+    "fullSourceAudit": true,
+    "nativeBoundaryVertices": 78,
+    "maximumNativeVertexToExportedNodeDistanceM": 0,
+    "comparisonRole": "Boundary vertices to exported nodes, not complete topology or byte equality",
+    "nativeMapSha256": "574cd66df38713dcfa46cd267aff8c1a606436de5864f5683c735a01548488be",
+    "exportedOsmSha256": "c66ff02b5228afe3b6cb3b6fa848e3272d7633d8cefad776e689dcb264171b73",
+    "oneStepUndo": true,
+    "pageErrors": []
+  },
+  "local_validation": {
+    "core_vector_tests": 77,
+    "wasm_tests": 12,
+    "native_api_cli_metric_mcp_tests": 35,
+    "production_vector_browser_tests": 19,
+    "actual_source_browser_tests": 1,
+    "linux_mypy_source_files": 143,
+    "fmt_clippy_typescript_release_builds": "pass"
+  },
+  "existing_gif_sha256": {
+    "docs/images/web/vector-map-hard-intersection.gif": "83dfcf852c6e327416092da03a85702bf1fbcc8f7ad79aad8012881493aa808b",
+    "docs/images/web/vector-map-supported-intersection.gif": "6e19effb3be8bf3607422f5c0c329eb941ce86c3763863c326c240579b4042f5"
+  },
+  "artifact_sha256": {
+    "planning/after-0-audit.json": "16a397acaa8a128836224ee7f8befde2e3f6a374d11b205fa4aae80687592e9c",
+    "planning/after-0-profiles.json": "47a7b387909f2294b1bb4ae2fe949dfeb993d2ab6d327f9bf6050cf9ee53ac1f",
+    "planning/after-0.json": "574cd66df38713dcfa46cd267aff8c1a606436de5864f5683c735a01548488be",
+    "planning/after-0.osm": "c66ff02b5228afe3b6cb3b6fa848e3272d7633d8cefad776e689dcb264171b73",
+    "planning/after-1-audit.json": "109c8d23fa1e19423bf9ace7b7c20c93b49fa8c40e28e0a3426f3d23c8cb3745",
+    "planning/after-1-profiles.json": "a1a0fa400795b8407c71cc49e53d91f49ef79dbcfa75af860e5afb088d1557fe",
+    "planning/after-1.json": "40e79b905397c0ae1398378f05ec6ef7ed17d40732a8a431feb7428005941a5e",
+    "planning/after-1.osm": "a5a0aa17f64f240d2effea57207d2fb4d93eefde8874c85c57387e800585bea2",
+    "planning/after-2-audit.json": "181dbf14641554b655f37308b4d95cfe4abc77275a6c57eacdf2b42db861985d",
+    "planning/after-2-profiles.json": "a8d70525d241d8afe781749fa980bf6f6f57a3083540febefdadd79505bf32cc",
+    "planning/after-2.json": "d260a196be90ff46943ddd86561d5287d21802d08113bbb184fd0e83004d558c",
+    "planning/after-2.osm": "6edc1e967555c9437af63644e0b04f0809e43856d24f2a468d868a28254c98df",
+    "planning/before-0-audit.json": "937babf566735e6144393434d54dc8b315a31bd4509c5f7e859c392658a05b72",
+    "planning/before-0-profiles.json": "25186f15f48a9931e362494c6b3c64bf4cc1468555dc90ecfb4f7db891d88e25",
+    "planning/before-0.json": "829bfb3ffc5f76562e2053a7490a8a4cae6a285468cef85081d22ef03b230a5e",
+    "planning/before-0.osm": "b689d2ed074c58ddd256f4793592f879044c13f2875206270b529293b68bde31",
+    "planning/before-1-audit.json": "cb1cf7025ae3e0de53ebd157bf3c3684be855e28525a32ae8645fdb5a7215f8c",
+    "planning/before-1-profiles.json": "e276d6506799e7a6203a1fd8ea3f760ff39efd7a67844174dc230977afd9bc47",
+    "planning/before-1.json": "94d67824c10da6e515f5ed6a35b8f1a1090276be599519660a25df0d8b587449",
+    "planning/before-1.osm": "c13c186f35857ec1838c4e2d376002ca22111d801f26ec0140cd4eec06f72535",
+    "planning/before-2-audit.json": "d783ed3e817c6ddc4c84bda7e3ee825e7929d7d80780012062782f9fcbb8124d",
+    "planning/before-2-profiles.json": "856d35843988cd9d9e201434463cf26101dac1a8116a1d1e1a180c30b1d1cd0f",
+    "planning/before-2.json": "09751998b071f638b6712c4673c5aeaaef4e582b1e4404aa8468f75ae062a0ed",
+    "planning/before-2.osm": "8a2692b2b880e8da29fcbe9ff2a0b2638702bab17f0005b0428fba0facaf84b5",
+    "planning/comparison.json": "5c98c1a77d9371836beb36abe9016d2f4f52848ac74fd633a7e678ed27f3a31f",
+    "planning/evaluation.json": "a50251b6cd6a9ae6d2c06e9bb4c005a4e097c4c828d300252a8813a3708578ad",
+    "planning/generation-freeze.json": "266b7a28f6356804fe8057dbd0a58598891b33d29609a48d11609fc1ffe06db6",
+    "planning/inputs.json": "03a33cdbb91ef893058743fa6601684116985b9e816187032f9c83c141b7d294",
+    "planning/trajectory-0.csv": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+    "planning/trajectory-1.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+    "planning/trajectory-2.csv": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9",
+    "README.md": "4bf9cd7b652a8510c322ff30e758b969f471c087258285400d0818c05446c046",
+    "tokyo/after-0-audit.json": "dafc88318a1f4976eb682e5de3aa94d58fc5c8c94710e4564ef7819cf54d153d",
+    "tokyo/after-0-profiles.json": "94f5bfe9760c7e5143b2d2bc14d72c842eccc8b672124c9c9166bce475cc248c",
+    "tokyo/after-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+    "tokyo/after-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+    "tokyo/after-1-audit.json": "378dd08a7656f816d8d9070aed9b8c9f0ec90e6d0c16f3d866d29de729726077",
+    "tokyo/after-1-profiles.json": "7339b6e8b806b3115c4ef5c5f6d60d311d15ba74e409aeb943c025b767f98ec2",
+    "tokyo/after-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+    "tokyo/after-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+    "tokyo/after-2-audit.json": "5426639642729851987a1fdc6c485788bf9226b1a7427c034b8ca403ed90f43f",
+    "tokyo/after-2-profiles.json": "cb486d4b8ad181a1363289fea90c377291cfbd045207322547a664d45e3479b6",
+    "tokyo/after-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+    "tokyo/after-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+    "tokyo/after-3-audit.json": "df2d0732b532be2bd2952466496d35757c1bda5fd01d28d0056343fc0b82b5b1",
+    "tokyo/after-3-profiles.json": "0e7daee490011aa2eacfc4ffccb70aea0423f864e59842cd3005edd3884ab59c",
+    "tokyo/after-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+    "tokyo/after-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+    "tokyo/after-4-audit.json": "5f13e3659453366f5010f96de30964ceb90a373cc84f8115266a5d2d8182581b",
+    "tokyo/after-4-profiles.json": "2d1237f374ec8c44b4715ca314bd96d186ba45435b7a0c1849e5826379998f19",
+    "tokyo/after-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+    "tokyo/after-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+    "tokyo/after-5-audit.json": "c3e46dd0adad16379575bb727bf826ab3266d2752ec6886a1390bfe60f749801",
+    "tokyo/after-5-profiles.json": "617340ef48dfa556a2350f2c38c9b06acbe06881d710b9a3b6d16cabaffb9af9",
+    "tokyo/after-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+    "tokyo/after-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+    "tokyo/before-0-audit.json": "a772070122c81f0de26d25ebf01be30d44d5937e677ed14e8a38de2320056958",
+    "tokyo/before-0-profiles.json": "ab6b146c097e16c4e57dc1fcd3b9e17ed197519a14b2b6aec41b6bc4c0183486",
+    "tokyo/before-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+    "tokyo/before-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+    "tokyo/before-1-audit.json": "1ef4e79ba6c06168a1fc7a0d6e479b3bef75ca0bbdc3a7742e7cfdb4c42d2bee",
+    "tokyo/before-1-profiles.json": "c1278c2b4e364e39bcad8f10bced9bc33278afa07af6eb1c4b89392612ff9f72",
+    "tokyo/before-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+    "tokyo/before-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+    "tokyo/before-2-audit.json": "65c0c498508a82bd74dd4560e77b029b7df35ddcb615b20befe8b98aa7d0d751",
+    "tokyo/before-2-profiles.json": "c01c6ce7bee3f9e636f74ebb313f3330124379a862da5dd4903dcb12d51a8bf6",
+    "tokyo/before-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+    "tokyo/before-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+    "tokyo/before-3-audit.json": "a06155185ea0e2eb60bba96ff21554ddae5f93558b54444fd5997d580cc3b274",
+    "tokyo/before-3-profiles.json": "c2820ed880ef390af287fea662887ae5d3af6bb5de5b0ea4cc0fcca824607b8f",
+    "tokyo/before-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+    "tokyo/before-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+    "tokyo/before-4-audit.json": "902b8b24414f582a688f2963e92d160b6c6cfd47daa5531032187c4c972f64ad",
+    "tokyo/before-4-profiles.json": "4823a32dc5ace7a4a6e75b1189ac39e2970aaae3d926a2a70dc95bff5abcd816",
+    "tokyo/before-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+    "tokyo/before-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+    "tokyo/before-5-audit.json": "e70812fd90676bd9be2909128179bf79e084268a96ce0fb6576fc105ff1319e2",
+    "tokyo/before-5-profiles.json": "9ce40b8a2ee5e577ad2352f9cb44755d94b40d2d2965c3eb9f053808fa03a4a9",
+    "tokyo/before-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+    "tokyo/before-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+    "tokyo/comparison.json": "9e0239616c0760843e52d1d710e3050722ce82f4bbfec7c99192ab96263f388c",
+    "tokyo/evaluation.json": "73e6e89518b1b0ce3c77982aa254ff348b6c633fa88035074ced78202d1a95c5",
+    "tokyo/generation-freeze.json": "05ec07a0bee63e257943511087bca0b78cfb3184c1ace22f4e6e3a9d2fafa2d8",
+    "tokyo/inputs.json": "f87b1d11972107d64abd5eb7253df4c608d8fe32b8aeeb9329d14a1812efba58",
+    "tokyo/trajectory-0.csv": "fcdfd2c453fd7fa5b4d458d100806533cee59f225aea56e986286cc896ae1ca9",
+    "tokyo/trajectory-1.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b",
+    "tokyo/trajectory-2.csv": "db591b8a2ab77281b967583f704bf3224454120b9a00b5d8c3a59a0694bb989b",
+    "tokyo/trajectory-3.csv": "6cffc6ff3d8f545f998f45b6893408c28c0e39e95f7ca484beef309e23583ca4",
+    "tokyo/trajectory-4.csv": "34a86c58a094080d9693ef5cb7073794fe51a3581592da2d2be9c962f5005b38",
+    "tokyo/trajectory-5.csv": "7cae83e443960483cd1b22e21293b02ef75da381bdaa3b86a097a6315359b8c1"
+  }
+}

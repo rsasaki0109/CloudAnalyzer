@@ -78,6 +78,42 @@ def test_all_source_outputs_frozen_before_reference_is_opened(tmp_path, monkeypa
     assert r["paired_source_intervals"][0]["after"]["mean_xy_m"] == 0
 
 
+def test_frozen_evaluation_rejects_tampering_and_incomplete_freeze_before_reference(tmp_path, monkeypatch):
+    import json
+    import vector_map_anchor_evaluate as audit
+    source, config, exe = [tmp_path / s for s in ("source", "config.json", "exe")]
+    source.write_bytes(b"source")
+    exe.write_bytes(b"binary")
+    config.write_text(json.dumps({"reference_inputs": [], "cases": [{"name": "test"}]}))
+    out = tmp_path / "proof"
+    out.mkdir()
+    doc = {"boundaries": [{"geometry": [[0, 0, 2], [1, 0, 2]]}]}
+    for mode in ("before", "after"):
+        audit.save(out / f"{mode}-0.json", doc)
+        audit.save(out / f"{mode}-0-profiles.json", profile())
+        audit.save(out / f"{mode}-0-audit.json", {})
+        (out / f"{mode}-0.osm").write_bytes(b"export")
+    (out / "trajectory-0.csv").write_bytes(b"trajectory")
+    audit.save(out / "comparison.json", [])
+    frozen = {p.name: audit.digest(p) for p in out.iterdir()}
+    freeze = {"reference_inputs": [], "source_sha256": audit.digest(source),
+              "config_sha256": audit.digest(config), "executable_sha256": audit.digest(exe),
+              "artifact_sha256": frozen}
+    audit.save(out / "generation-freeze.json", freeze)
+    def forbidden(*args, **kwargs):
+        pytest.fail("must not regenerate or open reference geometry")
+    monkeypatch.setattr(audit.subprocess, "run", forbidden)
+    monkeypatch.setattr(audit, "reference_document", forbidden)
+    (out / "after-0.osm").write_bytes(b"changed")
+    with pytest.raises(ValueError, match="artifacts differ"):
+        audit.run(source, config, tmp_path / "absent-reference", out, exe, "test", None, evaluate_frozen=True)
+    (out / "after-0.osm").write_bytes(b"export")
+    del frozen["after-0-audit.json"]
+    audit.save(out / "generation-freeze.json", freeze)
+    with pytest.raises(ValueError, match="incomplete"):
+        audit.run(source, config, tmp_path / "absent-reference", out, exe, "test", None, evaluate_frozen=True)
+
+
 def test_operator_coordinates_must_invert_the_reported_source_translation():
     p = profile()
     p["roads"][0]["operator_reference"] = [[0,-2,2],[1,-2,2]]

@@ -656,6 +656,9 @@ pub fn extract(
             let target = prior[j] * 0.7 + nominal[j] * 0.3;
             let found = candidates
                 .iter()
+                // RGB observations enter through continuity tracking. A paint
+                // candidate rejected there must not pre-shift inferred widths.
+                .filter(|c| !o.track_boundaries || c.evidence != Evidence::RgbPaint)
                 .filter(|c| {
                     (c.lateral - nominal[j]).abs() <= o.search_margin
                         && (j == 0
@@ -1082,6 +1085,42 @@ mod tests {
         cloud.colors.as_mut().unwrap().pop();
         assert!(build(&mut map, &cloud, &poses, &options).is_err());
         assert_eq!(map, before);
+    }
+
+    #[test]
+    fn rgb_rejected_by_tracking_cannot_shift_width_assumptions() {
+        let mut cloud = marked_road();
+        cloud.attributes.clear();
+        for p in &mut cloud.positions {
+            p[2] = 2.0;
+        }
+        cloud.colors = Some(
+            cloud
+                .positions
+                .iter()
+                .map(|p| {
+                    if (12.0..=18.0).contains(&p[0]) && (p[1] - 2.8).abs() < 0.11 {
+                        [230; 3]
+                    } else {
+                        [40; 3]
+                    }
+                })
+                .collect(),
+        );
+        let poses = [[3.0, 0.0, 99.0], [27.0, 0.0, 99.0]];
+        let (prior, _) = extract(&cloud, &poses, &BuildOptions::default()).unwrap();
+        let (rgb, report) = extract(
+            &cloud,
+            &poses,
+            &BuildOptions {
+                observe_rgb_boundaries: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(report.rgb_paint_vertices, 0);
+        assert_eq!(rgb[0].boundaries, prior[0].boundaries);
+        assert_eq!(rgb[0].evidence, prior[0].evidence);
     }
 
     #[test]

@@ -65,7 +65,10 @@ pub(super) fn candidates(
             bands[k].push(brightness(i));
         }
         for k in 0..4 {
-            if bands[k].len() >= o.min_bin_points {
+            // A sparse scan can have fewer than three returns per quarter.
+            // All four quarters and both dark flanks must still be observed;
+            // empty quarters never stand in for dark/bright measurements.
+            if !bands[k].is_empty() {
                 profile[j][k] = quantile(&mut bands[k], 0.75);
             }
         }

@@ -25,6 +25,7 @@ def build_vector_map(
     speed_limit: float = 40.0,
     segment_length: float = 50.0,
     anchor_width_prior: bool = True,
+    physical_anchors_only: bool = False,
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
     fit_source_surface: bool = False,
@@ -46,7 +47,11 @@ def build_vector_map(
     defines the local origin of the other projections. Omitted metadata uses Autoware Local.
     Candidate tracking rejects isolated peaks; trajectory-relative curve fitting moves XY by at most
     0.5 m and preserves ground heights. Evidence counts describe selected sources before
-    fitting, including explicit width priors. Curb profile checks reject tall raised
+    fitting, including explicit width priors. physical_anchors_only excludes point
+    coverage limits from offsets for inferred lines; curb/intensity observations
+    remain anchors. Coverage-edge geometry can still be selected and needs review.
+    The ignored-candidate counter is before tracking and surface deferral.
+    Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does
     not guarantee better lane geometry. Stages can be disabled independently.
     fit_source_surface instead fits inferred widths/heights to a coherent low-surface
@@ -116,6 +121,7 @@ def build_vector_map(
             "speed_limit": speed_limit,
             "segment_length": segment_length,
             "anchor_width_prior": anchor_width_prior,
+            **({"physical_anchors_only": True} if physical_anchors_only else {}),
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
             **({"fit_source_surface": True} if fit_source_surface else {}),

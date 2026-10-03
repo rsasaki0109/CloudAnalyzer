@@ -48,6 +48,9 @@ pub struct BuildOptions {
     pub smoothing_window: usize,
     /// Place inferred lane lines relative to nearby detected outer boundaries.
     pub anchor_width_prior: bool,
+    /// Use only selected curb/intensity observations for inferred width anchors.
+    /// Coverage limits can be scan gaps and must not move other inferred lines.
+    pub physical_anchors_only: bool,
     /// Select boundary candidates as a continuous path across supported slices.
     pub track_boundaries: bool,
     /// Regularize trajectory-relative lateral deviations with bounded XY movement.
@@ -81,6 +84,7 @@ impl Default for BuildOptions {
             sample_spacing: 2.0,
             smoothing_window: 2,
             anchor_width_prior: true,
+            physical_anchors_only: false,
             track_boundaries: true,
             fit_boundaries: true,
             merge_repeated_passes: true,
@@ -135,6 +139,9 @@ pub struct BuildReport {
     pub support_edge_vertices: usize,
     pub width_prior_vertices: usize,
     pub anchored_prior_vertices: usize,
+    /// Outside coverage-edge vertices excluded before tracking/surface deferral.
+    /// This counts anchor candidates, not removed geometry or false detections.
+    pub coverage_edge_anchor_candidates_ignored: usize,
     pub tracked_vertices: usize,
     pub fitted_vertices: usize,
     pub maximum_fit_displacement: f64,
@@ -474,6 +481,7 @@ pub fn extract(
         support_edge_vertices: 0,
         width_prior_vertices: 0,
         anchored_prior_vertices: 0,
+        coverage_edge_anchor_candidates_ignored: 0,
         tracked_vertices: 0,
         fitted_vertices: 0,
         maximum_fit_displacement: 0.0,
@@ -677,7 +685,18 @@ pub fn extract(
             // Retain the original robust outer-edge offset when an unstable
             // detection is replaced by an inferred point. Dropping the
             // observation must not silently reset the lane to the pose centre.
-            let (_, offsets) = prior_offsets(road, &nominal);
+            if o.anchor_width_prior && o.physical_anchors_only {
+                report.coverage_edge_anchor_candidates_ignored += [0, nlanes]
+                    .iter()
+                    .map(|&j| {
+                        road.evidence[j]
+                            .iter()
+                            .filter(|&&e| e == Evidence::SupportEdge)
+                            .count()
+                    })
+                    .sum::<usize>();
+            }
+            let (_, offsets) = prior_offsets(road, &nominal, o.physical_anchors_only);
             if o.anchor_width_prior {
                 for (k, section) in sections.iter_mut().enumerate() {
                     for (j, choices) in section.choices.iter_mut().enumerate() {
@@ -700,7 +719,19 @@ pub fn extract(
         }
     } else if o.anchor_width_prior {
         for road in &mut roads {
-            report.anchored_prior_vertices += anchor_priors(road, &nominal);
+            if o.physical_anchors_only {
+                report.coverage_edge_anchor_candidates_ignored += [0, nlanes]
+                    .iter()
+                    .map(|&j| {
+                        road.evidence[j]
+                            .iter()
+                            .filter(|&&e| e == Evidence::SupportEdge)
+                            .count()
+                    })
+                    .sum::<usize>();
+            }
+            report.anchored_prior_vertices +=
+                anchor_priors(road, &nominal, o.physical_anchors_only);
         }
     }
     if o.fit_boundaries {
@@ -766,6 +797,9 @@ pub fn extract(
         report.warnings.push(format!("{} sections lack ground support and were omitted; disconnected stretches require review.",report.unsupported_sections));
     }
     report.warnings.push("Draft map: verify lane counts, travel directions, junctions and boundary geometry before use.".into());
+    if o.physical_anchors_only && o.anchor_width_prior {
+        report.warnings.push(format!("{} pre-tracking coverage-edge anchor candidates were excluded from inferred lane offsets. Paint/curb observations remain anchors; inferred vertices remain width assumptions. Coverage-edge candidate geometry can still be selected and requires review.", report.coverage_edge_anchor_candidates_ignored));
+    }
     if o.fit_source_surface {
         return surface::refine(cloud, &line, &index, [low, high], o, report, roads);
     }
@@ -778,7 +812,11 @@ pub fn extract(
 /// inferred vertices keep their evidence label. No reference map is consulted.
 /// Missing slices are excluded from the median; up to two neighbouring slices
 /// receive an attenuated anchor rather than treating missing evidence as zero.
-fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<Option<f64>>) {
+fn prior_offsets(
+    road: &ExtractedRoad,
+    nominal: &[f64],
+    physical_only: bool,
+) -> (Vec<[f64; 2]>, Vec<Option<f64>>) {
     let n = road.reference.len();
     let last = nominal.len() - 1;
     let normals: Vec<_> = (0..n)
@@ -795,7 +833,9 @@ fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<O
             let mut sum = 0.0;
             let mut count = 0;
             for j in [0, last] {
-                if road.evidence[j][k] != Evidence::WidthPrior {
+                if road.evidence[j][k] != Evidence::WidthPrior
+                    && !(physical_only && road.evidence[j][k] == Evidence::SupportEdge)
+                {
                     let q = road.boundaries[j][k];
                     sum +=
                         (q[0] - p[0]) * normals[k][0] + (q[1] - p[1]) * normals[k][1] - nominal[j];
@@ -830,8 +870,8 @@ fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<O
     (normals, offsets)
 }
 
-fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64]) -> usize {
-    let (normals, offsets) = prior_offsets(road, nominal);
+fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64], physical_only: bool) -> usize {
+    let (normals, offsets) = prior_offsets(road, nominal, physical_only);
     let mut moved = 0;
     for (k, offset) in offsets.into_iter().enumerate() {
         let Some(offset) = offset else { continue };
@@ -1083,7 +1123,7 @@ mod tests {
         // used to count as zero offsets and overwhelm it in the median.
         road.boundaries[0][5][1] += 0.8;
         road.evidence[0][5] = Evidence::Curb;
-        anchor_priors(&mut road, &[1.75, -1.75, -5.25]);
+        anchor_priors(&mut road, &[1.75, -1.75, -5.25], true);
         for k in 0usize..11 {
             let expected = -1.75 + 0.8 * (1.0 - k.abs_diff(5) as f64 / 3.0).max(0.0);
             assert!((road.boundaries[1][k][1] - expected).abs() < 1e-12);
@@ -1092,6 +1132,53 @@ mod tests {
         }
         assert_eq!(road.boundaries[0][5][1], 2.55);
         assert_eq!(road.evidence[0][5], Evidence::Curb);
+    }
+
+    #[test]
+    fn coverage_limits_do_not_anchor_physical_only_width_priors() {
+        let reference: Vec<_> = (0..11).map(|k| [k as f64 * 2.0, 0.0, 2.0]).collect();
+        let nominal = [1.75, -1.75, -5.25];
+        let mut measured = ExtractedRoad {
+            reference: reference.clone(),
+            boundaries: nominal
+                .iter()
+                .enumerate()
+                .map(|(j, &y)| {
+                    reference
+                        .iter()
+                        .map(|p| [p[0], y + if j == 1 { 0.0 } else { 1.0 }, 2.0])
+                        .collect()
+                })
+                .collect(),
+            evidence: vec![
+                vec![Evidence::SupportEdge; 11],
+                vec![Evidence::WidthPrior; 11],
+                vec![Evidence::SupportEdge; 11],
+            ],
+            source_boundaries: None,
+        };
+        let original = measured.clone();
+        let mut legacy = measured.clone();
+        assert_eq!(anchor_priors(&mut measured, &nominal, true), 0);
+        assert_eq!(measured.boundaries, original.boundaries);
+        assert!(anchor_priors(&mut legacy, &nominal, false) > 0);
+        assert!((legacy.boundaries[1][5][1] + 0.75).abs() < 1e-12);
+        assert_eq!(legacy.evidence, original.evidence);
+
+        // The opposite coverage edge must not dilute a real curb/paint anchor.
+        for physical in [Evidence::Curb, Evidence::Intensity] {
+            let mut road = original.clone();
+            road.evidence[0].fill(physical);
+            for p in &mut road.boundaries[0] {
+                p[1] = nominal[0] + 0.6;
+            }
+            let observed = road.boundaries[0].clone();
+            anchor_priors(&mut road, &nominal, true);
+            assert!((road.boundaries[1][5][1] - (-1.75 + 0.6)).abs() < 1e-12);
+            assert_eq!(road.boundaries[0], observed);
+            assert_eq!(road.evidence[1][5], Evidence::WidthPrior);
+            assert!(road.boundaries.iter().flatten().all(|p| p[2] == 2.0));
+        }
     }
 
     #[test]

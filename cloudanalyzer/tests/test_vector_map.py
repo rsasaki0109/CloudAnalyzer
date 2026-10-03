@@ -842,3 +842,36 @@ def test_signal_target_preview_adoption_rejection_staleness_and_roundtrip(tmp_pa
     with pytest.raises(FileExistsError):
         propose_vector_map_relations(str(source), 21, candidate_key="crosswalk:10", map_snapshot=preview["map_snapshot"], out_dir=str(output))
     assert source.read_bytes() == original
+
+
+def test_scan_limits_do_not_shift_inferred_lanes_with_physical_anchors(tmp_path):
+    import numpy as np
+    native = pytest.importorskip("cloudanalyzer_core")
+    cloud = tmp_path / "clipped.xyz"
+    cloud.write_text("".join(f"{x/5} {y/5} 2\n" for x in range(201) for y in range(-21, 15)))
+    trajectory = tmp_path / "drive.csv"
+    trajectory.write_text("timestamp,x,y,z\n0,3,0,50\n1,37,0,50\n")
+    original = cloud.read_bytes()
+    def internal(report):
+        doc = json.loads(Path(report["files"]["editable_map"]).read_text())
+        def bid(value):
+            return value if isinstance(value, int) else value["boundary"]
+        common = {bid(doc["lanes"][0][s]) for s in ("left", "right")} & {bid(doc["lanes"][1][s]) for s in ("left", "right")}
+        line = next(b["geometry"] for b in doc["boundaries"] if b["id"] in common)
+        assert np.allclose(np.asarray(line)[:, 2], 2.)
+        return float(np.median(np.asarray(line)[:, 1]))
+    for tracked in (True, False):
+        legacy = build_vector_map(str(cloud), str(trajectory), str(tmp_path / f"legacy-{tracked}"), track_boundaries=tracked)
+        guarded = build_vector_map(str(cloud), str(trajectory), str(tmp_path / f"guarded-{tracked}"), track_boundaries=tracked, physical_anchors_only=True)
+        assert guarded["extraction"]["coverage_edge_anchor_candidates_ignored"] > 0
+        assert legacy["extraction"]["coverage_edge_anchor_candidates_ignored"] == 0
+        assert internal(guarded) == pytest.approx(-1.75, abs=.02)
+        assert internal(legacy) - internal(guarded) > .5
+        assert guarded["extraction"]["support_edge_vertices"] > 0  # Geometry remains available.
+        assert not json.loads(native.audit_vector_map_quality(str(cloud), guarded["files"]["editable_map"]))["quality"]["low_support_lanes"]
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trajectory), "--out", str(tmp_path/"cli"), "--physical-anchors-only"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report["options"]["physical_anchors_only"] is True
+    assert internal(report) == pytest.approx(-1.75, abs=.02)
+    assert cloud.read_bytes() == original

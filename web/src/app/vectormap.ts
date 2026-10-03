@@ -587,6 +587,7 @@ interface BuildReport {
   added_length: number;
   reused_length: number;
   tracked_vertices: number;
+  coverage_edge_anchor_candidates_ignored: number;
   fitted_vertices: number;
   maximum_fit_displacement: number;
   observed_fraction: number[];
@@ -1078,6 +1079,7 @@ function roadBuildOptions(): object {
     speed_limit: Number($<HTMLInputElement>("vm-speed").value),
     segment_length: Number($<HTMLInputElement>("vm-segment").value),
     anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
+    physical_anchors_only: $<HTMLInputElement>("vm-physical-anchors").checked,
     track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
     fit_boundaries: $<HTMLInputElement>("vm-fit-boundaries").checked,
     fit_source_surface: $<HTMLInputElement>("vm-source-surface").checked,
@@ -1090,6 +1092,7 @@ function renderBuildReport(report: BuildReport): void {
     `Added ${fmt(report.added_length)} m; reused ${fmt(report.reused_length)} m of existing lanes. ` +
     `Measured sources before fitting, left to right: ${report.observed_fraction.map(f => `${Math.round(f*100)}%`).join(", ")}. ` +
     `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +
+    `Coverage-edge anchor candidates ignored: ${report.coverage_edge_anchor_candidates_ignored}. ` +
     (report.surface_fit ? `Source footprint: ${fmt(report.surface_fit.deferred_length_m)} m deferred; inferred lane widths ${fmt(report.surface_fit.minimum_lane_width_m ?? 0)}–${fmt(report.surface_fit.maximum_lane_width_m ?? 0)} m. ` : "") +report.warnings.join(" ");
 }
 buildButton.onclick = async () => {

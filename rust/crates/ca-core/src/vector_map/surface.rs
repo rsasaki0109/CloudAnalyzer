@@ -405,6 +405,9 @@ fn finish(
         report.tracked_vertices = 0;
     }
     report.warnings.clear();
+    if report.coverage_edge_anchor_candidates_ignored > 0 {
+        report.warnings.push(format!("{} pre-tracking coverage-edge anchor candidates were excluded from inferred offsets before source-footprint trimming. Coverage limits are not physical road-boundary observations.", report.coverage_edge_anchor_candidates_ignored));
+    }
     let before = roads.len();
     roads.retain(|r| length(&r.reference) >= 2.0 - 1e-9);
     fit.discarded_short_stretches = before - roads.len();

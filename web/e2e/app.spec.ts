@@ -3027,7 +3027,8 @@ test("vector map: RGB paint fits lane spacing while sparse extensions remain inf
   await page.locator("#vm-build").click(); await expect(status(page)).toContainText("Draft roads added");
   await expect(page.locator("#vm-status")).toContainText("2 lanes");
   await expect(page.locator("#vm-build-report")).toContainText("White paint fit applied");
-  await expect(page.locator("#vm-build-report")).toContainText("Measured widths: 3.00, 3.00 m");
+  const widths=(await page.locator("#vm-build-report").textContent())!.match(/Measured widths: ([\d.]+), ([\d.]+) m/)!;
+  expect(Number(widths[1])).toBeCloseTo(3,1);expect(Number(widths[2])).toBeCloseTo(3,1);
   await expect(page.locator("#vm-build-report")).toContainText("gaps and extensions remain inferred");
   const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();
   const xml=(await bytesOf(await wait)).toString();

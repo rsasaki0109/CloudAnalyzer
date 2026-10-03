@@ -818,14 +818,19 @@ fn finish_extraction(
     }
     report.intensity_used = report.intensity_vertices > 0;
     report.roads = roads.len();
-    if !report.intensity_used && report.rgb_paint_vertices == 0 {
+    let paint_applied = report.paint_corridor.as_ref().is_some_and(|r| r.applied);
+    if !report.intensity_used && !paint_applied {
         report.warnings.push(
             "No usable intensity contrast: internal lane lines use the configured width prior."
                 .into(),
         );
     }
     if report.width_prior_vertices > 0 {
-        report.warnings.push(format!("{} boundary vertices are inferred rather than directly observed; paint-corridor fits use measured spacing, other paths use width assumptions.", report.width_prior_vertices));
+        report.warnings.push(if paint_applied {
+            format!("{} boundary vertices are inferred from measured paint spacing rather than directly observed paint.", report.width_prior_vertices)
+        } else {
+            format!("{} boundary vertices use the configured lane width rather than a detected feature.", report.width_prior_vertices)
+        });
     }
     if report.rejected_curb_candidates > 0 {
         report.warnings.push(format!("{} curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.", report.rejected_curb_candidates));

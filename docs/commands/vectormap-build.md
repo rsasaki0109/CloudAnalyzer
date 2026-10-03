@@ -51,7 +51,7 @@ fit, so its reported movement may exceed that cap. The option is off by default.
 See the [actual maps and correspondence-aware evaluation](../vector-map-curb-alignment.md).
 
 Opt in with `--fit-paint-corridor`, Python/MCP `fit_paint_corridor=True`, or Web's
-**Fit straight lanes using observed white paint**. This independently fits
+**Fit straight lanes using paint candidates**. This independently fits
 straight parallel boundary heading and spacing from thin source RGB paint with
 dark ground on both sides. Counts, directions and marking roles remain manual.
 `paint_corridor` reports measured widths and each line's source observation
@@ -72,6 +72,14 @@ the correction. Counts, boundary roles and directions remain manual; nearby
 observed paint alone receives RGB evidence. The option defaults to off and its
 separate relocation can exceed the 0.5 m local curve-fit cap.
 See [actual maps and per-boundary errors](../vector-map-paint-divider.md).
+
+Choose the paint-fit input explicitly with `--paint-channel intensity`, Python/MCP
+`paint_channel="intensity"`, or Web's **Paint-fit source → Retained intensity**.
+RGB remains the default; channel selection alone does not enable a fit or provide
+an automatic fallback. Retained intensity is temporarily normalized within the
+ROI while raw points stay unchanged. Observed fitted paint uses intensity evidence;
+gaps and extensions stay inferred. Missing, ambiguous or over-budget evidence holds
+the correction. See [normalization, source-only checks and real-data holds](../vector-map-intensity-paint.md).
 
 Curb candidates must have nearby road-side support and two raised outside bins no taller
 than `curb_height + 0.3 m` above the candidate. This rejects wall/vehicle steps and isolated

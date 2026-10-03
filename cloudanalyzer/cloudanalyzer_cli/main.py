@@ -1859,7 +1859,7 @@ def vectormap_build_cmd(
     speed_limit: float = typer.Option(40.0, "--speed-limit", help="Speed in km/h"),
     segment_length: float = typer.Option(50.0, "--segment-length", help="Lane piece length in metres; 0 keeps whole roads"),
     no_anchor_width_prior: bool = typer.Option(False, "--no-anchor-width-prior", help="Keep inferred lines relative to the trajectory instead of detected outer edges"),
-    physical_anchors_only: bool = typer.Option(False, "--physical-anchors-only", help="Use curb/paint observations for inferred offsets; scan limits cannot shift inferred lanes"),
+    physical_anchors_only: bool = typer.Option(False, "--physical-anchors-only", help="Exclude scan limits from inferred offset anchors; retain curb/paint observations"),
     no_track_boundaries: bool = typer.Option(False, "--no-track-boundaries", help="Choose each boundary slice independently without continuity tracking"),
     no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without trajectory-relative curve fitting"),
     fit_source_surface: bool = typer.Option(False, "--fit-source-surface", help="Fit widths/heights to source ground; defer unsupported intervals; lane counts remain explicit"),

@@ -76,13 +76,21 @@ and confirm its controlled lanes. For COPC surveys,
 [read a full-density working box](docs/large-point-clouds.md#web-full-density-working-box) first.
 
 <p align="center">
-  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map-hard-intersection.gif" alt="Original Tokyo points and recorded arterial poses with operator-traced branches generate a complex road draft, measured crossing and stop-marking candidates and signal housings; review, edit, Undo and reopen Lanelet2" width="800"></a><br>
-  <b>Build a complex intersection from points. Review, edit, undo, export.</b><br>
-  49 road lanes including connection drafts · 7 paint crossings · 2 stop-marking drafts · 4 signal housings.<br>
-  No input map: recorded arterial segments and traced branches; lane widths, object types and lane links are operator inputs.<br>
-  <a href="docs/vector-map-hard-intersection.md">Fixed source-only evaluation and limitations</a> ·
-  <a href="docs/vector-map-media.md">Reproduce this GIF</a>
+  <a href="docs/vector-map-supported-intersection.md"><img src="docs/images/web/vector-map-supported-intersection.gif" alt="Actual Tokyo source points generate default and source-footprint road drafts; supported connections, paint crossings, stop markings and signal housings are reviewed; geometric signal targets are highlighted, inspected, explicitly adopted, undone and reopened as Lanelet2" width="800"></a><br>
+  <b>Build a complex intersection from points. Inspect targets, adopt, export.</b><br>
+  38 road fragments + 21 reviewed connections · 7 paint crossings · 2 stop-marking drafts · 4 signal housings.<br>
+  Source-review flags: 9 → 0; 34.3 m of road extent deferred. 2 geometric target drafts reviewed; 2 signals remain unresolved.<br>
+  No input map: recorded arterial segments and traced branches; lane counts, object types and legal control require review.<br>
+  <a href="docs/vector-map-supported-intersection.md">Generated map, quality limits and GIF reproduction</a>
 </p>
+
+<details>
+  <summary>Earlier intersection draft and its source-quality audit</summary>
+  <p align="center">
+    <a href="docs/vector-map-media.md#source-only-hard-intersection"><img src="docs/images/web/vector-map-hard-intersection.gif" alt="Earlier 49-lane Tokyo draft generation, equipment review, editing and Lanelet2 reload" width="800"></a><br>
+    The earlier draft has nine lanes requiring source review; see the <a href="docs/vector-map-quality.md">quality audit</a>.
+  </p>
+</details>
 
 <details>
   <summary>Road boundaries drafted directly from real LiDAR and recorded poses</summary>

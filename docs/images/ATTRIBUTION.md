@@ -137,6 +137,14 @@ python3 ../scripts/build_readme_pointcloud_figure.py
 
 ## Hard Intersection vector-map audit
 
+`web/vector-map-supported-intersection.gif` captures actual source-footprint
+regeneration, reviewed connections/equipment and geometric signal-target
+suggestions with explicit adoption, editing, Undo and reload over
+the same pinned Hard Intersection source credited below. Derived map geometry,
+operator review, captions, screen crop/scale and GIF palette conversion are added
+by CloudAnalyzer. The GIF and published generated-map artifacts use CC BY 4.0;
+see [protocol, limits and reproduction](../vector-map-supported-intersection.md).
+
 `vector-map-hard-intersection.png`, `vector-map-hard-intersection-local-paint.png`,
 `vector-map-hard-intersection-envelope.png` and `vector-map-quality.png`
 plot actual source geometry, generated proposals
@@ -170,6 +178,8 @@ These commands produced the metrics shown in the root README:
 - `vector-map-equipment-relations.png`: original DynamicMapPlatform Co., Ltd. (2026) [hard-intersection sample](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c), CC BY 4.0. Earlier generated source geometry is retained; only operator-reviewed target relationships change. The figure overlays unchanged equipment and unsigned geometric normals on original source returns, with no teacher shapes or lamp states. See [equipment review](../vector-map-equipment-relations.md).
 
 - `web/vector-map-equipment-relations.png`: actual production browser association editor after export/reload of the generated map. Same DynamicMapPlatform source and CC BY 4.0 attribution as `vector-map-equipment-relations.png`; no simulated app UI.
+
+- `web/vector-map-relation-proposal-169.png` and `web/vector-map-relation-proposal-173.png`: actual production browser target previews over the same original DynamicMapPlatform (2026) source and CC BY 4.0 attribution above. The unchanged housing, target and road context are highlighted; control choices are geometric drafts with explicit review. See [proposal evidence](../vector-map-relation-proposals.md).
 
 ## Second-scene vector-map development audit
 

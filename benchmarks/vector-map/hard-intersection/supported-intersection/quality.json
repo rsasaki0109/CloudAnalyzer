@@ -1,0 +1,2060 @@
+{
+  "import_issues": [
+    {
+      "code": "lanelet2.projection",
+      "message": "coordinates taken from local_x/local_y (lat/lon are placeholders); the map has no georeference",
+      "severity": "info"
+    }
+  ],
+  "quality": {
+    "cloud_points": 1883866,
+    "ground_height_tolerance_m": 0.3,
+    "ground_radius_m": 0.75,
+    "lanes": [
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 8,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 9,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 10,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 11,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 12,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 13,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 59,
+          "start_supported": true,
+          "supported": 59
+        },
+        "lane": 21,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 58,
+          "start_supported": true,
+          "supported": 58
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 22,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 23,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        },
+        "lane": 24,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 64,
+          "start_supported": true,
+          "supported": 64
+        },
+        "lane": 25,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        },
+        "lane": 26,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 66,
+          "start_supported": true,
+          "supported": 66
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "lane": 34,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "lane": 35,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "lane": 36,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        },
+        "lane": 37,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        },
+        "lane": 38,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 25,
+          "start_supported": true,
+          "supported": 25
+        },
+        "lane": 39,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 25,
+          "start_supported": true,
+          "supported": 25
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        },
+        "lane": 47,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 41,
+          "start_supported": true,
+          "supported": 41
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        },
+        "lane": 48,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        },
+        "lane": 49,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        },
+        "lane": 50,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        },
+        "lane": 51,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        },
+        "lane": 52,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 45,
+          "start_supported": true,
+          "supported": 45
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 60,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 61,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 62,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 63,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 64,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 65,
+        "left": {
+          "end_supported": true,
+          "fraction": 0.9411764705882353,
+          "height_mismatches": 1,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 16
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 18,
+          "start_supported": true,
+          "supported": 18
+        },
+        "lane": 69,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 18,
+          "start_supported": true,
+          "supported": 18
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 18,
+          "start_supported": true,
+          "supported": 18
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 18,
+          "start_supported": true,
+          "supported": 18
+        },
+        "lane": 70,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 18,
+          "start_supported": true,
+          "supported": 18
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 18,
+          "start_supported": true,
+          "supported": 18
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 11,
+          "start_supported": true,
+          "supported": 11
+        },
+        "lane": 76,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 11,
+          "start_supported": true,
+          "supported": 11
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 11,
+          "start_supported": true,
+          "supported": 11
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 11,
+          "start_supported": true,
+          "supported": 11
+        },
+        "lane": 77,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 11,
+          "start_supported": true,
+          "supported": 11
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 11,
+          "start_supported": true,
+          "supported": 11
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 10,
+          "start_supported": true,
+          "supported": 10
+        },
+        "lane": 78,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 10,
+          "start_supported": true,
+          "supported": 10
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 11,
+          "start_supported": true,
+          "supported": 11
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 10,
+          "start_supported": true,
+          "supported": 10
+        },
+        "lane": 79,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 10,
+          "start_supported": true,
+          "supported": 10
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 10,
+          "start_supported": true,
+          "supported": 10
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 7,
+          "start_supported": true,
+          "supported": 7
+        },
+        "lane": 83,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 7,
+          "start_supported": true,
+          "supported": 7
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 7,
+          "start_supported": true,
+          "supported": 7
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 7,
+          "start_supported": true,
+          "supported": 7
+        },
+        "lane": 84,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 7,
+          "start_supported": true,
+          "supported": 7
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 7,
+          "start_supported": true,
+          "supported": 7
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 53,
+          "start_supported": true,
+          "supported": 53
+        },
+        "lane": 87,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 53,
+          "start_supported": true,
+          "supported": 53
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 54,
+          "start_supported": true,
+          "supported": 54
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 41,
+          "start_supported": true,
+          "supported": 41
+        },
+        "lane": 90,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 36,
+          "start_supported": true,
+          "supported": 36
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 46,
+          "start_supported": true,
+          "supported": 46
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 55,
+          "start_supported": true,
+          "supported": 55
+        },
+        "lane": 93,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 54,
+          "start_supported": true,
+          "supported": 54
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 56,
+          "start_supported": true,
+          "supported": 56
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 56,
+          "start_supported": true,
+          "supported": 56
+        },
+        "lane": 96,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 56,
+          "start_supported": true,
+          "supported": 56
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 57,
+          "start_supported": true,
+          "supported": 57
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 98,
+          "start_supported": true,
+          "supported": 98
+        },
+        "lane": 99,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 102,
+          "start_supported": true,
+          "supported": 102
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 94,
+          "start_supported": true,
+          "supported": 94
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 36,
+          "start_supported": true,
+          "supported": 36
+        },
+        "lane": 102,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 35,
+          "start_supported": true,
+          "supported": 35
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 36,
+          "start_supported": true,
+          "supported": 36
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 37,
+          "start_supported": true,
+          "supported": 37
+        },
+        "lane": 105,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 36,
+          "start_supported": true,
+          "supported": 36
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 37,
+          "start_supported": true,
+          "supported": 37
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 38,
+          "start_supported": true,
+          "supported": 38
+        },
+        "lane": 108,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 37,
+          "start_supported": true,
+          "supported": 37
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 38,
+          "start_supported": true,
+          "supported": 38
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 111,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 66,
+          "start_supported": true,
+          "supported": 66
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 57,
+          "start_supported": true,
+          "supported": 57
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 59,
+          "start_supported": true,
+          "supported": 59
+        },
+        "lane": 114,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 58,
+          "start_supported": true,
+          "supported": 58
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 117,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 39,
+          "start_supported": true,
+          "supported": 39
+        },
+        "lane": 120,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 39,
+          "start_supported": true,
+          "supported": 39
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 38,
+          "start_supported": true,
+          "supported": 38
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 68,
+          "start_supported": true,
+          "supported": 68
+        },
+        "lane": 123,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 71,
+          "start_supported": true,
+          "supported": 71
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 40,
+          "start_supported": true,
+          "supported": 40
+        },
+        "lane": 126,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 40,
+          "start_supported": true,
+          "supported": 40
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 39,
+          "start_supported": true,
+          "supported": 39
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 41,
+          "start_supported": true,
+          "supported": 41
+        },
+        "lane": 129,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 41,
+          "start_supported": true,
+          "supported": 41
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 40,
+          "start_supported": true,
+          "supported": 40
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 57,
+          "start_supported": true,
+          "supported": 57
+        },
+        "lane": 132,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 52,
+          "start_supported": true,
+          "supported": 52
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 38,
+          "start_supported": true,
+          "supported": 38
+        },
+        "lane": 135,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 34,
+          "start_supported": true,
+          "supported": 34
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 96,
+          "start_supported": true,
+          "supported": 96
+        },
+        "lane": 138,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 96,
+          "start_supported": true,
+          "supported": 96
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 96,
+          "start_supported": true,
+          "supported": 96
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 95,
+          "start_supported": true,
+          "supported": 95
+        },
+        "lane": 141,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 96,
+          "start_supported": true,
+          "supported": 96
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 95,
+          "start_supported": true,
+          "supported": 95
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 81,
+          "start_supported": true,
+          "supported": 81
+        },
+        "lane": 144,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 86,
+          "start_supported": true,
+          "supported": 86
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 75,
+          "start_supported": true,
+          "supported": 75
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 50,
+          "start_supported": true,
+          "supported": 50
+        },
+        "lane": 147,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 47,
+          "start_supported": true,
+          "supported": 47
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 54,
+          "start_supported": true,
+          "supported": 54
+        }
+      }
+    ],
+    "limited": false,
+    "low_support_lanes": [],
+    "malformed_lanes": [],
+    "minimum_support_fraction": 0.9,
+    "omitted_lanes": [],
+    "sample_budget": 100000,
+    "sampled_points": 6752,
+    "sampling_step_m": 0.5,
+    "warnings": [
+      "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+    ]
+  },
+  "validation": {
+    "counts": {
+      "errors": 0,
+      "infos": 0,
+      "warnings": 16
+    },
+    "issues": [
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 8,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+        "related": [
+          {
+            "id": 9,
+            "kind": "lane"
+          },
+          {
+            "id": 10,
+            "kind": "lane"
+          },
+          {
+            "id": 11,
+            "kind": "lane"
+          },
+          {
+            "id": 12,
+            "kind": "lane"
+          },
+          {
+            "id": 13,
+            "kind": "lane"
+          }
+        ],
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 60,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+        "related": [
+          {
+            "id": 61,
+            "kind": "lane"
+          },
+          {
+            "id": 62,
+            "kind": "lane"
+          },
+          {
+            "id": 63,
+            "kind": "lane"
+          },
+          {
+            "id": 64,
+            "kind": "lane"
+          },
+          {
+            "id": 65,
+            "kind": "lane"
+          }
+        ],
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 8,
+          "kind": "lane"
+        },
+        "message": "lane:8 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 9,
+          "kind": "lane"
+        },
+        "message": "lane:9 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 10,
+          "kind": "lane"
+        },
+        "message": "lane:10 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 11,
+          "kind": "lane"
+        },
+        "message": "lane:11 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 12,
+          "kind": "lane"
+        },
+        "message": "lane:12 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 13,
+          "kind": "lane"
+        },
+        "message": "lane:13 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 24,
+          "kind": "lane"
+        },
+        "message": "lane:24 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 60,
+          "kind": "lane"
+        },
+        "message": "lane:60 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 61,
+          "kind": "lane"
+        },
+        "message": "lane:61 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 62,
+          "kind": "lane"
+        },
+        "message": "lane:62 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 63,
+          "kind": "lane"
+        },
+        "message": "lane:63 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 64,
+          "kind": "lane"
+        },
+        "message": "lane:64 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 65,
+          "kind": "lane"
+        },
+        "message": "lane:65 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "orphan_rule",
+        "entity": {
+          "id": 171,
+          "kind": "regulatory_element"
+        },
+        "fix": {
+          "entity": {
+            "id": 171,
+            "kind": "regulatory_element"
+          },
+          "op": "remove_entity"
+        },
+        "message": "regulatory_element:171 does not apply to any lane or crosswalk",
+        "severity": "warning"
+      }
+    ]
+  }
+}

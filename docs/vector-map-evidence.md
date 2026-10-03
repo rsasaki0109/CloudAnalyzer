@@ -83,6 +83,7 @@ npx playwright test --config playwright.media.config.ts vector-map-physical-anch
 The output is `web/media-frames/vector-map-evidence/`. The harness checks source
 counts, source inspection, export equality, native vertices, source support and Undo.
 
-The planning source is the official [Autoware sample-map-planning](https://autowarefoundation.github.io/autoware-documentation/main/tutorials/ad-hoc-simulation/planning-simulation/) point cloud.
-Source attribution and prior accuracy evaluation are in the [lane-edge study](vector-map-lane-edges.md).
+Planning source: Copyright 2020 TIER IV, Inc.; the cached official Autoware
+`sample-map-planning` point cloud. Original source instructions and prior accuracy
+evaluation are in the [lane-edge study](vector-map-lane-edges.md).
 The screenshot is adapted from this source; no additional survey download was made.

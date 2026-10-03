@@ -58,9 +58,9 @@ impl Default for PaintCorridorReport {
 }
 
 // Coordinates relative to the straight trace: longitudinal s, lateral t, source z.
-struct Samples {
-    points: Vec<[f64; 3]>,
-    ids: Vec<usize>,
+pub(super) struct Samples {
+    pub(super) points: Vec<[f64; 3]>,
+    pub(super) ids: Vec<usize>,
     cells: HashMap<(i64, i64), Vec<usize>>,
 }
 impl Samples {
@@ -95,7 +95,7 @@ impl Samples {
         }
         Some(result)
     }
-    fn ground(&self, p: &[f64; 3]) -> Option<Option<f64>> {
+    pub(super) fn ground(&self, p: &[f64; 3]) -> Option<Option<f64>> {
         let ids = self.nearby(p, 0.75)?;
         Some(if ids.len() >= 3 {
             quantile(
@@ -113,10 +113,10 @@ struct Component {
     interval: [f64; 2],
     slope: f64,
 }
-struct Track {
-    ids: Vec<usize>,
-    intervals: Vec<[f64; 2]>,
-    intercept: f64,
+pub(super) struct Track {
+    pub(super) ids: Vec<usize>,
+    pub(super) intervals: Vec<[f64; 2]>,
+    pub(super) intercept: f64,
 }
 
 fn intervals(mut values: Vec<[f64; 2]>, length: f64) -> Vec<[f64; 2]> {
@@ -139,7 +139,7 @@ fn intervals(mut values: Vec<[f64; 2]>, length: f64) -> Vec<[f64; 2]> {
     merged
 }
 
-fn track_report(t: &Track, length: f64) -> PaintTrackReport {
+pub(super) fn track_report(t: &Track, length: f64) -> PaintTrackReport {
     let observed = intervals(t.intervals.clone(), length);
     let sum = observed.iter().map(|r| r[1] - r[0]).sum::<f64>();
     let span = observed
@@ -225,17 +225,28 @@ fn components(paint: &Samples) -> Option<Vec<Component>> {
     Some(result)
 }
 
-/// All limits fail closed for this optional fit, leaving the original extractor
-/// available. A partial scan never establishes a unique corridor.
-pub(super) fn fit(
+pub(super) struct Scan {
+    pub samples: Samples,
+    pub paint: Samples,
+    pub tracks: Vec<Track>,
+    pub origin: [f64; 3],
+    pub d: [f64; 2],
+    pub normal: [f64; 2],
+    pub length: f64,
+    pub initial_slope: f64,
+    pub report: PaintCorridorReport,
+}
+
+pub(super) fn scan(
     cloud: &PointCloud,
     line: &[[f64; 3]],
     o: &BuildOptions,
-) -> (Option<Vec<ExtractedRoad>>, PaintCorridorReport) {
+    minimum_parts: usize,
+) -> Result<Scan, Box<PaintCorridorReport>> {
     let mut report = PaintCorridorReport::default();
     let hold = |reason: &str, mut r: PaintCorridorReport| {
         r.reason = reason.into();
-        (None, r)
+        Err(Box::new(r))
     };
     let limited = |mut r: PaintCorridorReport| {
         r.limited = true;
@@ -347,7 +358,7 @@ pub(super) fn fit(
         return limited(report);
     };
     report.longitudinal_components = parts.len();
-    if parts.len() < count + 1 {
+    if parts.len() < minimum_parts {
         return hold("too few narrow longitudinal paint components", report);
     }
     let mut slope_values: Vec<_> = parts.iter().map(|c| c.slope).collect();
@@ -389,6 +400,52 @@ pub(super) fn fit(
             intercept: v,
         });
     }
+    Ok(Scan {
+        samples,
+        paint,
+        tracks,
+        origin,
+        d,
+        normal,
+        length,
+        initial_slope,
+        report,
+    })
+}
+
+/// All limits fail closed for this optional fit, leaving the original extractor
+/// available. A partial scan never establishes a unique corridor.
+pub(super) fn fit(
+    cloud: &PointCloud,
+    line: &[[f64; 3]],
+    o: &BuildOptions,
+) -> (Option<Vec<ExtractedRoad>>, PaintCorridorReport) {
+    let Scan {
+        samples,
+        paint,
+        mut tracks,
+        origin,
+        d,
+        normal,
+        length,
+        initial_slope,
+        mut report,
+    } = match scan(cloud, line, o, o.forward_lanes + o.backward_lanes + 1) {
+        Ok(scan) => scan,
+        Err(report) => return (None, *report),
+    };
+    let count = o.forward_lanes + o.backward_lanes;
+    let hold = |reason: &str, mut r: PaintCorridorReport| {
+        r.reason = reason.into();
+        (None, r)
+    };
+    let limited = |mut r: PaintCorridorReport| {
+        r.limited = true;
+        hold(
+            "paint fit budget exceeded; no corridor selected from a partial scan",
+            r,
+        )
+    };
     let mut bundles = vec![];
     for start in 0..tracks.len().saturating_sub(count) {
         let bundle = &tracks[start..=start + count];

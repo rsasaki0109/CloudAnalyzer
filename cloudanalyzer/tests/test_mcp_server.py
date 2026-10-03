@@ -63,6 +63,8 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert properties["physical_anchors_only"]["default"] is False
                 assert properties["align_trace_to_curbs"]["type"] == "boolean"
                 assert properties["align_trace_to_curbs"]["default"] is False
+                assert properties["fit_paint_divider"]["type"] == "boolean"
+                assert properties["fit_paint_divider"]["default"] is False
                 assert properties["fit_paint_corridor"]["type"] == "boolean"
                 assert properties["fit_paint_corridor"]["default"] is False
                 junction = next(t for t in tools if t.name == "connect_vector_map_junctions")

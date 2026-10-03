@@ -3039,3 +3039,31 @@ test("vector map: RGB paint fits lane spacing while sparse extensions remain inf
   await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
   await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
 });
+
+test("vector map: a lone paint divider needs physical curb pairs and keeps gaps inferred", async ({page}) => {
+  const rows:string[]=[];
+  for(let ix=-20;ix<=320;ix++)for(let iy=-80;iy<=80;iy++) {
+    const x=ix*.1,y=iy*.1+.03,t=y+.02*x;
+    const b=Math.abs(t)<.055 && ((ix%80)+80)%80<40 ? 230 : 70;
+    rows.push(`${x} ${y} ${12+.01*x+(t < -3.9 || t > 3.8 ? .2 : 0)} ${b} ${b} ${b}`);
+  }
+  const header=`ply\nformat ascii 1.0\nelement vertex ${rows.length}\nproperty double x\nproperty double y\nproperty double z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n`;
+  await open(page,[{name:"divider.ply",buffer:Buffer.from(header+rows.join("\n"))},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")}]);
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await expect(page.locator("#vm-paint-divider")).not.toBeChecked();
+  await page.locator("#vm-paint-divider").check();await page.locator("#vm-physical-anchors").check();
+  await page.locator("#vm-source-surface").check();await page.locator("#vm-discover-after-build").uncheck();
+  await page.locator("#vm-build").click();await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("Interior paint correction applied");
+  await expect(page.locator("#vm-build-report")).toContainText("gaps/extensions remain inferred");
+  const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await wait)).toString();
+  const nodes=new Map([...xml.matchAll(/<node id="([^"]+)"[^>]*>([\s\S]*?)<\/node>/g)].map(m=>[m[1],["local_x","local_y"].map(k=>Number(m[2].match(new RegExp(`<tag k="${k}" v="([^"]+)"`))![1]))]));
+  const ways=new Map([...xml.matchAll(/<way id="([^"]+)"[^>]*>([\s\S]*?)<\/way>/g)].map(m=>[m[1],[...m[2].matchAll(/<nd ref="([^"]+)"/g)].map(n=>nodes.get(n[1])!)]));
+  const refs=[...xml.matchAll(/<relation id="[^"]+"[^>]*>([\s\S]*?)<\/relation>/g)].filter(m=>m[1].includes('<tag k="subtype" v="road"')).map(m=>[...m[1].matchAll(/<member type="way" ref="([^"]+)" role="(?:left|right)"/g)].map(n=>n[1]));
+  const shared=refs[0].find(r=>refs[1].includes(r))!;
+  expect(ways.get(shared)!.every(p=>Math.abs(p[1]+.02*p[0])<.06)).toBe(true);
+  await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
+  await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
+});

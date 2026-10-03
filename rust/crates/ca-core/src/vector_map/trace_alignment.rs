@@ -18,7 +18,7 @@ pub struct TraceAlignmentReport {
 
 /// The band edges must each have TWO bounded raised outside bins and an inside
 /// road bin. Missing returns, walls and coverage limits cannot close a band.
-fn curb(surface: &[Option<f64>], edge: usize, outward: isize, o: &BuildOptions) -> bool {
+pub(super) fn curb(surface: &[Option<f64>], edge: usize, outward: isize, o: &BuildOptions) -> bool {
     let Some(base) = surface[edge] else {
         return false;
     };

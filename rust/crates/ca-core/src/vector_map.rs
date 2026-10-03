@@ -21,6 +21,8 @@ pub mod feature_editing;
 mod fitting;
 mod paint_corridor;
 pub use paint_corridor::{PaintCorridorReport, PaintTrackReport};
+mod paint_divider;
+pub use paint_divider::PaintDividerReport;
 mod integration;
 pub mod junctions;
 pub mod quality;
@@ -36,6 +38,9 @@ pub use trace_alignment::TraceAlignmentReport;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BuildOptions {
+    /// Correct only the interior boundary of an explicitly configured two-lane
+    /// road, using a unique strong RGB track guarded by paired physical curbs.
+    pub fit_paint_divider: bool,
     /// Fit parallel boundaries to locally contrasted RGB paint on straight traces.
     /// Counts/directions remain explicit; unobserved paint remains inferred.
     pub fit_paint_corridor: bool,
@@ -84,6 +89,7 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            fit_paint_divider: false,
             fit_paint_corridor: false,
             align_trace_to_curbs: false,
             fit_source_surface: false,
@@ -138,6 +144,8 @@ pub struct ExtractedRoad {
 /// What was measured, what was inferred, and where data were missing.
 #[derive(Debug, Clone, Serialize)]
 pub struct BuildReport {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paint_divider: Option<PaintDividerReport>,
     pub paint_corridor: Option<PaintCorridorReport>,
     pub trace_alignment: Option<TraceAlignmentReport>,
     pub surface_fit: Option<SurfaceFitReport>,
@@ -444,7 +452,7 @@ pub fn extract(
     if cloud.is_empty() {
         return fail("the point cloud is empty");
     }
-    if o.fit_paint_corridor
+    if (o.fit_paint_corridor || o.fit_paint_divider)
         && cloud
             .colors
             .as_ref()
@@ -495,6 +503,7 @@ pub fn extract(
     let high = nominal[0] + o.search_margin + o.bin_width * 3.0;
     let index = SurfaceIndex::new(cloud, &line, low.abs().max(high.abs()) + o.half_window);
     let mut report = BuildReport {
+        paint_divider: None,
         paint_corridor: None,
         trace_alignment,
         surface_fit: None,
@@ -792,6 +801,9 @@ fn finish_extraction(
             report.maximum_fit_displacement = report.maximum_fit_displacement.max(maximum);
         }
     }
+    if o.fit_paint_divider {
+        report.paint_divider = Some(paint_divider::apply(cloud, line, o, &mut roads, &report));
+    }
     let mut totals = vec![0usize; nlanes + 1];
     for road in &roads {
         report.generated_length += length(&road.reference);
@@ -819,7 +831,10 @@ fn finish_extraction(
     report.intensity_used = report.intensity_vertices > 0;
     report.roads = roads.len();
     let paint_applied = report.paint_corridor.as_ref().is_some_and(|r| r.applied);
-    if !report.intensity_used && !paint_applied {
+    if !report.intensity_used
+        && !paint_applied
+        && !report.paint_divider.as_ref().is_some_and(|p| p.applied)
+    {
         report.warnings.push(
             "No usable intensity contrast: internal lane lines use the configured width prior."
                 .into(),
@@ -858,6 +873,7 @@ fn finish_extraction(
         return surface::refine(cloud, line, index, bounds, o, report, roads);
     }
     paint_corridor::warnings(&mut report);
+    paint_divider::warnings(&mut report);
     Ok((roads, report))
 }
 

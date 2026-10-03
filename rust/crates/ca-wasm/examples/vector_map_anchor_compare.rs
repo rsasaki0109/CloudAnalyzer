@@ -43,9 +43,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             options.fit_source_surface = true;
             let align = config["comparison"].as_str() == Some("curb_trace_alignment");
             let paint = config["comparison"].as_str() == Some("paint_corridor");
-            options.physical_anchors_only = align || paint || mode == 1;
-            options.align_trace_to_curbs = paint || (align && mode == 1);
-            options.fit_paint_corridor = paint && mode == 1;
+            let divider = config["comparison"].as_str() == Some("paint_divider");
+            options.fit_paint_divider = divider && mode == 1;
+            options.physical_anchors_only = align || paint || divider || mode == 1;
+            options.align_trace_to_curbs = paint || divider || (align && mode == 1);
+            options.fit_paint_corridor = divider || (paint && mode == 1);
             let (roads, extracted) = vector_map::extract(&cloud, &poses.positions, &options)?;
             let shift = extracted
                 .trace_alignment
@@ -54,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .unwrap_or([0.0; 2]);
             let geometry: Vec<_> = roads.iter().map(|r| {
                 let operator_reference: Vec<_> = r.reference.iter().map(|p| [p[0]-shift[0], p[1]-shift[1], p[2]]).collect();
-                if align || paint { json!({"reference":r.reference,"operator_reference":operator_reference,"boundaries":r.boundaries,"evidence":r.evidence}) }
+                if align || paint || divider { json!({"reference":r.reference,"operator_reference":operator_reference,"boundaries":r.boundaries,"evidence":r.evidence}) }
                 else { json!({"reference":r.reference,"boundaries":r.boundaries,"evidence":r.evidence}) }
             }).collect();
             let report = vector_map::build(map, &cloud, &poses.positions, &options)?;

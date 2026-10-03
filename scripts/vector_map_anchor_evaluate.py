@@ -101,14 +101,15 @@ def assert_profile_geometry(profiles: dict, document: dict) -> None:
                 raise ValueError("measured profile is absent from the actual generated map")
 
 
-def run(source: Path, config: Path, reference: Path, out: Path, executable: Path, commit: str, epsg: str | None):
-    if out.exists():
+def run(source: Path, config: Path, reference: Path, out: Path, executable: Path, commit: str, epsg: str | None, *, evaluate_frozen: bool = False):
+    if out.exists() and not evaluate_frozen:
         raise FileExistsError("choose a new output directory")
     source_hash=digest(source)
     config_hash=digest(config)
     executable_hash=digest(executable)
     configuration=json.loads(config.read_text(encoding="utf-8"))
-    subprocess.run([str(executable.resolve()),str(source),str(config),str(out)],check=True)
+    if not evaluate_frozen:
+        subprocess.run([str(executable.resolve()),str(source),str(config),str(out)],check=True)
     for i in range(len(configuration["cases"])):
         for mode in ("before", "after"):
             assert_profile_geometry(
@@ -116,8 +117,22 @@ def run(source: Path, config: Path, reference: Path, out: Path, executable: Path
                 json.loads((out / f"{mode}-{i}.json").read_text()),
             )
     # Freeze ALL source outputs before opening any reference geometry.
-    frozen={p.name:digest(p) for p in out.iterdir() if p.is_file()}
-    save(out/"generation-freeze.json",{"reference_inputs":[],"source_sha256":source_hash,"config_sha256":config_hash,"executable_sha256":executable_hash,"artifact_sha256":frozen})
+    if evaluate_frozen:
+        freeze = json.loads((out / "generation-freeze.json").read_text(encoding="utf-8"))
+        if (freeze["reference_inputs"] != [] or freeze["source_sha256"] != source_hash
+                or freeze["config_sha256"] != config_hash or freeze["executable_sha256"] != executable_hash):
+            raise ValueError("frozen generation inputs differ")
+        frozen = freeze["artifact_sha256"]
+        if not frozen or any(Path(k).name != k or digest(out / k) != sha for k, sha in frozen.items()):
+            raise ValueError("frozen generation artifacts differ")
+        required = {f"{mode}-{i}{suffix}" for i in range(len(configuration["cases"]))
+                    for mode in ("before", "after") for suffix in (".json", ".osm", "-profiles.json", "-audit.json")}
+        required |= {f"trajectory-{i}.csv" for i in range(len(configuration["cases"]))} | {"comparison.json"}
+        if not required <= frozen.keys():
+            raise ValueError("generation freeze is incomplete")
+    else:
+        frozen={p.name:digest(p) for p in out.iterdir() if p.is_file()}
+        save(out/"generation-freeze.json",{"reference_inputs":[],"source_sha256":source_hash,"config_sha256":config_hash,"executable_sha256":executable_hash,"artifact_sha256":frozen})
     surveyed=reference_document(reference,epsg)
     used={lane[side] if isinstance(lane[side],int) else lane[side]["boundary"] for lane in surveyed["lanes"] if lane["kind"]=="driving" for side in ("left","right")}
     target=cKDTree(np.concatenate([resample(b["geometry"],.5) for b in surveyed["boundaries"] if b["id"] in used])[:,:2])
@@ -163,6 +178,7 @@ if __name__=="__main__":
         parser.add_argument(name,type=Path)
     parser.add_argument("--source-commit",required=True)
     parser.add_argument("--reference-epsg")
+    parser.add_argument("--evaluate-frozen", action="store_true", help="Verify and evaluate already frozen generation; never regenerate")
     args=parser.parse_args()
-    report=run(args.source,args.config,args.reference,args.out,args.executable,args.source_commit,args.reference_epsg)
+    report=run(args.source,args.config,args.reference,args.out,args.executable,args.source_commit,args.reference_epsg,evaluate_frozen=args.evaluate_frozen)
     print(json.dumps({"metrics":report["metrics"],"paired":report["paired_source_intervals"]},indent=2))

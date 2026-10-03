@@ -343,7 +343,11 @@ pub(super) fn refine(
         }
         flags.push(good);
     }
-    if supported_length < candidate_length * 0.6 {
+    // A paint fit must retain its measured spacing/labels. Trim unsupported
+    // intervals even below 60%; never silently replace it with width priors.
+    if supported_length < candidate_length * 0.6
+        && !report.paint_corridor.as_ref().is_some_and(|p| p.applied)
+    {
         drop(ground);
         return extract(cloud, line, index, range[0], range[1], o, report);
     }
@@ -394,6 +398,7 @@ fn finish(
     mut report: BuildReport,
 ) -> Result<(Vec<ExtractedRoad>, BuildReport), BuildError> {
     report.intensity_vertices = 0;
+    report.rgb_paint_vertices = 0;
     report.curb_vertices = 0;
     report.support_edge_vertices = 0;
     report.width_prior_vertices = 0;
@@ -424,6 +429,7 @@ fn finish(
                 .count() as f64;
             for &e in labels {
                 match e {
+                    Evidence::RgbPaint => report.rgb_paint_vertices += 1,
                     Evidence::SupportEdge => report.support_edge_vertices += 1,
                     Evidence::WidthPrior => report.width_prior_vertices += 1,
                     Evidence::Curb => report.curb_vertices += 1,
@@ -466,6 +472,7 @@ fn finish(
     report.warnings.push(if fit.preserved_candidate_geometry {"Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.".into()} else {"Source-footprint mode keeps explicit lane counts but fits inferred widths to a coherent low-surface band. Coverage limits can be occlusion or scan gaps, not road edges. Internal lane lines remain width assumptions; this does not identify road semantics or permitted turns.".into()});
     report.warnings.push(format!("{:.2} m of the traced/recorded path was deferred; {} intervals failed centre/boundary source checks; {} fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",fit.deferred_length_m,fit.rejected_intervals,fit.discarded_short_stretches));
     report.surface_fit = Some(fit);
+    super::paint_corridor::warnings(&mut report);
     if roads.is_empty() {
         return Err(BuildError("No source-supported road intervals remain; inspect path placement, lane counts, width assumptions and occlusion. The existing map is unchanged.".into()));
     }

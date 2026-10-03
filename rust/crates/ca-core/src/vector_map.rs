@@ -19,6 +19,8 @@ pub mod discovery;
 mod discovery_tests;
 pub mod feature_editing;
 mod fitting;
+mod paint_corridor;
+pub use paint_corridor::{PaintCorridorReport, PaintTrackReport};
 mod integration;
 pub mod junctions;
 pub mod quality;
@@ -34,6 +36,9 @@ pub use trace_alignment::TraceAlignmentReport;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BuildOptions {
+    /// Fit parallel boundaries to locally contrasted RGB paint on straight traces.
+    /// Counts/directions remain explicit; unobserved paint remains inferred.
+    pub fit_paint_corridor: bool,
     /// Translate a straight trace only when a stable pair of source curbs can
     /// contain the entire configured lane width. Lane counts remain explicit.
     pub align_trace_to_curbs: bool,
@@ -79,6 +84,7 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            fit_paint_corridor: false,
             align_trace_to_curbs: false,
             fit_source_surface: false,
             forward_lanes: 1,
@@ -109,6 +115,7 @@ impl Default for BuildOptions {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Evidence {
+    RgbPaint,
     Intensity,
     Curb,
     SupportEdge,
@@ -131,6 +138,7 @@ pub struct ExtractedRoad {
 /// What was measured, what was inferred, and where data were missing.
 #[derive(Debug, Clone, Serialize)]
 pub struct BuildReport {
+    pub paint_corridor: Option<PaintCorridorReport>,
     pub trace_alignment: Option<TraceAlignmentReport>,
     pub surface_fit: Option<SurfaceFitReport>,
     pub roads: usize,
@@ -141,6 +149,7 @@ pub struct BuildReport {
     pub unsupported_sections: usize,
     pub intensity_used: bool,
     pub intensity_vertices: usize,
+    pub rgb_paint_vertices: usize,
     pub curb_vertices: usize,
     pub rejected_curb_candidates: usize,
     pub support_edge_vertices: usize,
@@ -361,6 +370,7 @@ fn track_candidates(road: &mut ExtractedRoad, sections: &[Section], nominal: &[f
     for (j, &prior) in nominal.iter().enumerate() {
         let unary = |c: Candidate| {
             let evidence = match c.evidence {
+                Evidence::RgbPaint => 0.0,
                 Evidence::Intensity => 0.0,
                 Evidence::Curb => 0.1,
                 Evidence::SupportEdge => 0.3,
@@ -434,6 +444,14 @@ pub fn extract(
     if cloud.is_empty() {
         return fail("the point cloud is empty");
     }
+    if o.fit_paint_corridor
+        && cloud
+            .colors
+            .as_ref()
+            .is_some_and(|c| c.len() != cloud.len())
+    {
+        return fail("cloud colors do not match its points");
+    }
     if cloud
         .attributes
         .iter()
@@ -477,6 +495,7 @@ pub fn extract(
     let high = nominal[0] + o.search_margin + o.bin_width * 3.0;
     let index = SurfaceIndex::new(cloud, &line, low.abs().max(high.abs()) + o.half_window);
     let mut report = BuildReport {
+        paint_corridor: None,
         trace_alignment,
         surface_fit: None,
         roads: 0,
@@ -487,6 +506,7 @@ pub fn extract(
         unsupported_sections: 0,
         intensity_used: false,
         intensity_vertices: 0,
+        rgb_paint_vertices: 0,
         curb_vertices: 0,
         rejected_curb_candidates: 0,
         support_edge_vertices: 0,
@@ -503,6 +523,13 @@ pub fn extract(
         observed_fraction: vec![0.0; nlanes + 1],
         warnings: Vec::new(),
     };
+    if o.fit_paint_corridor {
+        let (paint_roads, paint_report) = paint_corridor::fit(cloud, &line, o);
+        report.paint_corridor = Some(paint_report);
+        if let Some(roads) = paint_roads {
+            return finish_extraction(cloud, &line, &index, [low, high], o, report, roads);
+        }
+    }
     let mut roads = Vec::new();
     let mut observations = Vec::new();
     let mut sections = Vec::new();
@@ -745,7 +772,20 @@ pub fn extract(
                 anchor_priors(road, &nominal, o.physical_anchors_only);
         }
     }
-    if o.fit_boundaries {
+    finish_extraction(cloud, &line, &index, [low, high], o, report, roads)
+}
+
+fn finish_extraction(
+    cloud: &PointCloud,
+    line: &[[f64; 3]],
+    index: &SurfaceIndex,
+    bounds: [f64; 2],
+    o: &BuildOptions,
+    mut report: BuildReport,
+    mut roads: Vec<ExtractedRoad>,
+) -> Result<(Vec<ExtractedRoad>, BuildReport), BuildError> {
+    let nlanes = o.forward_lanes + o.backward_lanes;
+    if o.fit_boundaries && !report.paint_corridor.as_ref().is_some_and(|r| r.applied) {
         for road in &mut roads {
             let (count, maximum) = fitting::fit(road);
             report.fitted_vertices += count;
@@ -759,6 +799,7 @@ pub fn extract(
             for &e in labels {
                 totals[j] += 1;
                 match e {
+                    Evidence::RgbPaint => report.rgb_paint_vertices += 1,
                     Evidence::Intensity => report.intensity_vertices += 1,
                     Evidence::Curb => report.curb_vertices += 1,
                     Evidence::SupportEdge => report.support_edge_vertices += 1,
@@ -777,17 +818,14 @@ pub fn extract(
     }
     report.intensity_used = report.intensity_vertices > 0;
     report.roads = roads.len();
-    if !report.intensity_used {
+    if !report.intensity_used && report.rgb_paint_vertices == 0 {
         report.warnings.push(
             "No usable intensity contrast: internal lane lines use the configured width prior."
                 .into(),
         );
     }
     if report.width_prior_vertices > 0 {
-        report.warnings.push(format!(
-            "{} boundary vertices use the configured lane width rather than a detected feature.",
-            report.width_prior_vertices
-        ));
+        report.warnings.push(format!("{} boundary vertices are inferred rather than directly observed; paint-corridor fits use measured spacing, other paths use width assumptions.", report.width_prior_vertices));
     }
     if report.rejected_curb_candidates > 0 {
         report.warnings.push(format!("{} curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.", report.rejected_curb_candidates));
@@ -812,8 +850,9 @@ pub fn extract(
         report.warnings.push(format!("{} pre-tracking coverage-edge anchor candidates were excluded from inferred lane offsets. Paint/curb observations remain anchors; inferred vertices remain width assumptions. Coverage-edge candidate geometry can still be selected and requires review.", report.coverage_edge_anchor_candidates_ignored));
     }
     if o.fit_source_surface {
-        return surface::refine(cloud, &line, &index, [low, high], o, report, roads);
+        return surface::refine(cloud, line, index, bounds, o, report, roads);
     }
+    paint_corridor::warnings(&mut report);
     Ok((roads, report))
 }
 

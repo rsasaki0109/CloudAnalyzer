@@ -899,3 +899,42 @@ def test_paired_source_curbs_translate_a_straight_trace_only_when_requested(tmp_
     document = json.loads(Path(report["files"]["editable_map"]).read_text(encoding="utf-8"))
     assert all(p[2] < 2.3 for b in document["boundaries"] for p in b["geometry"])
     assert (cloud.read_bytes(), trace.read_bytes()) == original
+
+
+def test_rgb_corridor_cli_measures_spacing_but_reports_sparse_extensions(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(-2, 32.001, .1), np.arange(-9, 10.001, .1))
+    x, y = x.ravel(), y.ravel()
+    white = np.zeros(len(x), dtype=bool)
+    for i, offset in enumerate([-.25, 2.75, 5.75]):
+        span = (x >= 4) & (x <= 6) if i == 2 else (np.rint(x * 10).astype(int) % 80 < 40)
+        white |= (abs(y - (offset - .04 * x)) < .055) & span
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x, y, 12 + .02 * x
+    data.red = data.green = data.blue = np.where(white, 230, 70).astype(np.uint16) * 256
+    cloud, trace = tmp_path / "paint.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    trace.write_text("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "default"))
+    assert "fit_paint_corridor" not in default["options"]
+    assert default["extraction"]["paint_corridor"] is None
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trace), "--out", str(tmp_path / "paint"),
+                                    "--fit-paint-corridor", "--fit-source-surface"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    extraction = report["extraction"]
+    paint = extraction["paint_corridor"]
+    assert report["options"]["fit_paint_corridor"] is True
+    assert paint["applied"] and not paint["limited"]
+    assert paint["measured_lane_widths_m"] == pytest.approx([3, 3], abs=.04)
+    assert paint["tracks"][0]["extrapolated_length_m"] > 25
+    assert extraction["rgb_paint_vertices"] > 0 and extraction["width_prior_vertices"] > 0
+    assert extraction["lanes"] == 2
+    quality = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))["quality"]
+    assert not quality["low_support_lanes"] and not quality["limited"]
+    assert (cloud.read_bytes(), trace.read_bytes()) == original

@@ -27,6 +27,7 @@ def build_vector_map(
     anchor_width_prior: bool = True,
     physical_anchors_only: bool = False,
     align_trace_to_curbs: bool = False,
+    fit_paint_corridor: bool = False,
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
     fit_source_surface: bool = False,
@@ -56,6 +57,12 @@ def build_vector_map(
     of source curbs enclosing the configured total width. It preserves lane counts,
     requires a majority of sections and holds curved or unconfirmed traces.
     The report records the translation; this does not certify lane identity.
+    fit_paint_corridor optionally fits straight parallel boundaries from thin RGB
+    paint with dark source returns on both sides. It measures heading and spacing
+    but keeps lane counts/directions manual. Sparse outer paint and dash gaps can
+    be extended; those vertices remain inferred. The report separates observed
+    component intervals, interpolation and extrapolation before footprint trimming.
+    Ambiguous bundles, missing contrast and exhausted scan budgets hold the fit.
     Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does
     not guarantee better lane geometry. Stages can be disabled independently.
@@ -128,6 +135,7 @@ def build_vector_map(
             "anchor_width_prior": anchor_width_prior,
             **({"physical_anchors_only": True} if physical_anchors_only else {}),
             **({"align_trace_to_curbs": True} if align_trace_to_curbs else {}),
+            **({"fit_paint_corridor": True} if fit_paint_corridor else {}),
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
             **({"fit_source_surface": True} if fit_source_surface else {}),

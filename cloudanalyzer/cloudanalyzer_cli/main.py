@@ -1992,6 +1992,43 @@ def vectormap_discover_cmd(
     typer.echo(json.dumps(report, indent=2))
 
 
+@app.command("vectormap-suggest")
+def vectormap_suggest_cmd(
+    vector_map: str = typer.Argument(..., help="Existing map JSON or Lanelet2 OSM"),
+    rule_id: int = typer.Option(..., "--rule", help="Signal regulatory element ID"),
+    candidate_key: str | None = typer.Option(None, "--candidate", help="Explicit candidate key from preview"),
+    map_snapshot: str | None = typer.Option(None, "--snapshot", help="Current map snapshot from preview"),
+    out: str | None = typer.Option(None, "--out", help="NEW output directory for adoption; omit for preview"),
+):
+    """Preview signal target evidence or adopt an explicitly reviewed candidate."""
+    from ca.vector_map import propose_vector_map_relations
+    try:
+        report = propose_vector_map_relations(vector_map, rule_id, candidate_key=candidate_key, map_snapshot=map_snapshot, out_dir=out)
+        typer.echo(json.dumps(report, indent=2))
+    except (ValueError, RuntimeError, OSError) as exc:
+        typer.echo(str(exc), err=True)
+        raise typer.Exit(1)
+
+
+@app.command("vectormap-relate")
+def vectormap_relate_cmd(
+    vector_map: str = typer.Argument(..., help="Existing editable IR JSON or Lanelet2 OSM"),
+    rule_id: Optional[int] = typer.Option(None, "--rule", help="Equipment rule ID; omit for read-only inspection"),
+    lanes: List[int] = typer.Option([], "--lane", help="Reviewed vehicle/crossing lane ID; repeat for each"),
+    crosswalks: List[int] = typer.Option([], "--crosswalk", help="Pedestrian controlled crossing ID; repeat"),
+    stops: List[int] = typer.Option([], "--stop", help="Reviewed stop-line ID; repeat"),
+    out: Optional[str] = typer.Option(None, "--out", help="New output directory, required for edits"),
+) -> None:
+    """Inspect or explicitly review equipment associations, retaining physical geometry."""
+    from ca.vector_map import edit_vector_map_relations
+    try:
+        report = edit_vector_map_relations(vector_map, rule_id=rule_id, lanes=lanes, controlled_crosswalks=crosswalks, stop_lines=stops, out_dir=out)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+        return
+    typer.echo(json.dumps(report, indent=2))
+
+
 @app.command("web-view")
 def web_view_cmd(
     paths: List[str] = typer.Argument(..., help="Files, or folders of results (their .ply, .pcd, .las/.laz, .tum ...)"),

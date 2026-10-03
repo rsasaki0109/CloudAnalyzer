@@ -53,3 +53,6 @@ omitted refinements. A longer source-supported chain suppresses the fragments
 whose observed bands it covers; separate or differently oriented patterns remain
 available for review. No reference-map outlines or semantic labels supply these
 geometry steps.
+
+Related controls, including pedestrian crosswalk control, remain assigned after a
+geometry edit but require review again. Use [Review equipment associations](vector-map-equipment-relations.md) to edit their targets explicitly.

@@ -430,3 +430,83 @@ def _publish(payload: dict[str, Any], out: Path) -> dict[str, Any]:
                 file.write(text)
         os.rename(stage, out)
     return report
+
+
+def edit_vector_map_relations(
+    vector_map: str,
+    *,
+    rule_id: int | None = None,
+    lanes: list[int] | None = None,
+    controlled_crosswalks: list[int] | None = None,
+    stop_lines: list[int] | None = None,
+    out_dir: str | None = None,
+) -> dict[str, Any]:
+    """Inspect equipment associations, or explicitly replace targets into a NEW directory.
+
+    Omit rule_id and out_dir for read-only inspection. Editing requires both.
+    Pedestrian signals control crosswalks; vehicle signals control lanes and an
+    optional previously reviewed transverse stop marking. Empty lists retain
+    unresolved targets. Physical geometry, lamps and source provenance stay fixed.
+    These are operator-reviewed drafts, not inferred legal control or phases.
+    """
+    source = Path(vector_map)
+    if not source.is_file():
+        raise FileNotFoundError(str(source))
+    values = {"lanes": lanes or [], "controlled_crosswalks": controlled_crosswalks or [], "stop_lines": stop_lines or []}
+    if rule_id is None:
+        if out_dir is not None or any(values.values()):
+            raise ValueError("inspection omits output and edit targets")
+        encoded = None
+    else:
+        if type(rule_id) is not int or rule_id <= 0 or not out_dir:
+            raise ValueError("editing requires a positive rule_id and a new output directory")
+        if any(len(v) > 128 or any(type(i) is not int or i <= 0 for i in v) for v in values.values()):
+            raise ValueError("targets must contain at most 128 positive integer IDs")
+        out = Path(out_dir).resolve()
+        if out.exists():
+            raise FileExistsError(str(out))
+        encoded = json.dumps({"rule_id": rule_id, **values}, allow_nan=False)
+    module = core()
+    if module is None or not hasattr(module, "edit_vector_map_relations"):
+        raise RuntimeError("association review needs an updated CloudAnalyzer Rust core")
+    payload = json.loads(module.edit_vector_map_relations(str(source), encoded))
+    payload["report"]["input"] = str(source.resolve())
+    return _publish(payload, out) if rule_id is not None else payload["report"]
+
+
+def propose_vector_map_relations(
+    vector_map: str,
+    rule_id: int,
+    *,
+    candidate_key: str | None = None,
+    map_snapshot: str | None = None,
+    out_dir: str | None = None,
+) -> dict[str, Any]:
+    """Preview geometric signal targets; explicitly adopt one into a NEW directory.
+
+    Preview is read-only and selects nothing. Adoption requires candidate_key,
+    map_snapshot from a fresh preview and out_dir together. Rust recomputes the
+    candidate and rejects stale, incomplete or unsupported evidence. Distance,
+    unsigned housing orientation, road context and elevation support geometric
+    drafts only; they do not prove legal control, front face or signal phases.
+    """
+    source = Path(vector_map)
+    if not source.is_file():
+        raise FileNotFoundError(str(source))
+    if type(rule_id) is not int or not 0 < rule_id <= 2**64 - 1:
+        raise ValueError("rule_id must be a positive integer ID")
+    adopting = any(v is not None for v in (candidate_key, map_snapshot, out_dir))
+    encoded = None
+    if adopting:
+        if not isinstance(candidate_key, str) or not candidate_key or not isinstance(map_snapshot, str) or not map_snapshot or not isinstance(out_dir, str) or not out_dir:
+            raise ValueError("adoption requires candidate_key, map_snapshot and a new output directory together")
+        out = Path(out_dir).resolve()
+        if out.exists():
+            raise FileExistsError(str(out))
+        encoded = json.dumps({"rule_id": rule_id, "candidate_key": candidate_key, "map_snapshot": map_snapshot})
+    module = core()
+    if module is None or not hasattr(module, "propose_vector_map_relations"):
+        raise RuntimeError("target proposals need an updated CloudAnalyzer Rust core")
+    payload = json.loads(module.propose_vector_map_relations(str(source), rule_id, encoded))
+    payload["report"]["input"] = str(source.resolve())
+    return _publish(payload, out) if adopting else payload["report"]

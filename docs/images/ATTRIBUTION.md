@@ -173,3 +173,7 @@ These commands produced the metrics shown in the root README:
 - `0.1m`: 67.5% kept, Chamfer `0.0147`, AUC `0.9984`
 - `0.2m`: 31.2% kept, Chamfer `0.0460`, AUC `0.9770`
 - `0.5m`: 7.2% kept, Chamfer `0.1266`, AUC `0.8775`
+
+- `vector-map-equipment-relations.png`: original DynamicMapPlatform Co., Ltd. (2026) [hard-intersection sample](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c), CC BY 4.0. Earlier generated source geometry is retained; only operator-reviewed target relationships change. The figure overlays unchanged equipment and unsigned geometric normals on original source returns, with no teacher shapes or lamp states. See [equipment review](../vector-map-equipment-relations.md).
+
+- `web/vector-map-equipment-relations.png`: actual production browser association editor after export/reload of the generated map. Same DynamicMapPlatform source and CC BY 4.0 attribution as `vector-map-equipment-relations.png`; no simulated app UI.

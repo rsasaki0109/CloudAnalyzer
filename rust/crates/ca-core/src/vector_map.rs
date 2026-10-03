@@ -22,6 +22,8 @@ mod fitting;
 mod integration;
 pub mod junctions;
 pub mod quality;
+pub mod relation_proposals;
+pub mod relations;
 pub mod signals;
 mod surface;
 pub use surface::SurfaceFitReport;

@@ -923,6 +923,22 @@
             </div>
             <p id="vm-crosswalk-report" class="small"></p>
           </details>
+          <details class="options" id="vm-relations-editor">
+            <summary>Review equipment associations</summary>
+            <label>Equipment rule <select id="vm-relation"><option value="">Choose an equipment rule</option></select></label>
+            <p id="vm-relation-current" class="hint small"></p>
+            <button id="vm-relation-preview" disabled>Suggest targets</button>
+            <p id="vm-relation-proposal-report" class="hint small" role="status"></p>
+            <div id="vm-relation-candidates" class="small"></div>
+            <div class="inline"><button id="vm-relation-candidate-focus" disabled>Focus candidate</button><button id="vm-relation-adopt" disabled>Adopt reviewed candidate</button></div>
+            <p class="hint small">Select a candidate to highlight the signal, target and road context. Dashed links are preview only. Rejected candidates can be inspected; no target is adopted automatically.</p>
+            <label id="vm-relation-lanes-row">Controlled / crossing lane IDs <input id="vm-relation-lanes" type="text" placeholder="e.g. 76,77" /></label>
+            <label id="vm-relation-crosswalks-row" hidden>Controlled crosswalk IDs <input id="vm-relation-crosswalks" type="text" placeholder="Choose observed crossing IDs" /></label>
+            <label id="vm-relation-stops-row">Stop line IDs <input id="vm-relation-stops" type="text" placeholder="Leave empty if unresolved" /></label>
+            <p id="vm-relation-targets" class="hint small"></p>
+            <p class="hint small">Choose targets explicitly after reviewing the map and source. Empty targets stay unresolved. Geometry and lamps are retained; control and phases are drafts.</p>
+            <div class="inline"><button id="vm-relation-focus" disabled>Focus associations</button><button id="vm-relation-apply" disabled>Apply associations</button></div>
+          </details>
           <details class="options" id="vm-feature-editor">
             <summary>Edit crossing, stop line or signal geometry</summary>
             <label>Feature <select id="vm-feature"><option value="">Choose a crossing or signal</option></select></label>

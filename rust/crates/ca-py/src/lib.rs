@@ -665,6 +665,11 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(normals, m)?)?;
     m.add_function(wrap_pyfunction!(vector_map::build_vector_map, m)?)?;
     m.add_function(wrap_pyfunction!(vector_map::audit_vector_map_quality, m)?)?;
+    m.add_function(wrap_pyfunction!(vector_map::edit_vector_map_relations, m)?)?;
+    m.add_function(wrap_pyfunction!(
+        vector_map::propose_vector_map_relations,
+        m
+    )?)?;
     m.add_function(wrap_pyfunction!(
         vector_map::discover_vector_map_features,
         m

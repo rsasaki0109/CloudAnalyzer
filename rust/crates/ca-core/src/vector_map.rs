@@ -21,6 +21,7 @@ pub mod feature_editing;
 mod fitting;
 mod integration;
 pub mod junctions;
+mod paint;
 pub mod quality;
 pub mod relation_proposals;
 pub mod relations;
@@ -32,6 +33,9 @@ pub use surface::SurfaceFitReport;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BuildOptions {
+    /// Observe narrow longitudinal white RGB bands with dark supported flanks.
+    /// Opt-in; paint geometry is not a legal/semantic lane classification.
+    pub observe_rgb_boundaries: bool,
     /// Fit a source-supported road footprint and defer unobserved intervals.
     /// Lane counts stay explicit; coverage edges are not certified road edges.
     pub fit_source_surface: bool,
@@ -71,6 +75,7 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            observe_rgb_boundaries: false,
             fit_source_surface: false,
             forward_lanes: 1,
             backward_lanes: 1,
@@ -99,6 +104,7 @@ impl Default for BuildOptions {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Evidence {
+    RgbPaint,
     Intensity,
     Curb,
     SupportEdge,
@@ -130,6 +136,7 @@ pub struct BuildReport {
     pub unsupported_sections: usize,
     pub intensity_used: bool,
     pub intensity_vertices: usize,
+    pub rgb_paint_vertices: usize,
     pub curb_vertices: usize,
     pub rejected_curb_candidates: usize,
     pub support_edge_vertices: usize,
@@ -347,7 +354,7 @@ fn track_candidates(road: &mut ExtractedRoad, sections: &[Section], nominal: &[f
     for (j, &prior) in nominal.iter().enumerate() {
         let unary = |c: Candidate| {
             let evidence = match c.evidence {
-                Evidence::Intensity => 0.0,
+                Evidence::Intensity | Evidence::RgbPaint => 0.0,
                 Evidence::Curb => 0.1,
                 Evidence::SupportEdge => 0.3,
                 Evidence::WidthPrior => 0.9,
@@ -417,6 +424,14 @@ pub fn extract(
     o: &BuildOptions,
 ) -> Result<(Vec<ExtractedRoad>, BuildReport), BuildError> {
     o.validate()?;
+    if o.observe_rgb_boundaries
+        && cloud
+            .colors
+            .as_ref()
+            .is_some_and(|v| v.len() != cloud.positions.len())
+    {
+        return fail("RGB count does not match positions");
+    }
     if cloud.is_empty() {
         return fail("the point cloud is empty");
     }
@@ -469,6 +484,7 @@ pub fn extract(
         unsupported_sections: 0,
         intensity_used: false,
         intensity_vertices: 0,
+        rgb_paint_vertices: 0,
         curb_vertices: 0,
         rejected_curb_candidates: 0,
         support_edge_vertices: 0,
@@ -589,6 +605,20 @@ pub fn extract(
                 }
             }
         }
+        if o.observe_rgb_boundaries {
+            candidates.extend(paint::candidates(
+                cloud,
+                &bins,
+                &surface,
+                paint::Frame {
+                    position: p,
+                    direction: dir,
+                    lateral_min: low,
+                    ground,
+                },
+                o,
+            ));
+        }
         for i in 2..bins.len() - 2 {
             let Some(z) = surface[i].filter(|z| (z - ground).abs() < 0.5) else {
                 continue;
@@ -626,9 +656,14 @@ pub fn extract(
             let target = prior[j] * 0.7 + nominal[j] * 0.3;
             let found = candidates
                 .iter()
+                // RGB observations enter through continuity tracking. A paint
+                // candidate rejected there must not pre-shift inferred widths.
+                .filter(|c| !o.track_boundaries || c.evidence != Evidence::RgbPaint)
                 .filter(|c| {
                     (c.lateral - nominal[j]).abs() <= o.search_margin
-                        && (j == 0 || j == nlanes || c.evidence == Evidence::Intensity)
+                        && (j == 0
+                            || j == nlanes
+                            || matches!(c.evidence, Evidence::Intensity | Evidence::RgbPaint))
                 })
                 .min_by(|a, b| {
                     (a.lateral - target)
@@ -645,7 +680,9 @@ pub fn extract(
                 .copied()
                 .filter(|c| {
                     (c.lateral - nominal[j]).abs() <= o.search_margin
-                        && (j == 0 || j == nlanes || c.evidence == Evidence::Intensity)
+                        && (j == 0
+                            || j == nlanes
+                            || matches!(c.evidence, Evidence::Intensity | Evidence::RgbPaint))
                 })
                 .collect();
             choices.push(Candidate {
@@ -718,6 +755,7 @@ pub fn extract(
                 totals[j] += 1;
                 match e {
                     Evidence::Intensity => report.intensity_vertices += 1,
+                    Evidence::RgbPaint => report.rgb_paint_vertices += 1,
                     Evidence::Curb => report.curb_vertices += 1,
                     Evidence::SupportEdge => report.support_edge_vertices += 1,
                     Evidence::WidthPrior => report.width_prior_vertices += 1,
@@ -735,11 +773,14 @@ pub fn extract(
     }
     report.intensity_used = report.intensity_vertices > 0;
     report.roads = roads.len();
-    if !report.intensity_used {
+    if !report.intensity_used && report.rgb_paint_vertices == 0 {
         report.warnings.push(
             "No usable intensity contrast: internal lane lines use the configured width prior."
                 .into(),
         );
+    }
+    if o.observe_rgb_boundaries {
+        report.warnings.push(format!("{} vertices use narrow longitudinal RGB paint with supported dark flanks. Shadows, short/dashed marks and missing flanks can be held; white paint is not a legal lane classification. Remaining lines retain their stated priors.", report.rgb_paint_vertices));
     }
     if report.width_prior_vertices > 0 {
         report.warnings.push(format!(
@@ -1003,6 +1044,83 @@ mod tests {
             values: AttributeValues::F32(intensities),
         });
         cloud
+    }
+
+    #[test]
+    fn rgb_opt_in_observes_white_line_and_invalid_colors_are_atomic() {
+        let mut cloud = marked_road();
+        cloud.attributes.clear();
+        cloud.colors = Some(
+            cloud
+                .positions
+                .iter()
+                .map(|p| {
+                    if (p[1] + 2.3).abs() < 0.11 {
+                        [230; 3]
+                    } else {
+                        [40; 3]
+                    }
+                })
+                .collect(),
+        );
+        let poses = [[1.0, 0.0, 99.0], [29.0, 0.0, 99.0]];
+        let (_, legacy) = extract(&cloud, &poses, &BuildOptions::default()).unwrap();
+        assert_eq!(legacy.rgb_paint_vertices, 0);
+        let options = BuildOptions {
+            observe_rgb_boundaries: true,
+            ..Default::default()
+        };
+        let (roads, report) = extract(&cloud, &poses, &options).unwrap();
+        assert!(report.rgb_paint_vertices > 10, "{report:?}");
+        assert!(
+            roads[0].boundaries[1]
+                .iter()
+                .zip(&roads[0].evidence[1])
+                .filter(|(_, e)| **e == Evidence::RgbPaint)
+                .all(|(p, _)| (p[1] + 2.3).abs() < 0.2)
+        );
+        assert!(!report.intensity_used);
+        let mut map = Map::new();
+        let before = map.clone();
+        cloud.colors.as_mut().unwrap().pop();
+        assert!(build(&mut map, &cloud, &poses, &options).is_err());
+        assert_eq!(map, before);
+    }
+
+    #[test]
+    fn rgb_rejected_by_tracking_cannot_shift_width_assumptions() {
+        let mut cloud = marked_road();
+        cloud.attributes.clear();
+        for p in &mut cloud.positions {
+            p[2] = 2.0;
+        }
+        cloud.colors = Some(
+            cloud
+                .positions
+                .iter()
+                .map(|p| {
+                    if (12.0..=18.0).contains(&p[0]) && (p[1] - 2.8).abs() < 0.11 {
+                        [230; 3]
+                    } else {
+                        [40; 3]
+                    }
+                })
+                .collect(),
+        );
+        let poses = [[3.0, 0.0, 99.0], [27.0, 0.0, 99.0]];
+        let (prior, _) = extract(&cloud, &poses, &BuildOptions::default()).unwrap();
+        let (rgb, report) = extract(
+            &cloud,
+            &poses,
+            &BuildOptions {
+                observe_rgb_boundaries: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(report.rgb_paint_vertices, 0);
+        assert_eq!(rgb[0].boundaries, prior[0].boundaries);
+        assert_eq!(rgb[0].evidence, prior[0].evidence);
     }
 
     #[test]

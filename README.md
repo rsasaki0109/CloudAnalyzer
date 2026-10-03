@@ -254,6 +254,8 @@ physical geometry and unresolved controls through Undo and Lanelet2 reload.
 orientation and road context, highlight held alternatives, and require explicit adoption.
 [Second-scene validation](docs/vector-map-cross-scene.md) reports boundary offsets,
 missing equipment and held signal targets alongside a connected-movement fix.
+[RGB boundary experiment](docs/vector-map-rgb-boundaries.md) adds optional paint
+observations and visualizes residual offsets; neither real-scene map improves yet.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

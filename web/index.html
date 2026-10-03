@@ -817,6 +817,7 @@
             <label><input id="vm-anchor-prior" type="checkbox" checked /> Anchor inferred lines to detected outer edges</label>
             <label title="Choose a continuous path through candidate edges; rejected observations can become width priors"><input id="vm-track-boundaries" type="checkbox" checked /> Track continuous boundaries</label>
             <label title="Fit trajectory-relative curves with at most 0.5 m horizontal movement; preserve supported corners and ground heights"><input id="vm-fit-boundaries" type="checkbox" checked /> Reduce boundary jitter</label>
+            <label title="Observe narrow white bands along the traced road with dark surface on both sides. Short, dashed or occluded paint can remain inferred."><input id="vm-rgb-boundaries" type="checkbox" /> Use RGB white paint for boundaries</label>
             <label title="Reject tall raised surfaces and steps without nearby road support; rejected candidates become width assumptions"><input id="vm-verify-curbs" type="checkbox" checked /> Check curb profiles</label>
             <label title="Reuse lanes whose centre, boundaries, direction and height agree; retain existing geometry and rules"><input id="vm-merge-passes" type="checkbox" checked /> Merge matching existing lanes</label>
           <p id="vm-build-report" class="small"></p>

@@ -1,0 +1,541 @@
+{
+  "import_issues": [],
+  "quality": {
+    "cloud_points": 1883866,
+    "ground_height_tolerance_m": 0.3,
+    "ground_radius_m": 0.75,
+    "lanes": [
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 8,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 9,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 10,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 11,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 12,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 13,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 59,
+          "start_supported": true,
+          "supported": 59
+        },
+        "lane": 21,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 58,
+          "start_supported": true,
+          "supported": 58
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 22,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 23,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        },
+        "lane": 24,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 64,
+          "start_supported": true,
+          "supported": 64
+        },
+        "lane": 25,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        },
+        "lane": 26,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 66,
+          "start_supported": true,
+          "supported": 66
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        }
+      }
+    ],
+    "limited": false,
+    "low_support_lanes": [],
+    "malformed_lanes": [],
+    "minimum_support_fraction": 0.9,
+    "omitted_lanes": [],
+    "sample_budget": 100000,
+    "sampled_points": 1371,
+    "sampling_step_m": 0.5,
+    "warnings": [
+      "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+    ]
+  },
+  "validation": {
+    "counts": {
+      "errors": 0,
+      "infos": 0,
+      "warnings": 13
+    },
+    "issues": [
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 21,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 2 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+        "related": [
+          {
+            "id": 22,
+            "kind": "lane"
+          },
+          {
+            "id": 23,
+            "kind": "lane"
+          },
+          {
+            "id": 24,
+            "kind": "lane"
+          },
+          {
+            "id": 25,
+            "kind": "lane"
+          },
+          {
+            "id": 26,
+            "kind": "lane"
+          }
+        ],
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 8,
+          "kind": "lane"
+        },
+        "message": "lane:8 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 9,
+          "kind": "lane"
+        },
+        "message": "lane:9 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 10,
+          "kind": "lane"
+        },
+        "message": "lane:10 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 11,
+          "kind": "lane"
+        },
+        "message": "lane:11 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 12,
+          "kind": "lane"
+        },
+        "message": "lane:12 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 13,
+          "kind": "lane"
+        },
+        "message": "lane:13 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 21,
+          "kind": "lane"
+        },
+        "message": "lane:21 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 22,
+          "kind": "lane"
+        },
+        "message": "lane:22 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 23,
+          "kind": "lane"
+        },
+        "message": "lane:23 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 24,
+          "kind": "lane"
+        },
+        "message": "lane:24 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 25,
+          "kind": "lane"
+        },
+        "message": "lane:25 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 26,
+          "kind": "lane"
+        },
+        "message": "lane:26 has neither predecessors nor successors",
+        "severity": "warning"
+      }
+    ]
+  }
+}

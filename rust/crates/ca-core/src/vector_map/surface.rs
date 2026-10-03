@@ -394,6 +394,7 @@ fn finish(
     mut report: BuildReport,
 ) -> Result<(Vec<ExtractedRoad>, BuildReport), BuildError> {
     report.intensity_vertices = 0;
+    report.rgb_paint_vertices = 0;
     report.curb_vertices = 0;
     report.support_edge_vertices = 0;
     report.width_prior_vertices = 0;
@@ -425,6 +426,7 @@ fn finish(
                     Evidence::WidthPrior => report.width_prior_vertices += 1,
                     Evidence::Curb => report.curb_vertices += 1,
                     Evidence::Intensity => report.intensity_vertices += 1,
+                    Evidence::RgbPaint => report.rgb_paint_vertices += 1,
                 }
             }
         }
@@ -460,6 +462,9 @@ fn finish(
             .for_each(|v| *v /= total as f64);
     }
     report.intensity_used = report.intensity_vertices > 0;
+    if report.rgb_paint_vertices > 0 {
+        report.warnings.push(format!("{} retained vertices use longitudinal RGB paint observations before fitting; these are geometry proposals, not legal lane classifications.", report.rgb_paint_vertices));
+    }
     report.warnings.push(if fit.preserved_candidate_geometry {"Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.".into()} else {"Source-footprint mode keeps explicit lane counts but fits inferred widths to a coherent low-surface band. Coverage limits can be occlusion or scan gaps, not road edges. Internal lane lines remain width assumptions; this does not identify road semantics or permitted turns.".into()});
     report.warnings.push(format!("{:.2} m of the traced/recorded path was deferred; {} intervals failed centre/boundary source checks; {} fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",fit.deferred_length_m,fit.rejected_intervals,fit.discarded_short_stretches));
     report.surface_fit = Some(fit);

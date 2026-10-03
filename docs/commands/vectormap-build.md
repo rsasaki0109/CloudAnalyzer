@@ -20,6 +20,16 @@ the end of ground coverage provide boundary candidates. Missing features use a w
 missing ground splits the road. Coverage edges can be scan gaps. Review the draft geometry,
 lane counts, directions, repeated passes and junctions before using it.
 
+For an RGB cloud, opt in with `--observe-rgb-boundaries`, Python/MCP
+`observe_rgb_boundaries=True`, or Web's **Use RGB white paint for boundaries**.
+The default is off. Narrow white bands must continue along the slice with dark
+supported road on both sides; RGB contrast must be at least 40/255. Each quarter
+of the longitudinal slice needs observations, so short/dashed or occluded paint
+can remain inferred. Transverse bars, broad bright surfaces and saturated colored
+marks are held. `extraction.rgb_paint_vertices` counts selected sources before
+fitting, separately from intensity. White paint geometry does not identify legal
+lanes, travel directions or permissions. See the [two-scene comparison](../vector-map-rgb-boundaries.md).
+
 Inferred lines are anchored to detected outer edges when available, while keeping their
 inferred label. This reduces dependence on the trajectory being exactly at the lane centre.
 `--no-anchor-width-prior` disables that adjustment; the MCP option is `anchor_width_prior`.

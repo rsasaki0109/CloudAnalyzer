@@ -27,6 +27,7 @@ def build_vector_map(
     anchor_width_prior: bool = True,
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
+    observe_rgb_boundaries: bool = False,
     fit_source_surface: bool = False,
     verify_curb_profiles: bool = True,
     merge_repeated_passes: bool = True,
@@ -49,6 +50,10 @@ def build_vector_map(
     fitting, including explicit width priors. Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does
     not guarantee better lane geometry. Stages can be disabled independently.
+    observe_rgb_boundaries optionally uses narrow longitudinal white RGB bands
+    with supported dark flanks in each quarter of the slice. RGB sources are
+    counted separately from intensity; short/dashed/occluded paint can be missed.
+    Paint geometry does not establish a legal lane boundary.
     fit_source_surface instead fits inferred widths/heights to a coherent low-surface
     band, keeps lane counts explicit and defers unobserved intervals/short fragments.
     Coverage edges can be occlusion, not road boundaries; reduced extent is not an
@@ -118,6 +123,7 @@ def build_vector_map(
             "anchor_width_prior": anchor_width_prior,
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
+            **({"observe_rgb_boundaries": True} if observe_rgb_boundaries else {}),
             **({"fit_source_surface": True} if fit_source_surface else {}),
             "verify_curb_profiles": verify_curb_profiles,
             "merge_repeated_passes": merge_repeated_passes,

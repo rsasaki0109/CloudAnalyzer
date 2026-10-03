@@ -518,6 +518,7 @@ def test_cli_writes_the_same_report_with_mgrs_and_reference_metadata_only(
             "--no-track-boundaries",
             "--no-fit-boundaries",
             "--no-verify-curb-profiles",
+            "--observe-rgb-boundaries",
         ],
     )
     assert result.exit_code == 0, result.output
@@ -526,6 +527,7 @@ def test_cli_writes_the_same_report_with_mgrs_and_reference_metadata_only(
     assert report["options"]["track_boundaries"] is False
     assert report["options"]["fit_boundaries"] is False
     assert report["options"]["verify_curb_profiles"] is False
+    assert report["options"]["observe_rgb_boundaries"] is True
     assert report["extraction"]["rejected_curb_candidates"] == 0
     assert report["extraction"]["tracked_vertices"] == 0
     assert report["extraction"]["fitted_vertices"] == 0

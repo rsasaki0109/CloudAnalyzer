@@ -2501,6 +2501,35 @@ test("vector map: a traced path is fitted to source points without a trajectory 
   await expect(page.locator("#vm-status")).toContainText("No map yet");
 });
 
+test("vector map: RGB white paint shifts a boundary only when explicitly enabled", async ({ page }) => {
+  const rows: string[] = [];
+  for (let i=0;i<=200;i++) for (let j=0;j<=100;j++) {
+    const x=i*0.1,y=-7+j*0.1;
+    const c=Math.abs(y+2.3)<0.11 ? 230 : 40;
+    rows.push(`${x} ${y} 2 ${c} ${c} ${c}`);
+  }
+  const header=`ply\nformat ascii 1.0\nelement vertex ${rows.length}\nproperty float x\nproperty float y\nproperty float z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n`;
+  await open(page,[{name:"paint.ply",buffer:Buffer.from(header+rows.join("\n"))},
+    {name:"drive.csv",buffer:Buffer.from("timestamp,x,y,z\n0,3,0,50\n1,17,0,50\n")}]);
+  await expect(status(page)).toContainText("trajectory of 2 poses");
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await expect(page.locator("#vm-rgb-boundaries")).not.toBeChecked();
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("RGB white-paint sources: 0");
+  await page.locator("#vm-undo").click();
+  await page.locator("#vm-rgb-boundaries").check();
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText(/RGB white-paint sources: [1-9]/);
+  const downloaded=page.waitForEvent("download",file=>file.suggestedFilename()==="lanelet2_map.osm");
+  await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await downloaded)).toString();
+  expect(xml).toMatch(/k="local_y" v="-2\.[23]/);
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
 test("vector map: trajectory builds a ground-level draft with an evidence report and one-step undo", async ({ page }) => {
   const ground: [number, number, number][] = [];
   for (let x = 0; x <= 60; x += 0.2) for (let y = -8; y <= 4; y += 0.2) ground.push([x, y, 2]);

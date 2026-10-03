@@ -1,0 +1,31 @@
+{
+  "reference_inputs": [],
+  "artifact_sha256": {
+    "discovery.json": "300d839ba87a62db40d5155be2aa55bea25168a8ec822607b0d86286bb530b90",
+    "junction-preview.json": "ae884a8b05ae9216b3d88faab1729864d96eeed619c752440d7b57d19a6d7806",
+    "operator-path-0.csv": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+    "operator-path-1.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+    "operator-path-2.csv": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9",
+    "roads/after-audit-0.json": "1cc4163b78bde079c6e0ac2f484805196b91277b2abfdf097e8afdbaf1bf52f8",
+    "roads/after-audit-1.json": "61bcdb3c7b29088c4461112788426e02f56114e7c466d19a3b186fe9c04340cd",
+    "roads/after-audit-2.json": "0346921e32696e038c99053dedeb6045f41e79f758597e7772a5c16d5c6262af",
+    "roads/after-projector-info.yaml": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+    "roads/after-road-0.json": "d1d222824017cea3b9b775b721a8752fa351644099798754be40417f19abf037",
+    "roads/after-road-0.osm": "1af76b72a5af28a9a942e005bcee8644b881a0f2b133af75077a880eacfa67fc",
+    "roads/after-road-1.json": "692832ec9a5cfe4ad59b079e4fbbc77f9006cc02b8e9ade6e05317d06300bc17",
+    "roads/after-road-1.osm": "b2531a0d58f88efa30a5e9df80a654b5c4437ab3b937d349d1d82c277949b076",
+    "roads/after-road-2.json": "6053e683937ec42e2a330afd8c1b26401c71c87a8ce0870a4171ddf4f50171a2",
+    "roads/after-road-2.osm": "d37a99062a8abac074b4927c6da89030ba7d4ac0656656cc7d98cf30e62c2ad1",
+    "roads/before-audit-0.json": "a3f3780bc5083341ee0927c69be3333bb4e458743827f807b6d7e3e75e377b15",
+    "roads/before-audit-1.json": "511ba9f2f31d5fc057d308d3814eb02c4dc6742b7a68eb160d8fdc411c2169a0",
+    "roads/before-audit-2.json": "3fb4980d1e420846e8e3a828a9cc778b3608edf921ad040a749037a8f205e140",
+    "roads/before-projector-info.yaml": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+    "roads/before-road-0.json": "c9d3815dce1b98276c36196181959b0c7db1d74e75b54b6b3b00c393eaff3134",
+    "roads/before-road-0.osm": "e2140e9196e6daa8890e1a9cf3ac836f742e0ecc7b0d335312aaa5dbde898532",
+    "roads/before-road-1.json": "fd4b4401e4ec2efb41b14c7b60456cee0ec0f830e068a5722b334a43e4566d90",
+    "roads/before-road-1.osm": "b4f3bddda94043d2bd5f45fc073095b64b51a87fda1cec97e588a60816b82ab9",
+    "roads/before-road-2.json": "b574c3577e35ca76218a98867a7c3f73e159074406eb525a53b6bdbe54a1e757",
+    "roads/before-road-2.osm": "87b5b8dfdfeb32429d2962916fa74e46002766b63fbe8d7586b6c9b3cba249b7",
+    "roads/comparison.json": "8cef5dc3111178d305c300a2211339ea0c1f5dd4d4e6ab0547300185a7b8f8a1"
+  }
+}

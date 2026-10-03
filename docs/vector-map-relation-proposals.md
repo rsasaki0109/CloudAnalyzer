@@ -26,18 +26,23 @@ hints only; adoption replaces them with controlled crosswalk IDs. A crossing's
 vehicle lanes never become pedestrian control targets.
 
 Vehicle candidates require an observed stop within 16 m, existing reviewed vehicle
-lanes, compatible stop-marking lane context, matching housing-normal/road axes and
-compatible elevation. The stop must be within 8 m of the road centre and within
+lanes, stop-marking context covering **every current controlled lane**, matching
+housing-normal/road axes and compatible elevation. Proposals retain the complete
+reviewed vehicle movement: connected lanes from another approach cannot replace
+it, and a marking for only some lanes cannot silently drop the others. Connected
+road context remains visible as evidence for held alternatives. The stop must be
+within 8 m of the road centre and within
 0.75 m of its road elevation, so a nearby marking on another deck is held. The existing atomic editor also checks transverse markings
-and participant/reference consistency. Road context is limited to two topology
-hops. Search budgets limit targets, heads and geometry; incomplete searches offer
+and participant/reference consistency. Pedestrian road context is limited to two
+topology hops. Search budgets limit targets, heads and geometry; incomplete searches offer
 no adoptable partial list.
 
 Normals are unsigned. Point-cloud housing geometry does not prove front face,
 legal target or signal phases. Multiple compatible candidates remain ambiguous;
 the user chooses explicitly. A missing candidate leaves the rule unresolved.
-These fixed geometric gates were exercised on a development scene, not a held-out
-semantic accuracy benchmark.
+The [second-scene audit](vector-map-cross-scene.md) records a connected-approach
+failure and its fix, including unresolved/masked cases. These development scenes
+are not a held-out semantic accuracy benchmark.
 
 ![Actual source: vehicle housing, observed stop and reviewed road context highlighted](images/web/vector-map-relation-proposal-169.png)
 

@@ -1,0 +1,585 @@
+{
+  "source_commit": "9e4f61559161dbbcfc62dadce6cabf3c2e53e1b0",
+  "native_sha256": "581f5c367b6366aaa27290a4771b086bc788fb8d8e477d060740c9311ad5b5c8",
+  "source_sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+  "operator_inputs_sha256": "9a6f62fc9c2dd32d2c377ea8449bca9d880370c48411576d29bca4ea19d50f60",
+  "reference_sha256": "4fe358f2d1e182dc76de296e5619086f8d8ad2fcab3e6d8f99f6e3d724a84e6d",
+  "generation_reference_inputs": [],
+  "generation_artifact_sha256": {
+    "discovery.json": "300d839ba87a62db40d5155be2aa55bea25168a8ec822607b0d86286bb530b90",
+    "junction-preview.json": "ae884a8b05ae9216b3d88faab1729864d96eeed619c752440d7b57d19a6d7806",
+    "operator-path-0.csv": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+    "operator-path-1.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+    "operator-path-2.csv": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9",
+    "roads/after-audit-0.json": "1cc4163b78bde079c6e0ac2f484805196b91277b2abfdf097e8afdbaf1bf52f8",
+    "roads/after-audit-1.json": "61bcdb3c7b29088c4461112788426e02f56114e7c466d19a3b186fe9c04340cd",
+    "roads/after-audit-2.json": "0346921e32696e038c99053dedeb6045f41e79f758597e7772a5c16d5c6262af",
+    "roads/after-projector-info.yaml": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+    "roads/after-road-0.json": "d1d222824017cea3b9b775b721a8752fa351644099798754be40417f19abf037",
+    "roads/after-road-0.osm": "1af76b72a5af28a9a942e005bcee8644b881a0f2b133af75077a880eacfa67fc",
+    "roads/after-road-1.json": "692832ec9a5cfe4ad59b079e4fbbc77f9006cc02b8e9ade6e05317d06300bc17",
+    "roads/after-road-1.osm": "b2531a0d58f88efa30a5e9df80a654b5c4437ab3b937d349d1d82c277949b076",
+    "roads/after-road-2.json": "6053e683937ec42e2a330afd8c1b26401c71c87a8ce0870a4171ddf4f50171a2",
+    "roads/after-road-2.osm": "d37a99062a8abac074b4927c6da89030ba7d4ac0656656cc7d98cf30e62c2ad1",
+    "roads/before-audit-0.json": "a3f3780bc5083341ee0927c69be3333bb4e458743827f807b6d7e3e75e377b15",
+    "roads/before-audit-1.json": "511ba9f2f31d5fc057d308d3814eb02c4dc6742b7a68eb160d8fdc411c2169a0",
+    "roads/before-audit-2.json": "3fb4980d1e420846e8e3a828a9cc778b3608edf921ad040a749037a8f205e140",
+    "roads/before-projector-info.yaml": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+    "roads/before-road-0.json": "c9d3815dce1b98276c36196181959b0c7db1d74e75b54b6b3b00c393eaff3134",
+    "roads/before-road-0.osm": "e2140e9196e6daa8890e1a9cf3ac836f742e0ecc7b0d335312aaa5dbde898532",
+    "roads/before-road-1.json": "fd4b4401e4ec2efb41b14c7b60456cee0ec0f830e068a5722b334a43e4566d90",
+    "roads/before-road-1.osm": "b4f3bddda94043d2bd5f45fc073095b64b51a87fda1cec97e588a60816b82ab9",
+    "roads/before-road-2.json": "b574c3577e35ca76218a98867a7c3f73e159074406eb525a53b6bdbe54a1e757",
+    "roads/before-road-2.osm": "87b5b8dfdfeb32429d2962916fa74e46002766b63fbe8d7586b6c9b3cba249b7",
+    "roads/comparison.json": "8cef5dc3111178d305c300a2211339ea0c1f5dd4d4e6ab0547300185a7b8f8a1"
+  },
+  "road_generation": {
+    "source_commit": "9e4f61559161dbbcfc62dadce6cabf3c2e53e1b0",
+    "native_sha256": "581f5c367b6366aaa27290a4771b086bc788fb8d8e477d060740c9311ad5b5c8",
+    "source_sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+    "reference_inputs": [],
+    "artifact_newlines": "LF",
+    "cases": [
+      {
+        "name": "operator-path-0",
+        "trajectory_sha256": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0
+        },
+        "before": {
+          "map": "before-road-0.json",
+          "map_sha256": "c9d3815dce1b98276c36196181959b0c7db1d74e75b54b6b3b00c393eaff3134",
+          "generated_length_m": 50.60632371551997,
+          "surface_fit": null,
+          "added_lane_ids": [
+            4,
+            5
+          ],
+          "source_quality": {
+            "checked_lanes": 2,
+            "source_review_lane_ids": [],
+            "sampled_points": 619,
+            "omitted_lanes": [],
+            "malformed_lanes": [],
+            "limited": false
+          },
+          "validation": {
+            "errors": 0,
+            "infos": 0,
+            "warnings": 2
+          }
+        },
+        "after": {
+          "map": "after-road-0.json",
+          "map_sha256": "d1d222824017cea3b9b775b721a8752fa351644099798754be40417f19abf037",
+          "generated_length_m": 41.10632371552034,
+          "surface_fit": {
+            "candidate_sections": 27,
+            "deferred_length_m": 9.49999999999963,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 50.60632371551997,
+            "maximum_lane_width_m": 4.069509596259146,
+            "minimum_lane_width_m": 3.279844005530244,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 5
+          },
+          "added_lane_ids": [
+            4,
+            5,
+            9,
+            10,
+            14,
+            15
+          ],
+          "source_quality": {
+            "checked_lanes": 6,
+            "source_review_lane_ids": [],
+            "sampled_points": 528,
+            "omitted_lanes": [],
+            "malformed_lanes": [],
+            "limited": false
+          },
+          "validation": {
+            "errors": 0,
+            "infos": 0,
+            "warnings": 8
+          }
+        }
+      },
+      {
+        "name": "operator-path-1",
+        "trajectory_sha256": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0
+        },
+        "before": {
+          "map": "before-road-1.json",
+          "map_sha256": "fd4b4401e4ec2efb41b14c7b60456cee0ec0f830e068a5722b334a43e4566d90",
+          "generated_length_m": 46.141087980237316,
+          "surface_fit": null,
+          "added_lane_ids": [
+            9,
+            10
+          ],
+          "source_quality": {
+            "checked_lanes": 2,
+            "source_review_lane_ids": [],
+            "sampled_points": 564,
+            "omitted_lanes": [],
+            "malformed_lanes": [],
+            "limited": false
+          },
+          "validation": {
+            "errors": 0,
+            "infos": 0,
+            "warnings": 5
+          }
+        },
+        "after": {
+          "map": "after-road-1.json",
+          "map_sha256": "692832ec9a5cfe4ad59b079e4fbbc77f9006cc02b8e9ade6e05317d06300bc17",
+          "generated_length_m": 38.14108798023091,
+          "surface_fit": {
+            "candidate_sections": 25,
+            "deferred_length_m": 8.000000000006409,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 46.141087980237316,
+            "maximum_lane_width_m": 3.907619223641965,
+            "minimum_lane_width_m": 3.4712869200281475,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 4
+          },
+          "added_lane_ids": [
+            19,
+            20,
+            24,
+            25
+          ],
+          "source_quality": {
+            "checked_lanes": 4,
+            "source_review_lane_ids": [],
+            "sampled_points": 480,
+            "omitted_lanes": [],
+            "malformed_lanes": [],
+            "limited": false
+          },
+          "validation": {
+            "errors": 0,
+            "infos": 0,
+            "warnings": 14
+          }
+        }
+      },
+      {
+        "name": "operator-path-2",
+        "trajectory_sha256": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9",
+        "options": {
+          "forward_lanes": 1,
+          "backward_lanes": 1,
+          "left_hand_traffic": true,
+          "lane_width": 3.5,
+          "segment_length": 0
+        },
+        "before": {
+          "map": "before-road-2.json",
+          "map_sha256": "b574c3577e35ca76218a98867a7c3f73e159074406eb525a53b6bdbe54a1e757",
+          "generated_length_m": 31.764760348537187,
+          "surface_fit": null,
+          "added_lane_ids": [
+            14,
+            15
+          ],
+          "source_quality": {
+            "checked_lanes": 2,
+            "source_review_lane_ids": [],
+            "sampled_points": 390,
+            "omitted_lanes": [],
+            "malformed_lanes": [],
+            "limited": false
+          },
+          "validation": {
+            "errors": 0,
+            "infos": 0,
+            "warnings": 8
+          }
+        },
+        "after": {
+          "map": "after-road-2.json",
+          "map_sha256": "6053e683937ec42e2a330afd8c1b26401c71c87a8ce0870a4171ddf4f50171a2",
+          "generated_length_m": 31.764760348537187,
+          "surface_fit": {
+            "candidate_sections": 17,
+            "deferred_length_m": 0.0,
+            "discarded_short_stretches": 0,
+            "evaluated_path_length_m": 31.764760348537187,
+            "maximum_lane_width_m": 3.5288172724745763,
+            "minimum_lane_width_m": 3.3652391999937277,
+            "preserved_candidate_geometry": true,
+            "rejected_intervals": 0
+          },
+          "added_lane_ids": [
+            29,
+            30
+          ],
+          "source_quality": {
+            "checked_lanes": 2,
+            "source_review_lane_ids": [],
+            "sampled_points": 390,
+            "omitted_lanes": [],
+            "malformed_lanes": [],
+            "limited": false
+          },
+          "validation": {
+            "errors": 0,
+            "infos": 0,
+            "warnings": 17
+          }
+        }
+      }
+    ],
+    "limitations": [
+      "Road-only regeneration; frozen junctions/equipment and associations are not transferred.",
+      "Support is the generation gate, not independent accuracy or road semantics.",
+      "Lower review counts include omission of unsupported extent; inspect deferred length and fragments.",
+      "Lane counts, traffic directions and width priors remain explicit operator inputs.",
+      "Existing project development scenes, not strictly held-out generalization evidence."
+    ],
+    "before": {
+      "final_map": "before-road-2.json",
+      "final_osm": "before-road-2.osm",
+      "final_projector": "before-projector-info.yaml",
+      "source_quality": {
+        "checked_lanes": 6,
+        "source_review_lane_ids": [],
+        "sampled_points": 1573,
+        "omitted_lanes": [],
+        "malformed_lanes": [],
+        "limited": false
+      },
+      "generated_length_m": 128.51217204429446
+    },
+    "after": {
+      "final_map": "after-road-2.json",
+      "final_osm": "after-road-2.osm",
+      "final_projector": "after-projector-info.yaml",
+      "source_quality": {
+        "checked_lanes": 12,
+        "source_review_lane_ids": [],
+        "sampled_points": 1398,
+        "omitted_lanes": [],
+        "malformed_lanes": [],
+        "limited": false
+      },
+      "generated_length_m": 111.01217204428843,
+      "reported_deferred_length_m": 17.50000000000604,
+      "entire_path_deferred_cases": [],
+      "evaluated_path_length_m": 128.51217204429446
+    }
+  },
+  "discovery": {
+    "source_points": 1757841,
+    "windows": 906,
+    "detected_candidates": 798,
+    "limited": true,
+    "unsupported_windows": 71
+  },
+  "features": {
+    "repeated_paint": {
+      "retained_proposals": 2,
+      "reference_objects": 4,
+      "nearby_one_to_one_pairs": 2,
+      "pairs": [
+        {
+          "candidate": 80,
+          "reference": 164,
+          "center_distance_m": 1.9917879909007954
+        },
+        {
+          "candidate": 84,
+          "reference": 166,
+          "center_distance_m": 1.5538519126696253
+        }
+      ],
+      "unmatched_proposals": 0,
+      "unmatched_references": 2
+    },
+    "bright_bar": {
+      "retained_proposals": 64,
+      "reference_objects": 95,
+      "nearby_one_to_one_pairs": 19,
+      "pairs": [
+        {
+          "candidate": 8,
+          "reference": 497,
+          "center_distance_m": 0.080579501509578
+        },
+        {
+          "candidate": 9,
+          "reference": 496,
+          "center_distance_m": 0.14912415334558624
+        },
+        {
+          "candidate": 17,
+          "reference": 498,
+          "center_distance_m": 0.06826208286564693
+        },
+        {
+          "candidate": 23,
+          "reference": 528,
+          "center_distance_m": 0.04312321239081597
+        },
+        {
+          "candidate": 33,
+          "reference": 530,
+          "center_distance_m": 0.06500795395242269
+        },
+        {
+          "candidate": 42,
+          "reference": 502,
+          "center_distance_m": 0.10731449233734222
+        },
+        {
+          "candidate": 57,
+          "reference": 411,
+          "center_distance_m": 0.07094089449384862
+        },
+        {
+          "candidate": 59,
+          "reference": 414,
+          "center_distance_m": 0.05482766528545944
+        },
+        {
+          "candidate": 77,
+          "reference": 378,
+          "center_distance_m": 0.06460267895148956
+        },
+        {
+          "candidate": 86,
+          "reference": 448,
+          "center_distance_m": 0.046075878794749774
+        },
+        {
+          "candidate": 91,
+          "reference": 446,
+          "center_distance_m": 0.1075301792424913
+        },
+        {
+          "candidate": 100,
+          "reference": 354,
+          "center_distance_m": 0.029398455927044154
+        },
+        {
+          "candidate": 101,
+          "reference": 351,
+          "center_distance_m": 0.09141154982806866
+        },
+        {
+          "candidate": 108,
+          "reference": 456,
+          "center_distance_m": 0.06348866786300245
+        },
+        {
+          "candidate": 113,
+          "reference": 487,
+          "center_distance_m": 0.03882340720069458
+        },
+        {
+          "candidate": 118,
+          "reference": 484,
+          "center_distance_m": 0.1030069243061864
+        },
+        {
+          "candidate": 121,
+          "reference": 490,
+          "center_distance_m": 0.06512396783563565
+        },
+        {
+          "candidate": 124,
+          "reference": 521,
+          "center_distance_m": 0.03585131292365812
+        },
+        {
+          "candidate": 128,
+          "reference": 481,
+          "center_distance_m": 0.02820697751079204
+        }
+      ],
+      "unmatched_proposals": 45,
+      "unmatched_references": 76
+    },
+    "elevated_panel": {
+      "retained_proposals": 64,
+      "reference_objects": 34,
+      "nearby_one_to_one_pairs": 2,
+      "pairs": [
+        {
+          "candidate": 58,
+          "reference": 419,
+          "center_distance_m": 0.2831897722765372
+        },
+        {
+          "candidate": 97,
+          "reference": 347,
+          "center_distance_m": 0.8898490558465867
+        }
+      ],
+      "unmatched_proposals": 62,
+      "unmatched_references": 32
+    }
+  },
+  "boundary_distance": {
+    "generated_samples": 837,
+    "mean_xy_m": 1.4182599657984172,
+    "p90_xy_m": 3.792687705723844,
+    "maximum_xy_m": 5.801628785214397,
+    "fraction_within_0_5m": 0.35603345280764637,
+    "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+  },
+  "relations": {
+    "existing": {
+      "rules": 10,
+      "rules_with_expected_candidate": 3,
+      "matching_target_and_movement_pairs": 3,
+      "different_reference_target_pairs": 0,
+      "changed_movement_pairs": 0,
+      "rules_without_eligible_candidate": 7,
+      "mixed_kind_rules_held": 4,
+      "limited_rules": 0
+    },
+    "query_target_masked": {
+      "rules": 10,
+      "rules_with_expected_candidate": 0,
+      "matching_target_and_movement_pairs": 0,
+      "different_reference_target_pairs": 0,
+      "changed_movement_pairs": 0,
+      "rules_without_eligible_candidate": 10,
+      "mixed_kind_rules_held": 4,
+      "limited_rules": 0
+    }
+  },
+  "reference_import_issues": [
+    {
+      "code": "lanelet2.projection",
+      "message": "coordinates projected in MGRS grid 54SVE",
+      "severity": "info"
+    },
+    {
+      "code": "lanelet2.unsupported_member",
+      "message": "regulatory element 9854 (no_stopping_area): members with roles {\"ref_line\", \"refers\"} are not represented and were dropped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_member",
+      "message": "regulatory element 9872 (detection_area): members with roles {\"ref_line\", \"refers\"} are not represented and were dropped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_member",
+      "message": "regulatory element 9881 (no_stopping_area): members with roles {\"refers\"} are not represented and were dropped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_member",
+      "message": "regulatory element 9926 (detection_area): members with roles {\"ref_line\", \"refers\"} are not represented and were dropped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_member",
+      "message": "regulatory element 9939 (virtual_traffic_light): members with roles {\"end_line\", \"ref_line\", \"refers\", \"start_line\"} are not represented and were dropped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_member",
+      "message": "regulatory element 9972 (virtual_traffic_light): members with roles {\"end_line\", \"ref_line\", \"refers\", \"start_line\"} are not represented and were dropped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_member",
+      "message": "regulatory element 10001 (virtual_traffic_light): members with roles {\"end_line\", \"ref_line\", \"refers\", \"start_line\"} are not represented and were dropped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "2 way(s) of type \"detection_area\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "1 way(s) of type \"fence\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "1 way(s) of type \"guard_rail\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "3 way(s) of type \"intersection_coordination\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "8 way(s) of type \"light_bulbs\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "40 way(s) of type \"line_thin\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "2 way(s) of type \"no_stopping_area\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "1 way(s) of type \"parking_lot\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "5 way(s) of type \"parking_space\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "43 way(s) of type \"pedestrian_marking\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "13 way(s) of type \"road_border\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "2 way(s) of type \"traffic_sign\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    },
+    {
+      "code": "lanelet2.unsupported_way",
+      "message": "1 way(s) of type \"virtual\" are not used by any lanelet or supported rule and were skipped",
+      "severity": "warning"
+    }
+  ],
+  "limitations": [
+    "Existing development scene, not held-out accuracy.",
+    "Paths, lane counts, directions and width priors are explicit operator inputs; no automatic legal semantics.",
+    "Source support is also a generation gate; report deferred extent alongside zero flags.",
+    "Feature matches are nearby geometry, not semantic classification or precision/recall; references may be incomplete and previews capped.",
+    "Association audit uses surveyed geometry and reviewed lanes. Masked mode removes only each query target; other reviewed marking contexts remain.",
+    "Masking also removes the query's stop-marking context; missing context is held, not recreated from the answer.",
+    "Mixed vehicle/pedestrian groups and distant targets remain held; unsigned normals cannot establish legal control or front face.",
+    "Junctions are strict point-supported previews only; no legal connection choices are adopted."
+  ]
+}

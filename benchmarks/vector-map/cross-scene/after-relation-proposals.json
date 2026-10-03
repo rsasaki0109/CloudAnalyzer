@@ -1,0 +1,1109 @@
+{
+  "existing": [
+    {
+      "rule_id": 1007,
+      "reference_stop": 348,
+      "reviewed_lanes": [
+        31,
+        36
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 59.033368685553256,
+            "controlled_crosswalks": [],
+            "distance_m": 1.2650786601966315,
+            "eligible": false,
+            "key": "stop_line:351",
+            "lanes": [
+              31,
+              36
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              351
+            ],
+            "target_id": 351,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 88.45176482255985,
+            "controlled_crosswalks": [],
+            "distance_m": 8.617032114129161,
+            "eligible": false,
+            "key": "stop_line:354",
+            "lanes": [
+              31,
+              36
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              354
+            ],
+            "target_id": 354,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1007,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    },
+    {
+      "rule_id": 1008,
+      "reference_stop": 351,
+      "reviewed_lanes": [
+        32,
+        34
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": true,
+            "axis_degrees": 1.2628833293989488,
+            "controlled_crosswalks": [],
+            "distance_m": 15.949879664665497,
+            "eligible": true,
+            "key": "stop_line:351",
+            "lanes": [
+              32,
+              34
+            ],
+            "reasons": [],
+            "road_context": "same_lane",
+            "stop_lines": [
+              351
+            ],
+            "target_id": 351,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 68.58030667339744,
+            "controlled_crosswalks": [],
+            "distance_m": 1.3287310825574998,
+            "eligible": false,
+            "key": "stop_line:348",
+            "lanes": [
+              32,
+              34
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              348
+            ],
+            "target_id": 348,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 80.93977324459235,
+            "controlled_crosswalks": [],
+            "distance_m": 12.261550041071079,
+            "eligible": false,
+            "key": "stop_line:354",
+            "lanes": [
+              32,
+              34
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              354
+            ],
+            "target_id": 354,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 1,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1008,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases."
+        ]
+      }
+    },
+    {
+      "rule_id": 1009,
+      "reference_stop": 354,
+      "reviewed_lanes": [
+        33,
+        35
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": true,
+            "axis_degrees": 7.569023066019823,
+            "controlled_crosswalks": [],
+            "distance_m": 11.995858693388456,
+            "eligible": true,
+            "key": "stop_line:354",
+            "lanes": [
+              33,
+              35
+            ],
+            "reasons": [],
+            "road_context": "same_lane",
+            "stop_lines": [
+              354
+            ],
+            "target_id": 354,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 87.14800686241409,
+            "controlled_crosswalks": [],
+            "distance_m": 6.877594558924286,
+            "eligible": false,
+            "key": "stop_line:351",
+            "lanes": [
+              33,
+              35
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              351
+            ],
+            "target_id": 351,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 83.96409131165177,
+            "controlled_crosswalks": [],
+            "distance_m": 10.05271336006614,
+            "eligible": false,
+            "key": "stop_line:348",
+            "lanes": [
+              33,
+              35
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              348
+            ],
+            "target_id": 348,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 1,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1009,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases."
+        ]
+      }
+    },
+    {
+      "rule_id": 1012,
+      "reference_stop": 367,
+      "reviewed_lanes": [
+        49,
+        50,
+        51
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "mixed",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1012,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "Signal kind or housing orientation is unavailable; review manually."
+        ]
+      }
+    },
+    {
+      "rule_id": 1015,
+      "reference_stop": 378,
+      "reviewed_lanes": [
+        52,
+        53,
+        54
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "mixed",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1015,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "Signal kind or housing orientation is unavailable; review manually."
+        ]
+      }
+    },
+    {
+      "rule_id": 1018,
+      "reference_stop": 389,
+      "reviewed_lanes": [
+        55,
+        56,
+        57
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "mixed",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1018,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "Signal kind or housing orientation is unavailable; review manually."
+        ]
+      }
+    },
+    {
+      "rule_id": 1021,
+      "reference_stop": 400,
+      "reviewed_lanes": [
+        58,
+        59,
+        60
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "mixed",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1021,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "Signal kind or housing orientation is unavailable; review manually."
+        ]
+      }
+    },
+    {
+      "rule_id": 1024,
+      "reference_stop": 411,
+      "reviewed_lanes": [
+        13,
+        15
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 56.15052573949554,
+            "controlled_crosswalks": [],
+            "distance_m": 1.236448026099181,
+            "eligible": false,
+            "key": "stop_line:414",
+            "lanes": [
+              13,
+              15
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              414
+            ],
+            "target_id": 414,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 84.91711476530912,
+            "controlled_crosswalks": [],
+            "distance_m": 8.699604003630913,
+            "eligible": false,
+            "key": "stop_line:417",
+            "lanes": [
+              13,
+              15
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              417
+            ],
+            "target_id": 417,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1024,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    },
+    {
+      "rule_id": 1025,
+      "reference_stop": 414,
+      "reviewed_lanes": [
+        14,
+        17
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 74.69691906020176,
+            "controlled_crosswalks": [],
+            "distance_m": 1.399189503330583,
+            "eligible": false,
+            "key": "stop_line:411",
+            "lanes": [
+              14,
+              17
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              411
+            ],
+            "target_id": 411,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 89.86720825085882,
+            "controlled_crosswalks": [],
+            "distance_m": 12.697917897279579,
+            "eligible": false,
+            "key": "stop_line:417",
+            "lanes": [
+              14,
+              17
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              417
+            ],
+            "target_id": 417,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1025,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    },
+    {
+      "rule_id": 1026,
+      "reference_stop": 417,
+      "reviewed_lanes": [
+        16,
+        18
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": true,
+            "axis_degrees": 4.24950192673179,
+            "controlled_crosswalks": [],
+            "distance_m": 11.830920630306036,
+            "eligible": true,
+            "key": "stop_line:417",
+            "lanes": [
+              16,
+              18
+            ],
+            "reasons": [],
+            "road_context": "same_lane",
+            "stop_lines": [
+              417
+            ],
+            "target_id": 417,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 86.96984408138884,
+            "controlled_crosswalks": [],
+            "distance_m": 7.111794171793098,
+            "eligible": false,
+            "key": "stop_line:414",
+            "lanes": [
+              16,
+              18
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              414
+            ],
+            "target_id": 414,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 85.53734608542344,
+            "controlled_crosswalks": [],
+            "distance_m": 10.630512365394274,
+            "eligible": false,
+            "key": "stop_line:411",
+            "lanes": [
+              16,
+              18
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              411
+            ],
+            "target_id": 411,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 1,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "60971fc074afb1e9",
+        "rule_id": 1026,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases."
+        ]
+      }
+    }
+  ],
+  "query_target_masked": [
+    {
+      "rule_id": 1007,
+      "reference_stop": 348,
+      "reviewed_lanes": [
+        31,
+        36
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 59.033368685553256,
+            "controlled_crosswalks": [],
+            "distance_m": 1.2650786601966315,
+            "eligible": false,
+            "key": "stop_line:351",
+            "lanes": [
+              31,
+              36
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              351
+            ],
+            "target_id": 351,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 88.45176482255985,
+            "controlled_crosswalks": [],
+            "distance_m": 8.617032114129161,
+            "eligible": false,
+            "key": "stop_line:354",
+            "lanes": [
+              31,
+              36
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              354
+            ],
+            "target_id": 354,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "8c006825863dd5dc",
+        "rule_id": 1007,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    },
+    {
+      "rule_id": 1008,
+      "reference_stop": 351,
+      "reviewed_lanes": [
+        32,
+        34
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 68.58030667339744,
+            "controlled_crosswalks": [],
+            "distance_m": 1.3287310825574998,
+            "eligible": false,
+            "key": "stop_line:348",
+            "lanes": [
+              32,
+              34
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              348
+            ],
+            "target_id": 348,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 80.93977324459235,
+            "controlled_crosswalks": [],
+            "distance_m": 12.261550041071079,
+            "eligible": false,
+            "key": "stop_line:354",
+            "lanes": [
+              32,
+              34
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              354
+            ],
+            "target_id": 354,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 1.2628833293989488,
+            "controlled_crosswalks": [],
+            "distance_m": 15.949879664665497,
+            "eligible": false,
+            "key": "stop_line:351",
+            "lanes": [
+              32,
+              34
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement."
+            ],
+            "road_context": "unavailable",
+            "stop_lines": [
+              351
+            ],
+            "target_id": 351,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "26b88f9b5ec14906",
+        "rule_id": 1008,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    },
+    {
+      "rule_id": 1009,
+      "reference_stop": 354,
+      "reviewed_lanes": [
+        33,
+        35
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 87.14800686241409,
+            "controlled_crosswalks": [],
+            "distance_m": 6.877594558924286,
+            "eligible": false,
+            "key": "stop_line:351",
+            "lanes": [
+              33,
+              35
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              351
+            ],
+            "target_id": 351,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 83.96409131165177,
+            "controlled_crosswalks": [],
+            "distance_m": 10.05271336006614,
+            "eligible": false,
+            "key": "stop_line:348",
+            "lanes": [
+              33,
+              35
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              348
+            ],
+            "target_id": 348,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 7.569023066019823,
+            "controlled_crosswalks": [],
+            "distance_m": 11.995858693388456,
+            "eligible": false,
+            "key": "stop_line:354",
+            "lanes": [
+              33,
+              35
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement."
+            ],
+            "road_context": "unavailable",
+            "stop_lines": [
+              354
+            ],
+            "target_id": 354,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "ad74699af79bd87c",
+        "rule_id": 1009,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    },
+    {
+      "rule_id": 1012,
+      "reference_stop": 367,
+      "reviewed_lanes": [
+        49,
+        50,
+        51
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "mixed",
+        "limited": false,
+        "map_snapshot": "5375babf19c2f527",
+        "rule_id": 1012,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "Signal kind or housing orientation is unavailable; review manually."
+        ]
+      }
+    },
+    {
+      "rule_id": 1015,
+      "reference_stop": 378,
+      "reviewed_lanes": [
+        52,
+        53,
+        54
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "mixed",
+        "limited": false,
+        "map_snapshot": "fcb94303304de8ee",
+        "rule_id": 1015,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "Signal kind or housing orientation is unavailable; review manually."
+        ]
+      }
+    },
+    {
+      "rule_id": 1018,
+      "reference_stop": 389,
+      "reviewed_lanes": [
+        55,
+        56,
+        57
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "mixed",
+        "limited": false,
+        "map_snapshot": "e4f8f0f94942ef53",
+        "rule_id": 1018,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "Signal kind or housing orientation is unavailable; review manually."
+        ]
+      }
+    },
+    {
+      "rule_id": 1021,
+      "reference_stop": 400,
+      "reviewed_lanes": [
+        58,
+        59,
+        60
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "mixed",
+        "limited": false,
+        "map_snapshot": "3a02deefa1b22cdb",
+        "rule_id": 1021,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "Signal kind or housing orientation is unavailable; review manually."
+        ]
+      }
+    },
+    {
+      "rule_id": 1024,
+      "reference_stop": 411,
+      "reviewed_lanes": [
+        13,
+        15
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 56.15052573949554,
+            "controlled_crosswalks": [],
+            "distance_m": 1.236448026099181,
+            "eligible": false,
+            "key": "stop_line:414",
+            "lanes": [
+              13,
+              15
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              414
+            ],
+            "target_id": 414,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 84.91711476530912,
+            "controlled_crosswalks": [],
+            "distance_m": 8.699604003630913,
+            "eligible": false,
+            "key": "stop_line:417",
+            "lanes": [
+              13,
+              15
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              417
+            ],
+            "target_id": 417,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "c4a9f60991acbc96",
+        "rule_id": 1024,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    },
+    {
+      "rule_id": 1025,
+      "reference_stop": 414,
+      "reviewed_lanes": [
+        14,
+        17
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 74.69691906020176,
+            "controlled_crosswalks": [],
+            "distance_m": 1.399189503330583,
+            "eligible": false,
+            "key": "stop_line:411",
+            "lanes": [
+              14,
+              17
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              411
+            ],
+            "target_id": 411,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 89.86720825085882,
+            "controlled_crosswalks": [],
+            "distance_m": 12.697917897279579,
+            "eligible": false,
+            "key": "stop_line:417",
+            "lanes": [
+              14,
+              17
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              417
+            ],
+            "target_id": 417,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "c6545a8e54b11a06",
+        "rule_id": 1025,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    },
+    {
+      "rule_id": 1026,
+      "reference_stop": 417,
+      "reviewed_lanes": [
+        16,
+        18
+      ],
+      "proposal": {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 86.96984408138884,
+            "controlled_crosswalks": [],
+            "distance_m": 7.111794171793098,
+            "eligible": false,
+            "key": "stop_line:414",
+            "lanes": [
+              16,
+              18
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              414
+            ],
+            "target_id": 414,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 85.53734608542344,
+            "controlled_crosswalks": [],
+            "distance_m": 10.630512365394274,
+            "eligible": false,
+            "key": "stop_line:411",
+            "lanes": [
+              16,
+              18
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement.",
+              "Stop marking is distant from its road or on another level.",
+              "Housing normal and vehicle lane direction disagree (>35 degrees)."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [
+              411
+            ],
+            "target_id": 411,
+            "target_kind": "stop_line"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 4.24950192673179,
+            "controlled_crosswalks": [],
+            "distance_m": 11.830920630306036,
+            "eligible": false,
+            "key": "stop_line:417",
+            "lanes": [
+              16,
+              18
+            ],
+            "reasons": [
+              "Stop marking does not cover every reviewed vehicle lane; connected approaches cannot replace the controlled movement."
+            ],
+            "road_context": "unavailable",
+            "stop_lines": [
+              417
+            ],
+            "target_id": 417,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "fd87476db8d7f92c",
+        "rule_id": 1026,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      }
+    }
+  ]
+}

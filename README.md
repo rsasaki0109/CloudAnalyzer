@@ -70,6 +70,8 @@ pose graph with one scan per pose.
   to guard a single white-line fit, with separate errors for interior and outer boundaries.
   [Lane edges inside distant curbs](docs/vector-map-lane-edges.md) retain road-edge candidates
   separately and label the configured-width outer edge as inferred.
+  [Build evidence inspection](docs/vector-map-evidence.md) distinguishes selected paint/curb sources,
+  inferred connectors and retained road-edge drafts without changing exports.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

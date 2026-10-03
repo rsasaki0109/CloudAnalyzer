@@ -46,3 +46,33 @@ def test_ambiguous_intervals_changed_slots_and_nonbuilt_profiles_are_rejected():
     assert_profile_geometry(p, doc)
     with pytest.raises(ValueError, match="absent"):
         assert_profile_geometry(profile(1.), doc)
+
+
+def test_all_source_outputs_frozen_before_reference_is_opened(tmp_path, monkeypatch):
+    import json
+    import vector_map_anchor_evaluate as audit
+    source, config, reference, exe = [tmp_path / s for s in ("cloud", "config.json", "survey", "exe")]
+    source.write_bytes(b"source")
+    reference.write_bytes(b"reference")
+    exe.write_bytes(b"binary")
+    config.write_text(json.dumps({"reference_inputs": [], "cases": [{"name": "test"}]}))
+    out = tmp_path / "proof"
+    doc = {"boundaries": [{"id": 1, "geometry": [[0, 0, 2], [1, 0, 2]]}],
+           "lanes": [{"kind": "driving", "left": 1, "right": 1}]}
+    def generate(*args, **kwargs):
+        out.mkdir()
+        for mode in ("before", "after"):
+            audit.save(out / f"{mode}-0.json", doc)
+            audit.save(out / f"{mode}-0-profiles.json", profile())
+            audit.save(out / f"{mode}-0-audit.json", {"extraction": {"generated_length": 1., "surface_fit": {"deferred_length_m": 0.},
+                "coverage_edge_anchor_candidates_ignored": 0}, "quality": {"low_support_lanes": [], "sampled_points": 3, "limited": False}})
+    def open_reference(*args):
+        frozen = json.loads((out / "generation-freeze.json").read_text())
+        assert frozen["reference_inputs"] == [] and len(frozen["artifact_sha256"]) == 6
+        assert all(audit.digest(out / name) == sha for name, sha in frozen["artifact_sha256"].items())
+        return doc
+    monkeypatch.setattr(audit.subprocess, "run", generate)
+    monkeypatch.setattr(audit, "reference_document", open_reference)
+    r = audit.run(source, config, reference, out, exe, "test", None)
+    assert r["generation_reference_inputs"] == [] and r["profile_geometry_verified_in_built_maps"]
+    assert r["paired_source_intervals"][0]["after"]["mean_xy_m"] == 0

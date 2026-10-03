@@ -99,6 +99,8 @@ def run(source: Path, config: Path, reference: Path, out: Path, executable: Path
     if out.exists():
         raise FileExistsError("choose a new output directory")
     source_hash=digest(source)
+    config_hash=digest(config)
+    executable_hash=digest(executable)
     configuration=json.loads(config.read_text(encoding="utf-8"))
     subprocess.run([str(executable.resolve()),str(source),str(config),str(out)],check=True)
     for i in range(len(configuration["cases"])):
@@ -109,7 +111,7 @@ def run(source: Path, config: Path, reference: Path, out: Path, executable: Path
             )
     # Freeze ALL source outputs before opening any reference geometry.
     frozen={p.name:digest(p) for p in out.iterdir() if p.is_file()}
-    save(out/"generation-freeze.json",{"reference_inputs":[],"artifact_sha256":frozen})
+    save(out/"generation-freeze.json",{"reference_inputs":[],"source_sha256":source_hash,"config_sha256":config_hash,"executable_sha256":executable_hash,"artifact_sha256":frozen})
     surveyed=reference_document(reference,epsg)
     used={lane[side] if isinstance(lane[side],int) else lane[side]["boundary"] for lane in surveyed["lanes"] if lane["kind"]=="driving" for side in ("left","right")}
     target=cKDTree(np.concatenate([resample(b["geometry"],.5) for b in surveyed["boundaries"] if b["id"] in used])[:,:2])
@@ -128,14 +130,15 @@ def run(source: Path, config: Path, reference: Path, out: Path, executable: Path
                        "ignored_coverage_anchor_candidates":sum(r["extraction"]["coverage_edge_anchor_candidates_ignored"] for r in audits),
                        "lane_fragments":len(final["lanes"]),"source_flags":audits[-1]["quality"]["low_support_lanes"],
                        "source_samples":audits[-1]["quality"]["sampled_points"],"limited":audits[-1]["quality"]["limited"]}
-    report={"source_commit":commit,"executable_sha256":digest(executable),"source_sha256":source_hash,
-            "config_sha256":digest(config),"reference_sha256":digest(reference),"reference_transform":epsg or "native coordinates",
+    report={"source_commit":commit,"executable_sha256":executable_hash,"evaluation_script_sha256":digest(Path(__file__)),"source_sha256":source_hash,
+            "config_sha256":config_hash,"reference_sha256":digest(reference),"reference_transform":epsg or "native coordinates",
             "generation_reference_inputs":[],"profile_geometry_verified_in_built_maps":True,"generation_artifact_sha256":frozen,"metrics":metrics,"paired_source_intervals":paired_cases,
             "limitations":["Known development scenes, not held-out accuracy.","Full-map distances are unpaired nearest sampled surveyed driving-boundary XY.",
                 "Common intervals are matched using source coordinates; survey targets selected for before points stay fixed for after points. Lane identities are not established.",
                 "Endpoint samples repeat across intervals; sampled reference discretization affects distances.","Source support is also a generation gate; report deferred extent separately.",
                 "Coverage-edge candidate geometry remains available; only its use to shift inferred lanes is disabled."]}
-    assert digest(source)==source_hash and all(digest(out/k)==v for k,v in frozen.items())
+    assert digest(source)==source_hash and digest(config)==config_hash and digest(executable)==executable_hash
+    assert all(digest(out/k)==v for k,v in frozen.items())
     save(out/"evaluation.json",report)
     return report
 

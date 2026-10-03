@@ -795,3 +795,50 @@ def test_reviewed_equipment_targets_cli_preserves_input_and_roundtrips(tmp_path)
     with pytest.raises(FileExistsError):
         edit_vector_map_relations(str(source), rule_id=21, controlled_crosswalks=[10], out_dir=str(output))
     assert source.read_bytes() == original
+
+
+def test_signal_target_preview_adoption_rejection_staleness_and_roundtrip(tmp_path):
+    from ca.vector_map import propose_vector_map_relations
+    pytest.importorskip("cloudanalyzer_core")
+    data = {"format": "vectormap-ir", "version": 1,
+        "boundaries": [{"id": 1, "kind": {"type": "virtual"}, "geometry": [[0, 2, 0], [20, 2, 0]]}, {"id": 2, "kind": {"type": "virtual"}, "geometry": [[0, -2, 0], [20, -2, 0]]}],
+        "lanes": [{"id": 3, "kind": "driving", "left": 1, "right": 2}],
+        "crosswalks": [{"id": 10, "left_edge": [[8, -3, 0], [8, 3, 0]], "right_edge": [[12, -3, 0], [12, 3, 0]]}, {"id": 11, "left_edge": [[8, -4, 0], [14, -4, 0]], "right_edge": [[8, -6, 0], [14, -6, 0]]}],
+        "traffic_signals": [{"id": 20, "kind": "pedestrian", "geometry": [[7, -5, 3], [8, -5, 3]], "height": 0.5}],
+        "regulatory_elements": [{"id": 21, "rule": {"type": "traffic_light", "signals": [20]}, "lanes": [3]}, {"id": 30, "rule": {"type": "crosswalk", "crosswalk": 10}, "lanes": [3]}, {"id": 31, "rule": {"type": "crosswalk", "crosswalk": 11}, "lanes": [3]}]}
+    source = tmp_path / "source.json"
+    source.write_text(json.dumps(data), encoding="utf-8")
+    original = source.read_bytes()
+    result = CliRunner().invoke(app, ["vectormap-suggest", str(source), "--rule", "21"])
+    assert result.exit_code == 0, result.output
+    preview = json.loads(result.stdout)["proposal"]
+    assert preview["eligible_count"] == 1 and not preview["ambiguous"]
+    good, held = preview["candidates"]
+    assert good["key"] == "crosswalk:10" and good["eligible"]
+    assert held["key"] == "crosswalk:11" and not held["eligible"]
+    assert held["distance_m"] < good["distance_m"]
+    for key, token in [(held["key"], preview["map_snapshot"]), (good["key"], "stale")]:
+        with pytest.raises(ValueError):
+            propose_vector_map_relations(str(source), 21, candidate_key=key, map_snapshot=token, out_dir=str(tmp_path / "invalid"))
+        assert not (tmp_path / "invalid").exists()
+    with pytest.raises(ValueError):
+        propose_vector_map_relations(str(source), True)
+    with pytest.raises(ValueError):
+        propose_vector_map_relations(str(source), 21, candidate_key=good["key"])
+    output = tmp_path / "reviewed"
+    result = CliRunner().invoke(app, ["vectormap-suggest", str(source), "--rule", "21", "--candidate", good["key"], "--snapshot", preview["map_snapshot"], "--out", str(output)])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report["edit"]["changed"]
+    saved = json.loads(Path(report["files"]["editable_map"]).read_text(encoding="utf-8"))
+    for field in ("boundaries", "lanes", "traffic_signals", "crosswalks"):
+        assert saved[field] == data[field]
+    rule = next(r for r in saved["regulatory_elements"] if r["id"] == 21)
+    assert rule["controlled_crosswalks"] == [10] and rule["lanes"] == []
+    restored = propose_vector_map_relations(report["files"]["map"], 21)["proposal"]
+    assert restored["eligible_count"] == 1 and restored["candidates"][0]["already_linked"]
+    repeat = propose_vector_map_relations(report["files"]["map"], 21, candidate_key="crosswalk:10", map_snapshot=restored["map_snapshot"], out_dir=str(tmp_path / "repeat"))
+    assert not repeat["edit"]["changed"]
+    with pytest.raises(FileExistsError):
+        propose_vector_map_relations(str(source), 21, candidate_key="crosswalk:10", map_snapshot=preview["map_snapshot"], out_dir=str(output))
+    assert source.read_bytes() == original

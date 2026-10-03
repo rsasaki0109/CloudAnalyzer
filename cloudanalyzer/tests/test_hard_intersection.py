@@ -283,3 +283,28 @@ def test_equipment_review_refuses_stale_scene_or_existing_output_before_edit(tmp
         relations.review(source, cloud, out)
     assert not calls
     assert out.exists() == (tamper == "existing_output")
+
+
+@pytest.mark.parametrize("tamper", ["map", "cloud", "existing_output"])
+def test_relation_proposals_refuse_stale_scene_before_native_preview(tmp_path, monkeypatch, tamper):
+    import preview_vector_map_relations as proposals
+    source = tmp_path / "generated.json"
+    cloud = tmp_path / "geometry.las"
+    source.write_text("{}", encoding="utf-8")
+    cloud.write_bytes(b"original source returns")
+    config = tmp_path / "operator.json"
+    config.write_text(json.dumps({"input_map_sha256": proposals.digest(source), "input_cloud_sha256": proposals.digest(cloud)}), encoding="utf-8")
+    monkeypatch.setattr(proposals, "CONFIG", config)
+    calls = []
+    monkeypatch.setitem(sys.modules, "cloudanalyzer_core", SimpleNamespace(propose_vector_map_relations=lambda *args: calls.append(args)))
+    out = tmp_path / "result"
+    if tamper == "map":
+        source.write_text('{"changed":true}', encoding="utf-8")
+    elif tamper == "cloud":
+        cloud.write_bytes(b"another scene")
+    else:
+        out.mkdir()
+    with pytest.raises(FileExistsError if tamper == "existing_output" else ValueError):
+        proposals.reproduce(source, cloud, out)
+    assert not calls
+    assert out.exists() == (tamper == "existing_output")

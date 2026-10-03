@@ -404,3 +404,31 @@ pub fn edit_vector_map_relations(
     })
     .map_err(PyValueError::new_err)
 }
+
+/// Preview geometric targets, or explicitly adopt one current-map candidate.
+#[pyfunction]
+#[pyo3(signature=(vector_map, rule_id, adoption=None))]
+pub fn propose_vector_map_relations(
+    py: Python<'_>,
+    vector_map: &str,
+    rule_id: u64,
+    adoption: Option<&str>,
+) -> PyResult<String> {
+    py.detach(|| -> Result<String, String> {
+        let text = std::fs::read_to_string(vector_map).map_err(|e| e.to_string())?;
+        let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
+            vectormap_io::json::from_str(&text).map_err(|e| e.to_string())?
+        } else { lanelet2::read_str(&text, &Default::default()).map_err(|e| e.to_string())? };
+        if let Some(issue) = loaded.issues.iter().find(|i| i.severity == vectormap_core::Severity::Error) {
+            return Err(format!("cannot retain vector_map: {}", issue.message));
+        }
+        let mut map = loaded.map;
+        let proposal = ca_core::vector_map::relation_proposals::propose(&map, rule_id).map_err(|e|e.to_string())?;
+        let edit = if let Some(text) = adoption {
+            let o: ca_core::vector_map::relation_proposals::Adoption = serde_json::from_str(text).map_err(|e|e.to_string())?;
+            if o.rule_id != rule_id { return Err("adoption rule must match the requested rule".into()); }
+            Some(ca_core::vector_map::relation_proposals::adopt(&mut map, &o).map_err(|e|e.to_string())?)
+        } else { None };
+        artifacts(&map, json!(loaded.issues), json!({"proposal":proposal,"edit":edit,"relationships":ca_core::vector_map::relations::inspect(&map)}))
+    }).map_err(PyValueError::new_err)
+}

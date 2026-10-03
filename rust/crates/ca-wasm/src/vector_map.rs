@@ -200,6 +200,30 @@ impl VectorMapSession {
         serde_json::to_string(&report).map_err(error)
     }
 
+    /// Read-only target evidence; never selects or changes a regulatory target.
+    #[wasm_bindgen(js_name = previewRelations)]
+    pub fn preview_relations(&self, rule_id: u64) -> Result<String, JsError> {
+        let report =
+            ca_core::vector_map::relation_proposals::propose(&self.map, rule_id).map_err(error)?;
+        serde_json::to_string(&report).map_err(error)
+    }
+
+    /// Adopt one explicitly reviewed candidate against its current map snapshot.
+    #[wasm_bindgen(js_name = adoptRelation)]
+    pub fn adopt_relation(&mut self, options: &str) -> Result<String, JsError> {
+        let options = serde_json::from_str(options).map_err(error)?;
+        let before = self.map.clone();
+        let report = ca_core::vector_map::relation_proposals::adopt(&mut self.map, &options)
+            .map_err(error)?;
+        if report.changed {
+            self.undo.push(before);
+            if self.undo.len() > UNDO_DEPTH {
+                self.undo.remove(0);
+            }
+        }
+        serde_json::to_string(&report).map_err(error)
+    }
+
     /// Explicitly edit existing crossing/signal geometry as one Undo step.
     #[wasm_bindgen(js_name = editRelations)]
     pub fn edit_relations(&mut self, options: &str) -> Result<String, JsError> {
@@ -987,6 +1011,42 @@ mod tests {
         assert!(s.undo());
         assert_eq!(s.to_json(), before);
         assert!(!s.undo());
+    }
+
+    #[test]
+    fn relation_preview_adoption_noop_undo_and_reload_preserve_targets() {
+        let text = r#"{"format":"vectormap-ir","version":1,
+            "boundaries":[{"id":1,"kind":{"type":"virtual"},"geometry":[[0,2,0],[20,2,0]]},{"id":2,"kind":{"type":"virtual"},"geometry":[[0,-2,0],[20,-2,0]]}],
+            "lanes":[{"id":3,"kind":"driving","left":1,"right":2}],
+            "crosswalks":[{"id":10,"left_edge":[[8,-3,0],[8,3,0]],"right_edge":[[12,-3,0],[12,3,0]]}],
+            "traffic_signals":[{"id":20,"kind":"pedestrian","geometry":[[7,-5,3],[8,-5,3]],"height":0.5}],
+            "regulatory_elements":[{"id":21,"rule":{"type":"traffic_light","signals":[20]},"lanes":[3]},{"id":30,"rule":{"type":"crosswalk","crosswalk":10},"lanes":[3]}]}"#;
+        let mut s = VectorMapSession::new();
+        s.open("map.json", text).unwrap();
+        let before = s.to_json();
+        let p: Value = serde_json::from_str(&s.preview_relations(21).unwrap()).unwrap();
+        assert_eq!(p["eligible_count"], 1);
+        assert_eq!(before, s.to_json());
+        assert!(s.undo.is_empty());
+        let adopt = |p: &Value| {
+            serde_json::json!({"rule_id":21,"map_snapshot":p["map_snapshot"],"candidate_key":"crosswalk:10"}).to_string()
+        };
+        s.adopt_relation(&adopt(&p)).unwrap();
+        assert_eq!(s.undo.len(), 1);
+        let reviewed = s.to_json();
+        let fresh: Value = serde_json::from_str(&s.preview_relations(21).unwrap()).unwrap();
+        s.adopt_relation(&adopt(&fresh)).unwrap();
+        assert_eq!(s.undo.len(), 1);
+        assert_eq!(reviewed, s.to_json());
+        let saved: Value = serde_json::from_str(&s.export_lanelet2(true)).unwrap();
+        assert!(s.undo());
+        assert_eq!(s.to_json(), before);
+        assert!(s.undo.is_empty());
+        s.open("reviewed.osm", saved["osm"].as_str().unwrap())
+            .unwrap();
+        let p: Value = serde_json::from_str(&s.preview_relations(21).unwrap()).unwrap();
+        assert_eq!(p["eligible_count"], 1);
+        assert_eq!(p["candidates"][0]["already_linked"], true);
     }
 
     #[test]

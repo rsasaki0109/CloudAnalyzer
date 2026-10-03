@@ -250,6 +250,8 @@ supports inspection, rejection, measured additions, geometry editing and map Und
 [Equipment association review](docs/vector-map-equipment-relations.md) links vehicle
 signals to reviewed stop markings and pedestrian signals to crosswalks, retaining
 physical geometry and unresolved controls through Undo and Lanelet2 reload.
+[Geometric target suggestions](docs/vector-map-relation-proposals.md) show distance,
+orientation and road context, highlight held alternatives, and require explicit adoption.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

@@ -8,6 +8,9 @@ separately from the vehicle lanes crossed by a crosswalk. No target is selected
 from proximity automatically. Existing crossings and stop markings also expose
 their crossing/controlled lane assignments.
 
+[Suggest targets](vector-map-relation-proposals.md) previews geometric candidates
+and held alternatives with map highlights, then requires explicit reviewed adoption.
+
 Applying changed targets adds one Undo step. Repeating identical targets adds
 none. Missing IDs, duplicate IDs, mixed participants and inappropriate target
 kinds reject the whole edit. A vehicle stop must already have a marking/rule

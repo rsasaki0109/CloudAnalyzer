@@ -25,6 +25,7 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 | `connect_vector_map_junctions(cloud, vector_map, out_dir, max_gap?, min_ground_support?, lane_pairs?, preview_only?)` | Preview or add ground-supported branching junction drafts, retaining existing IR geometry, rules and coordinates ([details](vectormap-connect.md)) |
 | `measure_vector_map_signal(cloud, vector_map, out_dir, bounds, lanes, kind?, preview_only?)` | Measure a user-identified signal head from a 3D box and explicitly selected lanes; preview defaults to true ([details](vectormap-signal.md)) |
 | `measure_vector_map_crosswalk(cloud, vector_map, out_dir, bounds, lanes?, candidate?, brightness_fraction?, preview_only?)` | Propose measured ground-paint bands, then add a user-confirmed crossing and lane assignment; preview defaults to true ([details](vectormap-crosswalk.md)) |
+| `propose_vector_map_relations(vector_map, rule_id, candidate_key?, map_snapshot?, out_dir?)` | Read-only geometric target evidence, or explicit adoption of one current-map candidate ([details](vectormap-suggest.md)) |
 | `view_link(paths)` | A link that opens results (a folder or files) in the web app for the person, served from this machine while the server runs ([`ca web-view`](web-view.md)) |
 | `cloud_info(path)` | A cloud's size, bounds, centroid and density |
 | `evaluate_map(candidate, reference, thresholds?)` | Chamfer, Hausdorff, F1 at thresholds, AUC |

@@ -70,6 +70,9 @@ def test_the_server_answers_over_stdio(tmp_path):
                 association = next(t for t in tools if t.name == "edit_vector_map_relations")
                 properties = association.model_dump(by_alias=True)["inputSchema"]["properties"]
                 assert {"rule_id", "lanes", "controlled_crosswalks", "stop_lines", "out_dir"} <= properties.keys()
+                proposal = next(t for t in tools if t.name == "propose_vector_map_relations")
+                properties = proposal.model_dump(by_alias=True)["inputSchema"]["properties"]
+                assert {"rule_id", "candidate_key", "map_snapshot", "out_dir"} <= properties.keys()
                 signal = next(t for t in tools if t.name == "measure_vector_map_signal")
                 properties = signal.model_dump(by_alias=True)["inputSchema"]["properties"]
                 assert properties["preview_only"]["default"] is True

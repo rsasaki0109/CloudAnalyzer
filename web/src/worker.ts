@@ -1016,6 +1016,10 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
       return withView(map.open(req.name ?? "", req.text ?? ""));
     case "apply":
       return withView(map.apply(req.text ?? "[]"));
+    case "relations-preview":
+      return map.previewRelations(BigInt(req.id ?? 0));
+    case "relations-adopt":
+      return withView(map.adoptRelation(req.text ?? "{}"));
     case "relations-edit":
       return withView(map.editRelations(req.text ?? "{}"));
     case "feature-edit":

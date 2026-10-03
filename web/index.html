@@ -927,6 +927,11 @@
             <summary>Review equipment associations</summary>
             <label>Equipment rule <select id="vm-relation"><option value="">Choose an equipment rule</option></select></label>
             <p id="vm-relation-current" class="hint small"></p>
+            <button id="vm-relation-preview" disabled>Suggest targets</button>
+            <p id="vm-relation-proposal-report" class="hint small" role="status"></p>
+            <div id="vm-relation-candidates" class="small"></div>
+            <div class="inline"><button id="vm-relation-candidate-focus" disabled>Focus candidate</button><button id="vm-relation-adopt" disabled>Adopt reviewed candidate</button></div>
+            <p class="hint small">Select a candidate to highlight the signal, target and road context. Dashed links are preview only. Rejected candidates can be inspected; no target is adopted automatically.</p>
             <label id="vm-relation-lanes-row">Controlled / crossing lane IDs <input id="vm-relation-lanes" type="text" placeholder="e.g. 76,77" /></label>
             <label id="vm-relation-crosswalks-row" hidden>Controlled crosswalk IDs <input id="vm-relation-crosswalks" type="text" placeholder="Choose observed crossing IDs" /></label>
             <label id="vm-relation-stops-row">Stop line IDs <input id="vm-relation-stops" type="text" placeholder="Leave empty if unresolved" /></label>

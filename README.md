@@ -68,6 +68,8 @@ pose graph with one scan per pose.
   distinguishing observed paint from inferred gaps and extensions in actual map comparisons.
   [Interior paint correction](docs/vector-map-paint-divider.md) uses paired source curbs
   to guard a single white-line fit, with separate errors for interior and outer boundaries.
+  [Lane edges inside distant curbs](docs/vector-map-lane-edges.md) retain road-edge candidates
+  separately and label the configured-width outer edge as inferred.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

@@ -172,3 +172,15 @@ Register CloudAnalyzer with `claude mcp add cloudanalyzer -- ca mcp`. Its
 options, and returns the same report. Call `view_link([cloud, out_dir])` to view the
 cloud and map together. Later map editing uses the separate `vectormap mcp` server.
 See [real-data validation](../vector-map-validation.md) for measured accuracy and limitations.
+
+### Lane edges inside distant curb candidates
+
+Opt in with `--infer-lane-edges`, Python/MCP `infer_lane_edges=True`, or Web’s
+“Infer lane edges inside distant curbs (width assumption)”. Requires an applied
+`--fit-paint-divider` correction and verified curb profiles. Review the configured
+width: the result is an inferred lane edge, not observed outer paint or a certified
+shoulder. Selected far-curb candidates require majority/run guards; every new
+vertex needs source ground and must move inward. Outside paint takes precedence.
+Original road-edge candidates remain separately in the report before footprint
+trimming; exported lane vertices use width-prior evidence.
+See [actual maps and fixed-reference comparison](../vector-map-lane-edges.md).

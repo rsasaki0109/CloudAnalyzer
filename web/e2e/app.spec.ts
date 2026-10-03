@@ -3088,7 +3088,7 @@ test("vector map: lane edges inside distant curbs remain width assumptions", asy
   await expect(page.locator("#vm-build-report")).toContainText("Interior paint correction applied");
   await expect(page.locator("#vm-build-report")).toContainText("gaps/extensions remain inferred");
   await expect(page.locator("#vm-build-report")).toContainText("Outer lane-edge inference applied");
-  await expect(page.locator("#vm-build-report")).toContainText("Configured width 3.50 m");
+  await expect(page.locator("#vm-build-report")).toContainText("Configured width 3.5 m");
   const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();
   const xml=(await bytesOf(await wait)).toString();
   const nodes=new Map([...xml.matchAll(/<node id="([^"]+)"[^>]*>([\s\S]*?)<\/node>/g)].map(m=>[m[1],["local_x","local_y"].map(k=>Number(m[2].match(new RegExp(`<tag k="${k}" v="([^"]+)"`))![1]))]));

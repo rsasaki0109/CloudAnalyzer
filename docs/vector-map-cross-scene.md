@@ -94,7 +94,10 @@ are byte-identical before/after the movement fix. Only runtime provenance and
 association proposals change. The original Tokyo generated scene still adopts
 169→stop 164 and 173→crosswalk 156, holds the closer wrong-axis crossing 152 and
 leaves rules 167/171 unresolved. Its physical map and full-source coverage stay
-unchanged; existing GIFs and historical evaluations are preserved.
+unchanged. The original 1,883,866-point production-browser regression also
+passes read-only previews, byte-exact native Lanelet2, all-edit Undo, full-source
+coverage and target/warning reload. Existing GIFs and historical evaluations are
+preserved.
 
 ## Reproduce from cached inputs
 

@@ -232,5 +232,35 @@
     "planning-inputs.json": "9a6f62fc9c2dd32d2c377ea8449bca9d880370c48411576d29bca4ea19d50f60"
   },
   "figure_sha256": "287e726d90acec3d3853d8c592e82adf91f666e35402862b02d5fc4345a5d4b5",
-  "browser_screenshot_sha256": "d30e9deea638225c017c121ebba3f54f7f4e9912c151f90f59267b5e8461b024"
+  "browser_screenshot_sha256": "d30e9deea638225c017c121ebba3f54f7f4e9912c151f90f59267b5e8461b024",
+  "original_scene_browser_verification": {
+    "source_points": 1883866,
+    "verification": {
+      "readonlyProposals": true,
+      "noAutomaticSelection": true,
+      "nearestWrongOrientationHeld": true,
+      "explicitAdoptions": [
+        "stop_line:164",
+        "crosswalk:156"
+      ],
+      "nativeOsmByteExact": true,
+      "physicalMapNativeExact": true,
+      "sourceQualityCheckedFullCloud": true,
+      "lanes": 59,
+      "sourceReviewLanes": 0,
+      "noOpUndoExact": true,
+      "allEditsUndoExact": true,
+      "controlTargetsReload": true,
+      "warningsReloadExact": true,
+      "warningsBefore": 19,
+      "warningsAfter": 18,
+      "unresolvedRules": [
+        167,
+        171
+      ],
+      "pageErrors": []
+    },
+    "verification_sha256": "cedb08aca0c598b87bc34781b2b2f094f01d629bfda729a5f9c1241a3f6eaf3c",
+    "reviewed_osm_sha256": "e60ea0fe9fcc5dbca5b6b2c7d57a78e7bbfcbc25f2be11b278fdbafff88beb77"
+  }
 }

@@ -45,6 +45,7 @@ test("actual planning points build a physical-anchor draft matching native geome
   expect(maximum).toBeLessThan(1e-6);
   expect(xml.match(/<tag k="subtype" v="road"\/>/g)).toHaveLength(native.lanes.length);
   await page.locator('[data-view="top"]').click();await page.locator("#fit").click();await page.locator("#edl").uncheck();
+  if(PAINT)await page.locator("#vm-fit").click();
   await page.screenshot({path:`${OUTPUT}/source-build.png`});
   await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
   expect(errors).toEqual([]);

@@ -278,7 +278,7 @@ pub(super) fn apply(
 
 pub(super) fn warnings(build: &mut BuildReport) {
     if let Some(p) = &build.paint_divider {
-        build.warnings.push(if p.applied { "Interior boundary corrected using RGB paint guarded by source curb pairs. Outside candidate geometry was retained and source-footprint checks can still trim unsupported intervals. Only nearby paint is labelled observed; gaps/extensions remain inferred. Lane counts, divider semantics and directions require review.".into() } else { format!("Interior RGB paint correction held: {}. Existing geometry retained.",p.reason) });
+        build.warnings.push(if p.applied && build.lane_edge_inference.as_ref().is_some_and(|r| r.applied) { "Interior boundary corrected using RGB paint guarded by source curb pairs. Separate lane-edge inference then changed an outer boundary using the configured width; that outer line is not observed paint. Nearby interior paint only is labelled observed; gaps/extensions remain inferred.".into() } else if p.applied { "Interior boundary corrected using RGB paint guarded by source curb pairs. Outside candidate geometry was retained and source-footprint checks can still trim unsupported intervals. Only nearby paint is labelled observed; gaps/extensions remain inferred. Lane counts, divider semantics and directions require review.".into() } else { format!("Interior RGB paint correction held: {}. Existing geometry retained.",p.reason) });
     }
 }
 

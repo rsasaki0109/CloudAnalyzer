@@ -27,6 +27,7 @@ def build_vector_map(
     anchor_width_prior: bool = True,
     physical_anchors_only: bool = False,
     align_trace_to_curbs: bool = False,
+    infer_lane_edges: bool = False,
     fit_paint_divider: bool = False,
     fit_paint_corridor: bool = False,
     track_boundaries: bool = True,
@@ -58,6 +59,9 @@ def build_vector_map(
     of source curbs enclosing the configured total width. It preserves lane counts,
     requires a majority of sections and holds curved or unconfirmed traces.
     The report records the translation; this does not certify lane identity.
+    infer_lane_edges optionally places a configured-width outer lane prior
+    inside distant verified curbs after an applied paint-divider correction.
+    Original curb candidates stay in the report; outer paint is not observed.
     fit_paint_divider optionally corrects only a two-lane interior boundary
     from one strong RGB track guarded by paired physical curbs. Outside geometry
     remains unchanged; missing paint is inferred and lane roles remain manual.
@@ -139,6 +143,7 @@ def build_vector_map(
             "anchor_width_prior": anchor_width_prior,
             **({"physical_anchors_only": True} if physical_anchors_only else {}),
             **({"align_trace_to_curbs": True} if align_trace_to_curbs else {}),
+            **({"infer_lane_edges": True} if infer_lane_edges else {}),
             **({"fit_paint_divider": True} if fit_paint_divider else {}),
             **({"fit_paint_corridor": True} if fit_paint_corridor else {}),
             "track_boundaries": track_boundaries,

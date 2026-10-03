@@ -23,6 +23,8 @@ mod paint_corridor;
 pub use paint_corridor::{PaintCorridorReport, PaintTrackReport};
 mod paint_divider;
 pub use paint_divider::PaintDividerReport;
+mod lane_edge_inference;
+pub use lane_edge_inference::{LaneEdgeInferenceReport, LaneEdgeSideReport, RetainedRoadEdge};
 mod integration;
 pub mod junctions;
 pub mod quality;
@@ -38,6 +40,9 @@ pub use trace_alignment::TraceAlignmentReport;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BuildOptions {
+    /// Infer configured-width lane edges inside distant verified curb candidates
+    /// after a guarded paint-divider fit; outer markings are not observed.
+    pub infer_lane_edges: bool,
     /// Correct only the interior boundary of an explicitly configured two-lane
     /// road, using a unique strong RGB track guarded by paired physical curbs.
     pub fit_paint_divider: bool,
@@ -89,6 +94,7 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            infer_lane_edges: false,
             fit_paint_divider: false,
             fit_paint_corridor: false,
             align_trace_to_curbs: false,
@@ -144,6 +150,8 @@ pub struct ExtractedRoad {
 /// What was measured, what was inferred, and where data were missing.
 #[derive(Debug, Clone, Serialize)]
 pub struct BuildReport {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lane_edge_inference: Option<LaneEdgeInferenceReport>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub paint_divider: Option<PaintDividerReport>,
     pub paint_corridor: Option<PaintCorridorReport>,
@@ -503,6 +511,7 @@ pub fn extract(
     let high = nominal[0] + o.search_margin + o.bin_width * 3.0;
     let index = SurfaceIndex::new(cloud, &line, low.abs().max(high.abs()) + o.half_window);
     let mut report = BuildReport {
+        lane_edge_inference: None,
         paint_divider: None,
         paint_corridor: None,
         trace_alignment,
@@ -804,6 +813,11 @@ fn finish_extraction(
     if o.fit_paint_divider {
         report.paint_divider = Some(paint_divider::apply(cloud, line, o, &mut roads, &report));
     }
+    if o.infer_lane_edges {
+        report.lane_edge_inference = Some(lane_edge_inference::apply(
+            cloud, line, o, &mut roads, &report,
+        ));
+    }
     let mut totals = vec![0usize; nlanes + 1];
     for road in &roads {
         report.generated_length += length(&road.reference);
@@ -874,6 +888,7 @@ fn finish_extraction(
     }
     paint_corridor::warnings(&mut report);
     paint_divider::warnings(&mut report);
+    lane_edge_inference::warnings(&mut report);
     Ok((roads, report))
 }
 

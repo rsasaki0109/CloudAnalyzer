@@ -143,9 +143,9 @@ def run(source: Path, config: Path, reference: Path, out: Path, executable: Path
     for i,case in enumerate(configuration["cases"]):
         p=[json.loads((out/f"{mode}-{i}-profiles.json").read_text()) for mode in ("before","after")]
         paired_cases.append({"name":case["name"],**paired(*p,target)})
-        if configuration.get("comparison") in {"curb_trace_alignment", "paint_corridor", "paint_divider"}:
+        if configuration.get("comparison") in {"curb_trace_alignment", "paint_corridor", "paint_divider", "lane_edge_inference"}:
             from vector_map_corridor_evaluate import corridor_comparison
-            corridors.append({"name":case["name"], **corridor_comparison(*p, surveyed, case["options"], include_slots=configuration.get("comparison") == "paint_divider")})
+            corridors.append({"name":case["name"], **corridor_comparison(*p, surveyed, case["options"], include_slots=configuration.get("comparison") in {"paint_divider", "lane_edge_inference"})})
     for mode in ("before","after"):
         audits=[json.loads((out/f"{mode}-{i}-audit.json").read_text()) for i in range(count)]
         final=json.loads((out/f"{mode}-{count-1}.json").read_text())

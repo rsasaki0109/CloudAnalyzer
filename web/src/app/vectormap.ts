@@ -580,6 +580,7 @@ interface Edited {
 }
 
 interface BuildReport {
+  lane_edge_inference?: { applied: boolean; reason: string; limited: boolean; configured_lane_width_m: number; retained_road_edges: unknown[]; sides: { boundary_slot: number; applied: boolean; reason: string; inferred_vertices_before_trimming: number; maximum_movement_m: number }[] } | null;
   paint_divider?: { applied: boolean; reason: string; limited: boolean; curb_pair_sections: number; sampled_sections: number; maximum_divider_movement_m: number; track: { observed_length_m: number; interpolated_length_m: number; extrapolated_length_m: number } | null } | null;
   paint_corridor?: { applied: boolean; reason: string; limited: boolean; measured_lane_widths_m: number[]; tracks: { observed_length_m: number; interpolated_length_m: number; extrapolated_length_m: number }[] } | null;
   trace_alignment?: { applied: boolean; reason: string; shift_xy: [number, number]; curb_pair_sections: number; sampled_sections: number } | null;
@@ -1084,6 +1085,7 @@ function roadBuildOptions(): object {
     anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
     physical_anchors_only: $<HTMLInputElement>("vm-physical-anchors").checked,
     align_trace_to_curbs: $<HTMLInputElement>("vm-align-curbs").checked,
+    infer_lane_edges: $<HTMLInputElement>("vm-lane-edges").checked,
     fit_paint_divider: $<HTMLInputElement>("vm-paint-divider").checked,
     fit_paint_corridor: $<HTMLInputElement>("vm-paint-corridor").checked,
     track_boundaries: $<HTMLInputElement>("vm-track-boundaries").checked,
@@ -1099,6 +1101,7 @@ function renderBuildReport(report: BuildReport): void {
     `Measured sources before fitting, left to right: ${report.observed_fraction.map(f => `${Math.round(f*100)}%`).join(", ")}. ` +
     `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +
     (report.trace_alignment ? `Trace alignment ${report.trace_alignment.applied ? "applied" : "held"}: XY shift (${fmt(report.trace_alignment.shift_xy[0])}, ${fmt(report.trace_alignment.shift_xy[1])}) m; paired curbs ${report.trace_alignment.curb_pair_sections}/${report.trace_alignment.sampled_sections} sections. ${report.trace_alignment.reason}. ` : "") +
+    (report.lane_edge_inference ? `Outer lane-edge inference ${report.lane_edge_inference.applied ? "applied" : "held"}${report.lane_edge_inference.limited ? " (scan limit reached)" : ""}: ${report.lane_edge_inference.reason}. Configured width ${fmt(report.lane_edge_inference.configured_lane_width_m)} m. ` + report.lane_edge_inference.sides.map(s => `${s.boundary_slot === 0 ? "Left" : "Right"}: ${s.applied ? `${s.inferred_vertices_before_trimming} inferred vertices before footprint trimming; maximum movement ${fmt(s.maximum_movement_m)} m` : s.reason}. `).join("") : "") +
     (report.paint_divider ? `Interior paint correction ${report.paint_divider.applied ? "applied" : "held"}${report.paint_divider.limited ? " (scan limit reached)" : ""}: ${report.paint_divider.reason}. Curb pairs: ${report.paint_divider.curb_pair_sections}/${report.paint_divider.sampled_sections}. ` + (report.paint_divider.applied && report.paint_divider.track ? `Maximum divider movement ${fmt(report.paint_divider.maximum_divider_movement_m)} m. Paint lengths before footprint trimming (observed / interpolated / extended): ${fmt(report.paint_divider.track.observed_length_m)} / ${fmt(report.paint_divider.track.interpolated_length_m)} / ${fmt(report.paint_divider.track.extrapolated_length_m)} m. ` : "") : "") +
     (report.paint_corridor ? `White paint fit ${report.paint_corridor.applied ? "applied" : "held"}${report.paint_corridor.limited ? " (scan limit reached)" : ""}: ${report.paint_corridor.reason}. ` + (report.paint_corridor.applied ? `Measured widths: ${report.paint_corridor.measured_lane_widths_m.map(fmt).join(", ")} m. Source track lengths before footprint trimming (observed / interpolated / extended), left to right: ${report.paint_corridor.tracks.map(t => `${fmt(t.observed_length_m)} / ${fmt(t.interpolated_length_m)} / ${fmt(t.extrapolated_length_m)} m`).join("; ")}. ` : "") : "") +
     `Coverage-edge anchor candidates ignored: ${report.coverage_edge_anchor_candidates_ignored}. ` +

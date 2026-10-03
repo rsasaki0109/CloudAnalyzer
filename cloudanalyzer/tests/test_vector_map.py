@@ -978,3 +978,56 @@ def test_rgb_divider_cli_corrects_one_line_guarded_by_source_curbs(tmp_path):
     quality = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))["quality"]
     assert not quality["low_support_lanes"] and not quality["limited"]
     assert (cloud.read_bytes(), trace.read_bytes()) == original
+
+
+def test_lane_edge_width_prior_retains_road_edge_candidates_separately(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(-2, 32.001, .1), np.arange(-8, 8.001, .1) + .03)
+    x, y = x.ravel(), y.ravel()
+    t = y + .02 * x
+    white = (abs(t) < .055) & (np.rint(x * 10).astype(int) % 80 < 40)
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x, y, 12 + .01 * x + np.where((t < -4.8) | (t > 3.2), .2, 0.)
+    data.red = data.green = data.blue = np.where(white, 230, 70).astype(np.uint16) * 256
+    cloud, trace = tmp_path / "divider.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    trace.write_text("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "default"))
+    assert "infer_lane_edges" not in default["options"]
+    assert "lane_edge_inference" not in default["extraction"]
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trace), "--out", str(tmp_path / "corrected"),
+                                    "--infer-lane-edges", "--fit-paint-divider", "--fit-source-surface", "--physical-anchors-only"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    fit = report["extraction"]["paint_divider"]
+    assert fit["applied"] and not fit["limited"]
+    assert fit["curb_pair_sections"] * 2 > fit["sampled_sections"]
+    assert fit["track"]["interpolated_length_m"] > 8
+    assert report["options"]["fit_paint_divider"] is True
+    document = json.loads(Path(report["files"]["editable_map"]).read_text(encoding="utf-8"))
+    def bid(value):
+        return value if isinstance(value, int) else value["boundary"]
+    shared = {bid(document["lanes"][0][s]) for s in ("left", "right")} & {bid(document["lanes"][1][s]) for s in ("left", "right")}
+    middle = next(b["geometry"] for b in document["boundaries"] if b["id"] in shared)
+    assert all(abs(p[1] + .02 * p[0]) < .06 and p[2] < 12.4 for p in middle)
+    inferred = report["extraction"]["lane_edge_inference"]
+    assert inferred["applied"] and not inferred["limited"]
+    assert not inferred["sides"][0]["applied"] and inferred["sides"][1]["applied"]
+    assert inferred["sides"][1]["maximum_movement_m"] > .7
+    assert len(inferred["retained_road_edges"]) == 1
+    assert "curb" in inferred["retained_road_edges"][0]["evidence"]
+    assert report["options"]["infer_lane_edges"] is True
+    assert "not detected outer paint" in " ".join(report["extraction"]["warnings"])
+    outer_id = next(bid(document["lanes"][1][side]) for side in ("left", "right") if bid(document["lanes"][1][side]) not in shared)
+    outer = next(b["geometry"] for b in document["boundaries"] if b["id"] == outer_id)
+    # Lane direction may reverse its boundary reference; compare unordered vertices.
+    distances = [min(np.linalg.norm(np.asarray(p)[:2] - np.asarray(q)[:2]) for q in middle) for p in outer]
+    assert distances == pytest.approx([3.5] * len(distances), abs=.01)
+    quality = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))["quality"]
+    assert not quality["low_support_lanes"] and not quality["limited"]
+    assert (cloud.read_bytes(), trace.read_bytes()) == original

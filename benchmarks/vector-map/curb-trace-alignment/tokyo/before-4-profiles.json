@@ -1,0 +1,241 @@
+{
+  "extraction": {
+    "added_length": 0.0,
+    "anchored_prior_vertices": 21,
+    "coverage_edge_anchor_candidates_ignored": 2,
+    "curb_vertices": 2,
+    "fitted_vertices": 20,
+    "generated_length": 4.782629975743308,
+    "intensity_used": false,
+    "intensity_vertices": 0,
+    "joined_connections": 0,
+    "lanes": 0,
+    "maximum_fit_displacement": 0.09662687519688011,
+    "observed_fraction": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.75
+    ],
+    "rejected_curb_candidates": 9,
+    "reused_intervals": 0,
+    "reused_length": 0.0,
+    "roads": 1,
+    "sampled_sections": 5,
+    "support_edge_vertices": 1,
+    "surface_fit": {
+      "candidate_sections": 5,
+      "deferred_length_m": 2.4993737207280144,
+      "discarded_short_stretches": 0,
+      "evaluated_path_length_m": 7.282003696471323,
+      "maximum_lane_width_m": 3.6545194009942326,
+      "minimum_lane_width_m": 3.380241788607681,
+      "preserved_candidate_geometry": true,
+      "rejected_intervals": 1
+    },
+    "trace_alignment": null,
+    "tracked_vertices": 21,
+    "trajectory_length": 7.285042967055422,
+    "unsupported_sections": 0,
+    "warnings": [
+      "2 pre-tracking coverage-edge anchor candidates were excluded from inferred offsets before source-footprint trimming. Coverage limits are not physical road-boundary observations.",
+      "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+      "2.50 m of the traced/recorded path was deferred; 1 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used."
+    ],
+    "width_prior_vertices": 17
+  },
+  "reference_inputs": [],
+  "roads": [
+    {
+      "boundaries": [
+        [
+          [
+            -9264.916393358144,
+            -40820.241009346064,
+            28.94775
+          ],
+          [
+            -9266.311054662881,
+            -40819.819883159245,
+            28.924999999999997
+          ],
+          [
+            -9267.680587066614,
+            -40819.38038118699,
+            28.892249999999997
+          ],
+          [
+            -9269.548218007763,
+            -40818.71036652928,
+            28.8615
+          ]
+        ],
+        [
+          [
+            -9264.020768272669,
+            -40816.87452802112,
+            28.94775
+          ],
+          [
+            -9265.348323570288,
+            -40816.462495676,
+            28.924999999999997
+          ],
+          [
+            -9266.647506597938,
+            -40816.036015605336,
+            28.892249999999997
+          ],
+          [
+            -9268.477055352705,
+            -40815.36848295982,
+            28.8615
+          ]
+        ],
+        [
+          [
+            -9263.120922035721,
+            -40813.49218020491,
+            28.94775
+          ],
+          [
+            -9264.383578265582,
+            -40813.09808391508,
+            28.924999999999997
+          ],
+          [
+            -9265.614511986454,
+            -40812.69192796703,
+            28.892249999999997
+          ],
+          [
+            -9267.40874824775,
+            -40812.035508323024,
+            28.8615
+          ]
+        ],
+        [
+          [
+            -9262.221075798772,
+            -40810.10983238869,
+            28.94775
+          ],
+          [
+            -9263.418832960879,
+            -40809.73367215415,
+            28.924999999999997
+          ],
+          [
+            -9264.58151737497,
+            -40809.34784032873,
+            28.892249999999997
+          ],
+          [
+            -9266.340441142795,
+            -40808.702533686235,
+            28.8615
+          ]
+        ],
+        [
+          [
+            -9261.352019269216,
+            -40806.84321712241,
+            28.858749999999997
+          ],
+          [
+            -9262.471393721165,
+            -40806.429612828535,
+            28.924999999999997
+          ],
+          [
+            -9263.545423544689,
+            -40805.99371966687,
+            28.779249999999998
+          ],
+          [
+            -9265.224969988145,
+            -40805.22241355104,
+            28.75425
+          ]
+        ]
+      ],
+      "evidence": [
+        [
+          "width_prior",
+          "width_prior",
+          "width_prior",
+          "width_prior"
+        ],
+        [
+          "width_prior",
+          "width_prior",
+          "width_prior",
+          "width_prior"
+        ],
+        [
+          "width_prior",
+          "width_prior",
+          "width_prior",
+          "width_prior"
+        ],
+        [
+          "width_prior",
+          "width_prior",
+          "width_prior",
+          "width_prior"
+        ],
+        [
+          "support_edge",
+          "width_prior",
+          "curb",
+          "curb"
+        ]
+      ],
+      "operator_reference": [
+        [
+          -9264.420321668402,
+          -40818.376371891805,
+          28.94775
+        ],
+        [
+          -9265.78704852141,
+          -40817.992486418814,
+          28.924999999999997
+        ],
+        [
+          -9267.130395004624,
+          -40817.599258175556,
+          28.892249999999997
+        ],
+        [
+          -9269.0,
+          -40817.0,
+          28.8615
+        ]
+      ],
+      "reference": [
+        [
+          -9264.420321668402,
+          -40818.376371891805,
+          28.94775
+        ],
+        [
+          -9265.78704852141,
+          -40817.992486418814,
+          28.924999999999997
+        ],
+        [
+          -9267.130395004624,
+          -40817.599258175556,
+          28.892249999999997
+        ],
+        [
+          -9269.0,
+          -40817.0,
+          28.8615
+        ]
+      ]
+    }
+  ]
+}

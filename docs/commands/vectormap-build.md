@@ -27,6 +27,52 @@ Missing observations are excluded from the five-section offset median. An anchor
 extend to two neighbouring sampled sections with decreasing strength; farther missing
 slices retain the trajectory-centred width prior. This does not bridge missing ground.
 
+Opt in with `--physical-anchors-only`, Python/MCP `physical_anchors_only=True`,
+or Web's **Anchor inferred lane widths to paint and curbs only** under **Build from a trajectory**.
+This excludes outside point-coverage candidates from the offset median for inferred
+width lines. Curb and intensity observations can still supply offsets. Direct
+coverage-edge geometry remains selectable; the option does not certify road edges.
+Later source-footprint fitting remains independent and can still infer a footprint
+from low-surface coverage.
+`coverage_edge_anchor_candidates_ignored` counts excluded outside candidates before
+tracking and surface deferral, including candidates that are later dropped. It is
+not a false-detection or removed-geometry count. The option defaults to off and has
+no effect with `--no-anchor-width-prior`. See the [same-interval gains, losses and
+coverage changes](../vector-map-physical-anchors.md).
+
+Opt in with `--align-trace-to-curbs`, Python/MCP `align_trace_to_curbs=True`,
+or Web's **Align straight traces using paired curbs**. This independently translates
+a straight trace when a stable pair of source curbs encloses the configured road
+width. It requires a majority of sections, three consecutive pairs, consistent
+offsets and no ambiguous sections; curved or unconfirmed traces stay unchanged.
+Lane counts and widths remain explicit priors. `trace_alignment` records the
+shift and held reason. This translation precedes the separate 0.5 m local curve
+fit, so its reported movement may exceed that cap. The option is off by default.
+See the [actual maps and correspondence-aware evaluation](../vector-map-curb-alignment.md).
+
+Opt in with `--fit-paint-corridor`, Python/MCP `fit_paint_corridor=True`, or Web's
+**Fit straight lanes using observed white paint**. This independently fits
+straight parallel boundary heading and spacing from thin source RGB paint with
+dark ground on both sides. Counts, directions and marking roles remain manual.
+`paint_corridor` reports measured widths and each line's source observation
+intervals, interpolation and extrapolation before source-footprint trimming.
+Sparse outer lines can be extended; unobserved vertices remain inferred.
+Missing/ambiguous bundles and scan limits hold the fit. It is off by default,
+and its separate relocation is not bounded by the later local curve-fit cap.
+See [actual maps, retained extent and both fixed-target diagnostics](../vector-map-paint-corridor.md).
+
+Opt in with `--fit-paint-divider`, Python/MCP `fit_paint_divider=True`, or Web's
+**Correct the interior line using paint and paired curbs**. This corrects only
+the interior boundary of an explicitly configured two-lane road when one strong
+RGB paint track lies inside confirmed physical curb pairs in a majority of
+sections. Outside candidates stay intact; a complete paint corridor takes
+precedence. `paint_divider` reports the guard counts, movement and observed,
+interpolated and extended source intervals. Missing or ambiguous evidence holds
+the correction. Counts, boundary roles and directions remain manual; nearby
+observed paint alone receives RGB evidence. The option defaults to off and its
+separate relocation can exceed the 0.5 m local curve-fit cap.
+See [actual maps and per-boundary errors](../vector-map-paint-divider.md).
+
 Curb candidates must have nearby road-side support and two raised outside bins no taller
 than `curb_height + 0.3 m` above the candidate. This rejects wall/vehicle steps and isolated
 low returns, but can also reject genuine curbs in sparse or cluttered scans. The report's
@@ -126,3 +172,15 @@ Register CloudAnalyzer with `claude mcp add cloudanalyzer -- ca mcp`. Its
 options, and returns the same report. Call `view_link([cloud, out_dir])` to view the
 cloud and map together. Later map editing uses the separate `vectormap mcp` server.
 See [real-data validation](../vector-map-validation.md) for measured accuracy and limitations.
+
+### Lane edges inside distant curb candidates
+
+Opt in with `--infer-lane-edges`, Python/MCP `infer_lane_edges=True`, or Web’s
+“Infer lane edges inside distant curbs (width assumption)”. Requires an applied
+`--fit-paint-divider` correction and verified curb profiles. Review the configured
+width: the result is an inferred lane edge, not observed outer paint or a certified
+shoulder. Selected far-curb candidates require majority/run guards; every new
+vertex needs source ground and must move inward. Outside paint takes precedence.
+Original road-edge candidates remain separately in the report before footprint
+trimming; exported lane vertices use width-prior evidence.
+See [actual maps and fixed-reference comparison](../vector-map-lane-edges.md).

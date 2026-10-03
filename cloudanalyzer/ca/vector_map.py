@@ -25,6 +25,11 @@ def build_vector_map(
     speed_limit: float = 40.0,
     segment_length: float = 50.0,
     anchor_width_prior: bool = True,
+    physical_anchors_only: bool = False,
+    align_trace_to_curbs: bool = False,
+    infer_lane_edges: bool = False,
+    fit_paint_divider: bool = False,
+    fit_paint_corridor: bool = False,
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
     fit_source_surface: bool = False,
@@ -46,7 +51,27 @@ def build_vector_map(
     defines the local origin of the other projections. Omitted metadata uses Autoware Local.
     Candidate tracking rejects isolated peaks; trajectory-relative curve fitting moves XY by at most
     0.5 m and preserves ground heights. Evidence counts describe selected sources before
-    fitting, including explicit width priors. Curb profile checks reject tall raised
+    fitting, including explicit width priors. physical_anchors_only excludes point
+    coverage limits from offsets for inferred lines; curb/intensity observations
+    remain anchors. Coverage-edge geometry can still be selected and needs review.
+    The ignored-candidate counter is before tracking and surface deferral.
+    align_trace_to_curbs optionally translates straight traces into a stable pair
+    of source curbs enclosing the configured total width. It preserves lane counts,
+    requires a majority of sections and holds curved or unconfirmed traces.
+    The report records the translation; this does not certify lane identity.
+    infer_lane_edges optionally places a configured-width outer lane prior
+    inside distant verified curbs after an applied paint-divider correction.
+    Original curb candidates stay in the report; outer paint is not observed.
+    fit_paint_divider optionally corrects only a two-lane interior boundary
+    from one strong RGB track guarded by paired physical curbs. Outside geometry
+    remains unchanged; missing paint is inferred and lane roles remain manual.
+    fit_paint_corridor optionally fits straight parallel boundaries from thin RGB
+    paint with dark source returns on both sides. It measures heading and spacing
+    but keeps lane counts/directions manual. Sparse outer paint and dash gaps can
+    be extended; those vertices remain inferred. The report separates observed
+    component intervals, interpolation and extrapolation before footprint trimming.
+    Ambiguous bundles, missing contrast and exhausted scan budgets hold the fit.
+    Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does
     not guarantee better lane geometry. Stages can be disabled independently.
     fit_source_surface instead fits inferred widths/heights to a coherent low-surface
@@ -116,6 +141,11 @@ def build_vector_map(
             "speed_limit": speed_limit,
             "segment_length": segment_length,
             "anchor_width_prior": anchor_width_prior,
+            **({"physical_anchors_only": True} if physical_anchors_only else {}),
+            **({"align_trace_to_curbs": True} if align_trace_to_curbs else {}),
+            **({"infer_lane_edges": True} if infer_lane_edges else {}),
+            **({"fit_paint_divider": True} if fit_paint_divider else {}),
+            **({"fit_paint_corridor": True} if fit_paint_corridor else {}),
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
             **({"fit_source_surface": True} if fit_source_surface else {}),

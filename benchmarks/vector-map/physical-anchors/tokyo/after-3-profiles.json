@@ -1,0 +1,183 @@
+{
+  "extraction": {
+    "added_length": 0.0,
+    "anchored_prior_vertices": 0,
+    "coverage_edge_anchor_candidates_ignored": 4,
+    "curb_vertices": 0,
+    "fitted_vertices": 15,
+    "generated_length": 7.9999999999979945,
+    "intensity_used": false,
+    "intensity_vertices": 0,
+    "joined_connections": 0,
+    "lanes": 0,
+    "maximum_fit_displacement": 0.5000000000005999,
+    "observed_fraction": [
+      0.4,
+      0.0,
+      0.4
+    ],
+    "rejected_curb_candidates": 16,
+    "reused_intervals": 0,
+    "reused_length": 0.0,
+    "roads": 1,
+    "sampled_sections": 10,
+    "support_edge_vertices": 4,
+    "surface_fit": {
+      "candidate_sections": 10,
+      "deferred_length_m": 10.000000000000396,
+      "discarded_short_stretches": 0,
+      "evaluated_path_length_m": 17.99999999999839,
+      "maximum_lane_width_m": 2.378875663699869,
+      "minimum_lane_width_m": 1.9000000000012705,
+      "preserved_candidate_geometry": false,
+      "rejected_intervals": 5
+    },
+    "tracked_vertices": 0,
+    "trajectory_length": 17.999999999998387,
+    "unsupported_sections": 0,
+    "warnings": [
+      "4 pre-tracking coverage-edge anchor candidates were excluded from inferred offsets before source-footprint trimming. Coverage limits are not physical road-boundary observations.",
+      "Source-footprint mode keeps explicit lane counts but fits inferred widths to a coherent low-surface band. Coverage limits can be occlusion or scan gaps, not road edges. Internal lane lines remain width assumptions; this does not identify road semantics or permitted turns.",
+      "10.00 m of the traced/recorded path was deferred; 5 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used."
+    ],
+    "width_prior_vertices": 11
+  },
+  "reference_inputs": [],
+  "roads": [
+    {
+      "boundaries": [
+        [
+          [
+            -9319.52694401007,
+            -40800.31817239243,
+            28.848249999999997
+          ],
+          [
+            -9317.828790232825,
+            -40801.376493002026,
+            28.852249999999998
+          ],
+          [
+            -9316.147669322036,
+            -40802.460362911304,
+            28.886249999999997
+          ],
+          [
+            -9315.172557962293,
+            -40803.701859328285,
+            28.838749999999997
+          ],
+          [
+            -9312.76285039329,
+            -40804.59423706911,
+            28.801499999999997
+          ]
+        ],
+        [
+          [
+            -9320.77155701204,
+            -40802.18509189538,
+            28.822
+          ],
+          [
+            -9319.041591830963,
+            -40803.19569539923,
+            28.8315
+          ],
+          [
+            -9317.266551203042,
+            -40804.13868573281,
+            28.8315
+          ],
+          [
+            -9316.351295879269,
+            -40805.46996620375,
+            28.771499999999996
+          ],
+          [
+            -9314.082413190741,
+            -40806.573581265286,
+            28.7735
+          ]
+        ],
+        [
+          [
+            -9321.926032851334,
+            -40803.91680565432,
+            28.8235
+          ],
+          [
+            -9320.095522203792,
+            -40804.77659095847,
+            28.7915
+          ],
+          [
+            -9318.320481575869,
+            -40805.719581292054,
+            28.771749999999997
+          ],
+          [
+            -9317.530033796245,
+            -40807.238073079214,
+            28.883499999999998
+          ],
+          [
+            -9315.299308641004,
+            -40808.398924440684,
+            28.79975
+          ]
+        ]
+      ],
+      "evidence": [
+        [
+          "width_prior",
+          "support_edge",
+          "support_edge",
+          "width_prior",
+          "width_prior"
+        ],
+        [
+          "width_prior",
+          "width_prior",
+          "width_prior",
+          "width_prior",
+          "width_prior"
+        ],
+        [
+          "width_prior",
+          "support_edge",
+          "support_edge",
+          "width_prior",
+          "width_prior"
+        ]
+      ],
+      "reference": [
+        [
+          -9319.67949705662,
+          -40800.54700196225,
+          28.846999999999998
+        ],
+        [
+          -9318.015396467945,
+          -40801.6564023547,
+          28.848999999999997
+        ],
+        [
+          -9316.35129587927,
+          -40802.765802747155,
+          28.848499999999998
+        ],
+        [
+          -9315.103220437764,
+          -40803.59785304149,
+          28.833499999999997
+        ],
+        [
+          -9313.023094701919,
+          -40804.98460353205,
+          28.814999999999998
+        ]
+      ]
+    }
+  ]
+}

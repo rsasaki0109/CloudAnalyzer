@@ -1,0 +1,1128 @@
+{
+  "source_commit": "c6c147c3405a1468540d5f3255520a13e5b2aba8",
+  "executable_sha256": "78819bb671ecee878fd29130cef3c3c4f7eef65465ac071886720f70b72a3f07",
+  "evaluation_script_sha256": "27dc5295ba8827b98289604446f42c27db702c25406dfb3d4a369dcad8dcea0b",
+  "source_sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+  "config_sha256": "03a33cdbb91ef893058743fa6601684116985b9e816187032f9c83c141b7d294",
+  "reference_sha256": "4fe358f2d1e182dc76de296e5619086f8d8ad2fcab3e6d8f99f6e3d724a84e6d",
+  "reference_transform": "native coordinates",
+  "generation_reference_inputs": [],
+  "profile_geometry_verified_in_built_maps": true,
+  "generation_artifact_sha256": {
+    "after-0-audit.json": "16a397acaa8a128836224ee7f8befde2e3f6a374d11b205fa4aae80687592e9c",
+    "after-0-profiles.json": "47a7b387909f2294b1bb4ae2fe949dfeb993d2ab6d327f9bf6050cf9ee53ac1f",
+    "after-0.json": "574cd66df38713dcfa46cd267aff8c1a606436de5864f5683c735a01548488be",
+    "after-0.osm": "c66ff02b5228afe3b6cb3b6fa848e3272d7633d8cefad776e689dcb264171b73",
+    "after-1-audit.json": "109c8d23fa1e19423bf9ace7b7c20c93b49fa8c40e28e0a3426f3d23c8cb3745",
+    "after-1-profiles.json": "a1a0fa400795b8407c71cc49e53d91f49ef79dbcfa75af860e5afb088d1557fe",
+    "after-1.json": "40e79b905397c0ae1398378f05ec6ef7ed17d40732a8a431feb7428005941a5e",
+    "after-1.osm": "a5a0aa17f64f240d2effea57207d2fb4d93eefde8874c85c57387e800585bea2",
+    "after-2-audit.json": "181dbf14641554b655f37308b4d95cfe4abc77275a6c57eacdf2b42db861985d",
+    "after-2-profiles.json": "a8d70525d241d8afe781749fa980bf6f6f57a3083540febefdadd79505bf32cc",
+    "after-2.json": "d260a196be90ff46943ddd86561d5287d21802d08113bbb184fd0e83004d558c",
+    "after-2.osm": "6edc1e967555c9437af63644e0b04f0809e43856d24f2a468d868a28254c98df",
+    "before-0-audit.json": "937babf566735e6144393434d54dc8b315a31bd4509c5f7e859c392658a05b72",
+    "before-0-profiles.json": "25186f15f48a9931e362494c6b3c64bf4cc1468555dc90ecfb4f7db891d88e25",
+    "before-0.json": "829bfb3ffc5f76562e2053a7490a8a4cae6a285468cef85081d22ef03b230a5e",
+    "before-0.osm": "b689d2ed074c58ddd256f4793592f879044c13f2875206270b529293b68bde31",
+    "before-1-audit.json": "cb1cf7025ae3e0de53ebd157bf3c3684be855e28525a32ae8645fdb5a7215f8c",
+    "before-1-profiles.json": "e276d6506799e7a6203a1fd8ea3f760ff39efd7a67844174dc230977afd9bc47",
+    "before-1.json": "94d67824c10da6e515f5ed6a35b8f1a1090276be599519660a25df0d8b587449",
+    "before-1.osm": "c13c186f35857ec1838c4e2d376002ca22111d801f26ec0140cd4eec06f72535",
+    "before-2-audit.json": "d783ed3e817c6ddc4c84bda7e3ee825e7929d7d80780012062782f9fcbb8124d",
+    "before-2-profiles.json": "856d35843988cd9d9e201434463cf26101dac1a8116a1d1e1a180c30b1d1cd0f",
+    "before-2.json": "09751998b071f638b6712c4673c5aeaaef4e582b1e4404aa8468f75ae062a0ed",
+    "before-2.osm": "8a2692b2b880e8da29fcbe9ff2a0b2638702bab17f0005b0428fba0facaf84b5",
+    "comparison.json": "5c98c1a77d9371836beb36abe9016d2f4f52848ac74fd633a7e678ed27f3a31f",
+    "trajectory-0.csv": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+    "trajectory-1.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+    "trajectory-2.csv": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9"
+  },
+  "metrics": {
+    "before": {
+      "boundary_distance": {
+        "generated_samples": 801,
+        "mean_xy_m": 0.9511988960582787,
+        "p90_xy_m": 3.3670928478320645,
+        "maximum_xy_m": 5.6737068171747165,
+        "fraction_within_0_5m": 0.4756554307116105,
+        "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+      },
+      "generated_path_m": 106.51217204428227,
+      "deferred_path_m": 22.000000000012193,
+      "ignored_coverage_anchor_candidates": 8,
+      "lane_fragments": 10,
+      "source_flags": [],
+      "source_samples": 1332,
+      "limited": false
+    },
+    "after": {
+      "boundary_distance": {
+        "generated_samples": 876,
+        "mean_xy_m": 0.3947581783206715,
+        "p90_xy_m": 1.0578512298241227,
+        "maximum_xy_m": 1.5296865659424834,
+        "fraction_within_0_5m": 0.7123287671232876,
+        "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+      },
+      "generated_path_m": 116.5121720442916,
+      "deferred_path_m": 12.000000000002863,
+      "ignored_coverage_anchor_candidates": 0,
+      "lane_fragments": 10,
+      "source_flags": [],
+      "source_samples": 1452,
+      "limited": false
+    }
+  },
+  "paired_source_intervals": [
+    {
+      "name": "planning-0",
+      "common_source_path_m": 34.60632371552294,
+      "before_only_source_path_m": 1.9999999999912452,
+      "after_only_source_path_m": 12.000000000000561,
+      "common_intervals": 18,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 282,
+      "before": {
+        "mean_xy_m": 1.6158230593923992,
+        "p90_xy_m": 4.021099596828415,
+        "maximum_xy_m": 5.6737068171747165,
+        "fraction_within_0_5m": 0.4219858156028369
+      },
+      "after": {
+        "mean_xy_m": 2.003364305629062,
+        "p90_xy_m": 2.9086283338064702,
+        "maximum_xy_m": 5.796924403933758,
+        "fraction_within_0_5m": 0.3333333333333333
+      },
+      "mean_boundary_displacement_m": 3.280214096635354,
+      "maximum_height_change_m": 0.3549976348876953
+    },
+    {
+      "name": "planning-1",
+      "common_source_path_m": 38.14108798023091,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 20,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 312,
+      "before": {
+        "mean_xy_m": 0.7124978962343269,
+        "p90_xy_m": 1.334786648180062,
+        "maximum_xy_m": 1.5296865659424834,
+        "fraction_within_0_5m": 0.5032051282051282
+      },
+      "after": {
+        "mean_xy_m": 0.7124978962343269,
+        "p90_xy_m": 1.334786648180062,
+        "maximum_xy_m": 1.5296865659424834,
+        "fraction_within_0_5m": 0.5032051282051282
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    },
+    {
+      "name": "planning-2",
+      "common_source_path_m": 31.76476034853718,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 16,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 255,
+      "before": {
+        "mean_xy_m": 0.3910980307523098,
+        "p90_xy_m": 0.580771033281724,
+        "maximum_xy_m": 0.6212718379000142,
+        "fraction_within_0_5m": 0.5333333333333333
+      },
+      "after": {
+        "mean_xy_m": 0.3910980307523098,
+        "p90_xy_m": 0.580771033281724,
+        "maximum_xy_m": 0.6212718379000142,
+        "fraction_within_0_5m": 0.5333333333333333
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    }
+  ],
+  "limitations": [
+    "Known development scenes, not held-out accuracy.",
+    "Full-map distances are unpaired nearest sampled surveyed driving-boundary XY.",
+    "Common intervals are matched using source coordinates; survey targets selected for before points stay fixed for after points. Lane identities are not established.",
+    "Endpoint samples repeat across intervals; sampled reference discretization affects distances.",
+    "Source support is also a generation gate; report deferred extent separately.",
+    "Coverage-edge candidate geometry remains available; only its use to shift inferred lanes is disabled.",
+    "Trace translation can change which nearby survey boundary is closest. Retained before-nearest targets and ordered adjacent-lane correspondences are different diagnostics; report both.",
+    "Corridor assignment is selected jointly using BEFORE only; incomplete reference intervals and unsupported configurations are held and their extent reported."
+  ],
+  "fixed_reference_corridors": [
+    {
+      "name": "planning-0",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 34.60632371552295,
+      "evaluated_path_m": 34.60632371552294,
+      "held_path_m": 0.0,
+      "assignments": [
+        {
+          "source_interval": [
+            3763.694566,
+            73790.940094,
+            3765.433479,
+            73791.928113
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3770.650218,
+            73794.892169,
+            3772.389131,
+            73795.880188
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3772.389131,
+            73795.880188,
+            3774.128044,
+            73796.868207
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3774.128044,
+            73796.868207,
+            3775.866957,
+            73797.856226
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3775.866957,
+            73797.856226,
+            3777.60587,
+            73798.844245
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3777.60587,
+            73798.844245,
+            3779.344784,
+            73799.832263
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3779.344784,
+            73799.832263,
+            3781.083697,
+            73800.820282
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3781.083697,
+            73800.820282,
+            3782.82261,
+            73801.808301
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3782.82261,
+            73801.808301,
+            3784.561523,
+            73802.79632
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3784.561523,
+            73802.79632,
+            3786.300436,
+            73803.784339
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3786.300436,
+            73803.784339,
+            3788.039349,
+            73804.772357
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3788.039349,
+            73804.772357,
+            3789.778262,
+            73805.760376
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3789.778262,
+            73805.760376,
+            3791.517175,
+            73806.748395
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3791.517175,
+            73806.748395,
+            3793.256089,
+            73807.736414
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3793.256089,
+            73807.736414,
+            3794.995002,
+            73808.724433
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3794.995002,
+            73808.724433,
+            3796.599277,
+            73809.635953
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3796.599277,
+            73809.635953,
+            3797.735164,
+            73810.281343
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        },
+        {
+          "source_interval": [
+            3797.735164,
+            73810.281343,
+            3799.0,
+            73811.0
+          ],
+          "survey_lanes": [
+            120,
+            121
+          ],
+          "survey_boundaries_left_to_right": [
+            47,
+            50,
+            49
+          ]
+        }
+      ],
+      "samples": 282,
+      "before": {
+        "mean_xy_m": 3.311646495169816,
+        "p90_xy_m": 4.165903246342516,
+        "maximum_xy_m": 5.674124123127726,
+        "fraction_within_0_5m": 0.0
+      },
+      "after": {
+        "mean_xy_m": 0.036674418062341764,
+        "p90_xy_m": 0.0622275519891216,
+        "maximum_xy_m": 0.0635109086580228,
+        "fraction_within_0_5m": 1.0
+      }
+    },
+    {
+      "name": "planning-1",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 38.1410879802309,
+      "evaluated_path_m": 38.14108798023091,
+      "held_path_m": 0.0,
+      "assignments": [
+        {
+          "source_interval": [
+            3820.0,
+            73823.0,
+            3822.167266,
+            73824.246178
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3822.167266,
+            73824.246178,
+            3823.467625,
+            73824.993884
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3823.467625,
+            73824.993884,
+            3825.201438,
+            73825.990827
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3825.201438,
+            73825.990827,
+            3826.93525,
+            73826.987769
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3826.93525,
+            73826.987769,
+            3828.669063,
+            73827.984711
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3828.669063,
+            73827.984711,
+            3830.402876,
+            73828.981653
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3830.402876,
+            73828.981653,
+            3832.136688,
+            73829.978596
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3832.136688,
+            73829.978596,
+            3833.870501,
+            73830.975538
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3840.805751,
+            73834.963307,
+            3842.539564,
+            73835.960249
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3842.539564,
+            73835.960249,
+            3844.273376,
+            73836.957191
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3844.273376,
+            73836.957191,
+            3846.007189,
+            73837.954134
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3846.007189,
+            73837.954134,
+            3847.741002,
+            73838.951076
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3847.741002,
+            73838.951076,
+            3849.474814,
+            73839.948018
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3849.474814,
+            73839.948018,
+            3851.208627,
+            73840.94496
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3851.208627,
+            73840.94496,
+            3852.94244,
+            73841.941903
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3852.94244,
+            73841.941903,
+            3854.676252,
+            73842.938845
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3854.676252,
+            73842.938845,
+            3856.410065,
+            73843.935787
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3856.410065,
+            73843.935787,
+            3857.964821,
+            73844.829772
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3857.964821,
+            73844.829772,
+            3859.041361,
+            73845.448783
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        },
+        {
+          "source_interval": [
+            3859.041361,
+            73845.448783,
+            3860.0,
+            73846.0
+          ],
+          "survey_lanes": [
+            126,
+            127
+          ],
+          "survey_boundaries_left_to_right": [
+            51,
+            52,
+            53
+          ]
+        }
+      ],
+      "samples": 312,
+      "before": {
+        "mean_xy_m": 0.6950282076783307,
+        "p90_xy_m": 1.3278468532816081,
+        "maximum_xy_m": 1.5309317680858954,
+        "fraction_within_0_5m": 0.5256410256410257
+      },
+      "after": {
+        "mean_xy_m": 0.6950282076783307,
+        "p90_xy_m": 1.3278468532816081,
+        "maximum_xy_m": 1.5309317680858954,
+        "fraction_within_0_5m": 0.5256410256410257
+      }
+    },
+    {
+      "name": "planning-2",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 31.76476034853718,
+      "evaluated_path_m": 29.76476034852803,
+      "held_path_m": 2.000000000009153,
+      "assignments": [
+        {
+          "source_interval": [
+            3816.09724,
+            73803.951819,
+            3815.0,
+            73806.0
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3816.790143,
+            73802.658399,
+            3816.09724,
+            73803.951819
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3817.722243,
+            73800.918479,
+            3816.790143,
+            73802.658399
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3818.666686,
+            73799.155519,
+            3817.722243,
+            73800.918479
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3819.611129,
+            73797.392559,
+            3818.666686,
+            73799.155519
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3820.555572,
+            73795.629599,
+            3819.611129,
+            73797.392559
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3821.500015,
+            73793.866639,
+            3820.555572,
+            73795.629599
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3822.444457,
+            73792.10368,
+            3821.500015,
+            73793.866639
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3823.3889,
+            73790.34072,
+            3822.444457,
+            73792.10368
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3824.333343,
+            73788.57776,
+            3823.3889,
+            73790.34072
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3825.277786,
+            73786.8148,
+            3824.333343,
+            73788.57776
+          ],
+          "survey_lanes": [
+            129,
+            130
+          ],
+          "survey_boundaries_left_to_right": [
+            55,
+            56,
+            57
+          ]
+        },
+        {
+          "source_interval": [
+            3827.166672,
+            73783.28888,
+            3826.222229,
+            73785.05184
+          ],
+          "survey_lanes": [
+            31,
+            32
+          ],
+          "survey_boundaries_left_to_right": [
+            161,
+            164,
+            163
+          ]
+        },
+        {
+          "source_interval": [
+            3828.111114,
+            73781.52592,
+            3827.166672,
+            73783.28888
+          ],
+          "survey_lanes": [
+            31,
+            32
+          ],
+          "survey_boundaries_left_to_right": [
+            161,
+            164,
+            163
+          ]
+        },
+        {
+          "source_interval": [
+            3828.819446,
+            73780.2037,
+            3828.111114,
+            73781.52592
+          ],
+          "survey_lanes": [
+            31,
+            32
+          ],
+          "survey_boundaries_left_to_right": [
+            161,
+            164,
+            163
+          ]
+        },
+        {
+          "source_interval": [
+            3830.0,
+            73778.0,
+            3828.819446,
+            73780.2037
+          ],
+          "survey_lanes": [
+            31,
+            32
+          ],
+          "survey_boundaries_left_to_right": [
+            161,
+            164,
+            163
+          ]
+        }
+      ],
+      "samples": 237,
+      "before": {
+        "mean_xy_m": 0.3522262763884706,
+        "p90_xy_m": 0.5656053246335193,
+        "maximum_xy_m": 0.5812550154261565,
+        "fraction_within_0_5m": 0.5949367088607594
+      },
+      "after": {
+        "mean_xy_m": 0.3522262763884706,
+        "p90_xy_m": 0.5656053246335193,
+        "maximum_xy_m": 0.5812550154261565,
+        "fraction_within_0_5m": 0.5949367088607594
+      }
+    }
+  ],
+  "corridor_evaluation_script_sha256": "9305c62aee959cdd2ea331bd9d7c1ebf5e51da5a9f84d5afb1c49b872f9d460d"
+}

@@ -2957,3 +2957,149 @@ test("vector map: connected stop targets cannot replace the reviewed vehicle mov
   await expect(page.locator("#vm-relation-current")).toContainText("stops: 15");
   await page.locator("#vm-undo").click();expect(await exported()).toBe(before);
 });
+test("vector map: scan limits do not move inferred lane priors in physical anchor mode", async ({page}) => {
+  const points: [number,number,number][]=[];
+  for(let x=0;x<=200;x++)for(let y=-21;y<=14;y++)points.push([x*.2,y*.2,2]);
+  await open(page,[{name:"clipped.ply",buffer:ply(points)},{name:"drive.csv",buffer:Buffer.from("timestamp,x,y,z\n0,3,0,50\n1,37,0,50\n")}]);
+  await page.locator("#vector-map-panel").getByText("Road options",{exact:true}).click();
+  await expect(page.locator("#vm-physical-anchors")).not.toBeChecked();
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await page.locator("#vm-discover-after-build").uncheck();
+  const exported=async()=>{const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();return (await bytesOf(await wait)).toString();};
+  const internal=(xml:string)=>{
+    const nodes=new Map([...xml.matchAll(/<node id="([^"]+)"[^>]*>([\s\S]*?)<\/node>/g)].map(m=>[m[1],Number(m[2].match(/<tag k="local_y" v="([^"]+)"/)![1])]));
+    const ways=new Map([...xml.matchAll(/<way id="([^"]+)"[^>]*>([\s\S]*?)<\/way>/g)].map(m=>[m[1],[...m[2].matchAll(/<nd ref="([^"]+)"/g)].map(n=>nodes.get(n[1])!)]));
+    const refs=[...xml.matchAll(/<relation id="[^"]+"[^>]*>([\s\S]*?)<\/relation>/g)].filter(m=>m[1].includes('<tag k="subtype" v="road"')).map(m=>[...m[1].matchAll(/<member type="way" ref="([^"]+)" role="(?:left|right)"/g)].map(n=>n[1]));
+    const shared=refs[0].find(r=>refs[1].includes(r))!;
+    const ys=ways.get(shared)!.sort((a,b)=>a-b);return ys[Math.floor(ys.length/2)];
+  };
+  await page.locator("#vm-build").click();await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("Coverage-edge anchor candidates ignored: 0.");
+  const legacy=internal(await exported());
+  await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
+  await page.locator("#vm-physical-anchors").check();
+  await page.locator("#vm-build").click();await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("pre-tracking coverage-edge anchor candidates");
+  await page.waitForTimeout(1100);const xml=await exported();
+  expect(internal(xml)).toBeCloseTo(-1.75,2);expect(legacy-internal(xml)).toBeGreaterThan(.5);
+  expect(xml).toMatch(/<tag k="ele" v="2(\.0+)?"\/>/);
+  await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
+  await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
+
+test("vector map: paired source curbs align a straight trace with reviewed lane priors", async ({page}) => {
+  const points: [number,number,number][]=[];
+  for(let x=0;x<=320;x++)for(let j=-140;j<=140;j++) {
+    const y=j*.1+.03; points.push([x*.1,y,y < -1.8 || y > 5.4 ? 2.2 : 2]);
+  }
+  await open(page,[{name:"curbs.ply",buffer:ply(points)},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,2,0,80\n1,30,0,80\n")}]);
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await expect(page.locator("#vm-align-curbs")).not.toBeChecked();
+  await page.locator("#vm-align-curbs").check(); await page.locator("#vm-physical-anchors").check();
+  await page.locator("#vm-source-surface").check(); await page.locator("#vm-discover-after-build").uncheck();
+  await page.locator("#vm-build").click(); await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  await expect(page.locator("#vm-build-report")).toContainText("Trace alignment applied");
+  const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm"); await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await wait)).toString();
+  const ys=[...xml.matchAll(/<tag k="local_y" v="([^"]+)"/g)].map(m=>Number(m[1]));
+  expect(Math.min(...ys)).toBeGreaterThan(-2.1); expect(Math.max(...ys)).toBeGreaterThan(5);
+  expect(xml).not.toContain('<tag k="ele" v="80"');
+  await page.locator("#vm-quality summary").click(); await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
+  await page.locator("#vm-undo").click(); await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
+test("vector map: RGB paint fits lane spacing while sparse extensions remain inferred", async ({page}) => {
+  const rows:string[]=[];
+  for(let sx=-20;sx<=320;sx++)for(let sy=-90;sy<=100;sy++) {
+    const x=sx*.1,y=sy*.1;
+    const white=[-.25,2.75,5.75].some((t,j)=>Math.abs(y-(t-.04*x))<.055 && (j===2 ? x>=4 && x<=6 : ((sx%80)+80)%80<40));
+    const b=white ? 230 : 70;rows.push(`${x} ${y} ${12+.02*x} ${b} ${b} ${b}`);
+  }
+  const header=`ply\nformat ascii 1.0\nelement vertex ${rows.length}\nproperty double x\nproperty double y\nproperty double z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n`;
+  await open(page,[{name:"paint.ply",buffer:Buffer.from(header+rows.join("\n"))},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")}]);
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await expect(page.locator("#vm-paint-corridor")).not.toBeChecked();
+  await page.locator("#vm-paint-corridor").check(); await page.locator("#vm-source-surface").check(); await page.locator("#vm-discover-after-build").uncheck();
+  await page.locator("#vm-build").click(); await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-status")).toContainText("2 lanes");
+  await expect(page.locator("#vm-build-report")).toContainText("White paint fit applied");
+  const widths=(await page.locator("#vm-build-report").textContent())!.match(/Measured widths: ([\d.]+), ([\d.]+) m/)!;
+  expect(Number(widths[1])).toBeCloseTo(3,1);expect(Number(widths[2])).toBeCloseTo(3,1);
+  await expect(page.locator("#vm-build-report")).toContainText("gaps and extensions remain inferred");
+  const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await wait)).toString();
+  const ys=[...xml.matchAll(/<tag k="local_y" v="([^"]+)"/g)].map(m=>Number(m[1]));
+  expect(Math.max(...ys)).toBeGreaterThan(5.5);expect(Math.min(...ys)).toBeGreaterThan(-1.6);
+  expect(xml).not.toContain('<tag k="ele" v="100"');
+  await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
+  await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
+test("vector map: a lone paint divider needs physical curb pairs and keeps gaps inferred", async ({page}) => {
+  const rows:string[]=[];
+  for(let ix=-20;ix<=320;ix++)for(let iy=-80;iy<=80;iy++) {
+    const x=ix*.1,y=iy*.1+.03,t=y+.02*x;
+    const b=Math.abs(t)<.055 && ((ix%80)+80)%80<40 ? 230 : 70;
+    rows.push(`${x} ${y} ${12+.01*x+(t < -3.9 || t > 3.8 ? .2 : 0)} ${b} ${b} ${b}`);
+  }
+  const header=`ply\nformat ascii 1.0\nelement vertex ${rows.length}\nproperty double x\nproperty double y\nproperty double z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n`;
+  await open(page,[{name:"divider.ply",buffer:Buffer.from(header+rows.join("\n"))},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")}]);
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await expect(page.locator("#vm-paint-divider")).not.toBeChecked();
+  await page.locator("#vm-paint-divider").check();await page.locator("#vm-physical-anchors").check();
+  await page.locator("#vm-source-surface").check();await page.locator("#vm-discover-after-build").uncheck();
+  await page.locator("#vm-build").click();await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("Interior paint correction applied");
+  await expect(page.locator("#vm-build-report")).toContainText("gaps/extensions remain inferred");
+  const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await wait)).toString();
+  const nodes=new Map([...xml.matchAll(/<node id="([^"]+)"[^>]*>([\s\S]*?)<\/node>/g)].map(m=>[m[1],["local_x","local_y"].map(k=>Number(m[2].match(new RegExp(`<tag k="${k}" v="([^"]+)"`))![1]))]));
+  const ways=new Map([...xml.matchAll(/<way id="([^"]+)"[^>]*>([\s\S]*?)<\/way>/g)].map(m=>[m[1],[...m[2].matchAll(/<nd ref="([^"]+)"/g)].map(n=>nodes.get(n[1])!)]));
+  const refs=[...xml.matchAll(/<relation id="[^"]+"[^>]*>([\s\S]*?)<\/relation>/g)].filter(m=>m[1].includes('<tag k="subtype" v="road"')).map(m=>[...m[1].matchAll(/<member type="way" ref="([^"]+)" role="(?:left|right)"/g)].map(n=>n[1]));
+  const shared=refs[0].find(r=>refs[1].includes(r))!;
+  expect(ways.get(shared)!.every(p=>Math.abs(p[1]+.02*p[0])<.06)).toBe(true);
+  await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
+  await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
+
+test("vector map: lane edges inside distant curbs remain width assumptions", async ({page}) => {
+  const rows:string[]=[];
+  for(let ix=-20;ix<=320;ix++)for(let iy=-80;iy<=80;iy++) {
+    const x=ix*.1,y=iy*.1+.03,t=y+.02*x;
+    const b=Math.abs(t)<.055 && ((ix%80)+80)%80<40 ? 230 : 70;
+    rows.push(`${x} ${y} ${12+.01*x+(t < -4.8 || t > 3.2 ? .2 : 0)} ${b} ${b} ${b}`);
+  }
+  const header=`ply\nformat ascii 1.0\nelement vertex ${rows.length}\nproperty double x\nproperty double y\nproperty double z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nend_header\n`;
+  await open(page,[{name:"divider.ply",buffer:Buffer.from(header+rows.join("\n"))},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")}]);
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await expect(page.locator("#vm-lane-edges")).not.toBeChecked();
+  await page.locator("#vm-lane-edges").check();
+  await expect(page.locator("#vm-paint-divider")).not.toBeChecked();
+  await page.locator("#vm-paint-divider").check();await page.locator("#vm-physical-anchors").check();
+  await page.locator("#vm-source-surface").check();await page.locator("#vm-discover-after-build").uncheck();
+  await page.locator("#vm-build").click();await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("Interior paint correction applied");
+  await expect(page.locator("#vm-build-report")).toContainText("gaps/extensions remain inferred");
+  await expect(page.locator("#vm-build-report")).toContainText("Outer lane-edge inference applied");
+  await expect(page.locator("#vm-build-report")).toContainText("Configured width 3.5 m");
+  const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();
+  const xml=(await bytesOf(await wait)).toString();
+  const nodes=new Map([...xml.matchAll(/<node id="([^"]+)"[^>]*>([\s\S]*?)<\/node>/g)].map(m=>[m[1],["local_x","local_y"].map(k=>Number(m[2].match(new RegExp(`<tag k="${k}" v="([^"]+)"`))![1]))]));
+  const ways=new Map([...xml.matchAll(/<way id="([^"]+)"[^>]*>([\s\S]*?)<\/way>/g)].map(m=>[m[1],[...m[2].matchAll(/<nd ref="([^"]+)"/g)].map(n=>nodes.get(n[1])!)]));
+  const refs=[...xml.matchAll(/<relation id="[^"]+"[^>]*>([\s\S]*?)<\/relation>/g)].filter(m=>m[1].includes('<tag k="subtype" v="road"')).map(m=>[...m[1].matchAll(/<member type="way" ref="([^"]+)" role="(?:left|right)"/g)].map(n=>n[1]));
+  const shared=refs[0].find(r=>refs[1].includes(r))!;
+  expect(ways.get(shared)!.every(p=>Math.abs(p[1]+.02*p[0])<.06)).toBe(true);
+  const middle=ways.get(shared)!;
+  const outer=ways.get(refs[1].find(r=>r!==shared)!)!;
+  for(const p of outer)expect(Math.min(...middle.map(q=>Math.hypot(p[0]-q[0],p[1]-q[1])))).toBeCloseTo(3.5,2);
+  await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
+  await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
+  await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
+});

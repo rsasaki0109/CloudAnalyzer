@@ -1,0 +1,327 @@
+{
+  "source_commit": "4cac998b54eec995c18b0ab5b2c1e7072c192d1c",
+  "executable_sha256": "40103bb7993b341c6860e6440268a2b7bc2c43794c43976fd2c741931782a843",
+  "evaluation_script_sha256": "104f19dbd275f6577483801bdab8f406a99dbd4da670b502b3bd21660c5a442e",
+  "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+  "config_sha256": "e559883041bfe96c7764c136995a2606650be6a54b5e1888a03db59158c9c597",
+  "reference_sha256": "00e78f8bcaa1e6cdfb5226123a42ceaeadbf1907cb9cfca59f6a16674eb10ec2",
+  "reference_transform": "EPSG:6677",
+  "generation_reference_inputs": [],
+  "profile_geometry_verified_in_built_maps": true,
+  "generation_artifact_sha256": {
+    "after-0-audit.json": "1f5f12113f27cc1abed640853d5829e3b8f96ba4603fff95f216255643b76202",
+    "after-0-profiles.json": "32bbb29975a6529a39fcb0c8d6edbaf73f518132880ea4518c3a9b9205098076",
+    "after-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+    "after-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+    "after-1-audit.json": "13567142b40eaa7cc768887c2cbb9d06984b4968d58f85a34873a5c7630ae391",
+    "after-1-profiles.json": "697236389c48ccbafd9464538a38a3feb164421571f959c8f7cc89c21dbb7232",
+    "after-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+    "after-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+    "after-2-audit.json": "7c43456c4792fadb6047d75a92f6028bece88f8e14873bddf278f7a9ed0589fe",
+    "after-2-profiles.json": "0392969085e7236170103bdb9f041befbafcc331dcd22134bc992c64a356537e",
+    "after-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+    "after-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+    "after-3-audit.json": "48c95f19d745c1e6a8a04f6dde887ffb13cc85fadc0964c6f12ecdf1584ce12d",
+    "after-3-profiles.json": "e964ff5642e386bce9513307d51ed8e48b7e9508761ffb224ab2284b27a55f2d",
+    "after-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+    "after-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+    "after-4-audit.json": "4319afdbe7792a3a454ab398e9c9a060907adff167f50da18b47c7381866b243",
+    "after-4-profiles.json": "ef8579d00a05bc91a46d7056c783217c3dff0c3a5f260409d22d00013926cf3e",
+    "after-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+    "after-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+    "after-5-audit.json": "051f0c42d880f001f3daf6120fe028f7cca019244aed2d249e4cba215da5244e",
+    "after-5-profiles.json": "abbbfc6a6ee23c0cb62fedeebf842715141fde80c73f68a53b2f5285e7042b04",
+    "after-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+    "after-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+    "before-0-audit.json": "12cd32c6bbf81509cafb69f35bc7ca3565aeaa13e059c4ff9097affa0fd917ae",
+    "before-0-profiles.json": "e014a69c7172e8c3bc531de7c1411cf7053082f34109cb61e1bb8ac72351d8f8",
+    "before-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+    "before-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+    "before-1-audit.json": "950f71521e854db8a15c6451d37b905aeeef29b8e8e4740c825326fe6f76c2b2",
+    "before-1-profiles.json": "098be32ce33cdd569d631c8f8d82365bfa196150417721edcae18f91527e8ebd",
+    "before-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+    "before-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+    "before-2-audit.json": "ac3e93e61b25b8b9ff0322876dc154a07234a6f9fe12f92d0194bd348c1f25c7",
+    "before-2-profiles.json": "310b61a1c046195b43ea8223d0b4c958c24106ba1e521a4281ab46b1b5d26342",
+    "before-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+    "before-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+    "before-3-audit.json": "746ed4089b05e55a82094cc6f0b77cf728a2c9e797b3f6a798f15812cc632e4e",
+    "before-3-profiles.json": "f81a53cda58ec1444eae3dffaff2f3c08c03b6adcd9de34878273674d8f4f5f9",
+    "before-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+    "before-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+    "before-4-audit.json": "2509d0d23adca3dda7af03513da8d78ad84979ac10857cfe08aa91c52a5c747e",
+    "before-4-profiles.json": "1079ea6d6aa08fe5b595706857f0b199d43c2e540404f4f9b84321ef26e33240",
+    "before-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+    "before-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+    "before-5-audit.json": "7a88bd08a28321f536dc5ab4420128eb7dd0b12e6cda23b4a062f6dd9761fc66",
+    "before-5-profiles.json": "1db5864e04354fae323a66ddd90aa453b489b53240d2363ea40af3dd43d3c902",
+    "before-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+    "before-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+    "comparison.json": "9e0239616c0760843e52d1d710e3050722ce82f4bbfec7c99192ab96263f388c",
+    "trajectory-0.csv": "fcdfd2c453fd7fa5b4d458d100806533cee59f225aea56e986286cc896ae1ca9",
+    "trajectory-1.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b",
+    "trajectory-2.csv": "db591b8a2ab77281b967583f704bf3224454120b9a00b5d8c3a59a0694bb989b",
+    "trajectory-3.csv": "6cffc6ff3d8f545f998f45b6893408c28c0e39e95f7ca484beef309e23583ca4",
+    "trajectory-4.csv": "34a86c58a094080d9693ef5cb7073794fe51a3581592da2d2be9c962f5005b38",
+    "trajectory-5.csv": "7cae83e443960483cd1b22e21293b02ef75da381bdaa3b86a097a6315359b8c1"
+  },
+  "metrics": {
+    "before": {
+      "boundary_distance": {
+        "generated_samples": 1406,
+        "mean_xy_m": 0.6607219117295217,
+        "p90_xy_m": 1.4057653580781357,
+        "maximum_xy_m": 5.063600557199052,
+        "fraction_within_0_5m": 0.5440967283072546,
+        "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+      },
+      "generated_path_m": 88.07807805965106,
+      "deferred_path_m": 34.25890841752784,
+      "ignored_coverage_anchor_candidates": 8,
+      "lane_fragments": 38,
+      "source_flags": [],
+      "source_samples": 3154,
+      "limited": false
+    },
+    "after": {
+      "boundary_distance": {
+        "generated_samples": 1406,
+        "mean_xy_m": 0.6607219117295217,
+        "p90_xy_m": 1.4057653580781357,
+        "maximum_xy_m": 5.063600557199052,
+        "fraction_within_0_5m": 0.5440967283072546,
+        "role": "Unpaired nearest surveyed boundary distances; no fitted registration, lane pairing or full-scene completeness claim."
+      },
+      "generated_path_m": 88.07807805965106,
+      "deferred_path_m": 34.25890841752784,
+      "ignored_coverage_anchor_candidates": 8,
+      "lane_fragments": 38,
+      "source_flags": [],
+      "source_samples": 3154,
+      "limited": false
+    }
+  },
+  "paired_source_intervals": [
+    {
+      "name": "arterial-south",
+      "common_source_path_m": 34.839048374650176,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 18,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 623,
+      "before": {
+        "mean_xy_m": 0.628666462060361,
+        "p90_xy_m": 1.3186122521289791,
+        "maximum_xy_m": 1.694881116200406,
+        "fraction_within_0_5m": 0.48154093097913325
+      },
+      "after": {
+        "mean_xy_m": 0.628666462060361,
+        "p90_xy_m": 1.3186122521289791,
+        "maximum_xy_m": 1.694881116200406,
+        "fraction_within_0_5m": 0.48154093097913325
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    },
+    {
+      "name": "arterial-middle",
+      "common_source_path_m": 10.604659714987088,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 6,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 196,
+      "before": {
+        "mean_xy_m": 0.3937500710918565,
+        "p90_xy_m": 0.7482949656226408,
+        "maximum_xy_m": 1.2823841917311314,
+        "fraction_within_0_5m": 0.7244897959183674
+      },
+      "after": {
+        "mean_xy_m": 0.3937500710918565,
+        "p90_xy_m": 0.7482949656226408,
+        "maximum_xy_m": 1.2823841917311314,
+        "fraction_within_0_5m": 0.7244897959183674
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    },
+    {
+      "name": "arterial-north",
+      "common_source_path_m": 27.525547844428242,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 14,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 490,
+      "before": {
+        "mean_xy_m": 0.486881069599605,
+        "p90_xy_m": 1.2853785670169287,
+        "maximum_xy_m": 1.6406685009711701,
+        "fraction_within_0_5m": 0.7040816326530612
+      },
+      "after": {
+        "mean_xy_m": 0.486881069599605,
+        "p90_xy_m": 1.2853785670169287,
+        "maximum_xy_m": 1.6406685009711701,
+        "fraction_within_0_5m": 0.7040816326530612
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    },
+    {
+      "name": "west-south",
+      "common_source_path_m": 7.9999999999979945,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 4,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 66,
+      "before": {
+        "mean_xy_m": 2.000551616400649,
+        "p90_xy_m": 4.241104884854758,
+        "maximum_xy_m": 5.063600557199052,
+        "fraction_within_0_5m": 0.25757575757575757
+      },
+      "after": {
+        "mean_xy_m": 2.000551616400649,
+        "p90_xy_m": 4.241104884854758,
+        "maximum_xy_m": 5.063600557199052,
+        "fraction_within_0_5m": 0.25757575757575757
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    },
+    {
+      "name": "east-south",
+      "common_source_path_m": 4.782629975743308,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 3,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 65,
+      "before": {
+        "mean_xy_m": 1.284662271338353,
+        "p90_xy_m": 2.3407781112569914,
+        "maximum_xy_m": 2.5351458070421384,
+        "fraction_within_0_5m": 0.09230769230769231
+      },
+      "after": {
+        "mean_xy_m": 1.284662271338353,
+        "p90_xy_m": 2.3407781112569914,
+        "maximum_xy_m": 2.5351458070421384,
+        "fraction_within_0_5m": 0.09230769230769231
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    },
+    {
+      "name": "west-north",
+      "common_source_path_m": 2.326192149844256,
+      "before_only_source_path_m": 0,
+      "after_only_source_path_m": 0,
+      "common_intervals": 2,
+      "role": "Same source intervals and configured boundary slots; every after point evaluated against the SAME nearest survey sample selected for its before point. Not semantic lane correspondence.",
+      "samples": 24,
+      "before": {
+        "mean_xy_m": 1.5778054478312427,
+        "p90_xy_m": 2.874713715579638,
+        "maximum_xy_m": 3.8274585063588167,
+        "fraction_within_0_5m": 0.16666666666666666
+      },
+      "after": {
+        "mean_xy_m": 1.5778054478312427,
+        "p90_xy_m": 2.874713715579638,
+        "maximum_xy_m": 3.8274585063588167,
+        "fraction_within_0_5m": 0.16666666666666666
+      },
+      "mean_boundary_displacement_m": 0.0,
+      "maximum_height_change_m": 0.0
+    }
+  ],
+  "limitations": [
+    "Known development scenes, not held-out accuracy.",
+    "Full-map distances are unpaired nearest sampled surveyed driving-boundary XY.",
+    "Common intervals are matched using source coordinates; survey targets selected for before points stay fixed for after points. Lane identities are not established.",
+    "Endpoint samples repeat across intervals; sampled reference discretization affects distances.",
+    "Source support is also a generation gate; report deferred extent separately.",
+    "Coverage-edge candidate geometry remains available; only its use to shift inferred lanes is disabled.",
+    "Trace translation can change which nearby survey boundary is closest. Retained before-nearest targets and ordered adjacent-lane correspondences are different diagnostics; report both.",
+    "Corridor assignment is selected jointly using BEFORE only; incomplete reference intervals and unsupported configurations are held and their extent reported."
+  ],
+  "fixed_reference_corridors": [
+    {
+      "name": "arterial-south",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 34.83904837465018,
+      "evaluated_path_m": 0.0,
+      "held_path_m": 34.83904837465018,
+      "assignments": [],
+      "samples": 0,
+      "before": null,
+      "after": null,
+      "reason": "only explicit one-forward/one-backward lane pairs are covered"
+    },
+    {
+      "name": "arterial-middle",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 10.604659714987088,
+      "evaluated_path_m": 0.0,
+      "held_path_m": 10.604659714987088,
+      "assignments": [],
+      "samples": 0,
+      "before": null,
+      "after": null,
+      "reason": "only explicit one-forward/one-backward lane pairs are covered"
+    },
+    {
+      "name": "arterial-north",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 27.52554784442824,
+      "evaluated_path_m": 0.0,
+      "held_path_m": 27.52554784442824,
+      "assignments": [],
+      "samples": 0,
+      "before": null,
+      "after": null,
+      "reason": "only explicit one-forward/one-backward lane pairs are covered"
+    },
+    {
+      "name": "west-south",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 7.9999999999979945,
+      "evaluated_path_m": 0.0,
+      "held_path_m": 7.9999999999979945,
+      "assignments": [],
+      "samples": 0,
+      "before": null,
+      "after": null
+    },
+    {
+      "name": "east-south",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 4.782629975743308,
+      "evaluated_path_m": 0.0,
+      "held_path_m": 4.782629975743308,
+      "assignments": [],
+      "samples": 0,
+      "before": null,
+      "after": null,
+      "reason": "only explicit one-forward/one-backward lane pairs are covered"
+    },
+    {
+      "name": "west-north",
+      "role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
+      "common_source_path_m": 2.326192149844256,
+      "evaluated_path_m": 0.0,
+      "held_path_m": 2.326192149844256,
+      "assignments": [],
+      "samples": 0,
+      "before": null,
+      "after": null
+    }
+  ],
+  "corridor_evaluation_script_sha256": "9305c62aee959cdd2ea331bd9d7c1ebf5e51da5a9f84d5afb1c49b872f9d460d"
+}

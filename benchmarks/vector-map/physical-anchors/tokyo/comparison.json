@@ -1,0 +1,128 @@
+[
+  {
+    "modes": [
+      {
+        "deferred_m": 9.999685475503156,
+        "flags": [],
+        "generated_m": 34.839048374650176,
+        "ignored": 0,
+        "lane_fragments": 12,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 9.999685475503156,
+        "flags": [],
+        "generated_m": 34.839048374650176,
+        "ignored": 2,
+        "lane_fragments": 12,
+        "mode": "after"
+      }
+    ],
+    "name": "arterial-south"
+  },
+  {
+    "modes": [
+      {
+        "deferred_m": 0.0,
+        "flags": [],
+        "generated_m": 10.604659714987088,
+        "ignored": 0,
+        "lane_fragments": 18,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 0.0,
+        "flags": [],
+        "generated_m": 10.604659714987088,
+        "ignored": 0,
+        "lane_fragments": 18,
+        "mode": "after"
+      }
+    ],
+    "name": "arterial-middle"
+  },
+  {
+    "modes": [
+      {
+        "deferred_m": 3.999911602239319,
+        "flags": [],
+        "generated_m": 27.52554784442824,
+        "ignored": 0,
+        "lane_fragments": 30,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 3.999911602239319,
+        "flags": [],
+        "generated_m": 27.52554784442824,
+        "ignored": 0,
+        "lane_fragments": 30,
+        "mode": "after"
+      }
+    ],
+    "name": "arterial-north"
+  },
+  {
+    "modes": [
+      {
+        "deferred_m": 10.000000000000396,
+        "flags": [],
+        "generated_m": 7.9999999999979945,
+        "ignored": 0,
+        "lane_fragments": 32,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 10.000000000000396,
+        "flags": [],
+        "generated_m": 7.9999999999979945,
+        "ignored": 4,
+        "lane_fragments": 32,
+        "mode": "after"
+      }
+    ],
+    "name": "west-south"
+  },
+  {
+    "modes": [
+      {
+        "deferred_m": 2.4993737207280144,
+        "flags": [],
+        "generated_m": 4.782629975743308,
+        "ignored": 0,
+        "lane_fragments": 36,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 2.4993737207280144,
+        "flags": [],
+        "generated_m": 4.782629975743308,
+        "ignored": 2,
+        "lane_fragments": 36,
+        "mode": "after"
+      }
+    ],
+    "name": "east-south"
+  },
+  {
+    "modes": [
+      {
+        "deferred_m": 7.759937619056957,
+        "flags": [],
+        "generated_m": 2.326192149844256,
+        "ignored": 0,
+        "lane_fragments": 38,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 7.759937619056957,
+        "flags": [],
+        "generated_m": 2.326192149844256,
+        "ignored": 0,
+        "lane_fragments": 38,
+        "mode": "after"
+      }
+    ],
+    "name": "west-north"
+  }
+]

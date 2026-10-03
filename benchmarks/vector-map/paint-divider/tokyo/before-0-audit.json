@@ -1,0 +1,470 @@
+{
+  "extraction": {
+    "added_length": 34.839048374650176,
+    "anchored_prior_vertices": 131,
+    "coverage_edge_anchor_candidates_ignored": 2,
+    "curb_vertices": 0,
+    "fitted_vertices": 140,
+    "generated_length": 34.839048374650176,
+    "intensity_used": true,
+    "intensity_vertices": 31,
+    "joined_connections": 0,
+    "lanes": 12,
+    "maximum_fit_displacement": 0.5000000000018294,
+    "observed_fraction": [
+      0.65,
+      0.1,
+      0.1,
+      0.5,
+      0.15,
+      0.0,
+      0.05
+    ],
+    "paint_corridor": {
+      "applied": false,
+      "contrasted_points": 0,
+      "eligible_bundles": 0,
+      "heading_correction_degrees": null,
+      "limited": false,
+      "longitudinal_components": 0,
+      "measured_lane_widths_m": [],
+      "reason": "trace is not straight within five degrees",
+      "residual_p90_m": null,
+      "roi_points": 0,
+      "tracks": [],
+      "white_candidates": 0
+    },
+    "rejected_curb_candidates": 6,
+    "reused_intervals": 0,
+    "reused_length": 0.0,
+    "rgb_paint_vertices": 0,
+    "roads": 2,
+    "sampled_sections": 24,
+    "support_edge_vertices": 0,
+    "surface_fit": {
+      "candidate_sections": 24,
+      "deferred_length_m": 9.999685475503156,
+      "discarded_short_stretches": 0,
+      "evaluated_path_length_m": 44.83873385015333,
+      "maximum_lane_width_m": 5.21181948943874,
+      "minimum_lane_width_m": 2.1695915569496824,
+      "preserved_candidate_geometry": true,
+      "rejected_intervals": 5
+    },
+    "trace_alignment": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "curb_pair_sections": 0,
+      "interquartile_range_m": null,
+      "longest_supported_run": 0,
+      "median_lateral_shift_m": null,
+      "reason": "trace is not straight within five degrees",
+      "sampled_sections": 24,
+      "shift_xy": [
+        0.0,
+        0.0
+      ]
+    },
+    "tracked_vertices": 134,
+    "trajectory_length": 44.84174910989409,
+    "unsupported_sections": 0,
+    "warnings": [
+      "2 pre-tracking coverage-edge anchor candidates were excluded from inferred offsets before source-footprint trimming. Coverage limits are not physical road-boundary observations.",
+      "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+      "10.00 m of the traced/recorded path was deferred; 5 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",
+      "RGB paint corridor was held: trace is not straight within five degrees. Existing extraction rules were used; this is not a negative road-marking diagnosis."
+    ],
+    "width_prior_vertices": 109
+  },
+  "name": "arterial-south",
+  "quality": {
+    "cloud_points": 1883866,
+    "ground_height_tolerance_m": 0.3,
+    "ground_radius_m": 0.75,
+    "lanes": [
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 8,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 9,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 10,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 11,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 12,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 13,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 59,
+          "start_supported": true,
+          "supported": 59
+        },
+        "lane": 21,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 58,
+          "start_supported": true,
+          "supported": 58
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 22,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 23,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        },
+        "lane": 24,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 64,
+          "start_supported": true,
+          "supported": 64
+        },
+        "lane": 25,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        },
+        "lane": 26,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 66,
+          "start_supported": true,
+          "supported": 66
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        }
+      }
+    ],
+    "limited": false,
+    "low_support_lanes": [],
+    "malformed_lanes": [],
+    "minimum_support_fraction": 0.9,
+    "omitted_lanes": [],
+    "sample_budget": 100000,
+    "sampled_points": 1371,
+    "sampling_step_m": 0.5,
+    "warnings": [
+      "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+    ]
+  }
+}

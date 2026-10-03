@@ -181,3 +181,17 @@ CloudAnalyzer adds generated geometry, measured offsets and annotations. Grey
 surveyed geometry is comparison context opened after generation, not generated
 output or a fitting input. No source or survey files are redistributed here.
 See the [protocol and hashes](../vector-map-cross-scene.md).
+
+## Physical boundary anchor comparison
+
+`vector-map-physical-anchors.png` displays actual frozen before/after source-only
+road boundaries on the cached planning sample: Copyright 2020 TIER IV, Inc.,
+[official planning instructions](https://docs.autoware.org/main/demos/planning-sim/).
+Grey surveyed boundaries are added only after generation. Plot-only ground filtering
+uses Z < 22 m and 1:7 decimation; generation and audits use the full original cloud.
+The separate Tokyo comparison uses Hard Intersection Multimodal Samples,
+Dynamic Map Platform Co., Ltd. (2026), [pinned revision](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c),
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+CloudAnalyzer adds derived drafts, overlays, measurements and annotations; no
+source/survey files or authorship/endorsement claim are added. See the
+[fixed source intervals, fixed survey targets and limitations](../vector-map-physical-anchors.md).

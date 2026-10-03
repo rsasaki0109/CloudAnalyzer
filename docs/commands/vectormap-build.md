@@ -61,6 +61,18 @@ Missing/ambiguous bundles and scan limits hold the fit. It is off by default,
 and its separate relocation is not bounded by the later local curve-fit cap.
 See [actual maps, retained extent and both fixed-target diagnostics](../vector-map-paint-corridor.md).
 
+Opt in with `--fit-paint-divider`, Python/MCP `fit_paint_divider=True`, or Web's
+**Correct the interior line using paint and paired curbs**. This corrects only
+the interior boundary of an explicitly configured two-lane road when one strong
+RGB paint track lies inside confirmed physical curb pairs in a majority of
+sections. Outside candidates stay intact; a complete paint corridor takes
+precedence. `paint_divider` reports the guard counts, movement and observed,
+interpolated and extended source intervals. Missing or ambiguous evidence holds
+the correction. Counts, boundary roles and directions remain manual; nearby
+observed paint alone receives RGB evidence. The option defaults to off and its
+separate relocation can exceed the 0.5 m local curve-fit cap.
+See [actual maps and per-boundary errors](../vector-map-paint-divider.md).
+
 Curb candidates must have nearby road-side support and two raised outside bins no taller
 than `curb_height + 0.3 m` above the candidate. This rejects wall/vehicle steps and isolated
 low returns, but can also reject genuine curbs in sparse or cluttered scans. The report's

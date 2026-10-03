@@ -145,7 +145,7 @@ def run(source: Path, config: Path, reference: Path, out: Path, executable: Path
         paired_cases.append({"name":case["name"],**paired(*p,target)})
         if configuration.get("comparison") in {"curb_trace_alignment", "paint_corridor", "paint_divider"}:
             from vector_map_corridor_evaluate import corridor_comparison
-            corridors.append({"name":case["name"], **corridor_comparison(*p, surveyed, case["options"])})
+            corridors.append({"name":case["name"], **corridor_comparison(*p, surveyed, case["options"], include_slots=configuration.get("comparison") == "paint_divider")})
     for mode in ("before","after"):
         audits=[json.loads((out/f"{mode}-{i}-audit.json").read_text()) for i in range(count)]
         final=json.loads((out/f"{mode}-{count-1}.json").read_text())

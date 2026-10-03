@@ -140,6 +140,16 @@ def test_corridor_correspondence_keeps_slots_targets_and_reports_missing_referen
     assert result["evaluated_path_m"] == 2 and result["held_path_m"] == 0
     assert result["assignments"][0]["survey_boundaries_left_to_right"] == [1,2,3]
     assert result["before"]["mean_xy_m"] == 3.5 and result["after"]["mean_xy_m"] == 0
+    divider = copy.deepcopy(p)
+    for point in divider["roads"][0]["boundaries"][1]:
+        point[1] += 3.5
+    detailed = corridor_comparison(p,divider,survey,{},include_slots=True)
+    slots = detailed["boundary_slots_left_to_right"]
+    assert slots[1]["before"]["mean_xy_m"] == 3.5 and slots[1]["after"]["mean_xy_m"] == 0
+    for j in (0,2):
+        assert slots[j]["before"] == slots[j]["after"]
+    assert sum(s["samples"] for s in slots) == detailed["samples"]
+    assert detailed["after"]["maximum_xy_m"] == 3.5  # Outer error must remain visible.
     bad = copy.deepcopy(survey)
     for boundary in bad["boundaries"]:
         boundary["geometry"][0][0] = .2

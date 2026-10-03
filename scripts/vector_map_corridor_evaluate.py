@@ -16,7 +16,7 @@ def stats(d):
             "maximum_xy_m": float(d.max()), "fraction_within_0_5m": float((d <= .5).mean())}
 
 
-def corridor_comparison(before, after, survey, options):
+def corridor_comparison(before, after, survey, options, *, include_slots=False):
     a, b = intervals(before), intervals(after)
     common = sorted(set(a) & set(b))
     base = {"role": "Before-selected adjacent opposite-direction survey lanes; three ordered boundary slots map one-to-one to the SAME station samples after. Post-generation only, not certified lane identities.",
@@ -72,6 +72,7 @@ def corridor_comparison(before, after, survey, options):
             if len(curves) == 3:
                 candidates.append(((lane["id"], other["id"]), next(iter(shared)), curves, directions, (ids, other_ids)))
     old, new = [], []
+    slot_old, slot_new = [[], [], []], [[], [], []]
     for key in common:
         length, p, q = a[key]
         other_length, ap, aq = b[key]
@@ -112,9 +113,18 @@ def corridor_comparison(before, after, survey, options):
         # Same target XYZ projection and assignment for both stages.
         old.append(np.linalg.norm(old_points[:,:,:2]-target,axis=2).ravel())
         new.append(np.linalg.norm(new_points[:,:,:2]-target,axis=2).ravel())
+        if include_slots:
+            for j in range(3):
+                slot_old[j].append(np.linalg.norm(old_points[j,:,:2]-target[j], axis=1))
+                slot_new[j].append(np.linalg.norm(new_points[j,:,:2]-target[j], axis=1))
         base["evaluated_path_m"] += length
         base["assignments"].append({"source_interval": list(key), "survey_lanes": list(lane_ids), "survey_boundaries_left_to_right": boundary_ids})
     if old:
         d, e = np.concatenate(old), np.concatenate(new)
         base.update(samples=len(d), before=stats(d), after=stats(e))
+        if include_slots:
+            base["boundary_slots_left_to_right"] = [
+                {"samples": sum(len(v) for v in slot_old[j]),
+                 "before": stats(np.concatenate(slot_old[j])),
+                 "after": stats(np.concatenate(slot_new[j]))} for j in range(3)]
     return base

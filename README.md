@@ -66,6 +66,8 @@ pose graph with one scan per pose.
   using source observations, with ordered lane-pair comparisons and explicit held intervals.
   [Straight RGB paint fits](docs/vector-map-paint-corridor.md) optionally measure heading and spacing,
   distinguishing observed paint from inferred gaps and extensions in actual map comparisons.
+  [Interior paint correction](docs/vector-map-paint-divider.md) uses paired source curbs
+  to guard a single white-line fit, with separate errors for interior and outer boundaries.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

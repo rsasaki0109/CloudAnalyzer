@@ -1,0 +1,236 @@
+{
+  "source": {
+    "name": "Autoware sample-map-planning",
+    "copyright": "Copyright 2020 TIER IV, Inc.",
+    "instructions": "https://docs.autoware.org/main/demos/planning-sim/",
+    "archive_url": "https://autoware-files.s3.us-west-2.amazonaws.com/maps/demos/sample-map-planning.zip",
+    "official_archive_sha256": "5536fce7bb8db7688fdf94ec004118b898637ad0d5b6175108b10989dd6e93b9"
+  },
+  "generation_geometry_discovery_and_quality_unchanged": true,
+  "runtime_source_commit": "9e4f61559161dbbcfc62dadce6cabf3c2e53e1b0",
+  "native_sha256": "581f5c367b6366aaa27290a4771b086bc788fb8d8e477d060740c9311ad5b5c8",
+  "production_wasm_sha256": "a8566b7de9366ce86e10657aaafd0b9a9ce693e8bb4850a2a3fed98ed42704e6",
+  "web_verification": {
+    "sourcePoints": 1757841,
+    "role": "surveyed-context component audit",
+    "opposingTargetsHeld": 4,
+    "readonlyExport": true,
+    "undoUnchanged": true,
+    "explicitSelectionRequired": true,
+    "expectedTarget351Available": true,
+    "pageErrors": []
+  },
+  "original_scene_regression": {
+    "reference_inputs": [],
+    "native_sha256": "581f5c367b6366aaa27290a4771b086bc788fb8d8e477d060740c9311ad5b5c8",
+    "input_map_sha256": "51a22c71a10811f96b5c54de839e7a50d58d7ac67baa01e1a189e887be3ede38",
+    "input_cloud_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+    "proposals": [
+      {
+        "ambiguous": false,
+        "candidates": [],
+        "eligible_count": 0,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "cf5dd0b488aa1596",
+        "rule_id": 167,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      },
+      {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 88.64476926243987,
+            "controlled_crosswalks": [
+              152
+            ],
+            "distance_m": 4.038987300031988,
+            "eligible": false,
+            "key": "crosswalk:152",
+            "lanes": [],
+            "reasons": [
+              "Housing normal and walking direction disagree (>35 degrees).",
+              "Crossing has no shared or connected road context; review its lane associations.",
+              "Road context is a location hint, not pedestrian control of vehicle lanes."
+            ],
+            "road_context": "unavailable",
+            "stop_lines": [],
+            "target_id": 152,
+            "target_kind": "crosswalk"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 87.22978605998297,
+            "controlled_crosswalks": [
+              148
+            ],
+            "distance_m": 11.043519816151152,
+            "eligible": false,
+            "key": "crosswalk:148",
+            "lanes": [],
+            "reasons": [
+              "Housing normal and walking direction disagree (>35 degrees).",
+              "Crossing endpoints are outside the 8 m review radius.",
+              "Road context is a location hint, not pedestrian control of vehicle lanes."
+            ],
+            "road_context": "same_lane",
+            "stop_lines": [],
+            "target_id": 148,
+            "target_kind": "crosswalk"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 15.632361433281527,
+            "controlled_crosswalks": [
+              156
+            ],
+            "distance_m": 15.485804753881538,
+            "eligible": false,
+            "key": "crosswalk:156",
+            "lanes": [],
+            "reasons": [
+              "Crossing endpoints are outside the 8 m review radius.",
+              "Crossing has no shared or connected road context; review its lane associations.",
+              "Road context is a location hint, not pedestrian control of vehicle lanes."
+            ],
+            "road_context": "unavailable",
+            "stop_lines": [],
+            "target_id": 156,
+            "target_kind": "crosswalk"
+          }
+        ],
+        "eligible_count": 0,
+        "kind": "pedestrian",
+        "limited": false,
+        "map_snapshot": "cf5dd0b488aa1596",
+        "rule_id": 171,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+          "No supported association candidate; keep this signal unresolved and review its source context."
+        ]
+      },
+      {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 18.548207600957657,
+            "controlled_crosswalks": [],
+            "distance_m": 3.585980174403127,
+            "eligible": true,
+            "key": "stop_line:164",
+            "lanes": [
+              76,
+              77
+            ],
+            "reasons": [],
+            "road_context": "same_lane",
+            "stop_lines": [
+              164
+            ],
+            "target_id": 164,
+            "target_kind": "stop_line"
+          }
+        ],
+        "eligible_count": 1,
+        "kind": "vehicle",
+        "limited": false,
+        "map_snapshot": "cf5dd0b488aa1596",
+        "rule_id": 169,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases."
+        ]
+      },
+      {
+        "ambiguous": false,
+        "candidates": [
+          {
+            "already_linked": false,
+            "axis_degrees": 12.950657681565843,
+            "controlled_crosswalks": [
+              156
+            ],
+            "distance_m": 3.491631095824416,
+            "eligible": true,
+            "key": "crosswalk:156",
+            "lanes": [],
+            "reasons": [
+              "Road context is a location hint, not pedestrian control of vehicle lanes."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [],
+            "target_id": 156,
+            "target_kind": "crosswalk"
+          },
+          {
+            "already_linked": false,
+            "axis_degrees": 88.67352698584445,
+            "controlled_crosswalks": [
+              152
+            ],
+            "distance_m": 3.3898958724744577,
+            "eligible": false,
+            "key": "crosswalk:152",
+            "lanes": [],
+            "reasons": [
+              "Housing normal and walking direction disagree (>35 degrees).",
+              "Road context is a location hint, not pedestrian control of vehicle lanes."
+            ],
+            "road_context": "connected_lanes",
+            "stop_lines": [],
+            "target_id": 152,
+            "target_kind": "crosswalk"
+          }
+        ],
+        "eligible_count": 1,
+        "kind": "pedestrian",
+        "limited": false,
+        "map_snapshot": "27d8d6fb1e3f38bf",
+        "rule_id": 173,
+        "warnings": [
+          "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases."
+        ]
+      }
+    ],
+    "explicit_adoptions": [
+      "stop_line:164",
+      "crosswalk:156"
+    ],
+    "unsupported_legacy_rule_explicitly_cleared": 171,
+    "unresolved_rules": [
+      167,
+      171
+    ],
+    "readonly_preview": true,
+    "reviewed_native_artifacts_exact": true,
+    "physical_map_exact": true,
+    "source_quality_unchanged": true,
+    "limitations": [
+      "Operator-reviewed geometric draft; not independently established legal control.",
+      "Signal kind was manually classified during source proposal confirmation; no bulb/state inference.",
+      "No ground-truth geometry or relationships were copied into edits.",
+      "Unresolved pedestrian 170 has competing nearby crossings and ambiguous facing geometry; legacy vehicle-lane reference explicitly cleared."
+    ]
+  },
+  "artifact_sha256": {
+    "after-evaluation.json": "9bddcfd9e2367b149a7f4788d0bcc84cbe1f1e37ac4ecec0e801ac28b5c4ac8f",
+    "after-projector-info.yaml": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+    "after-relation-proposals.json": "169d74aa9dc7a4f867aabdd7098eaa825f54892a5250efb3f15ae11a03dc53f9",
+    "after-road-2.json": "6053e683937ec42e2a330afd8c1b26401c71c87a8ce0870a4171ddf4f50171a2",
+    "after-road-2.osm": "d37a99062a8abac074b4927c6da89030ba7d4ac0656656cc7d98cf30e62c2ad1",
+    "before-evaluation.json": "bd2dfba2712c00d8ea76fd13d50e69e23f378eb8cf6c601da6a3db988074bfc0",
+    "before-relation-proposals.json": "e3fb30a2bf141d5071cdab8308b953a10842e7163d65faa8a4cf6ed38434154d",
+    "before-road-2.json": "b574c3577e35ca76218a98867a7c3f73e159074406eb525a53b6bdbe54a1e757",
+    "before-road-2.osm": "87b5b8dfdfeb32429d2962916fa74e46002766b63fbe8d7586b6c9b3cba249b7",
+    "discovery.json": "300d839ba87a62db40d5155be2aa55bea25168a8ec822607b0d86286bb530b90",
+    "generation-freeze.json": "009064cbe21977a1e32c2b0b5349b708e8decf501ec4eb9d8a560848addca3b0",
+    "junction-preview.json": "ae884a8b05ae9216b3d88faab1729864d96eeed619c752440d7b57d19a6d7806",
+    "planning-inputs.json": "9a6f62fc9c2dd32d2c377ea8449bca9d880370c48411576d29bca4ea19d50f60"
+  },
+  "figure_sha256": "287e726d90acec3d3853d8c592e82adf91f666e35402862b02d5fc4345a5d4b5",
+  "browser_screenshot_sha256": "d30e9deea638225c017c121ebba3f54f7f4e9912c151f90f59267b5e8461b024"
+}

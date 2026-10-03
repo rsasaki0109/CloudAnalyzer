@@ -252,6 +252,8 @@ signals to reviewed stop markings and pedestrian signals to crosswalks, retainin
 physical geometry and unresolved controls through Undo and Lanelet2 reload.
 [Geometric target suggestions](docs/vector-map-relation-proposals.md) show distance,
 orientation and road context, highlight held alternatives, and require explicit adoption.
+[Second-scene validation](docs/vector-map-cross-scene.md) reports boundary offsets,
+missing equipment and held signal targets alongside a connected-movement fix.
 
 For CI, `ca evaluate candidate.pcd reference.pcd` scores a map against a reference; start with the
 [SLAM benchmark tutorial](docs/tutorial-slam-benchmark.md), then the

@@ -170,3 +170,14 @@ These commands produced the metrics shown in the root README:
 - `vector-map-equipment-relations.png`: original DynamicMapPlatform Co., Ltd. (2026) [hard-intersection sample](https://huggingface.co/datasets/dynamic-maps/hard-intersection-multimodal-sample/tree/e8e8d2a5d49a8b9cb63b5b5ecef9b260ff48f39c), CC BY 4.0. Earlier generated source geometry is retained; only operator-reviewed target relationships change. The figure overlays unchanged equipment and unsigned geometric normals on original source returns, with no teacher shapes or lamp states. See [equipment review](../vector-map-equipment-relations.md).
 
 - `web/vector-map-equipment-relations.png`: actual production browser association editor after export/reload of the generated map. Same DynamicMapPlatform source and CC BY 4.0 attribution as `vector-map-equipment-relations.png`; no simulated app UI.
+
+## Second-scene vector-map development audit
+
+`vector-map-cross-scene.png` plots source-derived road drafts and a separate
+surveyed-context stop-target regression using the cached Autoware planning sample.
+Sample map: Copyright 2020 TIER IV, Inc., documented by the
+[official planning simulation guide](https://docs.autoware.org/main/demos/planning-sim/).
+CloudAnalyzer adds generated geometry, measured offsets and annotations. Grey
+surveyed geometry is comparison context opened after generation, not generated
+output or a fitting input. No source or survey files are redistributed here.
+See the [protocol and hashes](../vector-map-cross-scene.md).

@@ -52,6 +52,21 @@ test("actual planning points build a physical-anchor draft matching native geome
   if(DIVIDER)await expect(page.locator("#vm-build-report")).toContainText(`Interior paint correction ${audit.extraction.paint_divider.applied ? "applied" : "held"}`);
   if(EDGES)await expect(page.locator("#vm-build-report")).toContainText("Outer lane-edge inference applied");
   if(INTENSITY)await expect(page.locator("#vm-build-report")).toContainText("Source: retained intensity");
+  let candidateChecks = 0;
+  const diagnosticNames: Record<string,string> = {
+    local_ground_missing: "local support missing", local_height_mismatch: "local height mismatch",
+    trace_ground_missing: "trace support missing", trace_height_mismatch: "trace height mismatch",
+    flank_support_missing: "flank support missing", flank_contrast_insufficient: "flank contrast insufficient",
+  };
+  for (const fit of [PAINT ? audit.extraction.paint_corridor : null, DIVIDER ? audit.extraction.paint_divider : null]) {
+    const d = fit?.candidate_diagnostics;
+    if (!d) continue;
+    await expect(page.locator("#vm-build-report")).toContainText(`Bright candidate checks (${d.complete ? "complete scan" : "incomplete scan"}): ${d.accepted}/${d.bright_candidates} accepted for component checks.`);
+    for (const [key,name] of Object.entries(diagnosticNames)) {
+      await expect(page.locator("#vm-build-report")).toContainText(`${name} ${d[key]}`);
+    }
+    candidateChecks++;
+  }
   await expect(page.locator("#vm-build-report")).toContainText(`Coverage-edge anchor candidates ignored: ${audit.extraction.coverage_edge_anchor_candidates_ignored}.`);
   await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
   await expect(page.locator("#vm-quality-report")).toContainText(`${native.lanes.length} lanes checked; 0 need source review; 0 omitted`,{timeout:120000});
@@ -93,7 +108,7 @@ test("actual planning points build a physical-anchor draft matching native geome
   await page.screenshot({path:`${OUTPUT}/source-build.png`});
   await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
   expect(errors).toEqual([]);
-  writeFileSync(`${OUTPUT}/verification.json`,JSON.stringify({sourcePoints:POINTS,paintChannel:CHANNEL,generationReferenceInputs:[],physicalAnchorsOnly:true,evidenceOverlay:EVIDENCE,evidenceSummary,evidenceToggleOsmByteExact:EVIDENCE ? true : null,canvasEvidenceInspection:EVIDENCE && !INTENSITY ? true : null,
+  writeFileSync(`${OUTPUT}/verification.json`,JSON.stringify({sourcePoints:POINTS,paintChannel:CHANNEL,candidateReportsCheckedAgainstNative:candidateChecks,generationReferenceInputs:[],physicalAnchorsOnly:true,evidenceOverlay:EVIDENCE,evidenceSummary,evidenceToggleOsmByteExact:EVIDENCE ? true : null,canvasEvidenceInspection:EVIDENCE && !INTENSITY ? true : null,
     laneEdgeInference:EDGES ? audit.extraction.lane_edge_inference : null,traceAlignment:ALIGN ? audit.extraction.trace_alignment : null,paintDivider:DIVIDER ? audit.extraction.paint_divider : null,paintCorridor:PAINT ? audit.extraction.paint_corridor : null,defaultOff:true,lanes:native.lanes.length,fullSourceAudit:true,nativeBoundaryVertices:positions.length,
     maximumNativeVertexToExportedNodeDistanceM:maximum,comparisonRole:"Boundary vertices to exported nodes, not complete topology or byte equality",
     nativeMapSha256:createHash("sha256").update(readFileSync(`${PROOF}/after-0.json`)).digest("hex"),

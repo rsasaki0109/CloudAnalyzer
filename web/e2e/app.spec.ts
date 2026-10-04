@@ -3138,6 +3138,8 @@ test("vector map: explicit intensity paint fits spacing without RGB and labels s
   await expect(page.locator("#vm-status")).toContainText("2 lanes");
   await expect(page.locator("#vm-build-report")).toContainText("White paint fit applied");
   await expect(page.locator("#vm-build-report")).toContainText("Source: retained intensity");
+  await expect(page.locator("#vm-build-report")).toContainText("Bright candidate checks (complete scan)");
+  await expect(page.locator("#vm-build-report")).toContainText("accepted for component checks");
   await page.locator("#vector-map-panel").getByText("Map display",{exact:true}).click();
   await page.locator("#vm-show-evidence").check();
   await expect(page.locator("#vm-evidence-summary")).toContainText("0 RGB paint");
@@ -3167,6 +3169,8 @@ test("vector map: genuine dense paint neighbourhood holds and identifies the sea
   await page.locator("#vm-build").click();
   await expect(status(page)).toContainText("Draft roads added");
   await expect(page.locator("#vm-build-report")).toContainText("White paint fit held (scan limit reached)");
+  await expect(page.locator("#vm-build-report")).toContainText("Bright candidate checks (incomplete scan)");
+  await expect(page.locator("#vm-build-report")).toContainText("pending when the scan stopped; later candidates unexamined");
   await expect(page.locator("#vm-build-report")).toContainText("Search limit at ground near the trace");
   await expect(page.locator("#vm-build-report")).toContainText("limit 4096");
   await expect(page.locator("#vm-build-report")).not.toContainText("Measured widths:");

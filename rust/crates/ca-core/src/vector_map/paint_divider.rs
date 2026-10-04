@@ -14,6 +14,8 @@ pub struct PaintDividerReport {
     pub budget_stage: Option<paint_corridor::PaintBudgetStage>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub budget_query: Option<paint_corridor::PaintQueryLimit>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub candidate_diagnostics: Option<paint_corridor::PaintCandidateDiagnostics>,
     pub applied: bool,
     pub reason: String,
     pub limited: bool,
@@ -68,9 +70,11 @@ pub(super) fn apply(
             report.contrasted_points = scan.contrasted_points;
             report.budget_stage = scan.budget_stage;
             report.budget_query = scan.budget_query;
+            report.candidate_diagnostics = scan.candidate_diagnostics;
             return hold(&scan.reason, report);
         }
     };
+    report.candidate_diagnostics = scan.report.candidate_diagnostics.clone();
     report.roi_points = scan.report.roi_points;
     report.contrasted_points = scan.report.contrasted_points;
     let mut tracks: Vec<_> = scan
@@ -417,6 +421,15 @@ mod tests {
         let (after, report) = extract(&cloud, &trace(), &options()).unwrap();
         let fit = report.paint_divider.unwrap();
         assert!(fit.applied, "{fit:?}");
+        let diagnostics = fit.candidate_diagnostics.as_ref().unwrap();
+        assert!(diagnostics.complete && diagnostics.accepted > 0);
+        let scan = paint_corridor::scan(&cloud, &trace(), &options(), 1)
+            .ok()
+            .unwrap();
+        assert_eq!(
+            serde_json::to_value(diagnostics).unwrap(),
+            serde_json::to_value(scan.report.candidate_diagnostics).unwrap()
+        );
         assert_eq!(before.len(), after.len());
         assert!(fit.maximum_divider_movement_m > 0.005);
         assert!(fit.track.unwrap().interpolated_length_m > 8.0);

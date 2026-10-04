@@ -23,7 +23,8 @@ mod fitting;
 pub use evidence::{BoundaryEvidenceProfile, BuildEvidence};
 mod paint_corridor;
 pub use paint_corridor::{
-    PaintBudgetStage, PaintChannel, PaintCorridorReport, PaintQueryLimit, PaintTrackReport,
+    PaintBudgetStage, PaintCandidateDiagnostics, PaintChannel, PaintCorridorReport,
+    PaintQueryLimit, PaintTrackReport,
 };
 mod paint_divider;
 pub use paint_divider::PaintDividerReport;

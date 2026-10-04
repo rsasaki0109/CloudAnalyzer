@@ -68,6 +68,22 @@ pub struct PaintTrackReport {
     pub extrapolated_length_m: f64,
 }
 
+/// Exclusive outcomes of bright-return checks, before component/bundle fitting.
+/// Height quantiles are local support tests, not certified ground classifications.
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct PaintCandidateDiagnostics {
+    pub bright_candidates: usize,
+    pub local_ground_missing: usize,
+    pub local_height_mismatch: usize,
+    pub trace_ground_missing: usize,
+    pub trace_height_mismatch: usize,
+    pub flank_support_missing: usize,
+    pub flank_contrast_insufficient: usize,
+    pub accepted: usize,
+    /// False on an interrupted scan; its pending candidate has no outcome.
+    pub complete: bool,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct PaintCorridorReport {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -79,6 +95,8 @@ pub struct PaintCorridorReport {
     pub budget_stage: Option<PaintBudgetStage>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub budget_query: Option<PaintQueryLimit>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub candidate_diagnostics: Option<PaintCandidateDiagnostics>,
     pub applied: bool,
     pub reason: String,
     pub limited: bool,
@@ -101,6 +119,7 @@ impl Default for PaintCorridorReport {
             intensity_range: None,
             budget_stage: None,
             budget_query: None,
+            candidate_diagnostics: None,
             applied: false,
             reason: "no uniquely supported parallel paint corridor".into(),
             limited: false,
@@ -468,6 +487,7 @@ pub(super) fn scan(
         return hold("RGB has no usable local paint contrast", report);
     }
     let samples = Samples::new(points, ids);
+    report.candidate_diagnostics = Some(PaintCandidateDiagnostics::default());
     let mut paint_points = vec![];
     let mut paint_ids = vec![];
     for (i, p) in samples.points.iter().enumerate() {
@@ -478,6 +498,11 @@ pub(super) fn scan(
             continue;
         }
         report.white_candidates += 1;
+        report
+            .candidate_diagnostics
+            .as_mut()
+            .unwrap()
+            .bright_candidates += 1;
         if report.white_candidates > MAX_WHITE {
             return limited(PaintBudgetStage::BrightCandidates, None, report);
         }
@@ -492,7 +517,20 @@ pub(super) fn scan(
             .filter(|&&j| (samples.points[j][0] - p[0]).hypot(samples.points[j][1] - p[1]) <= 0.3)
             .map(|&j| samples.points[j][2])
             .collect();
-        if heights.len() < 3 || (p[2] - quantile(&mut heights, 0.2).unwrap()).abs() > 0.12 {
+        if heights.len() < 3 {
+            report
+                .candidate_diagnostics
+                .as_mut()
+                .unwrap()
+                .local_ground_missing += 1;
+            continue;
+        }
+        if (p[2] - quantile(&mut heights, 0.2).unwrap()).abs() > 0.12 {
+            report
+                .candidate_diagnostics
+                .as_mut()
+                .unwrap()
+                .local_height_mismatch += 1;
             continue;
         }
         let ground = match samples.ground(&[p[0], 0.0, 0.0]) {
@@ -501,7 +539,20 @@ pub(super) fn scan(
                 return limited(PaintBudgetStage::TraceGroundNeighbours, Some(query), report);
             }
         };
-        if !ground.is_some_and(|z| (p[2] - z).abs() <= 0.3) {
+        let Some(ground) = ground else {
+            report
+                .candidate_diagnostics
+                .as_mut()
+                .unwrap()
+                .trace_ground_missing += 1;
+            continue;
+        };
+        if (p[2] - ground).abs() > 0.3 {
+            report
+                .candidate_diagnostics
+                .as_mut()
+                .unwrap()
+                .trace_height_mismatch += 1;
             continue;
         }
         let mut sides = [vec![], vec![]];
@@ -515,18 +566,33 @@ pub(super) fn scan(
                 sides[usize::from(q[1] > p[1])].push(value);
             }
         }
-        if sides
-            .iter_mut()
-            .any(|side| side.len() < 3 || value - quantile(side, 0.5).unwrap() < 40.0)
-        {
+        if sides.iter().any(|side| side.len() < 3) {
+            report
+                .candidate_diagnostics
+                .as_mut()
+                .unwrap()
+                .flank_support_missing += 1;
             continue;
         }
+        if sides
+            .iter_mut()
+            .any(|side| value - quantile(side, 0.5).unwrap() < 40.0)
+        {
+            report
+                .candidate_diagnostics
+                .as_mut()
+                .unwrap()
+                .flank_contrast_insufficient += 1;
+            continue;
+        }
+        report.candidate_diagnostics.as_mut().unwrap().accepted += 1;
         paint_points.push(*p);
         paint_ids.push(samples.ids[i]);
         if paint_points.len() > MAX_PAINT {
             return limited(PaintBudgetStage::PaintPoints, None, report);
         }
     }
+    report.candidate_diagnostics.as_mut().unwrap().complete = true;
     report.contrasted_points = paint_points.len();
     let paint = Samples::new(paint_points, paint_ids);
     let mut parts = match components(&paint) {
@@ -1091,6 +1157,117 @@ mod query_tests {
             Some(PaintBudgetStage::ContrastNeighbours)
         ));
         assert!(report.budget_query.unwrap().candidate_points > MAX_NEIGHBOURS);
+    }
+}
+
+#[cfg(test)]
+mod diagnostic_tests {
+    use super::*;
+
+    fn outcomes(d: &PaintCandidateDiagnostics) -> [usize; 7] {
+        [
+            d.local_ground_missing,
+            d.local_height_mismatch,
+            d.trace_ground_missing,
+            d.trace_height_mismatch,
+            d.flank_support_missing,
+            d.flank_contrast_insufficient,
+            d.accepted,
+        ]
+    }
+
+    #[test]
+    fn bright_outcomes_are_exclusive_and_accepted_is_not_a_paint_track() {
+        for outcome in 0..7 {
+            let mut cloud = PointCloud {
+                colors: Some(vec![]),
+                ..Default::default()
+            };
+            let mut add = |p, c| {
+                cloud.positions.push(p);
+                cloud.colors.as_mut().unwrap().push([c; 3]);
+            };
+            add(
+                [2.0, 3.0, if outcome == 1 { 15.0 } else { 12.0 }],
+                if outcome == 5 { 210 } else { 230 },
+            );
+            if outcome != 0 {
+                for dx in [-0.05, 0.0, 0.05] {
+                    add([2.0 + dx, 3.05, 12.0], 70);
+                }
+            }
+            if outcome != 2 {
+                for dx in [-0.05, 0.0, 0.05] {
+                    add([2.0 + dx, 0.0, if outcome == 3 { 10.0 } else { 12.0 }], 70);
+                }
+            }
+            if outcome != 4 {
+                for dy in [-0.4, 0.4] {
+                    for dx in [-0.05, 0.0, 0.05] {
+                        add(
+                            [2.0 + dx, 3.0 + dy, 12.0],
+                            if outcome == 5 { 175 } else { 70 },
+                        );
+                    }
+                }
+            }
+            let original = cloud.clone();
+            let report = scan(
+                &cloud,
+                &[[0.0, 0.0, 100.0], [10.0, 0.0, 100.0]],
+                &BuildOptions::default(),
+                1,
+            )
+            .err()
+            .unwrap();
+            let d = report.candidate_diagnostics.unwrap();
+            let mut expected = [0; 7];
+            expected[outcome] = 1;
+            assert_eq!(outcomes(&d), expected, "outcome {outcome}");
+            assert!(d.complete);
+            assert_eq!(outcomes(&d).iter().sum::<usize>(), d.bright_candidates);
+            assert!(!report.applied && report.longitudinal_components == 0);
+            assert_eq!(cloud, original);
+        }
+    }
+
+    #[test]
+    fn interrupted_scan_has_pending_candidate_and_does_not_claim_complete_counts() {
+        let mut cloud = PointCloud {
+            colors: Some(vec![]),
+            ..Default::default()
+        };
+        cloud.positions.push([2.0, 3.0, 12.0]);
+        cloud.colors.as_mut().unwrap().push([230; 3]);
+        for _ in 0..MAX_NEIGHBOURS + 1 {
+            cloud.positions.push([2.0, 3.1, 12.0]);
+            cloud.colors.as_mut().unwrap().push([70; 3]);
+        }
+        let report = scan(
+            &cloud,
+            &[[0.0, 0.0, 100.0], [10.0, 0.0, 100.0]],
+            &BuildOptions::default(),
+            1,
+        )
+        .err()
+        .unwrap();
+        let d = report.candidate_diagnostics.unwrap();
+        assert!(!d.complete && report.limited && !report.applied);
+        assert_eq!(d.bright_candidates, 1);
+        assert_eq!(outcomes(&d), [0; 7]);
+        assert_eq!(report.contrasted_points, 0);
+        // Pre-scan holds must not expose fabricated zero counts.
+        cloud.colors = None;
+        let missing = scan(
+            &cloud,
+            &[[0.0, 0.0, 100.0], [10.0, 0.0, 100.0]],
+            &BuildOptions::default(),
+            1,
+        )
+        .err()
+        .unwrap();
+        let json = serde_json::to_value(missing).unwrap();
+        assert!(json.get("candidate_diagnostics").is_none());
     }
 }
 

@@ -660,7 +660,19 @@ interface Edited {
   undo: number;
 }
 
+interface PaintCandidateDiagnostics {
+  bright_candidates: number;
+  local_ground_missing: number;
+  local_height_mismatch: number;
+  trace_ground_missing: number;
+  trace_height_mismatch: number;
+  flank_support_missing: number;
+  flank_contrast_insufficient: number;
+  accepted: number;
+  complete: boolean;
+}
 interface PaintBudgetInfo {
+  candidate_diagnostics?: PaintCandidateDiagnostics;
   budget_stage?: string;
   budget_query?: {radius_m: number; candidate_points: number; limit: number};
 }
@@ -1192,6 +1204,20 @@ function paintBudgetText(report: PaintBudgetInfo): string {
   const q = report.budget_query;
   return `Search limit at ${names[report.budget_stage] ?? report.budget_stage.replaceAll("_"," ")}${q ? `: ${q.candidate_points} potential points for a ${fmt(q.radius_m)} m radius (limit ${q.limit})` : ""}. `;
 }
+function paintCandidateText(report: PaintBudgetInfo): string {
+  const d = report.candidate_diagnostics;
+  if (!d) return "";
+  const reasons: [string,number][] = [
+    ["local support missing", d.local_ground_missing], ["local height mismatch", d.local_height_mismatch],
+    ["trace support missing", d.trace_ground_missing], ["trace height mismatch", d.trace_height_mismatch],
+    ["flank support missing", d.flank_support_missing], ["flank contrast insufficient", d.flank_contrast_insufficient],
+  ];
+  const classified = d.accepted + reasons.reduce((sum,[,count]) => sum + count, 0);
+  return `Bright candidate checks (${d.complete ? "complete scan" : "incomplete scan"}): ${d.accepted}/${d.bright_candidates} accepted for component checks. ` +
+    `Rejected: ${reasons.map(([name,count]) => `${name} ${count}`).join(", ")}. ` +
+    (classified < d.bright_candidates ? `${d.bright_candidates - classified} pending when the scan stopped; later candidates unexamined. ` : "") +
+    "These checks do not classify a return as road paint. ";
+}
 function renderBuildReport(report: BuildReport): void {
   $("vm-build-report").textContent = `${report.roads} road stretches, ${report.lanes} lanes, ${fmt(report.generated_length)} m. ` +
     `Added ${fmt(report.added_length)} m; reused ${fmt(report.reused_length)} m of existing lanes. ` +
@@ -1199,8 +1225,8 @@ function renderBuildReport(report: BuildReport): void {
     `Tracking changed ${report.tracked_vertices} sources; fitted ${report.fitted_vertices} vertices (maximum XY movement ${fmt(report.maximum_fit_displacement)} m). ` +
     (report.trace_alignment ? `Trace alignment ${report.trace_alignment.applied ? "applied" : "held"}: XY shift (${fmt(report.trace_alignment.shift_xy[0])}, ${fmt(report.trace_alignment.shift_xy[1])}) m; paired curbs ${report.trace_alignment.curb_pair_sections}/${report.trace_alignment.sampled_sections} sections. ${report.trace_alignment.reason}. ` : "") +
     (report.lane_edge_inference ? `Outer lane-edge inference ${report.lane_edge_inference.applied ? "applied" : "held"}${report.lane_edge_inference.limited ? " (scan limit reached)" : ""}: ${report.lane_edge_inference.reason}. Configured width ${fmt(report.lane_edge_inference.configured_lane_width_m)} m. ` + report.lane_edge_inference.sides.map(s => `${s.boundary_slot === 0 ? "Left" : "Right"}: ${s.applied ? `${s.inferred_vertices_before_trimming} inferred vertices before footprint trimming; maximum movement ${fmt(s.maximum_movement_m)} m` : s.reason}. `).join("") : "") +
-    (report.paint_divider ? `Interior paint correction ${report.paint_divider.applied ? "applied" : "held"}${report.paint_divider.limited ? " (scan limit reached)" : ""}: ${report.paint_divider.reason}. ${report.paint_divider.source_channel === "intensity" ? "Source: retained intensity. " : ""}${paintBudgetText(report.paint_divider)}Curb pairs: ${report.paint_divider.curb_pair_sections}/${report.paint_divider.sampled_sections}. ` + (report.paint_divider.applied && report.paint_divider.track ? `Maximum divider movement ${fmt(report.paint_divider.maximum_divider_movement_m)} m. Paint lengths before footprint trimming (observed / interpolated / extended): ${fmt(report.paint_divider.track.observed_length_m)} / ${fmt(report.paint_divider.track.interpolated_length_m)} / ${fmt(report.paint_divider.track.extrapolated_length_m)} m. ` : "") : "") +
-    (report.paint_corridor ? `White paint fit ${report.paint_corridor.applied ? "applied" : "held"}${report.paint_corridor.limited ? " (scan limit reached)" : ""}: ${report.paint_corridor.reason}. ${report.paint_corridor.source_channel === "intensity" ? `Source: retained intensity; ROI normalization P10/P99.9 ${report.paint_corridor.intensity_range?.map(fmt).join(" / ") ?? "unavailable"}. ` : ""}${paintBudgetText(report.paint_corridor)}` + (report.paint_corridor.applied ? `Measured widths: ${report.paint_corridor.measured_lane_widths_m.map(fmt).join(", ")} m. Source track lengths before footprint trimming (observed / interpolated / extended), left to right: ${report.paint_corridor.tracks.map(t => `${fmt(t.observed_length_m)} / ${fmt(t.interpolated_length_m)} / ${fmt(t.extrapolated_length_m)} m`).join("; ")}. ` : "") : "") +
+    (report.paint_divider ? `Interior paint correction ${report.paint_divider.applied ? "applied" : "held"}${report.paint_divider.limited ? " (scan limit reached)" : ""}: ${report.paint_divider.reason}. ${report.paint_divider.source_channel === "intensity" ? "Source: retained intensity. " : ""}${paintBudgetText(report.paint_divider)}${paintCandidateText(report.paint_divider)}Curb pairs: ${report.paint_divider.curb_pair_sections}/${report.paint_divider.sampled_sections}. ` + (report.paint_divider.applied && report.paint_divider.track ? `Maximum divider movement ${fmt(report.paint_divider.maximum_divider_movement_m)} m. Paint lengths before footprint trimming (observed / interpolated / extended): ${fmt(report.paint_divider.track.observed_length_m)} / ${fmt(report.paint_divider.track.interpolated_length_m)} / ${fmt(report.paint_divider.track.extrapolated_length_m)} m. ` : "") : "") +
+    (report.paint_corridor ? `White paint fit ${report.paint_corridor.applied ? "applied" : "held"}${report.paint_corridor.limited ? " (scan limit reached)" : ""}: ${report.paint_corridor.reason}. ${report.paint_corridor.source_channel === "intensity" ? `Source: retained intensity; ROI normalization P10/P99.9 ${report.paint_corridor.intensity_range?.map(fmt).join(" / ") ?? "unavailable"}. ` : ""}${paintBudgetText(report.paint_corridor)}${paintCandidateText(report.paint_corridor)}` + (report.paint_corridor.applied ? `Measured widths: ${report.paint_corridor.measured_lane_widths_m.map(fmt).join(", ")} m. Source track lengths before footprint trimming (observed / interpolated / extended), left to right: ${report.paint_corridor.tracks.map(t => `${fmt(t.observed_length_m)} / ${fmt(t.interpolated_length_m)} / ${fmt(t.extrapolated_length_m)} m`).join("; ")}. ` : "") : "") +
     `Coverage-edge anchor candidates ignored: ${report.coverage_edge_anchor_candidates_ignored}. ` +
     (report.surface_fit ? `Source footprint: ${fmt(report.surface_fit.deferred_length_m)} m deferred; inferred lane widths ${fmt(report.surface_fit.minimum_lane_width_m ?? 0)}–${fmt(report.surface_fit.maximum_lane_width_m ?? 0)} m. ` : "") +report.warnings.join(" ");
 }

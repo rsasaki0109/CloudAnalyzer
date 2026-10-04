@@ -1063,6 +1063,12 @@ def test_intensity_paint_cli_is_explicit_and_keeps_raw_channels(tmp_path):
     fit = report["extraction"]["paint_corridor"]
     assert fit["applied"] and fit["source_channel"] == "intensity"
     assert fit["intensity_range"] == [18000, 60000]
+    diagnostics = fit["candidate_diagnostics"]
+    assert diagnostics["complete"] and diagnostics["accepted"] == fit["contrasted_points"]
+    outcomes = ["local_ground_missing", "local_height_mismatch", "trace_ground_missing",
+                "trace_height_mismatch", "flank_support_missing", "flank_contrast_insufficient", "accepted"]
+    assert sum(diagnostics[key] for key in outcomes) == diagnostics["bright_candidates"]
+    assert diagnostics["bright_candidates"] == fit["white_candidates"]
     assert fit["measured_lane_widths_m"] == pytest.approx([3, 3], abs=.04)
     assert report["extraction"]["rgb_paint_vertices"] == 0
     assert report["extraction"]["intensity_vertices"] > 0

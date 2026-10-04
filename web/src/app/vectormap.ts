@@ -1215,7 +1215,7 @@ function paintCandidateText(report: PaintBudgetInfo): string {
   const classified = d.accepted + reasons.reduce((sum,[,count]) => sum + count, 0);
   return `Bright candidate checks (${d.complete ? "complete scan" : "incomplete scan"}): ${d.accepted}/${d.bright_candidates} accepted for component checks. ` +
     `Rejected: ${reasons.map(([name,count]) => `${name} ${count}`).join(", ")}. ` +
-    (classified < d.bright_candidates ? `${d.bright_candidates - classified} pending when the scan stopped; later candidates unexamined. ` : "") +
+    (!d.complete ? `${d.bright_candidates - classified} pending when the scan stopped; later candidates unexamined. ` : "") +
     "These checks do not classify a return as road paint. ";
 }
 function renderBuildReport(report: BuildReport): void {

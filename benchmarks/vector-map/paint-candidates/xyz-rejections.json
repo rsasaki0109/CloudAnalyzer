@@ -1,0 +1,29 @@
+{
+  "reference_inputs": [],
+  "source_commit": "32687e204b132c9a418d9225fc53f1046433a179",
+  "source_sha256": "63cfc18d32c9a46db0b7546b75be522e307abef6af08e207f792f6c2a09d126a",
+  "inputs_sha256": "d128a6d9ae816fce8b000c2d6b47df1f836590f0629a54951450767678f26eb0",
+  "native_sha256": "d82be28db542c238da6a0ddac98b22eabb791152a47c8f82be31c142342d4309",
+  "source_fields": [
+    "x",
+    "y",
+    "z",
+    "_"
+  ],
+  "manual_roles": true,
+  "attempts": [
+    {
+      "channel": "rgb",
+      "status": "held_no_supported_road",
+      "error": "No source-supported road intervals remain; inspect path placement, lane counts, width assumptions and occlusion. The existing map is unchanged.",
+      "map_generated": false
+    },
+    {
+      "channel": "intensity",
+      "status": "held_no_supported_road",
+      "error": "No source-supported road intervals remain; inspect path placement, lane counts, width assumptions and occlusion. The existing map is unchanged.",
+      "map_generated": false
+    }
+  ],
+  "source_unchanged": true
+}

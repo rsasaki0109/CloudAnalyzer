@@ -76,6 +76,8 @@ pose graph with one scan per pose.
   channel, with guarded corrections and recorded real-source holds.
   [Bounded paint search](docs/vector-map-paint-search.md) reduces unrelated-cell query limits
   and reports the remaining search failures without adopting partial fits.
+  [Bright-candidate diagnostics](docs/vector-map-paint-candidates.md) explain missing support,
+  height mismatches and insufficient paint contrast, including interrupted scans.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

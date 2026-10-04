@@ -198,3 +198,5 @@ vertex needs source ground and must move inward. Outside paint takes precedence.
 Original road-edge candidates remain separately in the report before footprint
 trimming; exported lane vertices use width-prior evidence.
 See [actual maps and fixed-reference comparison](../vector-map-lane-edges.md).
+
+[Bright-candidate diagnostics](../vector-map-paint-candidates.md) report exclusive support, height and flank-check outcomes for the optional paint fits. A completed candidate scan does not certify a marking; interrupted scans show only the examined prefix.

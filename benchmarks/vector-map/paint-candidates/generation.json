@@ -1,0 +1,2127 @@
+{
+  "source_commit": "2748d07dce70f62dafd9451470662d923147ffae",
+  "reference_inputs": [],
+  "baseline_commit": "c10b305c2ffcaa97e250fb18ad9aa9913ad87ff5",
+  "scenes": {
+    "tokyo": {
+      "freeze": {
+        "source_commit": "2748d07dce70f62dafd9451470662d923147ffae",
+        "reference_inputs": [],
+        "executable_sha256": "a3756f58e6edac167683d0db31b2e35590ae5ab9d7403e2638fee300359b7657",
+        "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+        "inputs_sha256": "9fb93efae89579ad46f7fa125b58eda96cd75acf1a6294c29d3cdc950bcdb878",
+        "artifact_sha256": {
+          "after-0-audit.json": "97e4e33b96962e4bc353e46b9b96516d551058d579aeff6d8ca4198eb2e9bdf7",
+          "after-0-profiles.json": "88b400c75173e219cae84a052eee93ccb891a99985fbd4086d17ed16e50dd352",
+          "after-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+          "after-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+          "after-1-audit.json": "6fd72da2d8fe7e5cd5077f200627de7fe2e28eea86aa22f0d9a535fde8205c8a",
+          "after-1-profiles.json": "367a2a01025cbfec9ff3fa3f2d1fffa90aa0dc6b01a79beb8e8a2bbdb692e915",
+          "after-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+          "after-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+          "after-2-audit.json": "983cd0e85e5bd86c5dd6ee2097131d1c59b0d15b9be8e3d17c114b14d3a99084",
+          "after-2-profiles.json": "1298089df45c6b69aa4287cc05de901bc11db366dbf3fef7761462bdbcf86c18",
+          "after-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+          "after-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+          "after-3-audit.json": "57f7716022c0dfb2d2cc1615cb09747cd2e851d86da4e53525ef6515115bee46",
+          "after-3-profiles.json": "722bd5b45e1025d5303a88d18dfd37eaf81a9318c6ab894e144c62de886d8a62",
+          "after-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+          "after-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+          "after-4-audit.json": "19acbcd1b7c09ce62354c86d57f432b87847611c2760217eb6684a2f721b65a9",
+          "after-4-profiles.json": "9528ffcc63e8c9611aa67bbb037c6111562d86f023fa5f4cb711b084faaff703",
+          "after-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+          "after-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+          "after-5-audit.json": "195e6b6b637ea65203daa5a1aa94b53fdd5ef25635f0f998b56df239f71374ab",
+          "after-5-profiles.json": "01b0e10d21298302bf96bef6025e900e4b90970ea30a3ac0a795343bc5665eee",
+          "after-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+          "after-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+          "before-0-audit.json": "558c081329d5224a2687c58f5529de819425739d11e70b2ede39ee5aa8111771",
+          "before-0-profiles.json": "571771919e0b03a54d879e6b6c9758fb6666240e3c7f253de905ab5603f0e517",
+          "before-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+          "before-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+          "before-1-audit.json": "2e4ebeaef43154c4735bf62a43d2bb6a7ab15cfdffde57dc5d64c34e07270fd0",
+          "before-1-profiles.json": "346694d43c464025c7f0f7a1bc70edc47c19dfb78f579e7ae060b1a9dd671b8e",
+          "before-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+          "before-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+          "before-2-audit.json": "6b04ddb05c006552bb4e421aa0894f83f6e2646d6c45ef99323630f78d7d6b32",
+          "before-2-profiles.json": "067da4abbf76506f083c76329c163f15eb14ac1e4af5ff3e374a66b79ba9055a",
+          "before-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+          "before-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+          "before-3-audit.json": "4d8e2fd77ceab25bf6190ee090c89143b57eb95c453e1f38a872883c276c797e",
+          "before-3-profiles.json": "37f37d5720ce82922c2d84851937047005640226cb53e40061fea6031cdab07d",
+          "before-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+          "before-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+          "before-4-audit.json": "a1e0bc03406449be24a865e57b05a8b6f07bc75e3bb5dc78217ac3f3e8b0b462",
+          "before-4-profiles.json": "63a47e8534e7e90c1e86d14c93665dec0b2bfe699ec3706c190cb1ec28c08e35",
+          "before-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+          "before-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+          "before-5-audit.json": "e8dbe6bbaa6153da325254f0d437127e74c80dd0b6c026f968cd11ed5c733649",
+          "before-5-profiles.json": "7ad948728ee5ab7f89a7115eee6a331d6ca981114cc8862f979c55a006ea6d49",
+          "before-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+          "before-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+          "comparison.json": "9e0239616c0760843e52d1d710e3050722ce82f4bbfec7c99192ab96263f388c",
+          "trajectory-0.csv": "fcdfd2c453fd7fa5b4d458d100806533cee59f225aea56e986286cc896ae1ca9",
+          "trajectory-1.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b",
+          "trajectory-2.csv": "db591b8a2ab77281b967583f704bf3224454120b9a00b5d8c3a59a0694bb989b",
+          "trajectory-3.csv": "6cffc6ff3d8f545f998f45b6893408c28c0e39e95f7ca484beef309e23583ca4",
+          "trajectory-4.csv": "34a86c58a094080d9693ef5cb7073794fe51a3581592da2d2be9c962f5005b38",
+          "trajectory-5.csv": "7cae83e443960483cd1b22e21293b02ef75da381bdaa3b86a097a6315359b8c1"
+        }
+      },
+      "exact_artifacts": [
+        "after-0-audit.json",
+        "after-0-profiles.json",
+        "after-0.json",
+        "after-0.osm",
+        "after-1.json",
+        "after-1.osm",
+        "after-2-audit.json",
+        "after-2-profiles.json",
+        "after-2.json",
+        "after-2.osm",
+        "after-3.json",
+        "after-3.osm",
+        "after-4.json",
+        "after-4.osm",
+        "after-5-audit.json",
+        "after-5-profiles.json",
+        "after-5.json",
+        "after-5.osm",
+        "before-0-audit.json",
+        "before-0-profiles.json",
+        "before-0.json",
+        "before-0.osm",
+        "before-1-audit.json",
+        "before-1-profiles.json",
+        "before-1.json",
+        "before-1.osm",
+        "before-2-audit.json",
+        "before-2-profiles.json",
+        "before-2.json",
+        "before-2.osm",
+        "before-3-audit.json",
+        "before-3-profiles.json",
+        "before-3.json",
+        "before-3.osm",
+        "before-4-audit.json",
+        "before-4-profiles.json",
+        "before-4.json",
+        "before-4.osm",
+        "before-5-audit.json",
+        "before-5-profiles.json",
+        "before-5.json",
+        "before-5.osm",
+        "comparison.json",
+        "trajectory-0.csv",
+        "trajectory-1.csv",
+        "trajectory-2.csv",
+        "trajectory-3.csv",
+        "trajectory-4.csv",
+        "trajectory-5.csv"
+      ],
+      "only_additive_diagnostic_artifacts": [
+        "after-1-audit.json",
+        "after-1-profiles.json",
+        "after-3-audit.json",
+        "after-3-profiles.json",
+        "after-4-audit.json",
+        "after-4-profiles.json"
+      ],
+      "reports": [
+        {
+          "file": "after-0-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "source_channel": "intensity",
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "source_channel": "intensity",
+            "track": null
+          }
+        },
+        {
+          "file": "after-1-audit.json",
+          "corridor": {
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 24,
+              "bright_candidates": 7147,
+              "complete": true,
+              "flank_contrast_insufficient": 0,
+              "flank_support_missing": 2,
+              "local_ground_missing": 0,
+              "local_height_mismatch": 6881,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 240
+            },
+            "contrasted_points": 24,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "intensity_range": [
+              20993.0,
+              63350.0
+            ],
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "too few narrow longitudinal paint components",
+            "residual_p90_m": null,
+            "roi_points": 160313,
+            "source_channel": "intensity",
+            "tracks": [],
+            "white_candidates": 7147
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "source_channel": "intensity",
+            "track": null
+          }
+        },
+        {
+          "file": "after-2-audit.json",
+          "corridor": {
+            "applied": false,
+            "budget_stage": "roi_points",
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": true,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+            "residual_p90_m": null,
+            "roi_points": 250001,
+            "source_channel": "intensity",
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "source_channel": "intensity",
+            "track": null
+          }
+        },
+        {
+          "file": "after-3-audit.json",
+          "corridor": {
+            "applied": false,
+            "budget_query": {
+              "candidate_points": 4115,
+              "center_st": [
+                14.364932306597417,
+                2.3763356406260687
+              ],
+              "limit": 4096,
+              "radius_m": 0.8
+            },
+            "budget_stage": "contrast_neighbours",
+            "candidate_diagnostics": {
+              "accepted": 0,
+              "bright_candidates": 120,
+              "complete": false,
+              "flank_contrast_insufficient": 0,
+              "flank_support_missing": 0,
+              "local_ground_missing": 0,
+              "local_height_mismatch": 112,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 7
+            },
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "intensity_range": [
+              25536.0,
+              65535.0
+            ],
+            "limited": true,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+            "residual_p90_m": null,
+            "roi_points": 97072,
+            "source_channel": "intensity",
+            "tracks": [],
+            "white_candidates": 120
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "budget_query": {
+              "candidate_points": 4115,
+              "center_st": [
+                14.364932306597417,
+                2.3763356406260687
+              ],
+              "limit": 4096,
+              "radius_m": 0.8
+            },
+            "budget_stage": "contrast_neighbours",
+            "candidate_diagnostics": {
+              "accepted": 0,
+              "bright_candidates": 120,
+              "complete": false,
+              "flank_contrast_insufficient": 0,
+              "flank_support_missing": 0,
+              "local_ground_missing": 0,
+              "local_height_mismatch": 112,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 7
+            },
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": true,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+            "residual_p90_m": null,
+            "roi_points": 97072,
+            "sampled_sections": 0,
+            "source_channel": "intensity",
+            "track": null
+          }
+        },
+        {
+          "file": "after-4-audit.json",
+          "corridor": {
+            "applied": false,
+            "budget_query": {
+              "candidate_points": 4105,
+              "center_st": [
+                1.0158843908234725,
+                10.756190660706231
+              ],
+              "limit": 4096,
+              "radius_m": 0.8
+            },
+            "budget_stage": "contrast_neighbours",
+            "candidate_diagnostics": {
+              "accepted": 1,
+              "bright_candidates": 441,
+              "complete": false,
+              "flank_contrast_insufficient": 0,
+              "flank_support_missing": 0,
+              "local_ground_missing": 0,
+              "local_height_mismatch": 367,
+              "trace_ground_missing": 6,
+              "trace_height_mismatch": 66
+            },
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "intensity_range": [
+              25449.0,
+              65535.0
+            ],
+            "limited": true,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+            "residual_p90_m": null,
+            "roi_points": 96593,
+            "source_channel": "intensity",
+            "tracks": [],
+            "white_candidates": 441
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "source_channel": "intensity",
+            "track": null
+          }
+        },
+        {
+          "file": "after-5-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "source_channel": "intensity",
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "source_channel": "intensity",
+            "track": null
+          }
+        },
+        {
+          "file": "before-0-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-1-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 160313,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-2-audit.json",
+          "corridor": {
+            "applied": false,
+            "budget_stage": "roi_points",
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": true,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+            "residual_p90_m": null,
+            "roi_points": 250001,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-3-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 97072,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 97072,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-4-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 96593,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-5-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        }
+      ],
+      "map_osm_and_source_geometry_unchanged": true
+    },
+    "tokyo-ui": {
+      "freeze": {
+        "source_commit": "2748d07dce70f62dafd9451470662d923147ffae",
+        "reference_inputs": [],
+        "executable_sha256": "a3756f58e6edac167683d0db31b2e35590ae5ab9d7403e2638fee300359b7657",
+        "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+        "inputs_sha256": "1b85b223600f12b50abbce7b72543e2d4e7f027016e7524008d946ca0190aa1b",
+        "artifact_sha256": {
+          "after-0-audit.json": "7d0b165463eb2a9d485b09ce437d62d4e931944b61842f4856d3e68db2bf77cd",
+          "after-0-profiles.json": "367a2a01025cbfec9ff3fa3f2d1fffa90aa0dc6b01a79beb8e8a2bbdb692e915",
+          "after-0.json": "1aec95ad76dda986c195b5ba64c3864d366d4f28409f3eae312117289cbb2211",
+          "after-0.osm": "264c749e735b0a7ac1a71360f3e19ebb5a0816503928b1cb98d84032b1f3b725",
+          "before-0-audit.json": "ccb81f42076a87a5d1de426770c1ac2f2e785c8a67c64f6e57768f6a9c572030",
+          "before-0-profiles.json": "346694d43c464025c7f0f7a1bc70edc47c19dfb78f579e7ae060b1a9dd671b8e",
+          "before-0.json": "1aec95ad76dda986c195b5ba64c3864d366d4f28409f3eae312117289cbb2211",
+          "before-0.osm": "264c749e735b0a7ac1a71360f3e19ebb5a0816503928b1cb98d84032b1f3b725",
+          "comparison.json": "6f13ad45bac833ccb765f9e749110d8c532433a1a54b5588259c1102c41b67d3",
+          "trajectory-0.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b"
+        }
+      },
+      "exact_artifacts": [
+        "after-0.json",
+        "after-0.osm",
+        "before-0-audit.json",
+        "before-0-profiles.json",
+        "before-0.json",
+        "before-0.osm",
+        "comparison.json",
+        "trajectory-0.csv"
+      ],
+      "only_additive_diagnostic_artifacts": [
+        "after-0-audit.json",
+        "after-0-profiles.json"
+      ],
+      "reports": [
+        {
+          "file": "after-0-audit.json",
+          "corridor": {
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 24,
+              "bright_candidates": 7147,
+              "complete": true,
+              "flank_contrast_insufficient": 0,
+              "flank_support_missing": 2,
+              "local_ground_missing": 0,
+              "local_height_mismatch": 6881,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 240
+            },
+            "contrasted_points": 24,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "intensity_range": [
+              20993.0,
+              63350.0
+            ],
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "too few narrow longitudinal paint components",
+            "residual_p90_m": null,
+            "roi_points": 160313,
+            "source_channel": "intensity",
+            "tracks": [],
+            "white_candidates": 7147
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "source_channel": "intensity",
+            "track": null
+          }
+        },
+        {
+          "file": "before-0-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 160313,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        }
+      ],
+      "map_osm_and_source_geometry_unchanged": true
+    },
+    "rgb-planning": {
+      "freeze": {
+        "source_commit": "2748d07dce70f62dafd9451470662d923147ffae",
+        "reference_inputs": [],
+        "executable_sha256": "a3756f58e6edac167683d0db31b2e35590ae5ab9d7403e2638fee300359b7657",
+        "source_sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+        "inputs_sha256": "c0506fbfe73eace787ad66506ac83c7d6e00231451d4021a5809d9f30e85dbde",
+        "artifact_sha256": {
+          "after-0-audit.json": "100a048f087956e97bd5f8c766457f9c63c640c40b06c9e809b473ddf55f3c85",
+          "after-0-profiles.json": "aff0cc1ffc77960eed0cef753171bd8df5a80b19eee78871986cff250b7ccbc5",
+          "after-0.json": "574cd66df38713dcfa46cd267aff8c1a606436de5864f5683c735a01548488be",
+          "after-0.osm": "c66ff02b5228afe3b6cb3b6fa848e3272d7633d8cefad776e689dcb264171b73",
+          "after-1-audit.json": "88f6e0652f35d9153ba1b56ded35f2196bd323e5bedab0e79e74f9c5eab91ced",
+          "after-1-profiles.json": "a08242e47fb29e5237e1a726dbe607445235af38315f9ef8fd65193f19e0ca52",
+          "after-1.json": "2895a92a017ca8919303741a138754580817156cb4b8707e68c92bd24486c67a",
+          "after-1.osm": "82b124c2bbccdc013f976a89352a3ae4f85aa50dd4e179409d933d425ed2ae09",
+          "after-2-audit.json": "2f810b776a8b209843e6695342efa1a8e88af30207a067855c948e77ea1fbd40",
+          "after-2-profiles.json": "46e9a71728c39375cad2f75d198399ecbccd9a298c068b51838696f20485e8dd",
+          "after-2.json": "9e79633bfba56849e12da021114050c3fdd035017068fbdff5917559e58f1317",
+          "after-2.osm": "81039cbd035339e57b855b336c41cef1c13d156dcd82dbc33c3d78299afa22d7",
+          "before-0-audit.json": "9c1fed351d76c0ce4bd4d1e5bdd87018b6c503f1a97fc7b12c1fc1d075ce8a42",
+          "before-0-profiles.json": "f92b7a3e2a7aa1aa7a37419f99c1f01464c566c6a362d927eb510410385406be",
+          "before-0.json": "574cd66df38713dcfa46cd267aff8c1a606436de5864f5683c735a01548488be",
+          "before-0.osm": "c66ff02b5228afe3b6cb3b6fa848e3272d7633d8cefad776e689dcb264171b73",
+          "before-1-audit.json": "4548266945a1ea8f70148ee1b0f05cebdafe4a27b29ce935e9cdf4de55ecd661",
+          "before-1-profiles.json": "44deee21c65a97b3d984c579c5f546d60f3e4da0ce22830fd3bcb6d040b4359a",
+          "before-1.json": "a7540da58c7cabdd650de42b5c6b91bd6d95e4150b00ef0df6b5d5ed531dede1",
+          "before-1.osm": "b25254de28380010cc9934206bb517c041e739112c316e53320dc69cf3664504",
+          "before-2-audit.json": "c53a1398cfdd60e8e50ab82d134517be25eb8615ec0f4d8e2fe844af701e650e",
+          "before-2-profiles.json": "d81b869a19c24415d809b8e49b3304e04cc31d5f0db02b441bbe59f4684cfee0",
+          "before-2.json": "d8e8c2282af2a3c6616fdea976620de04590008a45c1298cc036dab9e801431f",
+          "before-2.osm": "98dbcb7d62b2c080407f0c4b581b6971e5812eac6e108e2a75336a835ecf169c",
+          "comparison.json": "2121b7e22ba1fa64d4e0efc9247bf3cc8473b9c88a5e97fc1ee4000674afad64",
+          "trajectory-0.csv": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+          "trajectory-1.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+          "trajectory-2.csv": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9"
+        }
+      },
+      "exact_artifacts": [
+        "after-0.json",
+        "after-0.osm",
+        "after-1.json",
+        "after-1.osm",
+        "after-2.json",
+        "after-2.osm",
+        "before-0.json",
+        "before-0.osm",
+        "before-1.json",
+        "before-1.osm",
+        "before-2.json",
+        "before-2.osm",
+        "comparison.json",
+        "trajectory-0.csv",
+        "trajectory-1.csv",
+        "trajectory-2.csv"
+      ],
+      "only_additive_diagnostic_artifacts": [
+        "after-0-audit.json",
+        "after-0-profiles.json",
+        "after-1-audit.json",
+        "after-1-profiles.json",
+        "after-2-audit.json",
+        "after-2-profiles.json",
+        "before-0-audit.json",
+        "before-0-profiles.json",
+        "before-1-audit.json",
+        "before-1-profiles.json",
+        "before-2-audit.json",
+        "before-2-profiles.json"
+      ],
+      "reports": [
+        {
+          "file": "after-0-audit.json",
+          "corridor": {
+            "applied": true,
+            "candidate_diagnostics": {
+              "accepted": 411,
+              "bright_candidates": 7976,
+              "complete": true,
+              "flank_contrast_insufficient": 1085,
+              "flank_support_missing": 137,
+              "local_ground_missing": 28,
+              "local_height_mismatch": 5271,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 1044
+            },
+            "contrasted_points": 411,
+            "eligible_bundles": 1,
+            "heading_correction_degrees": -2.0409856881453967,
+            "limited": false,
+            "longitudinal_components": 15,
+            "measured_lane_widths_m": [
+              2.9003523073130224,
+              2.8939343781439986
+            ],
+            "reason": "unique locally contrasted parallel paint bundle; counts and directions remain manual",
+            "residual_p90_m": 0.06753379094232903,
+            "roi_points": 88688,
+            "tracks": [
+              {
+                "extrapolated_length_m": 48.81075389679923,
+                "interpolated_length_m": 0.0,
+                "lateral_intercept_m": 5.552737262025015,
+                "observed_intervals_m": [
+                  [
+                    12.674602539164301,
+                    14.470172357885055
+                  ]
+                ],
+                "observed_length_m": 1.7955698187207538,
+                "source_points": 9,
+                "strong": false
+              },
+              {
+                "extrapolated_length_m": 0.9719635094717347,
+                "interpolated_length_m": 27.6103015747514,
+                "lateral_intercept_m": 2.6505438220180384,
+                "observed_intervals_m": [
+                  [
+                    0.0,
+                    2.510783516932938
+                  ],
+                  [
+                    9.470121749389671,
+                    12.427578538117052
+                  ],
+                  [
+                    17.616568447780594,
+                    22.548885735154514
+                  ],
+                  [
+                    27.704182659439688,
+                    32.53131067802925
+                  ],
+                  [
+                    37.63857676576989,
+                    42.374293746709206
+                  ],
+                  [
+                    47.57370416731452,
+                    49.63436020604824
+                  ]
+                ],
+                "observed_length_m": 22.024058631296842,
+                "source_points": 177,
+                "strong": true
+              },
+              {
+                "extrapolated_length_m": 13.413706223572596,
+                "interpolated_length_m": 29.111337581427442,
+                "lateral_intercept_m": -0.24522761474270904,
+                "observed_intervals_m": [
+                  [
+                    10.129238363698695,
+                    11.907923095245295
+                  ],
+                  [
+                    24.534880742714755,
+                    25.68551742035277
+                  ],
+                  [
+                    30.889308315002115,
+                    31.766252202478967
+                  ],
+                  [
+                    36.50752678925389,
+                    37.39749631540795
+                  ],
+                  [
+                    40.06989423815064,
+                    42.13618507168991
+                  ],
+                  [
+                    46.003101601480935,
+                    47.32185585564608
+                  ]
+                ],
+                "observed_length_m": 8.08127991051994,
+                "source_points": 42,
+                "strong": true
+              }
+            ],
+            "white_candidates": 7976
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "complete paint corridor already applied; no divider correction needed",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "after-1-audit.json",
+          "corridor": {
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 277,
+              "bright_candidates": 9416,
+              "complete": true,
+              "flank_contrast_insufficient": 935,
+              "flank_support_missing": 179,
+              "local_ground_missing": 19,
+              "local_height_mismatch": 5919,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 2087
+            },
+            "contrasted_points": 277,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 8,
+            "measured_lane_widths_m": [],
+            "reason": "need one unambiguous bundle with at least one strong track per configured lane",
+            "residual_p90_m": null,
+            "roi_points": 92677,
+            "tracks": [],
+            "white_candidates": 9416
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": true,
+            "candidate_diagnostics": {
+              "accepted": 277,
+              "bright_candidates": 9416,
+              "complete": true,
+              "flank_contrast_insufficient": 935,
+              "flank_support_missing": 179,
+              "local_ground_missing": 19,
+              "local_height_mismatch": 5919,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 2087
+            },
+            "contrasted_points": 277,
+            "curb_pair_sections": 13,
+            "eligible_tracks": 1,
+            "heading_correction_degrees": -2.3201261635542254,
+            "limited": false,
+            "longest_supported_run": 8,
+            "maximum_divider_movement_m": 0.9231560343062172,
+            "reason": "unique strong paint track inside paired physical curbs; only the interior boundary was corrected",
+            "residual_p90_m": 0.06092214011391578,
+            "roi_points": 92677,
+            "sampled_sections": 25,
+            "track": {
+              "extrapolated_length_m": 0.5229798522595601,
+              "interpolated_length_m": 27.503914676189513,
+              "lateral_intercept_m": -0.0908979908986387,
+              "observed_intervals_m": [
+                [
+                  0.0,
+                  1.385314579109568
+                ],
+                [
+                  7.728630543513377,
+                  11.305973584724237
+                ],
+                [
+                  17.632315455987126,
+                  21.491360716282355
+                ],
+                [
+                  26.67887215895833,
+                  28.01728575253139
+                ],
+                [
+                  28.90205506632575,
+                  31.41625266282992
+                ],
+                [
+                  37.93396579366913,
+                  41.31773644601856
+                ],
+                [
+                  43.56199939923182,
+                  45.61810812797775
+                ]
+              ],
+              "observed_length_m": 18.114193451788235,
+              "source_points": 99,
+              "strong": true
+            }
+          }
+        },
+        {
+          "file": "after-2-audit.json",
+          "corridor": {
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 174,
+              "bright_candidates": 3112,
+              "complete": true,
+              "flank_contrast_insufficient": 381,
+              "flank_support_missing": 21,
+              "local_ground_missing": 9,
+              "local_height_mismatch": 1793,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 734
+            },
+            "contrasted_points": 174,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 6,
+            "measured_lane_widths_m": [],
+            "reason": "need one unambiguous bundle with at least one strong track per configured lane",
+            "residual_p90_m": null,
+            "roi_points": 32490,
+            "tracks": [],
+            "white_candidates": 3112
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 174,
+              "bright_candidates": 3112,
+              "complete": true,
+              "flank_contrast_insufficient": 381,
+              "flank_support_missing": 21,
+              "local_ground_missing": 9,
+              "local_height_mismatch": 1793,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 734
+            },
+            "contrasted_points": 174,
+            "curb_pair_sections": 4,
+            "eligible_tracks": 1,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 3,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "paint must lie inside physical curb pairs in a majority of sections, including three consecutive sections",
+            "residual_p90_m": null,
+            "roi_points": 32490,
+            "sampled_sections": 17,
+            "track": null
+          }
+        },
+        {
+          "file": "before-0-audit.json",
+          "corridor": {
+            "applied": true,
+            "candidate_diagnostics": {
+              "accepted": 411,
+              "bright_candidates": 7976,
+              "complete": true,
+              "flank_contrast_insufficient": 1085,
+              "flank_support_missing": 137,
+              "local_ground_missing": 28,
+              "local_height_mismatch": 5271,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 1044
+            },
+            "contrasted_points": 411,
+            "eligible_bundles": 1,
+            "heading_correction_degrees": -2.0409856881453967,
+            "limited": false,
+            "longitudinal_components": 15,
+            "measured_lane_widths_m": [
+              2.9003523073130224,
+              2.8939343781439986
+            ],
+            "reason": "unique locally contrasted parallel paint bundle; counts and directions remain manual",
+            "residual_p90_m": 0.06753379094232903,
+            "roi_points": 88688,
+            "tracks": [
+              {
+                "extrapolated_length_m": 48.81075389679923,
+                "interpolated_length_m": 0.0,
+                "lateral_intercept_m": 5.552737262025015,
+                "observed_intervals_m": [
+                  [
+                    12.674602539164301,
+                    14.470172357885055
+                  ]
+                ],
+                "observed_length_m": 1.7955698187207538,
+                "source_points": 9,
+                "strong": false
+              },
+              {
+                "extrapolated_length_m": 0.9719635094717347,
+                "interpolated_length_m": 27.6103015747514,
+                "lateral_intercept_m": 2.6505438220180384,
+                "observed_intervals_m": [
+                  [
+                    0.0,
+                    2.510783516932938
+                  ],
+                  [
+                    9.470121749389671,
+                    12.427578538117052
+                  ],
+                  [
+                    17.616568447780594,
+                    22.548885735154514
+                  ],
+                  [
+                    27.704182659439688,
+                    32.53131067802925
+                  ],
+                  [
+                    37.63857676576989,
+                    42.374293746709206
+                  ],
+                  [
+                    47.57370416731452,
+                    49.63436020604824
+                  ]
+                ],
+                "observed_length_m": 22.024058631296842,
+                "source_points": 177,
+                "strong": true
+              },
+              {
+                "extrapolated_length_m": 13.413706223572596,
+                "interpolated_length_m": 29.111337581427442,
+                "lateral_intercept_m": -0.24522761474270904,
+                "observed_intervals_m": [
+                  [
+                    10.129238363698695,
+                    11.907923095245295
+                  ],
+                  [
+                    24.534880742714755,
+                    25.68551742035277
+                  ],
+                  [
+                    30.889308315002115,
+                    31.766252202478967
+                  ],
+                  [
+                    36.50752678925389,
+                    37.39749631540795
+                  ],
+                  [
+                    40.06989423815064,
+                    42.13618507168991
+                  ],
+                  [
+                    46.003101601480935,
+                    47.32185585564608
+                  ]
+                ],
+                "observed_length_m": 8.08127991051994,
+                "source_points": 42,
+                "strong": true
+              }
+            ],
+            "white_candidates": 7976
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "complete paint corridor already applied; no divider correction needed",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-1-audit.json",
+          "corridor": {
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 277,
+              "bright_candidates": 9416,
+              "complete": true,
+              "flank_contrast_insufficient": 935,
+              "flank_support_missing": 179,
+              "local_ground_missing": 19,
+              "local_height_mismatch": 5919,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 2087
+            },
+            "contrasted_points": 277,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 8,
+            "measured_lane_widths_m": [],
+            "reason": "need one unambiguous bundle with at least one strong track per configured lane",
+            "residual_p90_m": null,
+            "roi_points": 92677,
+            "tracks": [],
+            "white_candidates": 9416
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": true,
+            "candidate_diagnostics": {
+              "accepted": 277,
+              "bright_candidates": 9416,
+              "complete": true,
+              "flank_contrast_insufficient": 935,
+              "flank_support_missing": 179,
+              "local_ground_missing": 19,
+              "local_height_mismatch": 5919,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 2087
+            },
+            "contrasted_points": 277,
+            "curb_pair_sections": 13,
+            "eligible_tracks": 1,
+            "heading_correction_degrees": -2.3201261635542254,
+            "limited": false,
+            "longest_supported_run": 8,
+            "maximum_divider_movement_m": 0.9231560343062172,
+            "reason": "unique strong paint track inside paired physical curbs; only the interior boundary was corrected",
+            "residual_p90_m": 0.06092214011391578,
+            "roi_points": 92677,
+            "sampled_sections": 25,
+            "track": {
+              "extrapolated_length_m": 0.5229798522595601,
+              "interpolated_length_m": 27.503914676189513,
+              "lateral_intercept_m": -0.0908979908986387,
+              "observed_intervals_m": [
+                [
+                  0.0,
+                  1.385314579109568
+                ],
+                [
+                  7.728630543513377,
+                  11.305973584724237
+                ],
+                [
+                  17.632315455987126,
+                  21.491360716282355
+                ],
+                [
+                  26.67887215895833,
+                  28.01728575253139
+                ],
+                [
+                  28.90205506632575,
+                  31.41625266282992
+                ],
+                [
+                  37.93396579366913,
+                  41.31773644601856
+                ],
+                [
+                  43.56199939923182,
+                  45.61810812797775
+                ]
+              ],
+              "observed_length_m": 18.114193451788235,
+              "source_points": 99,
+              "strong": true
+            }
+          }
+        },
+        {
+          "file": "before-2-audit.json",
+          "corridor": {
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 174,
+              "bright_candidates": 3112,
+              "complete": true,
+              "flank_contrast_insufficient": 381,
+              "flank_support_missing": 21,
+              "local_ground_missing": 9,
+              "local_height_mismatch": 1793,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 734
+            },
+            "contrasted_points": 174,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 6,
+            "measured_lane_widths_m": [],
+            "reason": "need one unambiguous bundle with at least one strong track per configured lane",
+            "residual_p90_m": null,
+            "roi_points": 32490,
+            "tracks": [],
+            "white_candidates": 3112
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 174,
+              "bright_candidates": 3112,
+              "complete": true,
+              "flank_contrast_insufficient": 381,
+              "flank_support_missing": 21,
+              "local_ground_missing": 9,
+              "local_height_mismatch": 1793,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 734
+            },
+            "contrasted_points": 174,
+            "curb_pair_sections": 4,
+            "eligible_tracks": 1,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 3,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "paint must lie inside physical curb pairs in a majority of sections, including three consecutive sections",
+            "residual_p90_m": null,
+            "roi_points": 32490,
+            "sampled_sections": 17,
+            "track": null
+          }
+        }
+      ],
+      "map_osm_and_source_geometry_unchanged": true
+    },
+    "rgb-tokyo": {
+      "freeze": {
+        "source_commit": "2748d07dce70f62dafd9451470662d923147ffae",
+        "reference_inputs": [],
+        "executable_sha256": "a3756f58e6edac167683d0db31b2e35590ae5ab9d7403e2638fee300359b7657",
+        "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+        "inputs_sha256": "c62e412e7411f9bd5d74e0045976fa6d17be5f5336aa5d2ca21ee8e43b91638d",
+        "artifact_sha256": {
+          "after-0-audit.json": "8d854332c3b422d6609473db9565186dcf582610547bb292bb07d025de1614b5",
+          "after-0-profiles.json": "c544a975927edc182f0de3b798edbb2100dda4fec7e2c18b0d5ceddddf3577f1",
+          "after-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+          "after-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+          "after-1-audit.json": "f00a351962f72ac7e436b7f3df02ccaa85788ceb32e0f33df912255eafbb4ea3",
+          "after-1-profiles.json": "68b969e276b1dfd69b9a04bf477d6512128f51d0b2c2818ee12a058c94191c4a",
+          "after-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+          "after-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+          "after-2-audit.json": "6d0ee0c640fa8908e02cd05216c126816108bacb141c71cce048fdc4458dcc4b",
+          "after-2-profiles.json": "ff8b23ed8234482eaa0fe78683053ed2082d9a3c8004ef2f122af1868df3b3bc",
+          "after-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+          "after-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+          "after-3-audit.json": "9d396287a213ba8c515fcf82c256c5ac73a1cb83d78bedbad2290d1e27fc9d53",
+          "after-3-profiles.json": "5a434a1edad02574b57c76d20277db781ad0501a5f40ac7005518a25e57a01df",
+          "after-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+          "after-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+          "after-4-audit.json": "d07a0567d6e07a17d0bc5d4a59706eac22598a2a5ff027d570ad9176b40a5854",
+          "after-4-profiles.json": "7fed5e8ea73c86a72bae9314b519da3466cced74d9be436e54e2d815455d11a7",
+          "after-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+          "after-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+          "after-5-audit.json": "2b9540a334c9eddc9c3861536d8aa44be67369c708da52c48cc77d60ccc60f14",
+          "after-5-profiles.json": "4ec06ac963b260298fcc7a271a57740e51846db28894b4fc898db28d24c04db8",
+          "after-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+          "after-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+          "before-0-audit.json": "558c081329d5224a2687c58f5529de819425739d11e70b2ede39ee5aa8111771",
+          "before-0-profiles.json": "29094543b0b02cbb6dff7c2150643b3dd8dea1c62a7085c5e24a12a6977d6c7d",
+          "before-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+          "before-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+          "before-1-audit.json": "2e4ebeaef43154c4735bf62a43d2bb6a7ab15cfdffde57dc5d64c34e07270fd0",
+          "before-1-profiles.json": "00d36f172e6a6cb09e839f01f14b96ff460ebe3e51c779de309d6aac4eee5bd4",
+          "before-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+          "before-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+          "before-2-audit.json": "6b04ddb05c006552bb4e421aa0894f83f6e2646d6c45ef99323630f78d7d6b32",
+          "before-2-profiles.json": "b8b9a72bb0288dab05c05ae6ac17c78813dccb3d6a15b511d169cc49cbeddba6",
+          "before-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+          "before-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+          "before-3-audit.json": "4d8e2fd77ceab25bf6190ee090c89143b57eb95c453e1f38a872883c276c797e",
+          "before-3-profiles.json": "a68f751f2faad880749c5c6f8f607e679deaa1eea00bfbe6d000c395e9584913",
+          "before-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+          "before-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+          "before-4-audit.json": "a1e0bc03406449be24a865e57b05a8b6f07bc75e3bb5dc78217ac3f3e8b0b462",
+          "before-4-profiles.json": "bec1a9cf4027948339433cd57ae94b3c716d815168149f801f05d0e5c25eae4d",
+          "before-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+          "before-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+          "before-5-audit.json": "e8dbe6bbaa6153da325254f0d437127e74c80dd0b6c026f968cd11ed5c733649",
+          "before-5-profiles.json": "39cec7eaeac6a18889249e7fd41f06945389f68c6da38f7785943c9f5b5e21cf",
+          "before-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+          "before-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+          "comparison.json": "9e0239616c0760843e52d1d710e3050722ce82f4bbfec7c99192ab96263f388c",
+          "trajectory-0.csv": "fcdfd2c453fd7fa5b4d458d100806533cee59f225aea56e986286cc896ae1ca9",
+          "trajectory-1.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b",
+          "trajectory-2.csv": "db591b8a2ab77281b967583f704bf3224454120b9a00b5d8c3a59a0694bb989b",
+          "trajectory-3.csv": "6cffc6ff3d8f545f998f45b6893408c28c0e39e95f7ca484beef309e23583ca4",
+          "trajectory-4.csv": "34a86c58a094080d9693ef5cb7073794fe51a3581592da2d2be9c962f5005b38",
+          "trajectory-5.csv": "7cae83e443960483cd1b22e21293b02ef75da381bdaa3b86a097a6315359b8c1"
+        }
+      },
+      "exact_artifacts": [
+        "after-0-audit.json",
+        "after-0-profiles.json",
+        "after-0.json",
+        "after-0.osm",
+        "after-1-audit.json",
+        "after-1-profiles.json",
+        "after-1.json",
+        "after-1.osm",
+        "after-2-audit.json",
+        "after-2-profiles.json",
+        "after-2.json",
+        "after-2.osm",
+        "after-3-audit.json",
+        "after-3-profiles.json",
+        "after-3.json",
+        "after-3.osm",
+        "after-4-audit.json",
+        "after-4-profiles.json",
+        "after-4.json",
+        "after-4.osm",
+        "after-5-audit.json",
+        "after-5-profiles.json",
+        "after-5.json",
+        "after-5.osm",
+        "before-0-audit.json",
+        "before-0-profiles.json",
+        "before-0.json",
+        "before-0.osm",
+        "before-1-audit.json",
+        "before-1-profiles.json",
+        "before-1.json",
+        "before-1.osm",
+        "before-2-audit.json",
+        "before-2-profiles.json",
+        "before-2.json",
+        "before-2.osm",
+        "before-3-audit.json",
+        "before-3-profiles.json",
+        "before-3.json",
+        "before-3.osm",
+        "before-4-audit.json",
+        "before-4-profiles.json",
+        "before-4.json",
+        "before-4.osm",
+        "before-5-audit.json",
+        "before-5-profiles.json",
+        "before-5.json",
+        "before-5.osm",
+        "comparison.json",
+        "trajectory-0.csv",
+        "trajectory-1.csv",
+        "trajectory-2.csv",
+        "trajectory-3.csv",
+        "trajectory-4.csv",
+        "trajectory-5.csv"
+      ],
+      "only_additive_diagnostic_artifacts": [],
+      "reports": [
+        {
+          "file": "after-0-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "after-1-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 160313,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "after-2-audit.json",
+          "corridor": {
+            "applied": false,
+            "budget_stage": "roi_points",
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": true,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+            "residual_p90_m": null,
+            "roi_points": 250001,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "after-3-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 97072,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 97072,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "after-4-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 96593,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "after-5-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-0-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-1-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 160313,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-2-audit.json",
+          "corridor": {
+            "applied": false,
+            "budget_stage": "roi_points",
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": true,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+            "residual_p90_m": null,
+            "roi_points": 250001,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-3-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 97072,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 97072,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-4-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "RGB has no usable local paint contrast",
+            "residual_p90_m": null,
+            "roi_points": 96593,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "requires an explicitly configured two-lane road with generated geometry",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        },
+        {
+          "file": "before-5-audit.json",
+          "corridor": {
+            "applied": false,
+            "contrasted_points": 0,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 0,
+            "measured_lane_widths_m": [],
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "tracks": [],
+            "white_candidates": 0
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": false,
+            "contrasted_points": 0,
+            "curb_pair_sections": 0,
+            "eligible_tracks": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longest_supported_run": 0,
+            "maximum_divider_movement_m": 0.0,
+            "reason": "trace is not straight within five degrees",
+            "residual_p90_m": null,
+            "roi_points": 0,
+            "sampled_sections": 0,
+            "track": null
+          }
+        }
+      ],
+      "map_osm_and_source_geometry_unchanged": true
+    },
+    "planning-ui": {
+      "freeze": {
+        "source_commit": "2748d07dce70f62dafd9451470662d923147ffae",
+        "reference_inputs": [],
+        "executable_sha256": "a3756f58e6edac167683d0db31b2e35590ae5ab9d7403e2638fee300359b7657",
+        "source_sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+        "inputs_sha256": "797c750908d319a6b2b7721e9da0bbda09fac6ff5eddf559af645d63d88b4dc6",
+        "artifact_sha256": {
+          "after-0-audit.json": "13877014a3c1dfa4f99ce13d83ff42a5bc6858c06c37f0442e7c8e20fde28602",
+          "after-0-profiles.json": "a08242e47fb29e5237e1a726dbe607445235af38315f9ef8fd65193f19e0ca52",
+          "after-0.json": "2bd63cf29828992dcd2a96062f2cd8184f80fe885af5fdf7f446239d01c5a830",
+          "after-0.osm": "ff43d88b126e2efac6b102c1859e6e48346ced1b6e49239a687d405dcbf410f3",
+          "before-0-audit.json": "9989080f740a1892bce53fcedb9a9a7fbbced80bde132865f82eed4f65c57c0a",
+          "before-0-profiles.json": "44deee21c65a97b3d984c579c5f546d60f3e4da0ce22830fd3bcb6d040b4359a",
+          "before-0.json": "b07a121179ef92b6817d67b2bde503a58ccd7e181ab422b1870a9b99cf0b64fe",
+          "before-0.osm": "8a03094435c313a7884098481028e2217c0d00bc6a4719604225b142bcca046f",
+          "comparison.json": "82cb01ce9ef984625d657bc4651dc91d777cd586bed7e454ef4a478df8b4481a",
+          "trajectory-0.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6"
+        }
+      },
+      "exact_artifacts": [
+        "after-0.json",
+        "after-0.osm",
+        "before-0.json",
+        "before-0.osm",
+        "comparison.json",
+        "trajectory-0.csv"
+      ],
+      "only_additive_diagnostic_artifacts": [
+        "after-0-audit.json",
+        "after-0-profiles.json",
+        "before-0-audit.json",
+        "before-0-profiles.json"
+      ],
+      "reports": [
+        {
+          "file": "after-0-audit.json",
+          "corridor": {
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 277,
+              "bright_candidates": 9416,
+              "complete": true,
+              "flank_contrast_insufficient": 935,
+              "flank_support_missing": 179,
+              "local_ground_missing": 19,
+              "local_height_mismatch": 5919,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 2087
+            },
+            "contrasted_points": 277,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 8,
+            "measured_lane_widths_m": [],
+            "reason": "need one unambiguous bundle with at least one strong track per configured lane",
+            "residual_p90_m": null,
+            "roi_points": 92677,
+            "tracks": [],
+            "white_candidates": 9416
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": true,
+            "candidate_diagnostics": {
+              "accepted": 277,
+              "bright_candidates": 9416,
+              "complete": true,
+              "flank_contrast_insufficient": 935,
+              "flank_support_missing": 179,
+              "local_ground_missing": 19,
+              "local_height_mismatch": 5919,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 2087
+            },
+            "contrasted_points": 277,
+            "curb_pair_sections": 13,
+            "eligible_tracks": 1,
+            "heading_correction_degrees": -2.3201261635542254,
+            "limited": false,
+            "longest_supported_run": 8,
+            "maximum_divider_movement_m": 0.9231560343062172,
+            "reason": "unique strong paint track inside paired physical curbs; only the interior boundary was corrected",
+            "residual_p90_m": 0.06092214011391578,
+            "roi_points": 92677,
+            "sampled_sections": 25,
+            "track": {
+              "extrapolated_length_m": 0.5229798522595601,
+              "interpolated_length_m": 27.503914676189513,
+              "lateral_intercept_m": -0.0908979908986387,
+              "observed_intervals_m": [
+                [
+                  0.0,
+                  1.385314579109568
+                ],
+                [
+                  7.728630543513377,
+                  11.305973584724237
+                ],
+                [
+                  17.632315455987126,
+                  21.491360716282355
+                ],
+                [
+                  26.67887215895833,
+                  28.01728575253139
+                ],
+                [
+                  28.90205506632575,
+                  31.41625266282992
+                ],
+                [
+                  37.93396579366913,
+                  41.31773644601856
+                ],
+                [
+                  43.56199939923182,
+                  45.61810812797775
+                ]
+              ],
+              "observed_length_m": 18.114193451788235,
+              "source_points": 99,
+              "strong": true
+            }
+          }
+        },
+        {
+          "file": "before-0-audit.json",
+          "corridor": {
+            "applied": false,
+            "candidate_diagnostics": {
+              "accepted": 277,
+              "bright_candidates": 9416,
+              "complete": true,
+              "flank_contrast_insufficient": 935,
+              "flank_support_missing": 179,
+              "local_ground_missing": 19,
+              "local_height_mismatch": 5919,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 2087
+            },
+            "contrasted_points": 277,
+            "eligible_bundles": 0,
+            "heading_correction_degrees": null,
+            "limited": false,
+            "longitudinal_components": 8,
+            "measured_lane_widths_m": [],
+            "reason": "need one unambiguous bundle with at least one strong track per configured lane",
+            "residual_p90_m": null,
+            "roi_points": 92677,
+            "tracks": [],
+            "white_candidates": 9416
+          },
+          "divider": {
+            "ambiguous_sections": 0,
+            "applied": true,
+            "candidate_diagnostics": {
+              "accepted": 277,
+              "bright_candidates": 9416,
+              "complete": true,
+              "flank_contrast_insufficient": 935,
+              "flank_support_missing": 179,
+              "local_ground_missing": 19,
+              "local_height_mismatch": 5919,
+              "trace_ground_missing": 0,
+              "trace_height_mismatch": 2087
+            },
+            "contrasted_points": 277,
+            "curb_pair_sections": 13,
+            "eligible_tracks": 1,
+            "heading_correction_degrees": -2.3201261635542254,
+            "limited": false,
+            "longest_supported_run": 8,
+            "maximum_divider_movement_m": 0.9231560343062172,
+            "reason": "unique strong paint track inside paired physical curbs; only the interior boundary was corrected",
+            "residual_p90_m": 0.06092214011391578,
+            "roi_points": 92677,
+            "sampled_sections": 25,
+            "track": {
+              "extrapolated_length_m": 0.5229798522595601,
+              "interpolated_length_m": 27.503914676189513,
+              "lateral_intercept_m": -0.0908979908986387,
+              "observed_intervals_m": [
+                [
+                  0.0,
+                  1.385314579109568
+                ],
+                [
+                  7.728630543513377,
+                  11.305973584724237
+                ],
+                [
+                  17.632315455987126,
+                  21.491360716282355
+                ],
+                [
+                  26.67887215895833,
+                  28.01728575253139
+                ],
+                [
+                  28.90205506632575,
+                  31.41625266282992
+                ],
+                [
+                  37.93396579366913,
+                  41.31773644601856
+                ],
+                [
+                  43.56199939923182,
+                  45.61810812797775
+                ]
+              ],
+              "observed_length_m": 18.114193451788235,
+              "source_points": 99,
+              "strong": true
+            }
+          }
+        }
+      ],
+      "map_osm_and_source_geometry_unchanged": true
+    }
+  }
+}

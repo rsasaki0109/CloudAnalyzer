@@ -1,0 +1,17 @@
+{
+  "reference_inputs": [],
+  "cases": [
+    {
+      "name": "planning-1",
+      "options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": true,
+        "lane_width": 3.5,
+        "segment_length": 0
+      },
+      "trajectory_csv": "timestamp,x,y,z\n0,3820,73823,20\n1,3860,73846,20\n"
+    }
+  ],
+  "comparison": "lane_edge_inference"
+}

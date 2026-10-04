@@ -140,8 +140,8 @@ pub(super) fn apply(
                     let s = dx * scan.d[0] + dy * scan.d[1];
                     let t = dx * scan.normal[0] + dy * scan.normal[1];
                     point[2] = match scan.samples.ground(&[s, t, 0.0]) {
-                        Some(Some(z)) if (z - center[2]).abs() <= 0.3 => z,
-                        None => {
+                        Ok(Some(z)) if (z - center[2]).abs() <= 0.3 => z,
+                        Err(_) => {
                             report.limited = true;
                             reason = Some("lane-edge ground query budget exceeded");
                             break;

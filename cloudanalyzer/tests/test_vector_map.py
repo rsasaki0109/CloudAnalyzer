@@ -1031,3 +1031,49 @@ def test_lane_edge_width_prior_retains_road_edge_candidates_separately(tmp_path)
     quality = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))["quality"]
     assert not quality["low_support_lanes"] and not quality["limited"]
     assert (cloud.read_bytes(), trace.read_bytes()) == original
+
+
+def test_intensity_paint_cli_is_explicit_and_keeps_raw_channels(tmp_path):
+    import numpy as np
+    import laspy
+    pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(-2, 32.001, .1), np.arange(-9, 10.001, .1))
+    x, y = x.ravel(), y.ravel()
+    white = np.zeros(len(x), dtype=bool)
+    for i, offset in enumerate([-.25, 2.75, 5.75]):
+        span = (x >= 4) & (x <= 6) if i == 2 else (np.rint(x * 10).astype(int) % 80 < 40)
+        white |= (abs(y - (offset - .04 * x)) < .055) & span
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x, y, 12 + .02 * x
+    data.red = data.green = data.blue = np.full(len(x), 65535, dtype=np.uint16)
+    data.intensity = np.where(white, 60000, 18000).astype(np.uint16)
+    cloud, trace = tmp_path / "intensity.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    trace.write_text("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n", encoding="utf-8")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "rgb"), fit_paint_corridor=True)
+    assert "paint_channel" not in default["options"]
+    assert not default["extraction"]["paint_corridor"]["applied"]
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trace), "--out", str(tmp_path / "intensity"),
+        "--fit-paint-corridor", "--fit-source-surface", "--paint-channel", "intensity"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    fit = report["extraction"]["paint_corridor"]
+    assert fit["applied"] and fit["source_channel"] == "intensity"
+    assert fit["intensity_range"] == [18000, 60000]
+    diagnostics = fit["candidate_diagnostics"]
+    assert diagnostics["complete"] and diagnostics["accepted"] == fit["contrasted_points"]
+    outcomes = ["local_ground_missing", "local_height_mismatch", "trace_ground_missing",
+                "trace_height_mismatch", "flank_support_missing", "flank_contrast_insufficient", "accepted"]
+    assert sum(diagnostics[key] for key in outcomes) == diagnostics["bright_candidates"]
+    assert diagnostics["bright_candidates"] == fit["white_candidates"]
+    assert fit["measured_lane_widths_m"] == pytest.approx([3, 3], abs=.04)
+    assert report["extraction"]["rgb_paint_vertices"] == 0
+    assert report["extraction"]["intensity_vertices"] > 0
+    assert report["extraction"]["width_prior_vertices"] > 0
+    assert (cloud.read_bytes(), trace.read_bytes()) == original
+    with pytest.raises(ValueError, match="paint_channel"):
+        build_vector_map(str(cloud), str(trace), str(tmp_path / "invalid"), paint_channel="automatic")
+    assert not (tmp_path / "invalid").exists()

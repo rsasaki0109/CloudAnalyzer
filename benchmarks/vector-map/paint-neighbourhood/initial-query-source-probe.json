@@ -1,0 +1,86 @@
+[
+  {
+    "case": "arterial-south",
+    "reference_inputs": [],
+    "roi_points": 773998,
+    "reported_reason": "trace is not straight within five degrees",
+    "diagnostic": "curvature"
+  },
+  {
+    "case": "arterial-middle",
+    "reference_inputs": [],
+    "roi_points": 160313,
+    "reported_reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+    "diagnostic": "contrast_neighbours",
+    "query": {
+      "center": [
+        -0.8412268714053204,
+        17.672830458456065
+      ],
+      "radius": 0.8,
+      "coarse_candidates": 5507,
+      "exact_radius_points": 2926,
+      "coarse_outside_radius_points": 2581,
+      "exact_z_range": [
+        28.795749999999998,
+        41.346999999999994
+      ]
+    }
+  },
+  {
+    "case": "arterial-north",
+    "reference_inputs": [],
+    "roi_points": 433241,
+    "reported_reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+    "diagnostic": "roi_points"
+  },
+  {
+    "case": "west-south",
+    "reference_inputs": [],
+    "roi_points": 97142,
+    "reported_reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+    "diagnostic": "contrast_neighbours",
+    "query": {
+      "center": [
+        4.939674584910823,
+        0.9639302659885031
+      ],
+      "radius": 0.8,
+      "coarse_candidates": 4120,
+      "exact_radius_points": 2506,
+      "coarse_outside_radius_points": 1614,
+      "exact_z_range": [
+        28.835749999999997,
+        41.46875
+      ]
+    }
+  },
+  {
+    "case": "east-south",
+    "reference_inputs": [],
+    "roi_points": 96593,
+    "reported_reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+    "diagnostic": "contrast_neighbours",
+    "query": {
+      "center": [
+        3.4008415225243542,
+        13.490077964977273
+      ],
+      "radius": 0.8,
+      "coarse_candidates": 6322,
+      "exact_radius_points": 3163,
+      "coarse_outside_radius_points": 3159,
+      "exact_z_range": [
+        29.082499999999996,
+        39.911
+      ]
+    }
+  },
+  {
+    "case": "west-north",
+    "reference_inputs": [],
+    "roi_points": 125769,
+    "reported_reason": "trace is not straight within five degrees",
+    "diagnostic": "curvature"
+  }
+]

@@ -1,0 +1,41 @@
+{
+  "source_commit": "2242539e9be8e0d0c8d7769049b4b9f965c745e7",
+  "reference_inputs": [],
+  "scenes": {
+    "tokyo": {
+      "ir_osm_byte_exact": true,
+      "source_profile_geometry_exact": true,
+      "ir_osm_files": 24,
+      "profile_files": 12,
+      "report_profile_files": 24,
+      "rgb_changes_only_optional_budget_fields": null
+    },
+    "tokyo-ui": {
+      "ir_osm_byte_exact": true,
+      "source_profile_geometry_exact": true,
+      "ir_osm_files": 4,
+      "profile_files": 2,
+      "report_profile_files": 4,
+      "rgb_changes_only_optional_budget_fields": null
+    },
+    "rgb-planning": {
+      "ir_osm_byte_exact": true,
+      "source_profile_geometry_exact": true,
+      "ir_osm_files": 12,
+      "profile_files": 6,
+      "report_profile_files": 12,
+      "rgb_changes_only_optional_budget_fields": true
+    },
+    "rgb-tokyo": {
+      "ir_osm_byte_exact": true,
+      "source_profile_geometry_exact": true,
+      "ir_osm_files": 24,
+      "profile_files": 12,
+      "report_profile_files": 24,
+      "rgb_changes_only_optional_budget_fields": true
+    }
+  },
+  "default_rgb_artifacts": 83,
+  "default_rgb_exact_bytes": 79,
+  "default_rgb_optional_diagnostic_changes": 4
+}

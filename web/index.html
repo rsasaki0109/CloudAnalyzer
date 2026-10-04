@@ -766,10 +766,18 @@
             <label><input id="vm-show-markings" type="checkbox" checked /> Boundaries</label>
             <label><input id="vm-show-virtual" type="checkbox" /> Virtual boundaries</label>
             <label><input id="vm-show-regulations" type="checkbox" checked /> Stops, crossings &amp; signals</label>
+            <label><input id="vm-show-evidence" type="checkbox" /> Build evidence: source dots &amp; inferred connectors</label>
+            <label><input id="vm-show-roadEdges" type="checkbox" /> Saved road-edge drafts (before trimming)</label>
             <label><input id="vm-show-labels" type="checkbox" checked /> Object labels</label>
           </div>
           <label class="small">Point cloud brightness <input id="vm-context" type="range" min="10" max="100" value="100" aria-label="Point cloud brightness" /></label>
           <p class="hint small">Select a lane to highlight its incoming and outgoing connections. Signal faces show geometry, not lamp states. Crosswalk stripes are a display convention.</p>
+          <p class="small" id="vm-evidence-summary"></p>
+          <button id="vm-evidence-inspect" disabled>Inspect source</button>
+          <select id="vm-evidence-profile" aria-label="Build evidence profile" disabled></select>
+          <select id="vm-evidence-vertex" aria-label="Build evidence vertex" disabled></select>
+          <p class="small" id="vm-evidence-detail">No build snapshot yet.</p>
+          <p class="small" id="vm-evidence-render-limit" hidden>Partial display: dash rendering budget or numeric range reached. Map geometry is unchanged.</p>
         </details>
         <div class="button-row">
           <button id="vm-road" aria-pressed="false" title="Click points along a road; its lanes are built around them">Draw road</button>
@@ -818,7 +826,9 @@
             <label title="Translate a straight trace only when both source curbs consistently enclose the configured road width. Curved traces and unconfirmed corridors are held; lane directions and counts still need review."><input id="vm-align-curbs" type="checkbox" /> Align straight traces using paired curbs</label>
             <label title="Requires an applied interior paint correction. Infer a configured-width outer lane edge inside distant verified curbs. Original road-edge candidates remain in the report; this does not detect outer paint or classify a shoulder."><input id="vm-lane-edges" type="checkbox" /> Infer lane edges inside distant curbs (width assumption)</label>
             <label title="Correct only the interior boundary of a two-lane road using a strong white paint track enclosed by paired physical curbs. Outer boundaries remain candidates; missing paint is inferred."><input id="vm-paint-divider" type="checkbox" /> Correct the interior line using paint and paired curbs</label>
-            <label title="Use thin white paint with dark ground on both sides to fit straight parallel boundaries. Gaps and sparse extensions stay inferred; counts and directions require review."><input id="vm-paint-corridor" type="checkbox" /> Fit straight lanes using observed white paint</label>
+            <label title="Use thin white paint with dark ground on both sides to fit straight parallel boundaries. Gaps and sparse extensions stay inferred; counts and directions require review."><input id="vm-paint-corridor" type="checkbox" /> Fit straight lanes using paint candidates</label>
+            <label>Paint-fit source <select id="vm-paint-channel"><option value="rgb">RGB (default)</option><option value="intensity">Retained intensity (explicit)</option></select></label>
+            <p class="hint small">Applies to paint corridor/divider fits. Intensity uses local contrast; missing, ambiguous or unsupported paint keeps existing geometry. Counts and lane roles remain your inputs.</p>
             <label title="Point coverage can end at a scan limit or occlusion. Use paint or curb observations to position inferred lines; coverage-edge candidates still require review."><input id="vm-physical-anchors" type="checkbox" /> Anchor inferred lane widths to paint and curbs only</label>
             <label title="Choose a continuous path through candidate edges; rejected observations can become width priors"><input id="vm-track-boundaries" type="checkbox" checked /> Track continuous boundaries</label>
             <label title="Fit trajectory-relative curves with at most 0.5 m horizontal movement; preserve supported corners and ground heights"><input id="vm-fit-boundaries" type="checkbox" checked /> Reduce boundary jitter</label>
@@ -1034,6 +1044,7 @@
       <div id="vm-legend" class="vm-legend" hidden aria-label="Vector map legend">
         <span><i class="road"></i>Road</span><span><i class="turn"></i>Turn</span>
         <span><i class="stop"></i>Stop</span><span><i class="walk"></i>Crosswalk</span><span><i class="signal"></i>Signal geometry</span>
+        <span id="vm-evidence-legend" hidden><i class="source-paint"></i>Paint source <i class="source-intensity"></i>Intensity source <i class="source-curb"></i>Curb source <i class="source-coverage"></i>Coverage limit <i class="inferred-line"></i>Inferred connectors <i class="no-evidence"></i>No build snapshot <i class="saved-edge"></i>Road-edge draft (pre-trim)</span>
         <span id="vm-route-legend" hidden><i class="incoming"></i>Incoming <i class="selected"></i>Selected <i class="outgoing"></i>Outgoing</span>
       </div>
       <svg id="lasso" class="lasso" hidden><polygon points="" /></svg>

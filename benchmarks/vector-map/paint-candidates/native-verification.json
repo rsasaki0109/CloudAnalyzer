@@ -1,0 +1,105 @@
+{
+  "reference_inputs": [],
+  "source_commit": "2748d07dce70f62dafd9451470662d923147ffae",
+  "native_sha256": "d82be28db542c238da6a0ddac98b22eabb791152a47c8f82be31c142342d4309",
+  "cases": [
+    {
+      "case": "arterial-south",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-middle",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-north",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "west-south",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "east-south",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "west-north",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-south",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-middle",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-north",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "west-south",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "east-south",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "west-north",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    }
+  ],
+  "isolated_ui_cases": [
+    {
+      "scene": "tokyo-ui",
+      "mode": "before",
+      "channel": "rgb",
+      "map_osm_extraction_quality_exact": true
+    },
+    {
+      "scene": "tokyo-ui",
+      "mode": "after",
+      "channel": "intensity",
+      "map_osm_extraction_quality_exact": true
+    },
+    {
+      "scene": "planning-ui",
+      "mode": "before",
+      "channel": "rgb",
+      "map_osm_extraction_quality_exact": true
+    },
+    {
+      "scene": "planning-ui",
+      "mode": "after",
+      "channel": "rgb",
+      "map_osm_extraction_quality_exact": true
+    }
+  ]
+}

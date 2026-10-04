@@ -390,3 +390,12 @@ label.inline input[type="color"] { width: 28px; height: 22px; padding: 0 2px; }
   input[type="range"] { min-height: 28px; }
   .cloud-list .remove, .cloud-list .icon, .measure-list .remove { min-width: 36px; }
 }
+
+.vm-legend .source-paint { background: #31e4df; border-radius: 50%; }
+.vm-legend .source-curb { background: #ffad58; border-radius: 50%; }
+.vm-legend .inferred-line { background: repeating-linear-gradient(90deg,#b69cff 0 3px,transparent 3px 5px); }
+.vm-legend .saved-edge { background: repeating-linear-gradient(90deg,#ffad58 0 1px,transparent 1px 3px); }
+
+.vm-legend .source-intensity { background: #ffe066; border-radius: 50%; }
+.vm-legend .source-coverage { background: #8b98a5; border-radius: 50%; }
+.vm-legend .no-evidence { background: repeating-linear-gradient(90deg,#5d899c 0 3px,transparent 3px 5px); }

@@ -70,6 +70,14 @@ pose graph with one scan per pose.
   to guard a single white-line fit, with separate errors for interior and outer boundaries.
   [Lane edges inside distant curbs](docs/vector-map-lane-edges.md) retain road-edge candidates
   separately and label the configured-width outer edge as inferred.
+  [Build evidence inspection](docs/vector-map-evidence.md) distinguishes selected paint/curb sources,
+  inferred connectors and retained road-edge drafts without changing exports.
+  [Retained-intensity paint fits](docs/vector-map-intensity-paint.md) explicitly select the source
+  channel, with guarded corrections and recorded real-source holds.
+  [Bounded paint search](docs/vector-map-paint-search.md) reduces unrelated-cell query limits
+  and reports the remaining search failures without adopting partial fits.
+  [Bright-candidate diagnostics](docs/vector-map-paint-candidates.md) explain missing support,
+  height mismatches and insufficient paint contrast, including interrupted scans.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

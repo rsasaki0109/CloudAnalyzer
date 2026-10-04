@@ -54,3 +54,10 @@ review requirements and limitations of each workflow.
 [Feature geometry editing](vector-map-feature-editing.md) supports XY dragging,
 numeric XYZ changes and signal housing height adjustments. Observed paint and
 stored lamps retain their source coordinates; edits are marked for review.
+
+## Build evidence inspection
+
+After generating roads in this session, enable the optional [build evidence display](vector-map-evidence.md)
+to inspect selected paint/curb-source dots, inferred connectors and saved pre-trim
+road-edge drafts. Imported maps have no build history. These switches do not change
+map geometry or exports; source history is not persisted in the map.

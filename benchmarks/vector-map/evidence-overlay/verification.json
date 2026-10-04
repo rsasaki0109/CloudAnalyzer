@@ -1,0 +1,703 @@
+{
+  "role": "Read-only diagnostic display and regression; no new accuracy measurement or held-out evaluation",
+  "source_commit": "40087e247c27560303335a500b6f8d429cf70a9c",
+  "merged_baseline": "c02e8ef91ff7cb8b6a9240c798ab4b6768ddf589",
+  "generation_reference_inputs": [],
+  "runtime_git_sha256": {
+    "rust/crates/ca-core/src/vector_map.rs": "2badd96a32921d03d6584563d367c305c34e9b75778fec32965c7228c552b92c",
+    "rust/crates/ca-core/src/vector_map/evidence.rs": "dfc796728c2b8a1881f60c75f0c1caf102fa028f88aae481e26615d96e0cdea4",
+    "rust/crates/ca-wasm/src/vector_map.rs": "765eb639d2dcc5e69f3e869b6258d5a40344ee5bb803241e040a648e1d9a7b3d",
+    "web/src/app/vectormap.ts": "76d41410ac37e21949fb237451df3d0718b41437adf962ba578f23dd3db9fe20",
+    "web/src/app/vectormap-geometry.ts": "b7ce5bc985775588c77e5d3ca0c13554c5d492f444c8c6b2d92669941736d69c",
+    "web/index.html": "1ad2b42da3ca5b8df4d2a043fa8a9dcb855e79141f55ff041e1c5518870a1ea6",
+    "web/src/style.css": "fbc0b6cdb8953fc501eaec64964658e3d409f6bcb38167eb3e28aabc6516aa24",
+    "web/media/vector-map-physical-anchors.spec.ts": "c68094c2d3e19b187e51077abda5aa3eae239650602d9fa9d6bb57c139f2394e",
+    "web/e2e/app.spec.ts": "1fba9c6fb92ec9254ec5cbe3f7c47d3c4a43acfbd86dd5d822896dd3c047914d",
+    "web/tests/vectormap-geometry.test.mjs": "ce5e00d20bd6afb27c01a97db0507500f10a7a0d1aa2ed035791717cc42b198c"
+  },
+  "wasm_sha256": "e9d9abcd7748f9e579e94c7c7dfc87d6a0e9790156b7be6cf3b2684918fa3908",
+  "production_wasm_sha256": "e9d9abcd7748f9e579e94c7c7dfc87d6a0e9790156b7be6cf3b2684918fa3908",
+  "native_geometry_baseline": {
+    "source_commit": "ccfe1dc8dddadbcb577ffaa1b0206026abd5277c",
+    "native_sha256": "e5ed6d771754ef60b35ef4f2e3624b8b3ec7f069a51ab3d4f618ef7cee72d3cb",
+    "role": "Previously frozen independent native geometry; native wheel not rebuilt for this display change"
+  },
+  "source_regression": {
+    "generation_reference_inputs": [],
+    "executable_sha256": "0b42ab4526ab51f50960e6963998d972634fd8763ded6a74535ca1f8d8d7384c",
+    "scenes": {
+      "planning": {
+        "cases": 3,
+        "source_sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+        "inputs_sha256": "c0506fbfe73eace787ad66506ac83c7d6e00231451d4021a5809d9f30e85dbde",
+        "all_generated_outputs_byte_exact": true,
+        "artifact_sha256": {
+          "after-0-audit.json": "5a805a73c4f400a021c8f2270ebae046217f8ad50e54b7ff8a60eb552bb21ddd",
+          "after-0-profiles.json": "51a0aea9df26e4ea4c6df3834ac5d137b0860e4edbb698ef44da93241f12d2ab",
+          "after-0.json": "574cd66df38713dcfa46cd267aff8c1a606436de5864f5683c735a01548488be",
+          "after-0.osm": "c66ff02b5228afe3b6cb3b6fa848e3272d7633d8cefad776e689dcb264171b73",
+          "after-1-audit.json": "7812692f520632ef83a430f26f4b27a363b6371db38437148462105552ccef5f",
+          "after-1-profiles.json": "d47fa0331a717948bd3748b72959d8f0d3233b7eb5552216ffb01b9f2e019101",
+          "after-1.json": "2895a92a017ca8919303741a138754580817156cb4b8707e68c92bd24486c67a",
+          "after-1.osm": "82b124c2bbccdc013f976a89352a3ae4f85aa50dd4e179409d933d425ed2ae09",
+          "after-2-audit.json": "ae008acac7e7522a3a32ebe0c6604ead69e704e970b1359e5a80e2d6347a69e9",
+          "after-2-profiles.json": "af639c3fc29fe6b1699840cc11625cc51d420a4ef647bba3210eb42449704f4d",
+          "after-2.json": "9e79633bfba56849e12da021114050c3fdd035017068fbdff5917559e58f1317",
+          "after-2.osm": "81039cbd035339e57b855b336c41cef1c13d156dcd82dbc33c3d78299afa22d7",
+          "before-0-audit.json": "45d2b35ee53135c4d27b7ab2dc9b30728b0f9d8e01e911b343a629474ef5f73c",
+          "before-0-profiles.json": "0de656e1754b4282bd78876b9d6cfc99b7059d1308784b3777c49e9a073a5a71",
+          "before-0.json": "574cd66df38713dcfa46cd267aff8c1a606436de5864f5683c735a01548488be",
+          "before-0.osm": "c66ff02b5228afe3b6cb3b6fa848e3272d7633d8cefad776e689dcb264171b73",
+          "before-1-audit.json": "1a56aed9faa7d535c902cea3245c8291c6ec35f14a9c3c72ffb35079231e0e63",
+          "before-1-profiles.json": "3b781be63d7cc07062686a280a3958e8892632aaa7a102376e260af262c4aa95",
+          "before-1.json": "a7540da58c7cabdd650de42b5c6b91bd6d95e4150b00ef0df6b5d5ed531dede1",
+          "before-1.osm": "b25254de28380010cc9934206bb517c041e739112c316e53320dc69cf3664504",
+          "before-2-audit.json": "7b0b02da45d8fd40aa061918cc4c91e7b1a4ddf93c5b29deb4f80430a0bc78a3",
+          "before-2-profiles.json": "c80923549ddffbf044f1332dc4683ebe4b4664f919024c2d1031b3c2d356016d",
+          "before-2.json": "d8e8c2282af2a3c6616fdea976620de04590008a45c1298cc036dab9e801431f",
+          "before-2.osm": "98dbcb7d62b2c080407f0c4b581b6971e5812eac6e108e2a75336a835ecf169c",
+          "comparison.json": "2121b7e22ba1fa64d4e0efc9247bf3cc8473b9c88a5e97fc1ee4000674afad64",
+          "trajectory-0.csv": "362cfd1487c58213b3acdf4952ede41cb4125b11cfc905b92ddb457eda82b07a",
+          "trajectory-1.csv": "2d63f879a0cc13aa1754e9c75650078016f45687a91dfc7a23aee762003b64b6",
+          "trajectory-2.csv": "1a7dd071bba76d1617a4cebe2b64dfb6c612076fb5a05ae5ae3bca3334c0d8d9"
+        }
+      },
+      "tokyo": {
+        "cases": 6,
+        "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+        "inputs_sha256": "c62e412e7411f9bd5d74e0045976fa6d17be5f5336aa5d2ca21ee8e43b91638d",
+        "all_generated_outputs_byte_exact": true,
+        "artifact_sha256": {
+          "after-0-audit.json": "8d854332c3b422d6609473db9565186dcf582610547bb292bb07d025de1614b5",
+          "after-0-profiles.json": "c544a975927edc182f0de3b798edbb2100dda4fec7e2c18b0d5ceddddf3577f1",
+          "after-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+          "after-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+          "after-1-audit.json": "f00a351962f72ac7e436b7f3df02ccaa85788ceb32e0f33df912255eafbb4ea3",
+          "after-1-profiles.json": "68b969e276b1dfd69b9a04bf477d6512128f51d0b2c2818ee12a058c94191c4a",
+          "after-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+          "after-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+          "after-2-audit.json": "946e7844683c36da03fc40731510fea51f8bd6733154e92a5e7ea3c816b957e4",
+          "after-2-profiles.json": "493c72caa3607dbe831299df2e8545bc59f933bf89232fbd37f1eba49f6924f2",
+          "after-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+          "after-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+          "after-3-audit.json": "9d396287a213ba8c515fcf82c256c5ac73a1cb83d78bedbad2290d1e27fc9d53",
+          "after-3-profiles.json": "5a434a1edad02574b57c76d20277db781ad0501a5f40ac7005518a25e57a01df",
+          "after-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+          "after-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+          "after-4-audit.json": "d07a0567d6e07a17d0bc5d4a59706eac22598a2a5ff027d570ad9176b40a5854",
+          "after-4-profiles.json": "7fed5e8ea73c86a72bae9314b519da3466cced74d9be436e54e2d815455d11a7",
+          "after-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+          "after-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+          "after-5-audit.json": "2b9540a334c9eddc9c3861536d8aa44be67369c708da52c48cc77d60ccc60f14",
+          "after-5-profiles.json": "4ec06ac963b260298fcc7a271a57740e51846db28894b4fc898db28d24c04db8",
+          "after-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+          "after-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+          "before-0-audit.json": "558c081329d5224a2687c58f5529de819425739d11e70b2ede39ee5aa8111771",
+          "before-0-profiles.json": "29094543b0b02cbb6dff7c2150643b3dd8dea1c62a7085c5e24a12a6977d6c7d",
+          "before-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+          "before-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+          "before-1-audit.json": "2e4ebeaef43154c4735bf62a43d2bb6a7ab15cfdffde57dc5d64c34e07270fd0",
+          "before-1-profiles.json": "00d36f172e6a6cb09e839f01f14b96ff460ebe3e51c779de309d6aac4eee5bd4",
+          "before-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+          "before-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+          "before-2-audit.json": "6be1a83a535b4859119e61ceb2517c99520d9e03aa2e0b6bc0874cd617e8a5c8",
+          "before-2-profiles.json": "2d2144722ea1d02e10b2c0cde70440280f15869813dee6bd5dc1990c3ce08725",
+          "before-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+          "before-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+          "before-3-audit.json": "4d8e2fd77ceab25bf6190ee090c89143b57eb95c453e1f38a872883c276c797e",
+          "before-3-profiles.json": "a68f751f2faad880749c5c6f8f607e679deaa1eea00bfbe6d000c395e9584913",
+          "before-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+          "before-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+          "before-4-audit.json": "a1e0bc03406449be24a865e57b05a8b6f07bc75e3bb5dc78217ac3f3e8b0b462",
+          "before-4-profiles.json": "bec1a9cf4027948339433cd57ae94b3c716d815168149f801f05d0e5c25eae4d",
+          "before-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+          "before-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+          "before-5-audit.json": "e8dbe6bbaa6153da325254f0d437127e74c80dd0b6c026f968cd11ed5c733649",
+          "before-5-profiles.json": "39cec7eaeac6a18889249e7fd41f06945389f68c6da38f7785943c9f5b5e21cf",
+          "before-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+          "before-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+          "comparison.json": "9e0239616c0760843e52d1d710e3050722ce82f4bbfec7c99192ab96263f388c",
+          "trajectory-0.csv": "fcdfd2c453fd7fa5b4d458d100806533cee59f225aea56e986286cc896ae1ca9",
+          "trajectory-1.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b",
+          "trajectory-2.csv": "db591b8a2ab77281b967583f704bf3224454120b9a00b5d8c3a59a0694bb989b",
+          "trajectory-3.csv": "6cffc6ff3d8f545f998f45b6893408c28c0e39e95f7ca484beef309e23583ca4",
+          "trajectory-4.csv": "34a86c58a094080d9693ef5cb7073794fe51a3581592da2d2be9c962f5005b38",
+          "trajectory-5.csv": "7cae83e443960483cd1b22e21293b02ef75da381bdaa3b86a097a6315359b8c1"
+        }
+      }
+    }
+  },
+  "browser": {
+    "sourcePoints": 1757841,
+    "generationReferenceInputs": [],
+    "physicalAnchorsOnly": true,
+    "evidenceOverlay": true,
+    "evidenceSummary": "6 build profiles: 9 RGB paint, 0 intensity, 12 curb, 0 coverage-limit and 45 inferred vertices. 1 saved road-edge drafts before trimming. Selected sources precede fitting; connecting lines are inferred. This is a build snapshot, not a live source audit.",
+    "evidenceToggleOsmByteExact": true,
+    "canvasEvidenceInspection": true,
+    "laneEdgeInference": {
+      "applied": true,
+      "configured_lane_width_m": 3.5,
+      "limited": false,
+      "minimum_curb_gap_m": 0.5,
+      "reason": "explicit lane-width prior used inside distant curbs; road-edge candidates retained separately for review",
+      "retained_road_edges": [
+        {
+          "boundary_slot": 2,
+          "candidate_road": 0,
+          "evidence": [
+            "width_prior",
+            "width_prior",
+            "width_prior",
+            "width_prior",
+            "width_prior",
+            "width_prior",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb"
+          ],
+          "geometry": [
+            [
+              3822.245045801056,
+              73819.09557251989,
+              19.171430587768555
+            ],
+            [
+              3824.2930397679147,
+              73820.54917953191,
+              19.170499801635742
+            ],
+            [
+              3825.5544864003673,
+              73821.36456069158,
+              19.170583724975586
+            ],
+            [
+              3827.2934706222827,
+              73822.35250882561,
+              19.172922134399414
+            ],
+            [
+              3829.106356170058,
+              73823.21193291471,
+              19.17128562927246
+            ],
+            [
+              3830.9492933147285,
+              73824.01909335711,
+              19.169286727905273
+            ],
+            [
+              3832.7735893124577,
+              73824.85867318544,
+              19.233999252319336
+            ],
+            [
+              3834.5565822345393,
+              73825.77008444963,
+              19.233665466308594
+            ],
+            [
+              3836.3224814291693,
+              73826.71122393549,
+              19.204248428344727
+            ],
+            [
+              3838.0931872054543,
+              73827.64400414893,
+              19.256420135498047
+            ],
+            [
+              3839.8562042448752,
+              73828.59015607875,
+              19.22561264038086
+            ],
+            [
+              3841.6274426559226,
+              73829.52200997084,
+              19.1929988861084
+            ],
+            [
+              3843.422013541004,
+              73830.41328564717,
+              19.228614807128906
+            ],
+            [
+              3845.2168031913993,
+              73831.30418086216,
+              19.262264251708984
+            ],
+            [
+              3846.989409033023,
+              73832.2336566142,
+              19.244062423706055
+            ],
+            [
+              3848.7568568070988,
+              73833.17210291844,
+              19.19049835205078
+            ],
+            [
+              3850.5368073346726,
+              73834.08880530349,
+              19.246044158935547
+            ],
+            [
+              3852.3139213487066,
+              73835.01044075559,
+              19.228221893310547
+            ],
+            [
+              3854.0934157973193,
+              73835.92793632159,
+              19.265501022338867
+            ],
+            [
+              3855.8577624358536,
+              73836.87177590503,
+              19.232263565063477
+            ],
+            [
+              3857.6207002093906,
+              73837.8180656884,
+              19.189664840698242
+            ],
+            [
+              3859.3967012203407,
+              73838.74163679808,
+              19.243423461914062
+            ],
+            [
+              3860.9885985605624,
+              73839.57102963928,
+              19.195499420166016
+            ],
+            [
+              3862.0954198573177,
+              73840.1373762193,
+              19.187286376953125
+            ],
+            [
+              3863.084303262661,
+              73840.63599432584,
+              19.243730545043945
+            ]
+          ],
+          "reference": [
+            [
+              3820,
+              73823,
+              19.171430587768555
+            ],
+            [
+              3822.1672657576437,
+              73824.24617781064,
+              19.170499801635742
+            ],
+            [
+              3823.46762521223,
+              73824.99388449703,
+              19.170583724975586
+            ],
+            [
+              3825.201437818345,
+              73825.99082674555,
+              19.172922134399414
+            ],
+            [
+              3826.9352504244607,
+              73826.98776899405,
+              19.17128562927246
+            ],
+            [
+              3828.6690630305757,
+              73827.98471124256,
+              19.169286727905273
+            ],
+            [
+              3830.4028756366906,
+              73828.9816534911,
+              19.16612434387207
+            ],
+            [
+              3832.1366882428056,
+              73829.97859573961,
+              19.163787841796875
+            ],
+            [
+              3833.8705008489205,
+              73830.97553798812,
+              19.16217613220215
+            ],
+            [
+              3835.6043134550364,
+              73831.97248023663,
+              19.16217613220215
+            ],
+            [
+              3837.3381260611513,
+              73832.96942248516,
+              19.164562225341797
+            ],
+            [
+              3839.0719386672663,
+              73833.96636473369,
+              19.157833099365234
+            ],
+            [
+              3840.8057512733812,
+              73834.9633069822,
+              19.155000686645508
+            ],
+            [
+              3842.539563879496,
+              73835.9602492307,
+              19.152523040771484
+            ],
+            [
+              3844.273376485611,
+              73836.95719147923,
+              19.148954391479492
+            ],
+            [
+              3846.007189091726,
+              73837.95413372775,
+              19.147544860839844
+            ],
+            [
+              3847.741001697841,
+              73838.95107597628,
+              19.146696090698242
+            ],
+            [
+              3849.474814303956,
+              73839.94801822476,
+              19.14569664001465
+            ],
+            [
+              3851.2086269100714,
+              73840.9449604733,
+              19.13691520690918
+            ],
+            [
+              3852.9424395161864,
+              73841.94190272181,
+              19.128000259399414
+            ],
+            [
+              3854.6762521223013,
+              73842.93884497034,
+              19.12350082397461
+            ],
+            [
+              3856.4100647284163,
+              73843.93578721883,
+              19.108936309814453
+            ],
+            [
+              3857.9648214960025,
+              73844.82977236022,
+              19.091705322265625
+            ],
+            [
+              3859.0413611524273,
+              73845.44878266264,
+              19.088193893432617
+            ],
+            [
+              3860,
+              73846,
+              19.088144302368164
+            ]
+          ],
+          "source_before_fitting": [
+            [
+              3822.384353544357,
+              73818.8532981837,
+              19.171430587768555
+            ],
+            [
+              3824.318999444023,
+              73820.5040322691,
+              19.170499801635742
+            ],
+            [
+              3825.386739040628,
+              73821.65629523026,
+              19.170583724975586
+            ],
+            [
+              3827.120551646726,
+              73822.65323747876,
+              19.172922134399414
+            ],
+            [
+              3829.08698411083,
+              73823.2456234525,
+              19.17128562927246
+            ],
+            [
+              3831.053416574956,
+              73823.83800942628,
+              19.169286727905273
+            ],
+            [
+              3832.8204605893548,
+              73824.77715792127,
+              19.233999252319336
+            ],
+            [
+              3834.554273195456,
+              73825.77410016977,
+              19.233665466308594
+            ],
+            [
+              3836.2880858015574,
+              73826.77104241829,
+              19.204248428344727
+            ],
+            [
+              3838.121592632538,
+              73827.59460340618,
+              19.256420135498047
+            ],
+            [
+              3839.855405238681,
+              73828.59154565474,
+              19.22561264038086
+            ],
+            [
+              3841.5892178447825,
+              73829.58848790325,
+              19.1929988861084
+            ],
+            [
+              3843.422724675721,
+              73830.41204889114,
+              19.228614807128906
+            ],
+            [
+              3845.2562315067016,
+              73831.23560987903,
+              19.262264251708984
+            ],
+            [
+              3846.9900441128316,
+              73832.23255212758,
+              19.244062423706055
+            ],
+            [
+              3848.7238567189465,
+              73833.2294943761,
+              19.19049835205078
+            ],
+            [
+              3850.5573635498827,
+              73834.053055364,
+              19.246044158935547
+            ],
+            [
+              3852.291176155997,
+              73835.04999761248,
+              19.228221893310547
+            ],
+            [
+              3854.1246829869956,
+              73835.87355860042,
+              19.265501022338867
+            ],
+            [
+              3855.858495593111,
+              73836.87050084893,
+              19.232263565063477
+            ],
+            [
+              3857.592308199194,
+              73837.86744309745,
+              19.189664840698242
+            ],
+            [
+              3859.4258150301744,
+              73838.69100408533,
+              19.243423461914062
+            ],
+            [
+              3860.980571797779,
+              73839.58498922673,
+              19.195499420166016
+            ],
+            [
+              3862.0571114541617,
+              73840.20399952913,
+              19.187286376953125
+            ],
+            [
+              3863.115444526625,
+              73840.5818356059,
+              19.243730545043945
+            ]
+          ]
+        }
+      ],
+      "sides": [
+        {
+          "applied": false,
+          "boundary_slot": 0,
+          "candidate_vertices": 25,
+          "distant_curb_vertices": 0,
+          "inferred_vertices_before_trimming": 0,
+          "longest_distant_curb_run": 0,
+          "maximum_movement_m": 0,
+          "median_observed_curb_distance_m": null,
+          "reason": "distant verified curbs need a majority of candidate vertices and three consecutive observations"
+        },
+        {
+          "applied": true,
+          "boundary_slot": 2,
+          "candidate_vertices": 25,
+          "distant_curb_vertices": 19,
+          "inferred_vertices_before_trimming": 25,
+          "longest_distant_curb_run": 19,
+          "maximum_movement_m": 0.9267301474231806,
+          "median_observed_curb_distance_m": 4.188441822398815,
+          "reason": "configured-width lane edge inferred inside distant curb candidates; no outer marking observed"
+        }
+      ]
+    },
+    "traceAlignment": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "curb_pair_sections": 13,
+      "interquartile_range_m": 0,
+      "longest_supported_run": 8,
+      "median_lateral_shift_m": 0,
+      "reason": "configured lane width already fits inside the paired curbs",
+      "sampled_sections": 25,
+      "shift_xy": [
+        0,
+        0
+      ]
+    },
+    "paintDivider": {
+      "ambiguous_sections": 0,
+      "applied": true,
+      "contrasted_points": 277,
+      "curb_pair_sections": 13,
+      "eligible_tracks": 1,
+      "heading_correction_degrees": -2.3201261635542254,
+      "limited": false,
+      "longest_supported_run": 8,
+      "maximum_divider_movement_m": 0.9231560343062172,
+      "reason": "unique strong paint track inside paired physical curbs; only the interior boundary was corrected",
+      "residual_p90_m": 0.06092214011391578,
+      "roi_points": 92677,
+      "sampled_sections": 25,
+      "track": {
+        "extrapolated_length_m": 0.5229798522595601,
+        "interpolated_length_m": 27.503914676189513,
+        "lateral_intercept_m": -0.0908979908986387,
+        "observed_intervals_m": [
+          [
+            0,
+            1.385314579109568
+          ],
+          [
+            7.728630543513377,
+            11.305973584724237
+          ],
+          [
+            17.632315455987126,
+            21.491360716282355
+          ],
+          [
+            26.67887215895833,
+            28.01728575253139
+          ],
+          [
+            28.90205506632575,
+            31.41625266282992
+          ],
+          [
+            37.93396579366913,
+            41.31773644601856
+          ],
+          [
+            43.56199939923182,
+            45.61810812797775
+          ]
+        ],
+        "observed_length_m": 18.114193451788235,
+        "source_points": 99,
+        "strong": true
+      }
+    },
+    "paintCorridor": {
+      "applied": false,
+      "contrasted_points": 277,
+      "eligible_bundles": 0,
+      "heading_correction_degrees": null,
+      "limited": false,
+      "longitudinal_components": 8,
+      "measured_lane_widths_m": [],
+      "reason": "need one unambiguous bundle with at least one strong track per configured lane",
+      "residual_p90_m": null,
+      "roi_points": 92677,
+      "tracks": [],
+      "white_candidates": 9416
+    },
+    "defaultOff": true,
+    "lanes": 4,
+    "fullSourceAudit": true,
+    "nativeBoundaryVertices": 66,
+    "maximumNativeVertexToExportedNodeDistanceM": 0,
+    "comparisonRole": "Boundary vertices to exported nodes, not complete topology or byte equality",
+    "nativeMapSha256": "2bd63cf29828992dcd2a96062f2cd8184f80fe885af5fdf7f446239d01c5a830",
+    "exportedOsmSha256": "ff43d88b126e2efac6b102c1859e6e48346ced1b6e49239a687d405dcbf410f3",
+    "oneStepUndo": true,
+    "pageErrors": []
+  },
+  "screenshot": "docs/images/web/vector-map-evidence-source.png",
+  "screenshot_sha256": "7ca39dc912bc22531b4c00c0994b86d5d91c2e2fb5700d084575dee094ba36fe",
+  "preserved_historical_proof_files": 455,
+  "preserved_artifact_manifest_sha256": "17c17255f153c00e3d555b3116ae9368981166313d19228b98d65403b05a039d",
+  "limits": {
+    "core_profile_vertices": 100000,
+    "core_profiles": 10000,
+    "session_vertex_records_including_actual_geometry_and_retained_edges": 100000,
+    "display_dash_segments_per_material": 20000
+  },
+  "local_checks": {
+    "rust_core_vector_map_tests": 84,
+    "rust_wasm_tests": 13,
+    "rust_clippy_workspace": "passed",
+    "geometry_tests": 7,
+    "production_vector_map_tests": 21,
+    "actual_source_browser_proof": 1,
+    "broad_local_browser_run": "Stopped after startup timeouts at six workers; 21 map tests then passed sequentially. Whole suite is checked by CI."
+  },
+  "limitations": [
+    "Session-only build snapshot, not a live source audit or persisted map evidence",
+    "All connectors are inferred, including between observed source points",
+    "Geometry edits hide affected snapshots; saved road edges hidden if any associated profile changes",
+    "Imported/manual maps have no invented source labels",
+    "Selected curb sources can be aggregate candidates, not individual raw returns",
+    "Pre-trim road-edge drafts may extend through deferred intervals and are not exported lane boundaries",
+    "Inferred lane widths and semantic roles still require review"
+  ]
+}

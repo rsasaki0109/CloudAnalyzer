@@ -5,7 +5,7 @@ import sys
 import zipfile
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Literal, Optional, cast
 
 import typer
 
@@ -1862,8 +1862,9 @@ def vectormap_build_cmd(
     physical_anchors_only: bool = typer.Option(False, "--physical-anchors-only", help="Exclude scan limits from inferred offset anchors; retain curb/paint observations"),
     align_trace_to_curbs: bool = typer.Option(False, "--align-trace-to-curbs", help="Translate straight traces using stable paired source curbs; preserve lane count and width priors"),
     infer_lane_edges: bool = typer.Option(False, "--infer-lane-edges", help="Infer configured-width lane edges inside distant curbs after paint-divider correction; retain road-edge candidates separately"),
-    fit_paint_divider: bool = typer.Option(False, "--fit-paint-divider", help="Correct a two-lane interior line from strong RGB paint guarded by paired curbs; retain outside boundaries"),
-    fit_paint_corridor: bool = typer.Option(False, "--fit-paint-corridor", help="Fit straight RGB paint bundles; report observed intervals and inferred gaps, preserving explicit lane roles"),
+    fit_paint_divider: bool = typer.Option(False, "--fit-paint-divider", help="Correct a two-lane interior line from strong source paint guarded by paired curbs; retain outside boundaries"),
+    fit_paint_corridor: bool = typer.Option(False, "--fit-paint-corridor", help="Fit straight source paint bundles; report observed intervals and inferred gaps, preserving explicit lane roles"),
+    paint_channel: str = typer.Option("rgb", "--paint-channel", help="Explicit paint-fit source: rgb (default) or retained intensity; no automatic fallback"),
     no_track_boundaries: bool = typer.Option(False, "--no-track-boundaries", help="Choose each boundary slice independently without continuity tracking"),
     no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without trajectory-relative curve fitting"),
     fit_source_surface: bool = typer.Option(False, "--fit-source-surface", help="Fit widths/heights to source ground; defer unsupported intervals; lane counts remain explicit"),
@@ -1889,6 +1890,7 @@ def vectormap_build_cmd(
             infer_lane_edges=infer_lane_edges,
             fit_paint_divider=fit_paint_divider,
             fit_paint_corridor=fit_paint_corridor,
+            paint_channel=cast(Literal["rgb", "intensity"], paint_channel),
             track_boundaries=not no_track_boundaries, fit_boundaries=not no_fit_boundaries,
             fit_source_surface=fit_source_surface,
             verify_curb_profiles=not no_verify_curb_profiles,

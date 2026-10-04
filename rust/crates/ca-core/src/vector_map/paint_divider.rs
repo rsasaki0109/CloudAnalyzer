@@ -8,6 +8,14 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct PaintDividerReport {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub source_channel: Option<super::PaintChannel>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget_stage: Option<paint_corridor::PaintBudgetStage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget_query: Option<paint_corridor::PaintQueryLimit>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub candidate_diagnostics: Option<paint_corridor::PaintCandidateDiagnostics>,
     pub applied: bool,
     pub reason: String,
     pub limited: bool,
@@ -32,7 +40,11 @@ pub(super) fn apply(
     roads: &mut [ExtractedRoad],
     build: &BuildReport,
 ) -> PaintDividerReport {
-    let mut report = PaintDividerReport::default();
+    let mut report = PaintDividerReport {
+        source_channel: (o.paint_channel == super::PaintChannel::Intensity)
+            .then_some(super::PaintChannel::Intensity),
+        ..Default::default()
+    };
     let hold = |reason: &str, mut r: PaintDividerReport| {
         r.reason = reason.into();
         r.maximum_divider_movement_m = 0.0;
@@ -56,9 +68,13 @@ pub(super) fn apply(
             report.limited = scan.limited;
             report.roi_points = scan.roi_points;
             report.contrasted_points = scan.contrasted_points;
+            report.budget_stage = scan.budget_stage;
+            report.budget_query = scan.budget_query;
+            report.candidate_diagnostics = scan.candidate_diagnostics;
             return hold(&scan.reason, report);
         }
     };
+    report.candidate_diagnostics = scan.report.candidate_diagnostics.clone();
     report.roi_points = scan.report.roi_points;
     report.contrasted_points = scan.report.contrasted_points;
     let mut tracks: Vec<_> = scan
@@ -212,9 +228,12 @@ pub(super) fn apply(
             let s = (p[0] - scan.origin[0]) * scan.d[0] + (p[1] - scan.origin[1]) * scan.d[1];
             let lateral = intercept + slope * s;
             let z = match scan.samples.ground(&[s, lateral, 0.0]) {
-                Some(Some(z)) => z,
-                None => {
+                Ok(Some(z)) => z,
+                Err(query) => {
                     report.limited = true;
+                    report.budget_stage =
+                        Some(paint_corridor::PaintBudgetStage::BoundaryGroundNeighbours);
+                    report.budget_query = Some(query);
                     return hold("divider ground query budget exceeded", report);
                 }
                 _ => return hold("divider lacks source ground at an output vertex", report),
@@ -248,7 +267,10 @@ pub(super) fn apply(
                         .total_cmp(&(scan.paint.points[b][0] - s).abs())
                 });
             let (evidence, source) = near.map_or((Evidence::WidthPrior, point), |i| {
-                (Evidence::RgbPaint, cloud.positions[scan.paint.ids[i]])
+                (
+                    o.paint_channel.evidence(),
+                    cloud.positions[scan.paint.ids[i]],
+                )
             });
             let old = road.boundaries[1][k];
             report.maximum_divider_movement_m = report
@@ -278,7 +300,28 @@ pub(super) fn apply(
 
 pub(super) fn warnings(build: &mut BuildReport) {
     if let Some(p) = &build.paint_divider {
-        build.warnings.push(if p.applied && build.lane_edge_inference.as_ref().is_some_and(|r| r.applied) { "Interior boundary corrected using RGB paint guarded by source curb pairs. Separate lane-edge inference then changed an outer boundary using the configured width; that outer line is not observed paint. Nearby interior paint only is labelled observed; gaps/extensions remain inferred.".into() } else if p.applied { "Interior boundary corrected using RGB paint guarded by source curb pairs. Outside candidate geometry was retained and source-footprint checks can still trim unsupported intervals. Only nearby paint is labelled observed; gaps/extensions remain inferred. Lane counts, divider semantics and directions require review.".into() } else { format!("Interior RGB paint correction held: {}. Existing geometry retained.",p.reason) });
+        let warning: String = if p.applied
+            && build
+                .lane_edge_inference
+                .as_ref()
+                .is_some_and(|r| r.applied)
+        {
+            "Interior boundary corrected using RGB paint guarded by source curb pairs. Separate lane-edge inference then changed an outer boundary using the configured width; that outer line is not observed paint. Nearby interior paint only is labelled observed; gaps/extensions remain inferred.".into()
+        } else if p.applied {
+            "Interior boundary corrected using RGB paint guarded by source curb pairs. Outside candidate geometry was retained and source-footprint checks can still trim unsupported intervals. Only nearby paint is labelled observed; gaps/extensions remain inferred. Lane counts, divider semantics and directions require review.".into()
+        } else {
+            format!(
+                "Interior RGB paint correction held: {}. Existing geometry retained.",
+                p.reason
+            )
+        };
+        build.warnings.push(
+            if p.source_channel == Some(super::PaintChannel::Intensity) {
+                warning.replace("RGB", "intensity")
+            } else {
+                warning
+            },
+        );
     }
 }
 
@@ -329,6 +372,45 @@ mod tests {
     }
 
     #[test]
+    fn intensity_divider_keeps_curbs_and_gap_labels_and_rejects_unpaired_sides() {
+        for missing in [false, true] {
+            let mut cloud = scene(0.2, missing, false);
+            let values = cloud
+                .colors
+                .as_ref()
+                .unwrap()
+                .iter()
+                .map(|c| f32::from(c[0]) * 256.)
+                .collect();
+            cloud.attributes.push(crate::Attribute {
+                name: crate::INTENSITY.into(),
+                values: crate::AttributeValues::F32(values),
+            });
+            cloud.colors = None;
+            let mut o = options();
+            o.paint_channel = super::super::PaintChannel::Intensity;
+            let mut off = o.clone();
+            off.fit_paint_divider = false;
+            let (before, _) = extract(&cloud, &trace(), &off).unwrap();
+            let (after, report) = extract(&cloud, &trace(), &o).unwrap();
+            assert_eq!(report.paint_divider.unwrap().applied, !missing);
+            for (a, b) in before.iter().zip(&after) {
+                for j in [0, 2] {
+                    assert_eq!(a.boundaries[j], b.boundaries[j]);
+                    assert_eq!(a.evidence[j], b.evidence[j]);
+                }
+                if missing {
+                    assert_eq!(a.boundaries, b.boundaries);
+                } else {
+                    assert!(b.evidence[1].contains(&Evidence::Intensity));
+                    assert!(b.evidence[1].contains(&Evidence::WidthPrior));
+                    assert!(!b.evidence[1].contains(&Evidence::RgbPaint));
+                }
+            }
+        }
+    }
+
+    #[test]
     fn one_dashed_track_corrects_only_interior_and_does_not_observe_gaps() {
         let cloud = scene(0.2, false, false);
         let original = cloud.positions.clone();
@@ -339,6 +421,15 @@ mod tests {
         let (after, report) = extract(&cloud, &trace(), &options()).unwrap();
         let fit = report.paint_divider.unwrap();
         assert!(fit.applied, "{fit:?}");
+        let diagnostics = fit.candidate_diagnostics.as_ref().unwrap();
+        assert!(diagnostics.complete && diagnostics.accepted > 0);
+        let scan = paint_corridor::scan(&cloud, &trace(), &options(), 1)
+            .ok()
+            .unwrap();
+        assert_eq!(
+            serde_json::to_value(diagnostics).unwrap(),
+            serde_json::to_value(scan.report.candidate_diagnostics).unwrap()
+        );
         assert_eq!(before.len(), after.len());
         assert!(fit.maximum_divider_movement_m > 0.005);
         assert!(fit.track.unwrap().interpolated_length_m > 8.0);

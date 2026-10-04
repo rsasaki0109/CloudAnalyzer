@@ -1,0 +1,32 @@
+[
+  {
+    "case": "west-south",
+    "reference_inputs": [],
+    "query": {
+      "candidate_points": 4115,
+      "center_st": [
+        14.364932306597417,
+        2.3763356406260687
+      ],
+      "limit": 4096,
+      "radius_m": 0.8
+    },
+    "exact_circle_points_source_only_cross_check": 3321,
+    "role": "Independent source-only cross-check, not native point-visit telemetry"
+  },
+  {
+    "case": "east-south",
+    "reference_inputs": [],
+    "query": {
+      "candidate_points": 4105,
+      "center_st": [
+        1.0158843908234725,
+        10.756190660706231
+      ],
+      "limit": 4096,
+      "radius_m": 0.8
+    },
+    "exact_circle_points_source_only_cross_check": 4576,
+    "role": "Independent source-only cross-check, not native point-visit telemetry"
+  }
+]

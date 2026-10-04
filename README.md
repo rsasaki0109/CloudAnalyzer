@@ -74,6 +74,8 @@ pose graph with one scan per pose.
   inferred connectors and retained road-edge drafts without changing exports.
   [Retained-intensity paint fits](docs/vector-map-intensity-paint.md) explicitly select the source
   channel, with guarded corrections and recorded real-source holds.
+  [Bounded paint search](docs/vector-map-paint-search.md) reduces unrelated-cell query limits
+  and reports the remaining search failures without adopting partial fits.
 
 To add a signal head from points, [measure an identified box](docs/commands/vectormap-signal.md)
 and confirm its controlled lanes. For COPC surveys,

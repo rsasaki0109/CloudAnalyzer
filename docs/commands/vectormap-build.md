@@ -81,6 +81,12 @@ ROI while raw points stay unchanged. Observed fitted paint uses intensity eviden
 gaps and extensions stay inferred. Missing, ambiguous or over-budget evidence holds
 the correction. See [normalization, source-only checks and real-data holds](../vector-map-intensity-paint.md).
 
+Over-budget paint neighbourhoods use a finer index in dense cells before holding
+the fit. Reports identify `budget_stage` and, for query limits, `budget_query`
+with potential point count, radius and cap. Web displays the failing operation.
+These diagnostics do not certify markings or relax the examination limits.
+See [bounded search and remaining source failures](../vector-map-paint-search.md).
+
 Curb candidates must have nearby road-side support and two raised outside bins no taller
 than `curb_height + 0.3 m` above the candidate. This rejects wall/vehicle steps and isolated
 low returns, but can also reject genuine curbs in sparse or cluttered scans. The report's

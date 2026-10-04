@@ -1,0 +1,99 @@
+{
+  "reference_inputs": [],
+  "source_commit": "2242539e9be8e0d0c8d7769049b4b9f965c745e7",
+  "native_sha256": "4698fbf0a1a6f1205bd6d8625a3f557c52f8ab3b2ee3218a08fb77ec34ea0fbb",
+  "cases": [
+    {
+      "case": "arterial-south",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-middle",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-north",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "west-south",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "east-south",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "west-north",
+      "channel": "rgb",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-south",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-middle",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "arterial-north",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "west-south",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "east-south",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    },
+    {
+      "case": "west-north",
+      "channel": "intensity",
+      "map_osm_extraction_audit_exact": true,
+      "both_channel_geometry_byte_exact": true
+    }
+  ],
+  "isolated_ui_cases": [
+    {
+      "channel": "rgb",
+      "map_osm_extraction_quality_exact": true
+    },
+    {
+      "channel": "intensity",
+      "map_osm_extraction_quality_exact": true
+    }
+  ],
+  "planning_ui_cases": [
+    {
+      "mode": "before",
+      "map_osm_extraction_quality_exact": true
+    },
+    {
+      "mode": "after",
+      "map_osm_extraction_quality_exact": true
+    }
+  ]
+}

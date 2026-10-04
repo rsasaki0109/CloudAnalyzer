@@ -3167,7 +3167,7 @@ test("vector map: genuine dense paint neighbourhood holds and identifies the sea
   await page.locator("#vm-build").click();
   await expect(status(page)).toContainText("Draft roads added");
   await expect(page.locator("#vm-build-report")).toContainText("White paint fit held (scan limit reached)");
-  await expect(page.locator("#vm-build-report")).toContainText("Search limit at nearby paint contrast");
+  await expect(page.locator("#vm-build-report")).toContainText("Search limit at ground near the trace");
   await expect(page.locator("#vm-build-report")).toContainText("limit 4096");
   await expect(page.locator("#vm-build-report")).not.toContainText("Measured widths:");
   await page.locator("#vm-undo").click();

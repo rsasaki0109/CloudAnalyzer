@@ -3115,15 +3115,20 @@ test("vector map: lane edges inside distant curbs remain width assumptions", asy
   await expect(page.locator("#vm-evidence-summary")).toContainText("No current build snapshot");await expect(page.locator("#vm-evidence-inspect")).toBeDisabled();
 });
 
-test("vector map: explicit intensity paint fits spacing without RGB and labels source dots", async ({page}) => {
+function intensityPaintFixture(dense = false): Buffer {
   const rows:string[]=[];
   for(let sx=-20;sx<=320;sx++)for(let sy=-90;sy<=100;sy++) {
     const x=sx*.1,y=sy*.1;
     const white=[-.25,2.75,5.75].some((t,j)=>Math.abs(y-(t-.04*x))<.055 && (j===2 ? x>=4 && x<=6 : ((sx%80)+80)%80<40));
     const intensity=white ? 60000 : 18000;rows.push(`${x} ${y} ${12+.02*x} 255 255 255 ${intensity}`);
   }
+  if (dense) for(let i=0;i<4097;i++) rows.push(`0 -.25 12 255 255 255 18000`);
   const header=`ply\nformat ascii 1.0\nelement vertex ${rows.length}\nproperty double x\nproperty double y\nproperty double z\nproperty uchar red\nproperty uchar green\nproperty uchar blue\nproperty float intensity\nend_header\n`;
-  await open(page,[{name:"paint.ply",buffer:Buffer.from(header+rows.join("\n"))},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")}]);
+  return Buffer.from(header+rows.join("\n"));
+}
+
+test("vector map: explicit intensity paint fits spacing without RGB and labels source dots", async ({page}) => {
+  await open(page,[{name:"paint.ply",buffer:intensityPaintFixture()},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")}]);
   await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
   await expect(page.locator("#vm-paint-corridor")).not.toBeChecked();
   await expect(page.locator("#vm-paint-channel")).toHaveValue("rgb");
@@ -3150,4 +3155,21 @@ test("vector map: explicit intensity paint fits spacing without RGB and labels s
   await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
   await expect(page.locator("#vm-quality-report")).toContainText("2 lanes checked; 0 need source review; 0 omitted");
   await page.locator("#vm-undo").click();await expect(page.locator("#vm-status")).toContainText("No map yet");
+});
+
+
+test("vector map: genuine dense paint neighbourhood holds and identifies the search limit", async ({page}) => {
+  await open(page,[{name:"dense-paint.ply",buffer:intensityPaintFixture(true)},{name:"trace.csv",buffer:Buffer.from("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")}]);
+  await page.locator("#vector-map-panel").getByText("Build from a trajectory",{exact:true}).click();
+  await page.locator("#vm-paint-channel").selectOption("intensity");
+  await page.locator("#vm-paint-corridor").check();
+  await page.locator("#vm-discover-after-build").uncheck();
+  await page.locator("#vm-build").click();
+  await expect(status(page)).toContainText("Draft roads added");
+  await expect(page.locator("#vm-build-report")).toContainText("White paint fit held (scan limit reached)");
+  await expect(page.locator("#vm-build-report")).toContainText("Search limit at nearby paint contrast");
+  await expect(page.locator("#vm-build-report")).toContainText("limit 4096");
+  await expect(page.locator("#vm-build-report")).not.toContainText("Measured widths:");
+  await page.locator("#vm-undo").click();
+  await expect(page.locator("#vm-status")).toContainText("No map yet");
 });

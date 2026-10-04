@@ -10,6 +10,10 @@ use serde::Serialize;
 pub struct PaintDividerReport {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub source_channel: Option<super::PaintChannel>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget_stage: Option<paint_corridor::PaintBudgetStage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget_query: Option<paint_corridor::PaintQueryLimit>,
     pub applied: bool,
     pub reason: String,
     pub limited: bool,
@@ -62,6 +66,8 @@ pub(super) fn apply(
             report.limited = scan.limited;
             report.roi_points = scan.roi_points;
             report.contrasted_points = scan.contrasted_points;
+            report.budget_stage = scan.budget_stage;
+            report.budget_query = scan.budget_query;
             return hold(&scan.reason, report);
         }
     };
@@ -218,9 +224,12 @@ pub(super) fn apply(
             let s = (p[0] - scan.origin[0]) * scan.d[0] + (p[1] - scan.origin[1]) * scan.d[1];
             let lateral = intercept + slope * s;
             let z = match scan.samples.ground(&[s, lateral, 0.0]) {
-                Some(Some(z)) => z,
-                None => {
+                Ok(Some(z)) => z,
+                Err(query) => {
                     report.limited = true;
+                    report.budget_stage =
+                        Some(paint_corridor::PaintBudgetStage::BoundaryGroundNeighbours);
+                    report.budget_query = Some(query);
                     return hold("divider ground query budget exceeded", report);
                 }
                 _ => return hold("divider lacks source ground at an output vertex", report),

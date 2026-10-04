@@ -8,6 +8,33 @@ const MAX_ROI: usize = 250_000;
 const MAX_WHITE: usize = 50_000;
 const MAX_PAINT: usize = 10_000;
 const MAX_NEIGHBOURS: usize = 4096;
+// Fine cells prune unrelated returns without changing the circular query or cap.
+const FINE_CELL_WIDTH: f64 = 0.125;
+const DENSE_CELL_THRESHOLD: usize = 128;
+type Cell = (i64, i64);
+type Subcells = Vec<(Cell, Vec<usize>)>;
+
+#[derive(Debug, Clone, Copy, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PaintBudgetStage {
+    RoiPoints,
+    BrightCandidates,
+    ContrastNeighbours,
+    TraceGroundNeighbours,
+    PaintPoints,
+    ComponentNeighbours,
+    BoundaryGroundNeighbours,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct PaintQueryLimit {
+    /// Local trace coordinates; not a new source observation.
+    pub center_st: [f64; 2],
+    pub radius_m: f64,
+    /// Potential points in intersecting cells, counted before visiting the cell.
+    pub candidate_points: usize,
+    pub limit: usize,
+}
 
 /// Select one retained channel explicitly; no automatic fallback or synthetic RGB.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -48,6 +75,10 @@ pub struct PaintCorridorReport {
     /// Raw ROI intensity P10/P99.9 used only for local contrast normalization.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub intensity_range: Option<[f64; 2]>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget_stage: Option<PaintBudgetStage>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub budget_query: Option<PaintQueryLimit>,
     pub applied: bool,
     pub reason: String,
     pub limited: bool,
@@ -68,6 +99,8 @@ impl Default for PaintCorridorReport {
         Self {
             source_channel: None,
             intensity_range: None,
+            budget_stage: None,
+            budget_query: None,
             applied: false,
             reason: "no uniquely supported parallel paint corridor".into(),
             limited: false,
@@ -88,43 +121,108 @@ impl Default for PaintCorridorReport {
 pub(super) struct Samples {
     pub(super) points: Vec<[f64; 3]>,
     pub(super) ids: Vec<usize>,
-    cells: HashMap<(i64, i64), Vec<usize>>,
+    cells: HashMap<Cell, Vec<usize>>,
+    subcells: HashMap<Cell, Subcells>,
 }
 impl Samples {
     fn new(points: Vec<[f64; 3]>, ids: Vec<usize>) -> Self {
-        let mut cells: HashMap<_, Vec<_>> = HashMap::new();
+        let mut cells: HashMap<Cell, Vec<usize>> = HashMap::new();
         for (i, p) in points.iter().enumerate() {
-            cells.entry(Self::cell(p)).or_default().push(i);
+            cells.entry(Self::cell(p, 0.5)).or_default().push(i);
         }
-        Self { points, ids, cells }
+        let mut subcells = HashMap::new();
+        for (&cell, ids) in &cells {
+            if ids.len() <= DENSE_CELL_THRESHOLD {
+                continue;
+            }
+            let mut fine: HashMap<Cell, Vec<usize>> = HashMap::new();
+            for &i in ids {
+                fine.entry(Self::cell(&points[i], FINE_CELL_WIDTH))
+                    .or_default()
+                    .push(i);
+            }
+            let mut fine: Subcells = fine.into_iter().collect();
+            fine.sort_unstable_by_key(|(cell, _)| *cell);
+            subcells.insert(cell, fine);
+        }
+        Self {
+            points,
+            ids,
+            cells,
+            subcells,
+        }
     }
-    fn cell(p: &[f64; 3]) -> (i64, i64) {
-        ((p[0] / 0.5).floor() as i64, (p[1] / 0.5).floor() as i64)
+    fn cell(p: &[f64; 3], width: f64) -> Cell {
+        ((p[0] / width).floor() as i64, (p[1] / width).floor() as i64)
     }
-    fn nearby(&self, p: &[f64; 3], radius: f64) -> Option<Vec<usize>> {
-        let (x, y) = Self::cell(p);
+    fn intersects(cell: Cell, width: f64, p: &[f64; 3], radius: f64) -> bool {
+        let low = [cell.0 as f64 * width, cell.1 as f64 * width];
+        let distance = [0, 1].map(|a| (low[a] - p[a]).max(p[a] - low[a] - width).max(0.0));
+        let padding = 8.0 * f64::EPSILON * (p[0].abs() + p[1].abs() + radius + 1.0);
+        distance[0].hypot(distance[1]) <= radius + padding
+    }
+    fn nearby(&self, p: &[f64; 3], radius: f64) -> Result<Vec<usize>, PaintQueryLimit> {
+        let (x, y) = Self::cell(p, 0.5);
         let reach = (radius / 0.5).ceil() as i64;
-        let mut result = Vec::new();
-        let mut inspected = 0;
+        let mut cells = Vec::new();
+        let mut coarse_count = 0;
         for dx in -reach..=reach {
             for dy in -reach..=reach {
-                if let Some(ids) = self.cells.get(&(x + dx, y + dy)) {
-                    inspected += ids.len();
-                    if inspected > MAX_NEIGHBOURS {
-                        return None;
-                    }
-                    result.extend(ids.iter().copied().filter(|&i| {
-                        let q = self.points[i];
-                        (q[0] - p[0]).hypot(q[1] - p[1]) <= radius
-                    }));
+                let cell = (x.saturating_add(dx), y.saturating_add(dy));
+                if let Some(ids) = self.cells.get(&cell) {
+                    coarse_count += ids.len();
+                    cells.push((cell, ids));
                 }
             }
         }
-        Some(result)
+        let in_circle = |i: usize| {
+            let q = self.points[i];
+            (q[0] - p[0]).hypot(q[1] - p[1]) <= radius
+        };
+        // Check cell lengths before visiting any points. Ordinary queries use
+        // exactly the old traversal; only a coarse overflow needs subdivision.
+        if coarse_count <= MAX_NEIGHBOURS {
+            return Ok(cells
+                .into_iter()
+                .flat_map(|(_, ids)| ids.iter().copied().filter(|&i| in_circle(i)))
+                .collect());
+        }
+        let mut result = Vec::new();
+        let mut inspected = 0;
+        let mut visit = |ids: &[usize]| -> Result<(), PaintQueryLimit> {
+            inspected += ids.len();
+            if inspected > MAX_NEIGHBOURS {
+                return Err(PaintQueryLimit {
+                    center_st: [p[0], p[1]],
+                    radius_m: radius,
+                    candidate_points: inspected,
+                    limit: MAX_NEIGHBOURS,
+                });
+            }
+            result.extend(ids.iter().copied().filter(|&i| in_circle(i)));
+            Ok(())
+        };
+        for (cell, ids) in cells {
+            if !Self::intersects(cell, 0.5, p, radius) {
+                continue;
+            }
+            if let Some(fine) = self.subcells.get(&cell) {
+                for (cell, ids) in fine {
+                    if Self::intersects(*cell, FINE_CELL_WIDTH, p, radius) {
+                        visit(ids)?;
+                    }
+                }
+            } else {
+                visit(ids)?;
+            }
+        }
+        // Preserve completed-query order for component sums and source ties.
+        result.sort_unstable_by_key(|&i| (Self::cell(&self.points[i], 0.5), i));
+        Ok(result)
     }
-    pub(super) fn ground(&self, p: &[f64; 3]) -> Option<Option<f64>> {
+    pub(super) fn ground(&self, p: &[f64; 3]) -> Result<Option<f64>, PaintQueryLimit> {
         let ids = self.nearby(p, 0.75)?;
-        Some(if ids.len() >= 3 {
+        Ok(if ids.len() >= 3 {
             quantile(
                 &mut ids.iter().map(|&i| self.points[i][2]).collect::<Vec<_>>(),
                 0.15,
@@ -184,7 +282,7 @@ pub(super) fn track_report(t: &Track, length: f64) -> PaintTrackReport {
     }
 }
 
-fn components(paint: &Samples) -> Option<Vec<Component>> {
+fn components(paint: &Samples) -> Result<Vec<Component>, PaintQueryLimit> {
     let mut visited = vec![false; paint.points.len()];
     let mut result = vec![];
     for seed in 0..paint.points.len() {
@@ -249,7 +347,7 @@ fn components(paint: &Samples) -> Option<Vec<Component>> {
             slope: angle.tan(),
         });
     }
-    Some(result)
+    Ok(result)
 }
 
 pub(super) struct Scan {
@@ -279,8 +377,10 @@ pub(super) fn scan(
         r.reason = reason.into();
         Err(Box::new(r))
     };
-    let limited = |mut r: PaintCorridorReport| {
+    let limited = |stage, query, mut r: PaintCorridorReport| {
         r.limited = true;
+        r.budget_stage = Some(stage);
+        r.budget_query = query;
         hold(
             "paint fit budget exceeded; no corridor selected from a partial scan",
             r,
@@ -328,7 +428,7 @@ pub(super) fn scan(
             ids.push(id);
             report.roi_points += 1;
             if points.len() > MAX_ROI {
-                return limited(report);
+                return limited(PaintBudgetStage::RoiPoints, None, report);
             }
         }
     }
@@ -379,10 +479,13 @@ pub(super) fn scan(
         }
         report.white_candidates += 1;
         if report.white_candidates > MAX_WHITE {
-            return limited(report);
+            return limited(PaintBudgetStage::BrightCandidates, None, report);
         }
-        let Some(near) = samples.nearby(p, 0.8) else {
-            return limited(report);
+        let near = match samples.nearby(p, 0.8) {
+            Ok(near) => near,
+            Err(query) => {
+                return limited(PaintBudgetStage::ContrastNeighbours, Some(query), report);
+            }
         };
         let mut heights: Vec<_> = near
             .iter()
@@ -392,8 +495,11 @@ pub(super) fn scan(
         if heights.len() < 3 || (p[2] - quantile(&mut heights, 0.2).unwrap()).abs() > 0.12 {
             continue;
         }
-        let Some(ground) = samples.ground(&[p[0], 0.0, 0.0]) else {
-            return limited(report);
+        let ground = match samples.ground(&[p[0], 0.0, 0.0]) {
+            Ok(ground) => ground,
+            Err(query) => {
+                return limited(PaintBudgetStage::TraceGroundNeighbours, Some(query), report);
+            }
         };
         if !ground.is_some_and(|z| (p[2] - z).abs() <= 0.3) {
             continue;
@@ -418,13 +524,14 @@ pub(super) fn scan(
         paint_points.push(*p);
         paint_ids.push(samples.ids[i]);
         if paint_points.len() > MAX_PAINT {
-            return limited(report);
+            return limited(PaintBudgetStage::PaintPoints, None, report);
         }
     }
     report.contrasted_points = paint_points.len();
     let paint = Samples::new(paint_points, paint_ids);
-    let Some(mut parts) = components(&paint) else {
-        return limited(report);
+    let mut parts = match components(&paint) {
+        Ok(parts) => parts,
+        Err(query) => return limited(PaintBudgetStage::ComponentNeighbours, Some(query), report),
     };
     report.longitudinal_components = parts.len();
     if parts.len() < minimum_parts {
@@ -508,8 +615,10 @@ pub(super) fn fit(
         r.reason = reason.into();
         (None, r)
     };
-    let limited = |mut r: PaintCorridorReport| {
+    let limited = |stage, query, mut r: PaintCorridorReport| {
         r.limited = true;
+        r.budget_stage = Some(stage);
+        r.budget_query = Some(query);
         hold(
             "paint fit budget exceeded; no corridor selected from a partial scan",
             r,
@@ -615,13 +724,17 @@ pub(super) fn fit(
     for p in line {
         let s = (p[0] - origin[0]) * d[0] + (p[1] - origin[1]) * d[1];
         let mut vertices = vec![];
-        let Some(ground) = samples.ground(&[s, 0.0, 0.0]) else {
-            return limited(report);
+        let ground = match samples.ground(&[s, 0.0, 0.0]) {
+            Ok(ground) => ground,
+            Err(query) => return limited(PaintBudgetStage::TraceGroundNeighbours, query, report),
         };
         for t in selected.iter().rev() {
             let lateral = t.intercept + slope * s;
-            let Some(z) = samples.ground(&[s, lateral, 0.0]) else {
-                return limited(report);
+            let z = match samples.ground(&[s, lateral, 0.0]) {
+                Ok(z) => z,
+                Err(query) => {
+                    return limited(PaintBudgetStage::BoundaryGroundNeighbours, query, report);
+                }
             };
             let Some(z) = z else {
                 break;
@@ -867,10 +980,117 @@ mod tests {
         }
         let (roads, report) = fit(&cloud, &trace(), &options());
         assert!(roads.is_none() && report.limited);
+        assert!(matches!(
+            report.budget_stage,
+            Some(PaintBudgetStage::RoiPoints)
+        ));
         cloud.colors.as_mut().unwrap().pop();
         let mut map = Map::new();
         assert!(build(&mut map, &cloud, &trace(), &options()).is_err());
         assert_eq!(map.lanes().count(), 0);
+    }
+}
+
+#[cfg(test)]
+mod query_tests {
+    use super::*;
+
+    #[test]
+    fn circular_queries_match_brute_force_in_legacy_order_at_cell_and_radius_edges() {
+        let mut points = vec![];
+        for x in -35..=35 {
+            for y in -35..=35 {
+                points.push([x as f64 * 0.04, y as f64 * 0.04, (x - y) as f64]);
+            }
+        }
+        for radius in [0.3, 0.75, 0.8] {
+            points.extend([
+                [radius, 0.0, 1.0],
+                [-radius, 0.0, 1.0],
+                [radius + 1e-12, 0.0, 1.0],
+                [radius - 1e-12, 0.0, 1.0],
+                [-0.125, -0.125, 1.0],
+            ]);
+        }
+        let samples = Samples::new(points.clone(), (0..points.len()).collect());
+        for center in [
+            [0.0, 0.0, 0.0],
+            [-0.125, 0.125, 0.0],
+            [0.499999999, -0.500000001, 0.0],
+        ] {
+            for radius in [0.3, 0.75, 0.8] {
+                let mut expected: Vec<_> = points
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, p)| {
+                        ((p[0] - center[0]).hypot(p[1] - center[1]) <= radius).then_some(i)
+                    })
+                    .collect();
+                expected.sort_by_key(|&i| {
+                    (
+                        (points[i][0] / 0.5).floor() as i64,
+                        (points[i][1] / 0.5).floor() as i64,
+                        i,
+                    )
+                });
+                assert_eq!(samples.nearby(&center, radius).unwrap(), expected);
+            }
+        }
+    }
+
+    #[test]
+    fn unrelated_dense_cells_do_not_consume_budget_but_dense_nearby_returns_hold() {
+        let mut points = vec![[0.0, 0.0, 12.0], [-0.1, 0.0, 12.0], [0.1, 0.0, 12.0]];
+        points.extend((0..5000).map(|i| [1.2, 1.2, 12.0 + i as f64 * 0.01]));
+        let samples = Samples::new(points.clone(), (0..points.len()).collect());
+        // The old 0.5 m square visits all 5,003 points for this 0.8 m circle.
+        assert_eq!(samples.nearby(&[0.0; 3], 0.8).unwrap(), vec![1, 0, 2]);
+        assert_eq!(samples.ground(&[0.0; 3]).unwrap(), Some(12.0));
+        points.extend((0..MAX_NEIGHBOURS + 1).map(|i| [0.1, 0.1, 12.0 + i as f64 * 0.01]));
+        let samples = Samples::new(points.clone(), (0..points.len()).collect());
+        let failure = samples.nearby(&[0.0; 3], 0.8).unwrap_err();
+        assert_eq!(failure.limit, 4096);
+        assert!(failure.candidate_points > failure.limit);
+        assert_eq!(failure.radius_m, 0.8);
+    }
+
+    #[test]
+    fn high_returns_outside_paint_query_preserve_known_fit_and_original_sources() {
+        use super::tests::{options, scene, trace};
+        let cloud = scene(&[-4.5, -1.5, 1.5], false);
+        let baseline = fit(&cloud, &trace(), &options());
+        assert!(baseline.1.applied);
+        let mut cluttered = cloud.clone();
+        for i in 0..5000 {
+            cluttered
+                .positions
+                .push([-0.9, 2.4, 22.0 + i as f64 * 0.001]);
+            cluttered.colors.as_mut().unwrap().push([70; 3]);
+        }
+        let original = cluttered.clone();
+        let (roads, report) = fit(&cluttered, &trace(), &options());
+        assert!(report.applied, "{}", report.reason);
+        assert!(report.budget_stage.is_none() && report.budget_query.is_none());
+        let roads = roads.unwrap();
+        let baseline = baseline.0.unwrap();
+        for (actual, expected) in roads.iter().zip(&baseline) {
+            assert_eq!(actual.boundaries, expected.boundaries);
+            assert_eq!(actual.evidence, expected.evidence);
+            assert_eq!(actual.source_boundaries, expected.source_boundaries);
+        }
+        assert_eq!(cluttered, original);
+        // A genuine dense neighbourhood still holds the whole optional fit.
+        for _ in 0..MAX_NEIGHBOURS + 1 {
+            cluttered.positions.push([0.0, 1.5, 12.0]);
+            cluttered.colors.as_mut().unwrap().push([70; 3]);
+        }
+        let (roads, report) = fit(&cluttered, &trace(), &options());
+        assert!(roads.is_none() && report.limited);
+        assert!(matches!(
+            report.budget_stage,
+            Some(PaintBudgetStage::ContrastNeighbours)
+        ));
+        assert!(report.budget_query.unwrap().candidate_points > MAX_NEIGHBOURS);
     }
 }
 

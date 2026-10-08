@@ -34,6 +34,7 @@ def build_vector_map(
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
     fit_source_surface: bool = False,
+    local_ground_height: bool = False,
     verify_curb_profiles: bool = True,
     merge_repeated_passes: bool = True,
     existing_map: str | None = None,
@@ -84,6 +85,10 @@ def build_vector_map(
     Source-backed candidates are retained and clipped first. If less than 60% of their
     length is supported, low-surface footprint fitting replaces those candidates.
     Review boundaries, repeated passes, travel directions and junctions before using the map.
+    local_ground_height optionally estimates seed-road Z from local low returns
+    under the trajectory (at least three within 0.75 m, 15th percentile). Missing
+    returns defer sections rather than falling back to cross-section bins. This
+    can choose another level; inspect actual boundary support and retained extent.
     """
     if paint_channel not in ("rgb", "intensity"):
         raise ValueError("paint_channel must be rgb or intensity")
@@ -155,6 +160,7 @@ def build_vector_map(
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
             **({"fit_source_surface": True} if fit_source_surface else {}),
+            **({"local_ground_height": True} if local_ground_height else {}),
             "verify_curb_profiles": verify_curb_profiles,
             "merge_repeated_passes": merge_repeated_passes,
         },

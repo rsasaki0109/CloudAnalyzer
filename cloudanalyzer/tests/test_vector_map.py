@@ -3,6 +3,7 @@
 import json
 import asyncio
 import sys
+import os
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
@@ -63,6 +64,56 @@ def test_native_source_quality_distinguishes_edges_and_preserves_files(tmp_path)
     assert q["lanes"][0]["left"]["fraction"] == 0
     assert q["lanes"][0]["left"]["insufficient_returns"] > 0
     assert [p.read_bytes() for p in (cloud, vector_map)] == original
+
+    if hasattr(native, "audit_vector_map_quality_details"):
+        ir = json.loads(vector_map.read_text())
+        for boundary in ir["boundaries"]:
+            for point in boundary["geometry"]:
+                point[2] += 1
+        vector_map.write_text(json.dumps(ir))
+        original = [p.read_bytes() for p in (cloud, vector_map)]
+        details = json.loads(native.audit_vector_map_quality_details(str(cloud), str(vector_map)))
+        summary = json.loads(native.audit_vector_map_quality(str(cloud), str(vector_map)))
+        quality = details["quality"]
+        assert {k:v for k,v in quality.items() if k not in {"problems", "problems_limited"}} == summary["quality"]
+        assert quality["problems_limited"] is False
+        assert {p["reason"] for p in quality["problems"]} == {"height_mismatch", "insufficient_returns"}
+        for problem in quality["problems"]:
+            assert len(problem["points"]) == len(problem["source_heights_m"])
+            if problem["reason"] == "height_mismatch":
+                assert problem["curve"] == "center"
+                assert all(z == 2 for z in problem["source_heights_m"])
+                assert all(p[2] == 3 for p in problem["points"])
+            else:
+                assert all(z is None for z in problem["source_heights_m"])
+        assert [p.read_bytes() for p in (cloud, vector_map)] == original
+
+
+def test_local_ground_height_cli_retains_lanes_and_exposes_estimator_evidence(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "audit_vector_map_quality_details"):
+        pytest.skip("installed core predates local-height generation")
+    x, y = np.meshgrid(np.arange(-1, 21.01, .1), np.arange(-6, 3.01, .1))
+    header = laspy.LasHeader(point_format=3, version="1.2")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y = x.ravel(), y.ravel()
+    data.z = np.where(np.abs(y.ravel()) < .55, 7., 2.)
+    cloud, poses = tmp_path / "source.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    poses.write_text("timestamp,x,y,z\n0,1,0,99\n1,19,0,99\n")
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(poses), "--out",
+                                    str(tmp_path / "local"), "--local-ground-height"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report["options"]["local_ground_height"] is True
+    assert report["extraction"]["local_ground_sections"] > 0
+    assert report["extraction"]["lanes"] == 2
+    assert report["extraction"]["generated_length"] > 17
+    audit = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))
+    assert audit["quality"]["low_support_lanes"] == []
 
 
 def test_source_only_equipment_preview_confirm_cli_replay_and_failed_publication(tmp_path):
@@ -307,7 +358,8 @@ def test_signal_mcp_spatial_copc_publishes_preview(junction_survey, tmp_path):
     _, source = junction_survey
     fixture = Path(__file__).parent / "data" / "signal.copc.laz"
     server = StdioServerParameters(command=sys.executable,
-        args=["-c", "from ca.mcp_server import main; main()"], cwd=str(Path(__file__).resolve().parents[1]))
+        args=["-c", "from ca.mcp_server import main; main()"], cwd=str(Path(__file__).resolve().parents[1]),
+        env={"PYTHONPATH": os.environ["PYTHONPATH"]} if "PYTHONPATH" in os.environ else None)
     async def run():
         async with stdio_client(server) as (read, write):
             async with ClientSession(read, write) as session:

@@ -228,6 +228,12 @@ Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/
 
 ## `ca`: the command line, for CI and AI agents
 
+[Agent-controlled mapping jobs](docs/commands/mapping-job.md) connect raw-recording
+point-map generation with HD-road drafting. An agent starts a job, tests explicit
+road hypotheses, reads source/validation evidence and selects a retained draft.
+Recording/input/native hashes, bounded attempts and decision reasons persist across
+tool calls. Source holds and unresolved traffic rules stay visible in the result.
+
 `ca` runs the same Rust core natively, on all cores and without the browser's memory limit. It turns SLAM, LiDAR,
 perception and 3DGS outputs into metrics, HTML reports and pass / fail gates for CI, and it fixes SLAM maps. It
 reads ROS 1 bags, MCAP files, rosbag2 SQLite files and folders itself: no ROS install.

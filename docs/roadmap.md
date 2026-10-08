@@ -37,6 +37,17 @@ compatible with the existing MIT license and optional CUDA/PDAL backends.
 
 ## Priority plan
 
+### Agent-controlled mapping — current product priority (2026-10-08)
+
+- Connect raw recordings to both point-cloud maps and HD-road drafts through
+  persistent MCP/CLI mapping jobs; first validation uses bundled NCLT.
+- Retain attempts, input/native/artifact hashes, quality holds and agent decisions.
+- Compare source support alongside retained road extent and unchanged semantic priors.
+- Extend the loop to point-map quality comparisons, road topology, equipment and
+  known georeferenced frames, with real-data evidence for each step.
+- Evaluate automation by completed map outputs, unresolved issues and operator
+  effort, rather than the number of editor controls.
+
 ### P0 — release quality and headless CI
 
 - Keep no-display, Xvfb, and optional CUDA paths green.

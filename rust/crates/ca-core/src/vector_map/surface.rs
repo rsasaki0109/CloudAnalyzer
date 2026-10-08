@@ -73,7 +73,9 @@ fn footprint(surface: &[Option<f64>], low: f64, o: &BuildOptions) -> Option<Foot
     } else {
         (lanes as f64 - 0.5) * o.lane_width
     };
-    let fitted_left = nominal_left.clamp(right + width, left);
+    // width <= left-right mathematically, but adding it back can round above
+    // left by an ULP. Keep the clamp interval ordered without expanding the band.
+    let fitted_left = nominal_left.clamp((right + width).min(left), left);
     Some(Footprint {
         left: fitted_left,
         right: fitted_left - width,
@@ -515,6 +517,27 @@ mod tests {
             }
         }
         cloud
+    }
+    #[test]
+    fn band_width_roundoff_does_not_invert_the_fitting_interval() {
+        for left_hand_traffic in [true, false] {
+            let options = BuildOptions {
+                bin_width: 0.2,
+                left_hand_traffic,
+                ..BuildOptions::default()
+            };
+            let low = -3.45;
+            let surface = vec![Some(2.0); 23];
+            let right = low + 0.5 * options.bin_width;
+            let left = low + 22.5 * options.bin_width;
+            // Reconstructing this mathematically identical endpoint rounds up.
+            assert!(right + (left - right) > left);
+            let fitted = footprint(&surface, low, &options).unwrap();
+            assert!(fitted.left <= left);
+            assert!(fitted.right >= right - 1e-12);
+            assert!((fitted.left - fitted.right - (left - right)).abs() < 1e-12);
+            assert!(fitted.observed_left && fitted.observed_right);
+        }
     }
     #[test]
     fn narrow_low_band_fits_widths_without_following_raised_trace_returns() {

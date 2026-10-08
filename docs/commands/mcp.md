@@ -17,6 +17,10 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 
 | Tool | What it does |
 |---|---|
+| `start_mapping_job(source, out_dir, keyframe_spacing?, remove_dynamic?, max_attempts?, pointcloud_topic?, imu_topic?, minimum_retained_fraction?)` | Start an agent-controlled raw-recording job, generating the point-cloud map and corrected trajectory with hashes, processing reports and an explicit retained-extent goal ([workflow](mapping-job.md)) |
+| `inspect_mapping_job(job_dir)` | Read persisted artifacts, attempts, source holds and remaining budget without loading clouds |
+| `generate_mapping_candidate(job_dir, road_options, reason)` | Generate/audit one HD-map hypothesis against frozen point-map inputs; retain failures and the agent's reason |
+| `select_mapping_candidate(job_dir, candidate_id, reason)` | Select an audited draft explicitly, retaining quality holds and unresolved deployment readiness |
 | `session_layout(folder)` | Look at a SLAM session folder without loading it: poses file, poses and scans, whether they match, path length, IMU gravity folders nearby. Quick; call it first. |
 | `slam_odometry(scans, out_dir, max_range?, voxel_size?, max_frames?, deskew?, pointcloud_topic?, imu_topic?, imu_to_lidar?)` | Raw scans without poses, as a folder or a ROS bag (`.bag`, `.mcap`, `.db3`, a rosbag2 folder): the Rust core's LiDAR odometry, writing `trajectory.tum` and `map.ply`; from a bag also the scans and, with an IMU topic, each scan's up direction (`pip install "cloudanalyzer[fast]"`) |
 | `posegraph_fix(folder, out_dir?, poses?, keyframe_spacing?, gravity?, remove_dynamic?, truth?, voxel?, map_voxel?, find_loops?)` | [`ca posegraph-fix`](posegraph-fix.md): loops, IMU gravity, dynamic points, the fixed g2o / poses / map |

@@ -1,4 +1,6 @@
 import { onHistoryPolicy, historyPolicy } from "../memory-budget";
+import { projectChanged } from "../project-change";
+import type { ReviewDraft } from "../recovery-store";
 import { LaneReviews, reviewCsv, type LaneReview, type LaneReviewRow, type ReviewStatus } from "../lane-review";
 /**
  * Vector map panel: roads drawn over the clouds become lanes (both
@@ -1278,6 +1280,19 @@ function laneSignatures(): Map<number, string> {
 }
 export function captureLaneReviews(): LaneReview[] { return reviews.snapshot(); }
 export function restoreLaneReviews(records: LaneReview[]): void { reviews.restore(records, laneSignatures()); reviewPage = 0; renderReviews(); renderLane(); }
+export function captureReviewDraft(): ReviewDraft | undefined {
+  if (selected === null) return;
+  const status = $<HTMLSelectElement>("vm-review-state").value as ReviewStatus, notes = $<HTMLTextAreaElement>("vm-review-notes").value;
+  const saved = reviews.get(selected);
+  if (status !== (saved?.status ?? "unreviewed") || notes !== (saved?.notes ?? "")) return {lane:selected,status,notes};
+}
+export function restoreReviewDraft(draft: ReviewDraft | undefined): void {
+  if (!draft || !view.lanes.some(l => l.id === draft.lane)) return;
+  selectLane(draft.lane,true);
+  $<HTMLSelectElement>("vm-review-state").value = draft.status;
+  $<HTMLTextAreaElement>("vm-review-notes").value = draft.notes;
+}
+export function mapProjectReady(): boolean { return !busy; }
 function filteredReviews(): LaneReviewRow[] {
   const filter = $<HTMLSelectElement>("vm-review-filter").value;
   return reviews.rows(view.lanes.map(l => l.id)).filter(row => filter === "all" || (filter === "low-support" ? lowSupport.has(row.lane) : row.status === filter));
@@ -1318,7 +1333,7 @@ function renderReviews(): void {
   $<HTMLButtonElement>("vm-review-export").disabled = view.lanes.length === 0;
   markReviewSelection();
 }
-function reviewSourceChanged(): void { reviews.invalidateSource(); renderReviews(); renderLane(); }
+function reviewSourceChanged(): void { reviews.invalidateSource(); renderReviews(); renderLane(); projectChanged(); }
 $("vm-review-filter").onchange = () => { reviewPage = 0; renderReviews(); };
 $("vm-review-page-prev").onclick = () => { reviewPage--; renderReviews(); };
 $("vm-review-page-next").onclick = () => { reviewPage++; renderReviews(); };
@@ -1337,6 +1352,7 @@ $("vm-review-save").onclick = () => {
   if (selected === null) return;
   reviews.save(selected, laneSignatures().get(selected)!, $<HTMLSelectElement>("vm-review-state").value as ReviewStatus, $<HTMLTextAreaElement>("vm-review-notes").value);
   renderReviews(); renderLane(); setStatus(`Review saved for lane ${selected}`);
+  projectChanged();
 };
 
 function takeView(edited: Edited): void {
@@ -1361,6 +1377,7 @@ function takeView(edited: Edited): void {
   $<HTMLButtonElement>("vm-plan").disabled = $<HTMLButtonElement>("vm-iso").disabled = view.boundaries.length === 0;
   renderLane();
   void renderIssues();
+  projectChanged();
 }
 
 /** Run vectormap commands; failures go to the status line. Returns false if they failed. */

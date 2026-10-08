@@ -1,4 +1,5 @@
 import { bufferBytes, historyPolicy, onHistoryPolicy, trimHistory } from "../memory-budget";
+import { projectChanged } from "../project-change";
 /**
  * Pose graph panel, in the spirit of interactive_slam: a g2o graph or a
  * TUM / KITTI trajectory (as an odometry chain) with a scan per node. Each
@@ -68,6 +69,7 @@ export async function captureGraphProject(): Promise<{ project: PoseGraphProject
   if (!graph) return null;
   return { project: await savePoseGraphProject(), name: graph.name, sessions: graph.sessions, imu: graph.imu };
 }
+export function graphProjectReady(): boolean { return !busy; }
 
 export async function restoreGraphProject(project: PoseGraphProject | null, metadata?: { name: string; sessions: Graph["sessions"]; imu: Graph["imu"] }): Promise<void> {
   if (busy) throw new Error("Finish the pose graph operation before opening a project");
@@ -292,6 +294,7 @@ function build(g: Graph): void {
 function update(state: PoseGraphState): void {
   if (!graph) return;
   graph.state = state;
+  projectChanged();
   drawnShift = globalShift().join();
   const [sx, sy, sz] = globalShift();
   const m = state.poses;

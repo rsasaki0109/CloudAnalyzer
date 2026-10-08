@@ -1,24 +1,35 @@
 /** Portable editing projects; source files stay external and are verified. */
 import { parseProject, projectSources, type Project, type ControlSetting, type SavedPoseGraph } from "../project";
 import { matchesFile, referenceFile, sourceName, type SourceReference } from "../source-reference";
-import { vectorMap } from "../api";
+import { vectorMap, workerBusy } from "../api";
+import { Autosave } from "../autosave";
+import { onProjectChanged, projectChanged } from "../project-change";
+import { readRecovery, writeRecovery, MAX_RECOVERY_BYTES, type Recovery, type ReviewDraft } from "../recovery-store";
 import type { PoseGraphProject } from "../protocol";
 import { applySession, captureSession } from "./session";
-import { captureGraphProject, restoreGraphProject } from "./posegraph";
-import { captureMapProject, openVectorMap, captureLaneReviews, restoreLaneReviews } from "./vectormap";
-import { entries, type Entry } from "./state";
+import { captureGraphProject, restoreGraphProject, graphProjectReady } from "./posegraph";
+import { captureMapProject, openVectorMap, captureLaneReviews, restoreLaneReviews, captureReviewDraft, restoreReviewDraft, mapProjectReady } from "./vectormap";
+import { entries, listChanged, distanceChanged, type Entry } from "./state";
 import { loadFiles, loadUrls } from "./loading";
 import { removeEntry } from "./entries";
 import { $, download, errorText, setStatus } from "./dom";
-import { endTask, showProgress, startTask } from "./tasks";
+import { endTask, showProgress, startTask, taskActive } from "./tasks";
 import { setTool } from "./tools";
 import { clearCloudHistory } from "./history";
 
-const MAX_PROJECT_BYTES = 64 * 1024 * 1024;
+const MAX_PROJECT_BYTES = MAX_RECOVERY_BYTES;
 const available = new Set<File>();
 let pending: Project | null = null;
 let completing = false;
 let projectRevision = 0;
+let pendingDraft: ReviewDraft | undefined;
+let restoringBrowser = false;
+let manualSaving = false;
+let checkingRecovery = true;
+let recovery: Recovery | null = null;
+let recoveryToken: string | null = null;
+let offerRecovery = false;
+let recoveryAction = false;
 
 function controls(): (HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement)[] {
   return [...document.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input[id], select[id], textarea[id]")]
@@ -59,7 +70,7 @@ async function cloudReference(id: number, signal: AbortSignal): Promise<SourceRe
   throw new Error(`Cannot verify ${entry.cloud.name}; open a local file or a URL with a strong ETag`);
 }
 
-export async function captureProject(signal: AbortSignal): Promise<Project> {
+export async function captureProject(signal: AbortSignal, progress = true): Promise<Project> {
   const session = structuredClone(captureSession()), settings = captureSettings();
   if (new Set(session.clouds.map(c => c.name)).size !== session.clouds.length) throw new Error("Rename duplicate cloud files before saving a project; source names must be unique");
   const reviews = captureLaneReviews();
@@ -68,7 +79,7 @@ export async function captureProject(signal: AbortSignal): Promise<Project> {
   for (const saved of session.clouds) {
     const entry = [...entries.values()].find(e => e.cloud.name === saved.name && e.origin.kind !== "derived");
     if (!entry) throw new Error(`Source ${saved.name} was removed while saving`);
-    showProgress({ note: `Checking ${saved.name}` });
+    if (progress) showProgress({ note: `Checking ${saved.name}` });
     saved.source = await cloudReference(entry.cloud.id, signal);
     saved.loadMaxPoints = entry.origin.loadMaxPoints;
   }
@@ -79,7 +90,7 @@ export async function captureProject(signal: AbortSignal): Promise<Project> {
       const { graph, scans, ...options } = source.files;
       const references: SourceReference[] = [];
       for (const file of scans) {
-        showProgress({ note: `Checking ${file.name}` });
+        if (progress) showProgress({ note: `Checking ${file.name}` });
         references.push(await referenceFile(file, signal));
       }
       sources.push({ graph: graph ? await referenceFile(graph, signal) : null, scans: references, options, first: source.first, nodeIds: source.nodeIds });
@@ -90,6 +101,14 @@ export async function captureProject(signal: AbortSignal): Promise<Project> {
 }
 
 /** Stage projects before loading; graph inputs go to the graph reader. */
+function stageProject(project: Project): void {
+  const maxPoints = project.settings["max-points"]?.value;
+  const control = $<HTMLSelectElement>("max-points");
+  if (typeof maxPoints === "string" && [...control.options].some(o => o.value === maxPoints)) control.value = maxPoints;
+  pending = project;
+  projectRevision++;
+  available.clear();
+}
 export async function prepareProjectFiles(files: File[]): Promise<Set<File>> {
   const consumed = new Set<File>();
   for (const file of files) {
@@ -102,12 +121,8 @@ export async function prepareProjectFiles(files: File[]): Promise<Set<File>> {
     try { value = JSON.parse(await file.text()); } catch { continue; }
     if (value && typeof value === "object" && (value as { app?: string }).app === "CloudAnalyzer Project") {
       const project = parseProject(value);
-      const maxPoints = project.settings["max-points"]?.value;
-      const control = $<HTMLSelectElement>("max-points");
-      if (typeof maxPoints === "string" && [...control.options].some(o => o.value === maxPoints)) control.value = maxPoints;
-      pending = project;
-      projectRevision++;
-      available.clear();
+      stageProject(project);
+      pendingDraft = undefined; restoringBrowser = false;
       consumed.add(file);
     }
   }
@@ -215,16 +230,21 @@ export async function completePendingProject(): Promise<void> {
     if (!clearCloudHistory()) throw new Error("Finish Undo or Redo before opening a project");
     await applySession(project.session, true);
     restoreLaneReviews(project.reviews);
+    restoreReviewDraft(pendingDraft);
+    pendingDraft = undefined;
     pending = null;
     available.clear();
+    if (restoringBrowser) { restoringBrowser = false; offerRecovery = false; autosave.recovered(); }
     setStatus("Project restored: source files verified, map and pose graph ready to edit. Undo starts from this saved state.");
-  } finally { if (signal) endTask(signal); completing = false; }
+  } finally { if (signal) endTask(signal); completing = false; renderSaveState(); autosave.schedule(); }
 }
 
 $("project-save").onclick = async () => {
   const button = $<HTMLButtonElement>("project-save");
   if (button.disabled) return;
   button.disabled = true;
+  manualSaving = true;
+  const revision = autosave.revision;
   const signal = startTask();
   try {
     setStatus("Saving the project and verifying its source files…");
@@ -232,8 +252,96 @@ $("project-save").onclick = async () => {
     const json = JSON.stringify(project);
     if (new Blob([json]).size > MAX_PROJECT_BYTES) throw new Error("Project exceeds the 64 MiB metadata limit");
     download(new Blob([json], { type: "application/json" }), "project.cloudanalyzer.json");
+    // A portable export protects only the exact revision captured above.
+    if (!captureReviewDraft()) autosave.exported(revision);
     setStatus("Saved project: map, pose graph and settings. Keep the original source files to resume editing.");
   } catch (error) { setStatus(`Could not save project: ${errorText(error)}`, true); }
-  finally { button.disabled = false; endTask(signal); }
+  finally { button.disabled = false; manualSaving = false; endTask(signal); autosave.schedule(); }
 };
 $("project-open").onclick = () => $<HTMLInputElement>("file-input").click();
+
+const autosave = new Autosave<Recovery>({
+  idle: () => !checkingRecovery && !pending && !completing && !manualSaving && !taskActive() && !workerBusy() && mapProjectReady() && graphProjectReady(),
+  capture: async signal => {
+    const project = await captureProject(signal,false), draft = captureReviewDraft();
+    return {version:1,token:crypto.randomUUID(),savedAt:new Date().toISOString(),project,draft};
+  },
+  write: async value => {
+    await writeRecovery(value,recoveryToken);
+    recovery = value; recoveryToken = value.token;
+  },
+  render: renderSaveState,
+});
+function renderSaveState(): void {
+  const busy = completing || manualSaving || autosave.saving || checkingRecovery || recoveryAction;
+  $("project-recovery").hidden = !offerRecovery;
+  $<HTMLButtonElement>("project-resume").disabled = busy || !!pending || !recovery;
+  $<HTMLButtonElement>("project-forget").disabled = busy || !recovery;
+  $<HTMLButtonElement>("project-download-recovery").disabled = busy || !recovery;
+  $("project-autosave-retry").hidden = !autosave.error || checkingRecovery;
+  $("project-recovery-summary").textContent = recovery ? `Browser copy from ${new Date(recovery.savedAt).toLocaleString()}. ${pending && restoringBrowser ? "Open its matching original files to finish resuming." : "Resume it or discard it before automatic saves replace this copy."}` : "";
+  $("project-save-status").textContent = checkingRecovery ? "Checking browser recovery…" : autosave.error ? `Browser save failed: ${autosave.error}. Use Save project to keep your work.` : autosave.saving ? "Saving editing state in this browser…" : autosave.paused ? "Automatic saving paused; the previous browser copy is protected." : !autosave.enabled ? `Automatic saving is off.${autosave.unsaved ? " Changes are not saved." : ""}` : autosave.revision > autosave.savedRevision ? "Changes waiting for browser save…" : recovery ? `Editing state saved in this browser at ${new Date(recovery.savedAt).toLocaleTimeString()}.` : "Automatic saving ready. Original source files remain external.";
+}
+onProjectChanged(() => autosave.changed());
+listChanged.add(() => { if (entries.size || autosave.revision) projectChanged(); });
+distanceChanged.add(() => { if (entries.size) projectChanged(); });
+for (const event of ["input","change"]) document.addEventListener(event,e => {
+  const target = e.target;
+  if (!(target instanceof HTMLInputElement || target instanceof HTMLSelectElement || target instanceof HTMLTextAreaElement) || target.closest("#project-recovery-controls") || target instanceof HTMLInputElement && (target.type === "file" || target.readOnly)) return;
+  if (["vm-review-filter","vm-quality-cloud"].includes(target.id)) return;
+  projectChanged();
+});
+window.addEventListener("beforeunload",event => {
+  if (!autosave.unsaved) return;
+  event.preventDefault(); event.returnValue = "";
+});
+document.addEventListener("visibilitychange",() => { if (document.hidden) void autosave.save(); });
+$("project-autosave").onchange = () => {
+  autosave.enabled = $<HTMLInputElement>("project-autosave").checked;
+  try { localStorage.setItem("cloudanalyzer-autosave-enabled",autosave.enabled ? "on" : "off"); }
+  catch { /* Saving failures are reported independently by the recovery store. */ }
+  renderSaveState(); autosave.schedule();
+};
+$("project-autosave-retry").onclick = () => {
+  if (autosave.paused && !offerRecovery) { checkingRecovery = true; renderSaveState(); void initializeRecovery(); }
+  else autosave.retry();
+};
+$("project-resume").onclick = async () => {
+  if (!recovery || completing || autosave.saving || pending) return;
+  recoveryAction = true; renderSaveState();
+  try {
+    const current = await readRecovery();
+    if (current?.token !== recoveryToken) throw new Error("The browser copy changed in another tab. Reload to choose which work to resume.");
+    stageProject(recovery.project); pendingDraft = recovery.draft; restoringBrowser = true;
+    renderSaveState(); await completePendingProject();
+  } catch (error) { setStatus(`Could not resume browser copy: ${errorText(error)}`,true); }
+  finally { recoveryAction = false; renderSaveState(); }
+};
+$("project-download-recovery").onclick = () => {
+  if (!recovery) return;
+  download(new Blob([JSON.stringify(recovery.project)],{type:"application/json"}),"project.cloudanalyzer.json");
+  setStatus("Downloaded the saved browser project. Unsaved review text stays in browser recovery; save a lane review before exporting it.");
+};
+$("project-forget").onclick = async () => {
+  if (!recovery || completing || autosave.saving) return;
+  recoveryAction = true; renderSaveState();
+  try {
+    await writeRecovery(null,recoveryToken);
+    recovery = null; recoveryToken = null; offerRecovery = false;
+    if (restoringBrowser) { pending = null; pendingDraft = undefined; restoringBrowser = false; available.clear(); projectRevision++; }
+    autosave.paused = false; autosave.error = "";
+    renderSaveState(); autosave.schedule();
+  } catch (error) { autosave.error = errorText(error); renderSaveState(); }
+  finally { recoveryAction = false; renderSaveState(); }
+};
+async function initializeRecovery(): Promise<void> {
+  try {
+    try { autosave.enabled = localStorage.getItem("cloudanalyzer-autosave-enabled") !== "off"; } catch { /* IDB reports unavailable browser storage below. */ }
+    $<HTMLInputElement>("project-autosave").checked = autosave.enabled;
+    recovery = await readRecovery(); recoveryToken = recovery?.token ?? null;
+    offerRecovery = !!recovery; autosave.paused = offerRecovery;
+    autosave.error = "";
+  } catch (error) { autosave.error = errorText(error); }
+  finally { checkingRecovery = false; renderSaveState(); autosave.schedule(); }
+}
+void initializeRecovery();

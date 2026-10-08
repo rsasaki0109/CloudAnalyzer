@@ -1,4 +1,5 @@
 // Promise-based client for the WASM worker.
+import { projectChanged } from "./project-change";
 
 import type {
   C2cOutput,
@@ -41,6 +42,13 @@ const pending = new Map<
   { resolve: (v: unknown) => void; reject: (e: Error) => void; progress?: (p: Progress) => void; dispose: () => void }
 >();
 let seq = 0;
+export function workerBusy(): boolean { return pending.size > 0; }
+const mapEdits = new Set(["open", "apply", "feature-edit", "relations-edit", "relations-adopt", "feature-confirm", "build", "junction-connect", "signal-add", "crosswalk-add", "undo", "clear"]);
+function editsProject(req: Request): boolean {
+  if (req.kind === "vm") return mapEdits.has(req.op);
+  if (req.kind.startsWith("pg-")) return !["pg-project-save", "pg-register", "pg-find-loops", "pg-export", "pg-map"].includes(req.kind);
+  return ["load", "load-url", "remove", "transform", "icp", "c2c"].includes(req.kind);
+}
 
 /** Called with the size of the worker's WASM memory after every request. */
 let onMemory: (bytes: number, pool: number) => void = () => {};
@@ -70,6 +78,7 @@ function call<T>(
   signal?: AbortSignal,
 ): Promise<T> {
   const id = ++seq;
+  if (editsProject(req)) projectChanged();
   return new Promise<T>((resolve, reject) => {
     if (signal?.aborted) { reject(new Error("CANCELLED")); return; }
     const abort = () => worker.postMessage({ cancel: id } satisfies UiMessage);

@@ -25,14 +25,19 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    hashes, does not run native processing and does not spend an attempt.
    New jobs retain bounded `problems` with lane/curve/reason, oriented stations,
    original-frame XYZ and `source_heights_m` parallel to those points. A null
-   source height means fewer than three nearby returns. Older jobs explicitly
+   source height means insufficient support for that report's estimator. Older jobs explicitly
    report `problems_available=false`; limited previews set `problems_limited=true`.
    Neither absent nor truncated locations mean the unshown source is supported.
+   New jobs save both the original quantile evidence and a separate
+   `ground_consensus` report for each artifact. Read their `ground_estimator`
+   metadata and compare outcomes; diagnosis keeps both and flags disagreement.
 4. `select_mapping_candidate(job_dir, candidate_id, reason)` records the chosen
    draft and justification. It requires nonempty lanes, complete source checks,
    zero structural errors, unchanged inputs/output hashes and the job's minimum
    retained fraction of the corrected trajectory (default 90%). Low source support
-   remains a visible hold. A successful selection always has `deployment_ready: false`.
+   remains a visible hold. Both saved estimators must have complete audits;
+   `source_quality_passed` requires both to pass. A successful selection always
+   has `deployment_ready: false`.
 
 Road options require explicit `forward_lanes`, `backward_lanes`,
 `left_hand_traffic`, `lane_width` and `speed_limit`. Other fitting options from
@@ -63,14 +68,18 @@ from both lanes; they are not unique source points or fractions of road length.
 Editable and reopened OSM evidence are kept separately, with discrepancies visible.
 Location previews cap at 4,096 failed samples and 256 intervals independently of
 the 100,000-sample audit budget. Full summary counts remain authoritative when a
-preview is limited. Ground-height observations are local low-return quantiles,
-not certified road heights; another level and wrong XY can still match them.
+preview is limited. Ground-height observations use the explicitly recorded
+estimator, not certified road heights; another level and wrong XY can still match.
 
 For an explicitly reasoned estimator experiment, `road_options.local_ground_height`
-uses local low returns under the trajectory instead of the median of longitudinal
-cross-section bins for seed-road Z. It defaults to false. Missing local returns
-defer sections, and structural/extent gates still apply. This did **not** improve
-the bundled NCLT result; see the recorded experiment before choosing it.
+uses the lowest spatially supported local height layer instead of the median of
+longitudinal cross-section bins for seed-road Z. It defaults to false. The layer
+requires three occupied 0.2 m XY cells spanning at least 0.01 m² in a 0.15 m height
+window within 0.75 m. Each cell supplies its lowest return and the median of those
+votes supplies Z. Missing coherent support defers sections; structural/extent
+gates still apply. Its earlier quantile implementation did not improve NCLT.
+Compare both audits and the [recorded experiments](../../benchmarks/vector-map/nclt-agentic-mapping/README.md)
+before choosing an estimator; a better support score is not independent accuracy.
 
 Attempts default to four and are bounded to eight. A job pins its recording,
 generated inputs and native extension by SHA-256. Changing them requires a new

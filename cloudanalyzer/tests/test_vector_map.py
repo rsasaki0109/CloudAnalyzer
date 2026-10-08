@@ -75,7 +75,7 @@ def test_native_source_quality_distinguishes_edges_and_preserves_files(tmp_path)
         details = json.loads(native.audit_vector_map_quality_details(str(cloud), str(vector_map)))
         summary = json.loads(native.audit_vector_map_quality(str(cloud), str(vector_map)))
         quality = details["quality"]
-        assert {k:v for k,v in quality.items() if k not in {"problems", "problems_limited"}} == summary["quality"]
+        assert {k:v for k,v in quality.items() if k not in {"problems", "problems_limited", "ground_estimator"}} == summary["quality"]
         assert quality["problems_limited"] is False
         assert {p["reason"] for p in quality["problems"]} == {"height_mismatch", "insufficient_returns"}
         for problem in quality["problems"]:
@@ -89,11 +89,43 @@ def test_native_source_quality_distinguishes_edges_and_preserves_files(tmp_path)
         assert [p.read_bytes() for p in (cloud, vector_map)] == original
 
 
+def test_ground_consensus_audit_keeps_density_disagreement_and_inputs(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "audit_vector_map_ground_consensus_details"):
+        pytest.skip("installed core predates ground-consensus evidence")
+    x, y = np.meshgrid(np.arange(-1, 11.01, .2), np.arange(-3, 3.01, .2))
+    header = laspy.LasHeader(point_format=3, version="1.2")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x = np.tile(x.ravel(), 13)
+    data.y = np.tile(y.ravel(), 13)
+    data.z = np.repeat([2., *[5. + .05 * i for i in range(1, 13)]], x.size)
+    cloud = tmp_path / "layered.las"
+    data.write(cloud)
+    vector_map = tmp_path / "map.json"
+    vector_map.write_text(json.dumps({"format": "vectormap-ir", "version": 1,
+        "lanes": [{"id": 3, "kind": "driving", "left": 1, "right": 2}],
+        "boundaries": [{"id": i+1, "kind": {"type": "lane_marking", "pattern": "solid"},
+                        "geometry": [[0, offset, 2], [10, offset, 2]]} for i, offset in enumerate([2, -2])]}))
+    original = [p.read_bytes() for p in (cloud, vector_map)]
+    legacy = json.loads(native.audit_vector_map_quality_details(str(cloud), str(vector_map)))["quality"]
+    alternate = json.loads(native.audit_vector_map_ground_consensus_details(str(cloud), str(vector_map)))["quality"]
+    assert legacy["low_support_lanes"] == [3]
+    assert alternate["low_support_lanes"] == []
+    assert legacy["ground_estimator"]["model"] == "low_quantile"
+    assert alternate["ground_estimator"] == {"model": "lowest_supported_layer", "layer_height_m": .15,
+        "xy_cell_m": .2, "minimum_cells": 3, "minimum_triangle_area_m2": .01}
+    assert legacy["sampled_points"] == alternate["sampled_points"]
+    assert [p.read_bytes() for p in (cloud, vector_map)] == original
+
+
 def test_local_ground_height_cli_retains_lanes_and_exposes_estimator_evidence(tmp_path):
     import numpy as np
     import laspy
     native = pytest.importorskip("cloudanalyzer_core")
-    if not hasattr(native, "audit_vector_map_quality_details"):
+    if not hasattr(native, "audit_vector_map_ground_consensus_details"):
         pytest.skip("installed core predates local-height generation")
     x, y = np.meshgrid(np.arange(-1, 21.01, .1), np.arange(-6, 3.01, .1))
     header = laspy.LasHeader(point_format=3, version="1.2")
@@ -110,6 +142,7 @@ def test_local_ground_height_cli_retains_lanes_and_exposes_estimator_evidence(tm
     report = json.loads(result.stdout)
     assert report["options"]["local_ground_height"] is True
     assert report["extraction"]["local_ground_sections"] > 0
+    assert report["extraction"]["local_ground_estimator"]["model"] == "lowest_supported_layer"
     assert report["extraction"]["lanes"] == 2
     assert report["extraction"]["generated_length"] > 17
     audit = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))

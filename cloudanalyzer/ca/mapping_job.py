@@ -61,7 +61,7 @@ def _locked(root: Path) -> Iterator[None]:
 
 def _native() -> dict[str, Any]:
     module = core()
-    if module is None or not hasattr(module, "audit_vector_map_quality_details"):
+    if module is None or not hasattr(module, "audit_vector_map_ground_consensus_details"):
         raise RuntimeError('mapping jobs need an updated Rust core: pip install "cloudanalyzer[fast]"')
     extension = getattr(module, "_core", module)
     file = extension.__file__
@@ -188,6 +188,7 @@ def start_mapping_job(
 def _quality_summary(audit: dict[str, Any]) -> dict[str, Any]:
     q = audit["quality"]
     return {"lanes_checked": len(q["lanes"]), "needs_review": q["low_support_lanes"],
+            "ground_estimator": q.get("ground_estimator", {"model": "low_quantile", "quantile": 0.15, "minimum_returns": 3}),
             "omitted": q["omitted_lanes"], "malformed": q["malformed_lanes"],
             "limited": q["limited"], "sampled_points": q["sampled_points"],
             "supported_samples": sum(l[c]["supported"] for l in q["lanes"] for c in ("center", "left", "right")),
@@ -227,8 +228,9 @@ def _diagnose_audit(audit: dict[str, Any]) -> dict[str, Any]:
     errors = [i for i in [*audit["validation"]["issues"], *audit.get("import_issues", [])]
               if i["severity"] == "error"]
     return {
-        "protocol": {key: quality[key] for key in ("sampling_step_m", "ground_radius_m",
+        "protocol": {**{key: quality[key] for key in ("sampling_step_m", "ground_radius_m",
                      "ground_height_tolerance_m", "minimum_support_fraction", "sample_budget")},
+                     "ground_estimator": quality.get("ground_estimator", {"model": "low_quantile", "quantile": 0.15, "minimum_returns": 3})},
         "complete": bool(lanes) and not (quality["limited"] or quality["omitted_lanes"]
                                          or quality["malformed_lanes"] or errors),
         "sample_totals": totals, "needs_review": quality["low_support_lanes"], "lanes": lanes,
@@ -246,8 +248,9 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
     Verifies recorded source, point-map and candidate hashes, then reads small
     reports without rerunning native processing or spending attempts. Returns
     per-lane/trace height mismatches, insufficient returns, endpoint holds and
-    retained extent. New jobs also retain bounded problem locations and local
-    source heights; missing or limited location previews are explicit. These are
+    retained extent. New jobs retain legacy quantile and spatial-layer evidence,
+    bounded problem locations and local source heights. Missing or limited
+    location previews are explicit. These are
     observed audit failures, not proven root causes:
     wrong XY, another level, sparse source and unverified lane priors can overlap.
     Use the evidence to choose a trial; do not erase lanes or shrink the map to pass.
@@ -265,6 +268,8 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
     saved = json.loads(Path(attempt["quality_report"]["path"]).read_text(encoding="utf-8"))
     editable = _diagnose_audit(saved["editable"])
     reopened = _diagnose_audit(saved["reopened_osm"])
+    consensus = ({key: _diagnose_audit(saved["ground_consensus"][key]) for key in ("editable", "reopened_osm")}
+                 if "ground_consensus" in saved else None)
     report = json.loads(Path(attempt["files"]["report"]["path"]).read_text(encoding="utf-8"))
     extent = _extent(attempt["extraction"], job.get("minimum_retained_fraction", 0.9))
     investigations = []
@@ -275,18 +280,24 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         investigations.append("Inspect the point footprint and trajectory/lane assumptions for the affected traces; sparse or occluded returns do not prove that a road is absent.")
     if attempt["extraction"].get("width_prior_vertices", 0):
         investigations.append("Inspect assumed-width boundaries and their anchors. Point-coverage edges may be scan gaps rather than physical road edges; compare fitting choices at unchanged lane count, width and extent.")
-    if not editable["complete"] or not reopened["complete"]:
+    if not editable["complete"] or not reopened["complete"] or (consensus is not None and any(not a["complete"] for a in consensus.values())):
         investigations.append("Resolve incomplete or invalid audits before interpreting support or selecting a draft.")
     if editable != reopened:
         investigations.append("Inspect differences between editable and reopened OSM evidence before comparing candidates.")
     if not extent["passes_requested_extent"]:
         investigations.append("Inspect deferred road length; a supported fragment does not meet the requested extent.")
+    if consensus is not None:
+        if consensus["editable"]["lanes"] != editable["lanes"]:
+            investigations.append("Ground estimators disagree. Inspect layered/density-dominated source columns and actual surface levels; do not select the estimator with the better score as proof of road accuracy.")
+        if consensus["editable"] != consensus["reopened_osm"]:
+            investigations.append("Inspect differences between editable and reopened OSM ground-consensus evidence.")
     return {
         "schema": "cloudanalyzer.mapping_diagnosis.v1", "candidate_id": candidate_id,
         "quality_report": attempt["quality_report"], "road_options": attempt["road_options"],
         "effective_options": report["options"], "extent": extent,
         "editable": editable, "reopened_osm": reopened,
         "editable_and_reopened_match": editable == reopened,
+        "ground_consensus": consensus,
         "extraction": attempt["extraction"], "export_issues": attempt["export_issues"],
         "pointcloud_quality_status": job["pointcloud"]["quality_status"],
         "remaining_attempts": job["max_attempts"] - len(job["attempts"]),
@@ -302,7 +313,7 @@ def generate_mapping_candidate(job_dir: str, road_options: dict[str, Any], reaso
     left_hand_traffic, lane_width and speed_limit. Other build_vector_map fitting
     options are accepted; changing input maps or coordinate metadata is excluded.
     Each bounded attempt keeps its settings, native failures, output hashes and
-    source/OSM audits. Failed trials do not replace earlier drafts or their selection.
+    both source estimators for IR/OSM. Failed trials do not replace earlier drafts or their selection.
     """
     required = {"forward_lanes", "backward_lanes", "left_hand_traffic", "lane_width", "speed_limit"}
     excluded = {"cloud", "trajectory", "out_dir", "reference_map", "existing_map", "projection", "origin_lat", "origin_lon"}
@@ -332,11 +343,14 @@ def generate_mapping_candidate(job_dir: str, road_options: dict[str, Any], reaso
             assert module is not None
             audit = json.loads(module.audit_vector_map_quality_details(files["map"]["path"], report["files"]["editable_map"]))
             reopened = json.loads(module.audit_vector_map_quality_details(files["map"]["path"], report["files"]["map"]))
-            _save(root / f"candidate-{attempt['id']:02d}-quality.json", {"editable": audit, "reopened_osm": reopened})
+            consensus = {key: json.loads(module.audit_vector_map_ground_consensus_details(files["map"]["path"], report["files"][file_key]))
+                         for key, file_key in (("editable", "editable_map"), ("reopened_osm", "map"))}
+            _save(root / f"candidate-{attempt['id']:02d}-quality.json", {"editable": audit, "reopened_osm": reopened, "ground_consensus": consensus})
             _inputs(job)
             attempt["quality_report"] = _artifact(root / f"candidate-{attempt['id']:02d}-quality.json")
             attempt["quality"] = _quality_summary(audit)
             attempt["reopened_quality"] = _quality_summary(reopened)
+            attempt["ground_consensus_quality"] = {key: _quality_summary(value) for key, value in consensus.items()}
             attempt["extraction"] = report["extraction"]
             attempt["extent"] = _extent(report["extraction"], job["minimum_retained_fraction"])
             attempt["export_issues"] = report["autoware_issues"]
@@ -379,6 +393,8 @@ def select_mapping_candidate(job_dir: str, candidate_id: int, reason: str) -> di
         # than trusting cached summaries from an earlier job implementation.
         saved = json.loads(Path(attempt["quality_report"]["path"]).read_text(encoding="utf-8"))
         qualities = [_quality_summary(saved[key]) for key in ("editable", "reopened_osm")]
+        if "ground_consensus" in saved:
+            qualities.extend(_quality_summary(saved["ground_consensus"][key]) for key in ("editable", "reopened_osm"))
         for q in qualities:
             if not q["lanes_checked"] or q["omitted"] or q["malformed"] or q["limited"] or q["validation_errors"]:
                 raise ValueError("candidate needs complete source audits and nonempty, structurally valid roads")

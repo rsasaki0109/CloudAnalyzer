@@ -78,6 +78,21 @@ insufficient returns from height disagreement. The 100,000-sample budget is chec
 before resampling; omitted/malformed lanes are explicitly reported as unchecked.
 Changing the map, cloud list, points or source selection invalidates the result.
 
+Agent-controlled mapping jobs additionally save a separate
+`ground_consensus` audit for editable IR and reopened OSM. Its estimator selects
+the lowest 0.15 m height window within the same 0.75 m radius with at least three
+occupied 0.2 m XY cells spanning a triangle of at least 0.01 m². Each cell supplies
+its lowest return, and the median of those cell votes gives the height. Duplicate
+vertical returns cannot dominate its vote; isolated outliers and collinear walls
+cannot establish a supported layer. Missing coherent support is counted as
+insufficient returns even if the raw column has many points.
+
+The original quantile audit and all its thresholds remain unchanged. Both detailed
+reports include `ground_estimator` metadata. Mapping selection checks both reports;
+a pass from one cannot erase holds or an incomplete audit from the other. A coherent
+lower layer can be beneath the intended road, so inspect estimator disagreement.
+The Web source audit and junction checks still use the original quantile protocol.
+
 Sparse or occluded returns can reduce coverage even on a real road. A height
 disagreement can indicate another surface or a poor draft. Conversely, ground-like
 returns beneath a line do not establish road semantics, lane counts, boundary

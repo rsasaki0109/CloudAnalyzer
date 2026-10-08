@@ -139,6 +139,80 @@ their pinned core cannot be replaced for candidate generation or selection.
 The next unresolved question is source-level/XY/road-layout alignment; the observed
 local low height alone is insufficient justification for moving a boundary's Z.
 
+## Follow-up: separate low surface layers from overhead density
+
+The NCLT platform is a Segway, not a verified outside-forward-lane car drive.
+The sample packer removes points within 1.5 m of the sensor and thins scans to
+0.8 m. Neither the trajectory's driving-lane identity nor the two-lane hypotheses
+above is established by this input. Those hypotheses were held unchanged here.
+
+Inspecting source columns exposed a distinct estimator failure: around corrected
+pose 60, the trajectory Z is -1.96 m, the lowest nearby return is -2.02 m, but
+the local 15th percentile is +3.38 m because overhead returns dominate the column.
+This does not independently certify the lower layer as a road, but explains why
+an all-return quantile can lift generation despite lower source support.
+
+The experimental local seed estimator now chooses the lowest 0.15 m height window
+supported by at least three occupied 0.2 m XY cells spanning a triangle of 0.01 m²
+within 0.75 m. Each cell contributes its lowest return, and their median supplies
+height. Duplicate vertical returns cannot outvote another cell; isolated outliers
+and collinear walls cannot establish this support. A coherent lower physical level
+can still be wrong. The default generation option remains off.
+
+New jobs retain **both** the original quantile audit and an additional spatial-layer
+audit, each with explicit estimator metadata. Sampling, radius, height tolerance,
+support thresholds, endpoints and budgets stay unchanged. A selected draft's source
+pass requires both saved protocols to pass; disagreement remains visible.
+
+On 2026-10-09 JST, the agent ran a new three-attempt job. The point-map hash matches
+all previous runs. Trial 1 exactly reproduces #213's baseline geometry and complete
+legacy audits, excluding the additive estimator metadata. All three keep the same
+243.14 m generated length, 97.68% retained extent, lane priors and ten lane sections:
+
+| Trial | Generation hypothesis | Legacy support | Spatial-layer support | Review lanes, legacy / layer |
+| --- | --- | ---: | ---: | ---: |
+| 1 | Reproduced tracked baseline, no boundary XY fit | 1,748 / 3,169 (55.16%) | 1,716 / 3,169 (54.15%) | 8 / 8 |
+| 2 | Lowest supported local layer, no boundary XY fit | 1,944 / 2,957 (65.74%) | 2,365 / 2,957 (79.98%) | 8 / 5 |
+| 3 | Same layer with bounded boundary XY fit | 1,922 / 2,942 (65.33%) | 2,350 / 2,942 (79.88%) | 9 / 5 |
+
+The last column counts reviewed lanes under each estimator out of ten.
+Both estimators check the same geometry within each trial.
+Sample totals change because sampling follows 3D arc length: removing large Z
+excursions shortens curve length even though generated road extent is unchanged.
+These percentages describe source consistency, not surveyed accuracy.
+
+Trial 2's legacy audit has 542 height mismatches and 471 insufficient-return samples;
+its layer audit has 96 and 496 respectively. Every IR source audit matches the
+reopened OSM source audit, with complete bounded previews and zero structural/export
+errors. Reopened OSM additionally retains the expected Local-projector import info.
+The earlier quantile-seed/no-XY-fit trial failed the direction guard; this layer
+trial exports successfully without weakening that guard.
+
+![The same source cloud and boundary 7 before/after low-layer seed estimation, including overhead and low source returns](ground-consensus-comparison.png)
+
+Boundary 7's generated Z range changes from [-1.24, +7.19] m to [-2.05, -1.82] m.
+The right panel shows original-frame points within 0.75 m XY of either displayed
+trace, without filtering on candidate height or audit result. It illustrates the
+lower-layer hypothesis and the overhead density, not independent truth. The left
+panel thins displayed points deterministically to every eighth point; processing
+uses the complete pinned cloud.
+
+The agent selected trial 2 for review: it improves **both** source estimators over
+the reproduced baseline, retains extent, and has slightly more support/fewer legacy
+holds than the fitted trial. Eight legacy and five layer-reviewed lane sections
+remain; `source_quality_passed=false` and `deployment_ready=false`. There is no new
+claim about point-map accuracy, driving-lane identity, traffic rules, equipment or
+georeferencing. The estimator remains experimental until validated beyond this run.
+
+[`ground-consensus-verification.json`](ground-consensus-verification.json) records
+the three options, reasons, both protocols, per-trace totals, output/report hashes,
+baseline equivalence and selected draft. Full bounded source observations remain
+in the generated `candidate-NN-quality.json`. To reproduce, build the current core
+(including `audit_vector_map_ground_consensus_details`), start a **new** job with
+`--max-attempts 3`, then use this file's `road_options` in order. Diagnose each trial
+before the next, and select candidate 2 with the recorded holds. Earlier jobs remain
+readable and identify their older protocol; do not replace their pinned binary.
+
 ## Reproduce the initial tool sequence
 
 Build/install the current Rust Python core and install `cloudanalyzer`. From the
@@ -175,6 +249,6 @@ NCLT, University of Michigan: N. Carlevaris-Bianco, A. K. Ushani and R. M. Eusti
 "University of Michigan North Campus long-term vision and lidar dataset", IJRR
 2016. See [sample attribution](../../../web/public/samples/ATTRIBUTION.md) and
 [upstream NCLT](http://robots.engin.umich.edu/nclt/).
-The NCLT-derived evidence and image in this directory are offered under
+The NCLT-derived evidence and images in this directory are offered under
 [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/) with contents under the
 [Database Contents License 1.0](https://opendatacommons.org/licenses/dbcl/1-0/).

@@ -5,7 +5,7 @@ use vectormap_core::{LaneId, LaneKind, Map, Point3, Polyline3, Side};
 
 use super::{
     BuildError,
-    junctions::{Ground, HEIGHT, RADIUS},
+    junctions::{Ground, HEIGHT, LAYER_CELL, LAYER_HEIGHT, LAYER_MIN_AREA, RADIUS},
 };
 use crate::PointCloud;
 
@@ -77,8 +77,8 @@ pub struct ProblemInterval {
     pub from_m: f64,
     pub to_m: f64,
     pub points: Vec<[f64; 3]>,
-    /// One local 15th-percentile source height per point; None means fewer than
-    /// three returns. These are audit observations, not a verified road level.
+    /// One local source height per point using the report's ground estimator.
+    /// None means insufficient support; these are not a verified road level.
     pub source_heights_m: Vec<Option<f64>>,
 }
 
@@ -89,6 +89,33 @@ pub struct QualityDetails {
     pub problems: Vec<ProblemInterval>,
     /// Location preview limits are independent of the audit sampling budget.
     pub problems_limited: bool,
+    pub ground_estimator: GroundEstimator,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "model", rename_all = "snake_case")]
+pub enum GroundEstimator {
+    LowQuantile {
+        quantile: f64,
+        minimum_returns: usize,
+    },
+    LowestSupportedLayer {
+        layer_height_m: f64,
+        xy_cell_m: f64,
+        minimum_cells: usize,
+        minimum_triangle_area_m2: f64,
+    },
+}
+
+impl GroundEstimator {
+    pub(super) fn consensus() -> Self {
+        Self::LowestSupportedLayer {
+            layer_height_m: LAYER_HEIGHT,
+            xy_cell_m: LAYER_CELL,
+            minimum_cells: 3,
+            minimum_triangle_area_m2: LAYER_MIN_AREA,
+        }
+    }
 }
 
 #[derive(Default)]
@@ -216,17 +243,44 @@ pub(super) fn checked_curve_support(ground: &Ground<'_>, line: &Polyline3) -> Op
 /// frame. Sparse/occluded support is an uncertainty, not proof of a wrong road.
 /// No geometry, topology, attributes or Undo state are changed.
 pub fn audit(map: &Map, cloud: &PointCloud) -> Result<QualityReport, BuildError> {
-    audit_inner(map, cloud, None)
+    audit_inner(map, cloud, None, false)
 }
 
 /// Read-only audit plus a bounded preview; summary decisions are identical to audit().
 pub fn audit_with_locations(map: &Map, cloud: &PointCloud) -> Result<QualityDetails, BuildError> {
+    detailed_audit(map, cloud, false)
+}
+
+/// Alternative evidence for density-dominated columns. Keep the legacy audit
+/// alongside it: disagreement is a hold, not permission to choose a better score.
+pub fn audit_with_ground_consensus(
+    map: &Map,
+    cloud: &PointCloud,
+) -> Result<QualityDetails, BuildError> {
+    detailed_audit(map, cloud, true)
+}
+
+fn detailed_audit(
+    map: &Map,
+    cloud: &PointCloud,
+    consensus: bool,
+) -> Result<QualityDetails, BuildError> {
     let mut locations = ProblemLocations::default();
-    let report = audit_inner(map, cloud, Some(&mut locations))?;
+    let mut report = audit_inner(map, cloud, Some(&mut locations), consensus)?;
+    let ground_estimator = if consensus {
+        report.warnings[0] = "Alternative source evidence uses the lowest 0.15 m vertical layer within 0.75 m XY with three occupied 0.2 m cells and a triangle area of at least 0.01 m². It uses the median of cell-low returns. A lower physical level can still win; compare the legacy quantile audit and investigate disagreement. This does not establish road semantics, accuracy, obstacles or traffic rules.".into();
+        GroundEstimator::consensus()
+    } else {
+        GroundEstimator::LowQuantile {
+            quantile: 0.15,
+            minimum_returns: 3,
+        }
+    };
     Ok(QualityDetails {
         report,
         problems: locations.problems,
         problems_limited: locations.limited,
+        ground_estimator,
     })
 }
 
@@ -234,8 +288,13 @@ fn audit_inner(
     map: &Map,
     cloud: &PointCloud,
     mut locations: Option<&mut ProblemLocations>,
+    consensus: bool,
 ) -> Result<QualityReport, BuildError> {
-    let ground = Ground::new(cloud)?;
+    let ground = if consensus {
+        Ground::new_consensus(cloud)?
+    } else {
+        Ground::new(cloud)?
+    };
     let mut report = QualityReport {
         lanes: vec![], low_support_lanes: vec![], omitted_lanes: vec![], malformed_lanes: vec![],
         sampled_points: 0, cloud_points: cloud.len(), sampling_step_m: SPACING,
@@ -382,6 +441,37 @@ mod tests {
         assert_eq!(r.lanes[0].center.insufficient_returns, 0);
         assert!(r.lanes[0].center.height_mismatches > 0);
         assert!(audit(&map, &PointCloud::default()).is_err());
+    }
+
+    #[test]
+    fn density_dominated_source_has_two_explicit_read_only_protocols() {
+        let (map, mut cloud) = scene();
+        let floor = cloud.positions.clone();
+        for z in 1..=12 {
+            cloud.positions.extend(
+                floor
+                    .iter()
+                    .map(|p| [p[0], p[1], p[2] + 3. + z as f64 * 0.05]),
+            );
+        }
+        let before = map.clone();
+        let legacy = audit_with_locations(&map, &cloud).unwrap();
+        let alternative = audit_with_ground_consensus(&map, &cloud).unwrap();
+        assert!(!legacy.report.low_support_lanes.is_empty());
+        assert!(alternative.report.low_support_lanes.is_empty());
+        assert_eq!(
+            legacy.report.sampled_points,
+            alternative.report.sampled_points
+        );
+        assert_eq!(
+            legacy.report.minimum_support_fraction,
+            alternative.report.minimum_support_fraction
+        );
+        assert!(matches!(
+            alternative.ground_estimator,
+            GroundEstimator::LowestSupportedLayer { .. }
+        ));
+        assert_eq!(map, before);
     }
     #[test]
     fn locations_keep_survey_coordinates_reasons_and_unchanged_summary() {

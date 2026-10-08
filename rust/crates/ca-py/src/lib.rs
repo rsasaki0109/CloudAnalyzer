@@ -666,6 +666,10 @@ fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(vector_map::build_vector_map, m)?)?;
     m.add_function(wrap_pyfunction!(vector_map::audit_vector_map_quality, m)?)?;
     m.add_function(wrap_pyfunction!(
+        vector_map::audit_vector_map_ground_consensus_details,
+        m
+    )?)?;
+    m.add_function(wrap_pyfunction!(
         vector_map::audit_vector_map_quality_details,
         m
     )?)?;

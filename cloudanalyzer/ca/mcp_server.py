@@ -33,8 +33,11 @@ not proven root causes; inspect XY and level alignment before changing only Z.
 New jobs also retain bounded problem locations and local low-return heights in
 the original frame. Check problems_available/problems_limited before treating the
 preview as complete; summary counts have an independent budget. Local heights may
-belong to another level. local_ground_height is an experimental seed estimator;
-it did not improve bundled NCLT and must be tested with unchanged priors and extent.
+belong to another level. New jobs retain both the legacy low-quantile audit and
+ground_consensus evidence from the lowest spatially supported source layer. Read
+both protocols: source_quality_passed requires both, and disagreement needs review.
+local_ground_height experimentally uses that layer for seed heights; test it with
+unchanged priors and extent, and do not interpret source support as accuracy.
 Lane counts, permitted traffic,
 width and speed are assumptions, not established by point-cloud support. Do not
 reduce lane count or retained extent merely to raise a coverage score. Attempts

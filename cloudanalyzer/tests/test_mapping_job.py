@@ -28,7 +28,8 @@ def job_backend(tmp_path, monkeypatch):
                          "ground_height_tolerance_m": 0.3, "minimum_support_fraction": 0.9,
                          "sample_budget": 100000}, "validation": {"issues": [], "counts": {"errors": 0}}}
     module = SimpleNamespace(__file__=str(extension), __version__="test",
-                             audit_vector_map_quality_details=lambda *args: json.dumps(audit))
+                             audit_vector_map_quality_details=lambda *args: json.dumps(audit),
+                             audit_vector_map_ground_consensus_details=lambda *args: json.dumps(audit))
     monkeypatch.setattr(jobs, "core", lambda: module)
 
     def odometry(source, out, **kwargs):
@@ -103,6 +104,40 @@ def test_changed_inputs_or_candidates_cannot_be_selected_or_reused(job_backend, 
     with pytest.raises(ValueError, match="changed"):
         jobs.generate_mapping_candidate(str(root), OPTIONS, "Stale input")
     assert len(jobs.inspect_mapping_job(str(root))["attempts"]) == 1
+
+
+def test_ground_estimator_disagreement_cannot_be_selected_as_source_pass(job_backend, tmp_path):
+    source, audit = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    alternate = json.loads(json.dumps(audit))
+    # Legacy source passes while the alternate layer has endpoint/support holds.
+    audit["quality"]["low_support_lanes"] = []
+    for trace in ("center", "left", "right"):
+        audit["quality"]["lanes"][0][trace] = {"samples": 3, "supported": 3,
+            "height_mismatches": 0, "insufficient_returns": 0, "fraction": 1,
+            "start_supported": True, "end_supported": True}
+    alternate["quality"]["ground_estimator"] = {"model": "lowest_supported_layer"}
+    jobs.core().audit_vector_map_ground_consensus_details = lambda *args: json.dumps(alternate)
+    generated = jobs.generate_mapping_candidate(str(root), OPTIONS, "Compare source layers")
+    assert generated["attempts"][0]["quality"]["needs_review"] == []
+    diagnosis = jobs.diagnose_mapping_candidate(str(root), 1)
+    assert diagnosis["ground_consensus"]["editable"]["protocol"]["ground_estimator"]["model"] == "lowest_supported_layer"
+    assert any("estimators disagree" in reason for reason in diagnosis["investigations"])
+    selected = jobs.select_mapping_candidate(str(root), 1, "Keep geometry as a held review draft")
+    assert selected["selected"]["source_quality_passed"] is False
+
+
+def test_incomplete_ground_consensus_cannot_be_selected(job_backend, tmp_path):
+    source, audit = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    alternate = json.loads(json.dumps(audit))
+    alternate["quality"]["limited"] = True
+    jobs.core().audit_vector_map_ground_consensus_details = lambda *args: json.dumps(alternate)
+    jobs.generate_mapping_candidate(str(root), OPTIONS, "Partial alternate evidence")
+    with pytest.raises(ValueError, match="complete"):
+        jobs.select_mapping_candidate(str(root), 1, "Partial evidence must remain held")
 
 
 def test_failed_pointcloud_stage_is_recorded_and_existing_jobs_are_preserved(job_backend, tmp_path, monkeypatch):
@@ -249,7 +284,7 @@ def test_missing_assumptions_and_busy_jobs_do_not_spend_attempts(job_backend, tm
 
 def test_native_candidate_contract_audits_saved_osm_and_preserves_failed_trials(job_backend, tmp_path, monkeypatch):
     native = pytest.importorskip("cloudanalyzer_core")
-    if not hasattr(native, "audit_vector_map_quality_details"):
+    if not hasattr(native, "audit_vector_map_ground_consensus_details"):
         pytest.skip("installed core predates detailed source audit")
     from ca.vector_map import build_vector_map
     source, _ = job_backend

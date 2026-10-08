@@ -12,6 +12,9 @@ use crate::PointCloud;
 
 pub(super) const RADIUS: f64 = 0.75;
 pub(super) const HEIGHT: f64 = 0.3;
+pub(super) const LAYER_HEIGHT: f64 = 0.15;
+pub(super) const LAYER_CELL: f64 = 0.2;
+pub(super) const LAYER_MIN_AREA: f64 = 0.01;
 // An endpoint rise alone cannot distinguish a graded street from another level.
 // Retain the short-gap tolerance, then require a modest grade and observed ground
 // at both ends and along the actual connector. This is not a legal road-grade test.
@@ -119,6 +122,7 @@ fn coordinates(line: &Polyline3) -> Vec<[f64; 3]> {
 pub(super) struct Ground<'a> {
     cloud: &'a PointCloud,
     cells: HashMap<(i64, i64), Vec<usize>>,
+    consensus: bool,
 }
 
 fn cell(x: f64, y: f64) -> (i64, i64) {
@@ -141,7 +145,17 @@ impl<'a> Ground<'a> {
             }
             cells.entry(cell(p[0], p[1])).or_default().push(i);
         }
-        Ok(Self { cloud, cells })
+        Ok(Self {
+            cloud,
+            cells,
+            consensus: false,
+        })
+    }
+
+    pub(super) fn new_consensus(cloud: &'a PointCloud) -> Result<Self, BuildError> {
+        let mut ground = Self::new(cloud)?;
+        ground.consensus = true;
+        Ok(ground)
     }
 
     pub(super) fn height(&self, p: Point3) -> Option<f64> {
@@ -152,25 +166,159 @@ impl<'a> Ground<'a> {
             return None;
         }
         let (x, y) = cell(p.x, p.y);
-        let mut heights = Vec::new();
+        let mut points = Vec::new();
         for a in x - 1..=x + 1 {
             for b in y - 1..=y + 1 {
                 for &i in self.cells.get(&(a, b)).into_iter().flatten() {
                     let q = self.cloud.positions[i];
                     if (q[0] - p.x).powi(2) + (q[1] - p.y).powi(2) <= RADIUS * RADIUS {
-                        heights.push(q[2]);
+                        points.push(q);
                     }
                 }
             }
         }
-        if heights.len() < 3 {
+        if points.len() < 3 {
             return None;
         }
-        quantile(&mut heights, 0.15)
+        if self.consensus {
+            lowest_layer(&mut points)
+        } else {
+            quantile(&mut points.iter().map(|p| p[2]).collect::<Vec<_>>(), 0.15)
+        }
     }
 
     pub(super) fn supports(&self, p: Point3) -> bool {
         self.height(p).is_some_and(|z| (z - p.z).abs() <= HEIGHT)
+    }
+}
+
+/// One vote per occupied XY cell prevents vertical return density from lifting
+/// a low layer. Three non-collinear cells are required: a vertical wall or an
+/// isolated low return cannot supply surface support. The lowest such layer can
+/// still be the wrong physical level; this is not a semantic ground classifier.
+fn lowest_layer(points: &mut [[f64; 3]]) -> Option<f64> {
+    points.sort_unstable_by(|a, b| a[2].total_cmp(&b[2]));
+    let xy = |p: [f64; 3]| {
+        (
+            (p[0] / LAYER_CELL).floor() as i64,
+            (p[1] / LAYER_CELL).floor() as i64,
+        )
+    };
+    let mut occupied: BTreeMap<_, BTreeSet<usize>> = BTreeMap::new();
+    let mut end = 0;
+    for start in 0..points.len() {
+        while end < points.len() && points[end][2] - points[start][2] <= LAYER_HEIGHT {
+            occupied.entry(xy(points[end])).or_default().insert(end);
+            end += 1;
+        }
+        if occupied.len() >= 3 {
+            // Lowest representative of each cell in this window: duplicates in
+            // one column do not change either its vote or horizontal footprint.
+            let representatives: Vec<_> = occupied
+                .values()
+                .map(|ids| points[*ids.first().unwrap()])
+                .collect();
+            let axis = if spread(&representatives, 0) >= spread(&representatives, 1) {
+                0
+            } else {
+                1
+            };
+            let a = representatives
+                .iter()
+                .min_by(|a, b| a[axis].total_cmp(&b[axis]))
+                .unwrap();
+            let b = representatives
+                .iter()
+                .max_by(|a, b| a[axis].total_cmp(&b[axis]))
+                .unwrap();
+            let area = representatives
+                .iter()
+                .map(|p| {
+                    ((b[0] - a[0]) * (p[1] - a[1]) - (b[1] - a[1]) * (p[0] - a[0])).abs() * 0.5
+                })
+                .fold(0.0, f64::max);
+            if area >= LAYER_MIN_AREA {
+                return quantile(
+                    &mut representatives.iter().map(|p| p[2]).collect::<Vec<_>>(),
+                    0.5,
+                );
+            }
+        }
+        let key = xy(points[start]);
+        let ids = occupied.get_mut(&key).unwrap();
+        ids.remove(&start);
+        if ids.is_empty() {
+            occupied.remove(&key);
+        }
+    }
+    None
+}
+
+fn spread(points: &[[f64; 3]], axis: usize) -> f64 {
+    points
+        .iter()
+        .map(|p| p[axis])
+        .fold(f64::NEG_INFINITY, f64::max)
+        - points.iter().map(|p| p[axis]).fold(f64::INFINITY, f64::min)
+}
+
+#[cfg(test)]
+mod layer_tests {
+    use super::*;
+
+    #[test]
+    fn low_surface_survives_dense_overhead_returns_and_isolated_outlier() {
+        let mut cloud = PointCloud::default();
+        cloud.positions.extend([
+            [0.2, 0.2, 1.0],
+            [-0.2, 0.2, 1.04],
+            [0.2, -0.2, 1.02],
+            [0., 0., -5.],
+        ]);
+        for i in 0..1000 {
+            cloud.positions.push([0.2, 0.2, 3. + i as f64 * 0.001]);
+        }
+        let p = Point3::new(0., 0., 1.);
+        assert!(Ground::new(&cloud).unwrap().height(p).unwrap() > 3.);
+        assert_eq!(Ground::new_consensus(&cloud).unwrap().height(p), Some(1.02));
+    }
+
+    #[test]
+    fn duplicates_vertical_walls_and_remote_returns_do_not_supply_a_surface() {
+        let mut cloud = PointCloud::default();
+        for x in -3..=3 {
+            for z in 0..20 {
+                cloud.positions.push([x as f64 * 0.2, 0., z as f64 * 0.01]);
+            }
+        }
+        cloud.positions.push([2., 2., 0.]);
+        let p = Point3::new(0., 0., 0.);
+        assert!(Ground::new(&cloud).unwrap().height(p).is_some());
+        assert_eq!(Ground::new_consensus(&cloud).unwrap().height(p), None);
+        cloud.positions = vec![[0., 0., 0.]; 100];
+        assert_eq!(Ground::new_consensus(&cloud).unwrap().height(p), None);
+    }
+
+    #[test]
+    fn modest_grade_uses_cell_votes_and_a_lower_level_remains_ambiguous() {
+        let mut cloud = PointCloud::default();
+        for x in -2..=2 {
+            for y in -2..=2 {
+                cloud
+                    .positions
+                    .push([x as f64 * 0.2, y as f64 * 0.2, 2. + x as f64 * 0.02]);
+            }
+        }
+        let p = Point3::new(0., 0., 2.);
+        let height = Ground::new_consensus(&cloud).unwrap().height(p).unwrap();
+        assert!((height - 2.).abs() < 0.05);
+        // A coherent lower level must not be silently treated as the upper road.
+        cloud
+            .positions
+            .extend([[0.2, 0.2, -1.], [-0.2, 0.2, -1.], [0.2, -0.2, -1.]]);
+        let ground = Ground::new_consensus(&cloud).unwrap();
+        assert_eq!(ground.height(p), Some(-1.));
+        assert!(!ground.supports(p));
     }
 }
 

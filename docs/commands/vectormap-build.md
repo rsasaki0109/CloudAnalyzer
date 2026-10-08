@@ -21,14 +21,20 @@ missing ground splits the road. Coverage edges can be scan gaps. Review the draf
 lane counts, directions, repeated passes and junctions before using it.
 
 The experimental `--local-ground-height` flag (Python/MCP `local_ground_height=True`)
-uses the 15th percentile of at least three returns within 0.75 m under the trace
-for seed-road Z. It replaces the median of longitudinal cross-section bins; missing
-local returns defer sections. `extraction.local_ground_sections` records its use.
+uses the lowest spatially supported 0.15 m height layer within 0.75 m under the trace
+for seed-road Z. At least three occupied 0.2 m XY cells must span a triangle of
+0.01 m². Each cell contributes its lowest return, and their median supplies Z.
+Dense overhead returns therefore cannot outvote a supported lower layer.
+It replaces the median of longitudinal cross-section bins; missing coherent
+support defers sections. `extraction.local_ground_sections` and
+`extraction.local_ground_estimator` record its use and protocol.
 It does not change lane/traffic assumptions or identify the correct surface level.
 Applied paint-corridor fitting has its own height estimation and bypasses this
-seed stage. The default remains false. It rejects a narrow elevated strip in a
-synthetic fixture, but **did not improve bundled NCLT**: one trial failed the
-direction guard, and a fitted trial exported without improving source support.
+seed stage. The default remains false. Its earlier 15th-percentile implementation
+did not improve bundled NCLT; both old and current runs retain their protocol and
+binary hashes. Mapping jobs now save the unchanged quantile audit alongside an
+alternative ground-consensus audit. Estimator disagreement remains a review hold;
+neither establishes the physical road level or independent accuracy.
 See the [NCLT evidence](../../benchmarks/vector-map/nclt-agentic-mapping/README.md).
 
 In the Web panel, an inconsistent boundary direction stops generation and shows the

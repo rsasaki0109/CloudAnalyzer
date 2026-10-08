@@ -66,9 +66,8 @@ pub struct BuildOptions {
     /// Fit a source-supported road footprint and defer unobserved intervals.
     /// Lane counts stay explicit; coverage edges are not certified road edges.
     pub fit_source_surface: bool,
-    /// Estimate seed-road ground height from local low returns under the trace,
-    /// rather than a median of longitudinal cross-section bins. Missing local
-    /// returns defer the section; this does not establish the correct ground level.
+    /// Estimate seed-road height from the lowest spatially supported local layer.
+    /// Missing coherent returns defer the section; physical level is unverified.
     pub local_ground_height: bool,
     pub forward_lanes: usize,
     pub backward_lanes: usize,
@@ -182,6 +181,8 @@ pub struct BuildReport {
     pub unsupported_sections: usize,
     /// Seed sections using the opt-in local low-return height estimator.
     pub local_ground_sections: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub local_ground_estimator: Option<quality::GroundEstimator>,
     pub intensity_used: bool,
     pub intensity_vertices: usize,
     pub rgb_paint_vertices: usize,
@@ -552,7 +553,7 @@ pub fn extract(
     let index = SurfaceIndex::new(cloud, &line, low.abs().max(high.abs()) + o.half_window);
     let local_ground = o
         .local_ground_height
-        .then(|| junctions::Ground::new(cloud))
+        .then(|| junctions::Ground::new_consensus(cloud))
         .transpose()?;
     let mut report = BuildReport {
         lane_edge_inference: None,
@@ -567,6 +568,7 @@ pub fn extract(
         sampled_sections: line.len(),
         unsupported_sections: 0,
         local_ground_sections: 0,
+        local_ground_estimator: None,
         intensity_used: false,
         intensity_vertices: 0,
         rgb_paint_vertices: 0,
@@ -854,7 +856,8 @@ fn finish_extraction(
 ) -> Result<(Vec<ExtractedRoad>, BuildReport), BuildError> {
     let nlanes = o.forward_lanes + o.backward_lanes;
     if report.local_ground_sections > 0 {
-        report.warnings.push("Seed-road heights use the 15th percentile of at least three returns within 0.75 m under the trajectory. Missing local returns defer sections; another surface level or wrong XY can still pass this estimator. Audit actual boundaries and retained extent before selecting.".into());
+        report.local_ground_estimator = Some(quality::GroundEstimator::consensus());
+        report.warnings.push("Seed-road heights use the lowest 0.15 m layer within 0.75 m under the trajectory, with at least three occupied 0.2 m XY cells spanning a triangle of at least 0.01 m². Each cell contributes its lowest return; their median is used. Missing coherent support defers sections. Another level or wrong XY can still pass; compare both source estimators, actual boundaries and retained extent before selecting.".into());
     }
     if o.fit_boundaries && !report.paint_corridor.as_ref().is_some_and(|r| r.applied) {
         for road in &mut roads {

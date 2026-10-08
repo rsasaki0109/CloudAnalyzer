@@ -19,10 +19,14 @@ OPTIONS = {"forward_lanes": 1, "backward_lanes": 0, "left_hand_traffic": False,
 def job_backend(tmp_path, monkeypatch):
     extension = tmp_path / "native.bin"
     extension.write_bytes(b"fixed native implementation")
-    support = {"supported": 2}
-    audit = {"quality": {"lanes": [{"center": support, "left": support, "right": support}],
+    support = {"samples": 3, "supported": 2, "height_mismatches": 1, "insufficient_returns": 0,
+               "fraction": 2 / 3, "start_supported": True, "end_supported": False}
+    audit = {"quality": {"lanes": [{"lane": 3, "needs_review": True, "center": support, "left": support, "right": support}],
                          "low_support_lanes": [3], "omitted_lanes": [], "malformed_lanes": [],
-                         "limited": False, "sampled_points": 9}, "validation": {"issues": [], "counts": {"errors": 0}}}
+                         "limited": False, "sampled_points": 9, "warnings": [],
+                         "sampling_step_m": 0.5, "ground_radius_m": 0.75,
+                         "ground_height_tolerance_m": 0.3, "minimum_support_fraction": 0.9,
+                         "sample_budget": 100000}, "validation": {"issues": [], "counts": {"errors": 0}}}
     module = SimpleNamespace(__file__=str(extension), __version__="test",
                              audit_vector_map_quality=lambda *args: json.dumps(audit))
     monkeypatch.setattr(jobs, "core", lambda: module)
@@ -48,7 +52,7 @@ def job_backend(tmp_path, monkeypatch):
         files = {}
         for key, name in [("editable_map", "vector_map.json"), ("map", "map.osm"),
                           ("projector", "projector.yaml"), ("report", "report.json")]:
-            (root / name).write_text(key)
+            (root / name).write_text(json.dumps({"options": kwargs}) if key == "report" else key)
             files[key] = str(root / name)
         return {"files": files, "extraction": {"lanes": 1, "trajectory_length": 10, "generated_length": 10}, "autoware_issues": []}
 
@@ -124,9 +128,86 @@ def test_partial_or_empty_audits_do_not_become_selected_drafts(job_backend, tmp_
     jobs.start_mapping_job(str(source), str(root))
     audit["quality"][field] = value
     jobs.generate_mapping_candidate(str(root), OPTIONS, "Try a draft")
+    diagnosis = jobs.diagnose_mapping_candidate(str(root), 1)
+    assert diagnosis["editable"]["complete"] is False
     with pytest.raises(ValueError, match="complete"):
         jobs.select_mapping_candidate(str(root), 1, "Incomplete coverage is not a pass")
     assert jobs.inspect_mapping_job(str(root))["selected"] is None
+
+
+def test_diagnosis_distinguishes_trace_failures_without_processing_or_mutating(job_backend, tmp_path, monkeypatch):
+    source, audit = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    audit["quality"]["lanes"][0].update({
+        "left": {"samples": 3, "supported": 1, "height_mismatches": 0, "insufficient_returns": 2,
+                 "fraction": 1 / 3, "start_supported": False, "end_supported": True},
+        # Endpoint holds still matter independently of aggregate fraction.
+        "right": {"samples": 10, "supported": 9, "height_mismatches": 0, "insufficient_returns": 1,
+                  "fraction": 0.9, "start_supported": False, "end_supported": True},
+    })
+    audit["validation"]["issues"] = [{"severity": "error", "code": "invalid_geometry"}]
+    jobs.generate_mapping_candidate(str(root), OPTIONS, "Diagnose mixed evidence")
+    original = (root / "job.json").read_bytes()
+    def forbidden():
+        raise AssertionError("diagnosis must use saved evidence, not native processing")
+    monkeypatch.setattr(jobs, "core", forbidden)
+    diagnosis = jobs.diagnose_mapping_candidate(str(root), 1)
+    assert diagnosis["editable"]["sample_totals"] == {
+        "samples": 16, "supported": 12, "height_mismatches": 1, "insufficient_returns": 3}
+    traces = diagnosis["editable"]["lanes"][0]["traces"]
+    assert traces["center"]["holds"] == ["below_support_threshold", "unsupported_end"]
+    assert traces["left"]["holds"] == ["below_support_threshold", "unsupported_start"]
+    assert traces["right"]["holds"] == ["unsupported_start"]
+    assert diagnosis["editable"]["complete"] is False
+    assert diagnosis["editable_and_reopened_match"] is True
+    assert diagnosis["deployment_ready"] is False
+    assert diagnosis["remaining_attempts"] == 3
+    result = CliRunner().invoke(app, ["mapping-diagnose", str(root), "--candidate", "1"])
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.stdout) == diagnosis
+    assert (root / "job.json").read_bytes() == original
+
+
+@pytest.mark.parametrize("changed", ["pointcloud", "quality", "map", "report"])
+def test_diagnosis_rejects_changed_evidence(job_backend, tmp_path, changed):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    generated = jobs.generate_mapping_candidate(str(root), OPTIONS, "Freeze the evidence")
+    candidate = generated["attempts"][0]
+    artifact = (generated["pointcloud"]["files"]["map"] if changed == "pointcloud" else
+                candidate["quality_report"] if changed == "quality" else candidate["files"][changed])
+    Path(artifact["path"]).write_text("changed after the recorded audit")
+    with pytest.raises(ValueError, match="changed"):
+        jobs.diagnose_mapping_candidate(str(root), 1)
+
+
+def test_diagnosis_keeps_reopened_discrepancies_and_import_errors_visible(job_backend, tmp_path):
+    source, audit = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    module = jobs.core()
+    def audit_each(cloud, path):
+        result = json.loads(json.dumps(audit))
+        if Path(path).suffix == ".osm":
+            result["quality"]["lanes"][0]["right"]["end_supported"] = True
+            result["import_issues"] = [{"severity": "error", "code": "invalid_osm"}]
+        return json.dumps(result)
+    module.audit_vector_map_quality = audit_each
+    generated = jobs.generate_mapping_candidate(str(root), OPTIONS, "Inspect a reopened discrepancy")
+    diagnosis = jobs.diagnose_mapping_candidate(str(root), 1)
+    assert diagnosis["editable_and_reopened_match"] is False
+    assert diagnosis["editable"]["complete"] is True
+    assert diagnosis["reopened_osm"]["complete"] is False
+    assert diagnosis["reopened_osm"]["errors"][0]["code"] == "invalid_osm"
+    assert any("differences" in text for text in diagnosis["investigations"])
+    # Earlier job summaries omitted import errors. Selection must read the
+    # verified saved audit, including when opening such a persisted job.
+    generated["attempts"][0]["reopened_quality"]["validation_errors"] = []
+    (root / "job.json").write_text(json.dumps(generated))
+    with pytest.raises(ValueError, match="complete"):
+        jobs.select_mapping_candidate(str(root), 1, "Import failure cannot become a selected draft")
 
 
 def test_cli_records_choices_and_reports_failed_attempts_with_nonzero_exit(job_backend, tmp_path):
@@ -190,6 +271,11 @@ def test_native_candidate_contract_audits_saved_osm_and_preserves_failed_trials(
     assert candidate["status"] == "audited_draft", candidate
     assert candidate["quality"]["needs_review"] == []
     assert candidate["reopened_quality"] == candidate["quality"]
+    diagnosis = jobs.diagnose_mapping_candidate(str(root), 1)
+    assert diagnosis["editable_and_reopened_match"] is True
+    assert diagnosis["editable"]["complete"] is True
+    assert diagnosis["editable"]["sample_totals"]["height_mismatches"] == 0
+    assert diagnosis["editable"]["sample_totals"]["insufficient_returns"] == 0
     selected = jobs.select_mapping_candidate(str(root), 1, "Complete structural/source checks; road semantics still unconfirmed")
     assert selected["selected"]["source_quality_passed"] is True
     assert selected["selected"]["deployment_ready"] is False
@@ -225,6 +311,8 @@ def test_high_support_on_a_short_fragment_cannot_replace_the_requested_extent(jo
     generated = jobs.generate_mapping_candidate(str(root), OPTIONS, "Supported fragment only")
     assert generated["attempts"][-1]["quality"]["needs_review"] == []
     assert generated["attempts"][-1]["extent"]["passes_requested_extent"] is False
+    diagnosis = jobs.diagnose_mapping_candidate(str(root), 1)
+    assert diagnosis["extent"]["passes_requested_extent"] is False
     with pytest.raises(ValueError, match="retained-extent"):
         jobs.select_mapping_candidate(str(root), 1, "A perfect local score cannot recover missing road")
     assert jobs.inspect_mapping_job(str(root))["selected"] is None

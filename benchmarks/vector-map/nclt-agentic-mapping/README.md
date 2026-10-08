@@ -51,6 +51,47 @@ the repository (source), Python package (native extension) or generated job.
 Large point-cloud and candidate artifacts are generated outputs, not committed
 fixtures. Binary hashes identify this run; rebuilds/platforms may differ.
 
+## Follow-up: diagnose and compare anchor hypotheses
+
+`mapping-diagnose` now reads verified saved IR/OSM evidence without rerunning
+generation or spending attempts. The original selected draft has 832 height
+mismatches and 589 insufficient-return samples. Counts are per oriented
+lane/trace, so shared boundaries may be checked twice. These failure types do not
+establish whether the root cause is generated Z, wrong XY, another surface level,
+missing returns or the assumed road layout. Endpoint holds remain visible even
+when aggregate support reaches the threshold.
+
+On 2026-10-09 JST, a new three-attempt job reproduced the same point-map SHA-256
+and baseline audit. The agent inspected diagnoses between trials, keeping the
+same traffic priors, tracking and 243.14 m extent:
+
+| Trial in new job | Changed option | Supported / sampled | Height mismatches | Insufficient returns | Lane sections needing review |
+| --- | --- | ---: | ---: | ---: | ---: |
+| 1 | Reproduce earlier candidate 4 | 1,748 / 3,169 | 832 | 589 | 8 / 10 |
+| 2 | `physical_anchors_only=true` | 1,742 / 3,160 | 825 | 593 | 8 / 10 |
+| 3 | `anchor_width_prior=false` | 1,677 / 3,140 | 909 | 554 | 9 / 10 |
+
+Trial 2 excluded ten point-coverage-edge candidates as anchors for inferred
+boundaries but resolved no additional lane section. Trial 3 reduced missing-return
+samples while increasing height mismatches and reviewed lanes. Neither establishes
+an improvement. The agent retained trial 1, explicitly recording the unsuccessful
+hypotheses. All three had complete audits, matching editable/reopened diagnoses
+and zero structural/export errors. Source-review and deployment holds remain.
+[`diagnosis-verification.json`](diagnosis-verification.json) records the baseline
+per-trace evidence, trials, hashes and decision.
+
+To inspect a generated candidate:
+
+```sh
+ca mapping-diagnose runs/nclt-agent --candidate 4
+```
+
+For another comparison, start a new job with its budget declared up front; do not
+extend an exhausted job or overwrite its artifacts. Test fitting choices based
+on the returned evidence. Further investigation should locate the affected traces
+in the point footprint and compare nearby surface levels before changing height
+alone or changing lane semantics.
+
 ## Reproduce the tool sequence
 
 Build/install the current Rust Python core and install `cloudanalyzer`. From the

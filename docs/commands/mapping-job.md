@@ -19,6 +19,10 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    and reopened OSM, retaining validation/export issues and source-review lanes.
    Read the result before trying another fit. Failed attempts retain their errors
    and do not replace earlier maps or the selected draft.
+   Use `diagnose_mapping_candidate(job_dir, candidate_id)` to read the saved
+   per-lane/trace evidence: height mismatches, insufficient returns, endpoint
+   holds, audit completeness and retained extent. It verifies source/artifact
+   hashes, does not run native processing and does not spend an attempt.
 4. `select_mapping_candidate(job_dir, candidate_id, reason)` records the chosen
    draft and justification. It requires nonempty lanes, complete source checks,
    zero structural errors, unchanged inputs/output hashes and the job's minimum
@@ -43,6 +47,15 @@ Set `minimum_retained_fraction` when starting the job (`--minimum-retained-fract
 in the CLI). It is an explicit extent goal, not the source-support threshold.
 Candidate summaries expose the generated/trajectory lengths, fraction and extent
 hold; a highly supported short fragment cannot satisfy a whole-drive goal.
+
+Diagnosis separates observed failure types from possible causes. A height mismatch
+can come from wrong XY, another surface level or generated Z; it is not a command
+to move Z. Insufficient returns can reflect sparse/occluded coverage or a wrong
+lane/trace hypothesis; they do not prove that a road is absent. Inspect source
+footprints and assumed-width anchors before selecting another fitting option.
+Totals count samples per oriented lane/trace, including shared boundaries checked
+from both lanes; they are not unique source points or fractions of road length.
+Editable and reopened OSM evidence are kept separately, with discrepancies visible.
 
 Attempts default to four and are bounded to eight. A job pins its recording,
 generated inputs and native extension by SHA-256. Changing them requires a new
@@ -76,6 +89,7 @@ Write an explicit hypothesis to `roads.json`:
 ```sh
 ca mapping-candidate runs/nclt-agent --options roads.json --reason "Baseline road hypothesis; inspect source support and retained extent"
 ca mapping-status runs/nclt-agent
+ca mapping-diagnose runs/nclt-agent --candidate 1
 ca mapping-select runs/nclt-agent --candidate 1 --reason "Retain this draft with its unresolved source and traffic-rule holds"
 ```
 

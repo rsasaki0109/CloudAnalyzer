@@ -191,7 +191,8 @@ def _quality_summary(audit: dict[str, Any]) -> dict[str, Any]:
             "omitted": q["omitted_lanes"], "malformed": q["malformed_lanes"],
             "limited": q["limited"], "sampled_points": q["sampled_points"],
             "supported_samples": sum(l[c]["supported"] for l in q["lanes"] for c in ("center", "left", "right")),
-            "validation_errors": [i for i in audit["validation"]["issues"] if i["severity"] == "error"]}
+            "validation_errors": [i for i in [*audit["validation"]["issues"], *audit.get("import_issues", [])]
+                                  if i["severity"] == "error"]}
 
 
 def _extent(extraction: dict[str, Any], minimum: float) -> dict[str, Any]:
@@ -202,6 +203,91 @@ def _extent(extraction: dict[str, Any], minimum: float) -> dict[str, Any]:
     return {"trajectory_length_m": total, "generated_length_m": generated,
             "retained_fraction": fraction, "minimum_retained_fraction": minimum,
             "passes_requested_extent": fraction >= minimum}
+
+
+def _diagnose_audit(audit: dict[str, Any]) -> dict[str, Any]:
+    quality = audit["quality"]
+    lanes = []
+    totals = {key: 0 for key in ("samples", "supported", "height_mismatches", "insufficient_returns")}
+    for lane in quality["lanes"]:
+        traces = {}
+        for name in ("center", "left", "right"):
+            trace = lane[name]
+            for key in totals:
+                totals[key] += trace[key]
+            holds = []
+            if trace["fraction"] < quality["minimum_support_fraction"]:
+                holds.append("below_support_threshold")
+            if not trace["start_supported"]:
+                holds.append("unsupported_start")
+            if not trace["end_supported"]:
+                holds.append("unsupported_end")
+            traces[name] = {**trace, "holds": holds}
+        lanes.append({"lane": lane["lane"], "needs_review": lane["needs_review"], "traces": traces})
+    errors = [i for i in [*audit["validation"]["issues"], *audit.get("import_issues", [])]
+              if i["severity"] == "error"]
+    return {
+        "protocol": {key: quality[key] for key in ("sampling_step_m", "ground_radius_m",
+                     "ground_height_tolerance_m", "minimum_support_fraction", "sample_budget")},
+        "complete": bool(lanes) and not (quality["limited"] or quality["omitted_lanes"]
+                                         or quality["malformed_lanes"] or errors),
+        "sample_totals": totals, "needs_review": quality["low_support_lanes"], "lanes": lanes,
+        "omitted": quality["omitted_lanes"], "malformed": quality["malformed_lanes"],
+        "limited": quality["limited"], "errors": errors, "warnings": quality["warnings"],
+    }
+
+
+def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any]:
+    """Explain a candidate's source holds from its saved native IR and OSM audits.
+
+    Verifies recorded source, point-map and candidate hashes, then reads small
+    reports without rerunning native processing or spending attempts. Returns
+    per-lane/trace height mismatches, insufficient returns, endpoint holds and
+    retained extent. These are observed audit failures, not proven root causes:
+    wrong XY, another level, sparse source and unverified lane priors can overlap.
+    Use the evidence to choose a trial; do not erase lanes or shrink the map to pass.
+    """
+    root = Path(job_dir).resolve()
+    job = _load(root)
+    if type(candidate_id) is not int or candidate_id < 1:
+        raise ValueError("candidate_id must be a positive integer")
+    attempt = next((a for a in job["attempts"] if a["id"] == candidate_id), None)
+    if attempt is None or attempt["status"] != "audited_draft":
+        raise ValueError("diagnose an audited draft candidate")
+    for artifact in [job["source"], *job["pointcloud"]["files"].values(),
+                     *attempt["files"].values(), attempt["quality_report"]]:
+        _verify(artifact)
+    saved = json.loads(Path(attempt["quality_report"]["path"]).read_text(encoding="utf-8"))
+    editable = _diagnose_audit(saved["editable"])
+    reopened = _diagnose_audit(saved["reopened_osm"])
+    report = json.loads(Path(attempt["files"]["report"]["path"]).read_text(encoding="utf-8"))
+    extent = _extent(attempt["extraction"], job.get("minimum_retained_fraction", 0.9))
+    investigations = []
+    totals = editable["sample_totals"]
+    if totals["height_mismatches"]:
+        investigations.append("Compare trace Z with nearby low returns and inspect XY/ground-level alignment; a height mismatch does not establish that a Z-only correction is appropriate.")
+    if totals["insufficient_returns"]:
+        investigations.append("Inspect the point footprint and trajectory/lane assumptions for the affected traces; sparse or occluded returns do not prove that a road is absent.")
+    if attempt["extraction"].get("width_prior_vertices", 0):
+        investigations.append("Inspect assumed-width boundaries and their anchors. Point-coverage edges may be scan gaps rather than physical road edges; compare fitting choices at unchanged lane count, width and extent.")
+    if not editable["complete"] or not reopened["complete"]:
+        investigations.append("Resolve incomplete or invalid audits before interpreting support or selecting a draft.")
+    if editable != reopened:
+        investigations.append("Inspect differences between editable and reopened OSM evidence before comparing candidates.")
+    if not extent["passes_requested_extent"]:
+        investigations.append("Inspect deferred road length; a supported fragment does not meet the requested extent.")
+    return {
+        "schema": "cloudanalyzer.mapping_diagnosis.v1", "candidate_id": candidate_id,
+        "quality_report": attempt["quality_report"], "road_options": attempt["road_options"],
+        "effective_options": report["options"], "extent": extent,
+        "editable": editable, "reopened_osm": reopened,
+        "editable_and_reopened_match": editable == reopened,
+        "extraction": attempt["extraction"], "export_issues": attempt["export_issues"],
+        "pointcloud_quality_status": job["pointcloud"]["quality_status"],
+        "remaining_attempts": job["max_attempts"] - len(job["attempts"]),
+        "investigations": investigations, "deployment_ready": False,
+        "counting_note": "Totals count oriented samples per lane/trace; a shared boundary can be checked for both lanes. They are not unique points or percentages of road length.",
+    }
 
 
 def generate_mapping_candidate(job_dir: str, road_options: dict[str, Any], reason: str) -> dict[str, Any]:
@@ -284,13 +370,17 @@ def select_mapping_candidate(job_dir: str, candidate_id: int, reason: str) -> di
         extent = _extent(attempt["extraction"], job.get("minimum_retained_fraction", 0.9))
         if not extent["passes_requested_extent"]:
             raise ValueError("candidate does not meet the job's retained-extent goal; inspect deferred road length")
-        for q in [attempt["quality"], attempt["reopened_quality"]]:
+        # Interpret the verified saved audits with the current contract, rather
+        # than trusting cached summaries from an earlier job implementation.
+        saved = json.loads(Path(attempt["quality_report"]["path"]).read_text(encoding="utf-8"))
+        qualities = [_quality_summary(saved[key]) for key in ("editable", "reopened_osm")]
+        for q in qualities:
             if not q["lanes_checked"] or q["omitted"] or q["malformed"] or q["limited"] or q["validation_errors"]:
                 raise ValueError("candidate needs complete source audits and nonempty, structurally valid roads")
         if any(i["severity"] == "error" for i in attempt["export_issues"]):
             raise ValueError("resolve export errors before selecting")
         job["selected"] = {"candidate_id": candidate_id, "reason": reason.strip(),
-                           "source_quality_passed": not attempt["quality"]["needs_review"] and not attempt["reopened_quality"]["needs_review"],
+                           "source_quality_passed": all(not q["needs_review"] for q in qualities),
                            "deployment_ready": False, "files": attempt["files"],
                            "assumptions": attempt["road_options"], "extent": extent}
         job["status"] = "selected_draft"

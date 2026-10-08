@@ -1915,6 +1915,20 @@ def mapping_select_cmd(
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-diagnose")
+def mapping_diagnose_cmd(
+    job: str = typer.Argument(...),
+    candidate: int = typer.Option(..., "--candidate", min=1),
+) -> None:
+    """Explain saved source-review holds without rerunning generation or spending attempts."""
+    from ca.mapping_job import diagnose_mapping_candidate
+    try:
+        result = diagnose_mapping_candidate(job, candidate)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("vectormap-build")
 def vectormap_build_cmd(
     cloud: str = typer.Argument(..., help="Surveyed point cloud, in the trajectory's metre frame"),

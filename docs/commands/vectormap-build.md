@@ -20,6 +20,14 @@ the end of ground coverage provide boundary candidates. Missing features use a w
 missing ground splits the road. Coverage edges can be scan gaps. Review the draft geometry,
 lane counts, directions, repeated passes and junctions before using it.
 
+In the Web panel, an inconsistent boundary direction stops generation and shows the
+rejected section in red over the source cloud, with a yellow cross at the problem.
+Use **Focus problem**, then **Edit lane counts and width** and **Rebuild with current
+settings**. Existing geometry and Undo history survive a failed attempt. For fitted
+roads, **Boundary search margin** must stay within 45% of lane width; narrowing lanes
+may require reducing this margin explicitly. Changing inputs marks the old preview
+as stale; switching sources, successful builds and map edits clear it.
+
 Inferred lines are anchored to detected outer edges when available, while keeping their
 inferred label. This reduces dependence on the trajectory being exactly at the lane centre.
 `--no-anchor-width-prior` disables that adjustment; the MCP option is `anchor_width_prior`.

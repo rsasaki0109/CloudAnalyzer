@@ -58,12 +58,20 @@ test('NCLT corrected drive builds with default pieces, edits, checks and reopens
   // which Lanelet2 will interpret with a different boundary/travel direction.
   await expect(page.locator('#status')).toContainText('ambiguous travel directions', {timeout: 60_000});
   await expect(page.locator('#vm-status')).toContainText('No map yet');
-  await page.getByText('Road options', {exact: true}).click();
+  await expect(page.locator('#vm-build-failure')).toBeVisible();
+  await expect(page.locator('#vm-failure-settings')).toContainText('1 forward / 1 backward');
+  await expect(page.locator('#vm-failure-reason')).toContainText('Boundary travel direction');
+  await page.locator('#vm-failure-focus').click();
+  await page.screenshot({path: info.outputPath('rejected-boundaries.png')});
+  await page.locator('#vm-failure-options').click();
   await page.locator('#vm-backward').fill('0');
-  await page.locator('#vm-build').click();
+  await expect(page.locator('#vm-failure-stale')).toBeVisible();
+  await expect(page.locator('#vm-failure-settings')).toContainText('1 forward / 1 backward');
+  await page.locator('#vm-failure-retry').click();
   await expect(page.locator('#status')).toContainText(/Draft roads added|Could not build draft roads/, {timeout: 60_000});
   await expect(page.locator('#status')).toContainText('Draft roads added', {timeout: 0});
   await expect(page.locator('#vm-status')).toContainText('Autoware check: 0 errors, 0 warnings.');
+  await expect(page.locator('#vm-build-failure')).toBeHidden();
   const buildMs = Date.now() - building;
   const buildReport = await page.locator('#vm-build-report').textContent();
   const mapStatus = await page.locator('#vm-status').textContent();

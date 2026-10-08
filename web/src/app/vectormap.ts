@@ -25,6 +25,7 @@ import { clouds, entries, globalShift, listChanged, pointsInvalidated, viewer } 
 import { inputTrajectories, trajectoryChanged } from "./trajectory";
 import { activeTool, pickPoint, setTool, toggleTool, type Tool } from "./tools";
 import { appendDashedPairs, crosswalkTriangles, signalTriangles } from "./vectormap-geometry";
+import { parseRoadBuildFailure, type RoadBuildFailure } from "./road-build-failure";
 
 type XYZ = [number, number, number];
 
@@ -159,6 +160,9 @@ let view: MapView = { lanes: [], boundaries: [], stopLines: [], crosswalks: [], 
 let undoDepth = 0;
 let selected: number | null = null;
 let busy = false;
+let buildFailure: {failure: RoadBuildFailure; cloud: number; trajectory: number | null; path: XYZ[] | null} | null = null;
+let buildFailureRevision = 0;
+let buildSketchRevision = 0;
 let junctionPreview: JunctionReport | null = null;
 const junctionSelection = new Set<number>();
 let junctionSnapshot: { id: number; text: string } | null = null;
@@ -204,6 +208,7 @@ const materials = {
   savedEdge: viewer.lineMaterial({ color: 0xffad58, linewidth: 2.5, depthTest: false }),
   incomingRoute: viewer.lineMaterial({ color: 0xa894fa, linewidth: 3, depthTest: false }),
   outgoingRoute: viewer.lineMaterial({ color: 0x48dfaf, linewidth: 3, depthTest: false }),
+  failure: viewer.lineMaterial({ color: 0xff5364, linewidth: 4, depthTest: false }),
 };
 const laneFill = new THREE.MeshBasicMaterial({
   color: 0x2485bf,
@@ -351,9 +356,20 @@ function draw(): void {
   dashDisplayLimited = false;
   clearGroup();
   const shift = globalShift();
-  const first = view.boundaries[0]?.points[0] ?? sketch[0];
+  const first = view.boundaries[0]?.points[0] ?? sketch[0] ?? buildFailure?.failure.diagnostic.reference[0];
   if (first) origin = [first[0], first[1], first[2]];
   group.position.set(origin[0] - shift[0], origin[1] - shift[1], origin[2] - shift[2]);
+  if (buildFailure) {
+    const d = buildFailure.failure.diagnostic;
+    const failed: number[] = [];
+    for (const line of d.boundaries) polylinePairs(line, failed);
+    segments(failed, materials.failure, 6);
+    const marker: number[] = [];
+    const [x, y, z] = d.location;
+    polylinePairs([[x - 1, y - 1, z], [x + 1, y + 1, z]], marker);
+    polylinePairs([[x - 1, y + 1, z], [x + 1, y - 1, z]], marker);
+    segments(marker, materials.sketch, 7);
+  }
   const focused = view.lanes.find((l) => l.id === selected);
   if (display.surfaces) for (const lane of view.lanes) {
     const material = lane.id === selected ? selectedFill : focused?.successors.includes(lane.id) ? successorFill :
@@ -1170,18 +1186,71 @@ function buildInputs(): void {
   fill($<HTMLSelectElement>("vm-discovery-cloud"), clouds().map((entry) => entry.cloud));
   fill(trajectoryInput, inputTrajectories());
   buildButton.disabled = busy || !cloudInput.value || !trajectoryInput.value;
+  $<HTMLButtonElement>("vm-failure-retry").disabled = busy || !buildFailure;
   junctionInputs();
 }
-listChanged.add(() => { clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); buildInputs(); draw(); });
-pointsInvalidated.add((id) => { if (id === Number($<HTMLSelectElement>("vm-quality-cloud").value)) reviewSourceChanged(); clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); draw(); });
-trajectoryChanged.add(buildInputs);
+listChanged.add(() => { clearBuildFailure(); clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); buildInputs(); draw(); });
+pointsInvalidated.add((id) => { if (id === buildFailure?.cloud || id === Number(cloudInput.value)) clearBuildFailure(); if (id === Number($<HTMLSelectElement>("vm-quality-cloud").value)) reviewSourceChanged(); clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); draw(); });
+trajectoryChanged.add(() => { clearBuildFailure(); buildInputs(); draw(); });
+cloudInput.addEventListener("change", () => { clearBuildFailure(); draw(); });
+trajectoryInput.addEventListener("change", () => { clearBuildFailure(); draw(); });
 buildInputs();
+
+function clearBuildFailure(): void {
+  buildFailureRevision++;
+  buildSketchRevision++;
+  buildFailure = null;
+  $("vm-build-failure").hidden = true;
+  $("vm-failure-stale").hidden = true;
+}
+
+function focusBuildFailure(): void {
+  if (!buildFailure) return;
+  const d = buildFailure.failure.diagnostic, shift = globalShift(), box = new THREE.Box3();
+  for (const p of [d.location, ...d.reference, ...d.boundaries.flat()]) box.expandByPoint(new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] - shift[2]));
+  viewer.frameBox(box.expandByScalar(5));
+}
+
+function showBuildFailure(err: unknown, revision: number, cloud: number, trajectory: number | null, path: XYZ[] | null = null): string {
+  const text = errorText(err), failure = parseRoadBuildFailure(text);
+  if (!failure) return text;
+  if (revision !== buildFailureRevision || !entries.has(cloud)) return failure.message;
+  buildFailure = {failure, cloud, trajectory, path};
+  const d = failure.diagnostic;
+  buildButton.closest('details')!.open = true;
+  $("vm-build-failure").hidden = false;
+  $("vm-failure-reason").textContent = `Boundary travel direction is inconsistent in this ${fmt(d.context_length)} m section. Review the red preview against the source points.`;
+  $("vm-failure-settings").textContent = `Rejected settings: ${d.forward_lanes} forward / ${d.backward_lanes} backward lanes, ${fmt(d.lane_width)} m per lane, ${fmt(d.segment_length)} m pieces.`;
+  draw(); focusBuildFailure();
+  return failure.message;
+}
+
+$("vm-failure-focus").onclick = focusBuildFailure;
+$("vm-failure-options").onclick = () => {
+  $<HTMLDetailsElement>("vm-road-options").open = true;
+  const input = $<HTMLInputElement>("vm-forward"); input.focus(); input.select();
+};
+$("vm-failure-dismiss").onclick = () => { clearBuildFailure(); draw(); };
+$("vm-failure-retry").onclick = () => {
+  if (busy || !buildFailure) return;
+  if (buildFailure.trajectory !== null) buildButton.click();
+  else if (JSON.stringify(sketch) === JSON.stringify(buildFailure.path)) void finishRoad();
+  else { clearBuildFailure(); draw(); setStatus("Trace the path again before rebuilding."); }
+};
+for (const panel of [$("vm-road-options"), buildButton.parentElement!]) {
+  panel.addEventListener("input", event => {
+    if ((event.target as HTMLElement).closest("#vm-build-failure") || event.target === cloudInput || event.target === trajectoryInput) return;
+    buildFailureRevision++;
+    if (buildFailure) $("vm-failure-stale").hidden = false;
+  });
+}
 function roadBuildOptions(): object {
   return {
     forward_lanes: Number($<HTMLInputElement>("vm-forward").value),
     backward_lanes: Number($<HTMLInputElement>("vm-backward").value),
     left_hand_traffic: $<HTMLSelectElement>("vm-traffic").value === "left",
     lane_width: Number($<HTMLInputElement>("vm-width").value),
+    search_margin: Number($<HTMLInputElement>("vm-search-margin").value),
     speed_limit: Number($<HTMLInputElement>("vm-speed").value),
     segment_length: Number($<HTMLInputElement>("vm-segment").value),
     anchor_width_prior: $<HTMLInputElement>("vm-anchor-prior").checked,
@@ -1197,6 +1266,18 @@ function roadBuildOptions(): object {
     verify_curb_profiles: $<HTMLInputElement>("vm-verify-curbs").checked,
     merge_repeated_passes: $<HTMLInputElement>("vm-merge-passes").checked,
   };
+}
+
+function checkRoadSearchMargin(): boolean {
+  const width = Number($<HTMLInputElement>("vm-width").value), input = $<HTMLInputElement>("vm-search-margin"), margin = Number(input.value);
+  // Leave unrelated invalid options to the native validator.
+  if (width >= 1.5 && width <= 6 && (!Number.isFinite(margin) || margin < 0 || margin > width * 0.45)) {
+    $<HTMLDetailsElement>("vm-road-options").open = true;
+    input.focus(); input.select();
+    setStatus(`Boundary search margin must be between 0 and ${fmt(width * 0.45)} m for a ${fmt(width)} m lane. Adjust it before rebuilding.`);
+    return false;
+  }
+  return true;
 }
 function paintBudgetText(report: PaintBudgetInfo): string {
   if (!report.budget_stage) return "";
@@ -1239,14 +1320,18 @@ buildButton.onclick = async () => {
   if (busy) return;
   const trajectory = inputTrajectories().find((t) => String(t.id) === trajectoryInput.value);
   if (!trajectory || !cloudInput.value) return;
+  if (!checkRoadSearchMargin()) return;
+  const cloud = Number(cloudInput.value);
+  clearBuildFailure(); draw();
   busy = true;
   buildInputs();
   setTool(null);
+  const revision = buildFailureRevision;
   setStatus("Building draft roads from the point cloud and trajectory…");
   try {
     const options = roadBuildOptions();
     const edited = await vectorMap<Edited>("build", {
-      id: Number(cloudInput.value), positions: trajectory.poses.positions, text: JSON.stringify(options),
+      id: cloud, positions: trajectory.poses.positions, text: JSON.stringify(options),
     });
     takeView(edited);
     const report = edited.result as BuildReport;
@@ -1259,7 +1344,7 @@ buildButton.onclick = async () => {
       catch (err) { setStatus(`${built} Equipment search failed: ${errorText(err)}`); }
     }
   } catch (err) {
-    setStatus(`Could not build draft roads: ${errorText(err)}`);
+    setStatus(`Could not build draft roads: ${showBuildFailure(err, revision, cloud, trajectory.id)}`);
   } finally {
     busy = false;
     buildInputs();
@@ -1356,6 +1441,7 @@ $("vm-review-save").onclick = () => {
 };
 
 function takeView(edited: Edited, editing = true): void {
+  clearBuildFailure();
   clearQuality();
   $("vm-export-report").hidden = true;
   $("vm-export-issues").replaceChildren();
@@ -1629,7 +1715,11 @@ async function buildRoad(): Promise<void> {
   if (reference.length < 2) return setStatus("Click at least two points along the road.");
   const lanes = (roadCommand(reference) as { lanes: unknown[] }).lanes;
   if (lanes.length === 0) return setStatus("Give the road at least one lane.");
+  if ($<HTMLInputElement>("vm-refine-sketch").checked && !checkRoadSearchMargin()) return;
+  const cloud = Number(cloudInput.value);
+  clearBuildFailure(); const revision = buildFailureRevision, pathRevision = buildSketchRevision;
   sketch = [];
+  draw();
   if (!$<HTMLInputElement>("vm-refine-sketch").checked) {
     if (await apply([roadCommand(reference)], "Road built")) setTool(null);
     else draw();
@@ -1638,10 +1728,15 @@ async function buildRoad(): Promise<void> {
   busy = true; buildInputs();
   try {
     if (!cloudInput.value) throw new Error("Choose the point cloud for this drawn path.");
-    const edited = await vectorMap<Edited>("build", { id: Number(cloudInput.value), positions: new Float64Array(reference.flat()), text: JSON.stringify(roadBuildOptions()) });
+    const edited = await vectorMap<Edited>("build", { id: cloud, positions: new Float64Array(reference.flat()), text: JSON.stringify(roadBuildOptions()) });
     takeView(edited); const report = edited.result as BuildReport; renderBuildReport(report); setTool(null);
     setStatus(`Road built from the point cloud and your traced path: ${report.lanes} added lanes. The path and nominal widths are operator inputs; review the boundary evidence report.`);
-  } catch (err) { sketch = reference; draw(); setStatus(`Could not fit the drawn road: ${errorText(err)}`); }
+  } catch (err) {
+    // Setting changes invalidate the diagnostic, but preserve the traced path.
+    // Source changes, new picks and leaving the tool cancel its restoration.
+    if (pathRevision === buildSketchRevision) sketch = reference;
+    setStatus(`Could not fit the drawn road: ${showBuildFailure(err, revision, cloud, null, reference)}`); draw();
+  }
   finally { busy = false; buildInputs(); }
 }
 
@@ -1649,6 +1744,7 @@ const roadTool: Tool = {
   click(x, y) {
     return roadSelections.enqueue(() => clickPoint(x, y), p => {
       if (!p) return;
+      clearBuildFailure();
       sketch.push(p);
       draw();
       renderHint();
@@ -1668,6 +1764,7 @@ const roadTool: Tool = {
     }
     if (e.key === "Backspace") {
       void roadSelections.enqueue(async () => null, () => {
+        clearBuildFailure();
         sketch.pop();
         draw();
         renderHint();
@@ -1678,12 +1775,15 @@ const roadTool: Tool = {
   },
   enter() {
     roadSelections.cancel();
+    clearBuildFailure();
     sketch = [];
     $("vm-road").setAttribute("aria-pressed", "true");
+    draw();
     renderHint();
   },
   exit() {
     roadSelections.cancel();
+    clearBuildFailure();
     sketch = [];
     $("vm-road").setAttribute("aria-pressed", "false");
     draw();

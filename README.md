@@ -50,6 +50,9 @@ pose graph with one scan per pose.
   drag shared boundary vertices, add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
   [vectormap-rs](https://github.com/rsasaki0109/vectormap-rs), checks the map for Autoware, and saves
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
+  If a sharp turn produces inconsistent boundary directions, the Web panel shows the rejected
+  section over the source cloud, marks its problem location, and lets you adjust lane counts or
+  width and rebuild. Failed generation retains the existing map and Undo history.
   [Map display](docs/vector-map-display.md) shows road surfaces, direction arrows, clipped crosswalk
   bands and signal faces; selecting a lane highlights its incoming and outgoing connections.
   [Automatic equipment search](docs/commands/vectormap-discover.md) finds paint and elevated

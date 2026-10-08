@@ -3,7 +3,7 @@
 //! Nearest-point projection can jump to a different branch of a returning drive
 //! or to the endpoint of a fitted boundary. Extraction already supplies aligned
 //! vertices; interpolate every line using the same reference edge and fraction.
-use super::{BuildError, BuildOptions, ExtractedRoad};
+use super::{BuildDiagnostic, BuildError, BuildOptions, ExtractedRoad};
 use vectormap_core::{
     BuiltRoad, LaneDirection, Map, NewRoad, Point3, Polyline3, RoadLane, SpeedLimit,
 };
@@ -33,11 +33,22 @@ fn specification(
 }
 
 /// The caller works on a scratch map and commits only after all roads succeed.
-pub(super) fn build(
+#[cfg(test)]
+fn build(
     map: &mut Map,
     road: ExtractedRoad,
     lanes: &[RoadLane],
     options: &BuildOptions,
+) -> Result<(BuiltRoad, usize), BuildError> {
+    build_diagnostic(map, road, lanes, options, None)
+}
+
+pub(super) fn build_diagnostic(
+    map: &mut Map,
+    road: ExtractedRoad,
+    lanes: &[RoadLane],
+    options: &BuildOptions,
+    diagnostic: Option<&mut Option<BuildDiagnostic>>,
 ) -> Result<(BuiltRoad, usize), BuildError> {
     // Keep the native builder's 3D arc-length interpretation of piece length.
     let stations = polyline(road.reference.clone()).stations();
@@ -79,14 +90,13 @@ pub(super) fn build(
     let mut pending: Vec<_> = (0..pieces)
         .rev()
         .map(|i| {
-            (
-                total * i as f64 / pieces as f64,
-                total * (i + 1) as f64 / pieces as f64,
-            )
+            let start = total * i as f64 / pieces as f64;
+            let end = total * (i + 1) as f64 / pieces as f64;
+            (start, end, start, end)
         })
         .collect();
     let mut extra_cuts = 0;
-    while let Some((start, end)) = pending.pop() {
+    while let Some((start, end, context_start, context_end)) = pending.pop() {
         let first = locate(&stations, start);
         let last = locate(&stations, end);
         let reference = slice(&road.reference, first, last);
@@ -97,11 +107,34 @@ pub(super) fn build(
             .collect();
         if !unambiguous(&reference, &boundaries, lanes) {
             if pieces + extra_cuts >= MAX_PIECES || end - start <= 0.2 {
+                if let Some(diagnostic) = diagnostic {
+                    let first = locate(&stations, context_start);
+                    let last = locate(&stations, context_end);
+                    // At most 2048 preview vertices, including all lane edges.
+                    let limit = (2048 / (road.boundaries.len() + 1)).min(256);
+                    *diagnostic = Some(BuildDiagnostic {
+                        code: "ambiguous_boundary_direction",
+                        location: std::array::from_fn(|axis| {
+                            (reference[0][axis] + reference.last().unwrap()[axis]) * 0.5
+                        }),
+                        reference: sample(slice(&road.reference, first, last), limit),
+                        boundaries: road
+                            .boundaries
+                            .iter()
+                            .map(|line| sample(slice(line, first, last), limit))
+                            .collect(),
+                        context_length: context_end - context_start,
+                        forward_lanes: options.forward_lanes,
+                        backward_lanes: options.backward_lanes,
+                        lane_width: options.lane_width,
+                        segment_length: options.segment_length,
+                    });
+                }
                 return Err(BuildError("road boundaries have ambiguous travel directions; review the trajectory and lane widths".into()));
             }
             let middle = (start + end) * 0.5;
-            pending.push((middle, end));
-            pending.push((start, middle));
+            pending.push((middle, end, context_start, context_end));
+            pending.push((start, middle, context_start, context_end));
             extra_cuts += 1;
             continue;
         }
@@ -133,6 +166,15 @@ pub(super) fn build(
         },
         extra_cuts,
     ))
+}
+
+fn sample(points: Vec<[f64; 3]>, limit: usize) -> Vec<[f64; 3]> {
+    if points.len() <= limit {
+        return points;
+    }
+    (0..limit)
+        .map(|i| points[i * (points.len() - 1) / (limit - 1)])
+        .collect()
 }
 
 fn locate(stations: &[f64], station: f64) -> (usize, f64) {
@@ -437,11 +479,41 @@ mod tests {
         ];
         assert!(!unambiguous(&road.reference, &road.boundaries, &lanes));
         let mut map = Map::new();
+        let mut diagnostic = None;
         assert!(
-            build(&mut map, road.clone(), &lanes, &BuildOptions::default())
-                .unwrap_err()
-                .0
-                .contains("ambiguous travel directions")
+            build_diagnostic(
+                &mut map,
+                road.clone(),
+                &lanes,
+                &BuildOptions::default(),
+                Some(&mut diagnostic),
+            )
+            .unwrap_err()
+            .0
+            .contains("ambiguous travel directions")
+        );
+        let diagnostic = diagnostic.unwrap();
+        assert_eq!(diagnostic.code, "ambiguous_boundary_direction");
+        assert_eq!(diagnostic.reference, road.reference);
+        assert_eq!(diagnostic.boundaries, road.boundaries);
+        assert!(diagnostic.context_length > 40.);
+        assert_eq!(
+            (diagnostic.forward_lanes, diagnostic.backward_lanes),
+            (1, 1)
+        );
+        assert_eq!(diagnostic.lane_width, 3.5);
+        assert_eq!(diagnostic.segment_length, 50.);
+        // Location is in the original survey frame, on the rejected reference.
+        let marker = Point3::new(
+            diagnostic.location[0],
+            diagnostic.location[1],
+            diagnostic.location[2],
+        );
+        assert!(
+            polyline(road.reference.clone())
+                .distance_to(marker.xy())
+                .unwrap()
+                < 1e-6
         );
         let mut map = Map::new();
         let mut road = road;
@@ -461,5 +533,19 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn diagnostic_preview_bounds_dense_survey_geometry_and_keeps_endpoints() {
+        let points: Vec<_> = (0..100_000)
+            .map(|i| [500_000. + i as f64 * 0.01, 4_000_000., 12.])
+            .collect();
+        let endpoints = (points[0], *points.last().unwrap());
+        // The maximum sixteen-lane draft has seventeen boundaries plus a reference.
+        let limit = 2048 / 18;
+        let preview = sample(points, limit);
+        assert!(preview.len() * 18 <= 2048);
+        assert_eq!((preview[0], *preview.last().unwrap()), endpoints);
+        assert!(preview.windows(2).all(|p| p[1][0] > p[0][0]));
     }
 }

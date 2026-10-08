@@ -201,6 +201,27 @@ pub struct BuildReport {
 #[error("{0}")]
 pub struct BuildError(pub String);
 
+/// Bounded preview of the rejected section, in the original survey frame.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct BuildDiagnostic {
+    pub code: &'static str,
+    pub location: [f64; 3],
+    pub reference: Vec<[f64; 3]>,
+    pub boundaries: Vec<Vec<[f64; 3]>>,
+    pub context_length: f64,
+    pub forward_lanes: usize,
+    pub backward_lanes: usize,
+    pub lane_width: f64,
+    pub segment_length: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, thiserror::Error)]
+#[error("{message}")]
+pub struct BuildFailure {
+    pub message: String,
+    pub diagnostic: Option<Box<BuildDiagnostic>>,
+}
+
 fn fail<T>(s: &str) -> Result<T, BuildError> {
     Err(BuildError(s.into()))
 }
@@ -992,7 +1013,7 @@ pub fn build(
     poses: &[[f64; 3]],
     o: &BuildOptions,
 ) -> Result<BuildReport, BuildError> {
-    build_inner(map, cloud, poses, o, None)
+    build_inner(map, cloud, poses, o, None, None)
 }
 
 /// Generate the same map/report and a bounded, read-only source-evidence snapshot.
@@ -1004,8 +1025,33 @@ pub fn build_with_evidence(
     o: &BuildOptions,
 ) -> Result<(BuildReport, BuildEvidence), BuildError> {
     let mut evidence = BuildEvidence::default();
-    let report = build_inner(map, cloud, poses, o, Some(&mut evidence))?;
+    let report = build_inner(map, cloud, poses, o, Some(&mut evidence), None)?;
     Ok((report, evidence))
+}
+
+/// The same atomic build with a bounded failed-section preview for recovery.
+pub fn build_with_diagnostics(
+    map: &mut Map,
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    o: &BuildOptions,
+) -> Result<(BuildReport, BuildEvidence), BuildFailure> {
+    let mut evidence = BuildEvidence::default();
+    let mut diagnostic = None;
+    match build_inner(
+        map,
+        cloud,
+        poses,
+        o,
+        Some(&mut evidence),
+        Some(&mut diagnostic),
+    ) {
+        Ok(report) => Ok((report, evidence)),
+        Err(error) => Err(BuildFailure {
+            message: error.0,
+            diagnostic: diagnostic.map(Box::new),
+        }),
+    }
 }
 
 fn build_inner(
@@ -1014,6 +1060,7 @@ fn build_inner(
     poses: &[[f64; 3]],
     o: &BuildOptions,
     mut evidence: Option<&mut BuildEvidence>,
+    mut diagnostic: Option<&mut Option<BuildDiagnostic>>,
 ) -> Result<BuildReport, BuildError> {
     let (roads, mut report) = extract(cloud, poses, o)?;
     let had_existing = map.lanes().next().is_some();
@@ -1044,7 +1091,13 @@ fn build_inner(
                 .as_deref_mut()
                 .and_then(|e| e.can_accept(&road).then(|| road.clone()));
             let added_length = length(&road.reference);
-            let (built, extra_cuts) = segmentation::build(&mut draft, road, &lanes, o)?;
+            let (built, extra_cuts) = segmentation::build_diagnostic(
+                &mut draft,
+                road,
+                &lanes,
+                o,
+                diagnostic.as_deref_mut(),
+            )?;
             if extra_cuts > 0 {
                 report.warnings.push(format!("Added {extra_cuts} matched cuts on returning road sections so Lanelet2 can infer both boundary directions consistently; these pieces are shorter than the requested length. Geometry and heights are retained."));
             }

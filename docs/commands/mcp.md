@@ -19,6 +19,8 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 |---|---|
 | `start_mapping_job(source, out_dir, keyframe_spacing?, remove_dynamic?, max_attempts?, pointcloud_topic?, imu_topic?, minimum_retained_fraction?)` | Start an agent-controlled raw-recording job, generating the point-cloud map and corrected trajectory with hashes, processing reports and an explicit retained-extent goal ([workflow](mapping-job.md)) |
 | `inspect_mapping_job(job_dir)` | Read persisted artifacts, attempts, source holds and remaining budget without loading clouds |
+| `propose_mapping_corridors(job_dir, search_radius_m?)` | Generate cached low-surface corridor geometry and width/edge evidence before assigning lanes; no HD attempt is spent |
+| `inspect_mapping_corridors(job_dir, candidate_id?, offset?)` | Read a paged candidate index or bounded original-frame geometry; verify saved input/report hashes without native processing |
 | `diagnose_mapping_candidate(job_dir, candidate_id)` | Explain saved per-lane/trace height mismatches, insufficient returns, endpoint holds and extent; verify artifacts without processing or spending attempts |
 | `generate_mapping_candidate(job_dir, road_options, reason)` | Generate/audit one HD-map hypothesis against frozen point-map inputs; retain failures and the agent's reason |
 | `select_mapping_candidate(job_dir, candidate_id, reason)` | Select an audited draft explicitly, retaining quality holds and unresolved deployment readiness |

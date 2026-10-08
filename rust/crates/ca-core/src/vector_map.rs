@@ -15,6 +15,7 @@ use vectormap_core::{NewRoad, Point3, Polyline3, SpeedLimit};
 
 use crate::{AttributeValues, INTENSITY, PointCloud};
 
+pub mod corridors;
 pub mod crosswalks;
 pub mod discovery;
 #[cfg(test)]

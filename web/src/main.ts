@@ -1,5 +1,6 @@
 // Entry point: each module under app/ wires up its own panel when imported.
 import "./app/tasks";
+import "./app/memory";
 import "./app/layout";
 import "./app/display";
 import "./app/picking";

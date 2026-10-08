@@ -18,6 +18,7 @@ import type {
   PoseGraphOpened,
   PoseGraphOptimized,
   PoseGraphState,
+  PoseGraphProject,
   ProfileOutput,
   RemovedEdge,
   Progress,
@@ -42,8 +43,8 @@ const pending = new Map<
 let seq = 0;
 
 /** Called with the size of the worker's WASM memory after every request. */
-let onMemory: (bytes: number) => void = () => {};
-export function setMemoryListener(listener: (bytes: number) => void): void {
+let onMemory: (bytes: number, pool: number) => void = () => {};
+export function setMemoryListener(listener: (bytes: number, pool: number) => void): void {
   onMemory = listener;
 }
 
@@ -57,7 +58,7 @@ worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
   }
   pending.delete(message.seq);
   entry.dispose();
-  onMemory(message.memory);
+  onMemory(message.memory, message.poolMemory);
   if (message.response.ok) entry.resolve(message.response.value);
   else entry.reject(new Error(message.response.error));
 };
@@ -284,6 +285,14 @@ export function findShapes(params: Omit<Extract<Request, { kind: "shapes" }>, "k
 }
 
 /** Open a pose graph with its scans (replacing any open one). */
+export function savePoseGraphProject(): Promise<PoseGraphProject> {
+  return call({ kind: "pg-project-save" });
+}
+
+export function restorePoseGraphProject(project: PoseGraphProject, name: string, progress?: (p: Progress) => void, signal?: AbortSignal): Promise<PoseGraphOpened> {
+  return call({ kind: "pg-project-open", project, name }, [], progress, signal);
+}
+
 export function openPoseGraph(
   params: Omit<Extract<Request, { kind: "pg-open" }>, "kind">,
   progress?: (p: Progress) => void,
@@ -439,3 +448,6 @@ export async function vectorMap<T>(
 export function closePoseGraph(): Promise<void> {
   return call({ kind: "pg-close" });
 }
+
+export function memoryStats(): Promise<{main: number; pool: number; mapHistory: number; mapSteps: number}> { return call({kind: "memory-stats"}); }
+export function releaseUnusedPool(): Promise<void> { return call({kind: "release-pool"}); }

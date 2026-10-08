@@ -20,8 +20,16 @@ const UNDO_DEPTH: usize = 100;
 #[wasm_bindgen]
 pub struct VectorMapSession {
     map: Map,
-    undo: Vec<(Map, Vec<Arc<EvidenceBatch>>)>,
+    undo: Vec<UndoState>,
     evidence: Vec<Arc<EvidenceBatch>>,
+    history_limit: usize,
+    history_budget: usize,
+}
+
+struct UndoState {
+    map: Map,
+    evidence: Vec<Arc<EvidenceBatch>>,
+    bytes: usize,
 }
 
 // Snapshot geometry associates evidence with actual generated IDs, including split/reversed lanes.
@@ -59,6 +67,8 @@ impl VectorMapSession {
             map: Map::new(),
             undo: Vec::new(),
             evidence: Vec::new(),
+            history_limit: UNDO_DEPTH,
+            history_budget: 128 * 1024 * 1024,
         }
     }
 
@@ -89,10 +99,8 @@ impl VectorMapSession {
         let commands: Vec<Command> = serde_json::from_str(commands).map_err(error)?;
         let before = self.map.clone();
         let changes = self.map.apply_all(&commands).map_err(error)?;
-        self.undo.push((before, self.evidence.clone()));
-        if self.undo.len() > UNDO_DEPTH {
-            self.undo.remove(0);
-        }
+        self.remember(before);
+        self.trim_history();
         serde_json::to_string(&changes).map_err(error)
     }
 
@@ -122,10 +130,8 @@ impl VectorMapSession {
             ca_core::vector_map::build_with_evidence(&mut self.map, &cloud.inner, &poses, &o)
                 .map_err(error)?;
         if self.map != before {
-            self.undo.push((before, self.evidence.clone()));
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         if !diagnostics.profiles.is_empty() || diagnostics.limited {
             let old_vertices: usize = self
@@ -232,10 +238,8 @@ impl VectorMapSession {
         )
         .map_err(error)?;
         if self.map != before {
-            self.undo.push((before, self.evidence.clone()));
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -257,10 +261,8 @@ impl VectorMapSession {
         }
         .map_err(error)?;
         if self.map != before {
-            self.undo.push((before, self.evidence.clone()));
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -282,10 +284,8 @@ impl VectorMapSession {
         }
         .map_err(error)?;
         if self.map != before {
-            self.undo.push((before, self.evidence.clone()));
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -306,10 +306,8 @@ impl VectorMapSession {
         let report = ca_core::vector_map::relation_proposals::adopt(&mut self.map, &options)
             .map_err(error)?;
         if report.changed {
-            self.undo.push((before, self.evidence.clone()));
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -322,10 +320,8 @@ impl VectorMapSession {
         let before = self.map.clone();
         let report = ca_core::vector_map::relations::edit(&mut self.map, &o).map_err(error)?;
         if report.changed {
-            self.undo.push((before, self.evidence.clone()));
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -337,10 +333,8 @@ impl VectorMapSession {
         let report =
             ca_core::vector_map::feature_editing::edit(&mut self.map, &o).map_err(error)?;
         if report.changed {
-            self.undo.push((before, self.evidence.clone()));
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -374,20 +368,33 @@ impl VectorMapSession {
             ca_core::vector_map::discovery::add(&mut self.map, &cloud.inner, &o, &confirmations)
                 .map_err(error)?;
         if self.map != before {
-            self.undo.push((before, self.evidence.clone()));
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
 
+    /// Set count and estimated retained-size limits; dropping old steps keeps the map.
+    #[wasm_bindgen(js_name = setHistoryBudget)]
+    pub fn set_history_budget(&mut self, steps: usize, bytes: usize) {
+        self.history_limit = steps.min(UNDO_DEPTH);
+        self.history_budget = bytes;
+        self.trim_history();
+    }
+    #[wasm_bindgen(js_name = clearHistory)]
+    pub fn clear_history(&mut self) {
+        self.undo.clear();
+    }
+    #[wasm_bindgen(js_name = historyBytes)]
+    pub fn history_bytes(&self) -> usize {
+        self.undo.iter().map(|state| state.bytes).sum()
+    }
     /// Undo the last edit; false if there is none.
     pub fn undo(&mut self) -> bool {
         match self.undo.pop() {
-            Some((map, evidence)) => {
-                self.map = map;
-                self.evidence = evidence;
+            Some(state) => {
+                self.map = state.map;
+                self.evidence = state.evidence;
                 true
             }
             None => false,
@@ -564,11 +571,37 @@ impl VectorMapSession {
 }
 
 impl VectorMapSession {
-    fn push_undo(&mut self) {
-        self.undo.push((self.map.clone(), self.evidence.clone()));
-        if self.undo.len() > UNDO_DEPTH {
+    fn trim_history(&mut self) {
+        while !self.undo.is_empty()
+            && (self.undo.len() > self.history_limit || self.history_bytes() > self.history_budget)
+        {
             self.undo.remove(0);
         }
+    }
+    fn remember(&mut self, map: Map) {
+        let evidence_bytes: usize = self
+            .evidence
+            .iter()
+            .map(|batch| {
+                serde_json::to_vec(&batch.build).map_or(0, |v| v.len())
+                    + serde_json::to_vec(&batch.road_edges).map_or(0, |v| v.len())
+                    + batch
+                        .captured
+                        .values()
+                        .map(|line| line.points.len() * 24)
+                        .sum::<usize>()
+            })
+            .sum();
+        let bytes = 2 * (irjson::to_string(&map).len() + evidence_bytes);
+        self.undo.push(UndoState {
+            map,
+            evidence: self.evidence.clone(),
+            bytes,
+        });
+    }
+    fn push_undo(&mut self) {
+        self.remember(self.map.clone());
+        self.trim_history();
     }
 }
 
@@ -688,6 +721,8 @@ mod tests {
             map,
             undo: vec![],
             evidence: vec![],
+            history_limit: UNDO_DEPTH,
+            history_budget: 128 * 1024 * 1024,
         };
         let before = session.to_json();
         let options =
@@ -1257,6 +1292,26 @@ mod tests {
         let p: Value = serde_json::from_str(&s.preview_relations(21).unwrap()).unwrap();
         assert_eq!(p["eligible_count"], 1);
         assert_eq!(p["candidates"][0]["already_linked"], true);
+    }
+
+    #[test]
+    fn history_count_and_size_limits_keep_current_map() {
+        let mut s = super::VectorMapSession::new();
+        s.set_history_budget(2, usize::MAX);
+        for _ in 0..5 {
+            s.clear();
+        }
+        assert_eq!(s.undo_depth(), 2);
+        assert!(s.history_bytes() > 0);
+        let current = s.to_json();
+        s.set_history_budget(2, 1);
+        assert_eq!(s.undo_depth(), 0);
+        assert_eq!(s.to_json(), current);
+        s.set_history_budget(2, usize::MAX);
+        s.clear();
+        s.clear_history();
+        assert_eq!(s.history_bytes(), 0);
+        assert_eq!(s.to_json(), current);
     }
 
     #[test]

@@ -12,7 +12,7 @@
       <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti,.osm" />
+        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti,.osm,.g2o,.bag,.mcap,.bin" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -59,6 +59,17 @@
     </header>
 
     <aside id="sidebar" class="sidebar">
+      <details class="panel" id="memory-panel">
+        <summary>Memory and Undo</summary>
+        <p id="memory-report" class="small" role="status"></p>
+        <label>Undo steps per history <input id="memory-steps" type="number" min="0" max="100" value="20" /></label>
+        <label>Undo budget per history (MiB, estimated) <input id="memory-undo-budget" type="number" min="0" max="2048" value="128" /></label>
+        <label>Memory warning threshold (MiB) <input id="memory-warning" type="number" min="64" value="1024" /></label>
+        <button id="memory-apply">Apply limits</button>
+        <button id="memory-release">Clear Undo and release idle workers</button>
+        <p id="memory-warning-report" class="small"></p>
+        <p class="hint small">Clearing Undo keeps the current clouds and map. Main WASM memory stays allocated until reload. Estimates exclude browser overhead and render targets. Save your project before reloading.</p>
+      </details>
       <section>
         <h2>Clouds</h2>
         <label class="inline max-points" title="Larger files keep every n-th point so they fit in memory">Max points per file
@@ -79,7 +90,10 @@
         <div class="button-row">
           <button id="session-save" title="Save the view and how each cloud is shown (not the data)">Save session</button>
           <button id="session-open" title="Open a saved session, together with its files">Open session…</button>
+          <button id="project-save" title="Save the edited map, pose graph and settings with verified source references">Save project</button>
+          <button id="project-open" title="Open a project and reselect its original source files">Open project…</button>
         </div>
+        <p class="hint small">Projects reference original source files. Export derived clouds separately; reopening starts a fresh Undo history.</p>
         <div id="empty-hint" class="hint">
           <p>Drop PLY, PCD, LAS/LAZ, E57 or XYZ point clouds, OBJ/STL/PLY meshes, or TUM/KITTI/CSV trajectories, anywhere, or use Open…
             Files stay in your browser.</p>
@@ -972,8 +986,18 @@
             <button id="vm-feature-apply" disabled>Apply geometry edit</button>
             <p class="hint small">Coordinates use the original map frame. Drag keeps Z; numeric edits can change it. Observed paint, stored lamps and lane assignments stay at their original values. Review them after editing. Undo restores the complete previous map.</p>
           </details>
+        <details class="options" open>
+          <summary>Lane review</summary>
+          <p id="vm-review-summary" class="small"></p>
+          <label>Review queue <select id="vm-review-filter"><option value="unreviewed">Unreviewed</option><option value="reviewed">Reviewed</option><option value="needs-fix">Needs fixes</option><option value="deferred">Deferred</option><option value="low-support">Low source coverage (check first)</option><option value="all">All lanes</option></select></label>
+          <button id="vm-review-next">Next lane</button>
+        </details>
         <div id="vm-lane" hidden>
           <h3 id="vm-lane-title"></h3>
+          <label>Review state <select id="vm-review-state"><option value="unreviewed">Unreviewed</option><option value="reviewed">Reviewed</option><option value="needs-fix">Needs fixes</option><option value="deferred">Deferred</option></select></label>
+          <label>Review notes <textarea id="vm-review-notes" maxlength="10000" rows="3"></textarea></label>
+          <p id="vm-review-stale" class="small" role="status"></p>
+          <button id="vm-review-save">Save lane review</button>
           <p id="vm-lane-info" class="small"></p>
           <div class="button-row">
             <label>Speed limit (km/h) <input id="vm-lane-speed" type="number" min="0" step="5" /></label>
@@ -1083,7 +1107,7 @@
       </span>
       <span class="status-right">
         <span id="drawn"></span><span id="shift"></span>
-        <span id="memory" title="Memory used by the main WebAssembly worker (it grows but is not returned until the page is reloaded)"></span>
+        <span id="memory" title="Allocated WASM memory in the main worker and parallel workers"></span>
       </span>
     </footer>
 

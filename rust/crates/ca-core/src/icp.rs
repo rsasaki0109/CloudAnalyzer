@@ -12,7 +12,7 @@ use crate::PointCloud;
 use crate::kdtree::KdTree;
 
 /// A rigid transform `x' = R x + t`.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Rigid {
     pub rotation: [[f64; 3]; 3],
     pub translation: [f64; 3],

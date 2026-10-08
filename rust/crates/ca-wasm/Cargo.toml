@@ -14,6 +14,7 @@ ca-core = { path = "../ca-core" }
 js-sys = "0.3"
 wasm-bindgen = "0.2.129"
 serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "70893d75ff579e51e10a93bab0f82fa81f2aca8b" }
 vectormap-io = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "70893d75ff579e51e10a93bab0f82fa81f2aca8b" }
 vectormap-validation = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "70893d75ff579e51e10a93bab0f82fa81f2aca8b" }

@@ -494,6 +494,32 @@ export class Viewer {
     part.data = null;
   }
 
+  /** Buffers held by cached drawables as well as the current scene. */
+  memoryData(): { data: unknown[]; geometries: THREE.BufferGeometry[] } {
+    const data: unknown[] = [], geometries: THREE.BufferGeometry[] = [];
+    for (const cloud of this.clouds.values()) {
+      data.push(cloud.positions, cloud.colors, cloud.nodes);
+      for (const object of cloud.objects.values()) geometries.push(object.geometry);
+      for (const part of cloud.detail?.parts ?? []) {
+        data.push(part.data);
+        for (const piece of part.pieces ?? []) geometries.push(piece.object.geometry);
+      }
+    }
+    for (const object of [...this.meshes.values(), ...this.lines.values()]) geometries.push(object.geometry);
+    return {data, geometries};
+  }
+
+  /** Drop cached geometry and full-density chunks that are not currently drawn. */
+  releaseUnusedDetails(): void {
+    for (const cloud of this.clouds.values()) {
+      for (const [index, object] of cloud.objects) if (!cloud.visible || !object.visible) {
+        cloud.group.remove(object); object.geometry.dispose(); cloud.objects.delete(index);
+      }
+      for (const part of cloud.detail?.parts ?? []) if (!cloud.visible || !cloud.detail?.active || part.used !== this.frame) this.freeDetail(cloud, part);
+    }
+    this.requestRender();
+  }
+
   private dropDetail(cloud: LodCloud): void {
     for (const part of cloud.detail?.parts ?? []) this.freeDetail(cloud, part);
     cloud.detail = null;

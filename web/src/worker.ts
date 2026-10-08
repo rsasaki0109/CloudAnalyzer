@@ -37,7 +37,7 @@ import init, {
 import { type ByteSource, readRange } from "./bytes";
 import type { LasChunksResult, Slice } from "./c2c-worker";
 import { CANCELLED, isBag } from "./protocol";
-import { eachSlice, MIN_PARALLEL_QUERIES, poolSize, runAny, runOn, runSlices, warmUpPool } from "./pool";
+import { poolMemory, releasePool, eachSlice, MIN_PARALLEL_QUERIES, poolSize, runAny, runOn, runSlices, warmUpPool } from "./pool";
 import type {
   C2cOutput,
   DetailChunk,
@@ -51,6 +51,7 @@ import type {
   PoseGraphMerged,
   PoseGraphOpened,
   PoseGraphState,
+  PoseGraphSource,
   ProfileOutput,
   Progress,
   RasterOutput,
@@ -1002,7 +1003,7 @@ async function readDetail(
 const MAX_SLICES = 16;
 
 /** The open pose graph, if any (one at a time). */
-let poseGraph: { session: PoseGraphSession; name: string } | null = null;
+let poseGraph: { session: PoseGraphSession; name: string; sources: PoseGraphSource[] } | null = null;
 
 /** The vector map, made on first use. */
 let vectorMap: VectorMapSession | null = null;
@@ -1055,6 +1056,13 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
     case "clear":
       map.clear();
       return withView("null");
+    case "history-budget": {
+      const policy = JSON.parse(req.text ?? "{}");
+      map.setHistoryBudget(policy.steps, policy.bytes);
+      return withView("null");
+    }
+    case "history-clear":
+      map.clearHistory(); return withView("null");
     case "view":
       return withView("null");
     case "validate":
@@ -1065,6 +1073,12 @@ function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
       return map.nearestLane(req.x ?? 0, req.y ?? 0);
     case "json":
       return map.toJson();
+    case "check-project": {
+      const candidate = new VectorMapSession();
+      try { candidate.open("project-map.json", req.text ?? ""); }
+      finally { candidate.free(); }
+      return "null";
+    }
   }
 }
 
@@ -1418,7 +1432,7 @@ async function openPoseGraph(
   const { session, scans, scanPoints, unmatched, odometry } = await loadGraph(req, progress, check);
   poseGraph?.session.free();
   const name = req.graph?.name ?? "scans";
-  poseGraph = { session, name: name.replace(/\.[^.]+$/, "") };
+  poseGraph = { session, name: name.replace(/\.[^.]+$/, ""), sources: [{ files: req, first: 0, nodeIds: Array.from(session.nodeIds()) }] };
   const value: PoseGraphOpened = { ...graphState(session), name, scans, scanPoints, unmatched, odometry };
   const transfer = stateTransfer(value);
   for (const scan of scans) if (scan) transfer.push(scan.buffer);
@@ -1453,6 +1467,7 @@ async function mergePoseGraph(
     progress("optimising");
     const [initialCost, finalCost, iterations] = session.optimize(req.loopKernel);
     const state = graphState(session);
+    poseGraph!.sources.push({ files: req.files, first: offset, nodeIds: Array.from(ids) });
     const value: PoseGraphMerged = {
       state,
       name: req.files.graph?.name ?? "scans",
@@ -1482,10 +1497,49 @@ async function handle(
 ): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
+    case "memory-stats":
+      return {value: {main: (await ready).memory.buffer.byteLength, pool: poolMemory(), mapHistory: vectorMap?.historyBytes() ?? 0, mapSteps: vectorMap?.undoDepth ?? 0}, transfer: []};
+    case "release-pool":
+      if (controllers.size > 1) throw new Error("Finish the active operation before releasing memory");
+      releasePool(); return {value: null, transfer: []};
     case "copc-box":
       return readFullDensityBox(req, progress, check, signal);
     case "pg-open":
       return openPoseGraph(req, progress, check);
+    case "pg-project-save":
+      return { value: { snapshot: openGraph().toSnapshot(), sources: poseGraph!.sources }, transfer: [] };
+    case "pg-project-open": {
+      const saved = req.project;
+      const session = PoseGraphSession.fromSnapshot(saved.snapshot);
+      try {
+        const covered = new Set<number>();
+        for (const source of saved.sources) {
+          check();
+          const loaded = await loadGraph(source.files, progress, check);
+          try {
+            const ids = Array.from(loaded.session.nodeIds());
+            if (ids.length !== source.nodeIds.length || ids.some((id, i) => id !== source.nodeIds[i])) throw new Error("Source keyframes do not match the saved project");
+            if (!Number.isSafeInteger(source.first) || source.first < 0 || source.first + ids.length > session.nodeCount) throw new Error("Invalid project scan range");
+            for (let i = 0; i < ids.length; i++) {
+              const node = source.first + i;
+              if (covered.has(node)) throw new Error("Overlapping project scan ranges");
+              covered.add(node);
+            }
+            session.attachSourceScans(loaded.session, source.first);
+          } finally { loaded.session.free(); }
+        }
+        if (covered.size !== session.nodeCount) throw new Error("Project is missing original scan sources");
+        check();
+        const scans = Array.from({ length: session.nodeCount }, (_, i) => {
+          const source = saved.sources.find(s => i >= s.first && i < s.first + s.nodeIds.length);
+          return source ? session.scanPositions(i, source.files.displayPoints) : null;
+        });
+        const value: PoseGraphOpened = { ...graphState(session), name: req.name, scans, scanPoints: session.scanPointCount(), unmatched: [], odometry: null };
+        poseGraph?.session.free();
+        poseGraph = { session, name: req.name, sources: saved.sources };
+        return { value, transfer: [...stateTransfer(value), ...scans.filter((s): s is Float32Array => s !== null).map(s => s.buffer)] };
+      } catch (error) { session.free(); throw error; }
+    }
     case "pg-merge":
       return mergePoseGraph(req, progress, check);
     case "pg-loop": {
@@ -2202,6 +2256,6 @@ self.onmessage = async (event: MessageEvent<UiMessage>) => {
   cancelled.delete(seq);
   controllers.delete(seq);
   const memory = (await ready).memory.buffer.byteLength;
-  const message: WorkerMessage = { seq, response, memory };
+  const message: WorkerMessage = { seq, response, memory, poolMemory: poolMemory() };
   self.postMessage(message, { transfer });
 };

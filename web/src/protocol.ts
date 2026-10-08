@@ -392,6 +392,17 @@ export interface PoseGraphFiles {
   sigmaRDeg: number;
 }
 
+export interface PoseGraphSource {
+  files: PoseGraphFiles;
+  first: number;
+  nodeIds: number[];
+}
+
+export interface PoseGraphProject {
+  snapshot: string;
+  sources: PoseGraphSource[];
+}
+
 /** Loops found automatically (see `pg-find-loops`). */
 export interface PoseGraphFound {
   state: PoseGraphState;
@@ -430,9 +441,13 @@ export const isBag = (name: string) => /\.(bag|mcap)$/i.test(name);
 export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "splat";
 
 /** What a "vm" request does. */
-export type VectorMapOp = "open" | "apply" | "quality" | "feature-edit" | "relations-edit" | "relations-preview" | "relations-adopt" | "feature-discover" | "feature-confirm" | "build" | "junction-preview" | "junction-connect" | "signal-preview" | "signal-add" | "crosswalk-preview" | "crosswalk-add" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
+export type VectorMapOp = "history-budget" | "history-clear" | "check-project" | "open" | "apply" | "quality" | "feature-edit" | "relations-edit" | "relations-preview" | "relations-adopt" | "feature-discover" | "feature-confirm" | "build" | "junction-preview" | "junction-connect" | "signal-preview" | "signal-add" | "crosswalk-preview" | "crosswalk-add" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
 
 export type Request =
+  | { kind: "memory-stats" }
+  | { kind: "release-pool" }
+  | { kind: "pg-project-save" }
+  | { kind: "pg-project-open"; project: PoseGraphProject; name: string }
   | { kind: "copc-box"; id: number; min: Vec3; max: Vec3; maxPoints: number }
   | ({
       /** Open a pose graph (g2o, or a TUM / KITTI trajectory as an odometry chain) with a scan per node. */
@@ -809,7 +824,7 @@ export interface Progress {
  * WASM memory), or progress on a request.
  */
 export type WorkerMessage =
-  | { seq: number; response: Response; memory: number }
+  | { seq: number; response: Response; memory: number; poolMemory: number }
   | { seq: number; progress: Progress };
 
 /** UI -> worker messages: a request, or asking to stop one (loads stop between steps). */

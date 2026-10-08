@@ -5,6 +5,7 @@ import type { Progress } from "../protocol";
 import { $ } from "./dom";
 
 let task: AbortController | null = null;
+export function taskActive(): boolean { return task !== null; }
 
 export function startTask(): AbortSignal {
   task = new AbortController();
@@ -29,6 +30,6 @@ export function endTask(signal: AbortSignal): void {
 
 $<HTMLButtonElement>("task-cancel").onclick = () => task?.abort();
 
-setMemoryListener((bytes) => {
-  $("memory").textContent = bytes >= 1e9 ? `WASM ${(bytes / 1e9).toFixed(2)} GB` : `WASM ${Math.round(bytes / 1e6)} MB`;
+setMemoryListener((bytes,pool) => {
+  $("memory").textContent = `WASM ${Math.round(bytes / 1e6)} MB + pool ${Math.round(pool / 1e6)} MB`;
 });

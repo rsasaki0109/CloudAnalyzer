@@ -1,3 +1,5 @@
+import { onHistoryPolicy, historyPolicy } from "../memory-budget";
+import { LaneReviews, type LaneReview, type ReviewStatus } from "../lane-review";
 /**
  * Vector map panel: roads drawn over the clouds become lanes (both
  * directions, shared boundaries, connected pieces), joined through
@@ -12,6 +14,7 @@ import * as THREE from "three";
 import { LineSegments2 } from "three/examples/jsm/lines/LineSegments2.js";
 import { LineSegmentsGeometry } from "three/examples/jsm/lines/LineSegmentsGeometry.js";
 import { cropCloud, removeCloud, vectorMap } from "../api";
+import { SelectionQueue } from "../selection-queue";
 import { addEntry, renderList } from "./entries";
 import { refreshColors } from "./colors";
 import { record } from "./history";
@@ -1168,7 +1171,7 @@ function buildInputs(): void {
   junctionInputs();
 }
 listChanged.add(() => { clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); buildInputs(); draw(); });
-pointsInvalidated.add(() => { clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); draw(); });
+pointsInvalidated.add((id) => { if (id === Number($<HTMLSelectElement>("vm-quality-cloud").value)) reviewSourceChanged(); clearQuality(); clearDiscovery(); clearJunctionPreview(); clearSignalPreview(); clearCrosswalkPreview(); draw(); });
 trajectoryChanged.add(buildInputs);
 buildInputs();
 function roadBuildOptions(): object {
@@ -1261,9 +1264,41 @@ buildButton.onclick = async () => {
   }
 };
 
+const reviews = new LaneReviews();
+let lowSupport = new Set<number>();
+function laneSignatures(): Map<number, string> {
+  return new Map(view.lanes.map(lane => {
+    const rules = (view.regulatoryElements ?? []).filter(r => r.lanes.includes(lane.id));
+    const featureIds = new Set(rules.flatMap(r => [...r.signals, ...r.stop_lines, ...r.controlled_crosswalks, ...(r.crosswalk === null ? [] : [r.crosswalk])]));
+    return [lane.id, JSON.stringify([lane, view.boundaries.filter(b => b.id === lane.leftRef.id || b.id === lane.rightRef.id), rules, [...view.signals, ...view.stopLines, ...view.crosswalks].filter(f => featureIds.has(f.id))])];
+  }));
+}
+export function captureLaneReviews(): LaneReview[] { return reviews.snapshot(); }
+export function restoreLaneReviews(records: LaneReview[]): void { reviews.restore(records, laneSignatures()); renderReviews(); renderLane(); }
+function renderReviews(): void {
+  const counts = { unreviewed: 0, reviewed: 0, "needs-fix": 0, deferred: 0 };
+  for (const lane of view.lanes) counts[reviews.get(lane.id)?.status ?? "unreviewed"]++;
+  $("vm-review-summary").textContent = `${counts.unreviewed} unreviewed · ${counts.reviewed} reviewed · ${counts["needs-fix"]} need fixes · ${counts.deferred} deferred`;
+}
+function reviewSourceChanged(): void { reviews.invalidateSource(); renderReviews(); renderLane(); }
+$("vm-review-next").onclick = () => {
+  const filter = $<HTMLSelectElement>("vm-review-filter").value;
+  const lanes = view.lanes.filter(l => filter === "all" || (filter === "low-support" ? lowSupport.has(l.id) : (reviews.get(l.id)?.status ?? "unreviewed") === filter));
+  if (!lanes.length) return setStatus("No lanes match the review filter.");
+  const index = lanes.findIndex(l => l.id === selected);
+  selectLane(lanes[(index + 1) % lanes.length].id, true);
+};
+$("vm-review-save").onclick = () => {
+  if (selected === null) return;
+  reviews.save(selected, laneSignatures().get(selected)!, $<HTMLSelectElement>("vm-review-state").value as ReviewStatus, $<HTMLTextAreaElement>("vm-review-notes").value);
+  renderReviews(); renderLane(); setStatus(`Review saved for lane ${selected}`);
+};
+
 function takeView(edited: Edited): void {
   clearQuality();
   view = edited.view;
+  reviews.reconcile(laneSignatures());
+  renderReviews();
   renderBoundaryEvidence();
   clearRelationPreview();
   clearDiscovery();
@@ -1359,10 +1394,11 @@ interface SourceQualityReport {
 let qualityRevision = 0;
 function clearQuality(): void {
   qualityRevision++;
+  lowSupport = new Set();
   $("vm-quality-report").textContent = "Source coverage has not been checked for the current map and cloud.";
   $("vm-quality-lanes").replaceChildren();
 }
-$("vm-quality-cloud").onchange = clearQuality;
+$("vm-quality-cloud").onchange = () => { clearQuality(); reviewSourceChanged(); };
 $("vm-quality-check").onclick = async () => {
   if (busy) return;
   clearQuality(); const revision = qualityRevision;
@@ -1371,6 +1407,7 @@ $("vm-quality-check").onclick = async () => {
     const report = await vectorMap<SourceQualityReport>("quality", {id: Number($<HTMLSelectElement>("vm-quality-cloud").value)});
     if (revision !== qualityRevision) return;
     $("vm-quality-report").textContent = `${report.lanes.length} lanes checked; ${report.low_support_lanes.length} need source review; ${report.omitted_lanes.length} omitted; ${report.malformed_lanes.length} malformed. ${report.limited ? "Coverage check limited. " : ""}` + report.warnings.join(" ");
+    lowSupport = new Set([...report.low_support_lanes, ...report.omitted_lanes, ...report.malformed_lanes]);
     const percentage = (s: SourceCurveSupport) => `${Math.round(s.fraction*100)}%${s.start_supported && s.end_supported ? "" : " (end support missing)"}`;
     for (const lane of report.lanes.filter(l => l.needs_review)) {
       const button = document.createElement("button"); button.textContent = `Lane ${lane.lane}: centre ${percentage(lane.center)}, left ${percentage(lane.left)}, right ${percentage(lane.right)}`;
@@ -1398,6 +1435,10 @@ function renderLane(): void {
   const lane = selected === null ? undefined : laneById(selected);
   laneBox.hidden = !lane;
   if (!lane) return;
+  const review = reviews.get(lane.id);
+  $<HTMLSelectElement>("vm-review-state").value = review?.status ?? "unreviewed";
+  $<HTMLTextAreaElement>("vm-review-notes").value = review?.notes ?? "";
+  $("vm-review-stale").textContent = review?.staleReason ?? "";
   const list = (ids: number[]) => (ids.length ? ids.join(", ") : "none");
   $("vm-lane-title").textContent = `Lane ${lane.id}`;
   $("vm-lane-info").textContent =
@@ -1506,7 +1547,13 @@ function roadCommand(reference: XYZ[]): object {
   return command;
 }
 
-async function finishRoad(): Promise<void> {
+const roadSelections = new SelectionQueue();
+
+function finishRoad(): Promise<void> {
+  return roadSelections.finish(buildRoad);
+}
+
+async function buildRoad(): Promise<void> {
   if (busy) return;
   const reference = sketch;
   if (reference.length < 2) return setStatus("Click at least two points along the road.");
@@ -1529,37 +1576,44 @@ async function finishRoad(): Promise<void> {
 }
 
 const roadTool: Tool = {
-  async click(x, y) {
-    const p = await clickPoint(x, y);
-    if (!p) return;
-    sketch.push(p);
-    draw();
-    renderHint();
+  click(x, y) {
+    return roadSelections.enqueue(() => clickPoint(x, y), p => {
+      if (!p) return;
+      sketch.push(p);
+      draw();
+      renderHint();
+    });
   },
   doubleClick() {
     // The second click of the double click added a duplicate vertex.
-    sketch.pop();
-    void finishRoad();
+    void roadSelections.finish(async () => {
+      sketch.pop();
+      await buildRoad();
+    });
   },
   key(e) {
     if (e.key === "Enter") {
       void finishRoad();
       return true;
     }
-    if (e.key === "Backspace" && sketch.length > 0) {
-      sketch.pop();
-      draw();
-      renderHint();
+    if (e.key === "Backspace") {
+      void roadSelections.enqueue(async () => null, () => {
+        sketch.pop();
+        draw();
+        renderHint();
+      });
       return true;
     }
     return false;
   },
   enter() {
+    roadSelections.cancel();
     sketch = [];
     $("vm-road").setAttribute("aria-pressed", "true");
     renderHint();
   },
   exit() {
+    roadSelections.cancel();
     sketch = [];
     $("vm-road").setAttribute("aria-pressed", "false");
     draw();
@@ -1960,6 +2014,11 @@ function renderHint(): void {
 // ---------------------------------------------------------------------------
 
 /** Open a Lanelet2 map (.osm) or vectormap IR (.json) over the clouds. */
+export function captureMapProject(): Promise<string> {
+  if (busy) return Promise.reject(new Error("Finish the map operation before saving the project"));
+  return vectorMap<unknown>("json").then(value => JSON.stringify(value));
+}
+
 export async function openVectorMap(name: string, text: string): Promise<MapView> {
   const opened = await vectorMap<Edited>("open", { name, text });
   setTool(null);
@@ -1974,6 +2033,7 @@ export async function openVectorMap(name: string, text: string): Promise<MapView
     return li;
   }));
   selected = null;
+  reviews.clear();
   takeView(opened);
   if (view.lanes.length > 0 && entries.size === 0) frameMap();
   const problems = issues.filter((i) => i.severity !== "info").length;
@@ -2024,6 +2084,7 @@ $("vm-clear").onclick = async () => {
   setTool(null);
   if (view.lanes.length === 0 && view.boundaries.length === 0) return;
   selected = null;
+  reviews.clear();
   takeView(await vectorMap<Edited>("clear"));
   setStatus("Map cleared (Undo brings it back).");
 };
@@ -2038,3 +2099,7 @@ exportButton.onclick = async () => {
 
 renderHint();
 void vectorMap<Edited>("view").then(takeView);
+
+export async function clearMapHistory(): Promise<void> { takeView(await vectorMap<Edited>("history-clear")); }
+onHistoryPolicy(policy => { void vectorMap<Edited>("history-budget", {text: JSON.stringify(policy)}).then(edited => { undoDepth = edited.undo; undoButton.disabled = busy || undoDepth === 0; }); });
+void vectorMap<Edited>("history-budget", {text: JSON.stringify(historyPolicy())}).then(edited => { undoDepth = edited.undo; undoButton.disabled = busy || undoDepth === 0; });

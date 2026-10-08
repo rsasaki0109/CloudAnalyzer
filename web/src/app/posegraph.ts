@@ -1,3 +1,4 @@
+import { bufferBytes, historyPolicy, onHistoryPolicy, trimHistory } from "../memory-budget";
 /**
  * Pose graph panel, in the spirit of interactive_slam: a g2o graph or a
  * TUM / KITTI trajectory (as an odometry chain) with a scan per node. Each
@@ -21,6 +22,8 @@ import {
   closePoseGraph,
   detectPoseGraphDynamic,
   exportPoseGraph,
+  savePoseGraphProject,
+  restorePoseGraphProject,
   extractGround,
   rasterizeCloud,
   findPoseGraphLoops,
@@ -45,6 +48,7 @@ import {
   type PoseGraphFiles,
   type PoseGraphOpened,
   type PoseGraphState,
+  type PoseGraphProject,
   type Progress,
   type RemovedEdge,
 } from "../protocol";
@@ -58,6 +62,39 @@ import { record } from "./history";
 import { display, distanceChanged, entries, globalShift, hideEntry, listChanged, toRender, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { setTool, toggleTool, type Tool } from "./tools";
+
+export async function captureGraphProject(): Promise<{ project: PoseGraphProject; name: string; sessions: Graph["sessions"]; imu: Graph["imu"] } | null> {
+  if (busy) throw new Error("Finish the pose graph operation before saving the project");
+  if (!graph) return null;
+  return { project: await savePoseGraphProject(), name: graph.name, sessions: graph.sessions, imu: graph.imu };
+}
+
+export async function restoreGraphProject(project: PoseGraphProject | null, metadata?: { name: string; sessions: Graph["sessions"]; imu: Graph["imu"] }): Promise<void> {
+  if (busy) throw new Error("Finish the pose graph operation before opening a project");
+  setTool(null);
+  stopMoving();
+  stopAligning();
+  playing = false;
+  if (!project || !metadata) {
+    await closePoseGraph();
+    graph = null;
+    steps.length = 0;
+    selection = [];
+    clearGroup();
+    renderInfo();
+    return;
+  }
+  const signal = startTask();
+  busy = true;
+  try {
+    const opened = await restorePoseGraphProject(project, metadata.name, showProgress, signal);
+    graph = { name: metadata.name, state: opened, scans: opened.scans, scanPoints: opened.scanPoints, sessions: metadata.sessions, imu: metadata.imu };
+    steps.length = 0;
+    selection = [];
+    fieldA.value = fieldB.value = "";
+    build(graph);
+  } finally { busy = false; endTask(signal); renderInfo(); }
+}
 
 interface Graph {
   name: string;
@@ -183,6 +220,16 @@ let drawnShift = "";
 /** Node indices of the loop's ends (from the A and B fields), in that order. */
 let selection: number[] = [];
 const steps: Step[] = [];
+function enforceGraphBudget(): void {
+  const policy = historyPolicy();
+  trimHistory(steps, policy.steps, policy.bytes, list => bufferBytes(list) + list.reduce((n,s) => n + JSON.stringify([s.added,s.removed,s.planes,s.flipped,s.gravity]).length * 2, 0));
+  $<HTMLButtonElement>("pg-undo").disabled = busy || !steps.length;
+}
+function recordGraphStep(step: Step): void { steps.push(step); enforceGraphBudget(); }
+export function graphHistoryMemory(): {bytes: number; steps: number; data: unknown} { return {bytes: bufferBytes(steps) + steps.reduce((n,s) => n + JSON.stringify([s.added,s.removed]).length * 2,0), steps: steps.length, data: graph ? [graph,steps] : steps}; }
+export function clearGraphHistory(): boolean { if (busy) return false; steps.length = 0; enforceGraphBudget(); return true; }
+onHistoryPolicy(enforceGraphBudget);
+
 let busy = false;
 
 const num = (id: string) => Number($<HTMLInputElement>(id).value);
@@ -595,7 +642,7 @@ function removeEdges(indices: number[], what: string): Promise<void> {
   return run("Removing", async () => {
     const poses = graph!.state.poses.slice();
     const out = await removePoseGraphEdges(indices, kernel());
-    steps.push({ poses, removed: out.removed });
+    recordGraphStep({ poses, removed: out.removed });
     await animateTo(out.state);
     setStatus(`Removed ${what} and optimised`);
   });
@@ -962,7 +1009,7 @@ export const findLoops = (): Promise<void> =>
         },
         signal,
       );
-      if (found.added.length) steps.push({ poses, added: found.edges });
+      if (found.added.length) recordGraphStep({ poses, added: found.edges });
       await animateTo(found.state);
       const { optimized } = found;
       setStatus(
@@ -1000,7 +1047,7 @@ $<HTMLButtonElement>("pg-floor").onclick = () =>
       sigmaOffset: num("pg-floor-sigma-t") || 0.05,
       loopKernel: kernel(),
     });
-    steps.push({ poses, planes: floor.planes });
+    recordGraphStep({ poses, planes: floor.planes });
     await animateTo(floor.state);
     const withScans = graph!.scans.filter((s) => s).length;
     const { optimized } = floor;
@@ -1103,7 +1150,7 @@ async function commitMove(): Promise<void> {
   const before = g.poses;
   await run("Moving the node", async () => {
     const state = await setPoseGraphNodePose(g.node, Array.from(moved), carry());
-    steps.push({ poses: before });
+    recordGraphStep({ poses: before });
     update(state);
     // Further drags start from here.
     g.pivot.updateMatrix();
@@ -1303,7 +1350,7 @@ export const acceptAlignment = (): Promise<void> =>
       sigmaRDeg: num("pg-loop-sigma-r") || 1,
     });
     stopAligning();
-    steps.push({ poses, added: [edge] });
+    recordGraphStep({ poses, added: [edge] });
     update(state);
     setStatus(`Loop ${ids[a.from]} – ${ids[a.to]} added by hand; optimising…`);
     const optimized = await optimize();
@@ -1328,7 +1375,7 @@ $<HTMLButtonElement>("pg-fix").onclick = () =>
     }
     const fixed = !graph!.state.fixed[node];
     const state = await setPoseGraphFixed(node, fixed);
-    steps.push({ poses: graph!.state.poses.slice(), flipped: node });
+    recordGraphStep({ poses: graph!.state.poses.slice(), flipped: node });
     update(state);
     setStatus(`Node ${state.nodeIds[node]} ${fixed ? "is held in place by the optimiser (red)" : "is free again"}`);
   });
@@ -1417,7 +1464,7 @@ async function tieGravity(nodes: number[], ups: number[], source: string | null)
       kernel(),
       $<HTMLInputElement>("pg-gravity-calibrate").checked,
     );
-    steps.push({ poses, gravity: true });
+    recordGraphStep({ poses, gravity: true });
     await animateTo(out.state);
     setStatus(
       `Gravity${source ? ` from ${source}` : ""} tied to ${out.tied.toLocaleString()} of ${(state.poses.length / 16).toLocaleString()} keyframes ` +
@@ -1447,7 +1494,7 @@ async function optimize(): Promise<string> {
 $<HTMLButtonElement>("pg-optimize").onclick = () =>
   run("Optimising", async () => {
     setStatus("Optimising…");
-    steps.push({ poses: graph!.state.poses.slice() });
+    recordGraphStep({ poses: graph!.state.poses.slice() });
     setStatus(`Optimised: ${await optimize()}`);
   });
 
@@ -1468,7 +1515,7 @@ $<HTMLButtonElement>("pg-loop").onclick = () =>
       sigmaT: num("pg-loop-sigma-t") || 0.1,
       sigmaRDeg: num("pg-loop-sigma-r") || 1,
     });
-    steps.push({ poses, added: [loop.edge] });
+    recordGraphStep({ poses, added: [loop.edge] });
     update(loop.state);
     const icp =
       `ICP RMS ${fmt(loop.rmsInitial)} → ${fmt(loop.rmsFinal)}, overlap ${Math.round(loop.fitness * 100)} %` +

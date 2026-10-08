@@ -8,6 +8,14 @@ const MAX_WORKERS = 8;
 
 const workers: Worker[] = [];
 let seq = 0;
+const memory = new Map<Worker,number>();
+let pending = 0;
+export function poolMemory(): number { return [...memory.values()].reduce((sum,v) => sum + v,0); }
+export function releasePool(): void {
+  if (pending) throw new Error("Finish the active operation before releasing pool workers");
+  for (const worker of workers) worker?.terminate();
+  workers.length = 0; memory.clear(); nextLane = 0;
+}
 
 export function poolSize(): number {
   return Math.max(1, Math.min(MAX_WORKERS, (navigator.hardwareConcurrency || 2) - 1));
@@ -20,14 +28,19 @@ function worker(i: number): Worker {
 
 function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>> {
   const id = ++seq;
+  pending++;
   return new Promise((resolve, reject) => {
     const onMessage = (event: MessageEvent<SliceResponse>) => {
       if (event.data.seq !== id) return;
-      w.removeEventListener("message", onMessage);
+      cleanup();
+      memory.set(w,event.data.memory);
       if (event.data.ok) resolve(event.data.value as SliceResult<S>);
       else reject(new Error(event.data.error));
     };
+    const onError = (event: ErrorEvent) => { cleanup(); reject(new Error(event.message || "Pool worker failed")); };
+    const cleanup = () => { pending--; w.removeEventListener("message", onMessage); w.removeEventListener("error", onError); };
     w.addEventListener("message", onMessage);
+    w.addEventListener("error", onError);
     const request: SliceRequest = { ...slice, seq: id };
     // Per-slice buffers are transferred; a mesh shared by all slices is copied.
     const transfer: Transferable[] = [];
@@ -46,7 +59,7 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
       transfer.push(slice.positions.buffer);
       if (slice.colors) transfer.push(slice.colors.buffer);
     }
-    w.postMessage(request, { transfer });
+    try { w.postMessage(request, { transfer }); } catch (error) { cleanup(); reject(error); }
   });
 }
 

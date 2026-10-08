@@ -11,6 +11,7 @@ import { entries, globalShift, type Origin, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { addTrajectory } from "./trajectory";
 import { openVectorMap } from "./vectormap";
+import { completePendingProject, isProjectGraphSource, prepareProjectFiles, projectCloudFileAllowed, projectCloudLoadLimit } from "./project";
 
 /** A LAS/LAZ or COPC file on a server, read with range requests instead of downloaded. */
 interface RemoteFile {
@@ -30,10 +31,14 @@ const seconds = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `$
  * once the others are in. `origins` tells where each file came from.
  */
 export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]): Promise<void> {
+  let projects: Set<File>;
+  try { projects = await prepareProjectFiles(files.filter((f): f is File => f instanceof File)); }
+  catch (error) { setStatus(`Could not open project: ${errorText(error)}`, true); return; }
   const sessions: File[] = [];
   const signal = startTask();
   for (const [i, file] of files.entries()) {
     if (signal.aborted) break;
+    if (file instanceof File && (projects.has(file) || isProjectGraphSource(file))) continue;
     if (file instanceof File && /\.json$/i.test(file.name)) {
       sessions.push(file);
       continue;
@@ -51,7 +56,9 @@ export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]
     setStatus(`Loading ${file.name} (${mb}): reading…`);
     const start = performance.now();
     try {
-      const maxPoints = Number($<HTMLSelectElement>("max-points").value) || Number.POSITIVE_INFINITY;
+      if (file instanceof File && !await projectCloudFileAllowed(file, signal)) continue;
+      const loadLimit = projectCloudLoadLimit(file) ?? Number($<HTMLSelectElement>("max-points").value);
+      const maxPoints = loadLimit || Number.POSITIVE_INFINITY;
       if (file instanceof File && TRAJECTORY_FILE.test(file.name)) {
         const poses = await loadTrajectory(file);
         if (poses) {
@@ -69,7 +76,12 @@ export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]
         file instanceof File
           ? await loadCloud(file, maxPoints, onProgress, signal)
           : await loadUrl(file.url, file.name, file.size, maxPoints, onProgress, signal, file.etag);
-      addEntry(cloud, origins?.[i] ?? { kind: "file" });
+      const origin = origins?.[i] ?? { kind: "file" as const };
+      addEntry(cloud, origin.kind === "derived" ? origin : {
+        ...origin,
+        loadMaxPoints: loadLimit,
+        ...(file instanceof File ? { file } : { size: file.size, etag: file.etag }),
+      });
       if (entries.size === 1) viewer.fit();
       const [sx, sy, sz] = globalShift();
       $("shift").textContent = sx || sy || sz ? `Global shift: (${-sx}, ${-sy}, ${-sz})` : "";
@@ -110,6 +122,8 @@ export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]
   }
   // Files a pending session was waiting for.
   if (sessions.length === 0) await restorePendingAfterLoad();
+  try { await completePendingProject(); }
+  catch (error) { setStatus(`Could not restore project: ${errorText(error)}`, true); }
 }
 
 /** Download clouds from URLs (the server must allow cross-origin requests) and load them. */

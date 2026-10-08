@@ -127,8 +127,8 @@ export type SliceResult<S extends Slice> = S extends { kind: "bucket-chunk" | "b
 export type SliceRequest = Slice & { seq: number };
 
 export type SliceResponse =
-  | { seq: number; ok: true; value: Value }
-  | { seq: number; ok: false; error: string };
+  | { seq: number; ok: true; value: Value; memory: number }
+  | { seq: number; ok: false; error: string; memory: number };
 
 const ready = init();
 /** SOR parts indexed in step 1, by job, until released. */
@@ -307,12 +307,13 @@ self.onmessage = async (event: MessageEvent<SliceRequest>) => {
   try {
     await ready;
     const { value, transfer } = await run(request);
-    const response: SliceResponse = { seq: request.seq, ok: true, value };
+    const response: SliceResponse = { seq: request.seq, ok: true, value, memory: (await ready).memory.buffer.byteLength };
     self.postMessage(response, { transfer });
   } catch (err) {
     const response: SliceResponse = {
       seq: request.seq,
       ok: false,
+      memory: await ready.then(w => w.memory.buffer.byteLength, () => 0),
       error: err instanceof Error ? err.message : String(err),
     };
     self.postMessage(response);

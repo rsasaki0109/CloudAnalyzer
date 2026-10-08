@@ -298,6 +298,8 @@ npm run dev    # http://localhost:5173
 Tests: `cargo test` in `rust/`, `npx playwright test` in `web/`. `npm run media` (after `npm run build`)
 re-takes the README screenshots and GIFs.
 
+Browser editing can be resumed with **Save project / Open project**, including maps, pose graph constraints and lane review notes. Keep the original inputs for verified restoration. **Memory and Undo** bounds each history and releases unused caches and workers; see [browser projects and reviews](docs/browser-projects.md).
+
 ## License
 
 [MIT](LICENSE). Public demo data, sample data and derived images keep their upstream terms; see the

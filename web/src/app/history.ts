@@ -1,3 +1,4 @@
+import { bufferBytes, nativeCloudEstimate, historyPolicy, onHistoryPolicy } from "../memory-budget";
 /**
  * Undo / redo of operations on the cloud list: an operation adds clouds and
  * hides its sources, or moves a cloud (ICP). Undone clouds stay in the worker
@@ -19,7 +20,7 @@ interface Step {
   moved?: { entry: Entry; matrix: number[] };
 }
 
-const LIMIT = 20;
+
 const done: Step[] = [];
 const undone: Step[] = [];
 let busy = false;
@@ -40,10 +41,42 @@ function detach(entry: Entry): void {
   pointsInvalidated.emit(entry.cloud.id);
 }
 
-/** Free the worker data of entries that are no longer in the list. */
+/** Release only detached clouds no remaining history step can resurrect. */
 function release(list: Entry[]): void {
-  for (const entry of list) if (!entries.has(entry.cloud.id)) void removeCloud(entry.cloud.id);
+  const retained = new Set([...done, ...undone].flatMap(s => [...s.added, ...s.hidden, ...(s.moved ? [s.moved.entry] : [])]).map(e => e.cloud.id));
+  for (const entry of new Set(list)) if (!entries.has(entry.cloud.id) && !retained.has(entry.cloud.id)) void removeCloud(entry.cloud.id);
 }
+function retainedHistoryBytes(): number {
+  const data = [...done, ...undone];
+  const referenced = new Map(data.flatMap(s => [...s.added, ...s.hidden, ...(s.moved ? [s.moved.entry] : [])]).map(e => [e.cloud.id, e]));
+  return bufferBytes(data) + [...referenced.values()].reduce((sum,e) => sum + nativeCloudEstimate(e.cloud, e.fields.size),0);
+}
+function enforceBudget(): void {
+  if (busy) return;
+  const policy = historyPolicy();
+  const removed: Step[] = [];
+  while (done.length + undone.length && (done.length + undone.length > policy.steps || retainedHistoryBytes() > policy.bytes)) {
+    removed.push(done.length ? done.shift()! : undone.shift()!);
+  }
+  release(removed.flatMap(s => [...s.added, ...s.hidden, ...(s.moved ? [s.moved.entry] : [])]));
+  renderButtons();
+}
+export function historyMemory(): {bytes: number; steps: number; data: unknown} { return {bytes: retainedHistoryBytes(), steps: done.length + undone.length, data: [...done,...undone]}; }
+export function clearCloudHistory(): boolean {
+  if (busy) return false;
+  const old = [...done.splice(0), ...undone.splice(0)];
+  release(old.flatMap(s => [...s.added,...s.hidden])); renderButtons(); return true;
+}
+export function forgetCloudHistory(id: number): void {
+  for (const list of [done,undone]) for (let i = list.length - 1; i >= 0; i--) {
+    const step = list[i];
+    if ([...step.added,...step.hidden,...(step.moved ? [step.moved.entry] : [])].some(e => e.cloud.id === id)) {
+      list.splice(i,1); release(step.added);
+    }
+  }
+  renderButtons();
+}
+onHistoryPolicy(enforceBudget);
 
 /**
  * Record an operation that has been done: `added` clouds are already in the
@@ -59,7 +92,7 @@ export function record(step: {
   for (const e of hidden) hideEntry(e);
   done.push({ label: step.label, added: step.added ?? [], hidden, moved: step.moved });
   for (const s of undone.splice(0)) release(s.added);
-  if (done.length > LIMIT) done.shift();
+  enforceBudget();
   renderButtons();
 }
 
@@ -92,6 +125,7 @@ export async function undo(): Promise<void> {
   const step = done.at(-1);
   if (!step || busy) return;
   busy = true;
+  renderButtons();
   try {
     if (step.moved) {
       const { entry, matrix } = step.moved;
@@ -107,12 +141,14 @@ export async function undo(): Promise<void> {
       viewer.setVisible(e.cloud.id, true);
     }
     undone.push(done.pop()!);
+    enforceBudget();
     renderList();
     setStatus(`Undid ${step.label}`);
   } catch (err) {
     setStatus(`Undo failed: ${errorText(err)}`, true);
   } finally {
     busy = false;
+    enforceBudget();
     renderButtons();
   }
 }
@@ -121,6 +157,7 @@ export async function redo(): Promise<void> {
   const step = undone.at(-1);
   if (!step || busy) return;
   busy = true;
+  renderButtons();
   try {
     for (const e of step.added) attach(e);
     for (const e of step.hidden) if (entries.has(e.cloud.id)) hideEntry(e);
@@ -136,6 +173,7 @@ export async function redo(): Promise<void> {
     setStatus(`Redo failed: ${errorText(err)}`, true);
   } finally {
     busy = false;
+    enforceBudget();
     renderButtons();
   }
 }
@@ -147,8 +185,8 @@ export function lastStep(): Readonly<Step> | undefined {
 
 function renderButtons(): void {
   const [last, next] = [done.at(-1), undone.at(-1)];
-  undoButton.disabled = !last;
-  redoButton.disabled = !next;
+  undoButton.disabled = busy || !last;
+  redoButton.disabled = busy || !next;
   undoButton.title = last ? `Undo ${last.label} (Ctrl+Z)` : "Nothing to undo";
   redoButton.title = next ? `Redo ${next.label} (Ctrl+Shift+Z)` : "Nothing to redo";
 }

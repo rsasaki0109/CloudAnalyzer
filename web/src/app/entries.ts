@@ -1,3 +1,4 @@
+import { forgetCloudHistory } from "./history";
 /** The cloud list: adding, replacing, removing and saving clouds and meshes. */
 
 import { exportCloud, exportMesh, removeCloud } from "../api";
@@ -75,6 +76,7 @@ function clearDistance(entry: Entry): void {
 
 export async function removeEntry(id: number): Promise<void> {
   entries.delete(id);
+  forgetCloudHistory(id);
   viewer.remove(id);
   pointsInvalidated.emit(id);
   await removeCloud(id);

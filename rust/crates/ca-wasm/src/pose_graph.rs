@@ -7,6 +7,47 @@ use wasm_bindgen::prelude::*;
 
 use crate::{Cloud, TrajectoryData};
 
+#[cfg(test)]
+#[path = "pose_graph_project_tests.rs"]
+mod project_tests;
+
+#[derive(serde::Serialize, serde::Deserialize)]
+struct GraphSnapshot {
+    version: u32,
+    graph: PoseGraph,
+    timestamps: Vec<f64>,
+    initial: Vec<Rigid>,
+    dynamic: Vec<Vec<bool>>,
+}
+
+impl GraphSnapshot {
+    fn validate(&self) -> Result<(), String> {
+        let n = self.graph.nodes.len();
+        let ids: std::collections::HashSet<_> =
+            self.graph.nodes.iter().map(|node| node.id).collect();
+        if self.version != 1
+            || ids.len() != n
+            || self.initial.len() != n
+            || (!self.timestamps.is_empty() && self.timestamps.len() != n)
+            || (!self.dynamic.is_empty() && self.dynamic.len() != n)
+            || self
+                .graph
+                .edges
+                .iter()
+                .any(|edge| edge.from >= n || edge.to >= n)
+            || self
+                .graph
+                .plane_edges
+                .iter()
+                .any(|edge| edge.node >= n || edge.plane >= self.graph.planes.len())
+            || self.graph.gravity_edges.iter().any(|edge| edge.node >= n)
+        {
+            return Err("invalid pose graph project snapshot".into());
+        }
+        Ok(())
+    }
+}
+
 #[wasm_bindgen]
 pub struct PoseGraphSession {
     graph: PoseGraph,
@@ -222,6 +263,72 @@ impl PoseGraphSession {
 
 #[wasm_bindgen]
 impl PoseGraphSession {
+    /// Lossless editing state, including gravity, edge kinds and original poses.
+    #[wasm_bindgen(js_name = toSnapshot)]
+    pub fn to_snapshot(&self) -> Result<String, JsError> {
+        #[derive(serde::Serialize)]
+        struct SnapshotRef<'a> {
+            version: u32,
+            graph: &'a PoseGraph,
+            timestamps: &'a [f64],
+            initial: &'a [Rigid],
+            dynamic: &'a [Vec<bool>],
+        }
+        serde_json::to_string(&SnapshotRef {
+            version: 1,
+            graph: &self.graph,
+            timestamps: &self.timestamps,
+            initial: &self.initial,
+            dynamic: &self.dynamic,
+        })
+        .map_err(|e| JsError::new(&e.to_string()))
+    }
+
+    #[wasm_bindgen(js_name = fromSnapshot)]
+    pub fn from_snapshot(text: &str) -> Result<PoseGraphSession, JsError> {
+        let saved: GraphSnapshot =
+            serde_json::from_str(text).map_err(|e| JsError::new(&e.to_string()))?;
+        saved.validate().map_err(|e| JsError::new(&e))?;
+        let mut session = PoseGraphSession::new(saved.graph, saved.timestamps);
+        session.initial = saved.initial;
+        session.dynamic = saved.dynamic;
+        Ok(session)
+    }
+
+    /// Rebind verified source scans without replacing the saved editing state.
+    #[wasm_bindgen(js_name = attachSourceScans)]
+    pub fn attach_source_scans(
+        &mut self,
+        source: &mut PoseGraphSession,
+        first: usize,
+    ) -> Result<(), JsError> {
+        if first
+            .checked_add(source.scans.len())
+            .is_none_or(|end| end > self.scans.len())
+        {
+            return Err(JsError::new("source scan range exceeds saved graph"));
+        }
+        for (i, scan) in source.scans.iter().enumerate() {
+            if !self.dynamic.is_empty()
+                && !self.dynamic[first + i].is_empty()
+                && self.dynamic[first + i].len() != scan.as_ref().map_or(0, Scan::len)
+            {
+                return Err(JsError::new(
+                    "source points do not match saved dynamic flags",
+                ));
+            }
+        }
+        for (i, scan) in source.scans.iter_mut().enumerate() {
+            self.scans[first + i] = scan.take();
+        }
+        Ok(())
+    }
+
+    #[wasm_bindgen(js_name = scanPointCount)]
+    pub fn scan_point_count(&self) -> usize {
+        self.scans.iter().flatten().map(Scan::len).sum()
+    }
+
     #[wasm_bindgen(js_name = fromG2o)]
     pub fn from_g2o(text: &str) -> Result<PoseGraphSession, JsError> {
         let graph = PoseGraph::from_g2o(text).map_err(|e| JsError::new(&e.0))?;

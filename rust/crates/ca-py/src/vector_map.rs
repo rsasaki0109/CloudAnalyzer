@@ -312,7 +312,7 @@ pub fn discover_vector_map_features(
 /// Check source coverage without modifying or exporting the input map.
 #[pyfunction]
 pub fn audit_vector_map_quality(py: Python<'_>, cloud: &str, vector_map: &str) -> PyResult<String> {
-    audit_quality(py, cloud, vector_map, false)
+    audit_quality(py, cloud, vector_map, false, false)
 }
 
 /// Source coverage plus bounded failed-sample locations and observed low heights.
@@ -322,10 +322,26 @@ pub fn audit_vector_map_quality_details(
     cloud: &str,
     vector_map: &str,
 ) -> PyResult<String> {
-    audit_quality(py, cloud, vector_map, true)
+    audit_quality(py, cloud, vector_map, true, false)
 }
 
-fn audit_quality(py: Python<'_>, cloud: &str, vector_map: &str, details: bool) -> PyResult<String> {
+/// Alternative lowest-layer evidence; compare with the retained quantile audit.
+#[pyfunction]
+pub fn audit_vector_map_ground_consensus_details(
+    py: Python<'_>,
+    cloud: &str,
+    vector_map: &str,
+) -> PyResult<String> {
+    audit_quality(py, cloud, vector_map, true, true)
+}
+
+fn audit_quality(
+    py: Python<'_>,
+    cloud: &str,
+    vector_map: &str,
+    details: bool,
+    consensus: bool,
+) -> PyResult<String> {
     py.detach(|| {
         let text = std::fs::read_to_string(vector_map).map_err(|e| e.to_string())?;
         let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
@@ -343,7 +359,12 @@ fn audit_quality(py: Python<'_>, cloud: &str, vector_map: &str, details: bool) -
         }
         let cloud = ca_core::read(cloud, &std::fs::read(cloud).map_err(|e| e.to_string())?)
             .map_err(|e| e.to_string())?;
-        let quality = if details {
+        let quality = if consensus {
+            serde_json::to_value(
+                ca_core::vector_map::quality::audit_with_ground_consensus(&loaded.map, &cloud)
+                    .map_err(|e| e.to_string())?,
+            )
+        } else if details {
             serde_json::to_value(
                 ca_core::vector_map::quality::audit_with_locations(&loaded.map, &cloud)
                     .map_err(|e| e.to_string())?,

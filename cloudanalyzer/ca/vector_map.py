@@ -85,10 +85,11 @@ def build_vector_map(
     Source-backed candidates are retained and clipped first. If less than 60% of their
     length is supported, low-surface footprint fitting replaces those candidates.
     Review boundaries, repeated passes, travel directions and junctions before using the map.
-    local_ground_height optionally estimates seed-road Z from local low returns
-    under the trajectory (at least three within 0.75 m, 15th percentile). Missing
-    returns defer sections rather than falling back to cross-section bins. This
-    can choose another level; inspect actual boundary support and retained extent.
+    local_ground_height optionally estimates seed-road Z from the lowest 0.15 m
+    layer within 0.75 m under the trajectory. At least three occupied 0.2 m XY cells
+    must span a triangle of 0.01 m²; the median of their lowest returns is used.
+    Missing coherent support defers sections rather than falling back to bins.
+    Another level can win; compare both source estimators and retained extent.
     """
     if paint_channel not in ("rgb", "intensity"):
         raise ValueError("paint_channel must be rgb or intensity")

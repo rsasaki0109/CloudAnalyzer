@@ -1950,7 +1950,7 @@ def vectormap_build_cmd(
     no_track_boundaries: bool = typer.Option(False, "--no-track-boundaries", help="Choose each boundary slice independently without continuity tracking"),
     no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without trajectory-relative curve fitting"),
     fit_source_surface: bool = typer.Option(False, "--fit-source-surface", help="Fit widths/heights to source ground; defer unsupported intervals; lane counts remain explicit"),
-    local_ground_height: bool = typer.Option(False, "--local-ground-height", help="Estimate seed-road height from local low returns; defer missing sections and review surface-level ambiguity"),
+    local_ground_height: bool = typer.Option(False, "--local-ground-height", help="Estimate seed-road height from the lowest spatially supported layer; defer missing support and review level ambiguity"),
     no_verify_curb_profiles: bool = typer.Option(False, "--no-verify-curb-profiles", help="Keep unchecked height-step candidates, including tall objects and isolated returns"),
     no_merge_repeated_passes: bool = typer.Option(False, "--no-merge-repeated-passes", help="Add roads without reusing matching existing intervals"),
     existing_map: Optional[str] = typer.Option(None, "--existing-map", help="Keep this IR JSON or Lanelet2 map and add uncovered intervals"),

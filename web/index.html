@@ -986,11 +986,25 @@
             <button id="vm-feature-apply" disabled>Apply geometry edit</button>
             <p class="hint small">Coordinates use the original map frame. Drag keeps Z; numeric edits can change it. Observed paint, stored lamps and lane assignments stay at their original values. Review them after editing. Undo restores the complete previous map.</p>
           </details>
-        <details class="options" open>
+        <details id="vm-review-panel" class="options" open>
           <summary>Lane review</summary>
           <p id="vm-review-summary" class="small"></p>
           <label>Review queue <select id="vm-review-filter"><option value="unreviewed">Unreviewed</option><option value="reviewed">Reviewed</option><option value="needs-fix">Needs fixes</option><option value="deferred">Deferred</option><option value="low-support">Low source coverage (check first)</option><option value="all">All lanes</option></select></label>
           <button id="vm-review-next">Next lane</button>
+          <p id="vm-review-page" class="small" role="status"></p>
+          <div class="review-table-wrap">
+            <table class="review-table" aria-label="Lane reviews">
+              <thead><tr><th scope="col">Lane</th><th scope="col">State</th><th scope="col">Notes</th></tr></thead>
+              <tbody id="vm-review-rows"></tbody>
+            </table>
+          </div>
+          <p id="vm-review-empty" class="small"></p>
+          <div class="button-row">
+            <button id="vm-review-page-prev" disabled>Previous page</button>
+            <button id="vm-review-page-next" disabled>Next page</button>
+          </div>
+          <button id="vm-review-export" disabled>Export all reviews CSV</button>
+          <p class="hint small">Click a lane to view it. CSV includes every lane and its saved decision and notes; save any changes in the editor first.</p>
         </details>
         <div id="vm-lane" hidden>
           <h3 id="vm-lane-title"></h3>

@@ -2312,17 +2312,24 @@ test("vector map: source quality exposes unsupported edges without editing and i
   await expect(status(page)).toContainText("Opened draft.json: 1 lanes");
   const exportMap=async()=>{const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();return (await bytesOf(await wait)).toString();};
   const before=await exportMap();await expect(page.locator("#vm-undo")).toBeDisabled();
+  await page.locator("#vm-review-filter").selectOption("low-support");
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(0);
   await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
   await expect(page.locator("#vm-quality-report")).toContainText("1 lanes checked; 1 need source review; 0 omitted; 0 malformed");
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(1);
+  await expect(page.getByRole("button",{name:"View lane 3",exact:true})).toBeVisible();
   const issue=page.locator("#vm-quality-lanes button");await expect(issue).toContainText("centre 100%, left 0%");
   await issue.click();await expect(page.locator("#vm-lane-title")).toHaveText("Lane 3");
   expect(await exportMap()).toBe(before);await expect(page.locator("#vm-undo")).toBeDisabled();
   await page.locator("#vm-lane-speed").fill("20");await page.locator("#vm-lane-apply").click();
   await expect(page.locator("#vm-quality-report")).toContainText("has not been checked");await expect(issue).toHaveCount(0);
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(0);
   await page.locator("#vm-undo").click();expect(await exportMap()).toBe(before);
   await page.locator("#vm-quality-check").click();await expect(page.locator("#vm-quality-report")).toContainText("1 need source review");
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(1);
   await open(page,[{name:"other.ply",buffer:ply([[100000,100000,2]])}]);
   await expect(page.locator("#vm-quality-report")).toContainText("has not been checked");
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(0);
 });
 
 test("vector map: a shared reversed boundary can be dragged, cancelled, exported and undone", async ({ page }) => {

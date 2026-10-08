@@ -12,6 +12,10 @@ The project does not include derived clouds, user-computed scalar fields, transi
 
 The vector map's **Lane review** queue can visit unreviewed, reviewed, deferred, low-coverage or all lanes. Select a lane, choose **Reviewed**, **Needs fixes**, **Deferred** or **Unreviewed**, write notes and press **Save lane review**. Run **Check source coverage** before using the low-coverage queue; missing or limited coverage is a reason to inspect a lane, not an automatic approval.
 
+The lane table uses the same filter as **Next lane** and shows 25 lanes per page, ordered by lane ID. Click a lane ID to select it, open its review editor and focus the map on its geometry. **Next lane** also moves the table to the selected lane's page. Changed decisions show **Review again**; notes remain available in the editor.
+
+Use **Export all reviews CSV** to share every current lane's saved state and notes, including untouched lanes as **Unreviewed**. Export includes all lanes regardless of the active filter or page. Save changes in the editor before exporting. Columns are `lane_id`, `status`, `notes`, `updated_at`, `previous_status` and `stale_reason`; untouched lanes have no review timestamp. The UTF-8 file includes a BOM for spreadsheet compatibility, preserves quoted/multiline notes and prefixes text that could be interpreted as a spreadsheet formula with an apostrophe. Deleted lanes and decisions from another map are excluded. CSV is a report; use a project to resume editing.
+
 Geometry, lane attributes, shared boundaries and associated equipment rules are compared against the reviewed state. A relevant change returns affected lanes to **Unreviewed**, preserving their notes and displaying why they need another look. Changing the review source, or changing its points, also requires another review. Deleting a lane removes its review. Review state is saved in projects; plain Lanelet2 exports retain map geometry and rules only.
 
 ## Memory and Undo

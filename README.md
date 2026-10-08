@@ -47,7 +47,7 @@ pose graph with one scan per pose.
   and tied in with loops.
 - **Export** the graph as g2o, the poses as KITTI / TUM, and the map as a cloud.
 - **Build a vector map** over the point cloud: draft boundaries from a cloud and a trajectory with measured/inferred counts, draw roads with lanes in either direction, connect junctions,
-  drag shared boundary vertices, add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
+  drag shared boundary vertices, edit vertex heights, add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
   [vectormap-rs](https://github.com/rsasaki0109/vectormap-rs), checks the map for Autoware, and saves
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
   If a sharp turn produces inconsistent boundary directions, the Web panel shows the rejected

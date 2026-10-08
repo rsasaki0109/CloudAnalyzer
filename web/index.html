@@ -815,7 +815,7 @@
           <button id="vm-road" aria-pressed="false" title="Click points along a road; its lanes are built around them">Draw road</button>
           <button id="vm-connect" aria-pressed="false" title="Join the end of one lane to the start of another with a turning lane">Connect</button>
           <button id="vm-select" aria-pressed="false" title="Look at a lane, set its speed limit or remove it">Select</button>
-          <button id="vm-vertices" aria-pressed="false" title="Drag a boundary vertex in XY, keeping its height">Edit vertices</button>
+          <button id="vm-vertices" aria-pressed="false" title="Select a boundary vertex to edit its height, or drag in XY">Edit vertices</button>
           <button id="vm-fit" title="Frame the map's boundaries in the view" disabled>Frame map</button>
         </div>
         <div class="button-row">
@@ -823,6 +823,20 @@
           <button id="vm-light" aria-pressed="false" title="A traffic light for the clicked lane and those beside it">Traffic light</button>
           <button id="vm-crosswalk" aria-pressed="false" title="A crosswalk across the road at the click, with stop lines before it">Crosswalk</button>
         </div>
+        <details class="options" id="vm-boundary-editor">
+          <summary>Edit boundary vertex height</summary>
+          <label>Boundary <select id="vm-boundary"><option value="">Choose a boundary or click a yellow vertex</option></select></label>
+          <label>Vertex <select id="vm-boundary-vertex" disabled></select></label>
+          <p id="vm-boundary-context" class="hint small">Use Edit vertices to select a yellow handle, or choose a boundary here.</p>
+          <p id="vm-boundary-position" class="small"></p>
+          <label>New height Z (m) <input id="vm-boundary-z" type="number" step="any" disabled /></label>
+          <p id="vm-boundary-edit-status" class="hint small" role="status"></p>
+          <div class="button-row">
+            <button id="vm-boundary-focus" disabled>Focus vertex</button>
+            <button id="vm-boundary-apply" disabled>Apply height</button>
+          </div>
+          <p class="hint small">Height uses the original map frame. Applying changes only this vertex's Z; X and Y stay fixed. Shared boundaries update every lane that uses them. Inspect the source points, then recheck source coverage. Undo restores the previous map.</p>
+        </details>
         <details class="options" id="vm-road-options">
           <summary>Road options</summary>
           <label><input id="vm-refine-sketch" type="checkbox" /> Fit drawn paths to the point cloud</label>
@@ -923,9 +937,9 @@
             <div class="button-row">
               <button id="vm-quality-next" disabled>Next problem</button>
               <button id="vm-quality-focus" disabled>Focus interval</button>
-              <button id="vm-quality-edit" disabled>Edit lane boundary vertices (XY)</button>
+              <button id="vm-quality-edit" disabled>Edit lane boundary vertices</button>
             </div>
-            <p class="hint small">Inspect the source before editing. Vertex dragging keeps height; moving a shared boundary changes both lanes. After an edit, run Check source coverage again.</p>
+            <p class="hint small">Inspect the source before editing. Dragging keeps height; use Edit boundary vertex height to change Z. Shared boundaries update every lane that uses them. After an edit, run Check source coverage again.</p>
           </div>
         </details>
         <details class="options">

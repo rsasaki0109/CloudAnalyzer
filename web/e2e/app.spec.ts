@@ -2369,14 +2369,22 @@ test("vector map: a shared reversed boundary can be dragged, cancelled, exported
   await page.locator("#vm-vertices").click();
   // Pressing off the centre of a handle must not snap it or add undo history.
   await page.mouse.click(x + 3, y + 2);
+  await expect(page.locator("#vm-boundary-editor")).toHaveAttribute("open", "");
+  await expect(page.locator("#vm-boundary")).toHaveValue("2");
+  await expect(page.locator("#vm-boundary-vertex")).toHaveValue("1");
+  await expect(page.locator("#vm-boundary-z")).toHaveValue("2");
+  await expect(page.locator("#vm-boundary-context")).toContainText("Used by lanes 4, 5");
+  await expect(page.locator("#vm-boundary-apply")).toBeDisabled();
   expect(await exportXml()).toBe(before);
   await expect(page.locator("#vm-undo")).toBeDisabled();
   await page.mouse.move(x, y);
   await page.mouse.down();
   await expect(page.locator("#vm-hint")).toContainText("Boundary 2, vertex 2");
+  await expect(page.locator("#vm-boundary-z")).toBeDisabled();
   await page.mouse.move(x + 10, y + 30, { steps: 6 });
   await page.keyboard.press("Escape");
   await page.mouse.up();
+  await expect(page.locator("#vm-boundary-z")).toBeEnabled();
   expect(await exportXml()).toBe(before);
   await expect(page.locator("#vm-undo")).toBeDisabled();
 

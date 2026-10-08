@@ -95,6 +95,35 @@ test('NCLT corrected drive builds with default pieces, edits, checks and reopens
   const before = await snapshot(page), beforeMap = JSON.parse(before.vectorMap);
   expect(beforeMap.lanes.length).toBeGreaterThan(2);
   expect(beforeMap.lanes.filter(l => l.speed_limit?.kmh === 25)).toHaveLength(1);
+  // Exercise an explicit reversible Z edit on this real draft; this trial
+  // offset is not a source-derived correction or an accuracy improvement.
+  const boundaryProblem = await page.locator('#vm-quality-problem option').filter({hasText: /boundary:.*height disagreement/}).first().getAttribute('value');
+  await page.locator('#vm-quality-problem').selectOption(boundaryProblem!);
+  await page.locator('#vm-quality-edit').click();
+  const boundaryId = Number(await page.locator('#vm-boundary').inputValue());
+  const vertexIndex = Number(await page.locator('#vm-boundary-vertex').inputValue());
+  const originalZ = Number(await page.locator('#vm-boundary-z').inputValue());
+  const trialZ = originalZ + .125;
+  await page.locator('#vm-boundary-z').fill(String(trialZ));
+  await page.locator('#vm-boundary-apply').click();
+  await expect(page.locator('#status')).toContainText(`Boundary ${boundaryId} vertex ${vertexIndex + 1} height updated`);
+  await expect(page.locator('#vm-quality-locations')).toBeHidden();
+  const expectedHeightMap = structuredClone(beforeMap);
+  expectedHeightMap.boundaries.find(b => b.id === boundaryId).geometry[vertexIndex][2] = trialZ;
+  const heightMap = JSON.parse((await snapshot(page)).vectorMap);
+  expect(heightMap).toEqual(expectedHeightMap);
+  await page.screenshot({path: info.outputPath('manual-height-trial.png')});
+  await page.locator('#vm-quality-check').click();
+  await expect(page.locator('#status')).toContainText('Source coverage checked', {timeout: 120_000});
+  const trialQuality = await page.locator('#vm-quality-report').textContent();
+  await page.locator('#vm-undo').click();
+  await expect(page.locator('#status')).toContainText('Undone');
+  await expect(page.locator('#vm-boundary-z')).toHaveValue(String(originalZ));
+  expect(JSON.parse((await snapshot(page)).vectorMap)).toEqual(beforeMap);
+  await page.locator('#vm-quality-check').click();
+  await expect(page.locator('#status')).toContainText('Source coverage checked', {timeout: 120_000});
+  await expect(page.locator('#vm-quality-report')).toHaveText(quality!);
+  const heightTrial = {boundaryId, vertexIndex, originalZ, trialZ, trialQuality, onlySelectedZChanged: true, exactMapRestoredByUndo: true};
   const osmReady = page.waitForEvent('download', d => d.suggestedFilename() === 'lanelet2_map.osm');
   const projectorReady = page.waitForEvent('download', d => d.suggestedFilename() === 'map_projector_info.yaml');
   await page.locator('#vm-export').click();
@@ -122,6 +151,7 @@ test('NCLT corrected drive builds with default pieces, edits, checks and reopens
   for (const [name, data] of Object.entries({
     'workflow.json': JSON.stringify({importedMs, buildMs, totalMs: Date.now() - started, roadSettings: {forwardLanes: 1, backwardLanes: 0, pieceLength: 50, otherRoadOptions: 'default'}, defaultTwoLaneDraftRejected: true, poses: poses.toString().trim().split('\n').length, lanes: beforeMap.lanes.length, boundaries: beforeMap.boundaries.length, mapStatus, buildReport, quality, exportStatus, exportIssues, exportBytes: osm.length, errors}, null, 2),
     'source-problems.json': JSON.stringify(problemIntervals, null, 2),
+    'manual-height-trial.json': JSON.stringify(heightTrial, null, 2),
     'lanelet2_map.osm': osm,
     'map_projector_info.yaml': yaml,
     'corrected-drive.kitti': poses,

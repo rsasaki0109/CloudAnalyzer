@@ -37,10 +37,30 @@ change of reason. An isolated failed sample is a point. These marks do not
 establish that all positions between samples are unsupported. Individual failed
 samples can be shown even when a lane still passes the existing 90% threshold.
 
-Inspect the original points, then use **Edit lane boundary vertices (XY)** to enter
+Inspect the original points, then use **Edit lane boundary vertices** to enter
 the existing boundary editor at that interval, including the nearest editable
-vertices in the view when they lie outside the failed samples. Dragging keeps height and moves
-shared geometry for both lanes. A missing return can be sparse or occluded data;
+vertices in the view when they lie outside the failed samples. A boundary problem
+also selects the nearest stored vertex in **Edit boundary vertex height**;
+a centreline problem leaves the boundary choice to the operator.
+Dragging keeps height and moves shared geometry for all lanes that use it.
+To repair a height disagreement, choose a vertex, inspect its original X/Y and
+current Z, then enter **New height Z (m)** and click **Apply height**. Only that
+vertex's Z changes; X/Y, other vertices, boundary kind and lane references stay
+fixed. The editor lists affected lanes, including reversed boundary references.
+A yellow cross marks the selected vertex; **Focus vertex** frames it. Vertices
+are numbered in stored boundary order, which can oppose a lane's travel direction.
+You can also click a yellow handle using **Edit vertices**, or choose a boundary
+and vertex without loading a cloud. Side views also allow selecting a handle for
+height editing; XY dragging needs a top or oblique view.
+Empty, non-finite and unchanged values do not
+apply an edit or create an Undo step. Replacing or clearing the map clears the
+selection; Undo refreshes the displayed current height.
+
+Height is a manual value in the original map frame, not a camera-relative offset
+or an automatic snap to nearby returns. Inspect grade and connected endpoints
+after editing; the native edit warnings remain visible. Project and Lanelet2
+exports retain the edited height; Undo restores the complete previous map.
+A missing return can be sparse or occluded data;
 editing is an operator decision. Applied edits, Undo and source changes discard
 the old overlay. Run **Check source coverage** again to inspect the edited map.
 

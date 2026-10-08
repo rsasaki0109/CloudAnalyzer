@@ -15,9 +15,28 @@ from typing import Any
 
 import numpy as np
 from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations
+from ca.mapping_job import start_mapping_job, inspect_mapping_job, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
+
+For an agent-controlled raw-recording-to-both-maps job, use start_mapping_job with
+a NEW output directory. It makes the point-cloud map and corrected trajectory and
+records hashes and reports. Read inspect_mapping_job, then generate_mapping_candidate
+with explicit road_options and a reason for each hypothesis. Road options require
+forward_lanes, backward_lanes, left_hand_traffic, lane_width and speed_limit; other
+build_vector_map fitting options are available. Read native failures, source audits,
+export warnings and retained extent between trials. Use diagnose_mapping_candidate
+to separate saved per-lane/trace height mismatches, insufficient returns and endpoint
+holds without rerunning generation or spending attempts. These failures are evidence,
+not proven root causes; inspect XY and level alignment before changing only Z.
+Lane counts, permitted traffic,
+width and speed are assumptions, not established by point-cloud support. Do not
+reduce lane count or retained extent merely to raise a coverage score. Attempts
+are bounded; failed trials preserve earlier artifacts. Select an audited candidate
+with select_mapping_candidate and an explanation; low source support and unresolved
+semantics remain explicit. Selection never certifies deployment readiness. No LLM
+is embedded in these tools: the calling agent makes and records the decisions.
 
 A SLAM session folder holds a poses file (g2o, or a KITTI / TUM trajectory) and one scan
 per pose (PCD, PLY, LAS/LAZ, XYZ, KITTI .bin) named by frame number. Look at a folder with
@@ -282,7 +301,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [start_mapping_job, inspect_mapping_job, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

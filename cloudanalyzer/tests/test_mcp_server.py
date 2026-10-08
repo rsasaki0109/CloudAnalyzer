@@ -52,6 +52,12 @@ def test_the_server_answers_over_stdio(tmp_path):
                 await session.initialize()
                 tools = (await session.list_tools()).tools
                 names = {t.name for t in tools}
+                assert {"start_mapping_job", "inspect_mapping_job", "diagnose_mapping_candidate", "generate_mapping_candidate", "select_mapping_candidate"} <= names
+                diagnose = next(t for t in tools if t.name == "diagnose_mapping_candidate")
+                assert set(diagnose.model_dump(by_alias=True)["inputSchema"]["required"]) == {"job_dir", "candidate_id"}
+                mapping = next(t for t in tools if t.name == "generate_mapping_candidate")
+                schema = mapping.model_dump(by_alias=True)["inputSchema"]
+                assert set(schema["required"]) == {"job_dir", "road_options", "reason"}
                 build = next(t for t in tools if t.name == "build_vector_map")
                 properties = build.model_dump(by_alias=True)["inputSchema"]["properties"]
                 for field in ("track_boundaries", "fit_boundaries", "verify_curb_profiles"):

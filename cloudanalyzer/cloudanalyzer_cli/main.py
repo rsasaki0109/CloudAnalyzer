@@ -1847,6 +1847,88 @@ def view_cmd(
         _handle_error(e)
 
 
+@app.command("mapping-start")
+def mapping_start_cmd(
+    source: str = typer.Argument(..., help="Raw MCAP, ROS1 bag or rosbag2 SQLite recording"),
+    out: str = typer.Option(..., "--out", help="New mapping job directory"),
+    max_attempts: int = typer.Option(4, "--max-attempts", min=1, max=8),
+    keyframe_spacing: float = typer.Option(1.0, "--keyframe-spacing"),
+    keep_dynamic: bool = typer.Option(False, "--keep-dynamic"),
+    minimum_retained_fraction: float = typer.Option(0.9, "--minimum-retained-fraction", min=0, max=1),
+) -> None:
+    """Generate a point-cloud map and trajectory for an agent-controlled mapping job."""
+    from ca.mapping_job import start_mapping_job
+    try:
+        result = start_mapping_job(source, out, keyframe_spacing=keyframe_spacing,
+                                   remove_dynamic=not keep_dynamic, max_attempts=max_attempts,
+                                   minimum_retained_fraction=minimum_retained_fraction)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "pointcloud_failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-candidate")
+def mapping_candidate_cmd(
+    job: str = typer.Argument(...),
+    options: str = typer.Option(..., "--options", help="JSON file of explicit road assumptions and fitting options"),
+    reason: str = typer.Option(..., "--reason", help="Why the agent is testing this hypothesis"),
+) -> None:
+    """Generate and audit one HD-map candidate, recording failures without overwriting others."""
+    from ca.mapping_job import generate_mapping_candidate
+    try:
+        parameters = json.loads(Path(options).read_text(encoding="utf-8"))
+        if not isinstance(parameters, dict):
+            raise ValueError("options must be a JSON object")
+        result = generate_mapping_candidate(job, parameters, reason)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["attempts"][-1]["status"] == "failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-status")
+def mapping_status_cmd(job: str = typer.Argument(...)) -> None:
+    """Inspect mapping evidence, artifact paths and remaining attempt budget as JSON."""
+    from ca.mapping_job import inspect_mapping_job
+    try:
+        result = inspect_mapping_job(job)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-select")
+def mapping_select_cmd(
+    job: str = typer.Argument(...),
+    candidate: int = typer.Option(..., "--candidate"),
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Select a retained HD draft with a recorded reason and visible quality holds."""
+    from ca.mapping_job import select_mapping_candidate
+    try:
+        result = select_mapping_candidate(job, candidate, reason)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-diagnose")
+def mapping_diagnose_cmd(
+    job: str = typer.Argument(...),
+    candidate: int = typer.Option(..., "--candidate", min=1),
+) -> None:
+    """Explain saved source-review holds without rerunning generation or spending attempts."""
+    from ca.mapping_job import diagnose_mapping_candidate
+    try:
+        result = diagnose_mapping_candidate(job, candidate)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("vectormap-build")
 def vectormap_build_cmd(
     cloud: str = typer.Argument(..., help="Surveyed point cloud, in the trajectory's metre frame"),

@@ -10,9 +10,11 @@ const workers: Worker[] = [];
 let seq = 0;
 const memory = new Map<Worker,number>();
 let pending = 0;
+const warming = new Set<() => void>();
 export function poolMemory(): number { return [...memory.values()].reduce((sum,v) => sum + v,0); }
 export function releasePool(): void {
   if (pending) throw new Error("Finish the active operation before releasing pool workers");
+  for (const cancel of [...warming]) cancel();
   for (const worker of workers) worker?.terminate();
   workers.length = 0; memory.clear(); nextLane = 0;
 }
@@ -28,17 +30,28 @@ function worker(i: number): Worker {
 
 function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>> {
   const id = ++seq;
-  pending++;
+  const background = slice.kind === "warm-up";
+  if (!background) pending++;
   return new Promise((resolve, reject) => {
+    let finished = false;
     const onMessage = (event: MessageEvent<SliceResponse>) => {
       if (event.data.seq !== id) return;
-      cleanup();
+      if (!cleanup()) return;
       memory.set(w,event.data.memory);
       if (event.data.ok) resolve(event.data.value as SliceResult<S>);
       else reject(new Error(event.data.error));
     };
-    const onError = (event: ErrorEvent) => { cleanup(); reject(new Error(event.message || "Pool worker failed")); };
-    const cleanup = () => { pending--; w.removeEventListener("message", onMessage); w.removeEventListener("error", onError); };
+    const onError = (event: ErrorEvent) => { if (cleanup()) reject(new Error(event.message || "Pool worker failed")); };
+    const cleanup = () => {
+      if (finished) return false;
+      finished = true;
+      if (!background) pending--;
+      warming.delete(cancelWarmup);
+      w.removeEventListener("message", onMessage); w.removeEventListener("error", onError);
+      return true;
+    };
+    const cancelWarmup = () => { if (cleanup()) resolve(new Float64Array(0) as SliceResult<S>); };
+    if (background) warming.add(cancelWarmup);
     w.addEventListener("message", onMessage);
     w.addEventListener("error", onError);
     const request: SliceRequest = { ...slice, seq: id };
@@ -59,7 +72,7 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
       transfer.push(slice.positions.buffer);
       if (slice.colors) transfer.push(slice.colors.buffer);
     }
-    try { w.postMessage(request, { transfer }); } catch (error) { cleanup(); reject(error); }
+    try { w.postMessage(request, { transfer }); } catch (error) { if (cleanup()) reject(error); }
   });
 }
 

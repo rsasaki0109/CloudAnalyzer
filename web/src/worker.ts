@@ -106,7 +106,7 @@ const ready = init().then((wasm) => {
   // Optimize the heavy kernels here and on the pool before the first file
   // arrives (see `warmUp`); requests wait for this one.
   warmUp();
-  void warmUpPool();
+  void warmUpPool().catch(error => console.warn("Could not warm the worker pool", error));
   return wasm;
 });
 /** Larger clouds are voxel-thinned before meshing, to bound time and memory. */

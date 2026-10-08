@@ -1,5 +1,5 @@
 import { onHistoryPolicy, historyPolicy } from "../memory-budget";
-import { LaneReviews, type LaneReview, type ReviewStatus } from "../lane-review";
+import { LaneReviews, reviewCsv, type LaneReview, type LaneReviewRow, type ReviewStatus } from "../lane-review";
 /**
  * Vector map panel: roads drawn over the clouds become lanes (both
  * directions, shared boundaries, connected pieces), joined through
@@ -1266,6 +1266,9 @@ buildButton.onclick = async () => {
 
 const reviews = new LaneReviews();
 let lowSupport = new Set<number>();
+let reviewPage = 0;
+const REVIEW_PAGE_SIZE = 25;
+const reviewLabels: Record<ReviewStatus, string> = { unreviewed: "Unreviewed", reviewed: "Reviewed", "needs-fix": "Needs fixes", deferred: "Deferred" };
 function laneSignatures(): Map<number, string> {
   return new Map(view.lanes.map(lane => {
     const rules = (view.regulatoryElements ?? []).filter(r => r.lanes.includes(lane.id));
@@ -1274,19 +1277,61 @@ function laneSignatures(): Map<number, string> {
   }));
 }
 export function captureLaneReviews(): LaneReview[] { return reviews.snapshot(); }
-export function restoreLaneReviews(records: LaneReview[]): void { reviews.restore(records, laneSignatures()); renderReviews(); renderLane(); }
+export function restoreLaneReviews(records: LaneReview[]): void { reviews.restore(records, laneSignatures()); reviewPage = 0; renderReviews(); renderLane(); }
+function filteredReviews(): LaneReviewRow[] {
+  const filter = $<HTMLSelectElement>("vm-review-filter").value;
+  return reviews.rows(view.lanes.map(l => l.id)).filter(row => filter === "all" || (filter === "low-support" ? lowSupport.has(row.lane) : row.status === filter));
+}
+function markReviewSelection(): void {
+  for (const button of $("vm-review-rows").querySelectorAll<HTMLButtonElement>("button[data-lane]")) {
+    const current = Number(button.dataset.lane) === selected;
+    if (current) button.setAttribute("aria-current", "true");
+    else button.removeAttribute("aria-current");
+    button.closest("tr")!.classList.toggle("selected", current);
+  }
+}
 function renderReviews(): void {
   const counts = { unreviewed: 0, reviewed: 0, "needs-fix": 0, deferred: 0 };
   for (const lane of view.lanes) counts[reviews.get(lane.id)?.status ?? "unreviewed"]++;
   $("vm-review-summary").textContent = `${counts.unreviewed} unreviewed · ${counts.reviewed} reviewed · ${counts["needs-fix"]} need fixes · ${counts.deferred} deferred`;
+  const rows = filteredReviews();
+  reviewPage = Math.min(reviewPage, Math.max(0, Math.ceil(rows.length / REVIEW_PAGE_SIZE) - 1));
+  const start = reviewPage * REVIEW_PAGE_SIZE;
+  $("vm-review-page").textContent = rows.length ? `Showing ${start + 1}–${Math.min(start + REVIEW_PAGE_SIZE, rows.length)} of ${rows.length} matching lanes (${view.lanes.length} total).` : `0 matching lanes (${view.lanes.length} total).`;
+  $("vm-review-empty").textContent = rows.length ? "" : $<HTMLSelectElement>("vm-review-filter").value === "low-support" ? "No low-coverage lanes listed. Check source coverage for the current map and cloud." : "No lanes match this review filter.";
+  $("vm-review-rows").replaceChildren(...rows.slice(start, start + REVIEW_PAGE_SIZE).map(row => {
+    const tr = document.createElement("tr"), lane = document.createElement("td"), state = document.createElement("td"), notes = document.createElement("td");
+    const button = document.createElement("button");
+    button.textContent = String(row.lane); button.dataset.lane = String(row.lane); button.setAttribute("aria-label", `View lane ${row.lane}`);
+    button.onclick = () => selectLane(row.lane, true); lane.append(button);
+    state.textContent = reviewLabels[row.status];
+    if (row.staleReason) {
+      const stale = document.createElement("span"); stale.className = "stale"; stale.textContent = "Review again"; stale.title = row.staleReason; state.append(stale);
+    }
+    notes.textContent = row.notes.length > 160 ? row.notes.slice(0, 160) + "…" : row.notes;
+    notes.title = row.notes;
+    tr.append(lane, state, notes); return tr;
+  }));
+  $<HTMLButtonElement>("vm-review-page-prev").disabled = reviewPage === 0;
+  $<HTMLButtonElement>("vm-review-page-next").disabled = start + REVIEW_PAGE_SIZE >= rows.length;
+  $<HTMLButtonElement>("vm-review-next").disabled = rows.length === 0;
+  $<HTMLButtonElement>("vm-review-export").disabled = view.lanes.length === 0;
+  markReviewSelection();
 }
 function reviewSourceChanged(): void { reviews.invalidateSource(); renderReviews(); renderLane(); }
+$("vm-review-filter").onchange = () => { reviewPage = 0; renderReviews(); };
+$("vm-review-page-prev").onclick = () => { reviewPage--; renderReviews(); };
+$("vm-review-page-next").onclick = () => { reviewPage++; renderReviews(); };
+$("vm-review-export").onclick = () => {
+  const rows = reviews.rows(view.lanes.map(l => l.id));
+  download(new Blob([reviewCsv(rows)], { type: "text/csv;charset=utf-8" }), "lane-reviews.csv");
+  setStatus(`Exported saved reviews for all ${rows.length} lanes.`);
+};
 $("vm-review-next").onclick = () => {
-  const filter = $<HTMLSelectElement>("vm-review-filter").value;
-  const lanes = view.lanes.filter(l => filter === "all" || (filter === "low-support" ? lowSupport.has(l.id) : (reviews.get(l.id)?.status ?? "unreviewed") === filter));
+  const lanes = filteredReviews();
   if (!lanes.length) return setStatus("No lanes match the review filter.");
-  const index = lanes.findIndex(l => l.id === selected);
-  selectLane(lanes[(index + 1) % lanes.length].id, true);
+  const index = lanes.findIndex(l => l.lane === selected);
+  selectLane(lanes[(index + 1) % lanes.length].lane, true);
 };
 $("vm-review-save").onclick = () => {
   if (selected === null) return;
@@ -1397,6 +1442,7 @@ function clearQuality(): void {
   lowSupport = new Set();
   $("vm-quality-report").textContent = "Source coverage has not been checked for the current map and cloud.";
   $("vm-quality-lanes").replaceChildren();
+  renderReviews();
 }
 $("vm-quality-cloud").onchange = () => { clearQuality(); reviewSourceChanged(); };
 $("vm-quality-check").onclick = async () => {
@@ -1408,6 +1454,7 @@ $("vm-quality-check").onclick = async () => {
     if (revision !== qualityRevision) return;
     $("vm-quality-report").textContent = `${report.lanes.length} lanes checked; ${report.low_support_lanes.length} need source review; ${report.omitted_lanes.length} omitted; ${report.malformed_lanes.length} malformed. ${report.limited ? "Coverage check limited. " : ""}` + report.warnings.join(" ");
     lowSupport = new Set([...report.low_support_lanes, ...report.omitted_lanes, ...report.malformed_lanes]);
+    renderReviews();
     const percentage = (s: SourceCurveSupport) => `${Math.round(s.fraction*100)}%${s.start_supported && s.end_supported ? "" : " (end support missing)"}`;
     for (const lane of report.lanes.filter(l => l.needs_review)) {
       const button = document.createElement("button"); button.textContent = `Lane ${lane.lane}: centre ${percentage(lane.center)}, left ${percentage(lane.left)}, right ${percentage(lane.right)}`;
@@ -1422,6 +1469,10 @@ function selectLane(id: number | null, frame = false): void {
   selected = id;
   draw();
   renderLane();
+  const index = filteredReviews().findIndex(row => row.lane === id);
+  if (index >= 0 && Math.floor(index / REVIEW_PAGE_SIZE) !== reviewPage) {
+    reviewPage = Math.floor(index / REVIEW_PAGE_SIZE); renderReviews();
+  } else markReviewSelection();
   const lane = id === null ? undefined : laneById(id);
   if (frame && lane) {
     const shift = globalShift();

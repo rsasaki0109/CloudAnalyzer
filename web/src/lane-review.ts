@@ -4,6 +4,21 @@ export interface LaneReview {
   lane: number; status: ReviewStatus; notes: string; signature: string;
   updated: string; staleReason?: string; previousStatus?: ReviewStatus;
 }
+export type LaneReviewRow = Omit<LaneReview, "signature">;
+
+/** UTF-8 CSV for sharing saved decisions, including untouched lanes. */
+export function reviewCsv(rows: readonly LaneReviewRow[]): string {
+  const cell = (value: string | number | undefined): string => {
+    if (typeof value === "number") return String(value);
+    let text = value ?? "";
+    // Keep imported notes and timestamps literal when opened in a spreadsheet.
+    if (/^[\s\uFEFF]*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text)) text = "'" + text;
+    return `"${text.replaceAll('"', '""')}"`;
+  };
+  return "\uFEFFlane_id,status,notes,updated_at,previous_status,stale_reason\r\n" + rows.map(row =>
+    [row.lane, row.status, row.notes, row.updated, row.previousStatus, row.staleReason].map(cell).join(",") + "\r\n",
+  ).join("");
+}
 const statuses: ReviewStatus[] = ["unreviewed", "reviewed", "needs-fix", "deferred"];
 export function parseReviews(input: unknown): LaneReview[] {
   if (!Array.isArray(input)) throw new Error("Invalid lane reviews");
@@ -19,6 +34,12 @@ export function parseReviews(input: unknown): LaneReview[] {
 export class LaneReviews {
   private records = new Map<number, LaneReview>();
   get(lane: number): LaneReview | undefined { return this.records.get(lane); }
+  rows(lanes: Iterable<number>): LaneReviewRow[] {
+    return [...new Set(lanes)].sort((a, b) => a - b).map(lane => {
+      const record = this.records.get(lane);
+      return { lane, status: record?.status ?? "unreviewed", notes: record?.notes ?? "", updated: record?.updated ?? "", previousStatus: record?.previousStatus, staleReason: record?.staleReason };
+    });
+  }
   save(lane: number, signature: string, status: ReviewStatus, notes: string): void {
     this.records.set(lane, { lane, signature, status, notes: notes.slice(0,10000), updated: new Date().toISOString() });
   }

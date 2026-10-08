@@ -20,6 +20,17 @@ the end of ground coverage provide boundary candidates. Missing features use a w
 missing ground splits the road. Coverage edges can be scan gaps. Review the draft geometry,
 lane counts, directions, repeated passes and junctions before using it.
 
+The experimental `--local-ground-height` flag (Python/MCP `local_ground_height=True`)
+uses the 15th percentile of at least three returns within 0.75 m under the trace
+for seed-road Z. It replaces the median of longitudinal cross-section bins; missing
+local returns defer sections. `extraction.local_ground_sections` records its use.
+It does not change lane/traffic assumptions or identify the correct surface level.
+Applied paint-corridor fitting has its own height estimation and bypasses this
+seed stage. The default remains false. It rejects a narrow elevated strip in a
+synthetic fixture, but **did not improve bundled NCLT**: one trial failed the
+direction guard, and a fitted trial exported without improving source support.
+See the [NCLT evidence](../../benchmarks/vector-map/nclt-agentic-mapping/README.md).
+
 In the Web panel, an inconsistent boundary direction stops generation and shows the
 rejected section in red over the source cloud, with a yellow cross at the problem.
 Use **Focus problem**, then **Edit lane counts and width** and **Rebuild with current

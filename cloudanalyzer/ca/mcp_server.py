@@ -30,6 +30,11 @@ export warnings and retained extent between trials. Use diagnose_mapping_candida
 to separate saved per-lane/trace height mismatches, insufficient returns and endpoint
 holds without rerunning generation or spending attempts. These failures are evidence,
 not proven root causes; inspect XY and level alignment before changing only Z.
+New jobs also retain bounded problem locations and local low-return heights in
+the original frame. Check problems_available/problems_limited before treating the
+preview as complete; summary counts have an independent budget. Local heights may
+belong to another level. local_ground_height is an experimental seed estimator;
+it did not improve bundled NCLT and must be tested with unchanged priors and extent.
 Lane counts, permitted traffic,
 width and speed are assumptions, not established by point-cloud support. Do not
 reduce lane count or retained extent merely to raise a coverage score. Attempts

@@ -77,6 +77,9 @@ pub struct ProblemInterval {
     pub from_m: f64,
     pub to_m: f64,
     pub points: Vec<[f64; 3]>,
+    /// One local 15th-percentile source height per point; None means fewer than
+    /// three returns. These are audit observations, not a verified road level.
+    pub source_heights_m: Vec<Option<f64>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -104,8 +107,9 @@ impl ProblemLocations {
         index: usize,
         station: f64,
         point: Point3,
-        reason: Option<SupportProblem>,
+        observation: (Option<SupportProblem>, Option<f64>),
     ) {
+        let (reason, source_height) = observation;
         let Some(reason) = reason else {
             self.last_sample = None;
             return;
@@ -126,6 +130,7 @@ impl ProblemLocations {
             let p = self.problems.last_mut().unwrap();
             p.to_m = station;
             p.points.push([point.x, point.y, point.z]);
+            p.source_heights_m.push(source_height);
         } else {
             self.problems.push(ProblemInterval {
                 lane,
@@ -134,6 +139,7 @@ impl ProblemLocations {
                 from_m: station,
                 to_m: station,
                 points: vec![[point.x, point.y, point.z]],
+                source_heights_m: vec![source_height],
             });
         }
         self.vertices += 1;
@@ -164,14 +170,15 @@ fn curve_support(
     ground: &Ground<'_>,
     line: &Polyline3,
     count: usize,
-    mut on_sample: impl FnMut(usize, Point3, Option<SupportProblem>),
+    mut on_sample: impl FnMut(usize, Point3, Option<SupportProblem>, Option<f64>),
 ) -> CurveSupport {
     let points = line.resample_count(count);
     let mut supported = 0;
     let mut insufficient_returns = 0;
     let mut height_mismatches = 0;
     for (i, &p) in points.points.iter().enumerate() {
-        let reason = match ground.height(p) {
+        let source_height = ground.height(p);
+        let reason = match source_height {
             None => {
                 insufficient_returns += 1;
                 Some(SupportProblem::InsufficientReturns)
@@ -185,7 +192,7 @@ fn curve_support(
                 None
             }
         };
-        on_sample(i, p, reason);
+        on_sample(i, p, reason, source_height);
     }
     CurveSupport {
         samples: points.points.len(),
@@ -202,7 +209,7 @@ fn curve_support(
 /// Reject over-budget curves rather than allocating unbounded samples.
 pub(super) fn checked_curve_support(ground: &Ground<'_>, line: &Polyline3) -> Option<CurveSupport> {
     let count = sample_count(line)?;
-    (count <= MAX_SAMPLES).then(|| curve_support(ground, line, count, |_, _, _| {}))
+    (count <= MAX_SAMPLES).then(|| curve_support(ground, line, count, |_, _, _, _| {}))
 }
 
 /// Check every driving lane's centre and both boundaries in the chosen source
@@ -258,9 +265,16 @@ fn audit_inner(
         }
         let mut check = |line: &Polyline3, count, curve| {
             let step = line.length() / (count - 1) as f64;
-            curve_support(&ground, line, count, |i, p, reason| {
+            curve_support(&ground, line, count, |i, p, reason, source_height| {
                 if let Some(locations) = locations.as_deref_mut() {
-                    locations.sample(lane.id, curve, i, i as f64 * step, p, reason);
+                    locations.sample(
+                        lane.id,
+                        curve,
+                        i,
+                        i as f64 * step,
+                        p,
+                        (reason, source_height),
+                    );
                 }
             })
         };
@@ -403,6 +417,17 @@ mod tests {
         assert!(!details.problems_limited);
         let ground = Ground::new(&cloud).unwrap();
         for p in &details.problems {
+            assert_eq!(p.points.len(), p.source_heights_m.len());
+            for (xyz, observed) in p.points.iter().zip(&p.source_heights_m) {
+                assert_eq!(
+                    *observed,
+                    ground.height(Point3::new(xyz[0], xyz[1], xyz[2]))
+                );
+                assert_eq!(
+                    observed.is_none(),
+                    p.reason == SupportProblem::InsufficientReturns
+                );
+            }
             assert_eq!(p.points[0][0] - shift[0], p.from_m);
             assert_eq!(p.points.last().unwrap()[0] - shift[0], p.to_m);
             for xyz in &p.points {
@@ -496,6 +521,14 @@ mod tests {
             MAX_PROBLEM_POINTS
         );
         assert_eq!(
+            details
+                .problems
+                .iter()
+                .map(|p| p.source_heights_m.len())
+                .sum::<usize>(),
+            MAX_PROBLEM_POINTS
+        );
+        assert_eq!(
             serde_json::to_value(&details.report).unwrap(),
             serde_json::to_value(audit(&map, &cloud).unwrap()).unwrap()
         );
@@ -510,7 +543,7 @@ mod tests {
                 i,
                 i as f64,
                 Point3::new(i as f64, 0., 2.),
-                reason,
+                (reason, Some(0.0)),
             );
         }
         assert!(locations.limited);

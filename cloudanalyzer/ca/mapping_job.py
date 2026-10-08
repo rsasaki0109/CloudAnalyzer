@@ -61,7 +61,7 @@ def _locked(root: Path) -> Iterator[None]:
 
 def _native() -> dict[str, Any]:
     module = core()
-    if module is None or not hasattr(module, "audit_vector_map_quality"):
+    if module is None or not hasattr(module, "audit_vector_map_quality_details"):
         raise RuntimeError('mapping jobs need an updated Rust core: pip install "cloudanalyzer[fast]"')
     extension = getattr(module, "_core", module)
     file = extension.__file__
@@ -234,6 +234,9 @@ def _diagnose_audit(audit: dict[str, Any]) -> dict[str, Any]:
         "sample_totals": totals, "needs_review": quality["low_support_lanes"], "lanes": lanes,
         "omitted": quality["omitted_lanes"], "malformed": quality["malformed_lanes"],
         "limited": quality["limited"], "errors": errors, "warnings": quality["warnings"],
+        "problems": quality.get("problems", []),
+        "problems_available": "problems" in quality,
+        "problems_limited": quality.get("problems_limited"),
     }
 
 
@@ -243,7 +246,9 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
     Verifies recorded source, point-map and candidate hashes, then reads small
     reports without rerunning native processing or spending attempts. Returns
     per-lane/trace height mismatches, insufficient returns, endpoint holds and
-    retained extent. These are observed audit failures, not proven root causes:
+    retained extent. New jobs also retain bounded problem locations and local
+    source heights; missing or limited location previews are explicit. These are
+    observed audit failures, not proven root causes:
     wrong XY, another level, sparse source and unverified lane priors can overlap.
     Use the evidence to choose a trial; do not erase lanes or shrink the map to pass.
     """
@@ -325,8 +330,8 @@ def generate_mapping_candidate(job_dir: str, road_options: dict[str, Any], reaso
             attempt["files"] = {key: _artifact(path) for key, path in report["files"].items()}
             module = core()
             assert module is not None
-            audit = json.loads(module.audit_vector_map_quality(files["map"]["path"], report["files"]["editable_map"]))
-            reopened = json.loads(module.audit_vector_map_quality(files["map"]["path"], report["files"]["map"]))
+            audit = json.loads(module.audit_vector_map_quality_details(files["map"]["path"], report["files"]["editable_map"]))
+            reopened = json.loads(module.audit_vector_map_quality_details(files["map"]["path"], report["files"]["map"]))
             _save(root / f"candidate-{attempt['id']:02d}-quality.json", {"editable": audit, "reopened_osm": reopened})
             _inputs(job)
             attempt["quality_report"] = _artifact(root / f"candidate-{attempt['id']:02d}-quality.json")

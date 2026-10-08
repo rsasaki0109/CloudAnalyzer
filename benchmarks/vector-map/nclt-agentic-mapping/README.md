@@ -92,7 +92,54 @@ on the returned evidence. Further investigation should locate the affected trace
 in the point footprint and compare nearby surface levels before changing height
 alone or changing lane semantics.
 
-## Reproduce the tool sequence
+## Follow-up: locate failures and test seed-ground heights
+
+New mapping jobs save the native bounded location audit for both editable IR and
+reopened OSM. Each failed interval identifies lane, oriented curve, reason, stations,
+original-frame XYZ and local low-return heights. Missing returns have null source
+heights; preview limits are separate from summary sampling limits. Older audits
+without locations explicitly remain unavailable rather than becoming empty passes.
+
+On 2026-10-09 JST, a three-attempt NCLT job reproduced the original map and baseline
+quality with the new detailed audit. Its 102 intervals contain all 1,421 failed
+lane/trace samples, with no preview truncation. Source-minus-trace height residuals
+range from -8.97 m to +4.62 m. This is evidence of disagreement, not independent
+proof of which surface level or XY position is correct.
+
+![Failed samples in the original frame and the observed height disagreement on lane 9](source-problems.png)
+
+The agent tested the experimental local seed-ground estimator while retaining the
+same explicit two-direction lane, width, speed and traffic assumptions:
+
+| Trial | Height/fitting hypothesis | Result | Sample support | Reviewed lane sections |
+| --- | --- | --- | ---: | ---: |
+| 1 | Original tracked baseline, no XY fitting | 243.14 m draft | 1,748 / 3,169 (55.16%) | 8 / 10 |
+| 2 | Local low-return seed height, no XY fitting | Failed boundary-direction guard; no output directory | — | — |
+| 3 | Local low-return seed height, bounded XY fitting | 243.14 m draft | 1,820 / 3,312 (54.95%) | 12 / 14 |
+
+Trial 3 has a different partition into lane sections, so the raw reviewed-lane
+counts are not directly comparable. Its full extent remains 97.68%, but sampled
+support did not improve: 945 samples have height mismatches and 547 lack sufficient
+returns. The agent retained trial 1 with its unresolved holds. The estimator remains
+opt-in and experimental; it is not a NCLT quality improvement. A synthetic elevated
+strip test verifies its intended lower-return behavior, and a missing-source test
+verifies section deferral. Neither establishes real-scene accuracy.
+
+[`ground-evidence-verification.json`](ground-evidence-verification.json) records
+the compact interval evidence, hashes, three trials and choice. Full location
+arrays remain in the generated `candidate-NN-quality.json`. A final native build
+reproduced identical map/IR/projector hashes and full audits for both exported
+candidates, and the same unpublished failure for trial 2.
+
+To repeat this experiment, start a new job with `--max-attempts 3`. Use its three
+`road_options` from the verification file in order, inspect/diagnose each result,
+and keep the failed trial's evidence. Build/install the current Rust core; new jobs
+require `audit_vector_map_quality_details`. Existing jobs remain readable, but
+their pinned core cannot be replaced for candidate generation or selection.
+The next unresolved question is source-level/XY/road-layout alignment; the observed
+local low height alone is insufficient justification for moving a boundary's Z.
+
+## Reproduce the initial tool sequence
 
 Build/install the current Rust Python core and install `cloudanalyzer`. From the
 repository root, create a new output directory:

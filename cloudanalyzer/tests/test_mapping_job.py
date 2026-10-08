@@ -28,7 +28,7 @@ def job_backend(tmp_path, monkeypatch):
                          "ground_height_tolerance_m": 0.3, "minimum_support_fraction": 0.9,
                          "sample_budget": 100000}, "validation": {"issues": [], "counts": {"errors": 0}}}
     module = SimpleNamespace(__file__=str(extension), __version__="test",
-                             audit_vector_map_quality=lambda *args: json.dumps(audit))
+                             audit_vector_map_quality_details=lambda *args: json.dumps(audit))
     monkeypatch.setattr(jobs, "core", lambda: module)
 
     def odometry(source, out, **kwargs):
@@ -161,6 +161,8 @@ def test_diagnosis_distinguishes_trace_failures_without_processing_or_mutating(j
     assert traces["right"]["holds"] == ["unsupported_start"]
     assert diagnosis["editable"]["complete"] is False
     assert diagnosis["editable_and_reopened_match"] is True
+    assert diagnosis["editable"]["problems_available"] is False
+    assert diagnosis["editable"]["problems_limited"] is None
     assert diagnosis["deployment_ready"] is False
     assert diagnosis["remaining_attempts"] == 3
     result = CliRunner().invoke(app, ["mapping-diagnose", str(root), "--candidate", "1"])
@@ -194,7 +196,7 @@ def test_diagnosis_keeps_reopened_discrepancies_and_import_errors_visible(job_ba
             result["quality"]["lanes"][0]["right"]["end_supported"] = True
             result["import_issues"] = [{"severity": "error", "code": "invalid_osm"}]
         return json.dumps(result)
-    module.audit_vector_map_quality = audit_each
+    module.audit_vector_map_quality_details = audit_each
     generated = jobs.generate_mapping_candidate(str(root), OPTIONS, "Inspect a reopened discrepancy")
     diagnosis = jobs.diagnose_mapping_candidate(str(root), 1)
     assert diagnosis["editable_and_reopened_match"] is False
@@ -247,8 +249,8 @@ def test_missing_assumptions_and_busy_jobs_do_not_spend_attempts(job_backend, tm
 
 def test_native_candidate_contract_audits_saved_osm_and_preserves_failed_trials(job_backend, tmp_path, monkeypatch):
     native = pytest.importorskip("cloudanalyzer_core")
-    if not hasattr(native, "audit_vector_map_quality"):
-        pytest.skip("installed core predates source audit")
+    if not hasattr(native, "audit_vector_map_quality_details"):
+        pytest.skip("installed core predates detailed source audit")
     from ca.vector_map import build_vector_map
     source, _ = job_backend
     monkeypatch.setattr(jobs, "core", lambda: native)
@@ -274,6 +276,9 @@ def test_native_candidate_contract_audits_saved_osm_and_preserves_failed_trials(
     diagnosis = jobs.diagnose_mapping_candidate(str(root), 1)
     assert diagnosis["editable_and_reopened_match"] is True
     assert diagnosis["editable"]["complete"] is True
+    assert diagnosis["editable"]["problems_available"] is True
+    assert diagnosis["editable"]["problems"] == []
+    assert diagnosis["editable"]["problems_limited"] is False
     assert diagnosis["editable"]["sample_totals"]["height_mismatches"] == 0
     assert diagnosis["editable"]["sample_totals"]["insufficient_returns"] == 0
     selected = jobs.select_mapping_candidate(str(root), 1, "Complete structural/source checks; road semantics still unconfirmed")

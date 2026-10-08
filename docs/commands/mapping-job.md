@@ -23,6 +23,11 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    per-lane/trace evidence: height mismatches, insufficient returns, endpoint
    holds, audit completeness and retained extent. It verifies source/artifact
    hashes, does not run native processing and does not spend an attempt.
+   New jobs retain bounded `problems` with lane/curve/reason, oriented stations,
+   original-frame XYZ and `source_heights_m` parallel to those points. A null
+   source height means fewer than three nearby returns. Older jobs explicitly
+   report `problems_available=false`; limited previews set `problems_limited=true`.
+   Neither absent nor truncated locations mean the unshown source is supported.
 4. `select_mapping_candidate(job_dir, candidate_id, reason)` records the chosen
    draft and justification. It requires nonempty lanes, complete source checks,
    zero structural errors, unchanged inputs/output hashes and the job's minimum
@@ -56,6 +61,16 @@ footprints and assumed-width anchors before selecting another fitting option.
 Totals count samples per oriented lane/trace, including shared boundaries checked
 from both lanes; they are not unique source points or fractions of road length.
 Editable and reopened OSM evidence are kept separately, with discrepancies visible.
+Location previews cap at 4,096 failed samples and 256 intervals independently of
+the 100,000-sample audit budget. Full summary counts remain authoritative when a
+preview is limited. Ground-height observations are local low-return quantiles,
+not certified road heights; another level and wrong XY can still match them.
+
+For an explicitly reasoned estimator experiment, `road_options.local_ground_height`
+uses local low returns under the trajectory instead of the median of longitudinal
+cross-section bins for seed-road Z. It defaults to false. Missing local returns
+defer sections, and structural/extent gates still apply. This did **not** improve
+the bundled NCLT result; see the recorded experiment before choosing it.
 
 Attempts default to four and are bounded to eight. A job pins its recording,
 generated inputs and native extension by SHA-256. Changing them requires a new

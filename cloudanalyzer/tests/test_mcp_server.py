@@ -3,6 +3,7 @@
 import asyncio
 import json
 import sys
+import os
 from pathlib import Path
 
 import pytest
@@ -44,6 +45,7 @@ def test_the_server_answers_over_stdio(tmp_path):
         command=sys.executable,
         args=["-c", "from ca.mcp_server import main; main()"],
         cwd=str(Path(__file__).resolve().parents[1]),
+        env={"PYTHONPATH": os.environ["PYTHONPATH"]} if "PYTHONPATH" in os.environ else None,
     )
 
     async def run():
@@ -65,6 +67,8 @@ def test_the_server_answers_over_stdio(tmp_path):
                     assert properties[field]["default"] is True
                 assert properties["fit_source_surface"]["type"] == "boolean"
                 assert properties["fit_source_surface"]["default"] is False
+                assert properties["local_ground_height"]["type"] == "boolean"
+                assert properties["local_ground_height"]["default"] is False
                 assert properties["physical_anchors_only"]["type"] == "boolean"
                 assert properties["physical_anchors_only"]["default"] is False
                 assert properties["align_trace_to_curbs"]["type"] == "boolean"

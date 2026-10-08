@@ -1357,6 +1357,8 @@ $("vm-review-save").onclick = () => {
 
 function takeView(edited: Edited, editing = true): void {
   clearQuality();
+  $("vm-export-report").hidden = true;
+  $("vm-export-issues").replaceChildren();
   view = edited.view;
   reviews.reconcile(laneSignatures());
   renderReviews();
@@ -2157,12 +2159,29 @@ $("vm-clear").onclick = async () => {
   setStatus("Map cleared (Undo brings it back).");
 };
 exportButton.onclick = async () => {
-  const exported = await vectorMap<{ osm: string; projectorInfo: string; issues: Issue[] }>("export", { autoware: true });
-  download(new Blob([exported.osm], { type: "application/xml" }), "lanelet2_map.osm");
-  download(new Blob([exported.projectorInfo], { type: "text/yaml" }), "map_projector_info.yaml");
-  setStatus(
-    `Saved lanelet2_map.osm and map_projector_info.yaml (${exported.projectorInfo.split("\n")[0].replace("projector_type: ", "")} projector).`,
-  );
+  if (busy || exportButton.disabled) return;
+  exportButton.disabled = true;
+  try {
+    const exported = await vectorMap<{ osm: string; projectorInfo: string; issues: Issue[] }>("export", { autoware: true });
+    download(new Blob([exported.osm], { type: "application/xml" }), "lanelet2_map.osm");
+    download(new Blob([exported.projectorInfo], { type: "text/yaml" }), "map_projector_info.yaml");
+    const issues = exported.issues.filter(issue => issue.severity !== "info");
+    const counts = `${plural(issues.filter(i => i.severity === "error").length, "error")}, ${plural(issues.filter(i => i.severity === "warning").length, "warning")}`;
+    $("vm-export-summary").textContent = `Last saved Lanelet2: ${counts}${issues.length > 20 ? " (first 20 shown)" : ""}.`;
+    $("vm-export-issues").replaceChildren(...issues.slice(0, 20).map(issue => {
+      const li = document.createElement("li");
+      li.className = issue.severity;
+      li.textContent = issue.message;
+      li.title = issue.code;
+      return li;
+    }));
+    $("vm-export-report").hidden = issues.length === 0;
+    setStatus(`Saved lanelet2_map.osm and map_projector_info.yaml (${exported.projectorInfo.split("\n")[0].replace("projector_type: ", "")} projector). Export: ${counts}; also review the map validation and source coverage.`);
+  } catch (error) {
+    setStatus(`Could not export Lanelet2: ${errorText(error)}`);
+  } finally {
+    exportButton.disabled = busy || view.lanes.length === 0;
+  }
 };
 
 renderHint();

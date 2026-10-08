@@ -94,6 +94,20 @@
           <button id="project-open" title="Open a project and reselect its original source files">Open project…</button>
         </div>
         <p class="hint small">Projects reference original source files. Export derived clouds separately; reopening starts a fresh Undo history.</p>
+        <div id="project-recovery-controls">
+          <label class="inline"><input id="project-autosave" type="checkbox" checked /> Auto save editing state in this browser</label>
+          <p id="project-save-status" class="small" role="status">Checking browser recovery…</p>
+          <div id="project-recovery" hidden>
+            <p id="project-recovery-summary" class="hint small"></p>
+            <div class="button-row">
+              <button id="project-resume" disabled>Resume saved work</button>
+              <button id="project-download-recovery" disabled>Download browser copy</button>
+              <button id="project-forget" disabled>Discard browser copy</button>
+            </div>
+          </div>
+          <button id="project-autosave-retry" hidden>Retry browser save</button>
+          <p class="hint small">Keep original files and exported results. Browser copies can be cleared by the browser; download a project for a portable backup.</p>
+        </div>
         <div id="empty-hint" class="hint">
           <p>Drop PLY, PCD, LAS/LAZ, E57 or XYZ point clouds, OBJ/STL/PLY meshes, or TUM/KITTI/CSV trajectories, anywhere, or use Open…
             Files stay in your browser.</p>

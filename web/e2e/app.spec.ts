@@ -978,7 +978,9 @@ test("labels: added by clicking, edited, saved in a PNG and restored from a shar
   // Try a few spots until one hits a point.
   for (const [fx, fy] of [[0.5, 0.5], [0.45, 0.5], [0.5, 0.45], [0.55, 0.52]]) {
     await canvas.click({ position: { x: box.width * fx, y: box.height * fy } });
-    if ((await page.locator("#note-list li").count()) > 0) break;
+    // Point picking awaits the worker; let it finish before trying another spot.
+    try { await expect(page.locator("#note-list li")).toHaveCount(1, { timeout: 5000 }); break; }
+    catch { /* A miss leaves the list empty; try the next spot. */ }
   }
   const input = page.locator("#note-list input").first();
   await expect(input).toHaveValue(/^Z -?\d/);

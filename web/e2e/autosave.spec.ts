@@ -96,7 +96,8 @@ test('button-only changes to saved views, annotations and gates create fresh rec
   const canvas=page.locator('#viewport > canvas'),box=(await canvas.boundingBox())!;
   for(const [x,y] of [[.5,.5],[.45,.5],[.5,.45],[.55,.52]]) {
     await canvas.click({position:{x:box.width*x,y:box.height*y}});
-    if(await page.locator('#note-list li').count())break;
+    try { await expect(page.locator('#note-list li')).toHaveCount(1,{timeout:5000});break; }
+    catch { /* Wait for asynchronous picking before trying another position. */ }
   }
   await expect(page.locator('#note-list input')).toHaveValue(/^Z -?\d/);
   await saved(page);expect((await recovery(page)).project.session.labels).toHaveLength(1);

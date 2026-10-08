@@ -1355,7 +1355,7 @@ $("vm-review-save").onclick = () => {
   projectChanged();
 };
 
-function takeView(edited: Edited): void {
+function takeView(edited: Edited, editing = true): void {
   clearQuality();
   view = edited.view;
   reviews.reconcile(laneSignatures());
@@ -1377,7 +1377,7 @@ function takeView(edited: Edited): void {
   $<HTMLButtonElement>("vm-plan").disabled = $<HTMLButtonElement>("vm-iso").disabled = view.boundaries.length === 0;
   renderLane();
   void renderIssues();
-  projectChanged();
+  if (editing) projectChanged();
 }
 
 /** Run vectormap commands; failures go to the status line. Returns false if they failed. */
@@ -2166,7 +2166,7 @@ exportButton.onclick = async () => {
 };
 
 renderHint();
-void vectorMap<Edited>("view").then(takeView);
+void vectorMap<Edited>("view").then(edited => takeView(edited, false));
 
 export async function clearMapHistory(): Promise<void> { takeView(await vectorMap<Edited>("history-clear")); }
 onHistoryPolicy(policy => { void vectorMap<Edited>("history-budget", {text: JSON.stringify(policy)}).then(edited => { undoDepth = edited.undo; undoButton.disabled = busy || undoDepth === 0; }); });

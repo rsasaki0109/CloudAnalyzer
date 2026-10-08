@@ -141,8 +141,13 @@ test('quota failures preserve the previous copy and unload warning; a portable e
 });
 
 test('a stale tab cannot overwrite or silently acknowledge another tab\'s browser copy',async({page,context})=>{
-  await page.goto('/');await expect(page.locator('#project-save-status')).toContainText('Automatic saving ready');
+  await page.goto('/');
+  // Initial worker replies must neither mark work dirty nor save an empty copy.
+  await expect(page.locator('#vm-status')).toHaveText('No map yet.');
+  await expect(page.locator('#project-save-status')).toContainText('Automatic saving ready');
+  expect(await recovery(page)).toBeUndefined();expect(await unloadWarns(page)).toBe(false);
   const other=await context.newPage();await other.goto('/');
+  await expect(other.locator('#vm-status')).toHaveText('No map yet.');
   await expect(other.locator('#project-save-status')).toContainText('Automatic saving ready');
   await openMap(page);await saved(page);const before=await recovery(page);
   await openMap(other,3);

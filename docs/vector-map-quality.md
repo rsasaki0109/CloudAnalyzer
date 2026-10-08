@@ -24,6 +24,32 @@ coverage**. The check examines each driving lane's centreline and both boundarie
 Click a reported lane to select and frame it over the points. Map geometry,
 attributes, topology and Undo history remain unchanged.
 
+The Web check also shows problem locations: orange marks insufficient returns;
+purple marks height disagreement. **Problem interval** identifies the lane,
+centre/left/right curve and distance along that curve in its travel direction.
+**Next problem** and **Focus interval** frame the failed samples instead of the
+whole lane. Clicking a reported lane opens its first available interval. Use
+**Show source problem locations** to hide or show this overlay.
+
+Marks are the tested sample positions, in the original survey frame. Lines join
+consecutive failed samples of the same kind, stopping at supported samples or a
+change of reason. An isolated failed sample is a point. These marks do not
+establish that all positions between samples are unsupported. Individual failed
+samples can be shown even when a lane still passes the existing 90% threshold.
+
+Inspect the original points, then use **Edit lane boundary vertices (XY)** to enter
+the existing boundary editor at that interval, including the nearest editable
+vertices in the view when they lie outside the failed samples. Dragging keeps height and moves
+shared geometry for both lanes. A missing return can be sparse or occluded data;
+editing is an operator decision. Applied edits, Undo and source changes discard
+the old overlay. Run **Check source coverage** again to inspect the edited map.
+
+The location preview holds at most 4,096 points and 256 intervals, independently
+of the audit's 100,000-sample budget. A limited preview explicitly says further
+failed locations are not displayed; coverage figures still include all checked
+samples. The original native `audit` report is unchanged; Web uses the opt-in
+`audit_with_locations` report for the additional bounded preview.
+
 Samples are evenly spaced by 3D arc length at no more than 0.5 m. A sample requires
 at least three original returns within 0.75 m in XY, whose 15th-percentile height
 differs by at most 0.3 m. A lane needs review when any of its three curves has less

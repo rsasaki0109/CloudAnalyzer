@@ -86,6 +86,12 @@ test('NCLT corrected drive builds with default pieces, edits, checks and reopens
   await page.locator('#vm-quality-check').click();
   await expect(page.locator('#status')).toContainText('Source coverage checked', {timeout: 120_000});
   const quality = await page.locator('#vm-quality-report').textContent();
+  await expect(page.locator('#vm-quality-locations')).toBeVisible();
+  await expect(page.locator('#vm-quality-problem option')).not.toHaveCount(1);
+  const problemIntervals = await page.locator('#vm-quality-problem option').allTextContents();
+  await page.locator('#vm-quality-next').click();
+  await expect(page.locator('#vm-quality-focus')).toBeEnabled();
+  await page.screenshot({path: info.outputPath('source-problem-interval.png')});
   const before = await snapshot(page), beforeMap = JSON.parse(before.vectorMap);
   expect(beforeMap.lanes.length).toBeGreaterThan(2);
   expect(beforeMap.lanes.filter(l => l.speed_limit?.kmh === 25)).toHaveLength(1);
@@ -115,6 +121,7 @@ test('NCLT corrected drive builds with default pieces, edits, checks and reopens
   expect(errors).toEqual([]);
   for (const [name, data] of Object.entries({
     'workflow.json': JSON.stringify({importedMs, buildMs, totalMs: Date.now() - started, roadSettings: {forwardLanes: 1, backwardLanes: 0, pieceLength: 50, otherRoadOptions: 'default'}, defaultTwoLaneDraftRejected: true, poses: poses.toString().trim().split('\n').length, lanes: beforeMap.lanes.length, boundaries: beforeMap.boundaries.length, mapStatus, buildReport, quality, exportStatus, exportIssues, exportBytes: osm.length, errors}, null, 2),
+    'source-problems.json': JSON.stringify(problemIntervals, null, 2),
     'lanelet2_map.osm': osm,
     'map_projector_info.yaml': yaml,
     'corrected-drive.kitti': poses,

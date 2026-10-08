@@ -914,6 +914,19 @@
           <button id="vm-quality-check" disabled>Check source coverage</button>
           <p id="vm-quality-report" class="small">Source coverage has not been checked.</p>
           <div id="vm-quality-lanes" class="small"></div>
+          <div id="vm-quality-locations" hidden>
+            <p id="vm-quality-location-summary" class="small" role="status"></p>
+            <label><input id="vm-quality-show" type="checkbox" checked /> Show source problem locations</label>
+            <p class="hint small"><span style="color:#ff8a3d">Orange: insufficient returns.</span> <span style="color:#d98fff">Purple: height disagreement.</span> Marks show failed samples; lines join consecutive failures of the same kind. Missing points can mean occlusion or sparse coverage.</p>
+            <label>Problem interval <select id="vm-quality-problem"><option value="">Choose a problem interval</option></select></label>
+            <p id="vm-quality-problem-detail" class="small" role="status"></p>
+            <div class="button-row">
+              <button id="vm-quality-next" disabled>Next problem</button>
+              <button id="vm-quality-focus" disabled>Focus interval</button>
+              <button id="vm-quality-edit" disabled>Edit lane boundary vertices (XY)</button>
+            </div>
+            <p class="hint small">Inspect the source before editing. Vertex dragging keeps height; moving a shared boundary changes both lanes. After an edit, run Check source coverage again.</p>
+          </div>
         </details>
         <details class="options">
           <summary>Draft junction connections</summary>

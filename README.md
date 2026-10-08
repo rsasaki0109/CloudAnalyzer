@@ -61,6 +61,8 @@ pose graph with one scan per pose.
   and signal housings with complete-map Undo while retaining observed paint and lamps.
   [Source quality checks](docs/vector-map-quality.md) expose lanes whose centres or boundaries
   lack nearby ground support; passing format validation does not establish map accuracy.
+  The Web check marks intervals with insufficient returns or height disagreement, frames
+  them over the source, and opens the boundary editor; recheck after applying an edit.
   [Source-footprint drafting](docs/vector-map-source-footprint.md) fits weak road candidates
   to supported low surfaces and reports missing extent explicitly, with actual before/after maps.
   [Physical boundary anchors](docs/vector-map-physical-anchors.md) optionally keep scan limits

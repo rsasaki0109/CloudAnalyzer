@@ -163,6 +163,8 @@ let busy = false;
 let buildFailure: {failure: RoadBuildFailure; cloud: number; trajectory: number | null; path: XYZ[] | null} | null = null;
 let buildFailureRevision = 0;
 let buildSketchRevision = 0;
+let sourceProblems: SourceProblem[] = [];
+let sourceProblemSelected: number | null = null;
 let junctionPreview: JunctionReport | null = null;
 const junctionSelection = new Set<number>();
 let junctionSnapshot: { id: number; text: string } | null = null;
@@ -209,6 +211,12 @@ const materials = {
   incomingRoute: viewer.lineMaterial({ color: 0xa894fa, linewidth: 3, depthTest: false }),
   outgoingRoute: viewer.lineMaterial({ color: 0x48dfaf, linewidth: 3, depthTest: false }),
   failure: viewer.lineMaterial({ color: 0xff5364, linewidth: 4, depthTest: false }),
+  sourceMissing: viewer.lineMaterial({ color: 0xff8a3d, linewidth: 4, depthTest: false }),
+  sourceHeight: viewer.lineMaterial({ color: 0xd98fff, linewidth: 4, depthTest: false }),
+};
+const sourceDots = {
+  insufficient_returns: new THREE.PointsMaterial({color: 0xff8a3d, size: 7, sizeAttenuation: false, depthTest: false}),
+  height_mismatch: new THREE.PointsMaterial({color: 0xd98fff, size: 7, sizeAttenuation: false, depthTest: false}),
 };
 const laneFill = new THREE.MeshBasicMaterial({
   color: 0x2485bf,
@@ -391,6 +399,7 @@ function draw(): void {
   for (const kind of ["solid", "dashed", "edge", "virtual"] as const) segments(byKind[kind], materials[kind]);
   segments(unknownEvidence,materials.virtual,3);
   drawBoundaryEvidence();
+  drawSourceProblems();
   $("vm-evidence-render-limit").hidden = !dashDisplayLimited;
   const arrows: number[] = [];
   if (display.directions) for (const lane of view.lanes) arrowPairs(lane, arrows);
@@ -511,6 +520,31 @@ function draw(): void {
   $("vm-evidence-legend").hidden = !display.evidence && !display.roadEdges;
   $("vm-route-legend").hidden = !focused || !display.surfaces;
   viewer.requestRender();
+}
+
+function drawSourceProblems(): void {
+  if (!$<HTMLInputElement>("vm-quality-show").checked || drag?.moved) return;
+  for (const reason of ["insufficient_returns", "height_mismatch"] as const) {
+    const pairs: number[] = [], points: number[] = [];
+    for (const p of sourceProblems) if (p.reason === reason) {
+      polylinePairs(p.points, pairs);
+      for (const point of p.points) points.push(...local(point));
+    }
+    segments(pairs, reason === "insufficient_returns" ? materials.sourceMissing : materials.sourceHeight, 6);
+    if (points.length) {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.Float32BufferAttribute(points, 3));
+      const dots = new THREE.Points(geometry, sourceDots[reason]); dots.renderOrder = 6; group.add(dots);
+    }
+  }
+  const selected = sourceProblemSelected === null ? undefined : sourceProblems[sourceProblemSelected];
+  if (selected) {
+    const pairs: number[] = []; polylinePairs(selected.points, pairs);
+    const [x, y, z] = selected.points[0];
+    polylinePairs([[x-.4, y-.4, z], [x+.4, y+.4, z]], pairs);
+    polylinePairs([[x-.4, y+.4, z], [x+.4, y-.4, z]], pairs);
+    segments(pairs, materials.sketch, 7);
+  }
 }
 
 function triangles(positions: number[], material: THREE.Material, order: number): void {
@@ -731,6 +765,7 @@ const junctionList = $("vm-junction-candidates");
 function junctionInputs(): void {
   $<HTMLSelectElement>("vm-quality-cloud").disabled = busy;
   $<HTMLButtonElement>("vm-quality-check").disabled = busy || !$<HTMLSelectElement>("vm-quality-cloud").value || !view.lanes.length;
+  sourceProblemInputs();
   discoveryInputs();
   featureInputs();
   relationInputs();
@@ -1537,41 +1572,121 @@ function laneLength(lane: LaneView): number {
 }
 
 interface SourceCurveSupport { fraction: number; start_supported: boolean; end_supported: boolean; insufficient_returns: number; height_mismatches: number }
+interface SourceProblem {
+  lane: number; curve: "center" | "left" | "right";
+  reason: "insufficient_returns" | "height_mismatch";
+  from_m: number; to_m: number; points: XYZ[];
+}
 interface SourceQualityReport {
   lanes: {lane: number; center: SourceCurveSupport; left: SourceCurveSupport; right: SourceCurveSupport; needs_review: boolean}[];
   low_support_lanes: number[]; omitted_lanes: number[]; malformed_lanes: number[]; limited: boolean; warnings: string[];
+  problems: SourceProblem[]; problems_limited: boolean;
 }
 let qualityRevision = 0;
 function clearQuality(): void {
   qualityRevision++;
   lowSupport = new Set();
-  $("vm-quality-report").textContent = "Source coverage has not been checked for the current map and cloud.";
+  sourceProblems = []; sourceProblemSelected = null;
+  $("vm-quality-locations").hidden = true;
+  $<HTMLSelectElement>("vm-quality-problem").replaceChildren(new Option("Choose a problem interval", ""));
+  sourceProblemInputs();
+  $("vm-quality-report").textContent = "Source coverage has not been checked for the current map and cloud. Run Check source coverage after editing.";
   $("vm-quality-lanes").replaceChildren();
   renderReviews();
 }
-$("vm-quality-cloud").onchange = () => { clearQuality(); reviewSourceChanged(); };
+$("vm-quality-cloud").onchange = () => { clearQuality(); reviewSourceChanged(); draw(); };
 $("vm-quality-check").onclick = async () => {
   if (busy) return;
-  clearQuality(); const revision = qualityRevision;
+  clearQuality(); draw(); const revision = qualityRevision;
   busy = true; junctionInputs(); setStatus("Checking lane centres and boundaries against source points…");
   try {
     const report = await vectorMap<SourceQualityReport>("quality", {id: Number($<HTMLSelectElement>("vm-quality-cloud").value)});
     if (revision !== qualityRevision) return;
     $("vm-quality-report").textContent = `${report.lanes.length} lanes checked; ${report.low_support_lanes.length} need source review; ${report.omitted_lanes.length} omitted; ${report.malformed_lanes.length} malformed. ${report.limited ? "Coverage check limited. " : ""}` + report.warnings.join(" ");
     lowSupport = new Set([...report.low_support_lanes, ...report.omitted_lanes, ...report.malformed_lanes]);
+    sourceProblems = report.problems;
+    $("vm-quality-locations").hidden = !sourceProblems.length && !report.problems_limited;
+    $("vm-quality-location-summary").textContent = `${sourceProblems.length} problem intervals shown at checked sample locations.` +
+      (report.problems_limited ? " Location preview limited; further failed samples are not displayed. Coverage figures include all checked samples." : "");
+    $<HTMLSelectElement>("vm-quality-problem").replaceChildren(new Option("Choose a problem interval", ""), ...sourceProblems.map((p, i) => {
+      const curve = p.curve === "center" ? "centre" : `${p.curve} boundary`;
+      const reason = p.reason === "insufficient_returns" ? "insufficient returns" : "height disagreement";
+      return new Option(`Lane ${p.lane}, ${curve}: ${fmt(p.from_m)}–${fmt(p.to_m)} m, ${reason}`, String(i));
+    }));
     renderReviews();
     const percentage = (s: SourceCurveSupport) => `${Math.round(s.fraction*100)}%${s.start_supported && s.end_supported ? "" : " (end support missing)"}`;
     for (const lane of report.lanes.filter(l => l.needs_review)) {
       const button = document.createElement("button"); button.textContent = `Lane ${lane.lane}: centre ${percentage(lane.center)}, left ${percentage(lane.left)}, right ${percentage(lane.right)}`;
-      button.onclick = () => selectLane(lane.lane, true); $("vm-quality-lanes").append(button);
+      button.onclick = () => {
+        const index = sourceProblems.findIndex(p => p.lane === lane.lane);
+        if (index >= 0) chooseSourceProblem(index); else selectLane(lane.lane, true);
+      }; $("vm-quality-lanes").append(button);
     }
+    draw();
     setStatus(`Source coverage checked: ${report.low_support_lanes.length} lanes need review. The map is unchanged.`);
   } catch (err) { setStatus(`Could not check source coverage: ${errorText(err)}`); }
   finally { busy = false; junctionInputs(); }
 };
 
+function sourceProblemInputs(): void {
+  const p = sourceProblemSelected === null ? undefined : sourceProblems[sourceProblemSelected];
+  $("vm-quality-problem-detail").textContent = p
+    ? `Lane ${p.lane}, ${p.curve === "center" ? "centre" : `${p.curve} boundary`}: ${p.reason === "insufficient_returns" ? "insufficient returns" : "height disagreement"}. ${p.points.length} failed samples at ${fmt(p.from_m)}–${fmt(p.to_m)} m along travel.`
+    : "Choose an interval to inspect its source evidence.";
+  $<HTMLSelectElement>("vm-quality-problem").disabled = busy || !sourceProblems.length;
+  $<HTMLButtonElement>("vm-quality-next").disabled = busy || !sourceProblems.length;
+  for (const id of ["vm-quality-focus", "vm-quality-edit"]) $<HTMLButtonElement>(id).disabled = busy || sourceProblemSelected === null;
+}
+function focusSourceProblem(forEditing = false): void {
+  const p = sourceProblemSelected === null ? undefined : sourceProblems[sourceProblemSelected];
+  if (!p) return;
+  $<HTMLInputElement>("vm-quality-show").checked = true;
+  const shift = globalShift(), box = new THREE.Box3();
+  for (const point of p.points) box.expandByPoint(new THREE.Vector3(point[0] - shift[0], point[1] - shift[1], point[2] - shift[2]));
+  if (forEditing) {
+    const lane = laneById(p.lane), target = box.getCenter(new THREE.Vector3());
+    const ids = lane ? p.curve === "center" ? [lane.leftRef.id, lane.rightRef.id] : [p.curve === "left" ? lane.leftRef.id : lane.rightRef.id] : [];
+    for (const b of view.boundaries) if (ids.includes(b.id)) {
+      let nearest: THREE.Vector3 | null = null, distance = Infinity;
+      for (const point of b.points) {
+        const v = new THREE.Vector3(point[0] - shift[0], point[1] - shift[1], point[2] - shift[2]), d = v.distanceToSquared(target);
+        if (d < distance) { nearest = v; distance = d; }
+      }
+      if (nearest) box.expandByPoint(nearest);
+    }
+  }
+  viewer.frameBox(box.expandByScalar(3)); draw();
+}
+function chooseSourceProblem(index: number | null): void {
+  sourceProblemSelected = index;
+  $<HTMLSelectElement>("vm-quality-problem").value = index === null ? "" : String(index);
+  const p = index === null ? undefined : sourceProblems[index];
+  if (p) { selectLane(p.lane); focusSourceProblem(); } else draw();
+  sourceProblemInputs();
+}
+$("vm-quality-show").onchange = () => draw();
+$("vm-quality-problem").onchange = () => {
+  const value = $<HTMLSelectElement>("vm-quality-problem").value;
+  chooseSourceProblem(value === "" ? null : Number(value));
+};
+$("vm-quality-next").onclick = () => { if (!busy && sourceProblems.length) chooseSourceProblem(((sourceProblemSelected ?? -1) + 1) % sourceProblems.length); };
+$("vm-quality-focus").onclick = () => focusSourceProblem();
+$("vm-quality-edit").onclick = () => {
+  const p = sourceProblemSelected === null ? undefined : sourceProblems[sourceProblemSelected];
+  if (busy || !p) return;
+  const lane = laneById(p.lane); if (!lane) return;
+  setTool(vertexTool);
+  activeBoundary = p.curve === "center" ? null : p.curve === "left" ? lane.leftRef.id : lane.rightRef.id;
+  focusSourceProblem(true);
+};
+
 function selectLane(id: number | null, frame = false): void {
   selected = id;
+  if (sourceProblemSelected !== null && sourceProblems[sourceProblemSelected]?.lane !== id) {
+    sourceProblemSelected = null;
+    $<HTMLSelectElement>("vm-quality-problem").value = "";
+    sourceProblemInputs();
+  }
   draw();
   renderLane();
   const index = filteredReviews().findIndex(row => row.lane === id);

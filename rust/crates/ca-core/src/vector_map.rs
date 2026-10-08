@@ -9,7 +9,9 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use vectormap_core::{LaneDirection, Map, NewRoad, Point3, Polyline3, RoadLane, SpeedLimit};
+use vectormap_core::{LaneDirection, Map, RoadLane};
+#[cfg(test)]
+use vectormap_core::{NewRoad, Point3, Polyline3, SpeedLimit};
 
 use crate::{AttributeValues, INTENSITY, PointCloud};
 
@@ -35,6 +37,7 @@ pub mod junctions;
 pub mod quality;
 pub mod relation_proposals;
 pub mod relations;
+mod segmentation;
 pub mod signals;
 mod surface;
 pub use surface::SurfaceFitReport;
@@ -1041,21 +1044,10 @@ fn build_inner(
                 .as_deref_mut()
                 .and_then(|e| e.can_accept(&road).then(|| road.clone()));
             let added_length = length(&road.reference);
-            let polyline = |points: Vec<[f64; 3]>| {
-                Polyline3::new(
-                    points
-                        .into_iter()
-                        .map(|p| Point3::new(p[0], p[1], p[2]))
-                        .collect(),
-                )
-            };
-            let mut spec = NewRoad::new(polyline(road.reference), lanes.clone());
-            spec.boundaries = Some(road.boundaries.into_iter().map(polyline).collect());
-            spec.speed_limit = Some(SpeedLimit::from_kmh(o.speed_limit));
-            spec.segment_length = (o.segment_length > 0.0).then_some(o.segment_length);
-            let (built, _) = draft
-                .build_road(spec)
-                .map_err(|e| BuildError(e.to_string()))?;
+            let (built, extra_cuts) = segmentation::build(&mut draft, road, &lanes, o)?;
+            if extra_cuts > 0 {
+                report.warnings.push(format!("Added {extra_cuts} matched cuts on returning road sections so Lanelet2 can infer both boundary directions consistently; these pieces are shorter than the requested length. Geometry and heights are retained."));
+            }
             if let (Some(evidence), Some(snapshot)) = (evidence.as_deref_mut(), snapshot) {
                 evidence.capture(&draft, &built, &lanes, snapshot);
             }

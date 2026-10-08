@@ -777,10 +777,14 @@
         <p id="vm-hint" class="hint small"></p>
         <div class="button-row">
           <button id="vm-open" title="A Lanelet2 map (.osm) or vectormap IR (.json), drawn over the clouds">Open…</button>
-          <button id="vm-export" class="primary" disabled title="lanelet2_map.osm and map_projector_info.yaml for Autoware">Save for Autoware</button>
+          <button id="vm-export" class="primary" disabled title="Save lanelet2_map.osm and map_projector_info.yaml; review validation and export warnings before use">Save Lanelet2</button>
           <button id="vm-undo" disabled>Undo</button>
           <button id="vm-clear" title="Start a new map">Clear</button>
         </div>
+        <details id="vm-export-report" class="options" open hidden>
+          <summary id="vm-export-summary"></summary>
+          <ol id="vm-export-issues" class="issue-list small"></ol>
+        </details>
         <input id="vm-file" type="file" accept=".osm,.xml,.json" hidden />
         <details class="options">
           <summary>Map display</summary>

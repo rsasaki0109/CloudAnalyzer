@@ -1,0 +1,22 @@
+{
+  "importedMs": 35903,
+  "buildMs": 1437,
+  "totalMs": 47937,
+  "roadSettings": {
+    "forwardLanes": 1,
+    "backwardLanes": 0,
+    "pieceLength": 50,
+    "otherRoadOptions": "default"
+  },
+  "defaultTwoLaneDraftRejected": true,
+  "poses": 199,
+  "lanes": 5,
+  "boundaries": 10,
+  "mapStatus": "5 lanes. Autoware check: 0 errors, 0 warnings.",
+  "buildReport": "1 road stretches, 5 lanes, 243.14 m. Added 243.14 m; reused 0 m of existing lanes. Measured sources before fitting, left to right: 64%, 42%. Tracking changed 140 sources; fitted 254 vertices (maximum XY movement 0.5 m). Coverage-edge anchor candidates ignored: 0. 120 boundary vertices use the configured lane width rather than a detected feature. 216 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review. 96 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines. 140 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy. 254 vertices were fitted to trajectory-relative boundary curves (maximum XY movement 0.500 m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions. Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps. Draft map: verify lane counts, travel directions, junctions and boundary geometry before use.",
+  "quality": "5 lanes checked; 4 need source review; 0 omitted; 0 malformed. Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules.",
+  "exportStatus": "Saved lanelet2_map.osm and map_projector_info.yaml (Local projector). Export: 0 errors, 1 warning; also review the map validation and source coverage.",
+  "exportIssues": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+  "exportBytes": 68338,
+  "errors": []
+}

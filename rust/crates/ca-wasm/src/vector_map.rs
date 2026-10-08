@@ -211,7 +211,8 @@ impl VectorMapSession {
     /// Read-only coverage check of lane centres and both boundaries against source points.
     #[wasm_bindgen(js_name = auditQuality)]
     pub fn audit_quality(&self, cloud: &crate::Cloud) -> Result<String, JsError> {
-        let report = ca_core::vector_map::quality::audit(&self.map, &cloud.inner).map_err(error)?;
+        let report = ca_core::vector_map::quality::audit_with_locations(&self.map, &cloud.inner)
+            .map_err(error)?;
         serde_json::to_string(&report).map_err(error)
     }
 
@@ -789,6 +790,9 @@ mod tests {
         assert_eq!(r["low_support_lanes"].as_array().unwrap().len(), 1);
         assert_eq!(r["lanes"][0]["center"]["fraction"], 1.0);
         assert_eq!(r["lanes"][0]["left"]["fraction"], 0.0);
+        assert_eq!(r["problems"].as_array().unwrap().len(), 2);
+        assert_eq!(r["problems_limited"], false);
+        assert_eq!(r["problems"][0]["reason"], "insufficient_returns");
         assert_eq!(s.to_json(), before);
         assert_eq!(s.undo.len(), undo);
         assert_eq!(

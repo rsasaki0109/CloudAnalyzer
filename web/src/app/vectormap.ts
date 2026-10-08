@@ -258,6 +258,7 @@ let editingVertices = false;
 let editingFeature = false;
 let featureDrag: { before: MapView; index: number; point: XYZ; offset: [number, number]; start: [number, number]; moved: boolean } | null = null;
 let activeBoundary: number | null = null;
+let boundaryVertex: { boundary: number; index: number } | null = null;
 let drag: {
   before: MapView; boundary: number; index: number; point: XYZ;
   offset: [number, number]; start: [number, number]; moved: boolean;
@@ -515,6 +516,13 @@ function draw(): void {
       segments(pairs, materials.sketch, 4);
     }
   }
+  const chosenVertex = boundaryVertexPoint();
+  if (chosenVertex && !editingFeature) {
+    const [x, y, z] = chosenVertex, marker: number[] = [];
+    polylinePairs([[x - .4, y, z], [x + .4, y, z]], marker);
+    polylinePairs([[x, y - .4, z], [x, y + .4, z]], marker);
+    segments(marker, materials.sketch, 6);
+  }
   buildMapLabels();
   legend.hidden = view.lanes.length === 0;
   $("vm-evidence-legend").hidden = !display.evidence && !display.roadEdges;
@@ -768,6 +776,7 @@ function junctionInputs(): void {
   sourceProblemInputs();
   discoveryInputs();
   featureInputs();
+  boundaryInputs();
   relationInputs();
   signalInputs();
   crosswalkInputs();
@@ -1491,6 +1500,7 @@ function takeView(edited: Edited, editing = true): void {
   clearCrosswalkPreview();
   undoDepth = edited.undo;
   renderFeatures();
+  renderBoundaryEditor();
   renderRelations();
   if (selected !== null && !view.lanes.some((l) => l.id === selected)) selected = null;
   draw();
@@ -1677,6 +1687,18 @@ $("vm-quality-edit").onclick = () => {
   const lane = laneById(p.lane); if (!lane) return;
   setTool(vertexTool);
   activeBoundary = p.curve === "center" ? null : p.curve === "left" ? lane.leftRef.id : lane.rightRef.id;
+  if (activeBoundary !== null) {
+    const boundary = view.boundaries.find(b => b.id === activeBoundary);
+    const middle = p.points[Math.floor(p.points.length / 2)];
+    if (boundary && middle) {
+      let nearest = 0, distance = Infinity;
+      for (const [i, point] of boundary.points.entries()) {
+        const d = Math.hypot(point[0] - middle[0], point[1] - middle[1], point[2] - middle[2]);
+        if (d < distance) { nearest = i; distance = d; }
+      }
+      chooseBoundaryVertex(boundary.id, nearest, true);
+    }
+  } else chooseBoundaryVertex(null, 0, true);
   focusSourceProblem(true);
 };
 
@@ -2206,6 +2228,72 @@ function previewBoundary(): void {
   draw();
 }
 
+function boundaryVertexPoint(): XYZ | undefined {
+  return boundaryVertex ? view.boundaries.find(b => b.id === boundaryVertex!.boundary)?.points[boundaryVertex.index] : undefined;
+}
+function boundaryInputs(): void {
+  const p = boundaryVertexPoint(), blocked = busy || !!drag;
+  const height = $<HTMLInputElement>("vm-boundary-z").valueAsNumber;
+  $<HTMLSelectElement>("vm-boundary").disabled = blocked || !view.boundaries.length;
+  for (const id of ["vm-boundary-vertex", "vm-boundary-z", "vm-boundary-focus"]) {
+    ($<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>(id)).disabled = blocked || !p;
+  }
+  $<HTMLButtonElement>("vm-boundary-apply").disabled = blocked || !p || !Number.isFinite(height) || height === p[2];
+  $("vm-boundary-edit-status").textContent = !p ? "" : !Number.isFinite(height)
+    ? "Enter a finite height in metres."
+    : height === p[2] ? "Height unchanged; no edit to apply." : `Height change: ${fmt(height - p[2])} m. X and Y will stay fixed.`;
+}
+function renderBoundaryVertex(): void {
+  const p = boundaryVertexPoint();
+  $<HTMLInputElement>("vm-boundary-z").value = p ? String(p[2]) : "";
+  $("vm-boundary-position").textContent = p ? `Original coordinates: X ${p[0]} m, Y ${p[1]} m. Current height Z ${p[2]} m.` : "";
+  const lanes = boundaryVertex ? view.lanes.filter(l => l.leftRef.id === boundaryVertex!.boundary || l.rightRef.id === boundaryVertex!.boundary) : [];
+  $("vm-boundary-context").textContent = p
+    ? `Boundary ${boundaryVertex!.boundary}, vertex ${boundaryVertex!.index + 1} in stored boundary order. ${lanes.length ? `Used by lanes ${lanes.map(l => l.id).join(", ")}; all update together, including reversed references.` : "No lane currently uses this boundary."}`
+    : "Use Edit vertices to select a yellow handle, or choose a boundary here.";
+  boundaryInputs();
+}
+function renderBoundaryEditor(): void {
+  const boundary = view.boundaries.find(b => b.id === boundaryVertex?.boundary);
+  if (!boundary || !boundary.points[boundaryVertex!.index]) boundaryVertex = null;
+  const select = $<HTMLSelectElement>("vm-boundary");
+  select.replaceChildren(new Option("Choose a boundary or click a yellow vertex", ""), ...view.boundaries.map(b => new Option(`Boundary ${b.id}`, String(b.id))));
+  select.value = boundaryVertex ? String(boundaryVertex.boundary) : "";
+  const vertices = $<HTMLSelectElement>("vm-boundary-vertex");
+  vertices.replaceChildren(...(boundaryVertex ? boundary!.points.map((_, i) => new Option(`Vertex ${i + 1}`, String(i))) : []));
+  if (boundaryVertex) vertices.value = String(boundaryVertex.index);
+  renderBoundaryVertex();
+}
+function chooseBoundaryVertex(boundary: number | null, index = 0, open = false): void {
+  boundaryVertex = boundary === null ? null : { boundary, index };
+  activeBoundary = boundary;
+  renderBoundaryEditor();
+  if (open) $("vm-boundary-editor").setAttribute("open", "");
+  draw();
+}
+$("vm-boundary").onchange = () => {
+  const value = $<HTMLSelectElement>("vm-boundary").value;
+  chooseBoundaryVertex(value ? Number(value) : null);
+};
+$("vm-boundary-vertex").onchange = () => {
+  if (boundaryVertex) chooseBoundaryVertex(boundaryVertex.boundary, Number($<HTMLSelectElement>("vm-boundary-vertex").value));
+};
+$("vm-boundary-z").oninput = boundaryInputs;
+$("vm-boundary-focus").onclick = () => {
+  const p = boundaryVertexPoint(); if (busy || drag || !p) return;
+  const shift = globalShift(), v = new THREE.Vector3(p[0] - shift[0], p[1] - shift[1], p[2] - shift[2]);
+  viewer.frameBox(new THREE.Box3(v.clone(), v.clone()).expandByScalar(3));
+};
+$("vm-boundary-apply").onclick = async () => {
+  const p = boundaryVertexPoint(), selection = boundaryVertex;
+  if (busy || drag || !p || !selection) return;
+  const height = $<HTMLInputElement>("vm-boundary-z").valueAsNumber;
+  if (!Number.isFinite(height) || height === p[2]) return;
+  const geometry = view.boundaries.find(b => b.id === selection.boundary)!.points.map(point => [...point] as XYZ);
+  geometry[selection.index][2] = height;
+  await apply([{ op: "set_boundary_geometry", boundary: selection.boundary, geometry }], `Boundary ${selection.boundary} vertex ${selection.index + 1} height updated`);
+};
+
 const vertexTool: Tool = {
   click() {},
   pointerDown(x, y) {
@@ -2226,13 +2314,18 @@ const vertexTool: Tool = {
       }
     }
     if (!hit) return false;
+    chooseBoundaryVertex(hit.boundary, hit.index, true);
     const ground = viewer.groundPoint(x, y, hit.point[2] - shift[2]);
-    if (!ground) return false;
+    if (!ground) {
+      hint.textContent = `Boundary ${hit.boundary}, vertex ${hit.index + 1}: edit height in the panel; use a top or oblique view to drag in XY.`;
+      return true;
+    }
     drag = {
       before: structuredClone(view), ...hit, start: [x, y], moved: false,
       offset: [hit.point[0] - shift[0] - ground.x, hit.point[1] - shift[1] - ground.y],
     };
     activeBoundary = hit.boundary;
+    boundaryInputs();
     hint.textContent = `Boundary ${hit.boundary}, vertex ${hit.index + 1}: drag to move; Escape cancels.`;
     draw();
     return true;
@@ -2256,18 +2349,20 @@ const vertexTool: Tool = {
     const points = view.boundaries.find((b) => b.id === finished.boundary)!.points;
     drag = null;
     view = finished.before;
+    renderBoundaryVertex();
     draw();
     if (finished.moved) await apply([{ op: "set_boundary_geometry", boundary: finished.boundary, geometry: points }], `Boundary ${finished.boundary} vertex moved`);
-    hint.textContent = "Drag a yellow boundary vertex. Height is kept; shared lanes update together. Escape leaves editing.";
+    hint.textContent = "Select a yellow vertex to edit height, or drag in XY keeping Z. Shared lanes update together. Escape leaves editing.";
   },
   pointerCancel() {
-    if (drag) { view = drag.before; drag = null; draw(); }
+    if (drag) { view = drag.before; drag = null; renderBoundaryVertex(); draw(); }
   },
   enter() {
     editingVertices = true;
     clearJunctionPreview();
     $("vm-vertices").setAttribute("aria-pressed", "true");
-    hint.textContent = "Drag a yellow boundary vertex. Height is kept; shared lanes update together. Escape leaves editing.";
+    activeBoundary = boundaryVertex?.boundary ?? null;
+    hint.textContent = "Select a yellow vertex to edit height, or drag in XY keeping Z. Shared lanes update together. Escape leaves editing.";
     draw();
   },
   exit() {
@@ -2318,6 +2413,7 @@ export async function openVectorMap(name: string, text: string): Promise<MapView
     return li;
   }));
   selected = null;
+  boundaryVertex = null;
   reviews.clear();
   takeView(opened);
   if (view.lanes.length > 0 && entries.size === 0) frameMap();
@@ -2369,6 +2465,7 @@ $("vm-clear").onclick = async () => {
   setTool(null);
   if (view.lanes.length === 0 && view.boundaries.length === 0) return;
   selected = null;
+  boundaryVertex = null;
   reviews.clear();
   takeView(await vectorMap<Edited>("clear"));
   setStatus("Map cleared (Undo brings it back).");

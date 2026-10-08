@@ -127,8 +127,17 @@ impl VectorMapSession {
             .collect();
         let before = self.map.clone();
         let (report, diagnostics) =
-            ca_core::vector_map::build_with_evidence(&mut self.map, &cloud.inner, &poses, &o)
-                .map_err(error)?;
+            ca_core::vector_map::build_with_diagnostics(&mut self.map, &cloud.inner, &poses, &o)
+                .map_err(|failure| {
+                    if failure.diagnostic.is_some() {
+                        JsError::new(
+                            &serde_json::to_string(&failure)
+                                .unwrap_or_else(|_| failure.message.clone()),
+                        )
+                    } else {
+                        error(failure)
+                    }
+                })?;
         if self.map != before {
             self.remember(before);
             self.trim_history();

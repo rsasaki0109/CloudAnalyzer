@@ -823,7 +823,7 @@
           <button id="vm-light" aria-pressed="false" title="A traffic light for the clicked lane and those beside it">Traffic light</button>
           <button id="vm-crosswalk" aria-pressed="false" title="A crosswalk across the road at the click, with stop lines before it">Crosswalk</button>
         </div>
-        <details class="options">
+        <details class="options" id="vm-road-options">
           <summary>Road options</summary>
           <label><input id="vm-refine-sketch" type="checkbox" /> Fit drawn paths to the point cloud</label>
           <p class="hint small">When fitting, trace the outside forward lane and choose its cloud under Build from a trajectory. The path, lane counts and nominal width are your inputs; points supply ground height and supported boundaries. Equipment can be searched after the roads are fitted.</p>
@@ -835,6 +835,8 @@
             <label>Lane width (m) <input id="vm-width" type="number" min="0.5" step="0.05" value="3.5" /></label>
             <label title="Empty: no limit (Autoware needs one)">Speed limit (km/h) <input id="vm-speed" type="number" min="0" step="5" value="40" /></label>
           </div>
+          <label title="Used when fitting paths to source points. Must be no more than 45% of lane width.">Boundary search margin (m) <input id="vm-search-margin" type="number" min="0" max="2.7" step="0.05" value="1.5" /></label>
+          <p class="hint small">For fitted roads, keep the search margin within 45% of lane width. Reduce it when narrowing lanes.</p>
           <div class="range">
             <label title="The road is cut into connected lanes of about this length; 0 keeps one lane per road">Piece length (m) <input id="vm-segment" type="number" min="0" step="5" value="50" /></label>
             <label>Traffic keeps
@@ -867,6 +869,19 @@
             <label title="Reject tall raised surfaces and steps without nearby road support; rejected candidates become width assumptions"><input id="vm-verify-curbs" type="checkbox" checked /> Check curb profiles</label>
             <label title="Reuse lanes whose centre, boundaries, direction and height agree; retain existing geometry and rules"><input id="vm-merge-passes" type="checkbox" checked /> Merge matching existing lanes</label>
           <p id="vm-build-report" class="small"></p>
+          <aside id="vm-build-failure" class="options" aria-label="Road build problem" hidden>
+            <h3>Road generation stopped</h3>
+            <p id="vm-failure-reason" class="small"></p>
+            <p id="vm-failure-settings" class="small"></p>
+            <p class="hint small">Red lines show the rejected boundary preview; the yellow cross marks the problem location. Inspect the source points and review lane counts and width. Your existing map is retained.</p>
+            <p id="vm-failure-stale" class="small" hidden>Settings changed. Rebuild to check the new settings.</p>
+            <div class="button-row">
+              <button id="vm-failure-focus">Focus problem</button>
+              <button id="vm-failure-options">Edit lane counts and width</button>
+              <button id="vm-failure-retry">Rebuild with current settings</button>
+              <button id="vm-failure-dismiss">Dismiss preview</button>
+            </div>
+          </aside>
           <label><input id="vm-discover-after-build" type="checkbox" checked /> Search road equipment after building</label>
         </details>
         <details class="options" id="vm-discovery">

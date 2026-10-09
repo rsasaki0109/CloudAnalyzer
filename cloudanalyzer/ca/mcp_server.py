@@ -36,6 +36,9 @@ source-supported gaps between consecutive drive pieces. The fixed single-forward
 layout, recorded path, both ground estimators and reopened OSM topology are checked.
 Read local route spans and global longest route separately; connections do not increase
 original corridor extent or prove permitted turns. Failed links retain the prior draft.
+Connections can extend audited connected or gap-patched drafts: inherit all existing
+lanes and directed edges, select only new inspected pairs, and reject any new failures
+on retained source samples in either estimator or saved format.
 Use inspect_gaps to read missing source intervals and aligned raw-return neighborhoods.
 For a thinning hypothesis, retry_pointcloud explicitly reduces scan/map voxel sizes
 once while freezing corrected motion, retained frames, filter policy and thresholds.

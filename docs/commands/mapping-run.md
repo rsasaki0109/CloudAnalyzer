@@ -55,7 +55,8 @@ can still preserve source curves for review.
    disconnected. Previous maps and any explicit selection remain intact.
 5. The agent reads width/structural failures, original input extent and both
    ground estimators, then decides another draft, inspects short connections,
-   or finishes. Explicit connection choices spend one additional shared HD attempt.
+   inspects raw-source gaps to test less point thinning, or finishes. Explicit
+   connection choices spend one additional shared HD attempt.
    The runner cannot
    change the layout or lower the extent goal through an action. Invalid
    choices spend no processing attempt. Failed native stages retain their
@@ -168,6 +169,80 @@ The [NCLT connection evidence](../../benchmarks/vector-map/nclt-route-connection
 records a local chain changing 6 → 14 m in April and 4 → 22 m in June, with
 components 12 → 11 and 14 → 12. Global longest routes remain 34 m and 66 m;
 these connections do not make the full recordings routable.
+
+### Investigate missing intervals and retry point generation
+
+After an audited lane draft, inspect missing source intervals:
+
+```json
+{"type": "inspect_gaps", "candidate_id": 3, "offset": 0}
+```
+
+Pages contain eight gaps with stable IDs, source-profile reasons and bounded
+neighborhood observations. The runner freshly decodes the **original recording**,
+aligns returns from the original retained keyframes using the corrected graph,
+and records every decoded frame hash. Counts, occupied XY cells and local height
+quantiles compare raw returns with the fused point map before a density trial.
+These are descriptive observations: repeated returns are not independent ground
+evidence, and a missing trajectory band is not a proven thinning failure. The
+inspection includes nearby profile context and explicit truncation totals.
+It is limited to 4096 frames and five million matched raw returns. Larger logs
+need a smaller input recording. Inspection spends no HD attempt.
+
+For an inspected thinning hypothesis, explicitly choose gaps and resolutions:
+
+```json
+{"type": "retry_pointcloud", "candidate_id": 3, "gap_ids": [1, 4], "options": {"scan_voxel_m": 0.2, "map_voxel_m": 0.1}}
+```
+
+Use the IDs actually returned by your run. Scan voxels can decrease from the
+initial 0.4 m down to 0.1 m; fused-map voxels from 0.2 m down to 0.05 m. At least
+one must change. Corrected motion, retained keyframes, dynamic-filter policy,
+native implementation, source thresholds, association, lane layout, extent goal
+and original drive denominator stay fixed. Numerical pose roundtrips are checked;
+the child keeps the exact original trajectory and graph bytes. Filtering results
+can change with denser returns even though the filter policy remains fixed.
+This first retry does not repair motion, choose another ground level, include
+excluded non-keyframes or invent missing raw returns.
+
+One root retry transfers **all remaining shared HD attempts** to a child run
+at `pointcloud-retry/`, with at least two required. The root cannot spend that
+allocation again, even after a failed trial; children cannot retry recursively.
+The transfer is journaled before processing and never silently refunded.
+The response includes the new point map and child run. Use the child's `job_dir`
+and revision, inspect its fresh proposal IDs, explicitly draft the fixed layout,
+and optionally test inspected connections within its budget. Nothing adopts
+parent decisions or ranks child geometry automatically.
+
+Then call the root with the child's audited attempt ID:
+
+```json
+{"type": "compare_retry", "candidate_id": 2}
+```
+
+The retained comparison includes **both gained and lost original source
+intervals**, point counts, exported extent, all four source-audit totals/protocols
+and actual graph route station spans. All extraction/quality protocols and the
+original denominator must match. Longer routes and more points alone do not
+establish accuracy or improved road semantics. Response lists are bounded;
+the hashed report retains complete intervals and chains. No automatic adoption
+occurs. Finish the child with its chosen candidate, review the root comparison,
+then explicitly deliver that child's point map and HD draft:
+
+```json
+{"type": "finish_retry", "candidate_id": 2}
+```
+
+Alternatively use the root's normal `finish` with its retained baseline candidate
+when the trial worsens, fails or does not justify replacement. Earlier point and
+HD maps stay unchanged. Completed retry stages support `resume` without another
+allocation; running native stages and interrupted raw extraction require retained
+state inspection before manual recovery. Failed retry directories are preserved.
+An interrupted inspection can also be abandoned with normal `finish` to deliver
+an already audited baseline; finishing never restarts the failed processing stage.
+The [two NCLT density trials](../../benchmarks/vector-map/nclt-pointcloud-retry/README.md)
+retained their original maps: more points recovered some intervals but lost more,
+and global route spans decreased. The saved comparison exposes that outcome.
 
 `layout_hypothesis` / `layout.json`:
 

@@ -88,10 +88,17 @@ def _inputs(job: dict[str, Any]) -> None:
     if job["pointcloud"] is None:
         raise ValueError("generate the point-cloud map before an HD candidate")
     _verify(job["source"])
+    for artifact in job.get("retry_inputs", {}).values():
+        _verify(artifact)
     if _native() != job["runtime"]["native"]:
         raise ValueError("native core changed; use a new mapping job")
     for artifact in job["pointcloud"]["files"].values():
         _verify(artifact)
+
+
+def _remaining(job: dict[str, Any]) -> int:
+    """HD attempts transferred to a retry child cannot be spent by its parent."""
+    return int(job["max_attempts"] - len(job["attempts"]) - job.get("pointcloud_retry", {}).get("allocated_attempts", 0))
 
 
 def inspect_mapping_job(job_dir: str) -> dict[str, Any]:
@@ -104,7 +111,7 @@ def inspect_mapping_job(job_dir: str) -> dict[str, Any]:
     for attempt in job["attempts"]:
         if attempt["status"] == "audited_draft":
             attempt["extent"] = _extent(attempt["extraction"], job.get("minimum_retained_fraction", 0.9))
-    remaining = job["max_attempts"] - len(job["attempts"])
+    remaining = _remaining(job)
     job["remaining_attempts"] = remaining
     ready = job.get("pointcloud") is not None and job["status"] not in {"pointcloud_failed", "pointcloud_running"}
     job["next_actions"] = (["propose_mapping_corridors"] if ready and "corridor_proposal" not in job else []) + (
@@ -151,7 +158,7 @@ def start_mapping_job(
         "schema": SCHEMA, "job_dir": str(root), "status": "pointcloud_running",
         "source": _artifact(source_path), "runtime": {"python": platform.python_version(), "native": native},
         "pointcloud_options": {"keyframe_spacing": keyframe_spacing, "remove_dynamic": remove_dynamic,
-                               "pointcloud_topic": pointcloud_topic, "imu_topic": imu_topic},
+                               "pointcloud_topic": pointcloud_topic, "imu_topic": imu_topic, "scan_voxel_m": .4, "map_voxel_m": .2},
         "max_attempts": max_attempts, "minimum_retained_fraction": minimum_retained_fraction,
         "pointcloud": None, "attempts": [], "selected": None,
         "scope": "Generated point-cloud map and HD road drafts; source checks are not independent survey truth. Lane identity, traffic rules, equipment and georeferencing are unresolved unless supplied separately.",
@@ -245,7 +252,7 @@ def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dic
                 raise RuntimeError("corridor proposal stage did not finish; inspect its retained error and use a new job")
             _verify(stage["file"])
             summary = _corridor_summary(json.loads(Path(stage["file"]["path"]).read_text(encoding="utf-8")))
-            return {**stage, "summary": summary, "cached": True, "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+            return {**stage, "summary": summary, "cached": True, "remaining_attempts": _remaining(job)}
         stage = {"status": "running", "options": options}
         job["corridor_proposal"] = stage
         _save(root / "job.json", job)
@@ -266,7 +273,7 @@ def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dic
                 _save(root / "job.json", job)
                 raise
         _save(root / "job.json", job)
-    return {**stage, "cached": False, "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+    return {**stage, "cached": False, "remaining_attempts": _remaining(job)}
 
 
 def _refine_mapping_corridors(job_dir: str, reason: str) -> dict[str, Any]:
@@ -340,12 +347,12 @@ def inspect_mapping_corridors(job_dir: str, candidate_id: int | None = None, off
     for artifact in [job["source"], *job["pointcloud"]["files"].values()]:
         _verify(artifact)
     if stage["status"] != "ready":
-        return {**stage, "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+        return {**stage, "remaining_attempts": _remaining(job)}
     _verify(stage["file"])
     report = json.loads(Path(stage["file"]["path"]).read_text(encoding="utf-8"))
     candidates = report["candidates"]
     answer: dict[str, Any] = {"file": stage["file"], "summary": _corridor_summary(report),
-        "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+        "remaining_attempts": _remaining(job)}
     if candidate_id is None:
         hints = _curb_width_hints(report)
         answer.update({"candidate_index": [{k: c[k] for k in ("id", "from_m", "to_m", "minimum_support_span_m",
@@ -400,7 +407,7 @@ def generate_mapping_geometry(job_dir: str, decisions: list[dict[str, Any]], rea
         summary["included_station_fraction"] = summary["included_station_length_m"] / summary["trajectory_length_m"]
         summary["minimum_retained_fraction"] = job.get("minimum_retained_fraction", 0.9)
         summary["meets_requested_station_extent"] = summary["included_station_fraction"] + 1e-9 >= summary["minimum_retained_fraction"]
-        if len(job["attempts"]) >= job["max_attempts"]:
+        if _remaining(job) <= 0:
             raise ValueError("mapping attempt budget exhausted; inspect the retained candidates")
         evidence["input_artifacts"] = {"source": job["source"], "pointcloud": job["pointcloud"]["files"],
                                        "native": job["runtime"]["native"], "corridor_proposal": stage["file"]}
@@ -461,7 +468,7 @@ def inspect_mapping_geometry(job_dir: str, candidate_id: int, offset: int = 0) -
         raise ValueError("inspect a retained surface geometry attempt")
     for artifact in [job["source"], *job["pointcloud"]["files"].values(), attempt["corridor_proposal"]]:
         _verify(artifact)
-    remaining = job["max_attempts"] - len(job["attempts"])
+    remaining = _remaining(job)
     if attempt["status"] != "geometry_draft":
         return {**attempt, "remaining_attempts": remaining}
     for artifact in attempt["files"].values():
@@ -521,7 +528,7 @@ def generate_mapping_corridor_lanes(
         module = core()
         if module is None or not hasattr(module, "build_corridor_lanes"):
             raise RuntimeError("corridor lane drafting needs an updated native core and a new mapping job")
-        if len(job["attempts"]) >= job["max_attempts"]:
+        if _remaining(job) <= 0:
             raise ValueError("mapping attempt budget exhausted; inspect the retained candidates")
         options = {"geometry_candidate_id": geometry_candidate_id, "boundary_policy": boundary_policy, "lane_specs": lane_specs}
         attempt: dict[str, Any] = {"id": len(job["attempts"]) + 1, "kind": "corridor_lanes", "status": "running",
@@ -666,6 +673,7 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
                      *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else []),
                      *attempt.get("connection_inputs", {}).values(),
                      *([attempt["connection_proposal"]] if "connection_proposal" in attempt else []),
+                     *job.get("retry_inputs", {}).values(),
                      *attempt["files"].values(), attempt["quality_report"]]:
         _verify(artifact)
     saved = json.loads(Path(attempt["quality_report"]["path"]).read_text(encoding="utf-8"))
@@ -707,7 +715,7 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         "ground_consensus": consensus,
         "extraction": attempt["extraction"], "export_issues": attempt["export_issues"],
         "pointcloud_quality_status": job["pointcloud"]["quality_status"],
-        "remaining_attempts": job["max_attempts"] - len(job["attempts"]),
+        "remaining_attempts": _remaining(job),
         "routes": attempt.get("routes"),
         "investigations": investigations, "deployment_ready": False,
         "counting_note": "Totals count oriented samples per lane/trace; a shared boundary can be checked for both lanes. They are not unique points or percentages of road length.",
@@ -734,7 +742,7 @@ def generate_mapping_candidate(job_dir: str, road_options: dict[str, Any], reaso
         job = _load(root)
         if job["pointcloud"] is None:
             raise ValueError("generate the point-cloud map before an HD candidate")
-        if len(job["attempts"]) >= job["max_attempts"]:
+        if _remaining(job) <= 0:
             raise ValueError("mapping attempt budget exhausted; inspect the retained candidates")
         _inputs(job)
         job.setdefault("minimum_retained_fraction", 0.9)

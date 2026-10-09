@@ -1052,6 +1052,238 @@ def _connection_action(observation):
         for c in observation["connection_observation"]["candidates"]]}
 
 
+@pytest.fixture
+def density_run(job_backend, tmp_path, monkeypatch):
+    """Real native fusion/HD export with synthetic raw returns and frozen motion."""
+    from copy import deepcopy
+    import numpy as np
+    from ca import mapping_run as runs, mapping_retry as retry
+    source, _ = job_backend
+    native = _attach_lane_native()
+    module = jobs.core()
+    for name in ("PoseGraph", "read", "connect_vector_map_junctions", "audit_vector_map_quality_details", "audit_vector_map_ground_consensus_details"):
+        setattr(module, name, getattr(native, name))
+    poses = np.repeat(np.eye(4)[None], 2, axis=0)
+    poses[:, 2, 3] = 1.
+    poses[1, 0, 3] = 10.
+    graph = native.PoseGraph.from_poses(poses)
+    xyz = np.array([[x/10, y/10, 0., 1.] for x in range(-10, 111) for y in range(-30, 31)], dtype=np.float32)
+    def decode(source, out, **kwargs):
+        out = Path(out); out.mkdir(parents=True)
+        paths = []
+        for i in range(2):
+            path = out / f'frame_{i:06d}.bin'
+            (xyz - np.array([i*10, 0, 0, 0], dtype=np.float32)).tofile(path)
+            paths.append(path)
+        return paths, [0., 1.]
+    monkeypatch.setattr(retry, "materialize_pointcloud_bag", decode)
+    def fixed(folder, out, **kwargs):
+        root = Path(out); root.mkdir()
+        cloud, trajectory, g2o = root/'map.xyz', root/'poses.txt', root/'map.g2o'
+        np.savetxt(cloud, xyz[::4, :3] + [0, 0, 1])
+        np.savetxt(trajectory, poses[:, :3, :].reshape(2, 12))
+        g2o.write_text(graph.to_g2o())
+        return {"map_points": len(xyz[::4]), "nodes": 2, "scans": 2, "unmatched_scans": 0,
+                "outputs": {"map": str(cloud), "kitti": str(trajectory), "g2o": str(g2o)}}
+    monkeypatch.setattr(jobs, "fix_session", fixed)
+    report = _corridor_report()
+    original = deepcopy(report["candidates"][0])
+    first, second = deepcopy(original), deepcopy(original)
+    first.update(to_m=4., sections=first["sections"][:3])
+    second.update(id=17, from_m=8., sections=second["sections"][4:])
+    report.update(candidates=[first, second], with_candidate_station_length_m=6., without_candidate_station_length_m=4.,
+                  trajectory_covered_station_length_m=6., deferred_intervals=[{"from_m": 4., "to_m": 8., "reason": "unresolved_source_band"}])
+    report["profiles"] = [{"station_m": float(k), "trajectory": [float(k), 0., 1.], "heading_usable": True,
+                           "reference_ground_height_m": 1., "bands": []} for k in range(0, 11, 2)]
+    def propose(cloud, trajectory, options):
+        r = deepcopy(report)
+        r["protocol"] = {"options": {"association": "all_supported_bands", **json.loads(options)}}
+        if 'pointcloud-retry' in cloud:
+            r.update(candidates=[original], with_candidate_station_length_m=10., without_candidate_station_length_m=0.,
+                     trajectory_covered_station_length_m=10., deferred_intervals=[])
+        return json.dumps(r)
+    module.propose_road_corridors = propose
+    root = tmp_path / 'density-run'
+    runs.start_mapping_run(str(source), str(root), _run_layout())
+    runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1, 17]}, "Read separated pieces", 0)
+    result = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [
+        {"candidate_id": cid, "action": "include", "reason": "Keep observed source"} for cid in (1, 17)]}, "Baseline", 1)
+    assert result["draft_result"]["status"] == "audited_draft"
+    return root
+
+
+def _advance(root, action, reason='Test explicit inspected decision'):
+    from ca import mapping_run as runs
+    return runs.advance_mapping_run(str(root), action, reason, runs.inspect_mapping_run(str(root))["revision"])
+
+
+def _density_trial(root):
+    evidence = _advance(root, {"type": "inspect_gaps", "candidate_id": 2, "offset": 0})
+    ids = [g["id"] for g in evidence["gap_observation"]["gaps"]]
+    result = _advance(root, {"type": "retry_pointcloud", "candidate_id": 2, "gap_ids": ids,
+                    "options": {"scan_voxel_m": .2, "map_voxel_m": .1}})
+    return result
+
+
+def test_density_retry_freezes_motion_shares_budget_and_requires_comparison(density_run):
+    from ca import mapping_run as runs, mapping_connections as connections
+    root = density_run
+    parent = jobs.inspect_mapping_job(str(root))
+    originals = {v['path']: Path(v['path']).read_bytes() for v in [*parent['pointcloud']['files'].values(), *parent['attempts'][1]['files'].values()]}
+    proposal = connections.inspect_connections(root, 2, 0)
+    assert proposal['candidates']
+    result = _density_trial(root)
+    assert result['pointcloud_retry_result']['status'] == 'ready', result
+    assert result['remaining_attempts'] == 0
+    child = Path(result['pointcloud_retry_result']['stage']['child_job_dir'])
+    child_job = jobs.inspect_mapping_job(str(child))
+    assert child_job['max_attempts'] == 4
+    for key in ('trajectory', 'graph'):
+        assert parent['pointcloud']['files'][key]['sha256'] == child_job['pointcloud']['files'][key]['sha256']
+    for generate in (lambda: jobs.generate_mapping_candidate(str(root), OPTIONS, 'Budget'),
+                     lambda: jobs.generate_mapping_geometry(str(root), [{"candidate_id": 1, "action": "include", "reason": "Budget"}], 'Budget'),
+                     lambda: jobs.generate_mapping_corridor_lanes(str(root), 1, parent['attempts'][1]['road_options']['lane_specs'], 'source_span_hypothesis', 'Budget'),
+                     lambda: connections.connect(root, 2, [{'from': c['from'], 'to': c['to'], 'reason': 'Budget'} for c in proposal['candidates']], proposal['proposal_file'], 'Budget')):
+        with pytest.raises(ValueError, match='budget'): generate()
+    _advance(child, {'type': 'inspect', 'candidate_ids': [1]})
+    drafted = _advance(child, {'type': 'draft', 'decisions': [{'candidate_id': 1, 'action': 'include', 'reason': 'Newly inspected continuous source'}]})
+    assert drafted['draft_result']['status'] == 'audited_draft', drafted
+    with pytest.raises(ValueError, match='finish the child'):
+        _advance(root, {'type': 'finish_retry', 'candidate_id': 2})
+    _advance(child, {'type': 'finish', 'candidate_id': 2})
+    with pytest.raises(ValueError, match='compare_retry'):
+        _advance(root, {'type': 'finish_retry', 'candidate_id': 2})
+    compared = _advance(root, {'type': 'compare_retry', 'candidate_id': 2})['retry_comparison']
+    assert compared['gained_source_length_m'] == 4. and compared['lost_source_length_m'] == 0.
+    assert compared['before']['routes']['longest_route_station_span_m'] == 4.
+    assert compared['after']['routes']['longest_route_station_span_m'] == 10.
+    assert set(compared['after']['audits']) == {'editable', 'reopened_osm', 'consensus_editable', 'consensus_reopened_osm'}
+    assert not compared['automatic_adoption'] and runs.inspect_mapping_run(str(root))['output'] is None
+    final = _advance(root, {'type': 'finish_retry', 'candidate_id': 2})
+    assert final['output']['candidate_job_dir'] == str(child)
+    assert final['output']['artifacts']['map'] == child_job['pointcloud']['files']['map']
+    assert all(Path(p).read_bytes() == content for p, content in originals.items())
+    assert jobs.inspect_mapping_job(str(root))['selected'] is None
+
+
+@pytest.mark.parametrize('options', [
+    {'scan_voxel_m': .4, 'map_voxel_m': .2}, {'scan_voxel_m': .5, 'map_voxel_m': .1},
+    {'scan_voxel_m': True, 'map_voxel_m': .1}, {'scan_voxel_m': float('nan'), 'map_voxel_m': .1},
+    {'scan_voxel_m': .05, 'map_voxel_m': .1}, {'map_voxel_m': .1},
+])
+def test_density_retry_rejects_unbounded_or_unchanged_options_before_spending(density_run, options):
+    root = density_run
+    _advance(root, {'type': 'inspect_gaps', 'candidate_id': 2, 'offset': 0})
+    snapshot = (root / 'job.json').read_bytes()
+    with pytest.raises(ValueError):
+        _advance(root, {'type': 'retry_pointcloud', 'candidate_id': 2, 'gap_ids': [1], 'options': options})
+    assert (root / 'job.json').read_bytes() == snapshot
+
+
+@pytest.mark.parametrize('fault', ['raw', 'extra_frame', 'motion', 'proposal'])
+def test_density_retry_failure_preserves_baseline_and_reservation(density_run, monkeypatch, fault):
+    import numpy as np
+    from ca import mapping_retry as retry
+    root = density_run
+    _advance(root, {'type': 'inspect_gaps', 'candidate_id': 2, 'offset': 0})
+    original = retry.fix_session
+    def fail(*args, **kwargs):
+        result = original(*args, **kwargs)
+        if fault == 'raw':
+            next((root / 'gap-source/scans').glob('*.bin')).write_bytes(b'changed')
+        elif fault == 'extra_frame':
+            (root / 'gap-source/scans/frame_999999.bin').write_bytes(b'changed')
+        elif fault == 'motion':
+            motion = np.loadtxt(result['outputs']['kitti']); motion[0, 3] += 1.
+            np.savetxt(result['outputs']['kitti'], motion)
+        else:
+            jobs.core().propose_road_corridors = lambda *args: '{}'
+        return result
+    monkeypatch.setattr(retry, 'fix_session', fail)
+    result = _advance(root, {'type': 'retry_pointcloud', 'candidate_id': 2, 'gap_ids': [1],
+                           'options': {'scan_voxel_m': .2, 'map_voxel_m': .1}})
+    assert result['pointcloud_retry_result']['status'] == 'failed'
+    assert result['remaining_attempts'] == 0 and jobs.inspect_mapping_job(str(root))['pointcloud_retry']['allocated_attempts'] == 4
+    final = _advance(root, {'type': 'finish', 'candidate_id': 2})
+    assert final['output']['candidate_id'] == 2 and 'candidate_job_dir' not in final['output']
+
+
+def test_density_retry_completed_stage_resumes_without_duplicate_allocation(density_run, monkeypatch):
+    from ca import mapping_run as runs, mapping_retry as retry
+    root = density_run
+    _advance(root, {'type': 'inspect_gaps', 'candidate_id': 2, 'offset': 0})
+    original = retry.retry
+    def interrupted(*args, **kwargs):
+        original(*args, **kwargs)
+        raise KeyboardInterrupt()
+    monkeypatch.setattr(retry, 'retry', interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        _advance(root, {'type': 'retry_pointcloud', 'candidate_id': 2, 'gap_ids': [1],
+                       'options': {'scan_voxel_m': .2, 'map_voxel_m': .1}})
+    monkeypatch.setattr(retry, 'retry', original)
+    result = _advance(root, {'type': 'resume'})
+    assert result['pointcloud_retry_result']['status'] == 'ready'
+    assert result['remaining_attempts'] == 0
+    assert jobs.inspect_mapping_job(str(root / 'pointcloud-retry'))['max_attempts'] == 4
+    assert len([h for h in json.loads((root / 'run.json').read_text())['history'] if h['action']['type'] == 'retry_pointcloud']) == 1
+
+
+def test_density_retry_requires_seen_gaps_and_preserves_lost_intervals(density_run):
+    from ca import mapping_run as runs
+    root = density_run
+    action = {'type': 'retry_pointcloud', 'candidate_id': 2, 'gap_ids': [1],
+              'options': {'scan_voxel_m': .2, 'map_voxel_m': .1}}
+    with pytest.raises(ValueError, match='inspect gaps'):
+        _advance(root, action)
+    # Inspect an empty page: a valid ID existing in the full report is still unseen.
+    _advance(root, {'type': 'inspect_gaps', 'candidate_id': 2, 'offset': 99})
+    with pytest.raises(ValueError, match='inspect every chosen gap'):
+        _advance(root, action)
+    result = _density_trial(root)
+    child = Path(result['pointcloud_retry_result']['stage']['child_job_dir'])
+    _advance(child, {'type': 'inspect', 'candidate_ids': [1]})
+    _advance(child, {'type': 'draft', 'decisions': [{'candidate_id': 1, 'action': 'include', 'from_m': 2., 'to_m': 6.,
+                                                'reason': 'Test a replacement with both recovery and loss'}]})
+    with pytest.raises(ValueError, match='no recursive'):
+        _advance(child, {'type': 'retry_pointcloud', 'candidate_id': 2, 'gap_ids': [1],
+                         'options': {'scan_voxel_m': .1, 'map_voxel_m': .05}})
+    with pytest.raises(ValueError, match='one point-cloud retry'):
+        _advance(root, action)
+    compared = _advance(root, {'type': 'compare_retry', 'candidate_id': 2})['retry_comparison']
+    assert compared['gained_source_length_m'] == 2. and compared['lost_source_length_m'] == 4.
+    assert compared['gained_source_intervals'] == [{'from_m': 4., 'to_m': 6.}]
+    assert compared['lost_source_intervals'] == [{'from_m': 0., 'to_m': 2.}, {'from_m': 8., 'to_m': 10.}]
+    assert runs.inspect_mapping_run(str(root))['output'] is None
+    final = _advance(root, {'type': 'finish', 'candidate_id': 2})
+    assert final['output']['artifacts']['map'] == jobs.inspect_mapping_job(str(root))['pointcloud']['files']['map']
+    assert final['output']['pointcloud_retry_decision']['adopted'] is False
+    assert final['output']['artifacts']['retry_comparison_2'] == compared['file']
+
+
+def test_density_retry_rejects_changed_gap_evidence_before_allocation(density_run):
+    root = density_run
+    evidence = _advance(root, {'type': 'inspect_gaps', 'candidate_id': 2, 'offset': 0})['gap_observation']['file']
+    Path(evidence['path']).write_text('{}')
+    with pytest.raises(ValueError, match='changed'):
+        _advance(root, {'type': 'retry_pointcloud', 'candidate_id': 2, 'gap_ids': [1],
+                        'options': {'scan_voxel_m': .2, 'map_voxel_m': .1}})
+    assert 'pointcloud_retry' not in jobs.inspect_mapping_job(str(root))
+
+
+def test_failed_raw_gap_inspection_can_finish_with_the_retained_baseline(density_run, monkeypatch):
+    from ca import mapping_retry as retry, mapping_run as runs
+    root = density_run
+    def interrupted_decode(*args, **kwargs):
+        raise ValueError('recording reader cannot decode this source')
+    monkeypatch.setattr(retry, 'materialize_pointcloud_bag', interrupted_decode)
+    with pytest.raises(ValueError, match='reader cannot decode'):
+        _advance(root, {'type': 'inspect_gaps', 'candidate_id': 2, 'offset': 0})
+    assert runs.inspect_mapping_run(str(root))['status'] == 'interrupted'
+    final = _advance(root, {'type': 'finish', 'candidate_id': 2}, 'Retain baseline after failed raw inspection')
+    assert final['status'] == 'finished' and final['output']['candidate_id'] == 2
+    assert final['remaining_attempts'] == 4
+
+
 def test_connections_preserve_source_extent_and_verify_real_reopened_route(connection_run):
     from ca import mapping_run as runs
     from ca.mapping_connections import edges

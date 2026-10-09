@@ -157,3 +157,10 @@ cd rust
 cargo test --workspace
 cargo run --release -p ca-core --example c2c -- compared.ply reference.pcd
 ```
+
+Enable **Include current point and mesh records (64 MiB)** under browser autosave
+for automatic recovery of processed geometry and computed attributes without
+reselecting point sources. The default remains metadata-only recovery. Atomic
+storage failures preserve the previous copy; **Download browser copy** exports
+a saved record snapshot as a workspace ZIP. See [browser recovery](../docs/browser-projects.md#keep-processed-records-in-browser-recovery)
+for capacity, external graph/audit inputs and backup limitations.

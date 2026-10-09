@@ -39,3 +39,30 @@ Geometry, lane attributes, shared boundaries and associated equipment rules are 
 In `web/`, run `npm run test:unit`, `npm run build`, then `npx playwright test`. Project tests cover restoration of maps, graph constraints, source validation, review invalidation and memory release. Rust snapshot and map-history tests run with `cargo test --locked -p ca-wasm` in `rust/`.
 
 Opt into the real-data roundtrip and memory tests with `CLOUDANALYZER_REAL_DATA=1 npx playwright test project-real-data.spec.ts --workers=1`. They use the bundled NCLT MCAP and RELLIS-3D samples and attach JSON measurements to the Playwright results. The stress cloud consists of sixteen translated copies of one RELLIS-3D frame (2,097,152 points, approximately 32 MiB), not additional surveyed frames. It verifies 24 edits, a three-step history cap, memory release and project restoration; it does not establish limits for multi-gigabyte captures. See the sample attribution files before redistributing data.
+
+## Keep processed records in browser recovery
+
+Enable **Include current point and mesh records (64 MiB)** under the automatic
+save controls to retain the currently loaded point clouds and meshes, including
+processed results and computed attributes, alongside the editing state. This
+option is off by default and is remembered in this browser. Wait for **Current
+point/mesh records are included in this browser copy** before closing. After
+reopening, **Resume saved work** restores those records without choosing their
+original source files or rerunning filters. **Download browser copy** exports
+that saved state as a portable `project.cloudanalyzer.zip`.
+
+The recovery record and its ZIP are committed atomically; capacity or cross-tab
+failures preserve the preceding copy and the closing warning. ZIP member hashes
+and the project identity are checked before restoration. A cloud already open
+with the same display name must be exported and closed before resuming this copy;
+its current records are not silently replaced. Unsaved review text is restored
+from browser recovery, but is not included in the portable ZIP until the lane
+review is saved and a new snapshot captured.
+
+This stores currently loaded geometry, not unloaded original density. The whole
+browser recovery record is capped at 64 MiB, including its metadata and stored
+ZIP. Pose-graph source/scan files and frozen generated-map source-audit reports
+remain external, and Undo starts fresh. Browser storage is not a durable backup:
+keep a downloaded workspace snapshot and the original attributed review bundle.
+When this option is off, browser recovery retains metadata/source references and
+processed results still require their own export or manual workspace snapshot.

@@ -2,7 +2,7 @@
 import { parseProject, projectSources, type Project, type ControlSetting, type SavedPoseGraph } from "../project";
 import { matchesFile, referenceFile, sourceName, type SourceReference } from "../source-reference";
 import { vectorMap, workerBusy, exportCloud, exportMesh } from "../api";
-import { writeProjectSnapshot } from "../project-snapshot";
+import { writeProjectSnapshot, readProjectSnapshot } from "../project-snapshot";
 import { REVIEW_LIMIT } from "../review-zip";
 import { Autosave } from "../autosave";
 import { onProjectChanged, projectChanged } from "../project-change";
@@ -271,32 +271,37 @@ $("project-save").onclick = async () => {
   finally { button.disabled = false; manualSaving = false; endTask(signal); autosave.schedule(); }
 };
 
+async function captureWorkspace(signal: AbortSignal, progress: boolean): Promise<{project: Project; zip: Blob}> {
+  const savedEntries = [...entries.values()];
+  if (savedEntries.length > 127) throw new Error("Snapshot supports at most 127 clouds/meshes");
+  if (new Set(savedEntries.map(e => e.cloud.name)).size !== savedEntries.length) throw new Error("Rename duplicate cloud files before saving a snapshot");
+  const snapshots = new Map<number, File>(), prefix = `workspace-${crypto.randomUUID()}`;
+  let total = 0;
+  for (const [i, entry] of savedEntries.entries()) {
+    signal.throwIfAborted();
+    if (progress) setStatus(`Saving current records for ${entry.cloud.name}…`);
+    const bytes = entry.cloud.kind === "mesh" ? await exportMesh(entry.cloud.id, "ply") : await exportCloud(entry.cloud.id, "ply");
+    total += bytes.byteLength;
+    if (total > REVIEW_LIMIT) throw new Error("Snapshot exceeds the 64 MiB content limit; export large results separately");
+    snapshots.set(entry.cloud.id, new File([new Uint8Array(bytes)], `${prefix}-${i}.ply`));
+  }
+  const project = await captureProject(signal, progress, snapshots);
+  const zip = await writeProjectSnapshot(project, [...snapshots.values()], signal);
+  signal.throwIfAborted();
+  return {project,zip};
+}
+
 $("project-snapshot").onclick = async () => {
   if (taskActive() || workerBusy() || !mapProjectReady() || !graphProjectReady()) return setStatus("Finish the current operation before saving a workspace snapshot.", true);
   const button = $<HTMLButtonElement>("project-snapshot"), signal = startTask(), revision = autosave.revision;
   button.disabled = true; manualSaving = true;
   try {
-    const savedEntries = [...entries.values()];
-    if (savedEntries.length > 127) throw new Error("Snapshot supports at most 127 clouds/meshes");
-    if (new Set(savedEntries.map(e => e.cloud.name)).size !== savedEntries.length) throw new Error("Rename duplicate cloud files before saving a snapshot");
-    const snapshots = new Map<number, File>(), prefix = `workspace-${crypto.randomUUID()}`;
-    let total = 0;
-    for (const [i, entry] of savedEntries.entries()) {
-      signal.throwIfAborted();
-      setStatus(`Saving current records for ${entry.cloud.name}…`);
-      const bytes = entry.cloud.kind === "mesh" ? await exportMesh(entry.cloud.id, "ply") : await exportCloud(entry.cloud.id, "ply");
-      total += bytes.byteLength;
-      if (total > REVIEW_LIMIT) throw new Error("Snapshot exceeds the 64 MiB content limit; export large results separately");
-      snapshots.set(entry.cloud.id, new File([new Uint8Array(bytes)], `${prefix}-${i}.ply`));
-    }
-    const project = await captureProject(signal, true, snapshots);
-    const zip = await writeProjectSnapshot(project, [...snapshots.values()], signal);
-    signal.throwIfAborted();
+    const {project,zip} = await captureWorkspace(signal,true);
     if (autosave.revision !== revision) throw new Error("The workspace changed while saving; retry the snapshot");
     download(zip, "project.cloudanalyzer.zip");
     snapshotRevision = revision;
     if (!captureReviewDraft()) autosave.exported(revision);
-    setStatus(`Saved workspace snapshot: ${snapshots.size} current clouds/meshes with project metadata. Unloaded original detail and pose-graph input files remain external.`);
+    setStatus(`Saved workspace snapshot: ${project.session.clouds.length} current clouds/meshes with project metadata. Unloaded original detail and pose-graph input files remain external.`);
   } catch (error) { setStatus(`Could not save workspace snapshot: ${errorText(error)}`, true); }
   finally { button.disabled = false; manualSaving = false; endTask(signal); autosave.schedule(); }
 };
@@ -305,6 +310,10 @@ $("project-open").onclick = () => $<HTMLInputElement>("file-input").click();
 const autosave = new Autosave<Recovery>({
   idle: () => !checkingRecovery && !pending && !completing && !manualSaving && !taskActive() && !workerBusy() && mapProjectReady() && graphProjectReady(),
   capture: async signal => {
+    if ($<HTMLInputElement>("project-autosave-records").checked) {
+      const {project,zip} = await captureWorkspace(signal,false);
+      return {version:1,token:crypto.randomUUID(),savedAt:new Date().toISOString(),project,draft:captureReviewDraft(),snapshot:zip};
+    }
     const project = await captureProject(signal,false), draft = captureReviewDraft();
     return {version:1,token:crypto.randomUUID(),savedAt:new Date().toISOString(),project,draft};
   },
@@ -321,10 +330,11 @@ function renderSaveState(): void {
   $<HTMLButtonElement>("project-forget").disabled = busy || !recovery;
   $<HTMLButtonElement>("project-download-recovery").disabled = busy || !recovery;
   $("project-autosave-retry").hidden = !autosave.error || checkingRecovery;
-  $("project-recovery-summary").textContent = recovery ? `Browser copy from ${new Date(recovery.savedAt).toLocaleString()}. ${pending && restoringBrowser ? "Open its matching original files to finish resuming." : "Resume it or discard it before automatic saves replace this copy."}` : "";
+  $("project-recovery-summary").textContent = recovery ? `Browser copy from ${new Date(recovery.savedAt).toLocaleString()}. ${recovery.snapshot ? "Includes current point/mesh records. Pose-graph inputs remain external. " : ""}${pending && restoringBrowser ? "Open its matching original files to finish resuming." : "Resume it or discard it before automatic saves replace this copy."}` : "";
   $("project-save-status").textContent = checkingRecovery ? "Checking browser recovery…" : autosave.error ? `Browser save failed: ${autosave.error}. Use Save project to keep your work.` : autosave.saving ? "Saving editing state in this browser…" : autosave.paused ? "Automatic saving paused; the previous browser copy is protected." : !autosave.enabled ? `Automatic saving is off.${autosave.unsaved ? " Changes are not saved." : ""}` : autosave.revision > autosave.savedRevision ? "Changes waiting for browser save…" : recovery ? `Editing state saved in this browser at ${new Date(recovery.savedAt).toLocaleTimeString()}.` : "Automatic saving ready. Original source files remain external.";
   const derived = [...entries.values()].filter(e => e.origin.kind === "derived").length;
-  if (derived) $("project-save-status").textContent += ` ${derived} processed clouds/meshes are outside the browser metadata copy; use Save workspace snapshot to keep their records.`;
+  if (derived && !(recovery?.snapshot && autosave.revision <= autosave.savedRevision)) $("project-save-status").textContent += ` ${derived} processed clouds/meshes are outside the browser metadata copy; use Save workspace snapshot to keep their records.`;
+  if (recovery?.snapshot && autosave.revision <= autosave.savedRevision) $("project-save-status").textContent += " Current point/mesh records are included in this browser copy.";
 }
 onProjectChanged(() => autosave.changed());
 listChanged.add(() => { if (entries.size || autosave.revision) projectChanged(); });
@@ -336,8 +346,10 @@ for (const event of ["input","change"]) document.addEventListener(event,e => {
   projectChanged();
 });
 window.addEventListener("beforeunload",event => {
-  const derivedNeedsSnapshot = [...entries.values()].some(e => e.origin.kind === "derived") && autosave.revision > snapshotRevision;
-  if (!autosave.unsaved && !derivedNeedsSnapshot) return;
+  const recordsSavedRevision = recovery?.snapshot ? autosave.savedRevision : -1;
+  const derivedNeedsSnapshot = [...entries.values()].some(e => e.origin.kind === "derived") && autosave.revision > Math.max(snapshotRevision,recordsSavedRevision);
+  const currentRecordsNeedSave = $<HTMLInputElement>("project-autosave-records").checked && entries.size > 0 && autosave.revision > Math.max(snapshotRevision,recordsSavedRevision);
+  if (!autosave.unsaved && !derivedNeedsSnapshot && !currentRecordsNeedSave) return;
   event.preventDefault(); event.returnValue = "";
 });
 document.addEventListener("visibilitychange",() => { if (document.hidden) void autosave.save(); });
@@ -347,23 +359,37 @@ $("project-autosave").onchange = () => {
   catch { /* Saving failures are reported independently by the recovery store. */ }
   renderSaveState(); autosave.schedule();
 };
+$("project-autosave-records").onchange = () => {
+  try { localStorage.setItem("cloudanalyzer-autosave-records",$<HTMLInputElement>("project-autosave-records").checked ? "on" : "off"); } catch { /* Storage failures are reported by the recovery commit. */ }
+  projectChanged();
+};
 $("project-autosave-retry").onclick = () => {
   if (autosave.paused && !offerRecovery) { checkingRecovery = true; renderSaveState(); void initializeRecovery(); }
   else autosave.retry();
 };
 $("project-resume").onclick = async () => {
   if (!recovery || completing || autosave.saving || pending) return;
+  if (taskActive() || !mapProjectReady() || !graphProjectReady()) return setStatus("Finish the current operation before resuming browser work.",true);
   recoveryAction = true; renderSaveState();
   try {
     const current = await readRecovery();
-    if (current?.token !== recoveryToken) throw new Error("The browser copy changed in another tab. Reload to choose which work to resume.");
-    stageProject(recovery.project); pendingDraft = recovery.draft; restoringBrowser = true;
+    if (!current || current.token !== recoveryToken) throw new Error("The browser copy changed in another tab. Reload to choose which work to resume.");
+    let files: File[] = [];
+    if (current?.snapshot) {
+      files = await readProjectSnapshot(new File([current.snapshot],"project.cloudanalyzer.zip"),new AbortController().signal);
+      if (JSON.stringify(parseProject(JSON.parse(await files[0].text()))) !== JSON.stringify(current.project)) throw new Error("Browser snapshot metadata differs from the recovery project");
+      if (current.project.session.clouds.some(saved => [...entries.values()].some(e => e.cloud.name === saved.name))) throw new Error("A current cloud has the same name as saved work. Export and close it before resuming the browser snapshot");
+    }
+    recovery = current;
+    stageProject(current.project); pendingDraft = current.draft; restoringBrowser = true;
+    for (const file of files.slice(1)) available.add(file);
     renderSaveState(); await completePendingProject();
   } catch (error) { setStatus(`Could not resume browser copy: ${errorText(error)}`,true); }
   finally { recoveryAction = false; renderSaveState(); }
 };
 $("project-download-recovery").onclick = () => {
   if (!recovery) return;
+  if (recovery.snapshot) { download(recovery.snapshot,"project.cloudanalyzer.zip"); setStatus("Downloaded the saved point/mesh workspace. Unsaved review text stays in browser recovery; save the lane review to include it in a portable project."); return; }
   download(new Blob([JSON.stringify(recovery.project)],{type:"application/json"}),"project.cloudanalyzer.json");
   setStatus("Downloaded the saved browser project. Unsaved review text stays in browser recovery; save a lane review before exporting it.");
 };
@@ -382,6 +408,7 @@ $("project-forget").onclick = async () => {
 async function initializeRecovery(): Promise<void> {
   try {
     try { autosave.enabled = localStorage.getItem("cloudanalyzer-autosave-enabled") !== "off"; } catch { /* IDB reports unavailable browser storage below. */ }
+    try { $<HTMLInputElement>("project-autosave-records").checked = localStorage.getItem("cloudanalyzer-autosave-records") === "on"; } catch { /* IDB reports unavailable browser storage below. */ }
     $<HTMLInputElement>("project-autosave").checked = autosave.enabled;
     recovery = await readRecovery(); recoveryToken = recovery?.token ?? null;
     offerRecovery = !!recovery; autosave.paused = offerRecovery;

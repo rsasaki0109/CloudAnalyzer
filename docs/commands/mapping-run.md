@@ -650,6 +650,66 @@ All tool calls use the `job_dir` and current revision returned by the runner.
 The draft decisions use proposal IDs; finish uses the shared job attempt ID.
 Geometry curve IDs and per-piece lane specifications are supplied automatically.
 
+## Continue from a delivered map
+
+`inspect_mapping_run` resumes an unfinished decision loop. To repair another region
+**after finishing**, call the new MCP entry with a distinct output directory, an
+explicit **3..8** HD attempt budget and a reason:
+
+```python
+continue_mapping_run(
+    finished_job_dir="/absolute/accepted-run",
+    out_dir="/absolute/next-region",
+    max_attempts=6,
+    reason="Repair the next inspected gap while retaining the accepted map pair",
+)
+```
+
+Startup reuses the exact delivered point cloud and audited HD map as candidate **1**,
+without odometry, fusion, proposal extraction or HD generation. The seed spends
+zero new attempts. Source, original retained frames/poses, native version, fixed
+layout, audit protocols and full-input extent goal remain unchanged. A finished
+run with no HD output, added frames, incomplete audits, structural errors or
+changed artifact hashes cannot seed this first version. Existing source holds
+are allowed and remain explicit; continuation is not evidence of accuracy.
+
+Inspect candidate 1's gaps afresh, preview an explicit new box with
+`inspect_local_density`, and call `retry_local_density` with that preview and
+reduced thinning. Continue the returned child, inspect its fresh proposals,
+draft **only missing ranges**, inspect/execute a combined gap patch, compare
+against candidate 1, and explicitly finish/adopt. Existing lane IDs, geometry,
+metadata and directed edges remain the baseline; outside point records retain
+bytes, attributes and order. Explicit source-checked connections can also extend
+the seed. The old point-update box is archived in `continuation.json`, so it does
+not constrain the next repair's box.
+
+Full-replacement drafts and frame-adoption trials are unavailable in the new
+root. If a trial fails or is worse, `finish` candidate **1** returns the exact prior
+map pair and the rejected trial evidence. The new family uses one transferred
+budget; continuation neither reopens a finished run nor restores a spent budget.
+`session_spent_attempts` and `cumulative_spent_attempts` count actual HD attempts,
+including failures, across roots/children, excluding inherited seeds and unused
+allocations. Point-fusion trials remain separately recorded in their stages.
+
+Thinning settings describe the **last full fusion**, rather than uniform resolution
+of a hybrid map. A new density trial must strictly reduce them within the existing
+scan **0.1 m** / map **0.05 m** floors. The runner does not reset these settings to
+allow repeated same-resolution updates; this limits repeated density repairs.
+
+Inputs are immutable **references**, not copies: preserve earlier directories.
+`continuation.json` hashes the previous finished run/job, exact map pair, point
+composition evidence, native/layout/source, and all saved decision/audit artifacts.
+These hashes are verified before subsequent actions and propagated into retry
+children. A change to a prior decision invalidates continuation rather than silently
+changing its baseline.
+
+[The NCLT continuation packet](../../benchmarks/vector-map/nclt-repair-continuation/README.md)
+records a live MCP session from the previously accepted June map. The second,
+disjoint point-density trial is **rejected** because retained source support regresses;
+the final output preserves the earlier local lane/connector and map pair exactly.
+The native fixture separately verifies two successive accepted gap patches.
+The real-log session adds no new HD extent or route connectivity.
+
 ## Resume and inspect results
 
 An agent can stop between actions and resume with `inspect_mapping_run`. Each

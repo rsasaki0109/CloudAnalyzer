@@ -232,6 +232,11 @@ Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/
 point-map generation with HD-road drafting. Give a calling MCP agent the log and
 one explicit lane-layout hypothesis; it inspects source candidates, records
 include/defer choices, generates/audits drafts and returns both artifact sets.
+A finished map can seed the next bounded repair session through
+`continue_mapping_run`: retain the delivered point/HD pair, inspect a new region,
+and adopt a local patch only after comparing against that accumulated baseline.
+[Continuation evidence](benchmarks/vector-map/nclt-repair-continuation/README.md)
+records a rejected NCLT trial that returns the prior map unchanged.
 When off-path bands fragment the route, the agent can explicitly re-extract
 path-containing candidates once and review the new geometry. The
 [NCLT comparison](benchmarks/vector-map/nclt-path-refinement/README.md) records

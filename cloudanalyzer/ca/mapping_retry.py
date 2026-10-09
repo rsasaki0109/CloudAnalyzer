@@ -39,6 +39,7 @@ def _inputs(job: dict[str, Any], parent: dict[str, Any], layout: dict[str, Any])
     correction = jobs._artifact(job["pointcloud"]["reports"]["correction"])
     return {"source": job["source"], "native": job["runtime"]["native"]["extension"], "layout": layout,
             "correction_report": correction, "proposal": parent["corridor_proposal"], "audits": parent["quality_report"],
+            **{f"continuation_{k}": v for k, v in job.get("continuation_inputs", {}).items()},
             **{f"pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()},
             **{f"parent_{k}": v for k, v in parent["files"].items()},
             **{f"geometry_{k}": v for k, v in parent["geometry_inputs"].items()}}

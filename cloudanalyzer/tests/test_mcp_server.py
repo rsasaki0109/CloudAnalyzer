@@ -54,7 +54,9 @@ def test_the_server_answers_over_stdio(tmp_path):
                 await session.initialize()
                 tools = (await session.list_tools()).tools
                 names = {t.name for t in tools}
-                assert {"start_mapping_run", "inspect_mapping_run", "advance_mapping_run"} <= names
+                assert {"start_mapping_run", "continue_mapping_run", "inspect_mapping_run", "advance_mapping_run"} <= names
+                continuation = next(t for t in tools if t.name == "continue_mapping_run")
+                assert set(continuation.model_dump(by_alias=True)["inputSchema"]["required"]) == {"finished_job_dir", "out_dir", "max_attempts", "reason"}
                 start_run = next(t for t in tools if t.name == "start_mapping_run")
                 assert set(start_run.model_dump(by_alias=True)["inputSchema"]["required"]) == {"source", "out_dir", "layout_hypothesis"}
                 advance_run = next(t for t in tools if t.name == "advance_mapping_run")

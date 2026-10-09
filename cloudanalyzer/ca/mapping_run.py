@@ -194,6 +194,8 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
     root = Path(job_dir).resolve()
     run = _load(root)
     job = jobs.inspect_mapping_job(str(root))
+    if "continuation" in job:
+        jobs._inputs(job)
     jobs._verify(job["source"])
     if job["pointcloud"]:
         for artifact in job["pointcloud"]["files"].values():
@@ -216,11 +218,11 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
     if stage and (Path(stage["child_job_dir"]) / "job.json").exists():
         cj = jobs.inspect_mapping_job(stage["child_job_dir"])
         retry_child = {"job_dir": stage["child_job_dir"], "status": cj["status"], "remaining_attempts": cj["remaining_attempts"]}
-    return {"schema": SCHEMA, "job_dir": str(root), "revision": run["revision"], "status": run["status"],
+    answer = {"schema": SCHEMA, "job_dir": str(root), "revision": run["revision"], "status": run["status"],
         "layout_hypothesis": json.loads(Path(run["layout_file"]["path"]).read_text(encoding="utf-8")),
         "pointcloud": job["pointcloud"], "remaining_attempts": job["remaining_attempts"], "candidate_index": index,
         "reviewed_candidates": run["reviewed_candidates"], "history_total": len(run["history"]),
-        "corridor_refinement": job.get("corridor_refinement"),
+        "corridor_refinement": job.get("corridor_refinement"), "continuation": job.get("continuation"),
         "pointcloud_retry": stage, "retry_child": retry_child, "pointcloud_retry_allowed": run.get("pointcloud_retry_allowed", True),
         "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "unused_frame_observation", "local_point_observation", "height_observation", "height_inputs", "patch_observation", "patch_inputs", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
@@ -247,6 +249,22 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             "finish_retry": {"type": "finish_retry", "candidate_id": "compared, finished retry-child candidate"},
             "resume": {"type": "resume"}, "finish": {"type": "finish", "candidate_id": "audited draft ID, or null if none"}},
         "deployment_ready": False}
+    if "continuation" in job:
+        for action in ("draft", "refine", "retry_pointcloud", "retry_frames", "retry_local_frames", "inspect_unused_frames", "inspect_local_points"):
+            answer["action_contract"].pop(action)
+        answer["action_contract"]["finish"]["candidate_id"] = "retained seed 1 or an audited connected descendant; null unavailable"
+        answer["guidance"] = ("This is a new repair session seeded by the exact delivered pair. Candidate 1 spends zero new attempts. "
+            "Keep prior run directories accessible. Inspect gaps afresh, choose an explicit new local-density box, then use a gap-only child patch. "
+            "The previous point-update box is archived, not the scope of this new repair. Existing lanes and connections are the baseline. "
+            "Use unchanged layout, original denominator and audit thresholds. Source holds remain. "
+            "Thinning options record the last fusion; they do not describe uniform density of a hybrid map. "
+            "A new density trial must reduce them within scan>=0.1 m and map>=0.05 m; automatic resolution resets are unavailable. "
+            "Compare gains AND losses before adoption. If held, finish candidate 1 to retain the exact prior pair. "
+            "Full-replacement drafts and added-frame trials are unavailable in this root; the local retry child can draft missing ranges. "
+            "Explicit inspected connections can extend the seed while preserving existing geometry and edges. "
+            "Require complete IR/reopened OSM audits from both estimators and no newly failing retained source locations. "
+            "Route reachability does not increase original source extent or prove legal turns, independent accuracy or deployment readiness.")
+    return answer
 
 
 def _draft(root: Path, run: dict[str, Any], entry: dict[str, Any], layout: dict[str, Any]) -> dict[str, Any]:
@@ -433,6 +451,10 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         job = jobs.inspect_mapping_job(str(root))
         jobs._inputs(job)
         kind = action["type"]
+        if "continuation" in job and kind in {"draft", "refine", "retry_pointcloud", "retry_frames", "retry_local_frames", "inspect_unused_frames", "inspect_local_points"}:
+            raise ValueError("continuation retains the adopted pair; use a local-density child patch or connect the seed")
+        if "continuation" in job and kind == "finish" and action.get("candidate_id") is None:
+            raise ValueError("continuation must retain an audited HD map")
         attempt: dict[str, Any] | None = None
         if run["status"] == "processing_failed" and kind != "finish":
             raise ValueError("finish with retained point-map outputs after preparation failed")
@@ -760,6 +782,13 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     run["output"].update(candidate_job_dir=str(child_root), retry_comparison=comparison,
                         baseline_candidate_id=job["pointcloud_retry"]["candidate_id"], child_decision_history=str(child_root / "run.json"))
                     run["output"]["artifacts"]["retry_comparison"] = comparison["file"]
+                if "continuation" in job:
+                    from ca.mapping_revision import spent
+                    session_spent = spent(jobs._load(root))
+                    run["output"]["continuation"] = {**job["continuation"],
+                        "session_spent_attempts": session_spent,
+                        "cumulative_spent_attempts": job["continuation"]["previous_spent_attempts"] + session_spent}
+                    run["output"]["artifacts"]["continuation_manifest"] = job["continuation"]["file"]
                 entry["status"] = "finished"
             run["status"] = "finished" if kind in {"finish", "finish_retry"} else "needs_agent"
         except BaseException as error:

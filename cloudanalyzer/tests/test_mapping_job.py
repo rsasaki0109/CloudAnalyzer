@@ -2433,3 +2433,148 @@ def test_explicit_hd_region_completed_preview_resumes_without_native_replay(unus
     resumed=_advance(child,{'type':'resume'})
     assert resumed['connection_observation']['candidates_total']==1 and resumed['remaining_attempts']==1
     assert len(jobs._load(child)['attempts'])==3
+
+
+def _finished_repair(root):
+    child = _region_child(root)
+    _advance(root, {'type': 'compare_retry', 'candidate_id': 3})
+    _advance(child, {'type': 'finish', 'candidate_id': 3})
+    return _advance(root, {'type': 'finish_retry', 'candidate_id': 3})['output']
+
+
+def test_continuation_reuses_exact_pair_without_native_processing_and_retains_budget(unused_frame_run, monkeypatch):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run
+    old = _finished_repair(root)
+    original = {p: p.read_bytes() for p in (root/'run.json', root/'job.json', root/'pointcloud-retry/job.json')}
+    monkeypatch.setattr(jobs, 'odometry', lambda *a, **k: pytest.fail('no repeated odometry'))
+    monkeypatch.setattr(jobs, 'fix_session', lambda *a, **k: pytest.fail('no repeated fusion'))
+    monkeypatch.setattr(jobs.core(), 'propose_road_corridors', lambda *a, **k: pytest.fail('no repeated extraction'))
+    new = root.parent/'continued'
+    result = continue_mapping_run(str(root), str(new), 4, 'Repair another observed region while retaining the adopted pair')
+    assert result['remaining_attempts'] == 4 and result['reviewed_candidates'] == []
+    assert result['pointcloud']['files']['map'] == old['artifacts']['map']
+    assert 'local_update_report' not in result['pointcloud']['files']
+    seed = jobs._load(new)['attempts'][0]
+    assert seed['files']['editable_map'] == old['artifacts']['hd_editable_map']
+    assert result['continuation']['previous_spent_attempts'] == 5
+    for p, value in original.items(): assert p.read_bytes() == value
+    output = _advance(new, {'type': 'finish', 'candidate_id': 1})['output']
+    assert output['artifacts']['map'] == old['artifacts']['map']
+    assert output['artifacts']['hd_map'] == old['artifacts']['hd_map']
+    assert output['continuation']['session_spent_attempts'] == 0
+    assert output['continuation']['cumulative_spent_attempts'] == 5
+    again = continue_mapping_run(str(new), str(root.parent/'continued-again'), 3, 'Keep immutable cumulative provenance')
+    assert again['continuation']['previous_spent_attempts'] == 5
+
+
+@pytest.mark.parametrize('budget', [True, 0, 2, 9, 3.5])
+def test_continuation_requires_explicit_bounded_budget_before_creation(unused_frame_run, budget):
+    from ca.mapping_revision import continue_mapping_run
+    target = unused_frame_run.parent/'bad-continuation'
+    with pytest.raises(ValueError): continue_mapping_run(str(unused_frame_run), str(target), budget, 'Explicit budget')
+    assert not target.exists()
+
+
+def test_continuation_rejects_unfinished_and_tampered_lineage_before_creation(unused_frame_run):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; target = root.parent/'continued'
+    with pytest.raises(ValueError, match='finished'): continue_mapping_run(str(root), str(target), 4, 'Unfinished')
+    assert not target.exists()
+    _finished_repair(root)
+    source = Path(jobs._load(root)['source']['path']); source.write_bytes(source.read_bytes()+b'changed')
+    with pytest.raises(ValueError, match='changed'): continue_mapping_run(str(root), str(target), 4, 'Changed source')
+    assert not target.exists()
+
+
+@pytest.mark.parametrize('action', [{'type':'draft','decisions':[]}, {'type':'retry_pointcloud','candidate_id':1,'gap_ids':[1],'options':{}}, {'type':'finish','candidate_id':None}])
+def test_continuation_rejects_replacements_without_history_or_spending(unused_frame_run, action):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Preserve adopted pair')
+    before = (target/'run.json').read_bytes()
+    with pytest.raises(ValueError, match='continuation'): _advance(target, action)
+    assert (target/'run.json').read_bytes() == before
+    assert jobs.inspect_mapping_job(str(target))['remaining_attempts'] == 4
+
+
+def test_continuation_second_local_patch_preserves_previous_repair_and_all_motion(unused_frame_run):
+    from ca.mapping_revision import continue_mapping_run
+    from ca.mapping_connections import edges
+    from ca.mapping_patch import _preserved
+    from ca.mapping_local_points import records, mask
+    root = unused_frame_run; first = _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Explicit budget for the next disjoint repair')
+    before_ir = json.loads(Path(first['artifacts']['hd_editable_map']['path']).read_text())
+    _advance(target, {'type':'inspect_gaps','candidate_id':1,'offset':0})
+    preview = _advance(target, {'type':'inspect_local_density','candidate_id':1,'gap_ids':[1],'bounds_xy':[6.,-1.6,8.4,1.6]})['local_point_observation']
+    result = _advance(target, {'type':'retry_local_density','candidate_id':1,'options':{'scan_voxel_m':.1,'map_voxel_m':.05},'preview_file':preview['file']})
+    assert result['pointcloud_retry_result']['status'] == 'ready', result
+    child = target/'pointcloud-retry'
+    _advance(child, {'type':'inspect','candidate_ids':[1]})
+    _advance(child, {'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':6.,'to_m':8.,'reason':'Second missing interval only'}]})
+    _advance(child, {'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched = _advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status'] == 'audited_draft', patched
+    after = jobs._load(child)['attempts'][2]
+    after_ir = json.loads(Path(after['files']['editable_map']['path']).read_text())
+    _preserved(before_ir, after_ir, edges(after_ir)-edges(before_ir))
+    comparison = _advance(target, {'type':'compare_retry','candidate_id':3})['retry_comparison']
+    assert comparison['gained_source_length_m'] == 2 and comparison['lost_source_length_m'] == 0
+    _, baseline = records(Path(first['artifacts']['map']['path']))
+    _, updated = records(Path(jobs._load(child)['pointcloud']['files']['map']['path']))
+    box = preview['effective_bounds_xy']
+    assert baseline[~mask(baseline, box)].tobytes() == updated[~mask(updated, box)].tobytes()
+    _advance(child, {'type':'finish','candidate_id':3})
+    final = _advance(target, {'type':'finish_retry','candidate_id':3})['output']
+    assert final['continuation']['cumulative_spent_attempts'] == 8
+    for key in ('graph','trajectory'):
+        assert final['artifacts'][key]['sha256'] == first['artifacts'][key]['sha256']
+        assert Path(final['artifacts'][key]['path']).read_bytes() == Path(first['artifacts'][key]['path']).read_bytes()
+
+
+def test_continuation_failed_local_trial_can_finish_exact_seed(unused_frame_run, monkeypatch):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; first = _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Retain the earlier pair if the next trial fails')
+    _advance(target, {'type':'inspect_gaps','candidate_id':1,'offset':0})
+    preview = _advance(target, {'type':'inspect_local_density','candidate_id':1,'gap_ids':[1],'bounds_xy':[6.,-1.6,8.4,1.6]})['local_point_observation']
+    original = jobs.core().audit_vector_map_quality_details
+    def regressed(*args):
+        audit = json.loads(original(*args)); audit['quality']['lanes'][0]['left']['start_supported'] = False
+        return json.dumps(audit)
+    monkeypatch.setattr(jobs.core(), 'audit_vector_map_quality_details', regressed)
+    result = _advance(target, {'type':'retry_local_density','candidate_id':1,'options':{'scan_voxel_m':.1,'map_voxel_m':.05},'preview_file':preview['file']})
+    assert result['pointcloud_retry_result']['stage']['status'] == 'failed'
+    assert jobs.inspect_mapping_job(str(target))['remaining_attempts'] == 0
+    final = _advance(target, {'type':'finish','candidate_id':1})['output']
+    for key in ('map','hd_map'): assert final['artifacts'][key] == first['artifacts'][key]
+    assert final['continuation']['cumulative_spent_attempts'] == 5
+    assert final['artifacts']['pointcloud_trial_local_checks']
+
+
+@pytest.mark.parametrize('which', ['previous_run', 'manifest', 'old_patch_checks'])
+def test_continuation_pins_prior_decisions_before_new_allocation(unused_frame_run, which):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Retain frozen decisions')
+    saved = jobs._load(target)
+    artifact = {'previous_run': root/'run.json', 'manifest': target/'continuation.json',
+                'old_patch_checks': Path(saved['attempts'][0]['patch_checks']['path'])}[which]
+    artifact.write_bytes(artifact.read_bytes()+b' ')
+    before = (target/'run.json').read_bytes()
+    with pytest.raises(ValueError, match='changed'):
+        _advance(target, {'type':'inspect_gaps','candidate_id':1,'offset':0})
+    assert (target/'run.json').read_bytes() == before and 'pointcloud_retry' not in jobs._load(target)
+
+
+def test_continuation_low_level_generation_cannot_replace_seed(unused_frame_run):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Retain the accepted seed')
+    before = (target/'job.json').read_bytes()
+    with pytest.raises(ValueError, match='continuation'):
+        jobs.generate_mapping_geometry(str(target), [], 'No complete replacement')
+    with pytest.raises(ValueError, match='continuation'):
+        jobs.generate_mapping_candidate(str(target), {'forward_lanes':1,'backward_lanes':0,'left_hand_traffic':False,'lane_width':3.5,'speed_limit':20}, 'No complete replacement')
+    assert (target/'job.json').read_bytes() == before

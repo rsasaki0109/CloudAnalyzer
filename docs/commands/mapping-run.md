@@ -792,3 +792,48 @@ agent continues the loop through MCP. Starting alone does not finish HD mapping.
 A failed draft exits nonzero while preserving its run state and prior artifacts.
 See the [two NCLT calling-agent runs](../../benchmarks/vector-map/nclt-agent-run/README.md)
 for full live decision traces, unchanged layout priors and original-input extent.
+
+## Add missing HD intervals without rebuilding the point map
+
+Use `repair_hd` when the retained point map already contains an observed corridor
+that was omitted from the accepted HD draft. Inspect the root candidate's gaps
+first. Each returned gap now includes `retained_hd_occupancy`: a source-extent gap
+can already contain a retained connector. `unoccupied_intervals` identifies the
+parts available for an addition; it does not establish source support.
+
+```json
+{"type":"repair_hd","candidate_id":1,"gap_ids":[9]}
+```
+
+This creates an `hd-repair` child using the **exact retained point-cloud files and
+source proposal**. It performs no odometry, fusion or corridor re-extraction and
+spends no HD attempt during preparation. At least three remaining shared attempts
+are required for geometry, lane generation and a combined gap patch. HD-only,
+density and frame trials share one root repair allocation. Transferred attempts
+cannot also be spent by the root; failed attempts count and unused allocations
+are not restored. A continuation can start this child with its explicit new budget.
+
+Inspect the frozen proposal in the child, then `draft` only observed missing
+station ranges using the unchanged layout. Proposal refinement is unavailable in
+this child. `inspect_patch` and `patch_gaps` preserve the root's geometry, IDs,
+metadata and directed edges. Added lanes must lie entirely within the selected
+root gaps and must not overlap any retained lane or connector. All new traces
+require full support in the four complete audits, with no newly failing retained
+sample locations. An isolated draft cannot be adopted as a replacement map.
+
+Use `compare_retry`, finish the child with the combined candidate, then explicitly
+`finish_retry` in the root. The comparison records exact point-artifact identity,
+gained and lost source extent and route spans. Final `hd_repair_decision` records
+whether the HD patch was adopted and that `pointcloud_regenerated` is false.
+Finishing the root baseline retains the preceding pair after a rejected trial.
+
+[The NCLT HD-only packet](../../benchmarks/vector-map/nclt-hd-only-repair/README.md)
+records a live MCP session that adds 118–120 m without changing the 646,309-point
+map. Source extent increases from 118 to 120 m with no lost intervals. An earlier
+184–188 m addition passes its isolated source audits but is rejected before the
+combined patch because retained connector 45 already occupies it. The runner
+then uses only the nonoverlapping interval. No supported connector is offered
+for the new fragment; the longest route remains 66 m. This is a recorded agent
+session with prior diagnostic probes, rather than an independent autonomy or
+accuracy benchmark. Existing source disagreements and unmet full-drive extent
+remain visible.

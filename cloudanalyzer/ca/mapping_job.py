@@ -92,6 +92,10 @@ def _inputs(job: dict[str, Any]) -> None:
         _verify(artifact)
     for artifact in job["pointcloud"].get("source_motion", {}).values():
         _verify(artifact)
+    if "hd_repair_manifest" in job.get("retry_inputs", {}):
+        from ca.mapping_hd_repair import verify
+
+        verify(job)
     if _native() != job["runtime"]["native"]:
         raise ValueError("native core changed; use a new mapping job")
     for artifact in job["pointcloud"]["files"].values():
@@ -298,6 +302,8 @@ def _refine_mapping_corridors(job_dir: str, reason: str) -> dict[str, Any]:
     with _locked(root):
         job = _load(root)
         _inputs(job)
+        if "hd_repair_manifest" in job.get("retry_inputs", {}):
+            raise ValueError("HD-only repair retains the frozen source proposal")
         prior = job.get("corridor_proposal")
         if not prior or prior["status"] != "ready":
             raise ValueError("refinement requires a ready original corridor proposal")

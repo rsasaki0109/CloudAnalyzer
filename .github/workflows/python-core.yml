@@ -119,7 +119,7 @@ jobs:
           pip install dist/*.whl
       - name: Rust core agrees with Open3D and laspy
         working-directory: cloudanalyzer
-        run: python -m pytest -q tests/test_rust_core.py tests/test_metrics.py tests/test_io.py tests/test_vector_map.py tests/test_mapping_job.py tests/test_http_ranges.py tests/test_copc_stream.py tests/test_copc_tiles.py tests/test_copc_scale_benchmark.py
+        run: python -m pytest -q tests/test_rust_core.py tests/test_metrics.py tests/test_io.py tests/test_vector_map.py tests/test_mapping_job.py tests/test_mapping_hd_repair.py tests/test_http_ranges.py tests/test_copc_stream.py tests/test_copc_tiles.py tests/test_copc_scale_benchmark.py
 
   publish:
     # Push a tag such as `core-v0.1.0` to publish to PyPI (trusted publishing).

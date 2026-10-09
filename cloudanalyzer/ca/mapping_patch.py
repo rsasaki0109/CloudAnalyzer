@@ -82,6 +82,8 @@ def validate(root: Path, cid: int, gap_ids: Any) -> dict[str, Any]:
     seen = {g["id"] for receipt in receipts if receipt["file"] == evidence for g in receipt["gaps"]}
     if not isinstance(gap_ids, list) or not 1 <= len(gap_ids) <= 32 or any(type(i) is not int for i in gap_ids) or len(set(gap_ids)) != len(gap_ids) or not set(gap_ids) <= seen:
         raise ValueError("choose 1..32 distinct gap IDs inspected through the root run")
+    if stage.get("strategy") == "hd_only" and not set(gap_ids) <= set(stage["gap_ids"]):
+        raise ValueError("HD-only additions must use the allocated root gaps")
     chosen = [g for g in gaps["gaps"] if g["id"] in gap_ids]
     original, trial = _read(baseline["files"]["editable_map"]), _read(candidate["files"]["editable_map"])
     from ca import mapping_local_points as local

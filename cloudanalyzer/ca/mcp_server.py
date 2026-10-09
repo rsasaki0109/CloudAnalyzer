@@ -24,9 +24,10 @@ CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machin
 
 To repair another region of a finished map, use continue_mapping_run with a new
 output directory, explicit budget and reason. Candidate 1 retains the exact delivered
-pair without spending an attempt. Use local-density child patches, preserving earlier
-lanes/connections and outside point records. inspect_protected_density previews a
-box while retaining every old lane hull plus its saved source-audit radius at all
+pair without spending an attempt. repair_hd starts a gap-only HD child with the
+exact retained point map and source proposal, sharing the repair budget and requiring
+a combined patch before adoption. Local-density child patches preserve earlier
+lanes/connections and outside point records. inspect_protected_density previews a box while retaining every old lane hull plus its saved source-audit radius at all
 heights; retry_local_density uses that exact preview. It can exclude useful new
 evidence and keeps all four audit gates. Keep referenced prior runs accessible.
 

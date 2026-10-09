@@ -1,0 +1,411 @@
+{
+  "candidate_id": 2,
+  "gap_ids": [
+    29
+  ],
+  "inputs": {
+    "gap_evidence": {
+      "path": "run/gaps-01.json",
+      "sha256": "45e6e5929dfae4a04493edef3dc23f5a0676247aa8bd56339314726ae08f1292",
+      "bytes": 652489
+    },
+    "root_layout": {
+      "path": "run/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "child_layout": {
+      "path": "run/hd-repair/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "baseline_map": {
+      "path": "env/nclt-hd-only-june/hd-repair/candidate-05/lanelet2_map.osm",
+      "sha256": "6e591fa0904e270ff6ca9f0dd2cc8e58d603d08292a739d772a9e76eaa076ab4",
+      "bytes": 61353
+    },
+    "baseline_projector": {
+      "path": "env/nclt-hd-only-june/hd-repair/candidate-05/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "baseline_editable_map": {
+      "path": "env/nclt-hd-only-june/hd-repair/candidate-05/vector_map.json",
+      "sha256": "715f4199d6faa3fc5a37c6f3cc2038085fafbc7ad1a80fcd293c4c2407ce1aff",
+      "bytes": 26179
+    },
+    "baseline_report": {
+      "path": "env/nclt-hd-only-june/hd-repair/candidate-05/report.json",
+      "sha256": "17f98380568f25428e830c871f8a9ab5be3910318b270d5ba73e5764128a220c",
+      "bytes": 77573
+    },
+    "baseline_audits": {
+      "path": "env/nclt-hd-only-june/hd-repair/candidate-05/source-quality.json",
+      "sha256": "67a4a3cb132878d9a5316a2e9ac5cb02547ca2f8e428ae827794a2f86a454106",
+      "bytes": 229843
+    },
+    "baseline_geometry_editable_map": {
+      "path": "env/nclt-hd-only-june/hd-repair/geometry-03/vector_map.json",
+      "sha256": "fd234692699061e80c3dc228d46f040d6d44088eab220ef25f2e2ad863be2560",
+      "bytes": 2229
+    },
+    "baseline_geometry_report": {
+      "path": "env/nclt-hd-only-june/hd-repair/geometry-03/report.json",
+      "sha256": "b59aac2197b84057781c7242e87c718d3e26ef7c694c067f45e7438b88991666",
+      "bytes": 18473
+    },
+    "baseline_proposal": {
+      "path": "env/nclt-hd-region-june/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "2c57c290bc1e629cc7b82471082e9a1c37c3d8a4ee26ca9ed2ad1ffacf88e0fe",
+      "bytes": 393753
+    },
+    "addition_map": {
+      "path": "run/hd-repair/candidate-02/lanelet2_map.osm",
+      "sha256": "d235ba09ffb36a2b03ec0aec89413a6d3c786f5641bbd856323476737991afa3",
+      "bytes": 3055
+    },
+    "addition_projector": {
+      "path": "run/hd-repair/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "addition_editable_map": {
+      "path": "run/hd-repair/candidate-02/vector_map.json",
+      "sha256": "4ee14d72628c32dcc2bbf840f352468aab409975eb09247e050bf8f262f3983d",
+      "bytes": 2353
+    },
+    "addition_report": {
+      "path": "run/hd-repair/candidate-02/report.json",
+      "sha256": "8bf17402ac9917f9906845beb47cefa6956d10e4da465f6c76b04ab993254bc1",
+      "bytes": 18575
+    },
+    "addition_audits": {
+      "path": "run/hd-repair/candidate-02/source-quality.json",
+      "sha256": "4d4f3d777861a3ff2c4c9e82dfddee6664fb3b12f007f05075b1ecd7a54cef3c",
+      "bytes": 14129
+    },
+    "addition_geometry_editable_map": {
+      "path": "run/hd-repair/geometry-01/vector_map.json",
+      "sha256": "b520557d7c09a0d664eaa494a365552a8c66dd3e7c106f4b9fb00e2e414d2fd5",
+      "bytes": 3855
+    },
+    "addition_geometry_report": {
+      "path": "run/hd-repair/geometry-01/report.json",
+      "sha256": "3581f83f029c16d5b3bd2a12270c48e49fd9bfa86fe507c3051607894c24a908",
+      "bytes": 22599
+    },
+    "addition_proposal": {
+      "path": "env/nclt-hd-region-june/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "2c57c290bc1e629cc7b82471082e9a1c37c3d8a4ee26ca9ed2ad1ffacf88e0fe",
+      "bytes": 393753
+    },
+    "baseline_pointcloud_map": {
+      "path": "env/nclt-hd-region-june/pointcloud-retry/local_map.ply",
+      "sha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad",
+      "bytes": 20682062
+    },
+    "baseline_pointcloud_graph": {
+      "path": "env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "baseline_pointcloud_trajectory": {
+      "path": "env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "trial_pointcloud_map": {
+      "path": "env/nclt-hd-region-june/pointcloud-retry/local_map.ply",
+      "sha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad",
+      "bytes": 20682062
+    },
+    "trial_pointcloud_graph": {
+      "path": "env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "trial_pointcloud_trajectory": {
+      "path": "env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    }
+  },
+  "pairs": [
+    {
+      "from": "baseline:36",
+      "to": "addition:3",
+      "from_lane": 36,
+      "to_lane": 62,
+      "station_m": 222,
+      "boundary_endpoint_distances_m": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "from": "addition:3",
+      "to": "addition:6",
+      "from_lane": 62,
+      "to_lane": 63,
+      "station_m": 224.0,
+      "boundary_endpoint_distances_m": [
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "addition_lane_id_map": {
+    "3": 62,
+    "6": 63
+  },
+  "addition_intervals": {
+    "3": [
+      222.0,
+      224.0
+    ],
+    "6": [
+      224.0,
+      226.0
+    ]
+  },
+  "baseline_routes": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 13,
+    "longest_route_station_span_m": 66,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 0,
+        "to_m": 8,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 14,
+        "to_m": 18,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          51,
+          54,
+          9
+        ],
+        "from_m": 22,
+        "to_m": 36,
+        "station_span_m": 14
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 48,
+        "to_m": 114,
+        "station_span_m": 66
+      },
+      {
+        "lane_ids": [
+          57
+        ],
+        "from_m": 118,
+        "to_m": 120,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 146,
+        "to_m": 148,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          18
+        ],
+        "from_m": 152,
+        "to_m": 156,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          21
+        ],
+        "from_m": 168,
+        "to_m": 172,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          24,
+          45,
+          27,
+          48,
+          30
+        ],
+        "from_m": 180,
+        "to_m": 202,
+        "station_span_m": 22
+      },
+      {
+        "lane_ids": [
+          33
+        ],
+        "from_m": 210,
+        "to_m": 212,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          36
+        ],
+        "from_m": 220,
+        "to_m": 222,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          39
+        ],
+        "from_m": 232,
+        "to_m": 238,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          42
+        ],
+        "from_m": 242,
+        "to_m": 246,
+        "station_span_m": 4
+      }
+    ],
+    "legal_routing_verified": false
+  },
+  "proposed_routes": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 13,
+    "longest_route_station_span_m": 66,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 0,
+        "to_m": 8,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 14,
+        "to_m": 18,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          51,
+          54,
+          9
+        ],
+        "from_m": 22,
+        "to_m": 36,
+        "station_span_m": 14
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 48,
+        "to_m": 114,
+        "station_span_m": 66
+      },
+      {
+        "lane_ids": [
+          57
+        ],
+        "from_m": 118,
+        "to_m": 120,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 146,
+        "to_m": 148,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          18
+        ],
+        "from_m": 152,
+        "to_m": 156,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          21
+        ],
+        "from_m": 168,
+        "to_m": 172,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          24,
+          45,
+          27,
+          48,
+          30
+        ],
+        "from_m": 180,
+        "to_m": 202,
+        "station_span_m": 22
+      },
+      {
+        "lane_ids": [
+          33
+        ],
+        "from_m": 210,
+        "to_m": 212,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          36,
+          62,
+          63
+        ],
+        "from_m": 220,
+        "to_m": 226.0,
+        "station_span_m": 6.0
+      },
+      {
+        "lane_ids": [
+          39
+        ],
+        "from_m": 232,
+        "to_m": 238,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          42
+        ],
+        "from_m": 242,
+        "to_m": 246,
+        "station_span_m": 4
+      }
+    ],
+    "legal_routing_verified": false
+  },
+  "holds": [],
+  "note": "Exact geometric endpoint links can be inferred by the OSM reader. Inspect and explicitly adopt every offered pair, or revise the addition draft. Original connections remain fixed. These links do not establish legal routing."
+}

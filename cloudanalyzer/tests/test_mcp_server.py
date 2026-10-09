@@ -65,6 +65,11 @@ def test_the_server_answers_over_stdio(tmp_path):
                 bundle = next(t for t in tools if t.name == "inspect_mapping_bundle")
                 assert bundle.model_dump(by_alias=True)["inputSchema"]["required"] == ["bundle_path"]
                 assert {"start_mapping_run", "continue_mapping_run", "inspect_mapping_run", "advance_mapping_run"} <= names
+                application = next(t for t in tools if t.name == "apply_supported_hd_plan")
+                application_schema = application.model_dump(by_alias=True)["inputSchema"]
+                assert set(application_schema["required"]) == {"job_dir", "plan_files", "interval_ids", "connect_endpoints", "reason", "expected_revision"}
+                assert application_schema["properties"]["plan_files"]["type"] == "array"
+                assert application_schema["properties"]["connect_endpoints"]["type"] == "boolean"
                 continuation = next(t for t in tools if t.name == "continue_mapping_run")
                 assert set(continuation.model_dump(by_alias=True)["inputSchema"]["required"]) == {"finished_job_dir", "out_dir", "max_attempts", "reason"}
                 start_run = next(t for t in tools if t.name == "start_mapping_run")

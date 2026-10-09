@@ -978,3 +978,56 @@ local route from 220–222 to 220–226 m. All point files and prior geometry/ed
 retained; the global longest route remains 66 m. The calling agent selects ranges
 from MCP evidence without separate offline lane-generation probes in this session.
 This is a recorded workflow, not an independent model evaluation or accuracy test.
+
+## Apply an explicit supported plan
+
+After reading `inspect_hd_plan` pages, a calling MCP agent can execute its chosen
+intervals with one tool call:
+
+```json
+{
+  "job_dir": "/maps/new-repair-session",
+  "plan_files": ["/maps/new-repair-session/inspected-plan-page.json"],
+  "interval_ids": [3, 7],
+  "connect_endpoints": true,
+  "reason": "Add only the inspected intervals supported by both estimators",
+  "expected_revision": 5
+}
+```
+
+Pass this object to `apply_supported_hd_plan`. The paths must be the exact saved
+artifacts returned by inspections on this root, not copies. Supply one to eight
+distinct pages from the same frozen index and one to eight distinct global
+interval IDs. Every selected interval must have complete reference support from
+both estimators, unambiguous source geometry and endpoints visible in the bounded
+candidate preview. Unsupported, unseen or overlapping choices are rejected before
+a child or generation attempt is created.
+
+The tool prepares an unchanged-point-map HD child, inspects its source proposal,
+drafts only the chosen ranges, inspects all offered exact geometric endpoint
+pairs, creates a combined patch, finishes the audited child and compares it with
+the retained baseline. This uses at most three shared HD generation attempts.
+`connect_endpoints: true` explicitly permits all inspected coincident pairs;
+`false` requires an isolated addition and returns a hold if a join would be needed.
+It establishes neither traffic permission nor lane semantics.
+
+`ready_for_agent_decision` returns the comparison, retention checks, child output
+and hashed application policy. The root remains unfinished. Read the results and
+use `advance_mapping_run` with `finish_retry` to adopt explicitly, or finish the
+root baseline to retain the prior map. Holds and failed attempts remain recorded.
+The helper neither ranks candidates nor calls a model or adopts the parent.
+
+After interruption, inspect the root revision and repeat the same choices and
+reason. Completed stages are verified and reused; interrupted ordinary actions
+use their existing resume path. Failed native attempts are never silently rerun.
+Changed policies, stale revisions, source/artifact changes or unrelated manual
+child decisions require inspection and manual continuation. When the root is
+finished, its output retains the application policy for portable review and later
+continuation. Keep the original source and prior run directories accessible.
+
+[The two-drive NCLT application packet](../../benchmarks/vector-map/nclt-hd-plan-application/README.md)
+records live MCP application with explicit choices and a separate root adoption.
+June replays a known 4 m extension; April adds a freshly inspected contiguous
+14 m gap. Each uses three actual HD attempts with unchanged point/proposal files,
+zero lost extent and four final audits. A repeated June call spends no additional
+attempt; an unsupported April choice is rejected before child allocation.

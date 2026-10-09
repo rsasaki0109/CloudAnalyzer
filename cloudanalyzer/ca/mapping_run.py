@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from contextlib import contextmanager
@@ -817,6 +818,13 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                         artifacts["hd_connection_proposal"] = attempt["connection_proposal"]
                     for key in ('height_checks', 'height_audits', 'height_trial'):
                         if key in attempt: artifacts[f'hd_{key}'] = attempt[key]
+                application = root / "hd-plan-application.json"
+                if application.exists():
+                    policy = json.loads(application.read_text())
+                    policy_hash = hashlib.sha256(json.dumps(policy, sort_keys=True).encode()).hexdigest()
+                    if not any(h["reason"] == f"HD plan {policy_hash}: prepare child" for h in run["history"]):
+                        raise ValueError("HD application policy differs from the recorded decision")
+                    artifacts["hd_application_policy"] = jobs._artifact(application)
                 run["output"] = {"status": "draft_needs_review" if action["candidate_id"] is not None else "hd_unavailable",
                     "candidate_id": action["candidate_id"], "artifacts": artifacts,
                     "diagnosis": diagnosis if action["candidate_id"] is not None else None,

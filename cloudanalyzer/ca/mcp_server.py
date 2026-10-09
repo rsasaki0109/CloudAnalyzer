@@ -18,6 +18,7 @@ from ca.vector_map import build_vector_map, connect_vector_map_junctions, measur
 from ca.mapping_job import start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate
 from ca.mapping_run import start_mapping_run, inspect_mapping_run, advance_mapping_run
 from ca.mapping_revision import continue_mapping_run
+from ca.mapping_plan_apply import apply_supported_hd_plan
 from ca.mapping_bundle import export_mapping_run, export_mapping_preview, inspect_mapping_bundle
 
 INSTRUCTIONS = """\
@@ -39,6 +40,12 @@ output directory, explicit budget and reason. Candidate 1 retains the exact deli
 pair without spending an attempt. inspect_hd_plan checks observed missing reference
 intervals against both ground estimators, width requirements and retained HD occupancy
 before lane generation. It performs no lane export or automatic adoption.
+After choosing 1..8 fully supported nonambiguous intervals on retained plan pages,
+apply_supported_hd_plan executes their HD-only draft, combined retention-checked
+patch and baseline comparison with an explicit endpoint-link policy. Completed
+stages are reused on retry; failed attempts are not silently repeated. Read its
+comparison and holds, then finish_retry explicitly or retain the baseline. It
+never adopts the parent automatically or establishes independent accuracy.
 repair_hd starts a gap-only HD child with the
 exact retained point map and source proposal, sharing the repair budget and requiring
 a combined patch before adoption. Local-density child patches preserve earlier
@@ -431,7 +438,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

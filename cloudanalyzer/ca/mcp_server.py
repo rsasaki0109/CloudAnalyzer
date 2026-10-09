@@ -43,6 +43,14 @@ Remaining HD attempts transfer to a child run; inspect its fresh proposal IDs an
 draft there. compare_retry reports actual gained AND lost source intervals, all four
 audits and global route spans. Finish the child, then explicitly finish_retry after
 comparison, or finish the root baseline if the trial is worse. No automatic adoption.
+Alternatively use inspect_unused_frames after gap inspection to find unused raw
+frames observing missing intervals, with interpolated corrected-pose hypotheses
+and consistency checks against both neighboring retained scans. retry_frames
+explicitly fuses inspected eligible IDs, keeping thinning and existing corrected
+poses fixed. ICP's alternative correction is not applied and does not certify
+accuracy. Reference and expanded fusion graphs/trajectories are both retained.
+This shares the single root point-map retry and transferred HD budget; compare
+actual audited maps before explicitly delivering a trial or baseline pair.
 Use the returned revision for every action. Interrupted processing actions can resume without
 replaying completed stages. Do not stop after startup or a single failed trial;
 finish with a useful retained draft or explain why no HD draft can be generated.

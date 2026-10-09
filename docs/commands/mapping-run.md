@@ -244,6 +244,78 @@ The [two NCLT density trials](../../benchmarks/vector-map/nclt-pointcloud-retry/
 retained their original maps: more points recovered some intervals but lost more,
 and global route spans decreased. The saved comparison exposes that outcome.
 
+### Reuse inspected non-keyframe observations
+
+New jobs hash their original odometry report and timestamped trajectory before
+point-map correction. After `inspect_gaps`, inspect excluded source frames:
+
+```json
+{"type": "inspect_unused_frames", "candidate_id": 3, "offset": 0}
+```
+
+Pages contain eight frames in original recording order, their gap-return counts,
+pose hypotheses, both neighboring scan checks, eligibility and explicit holds.
+The full hashed report retains all observations. Original odometry must have one
+finite pose per freshly decoded frame, with matching strictly increasing timestamps.
+Older jobs without hashed original motion need a new run for this trial; existing
+density trials and retained outputs remain available.
+
+For a frame between two original corrected keyframes, the runner interpolates
+their corrections to original odometry: translation linearly and rotation with
+SLERP. It applies that correction to the frame's original pose. It never extrapolates
+past either end or across brackets longer than 4 s or 3 m. All existing corrected
+poses stay fixed. At least three raw returns must fall within 0.75 m of a saved
+missing-interval profile; these counts are descriptive, not proof of coherent ground.
+
+The hypothesis must agree with **both** original bracket scans. Each check uses
+at most 6000 deterministic sample points, 0.75 m nearest-neighbor reach and at least
+65% overlap both before and after ICP. Trimmed ICP uses 60% overlap and 30 iterations,
+must converge, have RMS at most 0.5 m without worsening, and suggest at most 0.25 m
+translation at the sensor origin and 1.5 degrees rotation. The ICP correction is
+**not applied**. Checks establish geometric consistency with correlated observations
+from this log; they do not prove independent pose accuracy or resolve weakly
+constrained scene geometry. Thresholds are fixed in the reported protocol.
+
+Inspection is limited to 4096 raw frames, 256 excluded frames and five million
+total raw returns. Larger recordings need a smaller input. Completed inspection
+is cached without another registration pass. Reader/processing failures remain
+visible, and the root can finish with its retained audited baseline.
+
+Explicitly adopt IDs that were returned as eligible through this run:
+
+```json
+{"type": "retry_frames", "candidate_id": 3, "frame_ids": [6, 12, 51]}
+```
+
+Use actual IDs from the observations, not this example. Choose 1–64 distinct frames;
+withheld, duplicate or unseen IDs cannot consume a retry allocation. The trial
+keeps original scan/map thinning, dynamic-filter policy, native binary, original
+corrected keyframes, source thresholds, association, initial lane layout and extent
+goal fixed. Filtering outcomes can change with the added observations. Density and
+unused-frame strategies share **one** root retry and the transferred HD budget;
+children cannot retry recursively. There is no automatic frame ranking or adoption.
+
+The child fuses exactly the original retained frames plus the explicitly chosen
+new IDs, retaining original frame names and checked return-byte hashes. Its
+`fusion_graph`, `fusion_trajectory` and `fusion_scans` artifacts describe the actual
+expanded fusion. Its `graph` and `trajectory` remain the **byte-identical original
+reference**, used for HD extraction and the original station denominator. They
+do not describe the expanded fusion set. The report verifies every original and
+added pose survived native roundtrips and records all excluded raw IDs.
+
+Inspect fresh child proposals and draft the fixed layout there; examine connections
+within the child budget. Then use the root's existing `compare_retry` to read
+actual gained/lost source intervals, all four audits and global routes. Finish the
+child, then explicitly `finish_retry` to deliver its point/HD pair, or normal
+`finish` to retain the baseline. More observing frames alone do not establish an
+improvement. Failed fusion and interrupted completed stages retain the same
+allocation and cannot silently replay processing.
+
+The [NCLT unused-frame trials](../../benchmarks/vector-map/nclt-unused-frames/README.md)
+retain both actual point/HD comparisons: April's partial improvement was explicitly
+adopted, while June's baseline was kept because its trial shortened the longest
+route and increased fragmentation despite gaining net source extent.
+
 `layout_hypothesis` / `layout.json`:
 
 ```json

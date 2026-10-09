@@ -90,6 +90,8 @@ def _inputs(job: dict[str, Any]) -> None:
     _verify(job["source"])
     for artifact in job.get("retry_inputs", {}).values():
         _verify(artifact)
+    for artifact in job["pointcloud"].get("source_motion", {}).values():
+        _verify(artifact)
     if _native() != job["runtime"]["native"]:
         raise ValueError("native core changed; use a new mapping job")
     for artifact in job["pointcloud"]["files"].values():
@@ -170,11 +172,15 @@ def start_mapping_job(
             initial = odometry(str(source_path), str(root / "odometry"),
                                pointcloud_topic=pointcloud_topic, imu_topic=imu_topic)
             _save(root / "odometry-report.json", initial)
+            source_motion = {"odometry_report": _artifact(root / "odometry-report.json"),
+                             "trajectory": _artifact(initial["trajectory"])}
             corrected = fix_session(initial["scans"], str(root / "pointcloud"),
                                     poses=initial["trajectory"], gravity=initial["gravity"],
                                     keyframe_spacing=keyframe_spacing, remove_dynamic=remove_dynamic)
             _save(root / "pointcloud-report.json", corrected)
             _verify(job["source"])
+            for artifact in source_motion.values():
+                _verify(artifact)
             if corrected["map_points"] <= 0:
                 raise ValueError("corrected point-cloud map is empty")
             files = corrected["outputs"]
@@ -185,6 +191,7 @@ def start_mapping_job(
                 "path_length_m": initial["path_length_m"],
                 "reports": {"odometry": str(root / "odometry-report.json"),
                             "correction": str(root / "pointcloud-report.json")},
+                "source_motion": source_motion,
                 "quality_status": "generated_unverified", "coordinate_frame": "local_slam_metres",
             }
             job["status"] = "pointcloud_ready"

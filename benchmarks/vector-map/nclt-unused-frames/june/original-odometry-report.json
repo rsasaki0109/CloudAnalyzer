@@ -1,0 +1,11 @@
+{
+  "driver": "cloudanalyzer",
+  "frames": 238,
+  "path_length_m": 253.8,
+  "runtime_s": 20.1,
+  "reading_s": 0.7,
+  "scans": "run/odometry/scans",
+  "trajectory": "run/odometry/trajectory.tum",
+  "gravity": "run/odometry/gravity/gravity.txt",
+  "map": "run/odometry/map.ply"
+}

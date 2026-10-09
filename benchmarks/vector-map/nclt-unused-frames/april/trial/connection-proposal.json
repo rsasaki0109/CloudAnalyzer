@@ -1,0 +1,481 @@
+{
+  "candidate_id": 2,
+  "inputs": {
+    "parent_map": {
+      "path": "run/pointcloud-retry/candidate-02/lanelet2_map.osm",
+      "sha256": "a89fd62d5ce9d394ca750ae5838c98b749a1a2f7165a2633393f0bcfa1ef4391",
+      "bytes": 44035
+    },
+    "parent_projector": {
+      "path": "run/pointcloud-retry/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "run/pointcloud-retry/candidate-02/vector_map.json",
+      "sha256": "d22306d36f7d8e9375de811e71119d8de0a33c5b14fecb0b23f49980d334da18",
+      "bytes": 17413
+    },
+    "parent_report": {
+      "path": "run/pointcloud-retry/candidate-02/report.json",
+      "sha256": "ffcd47da15f2a04413c1515d37bd5983d8452417031c49681c5809156a14df3e",
+      "bytes": 33998
+    },
+    "parent_audits": {
+      "path": "run/pointcloud-retry/candidate-02/source-quality.json",
+      "sha256": "73002c4da2409987c37e10bab12802d059583c9f38dfbd306417d4a9716bbce4",
+      "bytes": 197533
+    },
+    "geometry_editable_map": {
+      "path": "run/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "db6b89783986bca383b784d5839e281d7858611ebaa35174bcd0e68c9f4b9ee6",
+      "bytes": 35755
+    },
+    "geometry_report": {
+      "path": "run/pointcloud-retry/geometry-01/report.json",
+      "sha256": "b7ff7ebbabd6ff90eb482a6af085dec4c0a41defc4f34ea2bbacac15cecda04c",
+      "bytes": 93027
+    },
+    "proposal": {
+      "path": "run/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "c0045c30b683b7b06a26210aca8568714ad4884b7baeb67467aa259bf1de3eff",
+      "bytes": 324667
+    },
+    "pointcloud_map": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+      "sha256": "bef9b3eea139e07110a4d0ade285f52c911fbf07e329af4388aabb1c06165474",
+      "bytes": 22802030
+    },
+    "pointcloud_trajectory": {
+      "path": "run/pointcloud-retry/reference.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "pointcloud_graph": {
+      "path": "run/pointcloud-retry/reference.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "pointcloud_fusion_graph": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+      "sha256": "8af60955c59e71ec7bd4a7a9186ec6629a4bd938e2d77e2df4509b4a9df91f6d",
+      "bytes": 98339
+    },
+    "pointcloud_fusion_trajectory": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+      "sha256": "e0170603b9b86638d8273d372f910530e81f4d00aa87396e2fa50470c8a1dc5f",
+      "bytes": 50423
+    },
+    "pointcloud_fusion_scans": {
+      "path": "run/pointcloud-retry/fusion-scans.json",
+      "sha256": "e9cb6e978003e882ab9a04070742b7c64e4027ca482dfc667d01d0b1615e684e",
+      "bytes": 52377
+    },
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "options": {
+    "max_gap": 10.0,
+    "min_ground_support": 1.0,
+    "check_boundary_support": true
+  },
+  "pieces": [
+    {
+      "lane": 3,
+      "from_m": 10,
+      "to_m": 12,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 6,
+      "from_m": 16,
+      "to_m": 18,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 9,
+      "from_m": 26,
+      "to_m": 36,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 12,
+      "from_m": 40,
+      "to_m": 44,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 15,
+      "from_m": 56,
+      "to_m": 58,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 18,
+      "from_m": 62,
+      "to_m": 104,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 21,
+      "from_m": 110,
+      "to_m": 116,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 24,
+      "from_m": 122,
+      "to_m": 124,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 27,
+      "from_m": 128,
+      "to_m": 162,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 30,
+      "from_m": 166,
+      "to_m": 172,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 33,
+      "from_m": 178,
+      "to_m": 184,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 36,
+      "from_m": 240,
+      "to_m": 242,
+      "minimum_width_m": 2.5
+    }
+  ],
+  "baseline_routes": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 12,
+    "longest_route_station_span_m": 42,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 10,
+        "to_m": 12,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 16,
+        "to_m": 18,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          9
+        ],
+        "from_m": 26,
+        "to_m": 36,
+        "station_span_m": 10
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 40,
+        "to_m": 44,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 56,
+        "to_m": 58,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          18
+        ],
+        "from_m": 62,
+        "to_m": 104,
+        "station_span_m": 42
+      },
+      {
+        "lane_ids": [
+          21
+        ],
+        "from_m": 110,
+        "to_m": 116,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          24
+        ],
+        "from_m": 122,
+        "to_m": 124,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          27
+        ],
+        "from_m": 128,
+        "to_m": 162,
+        "station_span_m": 34
+      },
+      {
+        "lane_ids": [
+          30
+        ],
+        "from_m": 166,
+        "to_m": 172,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          33
+        ],
+        "from_m": 178,
+        "to_m": 184,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          36
+        ],
+        "from_m": 240,
+        "to_m": 242,
+        "station_span_m": 2
+      }
+    ],
+    "legal_routing_verified": false
+  },
+  "candidates": [
+    {
+      "ambiguous": false,
+      "boundary_support": [
+        1.0,
+        1.0
+      ],
+      "center": [
+        [
+          -12.26357581815331,
+          -76.00795813954144,
+          -2.010009747086905
+        ],
+        [
+          -11.536476891165501,
+          -76.46741719120317,
+          -2.041778007897166
+        ],
+        [
+          -10.807071656537826,
+          -76.92201465207754,
+          -2.073422053188274
+        ],
+        [
+          -10.06975374960988,
+          -77.36245261786553,
+          -2.1050418359737355
+        ],
+        [
+          -9.31930880882576,
+          -77.77930986346063,
+          -2.1367213186600056
+        ],
+        [
+          -8.551006721777057,
+          -78.16227012925702,
+          -2.1685147606430384
+        ],
+        [
+          -7.7610787218613595,
+          -78.4997264680512,
+          -2.2004257798364573
+        ],
+        [
+          -6.947681570078942,
+          -78.77910767998785,
+          -2.2323795596182614
+        ]
+      ],
+      "from": 21,
+      "gap": 5.99483122633377,
+      "ground_support": 1.0,
+      "left": [
+        [
+          -11.625870853555286,
+          -74.65026436768896,
+          -2.041545387808698
+        ],
+        [
+          -10.802522870146044,
+          -75.19202252438605,
+          -2.0772835046908
+        ],
+        [
+          -9.985904868079004,
+          -75.75542891566391,
+          -2.113021621572902
+        ],
+        [
+          -9.163455121183345,
+          -76.30915774477488,
+          -2.1487597384550035
+        ],
+        [
+          -8.322611903288232,
+          -76.82188321497108,
+          -2.184497855337105
+        ],
+        [
+          -7.450813488222834,
+          -77.26227952950484,
+          -2.220235972219207
+        ],
+        [
+          -6.535498149816321,
+          -77.59902089162836,
+          -2.2559740891013087
+        ]
+      ],
+      "right": [
+        [
+          -12.901280782751334,
+          -77.36565191139393,
+          -1.9784741063651115
+        ],
+        [
+          -12.152869451706062,
+          -77.82025352240939,
+          -2.0113756669036977
+        ],
+        [
+          -11.389347885930707,
+          -78.25342173609931,
+          -2.044277227442284
+        ],
+        [
+          -10.611138326974958,
+          -78.66119748456887,
+          -2.07717878798087
+        ],
+        [
+          -9.818663016388486,
+          -79.03962169992327,
+          -2.110080348519456
+        ],
+        [
+          -9.012344195720976,
+          -79.3847353142677,
+          -2.142981909058042
+        ],
+        [
+          -8.19260410652211,
+          -79.69257925970732,
+          -2.175883469596628
+        ],
+        [
+          -7.3598649903415625,
+          -79.95919446834733,
+          -2.208785030135214
+        ]
+      ],
+      "samples": 14,
+      "to": 24,
+      "turn_degrees": 15.807134319193304,
+      "from_m": 116,
+      "to_m": 122,
+      "station_gap_m": 6,
+      "trajectory_xy": [
+        [
+          -12.369859978919635,
+          -76.23424043485021
+        ],
+        [
+          -11.911828781320782,
+          -76.43475831940457
+        ],
+        [
+          -11.45379758372193,
+          -76.63527620395894
+        ],
+        [
+          -11.015941193845128,
+          -76.87589237066176
+        ],
+        [
+          -10.58194617448954,
+          -77.12418317430647
+        ],
+        [
+          -10.138334003054641,
+          -77.35466673840637
+        ],
+        [
+          -9.692712685797515,
+          -77.5814301428746
+        ],
+        [
+          -9.24455216869684,
+          -77.80310811763191
+        ],
+        [
+          -8.795525076675206,
+          -78.02305054334963
+        ],
+        [
+          -8.342897705422995,
+          -78.23538727864515
+        ],
+        [
+          -7.888156511336128,
+          -78.44325850416818
+        ],
+        [
+          -7.423642387721217,
+          -78.6259368600864
+        ],
+        [
+          -6.9476815700789265,
+          -78.77910767998786
+        ]
+      ],
+      "trajectory_step_max_m": 0.5,
+      "minimum_interpolated_xy_width_m": 2.5000000000000044,
+      "width_measurement": "equal_normalized_xy_arc_positions_on_linear_boundaries",
+      "both_estimators_verified": false
+    }
+  ],
+  "rejected": [],
+  "native_summary": {
+    "cloud_points": 712558,
+    "malformed_lanes": 0,
+    "open_entries": 12,
+    "open_exits": 12,
+    "rejected_geometry": 0,
+    "rejected_heading": 4,
+    "rejected_height": 0,
+    "traffic_rules_inferred": false,
+    "unsupported_candidates": 7,
+    "warnings": [
+      "Connection drafts follow geometry and nearby ground, not permitted turns. Review every branch, traffic rule and ground level before using the map. Existing rules are retained; no new right-of-way or signal rules are created."
+    ]
+  },
+  "traffic_rules_inferred": false
+}

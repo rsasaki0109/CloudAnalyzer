@@ -15,6 +15,7 @@ from ca.trajectory import load_trajectory
 
 REVIEW_SCHEMA = "cloudanalyzer.mapping_trajectory_regions.v1"
 PAGE_SIZE = 8
+TRIAL_COMPARISON_SCHEMA = "cloudanalyzer.mapping_motion_trial_comparison.v1"
 
 
 def _artifact(value: Any, limit: int | None = None) -> dict[str, Any]:
@@ -47,6 +48,11 @@ def _rmse(errors: np.ndarray) -> float:
     return float(np.sqrt(np.mean(errors**2)))
 
 
+def _graph_ids(report: dict[str, Any]) -> list[int]:
+    vertices = [line.split() for line in Path(report["inputs"]["pointcloud_graph"]["path"]).read_text().splitlines()]
+    return _ids(sorted(int(row[1]) for row in vertices if row and row[0] == "VERTEX_SE3:QUAT"))
+
+
 def _read(report_file: dict[str, Any]) -> tuple[dict[str, Any], np.ndarray, np.ndarray, dict[str, np.ndarray]]:
     _artifact(report_file, MAX_BYTES)
     report = json.loads(Path(report_file["path"]).read_text(encoding="utf-8"))
@@ -59,11 +65,12 @@ def _read(report_file: dict[str, Any]) -> tuple[dict[str, Any], np.ndarray, np.n
         raise ValueError("comparison is missing recorded input artifacts")
     for key, artifact in inputs.items():
         _artifact(artifact, MAX_BYTES if key in {"source_motion_trajectory", "pointcloud_graph", "pointcloud_trajectory", "reference"} else None)
-    vertices = [line.split() for line in Path(inputs["pointcloud_graph"]["path"]).read_text().splitlines()]
-    retained_ids = _ids(sorted(int(row[1]) for row in vertices if row and row[0] == "VERTEX_SE3:QUAT"))
+    retained_ids = _graph_ids(report)
     matched_ids = _ids(coverage["matched_original_frame_ids"])
     evaluated_ids = _ids(coverage["evaluated_original_frame_ids"])
     fitted_ids = _ids(coverage["alignment_original_frame_ids"])
+    if min(len(retained_ids), len(matched_ids), len(evaluated_ids), len(fitted_ids)) < 3:
+        raise ValueError("comparison needs at least three retained, matched, fitted and evaluated poses")
     held_out = report["protocol"]["held_out_alignment"]
     if (type(held_out) is not bool or not set(matched_ids) <= set(retained_ids)
             or coverage["retained_poses"] != len(retained_ids) or coverage["matched_poses"] != len(matched_ids)
@@ -110,6 +117,31 @@ def _read(report_file: dict[str, Any]) -> tuple[dict[str, Any], np.ndarray, np.n
     return report, corrected[:, :3, 3], indices, positions
 
 
+def _windows(report: dict[str, Any], map_positions: np.ndarray, indices: np.ndarray, positions: dict[str, np.ndarray], window_poses: int) -> list[dict[str, Any]]:
+    coverage = report["coverage"]
+    ids = coverage["evaluated_original_frame_ids"]
+    times = report["results"]["original"]["matched_trajectory"]["timestamps"]
+    distances = np.concatenate(([0.], np.cumsum(np.linalg.norm(np.diff(map_positions, axis=0), axis=1))))
+    windows = []
+    for start in range(0, len(ids), window_poses):
+        end = min(start + window_poses, len(ids))
+        chosen = indices[start:end]
+        raw = map_positions[chosen]
+        metrics: dict[str, dict[str, Any]] = {}
+        for name in ("original", "corrected"):
+            estimate, truth = positions[name][start:end], positions["reference"][start:end]
+            metrics[name] = {"ate_rmse_m": _rmse(np.linalg.norm(estimate - truth, axis=1)),
+                             "rpe_translation_rmse_m": _rmse(np.linalg.norm(np.diff(estimate, axis=0) - np.diff(truth, axis=0), axis=1)) if end - start > 1 else None}
+        delta = metrics["corrected"]["ate_rmse_m"] - metrics["original"]["ate_rmse_m"]
+        windows.append({"window_id": start // window_poses, "original_frame_ids": ids[start:end],
+                        "timestamp_range_s": [times[start], times[end - 1]], "evaluated_poses": end - start,
+                        "unevaluated_retained_poses_within_frame_span": int(chosen[-1] - chosen[0] + 1 - len(chosen)),
+                        "corrected_graph_distance_range_m": [float(distances[chosen[0]]), float(distances[chosen[-1]])],
+                        "evaluated_corrected_pose_bounds_xy": [float(raw[:, 0].min()), float(raw[:, 1].min()), float(raw[:, 0].max()), float(raw[:, 1].max())],
+                        "results": metrics, "ate_rmse_m_corrected_minus_original": delta})
+    return windows
+
+
 def inspect_mapping_trajectory_comparison(
     report_file: dict[str, Any], window_poses: int = 12, ranking: str = "regression", offset: int = 0,
 ) -> dict[str, Any]:
@@ -136,26 +168,7 @@ def inspect_mapping_trajectory_comparison(
     except (KeyError, TypeError, IndexError) as error:
         raise ValueError("malformed mapping trajectory comparison") from error
     coverage = report["coverage"]
-    ids = coverage["evaluated_original_frame_ids"]
-    times = report["results"]["original"]["matched_trajectory"]["timestamps"]
-    distances = np.concatenate(([0.], np.cumsum(np.linalg.norm(np.diff(map_positions, axis=0), axis=1))))
-    windows = []
-    for start in range(0, len(ids), window_poses):
-        end = min(start + window_poses, len(ids))
-        chosen = indices[start:end]
-        raw = map_positions[chosen]
-        metrics: dict[str, dict[str, Any]] = {}
-        for name in ("original", "corrected"):
-            estimate, truth = positions[name][start:end], positions["reference"][start:end]
-            metrics[name] = {"ate_rmse_m": _rmse(np.linalg.norm(estimate - truth, axis=1)),
-                             "rpe_translation_rmse_m": _rmse(np.linalg.norm(np.diff(estimate, axis=0) - np.diff(truth, axis=0), axis=1)) if end - start > 1 else None}
-        delta = metrics["corrected"]["ate_rmse_m"] - metrics["original"]["ate_rmse_m"]
-        windows.append({"window_id": start // window_poses, "original_frame_ids": ids[start:end],
-                        "timestamp_range_s": [times[start], times[end - 1]], "evaluated_poses": end - start,
-                        "unevaluated_retained_poses_within_frame_span": int(chosen[-1] - chosen[0] + 1 - len(chosen)),
-                        "corrected_graph_distance_range_m": [float(distances[chosen[0]]), float(distances[chosen[-1]])],
-                        "evaluated_corrected_pose_bounds_xy": [float(raw[:, 0].min()), float(raw[:, 1].min()), float(raw[:, 0].max()), float(raw[:, 1].max())],
-                        "results": metrics, "ate_rmse_m_corrected_minus_original": delta})
+    windows = _windows(report, map_positions, indices, positions, window_poses)
     metric = lambda window: window["ate_rmse_m_corrected_minus_original"] if ranking == "regression" else window["results"]["corrected"]["ate_rmse_m"]
     windows.sort(key=lambda window: (-metric(window), window["window_id"]))
     # Detect replacement or edits during parsing, including changes to large maps.
@@ -174,3 +187,75 @@ def inspect_mapping_trajectory_comparison(
             "next_offset": offset + PAGE_SIZE if offset + PAGE_SIZE < len(windows) else None,
             "windows": windows[offset:offset + PAGE_SIZE],
             "guidance": "Review exact frames and source-supported map observations. Bounds are sensor-origin envelopes, not repair permissions. Error ranking cannot establish cause; density/HD-only repairs freeze motion and cannot fix trajectory error. Reference uncertainty and sensor correlation remain uncalibrated. No quality/adoption or attempts change."}
+
+
+def compare_mapping_motion_trials(
+    baseline_report_file: dict[str, Any], candidate_report_file: dict[str, Any], window_poses: int = 12, offset: int = 0,
+) -> dict[str, Any]:
+    """Compare corrected motion candidates on exactly the same saved evaluation.
+
+    Supply exact hashed baseline/candidate reports from evaluate_mapping_trajectory.
+    Refuse different source recordings, original motion, reference content/provenance,
+    matching/alignment protocols, retained IDs or fit/evaluation splits. Recheck all
+    artifacts before/after reading. Return global ATE/RPE and eight local windows
+    ranked by candidate-minus-baseline ATE RMSE, with each map's own sensor bounds.
+    Positive differences are regressions, not calibrated failure thresholds. No
+    reference refit, attempts, map mutation, HD transfer or adoption occurs. Using
+    one reference repeatedly for policy selection is exploratory, not independent
+    unseen-data validation. A lower average can coexist with worse local regions.
+    """
+    if type(window_poses) is not int or not 2 <= window_poses <= 64:
+        raise ValueError("window_poses must be an integer in [2, 64]")
+    if type(offset) is not int or offset < 0:
+        raise ValueError("offset must be a nonnegative integer")
+    try:
+        baseline, base_map, base_indices, base_positions = _read(baseline_report_file)
+        candidate, trial_map, trial_indices, trial_positions = _read(candidate_report_file)
+        for key in ("source", "source_motion_trajectory", "reference"):
+            if any(baseline["inputs"][key][field] != candidate["inputs"][key][field] for field in ("sha256", "bytes")):
+                raise ValueError("motion trial comparison requires identical source/motion/reference content")
+        protocol_keys = ("units", "max_time_delta_s", "matching", "alignment", "held_out_alignment", "alignment_prefix_fraction", "rpe_translation")
+        coverage_keys = ("original_poses", "retained_poses", "matched_original_frame_ids", "alignment_original_frame_ids", "evaluated_original_frame_ids")
+        if (any(baseline["protocol"][key] != candidate["protocol"][key] for key in protocol_keys)
+                or any(baseline["coverage"][key] != candidate["coverage"][key] for key in coverage_keys)
+                or _graph_ids(baseline) != _graph_ids(candidate)
+                or baseline["reference_provenance"] != candidate["reference_provenance"]
+                or baseline["reference_independence"] != candidate["reference_independence"]
+                or not np.array_equal(base_positions["reference"], trial_positions["reference"])
+                or not np.allclose(base_positions["original"], trial_positions["original"], atol=1e-9, rtol=0)):
+            raise ValueError("motion trial comparison requires identical reference/protocol and pose partitions")
+        base_windows = _windows(baseline, base_map, base_indices, base_positions, window_poses)
+        trial_windows = _windows(candidate, trial_map, trial_indices, trial_positions, window_poses)
+    except (KeyError, TypeError, IndexError) as error:
+        raise ValueError("malformed mapping trajectory comparison") from error
+    windows = []
+    for base, trial in zip(base_windows, trial_windows):
+        windows.append({"window_id": base["window_id"], "original_frame_ids": base["original_frame_ids"],
+            "timestamp_range_s": base["timestamp_range_s"], "evaluated_poses": base["evaluated_poses"],
+            "baseline": {"metrics": base["results"]["corrected"], "sensor_origin_bounds_xy": base["evaluated_corrected_pose_bounds_xy"]},
+            "candidate": {"metrics": trial["results"]["corrected"], "sensor_origin_bounds_xy": trial["evaluated_corrected_pose_bounds_xy"]},
+            "ate_rmse_m_candidate_minus_baseline": trial["results"]["corrected"]["ate_rmse_m"] - base["results"]["corrected"]["ate_rmse_m"]})
+    windows.sort(key=lambda window: (-window["ate_rmse_m_candidate_minus_baseline"], window["window_id"]))
+    global_metrics = {}
+    for name, report in (("baseline", baseline), ("candidate", candidate)):
+        samples = report["results"]["corrected"]["matched_trajectory"]
+        estimate, truth = np.asarray(samples["estimated_positions"]), np.asarray(samples["reference_positions"])
+        global_metrics[name] = {"ate_rmse_m": _rmse(np.linalg.norm(estimate - truth, axis=1)),
+                                "rpe_translation_rmse_m": _rmse(np.linalg.norm(np.diff(estimate, axis=0) - np.diff(truth, axis=0), axis=1))}
+    for report_file, report in ((baseline_report_file, baseline), (candidate_report_file, candidate)):
+        for artifact in (report_file, *report["inputs"].values()):
+            jobs._verify(artifact)
+    return {"schema": TRIAL_COMPARISON_SCHEMA, "baseline_report": baseline_report_file, "candidate_report": candidate_report_file,
+        "point_maps": {"baseline": baseline["inputs"]["pointcloud_map"], "candidate": candidate["inputs"]["pointcloud_map"]},
+        "reference_provenance": baseline["reference_provenance"], "reference_independence": baseline["reference_independence"],
+        "coverage": {key: baseline["coverage"][key] for key in ("original_poses", "retained_poses", "matched_poses", "evaluated_poses", "alignment_fitted_poses", "retained_pose_fraction")},
+        "protocol": {"window_poses": window_poses, "ranking": "candidate_minus_baseline_ate_rmse_descending",
+                     "held_out_alignment": baseline["protocol"]["held_out_alignment"],
+                     "alignment_prefix_fraction": baseline["protocol"]["alignment_prefix_fraction"],
+                     "bounds_frame": "each_unaligned_corrected_point_map_sensor_origins_only"},
+        "global_results": global_metrics,
+        "ate_rmse_m_candidate_minus_baseline": global_metrics["candidate"]["ate_rmse_m"] - global_metrics["baseline"]["ate_rmse_m"],
+        "total_windows": len(windows), "offset": offset,
+        "next_offset": offset + PAGE_SIZE if offset + PAGE_SIZE < len(windows) else None,
+        "windows": windows[offset:offset + PAGE_SIZE],
+        "scope": "Same-reference exploratory motion comparison. Lower average error is not an adoption gate, independent accuracy, local-motion retention or validation of inherited HD geometry. Review worsened regions and reference uncertainty; no maps, attempts or adoption change."}

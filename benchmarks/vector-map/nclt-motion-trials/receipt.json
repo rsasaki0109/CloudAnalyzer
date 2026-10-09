@@ -1,0 +1,183 @@
+{
+  "schema": "cloudanalyzer.nclt_motion_trial_receipt.v1",
+  "sessions": {
+    "april": {
+      "baseline": {
+        "original_ate_rmse_m": 0.28928320758241216,
+        "corrected_ate_rmse_m": 0.2791993727009607,
+        "delta_ate_rmse_m": -0.010083834881451481,
+        "original_rpe_rmse_m": 0.17646915422920564,
+        "corrected_rpe_rmse_m": 0.1764452953033592,
+        "retained_poses": 199,
+        "matched_poses": 199,
+        "fit_poses": 59,
+        "evaluated_poses": 140,
+        "reference_time_delta_s_max": 0.007075071334838867,
+        "report": {
+          "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/april/comparison-prefix-30.json",
+          "sha256": "7809ccdb2fa237b24fd16cc261c5676dd8247169350ef78ccb1a54ec9dd58869",
+          "bytes": 244297
+        }
+      },
+      "trials": {
+        "loops-only": {
+          "job": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/job.json",
+            "sha256": "4cebb7fe4badb55323325080b8c08be0177e6527e23b75d1898622dddd875809",
+            "bytes": 6169
+          },
+          "trial_report": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/trial.json",
+            "sha256": "4f020a7c434429fdfb409a66b0936682b1d997b3e3185a8f8a840d5803e33765",
+            "bytes": 63234
+          },
+          "comparison": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trial-evaluations/april/loops-only/comparison-prefix-30.json",
+            "sha256": "1bd1199c1a52bc6331646a47053285738c1cd226aee03405cd3208a9e14ad597",
+            "bytes": 243523
+          },
+          "policy": {
+            "find_loops": true,
+            "use_gravity": false
+          },
+          "regression_pages": [
+            "regression-0.json",
+            "regression-8.json"
+          ],
+          "corrected_ate_rmse_m": 0.2729739786381924,
+          "baseline_corrected_ate_rmse_m": 0.2791993727009607,
+          "ate_rmse_m_trial_minus_baseline": -0.006225394062768286,
+          "corrected_rpe_translation_rmse_m": 0.17642640665473996,
+          "fit_poses": 59,
+          "evaluated_poses": 140,
+          "candidate_unchanged_files": 245,
+          "candidate_unchanged_manifest_sha256": "1a81bb617187ba5c4c6f2eef7a7bf840f222628a1c71ff18811eea67bec7484f"
+        },
+        "gravity-only": {
+          "job": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only/job.json",
+            "sha256": "39b6f3b537087f6615a4a3f6c5bd1763bc54e1f5138874f0fbb7b4eb188ec980",
+            "bytes": 6181
+          },
+          "trial_report": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only/trial.json",
+            "sha256": "1f6673496016335ab2185058a1518d06db05cdca3dd83015a4bb82e1c1a00c36",
+            "bytes": 63944
+          },
+          "comparison": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trial-evaluations/april/gravity-only/comparison-prefix-30.json",
+            "sha256": "c3676549e392e8548a7dc126305585f49a68d76df21705713bb6180a77603dd6",
+            "bytes": 243544
+          },
+          "policy": {
+            "find_loops": false,
+            "use_gravity": true
+          },
+          "regression_pages": [
+            "regression-0.json",
+            "regression-8.json"
+          ],
+          "corrected_ate_rmse_m": 0.32439077799196564,
+          "baseline_corrected_ate_rmse_m": 0.2791993727009607,
+          "ate_rmse_m_trial_minus_baseline": 0.04519140529100496,
+          "corrected_rpe_translation_rmse_m": 0.17638737194598392,
+          "fit_poses": 59,
+          "evaluated_poses": 140,
+          "candidate_unchanged_files": 246,
+          "candidate_unchanged_manifest_sha256": "34d53ea52d262aa51564d2cef05df91020936de74ad6373ad215715c33356ed3"
+        }
+      },
+      "unchanged_baseline_files": 240,
+      "unchanged_baseline_manifest_sha256": "ee52ab79529e4e3f084c20ed0fcf687169ab0b47e540d8ba8d9cba9aeaf9c8de"
+    },
+    "june": {
+      "baseline": {
+        "original_ate_rmse_m": 0.2467344230223635,
+        "corrected_ate_rmse_m": 0.2521914996949861,
+        "delta_ate_rmse_m": 0.005457076672622602,
+        "original_rpe_rmse_m": 0.13659398552891247,
+        "corrected_rpe_rmse_m": 0.1370022709508869,
+        "retained_poses": 195,
+        "matched_poses": 195,
+        "fit_poses": 58,
+        "evaluated_poses": 137,
+        "reference_time_delta_s_max": 0.00557398796081543,
+        "report": {
+          "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/june/comparison-prefix-30.json",
+          "sha256": "90aa871b7c4f5da399d621a81479116bd7bb6a8f9c5024d6bc30747c33f08d5f",
+          "bytes": 238538
+        }
+      },
+      "trials": {
+        "loops-only": {
+          "job": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/job.json",
+            "sha256": "5d7d42957b93bbd8c4e795340fed0b52fc72b0929bd16d2dfbff674a4b1df499",
+            "bytes": 5314
+          },
+          "trial_report": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/trial.json",
+            "sha256": "ae6171a4bcf1099b2b532c9a59689beaf9a84e142f3fa6cd6aadf5e5cceaf8fc",
+            "bytes": 62611
+          },
+          "comparison": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trial-evaluations/june/loops-only/comparison-prefix-30.json",
+            "sha256": "9f6417b58ab9eda00400ff5bfbf9600a567d8b91d486b1f27ae565614f349db6",
+            "bytes": 238607
+          },
+          "policy": {
+            "find_loops": true,
+            "use_gravity": false
+          },
+          "regression_pages": [
+            "regression-0.json",
+            "regression-8.json"
+          ],
+          "corrected_ate_rmse_m": 0.23164112223979894,
+          "baseline_corrected_ate_rmse_m": 0.2521914996949861,
+          "ate_rmse_m_trial_minus_baseline": -0.020550377455187174,
+          "corrected_rpe_translation_rmse_m": 0.13650548150017525,
+          "fit_poses": 58,
+          "evaluated_poses": 137,
+          "candidate_unchanged_files": 247,
+          "candidate_unchanged_manifest_sha256": "108a17d04cc0d23d32dc252cc114387d6b732f37adb8dd937b7c6cffff09a77f"
+        },
+        "gravity-only": {
+          "job": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/job.json",
+            "sha256": "212f066530170d4ce47062b6d19a328dc35ce7d6b7b5bc1388f50ff9af6117d8",
+            "bytes": 5326
+          },
+          "trial_report": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/trial.json",
+            "sha256": "8b5e21e0e2404ff6d7794518d0ca5544c7d7506a6948be36e717a89d0abbe085",
+            "bytes": 63325
+          },
+          "comparison": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-motion-trial-evaluations/june/gravity-only/comparison-prefix-30.json",
+            "sha256": "257c9995d91ed66173e7ef2399e1bcf6cc77b5969d1bfae9c4aa8f4ac867263b",
+            "bytes": 238683
+          },
+          "policy": {
+            "find_loops": false,
+            "use_gravity": true
+          },
+          "regression_pages": [
+            "regression-0.json",
+            "regression-8.json"
+          ],
+          "corrected_ate_rmse_m": 0.3539935572409246,
+          "baseline_corrected_ate_rmse_m": 0.2521914996949861,
+          "ate_rmse_m_trial_minus_baseline": 0.10180205754593846,
+          "corrected_rpe_translation_rmse_m": 0.13816663772177668,
+          "fit_poses": 58,
+          "evaluated_poses": 137,
+          "candidate_unchanged_files": 248,
+          "candidate_unchanged_manifest_sha256": "056d62719f633b477db3cb9275aa8786547d23f0fca11de7bb275bee1ec01669"
+        }
+      },
+      "unchanged_baseline_files": 760,
+      "unchanged_baseline_manifest_sha256": "abd879f13d852be8bdfd92a769a3bfdb12853237c9e07b60b771d971f5d1cbdb"
+    }
+  }
+}

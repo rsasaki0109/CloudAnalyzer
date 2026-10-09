@@ -1,0 +1,1440 @@
+{
+  "source": {
+    "path": "/workspace/CloudAnalyzer/web/public/samples/nclt-2012-06-15.mcap",
+    "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+    "bytes": 9387931
+  },
+  "pointcloud_topic": null,
+  "frames": [
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000000.bin",
+      "sha256": "ee0b26c9aa66b49aacd8ca56f9f8c7b18d351598c5b0c95dad77f15713f8d2bc",
+      "bytes": 70496
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000001.bin",
+      "sha256": "e2dc491c11fa63eed1a37e15cf5fc651a182f810312d2f44166836fbc7264e0b",
+      "bytes": 70064
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000002.bin",
+      "sha256": "f7b6a66a71ee8f19eedc32681616aff667e9c2141e23e5f334305162978e40db",
+      "bytes": 73104
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000003.bin",
+      "sha256": "6e7650bb841af5e01018afcf45113aa5c0594d7d58f73c49ede7ea11ddbaeac7",
+      "bytes": 79952
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000004.bin",
+      "sha256": "a27c3ccd2b3e4426d610168f3a86f11cc1c142cce00cf13931a2f45bc0b84a82",
+      "bytes": 83712
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000005.bin",
+      "sha256": "bf0e490e67c89e65f1efdd816951878ff94094b37f50583108651107450fce71",
+      "bytes": 85712
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000006.bin",
+      "sha256": "0e47d20cb477282b541788e108aa04f31c40d06c13984b7ed83ee7531d574c69",
+      "bytes": 87456
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000007.bin",
+      "sha256": "1f91b0e98982d0eba54f8654f638a037cea2c42ec700144cb2b1b2ac2dfb0ed1",
+      "bytes": 88880
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000008.bin",
+      "sha256": "96f5d58713a4625762d7d37b2891350a80a705f392b6af1c90c1002324e6ea8f",
+      "bytes": 89488
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000009.bin",
+      "sha256": "de3df462efa0c1cbb19d1a8cbf03a02b6f1a4ea5f1276cbb0dd5a329d475ef3c",
+      "bytes": 86304
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000010.bin",
+      "sha256": "7f04d6d65ad418debdcfd05e0e7efa84fcdd9a275ddc7ce40e917df7c88e2810",
+      "bytes": 90752
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000011.bin",
+      "sha256": "810426ca442414a9f1839fe8e3ec03a337a0d4d0e7f8d18acec836ae1dd4a7a5",
+      "bytes": 90544
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000012.bin",
+      "sha256": "e36360202a55478f4b391d1f60cdf1f769119ff911af256220481f24924975ae",
+      "bytes": 90656
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000013.bin",
+      "sha256": "0fd89fc70bd218f6f09c859bcd6bf2b623645c592259891fabe2af3295d81ef1",
+      "bytes": 92464
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000014.bin",
+      "sha256": "2a1182150f657d9759072f5564e30f0c152a6d4a60527a7596f0ea0c20a356cb",
+      "bytes": 94784
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000015.bin",
+      "sha256": "a8cbcc1624d9808bae7f76776b442c1f503fda2152220c24ace174f03d62da2e",
+      "bytes": 96768
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000016.bin",
+      "sha256": "7cd673262ed4591b99c84a679c7053a789dd36c0177f8711a09deaaf30de66f7",
+      "bytes": 97760
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000017.bin",
+      "sha256": "59f9b82f71547d78d06ff7988984a69465abdcaa62bd7b5a12ab90437f387cc6",
+      "bytes": 100400
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000018.bin",
+      "sha256": "9ba33391b43be7023f2c95ed84b7ccf03329a77108ada681cfccf27af5469241",
+      "bytes": 104112
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000019.bin",
+      "sha256": "2f14b05288ad56df0ed01d2c9b028f8c782e7e506120b2d957d7ce351ab0a0c1",
+      "bytes": 102944
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000020.bin",
+      "sha256": "75c4c484b9d925eaf19e778c2f9c0c4b5693e42d5c900d815f0061012f3b9c71",
+      "bytes": 96976
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000021.bin",
+      "sha256": "f10f48cf90e5f8c04cbe5cf288c7dd9302c5c3e1ddbb4a5a6bb39793193a41a4",
+      "bytes": 96944
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000022.bin",
+      "sha256": "b65fee2605d6c3a3ce118af1508876009338c114840d9417fddbac5927c64c2e",
+      "bytes": 99408
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000023.bin",
+      "sha256": "44dd932c87297591610266e361f76d6026600013349913c66fe0f90b238b4215",
+      "bytes": 96752
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000024.bin",
+      "sha256": "248c813c638e19b72db1de4e9493983076788ff0620a00a3f239dfd8df090af5",
+      "bytes": 98672
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000025.bin",
+      "sha256": "51ee90b37ebe895861fa0fb33064c3ab644479bda9e8fe44ecdb904db60901d1",
+      "bytes": 98512
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000026.bin",
+      "sha256": "501036bc31c731638d719545016617c2c3a7722109c2fa55acbee086ad55394b",
+      "bytes": 100944
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000027.bin",
+      "sha256": "15d741ab09c21b58c15d7627552c9b80882450db713c4dd7030475c73a38cd53",
+      "bytes": 99952
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000028.bin",
+      "sha256": "4bd4a52228f9cb1ec78f02dcc147d7a55060264f9940243052b4a2c314d1e940",
+      "bytes": 98592
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000029.bin",
+      "sha256": "a35e1705e15ac160784ca47bc3ff021639ca23ce9297062292355a9ab7fa328f",
+      "bytes": 94992
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000030.bin",
+      "sha256": "b80e3f897b1f384aea713d759ac1ec2dfcb82c26344c1e32309113f61714f16e",
+      "bytes": 92400
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000031.bin",
+      "sha256": "1a0dc21ca25e41f9c3ed122a666e0e7fc3a8416ce24df30496ee19762794df79",
+      "bytes": 88336
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000032.bin",
+      "sha256": "0043282bf4b9b87b2ccec463efd4eb5d875ca6c856f889960225b0831868dea3",
+      "bytes": 81568
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000033.bin",
+      "sha256": "57cff0ca4b97436d7394f12458e2d0267a3d125f0280d0ea7c5d02e0a62b3d4f",
+      "bytes": 78736
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000034.bin",
+      "sha256": "e483bc562ea55c99a56130f5dcd175ddde5a26d9d692bf49797835111750cd6e",
+      "bytes": 73792
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000035.bin",
+      "sha256": "22cfe1b0e77ea55af8a957c0f0f5711ac8aa556596bffeebcb8b6f8e586447a5",
+      "bytes": 69936
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000036.bin",
+      "sha256": "0e8372ac304704db63442c9843fe038a9f7441d27d4e72e019770d451b01511d",
+      "bytes": 72352
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000037.bin",
+      "sha256": "c56d582d2dc94fc8e293f17150dccfcd1cce3d60c5638257153d1590b6c972b8",
+      "bytes": 73328
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000038.bin",
+      "sha256": "0c5e9c798ed626e9563b962825157642360dbc68029b7ac883eacde9362f4cd0",
+      "bytes": 74560
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000039.bin",
+      "sha256": "4e50bcfd453b8ec5d683fc07027e0d890cf1f63bad6be8aac1d379379208b27d",
+      "bytes": 74976
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000040.bin",
+      "sha256": "2537afb6ccf05c368652060c7ed44bdcec1258988e847aa0bcb37bf056d4bbe2",
+      "bytes": 75824
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000041.bin",
+      "sha256": "2a4bedf7556d6278fd844582dde61390d244c2cb827ee930d538544feede10fe",
+      "bytes": 72848
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000042.bin",
+      "sha256": "b8b303f4928c4541a79e52bdfb05d69980fcbba77ad82d892011ba7601070cd5",
+      "bytes": 72688
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000043.bin",
+      "sha256": "a8f36d2cb140df49fb12f9857ffc9cda9abe431d73c2d063b57f1a7c827ba1b5",
+      "bytes": 73664
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000044.bin",
+      "sha256": "f76f15b0d979e3462d1eba06cc4dc452c58ff9b81e3fee477d90d22907fb2014",
+      "bytes": 73552
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000045.bin",
+      "sha256": "d93f32ec563219ef0d42fb672149aa82a1022eb1b9d77d0e6399af35cea9aa84",
+      "bytes": 73856
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000046.bin",
+      "sha256": "00cc373aaaad94ae30c257751075c116a11c2b68d4332e33a440d95c67e72c3d",
+      "bytes": 74784
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000047.bin",
+      "sha256": "c9d209fa974ed9419efe48819db1c1180b90399dbca32002eaea8da1e1d74b9a",
+      "bytes": 73120
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000048.bin",
+      "sha256": "f637a85b658ccde812136b9ea9901791315ed943fcb555641a90520393b2cccc",
+      "bytes": 73568
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000049.bin",
+      "sha256": "23ffa1ad39d883ba1fa5e4b429d9fb66821f877beb21e64e0dbf04a580eed8f9",
+      "bytes": 73728
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000050.bin",
+      "sha256": "c0f8f4bb0a426cf0e75b32a33ee222c2a7d32b4ca0852bc9bf7f38e52a42ca71",
+      "bytes": 73840
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000051.bin",
+      "sha256": "6aea6beb18cc039e795075c3e4bbbe4685bd59dcaa3135da1b5d6d4a72553aef",
+      "bytes": 74688
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000052.bin",
+      "sha256": "4279cb92461bc9a9e94506d30cdeede37e51e30c980385b33685823b16d93f60",
+      "bytes": 79968
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000053.bin",
+      "sha256": "2206be7aa5e8518dc4ae62c4efdceddc7a2d4d7288a8d35feaf8bcf9d4d79a44",
+      "bytes": 79584
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000054.bin",
+      "sha256": "2006cd68b61f9a1c269dd00867fec0735085852fc51d67f873bea987ae4102ea",
+      "bytes": 78864
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000055.bin",
+      "sha256": "e6a0c0f048014b7f8e09a875065b66c0f233a1614bfef6caba8310415fabf55a",
+      "bytes": 77920
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000056.bin",
+      "sha256": "698390021d4a0d6abf6be4a3a6a40db42a9cccdae5bb5c9066b00e741312e549",
+      "bytes": 81824
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000057.bin",
+      "sha256": "ea94b06e8810a318ee9a382e6b8826ea3c0419f32d5408bad8077e2b0a351825",
+      "bytes": 79552
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000058.bin",
+      "sha256": "0149aa14e1cab96eb2fb70e15751deb492de87044e646d55d608ad1ae0b8c582",
+      "bytes": 81520
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000059.bin",
+      "sha256": "56a44ea4e7f218e066468dc47ba31df073b90ce810f8d36bb0d0d157d043c909",
+      "bytes": 80880
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000060.bin",
+      "sha256": "db5cc5cf0a9140309b6e7a2ede9c3de405ad0374df5076c50a5fee00dd157bc5",
+      "bytes": 82144
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000061.bin",
+      "sha256": "cda93c59abf9ca2c6212a12a58e29d80ba75ab7515b86dd315bd97df6e9843ca",
+      "bytes": 83120
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000062.bin",
+      "sha256": "d0c97d1cfc62a5dba84c328e7ab4198ca9d1ac7e6317430fe7f9f7d7e54c1558",
+      "bytes": 80080
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000063.bin",
+      "sha256": "bc14b76288159e577d7919d0f09587c20526235ae51a4f225b225880b1e49fc9",
+      "bytes": 79888
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000064.bin",
+      "sha256": "e9965cc77dd05759313a1a7162207bb6e2bf3b6d00ea498c4957246e6dfd5ec4",
+      "bytes": 80432
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000065.bin",
+      "sha256": "9d9e44952d6eb6c6a6f35f0bb5def60d5d15eef546cdc64ee1dab329c44f3c44",
+      "bytes": 81824
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000066.bin",
+      "sha256": "21415498f917eea126be423a02b9a78668398bdb6dd0a5c31a8269c1871144b7",
+      "bytes": 83840
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000067.bin",
+      "sha256": "4f962e2c56897517aa39f8816d33c7314c2a038b914227ba945e2eab7c1d6617",
+      "bytes": 85808
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000068.bin",
+      "sha256": "1d0719ffa2a041cd446923166bbf2151ae8c9ec1b088aa3f3db7bcdf7e3c5720",
+      "bytes": 87296
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000069.bin",
+      "sha256": "11ecbc9a52aea51a6aacce5f19048e6c44d54164dc7c6b20837e948ac4a8ba0d",
+      "bytes": 85712
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000070.bin",
+      "sha256": "2b76191dd3926f193a217915b18e04fd84f7e9ffdc8f97b21f7346071aef56ea",
+      "bytes": 87392
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000071.bin",
+      "sha256": "04315876b6f510ff3122a92e164ced83feb95b2833a9504d5533937e5cc77ba8",
+      "bytes": 86192
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000072.bin",
+      "sha256": "933d3164c722f96e6a2a13f779ddfa5902db81e6c6a7083da33aefc003d3bf36",
+      "bytes": 91408
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000073.bin",
+      "sha256": "bd5ba63c32cd7adb8ad0436d1e6e2eb5091ebbbd3abb39b8acaf19514faf31e5",
+      "bytes": 86352
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000074.bin",
+      "sha256": "5e60290a47c4cf9d60650fe5791a380a8fc7f36994ea1a4e47b2e1a56d1522b5",
+      "bytes": 84608
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000075.bin",
+      "sha256": "85749b6cfbdb8e29287e4af205332d4a752c9452bf2e0ace10036ee6c239480f",
+      "bytes": 90784
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000076.bin",
+      "sha256": "dc64c30dc8f8de54ed289418c9895846b6f5e76115bf7d889352ac049ccf1671",
+      "bytes": 90304
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000077.bin",
+      "sha256": "06105a879a9473f7e1c54dcfe10670ce9852112c01ef25fde482a845e2847407",
+      "bytes": 89280
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000078.bin",
+      "sha256": "f1abd4f64a7c40c2868e1a51ecc99e11414e6b83796621e5e3187aaf9967820a",
+      "bytes": 89504
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000079.bin",
+      "sha256": "a42fd3f1cabed91d46e8a8e01827be2ff80d38759cb809ef650fd0256fb6f090",
+      "bytes": 89296
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000080.bin",
+      "sha256": "6aff30883cb31fd090134cdd8813904cba8dd86b54eee126991386bf57e71d60",
+      "bytes": 90128
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000081.bin",
+      "sha256": "dc6e9c74aad9ec46ba275ffd1b3088d7c79d73dd52db27779e672e0535385531",
+      "bytes": 87600
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000082.bin",
+      "sha256": "9c7525b91efb8fc8c0b9d478e56cbe766d24ed3815a30911a1118f808219cc7b",
+      "bytes": 86704
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000083.bin",
+      "sha256": "894071bae7c08211253017d6adbfd17fdc80530ad949b812dff82ca6f3ec3108",
+      "bytes": 87696
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000084.bin",
+      "sha256": "116846adbb13e98b22f1f085fc5a1fe885f806b9128fe6f933ccb9d9f1b62b5d",
+      "bytes": 83120
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000085.bin",
+      "sha256": "548dd69df226531699e2ecee0f3d06e7c8d912d0eb33f21a99625bc2bec89c34",
+      "bytes": 87472
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000086.bin",
+      "sha256": "dc05d0ea0c5142da18f2164dc03b8354e10955b94b3bf97bbe6bb108419ea96e",
+      "bytes": 84032
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000087.bin",
+      "sha256": "0abd48eba558983623f239c8a25451e4a2b76f5f4d9c3517b4e35c4872afab24",
+      "bytes": 91296
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000088.bin",
+      "sha256": "f0da8eeebd0697f92c729d42484e2e4ddfe3785f5cce9999e9a85c119609f8f7",
+      "bytes": 91440
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000089.bin",
+      "sha256": "b3f1f150dab521fa03dda70b87fb54777125dae905c4ab6c134497b0ca374834",
+      "bytes": 88032
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000090.bin",
+      "sha256": "c8dc9c296ead7bfd5e1788c67569cc6bd9d7a427e5b2ca5d99fc21949644f4b8",
+      "bytes": 84176
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000091.bin",
+      "sha256": "972d4555f89adbd9d45e85f3ee26d42f10b13439fcdabd65f2a055ab7dcaecf7",
+      "bytes": 86128
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000092.bin",
+      "sha256": "636b02bb66fefa623c9bef316255f79900fb845b160a15d575f2afd7851b88ea",
+      "bytes": 92448
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000093.bin",
+      "sha256": "cb7b47396cbe3bac4d8be41f902ac2ce1cd608da022a4c101eff49b0bd32060b",
+      "bytes": 89488
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000094.bin",
+      "sha256": "9ddeb58ed8900cb7442ce5d50bb3b7ae4eb3935918114053bb7881a3f118ba4e",
+      "bytes": 84160
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000095.bin",
+      "sha256": "a62971c9db2478e843314994bca1a77fcaf6bc4761826c34bf1ad453267d8d91",
+      "bytes": 83344
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000096.bin",
+      "sha256": "2072b7c362d9de5eee2b57cb86cb5a6fe750edc54279df62413c775b2a677392",
+      "bytes": 89680
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000097.bin",
+      "sha256": "058a7049b934f6a18c565365dbc6500a5153d638e3265715efc895c5fa82b9aa",
+      "bytes": 81536
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000098.bin",
+      "sha256": "34dcde38ab10352c9880de8247ec8fb57e428cf572621d03012f8e4857972c08",
+      "bytes": 82000
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000099.bin",
+      "sha256": "e0890ddce0b161b83d175a333759c1c5e1567fd43c800676bc1fef86d7bbf1fa",
+      "bytes": 84480
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000100.bin",
+      "sha256": "bc3cd17705cc3f5a10b0d6dcd63aa54ad50921f0934e8cd3076bb305090a820b",
+      "bytes": 87296
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000101.bin",
+      "sha256": "c0231b7d8dd5ab37c883d953441b9b711684e5df6a661f3c7d36953c84515cf3",
+      "bytes": 85344
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000102.bin",
+      "sha256": "a4329fabd7403262a01ffb1872d41d489dcbbb4e3c316eb911c5dc25d8f522e5",
+      "bytes": 89728
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000103.bin",
+      "sha256": "923a70900566ccf814a3db102959b35ceb5fc6c9e5d7e4b6ac41af5dbc78f4ca",
+      "bytes": 90544
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000104.bin",
+      "sha256": "61a1ec54e3ffeadc1387eabd334fe5840c60bfb5037e116d308b06d0af4c62e1",
+      "bytes": 97648
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000105.bin",
+      "sha256": "27aae933faae9e00330df536debbd26969928e257edc9e9a5dacc22a6dfa8149",
+      "bytes": 100768
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000106.bin",
+      "sha256": "90a9c465cd3cd9a788f5e46d075b41bd518c3cb042416ff7832f8f3265899b21",
+      "bytes": 100416
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000107.bin",
+      "sha256": "cfd15a54584559f86ad9e8fa31c12f3f7d02884cce0520cb457179e88d10bac3",
+      "bytes": 98704
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000108.bin",
+      "sha256": "a61dd1644ea2175103586cc74dbff6aceba5b7230516cccbd31c40e1bb021b0b",
+      "bytes": 103136
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000109.bin",
+      "sha256": "924ba2906eca432e472103f341c397792b6413808e4b1ef43f2689732448262b",
+      "bytes": 108080
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000110.bin",
+      "sha256": "ded23a01e52d9fca842f779885c3f3057f5b5ff6a8d821186e7b33c33dbac4b6",
+      "bytes": 107088
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000111.bin",
+      "sha256": "be55de72a4684ca8dc4da9ee4048a9f8236fc612dd3b072bdc74d39956805148",
+      "bytes": 110976
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000112.bin",
+      "sha256": "faa486d3390ab584f5082ab00c37f38c15c7b511530236640f6bd1af62996263",
+      "bytes": 108176
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000113.bin",
+      "sha256": "9cb8af53303bd537e642e2b3e5fbf2eebcb5c9a5aadbd3879140a3fbed8bb3d3",
+      "bytes": 108304
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000114.bin",
+      "sha256": "0a3f2fc15bbac23217983b2c0938873f02ab13ca04fa132d46bccc25255e6b3c",
+      "bytes": 105072
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000115.bin",
+      "sha256": "1b2a45a72345906304884e7465c17ba133dc87f89e1fdf8bd6c014c48542fea3",
+      "bytes": 102400
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000116.bin",
+      "sha256": "69bca31dbd87216bb604f2ccab96c8b7523572bf0e35154d4d767da0a2570593",
+      "bytes": 100224
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000117.bin",
+      "sha256": "c4a7803dffc054ac7e63fa444c2ccb3422a5e6a0f8ee6cdde0922115d158d18b",
+      "bytes": 94544
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000118.bin",
+      "sha256": "0f9fb61040d0a2d5ee4df09061d897505091d12acbadfca19dcb1ca7cfcef1a4",
+      "bytes": 93536
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000119.bin",
+      "sha256": "f1d0c778f749487ed0777566548cded5d3993829ed0d9c7b0db136eaf46e8288",
+      "bytes": 93312
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000120.bin",
+      "sha256": "27dd7abed1d2156417072c087e1f193df2ca6695fb4c9be93289b7c902c3456f",
+      "bytes": 96288
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000121.bin",
+      "sha256": "78cb52d9e8ab14ba153f75d3207a7f48253985e3d632ed00a7a8825051fb8e46",
+      "bytes": 96800
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000122.bin",
+      "sha256": "5dfe7df32045a0eecf05460eada55faf0ea7078dc1e994548badc2dceca54ee4",
+      "bytes": 96400
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000123.bin",
+      "sha256": "fa86c0cf170f7740d68da745d43a49555af66b407fea22b98db6c49b58f75267",
+      "bytes": 98000
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000124.bin",
+      "sha256": "5eeaf4ba421e083651e10371e08f9b996ec811f49d462300e65cf16ec4ce047c",
+      "bytes": 99360
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000125.bin",
+      "sha256": "0ed5434eff4dcf46a81797adfaf60715ad499a2827bb28fa2caf31e2eb723468",
+      "bytes": 97344
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000126.bin",
+      "sha256": "574f02328a6038b6c8e69c3eb157dd118994884e566165d3ecd091a16a9eafde",
+      "bytes": 98304
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000127.bin",
+      "sha256": "5a5a6a9f1b5a861583985de968f572b41f10321fa1d4bf0e00046155ddfb4a1d",
+      "bytes": 98544
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000128.bin",
+      "sha256": "46748443f1673cff57e43e456b13dee532e68c59e0afafab46e11e0c425e02f2",
+      "bytes": 98944
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000129.bin",
+      "sha256": "910087845c7629a503f4d1b1f25c849038dda7c94ec7c6ea69f9f52bfe9a6d46",
+      "bytes": 99120
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000130.bin",
+      "sha256": "dd361eeb2df6e8184ebdbcfa9055e552c06100ddf697b16d2d9c5d33013fae8e",
+      "bytes": 101712
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000131.bin",
+      "sha256": "2a12cbb9f71a1cc9db2ead5adf477ce94d18fbd25e1db9616316c959154cef3b",
+      "bytes": 103392
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000132.bin",
+      "sha256": "87fe8786cdab4781a8fea9b415feea58ad39d6e50a960f7052f20eefe45e838d",
+      "bytes": 102480
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000133.bin",
+      "sha256": "600eb79580d7b9bc05545e26607ecd5712e4e5a54cd460135939f7e2df6a2247",
+      "bytes": 100640
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000134.bin",
+      "sha256": "e18a723d2e05139ba28ba9bccd2da8d7d2dbf32bfab70a22d03338e947f78aec",
+      "bytes": 96144
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000135.bin",
+      "sha256": "8d205c889e1af05f802581801af68b4a5207cb19134b16bef8abad4fa601bf5f",
+      "bytes": 96880
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000136.bin",
+      "sha256": "db52c0b385a9d7b2f0d0cf7dd34aa8e305d0887d34a9f5c52d11569dc45dbe24",
+      "bytes": 98096
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000137.bin",
+      "sha256": "8a43af63e4c8287a73b7dae9e5c3386168912713d0e625c1c85ac95e7ae3abec",
+      "bytes": 95632
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000138.bin",
+      "sha256": "81b59624f36f672c198bcd915d3a3f40cc27c1065000b6ff883b8eef570065fb",
+      "bytes": 96320
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000139.bin",
+      "sha256": "872c51af23ade97899430b7b400843444ca1dc90a151c1825cfaed3a07df979c",
+      "bytes": 96608
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000140.bin",
+      "sha256": "8f87fa0b5b53ffc2ef46f5f26d352e32b70a14e5771b480701ec0ac1373aaf8f",
+      "bytes": 94112
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000141.bin",
+      "sha256": "4889faa84a5a27f5833beb13333f7a3d6375622b47dd40fd349a7f60aa3f93c6",
+      "bytes": 93296
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000142.bin",
+      "sha256": "e38410bc8b927312e23aa2340a65e56c0667478cbd74fc7dd7e910fdbffc01bd",
+      "bytes": 93824
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000143.bin",
+      "sha256": "2d0117c8f1bd4db6a6c93625530778c55d8e2c85074b582a171d62cbd9b58aa9",
+      "bytes": 92880
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000144.bin",
+      "sha256": "95bb6ca019b998ab4d024b9d97f0084ed8bbe924801ab1d4d923c03dd4e391b5",
+      "bytes": 92160
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000145.bin",
+      "sha256": "e87516436a3f7b2db85baf5d493007b902c21e8e88918e6fa65a55ee2837e80a",
+      "bytes": 92848
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000146.bin",
+      "sha256": "469722586f6188b0c52f5a4c581b1d5d0a6a477c6e6654199335617f208eecfb",
+      "bytes": 94064
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000147.bin",
+      "sha256": "76ea979bf2c167baefc31c22572bf68a144f737cf2ea21416591961b28ad27e6",
+      "bytes": 92464
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000148.bin",
+      "sha256": "0f84c2d56cf11dac0ccdeef8d22e97f906963b295e7318022ec409d598c23770",
+      "bytes": 91888
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000149.bin",
+      "sha256": "ac0fc06480ed6763d0621246314885cd4ce202c52bbc02cfeae53bcafc29f53a",
+      "bytes": 90576
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000150.bin",
+      "sha256": "61326b033f807ff2e50af5ea30038bdd04ab187ef78f59cef3e71e0962b9bb3b",
+      "bytes": 91136
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000151.bin",
+      "sha256": "f958363ad9471b00d3d24fef28bd07133e11c5b21abc42bf228fab0ec01c9f10",
+      "bytes": 92544
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000152.bin",
+      "sha256": "87f5e27616144e8cfa2b167006a913d4ae2d4a0ab0f848d832b9a7f03ab83324",
+      "bytes": 93328
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000153.bin",
+      "sha256": "790e90fea40ce7e1a2b2c096613aa735c868911a8e8348ce42bed535bbe4e165",
+      "bytes": 92496
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000154.bin",
+      "sha256": "82008e51238df3dc23bb79acb3bddc10c03b6005fdf1a603c03b1dee32574d69",
+      "bytes": 91488
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000155.bin",
+      "sha256": "dc0241f5be2207fac9148a4925687b30f8252a95416a86df11f5632284649fea",
+      "bytes": 92176
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000156.bin",
+      "sha256": "4046f740a6a983d5c62d9dbd1261a93b74eb51b5639bdfc8a08962692fd19f23",
+      "bytes": 89392
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000157.bin",
+      "sha256": "095d143c4e58a3f9e3f9d0b2da86075c8a5673bffd35534c216451cce51cd684",
+      "bytes": 91056
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000158.bin",
+      "sha256": "1f1124c7cb496a18bc00e0d07d3f4e1f28523c76d6c0ef9d91d5922176a8c88e",
+      "bytes": 91664
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000159.bin",
+      "sha256": "010a4e3d1d64dcbb305b0e41240a85de00e3e5ba4b8918210a1fb03085c25b3d",
+      "bytes": 91616
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000160.bin",
+      "sha256": "d2d9b62c9dbc8bed39625e5f3a24baadde44a66aa75270867f8b7f71acbb5c9f",
+      "bytes": 91216
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000161.bin",
+      "sha256": "323a23c5d31261e40c1e6b8046710a1fb9e4b7dc7f0438078773b8b5164b8482",
+      "bytes": 92656
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000162.bin",
+      "sha256": "e7c2aa9fae31b47cd90635ddee07f281fbb270ef719040df8e6d8831fdfa197b",
+      "bytes": 95248
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000163.bin",
+      "sha256": "dcd62d19da275520b364094d65f485a970773bb7a9abcc559d3884f40d6a0a05",
+      "bytes": 93344
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000164.bin",
+      "sha256": "0f26f3a23d72092183564d3e12af089caf19ae7f9facc8456022124d998a73e5",
+      "bytes": 91520
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000165.bin",
+      "sha256": "57a371c7274574d79bc20b1762d67d8ae16127546c7af8ba5b0f77aa5e546b9e",
+      "bytes": 93744
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000166.bin",
+      "sha256": "0451e141b4a962bca04fd01022890d03f0ab54e0ef541019756fd840b26d93c6",
+      "bytes": 93712
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000167.bin",
+      "sha256": "f0ca000d2678e6b7e635bbc92f3c8aac393aac752ad5bd8fdd60f1750e5b21f5",
+      "bytes": 93152
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000168.bin",
+      "sha256": "56e041739fb5c025848506bfee2172b0d3ee7081160c1089696a04d14194054e",
+      "bytes": 94512
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000169.bin",
+      "sha256": "f790f0218cc3c47e2f047f557973f48e1e98a130ba8346785d4379cfd1528571",
+      "bytes": 98416
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000170.bin",
+      "sha256": "1f0972535161e4c6400285dd8a1e791493f23589737894d6d42007cd331dd61d",
+      "bytes": 95936
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000171.bin",
+      "sha256": "8099d30392252174891570035ff30f606ead74e57391a6f65ee8cca46f8557b7",
+      "bytes": 101840
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000172.bin",
+      "sha256": "e4ba22922a4f5e57b75f23fb94c3ceeb2215634b8581497992b95f8c1f43482f",
+      "bytes": 103904
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000173.bin",
+      "sha256": "fc35f5004c5a54e64ce5b55b2ed988ebfbbb5e0217d461fa25671ccdc25dbf61",
+      "bytes": 104416
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000174.bin",
+      "sha256": "f3467e4403f7bc49f22bd669f064a6be767a1fc81b307c1054b3bbb1e5061a5d",
+      "bytes": 104816
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000175.bin",
+      "sha256": "a33eadfadc8990c1b4cac5669653427984e020ead0d008390181f7238a1d9e85",
+      "bytes": 103744
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000176.bin",
+      "sha256": "44718d7def72402d8342ef8dbdab51e9b1816ccccd2a712cc5c9308470b6753b",
+      "bytes": 104432
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000177.bin",
+      "sha256": "2d0432a7327f33d44c297c5d0396b6aefb85f86884dd026ddf35930fd1c6b990",
+      "bytes": 103872
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000178.bin",
+      "sha256": "285424a663abb8a8fea627d3301264dca10ca472727d5a7b75de4c817d14f34b",
+      "bytes": 100544
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000179.bin",
+      "sha256": "fc29f1663a76e797af175ff64196f74ef12d5bc30483c0b51525e11eb6bb3dba",
+      "bytes": 100320
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000180.bin",
+      "sha256": "3ac83b6df18ba499d9afe8eb1f52a53ff3693529becb6fff3d3027d22a0af6d4",
+      "bytes": 100272
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000181.bin",
+      "sha256": "0849e91e5f2e71de9827c76a18628b8d50c3e5be9408faac4f057dc569d2dd56",
+      "bytes": 86576
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000182.bin",
+      "sha256": "8778c61fbb73b57482aec750c52692dafa66154bcf590aba75a844de1e17bb94",
+      "bytes": 97648
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000183.bin",
+      "sha256": "bb3f7538a818bb35c9e06a5150c1930cec9b235b062c2f0d6d3f528f17def55c",
+      "bytes": 94528
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000184.bin",
+      "sha256": "ea93a0c798ab9966c349af344c4c7946a0b7382280733e626764822855d0f65c",
+      "bytes": 91760
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000185.bin",
+      "sha256": "f5d73fbf512011f0593293b61959cbc1f27cc3f97e69451fcdbbd08ad51fd67a",
+      "bytes": 90928
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000186.bin",
+      "sha256": "d5b22751b1d095b82f2a07d339a1b7d53b39f835ad6d49526f9ee9e7f88c147f",
+      "bytes": 88640
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000187.bin",
+      "sha256": "a61e11906686f6ccb6d2ec6eef73fded10aec5ca24be5aafbf6f985f5f8903c3",
+      "bytes": 85360
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000188.bin",
+      "sha256": "9c6b005c52bfd83db351d0edabda92ae5c969b127f948c401b016f6a819636cf",
+      "bytes": 87520
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000189.bin",
+      "sha256": "e9fedc9412915773fac269ec805446569537f0fb05bb17919bceb82b97814378",
+      "bytes": 87712
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000190.bin",
+      "sha256": "b01db357251a3b758f599a0db2154ad1fd2ec72b7269628a8fb11299d2050626",
+      "bytes": 83760
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000191.bin",
+      "sha256": "148120a2cda73c95625ceadaf07e05e98bb3fba0a5470296921138276f9c6f5c",
+      "bytes": 74416
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000192.bin",
+      "sha256": "2040bb656e6903eb90bf4b387a74943f1b5c05ab27d2dcfc5ab926069f99c43c",
+      "bytes": 68736
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000193.bin",
+      "sha256": "bcf989be03c2391c2b51d4559b48984a8a23f1f9524eac6593bcb8d952f8a39f",
+      "bytes": 69520
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000194.bin",
+      "sha256": "0dd4c91cb9618bcaa988ad6c807139939e0e1ee0e01afe7826966b7126ce8d3b",
+      "bytes": 67408
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000195.bin",
+      "sha256": "251c337c76195d2a889b54b07bd8e8dfc2c7bef959992e1ff3d82c2e642ef38e",
+      "bytes": 66352
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000196.bin",
+      "sha256": "809ae9de524dcf644206f4a12c21f402aa2073d23f900775b35ede22541f805d",
+      "bytes": 61328
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000197.bin",
+      "sha256": "1a51a896339d3a980fb2b789b226c0073d2fd9d7fbce2d1e0a248008a2ef9590",
+      "bytes": 59344
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000198.bin",
+      "sha256": "f5b39687adfc46f86e4e731c344f89037551c3f463e7ce2a181f52e504982a9f",
+      "bytes": 60384
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000199.bin",
+      "sha256": "331e6db1e42cdfb7cdfbbea22890a3a08421d545c5b40d5a05d501d653bf84fc",
+      "bytes": 61488
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000200.bin",
+      "sha256": "a78ebbaf5ef55028619c4fe7d4df1f622575603977accfba18890265384c2c53",
+      "bytes": 62016
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000201.bin",
+      "sha256": "2ba4fec49701327787f1b89caaaf0a2a87e3b2c4f562c4237253bde31791dcbd",
+      "bytes": 68416
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000202.bin",
+      "sha256": "c4d9dbf6121dfa39b4dab27a6e273dcd005d7978e1848acdf75d2404db4627ba",
+      "bytes": 71728
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000203.bin",
+      "sha256": "2cbadb4d3d72cde4efdc497e778b6b47bc32e19c80e139793eb5aabc20cd35fc",
+      "bytes": 74752
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000204.bin",
+      "sha256": "90873bfbbe565acd1768d0aef0570cd50777d39f0ff5f93600e35bcb8ed854ab",
+      "bytes": 74576
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000205.bin",
+      "sha256": "6c745a84beb95da1aa96c2f4280c416f5eeb11505443d2cadc325ba430ae131b",
+      "bytes": 73856
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000206.bin",
+      "sha256": "16272d5100743e964e077abbbe421b20ba7aa443630eb22e2d1c4cf76b32e4f6",
+      "bytes": 75344
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000207.bin",
+      "sha256": "d8284ced50f3ac99ac86cacbce600c9eb1643ffaa8f80e8c6353afa68b21b508",
+      "bytes": 78224
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000208.bin",
+      "sha256": "4dda443ae1a6f5bd12672040611c331a91fd378231a7534177e203d68bbf1af3",
+      "bytes": 89872
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000209.bin",
+      "sha256": "62bc6a5b6488cc8827df8fc5fc9461a8f675b93bb05235ce9623d51564ba3778",
+      "bytes": 91920
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000210.bin",
+      "sha256": "82080654b630e33b0523d938206efe5c8e9be82d28769b6aa6d9fbd73755cb30",
+      "bytes": 93200
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000211.bin",
+      "sha256": "8f62043cc3596253be69024c40e0ff358fef51f2b272fa5746d411e672ef493b",
+      "bytes": 97168
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000212.bin",
+      "sha256": "da8a654040d8f3cc8eb752a00a985c1670a51a861329051ee809eda3ecf91463",
+      "bytes": 99264
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000213.bin",
+      "sha256": "c2574a0d58da00763507428c6901cbe1914afdd7a7cab2c069f80e0adcab294b",
+      "bytes": 100528
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000214.bin",
+      "sha256": "482a1f61c68f50d3217ffcee18c19c560e8dc31760fdc956eab3ba6a52b7ce5a",
+      "bytes": 100256
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000215.bin",
+      "sha256": "8fb89b40555d578966100967c6129f49fae2f5fe772da219bfe52aed5d87346e",
+      "bytes": 102768
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000216.bin",
+      "sha256": "66c93b49f91b38b509f380103fccbdf7c89c0d7dfd396a50264731695f1ec100",
+      "bytes": 102464
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000217.bin",
+      "sha256": "739a2119d48c812084eb10889d962bbff865f8b988beda192407e6945e8954fb",
+      "bytes": 99824
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000218.bin",
+      "sha256": "fcb3b66244ba572e0e29316070970fb00b93f0025aa31c1b3276a2b5d9b029c7",
+      "bytes": 102080
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000219.bin",
+      "sha256": "cbf46520b2b3254cd441915469e09422692d9688af4c8b9f7ff60daffa5fc59a",
+      "bytes": 95216
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000220.bin",
+      "sha256": "30a8a158023fa38e760021c125c6b9f1756740279fa93f1de8e3896827cd3c32",
+      "bytes": 97952
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000221.bin",
+      "sha256": "812dd7a4278a2445ad7e5e567f974de5d44244893672f6c0a9c1e3b7a9b15361",
+      "bytes": 92288
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000222.bin",
+      "sha256": "e8773d48fe53ee05104656a75270ef9c31c4c953b2dda3037113c0763f782b69",
+      "bytes": 89600
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000223.bin",
+      "sha256": "0bb5421fe847e79c09dc8394b2bf79d915d207f2f8c1024736ec15b9624a51d2",
+      "bytes": 87104
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000224.bin",
+      "sha256": "0463eb0a38dd915e83791db874f8e3a76b9e118091e00c509a3009e3114aeca7",
+      "bytes": 77920
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000225.bin",
+      "sha256": "635f1c06ca40e35bcaef518a1258aebf6984af715c6b731d5936aded4d706600",
+      "bytes": 76816
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000226.bin",
+      "sha256": "eda6b44fe72cfafbd3d6efff081154b9f69fde00f8cf2fcc4017b8b7fd5bb73f",
+      "bytes": 76400
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000227.bin",
+      "sha256": "24f977ab6a9cbe8f91e4ce1738515fbef746000d7ad7014a651d1dc05e1de576",
+      "bytes": 80608
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000228.bin",
+      "sha256": "b4701612bc233633b75ba13a45d4ea7d483d798de0c3ac21be4117aac8c1d9fa",
+      "bytes": 83216
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000229.bin",
+      "sha256": "8a1a1111207a3f794155f2fe9e38791d8267e8ecffa1f1ba173b67d0744d60dc",
+      "bytes": 79136
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000230.bin",
+      "sha256": "0cac3d61d821943e2b706b713f0a7270a88441119857129267f043e6c9238e36",
+      "bytes": 76336
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000231.bin",
+      "sha256": "32bec15094231df6f40b6a7bdadbf23cb2291314c224b71c26c8bb423b782f76",
+      "bytes": 73216
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000232.bin",
+      "sha256": "8c4df770b1106e1b526c8024a8bd671dfaab890d7a25b7ec0d8b79aee61351b3",
+      "bytes": 71184
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000233.bin",
+      "sha256": "542d593c68344bade4e3e980a28a4311991ae7ca20aebae8a4a98bdf9faede38",
+      "bytes": 66912
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000234.bin",
+      "sha256": "43f3b0a6cc599525226ba3f527989196812182207e7d5e460776deed94564103",
+      "bytes": 60192
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000235.bin",
+      "sha256": "26a520ae4c226cead5482f8099af4a27049c1ffff19a96759650757e15ba3627",
+      "bytes": 61648
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000236.bin",
+      "sha256": "d3e21d9138b001c0d840762f97d5f114627aa79330bfaae360310fdc9455f808",
+      "bytes": 58656
+    },
+    {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/scans/frame_000237.bin",
+      "sha256": "b84d41d6dfb69cce337ca039435dc971a818212d94ddc6df23facb23cf0e633d",
+      "bytes": 62432
+    }
+  ],
+  "timestamps_s": [
+    1339761399.41732,
+    1339761400.217308,
+    1339761401.017292,
+    1339761401.817275,
+    1339761402.617279,
+    1339761403.417237,
+    1339761404.217227,
+    1339761405.017218,
+    1339761405.817204,
+    1339761406.617185,
+    1339761407.417183,
+    1339761408.217178,
+    1339761409.017139,
+    1339761409.817131,
+    1339761410.617111,
+    1339761411.417107,
+    1339761412.217079,
+    1339761413.017062,
+    1339761413.81705,
+    1339761414.617036,
+    1339761415.417019,
+    1339761416.217004,
+    1339761417.016994,
+    1339761417.816974,
+    1339761418.616961,
+    1339761419.416964,
+    1339761420.216949,
+    1339761421.016917,
+    1339761421.816927,
+    1339761422.616893,
+    1339761423.416875,
+    1339761424.216855,
+    1339761425.016864,
+    1339761425.816824,
+    1339761426.616813,
+    1339761427.416794,
+    1339761428.216781,
+    1339761429.016755,
+    1339761429.816755,
+    1339761430.616733,
+    1339761431.416724,
+    1339761432.216703,
+    1339761433.016695,
+    1339761433.816677,
+    1339761434.616651,
+    1339761435.416646,
+    1339761436.216637,
+    1339761437.016643,
+    1339761437.816601,
+    1339761438.616587,
+    1339761439.41657,
+    1339761440.216579,
+    1339761441.016539,
+    1339761441.816523,
+    1339761442.616508,
+    1339761443.416494,
+    1339761444.216486,
+    1339761445.0165,
+    1339761445.816453,
+    1339761446.616434,
+    1339761447.416417,
+    1339761448.216419,
+    1339761449.016392,
+    1339761449.816373,
+    1339761450.616358,
+    1339761451.416344,
+    1339761452.21633,
+    1339761453.016315,
+    1339761453.816301,
+    1339761454.616285,
+    1339761455.416272,
+    1339761456.216253,
+    1339761457.016242,
+    1339761457.816225,
+    1339761458.616212,
+    1339761459.416224,
+    1339761460.21618,
+    1339761461.016165,
+    1339761461.816148,
+    1339761462.616136,
+    1339761463.416118,
+    1339761464.216104,
+    1339761465.016089,
+    1339761465.816094,
+    1339761466.616062,
+    1339761467.416043,
+    1339761468.216029,
+    1339761469.016042,
+    1339761469.815998,
+    1339761470.615982,
+    1339761471.415968,
+    1339761472.215993,
+    1339761473.015938,
+    1339761473.815926,
+    1339761474.615909,
+    1339761475.415897,
+    1339761476.215878,
+    1339761477.015864,
+    1339761477.815852,
+    1339761478.615834,
+    1339761479.415821,
+    1339761480.215806,
+    1339761481.015789,
+    1339761481.815773,
+    1339761482.61576,
+    1339761483.415743,
+    1339761484.215741,
+    1339761485.015712,
+    1339761485.815692,
+    1339761486.615684,
+    1339761487.41567,
+    1339761488.215656,
+    1339761489.015641,
+    1339761489.815623,
+    1339761490.615609,
+    1339761491.415595,
+    1339761492.215579,
+    1339761493.015566,
+    1339761493.815553,
+    1339761494.615533,
+    1339761495.415517,
+    1339761496.215746,
+    1339761497.015488,
+    1339761497.815491,
+    1339761498.615458,
+    1339761499.415444,
+    1339761500.215428,
+    1339761501.01543,
+    1339761501.815404,
+    1339761502.615383,
+    1339761503.415367,
+    1339761504.215356,
+    1339761505.015337,
+    1339761505.815325,
+    1339761506.615316,
+    1339761507.415293,
+    1339761508.215303,
+    1339761509.015262,
+    1339761509.81525,
+    1339761510.615232,
+    1339761511.415222,
+    1339761512.215204,
+    1339761513.015191,
+    1339761513.815176,
+    1339761514.615163,
+    1339761515.415145,
+    1339761516.215132,
+    1339761517.015141,
+    1339761517.815102,
+    1339761518.615085,
+    1339761519.415069,
+    1339761520.215053,
+    1339761521.01503,
+    1339761521.815025,
+    1339761522.615012,
+    1339761523.414994,
+    1339761524.215,
+    1339761525.014961,
+    1339761525.814951,
+    1339761526.614935,
+    1339761527.414921,
+    1339761528.214936,
+    1339761529.014889,
+    1339761529.814876,
+    1339761530.614863,
+    1339761531.414845,
+    1339761532.214863,
+    1339761533.014814,
+    1339761533.814803,
+    1339761534.614785,
+    1339761535.414769,
+    1339761536.214775,
+    1339761537.014739,
+    1339761537.814727,
+    1339761538.614709,
+    1339761539.414696,
+    1339761540.214679,
+    1339761541.01467,
+    1339761541.814665,
+    1339761542.614643,
+    1339761543.414617,
+    1339761544.214602,
+    1339761545.01459,
+    1339761545.814587,
+    1339761546.614587,
+    1339761547.414544,
+    1339761548.21453,
+    1339761549.014549,
+    1339761549.814508,
+    1339761550.614513,
+    1339761551.414467,
+    1339761552.214471,
+    1339761553.014439,
+    1339761553.814425,
+    1339761554.614416,
+    1339761555.414394,
+    1339761556.21438,
+    1339761557.014378,
+    1339761557.814354,
+    1339761558.614334,
+    1339761559.41432,
+    1339761560.214306,
+    1339761561.01429,
+    1339761561.814274,
+    1339761562.614263,
+    1339761563.414246,
+    1339761564.214232,
+    1339761565.014222,
+    1339761565.814207,
+    1339761566.614188,
+    1339761567.414171,
+    1339761568.214155,
+    1339761569.014139,
+    1339761569.814129,
+    1339761570.614111,
+    1339761571.414096,
+    1339761572.214099,
+    1339761573.014068,
+    1339761573.814051,
+    1339761574.614067,
+    1339761575.414444,
+    1339761576.214005,
+    1339761577.013992,
+    1339761577.814393,
+    1339761578.613962,
+    1339761579.41395,
+    1339761580.213931,
+    1339761581.014239,
+    1339761581.813904,
+    1339761582.613909,
+    1339761583.413872,
+    1339761584.213967,
+    1339761585.013843,
+    1339761585.813829,
+    1339761586.613812,
+    1339761587.413799,
+    1339761588.213781,
+    1339761589.013801
+  ]
+}

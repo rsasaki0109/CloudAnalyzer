@@ -65,6 +65,16 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert review_schema["properties"]["window_poses"]["default"] == 12
                 assert review_schema["properties"]["ranking"]["default"] == "regression"
                 assert review_schema["properties"]["offset"]["default"] == 0
+                motion_trial = next(t for t in tools if t.name == "trial_mapping_motion")
+                trial_schema = motion_trial.model_dump(by_alias=True)["inputSchema"]
+                assert set(trial_schema["required"]) == {"job_dir", "out_dir", "find_loops", "use_gravity", "reason"}
+                assert trial_schema["properties"]["find_loops"]["type"] == "boolean"
+                assert trial_schema["properties"]["use_gravity"]["type"] == "boolean"
+                assert trial_schema["properties"]["max_attempts"]["default"] == 4
+                trial_compare = next(t for t in tools if t.name == "compare_mapping_motion_trials")
+                compare_schema = trial_compare.model_dump(by_alias=True)["inputSchema"]
+                assert set(compare_schema["required"]) == {"baseline_report_file", "candidate_report_file"}
+                assert compare_schema["properties"]["window_poses"]["default"] == 12
                 assert {"export_mapping_preview", "export_mapping_run", "inspect_mapping_bundle"} <= names
                 preview = next(t for t in tools if t.name == "export_mapping_preview")
                 schema = preview.model_dump(by_alias=True)["inputSchema"]

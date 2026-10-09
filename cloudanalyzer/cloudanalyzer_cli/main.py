@@ -2021,6 +2021,28 @@ def mapping_trajectory_inspect_cmd(
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-motion-trial")
+def mapping_motion_trial_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out"),
+    policy: str = typer.Option(..., "--policy", help="JSON file with explicit find_loops/use_gravity booleans"),
+    reason: str = typer.Option(..., "--reason"),
+    max_attempts: int = typer.Option(4, "--max-attempts", min=1, max=8),
+) -> None:
+    """Generate one alternative motion/point-map candidate in a new job."""
+    from ca.mapping_motion_trial import trial_mapping_motion
+    try:
+        value = json.loads(Path(policy).read_text())
+        if not isinstance(value, dict) or set(value) != {"find_loops", "use_gravity"}:
+            raise ValueError("policy needs exactly find_loops and use_gravity")
+        result = trial_mapping_motion(job, out, value["find_loops"], value["use_gravity"], reason, max_attempts)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "failed":
+        raise typer.Exit(1)
+
+
 @app.command("mapping-run-advance")
 def mapping_run_advance_cmd(
     job: str = typer.Argument(...),

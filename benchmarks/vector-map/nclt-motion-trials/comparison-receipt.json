@@ -1,0 +1,218 @@
+{
+  "schema": "cloudanalyzer.nclt_motion_comparison_receipt.v1",
+  "sessions": {
+    "april": {
+      "loops-only": {
+        "pages": [
+          "comparison-with-baseline-0.json",
+          "comparison-with-baseline-8.json"
+        ],
+        "worsened_windows": 4,
+        "improved_windows": 8,
+        "worst_window": {
+          "window_id": 8,
+          "original_frame_ids": [
+            176,
+            177,
+            178,
+            180,
+            181,
+            182,
+            183,
+            185,
+            187,
+            188,
+            190,
+            191
+          ],
+          "timestamp_range_s": [
+            1335706646.240748,
+            1335706658.2416
+          ],
+          "evaluated_poses": 12,
+          "baseline": {
+            "metrics": {
+              "ate_rmse_m": 0.3190897512476652,
+              "rpe_translation_rmse_m": 0.26182753855885615
+            },
+            "sensor_origin_bounds_xy": [
+              26.88704412136765,
+              -23.838608271265453,
+              30.390280629291944,
+              -11.136387390003616
+            ]
+          },
+          "candidate": {
+            "metrics": {
+              "ate_rmse_m": 0.35059432620858505,
+              "rpe_translation_rmse_m": 0.2610568543451556
+            },
+            "sensor_origin_bounds_xy": [
+              26.90148776262376,
+              -23.81067255156344,
+              30.418309723880874,
+              -11.116219872411998
+            ]
+          },
+          "ate_rmse_m_candidate_minus_baseline": 0.03150457496091985
+        }
+      },
+      "gravity-only": {
+        "pages": [
+          "comparison-with-baseline-0.json",
+          "comparison-with-baseline-8.json"
+        ],
+        "worsened_windows": 6,
+        "improved_windows": 6,
+        "worst_window": {
+          "window_id": 11,
+          "original_frame_ids": [
+            226,
+            227,
+            228,
+            230,
+            231,
+            232,
+            234,
+            235
+          ],
+          "timestamp_range_s": [
+            1335706686.242724,
+            1335706693.443099
+          ],
+          "evaluated_poses": 8,
+          "baseline": {
+            "metrics": {
+              "ate_rmse_m": 0.17660758833568133,
+              "rpe_translation_rmse_m": 0.20351418335900892
+            },
+            "sensor_origin_bounds_xy": [
+              1.6468923858460887,
+              -0.08357733795140715,
+              8.720539937784299,
+              5.851913940397893
+            ]
+          },
+          "candidate": {
+            "metrics": {
+              "ate_rmse_m": 0.6373611903401916,
+              "rpe_translation_rmse_m": 0.20519776765337222
+            },
+            "sensor_origin_bounds_xy": [
+              1.68463101480307,
+              -0.010962121408573607,
+              8.704589845786504,
+              5.934715884583863
+            ]
+          },
+          "ate_rmse_m_candidate_minus_baseline": 0.4607536020045102
+        }
+      }
+    },
+    "june": {
+      "loops-only": {
+        "pages": [
+          "comparison-with-baseline-0.json",
+          "comparison-with-baseline-8.json"
+        ],
+        "worsened_windows": 4,
+        "improved_windows": 8,
+        "worst_window": {
+          "window_id": 5,
+          "original_frame_ids": [
+            140,
+            141,
+            142,
+            144,
+            145,
+            146,
+            147,
+            148,
+            150,
+            151,
+            153,
+            154
+          ],
+          "timestamp_range_s": [
+            1339761511.415222,
+            1339761522.615012
+          ],
+          "evaluated_poses": 12,
+          "baseline": {
+            "metrics": {
+              "ate_rmse_m": 0.23880507437962195,
+              "rpe_translation_rmse_m": 0.15253346130928572
+            },
+            "sensor_origin_bounds_xy": [
+              -0.278125179611524,
+              -60.80619624307947,
+              7.94790203658726,
+              -47.83217231923814
+            ]
+          },
+          "candidate": {
+            "metrics": {
+              "ate_rmse_m": 0.2911493344260108,
+              "rpe_translation_rmse_m": 0.1531961214741753
+            },
+            "sensor_origin_bounds_xy": [
+              -0.41567990613470035,
+              -60.70853374293666,
+              7.846553884960776,
+              -47.7468992277352
+            ]
+          },
+          "ate_rmse_m_candidate_minus_baseline": 0.05234426004638887
+        }
+      },
+      "gravity-only": {
+        "pages": [
+          "comparison-with-baseline-0.json",
+          "comparison-with-baseline-8.json"
+        ],
+        "worsened_windows": 8,
+        "improved_windows": 4,
+        "worst_window": {
+          "window_id": 11,
+          "original_frame_ids": [
+            231,
+            232,
+            234,
+            236,
+            237
+          ],
+          "timestamp_range_s": [
+            1339761584.213967,
+            1339761589.013801
+          ],
+          "evaluated_poses": 5,
+          "baseline": {
+            "metrics": {
+              "ate_rmse_m": 0.1578864517346298,
+              "rpe_translation_rmse_m": 0.12164878950469199
+            },
+            "sensor_origin_bounds_xy": [
+              -1.8008504069816498,
+              0.2481980738897163,
+              4.309707472276546,
+              1.4889782808665635
+            ]
+          },
+          "candidate": {
+            "metrics": {
+              "ate_rmse_m": 0.8571698538803729,
+              "rpe_translation_rmse_m": 0.12621264618797187
+            },
+            "sensor_origin_bounds_xy": [
+              -1.819800197069912,
+              0.1432427329753483,
+              4.283826233919233,
+              1.4032610772638887
+            ]
+          },
+          "ate_rmse_m_candidate_minus_baseline": 0.6992834021457431
+        }
+      }
+    }
+  }
+}

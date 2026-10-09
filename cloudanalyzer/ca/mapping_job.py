@@ -679,6 +679,9 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
     for artifact in [job["source"], *job["pointcloud"]["files"].values(), *attempt.get("geometry_inputs", {}).values(),
                      *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else []),
                      *attempt.get("connection_inputs", {}).values(),
+                     *attempt.get("patch_inputs", {}).values(),
+                     *([attempt["patch_checks"], attempt["patch_audits"]] if "patch_checks" in attempt else []),
+                     *([attempt["patch_preview"]] if "patch_preview" in attempt else []),
                      *([attempt["connection_proposal"]] if "connection_proposal" in attempt else []),
                      *job.get("retry_inputs", {}).values(),
                      *attempt["files"].values(), attempt["quality_report"]]:
@@ -698,8 +701,10 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         investigations.append("Inspect the point footprint and trajectory/lane assumptions for the affected traces; sparse or occluded returns do not prove that a road is absent.")
     if attempt["extraction"].get("width_prior_vertices", 0):
         investigations.append("Inspect assumed-width boundaries and their anchors. Point-coverage edges may be scan gaps rather than physical road edges; compare fitting choices at unchanged lane count, width and extent.")
-    if attempt.get("kind") in {"corridor_lanes", "connected_corridor_lanes"}:
+    if attempt.get("kind") in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes"}:
         investigations.append("The observed support span was explicitly adopted as an unverified layout hypothesis. Inspect the parent edge evidence and assigned lane fractions/directions/minimum widths; source support does not confirm complete road width or legal traffic rules.")
+    if attempt.get("kind") == "patched_corridor_lanes":
+        investigations.append("The patch retains original lanes and directed connections and adds only selected missing station intervals. All original source holds remain visible; new traces passed both estimators and no new retained failure locations were accepted. The point cloud is the complete fusion trial, not a local point replacement.")
     if attempt.get("kind") == "connected_corridor_lanes":
         investigations.append("Connector turn_direction tags classify geometric headings, not permitted manoeuvres. Review legal routing, full-width interior and clearance; graph station spans do not increase original source-corridor extent.")
     if not editable["complete"] or not reopened["complete"] or (consensus is not None and any(not a["complete"] for a in consensus.values())):

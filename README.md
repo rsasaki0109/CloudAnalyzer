@@ -254,6 +254,13 @@ graphs are retained separately, with actual HD comparisons before delivery.
 The [NCLT unused-frame trials](benchmarks/vector-map/nclt-unused-frames/README.md)
 record April's adopted partial improvement and June's retained baseline after
 the trial shortened its longest route despite generating more source intervals.
+For local HD repair, the agent can draft only missing ranges and explicitly patch
+them into the retained map. Original lane geometry, IDs and connections stay fixed;
+four audits reject new failures on retained samples and require fully supported
+additions. The point map remains the complete fusion trial.
+The [NCLT local patches](benchmarks/vector-map/nclt-partial-repair/README.md)
+add 4/6 m of source intervals with zero losses and retain the original 34/66 m
+longest routes; the added pieces remain isolated.
 The runner binds per-piece lane settings automatically and resumes completed
 stages after interruption. [Individual mapping tools](docs/commands/mapping-job.md)
 remain available for separate experiments and explicit draft selection.

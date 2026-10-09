@@ -1,5 +1,9 @@
 # NCLT: explicit lane hypotheses from adopted source geometry
 
+The subsequent [calling-agent MCP runs](../nclt-agent-run/README.md) retain the
+same per-piece hypotheses while inspecting all offered candidates and adopting
+additional source intervals; their complete decision traces are saved.
+
 On 2026-10-09 JST, the calling agent ran both bundled NCLT recordings through
 raw-log odometry, corrected point-map generation, lane-free corridor proposals,
 the [previous include/defer choices](../nclt-geometry/README.md) and explicit

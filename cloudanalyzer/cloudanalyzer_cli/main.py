@@ -1953,6 +1953,55 @@ def mapping_geometry_inspect_cmd(
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-run")
+def mapping_run_cmd(
+    source: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out"),
+    layout: str = typer.Option(..., "--layout", help="JSON object with fixed, explicit unverified lane assumptions"),
+    max_attempts: int = typer.Option(6, "--max-attempts", min=2, max=8),
+    minimum_retained_fraction: float = typer.Option(.9, "--minimum-retained-fraction", min=0, max=1),
+) -> None:
+    """Start the MCP agent's mapping loop and return its next decision contract."""
+    from ca.mapping_run import start_mapping_run
+    try:
+        result = start_mapping_run(source, out, json.loads(Path(layout).read_text(encoding="utf-8")),
+                                   max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "processing_failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-run-inspect")
+def mapping_run_inspect_cmd(job: str = typer.Argument(...), offset: int = typer.Option(0, "--offset", min=0)) -> None:
+    """Read saved agent-run state, paged observations and output paths."""
+    from ca.mapping_run import inspect_mapping_run
+    try:
+        result = inspect_mapping_run(job, offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-run-advance")
+def mapping_run_advance_cmd(
+    job: str = typer.Argument(...),
+    action: str = typer.Option(..., "--action", help="JSON inspect/draft/resume/finish decision"),
+    revision: int = typer.Option(..., "--revision", min=0),
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Execute and record an agent decision using the inspected run revision."""
+    from ca.mapping_run import advance_mapping_run
+    try:
+        result = advance_mapping_run(job, json.loads(Path(action).read_text(encoding="utf-8")), reason, revision)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result.get("draft_result", {}).get("status") == "failed":
+        raise typer.Exit(1)
+
+
 @app.command("mapping-lanes")
 def mapping_lanes_cmd(
     job: str = typer.Argument(...),

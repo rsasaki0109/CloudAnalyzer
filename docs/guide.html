@@ -668,6 +668,10 @@
         clouds/meshes. Original pose-graph inputs and the verified generated-map review ZIP are included.
         <b>Download original map package</b> retrieves that archive; its saved audits describe the original
         pair, not later edits. Unloaded cloud detail stays external; Undo starts fresh.</li>
+      <li>Opening a workspace snapshot verifies and prepares every saved cloud, graph and map before
+        committing. Failed or cancelled preparation leaves current work and Undo available. Editing
+        current work during staging prevents replacement. Preparation temporarily needs memory for
+        both workspaces; cancellation is handled between parsing and indexing steps.</li>
       <li>Browser autosave and <b>Save project</b> keep metadata and source references. Use a workspace snapshot
         or a separate result export to keep processed point records.</li>
       <li>A link like <code>…/app/?url=https://example.com/scan.laz</code> opens a remote file directly (the

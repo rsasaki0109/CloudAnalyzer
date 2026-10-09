@@ -50,6 +50,7 @@ import type {
   PoseGraphFloor,
   PoseGraphMerged,
   PoseGraphOpened,
+  PoseGraphProject,
   PoseGraphState,
   PoseGraphSource,
   ProfileOutput,
@@ -1003,10 +1004,58 @@ async function readDetail(
 const MAX_SLICES = 16;
 
 /** The open pose graph, if any (one at a time). */
-let poseGraph: { session: PoseGraphSession; name: string; sources: PoseGraphSource[] } | null = null;
+type NativeGraph = { session: PoseGraphSession; name: string; sources: PoseGraphSource[] };
+let poseGraph: NativeGraph | null = null;
 
 /** The vector map, made on first use. */
 let vectorMap: VectorMapSession | null = null;
+
+async function prepareGraphProject(saved: PoseGraphProject, name: string, progress: (note:string,fraction?:number)=>void, check:()=>void) {
+  const session = PoseGraphSession.fromSnapshot(saved.snapshot);
+  try {
+    const covered = new Set<number>();
+    for (const source of saved.sources) {
+      check();
+      const loaded = await loadGraph(source.files, progress, check);
+      try {
+        const ids = Array.from(loaded.session.nodeIds());
+        if (ids.length !== source.nodeIds.length || ids.some((id, i) => id !== source.nodeIds[i])) throw new Error("Source keyframes do not match the saved project");
+        if (!Number.isSafeInteger(source.first) || source.first < 0 || source.first + ids.length > session.nodeCount) throw new Error("Invalid project scan range");
+        for (let i = 0; i < ids.length; i++) {
+          const node = source.first + i;
+          if (covered.has(node)) throw new Error("Overlapping project scan ranges");
+          covered.add(node);
+        }
+        session.attachSourceScans(loaded.session, source.first);
+      } finally { loaded.session.free(); }
+    }
+    if (covered.size !== session.nodeCount) throw new Error("Project is missing original scan sources");
+    check();
+    const scans = Array.from({ length: session.nodeCount }, (_, i) => {
+      const source = saved.sources.find(s => i >= s.first && i < s.first + s.nodeIds.length);
+      return source ? session.scanPositions(i, source.files.displayPoints) : null;
+    });
+    const value: PoseGraphOpened = { ...graphState(session), name: name, scans, scanPoints: session.scanPointCount(), unmatched: [], odometry: null };
+    const native = { session, name, sources: saved.sources };
+    return { native, value, transfer: [...stateTransfer(value), ...scans.filter((s): s is Float32Array => s !== null).map(s => s.buffer)] };
+  } catch (error) { session.free(); throw error; }
+}
+
+let workspacePreparing = false;
+let workspaceSequence = 0;
+let preparedWorkspace: {token:number; map:VectorMapSession; graph:NativeGraph | null; ids:number[]} | null = null;
+function releasePreparedWorkspace(): void {
+  if (!preparedWorkspace) return;
+  for (const id of preparedWorkspace.ids) {
+    const item = items.get(id);
+    if (item?.kind === "cloud") item.cloud.free();
+    if (item?.kind === "mesh") item.mesh.free();
+    items.delete(id);
+  }
+  preparedWorkspace.map.free();
+  preparedWorkspace.graph?.session.free();
+  preparedWorkspace = null;
+}
 
 /** A "vm" request's answer: JSON text, or for edits `{result, view}` with the view after the edit. */
 function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
@@ -1497,6 +1546,43 @@ async function handle(
 ): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
+    case "workspace-prepare": {
+      if (workspacePreparing || preparedWorkspace) throw new Error("A workspace import is already staged");
+      if (req.clouds.length > 127) throw new Error("Workspace import exceeds cloud limit");
+      workspacePreparing = true;
+      try {
+        const staged = {token:++workspaceSequence, map:new VectorMapSession(), graph:null as NativeGraph | null, ids:[] as number[]};
+        preparedWorkspace = staged;
+        const result = staged.map.open("project-map.json",req.mapText);
+        const map = `{"result":${result},"view":${staged.map.view()},"undo":0}`;
+        const graph = req.graph ? await prepareGraphProject(req.graph,req.graphName,progress,check) : null;
+        staged.graph = graph?.native ?? null;
+        const clouds:LoadedCloud[] = [], transfer:Transferable[] = [...(graph?.transfer ?? [])];
+        for (const source of req.clouds) {
+          check();
+          progress(`Staging ${source.name}`);
+          const loaded = await handle({kind:"load",file:source.file,displayName:source.name,maxPoints:Infinity},(note,fraction)=>progress(`${source.name}: ${note}`,fraction),check,signal);
+          const cloud = loaded.value as LoadedCloud;
+          staged.ids.push(cloud.id); clouds.push(cloud);transfer.push(...loaded.transfer);
+        }
+        check();
+        return {value:{token:staged.token,clouds,graph:graph?.value ?? null,map},transfer};
+      } catch(error) { releasePreparedWorkspace(); throw error; }
+      finally {workspacePreparing = false;}
+    }
+    case "workspace-commit": {
+      if (workspacePreparing || preparedWorkspace?.token !== req.token) throw new Error("Workspace stage is unavailable");
+      const staged = preparedWorkspace;
+      vectorMap?.free(); poseGraph?.session.free();
+      vectorMap = staged.map; poseGraph = staged.graph;
+      preparedWorkspace = null;
+      return {value:null,transfer:[]};
+    }
+    case "workspace-discard": {
+      if (workspacePreparing) throw new Error("Workspace preparation is still running");
+      if (preparedWorkspace?.token === req.token) releasePreparedWorkspace();
+      return {value:null,transfer:[]};
+    }
     case "memory-stats":
       return {value: {main: (await ready).memory.buffer.byteLength, pool: poolMemory(), mapHistory: vectorMap?.historyBytes() ?? 0, mapSteps: vectorMap?.undoDepth ?? 0}, transfer: []};
     case "release-pool":
@@ -1509,36 +1595,10 @@ async function handle(
     case "pg-project-save":
       return { value: { snapshot: openGraph().toSnapshot(), sources: poseGraph!.sources }, transfer: [] };
     case "pg-project-open": {
-      const saved = req.project;
-      const session = PoseGraphSession.fromSnapshot(saved.snapshot);
-      try {
-        const covered = new Set<number>();
-        for (const source of saved.sources) {
-          check();
-          const loaded = await loadGraph(source.files, progress, check);
-          try {
-            const ids = Array.from(loaded.session.nodeIds());
-            if (ids.length !== source.nodeIds.length || ids.some((id, i) => id !== source.nodeIds[i])) throw new Error("Source keyframes do not match the saved project");
-            if (!Number.isSafeInteger(source.first) || source.first < 0 || source.first + ids.length > session.nodeCount) throw new Error("Invalid project scan range");
-            for (let i = 0; i < ids.length; i++) {
-              const node = source.first + i;
-              if (covered.has(node)) throw new Error("Overlapping project scan ranges");
-              covered.add(node);
-            }
-            session.attachSourceScans(loaded.session, source.first);
-          } finally { loaded.session.free(); }
-        }
-        if (covered.size !== session.nodeCount) throw new Error("Project is missing original scan sources");
-        check();
-        const scans = Array.from({ length: session.nodeCount }, (_, i) => {
-          const source = saved.sources.find(s => i >= s.first && i < s.first + s.nodeIds.length);
-          return source ? session.scanPositions(i, source.files.displayPoints) : null;
-        });
-        const value: PoseGraphOpened = { ...graphState(session), name: req.name, scans, scanPoints: session.scanPointCount(), unmatched: [], odometry: null };
-        poseGraph?.session.free();
-        poseGraph = { session, name: req.name, sources: saved.sources };
-        return { value, transfer: [...stateTransfer(value), ...scans.filter((s): s is Float32Array => s !== null).map(s => s.buffer)] };
-      } catch (error) { session.free(); throw error; }
+      const result = await prepareGraphProject(req.project, req.name, progress, check);
+      poseGraph?.session.free();
+      poseGraph = result.native;
+      return {value:result.value,transfer:result.transfer};
     }
     case "pg-merge":
       return mergePoseGraph(req, progress, check);
@@ -1852,19 +1912,16 @@ async function handle(
       if (loaded.kind === "mesh") {
         const id = nextId++;
         items.set(id, { kind: "mesh", mesh: loaded.mesh, name: displayName });
-        return describe(id, { parse, index: 0 });
+        try { return describe(id, { parse, index: 0 }); }
+        catch(error) {loaded.mesh.free();items.delete(id);throw error;}
       }
       const { cloud } = loaded;
       progress(`indexing ${cloud.length.toLocaleString()} points`);
       t = performance.now();
-      const workers = await buildIndex(cloud);
+      let workers: number;
+      try { workers = await buildIndex(cloud); check(); }
+      catch(error) { cloud.free(); throw error; }
       const index = performance.now() - t;
-      try {
-        check();
-      } catch (err) {
-        cloud.free();
-        throw err;
-      }
       const id = nextId++;
       items.set(id, {
         kind: "cloud",
@@ -1878,7 +1935,8 @@ async function handle(
         copcSource: loaded.copcSource,
       });
       progress("preparing for display");
-      return describe(id, { parse, index, workers });
+      try { return describe(id, { parse, index, workers }); }
+      catch(error) {cloud.free();items.delete(id);throw error;}
     }
     case "c2c": {
       const compared = getCloud(req.compared);

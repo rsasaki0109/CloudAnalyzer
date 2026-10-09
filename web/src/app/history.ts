@@ -10,6 +10,7 @@ import { removeCloud, transformCloud } from "../api";
 import { $, errorText, setStatus, typing } from "./dom";
 import { drawEntry, renderList, replaceCloud } from "./entries";
 import { type Entry, entries, hideEntry, pointsInvalidated, putEntry, viewer } from "./state";
+import { taskActive } from "./tasks";
 
 interface Step {
   label: string;
@@ -24,6 +25,7 @@ interface Step {
 const done: Step[] = [];
 const undone: Step[] = [];
 let busy = false;
+export function cloudHistoryReady(): boolean { return !busy; }
 
 const undoButton = $<HTMLButtonElement>("undo");
 const redoButton = $<HTMLButtonElement>("redo");
@@ -123,7 +125,7 @@ export async function moveCloud(entry: Entry, matrix: number[], label: string): 
 
 export async function undo(): Promise<void> {
   const step = done.at(-1);
-  if (!step || busy) return;
+  if (!step || busy || taskActive()) return;
   busy = true;
   renderButtons();
   try {
@@ -155,7 +157,7 @@ export async function undo(): Promise<void> {
 
 export async function redo(): Promise<void> {
   const step = undone.at(-1);
-  if (!step || busy) return;
+  if (!step || busy || taskActive()) return;
   busy = true;
   renderButtons();
   try {

@@ -403,6 +403,14 @@ export interface PoseGraphProject {
   sources: PoseGraphSource[];
 }
 
+/** Native inputs are staged together before current map/graph replacement. */
+export interface PreparedWorkspace {
+  token: number;
+  clouds: LoadedCloud[];
+  graph: PoseGraphOpened | null;
+  map: string;
+}
+
 /** Loops found automatically (see `pg-find-loops`). */
 export interface PoseGraphFound {
   state: PoseGraphState;
@@ -444,6 +452,9 @@ export type FilterOp = "voxel" | "random" | "spatial" | "octree" | "sor" | "spla
 export type VectorMapOp = "history-budget" | "history-clear" | "check-project" | "open" | "apply" | "quality" | "feature-edit" | "relations-edit" | "relations-preview" | "relations-adopt" | "feature-discover" | "feature-confirm" | "build" | "junction-preview" | "junction-connect" | "signal-preview" | "signal-add" | "crosswalk-preview" | "crosswalk-add" | "undo" | "clear" | "view" | "validate" | "export" | "nearest" | "json";
 
 export type Request =
+  | { kind: "workspace-prepare"; clouds: {file: File; name: string}[]; graph: PoseGraphProject | null; graphName: string; mapText: string }
+  | { kind: "workspace-commit"; token: number }
+  | { kind: "workspace-discard"; token: number }
   | { kind: "memory-stats" }
   | { kind: "release-pool" }
   | { kind: "pg-project-save" }

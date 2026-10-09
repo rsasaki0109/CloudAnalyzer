@@ -20,6 +20,7 @@ import type {
   PoseGraphOptimized,
   PoseGraphState,
   PoseGraphProject,
+  PreparedWorkspace,
   ProfileOutput,
   RemovedEdge,
   Progress,
@@ -47,8 +48,14 @@ const mapEdits = new Set(["open", "apply", "feature-edit", "relations-edit", "re
 function editsProject(req: Request): boolean {
   if (req.kind === "vm") return mapEdits.has(req.op);
   if (req.kind.startsWith("pg-")) return !["pg-project-save", "pg-register", "pg-find-loops", "pg-export", "pg-map"].includes(req.kind);
-  return ["load", "load-url", "remove", "transform", "icp", "c2c"].includes(req.kind);
+  return ["load", "load-url", "remove", "transform", "icp", "c2c", "workspace-commit"].includes(req.kind);
 }
+
+export function prepareWorkspace(params: Omit<Extract<Request, {kind:"workspace-prepare"}>,"kind">, progress: (p:Progress)=>void, signal:AbortSignal): Promise<PreparedWorkspace> {
+  return call({kind:"workspace-prepare",...params},[],progress,signal);
+}
+export function commitWorkspace(token:number): Promise<void> { return call({kind:"workspace-commit",token}); }
+export function discardWorkspace(token:number): Promise<void> { return call({kind:"workspace-discard",token}); }
 
 /** Called with the size of the worker's WASM memory after every request. */
 let onMemory: (bytes: number, pool: number) => void = () => {};

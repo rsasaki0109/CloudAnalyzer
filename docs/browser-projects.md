@@ -89,3 +89,26 @@ that archive to review its original map pair, or run a new source check on your
 current edits. A display-preview archive continues to identify its external full
 point map; archiving it does not include that missing full density or align separate
 drives. Metadata-only projects keep their existing source-selection workflow.
+
+## Validate a workspace before changing current work
+
+Workspace ZIP imports and record-inclusive browser recovery first verify every
+member and original source fingerprint, then prepare the saved map, graph and
+all point/mesh records in the worker. They switch the map and graph and register
+the prepared records only after all inputs pass. A malformed later PLY, invalid
+graph, cancellation during preparation, or an edit to current work during staging
+discards the temporary geometry and leaves current points, graph, map and cloud
+Undo history available. Duplicate current cloud names are rejected before staging.
+
+After a successful import, Undo starts from the saved state. Legacy ZIPs with
+external graph inputs wait for matching files before native preparation begins.
+Cancel is cooperative between parsing/indexing steps; one native call may finish
+before cancellation is handled. Preparation temporarily needs memory for both
+workspaces. Freed WASM allocations remain reusable in the heap; its displayed
+allocated size does not shrink. This is an input/preparation transaction, not a
+crash-recovery guarantee or rollback of later recomputed analyses and rendering.
+
+The fault tests run in `workspace-transaction.spec.ts`. Opt into the real NCLT
+restore using `CLOUDANALYZER_TRANSACTION_ZIP=/path/to/nclt-complete-workspace.zip`
+with that test file; it reuses the previous immutable workspace and compares
+exported point records, saved graph and HD map exactly without regenerating them.

@@ -98,6 +98,15 @@ export async function restoreGraphProject(project: PoseGraphProject | null, meta
   } finally { busy = false; endTask(signal); renderInfo(); }
 }
 
+/** Adopt the view of an already committed native graph without re-reading inputs. */
+export function takePreparedGraph(opened: PoseGraphOpened | null, metadata?: {name:string;sessions:Graph["sessions"];imu:Graph["imu"]}): void {
+  setTool(null);stopMoving();stopAligning();playing=false;
+  steps.length=0;selection=[];fieldA.value=fieldB.value="";
+  if (!opened || !metadata) {graph=null;clearGroup();renderInfo();return;}
+  graph={name:metadata.name,state:opened,scans:opened.scans,scanPoints:opened.scanPoints,sessions:metadata.sessions,imu:metadata.imu};
+  build(graph);renderInfo();
+}
+
 interface Graph {
   name: string;
   state: PoseGraphState;

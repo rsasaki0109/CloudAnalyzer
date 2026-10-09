@@ -2417,7 +2417,12 @@ export function captureMapProject(): Promise<string> {
 }
 
 export async function openVectorMap(name: string, text: string): Promise<MapView> {
-  const opened = await vectorMap<Edited>("open", { name, text });
+  return takePreparedMap(name, await vectorMap<Edited>("open", { name, text }));
+}
+
+/** Native map has already been validated and committed with its workspace. */
+export function takePreparedMap(name: string, value: unknown): MapView {
+  const opened = value as Edited;
   setTool(null);
   const issues = opened.result as Issue[];
   $("vm-import-notes").hidden = issues.length === 0;

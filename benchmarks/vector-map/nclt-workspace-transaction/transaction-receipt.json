@@ -1,0 +1,20 @@
+{
+  "zipBytes": 54815611,
+  "zipSha256": "c918ad9dfd2a9972ee385d9e9cf2c2956a3a7cf2fc5d4ece348b7a65177b7db4",
+  "restoredMs": 89134,
+  "cloudExportsExact": true,
+  "poseGraphExact": true,
+  "hdMapExact": true,
+  "hashes": [
+    {
+      "name": "nclt-2012-04-29_map",
+      "bytes": 34485961,
+      "sha256": "957bf0bb42f8eac562beb052273910ac18a42c058253760abd4cb21f9efb9698"
+    },
+    {
+      "name": "014-preview_map.ply",
+      "bytes": 5170696,
+      "sha256": "4fae11d323f344da703ade2d55967c8f1f15c7a435f053770f461a85096a380c"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 /** Portable editing projects; source files stay external and are verified. */
 import { parseProject, projectSources, type Project, type ControlSetting, type SavedPoseGraph } from "../project";
 import { matchesFile, referenceFile, sourceName, type SourceReference } from "../source-reference";
-import { vectorMap, workerBusy, exportCloud, exportMesh } from "../api";
+import { vectorMap, workerBusy, exportCloud, exportMesh, prepareWorkspace, commitWorkspace, discardWorkspace } from "../api";
 import { writeProjectSnapshot, readProjectSnapshot } from "../project-snapshot";
 import { REVIEW_LIMIT } from "../review-zip";
 import { readMappingReview } from "../mapping-review";
@@ -10,20 +10,21 @@ import { onProjectChanged, projectChanged } from "../project-change";
 import { readRecovery, writeRecovery, MAX_RECOVERY_BYTES, type Recovery, type ReviewDraft } from "../recovery-store";
 import type { PoseGraphProject } from "../protocol";
 import { applySession, captureSession } from "./session";
-import { captureGraphProject, restoreGraphProject, graphProjectReady } from "./posegraph";
-import { captureMapProject, openVectorMap, captureLaneReviews, restoreLaneReviews, captureReviewDraft, restoreReviewDraft, mapProjectReady } from "./vectormap";
+import { captureGraphProject, restoreGraphProject, graphProjectReady, takePreparedGraph } from "./posegraph";
+import { captureMapProject, openVectorMap, captureLaneReviews, restoreLaneReviews, captureReviewDraft, restoreReviewDraft, mapProjectReady, takePreparedMap } from "./vectormap";
 import { entries, listChanged, distanceChanged, type Entry } from "./state";
 import { loadFiles, loadUrls } from "./loading";
-import { removeEntry } from "./entries";
+import { addEntry, renderList, removeEntry } from "./entries";
 import { $, download, errorText, setStatus } from "./dom";
 import { endTask, showProgress, startTask, taskActive } from "./tasks";
 import { setTool } from "./tools";
-import { clearCloudHistory } from "./history";
+import { clearCloudHistory, cloudHistoryReady } from "./history";
 import { captureReviewArchive, restoreReviewArchive } from "./mapping-review";
 
 const MAX_PROJECT_BYTES = MAX_RECOVERY_BYTES;
 const available = new Set<File>();
 let pending: Project | null = null;
+let pendingWorkspace: {files:File[];draft?:ReviewDraft;browser:boolean} | null = null;
 let completing = false;
 let projectRevision = 0;
 let pendingDraft: ReviewDraft | undefined;
@@ -119,6 +120,7 @@ function stageProject(project: Project): void {
   const control = $<HTMLSelectElement>("max-points");
   if (typeof maxPoints === "string" && [...control.options].some(o => o.value === maxPoints)) control.value = maxPoints;
   pending = project;
+  pendingWorkspace = null;
   projectRevision++;
   available.clear();
 }
@@ -178,7 +180,72 @@ async function findSource(ref: SourceReference, signal: AbortSignal): Promise<Fi
   return undefined;
 }
 
+/** Stage every native cloud, graph and map before changing current workspace data. */
+export async function restoreWorkspaceFiles(files: File[], extraFiles: File[] = [], draft?: ReviewDraft, browser = false): Promise<boolean> {
+  if (completing) return false;
+  if (taskActive() || !mapProjectReady() || !graphProjectReady()) throw new Error("Finish the current operation before opening a workspace snapshot");
+  const project = parseProject(JSON.parse(await files[0].text()));
+  if (completing || taskActive() || !mapProjectReady() || !graphProjectReady()) throw new Error("Finish the current operation before opening a workspace snapshot");
+  if (project.session.clouds.some(saved => [...entries.values()].some(e => e.cloud.name === saved.name)))
+    throw new Error("A current cloud has the same name as saved work. Export and close it before opening this snapshot");
+  completing = true;renderSaveState();
+  const signal = startTask();let token:number | undefined, committed=false;
+  try {
+    const waitingSince=performance.now();
+    while(workerBusy()) {
+      signal.throwIfAborted();
+      if(performance.now()-waitingSince>5000) throw new Error("Finish the worker operation before importing the workspace");
+      await new Promise(resolve=>setTimeout(resolve,25));
+    }
+    const originalRevision=autosave.revision;
+    const currentGraph = await captureGraphProject();
+    const candidates = new Set([...files.slice(1),...extraFiles,...available,...(currentGraph?.project.sources.flatMap(s=>[...(s.files.graph?[s.files.graph]:[]),...s.files.scans]) ?? [])]);
+    const archiveFile=captureReviewArchive();if(archiveFile)candidates.add(archiveFile);
+    for(const entry of entries.values()) if(entry.origin.kind!=="derived"&&entry.origin.file)candidates.add(entry.origin.file);
+    const resolved=new Map<SourceReference,File>(), missing:string[]=[];
+    const references=projectSources(project);
+    for(const ref of references) {
+      signal.throwIfAborted();let found:File|undefined;
+      for(const file of candidates) if(sameName(file,ref)&&await matchesFile(file,ref,signal)) {found=file;break;}
+      if(found)resolved.set(ref,found);else missing.push(ref.name);
+    }
+    for(const file of extraFiles) {
+      let referenced=false;
+      for(const ref of references) if(sameName(file,ref)&&await matchesFile(file,ref,signal)) {referenced=true;break;}
+      if(!referenced)throw new Error("Open unrelated files separately from a workspace snapshot");
+    }
+    if(missing.length) {
+      pending=project;pendingWorkspace={files,draft,browser};restoringBrowser=browser;available.clear();for(const file of candidates)available.add(file);
+      setStatus(`Project: open matching source files to continue: ${[...new Set(missing)].join(", ")}. Current clouds and maps are retained.`);
+      return false;
+    }
+    const archive=project.reviewArchive?resolved.get(project.reviewArchive)!:null;
+    const archivedReview=archive?await readMappingReview(archive,signal):null;
+    const graph:PoseGraphProject|null=project.poseGraph?{snapshot:project.poseGraph.snapshot,sources:project.poseGraph.sources.map(s=>({files:{...s.options,graph:s.graph?resolved.get(s.graph)!:null,scans:s.scans.map(ref=>resolved.get(ref)!)},first:s.first,nodeIds:s.nodeIds}))}:null;
+    const inputs=project.session.clouds.map(c=>({file:resolved.get(c.source!)!,name:c.name}));
+    const prepared=await prepareWorkspace({clouds:inputs,graph,graphName:project.poseGraph?.name??"",mapText:project.vectorMap},p=>{showProgress(p);setStatus(`Importing workspace: ${p.note}…`);},signal);
+    token=prepared.token;signal.throwIfAborted();
+    if(autosave.revision!==originalRevision) throw new Error("The workspace changed during import; current work is retained. Try the snapshot again");
+    if(!cloudHistoryReady()) throw new Error("Finish Undo or Redo before importing a workspace");
+    await commitWorkspace(token);committed=true;
+    clearCloudHistory();
+    for(const [i,cloud] of prepared.clouds.entries()) addEntry(cloud,{kind:"file",file:inputs[i].file,loadMaxPoints:0,displayPreview:project.session.clouds[i].displayPreview});
+    renderList();takePreparedGraph(prepared.graph,project.poseGraph??undefined);takePreparedMap("project-map.json",JSON.parse(prepared.map));
+    restoreSettings(project.settings);$("memory-apply").click();
+    await applySession(project.session,true);restoreLaneReviews(project.reviews);restoreReviewDraft(draft);
+    await restoreReviewArchive(archive,signal,archivedReview);
+    pending=null;pendingWorkspace=null;pendingDraft=undefined;available.clear();restoringBrowser=false;
+    if(browser) {offerRecovery=false;autosave.recovered();}
+    setStatus("Project restored: all point, graph and map inputs verified before import. Undo starts from this saved state.");
+    return true;
+  } finally {
+    if(token!==undefined&&!committed)await discardWorkspace(token);
+    endTask(signal);completing=false;renderSaveState();autosave.schedule();
+  }
+}
+
 export async function completePendingProject(): Promise<void> {
+  if(pendingWorkspace&&!completing) {const saved=pendingWorkspace;await restoreWorkspaceFiles(saved.files,[],saved.draft,saved.browser);return;}
   if (!pending || completing) return;
   completing = true;
   const project = pending, revision = projectRevision;
@@ -399,6 +466,7 @@ $("project-resume").onclick = async () => {
       if (current.project.session.clouds.some(saved => [...entries.values()].some(e => e.cloud.name === saved.name))) throw new Error("A current cloud has the same name as saved work. Export and close it before resuming the browser snapshot");
     }
     recovery = current;
+    if(current.snapshot) {await restoreWorkspaceFiles(files,[],current.draft,true);return;}
     stageProject(current.project); pendingDraft = current.draft; restoringBrowser = true;
     for (const file of files.slice(1)) available.add(file);
     renderSaveState(); await completePendingProject();
@@ -417,7 +485,7 @@ $("project-forget").onclick = async () => {
   try {
     await writeRecovery(null,recoveryToken);
     recovery = null; recoveryToken = null; offerRecovery = false;
-    if (restoringBrowser) { pending = null; pendingDraft = undefined; restoringBrowser = false; available.clear(); projectRevision++; }
+    if (restoringBrowser) { pending = null; pendingWorkspace=null; pendingDraft = undefined; restoringBrowser = false; available.clear(); projectRevision++; }
     autosave.paused = false; autosave.error = "";
     renderSaveState(); autosave.schedule();
   } catch (error) { autosave.error = errorText(error); renderSaveState(); }

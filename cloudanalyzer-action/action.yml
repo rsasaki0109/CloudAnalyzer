@@ -5,6 +5,10 @@ branding:
   color: blue
 
 inputs:
+  python_base_image:
+    description: Python 3.10-compatible base image; override when Docker Hub is rate-limited
+    required: false
+    default: python:3.10-slim
   config:
     description: Path to cloudanalyzer.yaml relative to the repository root
     required: true
@@ -48,7 +52,9 @@ runs:
   steps:
     - name: Build CloudAnalyzer action image
       shell: bash
-      run: docker build -t cloudanalyzer-action:local "${{ github.action_path }}"
+      env:
+        PYTHON_BASE_IMAGE: ${{ inputs.python_base_image }}
+      run: docker build --build-arg PYTHON_BASE_IMAGE="$PYTHON_BASE_IMAGE" -t cloudanalyzer-action:local "${{ github.action_path }}"
 
     - name: Run CloudAnalyzer QA
       id: run

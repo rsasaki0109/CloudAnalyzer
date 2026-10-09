@@ -1953,6 +1953,26 @@ def mapping_geometry_inspect_cmd(
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-lanes")
+def mapping_lanes_cmd(
+    job: str = typer.Argument(...),
+    geometry: int = typer.Option(..., "--geometry", min=1, help="Retained geometry attempt ID"),
+    specs: str = typer.Option(..., "--specs", help="JSON list of explicit per-centre-curve lane hypotheses"),
+    boundary_policy: str = typer.Option(..., "--boundary-policy"),
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Export source-span lane hypotheses with preserved geometry and IR/OSM source audits."""
+    from ca.mapping_job import generate_mapping_corridor_lanes
+    try:
+        hypotheses = json.loads(Path(specs).read_text(encoding="utf-8"))
+        result = generate_mapping_corridor_lanes(job, geometry, hypotheses, boundary_policy, reason)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["attempts"][-1]["status"] == "failed":
+        raise typer.Exit(1)
+
+
 @app.command("mapping-status")
 def mapping_status_cmd(job: str = typer.Argument(...)) -> None:
     """Inspect mapping evidence, artifact paths and remaining attempt budget as JSON."""

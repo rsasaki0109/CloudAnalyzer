@@ -73,7 +73,10 @@ lanes; keep them instead of applying the suggested removal.
 This stage publishes IR plus evidence, **no Lanelet2 OSM**. The current Lanelet2
 reader drops standalone unknown ways on reload. Exporting these curves as lanes
 would require additional semantics that this input does not establish. Resolve
-those hypotheses separately before lane-map export.
+those hypotheses separately before lane-map export. The subsequent
+[lane-hypothesis experiments](../nclt-corridor-lanes/README.md) preserve chosen
+outer curves while exporting explicit, unverified layouts and retaining the
+original full-drive extent and source holds.
 
 [`verification.json`](verification.json) includes source/native/map/proposal/draft
 hashes, processing results, decisions, all chosen section geometry, complete

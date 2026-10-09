@@ -5,6 +5,19 @@ use serde_json::{Value, json};
 use vectormap_core::{GeoReference, Map};
 use vectormap_io::{autoware, lanelet2};
 
+mod corridor_lanes;
+
+/// Export explicitly specified lane hypotheses inside frozen source geometry.
+#[pyfunction]
+pub fn build_corridor_lanes(
+    py: Python<'_>,
+    geometry: &str,
+    specifications: &str,
+) -> PyResult<String> {
+    py.detach(|| corridor_lanes::generate(geometry, specifications))
+        .map_err(PyValueError::new_err)
+}
+
 /// Lane-free low-surface corridor proposals in the shared input metre frame.
 #[pyfunction]
 #[pyo3(signature = (cloud, trajectory, options="{}"))]

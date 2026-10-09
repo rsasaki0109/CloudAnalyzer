@@ -20,7 +20,7 @@ from typing import Any, Iterator
 
 from ca._rust import core
 from ca.posegraph_fix import fix_session, odometry
-from ca.vector_map import build_vector_map
+from ca.vector_map import build_vector_map, _publish
 
 SCHEMA = "cloudanalyzer.mapping_job.v1"
 
@@ -111,6 +111,7 @@ def inspect_mapping_job(job_dir: str) -> dict[str, Any]:
         ["inspect_mapping_corridors"] if job.get("corridor_proposal", {}).get("status") == "ready" else []
     ) + (["generate_mapping_geometry"] if ready and remaining and job.get("corridor_proposal", {}).get("status") == "ready" else []) + (
         ["inspect_mapping_geometry"] if any(a["status"] == "geometry_draft" for a in job["attempts"]) else []
+    ) + (["generate_mapping_corridor_lanes"] if ready and remaining and any(a["status"] == "geometry_draft" for a in job["attempts"]) else []
     ) + (["generate_mapping_candidate"] if ready and remaining else []) + (
         ["select_mapping_candidate"] if any(a["status"] == "audited_draft" and a["extent"]["passes_requested_extent"] for a in job["attempts"]) else []
     )
@@ -426,6 +427,112 @@ def inspect_mapping_geometry(job_dir: str, candidate_id: int, offset: int = 0) -
         "remaining_attempts": remaining}
 
 
+def generate_mapping_corridor_lanes(
+    job_dir: str, geometry_candidate_id: int, lane_specs: list[dict[str, Any]], boundary_policy: str, reason: str,
+) -> dict[str, Any]:
+    """Export and audit explicit lane hypotheses inside retained source geometry.
+
+    Choose boundary_policy="source_span_hypothesis" explicitly: observation gaps
+    are not complete road edges. Each specification needs a retained center_curve_id,
+    reason, speed_limit_kmh, and lanes ordered left
+    to right along the original input stations. Each lane requires direction
+    (forward/backward), kind="driving", one_way, positive fraction and minimum_width_m.
+    Other lane kinds are excluded because the source-audit protocol evaluates driving lanes only.
+    Fractions sum to 1. Virtual dividers interpolate the source edges; no painted
+    marking or traffic rule is detected. Too-narrow source spans retain a failed
+    attempt instead of widening, narrowing or changing lane count automatically.
+
+    Outer source curves are preserved; separate pieces stay disconnected. Unassigned
+    geometry, all unresolved input intervals and semantic hypotheses remain visible.
+    Uses one shared HD attempt, pins parent/proposal/input/native hashes and preserves
+    existing selection. Saves IR, OSM, projector and four source audits after checking
+    lane membership/orientation/semantics/geometry on OSM reload. Native processing is
+    required; old jobs remain inspectable but cannot switch their pinned binary.
+    Use diagnose_mapping_candidate afterwards. Source support does not confirm width,
+    lane identity, legal direction/speed, clearance or deployment readiness.
+    """
+    from ca.mapping_geometry import corridor_lane_requests, verify_lane_roundtrip
+
+    if type(geometry_candidate_id) is not int or geometry_candidate_id < 1 or not isinstance(reason, str) or not reason.strip():
+        raise ValueError("supply a positive geometry_candidate_id and a reason")
+    root = Path(job_dir).resolve()
+    with _locked(root):
+        job = _load(root)
+        _inputs(job)
+        parent = next((a for a in job["attempts"] if a["id"] == geometry_candidate_id and a["status"] == "geometry_draft"), None)
+        if parent is None:
+            raise ValueError("use a retained geometry draft in the same mapping job")
+        for artifact in [*parent["files"].values(), parent["corridor_proposal"]]:
+            _verify(artifact)
+        geometry = json.loads(Path(parent["files"]["report"]["path"]).read_text(encoding="utf-8"))
+        requests, chosen = corridor_lane_requests(geometry, lane_specs, boundary_policy)
+        module = core()
+        if module is None or not hasattr(module, "build_corridor_lanes"):
+            raise RuntimeError("corridor lane drafting needs an updated native core and a new mapping job")
+        if len(job["attempts"]) >= job["max_attempts"]:
+            raise ValueError("mapping attempt budget exhausted; inspect the retained candidates")
+        options = {"geometry_candidate_id": geometry_candidate_id, "boundary_policy": boundary_policy, "lane_specs": lane_specs}
+        attempt: dict[str, Any] = {"id": len(job["attempts"]) + 1, "kind": "corridor_lanes", "status": "running",
+            "reason": reason.strip(), "road_options": options, "geometry_inputs": parent["files"], "corridor_proposal": parent["corridor_proposal"]}
+        job["attempts"].append(attempt)
+        _save(root / "job.json", job)
+        target = root / f"candidate-{attempt['id']:02d}"
+        try:
+            if target.exists():
+                raise FileExistsError(f"output directory already exists: {target}")
+            payload = json.loads(module.build_corridor_lanes(parent["files"]["editable_map"]["path"], json.dumps(requests, allow_nan=False)))
+            evidence = payload["report"]
+            evidence["options"] = options
+            evidence["reason"] = reason.strip()
+            evidence["geometry_inputs"] = parent["files"]
+            evidence["input_artifacts"] = geometry["input_artifacts"]
+            assigned = {s["curve_ids"]["center"] for s in chosen}
+            evidence["station_disposition"] = [{**i, "status": "included_lane_hypothesis" if any(
+                s["from_m"] <= i["from_m"] and i["to_m"] <= s["to_m"] for s in chosen)
+                else "geometry_only" if i["status"] == "included_geometry" else i["status"]} for i in geometry["station_disposition"]]
+            evidence["unassigned_geometry"] = [s for s in geometry["segments"] if s["curve_ids"]["center"] not in assigned]
+            extraction = {"roads": len(chosen), "lanes": sum(len(r["lanes"]) for r in requests),
+                "trajectory_length": geometry["summary"]["trajectory_length_m"], "generated_length": sum(s["to_m"] - s["from_m"] for s in chosen),
+                "length_measurement": "original_input_xy_station_union", "width_prior_vertices": 0,
+                "layout_prior_vertices": sum((len(r["lanes"]) - 1) * len(s["sections"]) for r, s in zip(requests, chosen))}
+            evidence["extraction"] = extraction
+            evidence["extent"] = _extent(extraction, job.get("minimum_retained_fraction", .9))
+            with tempfile.TemporaryDirectory(prefix=".mapping-lanes-", dir=root) as temporary:
+                draft = Path(temporary) / "result"
+                published = _publish(payload, draft)
+                files = published["files"]
+                reopened = json.loads(module.edit_vector_map_relations(files["map"]))
+                verify_lane_roundtrip(json.loads(payload["map_json"]), json.loads(reopened["map_json"]))
+                evidence["lane_roundtrip_verified"] = True
+                cloud = job["pointcloud"]["files"]["map"]["path"]
+                audits = {"editable": json.loads(module.audit_vector_map_quality_details(cloud, files["editable_map"])),
+                          "reopened_osm": json.loads(module.audit_vector_map_quality_details(cloud, files["map"]))}
+                audits["ground_consensus"] = {key: json.loads(module.audit_vector_map_ground_consensus_details(cloud, files[fkey]))
+                                             for key, fkey in (("editable", "editable_map"), ("reopened_osm", "map"))}
+                _save(draft / "source-quality.json", audits)
+                evidence["files"] = {k: str(target / Path(v).name) for k, v in files.items()}
+                evidence["editing"] = {"command": "vectormap", "args": ["mcp", evidence["files"]["map"]]}
+                _save(draft / "report.json", evidence)
+                result = {"files": {k: {**_artifact(files[k]), "path": v} for k, v in evidence["files"].items()},
+                    "quality_report": {**_artifact(draft / "source-quality.json"), "path": str(target / "source-quality.json")},
+                    "quality": _quality_summary(audits["editable"]), "reopened_quality": _quality_summary(audits["reopened_osm"]),
+                    "ground_consensus_quality": {k: _quality_summary(v) for k, v in audits["ground_consensus"].items()},
+                    "extraction": extraction, "extent": evidence["extent"], "export_issues": evidence["autoware_issues"], "status": "audited_draft"}
+                _inputs(job)
+                for artifact in [*parent["files"].values(), parent["corridor_proposal"]]:
+                    _verify(artifact)
+                os.rename(draft, target)
+            attempt.update(result)
+            job["status"] = "candidates_ready" if job["selected"] is None else "selected_draft"
+        except BaseException as error:
+            attempt.update({"status": "failed", "error": str(error), "error_type": type(error).__name__})
+            if not isinstance(error, Exception) and not _native_panic(error):
+                _save(root / "job.json", job)
+                raise
+        _save(root / "job.json", job)
+    return inspect_mapping_job(str(root))
+
+
 def _quality_summary(audit: dict[str, Any]) -> dict[str, Any]:
     q = audit["quality"]
     return {"lanes_checked": len(q["lanes"]), "needs_review": q["low_support_lanes"],
@@ -503,7 +610,8 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
     attempt = next((a for a in job["attempts"] if a["id"] == candidate_id), None)
     if attempt is None or attempt["status"] != "audited_draft":
         raise ValueError("diagnose an audited draft candidate")
-    for artifact in [job["source"], *job["pointcloud"]["files"].values(),
+    for artifact in [job["source"], *job["pointcloud"]["files"].values(), *attempt.get("geometry_inputs", {}).values(),
+                     *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else []),
                      *attempt["files"].values(), attempt["quality_report"]]:
         _verify(artifact)
     saved = json.loads(Path(attempt["quality_report"]["path"]).read_text(encoding="utf-8"))
@@ -521,6 +629,8 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         investigations.append("Inspect the point footprint and trajectory/lane assumptions for the affected traces; sparse or occluded returns do not prove that a road is absent.")
     if attempt["extraction"].get("width_prior_vertices", 0):
         investigations.append("Inspect assumed-width boundaries and their anchors. Point-coverage edges may be scan gaps rather than physical road edges; compare fitting choices at unchanged lane count, width and extent.")
+    if attempt.get("kind") == "corridor_lanes":
+        investigations.append("The observed support span was explicitly adopted as an unverified layout hypothesis. Inspect the parent edge evidence and assigned lane fractions/directions/minimum widths; source support does not confirm complete road width or legal traffic rules.")
     if not editable["complete"] or not reopened["complete"] or (consensus is not None and any(not a["complete"] for a in consensus.values())):
         investigations.append("Resolve incomplete or invalid audits before interpreting support or selecting a draft.")
     if editable != reopened:
@@ -625,7 +735,8 @@ def select_mapping_candidate(job_dir: str, candidate_id: int, reason: str) -> di
         attempt = next((a for a in job["attempts"] if a["id"] == candidate_id), None)
         if attempt is None or attempt["status"] != "audited_draft":
             raise ValueError("select an audited draft candidate")
-        for artifact in [*attempt["files"].values(), attempt["quality_report"]]:
+        for artifact in [*attempt["files"].values(), attempt["quality_report"], *attempt.get("geometry_inputs", {}).values(),
+                         *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else [])]:
             _verify(artifact)
         extent = _extent(attempt["extraction"], job.get("minimum_retained_fraction", 0.9))
         if not extent["passes_requested_extent"]:

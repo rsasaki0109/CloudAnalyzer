@@ -67,6 +67,8 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert geometry_schema["properties"]["decisions"]["type"] == "array"
                 geometry_inspect = next(t for t in tools if t.name == "inspect_mapping_geometry")
                 assert geometry_inspect.model_dump(by_alias=True)["inputSchema"]["properties"]["offset"]["default"] == 0
+                lane_draft = next(t for t in tools if t.name == "generate_mapping_corridor_lanes")
+                assert set(lane_draft.model_dump(by_alias=True)["inputSchema"]["required"]) == {"job_dir", "geometry_candidate_id", "lane_specs", "boundary_policy", "reason"}
                 assert schema["required"] == ["job_dir"]
                 assert schema["properties"]["offset"]["default"] == 0
                 diagnose = next(t for t in tools if t.name == "diagnose_mapping_candidate")

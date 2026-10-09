@@ -46,7 +46,7 @@ can still preserve source curves for review.
    surface evidence and observed stations. Previews contain up to 128 sections
    per candidate with explicit total/truncation flags. The inspection receipt
    persists. Draft ranges must have inspected endpoints; unreviewed tails stay
-   unresolved. There is no automatic adoption or candidate ranking.
+   unresolved. Source-proposal inspection preserves original candidate IDs and does not adopt a draft automatically.
 4. A draft action supplies **complete** include/defer decisions and reasons.
    It automatically saves source geometry, binds the fixed layout to each
    included piece, generates Lanelet2/IR/projector and reads all four source
@@ -837,3 +837,49 @@ for the new fragment; the longest route remains 66 m. This is a recorded agent
 session with prior diagnostic probes, rather than an independent autonomy or
 accuracy benchmark. Existing source disagreements and unmet full-drive extent
 remain visible.
+
+## Inspect source-supported HD repair intervals before drafting
+
+After inspecting the root's gap pages, request a bounded preflight:
+
+```json
+{"type":"inspect_hd_plan","candidate_id":1,"gap_ids":[14,19,29],"offset":0}
+```
+
+The response pages up to eight adjacent observed-station intervals. It excludes
+intervals that cannot satisfy the fixed minimum lane width or overlap retained
+lanes/connectors. Ordering uses the number of coincident retained endpoint links,
+then original station and source candidate ID; it is a geometric ordering, not a
+quality score. Source ambiguity and exact endpoint-link distances remain visible.
+Currently this inspection supports one forward, one-way lane occupying the entire
+observed source span.
+
+For each interval, the native quantile and lowest-supported-layer estimators check
+its two observed side curves and the derived centre trace on the exact retained
+point map. `reference_traces_fully_supported` requires complete inspections and
+every sample, including endpoints, supported by **both** estimators. Failure totals,
+protocols and full bounded source-problem locations are saved as hashed reports.
+
+These checks use a transient reference-trace carrier. They call neither the lane
+builder nor the OSM exporter, change no point/HD artifacts, and spend no shared HD
+generation attempt. There are at most 256 intervals in an index and a conservative
+100,000-sample limit per page per estimator. A completed page is immutable and
+reused; an interrupted page resumes completed interval inspections. This separates
+source inspection from generation while keeping its work bounded and visible.
+
+Use the results to choose root gaps for `repair_hd`. Inspect the frozen proposal in
+the returned child and explicitly draft the chosen ranges. Separate adjacent ranges
+can be drafted together; inspect and adopt all their coincident patch endpoint links.
+The actual lane export, OSM reload, four complete audits and retained-map checks
+remain required. Preflight support cannot establish a final patch pass, full road
+width, independent accuracy or legal routing. No automatic adoption is introduced.
+
+[The NCLT preflight packet](../../benchmarks/vector-map/nclt-hd-repair-preflight/README.md)
+records paging all 31 source gaps, selecting nine with observed candidates and free
+HD extent, and inspecting 11 intervals after width/occupancy filtering. Nine intervals
+have source holds; two pass both estimators. One actual geometry/lane draft and one
+combined patch adopt 222–226 m, increasing source extent from 120 to 124 m and the
+local route from 220–222 to 220–226 m. All point files and prior geometry/edges are
+retained; the global longest route remains 66 m. The calling agent selects ranges
+from MCP evidence without separate offline lane-generation probes in this session.
+This is a recorded workflow, not an independent model evaluation or accuracy test.

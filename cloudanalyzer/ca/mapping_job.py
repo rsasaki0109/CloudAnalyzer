@@ -728,8 +728,13 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
     if "continuation" in job:
         investigations.append("This exact map pair is inherited from a finished run. Earlier point-update scopes are archived in the continuation manifest; the adopted hybrid point map retains earlier repairs and source holds.")
     elif attempt.get("kind") == "patched_corridor_lanes":
-        investigations.append("The patch retains original lanes and directed connections and adds only selected missing station intervals. All original source holds remain visible; new traces passed both estimators and no new retained failure locations were accepted. "
-            + ("The point cloud replaces only the explicit XY column and preserves outside point records exactly." if 'local_update_report' in job['pointcloud']['files'] else "The point cloud is the complete fusion trial, not a local point replacement."))
+        if "hd_repair_manifest" in job.get("retry_inputs", {}):
+            point_note = "The point cloud is the exact retained baseline; only the HD map was repaired."
+        elif 'local_update_report' in job['pointcloud']['files']:
+            point_note = "The point cloud replaces only the explicit XY column and preserves outside point records exactly."
+        else:
+            point_note = "The point cloud is the complete fusion trial, not a local point replacement."
+        investigations.append("The patch retains original lanes and directed connections and adds only selected missing station intervals. All original source holds remain visible; new traces passed both estimators and no new retained failure locations were accepted. " + point_note)
     if attempt.get("kind") == "connected_corridor_lanes":
         investigations.append("Connector turn_direction tags classify geometric headings, not permitted manoeuvres. Review legal routing, full-width interior and clearance; graph station spans do not increase original source-corridor extent.")
     if not editable["complete"] or not reopened["complete"] or (consensus is not None and any(not a["complete"] for a in consensus.values())):

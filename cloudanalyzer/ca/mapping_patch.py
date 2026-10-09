@@ -24,6 +24,8 @@ def _read(artifact: dict[str, Any]) -> dict[str, Any]:
 
 def _intervals(attempt: dict[str, Any]) -> dict[int, tuple[float, float]]:
     report = _read(attempt["files"]["report"])
+    if "lane_intervals" in report:
+        return {int(k): tuple(v) for k, v in report["lane_intervals"].items()}
     geometry = _read(attempt["geometry_inputs"]["report"])
     segments = {s["curve_ids"]["center"]: s for s in geometry["segments"]}
     result = {}

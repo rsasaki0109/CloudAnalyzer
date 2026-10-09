@@ -59,26 +59,43 @@ def route_metrics(ir: dict[str, Any], intervals: dict[int, tuple[float, float]])
 
 
 def _parent(job: dict[str, Any], cid: int) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
+    from ca import mapping_retry as retries, mapping_patch as patches
     parent = next((a for a in job["attempts"] if a["id"] == cid), None)
-    if parent is None or parent.get("kind") != "corridor_lanes" or parent["status"] != "audited_draft":
-        raise ValueError("inspect connections on an audited, unconnected corridor lane draft")
-    for artifact in [*parent["files"].values(), *parent["geometry_inputs"].values(), parent["quality_report"], parent["corridor_proposal"]]:
-        jobs._verify(artifact)
+    if parent is None or parent.get("kind") not in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes"} or parent["status"] != "audited_draft":
+        raise ValueError("inspect connections on an audited corridor lane draft")
+    parent = retries._parent(job, cid)
     specs = parent["road_options"]["lane_specs"]
     if any(len(s["lanes"]) != 1 or s["lanes"][0]["direction"] != "forward" or not s["lanes"][0]["one_way"] for s in specs):
         raise ValueError("short connections currently require one forward one-way driving lane per piece")
     ir = json.loads(Path(parent["files"]["editable_map"]["path"]).read_text())
-    if not 1 <= len(ir["lanes"]) <= 256 or edges(ir):
-        raise ValueError("short connections need at most 256 initially disconnected lanes")
+    if not 1 <= len(ir["lanes"]) <= 256:
+        raise ValueError("short connections need at most 256 lanes")
     report = json.loads(Path(parent["files"]["report"]["path"]).read_text())
-    geometry = json.loads(Path(parent["geometry_inputs"]["report"]["path"]).read_text())
-    by_curve = {s["curve_ids"]["center"]: s for s in geometry["segments"]}
-    pieces = sorted([{"lane": b["lane_ids"][0], "from_m": by_curve[b["center_curve_id"]]["from_m"],
-                      "to_m": by_curve[b["center_curve_id"]]["to_m"],
-                      "minimum_width_m": next(s["lanes"][0]["minimum_width_m"] for s in specs if s["center_curve_id"] == b["center_curve_id"])}
-                     for b in report["built_segments"] if len(b["lane_ids"]) == 1], key=lambda p: p["from_m"])
+    intervals = patches._intervals(parent)
+    if "lane_minimum_width_m" in report:
+        widths = {int(k): v for k, v in report["lane_minimum_width_m"].items()}
+    elif parent["kind"] == "patched_corridor_lanes":
+        # Patch validation froze one uniform run layout across retained/addition lanes.
+        fixed = {s["lanes"][0]["minimum_width_m"] for s in specs}
+        if len(fixed) != 1:
+            raise ValueError("patched lanes need their fixed uniform minimum width")
+        widths = {lid: next(iter(fixed)) for lid in intervals}
+    else:
+        widths = {b["lane_ids"][0]: next(s["lanes"][0]["minimum_width_m"] for s in specs if s["center_curve_id"] == b["center_curve_id"])
+                  for b in report["built_segments"] if len(b["lane_ids"]) == 1}
+        for added in parent.get("routes", {}).get("added", []):
+            widths[added["lane"]] = max(widths[added["from"]], widths[added["to"]])
+    if widths.keys() != intervals.keys() or any(not math.isfinite(v) or v <= 0 for v in widths.values()):
+        raise ValueError("every lane needs its fixed minimum width")
+    pieces = sorted([{"lane": lid, "from_m": lo, "to_m": hi, "minimum_width_m": widths[lid]}
+                     for lid, (lo, hi) in intervals.items()], key=lambda p: (p["from_m"], p["lane"]))
     if {p["lane"] for p in pieces} != {l["id"] for l in ir["lanes"]}:
         raise ValueError("source pieces do not account for all draft lanes")
+    if any(not math.isfinite(p[k]) for p in pieces for k in ("from_m", "to_m")) or any(p["from_m"] >= p["to_m"] for p in pieces):
+        raise ValueError("invalid original lane stations")
+    if any(a["to_m"] > b["from_m"] + 1e-6 for a, b in zip(pieces, pieces[1:])):
+        raise ValueError("source lane intervals overlap")
+    route_metrics(ir, intervals)
     return parent, ir, report, pieces
 
 
@@ -128,6 +145,12 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
                   **{f"geometry_{k}": v for k, v in parent["geometry_inputs"].items()}, "proposal": parent["corridor_proposal"],
                   **{f"pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()}, "source": job["source"],
                   "native": job["runtime"]["native"]["extension"]}
+        # Freeze the complete inherited lineage, including the retained patch checks.
+        for key in ("connection_inputs", "patch_inputs"):
+            inputs.update({f"inherited_{key}_{k}": v for k, v in parent.get(key, {}).items()})
+        for key in ("connection_proposal", "connection_checks", "connection_audits", "patch_preview", "patch_checks", "patch_audits"):
+            if key in parent:
+                inputs[f"inherited_{key}"] = parent[key]
         if path.exists():
             proposal = json.loads(path.read_text())
             if proposal["inputs"] != inputs:
@@ -153,6 +176,8 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
                 xy = np.column_stack([np.interp(ts, stations, poses[:, k]) for k in (0, 1)])
                 minimum = _width(c)
                 holds = []
+                if any(frm == pair[0] or to == pair[1] for frm, to in edges(ir)):
+                    holds.append("existing_endpoint_already_connected")
                 if c["ambiguous"]:
                     holds.append("ambiguous_native_branch")
                 if not _inside(xy, np.asarray(c["left"] + c["right"][::-1])[:, :2]):
@@ -216,12 +241,17 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
         proposal = json.loads(Path(proposal_file["path"]).read_text())
         if proposal["candidate_id"] != cid:
             raise ValueError("connection proposal belongs to another parent")
+        if len(original["lanes"]) + len(chosen) > 256:
+            raise ValueError("short connections allow at most 256 total lanes")
         if jobs._remaining(job) <= 0:
             raise ValueError("mapping attempt budget exhausted")
         attempt: dict[str, Any] = {"id": len(job["attempts"]) + 1, "kind": "connected_corridor_lanes", "status": "running",
             "reason": reason, "road_options": parent["road_options"], "geometry_inputs": parent["geometry_inputs"],
             "corridor_proposal": parent["corridor_proposal"], "connection_inputs": proposal["inputs"],
             "connection_proposal": proposal_file, "connection_pairs": pairs, "parent_candidate_id": cid}
+        for key in ("patch_inputs", "patch_preview", "patch_checks", "patch_audits"):
+            if key in parent:
+                attempt[key] = parent[key]
         job["attempts"].append(attempt)
         jobs._save(root / "job.json", job)
         target = root / f"candidate-{attempt['id']:02d}"
@@ -254,7 +284,8 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
             if {(a["from"], a["to"]) for a in added} != set(chosen) or len(added) != len(chosen):
                 raise ValueError("native connection result differs from the explicit decision")
             connector_ids = set()
-            expected_edges: set[tuple[int, int]] = set()
+            expected_edges = edges(original).copy()
+            widths = {p["lane"]: p["minimum_width_m"] for p in proposal["pieces"]}
             boundaries = {b["id"]: b for b in ir["boundaries"]}
             ir_lanes = {l["id"]: l for l in ir["lanes"]}
             for a in added:
@@ -262,6 +293,7 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
                 lid = a["lane"]
                 connector_ids.add(lid)
                 intervals[lid] = c["from_m"], c["to_m"]
+                widths[lid] = max(widths[a["from"]], widths[a["to"]])
                 expected_edges.update(((a["from"], lid), (lid, a["to"])))
                 lane = ir_lanes[lid]
                 for side in ("left", "right"):
@@ -277,14 +309,21 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
                     raise ValueError("connector changed the fixed driving layout")
             if edges(ir) != expected_edges:
                 raise ValueError("connection topology differs from the explicit decision")
+            from ca import mapping_patch as patches
+            patches._preserved(original, ir, expected_edges - edges(original))
+            if set(ir_lanes) != {l["id"] for l in original["lanes"]} | connector_ids:
+                raise ValueError("connection added unexpected lanes")
             routes = {"before": proposal["baseline_routes"], "after": route_metrics(ir, intervals),
                       "added": added, "connection_pairs": pairs, "source_extent_unchanged": True,
-                      "legal_routing_verified": False}
+                      "retained_edges": sorted(edges(original)), "legal_routing_verified": False}
             evidence = payload["report"]
             evidence.update({"options": parent["road_options"], "reason": reason, "routes": routes,
                 "connection_proposal": proposal_file, "connection_inputs": proposal["inputs"],
                 "station_disposition": parent_report["station_disposition"], "extraction": parent["extraction"],
-                "extent": parent["extent"], "built_segments": parent_report["built_segments"]})
+                "extent": parent["extent"], "built_segments": parent_report["built_segments"],
+                "lane_intervals": {str(k): v for k, v in intervals.items()},
+                "lane_minimum_width_m": {str(k): v for k, v in widths.items()},
+                "retained_geometry_and_connections": True})
             with tempfile.TemporaryDirectory(prefix=".mapping-connections-", dir=root) as temporary:
                 draft = Path(temporary) / "result"
                 files = _publish(payload, draft)["files"]
@@ -304,6 +343,13 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
                 failed_audit = root / f"candidate-{attempt['id']:02d}-connection-audits.json"
                 jobs._save(failed_audit, audits)
                 attempt["connection_audits"] = jobs._artifact(failed_audit)
+                before_audits = json.loads(Path(parent["quality_report"]["path"]).read_text())
+                checks = patches._checks(before_audits, audits, {l["id"] for l in original["lanes"]}, connector_ids)
+                check_path = root / f"candidate-{attempt['id']:02d}-connection-checks.json"
+                jobs._save(check_path, checks)
+                attempt["connection_checks"] = jobs._artifact(check_path)
+                if not checks["passes"]:
+                    raise ValueError("connection source checks failed: " + ", ".join(checks["holds"]))
                 for audit in [audits["editable"], audits["reopened_osm"], *audits["ground_consensus"].values()]:
                     diagnosis = jobs._diagnose_audit(audit)
                     lanes = [l for l in audit["quality"]["lanes"] if l["lane"] in connector_ids]

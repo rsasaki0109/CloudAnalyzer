@@ -24,6 +24,9 @@ def _parent(job: dict[str, Any], cid: int) -> dict[str, Any]:
                      *parent.get("connection_inputs", {}).values(), *parent.get("patch_inputs", {}).values(),
                      *([parent["patch_checks"], parent["patch_audits"]] if "patch_checks" in parent else [])]:
         jobs._verify(artifact)
+    for key in ("connection_proposal", "connection_checks", "connection_audits"):
+        if key in parent:
+            jobs._verify(parent[key])
     if "patch_preview" in parent:
         jobs._verify(parent["patch_preview"])
     return cast(dict[str, Any], parent)

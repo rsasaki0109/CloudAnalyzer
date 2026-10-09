@@ -683,6 +683,7 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
                      *([attempt["patch_checks"], attempt["patch_audits"]] if "patch_checks" in attempt else []),
                      *([attempt["patch_preview"]] if "patch_preview" in attempt else []),
                      *([attempt["connection_proposal"]] if "connection_proposal" in attempt else []),
+                     *([attempt["connection_checks"], attempt["connection_audits"]] if "connection_checks" in attempt else []),
                      *job.get("retry_inputs", {}).values(),
                      *attempt["files"].values(), attempt["quality_report"]]:
         _verify(artifact)

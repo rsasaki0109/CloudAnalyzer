@@ -1800,3 +1800,111 @@ def test_gap_patch_failed_source_check_retains_full_audits_and_baseline(unused_f
     with pytest.raises(ValueError):_advance(root,{'type':'compare_retry','candidate_id':3})
     final=_advance(root,{'type':'finish','candidate_id':2},'Keep the earlier pair after held source evidence')
     assert final['output']['pointcloud_retry_decision']['adopted'] is False
+
+
+@pytest.fixture
+def patched_connection_run(unused_frame_run):
+    """A retained endpoint link plus a partial repair, leaving a supported 2 m gap."""
+    root = unused_frame_run
+    native = _attach_lane_native()
+    jobs.core().connect_vector_map_junctions = native.connect_vector_map_junctions
+    child = _gap_patch_draft(root, 4., 6.)
+    _advance(child, {'type': 'inspect_patch', 'candidate_id': 2, 'gap_ids': [1], 'offset': 0})
+    result = _advance(child, {'type': 'patch_gaps', 'candidate_id': 2, 'gap_ids': [1], 'pairs': _patch_pairs(child)})
+    assert result['patch_result']['status'] == 'audited_draft', result
+    parent = jobs.inspect_mapping_job(str(child))['attempts'][2]
+    return root, child, parent, native
+
+
+def _patch_connection_action(child):
+    observed = _advance(child, {'type': 'inspect_connections', 'candidate_id': 3, 'offset': 0})['connection_observation']
+    assert [(c['from'], c['to'], c['station_gap_m']) for c in observed['candidates']] == [(9, 6, 2.)]
+    return {'type': 'connect', 'candidate_id': 3, 'pairs': [{'from': 9, 'to': 6, 'reason': 'Join the inspected open gap after partial repair'}]}
+
+
+def test_connections_extend_partial_repairs_preserving_routes_and_deliver_checks(patched_connection_run):
+    from ca import mapping_connections as connections
+    root, child, parent, _ = patched_connection_run
+    original = json.loads(Path(parent['files']['editable_map']['path']).read_text())
+    assert connections.edges(original) == {(3, 9)}
+    with pytest.raises(ValueError, match='inspect connections'):
+        _advance(child, {'type': 'connect', 'candidate_id': 3, 'pairs': [{'from': 9, 'to': 6, 'reason': 'Unseen'}]})
+    result = _advance(child, _patch_connection_action(child))
+    assert result['connect_result']['status'] == 'audited_draft', result
+    current = jobs.inspect_mapping_job(str(child))['attempts'][3]
+    ir = json.loads(Path(current['files']['editable_map']['path']).read_text())
+    connections_set = {(3, 9), (9, 12), (12, 6)}
+    assert connections.edges(ir) == connections_set
+    for key in ('lanes', 'boundaries'):
+        assert all(item in ir[key] for item in original[key])
+    assert current['routes']['before']['connected_components'] == 2
+    assert current['routes']['after']['routes'][0]['lane_ids'] == [3, 9, 12, 6]
+    assert current['routes']['after']['longest_route_station_span_m'] == 10.
+    assert current['extent'] == parent['extent'] and current['extent']['generated_length_m'] == 8.
+    assert result['remaining_attempts'] == 0
+    checks = json.loads(Path(current['connection_checks']['path']).read_text())
+    assert checks['passes'] and not checks['holds']
+    assert connections.inspect_connections(child, 4, 0)['candidates_total'] == 0
+    _advance(root, {'type': 'compare_retry', 'candidate_id': 4})
+    _advance(child, {'type': 'finish', 'candidate_id': 4})
+    finished = _advance(root, {'type': 'finish_retry', 'candidate_id': 4})
+    assert finished['output']['artifacts']['hd_connection_checks'] == current['connection_checks']
+    assert finished['output']['artifacts']['hd_patch_checks'] == parent['patch_checks']
+
+
+@pytest.mark.parametrize('fault', ['remove_old_edge', 'old_source_failure'])
+def test_partial_repair_connections_reject_regressions_and_keep_parent(patched_connection_run, fault, monkeypatch):
+    root, child, parent, native = patched_connection_run
+    action = _patch_connection_action(child)
+    if fault == 'remove_old_edge':
+        def changed(*args):
+            payload = json.loads(native.connect_vector_map_junctions(*args))
+            ir = json.loads(payload['map_json'])
+            for row in ir['topology']:
+                if row['lane'] == 3: row['successors'] = []
+                if row['lane'] == 9: row['predecessors'] = []
+            payload['map_json'] = json.dumps(ir)
+            return json.dumps(payload)
+        monkeypatch.setattr(jobs.core(), 'connect_vector_map_junctions', changed)
+    else:
+        def changed(*args):
+            audit = json.loads(native.audit_vector_map_quality_details(*args))
+            old = next(l for l in audit['quality']['lanes'] if l['lane'] == 3)['left']
+            old.update(supported=old['supported']-1, height_mismatches=1, fraction=.9, start_supported=False)
+            return json.dumps(audit)
+        monkeypatch.setattr(jobs.core(), 'audit_vector_map_quality_details', changed)
+    result = _advance(child, action)
+    assert result['connect_result']['status'] == 'failed', result
+    assert not (child/'candidate-04').exists()
+    assert jobs.inspect_mapping_job(str(child))['selected'] is None
+    if fault == 'old_source_failure':
+        failed = jobs.inspect_mapping_job(str(child))['attempts'][3]
+        assert not json.loads(Path(failed['connection_checks']['path']).read_text())['passes']
+        jobs._verify(failed['connection_audits'])
+    _advance(root, {'type': 'compare_retry', 'candidate_id': 3})
+    _advance(child, {'type': 'finish', 'candidate_id': 3})
+    final = _advance(root, {'type': 'finish_retry', 'candidate_id': 3})
+    assert final['output']['artifacts']['hd_patch_checks'] == parent['patch_checks']
+
+
+def test_partial_repair_connection_binds_inherited_checks_before_spending(patched_connection_run):
+    _, child, parent, _ = patched_connection_run
+    action = _patch_connection_action(child)
+    Path(parent['patch_checks']['path']).write_text('tampered inherited support checks')
+    with pytest.raises(ValueError, match='changed'):
+        _advance(child, action)
+    assert len(jobs._load(child)['attempts']) == 3
+
+
+def test_partial_repair_connection_resume_reuses_the_shared_attempt(patched_connection_run, monkeypatch):
+    from ca import mapping_run as runs
+    _, child, _, _ = patched_connection_run
+    action = _patch_connection_action(child)
+    diagnosis = runs._diagnosis
+    monkeypatch.setattr(runs, '_diagnosis', lambda *args: (_ for _ in ()).throw(KeyboardInterrupt()))
+    with pytest.raises(KeyboardInterrupt): _advance(child, action)
+    monkeypatch.setattr(runs, '_diagnosis', diagnosis)
+    monkeypatch.setattr(runs.connections, 'connect', lambda *args: pytest.fail('completed connection must not repeat'))
+    result = _advance(child, {'type': 'resume'})
+    assert result['connect_result']['status'] == 'audited_draft' and result['remaining_attempts'] == 0
+    assert len(jobs.inspect_mapping_job(str(child))['attempts']) == 4

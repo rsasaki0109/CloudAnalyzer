@@ -22,15 +22,17 @@ ranges. Compare path association, surface levels, spans, edge evidence and compe
 bands. Source support does not prove road identity or complete width.
 If off-path overlapping bands fragment the route, explicitly refine with
 association=trajectory_containing once, then inspect the new proposal IDs afresh.
-All original profiles and drafts remain available; missing source is never bridged.
+All original profiles and drafts remain available; unresolved source stays visible
+in corridor-extent accounting even when a short connector is added.
 After drafting, inspect_connections on an audited draft. For a single forward
 one-way lane per piece, explicitly connect inspected consecutive drive pieces.
 Short gaps need recorded-path containment, unchanged minimum widths and complete
 center/boundary support from both ground estimators after export/reload. Inspect
 local and global route station spans separately; connector reachability does not
 increase original source-corridor extent or prove permitted turns.
-Each connect trial supplies a complete pair set for its unconnected parent;
-repeat earlier pairs explicitly to retain them in another trial.
+Connections may extend an audited connected or gap-patched draft. Existing
+lanes and directed edges are inherited; supply only the new inspected pairs.
+Old source samples must not gain failures in either estimator or saved format.
 For missing intervals, inspect_gaps to compare profiles and aligned raw-log
 neighborhoods. Counts do not prove coherent ground or a thinning-related cause.
 Explicit retry_pointcloud can reduce scan/map thinning once, keeping motion,
@@ -203,7 +205,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
             "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons and optional observed ranges"},
-            "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited unconnected lane draft ID", "offset": "nonnegative; pages of 8"},
+            "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited lane, connected or gap-patched draft ID", "offset": "nonnegative; pages of 8"},
             "connect": {"type": "connect", "candidate_id": "inspected parent lane draft ID", "pairs": "1..32 inspected {from,to,reason} pairs; one shared HD attempt"},
             "inspect_gaps": {"type": "inspect_gaps", "candidate_id": "own audited lane draft", "offset": "nonnegative; pages of 8"},
             "retry_pointcloud": {"type": "retry_pointcloud", "candidate_id": "inspected baseline", "gap_ids": "1..8 inspected IDs",
@@ -275,8 +277,10 @@ def _connect(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
     if attempt["status"] == "running":
         raise RuntimeError("connection processing did not finish; inspect its retained state before recovery")
     if attempt["status"] != "audited_draft":
-        return {"status": "failed", "stage": "connections", "error": attempt.get("error")}
-    return {"status": "audited_draft", "diagnosis": _diagnosis(root, lid)}
+        return {"status": "failed", "stage": "connections", "error": attempt.get("error"),
+                "connection_checks": attempt.get("connection_checks"), "connection_audits": attempt.get("connection_audits")}
+    return {"status": "audited_draft", "diagnosis": _diagnosis(root, lid),
+            "connection_checks": attempt.get("connection_checks")}
 
 
 def _retry(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
@@ -604,6 +608,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     artifacts["hd_source_audits"] = attempt["quality_report"]
                     if "patch_checks" in attempt:
                         artifacts["hd_patch_checks"] = attempt["patch_checks"]
+                    if "connection_checks" in attempt:
+                        artifacts["hd_connection_checks"] = attempt["connection_checks"]
                 run["output"] = {"status": "draft_needs_review" if action["candidate_id"] is not None else "hd_unavailable",
                     "candidate_id": action["candidate_id"], "artifacts": artifacts,
                     "diagnosis": diagnosis if action["candidate_id"] is not None else None,

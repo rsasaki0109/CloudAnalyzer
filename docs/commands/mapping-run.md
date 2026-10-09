@@ -162,13 +162,26 @@ silently turn unresolved source intervals into generated source corridors.
 Finish may return the new connected draft or an earlier retained draft.
 Interrupted inspection/connection actions support `resume` without replaying
 completed work. One connection attempt uses the existing shared HD budget. Every connection
-trial starts from its inspected unconnected parent; it supplies a complete set
-of pairs. Repeat earlier pairs explicitly to retain them in another trial.
+trial starts from its inspected audited parent, including connected or gap-patched
+drafts. Existing lanes and directed edges remain fixed; supply only new pairs.
+Only consecutive original-station pieces with open endpoints are eligible.
+All retained source samples must keep their support in both estimators and both
+saved formats; new connectors require complete support. Saved connection checks
+and four full audits remain available even when the trial fails.
 
 The [NCLT connection evidence](../../benchmarks/vector-map/nclt-route-connections/README.md)
 records a local chain changing 6 → 14 m in April and 4 → 22 m in June, with
 components 12 → 11 and 14 → 12. Global longest routes remain 34 m and 66 m;
 these connections do not make the full recordings routable.
+
+After a local gap patch, inspect connections on the combined candidate rather
+than its isolated addition draft. Supply only new seen pairs; retained connectors
+and endpoint links are inherited. A new trial consumes one remaining shared
+attempt, so reserve it when starting the run. Finished runs and budgets remain
+fixed. The [NCLT patch connections](../../benchmarks/vector-map/nclt-patch-connections/README.md)
+join June's repaired 22–28 m interval to the retained 14–18 m piece across a
+4 m gap, yielding one 14 m local chain and components 13 → 12. April offers
+no connection and keeps the patch. Global longest spans remain 34/66 m.
 
 ### Investigate missing intervals and retry point generation
 

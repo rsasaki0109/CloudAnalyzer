@@ -1998,7 +1998,7 @@ def mapping_run_advance_cmd(
     except (OSError, ValueError, RuntimeError) as error:
         _handle_error(error)
     typer.echo(json.dumps(result, indent=2))
-    if result.get("draft_result", {}).get("status") == "failed":
+    if any(result.get(key, {}).get("status") == "failed" for key in ("draft_result", "refine_result")):
         raise typer.Exit(1)
 
 

@@ -45,6 +45,11 @@ The total IR lane counts represent separate pieces, not 12/13 parallel lanes.
 
 ## Decisions and remaining holds
 
+The subsequent [explicit path-association experiment](../nclt-path-refinement/README.md)
+re-extracts from identical point maps, retaining all profiles and thresholds, then
+generates 106 / 112 m at the same layout. June's longest exported piece grows
+60 → 66 m; the whole-drive network and source-estimator disagreement remain unresolved.
+
 The assistant read path association, supported surface level, profile spans,
 edge evidence and competing bands. Included ranges have the recorded path
 inside every saved profile and satisfy the unchanged width constraint. Exact

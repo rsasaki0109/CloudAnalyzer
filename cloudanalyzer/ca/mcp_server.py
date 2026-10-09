@@ -51,6 +51,15 @@ poses fixed. ICP's alternative correction is not applied and does not certify
 accuracy. Reference and expanded fusion graphs/trajectories are both retained.
 This shares the single root point-map retry and transferred HD budget; compare
 actual audited maps before explicitly delivering a trial or baseline pair.
+For a local HD repair, draft only inspected missing ranges in the retry child.
+Use inspect_patch with gap IDs inspected through the root, examine exact geometric
+endpoint pairs, then patch_gaps with explicit pair decisions ([] when isolated).
+This keeps original lane geometry, IDs, metadata and connections, adds only inside
+selected gaps, and audits all retained/new traces against the full fusion trial.
+New lanes need full support from both estimators in IR and reopened OSM; no new
+failure locations are allowed on retained lanes. A patch spends one transferred
+HD attempt. It does not crop the point-map fusion or establish legal connectivity.
+Compare and finish explicitly; held patches retain their full checks and baseline.
 Use the returned revision for every action. Interrupted processing actions can resume without
 replaying completed stages. Do not stop after startup or a single failed trial;
 finish with a useful retained draft or explain why no HD draft can be generated.

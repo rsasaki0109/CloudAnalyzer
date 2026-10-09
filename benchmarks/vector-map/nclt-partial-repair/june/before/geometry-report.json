@@ -1,0 +1,3430 @@
+{
+  "schema": "cloudanalyzer.mapping_geometry.v1",
+  "reason": "Replay prior examined source ranges to reproduce the retained baseline; this is not an independent agent benchmark",
+  "coordinate_frame": "local_slam_metres",
+  "protocol": {
+    "options": {
+      "search_radius_m": 8.0,
+      "association": "trajectory_containing"
+    },
+    "sample_spacing_m": 2.0,
+    "bin_width_m": 0.5,
+    "half_window_m": 2.0,
+    "minimum_support_span_m": 1.0,
+    "maximum_adjacent_height_step_m": 0.08,
+    "maximum_reference_level_grade": 0.12,
+    "ground_estimator": {
+      "model": "lowest_supported_layer",
+      "layer_height_m": 0.15,
+      "xy_cell_m": 0.2,
+      "minimum_cells": 3,
+      "minimum_triangle_area_m2": 0.01
+    },
+    "interval_support_spacing_m": 0.5,
+    "interval_ground_radius_m": 0.75,
+    "interval_height_tolerance_m": 0.3,
+    "maximum_sections": 2048,
+    "profile_query_point_budget": 2000000,
+    "interval_support_sample_budget": 100000
+  },
+  "source_proposal_limited": false,
+  "decisions": [
+    {
+      "candidate_id": 1,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 0,
+      "to_m": 8
+    },
+    {
+      "candidate_id": 2,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 14,
+      "to_m": 18
+    },
+    {
+      "candidate_id": 4,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 34,
+      "to_m": 36
+    },
+    {
+      "candidate_id": 6,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 48,
+      "to_m": 114
+    },
+    {
+      "candidate_id": 8,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 146,
+      "to_m": 148
+    },
+    {
+      "candidate_id": 9,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 152,
+      "to_m": 156
+    },
+    {
+      "candidate_id": 11,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 168,
+      "to_m": 172
+    },
+    {
+      "candidate_id": 12,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 180,
+      "to_m": 184
+    },
+    {
+      "candidate_id": 12,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 188,
+      "to_m": 190
+    },
+    {
+      "candidate_id": 13,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 200,
+      "to_m": 202
+    },
+    {
+      "candidate_id": 15,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 210,
+      "to_m": 212
+    },
+    {
+      "candidate_id": 16,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 220,
+      "to_m": 222
+    },
+    {
+      "candidate_id": 16,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 232,
+      "to_m": 238
+    },
+    {
+      "candidate_id": 16,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 242,
+      "to_m": 246
+    },
+    {
+      "candidate_id": 3,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred.",
+      "from_m": 22.0,
+      "to_m": 28.0
+    },
+    {
+      "candidate_id": 4,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation.",
+      "from_m": 32.0,
+      "to_m": 34
+    },
+    {
+      "candidate_id": 5,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred.",
+      "from_m": 40.0,
+      "to_m": 44.0
+    },
+    {
+      "candidate_id": 7,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred.",
+      "from_m": 118.0,
+      "to_m": 122.0
+    },
+    {
+      "candidate_id": 8,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation.",
+      "from_m": 134.0,
+      "to_m": 146
+    },
+    {
+      "candidate_id": 10,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred.",
+      "from_m": 158.0,
+      "to_m": 160.0
+    },
+    {
+      "candidate_id": 11,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred.",
+      "from_m": 172,
+      "to_m": 176.0
+    },
+    {
+      "candidate_id": 12,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation.",
+      "from_m": 184,
+      "to_m": 188
+    },
+    {
+      "candidate_id": 12,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred.",
+      "from_m": 190,
+      "to_m": 196.0
+    },
+    {
+      "candidate_id": 14,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred.",
+      "from_m": 206.0,
+      "to_m": 208.0
+    },
+    {
+      "candidate_id": 15,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred.",
+      "from_m": 212,
+      "to_m": 214.0
+    },
+    {
+      "candidate_id": 16,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation.",
+      "from_m": 222,
+      "to_m": 232
+    },
+    {
+      "candidate_id": 16,
+      "action": "defer",
+      "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation.",
+      "from_m": 238,
+      "to_m": 242
+    }
+  ],
+  "segments": [
+    {
+      "candidate_id": 1,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 0,
+      "to_m": 8,
+      "curve_ids": {
+        "center": 1,
+        "left": 2,
+        "right": 3
+      },
+      "sections": [
+        {
+          "station_m": 0.0,
+          "center": [
+            0.06638399164978416,
+            -0.7470563336540568,
+            -0.3472807472661026
+          ],
+          "left": [
+            -0.02212799721659472,
+            0.24901877788468557,
+            -0.26847350452419483
+          ],
+          "right": [
+            0.15489598051616305,
+            -1.743131445192799,
+            -0.23015216271309424
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 2.0,
+          "center": [
+            1.6863252462163143,
+            1.3892690681415232,
+            -0.6564545220224832
+          ],
+          "left": [
+            1.3210590826531807,
+            2.8441163555761424,
+            -0.6247371988267725
+          ],
+          "right": [
+            2.051591409779448,
+            -0.06557821929309626,
+            -0.5600875278584002
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 4.0,
+          "center": [
+            3.576555027184263,
+            1.3956027688899848,
+            -0.8142312660765905
+          ],
+          "left": [
+            2.477976305739457,
+            3.359177262712079,
+            -0.7719644454586498
+          ],
+          "right": [
+            4.67513374862907,
+            -0.5679717249321093,
+            -0.8822911083192753
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 6.0,
+          "center": [
+            5.901565756940162,
+            1.5130552996914761,
+            -1.0078524044319188
+          ],
+          "left": [
+            5.3023747313253535,
+            2.3136613918633215,
+            -1.038113870228428
+          ],
+          "right": [
+            6.500756782554971,
+            0.7124492075196309,
+            -0.997252781498437
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 8.0,
+          "center": [
+            6.22808835665831,
+            4.320928135040915,
+            -1.2594733490602352
+          ],
+          "left": [
+            5.279333946488938,
+            5.48276507247412,
+            -1.2106314046159237
+          ],
+          "right": [
+            7.176842766827681,
+            3.1590911976077107,
+            -1.2315618324450068
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 2,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 14,
+      "to_m": 18,
+      "curve_ids": {
+        "center": 4,
+        "left": 5,
+        "right": 6
+      },
+      "sections": [
+        {
+          "station_m": 14.0,
+          "center": [
+            11.73176894880035,
+            6.997243311031521,
+            -2.014491439300132
+          ],
+          "left": [
+            11.010390068738209,
+            8.591643672107839,
+            -1.9736808813293338
+          ],
+          "right": [
+            12.45314782886249,
+            5.402842949955202,
+            -1.9692781479422095
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 16.0,
+          "center": [
+            13.587606071534577,
+            7.847928620278014,
+            -2.1815672519784624
+          ],
+          "left": [
+            13.416136371552788,
+            9.338095772643197,
+            -2.184587995912896
+          ],
+          "right": [
+            13.759075771516363,
+            6.357761467912833,
+            -2.188129917186369
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 18.0,
+          "center": [
+            15.636532483395007,
+            7.670602336384187,
+            -2.4077618148117157
+          ],
+          "left": [
+            16.33769542496384,
+            9.54366681188164,
+            -2.489015704721633
+          ],
+          "right": [
+            14.935369541826176,
+            5.797537860886735,
+            -2.32552180181764
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 4,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 34,
+      "to_m": 36,
+      "curve_ids": {
+        "center": 7,
+        "left": 8,
+        "right": 9
+      },
+      "sections": [
+        {
+          "station_m": 34.0,
+          "center": [
+            11.11907453019549,
+            -5.631038623787447,
+            -2.0728252552334685
+          ],
+          "left": [
+            12.381455012747663,
+            -6.441221021319844,
+            -2.2175607778196857
+          ],
+          "right": [
+            9.856694047643318,
+            -4.8208562262550485,
+            -1.967240875418637
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 36.0,
+          "center": [
+            10.448766523777168,
+            -7.543747512300604,
+            -2.087146397302729
+          ],
+          "left": [
+            11.308726514789202,
+            -8.054108966427563,
+            -2.0986678557948393
+          ],
+          "right": [
+            9.588806532765135,
+            -7.033386058173646,
+            -1.9975911836673554
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 6,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 48,
+      "to_m": 114,
+      "curve_ids": {
+        "center": 10,
+        "left": 11,
+        "right": 12
+      },
+      "sections": [
+        {
+          "station_m": 48.0,
+          "center": [
+            3.795715201249199,
+            -17.494345690615866,
+            -1.701125952072168
+          ],
+          "left": [
+            5.082503051738977,
+            -18.26517448343039,
+            -1.7468621871552483
+          ],
+          "right": [
+            2.5089273507594214,
+            -16.72351689780134,
+            -1.6399622917883363
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 50.0,
+          "center": [
+            3.3244803360597572,
+            -19.486205612693887,
+            -1.6355039247317213
+          ],
+          "left": [
+            5.510951963269459,
+            -20.698369720150858,
+            -1.8930681726406204
+          ],
+          "right": [
+            1.1380087088500546,
+            -18.274041505236916,
+            -1.5093358903479217
+          ],
+          "support_span_m": 5.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 52.0,
+          "center": [
+            1.2251567208258534,
+            -20.585103039387487,
+            -1.497394436569657
+          ],
+          "left": [
+            2.797237535729927,
+            -21.35390854886992,
+            -1.6298062747793831
+          ],
+          "right": [
+            -0.34692409407822056,
+            -19.816297529905054,
+            -1.4074721763245837
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 54.0,
+          "center": [
+            0.051147937059319526,
+            -22.199936850971415,
+            -1.4369658310062536
+          ],
+          "left": [
+            1.1726868250337645,
+            -22.75188840931784,
+            -1.5260010965576127
+          ],
+          "right": [
+            -1.0703909509151255,
+            -21.64798529262499,
+            -1.3876345430599044
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 56.0,
+          "center": [
+            -0.9358240069362695,
+            -23.854072374895335,
+            -1.4180451795231033
+          ],
+          "left": [
+            0.10120538023060577,
+            -24.551976415686255,
+            -1.4808508307552426
+          ],
+          "right": [
+            -1.972853394103145,
+            -23.156168334104414,
+            -1.3628762186604535
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 58.0,
+          "center": [
+            -1.523123944597488,
+            -25.874074937819945,
+            -1.451104843284823
+          ],
+          "left": [
+            0.09709707951718727,
+            -27.04662934296147,
+            -1.521311609503595
+          ],
+          "right": [
+            -3.1433449687121633,
+            -24.701520532678423,
+            -1.3302463056804634
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 60.0,
+          "center": [
+            -3.072711997186642,
+            -27.233574315977208,
+            -1.3197424372388127
+          ],
+          "left": [
+            -1.8043819196942628,
+            -28.03441063791083,
+            -1.4269080173453277
+          ],
+          "right": [
+            -4.341042074679021,
+            -26.432737994043585,
+            -1.298220859778879
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 62.0,
+          "center": [
+            -3.643281955192633,
+            -29.232818693883864,
+            -1.3247285365268882
+          ],
+          "left": [
+            -1.946025774400735,
+            -30.290798588193628,
+            -1.3536384446647771
+          ],
+          "right": [
+            -5.340538135984531,
+            -28.1748387995741,
+            -1.2369187885975808
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 64.0,
+          "center": [
+            -4.764252259748231,
+            -30.8922004483699,
+            -1.2636121927366637
+          ],
+          "left": [
+            -3.0988171758293275,
+            -31.999596484687544,
+            -1.3118658651820687
+          ],
+          "right": [
+            -6.429687343667133,
+            -29.78480441205225,
+            -1.2414760581230893
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 66.0,
+          "center": [
+            -5.851621359349302,
+            -32.55343007850872,
+            -1.1887153286544174
+          ],
+          "left": [
+            -4.1251718066315535,
+            -33.5630695893841,
+            -1.287709867510428
+          ],
+          "right": [
+            -7.57807091206705,
+            -31.543790567633334,
+            -1.1635257141896742
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 68.0,
+          "center": [
+            -7.418596662675125,
+            -33.94619164955358,
+            -1.075860411910552
+          ],
+          "left": [
+            -5.90431698196426,
+            -34.82337865845545,
+            -1.1367767065786243
+          ],
+          "right": [
+            -8.93287634338599,
+            -33.06900464065172,
+            -1.043220467936007
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 70.0,
+          "center": [
+            -8.492719915395298,
+            -35.616853073934884,
+            -1.0550316388591638
+          ],
+          "left": [
+            -7.00307143352501,
+            -36.53524699838209,
+            -1.1134099159709414
+          ],
+          "right": [
+            -9.982368397265587,
+            -34.698459149487675,
+            -0.9742732667917233
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 72.0,
+          "center": [
+            -9.707482651416077,
+            -37.18283504870326,
+            -1.0499943592765102
+          ],
+          "left": [
+            -8.457169827293926,
+            -38.011519452946324,
+            -1.05426120327133
+          ],
+          "right": [
+            -10.957795475538228,
+            -36.35415064446019,
+            -0.9742732667917233
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 74.0,
+          "center": [
+            -10.680915468211037,
+            -38.91813318005106,
+            -0.9666376447626426
+          ],
+          "left": [
+            -9.654987460535592,
+            -39.632256224817915,
+            -1.0357914406379445
+          ],
+          "right": [
+            -11.706843475886483,
+            -38.2040101352842,
+            -0.937523142744894
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 76.0,
+          "center": [
+            -11.365243527461313,
+            -40.87687645985867,
+            -0.9203661562706321
+          ],
+          "left": [
+            -9.525293998148957,
+            -42.17189990736193,
+            -0.935889460642679
+          ],
+          "right": [
+            -13.20519305677367,
+            -39.58185301235541,
+            -0.8340824233107604
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 78.0,
+          "center": [
+            -12.767867508545255,
+            -42.31816121986245,
+            -0.8110039716448396
+          ],
+          "left": [
+            -11.193743624248897,
+            -43.551909166927715,
+            -0.9767920275313082
+          ],
+          "right": [
+            -14.341991392841614,
+            -41.08441327279719,
+            -0.7963258116442918
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 80.0,
+          "center": [
+            -13.831576871249121,
+            -44.023640944717854,
+            -0.767266698536653
+          ],
+          "left": [
+            -12.45761826892273,
+            -45.10749414469159,
+            -0.9574028705798235
+          ],
+          "right": [
+            -15.205535473575512,
+            -42.939787744744116,
+            -0.7213735068583487
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 82.0,
+          "center": [
+            -15.441982577316358,
+            -45.30439873606542,
+            -0.6567838327103326
+          ],
+          "left": [
+            -14.45513740385989,
+            -46.071625302097694,
+            -0.747885020326897
+          ],
+          "right": [
+            -16.428827750772825,
+            -44.537172170033145,
+            -0.6409183230349766
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 84.0,
+          "center": [
+            -16.48028718993322,
+            -47.023311859236934,
+            -0.6624341125453335
+          ],
+          "left": [
+            -15.314374938624326,
+            -47.96705367893543,
+            -0.7514315020494051
+          ],
+          "right": [
+            -17.64619944124212,
+            -46.079570039538446,
+            -0.6381558525369453
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 86.0,
+          "center": [
+            -16.961986301151,
+            -49.16840054752482,
+            -0.6348654526174946
+          ],
+          "left": [
+            -15.373386889399782,
+            -50.38345277232163,
+            -0.6915345817006455
+          ],
+          "right": [
+            -18.550585712902222,
+            -47.95334832272801,
+            -0.5485356275325582
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 88.0,
+          "center": [
+            -17.876473146370756,
+            -50.90262189313456,
+            -0.6004948145357418
+          ],
+          "left": [
+            -16.004256811988824,
+            -52.150542562597764,
+            -0.6045881457560199
+          ],
+          "right": [
+            -19.748689480752688,
+            -49.65470122367136,
+            -0.46698088467980703
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 90.0,
+          "center": [
+            -18.932802644212845,
+            -52.57849657160664,
+            -0.533216535136195
+          ],
+          "left": [
+            -17.03944827472358,
+            -53.794107213027615,
+            -0.5323959420912213
+          ],
+          "right": [
+            -20.826157013702108,
+            -51.36288593018567,
+            -0.40857160710166834
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 92.0,
+          "center": [
+            -20.055057146777237,
+            -54.2936414181548,
+            -0.4874418939769554
+          ],
+          "left": [
+            -18.227018520069958,
+            -55.60542447158481,
+            -0.47973968792909916
+          ],
+          "right": [
+            -21.883095773484513,
+            -52.98185836472478,
+            -0.3728767902841338
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 94.0,
+          "center": [
+            -21.129813150904035,
+            -56.06784138124725,
+            -0.46047773668341896
+          ],
+          "left": [
+            -19.183931748212697,
+            -57.637409973778325,
+            -0.5695729256680023
+          ],
+          "right": [
+            -23.07569455359537,
+            -54.498272788716164,
+            -0.3140265642753398
+          ],
+          "support_span_m": 5.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 96.0,
+          "center": [
+            -22.415062009045087,
+            -57.62000395806317,
+            -0.404646483393155
+          ],
+          "left": [
+            -20.87590223299073,
+            -58.89710504402947,
+            -0.44325554264587796
+          ],
+          "right": [
+            -23.954221785099442,
+            -56.34290287209687,
+            -0.30441250537017506
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 98.0,
+          "center": [
+            -23.87519854690505,
+            -58.98506426957205,
+            -0.2641333607603689
+          ],
+          "left": [
+            -22.511348610340754,
+            -60.081610370077435,
+            -0.35333075288126864
+          ],
+          "right": [
+            -25.239048483469347,
+            -57.888518169066664,
+            -0.16412144296588638
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 100.0,
+          "center": [
+            -24.85140295144733,
+            -60.645261131369814,
+            -0.24621161100539846
+          ],
+          "left": [
+            -23.617465778850498,
+            -61.4981380592344,
+            -0.26688674451358296
+          ],
+          "right": [
+            -26.085340124044162,
+            -59.79238420350523,
+            -0.16533815249389883
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 102.0,
+          "center": [
+            -26.06261526260086,
+            -62.150524261895335,
+            -0.17005018315026205
+          ],
+          "left": [
+            -24.560077454393294,
+            -63.047675383450006,
+            -0.24660986357391543
+          ],
+          "right": [
+            -27.565153070808428,
+            -61.25337314034066,
+            -0.06107893643242951
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 104.0,
+          "center": [
+            -27.035101451507277,
+            -63.816007573924786,
+            -0.12458133367740164
+          ],
+          "left": [
+            -25.47682657709575,
+            -64.61242418335588,
+            -0.19405828525941765
+          ],
+          "right": [
+            -28.593376325918804,
+            -63.01959096449368,
+            0.009899845168112265
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 106.0,
+          "center": [
+            -27.76895465341049,
+            -65.44312856742572,
+            -0.07272304598406665
+          ],
+          "left": [
+            -25.592886057664355,
+            -66.01516481331181,
+            -0.17749997684090318
+          ],
+          "right": [
+            -29.945023249156623,
+            -64.87109232153963,
+            0.036202549353720165
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 108.0,
+          "center": [
+            -28.927922272216083,
+            -67.17403326679313,
+            -0.021464234450528752
+          ],
+          "left": [
+            -25.685607433495292,
+            -66.95066252875661,
+            -0.0898459446090901
+          ],
+          "right": [
+            -32.170237110936874,
+            -67.39740400482965,
+            0.14305486306481366
+          ],
+          "support_span_m": 6.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 110.0,
+          "center": [
+            -29.840468236350688,
+            -69.70899170818868,
+            0.03354281935466741
+          ],
+          "left": [
+            -25.946408007698253,
+            -68.00640692744284,
+            -0.13844089949689692
+          ],
+          "right": [
+            -33.73452846500312,
+            -71.41157648893451,
+            0.24042420062156766
+          ],
+          "support_span_m": 8.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 112.0,
+          "center": [
+            -27.359757193768875,
+            -70.76065599066587,
+            -0.10930613290422822
+          ],
+          "left": [
+            -25.196678808976422,
+            -69.06254177152638,
+            -0.2695680902516091
+          ],
+          "right": [
+            -29.522835578561327,
+            -72.45877020980535,
+            0.02969967472715084
+          ],
+          "support_span_m": 5.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 114.0,
+          "center": [
+            -25.67584348113739,
+            -71.86216771718078,
+            -0.23557883564461665
+          ],
+          "left": [
+            -24.822458123250136,
+            -70.94880391729399,
+            -0.3019007158746211
+          ],
+          "right": [
+            -26.529228839024647,
+            -72.77553151706758,
+            -0.18578907081039076
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 8,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 146,
+      "to_m": 148,
+      "curve_ids": {
+        "center": 13,
+        "left": 14,
+        "right": 15
+      },
+      "sections": [
+        {
+          "station_m": 146.0,
+          "center": [
+            -2.5583255032165932,
+            -63.75495251960431,
+            -1.4656143262717873
+          ],
+          "left": [
+            -4.127732328569212,
+            -62.51520971702927,
+            -1.437661949202705
+          ],
+          "right": [
+            -0.9889186778639747,
+            -64.99469532217935,
+            -1.4487609307866105
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 148.0,
+          "center": [
+            -1.8787368036960574,
+            -61.828207269676774,
+            -1.4437175732574463
+          ],
+          "left": [
+            -3.123465950308213,
+            -60.9911592713074,
+            -1.4507766243750124
+          ],
+          "right": [
+            -0.6340076570839017,
+            -62.665255268046145,
+            -1.5235283854422101
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 9,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 152,
+      "to_m": 156,
+      "curve_ids": {
+        "center": 16,
+        "left": 17,
+        "right": 18
+      },
+      "sections": [
+        {
+          "station_m": 152.0,
+          "center": [
+            0.9283003110536368,
+            -58.89872348582648,
+            -1.6311438138205392
+          ],
+          "left": [
+            -0.5369046737007996,
+            -57.94181473748589,
+            -1.5433282248804951
+          ],
+          "right": [
+            2.3935052958080734,
+            -59.85563223416707,
+            -1.702934508353092
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 154.0,
+          "center": [
+            2.054264796894401,
+            -57.24602303215963,
+            -1.6838002048670642
+          ],
+          "left": [
+            0.5936598009956167,
+            -56.28210755559775,
+            -1.59177474297923
+          ],
+          "right": [
+            3.5148697927931853,
+            -58.20993850872151,
+            -1.7368530258555928
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 156.0,
+          "center": [
+            3.130308538076659,
+            -55.56205725771287,
+            -1.7177837834609604
+          ],
+          "left": [
+            1.6682118290986654,
+            -54.600405962494214,
+            -1.6879795735925127
+          ],
+          "right": [
+            4.592405247054653,
+            -56.52370855293153,
+            -1.7559632779807912
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 11,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 168,
+      "to_m": 172,
+      "curve_ids": {
+        "center": 19,
+        "left": 20,
+        "right": 21
+      },
+      "sections": [
+        {
+          "station_m": 168.0,
+          "center": [
+            9.369867903624439,
+            -45.370519155944145,
+            -2.096940186309498
+          ],
+          "left": [
+            8.5332476059295,
+            -44.822735916437104,
+            -2.0703544605027515
+          ],
+          "right": [
+            10.206488201319376,
+            -45.91830239545119,
+            -2.2279261627109297
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 170.0,
+          "center": [
+            11.026024337226831,
+            -44.041482110899814,
+            -2.245832271763131
+          ],
+          "left": [
+            9.520478390383614,
+            -43.14938828066447,
+            -2.085713338566495
+          ],
+          "right": [
+            12.531570284070046,
+            -44.93357594113515,
+            -2.3336443362885757
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 172.0,
+          "center": [
+            11.825656077142387,
+            -42.20577142102087,
+            -2.2452818500390213
+          ],
+          "left": [
+            10.156308218154063,
+            -41.10428255330994,
+            -2.2776937858508095
+          ],
+          "right": [
+            13.495003936130711,
+            -43.3072602887318,
+            -2.3871577886553976
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "support_gap",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 12,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 180,
+      "to_m": 184,
+      "curve_ids": {
+        "center": 22,
+        "left": 23,
+        "right": 24
+      },
+      "sections": [
+        {
+          "station_m": 180.0,
+          "center": [
+            16.613299845723258,
+            -35.82903374681103,
+            -2.581955284999778
+          ],
+          "left": [
+            15.377109180182748,
+            -34.979426403133665,
+            -2.53964424322099
+          ],
+          "right": [
+            17.84949051126377,
+            -36.67864109048839,
+            -2.656078807479907
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 182.0,
+          "center": [
+            17.676348596807703,
+            -34.11539124318597,
+            -2.6120185116631496
+          ],
+          "left": [
+            16.81626936199061,
+            -33.605230768593465,
+            -2.626675450354251
+          ],
+          "right": [
+            18.5364278316248,
+            -34.625551717778464,
+            -2.722454197776468
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 184.0,
+          "center": [
+            18.87739437160712,
+            -32.503128395344994,
+            -2.706540961663615
+          ],
+          "left": [
+            17.369889551556316,
+            -31.614348772759293,
+            -2.6247445246896515
+          ],
+          "right": [
+            20.384899191657926,
+            -33.3919080179307,
+            -2.7701004350172145
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 12,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 188,
+      "to_m": 190,
+      "curve_ids": {
+        "center": 25,
+        "left": 26,
+        "right": 27
+      },
+      "sections": [
+        {
+          "station_m": 188.0,
+          "center": [
+            20.3543776104092,
+            -28.733243484886998,
+            -2.7279930770174903
+          ],
+          "left": [
+            19.49670164842016,
+            -28.219052912991543,
+            -2.6748802563713814
+          ],
+          "right": [
+            21.21205357239824,
+            -29.247434056782453,
+            -2.784772377147788
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 190.0,
+          "center": [
+            22.180216801026923,
+            -27.517976597231197,
+            -2.909811179806111
+          ],
+          "left": [
+            21.331557208804405,
+            -26.98903718999374,
+            -2.8750686458705808
+          ],
+          "right": [
+            23.02887639324944,
+            -28.046916004468656,
+            -2.886378529832405
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 13,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 200,
+      "to_m": 202,
+      "curve_ids": {
+        "center": 28,
+        "left": 29,
+        "right": 30
+      },
+      "sections": [
+        {
+          "station_m": 200.0,
+          "center": [
+            26.35764962522613,
+            -18.452895314962817,
+            -3.063022046685664
+          ],
+          "left": [
+            22.98802031454635,
+            -17.506534755446673,
+            -2.9398094160887833
+          ],
+          "right": [
+            29.72727893590591,
+            -19.39925587447896,
+            -3.2699488028071757
+          ],
+          "support_span_m": 7.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 202.0,
+          "center": [
+            26.55083340668106,
+            -16.49063291207147,
+            -3.05518711014853
+          ],
+          "left": [
+            23.645460044133422,
+            -15.7430998865812,
+            -2.894890766380177
+          ],
+          "right": [
+            29.456206769228697,
+            -17.23816593756174,
+            -3.216004806347341
+          ],
+          "support_span_m": 6.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 15,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 210,
+      "to_m": 212,
+      "curve_ids": {
+        "center": 31,
+        "left": 32,
+        "right": 33
+      },
+      "sections": [
+        {
+          "station_m": 210.0,
+          "center": [
+            29.167142342504707,
+            -9.042286772668692,
+            -3.297522983303592
+          ],
+          "left": [
+            27.715122434177104,
+            -8.665938282808172,
+            -3.3362038913454644
+          ],
+          "right": [
+            30.619162250832314,
+            -9.418635262529214,
+            -3.374682955016848
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 212.0,
+          "center": [
+            30.22627945191101,
+            -7.232126994863312,
+            -3.51990610708421
+          ],
+          "left": [
+            29.2604605252405,
+            -7.4913446657212575,
+            -3.513933165467038
+          ],
+          "right": [
+            31.192098378581527,
+            -6.972909324005366,
+            -3.39686266212189
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 16,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 220,
+      "to_m": 222,
+      "curve_ids": {
+        "center": 34,
+        "left": 35,
+        "right": 36
+      },
+      "sections": [
+        {
+          "station_m": 220.0,
+          "center": [
+            25.60590366856865,
+            -0.5518388856145455,
+            -3.139269654795172
+          ],
+          "left": [
+            24.504446239155477,
+            -1.5700684919364785,
+            -3.0461938262772006
+          ],
+          "right": [
+            26.707361097981828,
+            0.4663907207073874,
+            -3.1254926499120748
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 222.0,
+          "center": [
+            23.51849406587915,
+            0.25178666569088615,
+            -3.0297044868396332
+          ],
+          "left": [
+            22.805083615885906,
+            -0.44895974339048794,
+            -2.9938097739872545
+          ],
+          "right": [
+            24.23190451587239,
+            0.9525330747722602,
+            -3.149142818158418
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 16,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 232,
+      "to_m": 238,
+      "curve_ids": {
+        "center": 37,
+        "left": 38,
+        "right": 39
+      },
+      "sections": [
+        {
+          "station_m": 232.0,
+          "center": [
+            16.593789688635834,
+            7.701109775791304,
+            -2.4809790077658898
+          ],
+          "left": [
+            15.351775015664078,
+            5.824970241502113,
+            -2.4446462777419984
+          ],
+          "right": [
+            17.835804361607586,
+            9.577249310080497,
+            -2.4684764300169735
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 234.0,
+          "center": [
+            14.45679011900022,
+            8.856073218382459,
+            -2.2467173400740292
+          ],
+          "left": [
+            14.161474717321017,
+            7.385430905129148,
+            -2.220745175108282
+          ],
+          "right": [
+            14.752105520679423,
+            10.32671553163577,
+            -2.2083275407169607
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 236.0,
+          "center": [
+            11.965741272942827,
+            8.861944395061972,
+            -2.0727717230482785
+          ],
+          "left": [
+            12.359260454585538,
+            6.901040865135204,
+            -2.052974917594702
+          ],
+          "right": [
+            11.572222091300118,
+            10.822847924988737,
+            -1.867063827027713
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 238.0,
+          "center": [
+            10.246161003422362,
+            7.076212544956684,
+            -1.8475866370543232
+          ],
+          "left": [
+            11.000977861100221,
+            5.779967386290577,
+            -1.8760053976721276
+          ],
+          "right": [
+            9.491344145744502,
+            8.372457703622793,
+            -1.7911150146093173
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 16,
+      "action": "include",
+      "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved.",
+      "from_m": 242,
+      "to_m": 246,
+      "curve_ids": {
+        "center": 40,
+        "left": 41,
+        "right": 42
+      },
+      "sections": [
+        {
+          "station_m": 242.0,
+          "center": [
+            7.733150789961773,
+            3.9009752575222514,
+            -1.3803343527590863
+          ],
+          "left": [
+            8.630901941988698,
+            3.031180529420081,
+            -1.3844841691421985
+          ],
+          "right": [
+            6.835399637934848,
+            4.770769985624423,
+            -1.3435656596760168
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 244.0,
+          "center": [
+            6.533770491269885,
+            2.2349359063294334,
+            -1.1823371137422993
+          ],
+          "left": [
+            7.205660176490582,
+            1.4942846720132859,
+            -1.1654617504575389
+          ],
+          "right": [
+            5.861880806049188,
+            2.9755871406455814,
+            -1.1650926683785783
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 246.0,
+          "center": [
+            4.0302647557763835,
+            2.2142783236223944,
+            -0.879255156623906
+          ],
+          "left": [
+            4.570702967189707,
+            1.3728946182629616,
+            -0.9556004444689012
+          ],
+          "right": [
+            3.489826544363061,
+            3.055662028981827,
+            -0.8592984479164163
+          ],
+          "support_span_m": 2.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    }
+  ],
+  "station_disposition": [
+    {
+      "from_m": 0.0,
+      "to_m": 8.0,
+      "status": "included_geometry",
+      "included_candidate_id": 1,
+      "available_candidate_ids": [
+        1
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 8.0,
+      "to_m": 14.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 14.0,
+      "to_m": 18.0,
+      "status": "included_geometry",
+      "included_candidate_id": 2,
+      "available_candidate_ids": [
+        2
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 18.0,
+      "to_m": 22.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 22.0,
+      "to_m": 28.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        3
+      ],
+      "deferred_candidate_ids": [
+        3
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 28.0,
+      "to_m": 32.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 32.0,
+      "to_m": 34,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        4
+      ],
+      "deferred_candidate_ids": [
+        4
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 34,
+      "to_m": 36.0,
+      "status": "included_geometry",
+      "included_candidate_id": 4,
+      "available_candidate_ids": [
+        4
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 36.0,
+      "to_m": 40.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 40.0,
+      "to_m": 44.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        5
+      ],
+      "deferred_candidate_ids": [
+        5
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 44.0,
+      "to_m": 48.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 48.0,
+      "to_m": 114.0,
+      "status": "included_geometry",
+      "included_candidate_id": 6,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 114.0,
+      "to_m": 118.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 118.0,
+      "to_m": 122.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        7
+      ],
+      "deferred_candidate_ids": [
+        7
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 122.0,
+      "to_m": 124.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "unmatched_bands"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 124.0,
+      "to_m": 128.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 128.0,
+      "to_m": 130.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 130.0,
+      "to_m": 134.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_ground_anchor"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 134.0,
+      "to_m": 146,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        8
+      ],
+      "deferred_candidate_ids": [
+        8
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 146,
+      "to_m": 148.0,
+      "status": "included_geometry",
+      "included_candidate_id": 8,
+      "available_candidate_ids": [
+        8
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 148.0,
+      "to_m": 152.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 152.0,
+      "to_m": 156.0,
+      "status": "included_geometry",
+      "included_candidate_id": 9,
+      "available_candidate_ids": [
+        9
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 156.0,
+      "to_m": 158.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 158.0,
+      "to_m": 160.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [
+        10
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 160.0,
+      "to_m": 168.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 168.0,
+      "to_m": 172,
+      "status": "included_geometry",
+      "included_candidate_id": 11,
+      "available_candidate_ids": [
+        11
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 172,
+      "to_m": 176.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        11
+      ],
+      "deferred_candidate_ids": [
+        11
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 176.0,
+      "to_m": 180.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 180.0,
+      "to_m": 184,
+      "status": "included_geometry",
+      "included_candidate_id": 12,
+      "available_candidate_ids": [
+        12
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 184,
+      "to_m": 188,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        12
+      ],
+      "deferred_candidate_ids": [
+        12
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 188,
+      "to_m": 190,
+      "status": "included_geometry",
+      "included_candidate_id": 12,
+      "available_candidate_ids": [
+        12
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 190,
+      "to_m": 196.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        12
+      ],
+      "deferred_candidate_ids": [
+        12
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 196.0,
+      "to_m": 200.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 200.0,
+      "to_m": 202.0,
+      "status": "included_geometry",
+      "included_candidate_id": 13,
+      "available_candidate_ids": [
+        13
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 202.0,
+      "to_m": 206.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 206.0,
+      "to_m": 208.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        14
+      ],
+      "deferred_candidate_ids": [
+        14
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 208.0,
+      "to_m": 210.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 210.0,
+      "to_m": 212,
+      "status": "included_geometry",
+      "included_candidate_id": 15,
+      "available_candidate_ids": [
+        15
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 212,
+      "to_m": 214.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        15
+      ],
+      "deferred_candidate_ids": [
+        15
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 214.0,
+      "to_m": 220.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 220.0,
+      "to_m": 222,
+      "status": "included_geometry",
+      "included_candidate_id": 16,
+      "available_candidate_ids": [
+        16
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 222,
+      "to_m": 232,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        16
+      ],
+      "deferred_candidate_ids": [
+        16
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 232,
+      "to_m": 238,
+      "status": "included_geometry",
+      "included_candidate_id": 16,
+      "available_candidate_ids": [
+        16
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 238,
+      "to_m": 242,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        16
+      ],
+      "deferred_candidate_ids": [
+        16
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 242,
+      "to_m": 246.0,
+      "status": "included_geometry",
+      "included_candidate_id": 16,
+      "available_candidate_ids": [
+        16
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 246.0,
+      "to_m": 252.5863381996826,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    }
+  ],
+  "summary": {
+    "segments": 14,
+    "reference_curves": 42,
+    "trajectory_length_m": 252.5863381996826,
+    "included_station_length_m": 112,
+    "unresolved_station_length_m": 140.5863381996826,
+    "lane_count": null,
+    "complete_width_resolved": false,
+    "road_semantics_inferred": false,
+    "source_quality_passed": false,
+    "deployment_ready": false,
+    "included_station_fraction": 0.4434127387818505,
+    "minimum_retained_fraction": 0.9,
+    "meets_requested_station_extent": false
+  },
+  "warnings": [
+    "Included source curves remain review geometry. No complete width, lane, direction, speed, legal use, connectivity, georeference or full-width interior is established.",
+    "Other reference curves use the editable IR; standalone unknown ways are discarded by the Lanelet2 reader, so this stage does not publish OSM.",
+    "Station coverage is input-path extent, not unique road length or a source-quality pass. Separate candidates are not joined or smoothed."
+  ],
+  "source_warnings": [
+    "Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves.",
+    "Explicit trajectory-containing association excludes off-path bands from matching but retains them in every original profile. This resolves geometric association only, not physical road branches or lane identity; unsupported path intervals remain deferred."
+  ],
+  "input_artifacts": {
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "pointcloud": {
+      "map": {
+        "path": "run/pointcloud/trajectory_map.ply",
+        "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+        "bytes": 20653998
+      },
+      "trajectory": {
+        "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+        "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+        "bytes": 46143
+      },
+      "graph": {
+        "path": "run/pointcloud/trajectory_fixed.g2o",
+        "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+        "bytes": 92299
+      }
+    },
+    "native": {
+      "version": "0.1.0",
+      "extension": {
+        "path": "native/cloudanalyzer_core/_core.abi3.so",
+        "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+        "bytes": 7451080
+      }
+    },
+    "corridor_proposal": {
+      "path": "run/corridor-proposals-trajectory.json",
+      "sha256": "f668a5906976bf23b9807b052e8957205de1d525845455e3de8a30f0efe1e86c",
+      "bytes": 393263
+    }
+  },
+  "native_validation": {
+    "validation": {
+      "counts": {
+        "errors": 0,
+        "infos": 42,
+        "warnings": 0
+      },
+      "issues": [
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 1,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 1,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:1 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 2,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 2,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:2 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 3,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 3,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:3 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 4,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 4,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:4 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 5,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 5,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:5 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 6,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 6,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:6 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 7,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 7,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:7 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 8,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 8,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:8 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 9,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 9,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:9 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 10,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 10,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:10 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 11,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 11,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:11 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 12,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 12,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:12 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 13,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 13,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:13 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 14,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 14,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:14 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 15,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 15,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:15 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 16,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 16,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:16 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 17,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 17,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:17 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 18,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 18,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:18 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 19,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 19,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:19 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 20,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 20,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:20 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 21,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 21,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:21 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 22,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 22,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:22 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 23,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 23,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:23 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 24,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 24,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:24 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 25,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 25,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:25 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 26,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 26,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:26 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 27,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 27,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:27 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 28,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 28,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:28 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 29,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 29,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:29 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 30,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 30,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:30 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 31,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 31,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:31 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 32,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 32,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:32 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 33,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 33,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:33 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 34,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 34,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:34 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 35,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 35,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:35 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 36,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 36,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:36 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 37,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 37,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:37 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 38,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 38,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:38 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 39,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 39,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:39 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 40,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 40,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:40 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 41,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 41,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:41 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 42,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 42,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:42 is not used by any lane",
+          "severity": "info"
+        }
+      ]
+    },
+    "import_issues": [],
+    "georeference": null
+  },
+  "editing": {
+    "file": "run/geometry-01/vector_map.json",
+    "show_virtual_lines": true
+  }
+}

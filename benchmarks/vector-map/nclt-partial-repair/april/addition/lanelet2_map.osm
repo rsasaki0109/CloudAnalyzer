@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" upload="false" generator="vectormap-rs 0.1.0">
+  <node id="4" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.3190481512075882"/>
+    <tag k="local_x" v="21.480169551990436"/>
+    <tag k="local_y" v="1.7854548215819595"/>
+  </node>
+  <node id="5" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.3345540233693196"/>
+    <tag k="local_x" v="20.139120745460648"/>
+    <tag k="local_y" v="-0.35124692548350245"/>
+  </node>
+  <node id="6" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.3469546898797655"/>
+    <tag k="local_x" v="19.340155108683565"/>
+    <tag k="local_y" v="-1.797090745946891"/>
+  </node>
+  <node id="7" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.039437414851294"/>
+    <tag k="local_x" v="15.604178438781338"/>
+    <tag k="local_y" v="4.564434569166986"/>
+  </node>
+  <node id="8" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.0634190656635556"/>
+    <tag k="local_x" v="15.427433957086658"/>
+    <tag k="local_y" v="2.4860066071184033"/>
+  </node>
+  <node id="9" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.091863326016272"/>
+    <tag k="local_x" v="14.450809633106442"/>
+    <tag k="local_y" v="0.7216988086712599"/>
+  </node>
+  <way id="1" visible="true" version="1">
+    <nd ref="4"/>
+    <nd ref="5"/>
+    <nd ref="6"/>
+    <tag k="type" v="virtual"/>
+  </way>
+  <way id="2" visible="true" version="1">
+    <nd ref="7"/>
+    <nd ref="8"/>
+    <nd ref="9"/>
+    <tag k="type" v="virtual"/>
+  </way>
+  <relation id="3" visible="true" version="1">
+    <member type="way" ref="1" role="left"/>
+    <member type="way" ref="2" role="right"/>
+    <tag k="cloudanalyzer:assumption_status" v="hypothesis"/>
+    <tag k="cloudanalyzer:boundary_policy" v="source_span_hypothesis"/>
+    <tag k="cloudanalyzer:source_center_curve" v="1"/>
+    <tag k="location" v="urban"/>
+    <tag k="one_way" v="yes"/>
+    <tag k="participant:vehicle" v="yes"/>
+    <tag k="speed_limit" v="40"/>
+    <tag k="subtype" v="road"/>
+    <tag k="type" v="lanelet"/>
+  </relation>
+</osm>

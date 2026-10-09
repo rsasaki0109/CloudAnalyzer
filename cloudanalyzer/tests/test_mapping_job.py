@@ -1634,3 +1634,169 @@ def test_completed_connection_inspection_resumes_from_its_saved_proposal(connect
     jobs.core().connect_vector_map_junctions = lambda *args: pytest.fail("completed proposal must be reused")
     result = runs.advance_mapping_run(str(root), {"type": "resume"}, "Reuse saved preview", 3)
     assert len(result["connection_observation"]["candidates"]) == 1 and result["remaining_attempts"] == 4
+
+
+def _gap_patch_draft(root, start=4., stop=8., preview=True):
+    _inspect_unused(root)
+    _advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    child = root/'pointcloud-retry'
+    _advance(child, {'type': 'inspect', 'candidate_ids': [1]})
+    _advance(child, {'type': 'draft', 'decisions': [{'candidate_id': 1, 'action': 'include',
+              'from_m': start, 'to_m': stop, 'reason': 'Only the observed missing source interval'}]})
+    if preview and start == 4. and stop == 8.:
+        _advance(child, {'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    return child
+
+
+def _patch_pairs(child):
+    run=json.loads((child/'run.json').read_text())
+    receipt=next(h['patch_observation'] for h in reversed(run['history']) if 'patch_observation' in h)
+    return [{'from':p['from'],'to':p['to'],'reason':'Explicitly join inspected coincident endpoints'} for p in receipt['pairs']]
+
+
+def test_gap_patch_preserves_original_ids_geometry_and_routes_and_delivers_pair(unused_frame_run):
+    from ca import mapping_run as runs, mapping_connections as connections
+    root = unused_frame_run
+    original_job = jobs.inspect_mapping_job(str(root)); baseline = original_job['attempts'][1]
+    original = json.loads(Path(baseline['files']['editable_map']['path']).read_text())
+    child = _gap_patch_draft(root)
+    result = _advance(child, {'type': 'patch_gaps', 'candidate_id': 2, 'gap_ids': [1], 'pairs':_patch_pairs(child)})
+    assert result['patch_result']['status'] == 'audited_draft', result
+    job = jobs.inspect_mapping_job(str(child)); patch = job['attempts'][2]
+    combined = json.loads(Path(patch['files']['editable_map']['path']).read_text())
+    for key in ('lanes','boundaries'):
+        current = {r['id']: r for r in combined[key]}
+        assert all(current[r['id']] == r for r in original[key])
+    assert combined['metadata'] == original['metadata']
+    assert len(combined['lanes']) == 3 and connections.edges(original) <= connections.edges(combined)
+    assert patch['routes']['after']['longest_route_station_span_m'] >= patch['routes']['before']['longest_route_station_span_m']
+    assert patch['extent']['generated_length_m'] == 10.
+    checks = json.loads(Path(patch['patch_checks']['path']).read_text()); assert checks['passes'] and not checks['holds']
+    assert result['remaining_attempts'] == 1 and original_job['pointcloud']['files']['map'] != job['pointcloud']['files']['map']
+    compared = _advance(root, {'type': 'compare_retry', 'candidate_id': 3})['retry_comparison']
+    assert compared['gained_source_length_m'] == 4. and compared['lost_source_length_m'] == 0.
+    _advance(child, {'type': 'finish', 'candidate_id': 3})
+    final = _advance(root, {'type': 'finish_retry', 'candidate_id': 3})
+    assert final['output']['artifacts']['hd_patch_checks'] == patch['patch_checks']
+    assert final['output']['artifacts']['map'] == job['pointcloud']['files']['map']
+    assert runs.inspect_mapping_run(str(root))['output']['pointcloud_retry_decision']['adopted']
+    with pytest.raises(ValueError, match='awaiting'):_advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':[]})
+
+
+@pytest.mark.parametrize('invalid_ids', [[], [True], [1,1], [99]])
+def test_gap_patch_rejects_invalid_or_unseen_gaps_before_budget(unused_frame_run, invalid_ids):
+    child = _gap_patch_draft(unused_frame_run)
+    with pytest.raises(ValueError, match='gap IDs'):_advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':invalid_ids,'pairs':[]})
+    assert len(jobs.inspect_mapping_job(str(child))['attempts']) == 2
+    assert 'gap_patch' not in jobs.inspect_mapping_job(str(child))
+
+
+def test_gap_patch_rejects_whole_drive_replacement_and_tampered_baseline(unused_frame_run):
+    root = unused_frame_run; child = _gap_patch_draft(root,0.,10.)
+    with pytest.raises(ValueError, match='entirely inside'):_advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':[]})
+    baseline = jobs.inspect_mapping_job(str(root))['attempts'][1]
+    Path(baseline['files']['editable_map']['path']).write_text('{}')
+    with pytest.raises(ValueError, match='changed'):_advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':[]})
+    assert 'gap_patch' not in jobs.inspect_mapping_job(str(child))
+
+
+def test_gap_patch_cannot_fill_over_an_existing_connector(unused_frame_run):
+    from ca import mapping_retry as retry
+    root = unused_frame_run
+    native = _attach_lane_native(); jobs.core().connect_vector_map_junctions = native.connect_vector_map_junctions
+    observed = _advance(root, {'type':'inspect_connections','candidate_id':2,'offset':0})['connection_observation']
+    pair = observed['candidates'][0]
+    _advance(root, {'type':'connect','candidate_id':2,'pairs':[{'from':pair['from'],'to':pair['to'],'reason':'Preserve checked original route'}]})
+    _advance(root, {'type':'inspect_gaps','candidate_id':3,'offset':0})
+    _advance(root, {'type':'inspect_unused_frames','candidate_id':3,'offset':0})
+    _advance(root, {'type':'retry_frames','candidate_id':3,'frame_ids':[5]})
+    child = root/'pointcloud-retry'
+    _advance(child, {'type':'inspect','candidate_ids':[1]})
+    _advance(child, {'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':8.,'reason':'Investigate source gap'}]})
+    with pytest.raises(ValueError, match='retained lane or connector'):_advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':[]})
+    assert retry._routes(jobs.inspect_mapping_job(str(root))['attempts'][2])['longest_route_station_span_m'] == 10.
+    assert 'gap_patch' not in jobs.inspect_mapping_job(str(child))
+
+
+def test_gap_patch_rejects_new_failure_location_even_when_totals_unchanged():
+    from copy import deepcopy
+    from ca import mapping_patch as patch
+    trace = {'samples':10,'supported':9,'insufficient_returns':0,'height_mismatches':1,'fraction':.9,'start_supported':True,'end_supported':True}
+    audit = {'validation':{'issues':[]},'import_issues':[], 'quality':{
+        'lanes':[{'lane':3,'needs_review':True,**{k:deepcopy(trace) for k in ('center','left','right')}}],
+        'minimum_support_fraction':.9,'limited':False,'omitted_lanes':[],'malformed_lanes':[],'low_support_lanes':[3],
+        'sampling_step_m':.5,'ground_radius_m':.75,'ground_height_tolerance_m':.25,'sample_budget':100000,'warnings':[],
+        'problems_limited':False,'problems':[{'lane':3,'curve':k,'reason':'height_mismatch','points':[[1.,0.,0.]]} for k in ('center','left','right')]}}
+    before={'editable':audit,'reopened_osm':deepcopy(audit),'ground_consensus':{'editable':deepcopy(audit),'reopened_osm':deepcopy(audit)}}
+    after=deepcopy(before)
+    after['editable']['quality']['problems'][0]['points']=[[2.,0.,0.]]
+    result=patch._checks(before,after,{3},set())
+    assert not result['passes'] and result['holds']==['editable:new_retained_failure_location:3:center']
+    after=deepcopy(before);after['editable']['quality']['problems_limited']=True
+    assert not patch._checks(before,after,{3},set())['passes']
+
+
+def test_gap_patch_native_change_is_failed_without_replacing_baseline(unused_frame_run,monkeypatch):
+    root=unused_frame_run;child=_gap_patch_draft(root)
+    original = jobs.core().edit_vector_map_relations
+    def changed(path,*args):
+        payload=json.loads(original(path,*args));ir=json.loads(payload['map_json'])
+        ir['boundaries'][0]['geometry'][0][1] += .1
+        payload['map_json']=json.dumps(ir);return json.dumps(payload)
+    monkeypatch.setattr(jobs.core(),'edit_vector_map_relations',changed)
+    result=_advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert result['patch_result']['status']=='failed' and 'retained' in result['patch_result']['error']
+    assert len(jobs.inspect_mapping_job(str(child))['attempts'])==3
+    assert not (child/'candidate-03').exists()
+    final=_advance(root, {'type':'finish','candidate_id':2}, 'Keep original pair after failed local repair')
+    assert final['output']['pointcloud_retry_decision']['adopted'] is False
+
+
+def test_gap_patch_completed_stage_resumes_without_spending_twice(unused_frame_run,monkeypatch):
+    from ca import mapping_run as runs, mapping_patch as patch
+    root=unused_frame_run;child=_gap_patch_draft(root)
+    diagnosis=runs._diagnosis
+    monkeypatch.setattr(runs,'_diagnosis',lambda *a: (_ for _ in ()).throw(KeyboardInterrupt()))
+    with pytest.raises(KeyboardInterrupt):_advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert len(jobs.inspect_mapping_job(str(child))['attempts'])==3
+    monkeypatch.setattr(runs,'_diagnosis',diagnosis)
+    monkeypatch.setattr(patch,'patch',lambda *a: pytest.fail('completed patch was repeated'))
+    result=_advance(child, {'type':'resume'})
+    assert result['patch_result']['status']=='audited_draft' and len(jobs.inspect_mapping_job(str(child))['attempts'])==3
+
+
+def test_gap_patch_requires_explicit_seen_endpoint_pairs_before_spending(unused_frame_run):
+    from ca import mapping_patch as patch
+    child=_gap_patch_draft(unused_frame_run,preview=False)
+    observed=patch.preview(child,2,[1],0)
+    pairs=[{'from':p['from'],'to':p['to'],'reason':'Join inspected endpoints'} for p in observed['pairs']]
+    with pytest.raises(ValueError,match='inspect the gap patch'):
+        _advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':pairs})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':99})
+    with pytest.raises(ValueError,match='every patch endpoint pair'):
+        _advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':pairs})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    with pytest.raises(ValueError,match='every implicit endpoint pair'):
+        _advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':[]})
+    assert len(jobs.inspect_mapping_job(str(child))['attempts'])==2
+
+
+def test_gap_patch_failed_source_check_retains_full_audits_and_baseline(unused_frame_run,monkeypatch):
+    root=unused_frame_run;child=_gap_patch_draft(root)
+    original=jobs.core().audit_vector_map_quality_details
+    def unsupported(*args):
+        result=json.loads(original(*args))
+        for lane in result['quality']['lanes']:
+            if lane['lane'] <= 6:continue
+            lane['left']['supported'] -= 1;lane['left']['height_mismatches'] += 1
+            lane['left']['fraction']=lane['left']['supported']/lane['left']['samples']
+        return json.dumps(result)
+    monkeypatch.setattr(jobs.core(),'audit_vector_map_quality_details',unsupported)
+    result=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert result['patch_result']['status']=='failed'
+    checks=json.loads(Path(result['patch_result']['patch_checks']['path']).read_text())
+    assert not checks['passes'] and any('new_lane_not_fully_supported' in h for h in checks['holds'])
+    assert Path(result['patch_result']['patch_audits']['path']).is_file() and not (child/'candidate-03').exists()
+    with pytest.raises(ValueError):_advance(root,{'type':'compare_retry','candidate_id':3})
+    final=_advance(root,{'type':'finish','candidate_id':2},'Keep the earlier pair after held source evidence')
+    assert final['output']['pointcloud_retry_decision']['adopted'] is False

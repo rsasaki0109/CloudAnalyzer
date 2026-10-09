@@ -316,6 +316,84 @@ retain both actual point/HD comparisons: April's partial improvement was explici
 adopted, while June's baseline was kept because its trial shortened the longest
 route and increased fragmentation despite gaining net source extent.
 
+### Repair HD gaps while retaining the existing map
+
+After either point-fusion retry, the child can add source-supported missing HD
+intervals without replacing the root's retained geometry. This first patch is
+limited to one forward one-way lane per piece, 1–32 new lanes and 256 total lanes.
+The point map remains the **complete fusion trial**; this action does not crop or
+replace point returns only inside a spatial region.
+
+Inspect the root's actual baseline gap pages, then the child's fresh source
+sections. Draft **only** additions inside the gaps you choose. Each added lane
+must lie entirely in the union of selected missing station intervals and cannot
+overlap any retained lane or connector interval. A whole-drive replacement draft
+is not a patch. Source thresholds, original reference poses/denominator, extent
+goal, minimum widths and lane hypotheses remain fixed.
+
+In the child, preview that audited gap-only draft:
+
+```json
+{"type": "inspect_patch", "candidate_id": 2, "gap_ids": [3], "offset": 0}
+```
+
+Use current IDs; the gap IDs belong to the **root's** audited baseline. Preview
+pages contain eight geometric endpoint pairs, with `baseline:ID` and `addition:ID`
+references and endpoint distances. New links require original station adjacency
+and both boundary endpoints within 0.01 m in XYZ, matching the OSM reader's
+inference tolerance. The preview holds nonadjacent or ambiguous links. It is
+cached for this addition candidate and exact gap choice; a different gap selection
+needs a new draft. No HD attempt is spent by preview.
+
+OSM readers can infer links at coincident endpoints even without an explicit IR
+relation. Inspect and explicitly adopt **every** offered pair, or revise the draft;
+the runner does not silently accept these links. Pairs must have been returned
+through this child run. Use `pairs: []` when no endpoint pairs were offered:
+
+```json
+{
+  "type": "patch_gaps",
+  "candidate_id": 2,
+  "gap_ids": [3],
+  "pairs": [{"from": "baseline:6", "to": "addition:3", "reason": "Inspected station-adjacent coincident boundary endpoints"}]
+}
+```
+
+The patch spends **one** remaining transferred HD attempt. It retains original
+lane/boundary IDs, geometry, lane semantics, metadata and directed connections;
+new entities receive unused IDs. Only the explicitly inspected endpoint pairs
+can add edges, without moving or extending original boundaries. Native export
+and OSM reload must preserve geometry, projection, turn labels and the expected
+route graph. These geometric relations do not establish permitted manoeuvres.
+
+All retained and new traces are re-audited against the child point map, using
+both ground estimators for IR and reopened OSM at unchanged protocols. Every new
+trace and join endpoint needs full source support. Retained traces must keep
+their sample counts, supported endpoints and nonworsening support/failure totals.
+Complete failure-location reports also ensure **no previously supported sample
+becomes a new failure**, even if net totals improve elsewhere. Limited audits or
+failure-location previews hold the patch. Earlier source failures remain visible;
+they are not treated as repaired or as a quality pass.
+
+Failed patches retain full audits/checks and spend their original allocation;
+they cannot publish an audited replacement or be replayed as a new trial. The
+root can still explicitly finish with its baseline pair. Completed interrupted
+patches resume without another native export or allocation. A child can make
+only one patch; patches do not retry recursively.
+
+After a successful patch, use the root's `compare_retry` on the **patched** child
+candidate. Inspect gained/lost intervals, four audits and global route spans,
+finish the child with that candidate, then explicitly `finish_retry`, or retain
+the root baseline. Existing routes are preserved, but filling an isolated source
+interval need not make the whole drive connected. Original-station coverage is
+not unique physical road length, independent accuracy or deployment readiness.
+
+The [NCLT local patches](../../benchmarks/vector-map/nclt-partial-repair/README.md)
+retain actual before/addition/combined maps and four audits. They add 4/6 m with
+zero lost source intervals, preserve original geometry/edges and the 34/66 m
+longest routes, and explicitly deliver both partial pairs. The new intervals
+remain isolated; whole-drive connectivity and the original 90% goal remain unmet.
+
 `layout_hypothesis` / `layout.json`:
 
 ```json

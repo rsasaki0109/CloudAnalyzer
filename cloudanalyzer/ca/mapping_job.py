@@ -61,7 +61,7 @@ def _locked(root: Path) -> Iterator[None]:
 
 def _native() -> dict[str, Any]:
     module = core()
-    if module is None or not hasattr(module, "audit_vector_map_ground_consensus_details"):
+    if module is None or not hasattr(module, "propose_road_corridors"):
         raise RuntimeError('mapping jobs need an updated Rust core: pip install "cloudanalyzer[fast]"')
     extension = getattr(module, "_core", module)
     file = extension.__file__
@@ -106,7 +106,9 @@ def inspect_mapping_job(job_dir: str) -> dict[str, Any]:
     remaining = job["max_attempts"] - len(job["attempts"])
     job["remaining_attempts"] = remaining
     ready = job.get("pointcloud") is not None and job["status"] not in {"pointcloud_failed", "pointcloud_running"}
-    job["next_actions"] = (["generate_mapping_candidate"] if ready and remaining else []) + (
+    job["next_actions"] = (["propose_mapping_corridors"] if ready and "corridor_proposal" not in job else []) + (
+        ["inspect_mapping_corridors"] if job.get("corridor_proposal", {}).get("status") == "ready" else []
+    ) + (["generate_mapping_candidate"] if ready and remaining else []) + (
         ["select_mapping_candidate"] if any(a["status"] == "audited_draft" and a["extent"]["passes_requested_extent"] for a in job["attempts"]) else []
     )
     return job
@@ -127,7 +129,8 @@ def start_mapping_job(
     Accepts MCAP, ROS1 bag or rosbag2 SQLite recordings. Uses LiDAR odometry,
     loop closure, the recording's IMU gravity and optional dynamic removal.
     A NEW output directory holds the job and stage reports, including failures.
-    Call generate_mapping_candidate next with explicit road assumptions and a reason.
+    Call propose_mapping_corridors to inspect source bands without lane assumptions,
+    then generate_mapping_candidate with explicit road assumptions and a reason.
     """
     if type(max_attempts) is not int or not 1 <= max_attempts <= 8:
         raise ValueError("max_attempts must be an integer between 1 and 8")
@@ -183,6 +186,126 @@ def start_mapping_job(
                 raise
         _save(root / "job.json", job)
     return inspect_mapping_job(str(root))
+
+
+def _curb_width_hints(report: dict[str, Any]) -> list[dict[str, Any]]:
+    return [{**band, "review_required": True} for profile in report.get("profiles", []) for band in profile["bands"]
+            if band["path_level_supported"] and band["left_evidence"] == "curb_profile" and band["right_evidence"] == "curb_profile"]
+
+
+def _corridor_summary(report: dict[str, Any]) -> dict[str, Any]:
+    if report.get("schema") != "cloudanalyzer.corridor_proposals.v1":
+        raise ValueError("unsupported native corridor report schema")
+    return {**{key: report[key] for key in (
+        "coordinate_frame", "protocol", "trajectory_length_m", "with_candidate_station_length_m",
+        "without_candidate_station_length_m", "trajectory_covered_station_length_m", "curb_bounded_station_length_m",
+        "ambiguous_station_length_m", "sampled_sections", "evaluated_sections", "sections_with_bands",
+        "multiple_band_sections", "profile_queried_points", "interval_support_samples", "unstable_heading_sections",
+        "unanchored_sections", "level_mismatch_bands",
+        "limited", "road_semantics_inferred", "deployment_ready", "warnings")},
+        "candidate_count": len(report["candidates"]),
+        "curb_bounded_candidates": sum(c["curb_width_range_m"] is not None for c in report["candidates"]),
+        "paired_curb_profile_bands": len(_curb_width_hints(report)),
+    }
+
+
+def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dict[str, Any]:
+    """Generate lane-free road/path surface proposals from frozen map and trajectory.
+
+    Searches low, spatially supported cross-section bands symmetrically around
+    the path. The effective reach rounds outward to 0.5 m bins. No lane count,
+    width, direction or speed is required or inferred. Edges distinguish curb-like
+    profiles, source gaps, height steps and search limits; support spans are not
+    complete road widths without physical evidence. Branches and missing intervals
+    stay unresolved. These proposals do not change an HD draft or select traffic
+    semantics. Inspect the saved candidates before choosing road assumptions.
+
+    Saves geometry, exact input-station coverage and query limits as a hashed
+    report. This one-time stage does not spend the HD attempt budget; identical
+    calls verify and reuse it. Different reach/failed stages require a new job.
+    """
+    if not math.isfinite(search_radius_m) or not 1 <= search_radius_m <= 20:
+        raise ValueError("search_radius_m must be finite and within 1..20 metres")
+    root = Path(job_dir).resolve()
+    with _locked(root):
+        job = _load(root)
+        _inputs(job)
+        options = {"search_radius_m": search_radius_m}
+        if "corridor_proposal" in job:
+            stage = job["corridor_proposal"]
+            if stage["options"] != options:
+                raise ValueError("corridor search options are frozen; use a new mapping job")
+            if stage["status"] != "ready":
+                raise RuntimeError("corridor proposal stage did not finish; inspect its retained error and use a new job")
+            _verify(stage["file"])
+            summary = _corridor_summary(json.loads(Path(stage["file"]["path"]).read_text(encoding="utf-8")))
+            return {**stage, "summary": summary, "cached": True, "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+        stage = {"status": "running", "options": options}
+        job["corridor_proposal"] = stage
+        _save(root / "job.json", job)
+        try:
+            module = core()
+            assert module is not None
+            files = job["pointcloud"]["files"]
+            report = json.loads(module.propose_road_corridors(files["map"]["path"], files["trajectory"]["path"], json.dumps(options, allow_nan=False)))
+            report["coordinate_frame"] = job["pointcloud"]["coordinate_frame"]
+            report["input_artifacts"] = {"source": job["source"], "pointcloud": files, "native": job["runtime"]["native"]}
+            summary = _corridor_summary(report)
+            _save(root / "corridor-proposals.json", report)
+            _inputs(job)
+            stage.update({"status": "ready", "file": _artifact(root / "corridor-proposals.json"), "summary": summary})
+        except BaseException as error:
+            stage.update({"status": "failed", "error": str(error), "error_type": type(error).__name__})
+            if not isinstance(error, Exception) and not _native_panic(error):
+                _save(root / "job.json", job)
+                raise
+        _save(root / "job.json", job)
+    return {**stage, "cached": False, "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+
+
+def inspect_mapping_corridors(job_dir: str, candidate_id: int | None = None, offset: int = 0) -> dict[str, Any]:
+    """Read frozen lane-free proposals and geometry without processing or HD attempts.
+
+    Verifies input/report hashes, then returns a candidate index (16 per page;
+    next_offset selects the next page). A candidate_id returns its original-frame
+    cross sections, width evidence and station range. Geometry previews cap at
+    128 sections with explicit total/limited fields; the hashed file retains all
+    geometry and every deferred/ambiguous interval. No native core is needed for
+    inspection. Source spans do not establish road width, lanes or legal use.
+    """
+    if type(offset) is not int or offset < 0:
+        raise ValueError("offset must be a nonnegative integer")
+    if candidate_id is not None and (type(candidate_id) is not int or candidate_id < 1 or offset):
+        raise ValueError("candidate_id must be positive; omit offset when selecting a candidate")
+    job = _load(Path(job_dir).resolve())
+    stage = job.get("corridor_proposal")
+    if stage is None:
+        raise ValueError("run propose_mapping_corridors before inspecting proposals")
+    for artifact in [job["source"], *job["pointcloud"]["files"].values()]:
+        _verify(artifact)
+    if stage["status"] != "ready":
+        return {**stage, "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+    _verify(stage["file"])
+    report = json.loads(Path(stage["file"]["path"]).read_text(encoding="utf-8"))
+    candidates = report["candidates"]
+    answer: dict[str, Any] = {"file": stage["file"], "summary": _corridor_summary(report),
+        "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+    if candidate_id is None:
+        hints = _curb_width_hints(report)
+        answer.update({"candidate_index": [{k: c[k] for k in ("id", "from_m", "to_m", "minimum_support_span_m",
+            "maximum_support_span_m", "paired_curb_sections", "curb_width_range_m", "review_required")}
+            for c in candidates[offset:offset + 16]],
+            "next_offset": offset + 16 if offset + 16 < len(candidates) else None,
+            "curb_width_profile_hints": hints[:16], "curb_width_profile_hints_limited": len(hints) > 16,
+            "deferred_intervals": report["deferred_intervals"][:128], "deferred_intervals_limited": len(report["deferred_intervals"]) > 128,
+            "ambiguous_intervals": report["ambiguous_intervals"][:128], "ambiguous_intervals_limited": len(report["ambiguous_intervals"]) > 128})
+    else:
+        candidate = next((c for c in candidates if c["id"] == candidate_id), None)
+        if candidate is None:
+            raise ValueError("unknown corridor candidate_id")
+        answer["candidate"] = {**candidate, "sections": candidate["sections"][:128],
+            "total_sections": len(candidate["sections"]), "section_preview_limited": len(candidate["sections"]) > 128}
+    return answer
 
 
 def _quality_summary(audit: dict[str, Any]) -> dict[str, Any]:

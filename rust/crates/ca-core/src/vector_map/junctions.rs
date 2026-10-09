@@ -196,7 +196,7 @@ impl<'a> Ground<'a> {
 /// a low layer. Three non-collinear cells are required: a vertical wall or an
 /// isolated low return cannot supply surface support. The lowest such layer can
 /// still be the wrong physical level; this is not a semantic ground classifier.
-fn lowest_layer(points: &mut [[f64; 3]]) -> Option<f64> {
+pub(super) fn lowest_layer(points: &mut [[f64; 3]]) -> Option<f64> {
     points.sort_unstable_by(|a, b| a[2].total_cmp(&b[2]));
     let xy = |p: [f64; 3]| {
         (

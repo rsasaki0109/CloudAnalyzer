@@ -15,6 +15,20 @@ OPTIONS = {"forward_lanes": 1, "backward_lanes": 0, "left_hand_traffic": False,
            "lane_width": 3.5, "speed_limit": 25}
 
 
+def _corridor_report():
+    return {"schema": "cloudanalyzer.corridor_proposals.v1", "coordinate_frame": "input_metres", "protocol": {},
+        "trajectory_length_m": 10., "with_candidate_station_length_m": 10., "without_candidate_station_length_m": 0.,
+        "trajectory_covered_station_length_m": 10., "curb_bounded_station_length_m": 0., "ambiguous_station_length_m": 0.,
+        "sampled_sections": 6, "evaluated_sections": 6, "sections_with_bands": 6, "multiple_band_sections": 0,
+        "profile_queried_points": 50, "interval_support_samples": 15, "unstable_heading_sections": 0,
+        "unanchored_sections": 0, "level_mismatch_bands": 0, "limited": False,
+        "road_semantics_inferred": False, "deployment_ready": False, "warnings": [], "deferred_intervals": [], "ambiguous_intervals": [],
+        "candidates": [{"id": 1, "from_m": 0., "to_m": 10., "minimum_support_span_m": 2., "maximum_support_span_m": 2.,
+            "paired_curb_sections": 0, "curb_width_range_m": None, "review_required": True,
+            "sections": [{"station_m": k * 2., "center": [k * 2., 0., 1.], "left": [k * 2., 1., 1.],
+                "right": [k * 2., -1., 1.], "left_evidence": "support_gap", "right_evidence": "support_gap"} for k in range(6)]}]}
+
+
 @pytest.fixture
 def job_backend(tmp_path, monkeypatch):
     extension = tmp_path / "native.bin"
@@ -29,7 +43,8 @@ def job_backend(tmp_path, monkeypatch):
                          "sample_budget": 100000}, "validation": {"issues": [], "counts": {"errors": 0}}}
     module = SimpleNamespace(__file__=str(extension), __version__="test",
                              audit_vector_map_quality_details=lambda *args: json.dumps(audit),
-                             audit_vector_map_ground_consensus_details=lambda *args: json.dumps(audit))
+                             audit_vector_map_ground_consensus_details=lambda *args: json.dumps(audit),
+                             propose_road_corridors=lambda *args: json.dumps(_corridor_report()))
     monkeypatch.setattr(jobs, "core", lambda: module)
 
     def odometry(source, out, **kwargs):
@@ -70,7 +85,7 @@ def test_agent_choices_persist_quality_holds_failed_trials_and_budget(job_backen
     root = tmp_path / "job"
     started = jobs.start_mapping_job(str(source), str(root), max_attempts=2)
     assert started["status"] == "pointcloud_ready"
-    assert started["next_actions"] == ["generate_mapping_candidate"]
+    assert started["next_actions"] == ["propose_mapping_corridors", "generate_mapping_candidate"]
     first = jobs.generate_mapping_candidate(str(root), OPTIONS, "Test one explicit lane hypothesis")
     assert first["attempts"][0]["quality"]["needs_review"] == [3]
     selected = jobs.select_mapping_candidate(str(root), 1, "Retain the draft while source issues remain unresolved")
@@ -138,6 +153,131 @@ def test_incomplete_ground_consensus_cannot_be_selected(job_backend, tmp_path):
     jobs.generate_mapping_candidate(str(root), OPTIONS, "Partial alternate evidence")
     with pytest.raises(ValueError, match="complete"):
         jobs.select_mapping_candidate(str(root), 1, "Partial evidence must remain held")
+
+
+def test_corridor_proposals_cache_inputs_and_preserve_hd_budget_and_selection(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root), max_attempts=2)
+    jobs.generate_mapping_candidate(str(root), OPTIONS, "Keep an explicit draft")
+    selected = jobs.select_mapping_candidate(str(root), 1, "Unconfirmed source and traffic semantics")
+    module = jobs.core()
+    calls = []
+    def propose(cloud, trajectory, options):
+        calls.append((cloud, trajectory, json.loads(options)))
+        return json.dumps(_corridor_report())
+    module.propose_road_corridors = propose
+    proposed = jobs.propose_mapping_corridors(str(root))
+    assert proposed["status"] == "ready" and proposed["remaining_attempts"] == 1
+    assert proposed["summary"]["curb_bounded_candidates"] == 0
+    assert proposed["summary"]["coordinate_frame"] == "local_slam_metres"
+    cached = jobs.propose_mapping_corridors(str(root))
+    assert cached["cached"] is True and len(calls) == 1
+    assert calls[0][2] == {"search_radius_m": 8.0}
+    after = jobs.inspect_mapping_job(str(root))
+    assert after["selected"] == selected["selected"] and after["attempts"] == selected["attempts"]
+    assert "inspect_mapping_corridors" in after["next_actions"]
+    with pytest.raises(ValueError, match="frozen"):
+        jobs.propose_mapping_corridors(str(root), 9)
+    artifact = Path(proposed["file"]["path"])
+    artifact.write_text("changed proposal geometry")
+    with pytest.raises(ValueError, match="changed"):
+        jobs.propose_mapping_corridors(str(root))
+    with pytest.raises(ValueError, match="changed"):
+        jobs.inspect_mapping_corridors(str(root))
+
+
+def test_corridor_inspection_pages_and_bounds_geometry_without_a_native_core(job_backend, tmp_path, monkeypatch):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    report = _corridor_report()
+    sample = report["candidates"][0]
+    report["candidates"] = [{**sample, "id": i + 1, "sections": sample["sections"] * 30} for i in range(20)]
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    jobs.propose_mapping_corridors(str(root))
+    original = (root / "job.json").read_bytes()
+    monkeypatch.setattr(jobs, "core", lambda: None)
+    index = jobs.inspect_mapping_corridors(str(root))
+    assert len(index["candidate_index"]) == 16 and index["next_offset"] == 16
+    page = jobs.inspect_mapping_corridors(str(root), offset=16)
+    assert len(page["candidate_index"]) == 4 and page["next_offset"] is None
+    geometry = jobs.inspect_mapping_corridors(str(root), candidate_id=17)["candidate"]
+    assert geometry["id"] == 17 and geometry["section_preview_limited"] is True
+    assert geometry["total_sections"] == 180 and len(geometry["sections"]) == 128
+    assert (root / "job.json").read_bytes() == original
+    with pytest.raises(ValueError, match="unknown"):
+        jobs.inspect_mapping_corridors(str(root), candidate_id=21)
+    source.write_bytes(b"changed raw recording")
+    with pytest.raises(ValueError, match="changed"):
+        jobs.inspect_mapping_corridors(str(root))
+
+
+def test_failed_corridor_stage_retains_error_without_spending_attempts(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    def failed(*args):
+        raise ValueError("source frame has invalid coordinates")
+    jobs.core().propose_road_corridors = failed
+    result = jobs.propose_mapping_corridors(str(root))
+    assert result["status"] == "failed" and result["remaining_attempts"] == 4
+    assert result["error"] == "source frame has invalid coordinates"
+    assert jobs.inspect_mapping_corridors(str(root))["status"] == "failed"
+    assert jobs.inspect_mapping_job(str(root))["status"] == "pointcloud_ready"
+    assert not (root / ".mapping-lock").exists()
+    with pytest.raises(RuntimeError, match="did not finish"):
+        jobs.propose_mapping_corridors(str(root))
+
+
+def test_corridor_stage_rechecks_inputs_after_native_processing(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    def changed(*args):
+        source.write_bytes(b"recording changed during processing")
+        return json.dumps(_corridor_report())
+    jobs.core().propose_road_corridors = changed
+    result = jobs.propose_mapping_corridors(str(root))
+    assert result["status"] == "failed" and "changed" in result["error"]
+    assert "file" not in result and result["remaining_attempts"] == 4
+
+
+def test_corridor_cli_and_validation_need_no_lane_assumptions(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    runner = CliRunner()
+    proposed = runner.invoke(app, ["mapping-corridors", str(root)])
+    assert proposed.exit_code == 0, proposed.output
+    assert json.loads(proposed.stdout)["summary"]["road_semantics_inferred"] is False
+    inspected = runner.invoke(app, ["mapping-corridors-inspect", str(root), "--candidate", "1"])
+    assert inspected.exit_code == 0 and json.loads(inspected.stdout)["candidate"]["curb_width_range_m"] is None
+    for reach in (0, 21, float("nan")):
+        with pytest.raises(ValueError, match="search_radius"):
+            jobs.propose_mapping_corridors(str(root), reach)
+    for kwargs in ({"offset": -1}, {"candidate_id": True}, {"candidate_id": 1, "offset": 16}):
+        with pytest.raises(ValueError):
+            jobs.inspect_mapping_corridors(str(root), **kwargs)
+
+
+def test_single_profile_curb_width_hints_do_not_complete_a_corridor_width(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    report = _corridor_report()
+    band = {**report["candidates"][0]["sections"][2], "support_span_m": 2., "path_level_supported": True,
+            "left_evidence": "curb_profile", "right_evidence": "curb_profile"}
+    report["profiles"] = [{"station_m": 4., "bands": [band]}]
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    result = jobs.propose_mapping_corridors(str(root))
+    assert result["summary"]["paired_curb_profile_bands"] == 1
+    assert result["summary"]["curb_bounded_candidates"] == 0
+    index = jobs.inspect_mapping_corridors(str(root))
+    assert index["curb_width_profile_hints"][0]["support_span_m"] == 2.
+    assert index["curb_width_profile_hints"][0]["review_required"] is True
+    assert index["candidate_index"][0]["curb_width_range_m"] is None
+    assert jobs.inspect_mapping_job(str(root))["selected"] is None
 
 
 def test_failed_pointcloud_stage_is_recorded_and_existing_jobs_are_preserved(job_backend, tmp_path, monkeypatch):
@@ -284,7 +424,7 @@ def test_missing_assumptions_and_busy_jobs_do_not_spend_attempts(job_backend, tm
 
 def test_native_candidate_contract_audits_saved_osm_and_preserves_failed_trials(job_backend, tmp_path, monkeypatch):
     native = pytest.importorskip("cloudanalyzer_core")
-    if not hasattr(native, "audit_vector_map_ground_consensus_details"):
+    if not hasattr(native, "propose_road_corridors"):
         pytest.skip("installed core predates detailed source audit")
     from ca.vector_map import build_vector_map
     source, _ = job_backend
@@ -303,6 +443,12 @@ def test_native_candidate_contract_audits_saved_osm_and_preserves_failed_trials(
     monkeypatch.setattr(jobs, "fix_session", fixed)
     root = tmp_path / "native-job"
     jobs.start_mapping_job(str(source), str(root))
+    proposals = jobs.propose_mapping_corridors(str(root))
+    assert proposals["status"] == "ready", proposals
+    assert proposals["summary"]["trajectory_covered_station_length_m"] == 20.
+    assert proposals["summary"]["curb_bounded_candidates"] == 0
+    assert proposals["remaining_attempts"] == 4
+    assert jobs.inspect_mapping_corridors(str(root), candidate_id=1)["candidate"]["curb_width_range_m"] is None
     generated = jobs.generate_mapping_candidate(str(root), OPTIONS, "A straight, source-supported single-lane hypothesis")
     candidate = generated["attempts"][0]
     assert candidate["status"] == "audited_draft", candidate

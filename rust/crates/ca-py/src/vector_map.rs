@@ -5,6 +5,30 @@ use serde_json::{Value, json};
 use vectormap_core::{GeoReference, Map};
 use vectormap_io::{autoware, lanelet2};
 
+/// Lane-free low-surface corridor proposals in the shared input metre frame.
+#[pyfunction]
+#[pyo3(signature = (cloud, trajectory, options="{}"))]
+pub fn propose_road_corridors(
+    py: Python<'_>,
+    cloud: &str,
+    trajectory: &str,
+    options: &str,
+) -> PyResult<String> {
+    py.detach(|| -> Result<String, String> {
+        let options = serde_json::from_str(options).map_err(|e| e.to_string())?;
+        let cloud = ca_core::read(cloud, &std::fs::read(cloud).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+        let text = std::fs::read_to_string(trajectory).map_err(|e| e.to_string())?;
+        let format = ca_core::trajectory::detect(trajectory, &text)
+            .ok_or("trajectory must be TUM, KITTI or timestamped XYZ CSV")?;
+        let poses = ca_core::trajectory::parse(&text, format).map_err(|e| e.to_string())?;
+        let report = ca_core::vector_map::corridors::propose(&cloud, &poses.positions, &options)
+            .map_err(|e| e.to_string())?;
+        serde_json::to_string(&report).map_err(|e| e.to_string())
+    })
+    .map_err(PyValueError::new_err)
+}
+
 /// Build draft roads and return JSON containing the map, projector and report.
 /// Input positions must already use the same metre frame; metadata does not
 /// transform the cloud or the trajectory. Reference geometry is never copied.

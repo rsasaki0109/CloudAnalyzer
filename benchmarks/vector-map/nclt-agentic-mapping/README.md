@@ -1,5 +1,10 @@
 # NCLT: agent-controlled generation of both maps
 
+For the subsequent stage before lane assumptions, see
+[lane-free surface proposals on both bundled NCLT recordings](../nclt-corridors/README.md).
+It retains 52/77 candidates and local curb hints while leaving complete widths
+unresolved; it does not automatically adopt traffic semantics.
+
 On 2026-10-08, the calling agent ran the bundled NCLT recording through
 `mapping-start`, read each result, chose four explicit road hypotheses through
 `mapping-candidate`, and selected a review draft. The tools contain no LLM or

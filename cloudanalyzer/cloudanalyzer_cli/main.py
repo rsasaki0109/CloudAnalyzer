@@ -1889,6 +1889,37 @@ def mapping_candidate_cmd(
         raise typer.Exit(1)
 
 
+@app.command("mapping-corridors")
+def mapping_corridors_cmd(
+    job: str = typer.Argument(...),
+    search_radius: float = typer.Option(8.0, "--search-radius", min=1, max=20),
+) -> None:
+    """Generate lane-free surface corridor proposals before assigning road assumptions."""
+    from ca.mapping_job import propose_mapping_corridors
+    try:
+        result = propose_mapping_corridors(job, search_radius_m=search_radius)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-corridors-inspect")
+def mapping_corridors_inspect_cmd(
+    job: str = typer.Argument(...),
+    candidate: Optional[int] = typer.Option(None, "--candidate", min=1),
+    offset: int = typer.Option(0, "--offset", min=0),
+) -> None:
+    """Read paged corridor evidence or candidate geometry without native processing."""
+    from ca.mapping_job import inspect_mapping_corridors
+    try:
+        result = inspect_mapping_corridors(job, candidate_id=candidate, offset=offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("mapping-status")
 def mapping_status_cmd(job: str = typer.Argument(...)) -> None:
     """Inspect mapping evidence, artifact paths and remaining attempt budget as JSON."""

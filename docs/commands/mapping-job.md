@@ -14,7 +14,14 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    The new directory contains `job.json` and separate odometry/correction reports.
 2. `inspect_mapping_job(job_dir)` reads the small persisted job without loading
    point clouds. Inspect processing reports, artifact hashes and remaining attempts.
-3. `generate_mapping_candidate(job_dir, road_options, reason)` generates one HD
+3. `propose_mapping_corridors(job_dir)` searches the frozen source for surface
+   corridor candidates **without lane count, width, direction or speed priors**.
+   Read `inspect_mapping_corridors(job_dir)` for the paged index, then use
+   `candidate_id` to inspect a candidate's cross sections and edge evidence.
+   It saves candidate geometry, all profiles and unresolved intervals as a hashed
+   `corridor-proposals.json`. This one-time stage is cached and does not spend an
+   HD attempt. Search options are frozen; changing them needs a new job.
+4. `generate_mapping_candidate(job_dir, road_options, reason)` generates one HD
    hypothesis from the same frozen map and trajectory. It audits both editable IR
    and reopened OSM, retaining validation/export issues and source-review lanes.
    Read the result before trying another fit. Failed attempts retain their errors
@@ -31,7 +38,7 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    New jobs save both the original quantile evidence and a separate
    `ground_consensus` report for each artifact. Read their `ground_estimator`
    metadata and compare outcomes; diagnosis keeps both and flags disagreement.
-4. `select_mapping_candidate(job_dir, candidate_id, reason)` records the chosen
+5. `select_mapping_candidate(job_dir, candidate_id, reason)` records the chosen
    draft and justification. It requires nonempty lanes, complete source checks,
    zero structural errors, unchanged inputs/output hashes and the job's minimum
    retained fraction of the corrected trajectory (default 90%). Low source support
@@ -81,6 +88,76 @@ gates still apply. Its earlier quantile implementation did not improve NCLT.
 Compare both audits and the [recorded experiments](../../benchmarks/vector-map/nclt-agentic-mapping/README.md)
 before choosing an estimator; a better support score is not independent accuracy.
 
+## Surface corridors before road semantics
+
+Corridor search uses the same low-layer spatial estimator as the experimental
+height stage, applied to 0.5 m lateral bins in longitudinal windows of ±2 m.
+Profiles are spaced at 2 m **on the original corrected input trajectory's XY arc
+length**, including its exact endpoint. This station length can differ from the
+HD builder's resampled/smoothed trajectory length; do not mix their denominators.
+The symmetric search reach defaults to 8 m and rounds outward to complete 0.5 m
+bins. At least 1 m of adjacent supported bin-centre span is required, with no
+adjacent height step exceeding 0.08 m. Narrower/sparse features can be missed.
+
+A band must match the source low layer under the path within 0.3 m plus 0.12 times
+its lateral distance. This rejects distinctly elevated/lower bands; it is a
+geometric guard, not a legal grade or verified ground-level rule. All observed
+bands, their `path_level_supported` flags and the per-profile source anchor remain
+in the file. Missing anchors defer candidates rather than borrowing sensor height.
+
+Adjacent profiles connect only when bands overlap uniquely with bounded motion
+and vertical change. Branching bands are not silently chosen by width/proximity.
+Every connected interval checks its centre and both edges against the low-layer
+source at ≤0.5 m spacing with both endpoints included. No width prior fills absent
+profiles or unsupported curves. These three curves do not certify the full-width
+interior or obstacle clearance. Returning passes remain separate proposals.
+
+Each edge is `curb_profile`, `support_gap`, `height_discontinuity` or `search_limit`.
+The curb check requires bounded raised returns in two outside bins and nearby
+inside support. Only candidates with two curb-like edges in **every** cross section
+receive `curb_width_range_m`; even that estimate has 0.5 m bin-centre quantization
+and requires review. Other `support_span_m` values measure observed source extent
+and do not establish complete road/path width or pavement identity. No lane count,
+traffic direction, speed, legal use or equipment is inferred; every candidate has
+`review_required=true` and the report has `deployment_ready=false`.
+
+Coverage fields measure unions of **input-station intervals**, not the sum of
+overlapping candidates or unique roads. `with_candidate_station_length_m` and
+`without_candidate_station_length_m` partition the full requested path; deferred
+intervals preserve missing surface, missing anchors, unmatched bands, source gaps,
+branches, unusable headings and processing limits. Ambiguous station length may
+overlap candidate coverage when a separate uniquely matched band exists. Neither
+coverage figure certifies which band is the semantic road used by the recording.
+`trajectory_covered_station_length_m` counts connected intervals whose band
+contains the recorded path in both endpoint cross sections; intermediate path
+positions and full-width interiors are not separately certified by that figure.
+
+Search is bounded to 2,048 profiles, two million profile-return examinations and
+100,000 longitudinal support samples. An oversized trajectory fails before
+resampling. Reached processing budgets produce `limited=true` and explicit
+deferred remainder, preserving partial results. The full hashed report retains
+all bounded geometry. Inspection pages 16 candidates at a time via `next_offset`;
+individual geometry previews cap at 128 sections and interval previews at 128
+entries, with explicit truncation flags. Inspection verifies source and report
+hashes without needing the original native binary. Failed stages retain errors
+and leave point maps, HD attempts and selected drafts intact.
+
+The index also exposes up to 16 `curb_width_profile_hints` from individual
+paired-curb profiles, with a total count and truncation flag. These local position
+and span observations can exist even when no continuous candidate has two curb
+profiles throughout. Inspect competing hints at the same station; a single
+paired-curb profile does not establish complete corridor width or road identity.
+
+Surface proposals help the agent inspect position/width hypotheses before making
+an HD candidate. They are not automatically adopted as Lanelet2 geometry or traffic
+semantics. If only point-coverage edges are available, retain the unresolved width;
+do not narrow a road solely to increase source support.
+
+The [two bundled NCLT runs](../../benchmarks/vector-map/nclt-corridors/README.md)
+produced 52 and 77 candidates, with 5 and 7 local paired-curb hints. Neither has
+a candidate with paired-curb evidence throughout; complete widths remain unresolved.
+The recorded figures, hashes and deferred intervals make this limit inspectable.
+
 Attempts default to four and are bounded to eight. A job pins its recording,
 generated inputs and native extension by SHA-256. Changing them requires a new
 job. Candidates also retain output hashes, decision reasons and audit reports.
@@ -96,6 +173,9 @@ removing a leftover `.mapping-lock`; retain the directory and start a new job.
 ```sh
 ca mapping-start web/public/samples/nclt-2012-04-29.mcap --out runs/nclt-agent
 ca mapping-status runs/nclt-agent
+ca mapping-corridors runs/nclt-agent
+ca mapping-corridors-inspect runs/nclt-agent
+ca mapping-corridors-inspect runs/nclt-agent --candidate 1
 ```
 
 Write an explicit hypothesis to `roads.json`:

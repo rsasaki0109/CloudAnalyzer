@@ -3,11 +3,13 @@ import type { SourceQualityReport } from "./app/vectormap";
 export const REVIEW_LIMIT = 64 * 1024 * 1024;
 const HEADER_LIMIT = 10 * 1024 * 1024;
 const SCHEMA = "cloudanalyzer.mapping_review_bundle.v1";
+const PREVIEW_SCHEMA = "cloudanalyzer.mapping_review_bundle.v2";
 const REQUIRED = ["map", "graph", "trajectory", "hd_map", "hd_editable_map", "hd_projector", "hd_source_audits", "layout_hypothesis", "source_proposal", "decision_history"];
 type ObjectValue = Record<string, unknown>;
 interface Descriptor { path: string; sha256: string; bytes: number }
 interface Member { path: string; bytes: number; compressed: number; method: number; flags: number; offset: number }
 export interface MappingReview {
+  preview: { sourceCount: number; previewCount: number; stride: number } | null;
   roles: Record<string, string>;
   members: Map<string, File>;
   attribution: string;
@@ -146,7 +148,8 @@ export async function readMappingReview(file: File, signal: AbortSignal, progres
   const directory = await index(file, signal);
   const header = await read(file, directory.get("manifest.json")!, signal);
   const manifest = object(JSON.parse(decoder.decode(header)));
-  if (manifest.schema !== SCHEMA || !Array.isArray(manifest.files) || manifest.files.length > 128) throw new Error("Unsupported generated-map review schema");
+  if (![SCHEMA, PREVIEW_SCHEMA].includes(manifest.schema as string) || !Array.isArray(manifest.files) || manifest.files.length > 128) throw new Error("Unsupported generated-map review schema");
+  const rawPreview = manifest.schema === PREVIEW_SCHEMA ? object(manifest.preview_pointcloud) : null;
   const files = manifest.files.map(descriptor), paths = new Set(files.map(f => f.path));
   if (paths.size !== files.length || directory.size !== paths.size + 1 || [...directory.keys()].some(k => k !== "manifest.json" && !paths.has(k))) throw new Error("Review members differ from manifest");
   const rawRoles = object(manifest.roles), roles: Record<string, string> = {};
@@ -154,15 +157,30 @@ export async function readMappingReview(file: File, signal: AbortSignal, progres
     if (typeof value !== "string" || !paths.has(value)) throw new Error("Review role references a missing member");
     roles[role] = value;
   }
-  if (REQUIRED.some(role => !roles[role])) throw new Error("Review package is missing maps or evidence");
+  if (REQUIRED.some(role => !roles[rawPreview && role === "map" ? "preview_map" : role])) throw new Error("Review package is missing maps or evidence");
   const review = object(manifest.review), artifacts = object(review.artifacts);
   if (REQUIRED.slice(0, 7).some(role => !artifacts[role])) throw new Error("Delivered output is missing map roles");
   const byPath = new Map(files.map(f => [f.path, f]));
+  let preview: MappingReview["preview"] = null;
+  if (rawPreview) {
+    const p = rawPreview, source = object(p.source), delivered = object(artifacts.map), packed = descriptor(p.file);
+    const count = p.source_count as number, kept = p.preview_count as number, stride = p.every_nth_record as number, cap = p.max_preview_points as number;
+    const member = byPath.get(roles.preview_map);
+    if (![count, kept, stride, cap].every(n => Number.isSafeInteger(n) && n > 0) || count > 1e9 || cap > 1e6 || cap >= count ||
+      stride !== Math.ceil(count / cap) || kept !== Math.ceil(count / stride) || object(manifest.pointcloud_summary).map_points !== count) throw new Error("Invalid preview sampling counts");
+    if (typeof source.path !== "string" || !source.path || typeof source.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(source.sha256) || !Number.isSafeInteger(source.bytes) || (source.bytes as number) < packed.bytes ||
+      ["path", "bytes", "sha256"].some(k => source[k] !== delivered[k]) || packed.path !== roles.preview_map || !member || packed.bytes !== member.bytes || packed.sha256 !== member.sha256) throw new Error("Preview differs from original or packaged identity");
+    if (p.purpose !== "display_only" || p.first_record !== 0 || p.source_for_saved_audits !== "original_full_point_map" || p.full_point_map_included !== false ||
+      p.coordinate_frame_changed !== false || p.coordinate_or_attribute_quantization !== false || p.original_record_bytes_preserved !== true) throw new Error("Invalid display preview provenance");
+    if (roles.map) throw new Error("Preview package must distinguish its original full point map");
+    preview = { sourceCount: count, previewCount: kept, stride };
+  }
   for (const [role, value] of Object.entries(artifacts)) {
+    if (preview && role === "map") continue;
     const artifact = descriptor(value), original = byPath.get(artifact.path);
     if (roles[role] !== artifact.path || !original || original.bytes !== artifact.bytes || original.sha256 !== artifact.sha256) throw new Error("Delivered output differs from member identity");
   }
-  const retain = new Set([roles.map, roles.hd_editable_map, roles.hd_source_audits]);
+  const retain = new Set([preview ? roles.preview_map : roles.map, roles.hd_editable_map, roles.hd_source_audits]);
   const members = new Map<string, File>();
   let done = 0, total = header.byteLength;
   for (const artifact of files) {
@@ -177,5 +195,18 @@ export async function readMappingReview(file: File, signal: AbortSignal, progres
     progress(++done, files.length);
   }
   signal.throwIfAborted();
-  return { roles, members, attribution: typeof manifest.attribution === "string" ? manifest.attribution : "", review, verifiedFiles: files.length, uncompressedBytes: total };
+  if (preview) {
+    const file = members.get(roles.preview_map)!, bytes = new Uint8Array(await file.slice(0, 16384).arrayBuffer());
+    const end = new TextEncoder().encode("end_header\n");
+    let size = -1;
+    for (let i = 0; i <= bytes.length - end.length; i++) if (end.every((v, j) => bytes[i + j] === v)) { size = i + end.length; break; }
+    if (size < 0) throw new Error("Incomplete preview PLY header");
+    const lines = decoder.decode(bytes.slice(0, size)).split("\n");
+    if (lines.slice(0, 6).join("\n") !== `ply\nformat binary_little_endian 1.0\nelement vertex ${preview.previewCount}\nproperty double x\nproperty double y\nproperty double z`) throw new Error("Preview PLY differs from sampling metadata");
+    const attributes = lines.slice(6, -2).map(line => /^property float ([A-Za-z_][A-Za-z_0-9]*)$/.exec(line)?.[1]);
+    if (attributes.length > 16 || attributes.some(n => !n) || new Set(["x", "y", "z", ...attributes]).size !== attributes.length + 3) throw new Error("Invalid preview PLY fields");
+    const width = 24 + 4 * attributes.length;
+    if (rawPreview!.record_size_bytes !== width || file.size !== size + preview.previewCount * width) throw new Error("Preview record bytes differ from manifest");
+  }
+  return { preview, roles, members, attribution: typeof manifest.attribution === "string" ? manifest.attribution : "", review, verifiedFiles: files.length, uncompressedBytes: total };
 }

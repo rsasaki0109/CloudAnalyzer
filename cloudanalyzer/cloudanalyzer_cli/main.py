@@ -2018,6 +2018,32 @@ def mapping_run_export_cmd(
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-run-preview")
+def mapping_run_preview_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out", help="New display-preview review ZIP"),
+    attribution: str = typer.Option(
+        ..., "--attribution", help="Source-data license and credit text"
+    ),
+    max_preview_points: int = typer.Option(
+        200000, "--max-preview-points", min=1, max=1000000
+    ),
+    max_bundle_bytes: int = typer.Option(
+        64 * 1024**2, "--max-bundle-bytes", min=1024, max=4 * 1024**3
+    ),
+) -> None:
+    """Package bounded display-only point records and the exact HD map with original audits."""
+    from ca.mapping_bundle import export_mapping_preview
+
+    try:
+        result = export_mapping_preview(
+            job, out, attribution, max_preview_points, max_bundle_bytes
+        )
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("mapping-bundle-inspect")
 def mapping_bundle_inspect_cmd(
     bundle: str = typer.Argument(...),

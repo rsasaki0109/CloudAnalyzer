@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { packageFixture, cloud, map } from '../tests/mapping-review-fixture.mjs';
+import { packageFixture, packagePreview, previewFixture, cloud, map } from '../tests/mapping-review-fixture.mjs';
 const input=(buffer:Buffer)=>({name:'generated-review.zip',mimeType:'application/zip',buffer});
 
 test('opens the verified pair, focuses saved source failures and switches all four protocols', async ({page})=>{
@@ -53,4 +53,34 @@ test('removing the imported point source invalidates saved audits', async ({page
   await page.locator('#cloud-list button[title="Remove"]').click();
   await expect(page.locator('#mapping-review-audit')).toBeDisabled();
   await expect(page.locator('#mapping-review-state')).toContainText('removed');
+});
+
+test('preview shows full-source saved audits, blocks new source checks and persists the distinction in a project', async ({page})=>{
+  await page.goto('/');
+  await page.locator('#mapping-review-file').setInputFiles(input(packagePreview()));
+  await expect(page.locator('#status')).toContainText('Opened generated maps');
+  await expect(page.locator('#mapping-review-summary')).toContainText('2 loaded point records (display preview from 4)');
+  await expect(page.locator('#mapping-review-state')).toContainText('original 4 points');
+  await expect(page.locator('#vm-quality-check')).toBeDisabled();
+  await expect(page.locator('#vm-quality-lanes button')).toHaveCount(1);
+  await page.locator('#mapping-review-audit').selectOption('2');
+  await expect(page.locator('#vm-quality-report')).toContainText('ground consensus / editable IR');
+  await expect(page.locator('#vm-quality-lanes button')).toHaveCount(0);
+  const download=page.waitForEvent('download',d=>d.suggestedFilename()==='project.cloudanalyzer.json');
+  await page.locator('#project-save').click();
+  const chunks:Buffer[]=[];for await(const part of await (await download).createReadStream()) chunks.push(part);
+  const project=Buffer.concat(chunks);expect(JSON.parse(project.toString()).session.clouds[0].displayPreview).toBe(true);
+  await page.reload();
+  await page.locator('#file-input').setInputFiles({name:'project.cloudanalyzer.json',mimeType:'application/json',buffer:project});
+  await expect(page.locator('#status')).toContainText('open matching source files');
+  const preview=previewFixture().entries.find(([name]:[string,Buffer])=>name==='files/display-preview.ply')[1];
+  await page.locator('#file-input').setInputFiles({name:'display-preview.ply',mimeType:'application/octet-stream',buffer:preview});
+  await expect(page.locator('#status')).toContainText('Project restored');
+  await expect(page.locator('#vm-quality-check')).toBeDisabled();
+  await page.locator('#file-input').setInputFiles({name:'full-source.ply',mimeType:'application/octet-stream',buffer:cloud});
+  await expect(page.locator('#status')).toContainText('Loaded full-source.ply');
+  await page.locator('#vm-quality summary').click();
+  const option=await page.locator('#vm-quality-cloud option').evaluateAll(nodes=>nodes.map(n=>({text:n.textContent,value:(n as HTMLOptionElement).value})).find(n=>n.text?.includes('full-source')));
+  await page.locator('#vm-quality-cloud').selectOption(option!.value);
+  await expect(page.locator('#vm-quality-check')).toBeEnabled();
 });

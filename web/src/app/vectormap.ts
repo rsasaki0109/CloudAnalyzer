@@ -772,7 +772,8 @@ const junctionNone = $<HTMLButtonElement>("vm-junction-none");
 const junctionList = $("vm-junction-candidates");
 function junctionInputs(): void {
   $<HTMLSelectElement>("vm-quality-cloud").disabled = busy;
-  $<HTMLButtonElement>("vm-quality-check").disabled = busy || !$<HTMLSelectElement>("vm-quality-cloud").value || !view.lanes.length;
+  const qualityCloud = $<HTMLSelectElement>("vm-quality-cloud").value;
+  $<HTMLButtonElement>("vm-quality-check").disabled = busy || !qualityCloud || !view.lanes.length || entries.get(Number(qualityCloud))?.origin.displayPreview === true;
   sourceProblemInputs();
   discoveryInputs();
   featureInputs();
@@ -1606,9 +1607,10 @@ function clearQuality(): void {
   $("vm-quality-lanes").replaceChildren();
   renderReviews();
 }
-$("vm-quality-cloud").onchange = () => { clearQuality(); reviewSourceChanged(); draw(); };
+$("vm-quality-cloud").onchange = () => { clearQuality(); reviewSourceChanged(); draw(); junctionInputs(); };
 $("vm-quality-check").onclick = async () => {
   if (busy) return;
+  if (entries.get(Number($<HTMLSelectElement>("vm-quality-cloud").value))?.origin.displayPreview) return setStatus("Load the original full point map before running a new source check.", true);
   clearQuality(); draw(); const revision = qualityRevision;
   busy = true; junctionInputs(); setStatus("Checking lane centres and boundaries against source points…");
   try {

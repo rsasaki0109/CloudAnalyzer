@@ -54,7 +54,12 @@ def test_the_server_answers_over_stdio(tmp_path):
                 await session.initialize()
                 tools = (await session.list_tools()).tools
                 names = {t.name for t in tools}
-                assert {"export_mapping_run", "inspect_mapping_bundle"} <= names
+                assert {"export_mapping_preview", "export_mapping_run", "inspect_mapping_bundle"} <= names
+                preview = next(t for t in tools if t.name == "export_mapping_preview")
+                schema = preview.model_dump(by_alias=True)["inputSchema"]
+                assert set(schema["required"]) == {"finished_job_dir", "bundle_path", "attribution"}
+                assert schema["properties"]["max_preview_points"]["default"] == 200000
+                assert schema["properties"]["max_bundle_bytes"]["default"] == 64 * 1024**2
                 export = next(t for t in tools if t.name == "export_mapping_run")
                 assert set(export.model_dump(by_alias=True)["inputSchema"]["required"]) == {"finished_job_dir", "bundle_path", "attribution"}
                 bundle = next(t for t in tools if t.name == "inspect_mapping_bundle")

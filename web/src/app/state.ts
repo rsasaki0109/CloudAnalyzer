@@ -19,7 +19,7 @@ export type ColorMode =
   | "scalar";
 
 /** Where a cloud came from: sessions can restore file and URL clouds. */
-export type Origin = ({ kind: "file"; file?: File } | { kind: "url"; url: string; file?: File; size?: number; etag?: string } | { kind: "derived" }) & { loadMaxPoints?: number };
+export type Origin = ({ kind: "file"; file?: File } | { kind: "url"; url: string; file?: File; size?: number; etag?: string } | { kind: "derived" }) & { loadMaxPoints?: number; displayPreview?: boolean };
 
 export interface Entry {
   cloud: LoadedCloud;

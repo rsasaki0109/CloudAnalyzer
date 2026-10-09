@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import re
 import tempfile
 import zipfile
+from contextlib import ExitStack
 from pathlib import Path, PurePosixPath
 from typing import Any
 
 SCHEMA = "cloudanalyzer.mapping_review_bundle.v1"
+PREVIEW_SCHEMA = "cloudanalyzer.mapping_review_bundle.v2"
 DEFAULT_LIMIT = 1024**3
 MANIFEST_LIMIT = 10 * 1024**2
 MAX_FILES = 128
@@ -44,6 +47,94 @@ def _name(value: str) -> bool:
     )
 
 
+def _check_preview(
+    value: dict[str, Any],
+    output: dict[str, Any],
+    file: dict[str, Any],
+    source_count: int,
+    archive: zipfile.ZipFile,
+) -> None:
+    try:
+        count, kept, stride, limit = (
+            value[k]
+            for k in (
+                "source_count",
+                "preview_count",
+                "every_nth_record",
+                "max_preview_points",
+            )
+        )
+        if (
+            any(type(n) is not int for n in (count, kept, stride, limit))
+            or not 1 <= count <= 10**9
+            or not 1 <= limit <= 10**6
+            or count != source_count
+            or limit >= count
+            or stride != math.ceil(count / limit)
+            or kept != math.ceil(count / stride)
+        ):
+            raise ValueError("invalid preview sampling counts")
+        if value["source"] != output["artifacts"]["map"] or value["file"] != {
+            k: file[k] for k in ("path", "sha256", "bytes")
+        }:
+            raise ValueError("preview differs from delivered source or packaged file")
+        source = value["source"]
+        if (
+            not isinstance(source.get("path"), str)
+            or not re.fullmatch("[0-9a-f]{64}", source.get("sha256", ""))
+            or type(source.get("bytes")) is not int
+            or source["bytes"] < file["bytes"]
+        ):
+            raise ValueError("invalid original full point-map identity")
+        if (
+            value["purpose"] != "display_only"
+            or value["first_record"] != 0
+            or value["source_for_saved_audits"] != "original_full_point_map"
+            or value["full_point_map_included"] is not False
+            or value["coordinate_frame_changed"] is not False
+            or value["coordinate_or_attribute_quantization"] is not False
+            or value["original_record_bytes_preserved"] is not True
+        ):
+            raise ValueError("invalid preview purpose/provenance flags")
+        with archive.open(file["path"]) as stream:
+            lines: list[bytes] = []
+            size = 0
+            while size < 16384:
+                line = stream.readline(16384)
+                lines.append(line)
+                size += len(line)
+                if line == b"end_header\n":
+                    break
+                if not line:
+                    raise ValueError("incomplete preview PLY header")
+            else:
+                raise ValueError("preview PLY header exceeds its limit")
+        if lines[:3] != [
+            b"ply\n",
+            b"format binary_little_endian 1.0\n",
+            f"element vertex {kept}\n".encode(),
+        ] or lines[3:6] != [
+            b"property double x\n",
+            b"property double y\n",
+            b"property double z\n",
+        ]:
+            raise ValueError("preview PLY differs from its sampling metadata")
+        fields = [
+            re.fullmatch(rb"property float ([A-Za-z_][A-Za-z_0-9]*)\n", line)
+            for line in lines[6:-1]
+        ]
+        if len(fields) > 16 or any(f is None for f in fields):
+            raise ValueError("invalid preview PLY attribute fields")
+        names = [f[1] for f in fields if f is not None]
+        if len(set(names + [b"x", b"y", b"z"])) != len(names) + 3:
+            raise ValueError("duplicate preview PLY attribute fields")
+        width = 24 + len(fields) * 4
+        if value["record_size_bytes"] != width or file["bytes"] != size + kept * width:
+            raise ValueError("preview PLY record size differs from manifest")
+    except (KeyError, TypeError, ZeroDivisionError) as error:
+        raise ValueError("incomplete display preview provenance") from error
+
+
 def export_mapping_run(
     finished_job_dir: str,
     bundle_path: str,
@@ -61,6 +152,41 @@ def export_mapping_run(
     This is a portable review/export, not a resumable mapping job or accuracy claim.
     inspect_mapping_bundle checks all member hashes without native processing.
     """
+    return _export(finished_job_dir, bundle_path, attribution, max_bundle_bytes, 0)
+
+
+def export_mapping_preview(
+    finished_job_dir: str,
+    bundle_path: str,
+    attribution: str,
+    max_preview_points: int = 200000,
+    max_bundle_bytes: int = 64 * 1024**2,
+) -> dict[str, Any]:
+    """Package a display-only subset of a finished point map with its exact HD map.
+
+    Streams every kth original canonical PLY record with all double coordinates and
+    attributes byte-identical. The full point map stays unchanged outside this ZIP;
+    its descriptor and all four saved audits remain bound to the original full map.
+    This subset is for viewing, not for new source audits or mapping continuation.
+    A new v2 manifest distinguishes preview_map from the original delivered map.
+    No mapping attempts, odometry, fusion or HD generation are performed. Existing
+    ZIPs are never overwritten. Point budget is 1..1000000; uncompressed bytes are
+    bounded before packaging. Source-data attribution is required.
+    """
+    if type(max_preview_points) is not int or not 1 <= max_preview_points <= 10**6:
+        raise ValueError("max_preview_points must be an integer from 1 to 1000000")
+    return _export(
+        finished_job_dir, bundle_path, attribution, max_bundle_bytes, max_preview_points
+    )
+
+
+def _export(
+    finished_job_dir: str,
+    bundle_path: str,
+    attribution: str,
+    max_bundle_bytes: int,
+    preview_points: int,
+) -> dict[str, Any]:
     from ca import mapping_job as jobs, mapping_run as runs, mapping_retry as retries
 
     _limit(max_bundle_bytes)
@@ -76,7 +202,7 @@ def export_mapping_run(
         raise FileExistsError(f"review bundle already exists: {target}")
     if not target.parent.is_dir():
         raise ValueError("bundle parent directory must already exist")
-    with runs._locked(root):
+    with runs._locked(root), ExitStack() as cleanup:
         run = runs._load(root)
         if (
             run["status"] != "finished"
@@ -129,6 +255,30 @@ def export_mapping_run(
             "decision_history": jobs._artifact(root / "run.json"),
             "owner_decision_history": jobs._artifact(owner / "run.json"),
         }
+        preview = None
+        if preview_points and (
+            type(job["pointcloud"]["map_points"]) is not int
+            or job["pointcloud"]["map_points"] < 1
+        ):
+            raise ValueError("preview requires a positive original point count")
+        if preview_points and job["pointcloud"]["map_points"] > preview_points:
+            from ca import mapping_preview
+
+            directory = Path(
+                cleanup.enter_context(
+                    tempfile.TemporaryDirectory(
+                        prefix=".mapping-preview-", dir=target.parent
+                    )
+                )
+            )
+            preview_path = directory / "display-preview.ply"
+            preview = mapping_preview.write(
+                artifacts.pop("map"),
+                preview_path,
+                job["pointcloud"]["map_points"],
+                preview_points,
+            )
+            artifacts["preview_map"] = jobs._artifact(preview_path)
         paths: dict[str, str] = {}
         files: list[dict[str, Any]] = []
         roles: dict[str, str] = {}
@@ -148,8 +298,8 @@ def export_mapping_run(
                 )
             roles[role] = paths[path]
         manifest = {
-            "schema": SCHEMA,
-            "purpose": "portable_review",
+            "schema": PREVIEW_SCHEMA if preview else SCHEMA,
+            "purpose": "portable_preview_review" if preview else "portable_review",
             "attribution": attribution.strip(),
             "files": files,
             "roles": roles,
@@ -167,6 +317,9 @@ def export_mapping_run(
             "deployment_ready": False,
             "integrity_meaning": "member hashes detect changed bytes; they are not an authenticity signature",
         }
+        if preview:
+            preview["file"] = _rewrite(artifacts["preview_map"], paths)
+            manifest["preview_pointcloud"] = preview
         header = _json(manifest)
         if len(files) > MAX_FILES or len(header) > MANIFEST_LIMIT:
             raise ValueError("review manifest exceeds bounded file/metadata limits")
@@ -218,6 +371,8 @@ def inspect_mapping_bundle(
     uncompressed sizes before streaming files. A hash match establishes integrity
     against this manifest, not authenticity, accuracy or road-use permission.
     Final audit/extent holds remain in review.diagnosis and full audit members.
+    V1 contains the exact full point map. V2 contains a display-only preview_map;
+    preview_pointcloud identifies its external original map and full-source audits.
     """
     _limit(max_bundle_bytes)
     with zipfile.ZipFile(bundle_path) as archive:
@@ -244,8 +399,18 @@ def inspect_mapping_bundle(
         ):
             raise ValueError("review ZIP exceeds metadata or max_bundle_bytes limits")
         manifest = json.loads(archive.read("manifest.json"))
-        if not isinstance(manifest, dict) or manifest.get("schema") != SCHEMA:
+        if not isinstance(manifest, dict) or manifest.get("schema") not in {
+            SCHEMA,
+            PREVIEW_SCHEMA,
+        }:
             raise ValueError("unsupported mapping review bundle schema")
+        preview = (
+            manifest.get("preview_pointcloud")
+            if manifest["schema"] == PREVIEW_SCHEMA
+            else None
+        )
+        if manifest["schema"] == PREVIEW_SCHEMA and not isinstance(preview, dict):
+            raise ValueError("preview bundle needs display-only point provenance")
         files = manifest.get("files")
         roles = manifest.get("roles")
         if not isinstance(files, list) or not isinstance(roles, dict):
@@ -284,7 +449,10 @@ def inspect_mapping_bundle(
             "source_proposal",
             "decision_history",
         }
-        if not required <= roles.keys() or any(
+        required_roles = (
+            (required - {"map"}) | {"preview_map"} if preview is not None else required
+        )
+        if not required_roles <= roles.keys() or any(
             not isinstance(v, str) or v not in members for v in roles.values()
         ):
             raise ValueError("review bundle has missing map/evidence roles")
@@ -310,7 +478,25 @@ def inspect_mapping_bundle(
         ):
             raise ValueError("delivered output is missing map/evidence roles")
         by_path = {file["path"]: file for file in files}
+        if preview is not None:
+            if "map" in roles:
+                raise ValueError("preview bundle must distinguish its original map")
+            summary = manifest.get("pointcloud_summary")
+            if (
+                not isinstance(summary, dict)
+                or type(summary.get("map_points")) is not int
+            ):
+                raise ValueError("preview bundle needs original full point count")
+            _check_preview(
+                preview,
+                review,
+                by_path[roles["preview_map"]],
+                summary["map_points"],
+                archive,
+            )
         for role, artifact in review["artifacts"].items():
+            if preview is not None and role == "map":
+                continue
             if (
                 not isinstance(artifact, dict)
                 or roles.get(role) != artifact.get("path")
@@ -321,7 +507,7 @@ def inspect_mapping_bundle(
             if any(artifact.get(k) != file[k] for k in ("sha256", "bytes")):
                 raise ValueError("delivered output differs from member identity")
     return {
-        "schema": SCHEMA,
+        "schema": manifest["schema"],
         "bundle_path": str(Path(bundle_path).absolute()),
         "integrity_verified": True,
         "authenticity_verified": False,
@@ -330,6 +516,7 @@ def inspect_mapping_bundle(
         "roles": roles,
         "attribution": manifest.get("attribution"),
         "pointcloud_summary": manifest.get("pointcloud_summary"),
+        "preview_pointcloud": preview,
         "review": review,
         "resumable_mapping_job": False,
         "independent_accuracy_established": False,

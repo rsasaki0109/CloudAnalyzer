@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readMappingReview, parseSavedAudits, REVIEW_LIMIT } from '../src/mapping-review.ts';
-import { fixture, packageFixture, zip, quality } from './mapping-review-fixture.mjs';
+import { fixture, packageFixture, packagePreview, zip, quality } from './mapping-review-fixture.mjs';
 const read = (buffer, signal = new AbortController().signal) => readMappingReview(new File([buffer], 'review.zip'), signal);
 
 for (const method of [0,8]) test(`verifies complete maps/evidence with method ${method} and ZIP64 local headers`, async () => {
@@ -46,4 +46,33 @@ test('malformed or nonfinite saved locations cannot reach the viewer', () => {
     const q=quality();mutate(q);const audits=fixture().evidence;audits.editable.quality=q;
     assert.throws(()=>parseSavedAudits(audits),/saved|Saved/);
   }
+});
+
+test('display preview retains original full audit identity and binary attribute records', async () => {
+  const result=await read(packagePreview());
+  assert.deepEqual(result.preview,{sourceCount:4,previewCount:2,stride:2});
+  assert.equal(result.roles.map,undefined);assert.equal(result.members.size,3);
+  assert.equal(result.review.artifacts.map.path,'/external/original.ply');
+  const bytes=Buffer.from(await result.members.get(result.roles.preview_map).arrayBuffer());
+  assert.equal(bytes.readDoubleLE(bytes.length-56),0);assert.equal(bytes.readDoubleLE(bytes.length-28),10);
+  assert.equal(bytes.readFloatLE(bytes.length-4),Math.fround(0.1234567));
+  assert.deepEqual(parseSavedAudits(JSON.parse(await result.members.get(result.roles.hd_source_audits).text())).map(a=>a.report.low_support_lanes),[[7],[7],[],[]]);
+});
+test('preview source/count/provenance cannot be relabelled as a full source check', async () => {
+  for (const change of [d=>d.manifest.preview_pointcloud.source_count=0,d=>d.manifest.preview_pointcloud.every_nth_record=1,
+    d=>d.manifest.preview_pointcloud.source_for_saved_audits='preview',d=>d.manifest.preview_pointcloud.file.sha256='0'.repeat(64),
+    d=>d.manifest.review.artifacts.map.sha256='0'.repeat(64),d=>d.manifest.roles.map=d.manifest.roles.preview_map]) {
+    await assert.rejects(read(packagePreview(change)),/preview|Preview/);
+  }
+});
+test('a rehashed preview with inconsistent record count is rejected before delivery', async () => {
+  const {createHash}=await import('node:crypto');
+  const bad=packagePreview(d=>{
+    const entry=d.entries.find(([p])=>p===d.manifest.roles.preview_map);
+    entry[1]=Buffer.from(entry[1]);entry[1].write('3',entry[1].indexOf('vertex 2')+7);
+    const sha256=createHash('sha256').update(entry[1]).digest('hex');
+    d.manifest.preview_pointcloud.file.sha256=sha256;
+    d.manifest.files.find(f=>f.path===entry[0]).sha256=sha256;
+  });
+  await assert.rejects(read(bad),/PLY differs/);
 });

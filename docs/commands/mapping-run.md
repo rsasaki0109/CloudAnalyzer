@@ -125,6 +125,38 @@ exporter's ZIP64 local headers, with bounded decompression and full SHA-256
 verification. Larger packages use CLI verification and individual-file loading.
 No mapping generation or attempt spending occurs when opening the package.
 
+For a large delivered point map, call
+`export_mapping_preview(finished_job_dir, bundle_path, attribution,
+max_preview_points=200000)` over MCP, or:
+
+```sh
+ca mapping-run-preview runs/drive --out drive-display.zip \
+  --max-preview-points 200000 \
+  --attribution "Source dataset, license terms and required credit"
+ca mapping-bundle-inspect drive-display.zip
+```
+
+This streams the canonical binary PLY (double XYZ, optional float attributes) and
+retains every kth complete record, starting at record zero. The stride is
+`ceil(source_count / max_preview_points)`. Kept coordinates and attributes retain
+their original bytes, with no quantization or frame change. The full original
+point map stays outside the ZIP. The v2 manifest names the subset `preview_map`,
+records the original map's path/hash/size, point counts and stride, and retains
+the exact HD files and all four saved audits of the **original full source**.
+Sampling is for display; it makes no claim about feature coverage. A source
+already within the cap uses the exact full-map v1 format instead.
+
+Open this ZIP through the same browser control. The panel distinguishes loaded
+preview records from original source points and lets you inspect all four saved
+audits. New source-coverage checks are disabled for the imported display preview;
+load and select the original full point map for a fresh check. Projects/sessions
+retain this preview flag. Standalone extracted or re-exported PLY files do not
+carry that application flag; preserve the ZIP/manifest to retain provenance.
+Preview export defaults to a 64 MiB **uncompressed** package limit; large HD/audit
+evidence can still exceed it. Use a smaller point cap, or the full-map CLI path
+when evidence alone does not fit. It spends no mapping attempts and changes no
+original map or saved source check.
+
 Export spends no attempts, changes no run revision and refuses existing output
 files. Total **uncompressed** content is bounded by `max_bundle_bytes` / CLI
 `--max-bundle-bytes` (default 1 GiB; allowed 1024 bytes–4 GiB), with at most 128

@@ -58,3 +58,28 @@ export function packageFixture(change = () => {}, options) {
   const data=fixture(); change(data);
   return zip([['manifest.json',Buffer.from(JSON.stringify(data.manifest))],...data.entries],options);
 }
+
+export function previewFixture() {
+  const data = fixture(), {manifest, entries} = data;
+  const header = Buffer.from('ply\nformat binary_little_endian 1.0\nelement vertex 2\nproperty double x\nproperty double y\nproperty double z\nproperty float intensity\nend_header\n');
+  const body = Buffer.alloc(56);
+  for (let i=0;i<2;i++) {body.writeDoubleLE(i*10,i*28);body.writeDoubleLE(0,i*28+8);body.writeDoubleLE(2,i*28+16);body.writeFloatLE(0.1234567,i*28+24);}
+  const value=Buffer.concat([header,body]), name='files/display-preview.ply';
+  const packed={path:name,bytes:value.length,sha256:hash(value)};
+  manifest.files=manifest.files.filter(f=>f.path!==manifest.roles.map);
+  data.entries=entries.filter(([p])=>p!==manifest.roles.map);
+  delete manifest.roles.map;
+  manifest.roles.preview_map=name;manifest.files.push(packed);data.entries.push([name,value]);
+  const source={path:'/external/original.ply',bytes:header.length+4*28,sha256:hash(Buffer.from('full original records'))};
+  manifest.review.artifacts.map=source;
+  manifest.schema='cloudanalyzer.mapping_review_bundle.v2';
+  manifest.pointcloud_summary={map_points:4};
+  manifest.preview_pointcloud={purpose:'display_only',source:{...source},file:{...packed},source_count:4,preview_count:2,max_preview_points:2,
+    every_nth_record:2,first_record:0,record_size_bytes:28,coordinate_frame_changed:false,coordinate_or_attribute_quantization:false,
+    original_record_bytes_preserved:true,source_for_saved_audits:'original_full_point_map',full_point_map_included:false};
+  return data;
+}
+export function packagePreview(change=()=>{}) {
+  const data=previewFixture();change(data);
+  return zip([['manifest.json',Buffer.from(JSON.stringify(data.manifest))],...data.entries]);
+}

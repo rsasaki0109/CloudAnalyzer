@@ -23,6 +23,7 @@ from ca.mapping_bundle import export_mapping_run, export_mapping_preview, inspec
 from ca.mapping_trajectory import evaluate_mapping_trajectory
 from ca.mapping_trajectory_review import inspect_mapping_trajectory_comparison, compare_mapping_motion_trials
 from ca.mapping_motion_trial import trial_mapping_motion
+from ca.mapping_motion_run import start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
@@ -51,6 +52,16 @@ the child against the same reference/protocol and inspect local changes. Reusing
 the same reference to select policies is exploratory, not unseen-data validation.
 Draft/audit fresh HD geometry explicitly if continuing; moved poses invalidate
 old HD geometry and source audits. This is not a local motion patch.
+Use start_mapping_motion_run to prepare NEW source proposals from the immutable
+trial, with the exact finished baseline owner, its fixed layout/extraction policy
+and an explicit new 2..8 HD budget. Inspect/draft/finish the fresh run. Then
+compare_mapping_motion_maps with the saved baseline/trial trajectory reports;
+changed motion requires original-frame station correspondence, not direct metre
+interval comparison. Read four audits, lost/gained intervals and local regressions.
+The comparison initializes a separate selection at baseline. Use
+choose_mapping_motion_pair with the inspected revision to choose BOTH maps or
+restore baseline together. Old jobs and trial evaluations remain immutable.
+These selections are review drafts with all source, extent and semantic holds.
 Use compare_mapping_motion_trials with exact baseline/candidate evaluation report
 artifacts to compare their corrected trajectories globally and in matching windows.
 It refuses mismatched inputs, evaluation coverage or protocols, and ranks local
@@ -470,7 +481,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [compare_mapping_motion_trials, trial_mapping_motion, inspect_mapping_trajectory_comparison, evaluate_mapping_trajectory, apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair, compare_mapping_motion_trials, trial_mapping_motion, inspect_mapping_trajectory_comparison, evaluate_mapping_trajectory, apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

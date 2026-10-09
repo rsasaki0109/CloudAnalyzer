@@ -86,6 +86,13 @@ def test_the_server_answers_over_stdio(tmp_path):
                 bundle = next(t for t in tools if t.name == "inspect_mapping_bundle")
                 assert bundle.model_dump(by_alias=True)["inputSchema"]["required"] == ["bundle_path"]
                 assert {"start_mapping_run", "continue_mapping_run", "inspect_mapping_run", "advance_mapping_run"} <= names
+                motion_run = next(t for t in tools if t.name == "start_mapping_motion_run")
+                assert set(motion_run.model_dump(by_alias=True)["inputSchema"]["required"]) == {"trial_job_dir", "finished_job_dir", "out_dir", "max_attempts", "reason"}
+                motion_maps = next(t for t in tools if t.name == "compare_mapping_motion_maps")
+                assert set(motion_maps.model_dump(by_alias=True)["inputSchema"]["required"]) == {"candidate_job_dir", "baseline_report_file", "candidate_report_file", "out_dir", "reason"}
+                pair_choice = next(t for t in tools if t.name == "choose_mapping_motion_pair")
+                assert set(pair_choice.model_dump(by_alias=True)["inputSchema"]["required"]) == {"selection_dir", "choice", "reason", "expected_revision"}
+                assert "inspect_mapping_motion_selection" in names
                 application = next(t for t in tools if t.name == "apply_supported_hd_plan")
                 application_schema = application.model_dump(by_alias=True)["inputSchema"]
                 assert set(application_schema["required"]) == {"job_dir", "plan_files", "interval_ids", "connect_endpoints", "reason", "expected_revision"}

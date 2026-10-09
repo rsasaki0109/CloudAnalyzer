@@ -71,6 +71,10 @@ jobs:
         working-directory: .
         run: python benchmarks/vector-map/nclt-motion-trials/verify.py
 
+      - name: Verify NCLT fresh motion/HD pair packet
+        working-directory: .
+        run: python benchmarks/vector-map/nclt-motion-pairs/verify.py
+
       - name: Verify checked-in perception demo
         working-directory: .
         run: |

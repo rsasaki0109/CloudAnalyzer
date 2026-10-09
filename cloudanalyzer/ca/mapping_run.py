@@ -211,7 +211,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
     root = Path(job_dir).resolve()
     run = _load(root)
     job = jobs.inspect_mapping_job(str(root))
-    if "continuation" in job or "hd_repair_manifest" in job.get("retry_inputs", {}):
+    if "continuation" in job or "motion_run" in job or "hd_repair_manifest" in job.get("retry_inputs", {}):
         jobs._inputs(job)
     jobs._verify(job["source"])
     if job["pointcloud"]:
@@ -241,7 +241,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "layout_hypothesis": json.loads(Path(run["layout_file"]["path"]).read_text(encoding="utf-8")),
         "pointcloud": job["pointcloud"], "remaining_attempts": job["remaining_attempts"], "candidate_index": index,
         "reviewed_candidates": run["reviewed_candidates"], "history_total": len(run["history"]),
-        "corridor_refinement": job.get("corridor_refinement"), "continuation": job.get("continuation"),
+        "corridor_refinement": job.get("corridor_refinement"), "continuation": job.get("continuation"), "motion_run": job.get("motion_run"),
         "pointcloud_retry": stage, "retry_child": retry_child, "pointcloud_retry_allowed": run.get("pointcloud_retry_allowed", True),
         "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "unused_frame_observation", "local_point_observation", "height_observation", "height_inputs", "patch_observation", "patch_inputs", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,

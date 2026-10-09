@@ -1,0 +1,27 @@
+{
+  "schema": "cloudanalyzer.mapping_motion_selection.v1",
+  "revision": 2,
+  "choice": "baseline",
+  "comparison": {
+    "path": "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/selection/comparison.json",
+    "sha256": "ea486d5a7e52e7c6320448bc5defc6e8ebd3fa1e6385b89b259b7c0a2f957ea0",
+    "bytes": 305346
+  },
+  "history": [
+    {
+      "revision": 0,
+      "choice": "baseline",
+      "reason": "Compare regenerated HD support, source coverage, connections and local motion regressions at unchanged protocols on common original-frame stations"
+    },
+    {
+      "revision": 1,
+      "choice": "candidate",
+      "reason": "Exercise reversible review-draft pair selection; this does not certify or deploy the candidate"
+    },
+    {
+      "revision": 2,
+      "choice": "baseline",
+      "reason": "Restore exact baseline pair after reversible-selection validation; local regressions and fresh route/source holds require review"
+    }
+  ]
+}

@@ -83,6 +83,65 @@ establish independent accuracy. Survey uncertainty and sensor correlations also
 remain outside this diagnostic. Trajectory error does not certify point-map
 surface accuracy, HD boundaries, traffic semantics or georeferencing.
 
+## Locate regions for review
+
+Use the exact `report` artifact returned by evaluation, including its expected
+`path`, `sha256` and `bytes`, with MCP `inspect_mapping_trajectory_comparison`:
+
+```json
+{
+  "report_file": {"path": "/data/comparison.json", "sha256": "<evaluation digest>", "bytes": 244297},
+  "window_poses": 12,
+  "ranking": "regression",
+  "offset": 0
+}
+```
+
+The equivalent CLI requires the expected digest and size rather than accepting
+whatever file currently occupies that path:
+
+```bash
+ca mapping-trajectory-inspect /data/comparison.json \
+  --sha256 <evaluation-digest> --bytes <evaluation-byte-count> \
+  --window-poses 12 --ranking regression
+```
+
+The tool verifies the report and **all** recorded input artifacts before and
+after reading. Original jobs, large maps and reference files must remain
+accessible and unchanged. It reads frozen pose files without loading clouds,
+calling the native core, rerunning alignment or spending attempts. Changed
+job metadata also invalidates the comparison, even if the point map is unchanged.
+
+Only evaluated retained poses are divided into chronological, nonoverlapping
+windows of `window_poses` (integer 2..64, default 12). The last window may be
+shorter; a single-pose tail has no RPE. `ranking=regression` orders by local
+corrected-minus-original ATE RMSE, descending; `corrected_ate` orders by corrected
+ATE RMSE. Ties use chronological window IDs. Rankings include improvements too;
+they are not calibrated failure labels. Read up to eight windows at once and
+follow `next_offset` for all results. Window IDs remain stable across rankings
+for the same report and window size. Windows of unequal duration/length are
+not weighted equally in the full-report RMSE.
+
+Each window contains exact original frame IDs, the time range, both ATE/RPE
+translation values, and its **unaligned corrected point-map** sensor-origin XY
+bounds. The bounds do not use reference-frame coordinates and do not include
+scan returns. `corrected_graph_distance_range_m` follows the complete frozen
+graph's 3D path from its first pose. Unsupported retained poses inside a frame
+span are counted, not assigned errors. Excluded raw frames and alignment-prefix
+poses are not silently evaluated.
+
+Use the returned point-map artifact and exact frames to inspect the observed
+region and its source evidence. The bounds are a viewing envelope, not an
+authorized repair box or an HD gap ID. A large trajectory error does not establish
+its cause. Existing density/HD-only repairs freeze motion and cannot fix that
+error. No repair, threshold, quality status or adoption is inferred. The current
+reference uncertainty remains uncalibrated.
+
+The [NCLT localization evidence](../../benchmarks/vector-map/nclt-trajectory-error-regions/README.md)
+contains both complete ranked views, portable recomputation and unchanged-job
+receipts. Maturity remains unchanged: localization improves diagnosis, without
+demonstrating a corrected map's accuracy.
+
 ## Validation and NCLT external-reference results
 
 Synthetic contract tests cover known improvement/regression, nonconsecutive frame

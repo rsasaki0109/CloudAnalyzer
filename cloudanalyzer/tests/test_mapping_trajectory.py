@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 from typer.testing import CliRunner
 
-from ca import mapping_job as jobs, mapping_trajectory as comparison
+from ca import mapping_job as jobs, mapping_trajectory as comparison, mapping_trajectory_review as review
 from cloudanalyzer_cli.main import app
 
 PROVENANCE = {"source": "Synthetic reference for contract verification", "license": "MIT",
@@ -48,6 +48,156 @@ def fixture(tmp_path):
 def _run(fixture, **kwargs):
     root, truth, out = fixture
     return comparison.evaluate_mapping_trajectory(str(root), str(truth), PROVENANCE, str(out), **kwargs)
+
+
+def _localized_report(fixture, count=10):
+    root, truth, out = fixture
+    points = np.array([[k, (k % 2) * .5, 0.] for k in range(count)])
+    original = points.copy()
+    original[4:, 2] = .5
+    corrected = points.copy()
+    corrected[4:, 2] = [.1, .1, .9, .9, .3, .3] if count == 10 else np.arange(count - 4) * .025
+    q = np.tile([0., 0., 0., 1.], (count, 1))
+    comparison._write(root / "original.tum", np.arange(float(count)), original, q)
+    # The reference frame differs substantially from the point-map frame.
+    reference = np.column_stack((-points[:, 1] + 100., points[:, 0] - 20., points[:, 2] + 4.))
+    comparison._write(truth, np.arange(float(count)), reference, q)
+    graph = root / "corrected.g2o"
+    graph.write_text("".join(f"VERTEX_SE3:QUAT {i} {' '.join(map(str, p))} 0 0 0 1\n" for i, p in enumerate(corrected)))
+    poses = np.tile(np.eye(4), (count, 1, 1))
+    poses[:, :3, 3] = corrected
+    np.savetxt(root / "corrected.txt", poses[:, :3].reshape(count, 12), fmt="%.17g")
+    job = json.loads((root / "job.json").read_text())
+    job["pointcloud"]["files"].update(graph=jobs._artifact(graph), trajectory=jobs._artifact(root / "corrected.txt"))
+    job["pointcloud"]["source_motion"]["trajectory"] = jobs._artifact(root / "original.tum")
+    jobs._save(root / "job.json", job)
+    return _run(fixture, alignment_prefix_fraction=4/count)["report"]
+
+
+def test_local_review_ranks_known_regression_and_uses_unaligned_map_bounds(fixture, monkeypatch):
+    artifact = _localized_report(fixture)
+    root = fixture[0]
+    before = {p.name: p.read_bytes() for p in root.iterdir()}
+    monkeypatch.setattr(jobs, "core", lambda: None)
+    result = review.inspect_mapping_trajectory_comparison(artifact, window_poses=2)
+    windows = result["windows"]
+    assert [w["window_id"] for w in windows] == [1, 2, 0]
+    worst = windows[0]
+    assert worst["original_frame_ids"] == [6, 7]
+    assert worst["timestamp_range_s"] == [6., 7.]
+    assert worst["evaluated_corrected_pose_bounds_xy"] == [6., 0., 7., .5]
+    assert worst["results"]["original"]["ate_rmse_m"] == pytest.approx(.5)
+    assert worst["results"]["corrected"]["ate_rmse_m"] == pytest.approx(.9)
+    assert worst["ate_rmse_m_corrected_minus_original"] == pytest.approx(.4)
+    assert worst["results"]["corrected"]["rpe_translation_rmse_m"] == pytest.approx(0., abs=1e-12)
+    assert sorted(i for w in windows for i in w["original_frame_ids"]) == list(range(4, 10))
+    assert result["protocol"]["held_out_alignment"] is True
+    assert result["point_map"] == jobs._artifact(root / "map.ply")
+    assert "quality_gate" not in result
+    assert {p.name: p.read_bytes() for p in root.iterdir()} == before
+
+
+def test_local_review_pages_cover_each_evaluated_frame_once_including_single_tail(fixture):
+    artifact = _localized_report(fixture, count=23)
+    first = review.inspect_mapping_trajectory_comparison(artifact, window_poses=2, ranking="corrected_ate")
+    assert len(first["windows"]) == 8 and first["next_offset"] == 8 and first["total_windows"] == 10
+    second = review.inspect_mapping_trajectory_comparison(artifact, 2, "corrected_ate", first["next_offset"])
+    assert second["next_offset"] is None and len(second["windows"]) == 2
+    windows = first["windows"] + second["windows"]
+    assert sorted(i for w in windows for i in w["original_frame_ids"]) == list(range(4, 23))
+    tail = next(w for w in windows if w["evaluated_poses"] == 1)
+    assert tail["original_frame_ids"] == [22]
+    assert tail["results"]["corrected"]["rpe_translation_rmse_m"] is None
+    assert review.inspect_mapping_trajectory_comparison(artifact, 2, offset=100)["windows"] == []
+
+
+def test_local_review_keeps_sparse_original_ids_and_full_fit_protocol(fixture):
+    artifact = _run(fixture)["report"]
+    result = review.inspect_mapping_trajectory_comparison(artifact, 2)
+    assert result["protocol"]["held_out_alignment"] is False
+    assert sorted(w["original_frame_ids"] for w in result["windows"]) == [[0, 2], [4, 6]]
+    assert all(w["unevaluated_retained_poses_within_frame_span"] == 0 for w in result["windows"])
+
+
+def test_local_review_exposes_unsupported_retained_pose_inside_a_window(fixture):
+    truth = fixture[1]
+    rows = np.loadtxt(truth)
+    np.savetxt(truth, rows[rows[:, 0] != 4.], fmt="%.17g")
+    artifact = _run(fixture)["report"]
+    result = review.inspect_mapping_trajectory_comparison(artifact)
+    window = result["windows"][0]
+    assert window["original_frame_ids"] == [0, 2, 6]
+    assert window["unevaluated_retained_poses_within_frame_span"] == 1
+    assert result["coverage"]["retained_pose_fraction"] == .75
+    assert result["coverage"]["evaluated_poses"] == 3
+
+
+def test_local_review_rejects_oversized_report_before_reading():
+    with pytest.raises(ValueError, match="16 MiB"):
+        review.inspect_mapping_trajectory_comparison({"path": "/does-not-exist", "sha256": "0" * 64, "bytes": comparison.MAX_BYTES + 1})
+
+
+@pytest.mark.parametrize("name", ["map.ply", "source.mcap", "corrected.g2o", "corrected.txt", "original.tum", "job.json", "reference.tum", "report.json"])
+def test_local_review_rejects_any_changed_saved_evidence(fixture, name):
+    artifact = _run(fixture)["report"]
+    root, truth, out = fixture
+    target = truth if name == "reference.tum" else out if name == "report.json" else root / name
+    target.write_bytes(target.read_bytes() + b"\nchanged")
+    with pytest.raises(ValueError, match="changed"):
+        review.inspect_mapping_trajectory_comparison(artifact)
+
+
+def test_local_review_rechecks_interleaved_input_change(fixture, monkeypatch):
+    artifact = _run(fixture)["report"]
+    original_read = review._read
+    def changed(value):
+        result = original_read(value)
+        (fixture[0] / "map.ply").write_bytes(b"interleaved edit")
+        return result
+    monkeypatch.setattr(review, "_read", changed)
+    with pytest.raises(ValueError, match="changed"):
+        review.inspect_mapping_trajectory_comparison(artifact)
+
+
+@pytest.mark.parametrize("field,value", [("window_poses", True), ("window_poses", 1), ("window_poses", 65), ("window_poses", 2.5), ("offset", -1), ("offset", True), ("ranking", "unknown")])
+def test_local_review_rejects_invalid_paging_without_reading_inputs(field, value):
+    with pytest.raises(ValueError):
+        review.inspect_mapping_trajectory_comparison({}, **{field: value})
+
+
+@pytest.mark.parametrize("change", ["schema", "ids", "times", "errors", "position", "global_change", "missing"])
+def test_local_review_rejects_inconsistent_report_even_with_updated_digest(fixture, change):
+    artifact = _run(fixture)["report"]
+    out = fixture[2]
+    report = json.loads(out.read_text())
+    if change == "schema":
+        report["schema"] = "unknown"
+    elif change == "ids":
+        report["coverage"]["evaluated_original_frame_ids"] = [0, 1, 4, 6]
+    elif change == "times":
+        report["results"]["original"]["matched_trajectory"]["timestamps"][0] += .1
+    elif change == "errors":
+        report["results"]["corrected"]["matched_trajectory"]["ate_errors"][0] = 3.
+    elif change == "position":
+        report["results"]["corrected"]["matched_trajectory"]["estimated_positions"][0][0] += .1
+    elif change == "global_change":
+        report["change"]["ate_rmse_m_corrected_minus_original"] = 100.
+    else:
+        del report["results"]
+    out.write_text(json.dumps(report))
+    with pytest.raises(ValueError):
+        review.inspect_mapping_trajectory_comparison(jobs._artifact(out))
+
+
+def test_local_review_cli_requires_evaluation_digest_and_returns_same_window(fixture):
+    artifact = _localized_report(fixture)
+    result = CliRunner().invoke(app, ["mapping-trajectory-inspect", artifact["path"], "--sha256", artifact["sha256"],
+                                     "--bytes", str(artifact["bytes"]), "--window-poses", "2"])
+    assert result.exit_code == 0, result.output
+    assert json.loads(result.output)["windows"][0]["original_frame_ids"] == [6, 7]
+    changed = CliRunner().invoke(app, ["mapping-trajectory-inspect", artifact["path"], "--sha256", "0" * 64,
+                                      "--bytes", str(artifact["bytes"])])
+    assert changed.exit_code != 0 and "changed" in changed.output
 
 
 def test_same_original_ids_detect_improvement_and_preserve_every_job_file(fixture):

@@ -59,6 +59,12 @@ def test_the_server_answers_over_stdio(tmp_path):
                 assert set(trajectory_schema["required"]) == {"job_dir", "reference", "reference_provenance", "report_path"}
                 assert trajectory_schema["properties"]["max_time_delta"]["default"] == .05
                 assert trajectory_schema["properties"]["alignment_prefix_fraction"]["default"] == 1.
+                local_review = next(t for t in tools if t.name == "inspect_mapping_trajectory_comparison")
+                review_schema = local_review.model_dump(by_alias=True)["inputSchema"]
+                assert review_schema["required"] == ["report_file"]
+                assert review_schema["properties"]["window_poses"]["default"] == 12
+                assert review_schema["properties"]["ranking"]["default"] == "regression"
+                assert review_schema["properties"]["offset"]["default"] == 0
                 assert {"export_mapping_preview", "export_mapping_run", "inspect_mapping_bundle"} <= names
                 preview = next(t for t in tools if t.name == "export_mapping_preview")
                 schema = preview.model_dump(by_alias=True)["inputSchema"]

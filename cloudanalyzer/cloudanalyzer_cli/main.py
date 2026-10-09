@@ -2002,6 +2002,25 @@ def mapping_trajectory_evaluate_cmd(
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-trajectory-inspect")
+def mapping_trajectory_inspect_cmd(
+    report: str = typer.Argument(..., help="Saved comparison JSON"),
+    sha256: str = typer.Option(..., "--sha256", help="Expected SHA-256 from evaluation's report artifact"),
+    size: int = typer.Option(..., "--bytes", help="Expected byte count from evaluation's report artifact"),
+    window_poses: int = typer.Option(12, "--window-poses"),
+    ranking: str = typer.Option("regression", "--ranking"),
+    offset: int = typer.Option(0, "--offset"),
+) -> None:
+    """Locate evaluated trajectory error windows in the original point-map frame."""
+    from ca.mapping_trajectory_review import inspect_mapping_trajectory_comparison
+    try:
+        result = inspect_mapping_trajectory_comparison(
+            {"path": str(Path(report).resolve()), "sha256": sha256, "bytes": size}, window_poses, ranking, offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("mapping-run-advance")
 def mapping_run_advance_cmd(
     job: str = typer.Argument(...),

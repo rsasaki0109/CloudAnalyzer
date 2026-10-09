@@ -63,6 +63,10 @@ jobs:
         working-directory: .
         run: python benchmarks/vector-map/nclt-reference-accuracy/verify.py
 
+      - name: Verify NCLT trajectory error region packet
+        working-directory: .
+        run: python benchmarks/vector-map/nclt-trajectory-error-regions/verify.py
+
       - name: Verify checked-in perception demo
         working-directory: .
         run: |

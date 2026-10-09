@@ -21,11 +21,22 @@ const SUPPORT_BUDGET: usize = 100_000;
 pub struct CorridorOptions {
     /// Symmetric search reach from the path, independent of lane count or width.
     pub search_radius_m: f64,
+    /// Explicit geometric association, independent of lane identity or legal use.
+    pub association: CorridorAssociation,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CorridorAssociation {
+    #[default]
+    AllSupportedBands,
+    TrajectoryContaining,
 }
 impl Default for CorridorOptions {
     fn default() -> Self {
         Self {
             search_radius_m: 8.0,
+            association: CorridorAssociation::AllSupportedBands,
         }
     }
 }
@@ -87,6 +98,7 @@ pub struct Profile {
 pub enum IntervalReason {
     MissingCoherentSurface,
     MissingGroundAnchor,
+    MissingTrajectoryBand,
     UnmatchedBands,
     SourceGap,
     BranchingBands,
@@ -140,6 +152,8 @@ pub struct CorridorReport {
     pub unstable_heading_sections: usize,
     pub unanchored_sections: usize,
     pub level_mismatch_bands: usize,
+    /// Observations kept in profiles but excluded by explicit path association.
+    pub off_trajectory_bands: usize,
     pub limited: bool,
     pub profiles: Vec<Profile>,
     pub candidates: Vec<CorridorCandidate>,
@@ -349,19 +363,22 @@ fn propose_limited(
     let index = SurfaceIndex::new(cloud, &line, reach + HALF_WINDOW);
     let mut report = CorridorReport {
         schema: "cloudanalyzer.corridor_proposals.v1", coordinate_frame: "input_metres",
-        protocol: CorridorProtocol { options: CorridorOptions { search_radius_m: reach }, sample_spacing_m: SPACING, bin_width_m: BIN, half_window_m: HALF_WINDOW,
+        protocol: CorridorProtocol { options: CorridorOptions { search_radius_m: reach, association: options.association }, sample_spacing_m: SPACING, bin_width_m: BIN, half_window_m: HALF_WINDOW,
             minimum_support_span_m: MIN_WIDTH, maximum_adjacent_height_step_m: STEP, maximum_reference_level_grade: 0.12, ground_estimator: super::quality::GroundEstimator::consensus(),
             interval_support_spacing_m: 0.5, interval_ground_radius_m: junctions::RADIUS, interval_height_tolerance_m: junctions::HEIGHT,
             maximum_sections: MAX_SECTIONS, profile_query_point_budget: query_budget, interval_support_sample_budget: support_budget },
         trajectory_length_m: total, with_candidate_station_length_m: 0., without_candidate_station_length_m: total,
         trajectory_covered_station_length_m: 0., curb_bounded_station_length_m: 0., ambiguous_station_length_m: 0.,
         sampled_sections: samples.len(), evaluated_sections: 0, sections_with_bands: 0, multiple_band_sections: 0,
-        profile_queried_points: 0, interval_support_samples: 0, unstable_heading_sections: 0, unanchored_sections: 0, level_mismatch_bands: 0, limited: false,
+        profile_queried_points: 0, interval_support_samples: 0, unstable_heading_sections: 0, unanchored_sections: 0, level_mismatch_bands: 0, off_trajectory_bands: 0, limited: false,
         profiles: Vec::new(), candidates: Vec::new(), deferred_intervals: Vec::new(), ambiguous_intervals: Vec::new(),
         road_semantics_inferred: false, deployment_ready: false,
         warnings: vec!["Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves.".into()],
     };
     let mut previous: Vec<CrossSection> = Vec::new();
+    if options.association == CorridorAssociation::TrajectoryContaining {
+        report.warnings.push("Explicit trajectory-containing association excludes off-path bands from matching but retains them in every original profile. This resolves geometric association only, not physical road branches or lane identity; unsupported path intervals remain deferred.".into());
+    }
     let mut tracks: Vec<Option<usize>> = Vec::new();
     for (k, &(station, p)) in samples.iter().enumerate() {
         let a = samples[k.saturating_sub(1)].1;
@@ -396,7 +413,11 @@ fn propose_limited(
             observed = bands(&surface, (station, p), dir, reach, &o, reference_ground);
             current = observed
                 .iter()
-                .filter(|b| b.path_level_supported)
+                .filter(|b| {
+                    b.path_level_supported
+                        && (options.association == CorridorAssociation::AllSupportedBands
+                            || b.intersects_trajectory)
+                })
                 .cloned()
                 .collect();
         }
@@ -407,6 +428,10 @@ fn propose_limited(
             report.level_mismatch_bands +=
                 observed.iter().filter(|b| !b.path_level_supported).count();
         }
+        report.off_trajectory_bands += observed
+            .iter()
+            .filter(|b| b.path_level_supported && !b.intersects_trajectory)
+            .count();
         report.sections_with_bands += usize::from(!current.is_empty());
         report.multiple_band_sections += usize::from(current.len() > 1);
         report.profiles.push(Profile {
@@ -525,7 +550,22 @@ fn propose_limited(
                 {
                     IntervalReason::MissingGroundAnchor
                 } else if previous.is_empty() || current.is_empty() {
-                    IntervalReason::MissingCoherentSurface
+                    if options.association == CorridorAssociation::TrajectoryContaining
+                        && ((previous.is_empty()
+                            && report.profiles[k - 1]
+                                .bands
+                                .iter()
+                                .any(|b| b.path_level_supported))
+                            || (current.is_empty()
+                                && report.profiles[k]
+                                    .bands
+                                    .iter()
+                                    .any(|b| b.path_level_supported)))
+                    {
+                        IntervalReason::MissingTrajectoryBand
+                    } else {
+                        IntervalReason::MissingCoherentSurface
+                    }
                 } else if ambiguous {
                     IntervalReason::BranchingBands
                 } else if source_gap {
@@ -572,6 +612,78 @@ mod tests {
     }
     fn poses() -> [[f64; 3]; 2] {
         [[0., 0., 99.], [20., 0., 99.]]
+    }
+
+    #[test]
+    fn explicit_path_association_keeps_observations_and_resolves_off_path_branches() {
+        let mut cloud = scene();
+        for p in &mut cloud.positions {
+            if p[0] > 10. && (-1.5..=-0.5).contains(&p[1]) {
+                p[2] += 1.;
+            }
+        }
+        let original = cloud.positions.clone();
+        let all = propose(&cloud, &poses(), &CorridorOptions::default()).unwrap();
+        let on_path = propose(
+            &cloud,
+            &poses(),
+            &CorridorOptions {
+                association: CorridorAssociation::TrajectoryContaining,
+                ..CorridorOptions::default()
+            },
+        )
+        .unwrap();
+        assert!(all.ambiguous_station_length_m > 0.);
+        assert_eq!(on_path.ambiguous_station_length_m, 0.);
+        assert!(
+            on_path.trajectory_covered_station_length_m > all.trajectory_covered_station_length_m
+        );
+        assert!(on_path.off_trajectory_bands > 0);
+        assert_eq!(
+            serde_json::to_value(&all.profiles).unwrap(),
+            serde_json::to_value(&on_path.profiles).unwrap()
+        );
+        assert!(
+            on_path
+                .candidates
+                .iter()
+                .flat_map(|c| &c.sections)
+                .all(|s| s.intersects_trajectory && s.path_level_supported)
+        );
+        assert_eq!(cloud.positions, original);
+        assert!(!on_path.road_semantics_inferred && !on_path.deployment_ready);
+    }
+
+    #[test]
+    fn path_association_never_borrows_an_outside_band_or_bridges_missing_source() {
+        let options = CorridorOptions {
+            association: CorridorAssociation::TrajectoryContaining,
+            ..CorridorOptions::default()
+        };
+        let mut outside = scene();
+        outside.positions.retain(|p| p[1] >= 0.4);
+        let report = propose(&outside, &poses(), &options).unwrap();
+        assert!(report.candidates.is_empty());
+        assert_eq!(report.without_candidate_station_length_m, 20.);
+        assert!(report.profiles.iter().any(|p| !p.bands.is_empty()));
+        assert!(report.off_trajectory_bands > 0);
+        assert!(
+            report
+                .deferred_intervals
+                .iter()
+                .any(|i| i.reason == IntervalReason::MissingTrajectoryBand)
+        );
+        let mut gap = scene();
+        gap.positions.retain(|p| !(7.0..13.0).contains(&p[0]));
+        let report = propose(&gap, &poses(), &options).unwrap();
+        assert!(report.without_candidate_station_length_m >= 4.);
+        assert!(
+            report
+                .candidates
+                .iter()
+                .all(|c| !(c.from_m < 7. && c.to_m > 13.))
+        );
+        assert_eq!(report.trajectory_length_m, 20.);
     }
 
     #[test]
@@ -625,6 +737,7 @@ mod tests {
             &poses(),
             &CorridorOptions {
                 search_radius_m: 1.0,
+                ..CorridorOptions::default()
             },
         )
         .unwrap();
@@ -761,7 +874,8 @@ mod tests {
                 &scene(),
                 &poses(),
                 &CorridorOptions {
-                    search_radius_m: f64::NAN
+                    search_radius_m: f64::NAN,
+                    ..CorridorOptions::default()
                 }
             )
             .is_err()

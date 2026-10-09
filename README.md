@@ -232,6 +232,10 @@ Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/
 point-map generation with HD-road drafting. Give a calling MCP agent the log and
 one explicit lane-layout hypothesis; it inspects source candidates, records
 include/defer choices, generates/audits drafts and returns both artifact sets.
+When off-path bands fragment the route, the agent can explicitly re-extract
+path-containing candidates once and review the new geometry. The
+[NCLT comparison](benchmarks/vector-map/nclt-path-refinement/README.md) records
+added map intervals and June's longer continuous piece at unchanged source thresholds.
 The runner binds per-piece lane settings automatically and resumes completed
 stages after interruption. [Individual mapping tools](docs/commands/mapping-job.md)
 remain available for separate experiments and explicit draft selection.

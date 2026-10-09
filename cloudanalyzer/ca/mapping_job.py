@@ -208,6 +208,8 @@ def _corridor_summary(report: dict[str, Any]) -> dict[str, Any]:
         "unanchored_sections", "level_mismatch_bands",
         "limited", "road_semantics_inferred", "deployment_ready", "warnings")},
         "candidate_count": len(report["candidates"]),
+        "longest_candidate_station_length_m": max((c["to_m"] - c["from_m"] for c in report["candidates"]), default=0.),
+        "off_trajectory_bands": report.get("off_trajectory_bands", 0),
         "curb_bounded_candidates": sum(c["curb_width_range_m"] is not None for c in report["candidates"]),
         "paired_curb_profile_bands": len(_curb_width_hints(report)),
     }
@@ -265,6 +267,56 @@ def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dic
                 raise
         _save(root / "job.json", job)
     return {**stage, "cached": False, "remaining_attempts": job["max_attempts"] - len(job["attempts"])}
+
+
+def _refine_mapping_corridors(job_dir: str, reason: str) -> dict[str, Any]:
+    """One explicit path-association experiment; retain every previous artifact."""
+    root = Path(job_dir).resolve()
+    with _locked(root):
+        job = _load(root)
+        _inputs(job)
+        prior = job.get("corridor_proposal")
+        if not prior or prior["status"] != "ready":
+            raise ValueError("refinement requires a ready original corridor proposal")
+        _verify(prior["file"])
+        if "corridor_refinement" in job:
+            stage = job["corridor_refinement"]
+            _verify(stage["previous"]["file"])
+            if stage["reason"] != reason:
+                raise ValueError("path-association refinement was already attempted")
+            if stage["status"] == "running":
+                raise RuntimeError("refinement processing did not finish; inspect its retained state before recovery")
+            if stage["status"] == "ready":
+                _verify(stage["file"])
+            return {**stage, "cached": True}
+        if prior["options"].get("association", "all_supported_bands") != "all_supported_bands":
+            raise ValueError("refinement requires the original all-supported-bands proposal")
+        stage = {"status": "running", "reason": reason, "previous": prior,
+            "options": {**prior["options"], "association": "trajectory_containing"}}
+        job["corridor_refinement"] = stage
+        _save(root / "job.json", job)
+        try:
+            module = core()
+            assert module is not None
+            files = job["pointcloud"]["files"]
+            report = json.loads(module.propose_road_corridors(files["map"]["path"], files["trajectory"]["path"], json.dumps(stage["options"])))
+            if report["protocol"]["options"]["association"] != "trajectory_containing":
+                raise ValueError("native core did not apply the requested path association")
+            report["coordinate_frame"] = job["pointcloud"]["coordinate_frame"]
+            report["input_artifacts"] = {"source": job["source"], "pointcloud": files, "native": job["runtime"]["native"]}
+            summary = _corridor_summary(report)
+            _save(root / "corridor-proposals-trajectory.json", report)
+            _inputs(job)
+            _verify(prior["file"])
+            stage.update({"status": "ready", "file": _artifact(root / "corridor-proposals-trajectory.json"), "summary": summary})
+            job["corridor_proposal"] = {k: stage[k] for k in ("status", "options", "file", "summary")}
+        except BaseException as error:
+            stage.update({"status": "failed", "error": str(error), "error_type": type(error).__name__})
+            if not isinstance(error, Exception) and not _native_panic(error):
+                _save(root / "job.json", job)
+                raise
+        _save(root / "job.json", job)
+    return {**stage, "cached": False}
 
 
 def inspect_mapping_corridors(job_dir: str, candidate_id: int | None = None, offset: int = 0) -> dict[str, Any]:

@@ -159,6 +159,84 @@ def test_agent_run_validates_layout_before_raw_processing(job_backend, tmp_path)
     assert not (tmp_path / "run").exists()
 
 
+def test_agent_refinement_reinspects_reused_ids_and_preserves_prior_drafts(job_backend, tmp_path):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    _attach_lane_native()
+    root = tmp_path / "run"
+    runs.start_mapping_run(str(source), str(root), _run_layout())
+    runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1]}, "Read original proposal", 0)
+    runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [{"candidate_id": 1, "action": "include", "reason": "Original draft"}]}, "Keep original draft", 1)
+    original = jobs.inspect_mapping_job(str(root))
+    files = [original["corridor_proposal"]["file"], *original["attempts"][0]["files"].values(), *original["attempts"][1]["files"].values()]
+    snapshots = {f["path"]: Path(f["path"]).read_bytes() for f in files}
+    def refined(cloud, trajectory, options):
+        report = _corridor_report()
+        report["protocol"] = {"options": json.loads(options)}
+        candidate = report["candidates"][0]
+        candidate.update(from_m=2., to_m=8.)
+        candidate["sections"] = candidate["sections"][1:-1]
+        return json.dumps(report)
+    jobs.core().propose_road_corridors = refined
+    run = runs.advance_mapping_run(str(root), {"type": "refine", "association": "trajectory_containing"}, "Resolve off-path band overlap", 2)
+    assert run["refine_result"]["status"] == "ready" and run["remaining_attempts"] == 4
+    assert run["reviewed_candidates"] == [] and run["layout_hypothesis"] == _run_layout()
+    choices = [{"candidate_id": 1, "action": "include", "reason": "Reused ID, different original stations"}]
+    with pytest.raises(ValueError, match="inspect candidates"):
+        runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Old receipt cannot authorize new geometry", 3)
+    with pytest.raises(ValueError, match="already attempted"):
+        runs.advance_mapping_run(str(root), {"type": "refine", "association": "trajectory_containing"}, "Do not repeat refinement", 3)
+    run = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1]}, "Read refined geometry", 3)
+    assert run["observation"][0]["from_m"] == 2.
+    run = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Generate refined replacement", 4)
+    assert run["draft_result"]["status"] == "audited_draft" and run["remaining_attempts"] == 2
+    assert all(Path(path).read_bytes() == content for path, content in snapshots.items())
+    assert jobs.inspect_mapping_geometry(str(root), 1)["segments"][0]["from_m"] == 0.
+    final = runs.advance_mapping_run(str(root), {"type": "finish", "candidate_id": 2}, "Retain earlier audited draft if preferred", 5)
+    assert final["output"]["candidate_id"] == 2
+    assert jobs.inspect_mapping_job(str(root))["selected"] is None
+
+
+@pytest.mark.parametrize("after_processing", [False, True])
+def test_agent_refinement_failure_or_interruption_keeps_original_source(job_backend, tmp_path, monkeypatch, after_processing):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    root = tmp_path / "run"
+    runs.start_mapping_run(str(source), str(root), _run_layout())
+    original = jobs.inspect_mapping_job(str(root))["corridor_proposal"]
+    if after_processing:
+        def refined(cloud, trajectory, options):
+            report = _corridor_report()
+            report["protocol"] = {"options": json.loads(options)}
+            return json.dumps(report)
+        jobs.core().propose_road_corridors = refined
+        process = jobs._refine_mapping_corridors
+        def interrupted(*args):
+            process(*args)
+            raise KeyboardInterrupt()
+        monkeypatch.setattr(jobs, "_refine_mapping_corridors", interrupted)
+        with pytest.raises(KeyboardInterrupt):
+            runs.advance_mapping_run(str(root), {"type": "refine", "association": "trajectory_containing"}, "Retain completed extraction", 0)
+        monkeypatch.setattr(jobs, "_refine_mapping_corridors", process)
+        jobs.core().propose_road_corridors = lambda *args: pytest.fail("Completed extraction must not run twice")
+        run = runs.advance_mapping_run(str(root), {"type": "resume"}, "Resume saved refinement", 1)
+        assert run["refine_result"]["cached"] is True and run["reviewed_candidates"] == []
+    else:
+        def fail(*args):
+            raise ValueError("Source extraction failed")
+        jobs.core().propose_road_corridors = fail
+        action = tmp_path / "refine.json"
+        action.write_text(json.dumps({"type": "refine", "association": "trajectory_containing"}))
+        result = CliRunner().invoke(app, ["mapping-run-advance", str(root), "--action", str(action), "--revision", "0", "--reason", "Retain failed extraction"])
+        assert result.exit_code == 1
+        run = runs.inspect_mapping_run(str(root))
+        assert jobs.inspect_mapping_job(str(root))["corridor_proposal"] == original
+        assert run["corridor_refinement"]["status"] == "failed"
+    assert run["status"] == "needs_agent" and run["remaining_attempts"] == 6
+    jobs._verify(original["file"])
+    assert not (root / ".mapping-run-lock").exists()
+
+
 def _corridor_report():
     return {"schema": "cloudanalyzer.corridor_proposals.v1", "coordinate_frame": "input_metres", "protocol": {},
         "trajectory_length_m": 10., "with_candidate_station_length_m": 10., "without_candidate_station_length_m": 0.,

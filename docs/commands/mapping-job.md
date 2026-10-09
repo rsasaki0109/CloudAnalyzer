@@ -117,6 +117,15 @@ source at ≤0.5 m spacing with both endpoints included. No width prior fills ab
 profiles or unsupported curves. These three curves do not certify the full-width
 interior or obstacle clearance. Returning passes remain separate proposals.
 
+The [mapping-run refinement action](mapping-run.md#inputs-and-actions) can
+explicitly try `trajectory_containing` association instead of the default
+`all_supported_bands`. Off-path bands stay in the saved profiles but no longer
+break matching of a path-containing band. All source thresholds stay unchanged;
+geometric association does not identify a legal road branch. `off_trajectory_bands`
+counts retained supported observations outside the path. Missing path association
+is reported separately as `missing_trajectory_band` when outside surface bands
+exist. Full-width and intermediate recorded-path containment remain unverified.
+
 Each edge is `curb_profile`, `support_gap`, `height_discontinuity` or `search_limit`.
 The curb check requires bounded raised returns in two outside bins and nearby
 inside support. Only candidates with two curb-like edges in **every** cross section

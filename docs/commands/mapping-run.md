@@ -75,6 +75,40 @@ source-support score. Semantic assumptions remain fixed hypotheses throughout.
 
 ## Inputs and actions
 
+When off-path bands overlap a path-containing band and break its unique match,
+the calling agent can issue one explicit source extraction experiment:
+
+```json
+{"type": "refine", "association": "trajectory_containing"}
+```
+
+The extractor keeps only source bands containing the recorded trajectory in
+each endpoint profile for matching. Every original profile, off-path band and
+source-level observation is retained. Search reach, height/width thresholds,
+support spacing, query budgets, point map, trajectory, initial layout and full
+input denominator stay unchanged. Centre and both edges still need continuous
+source support. Absent path bands, missing anchors and source gaps remain deferred;
+no road junction, legal branch choice or full-width clearance is inferred.
+
+The original `corridor-proposals.json` stays immutable, while successful refinement
+saves `corridor-proposals-trajectory.json` and changes the active proposal.
+`corridor_refinement` returns both reports' summaries and paths; compare the
+path-associated extent and longest candidate length, not total off-path coverage.
+Candidate IDs can be reused with different geometry. All current review receipts
+are reset: inspect the new candidates before drafting a replacement. The history
+binds each inspection to its proposal hash. Earlier geometry/lane outputs and the
+selected draft remain intact; finishing with an earlier run draft is allowed.
+
+Refinement spends no HD attempt and can be attempted once per run. Failure retains
+the original active proposal and its error, so the agent can still draft or finish.
+Interrupted draft or refinement actions support `resume`: completed extraction
+is verified and reused, running native stages require manual inspection. A failed
+extraction is not silently rerun. This action addresses geometric association;
+it does not repair the point map or guarantee a continuous road across the drive.
+The [two NCLT refinement runs](../../benchmarks/vector-map/nclt-path-refinement/README.md)
+retain all previous exported intervals and record actual before/after maps:
+102 → 106 m and 88 → 112 m, with June's longest piece increasing 60 → 66 m.
+
 `layout_hypothesis` / `layout.json`:
 
 ```json

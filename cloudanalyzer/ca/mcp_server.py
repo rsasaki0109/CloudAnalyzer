@@ -28,7 +28,10 @@ then returns decision guidance. Continue autonomously using inspect_mapping_run
 and advance_mapping_run: inspect candidate evidence, draft complete include/defer
 choices, read automatic lane export and both diagnoses, retry within the fixed
 layout/budget, and finish with both artifact sets and unresolved holds. Use the
-returned revision for every action. Interrupted draft actions can resume without
+refine action with association=trajectory_containing when off-path overlapping
+bands fragment the route. It re-extracts once at unchanged source thresholds;
+original observations/drafts remain saved, and new proposal IDs need fresh inspection.
+Use the returned revision for every action. Interrupted draft/refine actions can resume without
 replaying completed stages. Do not stop after startup or a single failed trial;
 finish with a useful retained draft or explain why no HD draft can be generated.
 No LLM is embedded: you are the reasoning agent. Only initial assumptions need

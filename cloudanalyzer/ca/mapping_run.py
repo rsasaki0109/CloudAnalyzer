@@ -15,8 +15,11 @@ SCHEMA = "cloudanalyzer.mapping_run.v1"
 GUIDANCE = """Continue this run autonomously within its fixed layout and attempt budget.
 Page the candidate index; inspect relevant candidates before deciding include/defer
 ranges. Compare path association, surface levels, spans, edge evidence and competing
-bands. Source support does not prove road identity or complete width. Draft decisions
-describe a complete replacement hypothesis, not additions to the previous lane map.
+bands. Source support does not prove road identity or complete width.
+If off-path overlapping bands fragment the route, explicitly refine with
+association=trajectory_containing once, then inspect the new proposal IDs afresh.
+All original profiles and drafts remain available; missing source is never bridged.
+Draft decisions describe a complete replacement hypothesis, not additions to the previous lane map.
 The runner binds the fixed layout to every included piece and executes geometry,
 lane export and diagnosis. Read both ground estimators and full-input extent before
 trying another hypothesis. Do not alter lane count, width requirements, speed or
@@ -130,6 +133,8 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         for artifact in job["pointcloud"]["files"].values():
             jobs._verify(artifact)
     proposal = job.get("corridor_proposal", {})
+    if "corridor_refinement" in job:
+        jobs._verify(job["corridor_refinement"]["previous"]["file"])
     index = jobs.inspect_mapping_corridors(str(root), offset=offset) if proposal.get("status") == "ready" else None
     if run["output"]:
         for artifact in run["output"]["artifacts"].values():
@@ -138,9 +143,11 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "layout_hypothesis": json.loads(Path(run["layout_file"]["path"]).read_text(encoding="utf-8")),
         "pointcloud": job["pointcloud"], "remaining_attempts": job["remaining_attempts"], "candidate_index": index,
         "reviewed_candidates": run["reviewed_candidates"], "history_total": len(run["history"]),
+        "corridor_refinement": job.get("corridor_refinement"),
         "history": [{k: v for k, v in a.items() if k not in {"observation", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
+            "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
             "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons and optional observed ranges"},
             "resume": {"type": "resume"}, "finish": {"type": "finish", "candidate_id": "audited draft ID, or null if none"}},
         "deployment_ready": False}
@@ -194,15 +201,20 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
     preview stations for ranges. One draft automatically saves geometry, binds the fixed
     layout, exports IR/OSM and reads both audits, spending up to two shared HD attempts.
     Each draft replaces the hypothesis; prior maps/selection stay intact. Retry based
-    on evidence without silently changing the initial layout. Resume an interrupted
-    draft without replaying completed stages. Finish with an audited candidate ID or
+    on evidence, or refine once with association=trajectory_containing to re-extract
+    path-containing source bands at unchanged thresholds. Reinspect the new IDs;
+    prior observations cannot authorize a different proposal. Refinement preserves
+    the original report and drafts and spends no HD attempt. Its result is a
+    geometric association hypothesis, not proof of road identity or permitted use.
+    Keep the initial layout unchanged. Resume an interrupted draft/refinement
+    without replaying completed stages. Finish with an audited candidate ID or
     null, returning both map paths and explicit source/extent holds; this never selects
     or certifies the map. No candidate IDs are hardcoded or ranked by the runner.
     """
     if not isinstance(reason, str) or not reason.strip() or type(expected_revision) is not int:
         raise ValueError("supply a reason and the inspected integer revision")
-    if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {"inspect", "draft", "finish", "resume"}:
-        raise ValueError("action type must be inspect, draft, resume or finish")
+    if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {"inspect", "refine", "draft", "finish", "resume"}:
+        raise ValueError("action type must be inspect, refine, draft, resume or finish")
     root = Path(job_dir).resolve()
     with _locked(root):
         run = _load(root)
@@ -217,12 +229,12 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         kind = action["type"]
         if run["status"] == "processing_failed" and kind != "finish":
             raise ValueError("finish with retained point-map outputs after preparation failed")
-        keys = {"inspect": {"type", "candidate_ids"}, "draft": {"type", "decisions"}, "finish": {"type", "candidate_id"}, "resume": {"type"}}
+        keys = {"inspect": {"type", "candidate_ids"}, "refine": {"type", "association"}, "draft": {"type", "decisions"}, "finish": {"type", "candidate_id"}, "resume": {"type"}}
         if set(action) != keys[kind]:
             raise ValueError("supply only the required action fields from action_contract")
         if kind == "resume":
-            if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] != "draft":
-                raise ValueError("resume requires an interrupted draft action")
+            if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {"draft", "refine"}:
+                raise ValueError("resume requires an interrupted draft or refine action")
             entry = run["history"][-1]
         else:
             if run["status"] == "interrupted":
@@ -234,16 +246,27 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 if not isinstance(ids, list) or not 1 <= len(ids) <= 8 or any(type(v) is not int or v < 1 for v in ids) or len(set(ids)) != len(ids):
                     raise ValueError("inspect needs 1..8 distinct positive candidate IDs")
                 observation = [jobs.inspect_mapping_corridors(str(root), candidate_id=cid)["candidate"] for cid in ids]
+            elif kind == "refine":
+                if action["association"] != "trajectory_containing":
+                    raise ValueError("refine association must be trajectory_containing")
+                if "corridor_refinement" in job:
+                    raise ValueError("path-association refinement was already attempted")
+                if job.get("corridor_proposal", {}).get("status") != "ready":
+                    raise ValueError("refinement requires a ready original corridor proposal")
             elif kind == "draft":
                 if job["remaining_attempts"] < 2:
                     raise ValueError("a new draft needs two remaining shared HD attempts")
                 proposal = job["corridor_proposal"]["file"]
                 jobs._verify(proposal)
                 _, validated = assemble_geometry(json.loads(Path(proposal["path"]).read_text()), action["decisions"], reason)
+                original_sha = job.get("corridor_refinement", {}).get("previous", {}).get("file", proposal)["sha256"]
+                if run.get("reviewed_proposal_sha256", original_sha) != proposal["sha256"]:
+                    raise ValueError("inspect candidates from the current proposal before drafting decisions")
                 if any(d["candidate_id"] not in run["reviewed_candidates"] for d in validated["decisions"]):
                     raise ValueError("inspect candidates through this run before drafting decisions")
                 for d in validated["decisions"]:
-                    previews = [c for h in run["history"] for c in h.get("observation", []) if c["id"] == d["candidate_id"]]
+                    previews = [c for h in run["history"] if h.get("proposal_sha256", original_sha) == proposal["sha256"]
+                                for c in h.get("observation", []) if c["id"] == d["candidate_id"]]
                     stations = {s["station_m"] for c in previews for s in c["sections"]}
                     if d["from_m"] not in stations or d["to_m"] not in stations:
                         raise ValueError("draft ranges must use inspected preview stations; retain unreviewed tails")
@@ -257,6 +280,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                         raise ValueError("finish with an audited lane candidate generated by this run")
                     diagnosis = _diagnosis(root, cid)
             entry = {"sequence": len(run["history"]) + 1, "action": action, "reason": reason.strip(), "status": "running"}
+            if "corridor_proposal" in job:
+                entry["proposal_sha256"] = job["corridor_proposal"].get("file", {}).get("sha256")
             if kind == "draft":
                 entry["geometry_candidate_id"] = len(job["attempts"]) + 1
             run["history"].append(entry)
@@ -266,8 +291,19 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         try:
             if kind == "inspect":
                 entry["observation"] = observation
+                proposal_sha = job["corridor_proposal"]["file"]["sha256"]
+                if run.get("reviewed_proposal_sha256", proposal_sha) != proposal_sha:
+                    run["reviewed_candidates"] = []
+                run["reviewed_proposal_sha256"] = proposal_sha
                 run["reviewed_candidates"] = sorted(set(run["reviewed_candidates"]) | set(action["candidate_ids"]))
                 entry["status"] = "inspected"
+            elif entry["action"]["type"] == "refine":
+                outcome = jobs._refine_mapping_corridors(str(root), entry["reason"])
+                entry["status"] = outcome["status"]
+                entry["outcome"] = outcome
+                if outcome["status"] == "ready":
+                    run["reviewed_candidates"] = []
+                    run["reviewed_proposal_sha256"] = outcome["file"]["sha256"]
             elif kind in {"draft", "resume"}:
                 outcome = _draft(root, run, entry, layout)
                 entry["status"] = outcome["status"]
@@ -295,6 +331,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
     answer = inspect_mapping_run(str(root))
     if kind == "inspect":
         answer["observation"] = observation
+    elif entry["action"]["type"] == "refine":
+        answer["refine_result"] = outcome
     elif kind in {"draft", "resume"}:
         answer["draft_result"] = outcome
     return answer

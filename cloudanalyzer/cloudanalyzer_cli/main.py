@@ -1920,6 +1920,39 @@ def mapping_corridors_inspect_cmd(
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-geometry")
+def mapping_geometry_cmd(
+    job: str = typer.Argument(...),
+    decisions: str = typer.Option(..., "--decisions", help="JSON list of corridor include/defer decisions and reasons"),
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Adopt source curves as an editable geometry draft with unresolved lane semantics."""
+    from ca.mapping_job import generate_mapping_geometry
+    try:
+        choices = json.loads(Path(decisions).read_text(encoding="utf-8"))
+        result = generate_mapping_geometry(job, choices, reason)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["attempts"][-1]["status"] == "failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-geometry-inspect")
+def mapping_geometry_inspect_cmd(
+    job: str = typer.Argument(...),
+    candidate: int = typer.Option(..., "--candidate", min=1),
+    offset: int = typer.Option(0, "--offset", min=0),
+) -> None:
+    """Read geometry decisions, source curves and unresolved extent without processing."""
+    from ca.mapping_job import inspect_mapping_geometry
+    try:
+        result = inspect_mapping_geometry(job, candidate, offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("mapping-status")
 def mapping_status_cmd(job: str = typer.Argument(...)) -> None:
     """Inspect mapping evidence, artifact paths and remaining attempt budget as JSON."""

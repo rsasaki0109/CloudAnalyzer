@@ -13,6 +13,7 @@ import json
 import math
 import os
 import platform
+import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Iterator
@@ -108,6 +109,8 @@ def inspect_mapping_job(job_dir: str) -> dict[str, Any]:
     ready = job.get("pointcloud") is not None and job["status"] not in {"pointcloud_failed", "pointcloud_running"}
     job["next_actions"] = (["propose_mapping_corridors"] if ready and "corridor_proposal" not in job else []) + (
         ["inspect_mapping_corridors"] if job.get("corridor_proposal", {}).get("status") == "ready" else []
+    ) + (["generate_mapping_geometry"] if ready and remaining and job.get("corridor_proposal", {}).get("status") == "ready" else []) + (
+        ["inspect_mapping_geometry"] if any(a["status"] == "geometry_draft" for a in job["attempts"]) else []
     ) + (["generate_mapping_candidate"] if ready and remaining else []) + (
         ["select_mapping_candidate"] if any(a["status"] == "audited_draft" and a["extent"]["passes_requested_extent"] for a in job["attempts"]) else []
     )
@@ -306,6 +309,121 @@ def inspect_mapping_corridors(job_dir: str, candidate_id: int | None = None, off
         answer["candidate"] = {**candidate, "sections": candidate["sections"][:128],
             "total_sections": len(candidate["sections"]), "section_preview_limited": len(candidate["sections"]) > 128}
     return answer
+
+
+def generate_mapping_geometry(job_dir: str, decisions: list[dict[str, Any]], reason: str) -> dict[str, Any]:
+    """Adopt chosen corridor intervals as editable source geometry without inventing lanes.
+
+    Each decision needs candidate_id, action (include/defer), reason and optional
+    from_m/to_m at observed candidate stations. Include at most one band per input
+    interval; overlapping alternatives must be resolved explicitly. Adjacent pieces
+    are not joined, filled or smoothed. Preserve unreviewed, agent-deferred and
+    source-deferred extent across the whole input path, including ambiguous areas.
+
+    Uses one shared HD attempt, with retained native failures and frozen provenance.
+    Writes vectormap-ir Other curves for centre/left/right, exact source sections,
+    decisions and unresolved semantics. No lane/road count, speed, traffic direction
+    or complete width is established. No OSM is published: standalone unknown ways
+    are dropped on Lanelet2 reload. The IR can be opened in the editor with virtual
+    lines enabled. Existing selected HD drafts remain unchanged. This geometry
+    stage cannot be selected as an audited lane map or claimed as a source pass.
+    """
+    from ca.mapping_geometry import assemble_geometry
+
+    root = Path(job_dir).resolve()
+    with _locked(root):
+        job = _load(root)
+        _inputs(job)
+        stage = job.get("corridor_proposal", {})
+        if stage.get("status") != "ready":
+            raise ValueError("generate ready corridor proposals before drafting geometry")
+        _verify(stage["file"])
+        proposals = json.loads(Path(stage["file"]["path"]).read_text(encoding="utf-8"))
+        _corridor_summary(proposals)
+        ir, evidence = assemble_geometry(proposals, decisions, reason)
+        ir["metadata"]["attributes"].update({"cloudanalyzer:proposal_sha256": stage["file"]["sha256"],
+                                              "cloudanalyzer:pointcloud_sha256": job["pointcloud"]["files"]["map"]["sha256"]})
+        summary = evidence["summary"]
+        summary["included_station_fraction"] = summary["included_station_length_m"] / summary["trajectory_length_m"]
+        summary["minimum_retained_fraction"] = job.get("minimum_retained_fraction", 0.9)
+        summary["meets_requested_station_extent"] = summary["included_station_fraction"] + 1e-9 >= summary["minimum_retained_fraction"]
+        if len(job["attempts"]) >= job["max_attempts"]:
+            raise ValueError("mapping attempt budget exhausted; inspect the retained candidates")
+        evidence["input_artifacts"] = {"source": job["source"], "pointcloud": job["pointcloud"]["files"],
+                                       "native": job["runtime"]["native"], "corridor_proposal": stage["file"]}
+        attempt: dict[str, Any] = {"id": len(job["attempts"]) + 1, "kind": "surface_geometry", "status": "running",
+                                  "reason": reason.strip(), "decisions": evidence["decisions"], "corridor_proposal": stage["file"]}
+        job["attempts"].append(attempt)
+        _save(root / "job.json", job)
+        target = root / f"geometry-{attempt['id']:02d}"
+        try:
+            if target.exists():
+                raise FileExistsError(f"output directory already exists: {target}")
+            with tempfile.TemporaryDirectory(prefix=".mapping-geometry-", dir=root) as temporary:
+                draft = Path(temporary)
+                _save(draft / "vector_map.json", ir)
+                module = core()
+                assert module is not None
+                # Existing read-only native operation validates/normalizes IR. Its
+                # OSM is intentionally not used: unknown standalone ways are lost.
+                payload = json.loads(module.edit_vector_map_relations(str(draft / "vector_map.json")))
+                native = payload["report"]
+                if native["validation"]["counts"]["errors"] or any(i["severity"] == "error" for i in native["import_issues"]):
+                    raise ValueError("resolve geometry import/structural errors before publishing")
+                normalized = json.loads(payload["map_json"])
+                if normalized.get("lanes") or normalized.get("roads") or normalized.get("boundaries") != ir["boundaries"]:
+                    raise ValueError("native IR reload did not preserve the source reference curves")
+                _save(draft / "vector_map.json", normalized)
+                evidence["native_validation"] = {k: native[k] for k in ("validation", "import_issues", "georeference")}
+                evidence["editing"] = {"file": str(target / "vector_map.json"), "show_virtual_lines": True}
+                _save(draft / "report.json", evidence)
+                _inputs(job)
+                _verify(stage["file"])
+                os.rename(draft, target)
+            attempt.update({"status": "geometry_draft", "summary": evidence["summary"],
+                            "files": {"editable_map": _artifact(target / "vector_map.json"), "report": _artifact(target / "report.json")}})
+            job["status"] = "geometry_drafts_ready" if job["selected"] is None else "selected_draft"
+        except BaseException as error:
+            attempt.update({"status": "failed", "error": str(error), "error_type": type(error).__name__})
+            if not isinstance(error, Exception) and not _native_panic(error):
+                _save(root / "job.json", job)
+                raise
+        _save(root / "job.json", job)
+    return inspect_mapping_job(str(root))
+
+
+def inspect_mapping_geometry(job_dir: str, candidate_id: int, offset: int = 0) -> dict[str, Any]:
+    """Read a saved geometry draft and full-extent decisions without native processing.
+
+    Verifies source, map inputs, proposal and output hashes. Pages 16 segments via
+    next_offset; section previews cap at 128 and station dispositions at 128 with
+    explicit limits. The hashed report contains all curves, decisions and intervals.
+    Empty lane semantics remain unresolved, never a quality or deployment pass.
+    """
+    if type(candidate_id) is not int or candidate_id < 1 or type(offset) is not int or offset < 0:
+        raise ValueError("candidate_id must be positive and offset nonnegative integers")
+    job = _load(Path(job_dir).resolve())
+    attempt = next((a for a in job["attempts"] if a["id"] == candidate_id and a.get("kind") == "surface_geometry"), None)
+    if attempt is None:
+        raise ValueError("inspect a retained surface geometry attempt")
+    for artifact in [job["source"], *job["pointcloud"]["files"].values(), attempt["corridor_proposal"]]:
+        _verify(artifact)
+    remaining = job["max_attempts"] - len(job["attempts"])
+    if attempt["status"] != "geometry_draft":
+        return {**attempt, "remaining_attempts": remaining}
+    for artifact in attempt["files"].values():
+        _verify(artifact)
+    report = json.loads(Path(attempt["files"]["report"]["path"]).read_text(encoding="utf-8"))
+    segments = report["segments"]
+    return {"candidate_id": candidate_id, "files": attempt["files"], "summary": report["summary"],
+        "decisions": report["decisions"], "native_validation": report["native_validation"], "editing": report["editing"],
+        "segments": [{**s, "sections": s["sections"][:128], "total_sections": len(s["sections"]),
+                      "section_preview_limited": len(s["sections"]) > 128} for s in segments[offset:offset + 16]],
+        "next_offset": offset + 16 if offset + 16 < len(segments) else None,
+        "station_disposition": report["station_disposition"][:128], "total_station_intervals": len(report["station_disposition"]),
+        "station_disposition_limited": len(report["station_disposition"]) > 128,
+        "source_proposal_limited": report["source_proposal_limited"], "warnings": report["warnings"],
+        "remaining_attempts": remaining}
 
 
 def _quality_summary(audit: dict[str, Any]) -> dict[str, Any]:

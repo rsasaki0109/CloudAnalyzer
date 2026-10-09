@@ -1,0 +1,30 @@
+[
+  {
+    "candidate_id": 17,
+    "action": "include",
+    "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+    "from_m": 56.0,
+    "to_m": 104.0
+  },
+  {
+    "candidate_id": 22,
+    "action": "include",
+    "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+    "from_m": 128.0,
+    "to_m": 162.0
+  },
+  {
+    "candidate_id": 30,
+    "action": "include",
+    "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+    "from_m": 174.0,
+    "to_m": 184.0
+  },
+  {
+    "candidate_id": 8,
+    "action": "defer",
+    "reason": "Do not adopt this competing or rapidly varying band as the current path geometry. This is an agent review hold, not proof that the surface is absent or invalid.",
+    "from_m": 22.0,
+    "to_m": 38.0
+  }
+]

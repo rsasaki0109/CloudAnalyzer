@@ -53,6 +53,11 @@ projection options are excluded in this initial raw-recording workflow: its
 coordinates are local SLAM metres, not a known georeferenced frame. Both map
 outputs share that frame. Each build's `report.json` records effective options.
 
+When lane semantics are unresolved, use `generate_mapping_geometry` after step 3
+to adopt inspected source curves as an editable **geometry** draft. This lane-free
+branch shares the attempt budget with lane hypotheses and preserves existing
+selection. It does not qualify for `select_mapping_candidate` or a source pass.
+
 Compare `extraction.generated_length` and `trajectory_length` alongside source
 support. A shorter map, fewer lanes or narrower road can improve a support score
 without improving the requested map. Lane count, width, traffic direction, speed
@@ -167,6 +172,77 @@ reports busy. Ordinary errors and PyO3 panics are recorded; user interrupts are
 recorded and re-raised. This version does not resume an interrupted SLAM stage.
 After a hard process exit, inspect the job and confirm the process is gone before
 removing a leftover `.mapping-lock`; retain the directory and start a new job.
+
+## Adopt source geometry while lane semantics remain unresolved
+
+`generate_mapping_geometry(job_dir, decisions, reason)` records the calling
+agent's corridor choices and writes `geometry-NN/vector_map.json` plus
+`geometry-NN/report.json`. Each decision has `candidate_id`, `action` (`include`
+or `defer`) and a nonempty `reason`. Optional `from_m`/`to_m` must be actual
+observed stations in that candidate. The defaults use its complete interval.
+No extrapolation is allowed. Included ranges cannot overlap input stations;
+resolve competing bands explicitly. Disjoint ranges of the same candidate are
+allowed. Adjacent pieces remain separate, without joining gaps or smoothing.
+
+Each included piece saves the exact source centre, left and right curves as
+`vectormap-ir` boundaries of kind `other`, with attributes identifying the source
+role, proposal candidate and review hold. All section-level edge evidence and
+original stations remain in the report. These are reference curves, not lane
+markings, complete road borders or a drivable interior. Open the editable IR in
+the map editor and enable virtual lines to view/edit the reference geometry.
+
+Lane count, direction, speed and complete width remain unresolved; no lanes,
+roads, connectivity or traffic rules are invented. This stage intentionally does
+not publish Lanelet2 OSM: the current reader drops standalone unknown ways on
+reload, so their geometry would not survive. The IR is the editing artifact.
+Resolve lane hypotheses separately before lane-map export.
+
+The report partitions **every input station interval** into `included_geometry`,
+`source_deferred` (no connected proposal), `agent_deferred` (all offered candidates
+explicitly deferred) or `not_reviewed`. It records available/deferred candidates,
+source failure reasons and ambiguity, including ambiguity beside an included
+band. An omitted decision does not become acceptance or a reviewed rejection.
+No physical absence is inferred from a deferred band. Included/unresolved unions
+sum to the original input trajectory extent. The fraction and the job's extent
+goal are exposed; a partial draft does not satisfy the full-drive goal simply
+because its local curves have source support.
+
+One call consumes one shared HD attempt; native failures also retain their reason
+and consume that attempt. Invalid decisions consume none. Up to 256 decisions
+are accepted per call. Frozen inputs, native binary, proposal and output hashes
+are checked; publishing is atomic. Existing lane drafts and selection remain
+intact. Native IR loading normalizes the curves and checks structural errors;
+intentionally unused reference boundaries can produce informational
+`unused_boundary` issues. Keep these reference curves rather than applying their
+suggested removal. A zero-error, zero-lane draft has `source_quality_passed=false`
+and `deployment_ready=false`.
+
+`inspect_mapping_geometry(job_dir, candidate_id, offset=0)` verifies saved input,
+proposal and output hashes without native processing. It pages 16 segments, caps
+each section preview at 128 and the station-disposition preview at 128, with
+explicit totals/truncation flags. The hashed report retains all geometry and
+decisions. Failed/running geometry attempts remain inspectable.
+
+For example, after inspecting April NCLT candidate 17, save `decisions.json`:
+
+```json
+[
+  {
+    "candidate_id": 17,
+    "action": "include",
+    "reason": "Retain the observed source curves as review geometry; width and lane semantics remain unresolved"
+  }
+]
+```
+
+```sh
+ca mapping-geometry runs/nclt-agent --decisions decisions.json --reason "Build a geometry draft before lane hypotheses"
+ca mapping-geometry-inspect runs/nclt-agent --candidate 1
+```
+
+The `--candidate` is the job's shared attempt ID, not a proposal ID. Full-extent
+decisions and actual native-reloaded outputs are recorded in the
+[NCLT geometry runs](../../benchmarks/vector-map/nclt-geometry/README.md).
 
 ## CLI equivalent
 

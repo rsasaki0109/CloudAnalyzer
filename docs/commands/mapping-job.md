@@ -244,6 +244,73 @@ The `--candidate` is the job's shared attempt ID, not a proposal ID. Full-extent
 decisions and actual native-reloaded outputs are recorded in the
 [NCLT geometry runs](../../benchmarks/vector-map/nclt-geometry/README.md).
 
+## Export explicit lane hypotheses from adopted geometry
+
+`generate_mapping_corridor_lanes(job_dir, geometry_candidate_id, lane_specs,
+boundary_policy, reason)` turns chosen pieces of a saved geometry draft into
+editable IR and Lanelet2 OSM. The parent must be a `geometry_draft` in the same
+frozen job. Read its report's `segments[].curve_ids.center` to choose the pieces.
+These IDs identify retained curves, rather than proposal candidates or roads.
+
+Every call explicitly sets `boundary_policy="source_span_hypothesis"`: source
+support gaps and search limits do not establish complete physical road edges.
+For each chosen centre curve, supply a reason, `speed_limit_kmh` and an ordered
+`lanes` list. Lanes are ordered left to right looking along the **original input
+stations**, even for backward lanes. Every lane supplies `direction`
+(`forward`/`backward`), `kind="driving"`, boolean `one_way`, positive `fraction`
+and `minimum_width_m` within 0.5–10 m. Fractions sum to one; speed is explicit
+within 0.1–200 km/h. The source-audit protocol currently assesses driving lanes,
+so other lane kinds are rejected rather than silently left unaudited.
+
+For example, an explicitly unverified two-direction layout in `lanes.json`:
+
+```json
+[
+  {
+    "center_curve_id": 4,
+    "reason": "Test a two-lane hypothesis; legal direction and speed remain unconfirmed",
+    "speed_limit_kmh": 40,
+    "lanes": [
+      {"direction": "backward", "kind": "driving", "one_way": true, "fraction": 0.5, "minimum_width_m": 2},
+      {"direction": "forward", "kind": "driving", "one_way": true, "fraction": 0.5, "minimum_width_m": 2}
+    ]
+  }
+]
+```
+
+```sh
+ca mapping-lanes runs/nclt-agent --geometry 1 --specs lanes.json --boundary-policy source_span_hypothesis --reason "Partition adopted source geometry using explicit hypotheses"
+ca mapping-diagnose runs/nclt-agent --candidate 2
+```
+
+The outer source curves retain their XYZ values and vertex counts. Interior
+virtual dividers interpolate each cross-section by the requested fractions;
+there is no nominal-width replacement, resampling, smoothing, extrapolation or
+connection between separate pieces. At every saved profile, the source span
+times each lane fraction must meet that lane's minimum width. An inadequate
+span produces a **failed attempt**, without widening the source or changing
+lane count. That minimum is a profile-span constraint, not a clearance guarantee.
+All boundaries are virtual; no observed paint is claimed. Lane count, direction,
+one-way use, speed and interpretation of the span remain recorded hypotheses.
+
+One call consumes a shared HD attempt, including native failures. Invalid
+specifications consume none. Parent geometry, proposals, source map and native
+binary are hashed and checked before and after processing. Publishing waits for
+OSM reload checks of lane membership, orientation, kind, one-way use, speed and
+boundary coordinates, plus four full source audits: editable/reopened OSM with
+both low-quantile and ground-consensus estimators. An export or stale-input
+failure publishes no new candidate and leaves prior selection intact.
+
+The report retains the parent's complete original station disposition. Assigned
+intervals become `included_lane_hypothesis`; unassigned adopted pieces remain
+`geometry_only`. Source deferrals, agent deferrals, unreviewed alternatives and
+ambiguity remain visible. Coverage uses the union of assigned **original input
+XY station intervals** over the full corrected input trajectory, rather than
+lane-length sums or a shortened resampled denominator. A locally supported
+fragment still fails the job's whole-drive extent gate. Inspect the saved
+diagnosis before any explicit selection; source support does not confirm road
+semantics or deployment readiness. See the [NCLT export experiments](../../benchmarks/vector-map/nclt-corridor-lanes/README.md).
+
 ## CLI equivalent
 
 ```sh

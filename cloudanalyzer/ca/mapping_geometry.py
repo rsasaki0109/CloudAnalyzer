@@ -86,3 +86,72 @@ def assemble_geometry(report: dict[str, Any], decisions: list[dict[str, Any]], r
                      "Station coverage is input-path extent, not unique road length or a source-quality pass. Separate candidates are not joined or smoothed."],
         "source_warnings": report["warnings"]}
     return ir, evidence
+
+
+def corridor_lane_requests(geometry: dict[str, Any], lane_specs: list[dict[str, Any]], boundary_policy: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Validate explicit layout hypotheses and bind them to saved segment curves."""
+    if boundary_policy != "source_span_hypothesis":
+        raise ValueError("explicitly choose boundary_policy=source_span_hypothesis; complete width remains unresolved")
+    if not isinstance(lane_specs, list) or not 1 <= len(lane_specs) <= 256:
+        raise ValueError("supply 1..256 lane specifications")
+    segments = {s["curve_ids"]["center"]: s for s in geometry["segments"]}
+    requests, chosen = [], []
+    seen = set()
+    # The saved source-audit protocol currently evaluates driving lanes only.
+    kinds = {"driving"}
+    def number(value: Any, low: float, high: float) -> bool:
+        return type(value) in (int, float) and math.isfinite(value) and low <= value <= high
+    for spec in lane_specs:
+        if not isinstance(spec, dict) or set(spec) != {"center_curve_id", "lanes", "speed_limit_kmh", "reason"}:
+            raise ValueError("each specification needs center_curve_id, lanes, explicit speed_limit_kmh and reason")
+        cid = spec["center_curve_id"]
+        if type(cid) is not int or cid not in segments or cid in seen:
+            raise ValueError("use distinct centre curve IDs from the retained geometry draft")
+        if not isinstance(spec["reason"], str) or not spec["reason"].strip():
+            raise ValueError("each lane specification needs a reason")
+        lanes = spec["lanes"]
+        if not isinstance(lanes, list) or not 1 <= len(lanes) <= 16:
+            raise ValueError("supply 1..16 ordered lane hypotheses per source segment")
+        for lane in lanes:
+            if not isinstance(lane, dict) or set(lane) != {"direction", "kind", "one_way", "fraction", "minimum_width_m"}:
+                raise ValueError("lanes need explicit direction, kind, one_way, fraction and minimum_width_m")
+            if lane["direction"] not in ("forward", "backward") or not isinstance(lane["kind"], str) or lane["kind"] not in kinds or type(lane["one_way"]) is not bool:
+                raise ValueError("use supported lane kind/direction and boolean one_way")
+            if not number(lane["fraction"], 1e-9, 1) or not number(lane["minimum_width_m"], .5, 10):
+                raise ValueError("lane fractions must be positive; minimum_width_m must be within 0.5..10")
+        if abs(sum(lane["fraction"] for lane in lanes) - 1) > 1e-9:
+            raise ValueError("lane fractions must sum to 1")
+        speed = spec["speed_limit_kmh"]
+        if (speed is not None and not number(speed, .1, 200)) or (speed is None and any(l["kind"] in {"driving", "bus", "emergency"} for l in lanes)):
+            raise ValueError("vehicle lanes require an explicit speed_limit_kmh within 0.1..200")
+        segment = segments[cid]
+        requests.append({"center_curve_id": cid, "left_curve_id": segment["curve_ids"]["left"],
+                         "right_curve_id": segment["curve_ids"]["right"], "lanes": lanes, "speed_limit_kmh": speed})
+        chosen.append(segment)
+        seen.add(cid)
+    return requests, chosen
+
+
+def verify_lane_roundtrip(original: dict[str, Any], reopened: dict[str, Any]) -> None:
+    """Require OSM reload to retain lane membership, geometry and assigned semantics."""
+    source = {l["id"]: l for l in original.get("lanes", [])}
+    target = {l["id"]: l for l in reopened.get("lanes", [])}
+    if not source or source.keys() != target.keys():
+        raise ValueError("OSM reload did not retain every hypothesized lane")
+    def ref(value: Any) -> tuple[int, bool]:
+        return (value, False) if type(value) is int else (value["boundary"], value.get("reversed", False))
+    boundaries = [{b["id"]: b for b in m.get("boundaries", [])} for m in (original, reopened)]
+    for lid, lane in source.items():
+        other = target[lid]
+        if lane.get("kind", "driving") != other.get("kind", "driving") or lane.get("one_way", True) != other.get("one_way", True):
+            raise ValueError("OSM reload changed lane kind or one-way hypothesis")
+        a, b = lane.get("speed_limit", {}).get("kmh"), other.get("speed_limit", {}).get("kmh")
+        if (a is None) != (b is None) or (a is not None and not math.isclose(a, b, abs_tol=1e-6)):
+            raise ValueError("OSM reload changed the speed hypothesis")
+        for side in ("left", "right"):
+            if ref(lane[side]) != ref(other[side]):
+                raise ValueError("OSM reload changed lane orientation or shared boundaries")
+            bid, _ = ref(lane[side])
+            a_points, b_points = boundaries[0][bid]["geometry"], boundaries[1][bid]["geometry"]
+            if len(a_points) != len(b_points) or any(not math.isclose(a, b, rel_tol=0, abs_tol=1e-9) for p, q in zip(a_points, b_points) for a, b in zip(p, q)):
+                raise ValueError("OSM reload changed source-derived boundary geometry")

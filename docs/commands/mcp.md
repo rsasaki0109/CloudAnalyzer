@@ -23,6 +23,7 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 | `inspect_mapping_corridors(job_dir, candidate_id?, offset?)` | Read a paged candidate index or bounded original-frame geometry; verify saved input/report hashes without native processing |
 | `generate_mapping_geometry(job_dir, decisions, reason)` | Adopt explicitly chosen source intervals as editable IR reference curves; record full-extent holds, infer no lane semantics and consume one shared HD attempt |
 | `inspect_mapping_geometry(job_dir, candidate_id, offset?)` | Read saved geometry decisions and bounded curves without native processing; incomplete width/lane semantics and uncovered extent remain visible |
+| `generate_mapping_corridor_lanes(job_dir, geometry_candidate_id, lane_specs, boundary_policy, reason)` | Export explicit driving-lane hypotheses within adopted source geometry, preserving outer curves and unresolved intervals; reject inadequate minimum widths, verify OSM reload and save both ground audits |
 | `diagnose_mapping_candidate(job_dir, candidate_id)` | Explain saved per-lane/trace height mismatches, insufficient returns, endpoint holds and extent; verify artifacts without processing or spending attempts |
 | `generate_mapping_candidate(job_dir, road_options, reason)` | Generate/audit one HD-map hypothesis against frozen point-map inputs; retain failures and the agent's reason |
 | `select_mapping_candidate(job_dir, candidate_id, reason)` | Select an audited draft explicitly, retaining quality holds and unresolved deployment readiness |

@@ -15,6 +15,21 @@ OPTIONS = {"forward_lanes": 1, "backward_lanes": 0, "left_hand_traffic": False,
            "lane_width": 3.5, "speed_limit": 25}
 
 
+def _lane_specs(center=1, width=1.5):
+    return [{"center_curve_id": center, "speed_limit_kmh": 40., "reason": "Test an explicitly unverified lane layout",
+             "lanes": [{"direction": "forward", "kind": "driving", "one_way": True,
+                        "fraction": 1., "minimum_width_m": width}]}]
+
+
+def _attach_lane_native():
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "build_corridor_lanes"):
+        pytest.skip("installed core predates corridor lane drafting")
+    jobs.core().build_corridor_lanes = native.build_corridor_lanes
+    jobs.core().edit_vector_map_relations = native.edit_vector_map_relations
+    return native
+
+
 def _corridor_report():
     return {"schema": "cloudanalyzer.corridor_proposals.v1", "coordinate_frame": "input_metres", "protocol": {},
         "trajectory_length_m": 10., "with_candidate_station_length_m": 10., "without_candidate_station_length_m": 0.,
@@ -431,6 +446,95 @@ def test_geometry_cli_preserves_source_and_native_ir_reload(job_backend, tmp_pat
     assert inspected.exit_code == 0 and json.loads(inspected.stdout)["summary"]["deployment_ready"] is False
 
 
+def test_lane_layout_validation_never_spends_attempts_or_infers_semantics(job_backend, tmp_path):
+    from copy import deepcopy
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    jobs.propose_mapping_corridors(str(root))
+    jobs.generate_mapping_geometry(str(root), [{"candidate_id": 1, "action": "include", "reason": "Retain source"}], "Unknown lanes")
+    good = _lane_specs()
+    invalid = [[], [{**good[0], "center_curve_id": True}], [{**good[0], "center_curve_id": 2}], good + good,
+               [{**good[0], "speed_limit_kmh": None}], [{**good[0], "reason": " "}]]
+    for field, value in [("kind", "walkway"), ("direction", "both"), ("one_way", 1), ("fraction", .5), ("minimum_width_m", float("nan"))]:
+        bad = deepcopy(good)
+        bad[0]["lanes"][0][field] = value
+        invalid.append(bad)
+    for specs in invalid:
+        with pytest.raises(ValueError):
+            jobs.generate_mapping_corridor_lanes(str(root), 1, specs, "source_span_hypothesis", "No hidden assumptions")
+    with pytest.raises(ValueError, match="boundary_policy"):
+        jobs.generate_mapping_corridor_lanes(str(root), 1, good, "observed_road_width", "Not confirmed road edges")
+    assert len(jobs.inspect_mapping_job(str(root))["attempts"]) == 1
+
+
+def test_lane_width_failure_and_cli_export_preserve_parent_selection_and_shared_budget(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root), max_attempts=4)
+    jobs.generate_mapping_candidate(str(root), OPTIONS, "Earlier lane hypothesis")
+    selected = jobs.select_mapping_candidate(str(root), 1, "Earlier source-review holds")["selected"]
+    jobs.propose_mapping_corridors(str(root))
+    jobs.generate_mapping_geometry(str(root), [{"candidate_id": 1, "action": "include", "reason": "Keep reference curves"}], "Preserve observed geometry")
+    _attach_lane_native()
+    original = (root / "geometry-02" / "vector_map.json").read_bytes()
+    failed = jobs.generate_mapping_corridor_lanes(str(root), 2, _lane_specs(width=3.), "source_span_hypothesis", "Reject insufficient span")
+    assert failed["attempts"][-1]["status"] == "failed" and "minimum lane width" in failed["attempts"][-1]["error"]
+    assert failed["remaining_attempts"] == 1 and failed["selected"] == selected
+    assert not (root / "candidate-03").exists()
+    specs = tmp_path / "lanes.json"
+    specs.write_text(json.dumps(_lane_specs()))
+    result = CliRunner().invoke(app, ["mapping-lanes", str(root), "--geometry", "2", "--specs", str(specs),
+                                    "--boundary-policy", "source_span_hypothesis", "--reason", "Test source geometry, not certified traffic"])
+    assert result.exit_code == 0, result.output
+    job = json.loads(result.stdout)
+    attempt = job["attempts"][-1]
+    assert attempt["status"] == "audited_draft", attempt
+    assert job["remaining_attempts"] == 0 and job["selected"] == selected
+    assert (root / "geometry-02" / "vector_map.json").read_bytes() == original
+    report = json.loads(Path(attempt["files"]["report"]["path"]).read_text())
+    assert report["lane_roundtrip_verified"] is True and report["complete_width_resolved"] is False
+    assert report["extraction"]["length_measurement"] == "original_input_xy_station_union"
+    assert sum(i["to_m"]-i["from_m"] for i in report["station_disposition"]) == 10.
+    diagnosis = jobs.diagnose_mapping_candidate(str(root), 4)
+    assert any("unverified layout" in i for i in diagnosis["investigations"])
+    assert "source_span_hypothesis" in Path(attempt["files"]["map"]["path"]).read_text()
+    parent_report = root / "geometry-02" / "report.json"
+    parent_report.write_bytes(parent_report.read_bytes() + b" ")
+    with pytest.raises(ValueError, match="changed"):
+        jobs.diagnose_mapping_candidate(str(root), 4)
+    with pytest.raises(ValueError, match="changed"):
+        jobs.select_mapping_candidate(str(root), 4, "Reject stale parent")
+
+
+@pytest.mark.parametrize("fault", ["roundtrip", "parent", "audit"])
+def test_lane_export_rejects_roundtrip_loss_stale_parent_or_invalid_audit_before_publishing(job_backend, tmp_path, fault):
+    source, audit = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    jobs.propose_mapping_corridors(str(root))
+    jobs.generate_mapping_geometry(str(root), [{"candidate_id": 1, "action": "include", "reason": "Keep source"}], "Unresolved semantics")
+    _attach_lane_native()
+    real = jobs.core().edit_vector_map_relations
+    def changed(path):
+        result = json.loads(real(path))
+        if fault == "parent":
+            parent = root / "geometry-01" / "report.json"
+            parent.write_bytes(parent.read_bytes() + b" ")
+        elif fault == "roundtrip":
+            ir = json.loads(result["map_json"])
+            ir["lanes"] = []
+            result["map_json"] = json.dumps(ir)
+        return json.dumps(result)
+    jobs.core().edit_vector_map_relations = changed
+    if fault == "audit":
+        audit["quality"].pop("low_support_lanes")
+    failed = jobs.generate_mapping_corridor_lanes(str(root), 1, _lane_specs(), "source_span_hypothesis", "Verify reload and hashes")
+    assert failed["attempts"][-1]["status"] == "failed"
+    assert {"parent": "changed", "roundtrip": "retain every", "audit": "low_support_lanes"}[fault] in failed["attempts"][-1]["error"]
+    assert not (root / "candidate-02").exists() and not (root / ".mapping-lock").exists()
+
+
 def test_failed_pointcloud_stage_is_recorded_and_existing_jobs_are_preserved(job_backend, tmp_path, monkeypatch):
     source, _ = job_backend
     def failed(*args, **kwargs):
@@ -620,6 +724,22 @@ def test_native_candidate_contract_audits_saved_osm_and_preserves_failed_trials(
     assert failed["attempts"][-1]["status"] == "failed"
     assert failed["selected"] == selected["selected"]
     assert not (root / "candidate-02").exists()
+
+    if hasattr(native, "build_corridor_lanes"):
+        jobs.propose_mapping_corridors(str(root))
+        jobs.generate_mapping_geometry(str(root), [{"candidate_id": 1, "action": "include", "reason": "Keep actual source edges"}], "Explicit geometry before lane hypotheses")
+        specs = _lane_specs(width=1.)
+        specs[0]["lanes"] = [
+            {"direction": "backward", "kind": "driving", "one_way": True, "fraction": .5, "minimum_width_m": 1.},
+            {"direction": "forward", "kind": "driving", "one_way": True, "fraction": .5, "minimum_width_m": 1.}]
+        lanes = jobs.generate_mapping_corridor_lanes(str(root), 3, specs, "source_span_hypothesis", "Test a two-direction hypothesis without changing outer curves")
+        assert lanes["attempts"][-1]["status"] == "audited_draft", lanes["attempts"][-1]
+        assert lanes["attempts"][-1]["quality"]["lanes_checked"] == 2
+        assert lanes["selected"] == selected["selected"] and lanes["remaining_attempts"] == 0
+        diagnosis = jobs.diagnose_mapping_candidate(str(root), 4)
+        assert diagnosis["editable_and_reopened_match"] is True
+        assert diagnosis["editable"]["complete"] and diagnosis["ground_consensus"]["editable"]["complete"]
+        assert diagnosis["extent"]["passes_requested_extent"] is True
 
 
 def test_native_report_contract_errors_are_persisted(job_backend, tmp_path):

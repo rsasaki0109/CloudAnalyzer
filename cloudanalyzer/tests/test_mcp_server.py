@@ -54,6 +54,11 @@ def test_the_server_answers_over_stdio(tmp_path):
                 await session.initialize()
                 tools = (await session.list_tools()).tools
                 names = {t.name for t in tools}
+                assert {"start_mapping_run", "inspect_mapping_run", "advance_mapping_run"} <= names
+                start_run = next(t for t in tools if t.name == "start_mapping_run")
+                assert set(start_run.model_dump(by_alias=True)["inputSchema"]["required"]) == {"source", "out_dir", "layout_hypothesis"}
+                advance_run = next(t for t in tools if t.name == "advance_mapping_run")
+                assert set(advance_run.model_dump(by_alias=True)["inputSchema"]["required"]) == {"job_dir", "action", "reason", "expected_revision"}
                 assert {"start_mapping_job", "inspect_mapping_job", "propose_mapping_corridors", "inspect_mapping_corridors", "diagnose_mapping_candidate", "generate_mapping_candidate", "select_mapping_candidate"} <= names
                 corridors = next(t for t in tools if t.name == "propose_mapping_corridors")
                 schema = corridors.model_dump(by_alias=True)["inputSchema"]

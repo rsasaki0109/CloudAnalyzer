@@ -228,9 +228,13 @@ Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/
 
 ## `ca`: the command line, for CI and AI agents
 
-[Agent-controlled mapping jobs](docs/commands/mapping-job.md) connect raw-recording
-point-map generation with HD-road drafting. An agent starts a job, tests explicit
-road hypotheses, reads source/validation evidence and selects a retained draft.
+[Agent-driven mapping runs](docs/commands/mapping-run.md) connect raw-recording
+point-map generation with HD-road drafting. Give a calling MCP agent the log and
+one explicit lane-layout hypothesis; it inspects source candidates, records
+include/defer choices, generates/audits drafts and returns both artifact sets.
+The runner binds per-piece lane settings automatically and resumes completed
+stages after interruption. [Individual mapping tools](docs/commands/mapping-job.md)
+remain available for separate experiments and explicit draft selection.
 Recording/input/native hashes, bounded attempts and decision reasons persist across
 tool calls. Source holds and unresolved traffic rules stay visible in the result.
 

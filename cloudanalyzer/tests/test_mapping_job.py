@@ -30,6 +30,135 @@ def _attach_lane_native():
     return native
 
 
+def _run_layout(width=1.5):
+    spec = _lane_specs(width=width)[0]
+    return {"boundary_policy": "source_span_hypothesis", **{k: spec[k] for k in ("reason", "lanes", "speed_limit_kmh")}}
+
+
+@pytest.mark.parametrize("proposal_id", [1, 37])
+def test_agent_run_binds_one_layout_rejects_stale_replay_and_returns_both_maps(job_backend, tmp_path, proposal_id):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    _attach_lane_native()
+    report = _corridor_report()
+    report["candidates"][0]["id"] = proposal_id
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    root = tmp_path / "run"
+    layout = tmp_path / "layout.json"
+    layout.write_text(json.dumps(_run_layout()))
+    started = CliRunner().invoke(app, ["mapping-run", str(source), "--out", str(root), "--layout", str(layout)])
+    assert started.exit_code == 0, started.output
+    run = json.loads(started.stdout)
+    assert run["status"] == "needs_agent" and run["reviewed_candidates"] == [] and run["revision"] == 0
+    observed_id = run["candidate_index"]["candidate_index"][0]["id"]
+    choices = [{"candidate_id": observed_id, "action": "include", "reason": "Retain observed source span"}]
+    with pytest.raises(ValueError, match="inspect candidates"):
+        runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Read evidence first", 0)
+    run = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [observed_id]}, "Read original cross-sections", 0)
+    assert run["observation"][0]["sections"][0]["station_m"] == 0.
+    run = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Explicit source-span hypothesis", run["revision"])
+    assert run["draft_result"]["status"] == "audited_draft" and run["remaining_attempts"] == 4
+    assert run["draft_result"]["diagnosis"]["extent"]["passes_requested_extent"] is True
+    before = (root / "run.json").read_bytes()
+    with pytest.raises(ValueError, match="stale"):
+        runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Do not replay a completed stage", 1)
+    assert (root / "run.json").read_bytes() == before
+    action = tmp_path / "finish.json"
+    action.write_text(json.dumps({"type": "finish", "candidate_id": 2}))
+    finished = CliRunner().invoke(app, ["mapping-run-advance", str(root), "--action", str(action), "--revision", str(run["revision"]),
+                                     "--reason", "Deliver both draft maps with source and semantic holds"])
+    assert finished.exit_code == 0, finished.output
+    final = json.loads(finished.stdout)
+    assert final["status"] == "finished" and final["output"]["status"] == "draft_needs_review"
+    assert {"map", "trajectory", "hd_map", "hd_editable_map", "hd_source_audits"} <= final["output"]["artifacts"].keys()
+    assert final["output"]["road_semantics_inferred"] is False and jobs.inspect_mapping_job(str(root))["selected"] is None
+    inspect = CliRunner().invoke(app, ["mapping-run-inspect", str(root)])
+    assert inspect.exit_code == 0 and json.loads(inspect.stdout)["output"] == final["output"]
+    (root / "layout-hypothesis.json").write_text(json.dumps(_run_layout(width=1.)))
+    with pytest.raises(ValueError, match="changed"):
+        runs.inspect_mapping_run(str(root))
+
+
+def test_agent_run_retains_failed_layout_without_changing_policy_or_selecting(job_backend, tmp_path):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    _attach_lane_native()
+    root = tmp_path / "run"
+    runs.start_mapping_run(str(source), str(root), _run_layout(width=3.), max_attempts=2)
+    runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1]}, "Read narrow source span", 0)
+    run = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [{"candidate_id": 1, "action": "include", "reason": "Test minimum width"}]},
+                                    "Record width failure", 1)
+    assert run["draft_result"]["status"] == "failed" and "minimum" in run["draft_result"]["error"]
+    assert run["remaining_attempts"] == 0 and run["layout_hypothesis"] == _run_layout(width=3.)
+    assert not (root / "candidate-02").exists()
+    final = runs.advance_mapping_run(str(root), {"type": "finish", "candidate_id": None}, "No lane fits this fixed layout", 2)
+    assert final["output"]["status"] == "hd_unavailable" and "hd_map" not in final["output"]["artifacts"]
+
+
+def test_agent_run_retries_another_observed_band_with_unchanged_layout(job_backend, tmp_path):
+    from copy import deepcopy
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    _attach_lane_native()
+    report = _corridor_report()
+    alternative = deepcopy(report["candidates"][0])
+    alternative.update({"id": 9, "minimum_support_span_m": 4., "maximum_support_span_m": 4.})
+    for section in alternative["sections"]:
+        section["left"][1], section["right"][1] = 2., -2.
+        section["support_span_m"] = 4.
+    report["candidates"].append(alternative)
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    root = tmp_path / "run"
+    runs.start_mapping_run(str(source), str(root), _run_layout(width=3.), max_attempts=4)
+    runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1, 9]}, "Read competing source bands", 0)
+    first = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [{"candidate_id": 1, "action": "include", "reason": "Test narrow band"}]},
+                                     "Retain failed hypothesis", 1)
+    assert first["draft_result"]["status"] == "failed"
+    second = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [{"candidate_id": 9, "action": "include", "reason": "Try inspected alternate source geometry"}]},
+                                      "Another band, identical lane assumptions", 2)
+    assert second["draft_result"]["status"] == "audited_draft" and second["remaining_attempts"] == 0
+    assert second["layout_hypothesis"] == _run_layout(width=3.)
+    assert not (root / "candidate-02").exists() and (root / "candidate-04").exists()
+    final = runs.advance_mapping_run(str(root), {"type": "finish", "candidate_id": 4}, "Deliver retained alternate draft", 3)
+    assert final["output"]["candidate_id"] == 4 and jobs.inspect_mapping_job(str(root))["selected"] is None
+
+
+@pytest.mark.parametrize("after_lane", [False, True])
+def test_agent_run_resumes_interrupted_stage_without_spending_attempts_twice(job_backend, tmp_path, monkeypatch, after_lane):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    _attach_lane_native()
+    root = tmp_path / "run"
+    runs.start_mapping_run(str(source), str(root), _run_layout(), max_attempts=2)
+    runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1]}, "Read candidate evidence", 0)
+    original = jobs.generate_mapping_corridor_lanes
+    def interrupted(*args, **kwargs):
+        if after_lane:
+            original(*args, **kwargs)
+        raise KeyboardInterrupt()
+    monkeypatch.setattr(jobs, "generate_mapping_corridor_lanes", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [{"candidate_id": 1, "action": "include", "reason": "Keep source"}]},
+                                 "Draft and continue after interruption", 1)
+    assert runs.inspect_mapping_run(str(root))["status"] == "interrupted"
+    assert not (root / ".mapping-run-lock").exists()
+    monkeypatch.setattr(jobs, "generate_mapping_corridor_lanes", original)
+    run = runs.advance_mapping_run(str(root), {"type": "resume"}, "Continue retained stages", 2)
+    assert run["draft_result"]["status"] == "audited_draft" and run["remaining_attempts"] == 0
+    assert len(jobs.inspect_mapping_job(str(root))["attempts"]) == 2
+    assert [a["id"] for a in jobs.inspect_mapping_job(str(root))["attempts"]] == [1, 2]
+
+
+def test_agent_run_validates_layout_before_raw_processing(job_backend, tmp_path):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    bad = _run_layout()
+    bad["lanes"][0]["direction"] = "infer"
+    with pytest.raises(ValueError):
+        runs.start_mapping_run(str(source), str(tmp_path / "run"), bad)
+    assert not (tmp_path / "run").exists()
+
+
 def _corridor_report():
     return {"schema": "cloudanalyzer.corridor_proposals.v1", "coordinate_frame": "input_metres", "protocol": {},
         "trajectory_length_m": 10., "with_candidate_station_length_m": 10., "without_candidate_station_length_m": 0.,

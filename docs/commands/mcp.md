@@ -17,6 +17,9 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 
 | Tool | What it does |
 |---|---|
+| `start_mapping_run(source, out_dir, layout_hypothesis, max_attempts?, minimum_retained_fraction?, keyframe_spacing?, remove_dynamic?, pointcloud_topic?, imu_topic?)` | Start the calling agent's raw-log-to-both-maps loop with one fixed unverified layout; return observations and decision guidance ([workflow](mapping-run.md)) |
+| `inspect_mapping_run(job_dir, offset?)` | Resume saved agent-run state, paged candidate observations, attempts and output paths without processing |
+| `advance_mapping_run(job_dir, action, reason, expected_revision)` | Execute inspect/draft/resume/finish decisions; bind per-piece lane settings, run export/audits, retain failures and deliver both map artifacts with holds |
 | `start_mapping_job(source, out_dir, keyframe_spacing?, remove_dynamic?, max_attempts?, pointcloud_topic?, imu_topic?, minimum_retained_fraction?)` | Start an agent-controlled raw-recording job, generating the point-cloud map and corrected trajectory with hashes, processing reports and an explicit retained-extent goal ([workflow](mapping-job.md)) |
 | `inspect_mapping_job(job_dir)` | Read persisted artifacts, attempts, source holds and remaining budget without loading clouds |
 | `propose_mapping_corridors(job_dir, search_radius_m?)` | Generate cached low-surface corridor geometry and width/edge evidence before assigning lanes; no HD attempt is spent |

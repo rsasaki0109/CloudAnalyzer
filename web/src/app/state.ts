@@ -5,6 +5,7 @@ import type { RampName } from "../colormap";
 import type { LodNode } from "../lod";
 import type { C2cOutput, LoadedCloud, Vec3 } from "../protocol";
 import { Viewer } from "../viewer";
+import type { ProcessingRecord } from "../filter-recipe";
 import { $ } from "./dom";
 
 export type ColorMode =
@@ -35,6 +36,8 @@ export interface Entry {
   /** Transforms applied by ICP, newest last, for undo. */
   transforms: number[][];
   origin: Origin;
+  /** Recorded input/output identity at recipe execution, before later edits. */
+  processing?: ProcessingRecord;
 }
 
 export const viewer = new Viewer($("viewport"));

@@ -12,6 +12,7 @@ import "./app/volume";
 import "./app/raster";
 import "./app/mesh";
 import "./app/processing";
+import "./app/filter-recipe";
 import "./app/segment";
 import "./app/clip";
 import "./app/copc-box";

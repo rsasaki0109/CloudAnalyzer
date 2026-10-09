@@ -98,6 +98,10 @@ Files never leave the browser.
 - Workspace ZIPs prepare every point/mesh, map and original graph input before
   committing. Failed or cancelled preparation retains current work and Undo;
   success starts a fresh history. Preparation temporarily holds both workspaces.
+- Reusable filter recipes apply up to eight ordered steps to sixteen selected
+  point clouds, with one Undo for the whole batch. Results retain input/output
+  point-record and WASM-build hashes in portable workspace snapshots. Failed,
+  cancelled or stale preparation leaves sources and existing history available.
 - Large files: LAS and binary PLY/PCD are streamed in 16 MB slices, so the
   file is never held in memory whole; files above the "Max points per file"
   setting (50M by default) keep every n-th point. LAZ is thinned while it is

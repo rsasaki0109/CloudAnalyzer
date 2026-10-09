@@ -112,3 +112,49 @@ The fault tests run in `workspace-transaction.spec.ts`. Opt into the real NCLT
 restore using `CLOUDANALYZER_TRANSACTION_ZIP=/path/to/nclt-complete-workspace.zip`
 with that test file; it reuses the previous immutable workspace and compares
 exported point records, saved graph and HD map exactly without regenerating them.
+
+## Apply and keep a reusable filter recipe
+
+Open **Reusable filter recipe** in Filters. Choose an operation and its parameters
+in the existing filter controls, then press **Add current filter step**. Steps run
+in the displayed order; remove a step to change the sequence. Give it a name and
+use **Save recipe** to share its JSON. **Open recipe** loads instructions for
+inspection; it does not execute them or select source clouds.
+
+Select source checkboxes, or press **Select visible clouds**, then **Run recipe on
+selected clouds**. Version 1 supports voxel subsampling, minimum-distance
+subsampling, octree subsampling, SOR and splat cleanup. Random sampling and CSF
+remain in the individual-cloud controls. Splat cleanup requires splat attributes
+in every selected source. Recipes have at most eight steps and sixteen point-cloud
+sources, with at most four million loaded points per batch. The selected-source
+native memory estimate is limited to 256 MiB and each canonical point-record
+export to 64 MiB; these are bounds/estimates, not a process-memory guarantee.
+
+All results are prepared before originals are hidden. Sources remain in the
+workspace, and one cloud Undo step restores the whole batch; Redo restores its
+results and processing records. Cancellation, a later step/source failure, or a
+current-work edit before commit discards temporary results and retains original
+points and the preceding Undo history. Cancellation is cooperative between native
+calls and indexing steps. Only final outputs are registered; intermediate clouds
+are freed as the sequence progresses. Preparation still needs extra memory.
+The final step must fit the configured cloud Undo byte budget and at least one
+history step. If it does not, the recipe refuses to hide sources and reports the
+required estimated MiB. Increase **Memory and Undo** limits before retrying.
+Existing older steps can be evicted to fit a successful new batch, as with other
+cloud edits; a refused batch does not evict them.
+Voxel sizes below the supported grid range for a cloud's extent are refused in
+both individual filters and recipes; the status gives a safe minimum.
+
+Each result has a **Recipe** button to download its processing record: ordered
+parameters, actual WASM-build SHA-256, source name/count, and complete SHA-256
+digests of the input and output native PLY exports. These exports contain current
+loaded records, current coordinates and native attributes. They do not identify
+unloaded source density, certify a map, or guarantee matching future kernels.
+The record describes the result when generated; later point edits do not rewrite
+that historical output hash.
+
+Use **Save workspace snapshot** or record-inclusive browser recovery to keep the
+results and records together. Plain metadata projects keep only source-backed
+clouds; export derived point records separately or choose a workspace snapshot.
+Display-preview sources keep their preview flag on recipe outputs: filtering does
+not turn a preview into full-density evidence. Filters do not modify the HD map.

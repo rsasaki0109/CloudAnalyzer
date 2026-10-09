@@ -1,5 +1,6 @@
 // Promise-based client for the WASM worker.
 import { projectChanged } from "./project-change";
+import type { FilterRecipe } from "./filter-recipe";
 
 import type {
   C2cOutput,
@@ -48,7 +49,7 @@ const mapEdits = new Set(["open", "apply", "feature-edit", "relations-edit", "re
 function editsProject(req: Request): boolean {
   if (req.kind === "vm") return mapEdits.has(req.op);
   if (req.kind.startsWith("pg-")) return !["pg-project-save", "pg-register", "pg-find-loops", "pg-export", "pg-map"].includes(req.kind);
-  return ["load", "load-url", "remove", "transform", "icp", "c2c", "workspace-commit"].includes(req.kind);
+  return ["load", "load-url", "remove", "transform", "icp", "c2c", "set-field", "normals", "workspace-commit"].includes(req.kind);
 }
 
 export function prepareWorkspace(params: Omit<Extract<Request, {kind:"workspace-prepare"}>,"kind">, progress: (p:Progress)=>void, signal:AbortSignal): Promise<PreparedWorkspace> {
@@ -242,6 +243,13 @@ export async function alignPairs(
 export function filterCloud(id: number, op: FilterOp, a: number, b = 0): Promise<LoadedCloud> {
   return call({ kind: "filter", id, op, a, b });
 }
+
+/** Stage all recipe results in one request; current source clouds are unchanged. */
+export function filterBatch(sources: {id:number;name:string}[], recipe: FilterRecipe, progress: (p:Progress)=>void, signal:AbortSignal): Promise<LoadedCloud[]> {
+  return call({kind:"filter-batch",sources,recipe},[],progress,signal);
+}
+/** Release an unpublished derived result without marking current work edited. */
+export function discardCloud(id:number):Promise<void>{return call({kind:"discard-cloud",id});}
 
 /** Cut/fill volume between two surfaces (clouds, meshes or constant heights). */
 export function computeVolume(params: Omit<Extract<Request, { kind: "volume" }>, "kind">): Promise<VolumeOutput> {

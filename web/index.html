@@ -354,6 +354,23 @@
           </label>
         </div>
         <button id="filter-run" class="primary" disabled>Apply to a new cloud</button>
+        <details id="recipe-panel">
+          <summary>Reusable filter recipe</summary>
+          <label>Name <input id="recipe-name" value="Point cleanup" maxlength="80" /></label>
+          <button id="recipe-add">Add current filter step</button>
+          <ol id="recipe-steps"></ol>
+          <button id="recipe-export">Save recipe</button>
+          <button id="recipe-import">Open recipe…</button>
+          <input id="recipe-file" type="file" accept=".json" hidden />
+          <p class="hint">Up to 8 steps: voxel, minimum distance, octree, SOR or splat cleanup.
+            Applies to current loaded records in their current coordinates.</p>
+          <button id="recipe-visible">Select visible clouds</button>
+          <div id="recipe-clouds" aria-label="Recipe source clouds"></div>
+          <button id="recipe-run" class="primary" disabled>Run recipe on selected clouds</button>
+          <p id="recipe-status" role="status"></p>
+          <p class="hint">All results are prepared before hiding sources. One Undo restores the batch.
+            Preparation needs extra memory. Save a workspace snapshot to keep results and processing records.</p>
+        </details>
       </section>
 
       <section id="merge-panel">

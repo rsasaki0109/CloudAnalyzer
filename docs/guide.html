@@ -672,6 +672,12 @@
         committing. Failed or cancelled preparation leaves current work and Undo available. Editing
         current work during staging prevents replacement. Preparation temporarily needs memory for
         both workspaces; cancellation is handled between parsing and indexing steps.</li>
+      <li>Under Filters, <b>Reusable filter recipe</b> saves an ordered sequence of voxel, minimum-distance,
+        octree, SOR or splat-cleanup steps. Select point clouds and run the recipe; all results are
+        prepared before sources are hidden. One Undo restores the batch. Result <b>Recipe</b> buttons
+        download processing records with parameters and input/output/build hashes. Keep results and
+        records together with a workspace snapshot. Recipes are bounded to 8 steps, 16 clouds and
+        4 million loaded points; preparation needs extra memory. Preview inputs remain previews.</li>
       <li>Browser autosave and <b>Save project</b> keep metadata and source references. Use a workspace snapshot
         or a separate result export to keep processed point records.</li>
       <li>A link like <code>…/app/?url=https://example.com/scan.laz</code> opens a remote file directly (the

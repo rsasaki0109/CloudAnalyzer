@@ -45,6 +45,7 @@ export function captureSession(includeDerived = false): Session {
       .filter((e) => includeDerived || e.origin.kind !== "derived")
       .map((e) => ({
         name: e.cloud.name,
+        processing: e.processing,
         displayPreview: e.origin.displayPreview || undefined,
         url: e.origin.kind === "url" ? e.origin.url : undefined,
         visible: e.visible,
@@ -107,6 +108,7 @@ async function restorePending(): Promise<void> {
       continue;
     }
     if (restored.has(entry.cloud.id)) continue;
+    entry.processing = saved.processing;
     entry.origin.displayPreview = entry.origin.displayPreview || saved.displayPreview;
     if (restoreExactTransforms && JSON.stringify(entry.transforms) !== JSON.stringify(saved.transforms)) {
       // Existing sources may already be moved; return them to their source frame.

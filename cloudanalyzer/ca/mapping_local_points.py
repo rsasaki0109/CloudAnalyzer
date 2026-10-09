@@ -103,20 +103,27 @@ def validate_region(gap_evidence: dict[str, Any], cid: int, gap_ids: Any, bounds
     return box
 
 
-def preview(root: Path, cid: int, gap_evidence: dict[str, Any], frame_evidence: dict[str, Any],
+def preview(root: Path, cid: int, gap_evidence: dict[str, Any], frame_evidence: dict[str, Any] | None,
             gap_ids: Any, bounds_xy: Any) -> dict[str, Any]:
     with jobs._locked(root):
         job = jobs._load(root); jobs._inputs(job)
         retries._parent(job, cid)
-        gaps, saved = _read(gap_evidence), _read(frame_evidence)
+        gaps = _read(gap_evidence)
+        saved = _read(frame_evidence) if frame_evidence is not None else gaps
         retries._verify_inputs(gaps['inputs']); retries._verify_inputs(saved['inputs'])
-        if gaps['candidate_id'] != cid or saved['candidate_id'] != cid or saved['inputs']['gap_evidence'] != gap_evidence:
+        if gaps['candidate_id'] != cid or saved['candidate_id'] != cid or (frame_evidence is not None and saved['inputs']['gap_evidence'] != gap_evidence):
             raise ValueError("local point preview needs matching gap and unused-frame observations")
-        if saved['protocol'] != frames.PROTOCOL:
+        if frame_evidence is not None and saved['protocol'] != frames.PROTOCOL:
             raise ValueError("unused-frame consistency protocol changed")
         box = validate_region(gap_evidence, cid, gap_ids, bounds_xy)
-        inputs = {**saved['inputs'], 'frame_evidence': frame_evidence, 'gap_evidence': gap_evidence}
+        inputs = {**saved['inputs'], 'gap_evidence': gap_evidence}
+        if frame_evidence is not None:
+            inputs['frame_evidence'] = frame_evidence
+        else:
+            inputs['raw_manifest'] = gaps['raw_manifest']
         request = {'candidate_id': cid, 'gap_ids': gap_ids, 'bounds_xy': bounds_xy}
+        if frame_evidence is None:
+            request['strategy'] = 'density'
         suffix = hashlib.sha256(json.dumps(request, sort_keys=True).encode()).hexdigest()[:16]
         path = root / f'local-points-{cid:02d}-{suffix}.json'
         if path.exists():
@@ -129,14 +136,14 @@ def preview(root: Path, cid: int, gap_evidence: dict[str, Any], frame_evidence: 
             holds = ['no_outside_baseline_points'] if selected.all() else []
             eligible = []
             module = jobs.core(); assert module is not None
-            for row in saved['frames']:
+            for row in saved.get('frames', []):
                 if not row['eligible'] or not any(g['gap_id'] in gap_ids for g in row['gap_observations']): continue
                 jobs._verify(row['raw_frame'])
                 xyz = frames._align(np.asarray(module.read(row['raw_frame']['path'])['positions']), np.asarray(row['pose_hypothesis']))
                 count = int(np.count_nonzero((xyz[:,0] >= box[0]) & (xyz[:,1] >= box[1]) & (xyz[:,0] < box[2]) & (xyz[:,1] < box[3])))
                 if count >= frames.PROTOCOL['minimum_gap_returns']:
                     eligible.append({'frame_id': row['frame_id'], 'raw_returns_inside': count})
-            if not eligible: holds.append('no_eligible_unused_frames_observe_box')
+            if frame_evidence is not None and not eligible: holds.append('no_eligible_unused_frames_observe_box')
             report = {'schema': 'cloudanalyzer.local_point_preview.v1', 'request': request, 'inputs': inputs,
                 'protocol': PROTOCOL, 'effective_bounds_xy': box, 'pointcloud_options': saved['pointcloud_options'],
                 'inside_points': int(selected.sum()), 'outside_points': int((~selected).sum()),
@@ -146,6 +153,7 @@ def preview(root: Path, cid: int, gap_evidence: dict[str, Any], frame_evidence: 
             jobs._inputs(job); retries._verify_inputs(inputs); jobs._save(path, report)
         retries._verify_inputs(report['inputs'])
         return {'file': jobs._artifact(path), 'candidate_id': cid, 'gap_ids': gap_ids,
+            'strategy': report['request'].get('strategy', 'unused_frames'),
             'requested_bounds_xy': bounds_xy, 'effective_bounds_xy': report['effective_bounds_xy'],
             'inside_points': report['inside_points'], 'outside_points': report['outside_points'],
             'outside_records_sha256': report['outside_records_sha256'],
@@ -159,10 +167,22 @@ def validate(evidence: dict[str, Any], frame_evidence: dict[str, Any], cid: int,
     frames.validate(frame_evidence, frame_ids)
     if report['holds']:
         raise ValueError("local point preview is held: " + ', '.join(report['holds']))
-    if report['protocol'] != PROTOCOL or report['request']['candidate_id'] != cid or report['inputs']['frame_evidence'] != frame_evidence:
+    if report['protocol'] != PROTOCOL or report['request']['candidate_id'] != cid or report['inputs'].get('frame_evidence') != frame_evidence:
         raise ValueError("local point preview belongs to another decision or protocol")
     if not set(frame_ids) <= {r['frame_id'] for r in report['eligible_frames']}:
         raise ValueError("choose inspected eligible frames observing the local box")
+    return report
+
+
+def validate_density(evidence: dict[str, Any], gap_evidence: dict[str, Any], cid: int,
+                     options: Any) -> dict[str, Any]:
+    report = _read(evidence); retries._verify_inputs(report['inputs'])
+    if (report['protocol'] != PROTOCOL or report['request'].get('strategy') != 'density'
+        or report['request']['candidate_id'] != cid or report['inputs']['gap_evidence'] != gap_evidence):
+        raise ValueError("local density preview belongs to another decision or strategy")
+    if report['holds']:
+        raise ValueError("local density preview is held: " + ', '.join(report['holds']))
+    retries.validate(gap_evidence, report['request']['gap_ids'], options)
     return report
 
 

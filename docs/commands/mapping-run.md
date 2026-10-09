@@ -389,13 +389,57 @@ retaining existing geometry/routes; June rejects a new failure on a retained lan
 and returns the unchanged original pair. Point counts and source support do not
 establish independent accuracy or road semantics.
 
+### Increase density only inside an inspected region
+
+When an inspected gap suggests testing less thinning, use the original retained
+frames for a local density trial. No unused-frame inspection or added frame is
+needed. First inspect the root's relevant gap pages, then preview the box:
+
+```json
+{"type": "inspect_local_density", "candidate_id": 3, "gap_ids": [3], "bounds_xy": [14, -3, 23, 6]}
+```
+
+Pass the exact returned `local_point_observation.file` to the density retry:
+
+```json
+{"type": "retry_local_density", "candidate_id": 3, "preview_file": {"path": "/absolute/run/local-points-03-REQUEST_HASH.json", "sha256": "RETURNED_SHA256", "bytes": 1234}, "options": {"scan_voxel_m": 0.2, "map_voxel_m": 0.1}}
+```
+
+Use actual coordinates, IDs and artifact fields from your observations. Options
+follow the existing density bounds: scan voxels at least 0.1 m, map voxels at
+least 0.05 m, neither larger than the baseline, and at least one strictly smaller.
+Invalid options or a preview from the unused-frame strategy spend no allocation.
+The box stays aligned to the **original** voxel grid and remains frozen while
+candidate density changes. Preview hashes include the strategy, so identical
+boxes for density and unused-frame trials are distinct inspected decisions.
+
+The full density candidate still uses exactly the original retained frame IDs
+and corrected poses. It adds no non-keyframes, changes no motion and retains the
+original graph/trajectory bytes. Only inside candidate records replace baseline
+points; outside attributes/relative record order are exact. Finer returns can
+change dynamic-filter outcomes even though the filter policy is fixed.
+
+The same four retained-HD audits, one-root-retry allocation, minimum three
+remaining HD attempts, combined local HD patch requirement, explicit comparison
+and adoption, and failed-trial baseline delivery apply. Density, unused-frame and
+both local strategies share the same single retry; they cannot be chained or
+automatically reallocated within one run. Source observations do not establish
+that thinning caused the gap or that more points improve accuracy.
+
+The [NCLT local density trials](../../benchmarks/vector-map/nclt-local-density/README.md)
+keep all original frames and outside records. April explicitly delivers a 4 m
+HD addition with no lost interval. June's existing-HD audits pass, but its new
+boundary has a height mismatch; the agent stops before a known-held patch and
+returns the original pair. The full-drive extent goals remain unmet.
+
 ### Repair HD gaps while retaining the existing map
 
 After a point-fusion retry, the child can add source-supported missing HD
 intervals without replacing the root's retained geometry. This first patch is
 limited to one forward one-way lane per piece, 1–32 new lanes and 256 total lanes.
 The point map remains the **complete fusion trial** for ordinary density and
-unused-frame retries. Only `retry_local_frames` uses the spatial replacement above.
+unused-frame retries. `retry_local_frames` and `retry_local_density` use the spatial
+replacement above.
 
 Inspect the root's actual baseline gap pages, then the child's fresh source
 sections. Draft **only** additions inside the gaps you choose. Each added lane

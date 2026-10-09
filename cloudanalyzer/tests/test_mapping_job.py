@@ -2048,3 +2048,123 @@ def test_local_point_connection_preview_holds_connectors_leaving_the_update_box(
     observed=_advance(child,{'type':'inspect_connections','candidate_id':3,'offset':0})['connection_observation']
     assert observed['candidates_total']==0
     assert any(r['from']==9 and r['to']==6 and 'outside_local_point_update_bounds' in r['holds'] for r in observed['rejected'])
+
+
+def _local_density_preview(root):
+    return _advance(root, {'type':'inspect_local_density','candidate_id':2,'gap_ids':[1],
+                          'bounds_xy':[2.,-1.6,8.,1.6]})['local_point_observation']
+
+
+def _local_density_action(preview, options=None):
+    return {'type':'retry_local_density','candidate_id':2,'preview_file':preview['file'],
+            'options':options or {'scan_voxel_m':.2,'map_voxel_m':.1}}
+
+
+def test_local_density_updates_inside_records_without_unused_frames_and_keeps_hd(unused_frame_run):
+    from ca import mapping_local_points as local
+    root=unused_frame_run;before=jobs._load(root)
+    base_file=before['pointcloud']['files']['map'];base_bytes=Path(base_file['path']).read_bytes()
+    preview=_local_density_preview(root)
+    assert preview['eligible_frame_ids']==[] and preview['holds']==[]
+    assert not list(root.glob('unused-frames-*.json'))
+    result=_advance(root,_local_density_action(preview));stage=result['pointcloud_retry_result']['stage']
+    assert stage['status']=='ready' and stage['strategy']=='local_density',result
+    child=root/'pointcloud-retry';cj=jobs.inspect_mapping_job(str(child))
+    _,base=local.records(Path(base_file['path']));_,updated=local.records(Path(cj['pointcloud']['files']['map']['path']))
+    box=preview['effective_bounds_xy']
+    assert updated[~local.mask(updated,box)].tobytes()==base[~local.mask(base,box)].tobytes()
+    assert Path(base_file['path']).read_bytes()==base_bytes
+    report=json.loads(Path(cj['pointcloud']['reports']['correction']).read_text())
+    original_report=json.loads(Path(before['pointcloud']['reports']['correction']).read_text())
+    assert report['nodes']==original_report['nodes'] and report['unmatched_scans']==6
+    assert 'additional_frame_ids' not in cj['pointcloud'] and not list(child.glob('fusion-scans*'))
+    assert cj['pointcloud_options']['scan_voxel_m']==.2 and cj['pointcloud_options']['map_voxel_m']==.1
+    for key in ('graph','trajectory'):
+        assert cj['pointcloud']['files'][key]['sha256']==before['pointcloud']['files'][key]['sha256']
+    _advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Only source-supported local addition'}]})
+    with pytest.raises(ValueError,match='combined HD patch'):_advance(root,{'type':'compare_retry','candidate_id':2})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft',patched
+    comparison=_advance(root,{'type':'compare_retry','candidate_id':3})['retry_comparison']
+    assert comparison['local_point_update']['outside_records_bit_identical'] and comparison['lost_source_length_m']==0
+    _advance(child,{'type':'finish','candidate_id':3})
+    final=_advance(root,{'type':'finish_retry','candidate_id':3})
+    assert final['output']['artifacts']['map']==cj['pointcloud']['files']['map']
+
+
+@pytest.mark.parametrize('options',[{'scan_voxel_m':.4,'map_voxel_m':.2},
+    {'scan_voxel_m':.05,'map_voxel_m':.1},{'scan_voxel_m':True,'map_voxel_m':.1},
+    {'scan_voxel_m':.2,'map_voxel_m':.1,'remove_dynamic':False}])
+def test_local_density_invalid_options_do_not_consume_a_retry(unused_frame_run,options):
+    root=unused_frame_run;preview=_local_density_preview(root)
+    before=(root/'run.json').read_bytes()
+    with pytest.raises(ValueError):_advance(root,_local_density_action(preview,options))
+    assert before==(root/'run.json').read_bytes() and 'pointcloud_retry' not in jobs._load(root)
+    assert not (root/'pointcloud-retry').exists()
+
+
+@pytest.mark.parametrize('fault',['unseen','tampered','frame_strategy'])
+def test_local_density_requires_seen_preview_for_the_density_strategy(unused_frame_run,fault):
+    root=unused_frame_run;preview=_local_density_preview(root)
+    if fault=='unseen':
+        run=json.loads((root/'run.json').read_text());run['history'][-1].pop('local_point_observation');jobs._save(root/'run.json',run)
+    elif fault=='tampered':
+        Path(preview['file']['path']).write_text('{}')
+    else:
+        preview=_local_preview(root)
+    with pytest.raises(ValueError):_advance(root,_local_density_action(preview))
+    assert 'pointcloud_retry' not in jobs._load(root) and not (root/'pointcloud-retry').exists()
+
+
+def test_frame_retry_cannot_use_a_density_preview(unused_frame_run):
+    root=unused_frame_run;preview=_local_density_preview(root);_inspect_unused(root)
+    with pytest.raises(ValueError,match='another decision or protocol'):_advance(root,_local_action(preview))
+    assert 'pointcloud_retry' not in jobs._load(root)
+
+
+def test_local_density_completed_retry_resumes_without_recomputing(unused_frame_run,monkeypatch):
+    from ca import mapping_retry as retry
+    root=unused_frame_run;preview=_local_density_preview(root);original=retry.retry
+    def interrupted(*args,**kwargs):original(*args,**kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(retry,'retry',interrupted)
+    with pytest.raises(KeyboardInterrupt):_advance(root,_local_density_action(preview))
+    monkeypatch.setattr(retry,'retry',original)
+    monkeypatch.setattr(retry,'fix_session',lambda *args,**kwargs:pytest.fail('completed fusion must not repeat'))
+    resumed=_advance(root,{'type':'resume'})
+    assert resumed['pointcloud_retry_result']['status']=='ready' and resumed['remaining_attempts']==0
+    assert jobs._load(root)['pointcloud_retry']['allocated_attempts']==4
+    with pytest.raises(ValueError,match='one point-cloud retry'):_advance(root,_local_density_action(preview))
+
+
+def test_local_density_retained_support_failure_returns_original_pair(unused_frame_run,monkeypatch):
+    root=unused_frame_run;preview=_local_density_preview(root);original=jobs.core().audit_vector_map_quality_details
+    def regressed(*args):
+        report=json.loads(original(*args));report['quality']['lanes'][0]['left']['start_supported']=False
+        return json.dumps(report)
+    monkeypatch.setattr(jobs.core(),'audit_vector_map_quality_details',regressed)
+    stage=_advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and not stage['local_update']['passes']
+    child=jobs._load(root/'pointcloud-retry');assert child['pointcloud'] is None and child['attempts']==[]
+    final=_advance(root,{'type':'finish','candidate_id':2})['output']
+    assert not final['pointcloud_retry_decision']['adopted']
+    assert final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+    assert final['artifacts']['hd_map']==jobs._load(root)['attempts'][1]['files']['map']
+    assert final['artifacts']['pointcloud_trial_local_checks']==stage['local_update']['checks']
+
+
+def test_local_density_rejects_changed_fusion_frame_ids_before_map_publication(unused_frame_run,monkeypatch):
+    from ca import mapping_retry as retry
+    root=unused_frame_run;preview=_local_density_preview(root);original=retry.fix_session
+    def altered(*args,**kwargs):
+        result=original(*args,**kwargs)
+        path=Path(result['outputs']['g2o']);graph=jobs.core().PoseGraph.from_g2o(path.read_text())
+        path.write_text(jobs.core().PoseGraph.from_poses(graph.poses(),ids=[i+100 for i in graph.node_ids]).to_g2o())
+        return result
+    monkeypatch.setattr(retry,'fix_session',altered)
+    stage=_advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and 'retained frames or frozen poses' in stage['error']
+    assert 'local_update' not in stage and jobs._load(root/'pointcloud-retry')['pointcloud'] is None
+    final=_advance(root,{'type':'finish','candidate_id':2})['output']
+    assert final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']

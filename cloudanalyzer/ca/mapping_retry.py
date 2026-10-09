@@ -195,10 +195,11 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
         saved = validate(evidence, gap_ids, options) if frame_ids is None else frames.validate(evidence, frame_ids)
         strategy = "density" if frame_ids is None else "unused_frames"
         if local_evidence is not None:
-            local_preview = local.validate(local_evidence, evidence, cid, frame_ids)
+            local_preview = (local.validate_density(local_evidence, evidence, cid, options) if frame_ids is None
+                             else local.validate(local_evidence, evidence, cid, frame_ids))
             if gap_ids != local_preview['request']['gap_ids']:
                 raise ValueError("local update gap choice changed")
-            strategy = "local_unused_frames"
+            strategy = "local_density" if frame_ids is None else "local_unused_frames"
         if frame_ids is not None and options != saved["pointcloud_options"]:
             raise ValueError("unused-frame fusion must keep original thinning resolutions")
         if saved["candidate_id"] != cid:
@@ -253,6 +254,16 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
             reference = np.loadtxt(job["pointcloud"]["files"]["trajectory"]["path"])
             if motion.shape != reference.shape or not np.allclose(motion, reference, atol=1e-10, rtol=0):
                 raise ValueError("density trial changed frozen motion")
+            if frame_ids is None and local_evidence is not None:
+                module = jobs.core(); assert module is not None
+                original_graph = module.PoseGraph.from_g2o(Path(job['pointcloud']['files']['graph']['path']).read_text())
+                fused_graph = module.PoseGraph.from_g2o(Path(result['outputs']['g2o']).read_text())
+                if (list(fused_graph.node_ids) != list(original_graph.node_ids)
+                    or result['scans'] != len(original_graph.node_ids)
+                    or not np.allclose(fused_graph.poses(), original_graph.poses(), atol=1e-10, rtol=0)):
+                    raise ValueError("local density fusion changed retained frames or frozen poses")
+                result['original_retained_frame_ids'] = list(original_graph.node_ids)
+                result['added_frame_ids'] = []
             if result["map_points"] <= 0:
                 raise ValueError("density trial produced an empty point map")
             # Keep the exact original station grid and graph, rather than a numerical roundtrip copy.
@@ -350,7 +361,7 @@ def compare(root: Path, cid: int) -> dict[str, Any]:
     jobs._inputs(child_job)
     parent = _parent(job, stage["candidate_id"])
     candidate = _parent(child_job, cid)
-    if stage.get('strategy') == 'local_unused_frames' and 'patch_inputs' not in candidate:
+    if stage.get('strategy') in {'local_unused_frames', 'local_density'} and 'patch_inputs' not in candidate:
         raise ValueError("local point updates require a combined HD patch retaining the baseline map")
     child_run = load_run(child)
     if cid not in [h.get("lane_candidate_id") for h in child_run["history"]]:
@@ -400,7 +411,7 @@ def compare(root: Path, cid: int) -> dict[str, Any]:
               "lost_source_length_m": sum(i["to_m"] - i["from_m"] for i in lost),
               "same_frozen_reference_motion": True, "same_fixed_layout": True, "same_original_extent_goal": True,
               "automatic_adoption": False, "deployment_ready": False}
-    if stage.get('strategy') == 'local_unused_frames':
+    if stage.get('strategy') in {'local_unused_frames', 'local_density'}:
         local_report = json.loads(Path(child_job['pointcloud']['files']['local_update_report']['path']).read_text())
         report['local_point_update'] = {k: local_report[k] for k in ('effective_bounds_xy', 'before_inside_points',
             'after_inside_points', 'outside_points', 'outside_records_sha256', 'outside_records_bit_identical',

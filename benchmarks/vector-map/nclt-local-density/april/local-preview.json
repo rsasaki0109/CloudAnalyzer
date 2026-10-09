@@ -1,0 +1,151 @@
+{
+  "schema": "cloudanalyzer.local_point_preview.v1",
+  "request": {
+    "candidate_id": 3,
+    "gap_ids": [
+      3
+    ],
+    "bounds_xy": [
+      14,
+      -3,
+      23,
+      6
+    ],
+    "strategy": "density"
+  },
+  "inputs": {
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "layout": {
+      "path": "run/layout-hypothesis.json",
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "correction_report": {
+      "path": "run/pointcloud-report.json",
+      "sha256": "df07f2053de76640e3361c433d2965e9eba11ee37fa0976ecce0cde59ad3aee4",
+      "bytes": 1956
+    },
+    "proposal": {
+      "path": "run/corridor-proposals-trajectory.json",
+      "sha256": "ddbe2365fd2f5495a0fff76e012b209a8a64fff1ab8b8737f07c7e3d79a387d0",
+      "bytes": 323973
+    },
+    "audits": {
+      "path": "run/candidate-03/source-quality.json",
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "pointcloud_map": {
+      "path": "run/pointcloud/trajectory_map.ply",
+      "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+      "bytes": 21878254
+    },
+    "pointcloud_trajectory": {
+      "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "pointcloud_graph": {
+      "path": "run/pointcloud/trajectory_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "parent_map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "parent_projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "ae0713a810248d85f6bb1e38655b12c15be0dd5f0515de79a4df85e6ef8452fa",
+      "bytes": 18383
+    },
+    "parent_report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "cad725b20938fd6fb03861f9615f07ed87e7a560af0d37a0aec714c49eb34c01",
+      "bytes": 39036
+    },
+    "geometry_editable_map": {
+      "path": "run/geometry-01/vector_map.json",
+      "sha256": "55603f5684012e279042925f4ec7bf7846bf712cb2614ed925c4e2d528949564",
+      "bytes": 33766
+    },
+    "geometry_report": {
+      "path": "run/geometry-01/report.json",
+      "sha256": "03c53c5769d00d318e056a2f4c4a69058b8b6fccf64480d24a880ccdfe26e76f",
+      "bytes": 89197
+    },
+    "gap_evidence": {
+      "path": "run/gaps-03.json",
+      "sha256": "95c55e88bbf6364f5bc527fb564875a240df51c2c22639b23214c86754268998",
+      "bytes": 437216
+    },
+    "raw_manifest": {
+      "path": "run/gap-source/manifest.json",
+      "sha256": "53ad5df1af63a0f40d1ae19442b566ebafae49b3af2de0ca8357c92257dfab72",
+      "bytes": 58602
+    }
+  },
+  "protocol": {
+    "model": "full_fusion_candidate_spliced_into_explicit_xy_column",
+    "maximum_side_m": 20.0,
+    "maximum_points_per_map": 2000000,
+    "maximum_map_bytes": 128000000,
+    "boundary": "lower_inclusive_upper_exclusive",
+    "all_heights": true,
+    "outside_record_order_and_bytes_preserved": true,
+    "independent_accuracy_established": false
+  },
+  "effective_bounds_xy": [
+    14.0,
+    -3.0,
+    23.0,
+    6.0
+  ],
+  "pointcloud_options": {
+    "scan_voxel_m": 0.4,
+    "map_voxel_m": 0.2
+  },
+  "inside_points": 1918,
+  "outside_points": 681772,
+  "outside_records_sha256": "721e6d8aea63c7aa0f7f5496939e7db1218f353ac9f37e1c8abbe88a6ac04b28",
+  "record_dtype": [
+    [
+      "x",
+      "<f8"
+    ],
+    [
+      "y",
+      "<f8"
+    ],
+    [
+      "z",
+      "<f8"
+    ],
+    [
+      "intensity",
+      "<f4"
+    ],
+    [
+      "correction",
+      "<f4"
+    ]
+  ],
+  "eligible_frames": [],
+  "holds": [],
+  "note": "Explicit XY column at all heights, voxel-aligned outwards. The full fusion candidate is still generated; only its inside records replace baseline inside records. Outside record bytes and relative order remain fixed, including every scalar attribute. No local speedup or independent accuracy is established. Retained HD geometry and four source audits must not regress."
+}

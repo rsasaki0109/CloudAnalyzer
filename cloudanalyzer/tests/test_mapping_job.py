@@ -2578,3 +2578,112 @@ def test_continuation_low_level_generation_cannot_replace_seed(unused_frame_run)
     with pytest.raises(ValueError, match='continuation'):
         jobs.generate_mapping_candidate(str(target), {'forward_lanes':1,'backward_lanes':0,'left_hand_traffic':False,'lane_width':3.5,'speed_limit':20}, 'No complete replacement')
     assert (target/'job.json').read_bytes() == before
+
+
+def _protected_preview(root):
+    return _advance(root, {'type':'inspect_protected_density','candidate_id':2,'gap_ids':[1],'bounds_xy':[2.,-1.6,8.,1.6]})['local_point_observation']
+
+
+def test_protected_density_keeps_all_retained_neighborhood_records_and_missing_patch(unused_frame_run):
+    from ca import mapping_local_points as local, mapping_point_protection as protection
+    root = unused_frame_run; before = jobs._load(root); preview = _protected_preview(root)
+    assert preview['protected_inside_points'] > 0 and preview['editable_inside_points'] > 0
+    normal = _local_density_preview(root)
+    assert normal['file'] != preview['file'] and 'protection' not in normal
+    result = _advance(root, _local_density_action(preview))
+    assert result['pointcloud_retry_result']['status'] == 'ready', result
+    child = root/'pointcloud-retry'; job = jobs._load(child)
+    report = json.loads(Path(job['pointcloud']['files']['local_update_report']['path']).read_text())
+    assert report['passes'] and report['protected_records_bit_identical']
+    _, base = local.records(Path(before['pointcloud']['files']['map']['path']))
+    _, updated = local.records(Path(job['pointcloud']['files']['map']['path']))
+    def retained(rows):
+        inside = local.mask(rows,preview['effective_bounds_xy']); keep = ~inside
+        keep[inside] = protection.mask(rows[inside], report['protection']); return keep
+    assert base[retained(base)].tobytes() == updated[retained(updated)].tobytes()
+    _advance(child, {'type':'inspect','candidate_ids':[1]})
+    _advance(child, {'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Observed missing piece across protected and updated neighborhoods'}]})
+    _advance(child, {'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched = _advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status'] == 'audited_draft', patched
+    comparison = _advance(root, {'type':'compare_retry','candidate_id':3})['retry_comparison']
+    assert comparison['gained_source_length_m'] == 2 and comparison['lost_source_length_m'] == 0
+    _advance(child, {'type':'finish','candidate_id':3})
+    final = _advance(root, {'type':'finish_retry','candidate_id':3})['output']
+    assert final['artifacts']['local_update_report'] == job['pointcloud']['files']['local_update_report']
+
+
+def test_protected_density_excludes_adverse_candidate_returns_near_existing_lanes(unused_frame_run,monkeypatch):
+    from ca import mapping_retry as retry, mapping_local_points as local, mapping_point_protection as protection
+    root = unused_frame_run; preview = _protected_preview(root); original = retry.fix_session
+    report = json.loads(Path(preview['file']['path']).read_text())
+    def adverse(*args,**kwargs):
+        result = original(*args,**kwargs)
+        path = Path(result['outputs']['map']); header,rows = local.records(path)
+        inside = local.mask(rows,preview['effective_bounds_xy'])
+        protected = np.zeros(len(rows),dtype=bool); protected[inside] = protection.mask(rows[inside],report['protection'])
+        rows['z'][protected] += 20
+        path.write_bytes(header+rows.tobytes())
+        return result
+    import numpy as np
+    monkeypatch.setattr(retry,'fix_session',adverse)
+    stage = _advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status'] == 'ready' and stage['local_update']['passes']
+    update = json.loads(Path(stage['local_update']['report']['path']).read_text())
+    assert update['candidate_protected_points_excluded'] > 0
+
+
+def test_protected_density_retains_four_audit_gate_if_native_support_regresses(unused_frame_run,monkeypatch):
+    root=unused_frame_run;preview=_protected_preview(root);original=jobs.core().audit_vector_map_quality_details
+    def regressed(*args):
+        audit=json.loads(original(*args));audit['quality']['lanes'][0]['left']['start_supported']=False
+        return json.dumps(audit)
+    monkeypatch.setattr(jobs.core(),'audit_vector_map_quality_details',regressed)
+    stage=_advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and not stage['local_update']['passes']
+    assert _advance(root,{'type':'finish','candidate_id':2})['output']['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+
+
+def test_protected_density_preview_resume_reuses_frozen_plan_without_spending(unused_frame_run,monkeypatch):
+    from ca import mapping_run as runs
+    root=unused_frame_run;original=runs.local_points.preview
+    def interrupted(*args,**kwargs): original(*args,**kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(runs.local_points,'preview',interrupted)
+    with pytest.raises(KeyboardInterrupt):_protected_preview(root)
+    monkeypatch.setattr(runs.local_points,'preview',original)
+    result=_advance(root,{'type':'resume'})
+    assert result['local_point_observation']['protected_inside_points']>0
+    assert jobs.inspect_mapping_job(str(root))['remaining_attempts']==4
+
+
+def test_protected_density_rejects_whole_box_protection_without_accepting_points(unused_frame_run):
+    root=unused_frame_run
+    preview=_advance(root,{'type':'inspect_protected_density','candidate_id':2,'gap_ids':[1],'bounds_xy':[3.,-.8,4.2,.8]})['local_point_observation']
+    assert preview['editable_inside_points']==0
+    stage=_advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and 'no unprotected' in stage['error']
+    assert jobs._load(root/'pointcloud-retry')['pointcloud'] is None
+
+
+def test_protected_density_tampered_preview_blocks_allocation(unused_frame_run):
+    root=unused_frame_run;preview=_protected_preview(root);file=Path(preview['file']['path'])
+    saved=json.loads(file.read_text());saved['protection']['effective_halo_m']=0.
+    file.write_text(json.dumps(saved));before=(root/'run.json').read_bytes()
+    with pytest.raises(ValueError,match='changed'):_advance(root,_local_density_action(preview))
+    assert (root/'run.json').read_bytes()==before and 'pointcloud_retry' not in jobs._load(root)
+
+
+@pytest.mark.parametrize('fault',['missing_consensus','limited','zero_radius','degenerate_geometry'])
+def test_protected_density_rejects_incomplete_or_invalid_retained_neighborhoods(unused_frame_run,fault):
+    from copy import deepcopy
+    from ca import mapping_point_protection as protection
+    root=unused_frame_run;parent=deepcopy(jobs._load(root)['attempts'][1]);audits=json.loads(Path(parent['quality_report']['path']).read_text())
+    if fault=='missing_consensus':audits.pop('ground_consensus')
+    elif fault=='limited':audits['editable']['quality']['limited']=True
+    elif fault=='zero_radius':audits['editable']['quality']['ground_radius_m']=0
+    else:
+        ir=json.loads(Path(parent['files']['editable_map']['path']).read_text())
+        for b in ir['boundaries']:b['geometry']=[[0,0,1],[1,0,1]]
+        file=root/'degenerate.json';jobs._save(file,ir);parent['files']['editable_map']=jobs._artifact(file)
+    file=root/'protected-fault-audits.json';jobs._save(file,audits);parent['quality_report']=jobs._artifact(file)
+    with pytest.raises(ValueError):protection.plan(parent)

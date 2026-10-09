@@ -650,6 +650,51 @@ All tool calls use the `job_dir` and current revision returned by the runner.
 The draft decisions use proposal IDs; finish uses the shared job attempt ID.
 Geometry curve IDs and per-piece lane specifications are supplied automatically.
 
+## Preserve retained HD neighborhoods during density repair
+
+An ordinary box replacement can alter the ground estimate around an existing lane,
+even when it inserts more points. `inspect_protected_density` uses the same seen gap
+IDs and explicit box as `inspect_local_density`, with a separate frozen preview:
+
+```json
+{"type":"inspect_protected_density","candidate_id":1,"gap_ids":[1],"bounds_xy":[7,5,15,10]}
+```
+
+Inspect the returned protected/editable counts, then use the exact preview artifact
+with `retry_local_density`. This is an explicit alternative; ordinary replacement
+and unused-frame previews retain their existing behavior. The new preview consumes
+no attempts and has a distinct request hash; density retry retains the single child,
+transferred HD budget, bounded strictly reduced thinning and frozen original poses.
+
+The protection region is the union of each retained lane's **convex hull** of its
+left/right boundaries and any explicit centerline, expanded by the maximum ground
+query radius in the four complete saved audits (**0.75 m** in the current native
+protocol, plus a **1 µm** numerical margin). Derived centerlines lie in these hulls.
+The region covers every continuous retained trace's source-query disk, including
+existing holds and exported geometry; it is deliberately more conservative than
+protecting individual sampled disks. All heights are included.
+
+Inside protected regions, existing PLY records stay byte-identical and all fusion
+candidate points are excluded. Only the unprotected part of the explicit box is
+replaced. Every retained record, attribute and relative order is checked after
+writing/reloading the map; four native audits still require complete evidence and
+no newly failing retained source locations. A fully protected box or no unprotected
+candidate points cannot become a ready repair. No support threshold or HD geometry
+is modified to obtain a pass.
+
+Protection can exclude useful new evidence near held lanes or bend interiors. Point
+count increases do not prove improved ground/accuracy or an eligible HD addition.
+Continue the child, inspect fresh corridor evidence, and adopt only a compared,
+audited combined patch. Otherwise finish the prior baseline. The full fusion
+candidate is still generated, so this is not a local processing speedup.
+
+[The NCLT protected-density packet](../../benchmarks/vector-map/nclt-protected-density/README.md)
+uses the same June box/resolutions as the rejected preceding trial. It retains old
+nearby query evidence and passes all four retained-HD checks. The inspected missing
+8–14 m source interval still has no fresh candidate to add, so the final pair stays
+unchanged: **118 m** source extent and **66 m** longest route. Native-fixture tests
+separately verify a protected point update followed by a successfully adopted gap patch.
+
 ## Continue from a delivered map
 
 `inspect_mapping_run` resumes an unfinished decision loop. To repair another region

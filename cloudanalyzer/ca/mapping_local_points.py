@@ -104,10 +104,11 @@ def validate_region(gap_evidence: dict[str, Any], cid: int, gap_ids: Any, bounds
 
 
 def preview(root: Path, cid: int, gap_evidence: dict[str, Any], frame_evidence: dict[str, Any] | None,
-            gap_ids: Any, bounds_xy: Any) -> dict[str, Any]:
+            gap_ids: Any, bounds_xy: Any, protect_retained: bool = False) -> dict[str, Any]:
+    from ca import mapping_point_protection as protection
     with jobs._locked(root):
         job = jobs._load(root); jobs._inputs(job)
-        retries._parent(job, cid)
+        parent = retries._parent(job, cid)
         gaps = _read(gap_evidence)
         saved = _read(frame_evidence) if frame_evidence is not None else gaps
         retries._verify_inputs(gaps['inputs']); retries._verify_inputs(saved['inputs'])
@@ -124,6 +125,9 @@ def preview(root: Path, cid: int, gap_evidence: dict[str, Any], frame_evidence: 
         request = {'candidate_id': cid, 'gap_ids': gap_ids, 'bounds_xy': bounds_xy}
         if frame_evidence is None:
             request['strategy'] = 'density'
+        if protect_retained:
+            if frame_evidence is not None: raise ValueError('retained point protection is available for density trials only')
+            request['protect_retained'] = True
         suffix = hashlib.sha256(json.dumps(request, sort_keys=True).encode()).hexdigest()[:16]
         path = root / f'local-points-{cid:02d}-{suffix}.json'
         if path.exists():
@@ -150,8 +154,16 @@ def preview(root: Path, cid: int, gap_evidence: dict[str, Any], frame_evidence: 
                 'outside_records_sha256': hashlib.sha256(base[~selected].tobytes()).hexdigest(),
                 'record_dtype': base.dtype.descr, 'eligible_frames': eligible, 'holds': holds,
                 'note': 'Explicit XY column at all heights, voxel-aligned outwards. The full fusion candidate is still generated; only its inside records replace baseline inside records. Outside record bytes and relative order remain fixed, including every scalar attribute. No local speedup or independent accuracy is established. Retained HD geometry and four source audits must not regress.'}
+            if protect_retained:
+                report['protection'] = protection.plan(parent)
+                kept = protection.mask(base[selected], report['protection'])
+                report['protected_inside_points'] = int(kept.sum())
+                report['editable_inside_points'] = int((~kept).sum())
+                report['protected_inside_records_sha256'] = hashlib.sha256(base[selected][kept].tobytes()).hexdigest()
+                report['note'] = 'Explicit box with retained lane convex hulls expanded by the maximum saved audit radius. Inside these hulls/halos all existing point records are kept and candidate returns are excluded, at every height. Only unprotected box records are replaced. Outside records and four complete retained HD audits remain fixed; the conservative hull can exclude useful new evidence and establish no accuracy or speedup.'
             jobs._inputs(job); retries._verify_inputs(inputs); jobs._save(path, report)
         retries._verify_inputs(report['inputs'])
+        if protect_retained: protection.verify(report['protection'], parent)
         return {'file': jobs._artifact(path), 'candidate_id': cid, 'gap_ids': gap_ids,
             'strategy': report['request'].get('strategy', 'unused_frames'),
             'requested_bounds_xy': bounds_xy, 'effective_bounds_xy': report['effective_bounds_xy'],
@@ -159,7 +171,9 @@ def preview(root: Path, cid: int, gap_evidence: dict[str, Any], frame_evidence: 
             'outside_records_sha256': report['outside_records_sha256'],
             'eligible_frame_ids': [r['frame_id'] for r in report['eligible_frames']],
             'holds': report['holds'],
-            'protocol': report['protocol'], 'note': report['note']}
+            'protocol': report['protocol'], 'note': report['note'],
+            **({'protected_inside_points': report['protected_inside_points'], 'editable_inside_points': report['editable_inside_points'],
+                'protection': {k:v for k,v in report['protection'].items() if k != 'hulls'}, 'protected_lanes_total': len(report['protection']['hulls'])} if protect_retained else {})}
 
 
 def validate(evidence: dict[str, Any], frame_evidence: dict[str, Any], cid: int, frame_ids: Any) -> dict[str, Any]:
@@ -182,6 +196,12 @@ def validate_density(evidence: dict[str, Any], gap_evidence: dict[str, Any], cid
         raise ValueError("local density preview belongs to another decision or strategy")
     if report['holds']:
         raise ValueError("local density preview is held: " + ', '.join(report['holds']))
+    if bool(report['request'].get('protect_retained')) != ('protection' in report):
+        raise ValueError('protected density preview is missing its retained geometry')
+    if 'protection' in report:
+        from ca import mapping_point_protection as protection
+        protection.verify(report['protection'], {'files': {'editable_map': report['inputs']['parent_editable_map']},
+                          'quality_report': report['inputs']['audits']})
     retries.validate(gap_evidence, report['request']['gap_ids'], options)
     return report
 
@@ -207,7 +227,17 @@ def apply(child: Path, parent: dict[str, Any], preview_file: dict[str, Any], res
     if not b.any(): raise ValueError("local fusion candidate has no inside points")
     if int(a.sum()) != preview['inside_points'] or hashlib.sha256(base[~a].tobytes()).hexdigest() != preview['outside_records_sha256']:
         raise ValueError("local baseline records changed after preview")
-    merged = np.concatenate((base[~a], trial[b]))
+    protected_base = np.zeros(len(base), dtype=bool); protected_trial = np.zeros(len(trial), dtype=bool)
+    if 'protection' in preview:
+        from ca import mapping_point_protection as protection
+        protection.verify(preview['protection'], parent)
+        protected_base[a] = protection.mask(base[a], preview['protection'])
+        protected_trial[b] = protection.mask(trial[b], preview['protection'])
+        if hashlib.sha256(base[protected_base].tobytes()).hexdigest() != preview['protected_inside_records_sha256']:
+            raise ValueError('protected baseline point records changed after preview')
+    change, take = a & ~protected_base, b & ~protected_trial
+    if not take.any(): raise ValueError('local fusion has no unprotected candidate points')
+    merged = np.concatenate((base[~change], trial[take]))
     if len(merged) > PROTOCOL['maximum_points_per_map']:
         raise ValueError("local merged point count exceeds its bound")
     output = child / 'local_map.ply'
@@ -218,6 +248,12 @@ def apply(child: Path, parent: dict[str, Any], preview_file: dict[str, Any], res
     outside = reopened[~mask(reopened, box)]
     if outside.dtype != base.dtype or outside.tobytes() != base[~a].tobytes():
         raise ValueError("local point export changed outside coordinates, attributes or record order")
+    if 'protection' in preview:
+        inside = mask(reopened, box)
+        retained = ~inside
+        retained[inside] = protection.mask(reopened[inside], preview['protection'])
+        if reopened[retained].tobytes() != base[~change].tobytes():
+            raise ValueError('protected point export changed retained neighborhood records or order')
     module = jobs.core(); assert module is not None
     audits = {key: json.loads(module.audit_vector_map_quality_details(str(output), parent['files'][fkey]['path']))
               for key,fkey in (('editable','editable_map'),('reopened_osm','map'))}
@@ -238,6 +274,12 @@ def apply(child: Path, parent: dict[str, Any], preview_file: dict[str, Any], res
         'retained_hd_source_audits': jobs._artifact(audits_path), 'retained_hd_source_checks': jobs._artifact(checks_path),
         'passes': checks['passes'], 'holds': checks['holds'], 'point_map_total': len(merged),
         'full_candidate_generation_still_required': True, 'automatic_adoption': False}
+    if 'protection' in preview:
+        report['protection'] = preview['protection']
+        report.update(protected_inside_points=int(protected_base.sum()), after_inside_points=int(protected_base.sum()+take.sum()),
+            candidate_inside_points=int(b.sum()), editable_before_points=int(change.sum()),
+            editable_candidate_points=int(take.sum()), candidate_protected_points_excluded=int(protected_trial.sum()),
+            protected_records_bit_identical=True, retained_records_sha256=hashlib.sha256(base[~change].tobytes()).hexdigest())
     report_path = child/'local-point-update.json'; jobs._save(report_path, report)
     retries._verify_inputs(preview['inputs']); jobs._verify(preview_file); jobs._verify(trial_file)
     return {'report': jobs._artifact(report_path), 'checks': jobs._artifact(checks_path), 'audits': jobs._artifact(audits_path),

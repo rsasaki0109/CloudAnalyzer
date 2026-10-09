@@ -102,8 +102,9 @@ export function loadCloud(
   maxPoints: number,
   progress?: (p: Progress) => void,
   signal?: AbortSignal,
+  displayName?: string,
 ): Promise<LoadedCloud> {
-  return call({ kind: "load", file, maxPoints }, [], progress, signal);
+  return call({ kind: "load", file, maxPoints, displayName }, [], progress, signal);
 }
 
 /**

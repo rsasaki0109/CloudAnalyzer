@@ -26,7 +26,7 @@ const restored = new Set<number>();
 let applyingSession = false;
 let restoreExactTransforms = false;
 
-export function captureSession(): Session {
+export function captureSession(includeDerived = false): Session {
   const { views, ...settings } = captureDisplay();
   return {
     app: "CloudAnalyzer Web",
@@ -42,7 +42,7 @@ export function captureSession(): Session {
     labels: savedNotes(),
     gates: savedGates(),
     clouds: [...entries.values()]
-      .filter((e) => e.origin.kind !== "derived")
+      .filter((e) => includeDerived || e.origin.kind !== "derived")
       .map((e) => ({
         name: e.cloud.name,
         displayPreview: e.origin.displayPreview || undefined,

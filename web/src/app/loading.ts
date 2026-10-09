@@ -11,7 +11,8 @@ import { entries, globalShift, type Origin, viewer } from "./state";
 import { endTask, showProgress, startTask } from "./tasks";
 import { addTrajectory } from "./trajectory";
 import { openVectorMap } from "./vectormap";
-import { completePendingProject, isProjectGraphSource, prepareProjectFiles, projectCloudFileAllowed, projectCloudLoadLimit } from "./project";
+import { completePendingProject, isProjectGraphSource, prepareProjectFiles, projectCloudFileAllowed, projectCloudLoadLimit, projectCloudDisplayName } from "./project";
+import { readProjectSnapshot } from "../project-snapshot";
 
 /** A LAS/LAZ or COPC file on a server, read with range requests instead of downloaded. */
 interface RemoteFile {
@@ -31,6 +32,17 @@ const seconds = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `$
  * once the others are in. `origins` tells where each file came from.
  */
 export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]): Promise<void> {
+  if (files.some(file => file instanceof File && /\.cloudanalyzer\.zip$/i.test(file.name))) {
+    const expanded: (File | RemoteFile)[] = [], signal = startTask();
+    try {
+      for (const file of files) {
+        if (file instanceof File && /\.cloudanalyzer\.zip$/i.test(file.name)) expanded.push(...await readProjectSnapshot(file, signal));
+        else expanded.push(file);
+      }
+    } catch (error) { setStatus(`Could not open workspace snapshot: ${errorText(error)}`, true); return; }
+    finally { endTask(signal); }
+    return loadFiles(expanded);
+  }
   let projects: Set<File>;
   try { projects = await prepareProjectFiles(files.filter((f): f is File => f instanceof File)); }
   catch (error) { setStatus(`Could not open project: ${errorText(error)}`, true); return; }
@@ -74,7 +86,7 @@ export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]
       };
       const cloud =
         file instanceof File
-          ? await loadCloud(file, maxPoints, onProgress, signal)
+          ? await loadCloud(file, maxPoints, onProgress, signal, projectCloudDisplayName(file))
           : await loadUrl(file.url, file.name, file.size, maxPoints, onProgress, signal, file.etag);
       const origin = origins?.[i] ?? { kind: "file" as const };
       addEntry(cloud, origin.kind === "derived" ? origin : {

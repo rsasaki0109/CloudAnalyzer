@@ -640,6 +640,7 @@ export type Request =
     }
   | {
       kind: "load";
+      displayName?: string;
       /** Read by the worker in slices, so large files are never held whole. */
       file: File;
       /** Thin to at most this many points (every n-th point is kept; for COPC, whole levels). */

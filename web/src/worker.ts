@@ -1836,6 +1836,7 @@ async function handle(
     case "load-url": {
       const { maxPoints } = req;
       const name = req.kind === "load" ? req.file.name : req.name;
+      const displayName = req.kind === "load" ? req.displayName ?? name : name;
       let t = performance.now();
       const loaded =
         req.kind === "load"
@@ -1850,7 +1851,7 @@ async function handle(
       }
       if (loaded.kind === "mesh") {
         const id = nextId++;
-        items.set(id, { kind: "mesh", mesh: loaded.mesh, name });
+        items.set(id, { kind: "mesh", mesh: loaded.mesh, name: displayName });
         return describe(id, { parse, index: 0 });
       }
       const { cloud } = loaded;
@@ -1868,7 +1869,7 @@ async function handle(
       items.set(id, {
         kind: "cloud",
         cloud,
-        name,
+        name: displayName,
         keepEvery: loaded.keepEvery,
         filePoints: loaded.filePoints,
         copcLevels: loaded.copcLevels,

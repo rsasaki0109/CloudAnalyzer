@@ -68,6 +68,16 @@ Files never leave the browser.
 - Display: fixed (pixels) or adaptive point size (as wide as the local point
   spacing, per drawn octree node, so near surfaces close up), background
   colour, and named camera views; all kept in share links and sessions.
+- **Save workspace snapshot** writes a single `project.cloudanalyzer.zip` with
+  all current loaded point clouds and mesh geometry, including filtered/cropped
+  results, plus the edited HD map, lane notes and display settings. Open that ZIP
+  to continue from the saved records without rerunning processing. PLY snapshots
+  keep double coordinates and supported float/byte vertex attributes; transforms
+  are baked once. The package is bounded to 64 MiB uncompressed, 127 clouds/meshes
+  and 10 MiB project metadata. Unloaded original detail, pose-graph input files
+  and frozen generated-map source audits stay external. Undo starts fresh.
+  Browser autosave and **Save project** retain metadata/source references only;
+  processed records need a workspace snapshot or separate result export.
 - Works on phones and tablets: the view fills the screen and the panels
   open as a bottom sheet (**Panels**); drag to orbit, pinch to zoom, two
   fingers to pan, tap to pick, double-tap (or double-click) to orbit around

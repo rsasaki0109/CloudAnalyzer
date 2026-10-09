@@ -1,13 +1,12 @@
 /** Verify a portable generated-map review ZIP before any browser map changes. */
 import type { SourceQualityReport } from "./app/vectormap";
-export const REVIEW_LIMIT = 64 * 1024 * 1024;
-const HEADER_LIMIT = 10 * 1024 * 1024;
+import { indexReviewZip, readReviewMember } from "./review-zip.ts";
+export { REVIEW_LIMIT } from "./review-zip.ts";
 const SCHEMA = "cloudanalyzer.mapping_review_bundle.v1";
 const PREVIEW_SCHEMA = "cloudanalyzer.mapping_review_bundle.v2";
 const REQUIRED = ["map", "graph", "trajectory", "hd_map", "hd_editable_map", "hd_projector", "hd_source_audits", "layout_hypothesis", "source_proposal", "decision_history"];
 type ObjectValue = Record<string, unknown>;
 interface Descriptor { path: string; sha256: string; bytes: number }
-interface Member { path: string; bytes: number; compressed: number; method: number; flags: number; offset: number }
 export interface MappingReview {
   preview: { sourceCount: number; previewCount: number; stride: number } | null;
   roles: Record<string, string>;
@@ -59,94 +58,18 @@ function object(value: unknown): ObjectValue {
   if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("Invalid review metadata");
   return value as ObjectValue;
 }
-function path(value: unknown): string {
-  if (typeof value !== "string" || !value || value.startsWith("/") || value.includes("\\") || value.split("/").some(p => !p || p === "." || p === "..")) throw new Error("Unsafe review member path");
-  return value;
-}
 function descriptor(value: unknown): Descriptor {
   const file = object(value);
-  const name = path(file.path);
+  const name = file.path;
+  if (typeof name !== "string" || !name || name.startsWith("/") || name.includes("\\") || name.split("/").some(p => !p || p === "." || p === "..")) throw new Error("Unsafe review member path");
   if (!name.startsWith("files/") || typeof file.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(file.sha256) || !Number.isSafeInteger(file.bytes) || (file.bytes as number) < 0) throw new Error("Invalid review artifact identity");
   return { path: name, sha256: file.sha256, bytes: file.bytes as number };
 }
 const decoder = new TextDecoder("utf-8", { fatal: true });
-async function range(file: Blob, start: number, length: number): Promise<DataView> {
-  if (!Number.isSafeInteger(start) || start < 0 || length < 0 || start + length > file.size) throw new Error("Invalid ZIP member bounds");
-  return new DataView(await file.slice(start, start + length).arrayBuffer());
-}
-
-async function index(file: File, signal: AbortSignal): Promise<Map<string, Member>> {
-  if (file.size < 22 || file.size > REVIEW_LIMIT + HEADER_LIMIT) throw new Error("Review ZIP exceeds the 64 MiB browser limit or is incomplete; use the CLI for larger packages");
-  const tailStart = Math.max(0, file.size - 65557);
-  const tail = await range(file, tailStart, file.size - tailStart);
-  let end = -1;
-  for (let i = tail.byteLength - 22; i >= 0; i--) if (tail.getUint32(i, true) === 0x06054b50 && i + 22 + tail.getUint16(i + 20, true) === tail.byteLength) { end = i; break; }
-  if (end < 0 || tail.getUint16(end + 4, true) || tail.getUint16(end + 6, true)) throw new Error("Unsupported review ZIP directory");
-  const count = tail.getUint16(end + 10, true), size = tail.getUint32(end + 12, true), start = tail.getUint32(end + 16, true);
-  if (count > 129 || count !== tail.getUint16(end + 8, true) || start + size !== tailStart + end) throw new Error("Unsupported or excessive review ZIP directory");
-  const directory = await range(file, start, size);
-  const result = new Map<string, Member>();
-  let offset = 0, total = 0;
-  for (let i = 0; i < count; i++) {
-    signal.throwIfAborted();
-    if (offset + 46 > size || directory.getUint32(offset, true) !== 0x02014b50) throw new Error("Invalid ZIP directory member");
-    const flags = directory.getUint16(offset + 8, true), method = directory.getUint16(offset + 10, true);
-    const nameLength = directory.getUint16(offset + 28, true), extra = directory.getUint16(offset + 30, true), comment = directory.getUint16(offset + 32, true);
-    const next = offset + 46 + nameLength + extra + comment;
-    if (next > size) throw new Error("Incomplete ZIP directory member");
-    const name = path(decoder.decode(new Uint8Array(directory.buffer, directory.byteOffset + offset + 46, nameLength)));
-    const mode = (directory.getUint32(offset + 38, true) >>> 16) & 0o170000;
-    if (result.has(name) || flags & 1 || ![0, 8].includes(method) || ![0, 0o100000].includes(mode) || directory.getUint16(offset + 34, true)) throw new Error("Duplicate, nonregular, encrypted or unsupported ZIP member");
-    const bytes = directory.getUint32(offset + 24, true), compressed = directory.getUint32(offset + 20, true), local = directory.getUint32(offset + 42, true);
-    total += bytes;
-    if (total > REVIEW_LIMIT || local >= start || compressed > start - local || (name === "manifest.json" && bytes > HEADER_LIMIT)) throw new Error("Review contents exceed browser limits or ZIP bounds");
-    result.set(name, { path: name, bytes, compressed, method, flags, offset: local });
-    offset = next;
-  }
-  if (offset !== size || !result.has("manifest.json")) throw new Error("Review ZIP has no complete manifest directory");
-  // Reject overlapping local records and local names/flags that disagree with the directory.
-  const sorted = [...result.values()].sort((a, b) => a.offset - b.offset);
-  for (const [i, member] of sorted.entries()) {
-    const local = await range(file, member.offset, 30);
-    const length = local.getUint16(26, true), extra = local.getUint16(28, true);
-    if (local.getUint32(0, true) !== 0x04034b50 || local.getUint16(6, true) !== member.flags || local.getUint16(8, true) !== member.method) throw new Error("ZIP local record differs from directory");
-    const name = decoder.decode(new Uint8Array((await range(file, member.offset + 30, length)).buffer));
-    if (name !== member.path) throw new Error("ZIP local member name differs from directory");
-    member.offset += 30 + length + extra;
-    if (member.offset + member.compressed > (sorted[i + 1]?.offset ?? start)) throw new Error("Overlapping ZIP records");
-  }
-  return result;
-}
-
-async function read(file: File, member: Member, signal: AbortSignal): Promise<Uint8Array<ArrayBuffer>> {
-  let stream = file.slice(member.offset, member.offset + member.compressed).stream();
-  if (member.method === 8) {
-    if (typeof DecompressionStream === "undefined") throw new Error("This browser cannot decompress review ZIPs; extract and open the files manually");
-    stream = stream.pipeThrough(new DecompressionStream("deflate-raw"));
-  }
-  const reader = stream.getReader(), chunks: Uint8Array[] = [];
-  let size = 0;
-  try {
-    while (true) {
-      signal.throwIfAborted();
-      const { value, done } = await reader.read();
-      if (done) break;
-      size += value.byteLength;
-      if (size > member.bytes) throw new Error("Decompressed member exceeds its recorded byte limit");
-      chunks.push(value);
-    }
-    if (size !== member.bytes) throw new Error("ZIP member size differs from manifest");
-  } finally { await reader.cancel(); reader.releaseLock(); }
-  const data = new Uint8Array(size);
-  let offset = 0;
-  for (const chunk of chunks) { data.set(chunk, offset); offset += chunk.byteLength; }
-  return data;
-}
-
 /** All members are checked, even when only the map and audits are kept for display. */
 export async function readMappingReview(file: File, signal: AbortSignal, progress: (done: number, total: number) => void = () => {}): Promise<MappingReview> {
-  const directory = await index(file, signal);
-  const header = await read(file, directory.get("manifest.json")!, signal);
+  const directory = await indexReviewZip(file, signal);
+  const header = await readReviewMember(file, directory.get("manifest.json")!, signal);
   const manifest = object(JSON.parse(decoder.decode(header)));
   if (![SCHEMA, PREVIEW_SCHEMA].includes(manifest.schema as string) || !Array.isArray(manifest.files) || manifest.files.length > 128) throw new Error("Unsupported generated-map review schema");
   const rawPreview = manifest.schema === PREVIEW_SCHEMA ? object(manifest.preview_pointcloud) : null;
@@ -187,7 +110,7 @@ export async function readMappingReview(file: File, signal: AbortSignal, progres
     signal.throwIfAborted();
     const member = directory.get(artifact.path);
     if (!member || member.bytes !== artifact.bytes) throw new Error("Review artifact size differs from ZIP");
-    const data = await read(file, member, signal);
+    const data = await readReviewMember(file, member, signal);
     const hash = [...new Uint8Array(await crypto.subtle.digest("SHA-256", data))].map(n => n.toString(16).padStart(2, "0")).join("");
     if (hash !== artifact.sha256) throw new Error(`Review artifact hash differs: ${artifact.path}`);
     if (retain.has(artifact.path)) members.set(artifact.path, new File([data], artifact.path.split("/").at(-1)!));

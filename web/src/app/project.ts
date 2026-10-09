@@ -1,7 +1,9 @@
 /** Portable editing projects; source files stay external and are verified. */
 import { parseProject, projectSources, type Project, type ControlSetting, type SavedPoseGraph } from "../project";
 import { matchesFile, referenceFile, sourceName, type SourceReference } from "../source-reference";
-import { vectorMap, workerBusy } from "../api";
+import { vectorMap, workerBusy, exportCloud, exportMesh } from "../api";
+import { writeProjectSnapshot } from "../project-snapshot";
+import { REVIEW_LIMIT } from "../review-zip";
 import { Autosave } from "../autosave";
 import { onProjectChanged, projectChanged } from "../project-change";
 import { readRecovery, writeRecovery, MAX_RECOVERY_BYTES, type Recovery, type ReviewDraft } from "../recovery-store";
@@ -25,6 +27,7 @@ let projectRevision = 0;
 let pendingDraft: ReviewDraft | undefined;
 let restoringBrowser = false;
 let manualSaving = false;
+let snapshotRevision = -1;
 let checkingRecovery = true;
 let recovery: Recovery | null = null;
 let recoveryToken: string | null = null;
@@ -70,18 +73,21 @@ async function cloudReference(id: number, signal: AbortSignal): Promise<SourceRe
   throw new Error(`Cannot verify ${entry.cloud.name}; open a local file or a URL with a strong ETag`);
 }
 
-export async function captureProject(signal: AbortSignal, progress = true): Promise<Project> {
-  const session = structuredClone(captureSession()), settings = captureSettings();
+export async function captureProject(signal: AbortSignal, progress = true, snapshots?: Map<number, File>): Promise<Project> {
+  const session = structuredClone(captureSession(!!snapshots)), settings = captureSettings();
   if (new Set(session.clouds.map(c => c.name)).size !== session.clouds.length) throw new Error("Rename duplicate cloud files before saving a project; source names must be unique");
   const reviews = captureLaneReviews();
   const map = await captureMapProject(), captured = await captureGraphProject();
   const metadata = captured ? structuredClone({ name: captured.name, sessions: captured.sessions, imu: captured.imu }) : null;
   for (const saved of session.clouds) {
-    const entry = [...entries.values()].find(e => e.cloud.name === saved.name && e.origin.kind !== "derived");
+    const entry = [...entries.values()].find(e => e.cloud.name === saved.name && (snapshots || e.origin.kind !== "derived"));
     if (!entry) throw new Error(`Source ${saved.name} was removed while saving`);
     if (progress) showProgress({ note: `Checking ${saved.name}` });
-    saved.source = await cloudReference(entry.cloud.id, signal);
-    saved.loadMaxPoints = entry.origin.loadMaxPoints;
+    const snapshot = snapshots?.get(entry.cloud.id);
+    if (snapshots && !snapshot) throw new Error(`Snapshot ${saved.name} was removed while saving`);
+    saved.source = snapshot ? await referenceFile(snapshot, signal) : await cloudReference(entry.cloud.id, signal);
+    saved.loadMaxPoints = snapshot ? 0 : entry.origin.loadMaxPoints;
+    if (snapshot) { saved.transforms = []; saved.url = undefined; }
   }
   let poseGraph: SavedPoseGraph | null = null;
   if (captured && metadata) {
@@ -141,6 +147,11 @@ export function isProjectGraphSource(file: File): boolean {
 /** Each source keeps the loading limit used when its cloud was created. */
 export function projectCloudLoadLimit(file: File | {name: string; url: string}): number | undefined {
   return pending?.session.clouds.find(c => file instanceof File ? c.source && sameName(file,c.source) : c.url === file.url)?.loadMaxPoints;
+}
+
+/** Snapshot PLY source names differ from their saved display names. */
+export function projectCloudDisplayName(file: File): string | undefined {
+  return pending?.session.clouds.find(c => c.source && sameName(file, c.source))?.name;
 }
 
 export async function projectCloudFileAllowed(file: File, signal: AbortSignal): Promise<boolean> {
@@ -242,6 +253,7 @@ export async function completePendingProject(): Promise<void> {
 $("project-save").onclick = async () => {
   const button = $<HTMLButtonElement>("project-save");
   if (button.disabled) return;
+  if (taskActive() || workerBusy() || !mapProjectReady() || !graphProjectReady()) return setStatus("Finish the current operation before saving a project.", true);
   button.disabled = true;
   manualSaving = true;
   const revision = autosave.revision;
@@ -256,6 +268,36 @@ $("project-save").onclick = async () => {
     if (!captureReviewDraft()) autosave.exported(revision);
     setStatus("Saved project: map, pose graph and settings. Keep the original source files to resume editing.");
   } catch (error) { setStatus(`Could not save project: ${errorText(error)}`, true); }
+  finally { button.disabled = false; manualSaving = false; endTask(signal); autosave.schedule(); }
+};
+
+$("project-snapshot").onclick = async () => {
+  if (taskActive() || workerBusy() || !mapProjectReady() || !graphProjectReady()) return setStatus("Finish the current operation before saving a workspace snapshot.", true);
+  const button = $<HTMLButtonElement>("project-snapshot"), signal = startTask(), revision = autosave.revision;
+  button.disabled = true; manualSaving = true;
+  try {
+    const savedEntries = [...entries.values()];
+    if (savedEntries.length > 127) throw new Error("Snapshot supports at most 127 clouds/meshes");
+    if (new Set(savedEntries.map(e => e.cloud.name)).size !== savedEntries.length) throw new Error("Rename duplicate cloud files before saving a snapshot");
+    const snapshots = new Map<number, File>(), prefix = `workspace-${crypto.randomUUID()}`;
+    let total = 0;
+    for (const [i, entry] of savedEntries.entries()) {
+      signal.throwIfAborted();
+      setStatus(`Saving current records for ${entry.cloud.name}…`);
+      const bytes = entry.cloud.kind === "mesh" ? await exportMesh(entry.cloud.id, "ply") : await exportCloud(entry.cloud.id, "ply");
+      total += bytes.byteLength;
+      if (total > REVIEW_LIMIT) throw new Error("Snapshot exceeds the 64 MiB content limit; export large results separately");
+      snapshots.set(entry.cloud.id, new File([new Uint8Array(bytes)], `${prefix}-${i}.ply`));
+    }
+    const project = await captureProject(signal, true, snapshots);
+    const zip = await writeProjectSnapshot(project, [...snapshots.values()], signal);
+    signal.throwIfAborted();
+    if (autosave.revision !== revision) throw new Error("The workspace changed while saving; retry the snapshot");
+    download(zip, "project.cloudanalyzer.zip");
+    snapshotRevision = revision;
+    if (!captureReviewDraft()) autosave.exported(revision);
+    setStatus(`Saved workspace snapshot: ${snapshots.size} current clouds/meshes with project metadata. Unloaded original detail and pose-graph input files remain external.`);
+  } catch (error) { setStatus(`Could not save workspace snapshot: ${errorText(error)}`, true); }
   finally { button.disabled = false; manualSaving = false; endTask(signal); autosave.schedule(); }
 };
 $("project-open").onclick = () => $<HTMLInputElement>("file-input").click();
@@ -281,6 +323,8 @@ function renderSaveState(): void {
   $("project-autosave-retry").hidden = !autosave.error || checkingRecovery;
   $("project-recovery-summary").textContent = recovery ? `Browser copy from ${new Date(recovery.savedAt).toLocaleString()}. ${pending && restoringBrowser ? "Open its matching original files to finish resuming." : "Resume it or discard it before automatic saves replace this copy."}` : "";
   $("project-save-status").textContent = checkingRecovery ? "Checking browser recovery…" : autosave.error ? `Browser save failed: ${autosave.error}. Use Save project to keep your work.` : autosave.saving ? "Saving editing state in this browser…" : autosave.paused ? "Automatic saving paused; the previous browser copy is protected." : !autosave.enabled ? `Automatic saving is off.${autosave.unsaved ? " Changes are not saved." : ""}` : autosave.revision > autosave.savedRevision ? "Changes waiting for browser save…" : recovery ? `Editing state saved in this browser at ${new Date(recovery.savedAt).toLocaleTimeString()}.` : "Automatic saving ready. Original source files remain external.";
+  const derived = [...entries.values()].filter(e => e.origin.kind === "derived").length;
+  if (derived) $("project-save-status").textContent += ` ${derived} processed clouds/meshes are outside the browser metadata copy; use Save workspace snapshot to keep their records.`;
 }
 onProjectChanged(() => autosave.changed());
 listChanged.add(() => { if (entries.size || autosave.revision) projectChanged(); });
@@ -292,7 +336,8 @@ for (const event of ["input","change"]) document.addEventListener(event,e => {
   projectChanged();
 });
 window.addEventListener("beforeunload",event => {
-  if (!autosave.unsaved) return;
+  const derivedNeedsSnapshot = [...entries.values()].some(e => e.origin.kind === "derived") && autosave.revision > snapshotRevision;
+  if (!autosave.unsaved && !derivedNeedsSnapshot) return;
   event.preventDefault(); event.returnValue = "";
 });
 document.addEventListener("visibilitychange",() => { if (document.hidden) void autosave.save(); });

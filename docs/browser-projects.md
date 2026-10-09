@@ -42,7 +42,7 @@ Opt into the real-data roundtrip and memory tests with `CLOUDANALYZER_REAL_DATA=
 
 ## Keep processed records in browser recovery
 
-Enable **Include current point and mesh records (64 MiB)** under the automatic
+Enable **Include current records and original inputs (64 MiB)** under the automatic
 save controls to retain the currently loaded point clouds and meshes, including
 processed results and computed attributes, alongside the editing state. This
 option is off by default and is remembered in this browser. Wait for **Current
@@ -61,8 +61,31 @@ review is saved and a new snapshot captured.
 
 This stores currently loaded geometry, not unloaded original density. The whole
 browser recovery record is capped at 64 MiB, including its metadata and stored
-ZIP. Pose-graph source/scan files and frozen generated-map source-audit reports
-remain external, and Undo starts fresh. Browser storage is not a durable backup:
+ZIP. Original pose-graph source/scan files and the original verified generated-map
+review archive are included in new snapshots; Undo starts fresh. Browser storage is not a durable backup:
 keep a downloaded workspace snapshot and the original attributed review bundle.
 When this option is off, browser recovery retains metadata/source references and
 processed results still require their own export or manual workspace snapshot.
+
+## Keep graph inputs and original map evidence in one file
+
+New workspace snapshots include the original pose-graph/trajectory and scan files
+needed to rebind its saved poses and constraints. Original scan basenames survive
+the ZIP roundtrip, including distinct same-name scans from merged sessions; file
+fingerprints resolve their content identities. The same snapshot includes the
+original verified generated-map review ZIP if one was opened in this workspace.
+This preserves its attribution, decisions, proposals and frozen audits alongside
+the current edited map and point records.
+
+All included files share the existing 64 MiB uncompressed content limit. There are
+at most 127 clouds/meshes, 2,048 ZIP members and 10 MiB project metadata. Generated
+review imports keep their original smaller member limit. Oversized workspaces
+report failure rather than omit inputs; the previous browser copy remains intact.
+Older snapshots remain readable and still request their external graph sources.
+
+After reopening, **Download original map package** retrieves the exact archived
+ZIP. Saved audit controls remain disabled for the current edited workspace. Reopen
+that archive to review its original map pair, or run a new source check on your
+current edits. A display-preview archive continues to identify its external full
+point map; archiving it does not include that missing full density or align separate
+drives. Metadata-only projects keep their existing source-selection workflow.

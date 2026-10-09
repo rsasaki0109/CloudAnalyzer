@@ -4,6 +4,7 @@ import { matchesFile, referenceFile, sourceName, type SourceReference } from "..
 import { vectorMap, workerBusy, exportCloud, exportMesh } from "../api";
 import { writeProjectSnapshot, readProjectSnapshot } from "../project-snapshot";
 import { REVIEW_LIMIT } from "../review-zip";
+import { readMappingReview } from "../mapping-review";
 import { Autosave } from "../autosave";
 import { onProjectChanged, projectChanged } from "../project-change";
 import { readRecovery, writeRecovery, MAX_RECOVERY_BYTES, type Recovery, type ReviewDraft } from "../recovery-store";
@@ -18,6 +19,7 @@ import { $, download, errorText, setStatus } from "./dom";
 import { endTask, showProgress, startTask, taskActive } from "./tasks";
 import { setTool } from "./tools";
 import { clearCloudHistory } from "./history";
+import { captureReviewArchive, restoreReviewArchive } from "./mapping-review";
 
 const MAX_PROJECT_BYTES = MAX_RECOVERY_BYTES;
 const available = new Set<File>();
@@ -73,7 +75,7 @@ async function cloudReference(id: number, signal: AbortSignal): Promise<SourceRe
   throw new Error(`Cannot verify ${entry.cloud.name}; open a local file or a URL with a strong ETag`);
 }
 
-export async function captureProject(signal: AbortSignal, progress = true, snapshots?: Map<number, File>): Promise<Project> {
+export async function captureProject(signal: AbortSignal, progress = true, snapshots?: Map<number, File>, assets?: File[]): Promise<Project> {
   const session = structuredClone(captureSession(!!snapshots)), settings = captureSettings();
   if (new Set(session.clouds.map(c => c.name)).size !== session.clouds.length) throw new Error("Rename duplicate cloud files before saving a project; source names must be unique");
   const reviews = captureLaneReviews();
@@ -94,6 +96,7 @@ export async function captureProject(signal: AbortSignal, progress = true, snaps
     const sources: SavedPoseGraph["sources"] = [];
     for (const source of captured.project.sources) {
       const { graph, scans, ...options } = source.files;
+      assets?.push(...(graph ? [graph] : []), ...scans);
       const references: SourceReference[] = [];
       for (const file of scans) {
         if (progress) showProgress({ note: `Checking ${file.name}` });
@@ -103,7 +106,11 @@ export async function captureProject(signal: AbortSignal, progress = true, snaps
     }
     poseGraph = { ...metadata, snapshot: captured.project.snapshot, sources };
   }
-  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap: map, poseGraph, settings, reviews };
+  // Ordinary metadata projects keep their existing source-file workflow.
+  const archive = assets ? captureReviewArchive() : null;
+  if (archive) assets?.push(archive);
+  const reviewArchive = archive ? await referenceFile(archive,signal) : undefined;
+  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap: map, poseGraph, settings, reviews, ...(reviewArchive ? {reviewArchive} : {}) };
 }
 
 /** Stage projects before loading; graph inputs go to the graph reader. */
@@ -139,9 +146,9 @@ export async function prepareProjectFiles(files: File[]): Promise<Set<File>> {
 const sameName = (file: File, ref: SourceReference) => sourceName(file) === ref.name || file.name === ref.name.split("/").at(-1);
 
 export function isProjectGraphSource(file: File): boolean {
-  if (!pending?.poseGraph) return false;
+  if (!pending) return false;
   if (pending.session.clouds.some(c => c.source && sameName(file, c.source))) return false;
-  return pending.poseGraph.sources.some(s => [...(s.graph ? [s.graph] : []), ...s.scans].some(ref => sameName(file, ref)));
+  return !!(pending.reviewArchive && sameName(file,pending.reviewArchive)) || !!pending.poseGraph?.sources.some(s => [...(s.graph ? [s.graph] : []), ...s.scans].some(ref => sameName(file, ref)));
 }
 
 /** Each source keeps the loading limit used when its cloud was created. */
@@ -199,6 +206,9 @@ export async function completePendingProject(): Promise<void> {
       return;
     }
     await vectorMap("check-project", { name: "project-map.json", text: project.vectorMap });
+    const archive = project.reviewArchive ? resolved.get(project.reviewArchive)! : null;
+    // Check the nested immutable archive before mutating current geometry.
+    const archivedReview = archive ? await readMappingReview(archive, signal) : null;
     // Reopen a verified source when the listed cloud uses a different sampling limit.
     const stale: number[] = [];
     for (const saved of project.session.clouds) {
@@ -242,6 +252,7 @@ export async function completePendingProject(): Promise<void> {
     await applySession(project.session, true);
     restoreLaneReviews(project.reviews);
     restoreReviewDraft(pendingDraft);
+    await restoreReviewArchive(archive, signal, archivedReview);
     pendingDraft = undefined;
     pending = null;
     available.clear();
@@ -285,8 +296,15 @@ async function captureWorkspace(signal: AbortSignal, progress: boolean): Promise
     if (total > REVIEW_LIMIT) throw new Error("Snapshot exceeds the 64 MiB content limit; export large results separately");
     snapshots.set(entry.cloud.id, new File([new Uint8Array(bytes)], `${prefix}-${i}.ply`));
   }
-  const project = await captureProject(signal, progress, snapshots);
-  const zip = await writeProjectSnapshot(project, [...snapshots.values()], signal);
+  const originalAssets: File[] = [], assets: File[] = [];
+  const project = await captureProject(signal, progress, snapshots, originalAssets);
+  const identities = new Set<string>();
+  for (const file of originalAssets) {
+    const ref = await referenceFile(file,signal);
+    const identity = JSON.stringify([file.name,ref.size,ref.kind === "file" ? ref.digest : ""]);
+    if (!identities.has(identity)) { assets.push(file); identities.add(identity); }
+  }
+  const zip = await writeProjectSnapshot(project, [...snapshots.values()], signal, assets);
   signal.throwIfAborted();
   return {project,zip};
 }
@@ -301,7 +319,7 @@ $("project-snapshot").onclick = async () => {
     download(zip, "project.cloudanalyzer.zip");
     snapshotRevision = revision;
     if (!captureReviewDraft()) autosave.exported(revision);
-    setStatus(`Saved workspace snapshot: ${project.session.clouds.length} current clouds/meshes with project metadata. Unloaded original detail and pose-graph input files remain external.`);
+    setStatus(`Saved workspace snapshot: ${project.session.clouds.length} current clouds/meshes, original pose-graph inputs and generated-map archive. Unloaded original cloud detail remains external.`);
   } catch (error) { setStatus(`Could not save workspace snapshot: ${errorText(error)}`, true); }
   finally { button.disabled = false; manualSaving = false; endTask(signal); autosave.schedule(); }
 };

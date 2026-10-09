@@ -1,17 +1,34 @@
 /** Open the verified point/HD pair and inspect its frozen source audits together. */
-import { readMappingReview, parseSavedAudits, type SavedAudit } from "../mapping-review";
+import { readMappingReview, parseSavedAudits, type SavedAudit, type MappingReview } from "../mapping-review";
 import { loadCloud, removeCloud, vectorMap, workerBusy } from "../api";
 import { addEntry, renderList } from "./entries";
 import { refreshColors } from "./colors";
 import { entries, listChanged, pointsInvalidated, viewer } from "./state";
 import { captureMapProject, openVectorMap, showSavedSourceQuality, vectorMapChanged, mapProjectReady } from "./vectormap";
-import { $, errorText, setStatus } from "./dom";
+import { $, download, errorText, setStatus } from "./dom";
 import { startTask, endTask, showProgress, taskActive } from "./tasks";
 
 const button = $<HTMLButtonElement>("mapping-review-open"), input = $<HTMLInputElement>("mapping-review-file");
 const select = $<HTMLSelectElement>("mapping-review-audit");
 let version = 0, selection = 0;
 let current: { cloud: number; audits: SavedAudit[]; map: string; stale: boolean; sourceCount?: number } | null = null;
+let archive: File | null = null;
+export function captureReviewArchive(): File | null { return archive; }
+/** Keep original evidence downloadable without treating its audits as current. */
+export async function restoreReviewArchive(file: File | null, signal: AbortSignal, verified?: MappingReview | null): Promise<void> {
+  const review = verified === undefined ? (file ? await readMappingReview(file, signal) : null) : verified;
+  archive = file;
+  current = null; selection++;
+  select.disabled = true;
+  $("mapping-review-result").hidden = !file;
+  if (review) {
+    $("mapping-review-summary").textContent = `Original generated-map package retained: ${review.verifiedFiles} verified files.`;
+    $("mapping-review-credit").textContent = review.attribution;
+    $("mapping-review-state").textContent = "The archive contains the original map pair and frozen audits. Reopen it to review that pair. Current workspace edits need a new source check.";
+  }
+  $<HTMLButtonElement>("mapping-review-download").disabled = !archive;
+}
+$("mapping-review-download").onclick = () => { if (archive) download(archive, archive.name); };
 function invalidate(message: string): void {
   if (!current) return;
   current.stale = true;
@@ -75,6 +92,8 @@ input.onchange = async () => {
     committed = true;
     renderList(); viewer.fit();
     current = { cloud: cloud.id, audits, map: await captureMapProject(), stale: false, sourceCount: review.preview?.sourceCount };
+    archive = file;
+    $<HTMLButtonElement>("mapping-review-download").disabled = false;
     select.replaceChildren(...audits.map((audit, i) => new Option(audit.label, String(i))));
     select.disabled = false;
     $("mapping-review-result").hidden = false;

@@ -27,6 +27,8 @@ export interface Project {
   poseGraph: SavedPoseGraph | null;
   settings: Record<string, ControlSetting>;
   reviews: LaneReview[];
+  /** Immutable original agent review ZIP; its audits do not describe later edits. */
+  reviewArchive?: SourceReference;
 }
 
 const object = (v: unknown): Record<string, unknown> => {
@@ -96,12 +98,15 @@ export function parseProject(input: unknown): Project {
     if (ups.length !== nodes.length * 3 || !nodes.every(n => Number.isSafeInteger(n) && n >= 0 && n < count)) throw new Error("Invalid saved IMU directions");
     poseGraph = { name: text(graph.name), snapshot, sources, sessions, imu: { nodes, ups } };
   }
-  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap, poseGraph, settings, reviews: parseReviews(p.reviews ?? []) };
+  const reviewArchive = p.reviewArchive === undefined ? undefined : parseSource(p.reviewArchive);
+  if (reviewArchive && reviewArchive.kind !== "file") throw new Error("Review archive must be a local file");
+  return { app: "CloudAnalyzer Project", version: 1, session, vectorMap, poseGraph, settings, reviews: parseReviews(p.reviews ?? []), ...(reviewArchive ? {reviewArchive} : {}) };
 }
 
 export function projectSources(project: Project): SourceReference[] {
   return [
     ...project.session.clouds.flatMap(c => c.source ? [c.source] : []),
     ...project.poseGraph?.sources.flatMap(s => [...(s.graph ? [s.graph] : []), ...s.scans]) ?? [],
+    ...(project.reviewArchive ? [project.reviewArchive] : []),
   ];
 }

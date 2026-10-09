@@ -51,3 +51,38 @@ test('ZIP construction rejects oversized/duplicate content and supports cancella
   const controller=new AbortController();controller.abort();
   await assert.rejects(writeReviewZip([['small',new Blob(['x'])]],controller.signal),{name:'AbortError'});
 });
+
+test('complete snapshot keeps graph scans with equal basenames and distinct fingerprints', async()=>{
+  const {file,project}=await fixture();
+  const one=new File(['first scan'],'000001.ply'), two=new File(['second scan'],'000001.ply'), graph=new File(['poses'],'poses.kitti');
+  project.poseGraph={sources:[{graph:await referenceFile(graph),scans:[await referenceFile(one)]},{graph:null,scans:[await referenceFile(two)]}]};
+  const zip=asFile(await writeProjectSnapshot(project,[file],signal(),[graph,one,two]));
+  const restored=await readProjectSnapshot(zip,signal());
+  assert.deepEqual(restored.slice(2).map(f=>f.name),['poses.kitti','000001.ply','000001.ply']);
+  assert.deepEqual(await Promise.all(restored.slice(2).map(f=>f.text())),['poses','first scan','second scan']);
+});
+test('missing, swapped and unreferenced original inputs reject complete snapshots',async()=>{
+  const {file,project}=await fixture(), original=new File(['scan'],'000000.ply'), graph=new File(['poses'],'poses.g2o');
+  project.poseGraph={sources:[{graph:await referenceFile(graph),scans:[await referenceFile(original)]}]};
+  await assert.rejects(writeProjectSnapshot(project,[file],signal(),[graph]),/missing verified/);
+  await assert.rejects(writeProjectSnapshot(project,[file],signal(),[graph,new File(['bad!'],original.name)]),/missing verified/);
+  await assert.rejects(writeProjectSnapshot(project,[file],signal(),[graph,original,new File(['extra'],'unexpected.ply')]),/unreferenced/);
+});
+test('workspace member allowance does not relax generated review ZIP limits',async()=>{
+  const files=Array.from({length:130},(_,i)=>[`assets/${i}`,new Blob()]);
+  await assert.rejects(writeReviewZip(files,signal()),/member limit/);
+  const zip=asFile(await writeReviewZip([['manifest.json',new Blob(['{}'])],...files],signal(),2048));
+  await assert.rejects(indexReviewZip(zip,signal()),/excessive/);
+  assert.equal((await indexReviewZip(zip,signal(),2048)).size,131);
+  await assert.rejects(indexReviewZip(zip,signal(),99999),/Invalid ZIP member limit/);
+});
+test('original review archive bytes are separate from edited project geometry',async()=>{
+  const {file,project}=await fixture(), archive=new File(['original immutable review archive'],'review.zip');
+  project.reviewArchive=await referenceFile(archive);
+  const zip=asFile(await writeProjectSnapshot(project,[file],signal(),[archive]));
+  const restored=await readProjectSnapshot(zip,signal());
+  assert.equal(restored.at(-1).name,archive.name);assert.equal(await restored.at(-1).text(),await archive.text());
+  const table=await entries(zip), changed=table.find(([p])=>p.startsWith('assets/'));
+  changed[1]=new Blob(['changed original review archive!!!']);
+  await assert.rejects(readProjectSnapshot(asFile(await writeReviewZip(table,signal(),2048)),signal()),/identity|hash differs/);
+});

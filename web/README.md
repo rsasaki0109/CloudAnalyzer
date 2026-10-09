@@ -74,10 +74,12 @@ Files never leave the browser.
   to continue from the saved records without rerunning processing. PLY snapshots
   keep double coordinates and supported float/byte vertex attributes; transforms
   are baked once. The package is bounded to 64 MiB uncompressed, 127 clouds/meshes
-  and 10 MiB project metadata. Unloaded original detail, pose-graph input files
-  and frozen generated-map source audits stay external. Undo starts fresh.
-  Browser autosave and **Save project** retain metadata/source references only;
-  processed records need a workspace snapshot or separate result export.
+  and 10 MiB project metadata. Original pose-graph/scan inputs and the verified
+  generated-map review ZIP are included, with at most 2,048 ZIP members. The
+  original review archive stays downloadable; its frozen audits do not validate
+  later edits. Unloaded cloud detail stays external. Undo starts fresh.
+  Browser autosave includes these records/inputs when its optional checkbox is
+  enabled; otherwise it and **Save project** retain metadata/source references.
 - Works on phones and tablets: the view fills the screen and the panels
   open as a bottom sheet (**Panels**); drag to orbit, pinch to zoom, two
   fingers to pan, tap to pick, double-tap (or double-click) to orbit around

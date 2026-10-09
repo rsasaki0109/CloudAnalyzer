@@ -31,8 +31,8 @@ const seconds = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `$
  * Load point clouds and meshes; session files (.json) among them are applied
  * once the others are in. `origins` tells where each file came from.
  */
-export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]): Promise<void> {
-  if (files.some(file => file instanceof File && /\.cloudanalyzer\.zip$/i.test(file.name))) {
+export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[], snapshotExpanded = false): Promise<void> {
+  if (!snapshotExpanded && files.some(file => file instanceof File && /\.cloudanalyzer\.zip$/i.test(file.name))) {
     const expanded: (File | RemoteFile)[] = [], signal = startTask();
     try {
       for (const file of files) {
@@ -41,7 +41,7 @@ export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]
       }
     } catch (error) { setStatus(`Could not open workspace snapshot: ${errorText(error)}`, true); return; }
     finally { endTask(signal); }
-    return loadFiles(expanded);
+    return loadFiles(expanded, undefined, true);
   }
   let projects: Set<File>;
   try { projects = await prepareProjectFiles(files.filter((f): f is File => f instanceof File)); }

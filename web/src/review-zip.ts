@@ -2,6 +2,13 @@
 export const REVIEW_LIMIT = 64 * 1024 * 1024;
 export const MANIFEST_LIMIT = 10 * 1024 * 1024;
 const HEADER_LIMIT = MANIFEST_LIMIT;
+/** Workspace assets may include many small original pose-graph scans. */
+export const WORKSPACE_MEMBER_LIMIT = 2048;
+function memberLimit(value: number): number {
+  if (!Number.isSafeInteger(value) || value < 1 || value > WORKSPACE_MEMBER_LIMIT)
+    throw new Error("Invalid ZIP member limit");
+  return value;
+}
 export interface Member {
   path: string;
   bytes: number;
@@ -40,7 +47,9 @@ async function range(
 export async function indexReviewZip(
   file: File,
   signal: AbortSignal,
+  maximumMembers = 129,
 ): Promise<Map<string, Member>> {
+  memberLimit(maximumMembers);
   if (file.size < 22 || file.size > REVIEW_LIMIT + HEADER_LIMIT)
     throw new Error(
       "Review ZIP exceeds the 64 MiB browser limit or is incomplete; use the CLI for larger packages",
@@ -62,7 +71,7 @@ export async function indexReviewZip(
     size = tail.getUint32(end + 12, true),
     start = tail.getUint32(end + 16, true);
   if (
-    count > 129 ||
+    count > maximumMembers ||
     count !== tail.getUint16(end + 8, true) ||
     start + size !== tailStart + end
   )
@@ -196,11 +205,13 @@ export async function readReviewMember(
 export async function writeReviewZip(
   entries: [string, Blob][],
   signal: AbortSignal,
+  maximumMembers = 129,
 ): Promise<Blob> {
+  memberLimit(maximumMembers);
   const names = new Set(entries.map(([name]) => path(name)));
   if (
     names.size !== entries.length ||
-    entries.length > 129 ||
+    entries.length > maximumMembers ||
     entries.reduce((n, [, b]) => n + b.size, 0) > REVIEW_LIMIT
   )
     throw new Error("Snapshot exceeds the 64 MiB content or member limit");

@@ -275,7 +275,10 @@ def job_backend(tmp_path, monkeypatch):
     module.edit_vector_map_relations = normalize_geometry
 
     def odometry(source, out, **kwargs):
-        return {"scans": out, "trajectory": "unused", "gravity": None, "frames": 4, "path_length_m": 10}
+        root = Path(out); root.mkdir()
+        trajectory = root / 'trajectory.tum'
+        trajectory.write_text('0 0 0 1 0 0 0 1\n1 10 0 1 0 0 0 1\n')
+        return {"scans": out, "trajectory": str(trajectory), "gravity": None, "frames": 4, "path_length_m": 10}
 
     def fix(folder, out, **kwargs):
         root = Path(out)
@@ -1282,6 +1285,182 @@ def test_failed_raw_gap_inspection_can_finish_with_the_retained_baseline(density
     final = _advance(root, {'type': 'finish', 'candidate_id': 2}, 'Retain baseline after failed raw inspection')
     assert final['status'] == 'finished' and final['output']['candidate_id'] == 2
     assert final['remaining_attempts'] == 4
+
+
+@pytest.fixture
+def unused_frame_run(job_backend, tmp_path, monkeypatch, request):
+    from copy import deepcopy
+    import numpy as np
+    from ca import mapping_run as runs, mapping_retry as retry
+    source, _ = job_backend
+    native = _attach_lane_native()
+    module = jobs.core()
+    for name in ('PoseGraph', 'read', 'icp', 'audit_vector_map_quality_details', 'audit_vector_map_ground_consensus_details'):
+        setattr(module, name, getattr(native, name))
+    poses = np.repeat(np.eye(4)[None], 12, axis=0); poses[:, 0, 3] = np.arange(12); poses[:, 2, 3] = 1.
+    ids = getattr(request, 'param', list(range(0, 11, 2)))
+    xyz = np.array([[x/10, y/10, 0., 1.] for x in range(-10, 111) for y in range(-15, 16)], dtype=np.float32)
+    def decode(source, out, **kwargs):
+        out = Path(out); out.mkdir(parents=True); paths = []
+        for i in range(12):
+            path = out / f'frame_{i:06d}.bin'
+            (xyz - np.array([i, 0, 0, 0], dtype=np.float32)).tofile(path); paths.append(path)
+        return paths, (np.arange(12)*.1).tolist()
+    monkeypatch.setattr(retry, 'materialize_pointcloud_bag', decode)
+    def odometry(source, out, **kwargs):
+        out = Path(out); out.mkdir()
+        path = out/'trajectory.tum'; path.write_text(native.PoseGraph.from_poses(poses).to_tum((np.arange(12)*.1).tolist()))
+        return {'scans': str(out), 'trajectory': str(path), 'gravity': None, 'frames': 12, 'path_length_m': 11.}
+    monkeypatch.setattr(jobs, 'odometry', odometry)
+    def fixed(folder, out, **kwargs):
+        out = Path(out); out.mkdir()
+        cloud, trajectory, graph = out/'map.xyz', out/'poses.txt', out/'map.g2o'
+        np.savetxt(cloud, xyz[::2, :3]+[0, 0, 1]); np.savetxt(trajectory, poses[ids, :3].reshape(len(ids), 12))
+        graph.write_text(native.PoseGraph.from_poses(poses[ids], ids=ids).to_g2o())
+        return {'map_points': len(xyz[::2]), 'nodes': len(ids), 'scans': len(ids), 'unmatched_scans': 6,
+                'outputs': {'map': str(cloud), 'kitti': str(trajectory), 'g2o': str(graph)}}
+    monkeypatch.setattr(jobs, 'fix_session', fixed)
+    report = _corridor_report(); original = deepcopy(report['candidates'][0])
+    first, second = deepcopy(original), deepcopy(original)
+    first.update(to_m=4., sections=first['sections'][:3]); second.update(id=17, from_m=8., sections=second['sections'][4:])
+    report.update(candidates=[first, second], with_candidate_station_length_m=6., without_candidate_station_length_m=4.,
+                  trajectory_covered_station_length_m=6., deferred_intervals=[{'from_m': 4., 'to_m': 8., 'reason': 'source_gap'}])
+    report['profiles'] = [{'station_m': float(k), 'trajectory': [float(k),0.,1.], 'heading_usable': True,
+                           'reference_ground_height_m': 1., 'bands': []} for k in range(0, 11, 2)]
+    def propose(cloud, trajectory, options):
+        r = deepcopy(report); r['protocol'] = {'options': {'association': 'all_supported_bands', **json.loads(options)}}
+        if 'pointcloud-retry' in cloud:
+            r.update(candidates=[original], with_candidate_station_length_m=10., without_candidate_station_length_m=0.,
+                     trajectory_covered_station_length_m=10., deferred_intervals=[])
+        return json.dumps(r)
+    module.propose_road_corridors = propose
+    root = tmp_path/'unused-frame-run'
+    runs.start_mapping_run(str(source), str(root), _run_layout())
+    _advance(root, {'type': 'inspect', 'candidate_ids': [1,17]})
+    _advance(root, {'type': 'draft', 'decisions': [{'candidate_id': i, 'action': 'include', 'reason': 'Baseline source'} for i in (1,17)]})
+    _advance(root, {'type': 'inspect_gaps', 'candidate_id': 2, 'offset': 0})
+    return root
+
+
+def _inspect_unused(root, offset=0):
+    return _advance(root, {'type': 'inspect_unused_frames', 'candidate_id': 2, 'offset': offset})['unused_frame_observation']
+
+
+def test_unused_frames_two_sided_checks_fuse_only_explicit_ids_and_keep_reference(unused_frame_run):
+    from ca import mapping_run as runs
+    root = unused_frame_run
+    original = jobs.inspect_mapping_job(str(root))
+    observed = _inspect_unused(root)
+    assert observed['frames_total'] == 6 and observed['eligible_total'] == 5
+    tail = next(r for r in observed['frames'] if r['frame_id']==11)
+    assert not tail['eligible'] and tail['holds'] == ['no_two_sided_corrected_bracket']
+    for r in observed['frames'][:-1]:
+        assert r['eligible'] and set(r['registration']) == {'before','after'}
+        assert all(v['passes'] for v in r['registration'].values())
+    with pytest.raises(ValueError, match='eligible'):
+        _advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [11]})
+    result = _advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    assert result['pointcloud_retry_result']['status'] == 'ready', result
+    child = root/'pointcloud-retry'; job = jobs.inspect_mapping_job(str(child))
+    assert result['remaining_attempts'] == 0 and job['max_attempts'] == 4
+    assert job['pointcloud']['additional_frame_ids'] == [5]
+    assert {'fusion_graph','fusion_trajectory'} <= job['pointcloud']['files'].keys()
+    for key in ('trajectory','graph'):
+        assert original['pointcloud']['files'][key]['sha256'] == job['pointcloud']['files'][key]['sha256']
+    native = jobs.core()
+    fusion = native.PoseGraph.from_g2o(Path(job['pointcloud']['files']['fusion_graph']['path']).read_text())
+    assert list(fusion.node_ids) == [0,2,4,5,6,8,10]
+    _advance(child, {'type': 'inspect', 'candidate_ids': [1]})
+    _advance(child, {'type': 'draft', 'decisions': [{'candidate_id': 1, 'action': 'include', 'reason': 'Observed replacement'}]})
+    compared = _advance(root, {'type': 'compare_retry', 'candidate_id': 2})['retry_comparison']
+    assert compared['retry_strategy'] == 'unused_frames' and compared['added_frame_ids'] == [5]
+    assert compared['gained_source_length_m'] == 4. and not compared['lost_source_length_m']
+    assert runs.inspect_mapping_run(str(root))['output'] is None
+    _advance(child, {'type': 'finish', 'candidate_id': 2})
+    final = _advance(root, {'type': 'finish_retry', 'candidate_id': 2})
+    assert final['output']['pointcloud_retry_decision']['adopted'] and not final['deployment_ready']
+
+
+def test_unused_frames_require_seen_receipts_and_reuse_saved_checks(unused_frame_run, monkeypatch):
+    root = unused_frame_run
+    with pytest.raises(ValueError, match='inspect unused'):
+        _advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    _inspect_unused(root, 99)
+    with pytest.raises(ValueError, match='inspect every chosen frame'):
+        _advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    def do_not_repeat(*args, **kwargs):raise AssertionError('completed registration reran')
+    monkeypatch.setattr(jobs.core(), 'icp', do_not_repeat)
+    observed = _inspect_unused(root)
+    assert observed['eligible_total'] == 5
+    for ids in ([True], [5,5], [0], []):
+        with pytest.raises(ValueError):_advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': ids})
+    assert jobs.inspect_mapping_job(str(root))['remaining_attempts'] == 4
+
+
+def test_unused_frames_withhold_scan_pose_disagreement(unused_frame_run, monkeypatch):
+    import numpy as np
+    root = unused_frame_run
+    original = jobs.core().icp
+    def disagree(*args, **kwargs):
+        r = original(*args, **kwargs); m = np.array(r['transformation']); m[0,3] += 1.;r['transformation'] = m
+        return r
+    monkeypatch.setattr(jobs.core(), 'icp', disagree)
+    observed = _inspect_unused(root)
+    assert observed['eligible_total'] == 0
+    assert any('disagrees' in h for r in observed['frames'] for h in r['holds'])
+    with pytest.raises(ValueError, match='eligible'):_advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    assert 'pointcloud_retry' not in jobs.inspect_mapping_job(str(root))
+
+
+@pytest.mark.parametrize('target', ['raw', 'original_motion', 'frame_evidence'])
+def test_unused_frames_pin_original_motion_and_raw_frames_before_allocation(unused_frame_run, target):
+    root = unused_frame_run
+    observed = _inspect_unused(root)
+    frame = next(r for r in observed['frames'] if r['frame_id']==5)
+    artifact = frame['raw_frame'] if target == 'raw' else (observed['file'] if target == 'frame_evidence' else jobs.inspect_mapping_job(str(root))['pointcloud']['source_motion']['trajectory'])
+    Path(artifact['path']).write_bytes(b'changed source evidence')
+    with pytest.raises(ValueError, match='changed'):_advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    assert 'pointcloud_retry' not in jobs.inspect_mapping_job(str(root))
+
+
+def test_unused_frames_failed_fusion_keeps_baseline_and_allocation(unused_frame_run, monkeypatch):
+    import numpy as np
+    from ca import mapping_frames as frames
+    root = unused_frame_run; _inspect_unused(root)
+    original = frames.fix_session
+    def altered(*args, **kwargs):
+        r = original(*args, **kwargs); p = np.loadtxt(r['outputs']['kitti']); p[0,3] += .1
+        np.savetxt(r['outputs']['kitti'],p);return r
+    monkeypatch.setattr(frames, 'fix_session', altered)
+    result = _advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    assert result['pointcloud_retry_result']['status'] == 'failed' and result['remaining_attempts'] == 0
+    final = _advance(root, {'type': 'finish', 'candidate_id': 2})
+    assert not final['output']['pointcloud_retry_decision']['adopted']
+
+
+def test_unused_frames_completed_retry_resumes_once(unused_frame_run, monkeypatch):
+    from ca import mapping_retry as retry
+    root = unused_frame_run; _inspect_unused(root)
+    original = retry.retry
+    def interrupted(*args, **kwargs):original(*args, **kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(retry, 'retry', interrupted)
+    with pytest.raises(KeyboardInterrupt):_advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    monkeypatch.setattr(retry, 'retry', original)
+    result = _advance(root, {'type': 'resume'})
+    assert result['pointcloud_retry_result']['status'] == 'ready' and result['remaining_attempts'] == 0
+    assert jobs.inspect_mapping_job(str(root/'pointcloud-retry'))['pointcloud']['additional_frame_ids'] == [5]
+
+
+@pytest.mark.parametrize('unused_frame_run', [[0,3,6,9]], indirect=True)
+def test_unused_frames_sparse_keyframes_keep_original_ids_without_order_fallback(unused_frame_run):
+    root = unused_frame_run
+    observed = _inspect_unused(root)
+    assert next(r for r in observed['frames'] if r['frame_id']==5)['eligible']
+    result = _advance(root, {'type': 'retry_frames', 'candidate_id': 2, 'frame_ids': [5]})
+    assert result['pointcloud_retry_result']['status'] == 'ready', result
+    job = jobs.inspect_mapping_job(str(root/'pointcloud-retry'))
+    graph = jobs.core().PoseGraph.from_g2o(Path(job['pointcloud']['files']['fusion_graph']['path']).read_text())
+    assert list(graph.node_ids) == [0,3,5,6,9]
 
 
 def test_connections_preserve_source_extent_and_verify_real_reopened_route(connection_run):

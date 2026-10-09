@@ -247,6 +247,13 @@ budget; actual HD maps are compared for gained and lost intervals and route span
 before an explicit delivery choice. Earlier maps remain available if the trial worsens.
 The [NCLT density trials](benchmarks/vector-map/nclt-pointcloud-retry/README.md)
 record both recoveries and losses, with both replacements explicitly rejected.
+The agent can also inspect unused raw frames and explicitly fuse observations
+whose pose hypotheses pass checks against both neighboring corrected scans.
+Original poses and thinning remain fixed; expanded fusion and original reference
+graphs are retained separately, with actual HD comparisons before delivery.
+The [NCLT unused-frame trials](benchmarks/vector-map/nclt-unused-frames/README.md)
+record April's adopted partial improvement and June's retained baseline after
+the trial shortened its longest route despite generating more source intervals.
 The runner binds per-piece lane settings automatically and resumes completed
 stages after interruption. [Individual mapping tools](docs/commands/mapping-job.md)
 remain available for separate experiments and explicit draft selection.

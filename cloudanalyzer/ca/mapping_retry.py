@@ -12,7 +12,7 @@ from scipy.spatial import cKDTree
 
 from ca import mapping_job as jobs
 from ca.core.bag_ingest import materialize_pointcloud_bag
-from ca.posegraph_fix import SCAN_SUFFIXES, fix_session, match_scans
+from ca.posegraph_fix import SCAN_SUFFIXES, fix_session
 from ca.mapping_connections import route_metrics
 
 
@@ -64,7 +64,7 @@ def _raw_source(root: Path, job: dict[str, Any]) -> tuple[dict[str, Any], np.nda
         if directory.exists():
             raise RuntimeError("raw evidence extraction was interrupted; retain it and inspect before recovery")
         paths, stamps = materialize_pointcloud_bag(job["source"]["path"], directory / "scans",
-                              topic=job["pointcloud_options"]["pointcloud_topic"], kitti_bin=True)
+                              topic=job["pointcloud_options"]["pointcloud_topic"], kitti_bin=True, max_frames=4097)
         jobs._verify(job["source"])
         if not 1 <= len(paths) <= 4096:
             raise ValueError("raw gap inspection is limited to 4096 frames; use a smaller recording")
@@ -78,7 +78,10 @@ def _raw_source(root: Path, job: dict[str, Any]) -> tuple[dict[str, Any], np.nda
     reference = np.loadtxt(job["pointcloud"]["files"]["trajectory"]["path"]).reshape(-1, 3, 4)
     if poses.shape[0] != reference.shape[0] or not np.allclose(poses[:, :3, :], reference, atol=1e-10, rtol=0):
         raise ValueError("saved graph does not reproduce the frozen trajectory")
-    matched = match_scans(paths, list(graph.node_ids))
+    if any(p.name != f"frame_{i:06d}.bin" for i, p in enumerate(paths)):
+        raise ValueError("decoded raw frames must retain original contiguous frame numbers")
+    by_id = {node_id: i for i, node_id in enumerate(graph.node_ids)}
+    matched = [by_id.get(i) for i in range(len(paths))]
     if set(n for n in matched if n is not None) != set(range(len(reference))):
         raise ValueError("raw scans do not cover every frozen keyframe")
     points, count = [], 0
@@ -174,30 +177,38 @@ def validate(evidence: dict[str, Any], gap_ids: Any, options: Any) -> dict[str, 
     return cast(dict[str, Any], saved)
 
 
-def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], options: dict[str, Any], reason: str) -> dict[str, Any]:
+def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], options: dict[str, Any], reason: str,
+          frame_ids: list[int] | None = None) -> dict[str, Any]:
     from ca.mapping_run import SCHEMA
+    from ca import mapping_frames as frames
     with jobs._locked(root):
         job = jobs._load(root)
         jobs._inputs(job)
         parent = _parent(job, cid)
-        saved = validate(evidence, gap_ids, options)
+        saved = validate(evidence, gap_ids, options) if frame_ids is None else frames.validate(evidence, frame_ids)
+        strategy = "density" if frame_ids is None else "unused_frames"
+        if frame_ids is not None and options != saved["pointcloud_options"]:
+            raise ValueError("unused-frame fusion must keep original thinning resolutions")
         if saved["candidate_id"] != cid:
             raise ValueError("gap evidence belongs to another candidate")
         stage = job.get("pointcloud_retry")
         if stage:
             if (stage["candidate_id"], stage["gap_ids"], stage["options"], stage["reason"], stage["evidence"]) != (cid, gap_ids, options, reason, evidence):
                 raise ValueError("point-cloud retry was already allocated to another decision")
+            if stage.get("strategy", "density") != strategy or stage.get("frame_ids") != frame_ids:
+                raise ValueError("point-cloud retry strategy or chosen frames changed")
             if stage["status"] == "running":
                 raise RuntimeError("point-cloud retry did not finish; inspect retained state before recovery")
             return cast(dict[str, Any], stage)
         available = jobs._remaining(job)
         if available < 2 or "retry_inputs" in job:
-            raise ValueError("one density retry requires two remaining shared HD attempts and a root run")
+            raise ValueError("one point-map retry requires two remaining shared HD attempts and a root run")
         child = root / "pointcloud-retry"
         if child.exists():
             raise FileExistsError(f"retry directory already exists: {child}")
         stage = {"status": "running", "candidate_id": cid, "gap_ids": gap_ids, "options": options, "reason": reason,
-                 "evidence": evidence, "child_job_dir": str(child), "allocated_attempts": available}
+                 "evidence": evidence, "child_job_dir": str(child), "allocated_attempts": available,
+                 "strategy": strategy, "frame_ids": frame_ids}
         job["pointcloud_retry"] = stage
         jobs._save(root / "job.json", job)
         try:
@@ -207,7 +218,7 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
                 "status": "pointcloud_running", "pointcloud": None, "attempts": [], "selected": None,
                 "pointcloud_options": {**job["pointcloud_options"], **options}, "max_attempts": available,
                 "minimum_retained_fraction": job["minimum_retained_fraction"], "scope": job["scope"],
-                "retry_inputs": {**saved["inputs"], "gap_evidence": evidence, "raw_manifest": saved["raw_manifest"]},
+                "retry_inputs": {**saved["inputs"], "retry_evidence": evidence, "raw_manifest": saved["raw_manifest"]},
                 "retry_parent": {"job_dir": str(root), "candidate_id": cid, "gap_ids": gap_ids, "reason": reason}}
             jobs._save(child / "job.json", child_job)
             run = {"schema": SCHEMA, "revision": 0, "status": "preparing", "layout_file": jobs._artifact(child / "layout-hypothesis.json"),
@@ -215,7 +226,7 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
             jobs._save(child / "run.json", run)
             manifest = json.loads(Path(saved["raw_manifest"]["path"]).read_text())
             raw_paths = _frames(manifest)
-            result = fix_session(str(raw_paths[0].parent), str(child / "pointcloud"),
+            result = frames.rebuild(child, job, saved, frame_ids) if frame_ids is not None else fix_session(str(raw_paths[0].parent), str(child / "pointcloud"),
                 poses=job["pointcloud"]["files"]["graph"]["path"], voxel=options["scan_voxel_m"], map_voxel=options["map_voxel_m"],
                 loops=False, gravity=None, remove_dynamic=job["pointcloud_options"]["remove_dynamic"])
             _frames(manifest)
@@ -230,13 +241,18 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
             for key, output_key in (("trajectory", "kitti"), ("graph", "g2o")):
                 shutil.copyfile(job["pointcloud"]["files"][key]["path"], result["outputs"][output_key])
             result["motion_reoptimized"] = False
-            result["maximum_pose_roundtrip_difference"] = float(np.max(np.abs(motion - reference)))
+            result["maximum_pose_roundtrip_difference"] = max(result.get("maximum_pose_roundtrip_difference", 0.), float(np.max(np.abs(motion - reference))))
             jobs._save(child / "pointcloud-report.json", result)
             child_job["pointcloud"] = {"files": {"map": jobs._artifact(result["outputs"]["map"]),
                 "trajectory": jobs._artifact(result["outputs"]["kitti"]), "graph": jobs._artifact(result["outputs"]["g2o"])},
                 "frames": job["pointcloud"]["frames"], "map_points": result["map_points"], "path_length_m": job["pointcloud"]["path_length_m"],
                 "reports": {"correction": str(child / "pointcloud-report.json")},
                 "quality_status": "generated_unverified", "coordinate_frame": job["pointcloud"]["coordinate_frame"]}
+            if frame_ids is not None:
+                child_job["pointcloud"]["files"].update(fusion_graph=jobs._artifact(result["outputs"]["fusion_g2o"]),
+                    fusion_trajectory=jobs._artifact(result["outputs"]["fusion_kitti"]), fusion_scans=result["fusion_scans_manifest"])
+                child_job["pointcloud"]["additional_frame_ids"] = frame_ids
+                child_job["pointcloud"]["source_motion"] = job["pointcloud"]["source_motion"]
             child_job["status"] = "pointcloud_ready"
             jobs._save(child / "job.json", child_job)
             source_proposal = json.loads(Path(parent["corridor_proposal"]["path"]).read_text())
@@ -342,6 +358,7 @@ def compare(root: Path, cid: int) -> dict[str, Any]:
               **{f"after_pointcloud_{k}": v for k, v in child_job["pointcloud"]["files"].items()}}
     _verify_inputs(inputs)
     report = {"schema": "cloudanalyzer.mapping_retry_comparison.v1", "parent_candidate_id": parent["id"], "retry_candidate_id": cid,
+              "retry_strategy": stage.get("strategy", "density"), "added_frame_ids": stage.get("frame_ids"),
               "inputs": inputs, "before": {**summaries[0], "routes": _routes(parent), "map_points": job["pointcloud"]["map_points"]},
               "after": {**summaries[1], "routes": _routes(candidate), "map_points": child_job["pointcloud"]["map_points"]},
               "gained_source_intervals": gained, "lost_source_intervals": lost,
@@ -351,8 +368,16 @@ def compare(root: Path, cid: int) -> dict[str, Any]:
               "automatic_adoption": False, "deployment_ready": False}
     path = root / f"retry-comparison-{cid:02d}.json"
     if path.exists():
-        if json.loads(path.read_text()) != report:
+        retained = json.loads(path.read_text())
+        # Older completed density comparisons lack these optional strategy fields.
+        expected = dict(report)
+        if stage.get("strategy", "density") == "density":
+            for key in ("retry_strategy", "added_frame_ids"):
+                if key not in retained:
+                    expected.pop(key)
+        if retained != expected:
             raise ValueError("retained retry comparison changed")
+        report = retained
     else:
         jobs._save(path, report)
     # Full chains and interval lists remain in the hashed report; bound the tool response.

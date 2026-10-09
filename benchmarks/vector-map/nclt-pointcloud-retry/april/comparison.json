@@ -1,0 +1,679 @@
+{
+  "schema": "cloudanalyzer.mapping_retry_comparison.v1",
+  "parent_candidate_id": 3,
+  "retry_candidate_id": 2,
+  "inputs": {
+    "before_map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "before_projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "before_editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "ec86b68ebd4eef23fc67fd9e0ebe14df6bbcff8baa2d05abafe8d48da1146ad4",
+      "bytes": 18383
+    },
+    "before_report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "c98fa036fc7756889ef2766c610db329491c45566266028788143abf1c714bb0",
+      "bytes": 38303
+    },
+    "after_map": {
+      "path": "run/pointcloud-retry/candidate-02/lanelet2_map.osm",
+      "sha256": "1fc71dc63c71a831ecc0db8a1d8d588016c2cf34c26d341e4faf2641923ad4b9",
+      "bytes": 40036
+    },
+    "after_projector": {
+      "path": "run/pointcloud-retry/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "after_editable_map": {
+      "path": "run/pointcloud-retry/candidate-02/vector_map.json",
+      "sha256": "f18b6f8c989f24f1fe3959e3b6ffb7e8680b5d3dc3638d57f56ff5d264ad039a",
+      "bytes": 16278
+    },
+    "after_report": {
+      "path": "run/pointcloud-retry/candidate-02/report.json",
+      "sha256": "aceec1fd215f9571cb2007a9feb8ee0edbaefde903f3a608d0fc553f53ac0019",
+      "bytes": 34480
+    },
+    "before_audits": {
+      "path": "run/candidate-03/source-quality.json",
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "after_audits": {
+      "path": "run/pointcloud-retry/candidate-02/source-quality.json",
+      "sha256": "269f152f333b3e764948db36035f8c77ec155d0328aefc8af37ae84e83187a4a",
+      "bytes": 183773
+    },
+    "gap_evidence": {
+      "path": "run/gaps-03.json",
+      "sha256": "220f4b73462b07e952d33f662d166042596136009a1b053f1a3e432e684e6239",
+      "bytes": 437258
+    },
+    "after_lineage_source": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "after_lineage_native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "after_lineage_layout": {
+      "path": "run/layout-hypothesis.json",
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "after_lineage_correction_report": {
+      "path": "run/pointcloud-report.json",
+      "sha256": "2b4ed9f64540b83abbdd10099485bf16652ff0fc9fc2605e1b01221542e9819e",
+      "bytes": 1976
+    },
+    "after_lineage_proposal": {
+      "path": "run/corridor-proposals-trajectory.json",
+      "sha256": "056846e66156393ecb7e138ff5e0810771eaed58b5ea1ca4fd0500e15cd1e35a",
+      "bytes": 323982
+    },
+    "after_lineage_audits": {
+      "path": "run/candidate-03/source-quality.json",
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "after_lineage_pointcloud_map": {
+      "path": "run/pointcloud/trajectory_map.ply",
+      "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+      "bytes": 21878254
+    },
+    "after_lineage_pointcloud_trajectory": {
+      "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "after_lineage_pointcloud_graph": {
+      "path": "run/pointcloud/trajectory_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "after_lineage_parent_map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "after_lineage_parent_projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "after_lineage_parent_editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "ec86b68ebd4eef23fc67fd9e0ebe14df6bbcff8baa2d05abafe8d48da1146ad4",
+      "bytes": 18383
+    },
+    "after_lineage_parent_report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "c98fa036fc7756889ef2766c610db329491c45566266028788143abf1c714bb0",
+      "bytes": 38303
+    },
+    "after_lineage_geometry_editable_map": {
+      "path": "run/geometry-01/vector_map.json",
+      "sha256": "5e4593d78a4909e5c4acec73ebe4c2adc27f0a70e6168456cac97fa63c1c48d0",
+      "bytes": 33766
+    },
+    "after_lineage_geometry_report": {
+      "path": "run/geometry-01/report.json",
+      "sha256": "8c24cb93d8ac843e7c63166a3cf77b6bcf32382814b16ee5be7978613c440555",
+      "bytes": 89242
+    },
+    "after_lineage_gap_evidence": {
+      "path": "run/gaps-03.json",
+      "sha256": "220f4b73462b07e952d33f662d166042596136009a1b053f1a3e432e684e6239",
+      "bytes": 437258
+    },
+    "after_lineage_raw_manifest": {
+      "path": "run/gap-source/manifest.json",
+      "sha256": "c9ecd2c27ddeabc5e78bb125eace2b8b031fb7c6bb35e9b02dd661100ba4c87f",
+      "bytes": 59310
+    },
+    "after_pointcloud_map": {
+      "path": "run/pointcloud-retry/pointcloud/trajectory_fixed_map.ply",
+      "sha256": "5fdec477d3895653e45995fdcb6811493ca1e27bae6655ce5be478a98d84a4ee",
+      "bytes": 33082543
+    },
+    "after_pointcloud_trajectory": {
+      "path": "run/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "after_pointcloud_graph": {
+      "path": "run/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    }
+  },
+  "before": {
+    "extent": {
+      "trajectory_length_m": 250.4805260889724,
+      "generated_length_m": 106,
+      "retained_fraction": 0.42318659120968183,
+      "minimum_retained_fraction": 0.9,
+      "passes_requested_extent": false
+    },
+    "audits": {
+      "editable": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 758,
+          "supported": 444,
+          "height_mismatches": 314,
+          "insufficient_returns": 0
+        },
+        "needs_review": [
+          3,
+          9,
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          33,
+          36
+        ],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "minimum_returns": 3,
+            "model": "low_quantile",
+            "quantile": 0.15
+          }
+        }
+      },
+      "reopened_osm": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 758,
+          "supported": 444,
+          "height_mismatches": 314,
+          "insufficient_returns": 0
+        },
+        "needs_review": [
+          3,
+          9,
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          33,
+          36
+        ],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "minimum_returns": 3,
+            "model": "low_quantile",
+            "quantile": 0.15
+          }
+        }
+      },
+      "consensus_editable": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 758,
+          "supported": 758,
+          "height_mismatches": 0,
+          "insufficient_returns": 0
+        },
+        "needs_review": [],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          }
+        }
+      },
+      "consensus_reopened_osm": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 758,
+          "supported": 758,
+          "height_mismatches": 0,
+          "insufficient_returns": 0
+        },
+        "needs_review": [],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          }
+        }
+      }
+    },
+    "routes": {
+      "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+      "connected_components": 11,
+      "longest_route_station_span_m": 34,
+      "routes": [
+        {
+          "lane_ids": [
+            3
+          ],
+          "from_m": 10,
+          "to_m": 18,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            6
+          ],
+          "from_m": 42,
+          "to_m": 44,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            9
+          ],
+          "from_m": 56,
+          "to_m": 58,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            12
+          ],
+          "from_m": 62,
+          "to_m": 70,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            15
+          ],
+          "from_m": 76,
+          "to_m": 104,
+          "station_span_m": 28
+        },
+        {
+          "lane_ids": [
+            18,
+            39,
+            21
+          ],
+          "from_m": 110,
+          "to_m": 124,
+          "station_span_m": 14
+        },
+        {
+          "lane_ids": [
+            24
+          ],
+          "from_m": 128,
+          "to_m": 162,
+          "station_span_m": 34
+        },
+        {
+          "lane_ids": [
+            27
+          ],
+          "from_m": 166,
+          "to_m": 172,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            30
+          ],
+          "from_m": 178,
+          "to_m": 184,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            33
+          ],
+          "from_m": 198,
+          "to_m": 200,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            36
+          ],
+          "from_m": 240,
+          "to_m": 242,
+          "station_span_m": 2
+        }
+      ],
+      "legal_routing_verified": false
+    },
+    "map_points": 683690
+  },
+  "after": {
+    "extent": {
+      "trajectory_length_m": 250.4805260889724,
+      "generated_length_m": 102,
+      "retained_fraction": 0.4072172858810146,
+      "minimum_retained_fraction": 0.9,
+      "passes_requested_extent": false
+    },
+    "audits": {
+      "editable": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 688,
+          "supported": 396,
+          "height_mismatches": 292,
+          "insufficient_returns": 0
+        },
+        "needs_review": [
+          3,
+          9,
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          30,
+          36
+        ],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "minimum_returns": 3,
+            "model": "low_quantile",
+            "quantile": 0.15
+          }
+        }
+      },
+      "reopened_osm": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 688,
+          "supported": 396,
+          "height_mismatches": 292,
+          "insufficient_returns": 0
+        },
+        "needs_review": [
+          3,
+          9,
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          30,
+          36
+        ],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "minimum_returns": 3,
+            "model": "low_quantile",
+            "quantile": 0.15
+          }
+        }
+      },
+      "consensus_editable": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 688,
+          "supported": 688,
+          "height_mismatches": 0,
+          "insufficient_returns": 0
+        },
+        "needs_review": [],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          }
+        }
+      },
+      "consensus_reopened_osm": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 688,
+          "supported": 688,
+          "height_mismatches": 0,
+          "insufficient_returns": 0
+        },
+        "needs_review": [],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          }
+        }
+      }
+    },
+    "routes": {
+      "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+      "connected_components": 12,
+      "longest_route_station_span_m": 32,
+      "routes": [
+        {
+          "lane_ids": [
+            3
+          ],
+          "from_m": 10,
+          "to_m": 18,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            6
+          ],
+          "from_m": 34,
+          "to_m": 36,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            9
+          ],
+          "from_m": 40,
+          "to_m": 42,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            12
+          ],
+          "from_m": 56,
+          "to_m": 58,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            15
+          ],
+          "from_m": 62,
+          "to_m": 66,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            18
+          ],
+          "from_m": 74,
+          "to_m": 104,
+          "station_span_m": 30
+        },
+        {
+          "lane_ids": [
+            21
+          ],
+          "from_m": 114,
+          "to_m": 116,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            24
+          ],
+          "from_m": 120,
+          "to_m": 124,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            27
+          ],
+          "from_m": 130,
+          "to_m": 138,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            30
+          ],
+          "from_m": 142,
+          "to_m": 174,
+          "station_span_m": 32
+        },
+        {
+          "lane_ids": [
+            33
+          ],
+          "from_m": 178,
+          "to_m": 184,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            36
+          ],
+          "from_m": 240,
+          "to_m": 242,
+          "station_span_m": 2
+        }
+      ],
+      "legal_routing_verified": false
+    },
+    "map_points": 1033824
+  },
+  "gained_source_intervals": [
+    {
+      "from_m": 34.0,
+      "to_m": 36
+    },
+    {
+      "from_m": 40,
+      "to_m": 42.0
+    },
+    {
+      "from_m": 74.0,
+      "to_m": 76
+    },
+    {
+      "from_m": 120,
+      "to_m": 122
+    },
+    {
+      "from_m": 162,
+      "to_m": 166
+    },
+    {
+      "from_m": 172,
+      "to_m": 174
+    }
+  ],
+  "lost_source_intervals": [
+    {
+      "from_m": 42.0,
+      "to_m": 44
+    },
+    {
+      "from_m": 66,
+      "to_m": 70.0
+    },
+    {
+      "from_m": 110.0,
+      "to_m": 112.0
+    },
+    {
+      "from_m": 112.0,
+      "to_m": 114
+    },
+    {
+      "from_m": 128.0,
+      "to_m": 130.0
+    },
+    {
+      "from_m": 138.0,
+      "to_m": 142.0
+    },
+    {
+      "from_m": 198,
+      "to_m": 200.0
+    }
+  ],
+  "gained_source_length_m": 14.0,
+  "lost_source_length_m": 18.0,
+  "same_frozen_reference_motion": true,
+  "same_fixed_layout": true,
+  "same_original_extent_goal": true,
+  "automatic_adoption": false,
+  "deployment_ready": false
+}

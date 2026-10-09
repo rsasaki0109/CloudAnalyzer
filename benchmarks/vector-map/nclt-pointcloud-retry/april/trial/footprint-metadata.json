@@ -1,0 +1,11 @@
+{
+  "full_points": 1033824,
+  "sample_points": 14983,
+  "stride": 69,
+  "method": "Every Nth native fused point in file order, visualization only; never used for proposals/audits",
+  "full_map": {
+    "path": "run/pointcloud-retry/pointcloud/trajectory_fixed_map.ply",
+    "sha256": "5fdec477d3895653e45995fdcb6811493ca1e27bae6655ce5be478a98d84a4ee",
+    "bytes": 33082543
+  }
+}

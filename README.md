@@ -241,6 +241,12 @@ The agent can then inspect and explicitly connect short source-supported gaps;
 records local graph routes of 14 m and 22 m while preserving original lane geometry.
 Both ground estimators and reopened Lanelet2 topology are checked; permitted
 turns and whole-drive connectivity remain unresolved.
+For missing intervals, the agent can inspect raw-return neighborhoods and test
+less point thinning with frozen motion. A child run shares the original attempt
+budget; actual HD maps are compared for gained and lost intervals and route spans
+before an explicit delivery choice. Earlier maps remain available if the trial worsens.
+The [NCLT density trials](benchmarks/vector-map/nclt-pointcloud-retry/README.md)
+record both recoveries and losses, with both replacements explicitly rejected.
 The runner binds per-piece lane settings automatically and resumes completed
 stages after interruption. [Individual mapping tools](docs/commands/mapping-job.md)
 remain available for separate experiments and explicit draft selection.

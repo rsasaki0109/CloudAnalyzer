@@ -216,7 +216,7 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
         proposal = json.loads(Path(proposal_file["path"]).read_text())
         if proposal["candidate_id"] != cid:
             raise ValueError("connection proposal belongs to another parent")
-        if len(job["attempts"]) >= job["max_attempts"]:
+        if jobs._remaining(job) <= 0:
             raise ValueError("mapping attempt budget exhausted")
         attempt: dict[str, Any] = {"id": len(job["attempts"]) + 1, "kind": "connected_corridor_lanes", "status": "running",
             "reason": reason, "road_options": parent["road_options"], "geometry_inputs": parent["geometry_inputs"],

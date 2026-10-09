@@ -36,6 +36,13 @@ source-supported gaps between consecutive drive pieces. The fixed single-forward
 layout, recorded path, both ground estimators and reopened OSM topology are checked.
 Read local route spans and global longest route separately; connections do not increase
 original corridor extent or prove permitted turns. Failed links retain the prior draft.
+Use inspect_gaps to read missing source intervals and aligned raw-return neighborhoods.
+For a thinning hypothesis, retry_pointcloud explicitly reduces scan/map voxel sizes
+once while freezing corrected motion, retained frames, filter policy and thresholds.
+Remaining HD attempts transfer to a child run; inspect its fresh proposal IDs and
+draft there. compare_retry reports actual gained AND lost source intervals, all four
+audits and global route spans. Finish the child, then explicitly finish_retry after
+comparison, or finish the root baseline if the trial is worse. No automatic adoption.
 Use the returned revision for every action. Interrupted processing actions can resume without
 replaying completed stages. Do not stop after startup or a single failed trial;
 finish with a useful retained draft or explain why no HD draft can be generated.

@@ -94,6 +94,18 @@
           <button id="project-open" title="Open a project and reselect its original source files">Open project…</button>
         </div>
         <p class="hint small">Projects reference original source files. Export derived clouds separately; reopening starts a fresh Undo history.</p>
+        <details id="mapping-review-panel" class="options" open>
+          <summary>Generated maps</summary>
+          <button id="mapping-review-open">Open generated maps…</button>
+          <input id="mapping-review-file" type="file" accept=".zip" hidden />
+          <p class="hint small">Open a review ZIP from your mapping agent. The point map and HD map share their original coordinates. Opening replaces the current HD map.</p>
+          <div id="mapping-review-result" hidden>
+            <p id="mapping-review-summary" class="small" role="status"></p>
+            <label>Saved source audit <select id="mapping-review-audit"></select></label>
+            <p id="mapping-review-state" class="hint small" role="status"></p>
+            <details><summary>Dataset credit</summary><p id="mapping-review-credit" class="small"></p></details>
+          </div>
+        </details>
         <div id="project-recovery-controls">
           <label class="inline"><input id="project-autosave" type="checkbox" checked /> Auto save editing state in this browser</label>
           <p id="project-save-status" class="small" role="status">Checking browser recovery…</p>

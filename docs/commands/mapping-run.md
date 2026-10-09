@@ -104,6 +104,27 @@ the ZIP and use the manifest's `map` member with CloudCompare or CloudAnalyzer;
 load `hd_editable_map` for editing, or `hd_map` plus `hd_projector` for Lanelet2.
 All geometric coordinates and source-audit thresholds are retained.
 
+In CloudAnalyzer Web, choose **Generated maps → Open generated maps…** and
+select the ZIP. The browser verifies every member before loading the point map
+and editable HD map together, using their original coordinates. Opening replaces
+the current HD map and adds the point cloud. The initial solid display makes
+low-intensity points visible; the original fields remain available for coloring.
+The source-extent goal and dataset credit remain visible in the generated-map panel.
+
+Choose any of the four **Saved source audit** protocols to inspect frozen
+editable-IR/reopened-OSM results from each estimator. Existing source-review
+buttons and problem intervals focus the original failed samples over the point
+cloud. These are saved checks of the full exported pair; your loading limit and
+view budget can show fewer points. Editing/replacing the map or changing/removing
+the imported point source disables saved-audit display and clears its overlays.
+Use a fresh source check for edited geometry, or reopen the unchanged exported pair.
+
+Browser review accepts at most **64 MiB uncompressed**, 128 artifact members and
+a 10 MiB manifest. It supports stored/deflated ZIP members, including the
+exporter's ZIP64 local headers, with bounded decompression and full SHA-256
+verification. Larger packages use CLI verification and individual-file loading.
+No mapping generation or attempt spending occurs when opening the package.
+
 Export spends no attempts, changes no run revision and refuses existing output
 files. Total **uncompressed** content is bounded by `max_bundle_bytes` / CLI
 `--max-bundle-bytes` (default 1 GiB; allowed 1024 bytes–4 GiB), with at most 128

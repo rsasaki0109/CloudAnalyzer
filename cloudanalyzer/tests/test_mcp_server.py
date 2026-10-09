@@ -54,6 +54,10 @@ def test_the_server_answers_over_stdio(tmp_path):
                 await session.initialize()
                 tools = (await session.list_tools()).tools
                 names = {t.name for t in tools}
+                mapping_trajectory = next(t for t in tools if t.name == "evaluate_mapping_trajectory")
+                trajectory_schema = mapping_trajectory.model_dump(by_alias=True)["inputSchema"]
+                assert set(trajectory_schema["required"]) == {"job_dir", "reference", "reference_provenance", "report_path"}
+                assert trajectory_schema["properties"]["max_time_delta"]["default"] == .05
                 assert {"export_mapping_preview", "export_mapping_run", "inspect_mapping_bundle"} <= names
                 preview = next(t for t in tools if t.name == "export_mapping_preview")
                 schema = preview.model_dump(by_alias=True)["inputSchema"]

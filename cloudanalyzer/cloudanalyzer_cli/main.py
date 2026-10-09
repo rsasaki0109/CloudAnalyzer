@@ -1984,6 +1984,23 @@ def mapping_run_inspect_cmd(job: str = typer.Argument(...), offset: int = typer.
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-trajectory-evaluate")
+def mapping_trajectory_evaluate_cmd(
+    job: str = typer.Argument(...),
+    reference: str = typer.Option(..., "--reference", help="Timestamped metre-frame TUM/CSV reference"),
+    provenance: str = typer.Option(..., "--provenance", help="JSON source/license/frame/time basis and generation-use declaration"),
+    out: str = typer.Option(..., "--out", help="New report file outside the mapping job"),
+    max_time_delta: float = typer.Option(.05, "--max-time-delta"),
+) -> None:
+    """Compare saved original/corrected motion without changing maps or attempts."""
+    from ca.mapping_trajectory import evaluate_mapping_trajectory
+    try:
+        result = evaluate_mapping_trajectory(job, reference, json.loads(Path(provenance).read_text()), out, max_time_delta)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("mapping-run-advance")
 def mapping_run_advance_cmd(
     job: str = typer.Argument(...),

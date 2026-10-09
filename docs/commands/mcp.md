@@ -45,6 +45,7 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 | `cloud_info(path)` | A cloud's size, bounds, centroid and density |
 | `evaluate_map(candidate, reference, thresholds?)` | Chamfer, Hausdorff, F1 at thresholds, AUC |
 | `evaluate_trajectory(estimate, reference, align_rigid?)` | ATE, RPE, drift, coverage of a timestamped trajectory |
+| `evaluate_mapping_trajectory(job_dir, reference, reference_provenance, report_path, max_time_delta?)` | Compare saved original/corrected mapping motion on identical reference-supported timestamps; retain hashes, coverage and regressions in a new external report ([details](mapping-trajectory-evaluate.md)) |
 
 Paths are on the machine the server runs on. The pose graph tools read every scan: seconds for a
 short drive, a minute or so for a few thousand keyframes (KITTI 07, 1,101 scans: about 50 s), so

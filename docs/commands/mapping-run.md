@@ -76,6 +76,48 @@ that action budget is exhausted. The shared HD budget is 2–8 attempts, default
 Do not shrink required lane width, lane count or retained extent to improve a
 source-support score. Semantic assumptions remain fixed hypotheses throughout.
 
+## Deliver a portable review package
+
+After `finish` or `finish_retry`, call
+`export_mapping_run(finished_job_dir, bundle_path, attribution)` over MCP, or:
+
+```sh
+ca mapping-run-export runs/drive --out drive-review.zip \
+  --attribution "Source dataset, license terms and required credit"
+ca mapping-bundle-inspect drive-review.zip
+```
+
+Supply the actual source-data license and attribution. The exporter copies the
+**exact delivered pair**, including an adopted child's maps when applicable.
+The ZIP contains the complete point map, graph, trajectory, editable IR,
+Lanelet2, projector, fixed layout, retained proposal, final four source audits,
+final checks/comparisons and root/owner decision records. Duplicate files are
+stored once. `manifest.json` identifies each role with a relative member path,
+SHA-256 and byte count; `review` keeps the output diagnosis and adoption decision.
+Read the full audits for problem locations omitted from the compact diagnosis.
+
+Use `inspect_mapping_bundle(bundle_path)` on the receiving machine to check every
+member before opening the map. It needs neither the original directories/logs
+nor a native core. Its module uses only Python's standard library; an existing
+CloudAnalyzer installation exposes the CLI above. After verification, extract
+the ZIP and use the manifest's `map` member with CloudCompare or CloudAnalyzer;
+load `hd_editable_map` for editing, or `hd_map` plus `hd_projector` for Lanelet2.
+All geometric coordinates and source-audit thresholds are retained.
+
+Export spends no attempts, changes no run revision and refuses existing output
+files. Total **uncompressed** content is bounded by `max_bundle_bytes` / CLI
+`--max-bundle-bytes` (default 1 GiB; allowed 1024 bytes–4 GiB), with at most 128
+artifact members and a 10 MiB manifest. The inspector rejects unlisted,
+duplicate, unsafe, encrypted or symlink members and changed hashes without
+extracting files. A matching manifest establishes byte integrity, not a trusted
+signature or independent map accuracy.
+
+This package supports portable review. Original histories and archived manifests
+retain historical paths for provenance; referenced raw logs, native binaries and
+prior-run dependencies are excluded. It is **not a resumable mapping job**.
+Existing source failures, incomplete extent and unverified traffic semantics
+remain visible; export does not promote the draft to deployment readiness.
+
 ## Inputs and actions
 
 When off-path bands overlap a path-containing band and break its unique match,

@@ -18,9 +18,16 @@ from ca.vector_map import build_vector_map, connect_vector_map_junctions, measur
 from ca.mapping_job import start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate
 from ca.mapping_run import start_mapping_run, inspect_mapping_run, advance_mapping_run
 from ca.mapping_revision import continue_mapping_run
+from ca.mapping_bundle import export_mapping_run, inspect_mapping_bundle
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
+
+After finishing a mapping run, export_mapping_run copies the exact delivered pair
+and final audits to a new portable review ZIP. Supply source-data attribution and
+a byte limit. inspect_mapping_bundle verifies every member without the original
+logs, run directories or native core. Read review.diagnosis and the full audits;
+integrity checks do not prove accuracy. The ZIP cannot resume a mapping job.
 
 To repair another region of a finished map, use continue_mapping_run with a new
 output directory, explicit budget and reason. Candidate 1 retains the exact delivered
@@ -419,7 +426,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

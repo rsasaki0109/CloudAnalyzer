@@ -2002,6 +2002,36 @@ def mapping_run_advance_cmd(
         raise typer.Exit(1)
 
 
+@app.command("mapping-run-export")
+def mapping_run_export_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out", help="New portable review ZIP; existing files are never overwritten"),
+    attribution: str = typer.Option(..., "--attribution", help="Source-data license and credit text"),
+    max_bundle_bytes: int = typer.Option(1024**3, "--max-bundle-bytes", min=1024, max=4 * 1024**3),
+) -> None:
+    """Package the exact finished point/HD pair and final evidence for portable review."""
+    from ca.mapping_bundle import export_mapping_run
+    try:
+        result = export_mapping_run(job, out, attribution, max_bundle_bytes)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-bundle-inspect")
+def mapping_bundle_inspect_cmd(
+    bundle: str = typer.Argument(...),
+    max_bundle_bytes: int = typer.Option(1024**3, "--max-bundle-bytes", min=1024, max=4 * 1024**3),
+) -> None:
+    """Verify a portable review ZIP and read its map paths and remaining holds."""
+    from ca.mapping_bundle import inspect_mapping_bundle
+    try:
+        result = inspect_mapping_bundle(bundle, max_bundle_bytes)
+    except (OSError, ValueError, RuntimeError, zipfile.BadZipFile) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("mapping-lanes")
 def mapping_lanes_cmd(
     job: str = typer.Argument(...),

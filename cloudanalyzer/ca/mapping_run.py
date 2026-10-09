@@ -13,6 +13,7 @@ from ca import mapping_connections as connections
 from ca import mapping_retry as retries
 from ca import mapping_frames as frames
 from ca import mapping_patch as patches
+from ca import mapping_local_points as local_points
 from ca.mapping_geometry import assemble_geometry, corridor_lane_requests
 
 SCHEMA = "cloudanalyzer.mapping_run.v1"
@@ -48,6 +49,12 @@ corrected bracket scans. retry_frames explicitly adopts inspected eligible IDs,
 keeping thinning and all existing corrected poses fixed. ICP corrections are never
 applied; these are consistency-tested pose hypotheses, not independent accuracy.
 Density and unused-frame trials share one root retry and the same transferred budget.
+For a local point update, inspect_local_points with seen root gap IDs and explicit
+bounds_xy, then retry_local_frames using inspected eligible frames and that preview.
+The full fusion candidate is still generated; only the previewed XY column at all
+heights replaces baseline points. Outside PLY record bytes/attributes/order remain
+fixed. Four audits must retain old HD support. Use a combined HD gap patch inside
+that box before compare_retry and finish_retry, or finish the root baseline.
 The child retains separate fusion graph/trajectory artifacts plus the unchanged
 reference graph/trajectory used for the original extent comparison.
 To repair HD intervals locally, draft only observed missing ranges in the retry
@@ -56,7 +63,8 @@ explicit inspected endpoint pairs ([] when isolated). One shared attempt
 preserves the root's lane geometry, IDs, metadata and directed connections and
 adds only lanes inside those gaps. All four audits must be complete; no previously
 supported retained sample may fail, and new traces must be fully supported.
-The point cloud remains the full fusion trial. Existing HD source failures remain
+The point cloud remains the full fusion trial unless retry_local_frames was chosen.
+Existing HD source failures remain
 explicit. Compare and finish explicitly; failed patches preserve the baseline.
 Draft decisions describe a complete replacement hypothesis, not additions to the previous lane map.
 The runner binds the fixed layout to every included piece and executes geometry,
@@ -184,7 +192,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         for artifact in run["output"]["artifacts"].values():
             jobs._verify(artifact)
     for h in run["history"]:
-        for key in ("gap_observation", "unused_frame_observation", "patch_observation", "retry_comparison"):
+        for key in ("gap_observation", "unused_frame_observation", "local_point_observation", "patch_observation", "retry_comparison"):
             if key in h:
                 jobs._verify(h[key]["file"])
         if "connection_observation" in h:
@@ -200,7 +208,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "reviewed_candidates": run["reviewed_candidates"], "history_total": len(run["history"]),
         "corridor_refinement": job.get("corridor_refinement"),
         "pointcloud_retry": stage, "retry_child": retry_child, "pointcloud_retry_allowed": run.get("pointcloud_retry_allowed", True),
-        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "unused_frame_observation", "patch_observation", "patch_inputs", "action"}} for a in run["history"][-8:]],
+        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "unused_frame_observation", "local_point_observation", "patch_observation", "patch_inputs", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
@@ -212,6 +220,8 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
                 "options": "explicit scan_voxel_m/map_voxel_m; bounded thinning reduction, one child with transferred HD budget"},
             "inspect_unused_frames": {"type": "inspect_unused_frames", "candidate_id": "own gap-inspected baseline", "offset": "nonnegative; pages of 8 pose/registration observations"},
             "retry_frames": {"type": "retry_frames", "candidate_id": "inspected baseline", "frame_ids": "1..64 inspected eligible frame IDs; same thinning, original poses fixed, shared child budget"},
+            "inspect_local_points": {"type": "inspect_local_points", "candidate_id": "inspected baseline", "gap_ids": "1..8 root-inspected gap IDs", "bounds_xy": "explicit [xmin,ymin,xmax,ymax]; sides <=20 m after voxel alignment; all heights"},
+            "retry_local_frames": {"type": "retry_local_frames", "candidate_id": "inspected baseline", "frame_ids": "1..64 seen eligible frames observing the chosen box", "preview_file": "file artifact from inspect_local_points; needs three shared HD attempts"},
             "inspect_patch": {"type": "inspect_patch", "candidate_id": "own unconnected retry-child draft containing gap additions only", "gap_ids": "1..32 root-inspected gap IDs", "offset": "nonnegative; pages of 8 exact geometric endpoint pairs"},
             "patch_gaps": {"type": "patch_gaps", "candidate_id": "inspected gap-only draft ID", "gap_ids": "same root-inspected IDs", "pairs": "all seen endpoint pairs {from: baseline:ID or addition:ID, to: same form, reason}; [] if none, one shared HD attempt"},
             "compare_retry": {"type": "compare_retry", "candidate_id": "own audited candidate in retry child"},
@@ -285,10 +295,13 @@ def _connect(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
 
 def _retry(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
     a = entry["action"]
-    if a["type"] == "retry_frames":
+    if a["type"] in {"retry_frames", "retry_local_frames"}:
         saved = frames.validate(entry["frame_evidence"], a["frame_ids"])
         gap_ids = sorted({g["gap_id"] for r in saved["frames"] if r["frame_id"] in a["frame_ids"] for g in r["gap_observations"]})
-        stage = retries.retry(root, a["candidate_id"], entry["frame_evidence"], gap_ids, saved["pointcloud_options"], entry["reason"], frame_ids=a["frame_ids"])
+        local_file = a.get('preview_file')
+        if local_file is not None:
+            gap_ids = local_points.validate(local_file, entry['frame_evidence'], a['candidate_id'], a['frame_ids'])['request']['gap_ids']
+        stage = retries.retry(root, a["candidate_id"], entry["frame_evidence"], gap_ids, saved["pointcloud_options"], entry["reason"], frame_ids=a["frame_ids"], local_evidence=local_file)
     else:
         stage = retries.retry(root, a["candidate_id"], entry["gap_evidence"], a["gap_ids"], a["options"], entry["reason"])
     return {"status": stage["status"], "stage": stage,
@@ -360,7 +373,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
     if not isinstance(reason, str) or not reason.strip() or type(expected_revision) is not int:
         raise ValueError("supply a reason and the inspected integer revision")
     if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {
-        "inspect", "refine", "draft", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
+        "inspect", "refine", "draft", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
         raise ValueError("use an action type from action_contract")
     root = Path(job_dir).resolve()
     with _locked(root):
@@ -381,6 +394,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 "inspect_connections": {"type", "candidate_id", "offset"}, "connect": {"type", "candidate_id", "pairs"},
                 "inspect_gaps": {"type", "candidate_id", "offset"}, "retry_pointcloud": {"type", "candidate_id", "gap_ids", "options"},
                 "inspect_unused_frames": {"type", "candidate_id", "offset"}, "retry_frames": {"type", "candidate_id", "frame_ids"},
+                "inspect_local_points": {"type", "candidate_id", "gap_ids", "bounds_xy"}, "retry_local_frames": {"type", "candidate_id", "frame_ids", "preview_file"},
                 "inspect_patch": {"type", "candidate_id", "gap_ids", "offset"}, "patch_gaps": {"type", "candidate_id", "gap_ids", "pairs"},
                 "compare_retry": {"type", "candidate_id"}, "finish_retry": {"type", "candidate_id"},
                 "finish": {"type", "candidate_id"}, "resume": {"type"}}
@@ -388,7 +402,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             raise ValueError("supply only the required action fields from action_contract")
         if kind == "resume":
             if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {
-                "draft", "refine", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_patch", "patch_gaps", "compare_retry"}:
+                "draft", "refine", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_patch", "patch_gaps", "compare_retry"}:
                 raise ValueError("resume requires an interrupted processing action")
             entry = run["history"][-1]
         else:
@@ -444,12 +458,22 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     seen = {(c["from"], c["to"]) for r in receipts if r["proposal_file"] == proposal_file for c in r["candidates"]}
                     if not set(chosen) <= seen:
                         raise ValueError("inspect every chosen connection pair before adoption")
-            elif kind in {"inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames"}:
+            elif kind in {"inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames"}:
                 cid = action["candidate_id"]
                 if type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
                     raise ValueError("use an audited lane draft generated by this run")
                 retries._parent(job, cid)
-                if kind in {"inspect_gaps", "inspect_unused_frames"}:
+                if kind == 'inspect_local_points':
+                    gaps_seen = [h['gap_observation'] for h in run['history'] if h.get('gap_observation', {}).get('candidate_id') == cid]
+                    frames_seen = [h['unused_frame_observation'] for h in run['history'] if h.get('unused_frame_observation', {}).get('candidate_id') == cid]
+                    if not gaps_seen or not frames_seen:
+                        raise ValueError("inspect root gaps and unused frames before a local point preview")
+                    gap_evidence, frame_evidence = gaps_seen[-1]['file'], frames_seen[-1]['file']
+                    seen_ids = {g['id'] for r in gaps_seen if r['file'] == gap_evidence for g in r['gaps']}
+                    if not isinstance(action['gap_ids'], list) or any(type(i) is not int or i not in seen_ids for i in action['gap_ids']):
+                        raise ValueError("inspect every chosen local gap through this run")
+                    local_points.validate_region(gap_evidence, cid, action['gap_ids'], action['bounds_xy'])
+                elif kind in {"inspect_gaps", "inspect_unused_frames"}:
                     if type(action["offset"]) is not int or action["offset"] < 0:
                         raise ValueError("gap offset must be a nonnegative integer")
                     if kind == "inspect_unused_frames":
@@ -460,8 +484,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 else:
                     if not run.get("pointcloud_retry_allowed", True) or "pointcloud_retry" in job:
                         raise ValueError("one point-cloud retry is allowed per root run; no recursive retries")
-                    if job["remaining_attempts"] < 2:
-                        raise ValueError("retry needs two remaining shared HD attempts")
+                    if job["remaining_attempts"] < (3 if kind == 'retry_local_frames' else 2):
+                        raise ValueError("retry needs enough shared HD attempts (three for a local combined patch)")
                     if kind == "retry_pointcloud":
                         receipts_gaps = [h["gap_observation"] for h in run["history"] if h.get("gap_observation", {}).get("candidate_id") == cid]
                         if not receipts_gaps:
@@ -480,6 +504,11 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                         seen_frames = {r["frame_id"] for receipt in receipts_frames if receipt["file"] == frame_evidence for r in receipt["frames"]}
                         if not set(action["frame_ids"]) <= seen_frames:
                             raise ValueError("inspect every chosen frame before fusion")
+                        if kind == 'retry_local_frames':
+                            previews = [h['local_point_observation'] for h in run['history'] if h.get('local_point_observation', {}).get('candidate_id') == cid]
+                            if not any(r['file'] == action['preview_file'] for r in previews):
+                                raise ValueError("inspect the chosen local point preview through this run before retrying")
+                            local_points.validate(action['preview_file'], frame_evidence, cid, action['frame_ids'])
             elif kind in {"inspect_patch", "patch_gaps"}:
                 cid = action["candidate_id"]
                 if type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
@@ -505,6 +534,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 child_run = _load(child_root)
                 child_job = jobs.inspect_mapping_job(str(child_root))
                 attempt = retries._parent(child_job, cid)
+                if job['pointcloud_retry'].get('strategy') == 'local_unused_frames' and 'patch_inputs' not in attempt:
+                    raise ValueError("local point updates require a combined HD patch retaining the baseline map")
                 if cid not in [h.get("lane_candidate_id") for h in child_run["history"]]:
                     raise ValueError("candidate was not generated by the retry run")
                 if kind == "finish_retry":
@@ -540,6 +571,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 entry["gap_evidence"] = gap_evidence
             elif kind == "retry_frames":
                 entry["frame_evidence"] = frame_evidence
+            elif kind in {'inspect_local_points', 'retry_local_frames'}:
+                entry['frame_evidence'] = frame_evidence
+                if kind == 'inspect_local_points': entry['gap_evidence'] = gap_evidence
             elif kind == "patch_gaps":
                 entry["lane_candidate_id"] = len(job["attempts"]) + 1
                 entry["patch_inputs"] = patch_inputs
@@ -580,7 +614,12 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 frame_observation = frames.inspect(root, entry["action"]["candidate_id"], entry["gap_evidence"], entry["action"]["offset"])
                 entry["unused_frame_observation"] = frame_observation
                 entry["status"] = "inspected"
-            elif entry["action"]["type"] in {"retry_pointcloud", "retry_frames"}:
+            elif entry['action']['type'] == 'inspect_local_points':
+                a = entry['action']
+                local_observation = local_points.preview(root, a['candidate_id'], entry['gap_evidence'], entry['frame_evidence'], a['gap_ids'], a['bounds_xy'])
+                entry['local_point_observation'] = local_observation
+                entry['status'] = 'inspected'
+            elif entry["action"]["type"] in {"retry_pointcloud", "retry_frames", "retry_local_frames"}:
                 outcome = _retry(root, entry)
                 entry["status"] = outcome["status"]
                 entry["outcome"] = {k: v for k, v in outcome.items() if k != "child_run"}
@@ -617,6 +656,10 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     "road_semantics_inferred": False, "deployment_ready": False}
                 if job.get("pointcloud_retry"):
                     stage = job["pointcloud_retry"]
+                    if 'local_update' in stage:
+                        for key in ('report', 'checks', 'audits'):
+                            run['output']['artifacts'][f'pointcloud_trial_local_{key}'] = stage['local_update'][key]
+                        run['output']['artifacts']['pointcloud_local_preview'] = stage['local_evidence']
                     run["output"]["pointcloud_retry_decision"] = {"adopted": kind == "finish_retry",
                         "status": stage["status"], "child_job_dir": stage["child_job_dir"],
                         "baseline_candidate_id": stage["candidate_id"], "reason": reason.strip()}
@@ -650,7 +693,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         answer["gap_observation"] = gap_observation
     elif entry["action"]["type"] == "inspect_unused_frames":
         answer["unused_frame_observation"] = frame_observation
-    elif entry["action"]["type"] in {"retry_pointcloud", "retry_frames"}:
+    elif entry['action']['type'] == 'inspect_local_points':
+        answer['local_point_observation'] = local_observation
+    elif entry["action"]["type"] in {"retry_pointcloud", "retry_frames", "retry_local_frames"}:
         answer["pointcloud_retry_result"] = outcome
     elif entry["action"]["type"] == "patch_gaps":
         answer["patch_result"] = outcome

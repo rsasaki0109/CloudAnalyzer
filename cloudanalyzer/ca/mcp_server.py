@@ -52,6 +52,12 @@ and consistency checks against both neighboring retained scans. retry_frames
 explicitly fuses inspected eligible IDs, keeping thinning and existing corrected
 poses fixed. ICP's alternative correction is not applied and does not certify
 accuracy. Reference and expanded fusion graphs/trajectories are both retained.
+For a local point update, inspect_local_points with seen gap IDs and explicit
+bounds_xy, then retry_local_frames with the returned preview_file and eligible
+frame IDs. It generates the full fusion candidate but applies only that XY column
+at all heights, preserving outside PLY records and attributes exactly. Existing HD
+source support must not regress. Use a combined HD patch inside the same box before
+compare_retry and finish_retry; finish the original root map to reject the trial.
 This shares the single root point-map retry and transferred HD budget; compare
 actual audited maps before explicitly delivering a trial or baseline pair.
 For a local HD repair, draft only inspected missing ranges in the retry child.

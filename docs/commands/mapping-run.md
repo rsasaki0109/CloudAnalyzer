@@ -329,13 +329,73 @@ retain both actual point/HD comparisons: April's partial improvement was explici
 adopted, while June's baseline was kept because its trial shortened the longest
 route and increased fragmentation despite gaining net source extent.
 
+### Update points only inside an inspected region
+
+After inspecting the root's gap pages and unused-frame pages, preview an explicit
+spatial update instead of replacing the whole point map:
+
+```json
+{"type": "inspect_local_points", "candidate_id": 3, "gap_ids": [1], "bounds_xy": [14, -3, 23, 6]}
+```
+
+Use observed IDs and coordinates from your run. Each chosen gap must have an
+inspected trajectory profile inside the box. Bounds expand outwards to the
+original map voxel grid; each effective side must be positive and at most 20 m.
+This is an XY column **at all heights**, with lower edges included and upper
+edges excluded. It can include another pass through the same physical location.
+The preview returns effective bounds, inside/outside counts, an outside-record
+hash and eligible frames with at least three raw returns inside the box.
+
+Choose only eligible frame IDs already inspected through this run, and pass the
+exact `local_point_observation.file` artifact as `preview_file`:
+
+```json
+{"type": "retry_local_frames", "candidate_id": 3, "frame_ids": [199, 217], "preview_file": {"path": "/absolute/run/local-points-03-REQUEST_HASH.json", "sha256": "RETURNED_SHA256", "bytes": 1234}}
+```
+
+The runner still generates a **full fusion candidate** from the original frames
+plus these explicit unused frames. Only candidate records inside the frozen box
+replace baseline records. Every outside vertex record keeps its exact XYZ,
+scalar attributes and relative order. The PLY vertex count/header and global
+record indices can change. This version accepts canonical binary little-endian
+PLY with double XYZ and up to 16 float attributes, at most two million points
+and 128 MB per map. It does not establish a local processing speedup.
+
+Before generating child HD proposals, four full audits require the unchanged
+baseline lanes to retain their supported samples, endpoints and failure locations
+against the local point map. A regression stops the trial and retains its map,
+full fusion candidate, report, checks and audits for inspection. The root can
+still `finish` with its original point/HD pair.
+
+This strategy shares the **one root retry** with density and full-map unused-frame
+trials. It transfers all remaining HD attempts and requires at least three:
+geometry, lane draft and combined gap patch. Inspect fresh child proposals, draft
+only chosen missing intervals and use `inspect_patch` / `patch_gaps` below. Added
+HD boundaries must stay inside the closed effective XY box; patch gaps must be
+among those chosen in the local preview. Existing lanes and directed edges remain
+fixed. Connection previews withhold new connectors leaving the box. The root
+accepts `compare_retry` and `finish_retry` only for a combined patch (or its
+subsequent connection candidate), preserving the original HD map.
+
+Finish requires an explicit choice; successful audits never adopt a trial.
+Returned artifacts include `pointcloud_trial_local_report`,
+`pointcloud_trial_local_checks` and `pointcloud_trial_local_audits` after a completed
+local source gate, including a rejected gate. Completed interrupted stages resume
+without another allocation. Failed stages retain their shared allocation.
+
+The [NCLT local point trials](../../benchmarks/vector-map/nclt-local-points/README.md)
+verify exact outside records in both scenes. April adds a 4 m HD interval while
+retaining existing geometry/routes; June rejects a new failure on a retained lane
+and returns the unchanged original pair. Point counts and source support do not
+establish independent accuracy or road semantics.
+
 ### Repair HD gaps while retaining the existing map
 
-After either point-fusion retry, the child can add source-supported missing HD
+After a point-fusion retry, the child can add source-supported missing HD
 intervals without replacing the root's retained geometry. This first patch is
 limited to one forward one-way lane per piece, 1–32 new lanes and 256 total lanes.
-The point map remains the **complete fusion trial**; this action does not crop or
-replace point returns only inside a spatial region.
+The point map remains the **complete fusion trial** for ordinary density and
+unused-frame retries. Only `retry_local_frames` uses the spatial replacement above.
 
 Inspect the root's actual baseline gap pages, then the child's fresh source
 sections. Draft **only** additions inside the gaps you choose. Each added lane

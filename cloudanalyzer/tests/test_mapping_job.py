@@ -1314,8 +1314,11 @@ def unused_frame_run(job_backend, tmp_path, monkeypatch, request):
     monkeypatch.setattr(jobs, 'odometry', odometry)
     def fixed(folder, out, **kwargs):
         out = Path(out); out.mkdir()
-        cloud, trajectory, graph = out/'map.xyz', out/'poses.txt', out/'map.g2o'
-        np.savetxt(cloud, xyz[::2, :3]+[0, 0, 1]); np.savetxt(trajectory, poses[ids, :3].reshape(len(ids), 12))
+        from ca.posegraph_fix import write_ply
+        cloud, trajectory, graph = out/'map.ply', out/'poses.txt', out/'map.g2o'
+        points = xyz[::2, :3]+[0, 0, 1]
+        write_ply(cloud, points, {'intensity': np.ones(len(points)), 'correction': np.zeros(len(points))})
+        np.savetxt(trajectory, poses[ids, :3].reshape(len(ids), 12))
         graph.write_text(native.PoseGraph.from_poses(poses[ids], ids=ids).to_g2o())
         return {'map_points': len(xyz[::2]), 'nodes': len(ids), 'scans': len(ids), 'unmatched_scans': 6,
                 'outputs': {'map': str(cloud), 'kitti': str(trajectory), 'g2o': str(graph)}}
@@ -1908,3 +1911,140 @@ def test_partial_repair_connection_resume_reuses_the_shared_attempt(patched_conn
     result = _advance(child, {'type': 'resume'})
     assert result['connect_result']['status'] == 'audited_draft' and result['remaining_attempts'] == 0
     assert len(jobs.inspect_mapping_job(str(child))['attempts']) == 4
+
+
+def _local_preview(root, box=None):
+    _inspect_unused(root)
+    return _advance(root, {'type':'inspect_local_points','candidate_id':2,'gap_ids':[1],
+                          'bounds_xy':box or [2.,-1.6,8.,1.6]})['local_point_observation']
+
+
+def _local_action(preview):
+    return {'type':'retry_local_frames','candidate_id':2,'frame_ids':[5],'preview_file':preview['file']}
+
+
+def test_local_point_update_keeps_outside_records_attributes_motion_and_hd(unused_frame_run):
+    from ca import mapping_local_points as local
+    root=unused_frame_run;original=jobs.inspect_mapping_job(str(root))
+    base_file=original['pointcloud']['files']['map'];base_bytes=Path(base_file['path']).read_bytes()
+    preview=_local_preview(root)
+    assert 5 in preview['eligible_frame_ids'] and preview['inside_points']>0 and preview['outside_points']>0
+    result=_advance(root,_local_action(preview))
+    assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';cj=jobs.inspect_mapping_job(str(child))
+    _,base=local.records(Path(base_file['path']));_,updated=local.records(Path(cj['pointcloud']['files']['map']['path']))
+    box=preview['effective_bounds_xy']
+    assert updated[~local.mask(updated,box)].tobytes()==base[~local.mask(base,box)].tobytes()
+    assert updated.dtype.names==('x','y','z','intensity','correction')
+    assert any(base['x']==box[2]) and all(p['x']<box[2] for p in updated[local.mask(updated,box)])
+    assert Path(base_file['path']).read_bytes()==base_bytes
+    assert all(cj['pointcloud']['files'][k]['sha256']==original['pointcloud']['files'][k]['sha256'] for k in ('graph','trajectory'))
+    _advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Only observed local source'}]})
+    with pytest.raises(ValueError,match='combined HD patch'):_advance(root,{'type':'compare_retry','candidate_id':2})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft',patched
+    compared=_advance(root,{'type':'compare_retry','candidate_id':3})['retry_comparison']
+    assert compared['local_point_update']['outside_records_bit_identical'] and compared['lost_source_length_m']==0
+    _advance(child,{'type':'finish','candidate_id':3})
+    final=_advance(root,{'type':'finish_retry','candidate_id':3})
+    assert final['output']['artifacts']['local_update_checks']==cj['pointcloud']['files']['local_update_checks']
+    assert final['output']['artifacts']['map']==cj['pointcloud']['files']['map']
+
+
+@pytest.mark.parametrize('box',[[True,0,1,1],[0,0,float('nan'),1],[0,0,50,1],[3,0,2,1],[40,40,42,42]])
+def test_local_point_preview_rejects_invalid_unobserved_boxes_without_allocation(unused_frame_run,box):
+    root=unused_frame_run;_inspect_unused(root)
+    with pytest.raises(ValueError):_advance(root,{'type':'inspect_local_points','candidate_id':2,'gap_ids':[1],'bounds_xy':box})
+    assert 'pointcloud_retry' not in jobs._load(root)
+
+
+@pytest.mark.parametrize('fault',['unseen_preview','tampered_preview','unseen_frame'])
+def test_local_point_adoption_requires_seen_frozen_region_and_frames(unused_frame_run,fault):
+    root=unused_frame_run;preview=_local_preview(root);action=_local_action(preview)
+    if fault=='unseen_preview':
+        run=json.loads((root/'run.json').read_text());run['history'][-1].pop('local_point_observation');jobs._save(root/'run.json',run)
+    elif fault=='tampered_preview':Path(preview['file']['path']).write_text('changed local box')
+    else:
+        run=json.loads((root/'run.json').read_text())
+        for h in run['history']:
+            if 'unused_frame_observation' in h:h['unused_frame_observation']['frames']=[]
+        jobs._save(root/'run.json',run)
+    with pytest.raises(ValueError):_advance(root,action)
+    assert 'pointcloud_retry' not in jobs._load(root)
+
+
+def test_local_point_hd_patch_rejects_changes_outside_the_preview_box(unused_frame_run):
+    root=unused_frame_run;preview=_local_preview(root,[4.,-.8,6.,.8])
+    result=_advance(root,_local_action(preview));assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';_advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Inspected local station range'}]})
+    with pytest.raises(ValueError,match='inside the local point update box'):
+        _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    assert 'gap_patch' not in jobs._load(child)
+
+
+def test_local_point_failed_source_gate_retains_checks_and_original_pair(unused_frame_run,monkeypatch):
+    root=unused_frame_run;preview=_local_preview(root);original=jobs.core().audit_vector_map_quality_details
+    def unsupported(*args):
+        audit=json.loads(original(*args));audit['quality']['lanes'][0]['left']['start_supported']=False
+        return json.dumps(audit)
+    monkeypatch.setattr(jobs.core(),'audit_vector_map_quality_details',unsupported)
+    result=_advance(root,_local_action(preview));stage=result['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and not stage['local_update']['passes']
+    assert Path(stage['local_update']['checks']['path']).is_file() and Path(stage['local_update']['audits']['path']).is_file()
+    final=_advance(root,{'type':'finish','candidate_id':2})
+    assert not final['output']['pointcloud_retry_decision']['adopted']
+    assert final['output']['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+    for key in ('report','checks','audits'):
+        assert final['output']['artifacts'][f'pointcloud_trial_local_{key}']==stage['local_update'][key]
+
+
+def test_local_point_completed_retry_resumes_without_second_allocation(unused_frame_run,monkeypatch):
+    from ca import mapping_retry as retry
+    root=unused_frame_run;preview=_local_preview(root);original=retry.retry
+    def interrupted(*args,**kwargs):original(*args,**kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(retry,'retry',interrupted)
+    with pytest.raises(KeyboardInterrupt):_advance(root,_local_action(preview))
+    monkeypatch.setattr(retry,'retry',original)
+    result=_advance(root,{'type':'resume'})
+    assert result['pointcloud_retry_result']['status']=='ready' and result['remaining_attempts']==0
+    assert jobs._load(root)['pointcloud_retry']['strategy']=='local_unused_frames'
+
+
+def test_local_point_inverted_subvoxel_box_can_be_corrected_without_interrupt(unused_frame_run):
+    root=unused_frame_run;_inspect_unused(root)
+    with pytest.raises(ValueError,match='positive requested sides'):
+        _advance(root,{'type':'inspect_local_points','candidate_id':2,'gap_ids':[1],'bounds_xy':[4.09,-1.,4.01,1.]})
+    assert json.loads((root/'run.json').read_text())['status']=='needs_agent'
+    assert _local_preview(root)['outside_points']>0
+
+
+def test_local_point_export_attribute_corruption_is_not_adopted(unused_frame_run,monkeypatch):
+    from ca import mapping_local_points as local
+    root=unused_frame_run;preview=_local_preview(root);original=local.records
+    def corrupt(path):
+        header,rows=original(path)
+        if path.name=='local_map.ply':rows[0]['intensity']+=1.
+        return header,rows
+    monkeypatch.setattr(local,'records',corrupt)
+    result=_advance(root,_local_action(preview))
+    assert result['pointcloud_retry_result']['status']=='failed'
+    assert 'outside coordinates, attributes or record order' in result['pointcloud_retry_result']['stage']['error']
+    final=_advance(root,{'type':'finish','candidate_id':2})
+    assert final['output']['pointcloud_retry_decision']['adopted'] is False
+
+
+def test_local_point_connection_preview_holds_connectors_leaving_the_update_box(unused_frame_run):
+    root=unused_frame_run;preview=_local_preview(root,[2.,-1.6,6.,1.6])
+    jobs.core().connect_vector_map_junctions=_attach_lane_native().connect_vector_map_junctions
+    result=_advance(root,_local_action(preview));assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';_advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Local repair within the selected box'}]})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft',patched
+    observed=_advance(child,{'type':'inspect_connections','candidate_id':3,'offset':0})['connection_observation']
+    assert observed['candidates_total']==0
+    assert any(r['from']==9 and r['to']==6 and 'outside_local_point_update_bounds' in r['holds'] for r in observed['rejected'])

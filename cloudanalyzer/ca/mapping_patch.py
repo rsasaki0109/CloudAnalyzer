@@ -84,6 +84,14 @@ def validate(root: Path, cid: int, gap_ids: Any) -> dict[str, Any]:
         raise ValueError("choose 1..32 distinct gap IDs inspected through the root run")
     chosen = [g for g in gaps["gaps"] if g["id"] in gap_ids]
     original, trial = _read(baseline["files"]["editable_map"]), _read(candidate["files"]["editable_map"])
+    from ca import mapping_local_points as local
+    local_box = local.bounds(job)
+    if local_box is not None:
+        point_preview = _read(job['retry_inputs']['local_preview'])
+        if not set(gap_ids) <= set(point_preview['request']['gap_ids']):
+            raise ValueError("HD additions must use the locally updated point gaps")
+        if any(not local.inside_geometry(b['geometry'], local_box) for b in trial['boundaries']):
+            raise ValueError("HD additions must stay inside the local point update box")
     if any(trial.get(k) for k in ("roads", "rules", "topology", "signals", "crosswalks", "markings")):
         raise ValueError("patch additions must be isolated source-lane drafts without relations")
     before, additions = _intervals(baseline), _intervals(candidate)
@@ -111,7 +119,7 @@ def validate(root: Path, cid: int, gap_ids: Any) -> dict[str, Any]:
         inputs["baseline_connection_proposal"] = baseline["connection_proposal"]
     retries._verify_inputs(inputs)
     return {"inputs": inputs, "baseline": baseline, "candidate": candidate, "original": original, "trial": trial,
-            "before_intervals": before, "addition_intervals": additions, "chosen_gaps": chosen}
+            "before_intervals": before, "addition_intervals": additions, "chosen_gaps": chosen, 'local_bounds_xy': local_box}
 
 
 def _merge(original: dict[str, Any], trial: dict[str, Any]) -> tuple[dict[str, Any], dict[int, int]]:
@@ -341,7 +349,9 @@ def patch(root: Path, cid: int, gap_ids: list[int], pairs: list[dict[str, Any]],
                     station_disposition=disposition, extraction=extraction, extent=jobs._extent(extraction, job["minimum_retained_fraction"]),
                     routes=routes, built_segments=addition_report["built_segments"], retained_geometry_and_connections=True,
                     lane_roundtrip_verified=True, topology_roundtrip_verified=True,
-                    note="HD changes are confined to selected original-station gaps. Existing geometry, IDs, metadata and directed connections remain fixed. The point cloud is the full fusion trial, not an unchanged-outside-ROI point map. Original failed source samples and semantic holds remain visible; no new retained failure locations are allowed.")
+                    note="HD changes are confined to selected original-station gaps. Existing geometry, IDs, metadata and directed connections remain fixed. "
+                        + ("The point cloud replaces only the explicit XY column; outside record bytes and attributes remain fixed. " if validated['local_bounds_xy'] is not None else "The point cloud is the full fusion trial, not an unchanged-outside-ROI point map. ")
+                        + "Original failed source samples and semantic holds remain visible; no new retained failure locations are allowed.")
                 evidence["files"] = {k: str(target / Path(v).name) for k, v in files.items()}
                 evidence["editing"] = {"command": "vectormap", "args": ["mcp", evidence["files"]["map"]]}
                 jobs._save(draft / "report.json", evidence)

@@ -96,6 +96,9 @@ def _inputs(job: dict[str, Any]) -> None:
         raise ValueError("native core changed; use a new mapping job")
     for artifact in job["pointcloud"]["files"].values():
         _verify(artifact)
+    if 'local_update_report' in job['pointcloud']['files']:
+        from ca import mapping_local_points as local
+        local.bounds(job)
 
 
 def _remaining(job: dict[str, Any]) -> int:
@@ -705,7 +708,8 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
     if attempt.get("kind") in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes"}:
         investigations.append("The observed support span was explicitly adopted as an unverified layout hypothesis. Inspect the parent edge evidence and assigned lane fractions/directions/minimum widths; source support does not confirm complete road width or legal traffic rules.")
     if attempt.get("kind") == "patched_corridor_lanes":
-        investigations.append("The patch retains original lanes and directed connections and adds only selected missing station intervals. All original source holds remain visible; new traces passed both estimators and no new retained failure locations were accepted. The point cloud is the complete fusion trial, not a local point replacement.")
+        investigations.append("The patch retains original lanes and directed connections and adds only selected missing station intervals. All original source holds remain visible; new traces passed both estimators and no new retained failure locations were accepted. "
+            + ("The point cloud replaces only the explicit XY column and preserves outside point records exactly." if 'local_update_report' in job['pointcloud']['files'] else "The point cloud is the complete fusion trial, not a local point replacement."))
     if attempt.get("kind") == "connected_corridor_lanes":
         investigations.append("Connector turn_direction tags classify geometric headings, not permitted manoeuvres. Review legal routing, full-width interior and clearance; graph station spans do not increase original source-corridor extent.")
     if not editable["complete"] or not reopened["complete"] or (consensus is not None and any(not a["complete"] for a in consensus.values())):

@@ -1,0 +1,182 @@
+{
+  "schema": "cloudanalyzer.local_point_preview.v1",
+  "request": {
+    "candidate_id": 3,
+    "gap_ids": [
+      3
+    ],
+    "bounds_xy": [
+      12.0,
+      -3.0,
+      22.0,
+      11.0
+    ]
+  },
+  "inputs": {
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "layout": {
+      "path": "run/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "correction_report": {
+      "path": "run/pointcloud-report.json",
+      "sha256": "1189226fb0403a8f938688a1b9a6be855b7d56c6220e112f0f7a33ffc716f6ad",
+      "bytes": 1946
+    },
+    "proposal": {
+      "path": "run/corridor-proposals-trajectory.json",
+      "sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+      "bytes": 393257
+    },
+    "audits": {
+      "path": "run/candidate-03/source-quality.json",
+      "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+      "bytes": 216939
+    },
+    "pointcloud_map": {
+      "path": "run/pointcloud/trajectory_map.ply",
+      "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+      "bytes": 20653998
+    },
+    "pointcloud_trajectory": {
+      "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "pointcloud_graph": {
+      "path": "run/pointcloud/trajectory_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "parent_map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+      "bytes": 53372
+    },
+    "parent_projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "2c9a4b667fb5441bf6a225e6f60777a7f25646c34751d1380a1a6ae46c229322",
+      "bytes": 22406
+    },
+    "parent_report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "2b2449bbcdfe057b445a523ad88b06791e27aefabbf437d6911e45cc1bd88724",
+      "bytes": 48866
+    },
+    "geometry_editable_map": {
+      "path": "run/geometry-01/vector_map.json",
+      "sha256": "8ebae5e0483bdfa43d6f0d9985f95cb316ea808bb0c89047ae9cf1e1e29457aa",
+      "bytes": 37479
+    },
+    "geometry_report": {
+      "path": "run/geometry-01/report.json",
+      "sha256": "855ec102ad523dc060cf12976a2db0200fb41730027f2b9bf70132db23822708",
+      "bytes": 100742
+    },
+    "gap_evidence": {
+      "path": "run/gaps-03.json",
+      "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+      "bytes": 634116
+    },
+    "raw_manifest": {
+      "path": "run/gap-source/manifest.json",
+      "sha256": "1ede7f93ce3a16cdd122181dd82c844651d1784a73ea8a9262c7587845fca3b6",
+      "bytes": 58586
+    },
+    "source_motion_odometry_report": {
+      "path": "run/odometry-report.json",
+      "sha256": "13221abe1bad4f8ffcc1c231f38f555746dad028f631ae95b3cd8558930f6916",
+      "bytes": 474
+    },
+    "source_motion_trajectory": {
+      "path": "run/odometry/trajectory.tum",
+      "sha256": "e3c467ee64877108ce71d6d4451cff5cbbb4f8ab7493a0778afea02d312f1409",
+      "bytes": 20406
+    },
+    "frame_evidence": {
+      "path": "run/unused-frames-03.json",
+      "sha256": "bd92eab8d9ce9b8693db455dfd7c3353e00dce8f1d5e368643bc6578577eb86f",
+      "bytes": 145835
+    }
+  },
+  "protocol": {
+    "model": "full_fusion_candidate_spliced_into_explicit_xy_column",
+    "maximum_side_m": 20.0,
+    "maximum_points_per_map": 2000000,
+    "maximum_map_bytes": 128000000,
+    "boundary": "lower_inclusive_upper_exclusive",
+    "all_heights": true,
+    "outside_record_order_and_bytes_preserved": true,
+    "independent_accuracy_established": false
+  },
+  "effective_bounds_xy": [
+    12.0,
+    -3.0,
+    22.0,
+    11.0
+  ],
+  "pointcloud_options": {
+    "scan_voxel_m": 0.4,
+    "map_voxel_m": 0.2
+  },
+  "inside_points": 3371,
+  "outside_points": 642061,
+  "outside_records_sha256": "ff73a094aa4b482986838f4ad0a79f298a07bd4bf679d0b28d48b4e2a4848867",
+  "record_dtype": [
+    [
+      "x",
+      "<f8"
+    ],
+    [
+      "y",
+      "<f8"
+    ],
+    [
+      "z",
+      "<f8"
+    ],
+    [
+      "intensity",
+      "<f4"
+    ],
+    [
+      "correction",
+      "<f4"
+    ]
+  ],
+  "eligible_frames": [
+    {
+      "frame_id": 195,
+      "raw_returns_inside": 77
+    },
+    {
+      "frame_id": 198,
+      "raw_returns_inside": 75
+    },
+    {
+      "frame_id": 210,
+      "raw_returns_inside": 173
+    },
+    {
+      "frame_id": 216,
+      "raw_returns_inside": 132
+    }
+  ],
+  "holds": [],
+  "note": "Explicit XY column at all heights, voxel-aligned outwards. The full fusion candidate is still generated; only its inside records replace baseline inside records. Outside record bytes and relative order remain fixed, including every scalar attribute. No local speedup or independent accuracy is established. Retained HD geometry and four source audits must not regress."
+}

@@ -166,6 +166,8 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
             if not np.isfinite(poses).all() or stations[-1] < pieces[-1]["to_m"] - 1e-6:
                 raise ValueError("trajectory does not cover the source stations")
             candidates, rejected = [], []
+            from ca import mapping_local_points as local
+            box = local.bounds(job)
             for first, second in zip(pieces, pieces[1:]):
                 pair = (first["lane"], second["lane"])
                 gap = second["from_m"] - first["to_m"]
@@ -176,6 +178,8 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
                 xy = np.column_stack([np.interp(ts, stations, poses[:, k]) for k in (0, 1)])
                 minimum = _width(c)
                 holds = []
+                if box is not None and any(not local.inside_geometry(c[k], box) for k in ('left', 'right', 'center')):
+                    holds.append('outside_local_point_update_bounds')
                 if any(frm == pair[0] or to == pair[1] for frm, to in edges(ir)):
                     holds.append("existing_endpoint_already_connected")
                 if c["ambiguous"]:

@@ -10,6 +10,7 @@ status. This supplies a diagnostic for the agent's next decision.
 ca mapping-trajectory-evaluate /data/run \
   --reference /data/reference-sensor.tum \
   --provenance /data/reference-provenance.json \
+  --alignment-prefix-fraction 0.3 \
   --out /data/comparisons/run-trajectory.json
 ```
 
@@ -58,8 +59,13 @@ thresholds are calibrated by this command, so it emits no quality pass/fail gate
   count divided by **retained corrected poses**, not the size of a denser
   reference. Retained/matched duration and original frame IDs are also saved.
 - Each estimate fits its **own** rigid SE(3) alignment to the same reference
-  positions, with no scale fitting. Alignment matrices are saved. ATE and RPE
-  are evaluated on those fitted samples; this is not a held-out alignment test.
+  positions, with no scale fitting. Alignment matrices are saved. Default
+  `alignment_prefix_fraction=1` evaluates the fitted samples. A fraction below
+  1 fits `floor(fraction * matched_poses)` from the chronological prefix and
+  evaluates only the disjoint suffix; both subsets need at least three poses,
+  and each estimate/reference prefix must constrain a rigid fit. Fitted and
+  evaluated frame IDs/counts are saved separately. This avoids fitting the
+  evaluated suffix, but does not establish unseen-session generalization.
   RPE translation uses consecutive matched poses with variable time intervals,
   not a fixed one-second interval. `change.ate_rmse_m_corrected_minus_original`
   is positive for a regression. Read coverage alongside that number.
@@ -77,7 +83,7 @@ establish independent accuracy. Survey uncertainty and sensor correlations also
 remain outside this diagnostic. Trajectory error does not certify point-map
 surface accuracy, HD boundaries, traffic semantics or georeferencing.
 
-## Validation and the pending NCLT reference check
+## Validation and NCLT external-reference results
 
 Synthetic contract tests cover known improvement/regression, nonconsecutive frame
 IDs, partial coverage, clock mismatch, provenance declarations, known input reuse,
@@ -95,8 +101,27 @@ https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/ground
 https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-06-15.csv
 ```
 
-At implementation time that host was denied by the cloud network policy.
-Its domain addition was saved as an environment configuration draft; it has not
-been applied or published. Actual reference-based NCLT accuracy remains pending.
-Do not substitute the self-comparison control for that measurement. Follow NCLT's
-ODbL/DBCL attribution and preserve reference/preparation hashes when it is run.
+After the user published the additive network setting, both source CSVs were
+downloaded over verified TLS, length-checked and hashed. The bounded reference
+preparation script transforms the dataset body poses to the synchronized scan
+sensor origin and retains only original scan-time interpolation brackets:
+
+```bash
+python scripts/prepare_nclt_reference.py \
+  --job /data/finished-point-map-owner \
+  --ground-truth /data/groundtruth_2012-04-29.csv \
+  --source-url https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-04-29.csv \
+  --out /data/new-reference
+```
+
+Both estimates were compared over live MCP calls on two finished NCLT jobs.
+All retained poses matched (199 April / 195 June). The first-30%-fit suffix ATE
+was 0.289283 → 0.279199 m for April and 0.246734 → 0.252191 m for June; full-data
+fits slightly regressed for both. No reference-uncertainty calibration, pass/fail
+gate or map adoption was inferred from these small differences. All existing
+job files stayed unchanged. The portable
+[external-reference packet](../../benchmarks/vector-map/nclt-reference-accuracy/README.md)
+retains raw reference brackets, source hashes/calibration, original motion,
+corrected graph/trajectory, full reports and a standard-library verifier.
+This is external-reference trajectory shape evidence, not independent HD-map
+survey accuracy. Follow NCLT's ODbL/DBCL attribution when sharing the derived data.

@@ -232,3 +232,116 @@ def test_cli_emits_the_same_report_contract(fixture):
                                       "--provenance", str(provenance), "--out", str(out)])
     assert result.exit_code == 0, result.output
     assert json.loads(result.output)["schema"] == comparison.SCHEMA
+
+
+def _all_graph_nodes(fixture):
+    root, truth, _ = fixture
+    rows = np.loadtxt(truth)
+    points = rows[:, 1:4]
+    graph = root / "corrected.g2o"
+    graph.write_text("".join(f"VERTEX_SE3:QUAT {i} {' '.join(map(str, p))} 0 0 0 1\n" for i, p in enumerate(points)))
+    poses = np.tile(np.eye(4), (len(points), 1, 1))
+    poses[:, :3, 3] = points
+    corrected = root / "corrected.txt"
+    np.savetxt(corrected, poses[:, :3].reshape(len(points), 12), fmt="%.17g")
+    job = json.loads((root / "job.json").read_text())
+    job["pointcloud"]["files"].update(graph=jobs._artifact(graph), trajectory=jobs._artifact(corrected))
+    jobs._save(root / "job.json", job)
+
+
+def test_prefix_alignment_excludes_evaluated_reference_samples(fixture):
+    _all_graph_nodes(fixture)
+    root, truth, _ = fixture
+    first = _run(fixture, alignment_prefix_fraction=4/7)
+    assert first["protocol"]["held_out_alignment"] is True
+    assert first["coverage"]["alignment_original_frame_ids"] == [0, 1, 2, 3]
+    assert first["coverage"]["evaluated_original_frame_ids"] == [4, 5, 6]
+    assert first["coverage"]["matched_poses"] == 7 and first["coverage"]["evaluated_poses"] == 3
+    assert first["results"]["corrected"]["ate"]["rmse"] < 1e-10
+    rows = np.loadtxt(truth)
+    rows[4:, 2:4] += [4., 1.5]
+    np.savetxt(truth, rows, fmt="%.17g")
+    second = comparison.evaluate_mapping_trajectory(str(root), str(truth), PROVENANCE,
+               str(truth.parent / "suffix-changed.json"), alignment_prefix_fraction=4/7)
+    for name in ("original", "corrected"):
+        assert second["results"][name]["alignment"] == first["results"][name]["alignment"]
+    assert second["results"]["corrected"]["ate"]["rmse"] == pytest.approx(np.hypot(4., 1.5))
+
+
+def test_prefix_alignment_applies_the_same_rigid_frame_to_orientations(fixture):
+    from scipy.spatial.transform import Rotation
+    _all_graph_nodes(fixture)
+    _, truth, _ = fixture
+    rows = np.loadtxt(truth)
+    rotation = Rotation.from_euler('z', .3)
+    rows[:, 1:4] = rotation.apply(rows[:, 1:4]) + [100., -20., 4.]
+    rows[:, 4:] = rotation.as_quat()
+    np.savetxt(truth, rows, fmt="%.17g")
+    result = _run(fixture, alignment_prefix_fraction=4/7)
+    assert result["results"]["corrected"]["ate"]["rmse"] < 1e-10
+    assert result["results"]["corrected"]["ate_rotation"]["rmse"] < 1e-5
+    np.testing.assert_allclose(result["results"]["corrected"]["alignment"]["rotation_matrix"], rotation.as_matrix(), atol=1e-10)
+
+
+@pytest.mark.parametrize("fraction", [0., float('nan'), float('inf'), True, 1.01])
+def test_rejects_invalid_prefix_fraction(fixture, fraction):
+    with pytest.raises(ValueError, match="alignment_prefix_fraction"):
+        _run(fixture, alignment_prefix_fraction=fraction)
+    assert not fixture[2].exists()
+
+
+def test_prefix_alignment_needs_enough_fit_and_evaluation_samples(fixture):
+    with pytest.raises(ValueError, match="3 fitting and 3 evaluated"):
+        _run(fixture, alignment_prefix_fraction=.5)
+    assert not fixture[2].exists()
+
+
+def test_prefix_alignment_rejects_an_unconstrained_fit_even_if_suffix_turns(fixture):
+    _all_graph_nodes(fixture)
+    _, truth, out = fixture
+    rows = np.loadtxt(truth)
+    rows[:4, 2:4] = 0.
+    np.savetxt(truth, rows, fmt='%.17g')
+    with pytest.raises(ValueError, match='prefix cannot constrain'):
+        _run(fixture, alignment_prefix_fraction=4/7)
+    assert not out.exists()
+
+
+def test_nclt_sensor_transform_and_reference_bracket_preparation(fixture):
+    import importlib.util
+    from pathlib import Path
+    script = Path(__file__).resolve().parents[2] / 'scripts/prepare_nclt_reference.py'
+    spec = importlib.util.spec_from_file_location('nclt_reference', script)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    row = np.array([1e6, 20., 30., -1., .1, -.2, .3])
+    def xyz_rotation(angles):
+        r, p, y = angles
+        rx = np.array([[1, 0, 0], [0, np.cos(r), -np.sin(r)], [0, np.sin(r), np.cos(r)]])
+        ry = np.array([[np.cos(p), 0, np.sin(p)], [0, 1, 0], [-np.sin(p), 0, np.cos(p)]])
+        rz = np.array([[np.cos(y), -np.sin(y), 0], [np.sin(y), np.cos(y), 0], [0, 0, 1]])
+        return rz @ ry @ rx
+    body = np.eye(4)
+    body[:3, :3] = xyz_rotation(row[4:])
+    body[:3, 3] = row[1:4]
+    extrinsic = np.eye(4)
+    extrinsic[:3, :3] = xyz_rotation(np.radians(module.BODY_VEL[3:]))
+    extrinsic[:3, 3] = module.BODY_VEL[:3]
+    flip = np.diag([1., -1., -1., 1.])
+    np.testing.assert_allclose(module.sensor_pose(row), flip @ body @ extrinsic @ flip, atol=1e-12)
+    root, _, _ = fixture
+    before = {p.name: p.read_bytes() for p in root.iterdir()}
+    raw = root.parent / 'groundtruth.csv'
+    rows = [np.array([t * 1e6, t, t % 3, 0., .1, -.2, .3]) for t in np.arange(-.01, 6.02, .02)]
+    np.savetxt(raw, rows, delimiter=',', fmt='%.17g')
+    out = root.parent / 'reference-prepared'
+    result = module.prepare(root, raw, out, 'https://example.test/nclt.csv')
+    selected = np.loadtxt(out / 'reference-raw-rows.csv', delimiter=',')
+    tum = np.loadtxt(out / 'reference.tum')
+    np.testing.assert_allclose(tum[:, 0], selected[:, 0] / 1e6, atol=0.)
+    for index, raw_row in enumerate(selected):
+        np.testing.assert_allclose(tum[index, 1:4], module.sensor_pose(raw_row)[:3, 3], atol=1e-12)
+    assert result['selected_bracket_rows'] <= 2 * result['original_scan_poses']
+    assert {p.name: p.read_bytes() for p in root.iterdir()} == before
+    with pytest.raises(FileExistsError):
+        module.prepare(root, raw, out, 'https://example.test/nclt.csv')

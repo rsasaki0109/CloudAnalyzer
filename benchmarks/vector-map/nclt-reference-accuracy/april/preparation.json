@@ -1,0 +1,85 @@
+{
+  "schema": "cloudanalyzer.nclt_reference_preparation.v1",
+  "inputs": {
+    "job": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/job.json",
+      "bytes": 64126,
+      "sha256": "cdb8e52cdb4ecae0370e0be540a4570cec647fc8b5caa92a5dc719aeccb39064"
+    },
+    "source_motion": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/odometry/trajectory.tum",
+      "sha256": "7638be71dfdba5ecab32a9b59a3903d16403aa082640d2b4be910a8fdc378f96",
+      "bytes": 20224
+    },
+    "ground_truth": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-reference-inputs/groundtruth_2012-04-29.csv",
+      "bytes": 53339022,
+      "sha256": "d60a6fcc62c5c2db789b54cb2d7ff5627ae2035a9e9dcb6da2b0b1aa3141bf96"
+    },
+    "preparation_script": {
+      "path": "/workspace/CloudAnalyzer/scripts/prepare_nclt_reference.py",
+      "bytes": 7016,
+      "sha256": "45328870d053b8340c3d49d2c81cb60d12336f0c864afb3e5ff3b553600cdb45"
+    }
+  },
+  "source_url": "https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-04-29.csv",
+  "body_vel_xyz_m_rpy_deg": [
+    0.002,
+    -0.004,
+    -0.957,
+    0.807,
+    0.166,
+    0.0
+  ],
+  "flip_matrix": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      -1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      -1.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
+  "ground_truth_rpy_units": "radians",
+  "timestamp_units": "microseconds_to_seconds",
+  "window_tolerance_s": 0.05,
+  "original_scan_poses": 236,
+  "finite_raw_window_rows": 28058,
+  "invalid_raw_window_rows": 0,
+  "selected_bracket_rows": 472,
+  "scope": "External supplied ground truth was not used as generation input. This is not a statistically independent sensor measurement or HD-map surface/traffic certification.",
+  "outputs": {
+    "reference.tum": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy-final/april/reference.tum",
+      "bytes": 76458,
+      "sha256": "1c01b434cceae41d15746679764850cc8ce78e85c44080057e98e59a7b7d426e"
+    },
+    "reference-raw-rows.csv": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy-final/april/reference-raw-rows.csv",
+      "bytes": 64923,
+      "sha256": "0348e2f3dda4a626e4edd00139a7644971c97ff2c8e69ae1dda4bc9a4bcf1383"
+    },
+    "reference-provenance.json": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy-final/april/reference-provenance.json",
+      "bytes": 543,
+      "sha256": "9be05e6dd3d444249a08c64aaed1280503dbddff38ceff592e395dfc5b9545d1"
+    }
+  }
+}

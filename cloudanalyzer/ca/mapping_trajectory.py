@@ -16,7 +16,7 @@ from scipy.spatial.transform import Rotation
 from ca import mapping_job as jobs
 from ca.posegraph_fix import read_trajectory
 from ca.trajectory import (
-    _interpolate_matches, _interpolate_orientation_series, evaluate_trajectory, load_trajectory,
+    _apply_rigid_alignment, _interpolate_matches, _interpolate_orientation_series, evaluate_trajectory, load_trajectory,
 )
 
 SCHEMA = "cloudanalyzer.mapping_trajectory_comparison.v1"
@@ -52,6 +52,7 @@ def _write(path: Path, times: np.ndarray, positions: np.ndarray, orientations: n
 def evaluate_mapping_trajectory(
     job_dir: str, reference: str, reference_provenance: dict[str, Any], report_path: str,
     max_time_delta: float = .05,
+    alignment_prefix_fraction: float = 1.,
 ) -> dict[str, Any]:
     """Compare original and corrected mapping poses on identical reference-supported timestamps.
 
@@ -60,7 +61,9 @@ def evaluate_mapping_trajectory(
     Requires saved hashed source_motion and original-frame graph IDs. Interpolate
     the reference only within its coverage and with both brackets within the time
     tolerance. Each estimate fits its own scale-free rigid alignment on the same
-    matched poses; this is an in-sample fit, not held-out accuracy. Preserve input
+    matched poses. With alignment_prefix_fraction below 1, fit only that prefix
+    and evaluate only the disjoint suffix; default 1 fits/evaluates all samples.
+    This is trajectory shape evaluation, not map certification. Preserve input
     hashes, coverage and both ATE/RPE results. No job, map, attempt, selection or
     quality status changes. Caller declarations do not establish independence,
     surveyed map accuracy, georeferencing or road-use readiness.
@@ -68,6 +71,8 @@ def evaluate_mapping_trajectory(
     provenance = _provenance(reference_provenance)
     if isinstance(max_time_delta, bool) or not math.isfinite(max_time_delta) or not 0 < max_time_delta <= 1:
         raise ValueError("max_time_delta must be finite and in (0, 1] seconds")
+    if isinstance(alignment_prefix_fraction, bool) or not math.isfinite(alignment_prefix_fraction) or not 0 < alignment_prefix_fraction <= 1:
+        raise ValueError("alignment_prefix_fraction must be finite and in (0, 1]")
     root, target = Path(job_dir).resolve(), Path(report_path).resolve()
     if target.exists():
         raise FileExistsError(f"report already exists: {target}")
@@ -123,16 +128,38 @@ def evaluate_mapping_trajectory(
     quaternions = _interpolate_orientation_series(
         truth["timestamps"], truth.get("orientations"), matched, max_time_delta,
     )
+    held_out = alignment_prefix_fraction < 1.
+    fit_count = int(len(matched) * alignment_prefix_fraction) if held_out else len(matched)
+    if held_out and (fit_count < 3 or len(matched) - fit_count < 3):
+        raise ValueError("prefix alignment needs at least 3 fitting and 3 evaluated poses")
+    estimates = {
+        "original": (original["positions"][original_ids], None if original["orientations"] is None else original["orientations"][original_ids]),
+        "corrected": (corrected[selected, :3, 3], Rotation.from_matrix(rotations[selected]).as_quat()),
+    }
+    evaluation_start = fit_count if held_out else 0
+    if held_out:
+        for values in (positions, *(pair[0] for pair in estimates.values())):
+            if np.linalg.matrix_rank(values[:fit_count] - values[:fit_count].mean(axis=0), tol=1e-8) < 2:
+                raise ValueError("alignment prefix cannot constrain rigid alignment")
     with tempfile.TemporaryDirectory(prefix="ca-mapping-trajectory-") as folder:
         staging = Path(folder)
-        _write(staging / "reference.tum", matched, positions, quaternions)
-        _write(staging / "original.tum", matched, original["positions"][original_ids],
-               None if original["orientations"] is None else original["orientations"][original_ids])
-        _write(staging / "corrected.tum", matched, corrected[selected, :3, 3],
-               Rotation.from_matrix(rotations[selected]).as_quat())
+        _write(staging / "reference.tum", matched[evaluation_start:], positions[evaluation_start:],
+               None if quaternions is None else quaternions[evaluation_start:])
         results = {}
         for name in ("original", "corrected"):
-            result = evaluate_trajectory(str(staging / f"{name}.tum"), str(staging / "reference.tum"), align_rigid=True)
+            estimate_positions, estimate_quaternions = estimates[name]
+            if held_out:
+                fitted, translation, rotation = _apply_rigid_alignment(estimate_positions[:fit_count], positions[:fit_count])
+                estimate_positions = estimate_positions @ rotation.T + translation
+                if estimate_quaternions is not None:
+                    estimate_quaternions = (Rotation.from_matrix(rotation) * Rotation.from_quat(estimate_quaternions)).as_quat()
+            _write(staging / f"{name}.tum", matched[evaluation_start:], estimate_positions[evaluation_start:],
+                   None if estimate_quaternions is None else estimate_quaternions[evaluation_start:])
+            result = evaluate_trajectory(str(staging / f"{name}.tum"), str(staging / "reference.tum"), align_rigid=not held_out)
+            if held_out:
+                result["alignment"] = {"mode": "rigid_prefix", "translation": translation.tolist(),
+                                       "rotation_matrix": rotation.tolist(),
+                                       "fit_rmse_m": float(np.sqrt(np.mean(np.sum((fitted - positions[:fit_count])**2, axis=1))))}
             result["estimated_path"] = inputs["source_motion_trajectory" if name == "original" else "pointcloud_trajectory"]["path"]
             result["reference_path"] = inputs["reference"]["path"]
             # No calibrated thresholds were supplied; do not emit an empty passing gate.
@@ -146,9 +173,10 @@ def evaluate_mapping_trajectory(
         "reference_matches_recorded_inputs": known_reuse,
         "protocol": {"units": "metres_seconds", "max_time_delta_s": max_time_delta,
                      "matching": "reference_interpolated_at_retained_original_frame_timestamps_no_extrapolation",
-                     "alignment": "separate_SE3_fits_on_identical_matched_positions_no_scale",
+                     "alignment": "separate_SE3_prefix_fits_disjoint_suffix_evaluation_no_scale" if held_out else "separate_SE3_fits_on_identical_matched_positions_no_scale",
                      "rpe_translation": "adjacent_matched_retained_poses_variable_time_interval",
-                     "held_out_alignment": False, "native": jobs._native(),
+                     "held_out_alignment": held_out, "alignment_prefix_fraction": alignment_prefix_fraction,
+                     "native": jobs._native(),
                      "python": platform.python_version(), "numpy": np.__version__, "scipy": scipy.__version__},
         "coverage": {"original_poses": original["num_poses"], "retained_poses": len(ids),
                      "matched_poses": len(matched), "retained_pose_fraction": len(matched) / len(ids),
@@ -156,10 +184,13 @@ def evaluate_mapping_trajectory(
                      "matched_duration_s": float(matched[-1] - matched[0]),
                      "mean_nearest_reference_delta_s": float(np.mean(deltas)),
                      "max_nearest_reference_delta_s": float(np.max(deltas)),
-                     "matched_original_frame_ids": original_ids.tolist()},
+                     "matched_original_frame_ids": original_ids.tolist(),
+                     "alignment_fitted_poses": fit_count, "evaluated_poses": len(matched) - evaluation_start,
+                     "alignment_original_frame_ids": original_ids[:fit_count].tolist(),
+                     "evaluated_original_frame_ids": original_ids[evaluation_start:].tolist()},
         "results": results,
         "change": {"ate_rmse_m_corrected_minus_original": results["corrected"]["ate"]["rmse"] - results["original"]["ate"]["rmse"]},
-        "scope": "Trajectory diagnostic only. Reference independence is caller-declared; alignment is fitted on evaluated poses. Does not certify point/HD map accuracy or change job quality/adoption.",
+        "scope": "Trajectory diagnostic only. Reference independence is caller-declared; consult alignment/evaluation split. Does not certify point/HD map accuracy or change job quality/adoption.",
     }
     # Detect interleaved changes before publishing anything; never replace a report.
     for artifact in inputs.values():

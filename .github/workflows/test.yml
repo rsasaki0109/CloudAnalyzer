@@ -59,6 +59,10 @@ jobs:
             --chunk-size 100000 \
             --output /tmp/cloudanalyzer-mapeval-scale.json
 
+      - name: Verify NCLT external-reference trajectory packet
+        working-directory: .
+        run: python benchmarks/vector-map/nclt-reference-accuracy/verify.py
+
       - name: Verify checked-in perception demo
         working-directory: .
         run: |

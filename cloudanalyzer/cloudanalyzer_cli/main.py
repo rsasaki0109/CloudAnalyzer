@@ -1991,11 +1991,12 @@ def mapping_trajectory_evaluate_cmd(
     provenance: str = typer.Option(..., "--provenance", help="JSON source/license/frame/time basis and generation-use declaration"),
     out: str = typer.Option(..., "--out", help="New report file outside the mapping job"),
     max_time_delta: float = typer.Option(.05, "--max-time-delta"),
+    alignment_prefix_fraction: float = typer.Option(1., "--alignment-prefix-fraction", help="Fit only this prefix and evaluate the disjoint suffix; 1 fits/evaluates all samples"),
 ) -> None:
     """Compare saved original/corrected motion without changing maps or attempts."""
     from ca.mapping_trajectory import evaluate_mapping_trajectory
     try:
-        result = evaluate_mapping_trajectory(job, reference, json.loads(Path(provenance).read_text()), out, max_time_delta)
+        result = evaluate_mapping_trajectory(job, reference, json.loads(Path(provenance).read_text()), out, max_time_delta, alignment_prefix_fraction)
     except (OSError, ValueError, RuntimeError) as error:
         _handle_error(error)
     typer.echo(json.dumps(result, indent=2))

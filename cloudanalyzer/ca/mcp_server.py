@@ -29,7 +29,9 @@ Use evaluate_mapping_trajectory on the point-map owner's job_dir to compare save
 original motion and corrected graph poses against a supplied timestamped reference.
 Declare reference source/license/frame/time basis and whether it was used for
 generation. Results use identical supported timestamps and separate scale-free
-rigid fits on evaluated positions, not a held-out alignment. Save a new external
+rigid fits. Default alignment fits evaluated positions. Set alignment_prefix_fraction
+below 1 to fit only the chronological prefix and evaluate the disjoint suffix.
+Read fitted/evaluated frame IDs and both results. Save a new external
 report; neither attempts nor map quality/adoption change. Read coverage and both
 results, including regressions. Caller declarations do not establish independence.
 

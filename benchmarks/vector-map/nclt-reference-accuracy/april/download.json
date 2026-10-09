@@ -1,0 +1,13 @@
+{
+  "url": "https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-04-29.csv",
+  "path": "/workspace/.cloudanalyzer-env/nclt-reference-inputs/groundtruth_2012-04-29.csv",
+  "bytes": 53339022,
+  "sha256": "d60a6fcc62c5c2db789b54cb2d7ff5627ae2035a9e9dcb6da2b0b1aa3141bf96",
+  "headers": {
+    "ETag": "\"d79632f9038009c9abc30be24d2da842-7\"",
+    "Last-Modified": "Tue, 27 Sep 2022 01:02:07 GMT",
+    "Content-Type": "text/csv"
+  },
+  "license": "NCLT ODbL / DBCL",
+  "verification": "TLS authoritative source and length check; SHA-256 computed locally. Multipart ETag is not treated as a content checksum."
+}

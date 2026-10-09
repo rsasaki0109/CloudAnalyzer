@@ -1,5 +1,8 @@
 # NCLT: surface proposals without lane assumptions
 
+The follow-up [editable geometry runs](../nclt-geometry/README.md) adopt explicit
+candidate intervals and preserve full-extent holds without inventing lanes.
+
 On 2026-10-09 JST, the calling agent generated point-cloud maps and searched
 surface corridors in both bundled NCLT recordings, before supplying lane count,
 lane width, speed or traffic direction. The source contains geometry and sparse

@@ -15,7 +15,7 @@ from typing import Any
 
 import numpy as np
 from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations
-from ca.mapping_job import start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate
+from ca.mapping_job import start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
@@ -29,7 +29,14 @@ edge evidence. Paired curb profiles can suggest a width; coverage gaps and searc
 limits cannot. Branches, absent ground anchors and different levels remain unresolved.
 The proposal stage is cached and does not spend HD attempts. It does not infer
 road use, lane count/direction, speed or automatically adopt geometry. After reading
-the proposals, call generate_mapping_candidate
+the proposals, use generate_mapping_geometry with explicit include/defer decisions
+and reasons to retain selected source curves in editable IR without lane assumptions.
+Optional ranges use observed stations; included bands cannot overlap input stations.
+Read inspect_mapping_geometry for curves, decisions and full-extent holds. Geometry
+drafts use the shared HD attempt budget, preserve existing selections, infer no lanes
+and are not selectable as audited lane maps. They publish IR and an evidence report;
+no OSM is published because standalone unknown ways are dropped on Lanelet2 reload.
+For an explicitly assumed lane-map hypothesis, call generate_mapping_candidate
 with explicit road_options and a reason for each hypothesis. Road options require
 forward_lanes, backward_lanes, left_hand_traffic, lane_width and speed_limit; other
 build_vector_map fitting options are available. Read native failures, source audits,
@@ -316,7 +323,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

@@ -47,6 +47,11 @@ def job_backend(tmp_path, monkeypatch):
                              propose_road_corridors=lambda *args: json.dumps(_corridor_report()))
     monkeypatch.setattr(jobs, "core", lambda: module)
 
+    def normalize_geometry(path):
+        return json.dumps({"map_json": Path(path).read_text(), "report": {
+            "validation": {"counts": {"errors": 0}, "issues": []}, "import_issues": [], "georeference": None}})
+    module.edit_vector_map_relations = normalize_geometry
+
     def odometry(source, out, **kwargs):
         return {"scans": out, "trajectory": "unused", "gravity": None, "frames": 4, "path_length_m": 10}
 
@@ -278,6 +283,152 @@ def test_single_profile_curb_width_hints_do_not_complete_a_corridor_width(job_ba
     assert index["curb_width_profile_hints"][0]["review_required"] is True
     assert index["candidate_index"][0]["curb_width_range_m"] is None
     assert jobs.inspect_mapping_job(str(root))["selected"] is None
+
+
+def test_geometry_draft_preserves_chosen_source_curves_full_extent_and_selected_lane_map(job_backend, tmp_path, monkeypatch):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root), max_attempts=2)
+    jobs.generate_mapping_candidate(str(root), OPTIONS, "Retain the earlier lane hypothesis")
+    prior = jobs.select_mapping_candidate(str(root), 1, "Earlier review draft")["selected"]
+    jobs.propose_mapping_corridors(str(root))
+    choices = [{"candidate_id": 1, "action": "include", "reason": "Inspect source curves", "from_m": 0., "to_m": 4.},
+               {"candidate_id": 1, "action": "defer", "reason": "Width unresolved", "from_m": 4., "to_m": 6.},
+               {"candidate_id": 1, "action": "include", "reason": "Separate later source fragment", "from_m": 8., "to_m": 10.}]
+    result = jobs.generate_mapping_geometry(str(root), choices, "Use actual candidate geometry with unresolved lanes")
+    assert result["selected"] == prior and result["remaining_attempts"] == 0
+    attempt = result["attempts"][1]
+    assert attempt["status"] == "geometry_draft", attempt
+    ir = json.loads(Path(attempt["files"]["editable_map"]["path"]).read_text())
+    assert ir["lanes"] == [] and ir["roads"] == [] and len(ir["boundaries"]) == 6
+    assert ir["boundaries"][0]["geometry"] == [[0., 0., 1.], [2., 0., 1.], [4., 0., 1.]]
+    assert all(b["kind"] == {"type": "other"} for b in ir["boundaries"])
+    assert ir["metadata"]["attributes"]["cloudanalyzer:proposal_sha256"] == result["corridor_proposal"]["file"]["sha256"]
+    assert ir["metadata"]["attributes"]["cloudanalyzer:pointcloud_sha256"] == result["pointcloud"]["files"]["map"]["sha256"]
+    assert not list((root / "geometry-02").glob("*.osm"))
+    monkeypatch.setattr(jobs, "core", lambda: None)
+    inspected = jobs.inspect_mapping_geometry(str(root), 2)
+    assert inspected["summary"]["included_station_length_m"] == 6.
+    assert inspected["summary"]["unresolved_station_length_m"] == 4.
+    assert inspected["summary"]["included_station_fraction"] == .6
+    assert inspected["summary"]["meets_requested_station_extent"] is False
+    assert inspected["summary"]["lane_count"] is None and inspected["summary"]["source_quality_passed"] is False
+    intervals = inspected["station_disposition"]
+    assert [i["status"] for i in intervals] == ["included_geometry", "agent_deferred", "not_reviewed", "included_geometry"]
+    assert sum(i["to_m"] - i["from_m"] for i in intervals) == 10.
+    assert inspected["editing"]["file"].endswith("vector_map.json")
+    report = Path(attempt["files"]["report"]["path"])
+    report.write_text(report.read_text() + " ")
+    with pytest.raises(ValueError, match="changed"):
+        jobs.inspect_mapping_geometry(str(root), 2)
+
+
+def test_geometry_decisions_reject_overlapping_bands_extrapolation_and_implicit_lanes(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    report = _corridor_report()
+    report["candidates"].append({**report["candidates"][0], "id": 2})
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    jobs.propose_mapping_corridors(str(root))
+    included = {"candidate_id": 1, "action": "include", "reason": "Inspect the observed band"}
+    invalid = [[], [{**included, "candidate_id": True}], [{**included, "from_m": 1.}],
+        [{**included, "to_m": 12.}], [{**included, "lane_width": 3.5}], [{**included, "reason": " "}],
+        [included, {**included, "candidate_id": 2}], [included, {**included, "action": "defer"}]]
+    for choices in invalid:
+        with pytest.raises(ValueError):
+            jobs.generate_mapping_geometry(str(root), choices, "No unobserved geometry")
+    assert jobs.inspect_mapping_job(str(root))["attempts"] == []
+    result = jobs.generate_mapping_geometry(str(root), [included], "Geometry alone does not establish lanes")
+    assert result["attempts"][0]["status"] == "geometry_draft"
+    with pytest.raises(ValueError, match="audited draft"):
+        jobs.select_mapping_candidate(str(root), 1, "Empty lanes must not pass")
+    with pytest.raises(ValueError, match="audited draft"):
+        jobs.diagnose_mapping_candidate(str(root), 1)
+
+
+def test_geometry_failures_are_retained_and_atomic_without_spending_extra_attempts(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root), max_attempts=1)
+    jobs.propose_mapping_corridors(str(root))
+    def failed(path):
+        raise ValueError("native map import failed")
+    jobs.core().edit_vector_map_relations = failed
+    choices = [{"candidate_id": 1, "action": "include", "reason": "Keep source geometry"}]
+    result = jobs.generate_mapping_geometry(str(root), choices, "Try the saved source band")
+    assert result["attempts"][0]["status"] == "failed"
+    assert result["attempts"][0]["error"] == "native map import failed"
+    assert result["remaining_attempts"] == 0 and result["selected"] is None
+    assert jobs.inspect_mapping_geometry(str(root), 1)["status"] == "failed"
+    assert not (root / "geometry-01").exists() and not (root / ".mapping-lock").exists()
+    with pytest.raises(ValueError, match="budget exhausted"):
+        jobs.generate_mapping_geometry(str(root), choices, "No automatic retry")
+
+
+@pytest.mark.parametrize("mutate_proposal", [False, True])
+def test_geometry_rechecks_proposal_and_inputs_before_publishing(job_backend, tmp_path, mutate_proposal):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    jobs.propose_mapping_corridors(str(root))
+    normalizer = jobs.core().edit_vector_map_relations
+    def changed(path):
+        answer = normalizer(path)
+        if mutate_proposal:
+            proposal = root / "corridor-proposals.json"
+            proposal.write_bytes(proposal.read_bytes() + b" ")
+        else:
+            source.write_bytes(b"changed while normalizing")
+        return answer
+    jobs.core().edit_vector_map_relations = changed
+    result = jobs.generate_mapping_geometry(str(root), [{"candidate_id": 1, "action": "include", "reason": "Keep the band"}], "Reject stale processing")
+    assert result["attempts"][0]["status"] == "failed" and "changed" in result["attempts"][0]["error"]
+    assert not (root / "geometry-01").exists()
+
+
+def test_geometry_preserves_source_deferred_and_ambiguous_intervals(job_backend, tmp_path):
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    report = _corridor_report()
+    report["candidates"][0].update({"from_m": 2., "to_m": 8., "sections": report["candidates"][0]["sections"][1:5]})
+    report["deferred_intervals"] = [{"from_m": 0., "to_m": 2., "reason": "missing_coherent_surface"},
+                                    {"from_m": 8., "to_m": 10., "reason": "source_gap"}]
+    report["ambiguous_intervals"] = [{"from_m": 4., "to_m": 6., "reason": "branching_bands"}]
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    jobs.propose_mapping_corridors(str(root))
+    jobs.generate_mapping_geometry(str(root), [{"candidate_id": 1, "action": "include", "reason": "Separate retained band still needs review"}], "Preserve unresolved context")
+    intervals = jobs.inspect_mapping_geometry(str(root), 1)["station_disposition"]
+    assert intervals[0]["status"] == "source_deferred" and intervals[0]["source_reasons"] == ["missing_coherent_surface"]
+    assert intervals[-1]["status"] == "source_deferred" and intervals[-1]["source_reasons"] == ["source_gap"]
+    assert any(i["status"] == "included_geometry" and i["source_ambiguous"] for i in intervals)
+    assert sum(i["to_m"] - i["from_m"] for i in intervals) == 10.
+
+
+def test_geometry_cli_preserves_source_and_native_ir_reload(job_backend, tmp_path, monkeypatch):
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "edit_vector_map_relations"):
+        pytest.skip("installed native core predates IR normalization")
+    source, _ = job_backend
+    root = tmp_path / "job"
+    jobs.start_mapping_job(str(source), str(root))
+    jobs.propose_mapping_corridors(str(root))
+    jobs.core().edit_vector_map_relations = native.edit_vector_map_relations
+    choices = tmp_path / "decisions.json"
+    choices.write_text(json.dumps([{"candidate_id": 1, "action": "include", "reason": "Use source curves only"}]))
+    result = CliRunner().invoke(app, ["mapping-geometry", str(root), "--decisions", str(choices), "--reason", "No lane assumptions"])
+    assert result.exit_code == 0, result.output
+    attempt = json.loads(result.stdout)["attempts"][0]
+    assert attempt["status"] == "geometry_draft", attempt
+    normalized = json.loads(native.edit_vector_map_relations(attempt["files"]["editable_map"]["path"]))
+    ir = json.loads(normalized["map_json"])
+    assert len(ir["boundaries"]) == 3 and not ir.get("lanes")
+    assert ir["boundaries"][0]["attributes"]["cloudanalyzer:role"] == "source_center"
+    assert normalized["report"]["validation"]["counts"]["errors"] == 0
+    monkeypatch.setattr(jobs, "core", lambda: None)
+    inspected = CliRunner().invoke(app, ["mapping-geometry-inspect", str(root), "--candidate", "1"])
+    assert inspected.exit_code == 0 and json.loads(inspected.stdout)["summary"]["deployment_ready"] is False
 
 
 def test_failed_pointcloud_stage_is_recorded_and_existing_jobs_are_preserved(job_backend, tmp_path, monkeypatch):

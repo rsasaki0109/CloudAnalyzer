@@ -236,6 +236,11 @@ When off-path bands fragment the route, the agent can explicitly re-extract
 path-containing candidates once and review the new geometry. The
 [NCLT comparison](benchmarks/vector-map/nclt-path-refinement/README.md) records
 added map intervals and June's longer continuous piece at unchanged source thresholds.
+The agent can then inspect and explicitly connect short source-supported gaps;
+[NCLT connection evidence](benchmarks/vector-map/nclt-route-connections/README.md)
+records local graph routes of 14 m and 22 m while preserving original lane geometry.
+Both ground estimators and reopened Lanelet2 topology are checked; permitted
+turns and whole-drive connectivity remain unresolved.
 The runner binds per-piece lane settings automatically and resumes completed
 stages after interruption. [Individual mapping tools](docs/commands/mapping-job.md)
 remain available for separate experiments and explicit draft selection.

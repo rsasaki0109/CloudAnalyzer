@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, Iterator
 
 from ca import mapping_job as jobs
+from ca import mapping_connections as connections
 from ca.mapping_geometry import assemble_geometry, corridor_lane_requests
 
 SCHEMA = "cloudanalyzer.mapping_run.v1"
@@ -19,6 +20,14 @@ bands. Source support does not prove road identity or complete width.
 If off-path overlapping bands fragment the route, explicitly refine with
 association=trajectory_containing once, then inspect the new proposal IDs afresh.
 All original profiles and drafts remain available; missing source is never bridged.
+After drafting, inspect_connections on an audited draft. For a single forward
+one-way lane per piece, explicitly connect inspected consecutive drive pieces.
+Short gaps need recorded-path containment, unchanged minimum widths and complete
+center/boundary support from both ground estimators after export/reload. Inspect
+local and global route station spans separately; connector reachability does not
+increase original source-corridor extent or prove permitted turns.
+Each connect trial supplies a complete pair set for its unconnected parent;
+repeat earlier pairs explicitly to retain them in another trial.
 Draft decisions describe a complete replacement hypothesis, not additions to the previous lane map.
 The runner binds the fixed layout to every included piece and executes geometry,
 lane export and diagnosis. Read both ground estimators and full-input extent before
@@ -113,6 +122,11 @@ def _diagnosis(root: Path, candidate_id: int) -> dict[str, Any]:
         audit["lanes_total"] = len(audit["lanes"])
         audit["lanes_limited_in_response"] = len(audit["lanes"]) > 16
         audit["lanes"] = audit["lanes"][:16]
+    if diagnosis.get("routes"):
+        for metrics in (diagnosis["routes"]["before"], diagnosis["routes"]["after"]):
+            metrics["routes_total"] = len(metrics["routes"])
+            metrics["routes_limited_in_response"] = len(metrics["routes"]) > 16
+            metrics["routes"] = metrics["routes"][:16]
     return diagnosis
 
 
@@ -139,16 +153,21 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
     if run["output"]:
         for artifact in run["output"]["artifacts"].values():
             jobs._verify(artifact)
+    for h in run["history"]:
+        if "connection_observation" in h:
+            jobs._verify(h["connection_observation"]["proposal_file"])
     return {"schema": SCHEMA, "job_dir": str(root), "revision": run["revision"], "status": run["status"],
         "layout_hypothesis": json.loads(Path(run["layout_file"]["path"]).read_text(encoding="utf-8")),
         "pointcloud": job["pointcloud"], "remaining_attempts": job["remaining_attempts"], "candidate_index": index,
         "reviewed_candidates": run["reviewed_candidates"], "history_total": len(run["history"]),
         "corridor_refinement": job.get("corridor_refinement"),
-        "history": [{k: v for k, v in a.items() if k not in {"observation", "action"}} for a in run["history"][-8:]],
+        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
             "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons and optional observed ranges"},
+            "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited unconnected lane draft ID", "offset": "nonnegative; pages of 8"},
+            "connect": {"type": "connect", "candidate_id": "inspected parent lane draft ID", "pairs": "1..32 inspected {from,to,reason} pairs; one shared HD attempt"},
             "resume": {"type": "resume"}, "finish": {"type": "finish", "candidate_id": "audited draft ID, or null if none"}},
         "deployment_ready": False}
 
@@ -192,6 +211,28 @@ def _draft(root: Path, run: dict[str, Any], entry: dict[str, Any], layout: dict[
     return {"status": "audited_draft", "diagnosis": _diagnosis(root, lid)}
 
 
+def _connect(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
+    job = jobs.inspect_mapping_job(str(root))
+    lid = entry["lane_candidate_id"]
+    attempt = next((a for a in job["attempts"] if a["id"] == lid), None)
+    if attempt is None:
+        if len(job["attempts"]) + 1 != lid:
+            raise ValueError("mapping job changed outside this run")
+        job = connections.connect(root, entry["action"]["candidate_id"], entry["action"]["pairs"],
+                                  entry["connection_proposal"], entry["reason"])
+        attempt = job["attempts"][-1]
+    if (attempt.get("kind") != "connected_corridor_lanes" or attempt["reason"] != entry["reason"]
+        or attempt["parent_candidate_id"] != entry["action"]["candidate_id"]
+        or attempt["connection_pairs"] != entry["action"]["pairs"]
+        or attempt["connection_proposal"] != entry["connection_proposal"]):
+        raise ValueError("planned connection attempt belongs to a different action")
+    if attempt["status"] == "running":
+        raise RuntimeError("connection processing did not finish; inspect its retained state before recovery")
+    if attempt["status"] != "audited_draft":
+        return {"status": "failed", "stage": "connections", "error": attempt.get("error")}
+    return {"status": "audited_draft", "diagnosis": _diagnosis(root, lid)}
+
+
 def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expected_revision: int) -> dict[str, Any]:
     """Execute the calling agent's next inspect/draft/resume/finish decision and persist it.
 
@@ -210,11 +251,16 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
     without replaying completed stages. Finish with an audited candidate ID or
     null, returning both map paths and explicit source/extent holds; this never selects
     or certifies the map. No candidate IDs are hardcoded or ranked by the runner.
+    inspect_connections returns at most eight short connections on an own audited
+    single-forward-lane draft. Explicit connect pairs must have been inspected;
+    one shared attempt retains existing lanes and verifies both source estimators
+    and route topology after OSM reload. Source-corridor extent stays unchanged.
+    Connection processing and its inspection also support interrupted resume.
     """
     if not isinstance(reason, str) or not reason.strip() or type(expected_revision) is not int:
         raise ValueError("supply a reason and the inspected integer revision")
-    if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {"inspect", "refine", "draft", "finish", "resume"}:
-        raise ValueError("action type must be inspect, refine, draft, resume or finish")
+    if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {"inspect", "refine", "draft", "inspect_connections", "connect", "finish", "resume"}:
+        raise ValueError("action type must be inspect, refine, draft, inspect_connections, connect, resume or finish")
     root = Path(job_dir).resolve()
     with _locked(root):
         run = _load(root)
@@ -229,12 +275,14 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         kind = action["type"]
         if run["status"] == "processing_failed" and kind != "finish":
             raise ValueError("finish with retained point-map outputs after preparation failed")
-        keys = {"inspect": {"type", "candidate_ids"}, "refine": {"type", "association"}, "draft": {"type", "decisions"}, "finish": {"type", "candidate_id"}, "resume": {"type"}}
+        keys = {"inspect": {"type", "candidate_ids"}, "refine": {"type", "association"}, "draft": {"type", "decisions"},
+                "inspect_connections": {"type", "candidate_id", "offset"}, "connect": {"type", "candidate_id", "pairs"},
+                "finish": {"type", "candidate_id"}, "resume": {"type"}}
         if set(action) != keys[kind]:
             raise ValueError("supply only the required action fields from action_contract")
         if kind == "resume":
-            if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {"draft", "refine"}:
-                raise ValueError("resume requires an interrupted draft or refine action")
+            if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {"draft", "refine", "inspect_connections", "connect"}:
+                raise ValueError("resume requires an interrupted processing action")
             entry = run["history"][-1]
         else:
             if run["status"] == "interrupted":
@@ -270,13 +318,32 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     stations = {s["station_m"] for c in previews for s in c["sections"]}
                     if d["from_m"] not in stations or d["to_m"] not in stations:
                         raise ValueError("draft ranges must use inspected preview stations; retain unreviewed tails")
+            elif kind in {"inspect_connections", "connect"}:
+                cid = action["candidate_id"]
+                if type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
+                    raise ValueError("use a lane draft generated by this run")
+                connections._parent(job, cid)
+                if kind == "inspect_connections":
+                    if type(action["offset"]) is not int or action["offset"] < 0:
+                        raise ValueError("connection offset must be a nonnegative integer")
+                else:
+                    if job["remaining_attempts"] < 1:
+                        raise ValueError("a connection needs one remaining shared HD attempt")
+                    receipts = [h["connection_observation"] for h in run["history"] if h.get("connection_observation", {}).get("candidate_id") == cid]
+                    if not receipts:
+                        raise ValueError("inspect connections through this run before adopting pairs")
+                    proposal_file = receipts[-1]["proposal_file"]
+                    chosen = connections.validate_pairs(proposal_file, action["pairs"])
+                    seen = {(c["from"], c["to"]) for r in receipts if r["proposal_file"] == proposal_file for c in r["candidates"]}
+                    if not set(chosen) <= seen:
+                        raise ValueError("inspect every chosen connection pair before adoption")
             else:
                 cid = action["candidate_id"]
                 if cid is not None and (type(cid) is not int or cid < 1):
                     raise ValueError("finish needs an audited candidate ID or null")
                 if cid is not None:
                     attempt = next((a for a in job["attempts"] if a["id"] == cid), None)
-                    if attempt is None or attempt.get("kind") != "corridor_lanes" or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
+                    if attempt is None or attempt.get("kind") not in {"corridor_lanes", "connected_corridor_lanes"} or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
                         raise ValueError("finish with an audited lane candidate generated by this run")
                     diagnosis = _diagnosis(root, cid)
             entry = {"sequence": len(run["history"]) + 1, "action": action, "reason": reason.strip(), "status": "running"}
@@ -284,6 +351,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 entry["proposal_sha256"] = job["corridor_proposal"].get("file", {}).get("sha256")
             if kind == "draft":
                 entry["geometry_candidate_id"] = len(job["attempts"]) + 1
+            elif kind == "connect":
+                entry["lane_candidate_id"] = len(job["attempts"]) + 1
+                entry["connection_proposal"] = proposal_file
             run["history"].append(entry)
         run["status"] = "action_running"
         run["revision"] += 1
@@ -304,6 +374,14 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 if outcome["status"] == "ready":
                     run["reviewed_candidates"] = []
                     run["reviewed_proposal_sha256"] = outcome["file"]["sha256"]
+            elif entry["action"]["type"] == "inspect_connections":
+                observation_connections = connections.inspect_connections(root, entry["action"]["candidate_id"], entry["action"]["offset"])
+                entry["connection_observation"] = observation_connections
+                entry["status"] = "inspected"
+            elif entry["action"]["type"] == "connect":
+                outcome = _connect(root, entry)
+                entry["status"] = outcome["status"]
+                entry["outcome"] = outcome
             elif kind in {"draft", "resume"}:
                 outcome = _draft(root, run, entry, layout)
                 entry["status"] = outcome["status"]
@@ -333,6 +411,10 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         answer["observation"] = observation
     elif entry["action"]["type"] == "refine":
         answer["refine_result"] = outcome
+    elif entry["action"]["type"] == "inspect_connections":
+        answer["connection_observation"] = observation_connections
+    elif entry["action"]["type"] == "connect":
+        answer["connect_result"] = outcome
     elif kind in {"draft", "resume"}:
         answer["draft_result"] = outcome
     return answer

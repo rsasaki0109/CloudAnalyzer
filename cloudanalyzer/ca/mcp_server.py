@@ -31,7 +31,12 @@ layout/budget, and finish with both artifact sets and unresolved holds. Use the
 refine action with association=trajectory_containing when off-path overlapping
 bands fragment the route. It re-extracts once at unchanged source thresholds;
 original observations/drafts remain saved, and new proposal IDs need fresh inspection.
-Use the returned revision for every action. Interrupted draft/refine actions can resume without
+After a lane draft, use inspect_connections then explicit connect pairs to test short
+source-supported gaps between consecutive drive pieces. The fixed single-forward-lane
+layout, recorded path, both ground estimators and reopened OSM topology are checked.
+Read local route spans and global longest route separately; connections do not increase
+original corridor extent or prove permitted turns. Failed links retain the prior draft.
+Use the returned revision for every action. Interrupted processing actions can resume without
 replaying completed stages. Do not stop after startup or a single failed trial;
 finish with a useful retained draft or explain why no HD draft can be generated.
 No LLM is embedded: you are the reasoning agent. Only initial assumptions need

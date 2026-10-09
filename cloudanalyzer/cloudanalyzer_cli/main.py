@@ -1987,7 +1987,7 @@ def mapping_run_inspect_cmd(job: str = typer.Argument(...), offset: int = typer.
 @app.command("mapping-run-advance")
 def mapping_run_advance_cmd(
     job: str = typer.Argument(...),
-    action: str = typer.Option(..., "--action", help="JSON inspect/draft/resume/finish decision"),
+    action: str = typer.Option(..., "--action", help="JSON inspect/refine/draft/inspect_connections/connect/resume/finish decision"),
     revision: int = typer.Option(..., "--revision", min=0),
     reason: str = typer.Option(..., "--reason"),
 ) -> None:
@@ -1998,7 +1998,7 @@ def mapping_run_advance_cmd(
     except (OSError, ValueError, RuntimeError) as error:
         _handle_error(error)
     typer.echo(json.dumps(result, indent=2))
-    if any(result.get(key, {}).get("status") == "failed" for key in ("draft_result", "refine_result")):
+    if any(result.get(key, {}).get("status") == "failed" for key in ("draft_result", "refine_result", "connect_result")):
         raise typer.Exit(1)
 
 

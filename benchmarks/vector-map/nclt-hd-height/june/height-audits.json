@@ -1,0 +1,288 @@
+{
+  "editable": {
+    "import_issues": [],
+    "quality": {
+      "cloud_points": 646309,
+      "ground_estimator": {
+        "minimum_returns": 3,
+        "model": "low_quantile",
+        "quantile": 0.15
+      },
+      "ground_height_tolerance_m": 0.3,
+      "ground_radius_m": 0.75,
+      "lanes": [
+        {
+          "center": {
+            "end_supported": true,
+            "fraction": 1.0,
+            "height_mismatches": 0,
+            "insufficient_returns": 0,
+            "samples": 15,
+            "start_supported": true,
+            "supported": 15
+          },
+          "lane": 3,
+          "left": {
+            "end_supported": true,
+            "fraction": 1.0,
+            "height_mismatches": 0,
+            "insufficient_returns": 0,
+            "samples": 19,
+            "start_supported": true,
+            "supported": 19
+          },
+          "needs_review": false,
+          "right": {
+            "end_supported": true,
+            "fraction": 1.0,
+            "height_mismatches": 0,
+            "insufficient_returns": 0,
+            "samples": 12,
+            "start_supported": true,
+            "supported": 12
+          }
+        }
+      ],
+      "limited": false,
+      "low_support_lanes": [],
+      "malformed_lanes": [],
+      "minimum_support_fraction": 0.9,
+      "omitted_lanes": [],
+      "problems": [],
+      "problems_limited": false,
+      "sample_budget": 100000,
+      "sampled_points": 46,
+      "sampling_step_m": 0.5,
+      "warnings": [
+        "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+      ]
+    },
+    "validation": {
+      "counts": {
+        "errors": 0,
+        "infos": 0,
+        "warnings": 0
+      },
+      "issues": []
+    }
+  },
+  "reopened_osm": {
+    "import_issues": [
+      {
+        "code": "lanelet2.projection",
+        "message": "coordinates taken from local_x/local_y (lat/lon are placeholders); the map has no georeference",
+        "severity": "info"
+      }
+    ],
+    "quality": {
+      "cloud_points": 646309,
+      "ground_estimator": {
+        "minimum_returns": 3,
+        "model": "low_quantile",
+        "quantile": 0.15
+      },
+      "ground_height_tolerance_m": 0.3,
+      "ground_radius_m": 0.75,
+      "lanes": [
+        {
+          "center": {
+            "end_supported": true,
+            "fraction": 1.0,
+            "height_mismatches": 0,
+            "insufficient_returns": 0,
+            "samples": 15,
+            "start_supported": true,
+            "supported": 15
+          },
+          "lane": 3,
+          "left": {
+            "end_supported": true,
+            "fraction": 1.0,
+            "height_mismatches": 0,
+            "insufficient_returns": 0,
+            "samples": 19,
+            "start_supported": true,
+            "supported": 19
+          },
+          "needs_review": false,
+          "right": {
+            "end_supported": true,
+            "fraction": 1.0,
+            "height_mismatches": 0,
+            "insufficient_returns": 0,
+            "samples": 12,
+            "start_supported": true,
+            "supported": 12
+          }
+        }
+      ],
+      "limited": false,
+      "low_support_lanes": [],
+      "malformed_lanes": [],
+      "minimum_support_fraction": 0.9,
+      "omitted_lanes": [],
+      "problems": [],
+      "problems_limited": false,
+      "sample_budget": 100000,
+      "sampled_points": 46,
+      "sampling_step_m": 0.5,
+      "warnings": [
+        "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+      ]
+    },
+    "validation": {
+      "counts": {
+        "errors": 0,
+        "infos": 0,
+        "warnings": 0
+      },
+      "issues": []
+    }
+  },
+  "ground_consensus": {
+    "editable": {
+      "import_issues": [],
+      "quality": {
+        "cloud_points": 646309,
+        "ground_estimator": {
+          "layer_height_m": 0.15,
+          "minimum_cells": 3,
+          "minimum_triangle_area_m2": 0.01,
+          "model": "lowest_supported_layer",
+          "xy_cell_m": 0.2
+        },
+        "ground_height_tolerance_m": 0.3,
+        "ground_radius_m": 0.75,
+        "lanes": [
+          {
+            "center": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 15,
+              "start_supported": true,
+              "supported": 15
+            },
+            "lane": 3,
+            "left": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 19,
+              "start_supported": true,
+              "supported": 19
+            },
+            "needs_review": false,
+            "right": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 12,
+              "start_supported": true,
+              "supported": 12
+            }
+          }
+        ],
+        "limited": false,
+        "low_support_lanes": [],
+        "malformed_lanes": [],
+        "minimum_support_fraction": 0.9,
+        "omitted_lanes": [],
+        "problems": [],
+        "problems_limited": false,
+        "sample_budget": 100000,
+        "sampled_points": 46,
+        "sampling_step_m": 0.5,
+        "warnings": [
+          "Alternative source evidence uses the lowest 0.15 m vertical layer within 0.75 m XY with three occupied 0.2 m cells and a triangle area of at least 0.01 m\u00b2. It uses the median of cell-low returns. A lower physical level can still win; compare the legacy quantile audit and investigate disagreement. This does not establish road semantics, accuracy, obstacles or traffic rules."
+        ]
+      },
+      "validation": {
+        "counts": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 0
+        },
+        "issues": []
+      }
+    },
+    "reopened_osm": {
+      "import_issues": [
+        {
+          "code": "lanelet2.projection",
+          "message": "coordinates taken from local_x/local_y (lat/lon are placeholders); the map has no georeference",
+          "severity": "info"
+        }
+      ],
+      "quality": {
+        "cloud_points": 646309,
+        "ground_estimator": {
+          "layer_height_m": 0.15,
+          "minimum_cells": 3,
+          "minimum_triangle_area_m2": 0.01,
+          "model": "lowest_supported_layer",
+          "xy_cell_m": 0.2
+        },
+        "ground_height_tolerance_m": 0.3,
+        "ground_radius_m": 0.75,
+        "lanes": [
+          {
+            "center": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 15,
+              "start_supported": true,
+              "supported": 15
+            },
+            "lane": 3,
+            "left": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 19,
+              "start_supported": true,
+              "supported": 19
+            },
+            "needs_review": false,
+            "right": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 12,
+              "start_supported": true,
+              "supported": 12
+            }
+          }
+        ],
+        "limited": false,
+        "low_support_lanes": [],
+        "malformed_lanes": [],
+        "minimum_support_fraction": 0.9,
+        "omitted_lanes": [],
+        "problems": [],
+        "problems_limited": false,
+        "sample_budget": 100000,
+        "sampled_points": 46,
+        "sampling_step_m": 0.5,
+        "warnings": [
+          "Alternative source evidence uses the lowest 0.15 m vertical layer within 0.75 m XY with three occupied 0.2 m cells and a triangle area of at least 0.01 m\u00b2. It uses the median of cell-low returns. A lower physical level can still win; compare the legacy quantile audit and investigate disagreement. This does not establish road semantics, accuracy, obstacles or traffic rules."
+        ]
+      },
+      "validation": {
+        "counts": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 0
+        },
+        "issues": []
+      }
+    }
+  }
+}

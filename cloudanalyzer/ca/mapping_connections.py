@@ -146,9 +146,9 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
                   **{f"pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()}, "source": job["source"],
                   "native": job["runtime"]["native"]["extension"]}
         # Freeze the complete inherited lineage, including the retained patch checks.
-        for key in ("connection_inputs", "patch_inputs"):
+        for key in ("connection_inputs", "patch_inputs", "height_inputs"):
             inputs.update({f"inherited_{key}_{k}": v for k, v in parent.get(key, {}).items()})
-        for key in ("connection_proposal", "connection_checks", "connection_audits", "patch_preview", "patch_checks", "patch_audits"):
+        for key in ("connection_proposal", "connection_checks", "connection_audits", "patch_preview", "patch_checks", "patch_audits", "height_checks", "height_audits", "height_trial"):
             if key in parent:
                 inputs[f"inherited_{key}"] = parent[key]
         if path.exists():
@@ -253,7 +253,7 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
             "reason": reason, "road_options": parent["road_options"], "geometry_inputs": parent["geometry_inputs"],
             "corridor_proposal": parent["corridor_proposal"], "connection_inputs": proposal["inputs"],
             "connection_proposal": proposal_file, "connection_pairs": pairs, "parent_candidate_id": cid}
-        for key in ("patch_inputs", "patch_preview", "patch_checks", "patch_audits"):
+        for key in ("patch_inputs", "patch_preview", "patch_checks", "patch_audits", "height_inputs", "height_edits", "height_checks", "height_audits", "height_trial"):
             if key in parent:
                 attempt[key] = parent[key]
         job["attempts"].append(attempt)

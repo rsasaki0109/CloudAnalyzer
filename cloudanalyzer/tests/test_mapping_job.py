@@ -2168,3 +2168,161 @@ def test_local_density_rejects_changed_fusion_frame_ids_before_map_publication(u
     assert 'local_update' not in stage and jobs._load(root/'pointcloud-retry')['pointcloud'] is None
     final=_advance(root,{'type':'finish','candidate_id':2})['output']
     assert final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+
+
+def _height_child(root,monkeypatch,with_failure=True):
+    module=jobs.core();original=module.propose_road_corridors
+    def propose(*args):
+        p=json.loads(original(*args))
+        if with_failure:
+            for c in p['candidates']:
+                for section in c['sections']:
+                    if section['station_m']==6.:section['right'][2]-=.35
+        return json.dumps(p)
+    monkeypatch.setattr(module,'propose_road_corridors',propose)
+    preview=_advance(root,{'type':'inspect_local_density','candidate_id':2,'gap_ids':[1],'bounds_xy':[2.,-1.6,8.4,1.6]})['local_point_observation']
+    result=_advance(root,_local_density_action(preview));assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';_advance(child,{'type':'inspect','candidate_ids':[1]})
+    drafted=_advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':8.,'reason':'Only the local missing interval'}]})
+    assert drafted['draft_result']['status']=='audited_draft',drafted
+    return child
+
+
+def _height_preview(child,offset=0):
+    return _advance(child,{'type':'inspect_heights','candidate_id':2,'offset':offset})['height_observation']
+
+
+def _height_action(preview,dz=.075):
+    return {'type':'edit_heights','candidate_id':2,'preview_file':preview['file'],
+            'edits':[{'boundary_id':2,'vertex_index':1,'delta_z_m':dz,'reason':'Bounded Z hypothesis at the observed height mismatch; verify both estimators'}]}
+
+
+def test_height_edit_keeps_xy_endpoints_metadata_and_supports_combined_patch(unused_frame_run,monkeypatch):
+    from ca import mapping_heights as height
+    root=unused_frame_run;child=_height_child(root,monkeypatch);before=jobs._load(child)['attempts'][1]
+    original=json.loads(Path(before['files']['editable_map']['path']).read_text());before_bytes=Path(before['files']['editable_map']['path']).read_bytes()
+    preview=_height_preview(child)
+    assert [(r['boundary_id'],r['vertex_index']) for r in preview['vertices']]==[(2,1)]
+    result=_advance(child,_height_action(preview));assert result['height_result']['status']=='audited_draft',result
+    after=jobs.inspect_mapping_job(str(child))['attempts'][2]
+    height._preserved(original,json.loads(Path(after['files']['editable_map']['path']).read_text()),_height_action(preview)['edits'])
+    assert Path(before['files']['editable_map']['path']).read_bytes()==before_bytes
+    assert result['remaining_attempts']==1 and json.loads(Path(after['height_checks']['path']).read_text())['passes']
+    _advance(child,{'type':'inspect_patch','candidate_id':3,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':3,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft' and patched['remaining_attempts']==0,patched
+    comparison=_advance(root,{'type':'compare_retry','candidate_id':4})['retry_comparison']
+    assert comparison['gained_source_length_m']==4 and comparison['lost_source_length_m']==0
+    _advance(child,{'type':'finish','candidate_id':4})
+    final=_advance(root,{'type':'finish_retry','candidate_id':4})['output']
+    assert final['artifacts']['hd_height_checks']==after['height_checks']
+    assert any('addition_height' in k for k in jobs._load(child)['attempts'][3]['patch_inputs'])
+
+
+@pytest.mark.parametrize('fault',['large_delta','zero','nan','boolean','endpoint','xy','duplicate'])
+def test_height_invalid_edits_do_not_spend_attempts(unused_frame_run,monkeypatch,fault):
+    root=unused_frame_run;child=_height_child(root,monkeypatch);preview=_height_preview(child);action=_height_action(preview)
+    row=action['edits'][0]
+    if fault in ('large_delta','zero','nan','boolean'):row['delta_z_m']={'large_delta':.101,'zero':0.,'nan':float('nan'),'boolean':True}[fault]
+    elif fault=='endpoint':row['vertex_index']=0
+    elif fault=='xy':row['delta_x_m']=.01
+    else:action['edits'].append(dict(row))
+    before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError):_advance(child,action)
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==2
+
+
+@pytest.mark.parametrize('fault',['unseen_page','tamper','unseen_preview'])
+def test_height_requires_frozen_seen_preview_and_every_vertex(unused_frame_run,monkeypatch,fault):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child,99 if fault=='unseen_page' else 0)
+    if fault=='tamper':Path(preview['file']['path']).write_text('{}')
+    elif fault=='unseen_preview':
+        run=json.loads((child/'run.json').read_text());run['history'][-1].pop('height_observation');jobs._save(child/'run.json',run)
+    with pytest.raises(ValueError):_advance(child,_height_action(preview))
+    assert len(jobs._load(child)['attempts'])==2
+
+
+def test_height_failed_hypothesis_keeps_audits_and_root_baseline(unused_frame_run,monkeypatch):
+    root=unused_frame_run;child=_height_child(root,monkeypatch);preview=_height_preview(child)
+    result=_advance(child,_height_action(preview,-.075));assert result['height_result']['status']=='failed'
+    attempt=jobs._load(child)['attempts'][2]
+    assert not json.loads(Path(attempt['height_checks']['path']).read_text())['passes']
+    assert Path(attempt['height_audits']['path']).is_file() and Path(attempt['height_trial']['path']).is_file()
+    assert 'files' not in attempt and result['remaining_attempts']==1
+    with pytest.raises(ValueError,match='one height trial'):_advance(child,_height_action(preview))
+    final=_advance(root,{'type':'finish','candidate_id':2})['output']
+    assert not final['pointcloud_retry_decision']['adopted'] and final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+
+
+def test_height_completed_trial_resumes_without_reexport(unused_frame_run,monkeypatch):
+    from ca import mapping_run as runs
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child);original=runs._diagnosis
+    monkeypatch.setattr(runs,'_diagnosis',lambda *args:(_ for _ in ()).throw(KeyboardInterrupt()))
+    with pytest.raises(KeyboardInterrupt):_advance(child,_height_action(preview))
+    monkeypatch.setattr(runs,'_diagnosis',original)
+    monkeypatch.setattr(runs.heights,'edit',lambda *args:pytest.fail('completed height export must not repeat'))
+    resumed=_advance(child,{'type':'resume'})
+    assert resumed['height_result']['status']=='audited_draft' and resumed['remaining_attempts']==1
+    assert len(jobs._load(child)['attempts'])==3
+
+
+def test_height_preview_has_no_edits_for_fully_supported_addition(unused_frame_run,monkeypatch):
+    child=_height_child(unused_frame_run,monkeypatch,with_failure=False);preview=_height_preview(child)
+    assert preview['vertices_total']==0 and preview['vertices']==[]
+    with pytest.raises(ValueError):_advance(child,_height_action(preview))
+    assert len(jobs._load(child)['attempts'])==2
+
+
+def test_height_export_rejects_native_xy_mutation_and_keeps_point_map(unused_frame_run,monkeypatch):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child)
+    point=jobs._load(child)['pointcloud']['files']['map'];point_bytes=Path(point['path']).read_bytes()
+    native=jobs.core();original=native.edit_vector_map_relations
+    def changed(*args):
+        payload=json.loads(original(*args));ir=json.loads(payload['map_json'])
+        ir['boundaries'][0]['geometry'][1][0]+=.01
+        payload['map_json']=json.dumps(ir);return json.dumps(payload)
+    monkeypatch.setattr(native,'edit_vector_map_relations',changed)
+    result=_advance(child,_height_action(preview))['height_result']
+    assert result['status']=='failed' and 'boundary XY/endpoints' in result['error']
+    attempt=jobs._load(child)['attempts'][2]
+    assert 'files' not in attempt and Path(attempt['height_trial']['path']).is_file()
+    assert Path(point['path']).read_bytes()==point_bytes
+    assert not (child/'candidate-03').exists()
+
+
+@pytest.mark.parametrize('fault',['changed_samples','incomplete','consensus_failure'])
+def test_height_gate_rejects_changed_or_incomplete_audits(unused_frame_run,monkeypatch,fault):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child)
+    native=jobs.core();method='audit_vector_map_ground_consensus_details' if fault=='consensus_failure' else 'audit_vector_map_quality_details'
+    original=getattr(native,method)
+    def changed(*args):
+        report=json.loads(original(*args));quality=report['quality']
+        if fault=='changed_samples':quality['lanes'][0]['left']['samples']+=1
+        elif fault=='incomplete':quality['problems_limited']=True
+        else:quality['lanes'][0]['left']['end_supported']=False
+        return json.dumps(report)
+    monkeypatch.setattr(native,method,changed)
+    result=_advance(child,_height_action(preview))
+    assert result['height_result']['status']=='failed' and result['remaining_attempts']==1
+    attempt=jobs._load(child)['attempts'][2];checks=json.loads(Path(attempt['height_checks']['path']).read_text())
+    assert not checks['passes'] and checks['holds'] and 'files' not in attempt
+
+
+def test_height_lineage_tamper_blocks_combined_patch_without_spending(unused_frame_run,monkeypatch):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child)
+    _advance(child,_height_action(preview))
+    _advance(child,{'type':'inspect_patch','candidate_id':3,'gap_ids':[1],'offset':0})
+    attempt=jobs._load(child)['attempts'][2]
+    Path(attempt['height_checks']['path']).write_text('{}')
+    before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError,match='changed'):
+        _advance(child,{'type':'patch_gaps','candidate_id':3,'gap_ids':[1],'pairs':[]})
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==3
+
+
+def test_height_budget_reserves_the_combined_patch(unused_frame_run,monkeypatch):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child)
+    job=jobs._load(child);job['max_attempts']=3;jobs._save(child/'job.json',job)
+    before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError,match='two remaining'):_advance(child,_height_action(preview))
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==2

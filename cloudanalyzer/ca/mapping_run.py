@@ -14,6 +14,7 @@ from ca import mapping_retry as retries
 from ca import mapping_frames as frames
 from ca import mapping_patch as patches
 from ca import mapping_local_points as local_points
+from ca import mapping_heights as heights
 from ca.mapping_geometry import assemble_geometry, corridor_lane_requests
 
 SCHEMA = "cloudanalyzer.mapping_run.v1"
@@ -58,6 +59,11 @@ The full fusion candidate is still generated; only the previewed XY column at al
 heights replaces baseline points. Outside PLY record bytes/attributes/order remain
 fixed. Four audits must retain old HD support. Use a combined HD gap patch inside
 that box before compare_retry and finish_retry, or finish the root baseline.
+If an isolated local addition has height mismatches, inspect_heights returns affected
+interior boundary vertices. Explicit edit_heights tries seen individual Z deltas
+up to 0.1 m, retaining boundary XY/endpoints and semantics. Every addition trace
+must pass all four audits. One shared attempt is spent, with another reserved for
+the combined patch. No recursive height trial or automatic estimator preference.
 The child retains separate fusion graph/trajectory artifacts plus the unchanged
 reference graph/trajectory used for the original extent comparison.
 To repair HD intervals locally, draft only observed missing ranges in the retry
@@ -195,7 +201,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         for artifact in run["output"]["artifacts"].values():
             jobs._verify(artifact)
     for h in run["history"]:
-        for key in ("gap_observation", "unused_frame_observation", "local_point_observation", "patch_observation", "retry_comparison"):
+        for key in ("gap_observation", "unused_frame_observation", "local_point_observation", "height_observation", "patch_observation", "retry_comparison"):
             if key in h:
                 jobs._verify(h[key]["file"])
         if "connection_observation" in h:
@@ -211,7 +217,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
         "reviewed_candidates": run["reviewed_candidates"], "history_total": len(run["history"]),
         "corridor_refinement": job.get("corridor_refinement"),
         "pointcloud_retry": stage, "retry_child": retry_child, "pointcloud_retry_allowed": run.get("pointcloud_retry_allowed", True),
-        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "unused_frame_observation", "local_point_observation", "patch_observation", "patch_inputs", "action"}} for a in run["history"][-8:]],
+        "history": [{k: v for k, v in a.items() if k not in {"observation", "connection_observation", "gap_observation", "unused_frame_observation", "local_point_observation", "height_observation", "height_inputs", "patch_observation", "patch_inputs", "action"}} for a in run["history"][-8:]],
         "history_limited": len(run["history"]) > 8, "output": run["output"], "guidance": GUIDANCE,
         "action_contract": {"inspect": {"type": "inspect", "candidate_ids": "1..8 IDs from the frozen proposal"},
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
@@ -227,6 +233,8 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             "retry_local_frames": {"type": "retry_local_frames", "candidate_id": "inspected baseline", "frame_ids": "1..64 seen eligible frames observing the chosen box", "preview_file": "file artifact from inspect_local_points; needs three shared HD attempts"},
             "inspect_local_density": {"type": "inspect_local_density", "candidate_id": "inspected baseline", "gap_ids": "1..8 root-inspected gap IDs", "bounds_xy": "explicit [xmin,ymin,xmax,ymax]; sides <=20 m after original voxel alignment; all heights"},
             "retry_local_density": {"type": "retry_local_density", "candidate_id": "inspected baseline", "options": "bounded scan_voxel_m/map_voxel_m reduction; original frames and poses fixed", "preview_file": "file artifact from inspect_local_density; needs three shared HD attempts"},
+            "inspect_heights": {"type": "inspect_heights", "candidate_id": "own isolated local-retry addition draft", "offset": "nonnegative; pages of 8 affected interior vertices with observed height mismatches"},
+            "edit_heights": {"type": "edit_heights", "candidate_id": "same inspected addition draft", "preview_file": "exact height observation artifact", "edits": "1..16 seen {boundary_id, vertex_index, delta_z_m, reason}; nonzero absolute delta <=0.1 m, one trial and two remaining shared attempts"},
             "inspect_patch": {"type": "inspect_patch", "candidate_id": "own unconnected retry-child draft containing gap additions only", "gap_ids": "1..32 root-inspected gap IDs", "offset": "nonnegative; pages of 8 exact geometric endpoint pairs"},
             "patch_gaps": {"type": "patch_gaps", "candidate_id": "inspected gap-only draft ID", "gap_ids": "same root-inspected IDs", "pairs": "all seen endpoint pairs {from: baseline:ID or addition:ID, to: same form, reason}; [] if none, one shared HD attempt"},
             "compare_retry": {"type": "compare_retry", "candidate_id": "own audited candidate in retry child"},
@@ -340,6 +348,30 @@ def _patch(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
     return {"status": "audited_draft", "diagnosis": _diagnosis(root, lid), "patch_checks": attempt["patch_checks"]}
 
 
+def _height(root: Path, entry: dict[str, Any]) -> dict[str, Any]:
+    job = jobs.inspect_mapping_job(str(root))
+    lid, action = entry["lane_candidate_id"], entry["action"]
+    attempt = next((row for row in job["attempts"] if row["id"] == lid), None)
+    if attempt is None:
+        if len(job["attempts"]) + 1 != lid:
+            raise ValueError("mapping job changed outside this height action")
+        job = heights.edit(root, action["candidate_id"], action["edits"], action["preview_file"],
+                           entry["reason"], {"inputs": entry["height_inputs"]})
+        attempt = job["attempts"][-1]
+    if (attempt.get("height_inputs") != entry["height_inputs"] or attempt.get("height_edits") != action["edits"]
+        or attempt["parent_candidate_id"] != action["candidate_id"] or attempt["reason"] != entry["reason"]):
+        raise ValueError("height attempt belongs to another action")
+    retries._verify_inputs(entry["height_inputs"])
+    artifacts = {key: attempt[key] for key in ("height_checks", "height_audits", "height_trial") if key in attempt}
+    for artifact in artifacts.values():
+        jobs._verify(artifact)
+    if attempt["status"] == "running":
+        raise RuntimeError("height processing did not finish; inspect retained state before recovery")
+    if attempt["status"] != "audited_draft":
+        return {"status": "failed", "error": attempt.get("error"), **artifacts}
+    return {"status": "audited_draft", "diagnosis": _diagnosis(root, lid), **artifacts}
+
+
 def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expected_revision: int) -> dict[str, Any]:
     """Execute the calling agent's next inspect/draft/resume/finish decision and persist it.
 
@@ -381,7 +413,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
     if not isinstance(reason, str) or not reason.strip() or type(expected_revision) is not int:
         raise ValueError("supply a reason and the inspected integer revision")
     if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {
-        "inspect", "refine", "draft", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "retry_local_density", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
+        "inspect", "refine", "draft", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
         raise ValueError("use an action type from action_contract")
     root = Path(job_dir).resolve()
     with _locked(root):
@@ -404,6 +436,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 "inspect_unused_frames": {"type", "candidate_id", "offset"}, "retry_frames": {"type", "candidate_id", "frame_ids"},
                 "inspect_local_points": {"type", "candidate_id", "gap_ids", "bounds_xy"}, "retry_local_frames": {"type", "candidate_id", "frame_ids", "preview_file"},
                 "inspect_local_density": {"type", "candidate_id", "gap_ids", "bounds_xy"}, "retry_local_density": {"type", "candidate_id", "options", "preview_file"},
+                "inspect_heights": {"type", "candidate_id", "offset"}, "edit_heights": {"type", "candidate_id", "preview_file", "edits"},
                 "inspect_patch": {"type", "candidate_id", "gap_ids", "offset"}, "patch_gaps": {"type", "candidate_id", "gap_ids", "pairs"},
                 "compare_retry": {"type", "candidate_id"}, "finish_retry": {"type", "candidate_id"},
                 "finish": {"type", "candidate_id"}, "resume": {"type"}}
@@ -411,7 +444,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             raise ValueError("supply only the required action fields from action_contract")
         if kind == "resume":
             if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {
-                "draft", "refine", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "retry_local_density", "inspect_patch", "patch_gaps", "compare_retry"}:
+                "draft", "refine", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry"}:
                 raise ValueError("resume requires an interrupted processing action")
             entry = run["history"][-1]
         else:
@@ -529,6 +562,20 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                             if not any(r['file'] == action['preview_file'] for r in previews):
                                 raise ValueError("inspect the chosen local point preview through this run before retrying")
                             local_points.validate(action['preview_file'], frame_evidence, cid, action['frame_ids'])
+            elif kind in {'inspect_heights', 'edit_heights'}:
+                cid = action['candidate_id']
+                if type(cid) is not int or cid not in [h.get('lane_candidate_id') for h in run['history']]:
+                    raise ValueError('inspect heights on an audited addition generated by this run')
+                heights._parent(root, cid)
+                if kind == 'inspect_heights':
+                    if type(action['offset']) is not int or action['offset'] < 0: raise ValueError('height offset must be nonnegative')
+                else:
+                    receipts = [h['height_observation'] for h in run['history'] if h.get('height_observation',{}).get('candidate_id') == cid]
+                    if not any(r['file'] == action['preview_file'] for r in receipts): raise ValueError('inspect the chosen height preview through this run')
+                    height_inputs = heights.validate(root, cid, action['preview_file'], action['edits'])['inputs']
+                    seen = {(v['boundary_id'],v['vertex_index']) for r in receipts if r['file']==action['preview_file'] for v in r['vertices']}
+                    if not {(e['boundary_id'],e['vertex_index']) for e in action['edits']} <= seen:
+                        raise ValueError('inspect every chosen height vertex before adoption')
             elif kind in {"inspect_patch", "patch_gaps"}:
                 cid = action["candidate_id"]
                 if type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
@@ -594,6 +641,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             elif kind in {'inspect_local_points', 'retry_local_frames'}:
                 entry['frame_evidence'] = frame_evidence
                 if kind == 'inspect_local_points': entry['gap_evidence'] = gap_evidence
+            elif kind == 'edit_heights':
+                entry['lane_candidate_id'] = len(job['attempts']) + 1
+                entry['height_inputs'] = height_inputs
             elif kind == "patch_gaps":
                 entry["lane_candidate_id"] = len(job["attempts"]) + 1
                 entry["patch_inputs"] = patch_inputs
@@ -639,6 +689,11 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 local_observation = local_points.preview(root, a['candidate_id'], entry['gap_evidence'], entry.get('frame_evidence'), a['gap_ids'], a['bounds_xy'])
                 entry['local_point_observation'] = local_observation
                 entry['status'] = 'inspected'
+            elif entry['action']['type'] == 'inspect_heights':
+                a = entry['action']; height_observation = heights.preview(root,a['candidate_id'],a['offset'])
+                entry['height_observation'] = height_observation; entry['status'] = 'inspected'
+            elif entry['action']['type'] == 'edit_heights':
+                outcome = _height(root,entry); entry['status'] = outcome['status']; entry['outcome'] = outcome
             elif entry["action"]["type"] in {"retry_pointcloud", "retry_frames", "retry_local_frames", "retry_local_density"}:
                 outcome = _retry(root, entry)
                 entry["status"] = outcome["status"]
@@ -669,6 +724,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                         artifacts["hd_patch_checks"] = attempt["patch_checks"]
                     if "connection_checks" in attempt:
                         artifacts["hd_connection_checks"] = attempt["connection_checks"]
+                    for key in ('height_checks', 'height_audits', 'height_trial'):
+                        if key in attempt: artifacts[f'hd_{key}'] = attempt[key]
                 run["output"] = {"status": "draft_needs_review" if action["candidate_id"] is not None else "hd_unavailable",
                     "candidate_id": action["candidate_id"], "artifacts": artifacts,
                     "diagnosis": diagnosis if action["candidate_id"] is not None else None,
@@ -715,6 +772,10 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         answer["unused_frame_observation"] = frame_observation
     elif entry['action']['type'] in {'inspect_local_points', 'inspect_local_density'}:
         answer['local_point_observation'] = local_observation
+    elif entry['action']['type'] == 'inspect_heights':
+        answer['height_observation'] = height_observation
+    elif entry['action']['type'] == 'edit_heights':
+        answer['height_result'] = outcome
     elif entry["action"]["type"] in {"retry_pointcloud", "retry_frames", "retry_local_frames", "retry_local_density"}:
         answer["pointcloud_retry_result"] = outcome
     elif entry["action"]["type"] == "patch_gaps":

@@ -432,6 +432,55 @@ HD addition with no lost interval. June's existing-HD audits pass, but its new
 boundary has a height mismatch; the agent stops before a known-held patch and
 returns the original pair. The full-drive extent goals remain unmet.
 
+### Adjust an interior height on a local HD addition
+
+An isolated gap-only draft in a **local** retry child can have enough returns
+but a boundary height mismatch. Inspect it before the combined patch:
+
+```json
+{"type": "inspect_heights", "candidate_id": 2, "offset": 0}
+```
+
+The returned `height_observation` pages contain at most eight affected interior
+vertices, their XYZ and observations from both estimators in IR/reopened OSM.
+Only vertices next to observed boundary height mismatches, inside the frozen
+point-update box and on unshared boundaries are offered. Fully supported drafts
+have no offered edits. Original failures and source curves remain saved.
+
+An agent can propose an explicit bounded Z hypothesis using the exact returned
+`height_observation.file`. Use actual observed IDs and **zero-based** indices:
+
+```json
+{"type": "edit_heights", "candidate_id": 2, "preview_file": {"path": "/absolute/child/heights-02.json", "sha256": "RETURNED_SHA256", "bytes": 1234}, "edits": [{"boundary_id": 2, "vertex_index": 1, "delta_z_m": 0.075, "reason": "Test a bounded height hypothesis at the inspected mismatch; require both estimators"}]}
+```
+
+Choose 1–16 distinct seen vertices, each with a finite, nonzero delta of at most
+0.1 m in magnitude and an individual reason. Boundary XY, endpoints, unchosen Z,
+IDs, metadata, lane semantics, directed relations, projector and point-map files
+stay fixed. The original map and addition draft are untouched. Derived centerlines
+and sample locations may move because native resampling uses 3D arc length.
+Acceptance conservatively requires unchanged trace sample counts, **full support
+at every addition sample and endpoint in all four audits**, complete reports at
+unchanged protocols, and matching IR/reopened OSM geometry and routes.
+
+One height trial is allowed per child. It spends one transferred HD attempt and
+requires at least two remaining attempts so the combined patch still fits.
+Invalid or unseen edits spend none. A failed hypothesis keeps its trial geometry,
+checks and audits without publishing an edited draft; finish the root baseline
+when it cannot be adopted. Interrupted completed exports resume without another
+export or attempt. A successful edit produces a new candidate ID: inspect and
+patch **that** candidate, then compare and explicitly adopt the resulting pair.
+The combined patch still independently checks every retained and new lane.
+
+There is no automatic fitting, estimator preference, endpoint/XY adjustment,
+retained-root geometry edit, recursive height search or independent accuracy claim.
+
+The [NCLT height trials](../../benchmarks/vector-map/nclt-hd-height/README.md)
+repair June's one new-boundary mismatch with a +0.075 m interior Z hypothesis,
+then deliver a 6 m combined HD addition without lost intervals. April has no
+affected vertices and delivers its unchanged 4 m addition. Both preserve outside
+point records and original HD entities; full-drive extent goals remain unmet.
+
 ### Repair HD gaps while retaining the existing map
 
 After a point-fusion retry, the child can add source-supported missing HD

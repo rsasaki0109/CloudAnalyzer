@@ -117,6 +117,9 @@ def validate(root: Path, cid: int, gap_ids: Any) -> dict[str, Any]:
               **{f"trial_pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()}}
     if "connection_proposal" in baseline:
         inputs["baseline_connection_proposal"] = baseline["connection_proposal"]
+    inputs.update({f'addition_height_{k}':v for k,v in candidate.get('height_inputs', {}).items()})
+    for key in ('height_checks', 'height_audits', 'height_trial'):
+        if key in candidate: inputs[f'addition_{key}'] = candidate[key]
     retries._verify_inputs(inputs)
     return {"inputs": inputs, "baseline": baseline, "candidate": candidate, "original": original, "trial": trial,
             "before_intervals": before, "addition_intervals": additions, "chosen_gaps": chosen, 'local_bounds_xy': local_box}
@@ -288,6 +291,8 @@ def patch(root: Path, cid: int, gap_ids: list[int], pairs: list[dict[str, Any]],
         attempt: dict[str, Any] = {"id": len(job["attempts"]) + 1, "kind": "patched_corridor_lanes", "status": "running",
             "reason": reason, "parent_candidate_id": cid, "gap_ids": gap_ids, "patch_inputs": prepared["inputs"], "patch_pairs": pairs, "patch_preview": preview_file,
             "geometry_inputs": addition["geometry_inputs"], "corridor_proposal": addition["corridor_proposal"], "road_options": addition["road_options"]}
+        for key in ('height_inputs', 'height_edits', 'height_checks', 'height_audits', 'height_trial'):
+            if key in addition: attempt[key] = addition[key]
         job["attempts"].append(attempt); job["gap_patch"] = {"candidate_id": attempt["id"], "gap_ids": gap_ids}
         jobs._save(root / "job.json", job)
         target = root / f"candidate-{attempt['id']:02d}"

@@ -683,6 +683,8 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
                      *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else []),
                      *attempt.get("connection_inputs", {}).values(),
                      *attempt.get("patch_inputs", {}).values(),
+                     *attempt.get("height_inputs", {}).values(),
+                     *[attempt[k] for k in ("height_checks", "height_audits", "height_trial") if k in attempt],
                      *([attempt["patch_checks"], attempt["patch_audits"]] if "patch_checks" in attempt else []),
                      *([attempt["patch_preview"]] if "patch_preview" in attempt else []),
                      *([attempt["connection_proposal"]] if "connection_proposal" in attempt else []),
@@ -819,6 +821,8 @@ def select_mapping_candidate(job_dir: str, candidate_id: int, reason: str) -> di
             raise ValueError("select an audited draft candidate")
         for artifact in [*attempt["files"].values(), attempt["quality_report"], *attempt.get("geometry_inputs", {}).values(),
                          *attempt.get("connection_inputs", {}).values(),
+                         *attempt.get("height_inputs", {}).values(),
+                         *[attempt[k] for k in ("height_checks", "height_audits", "height_trial") if k in attempt],
                          *([attempt["connection_proposal"]] if "connection_proposal" in attempt else []),
                          *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else [])]:
             _verify(artifact)

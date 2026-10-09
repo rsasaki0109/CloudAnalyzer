@@ -64,6 +64,16 @@ compare_retry and finish_retry; finish the original root map to reject the trial
 This shares the single root point-map retry and transferred HD budget; compare
 actual audited maps before explicitly delivering a trial or baseline pair.
 For a local HD repair, draft only inspected missing ranges in the retry child.
+When an isolated addition has a boundary height mismatch, inspect_heights pages
+offer adjacent interior vertices inside the frozen local point-update box.
+Use edit_heights with that exact preview_file and seen vertices, each with an
+explicit nonzero delta_z_m at most 0.1 m and reason. Boundary XY/endpoints, all
+unchosen Z, IDs, semantics, routes and point-map files remain fixed. This spends
+one shared attempt and reserves one for the combined patch; one height trial is
+allowed per child. All addition traces need full support in four unchanged
+audits, unchanged sample counts and an exact OSM roundtrip. Original source
+curves remain observations; height edits are hypotheses, not accuracy claims.
+Failures retain the trial and audits without publishing a replacement draft.
 Use inspect_patch with gap IDs inspected through the root, examine exact geometric
 endpoint pairs, then patch_gaps with explicit pair decisions ([] when isolated).
 This keeps original lane geometry, IDs, metadata and connections, adds only inside

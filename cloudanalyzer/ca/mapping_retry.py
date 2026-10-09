@@ -29,6 +29,9 @@ def _parent(job: dict[str, Any], cid: int) -> dict[str, Any]:
             jobs._verify(parent[key])
     if "patch_preview" in parent:
         jobs._verify(parent["patch_preview"])
+    _verify_inputs(parent.get('height_inputs', {}))
+    for key in ('height_checks', 'height_audits', 'height_trial'):
+        if key in parent: jobs._verify(parent[key])
     return cast(dict[str, Any], parent)
 
 

@@ -54,7 +54,9 @@ can still preserve source curves for review.
    hypothesis; it does not append roads to an earlier map. Separate pieces stay
    disconnected. Previous maps and any explicit selection remain intact.
 5. The agent reads width/structural failures, original input extent and both
-   ground estimators, then decides another draft or finishes. The runner cannot
+   ground estimators, then decides another draft, inspects short connections,
+   or finishes. Explicit connection choices spend one additional shared HD attempt.
+   The runner cannot
    change the layout or lower the extent goal through an action. Invalid
    choices spend no processing attempt. Failed native stages retain their
    reason and consume their attempt. Full source support is not accuracy truth.
@@ -108,6 +110,64 @@ it does not repair the point map or guarantee a continuous road across the drive
 The [two NCLT refinement runs](../../benchmarks/vector-map/nclt-path-refinement/README.md)
 retain all previous exported intervals and record actual before/after maps:
 102 → 106 m and 88 → 112 m, with June's longest piece increasing 60 → 66 m.
+
+### Connect short, inspected source gaps
+
+After an audited lane draft, the calling agent can inspect connection candidates:
+
+```json
+{"type": "inspect_connections", "candidate_id": 2, "offset": 0}
+```
+
+Use the actual shared attempt ID from your run. This first version supports one
+forward, one-way driving lane per disconnected source piece, at most 256 lanes.
+It considers only consecutive pieces in original drive-station order. Both the
+endpoint distance and original drive gap must be at most 10 m. Native heading,
+grade and endpoint checks remain active. Ambiguous native branches are withheld.
+Centre and both actual boundaries must have 100% low-quantile source support;
+recorded XY path samples at no more than 0.5 m spacing must lie inside the exact
+connector polygon, including endpoints. Minimum distance between equal normalized
+XY-arc positions on the piecewise-linear boundaries must meet the fixed width
+hypothesis. This is a geometric width check, not observed physical road width.
+
+The proposal is saved with parent, cloud, trajectory, source and native hashes.
+Pages show at most eight complete candidates; overlong geometry is withheld.
+Inspection costs no HD attempt and never changes an exported map. Each chosen
+pair must have been seen through this run and have its own reason:
+
+```json
+{"type": "connect", "candidate_id": 2, "pairs": [{"from": 3, "to": 6, "reason": "Inspected consecutive gap; exact geometry encloses the recorded path and retains fixed minimum width. Test both ground estimators and reopened graph."}]}
+```
+
+Use lane IDs from the observation, rather than corridor proposal IDs. The runner
+retains every existing lane, boundary, rule and coordinate value; it adds only
+explicitly chosen connections in a new candidate. It rechecks the proposal and
+source hashes, requires the actual added boundaries to match the inspected
+geometry, audits IR and reopened OSM with **both** ground estimators, and requires
+100% support and supported endpoints on all new centre/left/right traces.
+Incomplete audits, changed source or altered OSM reachability withhold publication.
+Failed attempts and any completed failed audit remain recorded; the previous
+candidate and selection stay intact. Existing lanes' estimator disagreement is
+still visible and is not repaired by adding supported connections.
+
+`routes.before` and `routes.after` report directed lane chains, component count,
+and original drive-station spans, including connector gaps. Native `turn_direction`
+tags classify geometric headings; they remain unverified manoeuvre hypotheses.
+These spans are not
+physical centreline length or certified legal routes. Read the affected local
+chain and global longest route separately. Original corridor extraction length,
+station dispositions and the 90% extent goal stay unchanged: connectors do not
+silently turn unresolved source intervals into generated source corridors.
+Finish may return the new connected draft or an earlier retained draft.
+Interrupted inspection/connection actions support `resume` without replaying
+completed work. One connection attempt uses the existing shared HD budget. Every connection
+trial starts from its inspected unconnected parent; it supplies a complete set
+of pairs. Repeat earlier pairs explicitly to retain them in another trial.
+
+The [NCLT connection evidence](../../benchmarks/vector-map/nclt-route-connections/README.md)
+records a local chain changing 6 → 14 m in April and 4 → 22 m in June, with
+components 12 → 11 and 14 → 12. Global longest routes remain 34 m and 66 m;
+these connections do not make the full recordings routable.
 
 `layout_hypothesis` / `layout.json`:
 

@@ -1000,3 +1000,226 @@ def test_native_panics_are_recorded_but_user_interrupts_still_propagate(job_back
         assert result["attempts"][-1]["error_type"] == "PanicException"
     assert jobs.inspect_mapping_job(str(root))["attempts"][-1]["status"] == "failed"
     assert not (root / ".mapping-lock").exists()
+
+
+@pytest.fixture
+def connection_run(job_backend, tmp_path, monkeypatch):
+    """A surveyed flat source with two lane pieces, a four-metre gap and real OSM."""
+    from copy import deepcopy
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    native = _attach_lane_native()
+    if not hasattr(native, "connect_vector_map_junctions"):
+        pytest.skip("installed core predates connection support")
+    module = jobs.core()
+    for name in ("connect_vector_map_junctions", "audit_vector_map_quality_details", "audit_vector_map_ground_consensus_details"):
+        setattr(module, name, getattr(native, name))
+    report = _corridor_report()
+    first, second = deepcopy(report["candidates"][0]), deepcopy(report["candidates"][0])
+    first.update(to_m=4., sections=first["sections"][:3])
+    second.update(id=17, from_m=8., sections=second["sections"][4:])
+    report.update(candidates=[first, second], with_candidate_station_length_m=6., without_candidate_station_length_m=4.,
+                  trajectory_covered_station_length_m=6., deferred_intervals=[{"from_m": 4., "to_m": 8., "reason": "unresolved_source_band"}])
+    module.propose_road_corridors = lambda *args: json.dumps(report)
+
+    def fixed(folder, out, **kwargs):
+        root = Path(out)
+        root.mkdir()
+        cloud, trajectory, graph = root / "map.xyz", root / "poses.txt", root / "map.g2o"
+        cloud.write_text("".join(f"{x/5} {y/5} 1\n" for x in range(-5, 56) for y in range(-15, 16)))
+        trajectory.write_text("1 0 0 0 0 1 0 0 0 0 1 1\n1 0 0 10 0 1 0 0 0 0 1 1\n")
+        graph.write_text("unused graph")
+        return {"map_points": 1891, "outputs": {"map": str(cloud), "kitti": str(trajectory), "g2o": str(graph)}}
+    monkeypatch.setattr(jobs, "fix_session", fixed)
+    root = tmp_path / "connections-run"
+    runs.start_mapping_run(str(source), str(root), _run_layout())
+    runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1, 17]}, "Inspect separated source pieces", 0)
+    result = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": [
+        {"candidate_id": cid, "action": "include", "reason": "Retain observed source geometry"} for cid in (1, 17)]}, "Draft original disconnected pieces", 1)
+    assert result["draft_result"]["status"] == "audited_draft", result
+    return root, native
+
+
+def _inspect_connection(root):
+    from ca import mapping_run as runs
+    return runs.advance_mapping_run(str(root), {"type": "inspect_connections", "candidate_id": 2, "offset": 0},
+                                    "Read source, original drive ordering and exact connection geometry", 2)
+
+
+def _connection_action(observation):
+    return {"type": "connect", "candidate_id": 2, "pairs": [
+        {"from": c["from"], "to": c["to"], "reason": "Inspected short consecutive gap with source support and recorded path containment"}
+        for c in observation["connection_observation"]["candidates"]]}
+
+
+def test_connections_preserve_source_extent_and_verify_real_reopened_route(connection_run):
+    from ca import mapping_run as runs
+    from ca.mapping_connections import edges
+    root, _ = connection_run
+    original = jobs.inspect_mapping_job(str(root))["attempts"][1]
+    original_bytes = {k: Path(v["path"]).read_bytes() for k, v in original["files"].items()}
+    before = (root / "run.json").read_bytes()
+    with pytest.raises(ValueError, match="inspect connections"):
+        runs.advance_mapping_run(str(root), {"type": "connect", "candidate_id": 2, "pairs": [{"from": 3, "to": 6, "reason": "Uninspected"}]}, "Need receipt", 2)
+    assert (root / "run.json").read_bytes() == before
+    preview = _inspect_connection(root)
+    assert preview["remaining_attempts"] == 4
+    c = preview["connection_observation"]["candidates"][0]
+    assert (c["from"], c["to"], c["station_gap_m"]) == (3, 6, 4.)
+    for pairs in ([], [{"from": 6, "to": 3, "reason": "Reverse"}], _connection_action(preview)["pairs"] * 2):
+        with pytest.raises(ValueError):
+            runs.advance_mapping_run(str(root), {"type": "connect", "candidate_id": 2, "pairs": pairs}, "Reject invalid decision", 3)
+    result = runs.advance_mapping_run(str(root), _connection_action(preview), "Join inspected gap without changing prior geometry", 3)
+    assert result["connect_result"]["status"] == "audited_draft", result
+    diagnosis = result["connect_result"]["diagnosis"]
+    assert diagnosis["extent"] == original["extent"] and not diagnosis["extent"]["passes_requested_extent"]
+    assert diagnosis["routes"]["before"]["longest_route_station_span_m"] == 4.
+    assert diagnosis["routes"]["after"]["longest_route_station_span_m"] == 10.
+    assert diagnosis["routes"]["after"]["connected_components"] == 1
+    assert result["remaining_attempts"] == 3 and diagnosis["deployment_ready"] is False
+    attempt = jobs.inspect_mapping_job(str(root))["attempts"][-1]
+    ir = json.loads(Path(attempt["files"]["editable_map"]["path"]).read_text())
+    assert edges(ir) == {(3, 9), (9, 6)}
+    assert all(Path(original["files"][k]["path"]).read_bytes() == v for k, v in original_bytes.items())
+    before = (root / "job.json").read_bytes()
+    with pytest.raises(ValueError, match="stale"):
+        runs.advance_mapping_run(str(root), _connection_action(preview), "No replay", 3)
+    assert (root / "job.json").read_bytes() == before
+    with pytest.raises(ValueError, match="retained-extent"):
+        jobs.select_mapping_candidate(str(root), 3, "Connection must not inflate source-corridor extent")
+    final = runs.advance_mapping_run(str(root), {"type": "finish", "candidate_id": 3}, "Deliver graph with unresolved legal routing", 4)
+    assert final["output"]["candidate_id"] == 3 and jobs.inspect_mapping_job(str(root))["selected"] is None
+
+
+@pytest.mark.parametrize("fault", ["legacy", "consensus", "limited", "topology", "turn_label"])
+def test_connection_audit_or_reload_failures_do_not_publish_or_replace_prior_draft(connection_run, fault, tmp_path):
+    from ca import mapping_run as runs
+    root, native = connection_run
+    preview = _inspect_connection(root)
+    module = jobs.core()
+    if fault in {"topology", "turn_label"}:
+        def reopen(path):
+            result = json.loads(native.edit_vector_map_relations(path))
+            ir = json.loads(result["map_json"])
+            if fault == "topology":
+                ir["topology"] = []
+            else:
+                ir["lanes"][-1]["turn_direction"] = "right"
+            result["map_json"] = json.dumps(ir)
+            return json.dumps(result)
+        module.edit_vector_map_relations = reopen
+    else:
+        name = "audit_vector_map_quality_details" if fault == "legacy" else "audit_vector_map_ground_consensus_details"
+        def bad_audit(*args):
+            result = json.loads(getattr(native, name)(*args))
+            if fault == "limited":
+                result["quality"]["limited"] = True
+            else:
+                connector = next(l for l in result["quality"]["lanes"] if l["lane"] == 9)
+                connector["left"].update(fraction=.99, end_supported=False)
+            return json.dumps(result)
+        setattr(module, name, bad_audit)
+    action = tmp_path / "connect.json"
+    action.write_text(json.dumps(_connection_action(preview)))
+    result = CliRunner().invoke(app, ["mapping-run-advance", str(root), "--action", str(action), "--revision", "3", "--reason", "Retain failed connection evidence"])
+    assert result.exit_code == 1, result.output
+    state = json.loads(result.stdout)
+    assert state["connect_result"]["status"] == "failed" and state["remaining_attempts"] == 3
+    assert not (root / "candidate-03").exists()
+    attempt = jobs.inspect_mapping_job(str(root))["attempts"][-1]
+    if fault not in {"topology", "turn_label"}:
+        jobs._verify(attempt["connection_audits"])
+    final = runs.advance_mapping_run(str(root), {"type": "finish", "candidate_id": 2}, "Keep earlier audited draft", 4)
+    assert final["output"]["candidate_id"] == 2
+
+
+def test_completed_connection_resumes_without_another_attempt(connection_run, monkeypatch):
+    from ca import mapping_run as runs
+    root, _ = connection_run
+    preview = _inspect_connection(root)
+    original = runs.connections.connect
+    def interrupted(*args, **kwargs):
+        original(*args, **kwargs)
+        raise KeyboardInterrupt("caller stopped after native completion")
+    monkeypatch.setattr(runs.connections, "connect", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        runs.advance_mapping_run(str(root), _connection_action(preview), "Explicit inspected connections", 3)
+    assert runs.inspect_mapping_run(str(root))["status"] == "interrupted"
+    monkeypatch.setattr(runs.connections, "connect", original)
+    result = runs.advance_mapping_run(str(root), {"type": "resume"}, "Reuse completed connection", 4)
+    assert result["connect_result"]["status"] == "audited_draft" and result["remaining_attempts"] == 3
+
+
+def test_connection_receipts_bind_source_artifacts_and_all_inspected_pairs(connection_run):
+    from ca import mapping_run as runs
+    root, _ = connection_run
+    preview = _inspect_connection(root)
+    # An unobserved page cannot authorize a pair, even if a cached proposal offers it.
+    run = json.loads((root / "run.json").read_text())
+    run["history"][-1]["connection_observation"]["candidates"] = []
+    jobs._save(root / "run.json", run)
+    with pytest.raises(ValueError, match="inspect every"):
+        runs.advance_mapping_run(str(root), _connection_action(preview), "No unseen adoption", 3)
+    run["history"][-1]["connection_observation"]["candidates"] = preview["connection_observation"]["candidates"]
+    jobs._save(root / "run.json", run)
+    Path(preview["connection_observation"]["proposal_file"]["path"]).write_text("changed")
+    with pytest.raises(ValueError, match="changed"):
+        runs.advance_mapping_run(str(root), _connection_action(preview), "Reject stale geometry", 3)
+    assert len(jobs.inspect_mapping_job(str(root))["attempts"]) == 2
+
+
+def test_recorded_path_containment_includes_edges_but_rejects_shortcuts():
+    import numpy as np
+    from ca.mapping_connections import _inside, route_metrics
+    polygon = np.array([[0, 1], [4, 1], [4, -1], [0, -1]], dtype=float)
+    assert _inside(np.array([[0, 0], [2, 0], [4, 0]], dtype=float), polygon)
+    assert not _inside(np.array([[0, 0], [2, 2], [4, 0]], dtype=float), polygon)
+    with pytest.raises(ValueError, match="station-contiguous"):
+        route_metrics({"lanes": [{"id": 1}, {"id": 2}], "topology": [{"lane": 1, "successors": [2]}]}, {1: (0., 4.), 2: (8., 10.)})
+
+
+@pytest.mark.parametrize("hold", ["recorded_path_outside_connection", "below_fixed_minimum_width", "ambiguous_native_branch"])
+def test_connection_preview_withholds_geometric_shortcuts_narrowing_and_ambiguity(connection_run, hold):
+    from ca import mapping_run as runs
+    root, native = connection_run
+    module = jobs.core()
+    def changed_preview(*args):
+        result = json.loads(native.connect_vector_map_junctions(*args))
+        c = result["report"]["junctions"]["candidates"][0]
+        if hold == "ambiguous_native_branch":
+            c["ambiguous"] = True
+        elif hold == "below_fixed_minimum_width":
+            for p in c["left"]:
+                p[1] = .5
+            for p in c["right"]:
+                p[1] = -.5
+        else:
+            for side in ("left", "right"):
+                for p in c[side]:
+                    p[1] += 3
+        return json.dumps(result)
+    module.connect_vector_map_junctions = changed_preview
+    result = _inspect_connection(root)
+    observation = result["connection_observation"]
+    assert observation["candidates"] == [] and hold in observation["rejected"][0]["holds"]
+    assert result["remaining_attempts"] == 4
+    # The retained proposal is reused, rather than silently retrying native extraction.
+    module.connect_vector_map_junctions = lambda *args: pytest.fail("cached preview must not rerun")
+    result = runs.advance_mapping_run(str(root), {"type": "inspect_connections", "candidate_id": 2, "offset": 0}, "Read retained holds", 3)
+    assert result["connection_observation"] == observation
+
+
+def test_completed_connection_inspection_resumes_from_its_saved_proposal(connection_run, monkeypatch):
+    from ca import mapping_run as runs
+    root, _ = connection_run
+    original = runs.connections.inspect_connections
+    def interrupted(*args, **kwargs):
+        original(*args, **kwargs)
+        raise KeyboardInterrupt("caller stopped after saved preview")
+    monkeypatch.setattr(runs.connections, "inspect_connections", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        _inspect_connection(root)
+    monkeypatch.setattr(runs.connections, "inspect_connections", original)
+    jobs.core().connect_vector_map_junctions = lambda *args: pytest.fail("completed proposal must be reused")
+    result = runs.advance_mapping_run(str(root), {"type": "resume"}, "Reuse saved preview", 3)
+    assert len(result["connection_observation"]["candidates"]) == 1 and result["remaining_attempts"] == 4

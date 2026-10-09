@@ -2326,3 +2326,110 @@ def test_height_budget_reserves_the_combined_patch(unused_frame_run,monkeypatch)
     before=(child/'run.json').read_bytes()
     with pytest.raises(ValueError,match='two remaining'):_advance(child,_height_action(preview))
     assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==2
+
+
+def _region_child(root):
+    preview=_advance(root,{'type':'inspect_local_density','candidate_id':2,'gap_ids':[1],'bounds_xy':[2.,-1.6,6.,1.6]})['local_point_observation']
+    jobs.core().connect_vector_map_junctions=_attach_lane_native().connect_vector_map_junctions
+    result=_advance(root,_local_density_action(preview));assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';_advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Only the inspected local interval'}]})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft',patched
+    return child
+
+
+def _region_action(box=None,offset=0):
+    return {'type':'inspect_connection_region','candidate_id':3,'bounds_xy':box if box is not None else [2.,-1.6,8.4,1.6],'offset':offset}
+
+
+def test_explicit_hd_region_connects_repair_without_expanding_point_update(unused_frame_run):
+    from ca.mapping_connections import edges
+    from ca.mapping_patch import _preserved
+    root=unused_frame_run;child=_region_child(root);job=jobs._load(child);parent=job['attempts'][2]
+    before=json.loads(Path(parent['files']['editable_map']['path']).read_text())
+    point=job['pointcloud']['files']['map'];point_bytes=Path(point['path']).read_bytes()
+    normal=_advance(child,{'type':'inspect_connections','candidate_id':3,'offset':0})['connection_observation']
+    assert normal['candidates_total']==0
+    held=next(r for r in normal['rejected'] if r['from']==9 and r['to']==6)
+    assert held['holds']==['outside_local_point_update_bounds'] and held['geometry_bounds_xy'][2]>6.
+    observed=_advance(child,_region_action())['connection_observation']
+    assert observed['region']['point_bounds_xy']==[2.,-1.6,6.,1.6] and observed['region']['bounds_xy']==[2.,-1.6,8.4,1.6]
+    pairs=[{'from':c['from'],'to':c['to'],'reason':'Inspected HD-only envelope and exact source-supported geometry'} for c in observed['candidates']]
+    assert [(p['from'],p['to']) for p in pairs]==[(9,6)]
+    connected=_advance(child,{'type':'connect','candidate_id':3,'pairs':pairs})
+    assert connected['connect_result']['status']=='audited_draft' and connected['remaining_attempts']==0,connected
+    after=jobs._load(child)['attempts'][3];ir=json.loads(Path(after['files']['editable_map']['path']).read_text())
+    _preserved(before,ir,edges(ir)-edges(before))
+    checks=json.loads(Path(after['connection_checks']['path']).read_text());assert checks['passes']
+    assert Path(point['path']).read_bytes()==point_bytes and jobs._load(child)['pointcloud']['files']['map']==point
+    comparison=_advance(root,{'type':'compare_retry','candidate_id':4})['retry_comparison']
+    assert comparison['gained_source_length_m']==2 and comparison['lost_source_length_m']==0
+    assert comparison['after']['routes']['longest_route_station_span_m']==10.
+    _advance(child,{'type':'finish','candidate_id':4})
+    final=_advance(root,{'type':'finish_retry','candidate_id':4})['output']
+    assert final['artifacts']['hd_connection_proposal']==observed['proposal_file'] and final['artifacts']['map']==point
+
+
+@pytest.mark.parametrize('box',[[2.,-1.6,6.,1.6],[2.,-1.6,7.,1.6]])
+def test_explicit_hd_region_keeps_connectors_outside_its_own_bounds_held(unused_frame_run,box):
+    child=_region_child(unused_frame_run)
+    observed=_advance(child,_region_action(box))['connection_observation']
+    assert observed['candidates_total']==0 and any('outside_explicit_hd_connection_bounds' in r['holds'] for r in observed['rejected'])
+    assert len(jobs._load(child)['attempts'])==3
+
+
+@pytest.mark.parametrize('box',[[3.,-1.6,8.4,1.6],[2.,-1.6,23.,1.6],[2.,0.,8.,0.],[2.,-1.6,float('nan'),1.6],[True,-1.6,8.,1.6]])
+def test_explicit_hd_region_invalid_bounds_do_not_spend_or_journal(unused_frame_run,box):
+    child=_region_child(unused_frame_run);before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError):_advance(child,_region_action(box))
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==3
+
+
+def test_explicit_hd_region_requires_combined_patch(unused_frame_run):
+    root=unused_frame_run;before=(root/'run.json').read_bytes()
+    action=_region_action();action['candidate_id']=2
+    with pytest.raises(ValueError,match='combined local-retry patch'):_advance(root,action)
+    assert (root/'run.json').read_bytes()==before
+
+
+@pytest.mark.parametrize('fault',['unseen_page','tamper','default_preview'])
+def test_explicit_hd_region_requires_seen_pairs_and_frozen_receipt(unused_frame_run,fault):
+    child=_region_child(unused_frame_run)
+    observed=_advance(child,_region_action(offset=99 if fault=='unseen_page' else 0))['connection_observation']
+    if fault=='tamper':Path(observed['proposal_file']['path']).write_text('{}')
+    elif fault=='default_preview':_advance(child,{'type':'inspect_connections','candidate_id':3,'offset':0})
+    before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError):_advance(child,{'type':'connect','candidate_id':3,'pairs':[{'from':9,'to':6,'reason':'Only a seen pair in the latest exact HD region can be adopted'}]})
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==3
+
+
+def test_explicit_hd_region_consensus_failure_keeps_original_pair(unused_frame_run,monkeypatch):
+    root=unused_frame_run;child=_region_child(root)
+    _advance(child,_region_action());native=jobs.core();original=native.audit_vector_map_ground_consensus_details
+    def changed(*args):
+        report=json.loads(original(*args));report['quality']['lanes'][-1]['left']['end_supported']=False
+        return json.dumps(report)
+    monkeypatch.setattr(native,'audit_vector_map_ground_consensus_details',changed)
+    result=_advance(child,{'type':'connect','candidate_id':3,'pairs':[{'from':9,'to':6,'reason':'Test both estimators in the explicit HD region'}]})
+    assert result['connect_result']['status']=='failed' and result['remaining_attempts']==0
+    attempt=jobs._load(child)['attempts'][3]
+    assert 'files' not in attempt and not json.loads(Path(attempt['connection_checks']['path']).read_text())['passes']
+    assert Path(attempt['connection_audits']['path']).is_file()
+    final=_advance(root,{'type':'finish','candidate_id':2})['output']
+    assert not final['pointcloud_retry_decision']['adopted'] and final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+
+
+def test_explicit_hd_region_completed_preview_resumes_without_native_replay(unused_frame_run,monkeypatch):
+    from ca import mapping_run as runs
+    child=_region_child(unused_frame_run);original=runs.connections.inspect_connections
+    def interrupted(*args,**kwargs):
+        original(*args,**kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(runs.connections,'inspect_connections',interrupted)
+    with pytest.raises(KeyboardInterrupt):_advance(child,_region_action())
+    monkeypatch.setattr(runs.connections,'inspect_connections',original)
+    monkeypatch.setattr(jobs.core(),'connect_vector_map_junctions',lambda *args:pytest.fail('completed region preview must not repeat native discovery'))
+    resumed=_advance(child,{'type':'resume'})
+    assert resumed['connection_observation']['candidates_total']==1 and resumed['remaining_attempts']==1
+    assert len(jobs._load(child)['attempts'])==3

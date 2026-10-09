@@ -183,6 +183,56 @@ join June's repaired 22–28 m interval to the retained 14–18 m piece across a
 4 m gap, yielding one 14 m local chain and components 13 → 12. April offers
 no connection and keeps the patch. Global longest spans remain 34/66 m.
 
+### Extend only the HD connection region after a local patch
+
+Default connection inspection keeps new connectors inside the local point-update
+box. When a supported link from a repair lane to the existing map crosses that
+box, its rejection includes `geometry_bounds_xy`. The agent can explicitly inspect
+a separate **HD-only** envelope on the combined patched candidate:
+
+```json
+{"type": "inspect_connection_region", "candidate_id": 4, "bounds_xy": [9, -7, 22, 5], "offset": 0}
+```
+
+Use observed IDs and coordinates. The envelope must contain the frozen point box,
+have positive sides of at most 20 m, and finite coordinates. It is a closed XY
+envelope at all heights, without voxel alignment. This is available only for a
+combined local-retry patch, including its later connected descendants. It does
+not regenerate or expand point replacement, change density or poses, move
+existing HD geometry, alter the layout, or infer permitted turns.
+
+Only station-consecutive links touching a repair lane/connector are offered.
+Every offered center and boundary curve stays inside the HD envelope; unrelated
+original-lane links remain held. Heading, path containment, minimum width,
+ambiguity and original directed-edge checks remain in effect. Preview pages
+contain eight candidates and a hash-pinned region artifact. Different envelopes
+produce different cached previews, and pairs must be seen in the latest exact
+preview before adoption:
+
+```json
+{"type": "connect", "candidate_id": 4, "pairs": [{"from": 51, "to": 9, "reason": "Inspected the HD-only envelope and exact geometry; test both estimators and OSM topology"}]}
+```
+
+Inspection spends no attempt; `connect` still spends one transferred HD attempt.
+Plan for it when starting the run: geometry/lane draft, optional height edit,
+combined patch and connection all share the child allocation. The native export
+must preserve every original entity/edge, exactly match inspected boundaries,
+and retain support/failure locations on old traces. New connectors need full
+support under both estimators in IR and reopened OSM, against the actual complete
+local point map, including unchanged outside points. Failed links retain their
+checks/audits and the prior draft; completed previews support `resume`.
+
+Finish explicitly after comparison. Outputs include `hd_connection_proposal`
+with both region boundaries, alongside source checks, so the HD-only scope is
+reviewable. Connector station spans improve graph reachability; they do not
+increase source-corridor extent or establish road identity or legal routing.
+
+The [NCLT HD-region trial](../../benchmarks/vector-map/nclt-hd-connection-region/README.md)
+explicitly connects June's new lane to an existing lane across the point-box
+boundary: 51 → 54 → 9 spans 22–36 m. Point files and retained HD entities remain
+fixed, components fall 13 → 12, and all four audits pass. Source extent stays
+118 m and the global longest route stays 66 m; full-drive continuity is unmet.
+
 ### Investigate missing intervals and retry point generation
 
 After an audited lane draft, inspect missing source intervals:
@@ -373,7 +423,9 @@ geometry, lane draft and combined gap patch. Inspect fresh child proposals, draf
 only chosen missing intervals and use `inspect_patch` / `patch_gaps` below. Added
 HD boundaries must stay inside the closed effective XY box; patch gaps must be
 among those chosen in the local preview. Existing lanes and directed edges remain
-fixed. Connection previews withhold new connectors leaving the box. The root
+fixed. Default connection previews withhold new connectors leaving the box;
+`inspect_connection_region` explicitly inspects a separate HD-only envelope.
+The root
 accepts `compare_retry` and `finish_retry` only for a combined patch (or its
 subsequent connection candidate), preserving the original HD map.
 

@@ -35,6 +35,11 @@ increase original source-corridor extent or prove permitted turns.
 Connections may extend an audited connected or gap-patched draft. Existing
 lanes and directed edges are inherited; supply only the new inspected pairs.
 Old source samples must not gain failures in either estimator or saved format.
+To extend a combined local patch's HD envelope independently,
+use inspect_connection_region with explicit bounds_xy containing the frozen
+point-update box and sides at most 20 m. Point records remain fixed. Only links
+touching repair lanes are offered; inspect exact geometry and connect seen pairs.
+Every new trace needs full support from both estimators in IR/reopened OSM.
 For missing intervals, inspect_gaps to compare profiles and aligned raw-log
 neighborhoods. Counts do not prove coherent ground or a thinning-related cause.
 Explicit retry_pointcloud can reduce scan/map thinning once, keeping motion,
@@ -223,6 +228,7 @@ def inspect_mapping_run(job_dir: str, offset: int = 0) -> dict[str, Any]:
             "refine": {"type": "refine", "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"},
             "draft": {"type": "draft", "decisions": "complete include/defer choices with reasons and optional observed ranges"},
             "inspect_connections": {"type": "inspect_connections", "candidate_id": "own audited lane, connected or gap-patched draft ID", "offset": "nonnegative; pages of 8"},
+            "inspect_connection_region": {"type": "inspect_connection_region", "candidate_id": "own combined local-retry patch", "bounds_xy": "explicit HD-only [xmin,ymin,xmax,ymax]; contains frozen point box; sides <=20 m", "offset": "nonnegative; pages of 8; only links touching repair lanes"},
             "connect": {"type": "connect", "candidate_id": "inspected parent lane draft ID", "pairs": "1..32 inspected {from,to,reason} pairs; one shared HD attempt"},
             "inspect_gaps": {"type": "inspect_gaps", "candidate_id": "own audited lane draft", "offset": "nonnegative; pages of 8"},
             "retry_pointcloud": {"type": "retry_pointcloud", "candidate_id": "inspected baseline", "gap_ids": "1..8 inspected IDs",
@@ -413,7 +419,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
     if not isinstance(reason, str) or not reason.strip() or type(expected_revision) is not int:
         raise ValueError("supply a reason and the inspected integer revision")
     if not isinstance(action, dict) or not isinstance(action.get("type"), str) or action["type"] not in {
-        "inspect", "refine", "draft", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
+        "inspect", "refine", "draft", "inspect_connections", "inspect_connection_region", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry", "finish_retry", "finish", "resume"}:
         raise ValueError("use an action type from action_contract")
     root = Path(job_dir).resolve()
     with _locked(root):
@@ -432,6 +438,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             raise ValueError("finish with retained point-map outputs after preparation failed")
         keys = {"inspect": {"type", "candidate_ids"}, "refine": {"type", "association"}, "draft": {"type", "decisions"},
                 "inspect_connections": {"type", "candidate_id", "offset"}, "connect": {"type", "candidate_id", "pairs"},
+                "inspect_connection_region": {"type", "candidate_id", "bounds_xy", "offset"},
                 "inspect_gaps": {"type", "candidate_id", "offset"}, "retry_pointcloud": {"type", "candidate_id", "gap_ids", "options"},
                 "inspect_unused_frames": {"type", "candidate_id", "offset"}, "retry_frames": {"type", "candidate_id", "frame_ids"},
                 "inspect_local_points": {"type", "candidate_id", "gap_ids", "bounds_xy"}, "retry_local_frames": {"type", "candidate_id", "frame_ids", "preview_file"},
@@ -444,7 +451,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
             raise ValueError("supply only the required action fields from action_contract")
         if kind == "resume":
             if run["status"] != "interrupted" or not run["history"] or run["history"][-1]["action"]["type"] not in {
-                "draft", "refine", "inspect_connections", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry"}:
+                "draft", "refine", "inspect_connections", "inspect_connection_region", "connect", "inspect_gaps", "retry_pointcloud", "inspect_unused_frames", "retry_frames", "inspect_local_points", "retry_local_frames", "inspect_local_density", "retry_local_density", "inspect_heights", "edit_heights", "inspect_patch", "patch_gaps", "compare_retry"}:
                 raise ValueError("resume requires an interrupted processing action")
             entry = run["history"][-1]
         else:
@@ -481,14 +488,16 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                     stations = {s["station_m"] for c in previews for s in c["sections"]}
                     if d["from_m"] not in stations or d["to_m"] not in stations:
                         raise ValueError("draft ranges must use inspected preview stations; retain unreviewed tails")
-            elif kind in {"inspect_connections", "connect"}:
+            elif kind in {"inspect_connections", "inspect_connection_region", "connect"}:
                 cid = action["candidate_id"]
                 if type(cid) is not int or cid not in [h.get("lane_candidate_id") for h in run["history"]]:
                     raise ValueError("use a lane draft generated by this run")
-                connections._parent(job, cid)
-                if kind == "inspect_connections":
+                connection_parent = connections._parent(job, cid)[0]
+                if kind in {"inspect_connections", "inspect_connection_region"}:
                     if type(action["offset"]) is not int or action["offset"] < 0:
                         raise ValueError("connection offset must be a nonnegative integer")
+                    if kind == "inspect_connection_region":
+                        connections.connection_region(job, connection_parent, action["bounds_xy"])
                 else:
                     if job["remaining_attempts"] < 1:
                         raise ValueError("a connection needs one remaining shared HD attempt")
@@ -668,8 +677,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 if outcome["status"] == "ready":
                     run["reviewed_candidates"] = []
                     run["reviewed_proposal_sha256"] = outcome["file"]["sha256"]
-            elif entry["action"]["type"] == "inspect_connections":
-                observation_connections = connections.inspect_connections(root, entry["action"]["candidate_id"], entry["action"]["offset"])
+            elif entry["action"]["type"] in {"inspect_connections", "inspect_connection_region"}:
+                observation_connections = connections.inspect_connections(root, entry["action"]["candidate_id"], entry["action"]["offset"],
+                                                                         entry["action"].get("bounds_xy"))
                 entry["connection_observation"] = observation_connections
                 entry["status"] = "inspected"
             elif entry["action"]["type"] == "connect":
@@ -724,6 +734,8 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                         artifacts["hd_patch_checks"] = attempt["patch_checks"]
                     if "connection_checks" in attempt:
                         artifacts["hd_connection_checks"] = attempt["connection_checks"]
+                    if "connection_proposal" in attempt:
+                        artifacts["hd_connection_proposal"] = attempt["connection_proposal"]
                     for key in ('height_checks', 'height_audits', 'height_trial'):
                         if key in attempt: artifacts[f'hd_{key}'] = attempt[key]
                 run["output"] = {"status": "draft_needs_review" if action["candidate_id"] is not None else "hd_unavailable",
@@ -762,7 +774,7 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
         answer["observation"] = observation
     elif entry["action"]["type"] == "refine":
         answer["refine_result"] = outcome
-    elif entry["action"]["type"] == "inspect_connections":
+    elif entry["action"]["type"] in {"inspect_connections", "inspect_connection_region"}:
         answer["connection_observation"] = observation_connections
     elif entry["action"]["type"] == "connect":
         answer["connect_result"] = outcome

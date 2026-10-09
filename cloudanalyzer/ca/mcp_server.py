@@ -36,6 +36,12 @@ source-supported gaps between consecutive drive pieces. The fixed single-forward
 layout, recorded path, both ground estimators and reopened OSM topology are checked.
 Read local route spans and global longest route separately; connections do not increase
 original corridor extent or prove permitted turns. Failed links retain the prior draft.
+For a combined local HD patch, inspect_connection_region explicitly supplies an
+HD-only bounds_xy envelope containing the unchanged point-update box, with sides
+at most 20 m. Only links touching new repair lanes are offered; all geometry must
+stay inside that HD envelope. Inspect exact geometry and connect seen pairs.
+Point records, retained geometry/edges, width and all four source-audit protocols
+stay fixed. No scope expansion occurs implicitly; failures preserve the prior pair.
 Connections can extend audited connected or gap-patched drafts: inherit all existing
 lanes and directed edges, select only new inspected pairs, and reject any new failures
 on retained source samples in either estimator or saved format.

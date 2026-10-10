@@ -77,11 +77,30 @@ original verified generated-map review ZIP if one was opened in this workspace.
 This preserves its attribution, decisions, proposals and frozen audits alongside
 the current edited map and point records.
 
-All included files share the existing 64 MiB uncompressed content limit. There are
+Manual workspace snapshots allow 256 MiB of uncompressed content, including the
+manifest, metadata, current records and original inputs. Browser recovery remains
+capped at 64 MiB including its stored ZIP. There are
 at most 127 clouds/meshes, 2,048 ZIP members and 10 MiB project metadata. Generated
 review imports keep their original smaller member limit. Oversized workspaces
 report failure rather than omit inputs; the previous browser copy remains intact.
-Older snapshots remain readable and still request their external graph sources.
+Older v1/v2 snapshots remain readable under their original 64 MiB content limit;
+snapshots with external graph references still request those source files.
+
+The real-data roundtrip and independent verification are recorded in
+[larger NCLT workspace](../benchmarks/vector-map/nclt-large-workspace/README.md).
+Run `e2e/large-workspace.spec.ts` with `CLOUDANALYZER_LARGE_WORKSPACE_BASE` set to
+the previous complete workspace ZIP and `CLOUDANALYZER_LARGE_WORKSPACE_CLOUD`
+set to the second-session point map. The ordinary synthetic test checks a
+million-point workspace above 64 MiB and the unchanged browser-save budget.
+
+New v3 snapshots use the existing `sha256-chunks-v1` file identity to verify every
+stored member in 8 MiB SHA-256 chunks. ZIP writing checks CRC32 in 1 MiB chunks;
+opening retains stored member Blob slices rather than reading each entire member
+into another buffer. Legacy v1/v2 members retain their original whole-file SHA-256
+verification. This bounds archive verification buffers, not total browser memory:
+loaded geometry, native exports, staging and recovery still need memory. The
+256 MiB limit does not guarantee a workspace fits on every device. Generated-map
+review ZIP imports retain their separate 64 MiB content and smaller member limits.
 
 After reopening, **Download original map package** retrieves the exact archived
 ZIP. Saved audit controls remain disabled for the current edited workspace. Reopen

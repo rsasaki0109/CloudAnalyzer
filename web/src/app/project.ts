@@ -3,7 +3,7 @@ import { parseProject, projectSources, type Project, type ControlSetting, type S
 import { matchesFile, referenceFile, sourceName, type SourceReference } from "../source-reference";
 import { vectorMap, workerBusy, exportCloud, exportMesh, prepareWorkspace, commitWorkspace, discardWorkspace } from "../api";
 import { writeProjectSnapshot, readProjectSnapshot } from "../project-snapshot";
-import { REVIEW_LIMIT } from "../review-zip";
+import { REVIEW_LIMIT, WORKSPACE_LIMIT } from "../review-zip";
 import { readMappingReview } from "../mapping-review";
 import { Autosave } from "../autosave";
 import { onProjectChanged, projectChanged } from "../project-change";
@@ -349,7 +349,7 @@ $("project-save").onclick = async () => {
   finally { button.disabled = false; manualSaving = false; endTask(signal); autosave.schedule(); }
 };
 
-async function captureWorkspace(signal: AbortSignal, progress: boolean): Promise<{project: Project; zip: Blob}> {
+async function captureWorkspace(signal: AbortSignal, progress: boolean, maximumBytes = WORKSPACE_LIMIT): Promise<{project: Project; zip: Blob}> {
   const savedEntries = [...entries.values()];
   if (savedEntries.length > 127) throw new Error("Snapshot supports at most 127 clouds/meshes");
   if (new Set(savedEntries.map(e => e.cloud.name)).size !== savedEntries.length) throw new Error("Rename duplicate cloud files before saving a snapshot");
@@ -360,7 +360,7 @@ async function captureWorkspace(signal: AbortSignal, progress: boolean): Promise
     if (progress) setStatus(`Saving current records for ${entry.cloud.name}…`);
     const bytes = entry.cloud.kind === "mesh" ? await exportMesh(entry.cloud.id, "ply") : await exportCloud(entry.cloud.id, "ply");
     total += bytes.byteLength;
-    if (total > REVIEW_LIMIT) throw new Error("Snapshot exceeds the 64 MiB content limit; export large results separately");
+    if (total > maximumBytes) throw new Error(`Snapshot exceeds the ${maximumBytes / 1024 / 1024} MiB content limit; export large results separately${maximumBytes === REVIEW_LIMIT ? " or save a manual workspace snapshot" : ""}`);
     snapshots.set(entry.cloud.id, new File([new Uint8Array(bytes)], `${prefix}-${i}.ply`));
   }
   const originalAssets: File[] = [], assets: File[] = [];
@@ -371,7 +371,7 @@ async function captureWorkspace(signal: AbortSignal, progress: boolean): Promise
     const identity = JSON.stringify([file.name,ref.size,ref.kind === "file" ? ref.digest : ""]);
     if (!identities.has(identity)) { assets.push(file); identities.add(identity); }
   }
-  const zip = await writeProjectSnapshot(project, [...snapshots.values()], signal, assets);
+  const zip = await writeProjectSnapshot(project, [...snapshots.values()], signal, assets, maximumBytes);
   signal.throwIfAborted();
   return {project,zip};
 }
@@ -396,7 +396,7 @@ const autosave = new Autosave<Recovery>({
   idle: () => !checkingRecovery && !pending && !completing && !manualSaving && !taskActive() && !workerBusy() && mapProjectReady() && graphProjectReady(),
   capture: async signal => {
     if ($<HTMLInputElement>("project-autosave-records").checked) {
-      const {project,zip} = await captureWorkspace(signal,false);
+      const {project,zip} = await captureWorkspace(signal,false,REVIEW_LIMIT);
       return {version:1,token:crypto.randomUUID(),savedAt:new Date().toISOString(),project,draft:captureReviewDraft(),snapshot:zip};
     }
     const project = await captureProject(signal,false), draft = captureReviewDraft();

@@ -1,0 +1,47 @@
+{
+  "schema": "cloudanalyzer.large_workspace_receipt.v1",
+  "legacyZipBytes": 54815611,
+  "legacyZipSha256": "c918ad9dfd2a9972ee385d9e9cf2c2956a3a7cf2fc5d4ece348b7a65177b7db4",
+  "candidateInputBytes": 18824718,
+  "candidateInputSha256": "ce475e7e6b70de9474fd34a6d3c117535ab784b405d57f0cdd9c1854e422a3c8",
+  "zipBytes": 73641698,
+  "zipSha256": "2f9f486442d1ca99865071a0115888257f1397b125a63cbe9c31861e064117c2",
+  "restoredMs": 33248,
+  "nodes": 199,
+  "cloudExportsExact": true,
+  "originalAssetsExact": true,
+  "poseGraphExact": true,
+  "hdMapExact": true,
+  "reviewsExact": true,
+  "originalArchiveExact": true,
+  "savedAuditsDisabled": true,
+  "clouds": [
+    {
+      "name": "nclt-2012-04-29_map",
+      "bytes": 34485961,
+      "sha256": "957bf0bb42f8eac562beb052273910ac18a42c058253760abd4cb21f9efb9698"
+    },
+    {
+      "name": "014-preview_map.ply",
+      "bytes": 5170696,
+      "sha256": "4fae11d323f344da703ade2d55967c8f1f15c7a435f053770f461a85096a380c"
+    },
+    {
+      "name": "original-keyframes_map.ply",
+      "bytes": 18824744,
+      "sha256": "f124a95a5f09eee640da43530eb564a05c4988445c01172a6def91da43068edd"
+    }
+  ],
+  "assets": [
+    {
+      "name": "nclt-2012-04-29.mcap",
+      "bytes": 10054898,
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6"
+    },
+    {
+      "name": "nclt-hd-preflight-display-preview.zip",
+      "bytes": 4787591,
+      "sha256": "85e3b22b7fb53a781cf72e356946f178a6efd1e9eda4e7e03ef06edbd96cdf2a"
+    }
+  ]
+}

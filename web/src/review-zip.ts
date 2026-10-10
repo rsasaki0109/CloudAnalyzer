@@ -4,6 +4,14 @@ export const MANIFEST_LIMIT = 10 * 1024 * 1024;
 const HEADER_LIMIT = MANIFEST_LIMIT;
 /** Workspace assets may include many small original pose-graph scans. */
 export const WORKSPACE_MEMBER_LIMIT = 2048;
+/** Explicit manual workspaces; generated reviews and browser recovery remain 64 MiB. */
+export const WORKSPACE_LIMIT = 256 * 1024 * 1024;
+export const ZIP_CHECK_CHUNK = 1024 * 1024;
+function contentLimit(value: number): number {
+  if (!Number.isSafeInteger(value) || value < 1 || value > WORKSPACE_LIMIT)
+    throw new Error("Invalid ZIP content limit");
+  return value;
+}
 function memberLimit(value: number): number {
   if (!Number.isSafeInteger(value) || value < 1 || value > WORKSPACE_MEMBER_LIMIT)
     throw new Error("Invalid ZIP member limit");
@@ -48,11 +56,13 @@ export async function indexReviewZip(
   file: File,
   signal: AbortSignal,
   maximumMembers = 129,
+  maximumBytes = REVIEW_LIMIT,
 ): Promise<Map<string, Member>> {
   memberLimit(maximumMembers);
-  if (file.size < 22 || file.size > REVIEW_LIMIT + HEADER_LIMIT)
+  contentLimit(maximumBytes);
+  if (file.size < 22 || file.size > maximumBytes + HEADER_LIMIT)
     throw new Error(
-      "Review ZIP exceeds the 64 MiB browser limit or is incomplete; use the CLI for larger packages",
+      `Review ZIP exceeds the ${maximumBytes / 1024 / 1024} MiB browser limit or is incomplete; use the CLI for larger packages`,
     );
   const tailStart = Math.max(0, file.size - 65557);
   const tail = await range(file, tailStart, file.size - tailStart);
@@ -72,6 +82,7 @@ export async function indexReviewZip(
     start = tail.getUint32(end + 16, true);
   if (
     count > maximumMembers ||
+    size > HEADER_LIMIT ||
     count !== tail.getUint16(end + 8, true) ||
     start + size !== tailStart + end
   )
@@ -116,7 +127,7 @@ export async function indexReviewZip(
       local = directory.getUint32(offset + 42, true);
     total += bytes;
     if (
-      total > REVIEW_LIMIT ||
+      total > maximumBytes ||
       local >= start ||
       compressed > start - local ||
       (name === "manifest.json" && bytes > HEADER_LIMIT)
@@ -206,15 +217,17 @@ export async function writeReviewZip(
   entries: [string, Blob][],
   signal: AbortSignal,
   maximumMembers = 129,
+  maximumBytes = REVIEW_LIMIT,
 ): Promise<Blob> {
   memberLimit(maximumMembers);
+  contentLimit(maximumBytes);
   const names = new Set(entries.map(([name]) => path(name)));
   if (
     names.size !== entries.length ||
     entries.length > maximumMembers ||
-    entries.reduce((n, [, b]) => n + b.size, 0) > REVIEW_LIMIT
+    entries.reduce((n, [, b]) => n + b.size, 0) > maximumBytes
   )
-    throw new Error("Snapshot exceeds the 64 MiB content or member limit");
+    throw new Error(`Snapshot exceeds the ${maximumBytes / 1024 / 1024} MiB content or member limit`);
   const table = new Uint32Array(256);
   for (let i = 0; i < 256; i++) {
     let c = i;
@@ -225,17 +238,18 @@ export async function writeReviewZip(
     locals: BlobPart[] = [],
     directory: BlobPart[] = [];
   let offset = 0,
-    directoryBytes = 0;
+    directoryBytes = 0,
+    headerBytes = 22;
   for (const [name, blob] of entries) {
     signal.throwIfAborted();
-    const text = encoder.encode(name),
-      bytes = new Uint8Array(await blob.arrayBuffer());
+    const text = encoder.encode(name);
     if (text.length > 65535)
       throw new Error("Snapshot member name is too long");
     let crc = 0xffffffff;
-    for (let i = 0; i < bytes.length; i++) {
-      if (i % 1048576 === 0) signal.throwIfAborted();
-      crc = (crc >>> 8) ^ table[(crc ^ bytes[i]) & 255];
+    for (let start = 0; start < blob.size; start += ZIP_CHECK_CHUNK) {
+      signal.throwIfAborted();
+      const bytes = new Uint8Array(await blob.slice(start, start + ZIP_CHECK_CHUNK).arrayBuffer());
+      for (const byte of bytes) crc = (crc >>> 8) ^ table[(crc ^ byte) & 255];
     }
     crc = (crc ^ 0xffffffff) >>> 0;
     const local = new Uint8Array(30),
@@ -247,8 +261,8 @@ export async function writeReviewZip(
     l.setUint16(6, 0x800, true);
     l.setUint16(12, 0x21, true);
     l.setUint32(14, crc, true);
-    l.setUint32(18, bytes.length, true);
-    l.setUint32(22, bytes.length, true);
+    l.setUint32(18, blob.size, true);
+    l.setUint32(22, blob.size, true);
     l.setUint16(26, text.length, true);
     c.setUint32(0, 0x02014b50, true);
     c.setUint16(4, 20, true);
@@ -256,14 +270,17 @@ export async function writeReviewZip(
     c.setUint16(8, 0x800, true);
     c.setUint16(14, 0x21, true);
     c.setUint32(16, crc, true);
-    c.setUint32(20, bytes.length, true);
-    c.setUint32(24, bytes.length, true);
+    c.setUint32(20, blob.size, true);
+    c.setUint32(24, blob.size, true);
     c.setUint16(28, text.length, true);
     c.setUint32(42, offset, true);
     locals.push(local, text, blob);
     directory.push(central, text);
-    offset += local.length + text.length + bytes.length;
+    offset += local.length + text.length + blob.size;
     directoryBytes += central.length + text.length;
+    headerBytes += local.length + central.length + 2 * text.length;
+    if (headerBytes > HEADER_LIMIT)
+      throw new Error("Snapshot ZIP headers exceed the 10 MiB limit");
   }
   const end = new Uint8Array(22),
     e = new DataView(end.buffer);

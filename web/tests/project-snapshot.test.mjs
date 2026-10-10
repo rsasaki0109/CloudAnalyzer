@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { writeProjectSnapshot, readProjectSnapshot } from '../src/project-snapshot.ts';
-import { indexReviewZip, readReviewMember, writeReviewZip, REVIEW_LIMIT } from '../src/review-zip.ts';
+import { indexReviewZip, readReviewMember, writeReviewZip, REVIEW_LIMIT, WORKSPACE_LIMIT, ZIP_CHECK_CHUNK } from '../src/review-zip.ts';
 import { referenceFile } from '../src/source-reference.ts';
+import { crc32 } from 'node:zlib';
 
 const signal=()=>new AbortController().signal;
 async function fixture() {
@@ -85,4 +86,104 @@ test('original review archive bytes are separate from edited project geometry',a
   const table=await entries(zip), changed=table.find(([p])=>p.startsWith('assets/'));
   changed[1]=new Blob(['changed original review archive!!!']);
   await assert.rejects(readProjectSnapshot(asFile(await writeReviewZip(table,signal(),2048)),signal()),/identity|hash differs/);
+});
+
+test('metadata-only v3 workspaces retain external graph and review references',async()=>{
+  const {file,project}=await fixture(),graph=new File(['original graph'],'poses.g2o'),archive=new File(['original review'],'review.zip');
+  project.poseGraph={sources:[{graph:await referenceFile(graph),scans:[]}]};
+  project.reviewArchive=await referenceFile(archive);
+  const zip=asFile(await writeProjectSnapshot(project,[file],signal()));
+  const restored=await readProjectSnapshot(zip,signal());
+  assert.equal(restored.length,2);
+  assert.deepEqual(JSON.parse(await restored[0].text()).poseGraph,project.poseGraph);
+  const table=await entries(zip),entry=table.find(([p])=>p==='manifest.json'),manifest=JSON.parse(await entry[1].text());
+  assert.equal(manifest.pose_graph_sources_included,false);assert.equal(manifest.review_archive_included,false);
+  manifest.pose_graph_sources_included=true;entry[1]=new Blob([JSON.stringify(manifest)]);
+  await assert.rejects(readProjectSnapshot(asFile(await writeReviewZip(table,signal())),signal()),/provenance/);
+});
+
+test('large workspace retains more than 64 MiB without whole-member arrayBuffer reads',async()=>{
+  const chunk=new Blob([new Uint8Array(8*1024*1024).fill(73)]);
+  const file=new File([...Array(8).fill(chunk),new Uint8Array(17).fill(91)],'large.ply');
+  const source=await referenceFile(file),project={app:'CloudAnalyzer Project',version:1,session:{clouds:[{name:'Large survey',source,transforms:[],loadMaxPoints:0}]}};
+  const original=Blob.prototype.arrayBuffer,reads=[];
+  Blob.prototype.arrayBuffer=function(){reads.push(this.size);return original.call(this);};
+  try {
+    const zip=asFile(await writeProjectSnapshot(project,[file],signal()));
+    assert(zip.size>REVIEW_LIMIT);
+    await assert.rejects(indexReviewZip(zip,signal()),/browser limits/);
+    const directory=await indexReviewZip(zip,signal(),2048,WORKSPACE_LIMIT);
+    const member=directory.get('clouds/000.ply');assert.equal(member.bytes,file.size);
+    const restored=await readProjectSnapshot(zip,signal());
+    assert.deepEqual(await referenceFile(restored[1]),source);
+    assert(reads.length>1 && Math.max(...reads)<=8*1024*1024,JSON.stringify(reads));
+    const localOffset=member.offset-30-Buffer.byteLength(member.path);
+    const cloudHeader=new DataView(await zip.slice(localOffset,localOffset+30).arrayBuffer());
+    let expected=0;
+    for(let offset=0;offset<file.size;offset+=8*1024*1024)
+      expected=crc32(new Uint8Array(await file.slice(offset,offset+8*1024*1024).arrayBuffer()),expected);
+    assert.equal(cloudHeader.getUint32(14,true),expected);
+    // The old browser-save budget remains explicitly available to its caller.
+    await assert.rejects(writeProjectSnapshot(project,[file],signal(),[],REVIEW_LIMIT),/64 MiB/);
+  } finally {Blob.prototype.arrayBuffer=original;}
+});
+
+test('ZIP checksum reads at most one MiB and agrees with independent CRC32',async()=>{
+  const blob=new Blob([new Uint8Array(2*ZIP_CHECK_CHUNK+39).fill(255)]);
+  const original=Blob.prototype.arrayBuffer,reads=[];
+  Blob.prototype.arrayBuffer=function(){reads.push(this.size);return original.call(this);};
+  let zip;
+  try {zip=await writeReviewZip([['manifest.json',blob]],signal());}
+  finally {Blob.prototype.arrayBuffer=original;}
+  assert.equal(Math.max(...reads),ZIP_CHECK_CHUNK);
+  assert.equal(new DataView(await zip.slice(0,30).arrayBuffer()).getUint32(14,true),crc32(new Uint8Array(await blob.arrayBuffer())));
+});
+
+test('legacy SHA-256 workspace versions still read with their original identity rules',async()=>{
+  for(const version of [1,2]) {
+    const {file,project}=await fixture(),graph=new File(['original graph'],'poses.g2o');
+    const assets=version===2?[graph]:[];
+    if(version===2)project.poseGraph={sources:[{graph:await referenceFile(graph),scans:[]}]};
+    const table=await entries(asFile(await writeProjectSnapshot(project,[file],signal(),assets)));
+    const manifestEntry=table.find(([name])=>name==='manifest.json'),manifest=JSON.parse(await manifestEntry[1].text());
+    manifest.schema=`cloudanalyzer.project_snapshot.v${version}`;
+    for(const d of manifest.files){const blob=table.find(([name])=>name===d.path)[1];d.sha256=Buffer.from(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer())).toString('hex');delete d.identity;}
+    manifestEntry[1]=new Blob([JSON.stringify(manifest)]);
+    const restored=await readProjectSnapshot(asFile(await writeReviewZip(table,signal())),signal());
+    assert.equal(await restored[1].text(),await file.text());
+    if(version===2)assert.equal(await restored[2].text(),await graph.text());
+  }
+});
+
+test('input directory names do not replace original scan basenames in the archive',async()=>{
+  const {file,project}=await fixture(),scan=new File(['scan records'],'000000.ply');
+  Object.defineProperty(scan,'webkitRelativePath',{value:'session-a/000000.ply'});
+  project.poseGraph={sources:[{graph:null,scans:[await referenceFile(scan)]}]};
+  const restored=await readProjectSnapshot(asFile(await writeProjectSnapshot(project,[file],signal(),[scan])),signal());
+  assert.equal(restored[2].name,'000000.ply');assert.equal(await restored[2].text(),'scan records');
+});
+
+test('cancellation between ZIP checksum chunks publishes no archive',async()=>{
+  const controller=new AbortController(),blob=new Blob([new Uint8Array(3*ZIP_CHECK_CHUNK)]);
+  const original=Blob.prototype.arrayBuffer;let reads=0;
+  Blob.prototype.arrayBuffer=async function(){const result=await original.call(this);if(++reads===1)controller.abort();return result;};
+  try {await assert.rejects(writeReviewZip([['manifest.json',blob]],controller.signal),{name:'AbortError'});assert.equal(reads,1);}
+  finally {Blob.prototype.arrayBuffer=original;}
+});
+
+test('manual snapshots refuse content above 256 MiB before hashing or allocating records',async()=>{
+  const chunk=new Blob([new Uint8Array(1024*1024)]),file=new File([...Array(257).fill(chunk)],'oversized.ply');
+  const project={session:{clouds:[{}]}};
+  await assert.rejects(writeProjectSnapshot(project,[file],signal()),/256 MiB/);
+  await assert.rejects(writeReviewZip([['manifest.json',file]],signal(),129,WORKSPACE_LIMIT),/256 MiB/);
+});
+
+test('oversized ZIP directory is rejected before reading the directory buffer',async()=>{
+  const end=new Uint8Array(22),e=new DataView(end.buffer),size=11*1024*1024;
+  e.setUint32(0,0x06054b50,true);e.setUint16(8,1,true);e.setUint16(10,1,true);e.setUint32(12,size,true);e.setUint32(16,0,true);
+  const file=new File([new Blob([new Uint8Array(size)]),end],'malformed.zip');
+  const original=Blob.prototype.arrayBuffer,reads=[];
+  Blob.prototype.arrayBuffer=function(){reads.push(this.size);return original.call(this);};
+  try {await assert.rejects(indexReviewZip(file,signal(),2048,WORKSPACE_LIMIT),/directory/);assert(Math.max(...reads)<=65557);}
+  finally {Blob.prototype.arrayBuffer=original;}
 });

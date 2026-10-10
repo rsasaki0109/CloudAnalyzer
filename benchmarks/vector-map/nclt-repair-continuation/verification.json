@@ -1,0 +1,91 @@
+{
+  "schema": "cloudanalyzer.nclt_repair_continuation.v1",
+  "date": "2026-10-09",
+  "source": {
+    "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+    "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+    "bytes": 9387931
+  },
+  "native": {
+    "version": "0.1.0",
+    "extension": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "method": "Live MCP continues the exact accepted June point/HD pair from the previous HD-envelope run. Fresh gap/box inspection, explicit disjoint density trial (.1/.05 m) at original retained frames/poses, four unchanged retained-HD audits, reject regressions, explicitly finish seed1. Choices are informed by earlier runs; not an independent agent benchmark.",
+  "independent_agent_benchmark": false,
+  "independent_ground_truth_used": false,
+  "independent_accuracy_improvement_established": false,
+  "deployment_ready": false,
+  "full_extent_goal_met": false,
+  "source_license": "ODbL-1.0 and DBCL-1.0 for derived maps, subsets, observations and figure.",
+  "path_conventions": "run/parent/repo/native/env replace machine paths. Original descriptor hashes identify generated files; files-sha256.json hashes portable copies. Inside subsets cannot alone prove outside equality.",
+  "adopted": false,
+  "point_box": [
+    7.0,
+    5.0,
+    15.0,
+    10.0
+  ],
+  "previous_point_box": [
+    12.0,
+    -3.0,
+    22.0,
+    5.0
+  ],
+  "startup_native_processing": false,
+  "seed_candidate_id": 1,
+  "new_session_budget": 6,
+  "allocated_to_rejected_child": 6,
+  "session_hd_attempts": 0,
+  "previous_hd_attempts": 8,
+  "cumulative_hd_attempts": 8,
+  "new_point_fusion_trials": 1,
+  "before_inside_points": 4399,
+  "rejected_inside_points": 8828,
+  "outside_points": 641910,
+  "outside_records_sha256": "d68cd79b1dada2577637d92411802081fe4a2d4a8bdd42a8a149fc36ce629679",
+  "outside_records_bit_identical": true,
+  "previous_point_box_records_bit_identical": true,
+  "retained_map_points": 646309,
+  "rejected_map_points": 650738,
+  "delivered_pair_identical_to_parent": true,
+  "source_extent_before_m": 118.0,
+  "source_extent_after_m": 118.0,
+  "gained_source_length_m": 0,
+  "lost_source_length_m": 0,
+  "retained_previous_addition": 51,
+  "retained_previous_connector": 54,
+  "retained_previous_edges": [
+    [
+      51,
+      54
+    ],
+    [
+      54,
+      9
+    ]
+  ],
+  "retained_route_components": 12,
+  "retained_longest_route_m": 66,
+  "holds": [
+    "editable:new_retained_failure_location:39:center",
+    "editable:new_retained_failure_location:39:left",
+    "editable:new_retained_failure_location:6:left",
+    "editable:new_retained_failure_location:6:right",
+    "editable:retained_trace_regressed:39:center",
+    "editable:retained_trace_regressed:39:left",
+    "editable:retained_trace_regressed:6:left",
+    "editable:retained_trace_regressed:6:right",
+    "reopened_osm:new_retained_failure_location:39:center",
+    "reopened_osm:new_retained_failure_location:39:left",
+    "reopened_osm:new_retained_failure_location:6:left",
+    "reopened_osm:new_retained_failure_location:6:right",
+    "reopened_osm:retained_trace_regressed:39:center",
+    "reopened_osm:retained_trace_regressed:39:left",
+    "reopened_osm:retained_trace_regressed:6:left",
+    "reopened_osm:retained_trace_regressed:6:right"
+  ]
+}

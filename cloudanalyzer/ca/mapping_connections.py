@@ -1,6 +1,7 @@
 """Explicit, source-checked short connections between consecutive drive pieces."""
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -133,27 +134,48 @@ def _width(candidate: dict[str, Any]) -> float:
     return float(np.min(np.linalg.norm(width[:-1] + fraction[:, None] * delta, axis=1)))
 
 
-def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
+def connection_region(job: dict[str, Any], parent: dict[str, Any], bounds_xy: Any) -> dict[str, Any]:
+    """Validate an explicit HD envelope without expanding point replacement."""
+    from ca import mapping_local_points as local
+    point_box = local.bounds(job)
+    if point_box is None or "patch_inputs" not in parent:
+        raise ValueError("HD connection regions require a combined local-retry patch")
+    if (not isinstance(bounds_xy, list) or len(bounds_xy) != 4
+        or any(type(v) not in (int, float) or not math.isfinite(v) or abs(v) > 1e6 for v in bounds_xy)
+        or any(not 0 < bounds_xy[i+2] - bounds_xy[i] <= 20 for i in (0, 1))):
+        raise ValueError("HD bounds_xy needs four finite coordinates with positive sides at most 20 m")
+    if any(bounds_xy[i] > point_box[i] or bounds_xy[i+2] < point_box[i+2] for i in (0, 1)):
+        raise ValueError("HD connection region must contain the frozen point-update box")
+    return {"protocol": "explicit_local_hd_connection_region_v1", "bounds_xy": bounds_xy,
+            "point_bounds_xy": point_box, "maximum_side_m": 20, "repair_lanes_only": True,
+            "point_map_unchanged": True, "independent_accuracy_established": False}
+
+
+def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None) -> dict[str, Any]:
     if type(offset) is not int or offset < 0:
         raise ValueError("connection offset must be a nonnegative integer")
     with jobs._locked(root):
         job = jobs._load(root)
         jobs._inputs(job)
         parent, ir, _, pieces = _parent(job, cid)
+        region = connection_region(job, parent, bounds_xy) if bounds_xy is not None else None
         path = root / f"connections-{cid:02d}.json"
+        if region is not None:
+            key = hashlib.sha256(json.dumps(region, sort_keys=True).encode()).hexdigest()[:16]
+            path = root / f"connections-{cid:02d}-region-{key}.json"
         inputs = {**{f"parent_{k}": v for k, v in parent["files"].items()}, "parent_audits": parent["quality_report"],
                   **{f"geometry_{k}": v for k, v in parent["geometry_inputs"].items()}, "proposal": parent["corridor_proposal"],
                   **{f"pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()}, "source": job["source"],
                   "native": job["runtime"]["native"]["extension"]}
         # Freeze the complete inherited lineage, including the retained patch checks.
-        for key in ("connection_inputs", "patch_inputs"):
+        for key in ("connection_inputs", "patch_inputs", "height_inputs"):
             inputs.update({f"inherited_{key}_{k}": v for k, v in parent.get(key, {}).items()})
-        for key in ("connection_proposal", "connection_checks", "connection_audits", "patch_preview", "patch_checks", "patch_audits"):
+        for key in ("connection_proposal", "connection_checks", "connection_audits", "patch_preview", "patch_checks", "patch_audits", "height_checks", "height_audits", "height_trial"):
             if key in parent:
                 inputs[f"inherited_{key}"] = parent[key]
         if path.exists():
             proposal = json.loads(path.read_text())
-            if proposal["inputs"] != inputs:
+            if proposal["inputs"] != inputs or proposal.get("region") != region:
                 raise ValueError("connection proposal inputs changed")
         else:
             module = jobs.core()
@@ -166,6 +188,12 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
             if not np.isfinite(poses).all() or stations[-1] < pieces[-1]["to_m"] - 1e-6:
                 raise ValueError("trajectory does not cover the source stations")
             candidates, rejected = [], []
+            from ca import mapping_local_points as local
+            box = region['bounds_xy'] if region is not None else local.bounds(job)
+            repair_ids = set()
+            if region is not None:
+                baseline = json.loads(Path(parent['patch_inputs']['baseline_editable_map']['path']).read_text())
+                repair_ids = {l['id'] for l in ir['lanes']} - {l['id'] for l in baseline['lanes']}
             for first, second in zip(pieces, pieces[1:]):
                 pair = (first["lane"], second["lane"])
                 gap = second["from_m"] - first["to_m"]
@@ -176,6 +204,10 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
                 xy = np.column_stack([np.interp(ts, stations, poses[:, k]) for k in (0, 1)])
                 minimum = _width(c)
                 holds = []
+                if box is not None and any(not local.inside_geometry(c[k], box) for k in ('left', 'right', 'center')):
+                    holds.append('outside_explicit_hd_connection_bounds' if region is not None else 'outside_local_point_update_bounds')
+                if region is not None and not repair_ids.intersection(pair):
+                    holds.append('unrelated_to_local_hd_repair')
                 if any(frm == pair[0] or to == pair[1] for frm, to in edges(ir)):
                     holds.append("existing_endpoint_already_connected")
                 if c["ambiguous"]:
@@ -187,14 +219,16 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
                 if max(len(c[k]) for k in ("center", "left", "right")) > 128:
                     holds.append("geometry_exceeds_inspection_bound")
                 if holds:
-                    rejected.append({"from": pair[0], "to": pair[1], "holds": holds})
+                    points = np.concatenate([c[k] for k in ('left', 'right', 'center')])[:, :2]
+                    rejected.append({"from": pair[0], "to": pair[1], "holds": holds,
+                                     "geometry_bounds_xy": [*points.min(axis=0).tolist(), *points.max(axis=0).tolist()]})
                 else:
                     candidates.append({**c, "from_m": first["to_m"], "to_m": second["from_m"], "station_gap_m": gap,
                                        "trajectory_xy": xy.tolist(), "trajectory_step_max_m": .5,
                                        "minimum_interpolated_xy_width_m": minimum,
                                        "width_measurement": "equal_normalized_xy_arc_positions_on_linear_boundaries",
                                        "both_estimators_verified": False})
-            proposal = {"candidate_id": cid, "inputs": inputs, "options": OPTIONS, "pieces": pieces,
+            proposal = {"candidate_id": cid, "inputs": inputs, "options": OPTIONS, "pieces": pieces, "region": region,
                         "baseline_routes": route_metrics(ir, {p["lane"]: (p["from_m"], p["to_m"]) for p in pieces}),
                         "candidates": candidates, "rejected": rejected,
                         "native_summary": {k: v for k, v in payload["report"]["junctions"].items() if k not in {"candidates", "added"}},
@@ -206,6 +240,7 @@ def inspect_connections(root: Path, cid: int, offset: int) -> dict[str, Any]:
         for artifact in proposal["inputs"].values():
             jobs._verify(artifact)
         return {"proposal_file": jobs._artifact(path), "candidate_id": cid, "options": proposal["options"],
+                "region": proposal.get("region"),
                 "baseline_routes": proposal["baseline_routes"], "candidates_total": len(proposal["candidates"]),
                 "candidates": proposal["candidates"][offset:offset + 8],
                 "next_offset": offset + 8 if offset + 8 < len(proposal["candidates"]) else None,
@@ -241,6 +276,9 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
         proposal = json.loads(Path(proposal_file["path"]).read_text())
         if proposal["candidate_id"] != cid:
             raise ValueError("connection proposal belongs to another parent")
+        if proposal.get("region") is not None:
+            if connection_region(job, parent, proposal["region"]["bounds_xy"]) != proposal["region"]:
+                raise ValueError("HD connection region changed after inspection")
         if len(original["lanes"]) + len(chosen) > 256:
             raise ValueError("short connections allow at most 256 total lanes")
         if jobs._remaining(job) <= 0:
@@ -249,7 +287,7 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
             "reason": reason, "road_options": parent["road_options"], "geometry_inputs": parent["geometry_inputs"],
             "corridor_proposal": parent["corridor_proposal"], "connection_inputs": proposal["inputs"],
             "connection_proposal": proposal_file, "connection_pairs": pairs, "parent_candidate_id": cid}
-        for key in ("patch_inputs", "patch_preview", "patch_checks", "patch_audits"):
+        for key in ("patch_inputs", "patch_preview", "patch_checks", "patch_audits", "height_inputs", "height_edits", "height_checks", "height_audits", "height_trial"):
             if key in parent:
                 attempt[key] = parent[key]
         job["attempts"].append(attempt)
@@ -319,6 +357,7 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
             evidence = payload["report"]
             evidence.update({"options": parent["road_options"], "reason": reason, "routes": routes,
                 "connection_proposal": proposal_file, "connection_inputs": proposal["inputs"],
+                "connection_region": proposal.get("region"),
                 "station_disposition": parent_report["station_disposition"], "extraction": parent["extraction"],
                 "extent": parent["extent"], "built_segments": parent_report["built_segments"],
                 "lane_intervals": {str(k): v for k, v in intervals.items()},

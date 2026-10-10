@@ -235,6 +235,12 @@ export function renderList(): void {
       formats.append(button);
     }
     actions.append(save, remove);
+    if(entry.processing){
+      const provenance=document.createElement("button");provenance.textContent="Recipe";
+      provenance.title="Download processing record";
+      provenance.onclick=()=>download(new Blob([JSON.stringify(entry.processing,null,2)],{type:"application/json"}),"processing-record.json");
+      actions.prepend(provenance);
+    }
 
     const mode = document.createElement("select");
     mode.title = "Color by";

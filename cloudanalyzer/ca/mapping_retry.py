@@ -29,6 +29,9 @@ def _parent(job: dict[str, Any], cid: int) -> dict[str, Any]:
             jobs._verify(parent[key])
     if "patch_preview" in parent:
         jobs._verify(parent["patch_preview"])
+    _verify_inputs(parent.get('height_inputs', {}))
+    for key in ('height_checks', 'height_audits', 'height_trial'):
+        if key in parent: jobs._verify(parent[key])
     return cast(dict[str, Any], parent)
 
 
@@ -36,6 +39,7 @@ def _inputs(job: dict[str, Any], parent: dict[str, Any], layout: dict[str, Any])
     correction = jobs._artifact(job["pointcloud"]["reports"]["correction"])
     return {"source": job["source"], "native": job["runtime"]["native"]["extension"], "layout": layout,
             "correction_report": correction, "proposal": parent["corridor_proposal"], "audits": parent["quality_report"],
+            **{f"continuation_{k}": v for k, v in job.get("continuation_inputs", {}).items()},
             **{f"pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()},
             **{f"parent_{k}": v for k, v in parent["files"].items()},
             **{f"geometry_{k}": v for k, v in parent["geometry_inputs"].items()}}
@@ -160,8 +164,10 @@ def inspect_gaps(root: Path, cid: int, offset: int, layout: dict[str, Any]) -> d
             jobs._save(path, saved)
         _verify_inputs(saved["inputs"])
         jobs._verify(saved["raw_manifest"])
+        from ca.mapping_hd_repair import occupancy
+        page = [{**gap, "retained_hd_occupancy": occupancy(parent, gap)} for gap in saved["gaps"][offset:offset + 8]]
         return {"file": jobs._artifact(path), "candidate_id": cid, "gaps_total": len(saved["gaps"]),
-                "gaps": saved["gaps"][offset:offset + 8], "next_offset": offset + 8 if offset + 8 < len(saved["gaps"]) else None,
+                "gaps": page, "next_offset": offset + 8 if offset + 8 < len(saved["gaps"]) else None,
                 **{k: saved[k] for k in ("processing", "pointcloud_options", "raw_matched_returns", "protocol", "source_extent", "note")}}
 
 
@@ -184,15 +190,22 @@ def validate(evidence: dict[str, Any], gap_ids: Any, options: Any) -> dict[str, 
 
 
 def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], options: dict[str, Any], reason: str,
-          frame_ids: list[int] | None = None) -> dict[str, Any]:
+          frame_ids: list[int] | None = None, local_evidence: dict[str, Any] | None = None) -> dict[str, Any]:
     from ca.mapping_run import SCHEMA
     from ca import mapping_frames as frames
+    from ca import mapping_local_points as local
     with jobs._locked(root):
         job = jobs._load(root)
         jobs._inputs(job)
         parent = _parent(job, cid)
         saved = validate(evidence, gap_ids, options) if frame_ids is None else frames.validate(evidence, frame_ids)
         strategy = "density" if frame_ids is None else "unused_frames"
+        if local_evidence is not None:
+            local_preview = (local.validate_density(local_evidence, evidence, cid, options) if frame_ids is None
+                             else local.validate(local_evidence, evidence, cid, frame_ids))
+            if gap_ids != local_preview['request']['gap_ids']:
+                raise ValueError("local update gap choice changed")
+            strategy = "local_density" if frame_ids is None else "local_unused_frames"
         if frame_ids is not None and options != saved["pointcloud_options"]:
             raise ValueError("unused-frame fusion must keep original thinning resolutions")
         if saved["candidate_id"] != cid:
@@ -203,18 +216,22 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
                 raise ValueError("point-cloud retry was already allocated to another decision")
             if stage.get("strategy", "density") != strategy or stage.get("frame_ids") != frame_ids:
                 raise ValueError("point-cloud retry strategy or chosen frames changed")
+            if stage.get('local_evidence') != local_evidence:
+                raise ValueError("point-cloud retry local region changed")
             if stage["status"] == "running":
                 raise RuntimeError("point-cloud retry did not finish; inspect retained state before recovery")
             return cast(dict[str, Any], stage)
         available = jobs._remaining(job)
-        if available < 2 or "retry_inputs" in job:
-            raise ValueError("one point-map retry requires two remaining shared HD attempts and a root run")
+        if available < (3 if local_evidence is not None else 2) or "retry_inputs" in job:
+            raise ValueError("one point-map retry requires enough shared HD attempts (three for local updates) and a root run")
         child = root / "pointcloud-retry"
         if child.exists():
             raise FileExistsError(f"retry directory already exists: {child}")
         stage = {"status": "running", "candidate_id": cid, "gap_ids": gap_ids, "options": options, "reason": reason,
                  "evidence": evidence, "child_job_dir": str(child), "allocated_attempts": available,
                  "strategy": strategy, "frame_ids": frame_ids}
+        if local_evidence is not None:
+            stage['local_evidence'] = local_evidence
         job["pointcloud_retry"] = stage
         jobs._save(root / "job.json", job)
         try:
@@ -226,6 +243,8 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
                 "minimum_retained_fraction": job["minimum_retained_fraction"], "scope": job["scope"],
                 "retry_inputs": {**saved["inputs"], "retry_evidence": evidence, "raw_manifest": saved["raw_manifest"]},
                 "retry_parent": {"job_dir": str(root), "candidate_id": cid, "gap_ids": gap_ids, "reason": reason}}
+            if local_evidence is not None:
+                child_job['retry_inputs']['local_preview'] = local_evidence
             jobs._save(child / "job.json", child_job)
             run = {"schema": SCHEMA, "revision": 0, "status": "preparing", "layout_file": jobs._artifact(child / "layout-hypothesis.json"),
                    "reviewed_candidates": [], "history": [], "output": None, "maximum_actions": 128, "pointcloud_retry_allowed": False}
@@ -241,6 +260,16 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
             reference = np.loadtxt(job["pointcloud"]["files"]["trajectory"]["path"])
             if motion.shape != reference.shape or not np.allclose(motion, reference, atol=1e-10, rtol=0):
                 raise ValueError("density trial changed frozen motion")
+            if frame_ids is None and local_evidence is not None:
+                module = jobs.core(); assert module is not None
+                original_graph = module.PoseGraph.from_g2o(Path(job['pointcloud']['files']['graph']['path']).read_text())
+                fused_graph = module.PoseGraph.from_g2o(Path(result['outputs']['g2o']).read_text())
+                if (list(fused_graph.node_ids) != list(original_graph.node_ids)
+                    or result['scans'] != len(original_graph.node_ids)
+                    or not np.allclose(fused_graph.poses(), original_graph.poses(), atol=1e-10, rtol=0)):
+                    raise ValueError("local density fusion changed retained frames or frozen poses")
+                result['original_retained_frame_ids'] = list(original_graph.node_ids)
+                result['added_frame_ids'] = []
             if result["map_points"] <= 0:
                 raise ValueError("density trial produced an empty point map")
             # Keep the exact original station grid and graph, rather than a numerical roundtrip copy.
@@ -248,6 +277,16 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
                 shutil.copyfile(job["pointcloud"]["files"][key]["path"], result["outputs"][output_key])
             result["motion_reoptimized"] = False
             result["maximum_pose_roundtrip_difference"] = max(result.get("maximum_pose_roundtrip_difference", 0.), float(np.max(np.abs(motion - reference))))
+            if local_evidence is not None:
+                update = local.apply(child, parent, local_evidence, result)
+                stage['local_update'] = update
+                if not update['passes']:
+                    raise ValueError("local point update regressed retained HD source: " + ', '.join(update['holds']))
+                result['outputs']['full_fusion_map'] = result['outputs']['map']
+                result['outputs']['map'] = update['map']['path']
+                result['full_fusion_map_points'] = result['map_points']
+                result['map_points'] = update['map_points']
+                result['local_update'] = update
             jobs._save(child / "pointcloud-report.json", result)
             child_job["pointcloud"] = {"files": {"map": jobs._artifact(result["outputs"]["map"]),
                 "trajectory": jobs._artifact(result["outputs"]["kitti"]), "graph": jobs._artifact(result["outputs"]["g2o"])},
@@ -259,6 +298,10 @@ def retry(root: Path, cid: int, evidence: dict[str, Any], gap_ids: list[int], op
                     fusion_trajectory=jobs._artifact(result["outputs"]["fusion_kitti"]), fusion_scans=result["fusion_scans_manifest"])
                 child_job["pointcloud"]["additional_frame_ids"] = frame_ids
                 child_job["pointcloud"]["source_motion"] = job["pointcloud"]["source_motion"]
+            if local_evidence is not None:
+                child_job['pointcloud']['files'].update(local_update_report=update['report'],
+                    local_update_checks=update['checks'], local_update_audits=update['audits'],
+                    full_fusion_candidate=update['full_fusion_candidate'])
             child_job["status"] = "pointcloud_ready"
             jobs._save(child / "job.json", child_job)
             source_proposal = json.loads(Path(parent["corridor_proposal"]["path"]).read_text())
@@ -324,6 +367,8 @@ def compare(root: Path, cid: int) -> dict[str, Any]:
     jobs._inputs(child_job)
     parent = _parent(job, stage["candidate_id"])
     candidate = _parent(child_job, cid)
+    if stage.get('strategy') in {'local_unused_frames', 'local_density', 'hd_only'} and 'patch_inputs' not in candidate:
+        raise ValueError("local and HD-only repairs require a combined HD patch retaining the baseline map")
     child_run = load_run(child)
     if cid not in [h.get("lane_candidate_id") for h in child_run["history"]]:
         raise ValueError("compare an audited lane candidate generated by the retry run")
@@ -331,6 +376,8 @@ def compare(root: Path, cid: int) -> dict[str, Any]:
         or child_run["layout_file"]["sha256"] != json.loads((root / "run.json").read_text())["layout_file"]["sha256"]
         or any(job["pointcloud"]["files"][k]["sha256"] != child_job["pointcloud"]["files"][k]["sha256"] for k in ("trajectory", "graph"))):
         raise ValueError("retry comparison changed source, native, layout or frozen reference motion")
+    if stage.get("strategy") == "hd_only" and job["pointcloud"] != child_job["pointcloud"]:
+        raise ValueError("HD-only comparison changed the retained point map")
     reports = [json.loads(Path(a["files"]["report"]["path"]).read_text()) for a in (parent, candidate)]
     proposals = [json.loads(Path(a["corridor_proposal"]["path"]).read_text()) for a in (parent, candidate)]
     if proposals[0]["protocol"] != proposals[1]["protocol"]:
@@ -372,6 +419,13 @@ def compare(root: Path, cid: int) -> dict[str, Any]:
               "lost_source_length_m": sum(i["to_m"] - i["from_m"] for i in lost),
               "same_frozen_reference_motion": True, "same_fixed_layout": True, "same_original_extent_goal": True,
               "automatic_adoption": False, "deployment_ready": False}
+    if stage.get("strategy") == "hd_only":
+        report.update(pointcloud_regenerated=False, pointcloud_artifacts_identical=True, source_proposal_identical=parent["corridor_proposal"] == candidate["corridor_proposal"])
+    if stage.get('strategy') in {'local_unused_frames', 'local_density'}:
+        local_report = json.loads(Path(child_job['pointcloud']['files']['local_update_report']['path']).read_text())
+        report['local_point_update'] = {k: local_report[k] for k in ('effective_bounds_xy', 'before_inside_points',
+            'after_inside_points', 'outside_points', 'outside_records_sha256', 'outside_records_bit_identical',
+            'passes', 'full_candidate_generation_still_required')}
     path = root / f"retry-comparison-{cid:02d}.json"
     if path.exists():
         retained = json.loads(path.read_text())

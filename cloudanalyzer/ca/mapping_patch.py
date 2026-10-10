@@ -82,8 +82,18 @@ def validate(root: Path, cid: int, gap_ids: Any) -> dict[str, Any]:
     seen = {g["id"] for receipt in receipts if receipt["file"] == evidence for g in receipt["gaps"]}
     if not isinstance(gap_ids, list) or not 1 <= len(gap_ids) <= 32 or any(type(i) is not int for i in gap_ids) or len(set(gap_ids)) != len(gap_ids) or not set(gap_ids) <= seen:
         raise ValueError("choose 1..32 distinct gap IDs inspected through the root run")
+    if stage.get("strategy") == "hd_only" and not set(gap_ids) <= set(stage["gap_ids"]):
+        raise ValueError("HD-only additions must use the allocated root gaps")
     chosen = [g for g in gaps["gaps"] if g["id"] in gap_ids]
     original, trial = _read(baseline["files"]["editable_map"]), _read(candidate["files"]["editable_map"])
+    from ca import mapping_local_points as local
+    local_box = local.bounds(job)
+    if local_box is not None:
+        point_preview = _read(job['retry_inputs']['local_preview'])
+        if not set(gap_ids) <= set(point_preview['request']['gap_ids']):
+            raise ValueError("HD additions must use the locally updated point gaps")
+        if any(not local.inside_geometry(b['geometry'], local_box) for b in trial['boundaries']):
+            raise ValueError("HD additions must stay inside the local point update box")
     if any(trial.get(k) for k in ("roads", "rules", "topology", "signals", "crosswalks", "markings")):
         raise ValueError("patch additions must be isolated source-lane drafts without relations")
     before, additions = _intervals(baseline), _intervals(candidate)
@@ -109,9 +119,12 @@ def validate(root: Path, cid: int, gap_ids: Any) -> dict[str, Any]:
               **{f"trial_pointcloud_{k}": v for k, v in job["pointcloud"]["files"].items()}}
     if "connection_proposal" in baseline:
         inputs["baseline_connection_proposal"] = baseline["connection_proposal"]
+    inputs.update({f'addition_height_{k}':v for k,v in candidate.get('height_inputs', {}).items()})
+    for key in ('height_checks', 'height_audits', 'height_trial'):
+        if key in candidate: inputs[f'addition_{key}'] = candidate[key]
     retries._verify_inputs(inputs)
     return {"inputs": inputs, "baseline": baseline, "candidate": candidate, "original": original, "trial": trial,
-            "before_intervals": before, "addition_intervals": additions, "chosen_gaps": chosen}
+            "before_intervals": before, "addition_intervals": additions, "chosen_gaps": chosen, 'local_bounds_xy': local_box}
 
 
 def _merge(original: dict[str, Any], trial: dict[str, Any]) -> tuple[dict[str, Any], dict[int, int]]:
@@ -280,6 +293,8 @@ def patch(root: Path, cid: int, gap_ids: list[int], pairs: list[dict[str, Any]],
         attempt: dict[str, Any] = {"id": len(job["attempts"]) + 1, "kind": "patched_corridor_lanes", "status": "running",
             "reason": reason, "parent_candidate_id": cid, "gap_ids": gap_ids, "patch_inputs": prepared["inputs"], "patch_pairs": pairs, "patch_preview": preview_file,
             "geometry_inputs": addition["geometry_inputs"], "corridor_proposal": addition["corridor_proposal"], "road_options": addition["road_options"]}
+        for key in ('height_inputs', 'height_edits', 'height_checks', 'height_audits', 'height_trial'):
+            if key in addition: attempt[key] = addition[key]
         job["attempts"].append(attempt); job["gap_patch"] = {"candidate_id": attempt["id"], "gap_ids": gap_ids}
         jobs._save(root / "job.json", job)
         target = root / f"candidate-{attempt['id']:02d}"
@@ -341,7 +356,9 @@ def patch(root: Path, cid: int, gap_ids: list[int], pairs: list[dict[str, Any]],
                     station_disposition=disposition, extraction=extraction, extent=jobs._extent(extraction, job["minimum_retained_fraction"]),
                     routes=routes, built_segments=addition_report["built_segments"], retained_geometry_and_connections=True,
                     lane_roundtrip_verified=True, topology_roundtrip_verified=True,
-                    note="HD changes are confined to selected original-station gaps. Existing geometry, IDs, metadata and directed connections remain fixed. The point cloud is the full fusion trial, not an unchanged-outside-ROI point map. Original failed source samples and semantic holds remain visible; no new retained failure locations are allowed.")
+                    note="HD changes are confined to selected original-station gaps. Existing geometry, IDs, metadata and directed connections remain fixed. "
+                        + ("The point cloud replaces only the explicit XY column; outside record bytes and attributes remain fixed. " if validated['local_bounds_xy'] is not None else "The point cloud is the full fusion trial, not an unchanged-outside-ROI point map. ")
+                        + "Original failed source samples and semantic holds remain visible; no new retained failure locations are allowed.")
                 evidence["files"] = {k: str(target / Path(v).name) for k, v in files.items()}
                 evidence["editing"] = {"command": "vectormap", "args": ["mcp", evidence["files"]["map"]]}
                 jobs._save(draft / "report.json", evidence)

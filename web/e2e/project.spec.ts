@@ -164,7 +164,7 @@ test('a budget change while Undo awaits a worker reply clears history safely', a
         super.onmessage=event => {
           if (this.delayed.has(event.data.seq) && event.data.response) {
             this.delayed.delete(event.data.seq);
-            setTimeout(()=>handler?.call(this,event),1000);
+            (window as any).__releaseUndoReply=()=>handler?.call(this,event);
           } else handler?.call(this,event);
         };
       }
@@ -186,8 +186,10 @@ test('a budget change while Undo awaits a worker reply clears history safely', a
   await page.evaluate(() => { (window as any).__delayUndo=true; });
   await page.locator('#undo').click();
   await expect(page.locator('#undo')).toBeDisabled();
+  await expect.poll(()=>page.evaluate(()=>typeof (window as any).__releaseUndoReply)).toBe('function');
   await page.locator('#memory-steps').fill('0');
   await page.locator('#memory-apply').click();
+  await page.evaluate(()=>{(window as any).__releaseUndoReply();});
   await expect(page.locator('#status')).toContainText('Undid');
   await expect(page.locator('#redo')).toBeDisabled();
   await expect(page.locator('#memory-report')).toContainText('clouds 0');

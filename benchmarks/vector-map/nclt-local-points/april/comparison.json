@@ -1,0 +1,707 @@
+{
+  "schema": "cloudanalyzer.mapping_retry_comparison.v1",
+  "parent_candidate_id": 3,
+  "retry_candidate_id": 3,
+  "retry_strategy": "local_unused_frames",
+  "added_frame_ids": [
+    199,
+    217
+  ],
+  "inputs": {
+    "before_map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "before_projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "before_editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "521880ac0c301ddbfe0aef1064595867840598fab5a323161efdc2add75e825c",
+      "bytes": 18383
+    },
+    "before_report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "a4605937e802f667a585a09cd24deccad6871ad2cabdca174ed9edd4542a4182",
+      "bytes": 39019
+    },
+    "after_map": {
+      "path": "run/pointcloud-retry/candidate-03/lanelet2_map.osm",
+      "sha256": "ff8f14d5a9761faf5348550880105745da97863ca306bfac2811b6e0918ca7dd",
+      "bytes": 46791
+    },
+    "after_projector": {
+      "path": "run/pointcloud-retry/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "after_editable_map": {
+      "path": "run/pointcloud-retry/candidate-03/vector_map.json",
+      "sha256": "63dbdbb947f7bf2ae137a69cbcd153f4a8d267815b20cdf64ea89e83458599fa",
+      "bytes": 19368
+    },
+    "after_report": {
+      "path": "run/pointcloud-retry/candidate-03/report.json",
+      "sha256": "757d3c88cab78c5f7caf422c8e30c21202da8eac3ee4dc66f8e2ff3bab08e859",
+      "bytes": 37564
+    },
+    "before_audits": {
+      "path": "run/candidate-03/source-quality.json",
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "after_audits": {
+      "path": "run/pointcloud-retry/candidate-03/source-quality.json",
+      "sha256": "2e7527695236f615f60624e5e6db0cd08d8e3aff97b2f72a59fce83685bc65a7",
+      "bytes": 198705
+    },
+    "gap_evidence": {
+      "path": "run/unused-frames-03.json",
+      "sha256": "9d1907dd88a767e19f2e08099eb80b6af977c6b2a2a9f41fca4bfcfa1f8c31a3",
+      "bytes": 165488
+    },
+    "after_lineage_source": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "after_lineage_native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "after_lineage_layout": {
+      "path": "run/layout-hypothesis.json",
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "after_lineage_correction_report": {
+      "path": "run/pointcloud-report.json",
+      "sha256": "ce1dcc00dde84b34d7ff2e2a1ad413dc1fd468f1682c84ed38715925f9860865",
+      "bytes": 1952
+    },
+    "after_lineage_proposal": {
+      "path": "run/corridor-proposals-trajectory.json",
+      "sha256": "be432a02e6069d1c4759da7e38e6b6311aed6fe42391bbeb0a3af08e0e88bfbf",
+      "bytes": 323970
+    },
+    "after_lineage_audits": {
+      "path": "run/candidate-03/source-quality.json",
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "after_lineage_pointcloud_map": {
+      "path": "run/pointcloud/trajectory_map.ply",
+      "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+      "bytes": 21878254
+    },
+    "after_lineage_pointcloud_trajectory": {
+      "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "after_lineage_pointcloud_graph": {
+      "path": "run/pointcloud/trajectory_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "after_lineage_parent_map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "after_lineage_parent_projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "after_lineage_parent_editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "521880ac0c301ddbfe0aef1064595867840598fab5a323161efdc2add75e825c",
+      "bytes": 18383
+    },
+    "after_lineage_parent_report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "a4605937e802f667a585a09cd24deccad6871ad2cabdca174ed9edd4542a4182",
+      "bytes": 39019
+    },
+    "after_lineage_geometry_editable_map": {
+      "path": "run/geometry-01/vector_map.json",
+      "sha256": "9469e8b794b29c4dba2ed76cd0af27eb79b3418b30a3bc0b1056346cba1c52de",
+      "bytes": 33766
+    },
+    "after_lineage_geometry_report": {
+      "path": "run/geometry-01/report.json",
+      "sha256": "af0e47131b0b467cb6395b4075f5d69ed5bb135cbc82eea3b07e2eccabdbb2c5",
+      "bytes": 89192
+    },
+    "after_lineage_gap_evidence": {
+      "path": "run/gaps-03.json",
+      "sha256": "0bd4069fa76a9e7d1524061853f23e2ce05a2ed70970eb76a119a1b0852100cf",
+      "bytes": 437202
+    },
+    "after_lineage_raw_manifest": {
+      "path": "run/gap-source/manifest.json",
+      "sha256": "7b2d322a01c989bd2292e9ee4e5946b2552512a8253ea87aea0f48120ab8f4d3",
+      "bytes": 58366
+    },
+    "after_lineage_source_motion_odometry_report": {
+      "path": "run/odometry-report.json",
+      "sha256": "31cfc79946cba1f79ecc444f08fc715160fd2751eae8dbbf19493e54874f05f5",
+      "bytes": 478
+    },
+    "after_lineage_source_motion_trajectory": {
+      "path": "run/odometry/trajectory.tum",
+      "sha256": "7638be71dfdba5ecab32a9b59a3903d16403aa082640d2b4be910a8fdc378f96",
+      "bytes": 20224
+    },
+    "after_lineage_retry_evidence": {
+      "path": "run/unused-frames-03.json",
+      "sha256": "9d1907dd88a767e19f2e08099eb80b6af977c6b2a2a9f41fca4bfcfa1f8c31a3",
+      "bytes": 165488
+    },
+    "after_lineage_local_preview": {
+      "path": "run/local-points-03-0928fa33ce0d2e54.json",
+      "sha256": "7068e7dea35cc62af6ecdfc960f9e53d932e8db51256fe5101af7c60c207eca5",
+      "bytes": 6357
+    },
+    "after_pointcloud_map": {
+      "path": "run/pointcloud-retry/local_map.ply",
+      "sha256": "26736287a11e4934260c022c2e7b22090565bdcdcd127d91a1dc599ade1f3d17",
+      "bytes": 21880590
+    },
+    "after_pointcloud_trajectory": {
+      "path": "run/pointcloud-retry/reference.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "after_pointcloud_graph": {
+      "path": "run/pointcloud-retry/reference.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "after_pointcloud_fusion_graph": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+      "sha256": "2a60468e96fb7bf78a49355f471cba9f3e983a73715885e6f2440619ffc4b5a7",
+      "bytes": 93227
+    },
+    "after_pointcloud_fusion_trajectory": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+      "sha256": "af14c84691e3044942c6a3d6fdd6a470ea8f3a93fbd9381dc4b3ac8302367874",
+      "bytes": 47793
+    },
+    "after_pointcloud_fusion_scans": {
+      "path": "run/pointcloud-retry/fusion-scans.json",
+      "sha256": "01b32a4170b1d66b1c08cd02d30ef9536de902776c0890533d758a7ce0ca5e2d",
+      "bytes": 49473
+    },
+    "after_pointcloud_local_update_report": {
+      "path": "run/pointcloud-retry/local-point-update.json",
+      "sha256": "79ccdd4b65106aa063c2aafaa78150f53a333b700b00838f642df7a58281f7c6",
+      "bytes": 3708
+    },
+    "after_pointcloud_local_update_checks": {
+      "path": "run/pointcloud-retry/local-point-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "after_pointcloud_local_update_audits": {
+      "path": "run/pointcloud-retry/local-point-audits.json",
+      "sha256": "67569222e04f19c5fc47ea55e2c603cb15aff1d4719fe924a013180e5b2ad886",
+      "bytes": 192825
+    },
+    "after_pointcloud_full_fusion_candidate": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+      "sha256": "496c742e7144c75559fe829808929ae3f583d8e6e89f8bdb4ba0d545459d3cf7",
+      "bytes": 22041198
+    }
+  },
+  "before": {
+    "extent": {
+      "trajectory_length_m": 250.4805260889724,
+      "generated_length_m": 106,
+      "retained_fraction": 0.42318659120968183,
+      "minimum_retained_fraction": 0.9,
+      "passes_requested_extent": false
+    },
+    "audits": {
+      "editable": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 758,
+          "supported": 444,
+          "height_mismatches": 314,
+          "insufficient_returns": 0
+        },
+        "needs_review": [
+          3,
+          9,
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          33,
+          36
+        ],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "minimum_returns": 3,
+            "model": "low_quantile",
+            "quantile": 0.15
+          }
+        }
+      },
+      "reopened_osm": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 758,
+          "supported": 444,
+          "height_mismatches": 314,
+          "insufficient_returns": 0
+        },
+        "needs_review": [
+          3,
+          9,
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          33,
+          36
+        ],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "minimum_returns": 3,
+            "model": "low_quantile",
+            "quantile": 0.15
+          }
+        }
+      },
+      "consensus_editable": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 758,
+          "supported": 758,
+          "height_mismatches": 0,
+          "insufficient_returns": 0
+        },
+        "needs_review": [],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          }
+        }
+      },
+      "consensus_reopened_osm": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 758,
+          "supported": 758,
+          "height_mismatches": 0,
+          "insufficient_returns": 0
+        },
+        "needs_review": [],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          }
+        }
+      }
+    },
+    "routes": {
+      "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+      "connected_components": 11,
+      "longest_route_station_span_m": 34,
+      "routes": [
+        {
+          "lane_ids": [
+            3
+          ],
+          "from_m": 10,
+          "to_m": 18,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            6
+          ],
+          "from_m": 42,
+          "to_m": 44,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            9
+          ],
+          "from_m": 56,
+          "to_m": 58,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            12
+          ],
+          "from_m": 62,
+          "to_m": 70,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            15
+          ],
+          "from_m": 76,
+          "to_m": 104,
+          "station_span_m": 28
+        },
+        {
+          "lane_ids": [
+            18,
+            39,
+            21
+          ],
+          "from_m": 110,
+          "to_m": 124,
+          "station_span_m": 14
+        },
+        {
+          "lane_ids": [
+            24
+          ],
+          "from_m": 128,
+          "to_m": 162,
+          "station_span_m": 34
+        },
+        {
+          "lane_ids": [
+            27
+          ],
+          "from_m": 166,
+          "to_m": 172,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            30
+          ],
+          "from_m": 178,
+          "to_m": 184,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            33
+          ],
+          "from_m": 198,
+          "to_m": 200,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            36
+          ],
+          "from_m": 240,
+          "to_m": 242,
+          "station_span_m": 2
+        }
+      ],
+      "legal_routing_verified": false
+    },
+    "map_points": 683690
+  },
+  "after": {
+    "extent": {
+      "trajectory_length_m": 250.4805260889724,
+      "generated_length_m": 110.0,
+      "retained_fraction": 0.439155896538349,
+      "minimum_retained_fraction": 0.9,
+      "passes_requested_extent": false
+    },
+    "audits": {
+      "editable": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 788,
+          "supported": 474,
+          "height_mismatches": 314,
+          "insufficient_returns": 0
+        },
+        "needs_review": [
+          3,
+          9,
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          33,
+          36
+        ],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "minimum_returns": 3,
+            "model": "low_quantile",
+            "quantile": 0.15
+          }
+        }
+      },
+      "reopened_osm": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 788,
+          "supported": 474,
+          "height_mismatches": 314,
+          "insufficient_returns": 0
+        },
+        "needs_review": [
+          3,
+          9,
+          12,
+          15,
+          18,
+          21,
+          24,
+          27,
+          33,
+          36
+        ],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "minimum_returns": 3,
+            "model": "low_quantile",
+            "quantile": 0.15
+          }
+        }
+      },
+      "consensus_editable": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 788,
+          "supported": 788,
+          "height_mismatches": 0,
+          "insufficient_returns": 0
+        },
+        "needs_review": [],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          }
+        }
+      },
+      "consensus_reopened_osm": {
+        "complete": true,
+        "sample_totals": {
+          "samples": 788,
+          "supported": 788,
+          "height_mismatches": 0,
+          "insufficient_returns": 0
+        },
+        "needs_review": [],
+        "protocol": {
+          "sampling_step_m": 0.5,
+          "ground_radius_m": 0.75,
+          "ground_height_tolerance_m": 0.3,
+          "minimum_support_fraction": 0.9,
+          "sample_budget": 100000,
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          }
+        }
+      }
+    },
+    "routes": {
+      "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+      "connected_components": 12,
+      "longest_route_station_span_m": 34,
+      "routes": [
+        {
+          "lane_ids": [
+            3
+          ],
+          "from_m": 10,
+          "to_m": 18,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            42
+          ],
+          "from_m": 26.0,
+          "to_m": 30.0,
+          "station_span_m": 4.0
+        },
+        {
+          "lane_ids": [
+            6
+          ],
+          "from_m": 42,
+          "to_m": 44,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            9
+          ],
+          "from_m": 56,
+          "to_m": 58,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            12
+          ],
+          "from_m": 62,
+          "to_m": 70,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            15
+          ],
+          "from_m": 76,
+          "to_m": 104,
+          "station_span_m": 28
+        },
+        {
+          "lane_ids": [
+            18,
+            39,
+            21
+          ],
+          "from_m": 110,
+          "to_m": 124,
+          "station_span_m": 14
+        },
+        {
+          "lane_ids": [
+            24
+          ],
+          "from_m": 128,
+          "to_m": 162,
+          "station_span_m": 34
+        },
+        {
+          "lane_ids": [
+            27
+          ],
+          "from_m": 166,
+          "to_m": 172,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            30
+          ],
+          "from_m": 178,
+          "to_m": 184,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            33
+          ],
+          "from_m": 198,
+          "to_m": 200,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            36
+          ],
+          "from_m": 240,
+          "to_m": 242,
+          "station_span_m": 2
+        }
+      ],
+      "legal_routing_verified": false
+    },
+    "map_points": 683763
+  },
+  "gained_source_intervals": [
+    {
+      "from_m": 26.0,
+      "to_m": 30.0
+    }
+  ],
+  "lost_source_intervals": [],
+  "gained_source_length_m": 4.0,
+  "lost_source_length_m": 0,
+  "same_frozen_reference_motion": true,
+  "same_fixed_layout": true,
+  "same_original_extent_goal": true,
+  "automatic_adoption": false,
+  "deployment_ready": false,
+  "local_point_update": {
+    "effective_bounds_xy": [
+      14.0,
+      -3.0,
+      23.0,
+      6.0
+    ],
+    "before_inside_points": 1918,
+    "after_inside_points": 1991,
+    "outside_points": 681772,
+    "outside_records_sha256": "721e6d8aea63c7aa0f7f5496939e7db1218f353ac9f37e1c8abbe88a6ac04b28",
+    "outside_records_bit_identical": true,
+    "passes": true,
+    "full_candidate_generation_still_required": true
+  }
+}

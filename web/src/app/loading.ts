@@ -8,10 +8,11 @@ import { $, errorText, setStatus } from "./dom";
 import { addEntry, renderList } from "./entries";
 import { applySession, restorePendingAfterLoad } from "./session";
 import { entries, globalShift, type Origin, viewer } from "./state";
-import { endTask, showProgress, startTask } from "./tasks";
+import { endTask, showProgress, startTask, taskActive } from "./tasks";
 import { addTrajectory } from "./trajectory";
 import { openVectorMap } from "./vectormap";
-import { completePendingProject, isProjectGraphSource, prepareProjectFiles, projectCloudFileAllowed, projectCloudLoadLimit } from "./project";
+import { completePendingProject, isProjectGraphSource, prepareProjectFiles, projectCloudFileAllowed, projectCloudLoadLimit, projectCloudDisplayName, restoreWorkspaceFiles } from "./project";
+import { readProjectSnapshot } from "../project-snapshot";
 
 /** A LAS/LAZ or COPC file on a server, read with range requests instead of downloaded. */
 interface RemoteFile {
@@ -31,6 +32,22 @@ const seconds = (ms: number) => (ms >= 1000 ? `${(ms / 1000).toFixed(1)} s` : `$
  * once the others are in. `origins` tells where each file came from.
  */
 export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]): Promise<void> {
+  if (files.some(file => file instanceof File && /\.cloudanalyzer\.zip$/i.test(file.name))) {
+    if (taskActive()) {setStatus("Finish the current operation before opening a workspace snapshot",true);return;}
+    const snapshots=files.filter((f):f is File=>f instanceof File&&/\.cloudanalyzer\.zip$/i.test(f.name));
+    if(snapshots.length!==1||files.some(f=>!(f instanceof File))) {setStatus("Open one workspace snapshot at a time",true);return;}
+    const extras=files.filter((f):f is File=>f instanceof File&&!snapshots.includes(f));
+    let expanded:File[];
+    const signal = startTask();
+    try {
+      expanded = await readProjectSnapshot(snapshots[0],signal);
+    } catch (error) { setStatus(`Could not open workspace snapshot: ${errorText(error)}`, true); return; }
+    finally { endTask(signal); }
+    try {
+      await restoreWorkspaceFiles(expanded,extras);
+    } catch(error) {setStatus(`Could not open workspace snapshot: ${errorText(error)}`,true);}
+    return;
+  }
   let projects: Set<File>;
   try { projects = await prepareProjectFiles(files.filter((f): f is File => f instanceof File)); }
   catch (error) { setStatus(`Could not open project: ${errorText(error)}`, true); return; }
@@ -74,7 +91,7 @@ export async function loadFiles(files: (File | RemoteFile)[], origins?: Origin[]
       };
       const cloud =
         file instanceof File
-          ? await loadCloud(file, maxPoints, onProgress, signal)
+          ? await loadCloud(file, maxPoints, onProgress, signal, projectCloudDisplayName(file))
           : await loadUrl(file.url, file.name, file.size, maxPoints, onProgress, signal, file.etag);
       const origin = origins?.[i] ?? { kind: "file" as const };
       addEntry(cloud, origin.kind === "derived" ? origin : {

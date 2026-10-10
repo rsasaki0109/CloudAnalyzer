@@ -21,7 +21,7 @@ import { addEntry, renderList } from "./entries";
 import { refreshColors } from "./colors";
 import { record } from "./history";
 import { $, download, errorText, fmt, setStatus } from "./dom";
-import { clouds, entries, globalShift, listChanged, pointsInvalidated, viewer } from "./state";
+import { clouds, entries, globalShift, listChanged, pointsInvalidated, viewer, Signal } from "./state";
 import { inputTrajectories, trajectoryChanged } from "./trajectory";
 import { activeTool, pickPoint, setTool, toggleTool, type Tool } from "./tools";
 import { appendDashedPairs, crosswalkTriangles, signalTriangles } from "./vectormap-geometry";
@@ -772,7 +772,8 @@ const junctionNone = $<HTMLButtonElement>("vm-junction-none");
 const junctionList = $("vm-junction-candidates");
 function junctionInputs(): void {
   $<HTMLSelectElement>("vm-quality-cloud").disabled = busy;
-  $<HTMLButtonElement>("vm-quality-check").disabled = busy || !$<HTMLSelectElement>("vm-quality-cloud").value || !view.lanes.length;
+  const qualityCloud = $<HTMLSelectElement>("vm-quality-cloud").value;
+  $<HTMLButtonElement>("vm-quality-check").disabled = busy || !qualityCloud || !view.lanes.length || entries.get(Number(qualityCloud))?.origin.displayPreview === true;
   sourceProblemInputs();
   discoveryInputs();
   featureInputs();
@@ -1484,6 +1485,7 @@ $("vm-review-save").onclick = () => {
   projectChanged();
 };
 
+export const vectorMapChanged = new Signal();
 function takeView(edited: Edited, editing = true): void {
   clearBuildFailure();
   clearQuality();
@@ -1510,6 +1512,7 @@ function takeView(edited: Edited, editing = true): void {
   $<HTMLButtonElement>("vm-plan").disabled = $<HTMLButtonElement>("vm-iso").disabled = view.boundaries.length === 0;
   renderLane();
   void renderIssues();
+  vectorMapChanged.emit();
   if (editing) projectChanged();
 }
 
@@ -1587,7 +1590,7 @@ interface SourceProblem {
   reason: "insufficient_returns" | "height_mismatch";
   from_m: number; to_m: number; points: XYZ[];
 }
-interface SourceQualityReport {
+export interface SourceQualityReport {
   lanes: {lane: number; center: SourceCurveSupport; left: SourceCurveSupport; right: SourceCurveSupport; needs_review: boolean}[];
   low_support_lanes: number[]; omitted_lanes: number[]; malformed_lanes: number[]; limited: boolean; warnings: string[];
   problems: SourceProblem[]; problems_limited: boolean;
@@ -1604,39 +1607,53 @@ function clearQuality(): void {
   $("vm-quality-lanes").replaceChildren();
   renderReviews();
 }
-$("vm-quality-cloud").onchange = () => { clearQuality(); reviewSourceChanged(); draw(); };
+$("vm-quality-cloud").onchange = () => { clearQuality(); reviewSourceChanged(); draw(); junctionInputs(); };
 $("vm-quality-check").onclick = async () => {
   if (busy) return;
+  if (entries.get(Number($<HTMLSelectElement>("vm-quality-cloud").value))?.origin.displayPreview) return setStatus("Load the original full point map before running a new source check.", true);
   clearQuality(); draw(); const revision = qualityRevision;
   busy = true; junctionInputs(); setStatus("Checking lane centres and boundaries against source points…");
   try {
     const report = await vectorMap<SourceQualityReport>("quality", {id: Number($<HTMLSelectElement>("vm-quality-cloud").value)});
     if (revision !== qualityRevision) return;
-    $("vm-quality-report").textContent = `${report.lanes.length} lanes checked; ${report.low_support_lanes.length} need source review; ${report.omitted_lanes.length} omitted; ${report.malformed_lanes.length} malformed. ${report.limited ? "Coverage check limited. " : ""}` + report.warnings.join(" ");
-    lowSupport = new Set([...report.low_support_lanes, ...report.omitted_lanes, ...report.malformed_lanes]);
-    sourceProblems = report.problems;
-    $("vm-quality-locations").hidden = !sourceProblems.length && !report.problems_limited;
-    $("vm-quality-location-summary").textContent = `${sourceProblems.length} problem intervals shown at checked sample locations.` +
-      (report.problems_limited ? " Location preview limited; further failed samples are not displayed. Coverage figures include all checked samples." : "");
-    $<HTMLSelectElement>("vm-quality-problem").replaceChildren(new Option("Choose a problem interval", ""), ...sourceProblems.map((p, i) => {
-      const curve = p.curve === "center" ? "centre" : `${p.curve} boundary`;
-      const reason = p.reason === "insufficient_returns" ? "insufficient returns" : "height disagreement";
-      return new Option(`Lane ${p.lane}, ${curve}: ${fmt(p.from_m)}–${fmt(p.to_m)} m, ${reason}`, String(i));
-    }));
-    renderReviews();
-    const percentage = (s: SourceCurveSupport) => `${Math.round(s.fraction*100)}%${s.start_supported && s.end_supported ? "" : " (end support missing)"}`;
-    for (const lane of report.lanes.filter(l => l.needs_review)) {
-      const button = document.createElement("button"); button.textContent = `Lane ${lane.lane}: centre ${percentage(lane.center)}, left ${percentage(lane.left)}, right ${percentage(lane.right)}`;
-      button.onclick = () => {
-        const index = sourceProblems.findIndex(p => p.lane === lane.lane);
-        if (index >= 0) chooseSourceProblem(index); else selectLane(lane.lane, true);
-      }; $("vm-quality-lanes").append(button);
-    }
-    draw();
+    renderSourceQuality(report);
     setStatus(`Source coverage checked: ${report.low_support_lanes.length} lanes need review. The map is unchanged.`);
   } catch (err) { setStatus(`Could not check source coverage: ${errorText(err)}`); }
   finally { busy = false; junctionInputs(); }
 };
+
+function renderSourceQuality(report: SourceQualityReport, prefix = ""): void {
+  $("vm-quality-report").textContent = prefix + `${report.lanes.length} lanes checked; ${report.low_support_lanes.length} need source review; ${report.omitted_lanes.length} omitted; ${report.malformed_lanes.length} malformed. ${report.limited ? "Coverage check limited. " : ""}` + report.warnings.join(" ");
+  lowSupport = new Set([...report.low_support_lanes, ...report.omitted_lanes, ...report.malformed_lanes]);
+  sourceProblems = report.problems;
+  $("vm-quality-locations").hidden = !sourceProblems.length && !report.problems_limited;
+  $("vm-quality-location-summary").textContent = `${sourceProblems.length} problem intervals shown at checked sample locations.` +
+    (report.problems_limited ? " Location preview limited; further failed samples are not displayed. Coverage figures include all checked samples." : "");
+  $<HTMLSelectElement>("vm-quality-problem").replaceChildren(new Option("Choose a problem interval", ""), ...sourceProblems.map((p, i) => {
+    const curve = p.curve === "center" ? "centre" : `${p.curve} boundary`;
+    const reason = p.reason === "insufficient_returns" ? "insufficient returns" : "height disagreement";
+    return new Option(`Lane ${p.lane}, ${curve}: ${fmt(p.from_m)}–${fmt(p.to_m)} m, ${reason}`, String(i));
+  }));
+  renderReviews();
+  const percentage = (s: SourceCurveSupport) => `${Math.round(s.fraction*100)}%${s.start_supported && s.end_supported ? "" : " (end support missing)"}`;
+  for (const lane of report.lanes.filter(l => l.needs_review)) {
+    const button = document.createElement("button"); button.textContent = `Lane ${lane.lane}: centre ${percentage(lane.center)}, left ${percentage(lane.left)}, right ${percentage(lane.right)}`;
+    button.onclick = () => {
+      const index = sourceProblems.findIndex(p => p.lane === lane.lane);
+      if (index >= 0) chooseSourceProblem(index); else selectLane(lane.lane, true);
+    }; $("vm-quality-lanes").append(button);
+  }
+  draw();
+}
+
+/** Frozen audit display; callers must invalidate it after map/source changes. */
+export function showSavedSourceQuality(report: SourceQualityReport, label: string, cloud: number): void {
+  clearQuality();
+  $<HTMLSelectElement>("vm-quality-cloud").value = String(cloud);
+  renderSourceQuality(report, `Saved ${label} audit of the exported map. `);
+  junctionInputs();
+  $("vm-quality").setAttribute("open", "");
+}
 
 function sourceProblemInputs(): void {
   const p = sourceProblemSelected === null ? undefined : sourceProblems[sourceProblemSelected];
@@ -2400,7 +2417,12 @@ export function captureMapProject(): Promise<string> {
 }
 
 export async function openVectorMap(name: string, text: string): Promise<MapView> {
-  const opened = await vectorMap<Edited>("open", { name, text });
+  return takePreparedMap(name, await vectorMap<Edited>("open", { name, text }));
+}
+
+/** Native map has already been validated and committed with its workspace. */
+export function takePreparedMap(name: string, value: unknown): MapView {
+  const opened = value as Edited;
   setTool(null);
   const issues = opened.result as Issue[];
   $("vm-import-notes").hidden = issues.length === 0;

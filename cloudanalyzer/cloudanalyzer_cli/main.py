@@ -1984,6 +1984,65 @@ def mapping_run_inspect_cmd(job: str = typer.Argument(...), offset: int = typer.
     typer.echo(json.dumps(result, indent=2))
 
 
+@app.command("mapping-trajectory-evaluate")
+def mapping_trajectory_evaluate_cmd(
+    job: str = typer.Argument(...),
+    reference: str = typer.Option(..., "--reference", help="Timestamped metre-frame TUM/CSV reference"),
+    provenance: str = typer.Option(..., "--provenance", help="JSON source/license/frame/time basis and generation-use declaration"),
+    out: str = typer.Option(..., "--out", help="New report file outside the mapping job"),
+    max_time_delta: float = typer.Option(.05, "--max-time-delta"),
+    alignment_prefix_fraction: float = typer.Option(1., "--alignment-prefix-fraction", help="Fit only this prefix and evaluate the disjoint suffix; 1 fits/evaluates all samples"),
+) -> None:
+    """Compare saved original/corrected motion without changing maps or attempts."""
+    from ca.mapping_trajectory import evaluate_mapping_trajectory
+    try:
+        result = evaluate_mapping_trajectory(job, reference, json.loads(Path(provenance).read_text()), out, max_time_delta, alignment_prefix_fraction)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-trajectory-inspect")
+def mapping_trajectory_inspect_cmd(
+    report: str = typer.Argument(..., help="Saved comparison JSON"),
+    sha256: str = typer.Option(..., "--sha256", help="Expected SHA-256 from evaluation's report artifact"),
+    size: int = typer.Option(..., "--bytes", help="Expected byte count from evaluation's report artifact"),
+    window_poses: int = typer.Option(12, "--window-poses"),
+    ranking: str = typer.Option("regression", "--ranking"),
+    offset: int = typer.Option(0, "--offset"),
+) -> None:
+    """Locate evaluated trajectory error windows in the original point-map frame."""
+    from ca.mapping_trajectory_review import inspect_mapping_trajectory_comparison
+    try:
+        result = inspect_mapping_trajectory_comparison(
+            {"path": str(Path(report).resolve()), "sha256": sha256, "bytes": size}, window_poses, ranking, offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-motion-trial")
+def mapping_motion_trial_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out"),
+    policy: str = typer.Option(..., "--policy", help="JSON file with explicit find_loops/use_gravity booleans"),
+    reason: str = typer.Option(..., "--reason"),
+    max_attempts: int = typer.Option(4, "--max-attempts", min=1, max=8),
+) -> None:
+    """Generate one alternative motion/point-map candidate in a new job."""
+    from ca.mapping_motion_trial import trial_mapping_motion
+    try:
+        value = json.loads(Path(policy).read_text())
+        if not isinstance(value, dict) or set(value) != {"find_loops", "use_gravity"}:
+            raise ValueError("policy needs exactly find_loops and use_gravity")
+        result = trial_mapping_motion(job, out, value["find_loops"], value["use_gravity"], reason, max_attempts)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "failed":
+        raise typer.Exit(1)
+
+
 @app.command("mapping-run-advance")
 def mapping_run_advance_cmd(
     job: str = typer.Argument(...),
@@ -2000,6 +2059,62 @@ def mapping_run_advance_cmd(
     typer.echo(json.dumps(result, indent=2))
     if any(result.get(key, {}).get("status") == "failed" for key in ("draft_result", "refine_result", "connect_result", "pointcloud_retry_result")):
         raise typer.Exit(1)
+
+
+@app.command("mapping-run-export")
+def mapping_run_export_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out", help="New portable review ZIP; existing files are never overwritten"),
+    attribution: str = typer.Option(..., "--attribution", help="Source-data license and credit text"),
+    max_bundle_bytes: int = typer.Option(1024**3, "--max-bundle-bytes", min=1024, max=4 * 1024**3),
+) -> None:
+    """Package the exact finished point/HD pair and final evidence for portable review."""
+    from ca.mapping_bundle import export_mapping_run
+    try:
+        result = export_mapping_run(job, out, attribution, max_bundle_bytes)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-run-preview")
+def mapping_run_preview_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out", help="New display-preview review ZIP"),
+    attribution: str = typer.Option(
+        ..., "--attribution", help="Source-data license and credit text"
+    ),
+    max_preview_points: int = typer.Option(
+        200000, "--max-preview-points", min=1, max=1000000
+    ),
+    max_bundle_bytes: int = typer.Option(
+        64 * 1024**2, "--max-bundle-bytes", min=1024, max=4 * 1024**3
+    ),
+) -> None:
+    """Package bounded display-only point records and the exact HD map with original audits."""
+    from ca.mapping_bundle import export_mapping_preview
+
+    try:
+        result = export_mapping_preview(
+            job, out, attribution, max_preview_points, max_bundle_bytes
+        )
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-bundle-inspect")
+def mapping_bundle_inspect_cmd(
+    bundle: str = typer.Argument(...),
+    max_bundle_bytes: int = typer.Option(1024**3, "--max-bundle-bytes", min=1024, max=4 * 1024**3),
+) -> None:
+    """Verify a portable review ZIP and read its map paths and remaining holds."""
+    from ca.mapping_bundle import inspect_mapping_bundle
+    try:
+        result = inspect_mapping_bundle(bundle, max_bundle_bytes)
+    except (OSError, ValueError, RuntimeError, zipfile.BadZipFile) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
 
 
 @app.command("mapping-lanes")

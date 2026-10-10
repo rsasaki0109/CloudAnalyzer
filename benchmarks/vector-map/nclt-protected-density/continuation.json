@@ -1,0 +1,506 @@
+{
+  "schema": "cloudanalyzer.mapping_continuation.v1",
+  "parent_run": "env/nclt-continuation-june",
+  "seeded_from": {
+    "job_dir": "env/nclt-continuation-june",
+    "candidate_id": 1
+  },
+  "reason": "Explicit new session after the rejected density trial: preserve the accumulated pair and inspect retained source-query neighborhoods before another bounded point trial.",
+  "new_max_attempts": 6,
+  "previous_spent_attempts": 8,
+  "inputs": {
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/layout-hypothesis.json": {
+      "path": "parent/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/gaps-01.json": {
+      "path": "parent/gaps-01.json",
+      "sha256": "1ee0229e514c2dcc91e4496ff449c9803abb352918314c7c9e0dd48fcdcaf1e1",
+      "bytes": 638022
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/local-points-01-b561b0441ade4f84.json": {
+      "path": "parent/local-points-01-b561b0441ade4f84.json",
+      "sha256": "7ef0df946e00ac83b866bac053262b5faaeb5984ec067ba3dfa8e6430874d63d",
+      "bytes": 31751
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/local-point-update.json": {
+      "path": "parent/pointcloud-retry/local-point-update.json",
+      "sha256": "f27f00c933a3016be7bd04a834959fcecf21a7380aa1289fe0cff77afa7e12f6",
+      "bytes": 4639
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/local-point-checks.json": {
+      "path": "parent/pointcloud-retry/local-point-checks.json",
+      "sha256": "b160f17c1017424f19e4f7cc7d493c2be37becaacf120a7fa628034c87ebc9b9",
+      "bytes": 1076
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/local-point-audits.json": {
+      "path": "parent/pointcloud-retry/local-point-audits.json",
+      "sha256": "100a49c804b49f0891c2f0d9679dec84e035b4865a7bfb3b4c4810c43a1db2c7",
+      "bytes": 229667
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/local_map.ply": {
+      "path": "parent/pointcloud-retry/local_map.ply",
+      "sha256": "269b93a701bb7a89a534cf7e272d074bae7eb394a18c69bd79c11bacb78430e7",
+      "bytes": 20823790
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed_map.ply": {
+      "path": "parent/pointcloud-retry/pointcloud/trajectory_fixed_fixed_map.ply",
+      "sha256": "d56675dd5bbc1c067644bba0c2c15de67db630967d14dc4a671f2254cc5b8842",
+      "bytes": 33742255
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local_map.ply": {
+      "path": "original/pointcloud-retry/local_map.ply",
+      "sha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad",
+      "bytes": 20682062
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/lanelet2_map.osm": {
+      "path": "original/pointcloud-retry/candidate-05/lanelet2_map.osm",
+      "sha256": "d2aa72a9a3b8847e8958aa6b69fa865d15f85a2169ac6906e374452fb130a275",
+      "bytes": 59622
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/map_projector_info.yaml": {
+      "path": "original/pointcloud-retry/candidate-05/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/vector_map.json": {
+      "path": "original/pointcloud-retry/candidate-05/vector_map.json",
+      "sha256": "2708c3e12ff877ff03dda686df2004af74f4774a58bbb119abf0fcdbd342fc81",
+      "bytes": 25328
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/report.json": {
+      "path": "original/pointcloud-retry/candidate-05/report.json",
+      "sha256": "64399b268ec4f9454025778027d110ba2b69bbb5b635d2e43c0fb4570e59c1ed",
+      "bytes": 75592
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/source-quality.json": {
+      "path": "original/pointcloud-retry/candidate-05/source-quality.json",
+      "sha256": "9b67a6e5f2a3a1bbdddd8bbbf6dd98874cdc2043bb62e2f668b16e37481211bd",
+      "bytes": 223979
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04-patch-checks.json": {
+      "path": "original/pointcloud-retry/candidate-04-patch-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05-connection-checks.json": {
+      "path": "original/pointcloud-retry/candidate-05-connection-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/connections-04-region-cf1267e38c2728ce.json": {
+      "path": "original/pointcloud-retry/connections-04-region-cf1267e38c2728ce.json",
+      "sha256": "fe025806d62f79fbfc287084c690267bf2675cbaa2c00f9288778abc7d6ab248",
+      "bytes": 47048
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03-height-checks.json": {
+      "path": "original/pointcloud-retry/candidate-03-height-checks.json",
+      "sha256": "427df2928682d31e243236f60d17ad42d6877546f67b8c0288e36d94f55a3ece",
+      "bytes": 179
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03-height-audits.json": {
+      "path": "original/pointcloud-retry/candidate-03-height-audits.json",
+      "sha256": "f013b0e513351fd42c544b7ed64d0bc7e560e6c1424fc9f42bb4272dd8050217",
+      "bytes": 8923
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03-height-trial.json": {
+      "path": "original/pointcloud-retry/candidate-03-height-trial.json",
+      "sha256": "f6e436f57ba0a90b04d93a0f122b7ea308f295d9b55e5c21bfbf007912199070",
+      "bytes": 2113
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/continuation.json": {
+      "path": "parent/continuation.json",
+      "sha256": "e6c23fbe306b221783d555ecf617c613a8ed295e9bdf7f795f1eee13e822ef9d",
+      "bytes": 28311
+    },
+    "/workspace/CloudAnalyzer/web/public/samples/nclt-2012-06-15.mcap": {
+      "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "/workspace/.cloudanalyzer-env/path-refinement-final-native/cloudanalyzer_core/_core.abi3.so": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/corridor-proposals-trajectory.json": {
+      "path": "original/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "2c57c290bc1e629cc7b82471082e9a1c37c3d8a4ee26ca9ed2ad1ffacf88e0fe",
+      "bytes": 393753
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/geometry-01/vector_map.json": {
+      "path": "original/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "3ed9b2bd4816b150d3b2619e3e6ee6035e02909bba39e49745ba26ac13006777",
+      "bytes": 2876
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/geometry-01/report.json": {
+      "path": "original/pointcloud-retry/geometry-01/report.json",
+      "sha256": "136a57592cf8a977fda47782130f8aef87aa35aec8c3d03a56039d75411a3eb2",
+      "bytes": 23902
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/lanelet2_map.osm": {
+      "path": "original/pointcloud-retry/candidate-04/lanelet2_map.osm",
+      "sha256": "7ca6abdd59d444d7f1ba30055fab9bf5c9e0951f2879150d759044215f5344eb",
+      "bytes": 56088
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/map_projector_info.yaml": {
+      "path": "original/pointcloud-retry/candidate-04/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/vector_map.json": {
+      "path": "original/pointcloud-retry/candidate-04/vector_map.json",
+      "sha256": "7e73313bf2801f1fd63783b0925ea6cf25205e48f38ae301cfb8208f4b5a6ca5",
+      "bytes": 23526
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/report.json": {
+      "path": "original/pointcloud-retry/candidate-04/report.json",
+      "sha256": "36b6fdcc5759ffeec34ef7fa64c046c011431f8821c0dc43c0db92a11a828c04",
+      "bytes": 50677
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/source-quality.json": {
+      "path": "original/pointcloud-retry/candidate-04/source-quality.json",
+      "sha256": "8b593909f09f223d4556bd362d8829568f46cdc810b696fdc77d275479bc348f",
+      "bytes": 222819
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local-point-update.json": {
+      "path": "original/pointcloud-retry/local-point-update.json",
+      "sha256": "538b3775eee511fdf691a12d622f8b8654634bf260d7330d2b4e5bac31e28161",
+      "bytes": 3668
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local-point-checks.json": {
+      "path": "original/pointcloud-retry/local-point-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local-point-audits.json": {
+      "path": "original/pointcloud-retry/local-point-audits.json",
+      "sha256": "6f4f59dfa864468d77ef6581c3ef0a68384c5941834b564680b0d4c3d89c1995",
+      "bytes": 216939
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_map.ply": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_map.ply",
+      "sha256": "0aa80ff0a150fc8a7b31c8bdd411932c0990facc5df71512484463ef91d31e92",
+      "bytes": 30588910
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/gaps-03.json": {
+      "path": "original/gaps-03.json",
+      "sha256": "27cf3729f9223eae31e7fc4990b7cb1395feebce0eb8a7c67a804a7202c0142d",
+      "bytes": 634074
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/layout-hypothesis.json": {
+      "path": "original/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/layout-hypothesis.json": {
+      "path": "original/pointcloud-retry/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/lanelet2_map.osm": {
+      "path": "original/candidate-03/lanelet2_map.osm",
+      "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+      "bytes": 53372
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/map_projector_info.yaml": {
+      "path": "original/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/vector_map.json": {
+      "path": "original/candidate-03/vector_map.json",
+      "sha256": "be7aa8e0028b711c4742c1d362ef7aa4572b05eef0e19f0bfd79edb638072bf3",
+      "bytes": 22406
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/report.json": {
+      "path": "original/candidate-03/report.json",
+      "sha256": "c245791ecdc5ad1904e84a42c79e211e6f854f4596b64e914e37154dee38e45b",
+      "bytes": 48844
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/source-quality.json": {
+      "path": "original/candidate-03/source-quality.json",
+      "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+      "bytes": 216939
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/geometry-01/vector_map.json": {
+      "path": "original/geometry-01/vector_map.json",
+      "sha256": "bcba276d0c5c404984fec0b4b9dd262dc1aadcf24c58a5654a0ebef89a9fc8b7",
+      "bytes": 37479
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/geometry-01/report.json": {
+      "path": "original/geometry-01/report.json",
+      "sha256": "4e5acbb7437cc54dc88a89d352a4b67c3456422fc86e1dc2e6dbdd05d178ebc6",
+      "bytes": 100727
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/lanelet2_map.osm": {
+      "path": "original/candidate-02/lanelet2_map.osm",
+      "sha256": "8435325e3a8f5215b9c0d7f5fe22439a3aa4844e6f176aecede80314ae829c4f",
+      "bytes": 45048
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/map_projector_info.yaml": {
+      "path": "original/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/vector_map.json": {
+      "path": "original/candidate-02/vector_map.json",
+      "sha256": "e474add91b9da49b295ef9777892676a2fe801aa2f6b59e5d11170966d5e752c",
+      "bytes": 18456
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/report.json": {
+      "path": "original/candidate-02/report.json",
+      "sha256": "8134c08ccea288a6a2def1f5b33e26a2d1d9e2363afee224937a242ea9697628",
+      "bytes": 39902
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/source-quality.json": {
+      "path": "original/candidate-02/source-quality.json",
+      "sha256": "dfcc77af9379a595488613e274627474c519e75eb3efd348506cbdc1cd94719a",
+      "bytes": 215299
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/connections-02.json": {
+      "path": "original/connections-02.json",
+      "sha256": "2ca8c7394c3592179aa0e1dd5a2cff6efef2fb04d3de2e447f3b39b83ee58cf4",
+      "bytes": 16924
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud/trajectory_map.ply": {
+      "path": "original/pointcloud/trajectory_map.ply",
+      "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+      "bytes": 20653998
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud/trajectory_fixed_kitti.txt": {
+      "path": "original/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud/trajectory_fixed.g2o": {
+      "path": "original/pointcloud/trajectory_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/corridor-proposals-trajectory.json": {
+      "path": "original/corridor-proposals-trajectory.json",
+      "sha256": "a4ca13d0c2281568464ea166fc79b5850d4683accfc9680017b4160645841a8c",
+      "bytes": 393248
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/lanelet2_map.osm": {
+      "path": "original/pointcloud-retry/candidate-03/lanelet2_map.osm",
+      "sha256": "800159200684c99fc3be17554597dce93d6f447bf0d222f5aa4deb0095336305",
+      "bytes": 2789
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/map_projector_info.yaml": {
+      "path": "original/pointcloud-retry/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/vector_map.json": {
+      "path": "original/pointcloud-retry/candidate-03/vector_map.json",
+      "sha256": "d1c73f14f731fa08292d2c99b81b293469a861c462fd2331bd570555b8baaffc",
+      "bytes": 1793
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/report.json": {
+      "path": "original/pointcloud-retry/candidate-03/report.json",
+      "sha256": "f0c5762cdfb92fbb7ed9b14f2c31bb3e3925cd802e0f001b268926bd19dd94cb",
+      "bytes": 26664
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/source-quality.json": {
+      "path": "original/pointcloud-retry/candidate-03/source-quality.json",
+      "sha256": "f013b0e513351fd42c544b7ed64d0bc7e560e6c1424fc9f42bb4272dd8050217",
+      "bytes": 8923
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/lanelet2_map.osm": {
+      "path": "original/pointcloud-retry/candidate-02/lanelet2_map.osm",
+      "sha256": "4dcaba7ffd8565ddbc6995f84edbaa2befd15cc402b085b34c436e726c9525a0",
+      "bytes": 2789
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/map_projector_info.yaml": {
+      "path": "original/pointcloud-retry/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/vector_map.json": {
+      "path": "original/pointcloud-retry/candidate-02/vector_map.json",
+      "sha256": "7de85b8a60105c95fc7a311f2305f3d4db240debdb08bf3decd89b0fd55c3dad",
+      "bytes": 1793
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/report.json": {
+      "path": "original/pointcloud-retry/candidate-02/report.json",
+      "sha256": "8be9b3271c4ec7fbf9581f1918a3eb1cbedbad5dbdd0a156e20206689fe5aaed",
+      "bytes": 17270
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/source-quality.json": {
+      "path": "original/pointcloud-retry/candidate-02/source-quality.json",
+      "sha256": "3c3fa004bc42072d42494fba776edaf201f78998b1d4324eb756fd8801c978f2",
+      "bytes": 9817
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-report.json": {
+      "path": "original/pointcloud-report.json",
+      "sha256": "88923d01a5c2d797545821b712958341960aab4bee2cb1711e61fcb835735cf6",
+      "bytes": 1928
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/gap-source/manifest.json": {
+      "path": "original/gap-source/manifest.json",
+      "sha256": "d2e6b6ed6edac42cc01fae999a8b56172601e97a7f392eb5c376c9d56982930a",
+      "bytes": 57872
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/local-points-03-7952149e3b736f89.json": {
+      "path": "original/local-points-03-7952149e3b736f89.json",
+      "sha256": "08c0965dcae760df920603e8ab0ef67dbe9e156a0cc58f685350362482eda3f3",
+      "bytes": 5467
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/heights-02.json": {
+      "path": "original/pointcloud-retry/heights-02.json",
+      "sha256": "96137345efa5f8e181c6c0f7ffb8278a467cce56e8ab3d534b724c3221c57c2e",
+      "bytes": 11764
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/patch-preview-03.json": {
+      "path": "original/pointcloud-retry/patch-preview-03.json",
+      "sha256": "e23d0eee1959fbd558f393db61424cd2f25ee83aea3095fdb5333c39e1996164",
+      "bytes": 25029
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04-patch-audits.json": {
+      "path": "original/pointcloud-retry/candidate-04-patch-audits.json",
+      "sha256": "8b593909f09f223d4556bd362d8829568f46cdc810b696fdc77d275479bc348f",
+      "bytes": 222819
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05-connection-audits.json": {
+      "path": "original/pointcloud-retry/candidate-05-connection-audits.json",
+      "sha256": "9b67a6e5f2a3a1bbdddd8bbbf6dd98874cdc2043bb62e2f668b16e37481211bd",
+      "bytes": 223979
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/corridor-proposals.json": {
+      "path": "original/corridor-proposals.json",
+      "sha256": "c5ec1e6e1466ef945b57946a5f2f528d9400900edd1e3e0188947a8c781ab009",
+      "bytes": 517306
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03-connection-checks.json": {
+      "path": "original/candidate-03-connection-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/retry-comparison-04.json": {
+      "path": "original/retry-comparison-04.json",
+      "sha256": "c992a6db07114a490d1895e1c6df5f16d7b01c2fd1d41f8ead835eb4a03cb653",
+      "bytes": 20696
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/retry-comparison-05.json": {
+      "path": "original/retry-comparison-05.json",
+      "sha256": "d95de8bcdc3e02fa81e4cabf087feeee86c89a1a7de029be22dcbb7f54044715",
+      "bytes": 20580
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/odometry-report.json": {
+      "path": "original/odometry-report.json",
+      "sha256": "43545aa048453e0c158d3d75b4e679b541f765a6e4c9fe8044708bdab2182219",
+      "bytes": 462
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/odometry/trajectory.tum": {
+      "path": "original/odometry/trajectory.tum",
+      "sha256": "e3c467ee64877108ce71d6d4451cff5cbbb4f8ab7493a0778afea02d312f1409",
+      "bytes": 20406
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03-connection-audits.json": {
+      "path": "original/candidate-03-connection-audits.json",
+      "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+      "bytes": 216939
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/corridor-proposals.json": {
+      "path": "original/pointcloud-retry/corridor-proposals.json",
+      "sha256": "01c739cd78b8a3fb0efb2bae3efad0eb9ef593cc90a4bf287361845ff2c4b044",
+      "bytes": 517706
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/connections-04.json": {
+      "path": "original/pointcloud-retry/connections-04.json",
+      "sha256": "d54cab8aded576e01492ad09ecc0aacfb53cbb9f8825d542fc41f67e311643e6",
+      "bytes": 42746
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/run.json": {
+      "path": "original/run.json",
+      "sha256": "b281ad5a818d06abf3a1260d175ed3058c06245dd01dfbc128ab7ac9f10e55b1",
+      "bytes": 1441189
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/job.json": {
+      "path": "original/job.json",
+      "sha256": "e3f9b64594bd186b1f26981d2c9f796d57061bc9925ea7a7b266b87d22626c58",
+      "bytes": 67187
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/job.json": {
+      "path": "original/pointcloud-retry/job.json",
+      "sha256": "6583dd14b05ee780db63e8d0f6369885e61277e0ac23c39bfc5faf94c50b6ab0",
+      "bytes": 178731
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/run.json": {
+      "path": "original/pointcloud-retry/run.json",
+      "sha256": "5c4ad57bdf7b9d882e9d133cadf63eb66b4d74787fa063efbfd115e9c891c3b6",
+      "bytes": 472761
+    },
+    "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/pointcloud-report.json": {
+      "path": "original/pointcloud-retry/pointcloud-report.json",
+      "sha256": "29660fecdd88886b4780b772cad9d8bd5d259ce2d9bceb47c21c07157ea82f81",
+      "bytes": 4354
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/run.json": {
+      "path": "parent/run.json",
+      "sha256": "1d8dc59533c0b6e0b3eb020a5cbfb6415ddd494d2fd6d85b9e2efd8ff8716f3e",
+      "bytes": 295421
+    },
+    "/workspace/.cloudanalyzer-env/nclt-continuation-june/job.json": {
+      "path": "parent/job.json",
+      "sha256": "bf609cfb77587d47ca8792fd2e28a65ffac216378d2c4782a3f9d9d289b62fca",
+      "bytes": 129371
+    }
+  },
+  "pointcloud_files": {
+    "map": {
+      "path": "original/pointcloud-retry/local_map.ply",
+      "sha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad",
+      "bytes": 20682062
+    },
+    "graph": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "trajectory": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    }
+  },
+  "hd_files": {
+    "map": {
+      "path": "original/pointcloud-retry/candidate-05/lanelet2_map.osm",
+      "sha256": "d2aa72a9a3b8847e8958aa6b69fa865d15f85a2169ac6906e374452fb130a275",
+      "bytes": 59622
+    },
+    "projector": {
+      "path": "original/pointcloud-retry/candidate-05/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "editable_map": {
+      "path": "original/pointcloud-retry/candidate-05/vector_map.json",
+      "sha256": "2708c3e12ff877ff03dda686df2004af74f4774a58bbb119abf0fcdbd342fc81",
+      "bytes": 25328
+    },
+    "report": {
+      "path": "original/pointcloud-retry/candidate-05/report.json",
+      "sha256": "64399b268ec4f9454025778027d110ba2b69bbb5b635d2e43c0fb4570e59c1ed",
+      "bytes": 75592
+    }
+  },
+  "previous_point_update_scope_archived": false,
+  "pointcloud_options_meaning": "last_full_fusion_settings_not_uniform_hybrid_map_resolution",
+  "original_source_holds_retained": true,
+  "independent_accuracy_established": false
+}

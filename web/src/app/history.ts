@@ -10,6 +10,8 @@ import { removeCloud, transformCloud } from "../api";
 import { $, errorText, setStatus, typing } from "./dom";
 import { drawEntry, renderList, replaceCloud } from "./entries";
 import { type Entry, entries, hideEntry, pointsInvalidated, putEntry, viewer } from "./state";
+import { taskActive } from "./tasks";
+import type { LoadedCloud } from "../protocol";
 
 interface Step {
   label: string;
@@ -24,6 +26,16 @@ interface Step {
 const done: Step[] = [];
 const undone: Step[] = [];
 let busy = false;
+export function cloudHistoryReady(): boolean { return !busy; }
+
+/** Ensure a staged derived operation can retain its single Undo step. */
+export function requireDerivedUndo(clouds:LoadedCloud[],hide:Entry[]):void {
+  const hidden=hide.filter(e=>e.visible),policy=historyPolicy();
+  const native=new Map(hidden.map(e=>[e.cloud.id,nativeCloudEstimate(e.cloud,e.fields.size)]));
+  for(const cloud of clouds)native.set(cloud.id,nativeCloudEstimate(cloud));
+  const bytes=bufferBytes([...hidden,...clouds])+[...native.values()].reduce((sum,value)=>sum+value,0);
+  if(policy.steps<1||bytes>policy.bytes)throw new Error("Recipe needs an Undo budget of at least "+Math.ceil(bytes/1024/1024)+" MiB and one history step; increase Memory and Undo limits before retrying");
+}
 
 const undoButton = $<HTMLButtonElement>("undo");
 const redoButton = $<HTMLButtonElement>("redo");
@@ -123,7 +135,7 @@ export async function moveCloud(entry: Entry, matrix: number[], label: string): 
 
 export async function undo(): Promise<void> {
   const step = done.at(-1);
-  if (!step || busy) return;
+  if (!step || busy || taskActive()) return;
   busy = true;
   renderButtons();
   try {
@@ -155,7 +167,7 @@ export async function undo(): Promise<void> {
 
 export async function redo(): Promise<void> {
   const step = undone.at(-1);
-  if (!step || busy) return;
+  if (!step || busy || taskActive()) return;
   busy = true;
   renderButtons();
   try {

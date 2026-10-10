@@ -1,0 +1,128 @@
+[
+  {
+    "candidate_id": 1,
+    "action": "defer",
+    "from_m": 0.0,
+    "to_m": 2.0,
+    "reason": "An observed endpoint is narrower than the fixed minimum width; defer this interval without extrapolation"
+  },
+  {
+    "candidate_id": 2,
+    "action": "include",
+    "from_m": 8.0,
+    "to_m": 16.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 3,
+    "action": "include",
+    "from_m": 20.0,
+    "to_m": 22.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 3,
+    "action": "defer",
+    "from_m": 22.0,
+    "to_m": 24.0,
+    "reason": "An observed endpoint is narrower than the fixed minimum width; defer this interval without extrapolation"
+  },
+  {
+    "candidate_id": 4,
+    "action": "include",
+    "from_m": 26.0,
+    "to_m": 34.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 4,
+    "action": "defer",
+    "from_m": 34.0,
+    "to_m": 38.0,
+    "reason": "An observed endpoint is narrower than the fixed minimum width; defer this interval without extrapolation"
+  },
+  {
+    "candidate_id": 4,
+    "action": "include",
+    "from_m": 38.0,
+    "to_m": 108.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 5,
+    "action": "include",
+    "from_m": 112.0,
+    "to_m": 124.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 6,
+    "action": "include",
+    "from_m": 128.0,
+    "to_m": 134.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 7,
+    "action": "include",
+    "from_m": 136.0,
+    "to_m": 158.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 7,
+    "action": "defer",
+    "from_m": 158.0,
+    "to_m": 162.0,
+    "reason": "An observed endpoint is narrower than the fixed minimum width; defer this interval without extrapolation"
+  },
+  {
+    "candidate_id": 7,
+    "action": "include",
+    "from_m": 162.0,
+    "to_m": 170.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 8,
+    "action": "include",
+    "from_m": 178.0,
+    "to_m": 198.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 9,
+    "action": "defer",
+    "from_m": 204.0,
+    "to_m": 208.0,
+    "reason": "An observed endpoint is narrower than the fixed minimum width; defer this interval without extrapolation"
+  },
+  {
+    "candidate_id": 9,
+    "action": "include",
+    "from_m": 208.0,
+    "to_m": 212.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 10,
+    "action": "include",
+    "from_m": 220.0,
+    "to_m": 232.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 11,
+    "action": "include",
+    "from_m": 240.0,
+    "to_m": 244.0,
+    "reason": "Observed source-span endpoints meet the unchanged explicit minimum lane width; retain geometry as an unverified lane hypothesis"
+  },
+  {
+    "candidate_id": 12,
+    "action": "defer",
+    "from_m": 250.0,
+    "to_m": 250.50052617601867,
+    "reason": "An observed endpoint is narrower than the fixed minimum width; defer this interval without extrapolation"
+  }
+]

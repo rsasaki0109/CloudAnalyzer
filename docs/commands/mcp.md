@@ -18,9 +18,13 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 | Tool | What it does |
 |---|---|
 | `start_mapping_run(source, out_dir, layout_hypothesis, max_attempts?, minimum_retained_fraction?, keyframe_spacing?, remove_dynamic?, pointcloud_topic?, imu_topic?)` | Start the calling agent's raw-log-to-both-maps loop with one fixed unverified layout; return observations and decision guidance ([workflow](mapping-run.md)) |
+| `continue_mapping_run(finished_job_dir, out_dir, max_attempts, reason)` | Start a new bounded repair session from the exact delivered point/HD pair; retain previous repairs, fixed assumptions, immutable evidence and cumulative attempt history ([workflow](mapping-run.md#continue-from-a-delivered-map)) |
 | `inspect_mapping_run(job_dir, offset?)` | Resume saved agent-run state, paged candidate observations, attempts and output paths without processing |
+| `apply_supported_hd_plan(job_dir, plan_files, interval_ids, connect_endpoints, reason, expected_revision)` | Execute explicitly chosen, source-supported intervals through child drafting, exact endpoint inspection, four audits, retention checks and comparison; retain the root for a separate adoption decision ([workflow](mapping-run.md#apply-an-explicit-supported-plan)) |
 | `advance_mapping_run(job_dir, action, reason, expected_revision)` | Inspect/refine/draft/connect, inspect gaps and retry point fusion, or inspect_patch/patch_gaps to add selected missing intervals while preserving existing lanes and connections; compare actual audited HD intervals/routes and explicitly deliver a retained draft |
 | `start_mapping_job(source, out_dir, keyframe_spacing?, remove_dynamic?, max_attempts?, pointcloud_topic?, imu_topic?, minimum_retained_fraction?)` | Start an agent-controlled raw-recording job, generating the point-cloud map and corrected trajectory with hashes, processing reports and an explicit retained-extent goal ([workflow](mapping-job.md)) |
+| `trial_mapping_motion(job_dir, out_dir, find_loops, use_gravity, reason, max_attempts?)` | Generate one explicit alternative correction from freshly decoded logs in a new job; retain exact reference-graph nodes and failed outputs, with no old HD geometry or adoption ([workflow](mapping-motion-trial.md)) |
+| `compare_mapping_motion_trials(baseline_report_file, candidate_report_file, window_poses?, offset?)` | Require identical source/reference/protocol and pose coverage, then compare corrected motion globally and in matching local windows; retain regressions ([workflow](mapping-motion-trial.md#evaluate-and-compare)) |
 | `inspect_mapping_job(job_dir)` | Read persisted artifacts, attempts, source holds and remaining budget without loading clouds |
 | `propose_mapping_corridors(job_dir, search_radius_m?)` | Generate cached low-surface corridor geometry and width/edge evidence before assigning lanes; no HD attempt is spent |
 | `inspect_mapping_corridors(job_dir, candidate_id?, offset?)` | Read a paged candidate index or bounded original-frame geometry; verify saved input/report hashes without native processing |
@@ -43,6 +47,8 @@ Other MCP clients start the same command (`ca mcp`, no arguments) as a stdio ser
 | `cloud_info(path)` | A cloud's size, bounds, centroid and density |
 | `evaluate_map(candidate, reference, thresholds?)` | Chamfer, Hausdorff, F1 at thresholds, AUC |
 | `evaluate_trajectory(estimate, reference, align_rigid?)` | ATE, RPE, drift, coverage of a timestamped trajectory |
+| `evaluate_mapping_trajectory(job_dir, reference, reference_provenance, report_path, max_time_delta?, alignment_prefix_fraction?)` | Compare saved original/corrected mapping motion; optionally fit only the prefix and evaluate a disjoint suffix; retain hashes, coverage and regressions ([details](mapping-trajectory-evaluate.md)) |
+| `inspect_mapping_trajectory_comparison(report_file, window_poses?, ranking?, offset?)` | Verify saved evaluation/input hashes and locate evaluated error windows by original scan IDs, times and corrected-map pose bounds; eight windows per page ([details](mapping-trajectory-evaluate.md#locate-regions-for-review)) |
 
 Paths are on the machine the server runs on. The pose graph tools read every scan: seconds for a
 short drive, a minute or so for a few thousand keyframes (KITTI 07, 1,101 scans: about 50 s), so

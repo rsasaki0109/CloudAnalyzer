@@ -54,7 +54,52 @@ def test_the_server_answers_over_stdio(tmp_path):
                 await session.initialize()
                 tools = (await session.list_tools()).tools
                 names = {t.name for t in tools}
-                assert {"start_mapping_run", "inspect_mapping_run", "advance_mapping_run"} <= names
+                mapping_trajectory = next(t for t in tools if t.name == "evaluate_mapping_trajectory")
+                trajectory_schema = mapping_trajectory.model_dump(by_alias=True)["inputSchema"]
+                assert set(trajectory_schema["required"]) == {"job_dir", "reference", "reference_provenance", "report_path"}
+                assert trajectory_schema["properties"]["max_time_delta"]["default"] == .05
+                assert trajectory_schema["properties"]["alignment_prefix_fraction"]["default"] == 1.
+                local_review = next(t for t in tools if t.name == "inspect_mapping_trajectory_comparison")
+                review_schema = local_review.model_dump(by_alias=True)["inputSchema"]
+                assert review_schema["required"] == ["report_file"]
+                assert review_schema["properties"]["window_poses"]["default"] == 12
+                assert review_schema["properties"]["ranking"]["default"] == "regression"
+                assert review_schema["properties"]["offset"]["default"] == 0
+                motion_trial = next(t for t in tools if t.name == "trial_mapping_motion")
+                trial_schema = motion_trial.model_dump(by_alias=True)["inputSchema"]
+                assert set(trial_schema["required"]) == {"job_dir", "out_dir", "find_loops", "use_gravity", "reason"}
+                assert trial_schema["properties"]["find_loops"]["type"] == "boolean"
+                assert trial_schema["properties"]["use_gravity"]["type"] == "boolean"
+                assert trial_schema["properties"]["max_attempts"]["default"] == 4
+                trial_compare = next(t for t in tools if t.name == "compare_mapping_motion_trials")
+                compare_schema = trial_compare.model_dump(by_alias=True)["inputSchema"]
+                assert set(compare_schema["required"]) == {"baseline_report_file", "candidate_report_file"}
+                assert compare_schema["properties"]["window_poses"]["default"] == 12
+                assert {"export_mapping_preview", "export_mapping_run", "inspect_mapping_bundle"} <= names
+                preview = next(t for t in tools if t.name == "export_mapping_preview")
+                schema = preview.model_dump(by_alias=True)["inputSchema"]
+                assert set(schema["required"]) == {"finished_job_dir", "bundle_path", "attribution"}
+                assert schema["properties"]["max_preview_points"]["default"] == 200000
+                assert schema["properties"]["max_bundle_bytes"]["default"] == 64 * 1024**2
+                export = next(t for t in tools if t.name == "export_mapping_run")
+                assert set(export.model_dump(by_alias=True)["inputSchema"]["required"]) == {"finished_job_dir", "bundle_path", "attribution"}
+                bundle = next(t for t in tools if t.name == "inspect_mapping_bundle")
+                assert bundle.model_dump(by_alias=True)["inputSchema"]["required"] == ["bundle_path"]
+                assert {"start_mapping_run", "continue_mapping_run", "inspect_mapping_run", "advance_mapping_run"} <= names
+                motion_run = next(t for t in tools if t.name == "start_mapping_motion_run")
+                assert set(motion_run.model_dump(by_alias=True)["inputSchema"]["required"]) == {"trial_job_dir", "finished_job_dir", "out_dir", "max_attempts", "reason"}
+                motion_maps = next(t for t in tools if t.name == "compare_mapping_motion_maps")
+                assert set(motion_maps.model_dump(by_alias=True)["inputSchema"]["required"]) == {"candidate_job_dir", "baseline_report_file", "candidate_report_file", "out_dir", "reason"}
+                pair_choice = next(t for t in tools if t.name == "choose_mapping_motion_pair")
+                assert set(pair_choice.model_dump(by_alias=True)["inputSchema"]["required"]) == {"selection_dir", "choice", "reason", "expected_revision"}
+                assert "inspect_mapping_motion_selection" in names
+                application = next(t for t in tools if t.name == "apply_supported_hd_plan")
+                application_schema = application.model_dump(by_alias=True)["inputSchema"]
+                assert set(application_schema["required"]) == {"job_dir", "plan_files", "interval_ids", "connect_endpoints", "reason", "expected_revision"}
+                assert application_schema["properties"]["plan_files"]["type"] == "array"
+                assert application_schema["properties"]["connect_endpoints"]["type"] == "boolean"
+                continuation = next(t for t in tools if t.name == "continue_mapping_run")
+                assert set(continuation.model_dump(by_alias=True)["inputSchema"]["required"]) == {"finished_job_dir", "out_dir", "max_attempts", "reason"}
                 start_run = next(t for t in tools if t.name == "start_mapping_run")
                 assert set(start_run.model_dump(by_alias=True)["inputSchema"]["required"]) == {"source", "out_dir", "layout_hypothesis"}
                 advance_run = next(t for t in tools if t.name == "advance_mapping_run")

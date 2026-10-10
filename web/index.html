@@ -12,7 +12,7 @@
       <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti,.osm,.g2o,.bag,.mcap,.bin" />
+        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.zip,.tum,.kitti,.osm,.g2o,.bag,.mcap,.bin" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -91,11 +91,26 @@
           <button id="session-save" title="Save the view and how each cloud is shown (not the data)">Save session</button>
           <button id="session-open" title="Open a saved session, together with its files">Open session…</button>
           <button id="project-save" title="Save the edited map, pose graph and settings with verified source references">Save project</button>
+          <button id="project-snapshot" title="Save current loaded point and mesh records, including processed results, with project metadata">Save workspace snapshot</button>
           <button id="project-open" title="Open a project and reselect its original source files">Open project…</button>
         </div>
-        <p class="hint small">Projects reference original source files. Export derived clouds separately; reopening starts a fresh Undo history.</p>
+        <p class="hint small">Projects reference original source files. Workspace snapshots include current clouds and meshes, pose-graph inputs and the original generated-map review package (256 MiB content limit). Unloaded cloud detail stays external. Reopening starts a fresh Undo history.</p>
+        <details id="mapping-review-panel" class="options" open>
+          <summary>Generated maps</summary>
+          <button id="mapping-review-open">Open generated maps…</button>
+          <input id="mapping-review-file" type="file" accept=".zip" hidden />
+          <p class="hint small">Open a review ZIP from your mapping agent. The point map and HD map share their original coordinates. Opening replaces the current HD map.</p>
+          <div id="mapping-review-result" hidden>
+            <p id="mapping-review-summary" class="small" role="status"></p>
+            <button id="mapping-review-download" disabled>Download original map package</button>
+            <label>Saved source audit <select id="mapping-review-audit"></select></label>
+            <p id="mapping-review-state" class="hint small" role="status"></p>
+            <details><summary>Dataset credit</summary><p id="mapping-review-credit" class="small"></p></details>
+          </div>
+        </details>
         <div id="project-recovery-controls">
           <label class="inline"><input id="project-autosave" type="checkbox" checked /> Auto save editing state in this browser</label>
+          <label class="inline"><input id="project-autosave-records" type="checkbox" /> Include current records and original inputs (64 MiB)</label>
           <p id="project-save-status" class="small" role="status">Checking browser recovery…</p>
           <div id="project-recovery" hidden>
             <p id="project-recovery-summary" class="hint small"></p>
@@ -339,6 +354,23 @@
           </label>
         </div>
         <button id="filter-run" class="primary" disabled>Apply to a new cloud</button>
+        <details id="recipe-panel">
+          <summary>Reusable filter recipe</summary>
+          <label>Name <input id="recipe-name" value="Point cleanup" maxlength="80" /></label>
+          <button id="recipe-add">Add current filter step</button>
+          <ol id="recipe-steps"></ol>
+          <button id="recipe-export">Save recipe</button>
+          <button id="recipe-import">Open recipe…</button>
+          <input id="recipe-file" type="file" accept=".json" hidden />
+          <p class="hint">Up to 8 steps: voxel, minimum distance, octree, SOR or splat cleanup.
+            Applies to current loaded records in their current coordinates.</p>
+          <button id="recipe-visible">Select visible clouds</button>
+          <div id="recipe-clouds" aria-label="Recipe source clouds"></div>
+          <button id="recipe-run" class="primary" disabled>Run recipe on selected clouds</button>
+          <p id="recipe-status" role="status"></p>
+          <p class="hint">All results are prepared before hiding sources. One Undo restores the batch.
+            Preparation needs extra memory. Save a workspace snapshot to keep results and processing records.</p>
+        </details>
       </section>
 
       <section id="merge-panel">

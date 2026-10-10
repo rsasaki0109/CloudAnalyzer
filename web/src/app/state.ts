@@ -5,6 +5,7 @@ import type { RampName } from "../colormap";
 import type { LodNode } from "../lod";
 import type { C2cOutput, LoadedCloud, Vec3 } from "../protocol";
 import { Viewer } from "../viewer";
+import type { ProcessingRecord } from "../filter-recipe";
 import { $ } from "./dom";
 
 export type ColorMode =
@@ -19,7 +20,7 @@ export type ColorMode =
   | "scalar";
 
 /** Where a cloud came from: sessions can restore file and URL clouds. */
-export type Origin = ({ kind: "file"; file?: File } | { kind: "url"; url: string; file?: File; size?: number; etag?: string } | { kind: "derived" }) & { loadMaxPoints?: number };
+export type Origin = ({ kind: "file"; file?: File } | { kind: "url"; url: string; file?: File; size?: number; etag?: string } | { kind: "derived" }) & { loadMaxPoints?: number; displayPreview?: boolean };
 
 export interface Entry {
   cloud: LoadedCloud;
@@ -35,6 +36,8 @@ export interface Entry {
   /** Transforms applied by ICP, newest last, for undo. */
   transforms: number[][];
   origin: Origin;
+  /** Recorded input/output identity at recipe execution, before later edits. */
+  processing?: ProcessingRecord;
 }
 
 export const viewer = new Viewer($("viewport"));

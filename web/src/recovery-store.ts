@@ -4,7 +4,7 @@ import type { ReviewStatus } from "./lane-review";
 export const MAX_RECOVERY_BYTES = 64 * 1024 * 1024;
 export interface ReviewDraft { lane: number; status: ReviewStatus; notes: string }
 export interface Recovery {
-  version: 1; token: string; savedAt: string; project: Project; draft?: ReviewDraft;
+  version: 1; token: string; savedAt: string; project: Project; draft?: ReviewDraft; snapshot?: Blob;
 }
 const DB = "cloudanalyzer-recovery", STORE = "projects", KEY = "latest";
 let database: Promise<IDBDatabase> | undefined;
@@ -31,7 +31,7 @@ export function parseRecovery(value: unknown): Recovery {
   if (!value || typeof value !== "object") throw new Error("Invalid browser recovery copy");
   const r = value as Recovery;
   if (r.version !== 1 || typeof r.token !== "string" || !r.token || typeof r.savedAt !== "string" || !Number.isFinite(Date.parse(r.savedAt))) throw new Error("Invalid browser recovery copy");
-  if (new Blob([JSON.stringify(r)]).size > MAX_RECOVERY_BYTES) throw new Error("Browser recovery exceeds the 64 MiB metadata limit");
+  checkSize(r);
   if (r.draft && (!Number.isSafeInteger(r.draft.lane) || r.draft.lane < 0 || !["unreviewed","reviewed","needs-fix","deferred"].includes(r.draft.status) || typeof r.draft.notes !== "string" || r.draft.notes.length > 10000)) throw new Error("Invalid recovered review draft");
   return {...r,project:parseProject(r.project)};
 }
@@ -51,7 +51,7 @@ export async function readRecovery(): Promise<Recovery | null> {
 }
 /** Compare-and-swap in one transaction prevents silent cross-tab overwrites. */
 export async function writeRecovery(value: Recovery | null, expected: string | null): Promise<void> {
-  if (value && new Blob([JSON.stringify(value)]).size > MAX_RECOVERY_BYTES) throw new Error("Browser recovery exceeds the 64 MiB metadata limit");
+  if (value) checkSize(value);
   const db = await open();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(STORE, "readwrite"), store = transaction.objectStore(STORE);
@@ -69,4 +69,9 @@ export async function writeRecovery(value: Recovery | null, expected: string | n
     transaction.onabort = () => reject(conflict ?? transaction.error ?? new Error("Could not save the browser copy"));
     transaction.onerror = () => reject(transaction.error);
   });
+}
+
+function checkSize(value: Recovery): void {
+  if (value.snapshot !== undefined && !(value.snapshot instanceof Blob)) throw new Error("Invalid browser point-record snapshot");
+  if (new Blob([JSON.stringify(value)]).size + (value.snapshot?.size ?? 0) > MAX_RECOVERY_BYTES) throw new Error("Browser recovery exceeds the 64 MiB content limit; download a workspace snapshot or export large results separately");
 }

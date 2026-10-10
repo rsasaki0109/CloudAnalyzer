@@ -1,0 +1,32 @@
+{
+  "schema": "cloudanalyzer.edl_review_evidence.v1",
+  "point_records": 161578,
+  "full_source_records": 646309,
+  "bundle": {
+    "path": "/workspace/.cloudanalyzer-env/exports/nclt-hd-preflight-display-preview.zip",
+    "sha256": "85e3b22b7fb53a781cf72e356946f178a6efd1e9eda4e7e03ef06edbd96cdf2a",
+    "bytes": 4787591
+  },
+  "job_hashes_before": {
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/run.json": "b0d8c8f0b429c2d28552a07ec78037b252ef3cc365c74e8d7ca067c72e47a404",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/job.json": "6ac5429312507bc555ab6af6fe4082b52bfee4397e3f12a3172b3dc656b1ae0e",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/run.json": "6d2e7860a5f070be9bc0c18cb3c49bc0a856733916fd5ede3158953330f82d29",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/job.json": "b3e41f27b00cfccee6960357003aab5e3d959d66cd22ca845b918d4a1712da7f"
+  },
+  "job_hashes_after": {
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/run.json": "b0d8c8f0b429c2d28552a07ec78037b252ef3cc365c74e8d7ca067c72e47a404",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/job.json": "6ac5429312507bc555ab6af6fe4082b52bfee4397e3f12a3172b3dc656b1ae0e",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/run.json": "6d2e7860a5f070be9bc0c18cb3c49bc0a856733916fd5ede3158953330f82d29",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/job.json": "b3e41f27b00cfccee6960357003aab5e3d959d66cd22ca845b918d4a1712da7f"
+  },
+  "before_image": "../nclt-preview-bundle/review.png",
+  "after_image": "preview-after.png",
+  "old_sparse_visibility_ratio": 0,
+  "saved_legacy_review_lanes": 9,
+  "saved_legacy_problem_intervals": 19,
+  "saved_protocols_opened": 4,
+  "point_map_modified": false,
+  "hd_map_modified": false,
+  "mapping_attempts_spent": 0,
+  "independent_accuracy_established": false
+}

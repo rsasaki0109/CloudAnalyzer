@@ -3,10 +3,14 @@
 // file name (the user opens the same files).
 
 import { parseSource, type SourceReference } from "./source-reference";
+import { parseProcessingRecord, type ProcessingRecord } from "./filter-recipe.ts";
 
 export type Vec3 = [number, number, number];
 
 export interface SessionCloud {
+  processing?: ProcessingRecord;
+  /** Display-only generated-map subset; not a source for new coverage audits. */
+  displayPreview?: boolean;
   source?: SourceReference;
   /** Actual file loading limit; 0 keeps every point. */
   loadMaxPoints?: number;
@@ -139,9 +143,12 @@ export function parseSession(json: unknown): Session {
       if (typeof c !== "object" || c === null) fail("cloud");
       const r = c as Record<string, unknown>;
       if (typeof r.name !== "string") fail("cloud name");
+      if (r.displayPreview !== undefined && typeof r.displayPreview !== "boolean") fail("cloud preview flag");
       if (r.loadMaxPoints !== undefined && (!Number.isSafeInteger(r.loadMaxPoints) || Number(r.loadMaxPoints) < 0)) fail("cloud loading limit");
       const distance = r.distance as Record<string, unknown> | undefined;
       return {
+        processing: r.processing === undefined ? undefined : parseProcessingRecord(r.processing),
+        displayPreview: r.displayPreview as boolean | undefined,
         loadMaxPoints: r.loadMaxPoints as number | undefined,
         source: r.source === undefined ? undefined : parseSource(r.source),
         name: r.name,

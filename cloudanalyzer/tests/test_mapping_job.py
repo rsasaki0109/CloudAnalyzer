@@ -1314,8 +1314,11 @@ def unused_frame_run(job_backend, tmp_path, monkeypatch, request):
     monkeypatch.setattr(jobs, 'odometry', odometry)
     def fixed(folder, out, **kwargs):
         out = Path(out); out.mkdir()
-        cloud, trajectory, graph = out/'map.xyz', out/'poses.txt', out/'map.g2o'
-        np.savetxt(cloud, xyz[::2, :3]+[0, 0, 1]); np.savetxt(trajectory, poses[ids, :3].reshape(len(ids), 12))
+        from ca.posegraph_fix import write_ply
+        cloud, trajectory, graph = out/'map.ply', out/'poses.txt', out/'map.g2o'
+        points = xyz[::2, :3]+[0, 0, 1]
+        write_ply(cloud, points, {'intensity': np.ones(len(points)), 'correction': np.zeros(len(points))})
+        np.savetxt(trajectory, poses[ids, :3].reshape(len(ids), 12))
         graph.write_text(native.PoseGraph.from_poses(poses[ids], ids=ids).to_g2o())
         return {'map_points': len(xyz[::2]), 'nodes': len(ids), 'scans': len(ids), 'unmatched_scans': 6,
                 'outputs': {'map': str(cloud), 'kitti': str(trajectory), 'g2o': str(graph)}}
@@ -1908,3 +1911,779 @@ def test_partial_repair_connection_resume_reuses_the_shared_attempt(patched_conn
     result = _advance(child, {'type': 'resume'})
     assert result['connect_result']['status'] == 'audited_draft' and result['remaining_attempts'] == 0
     assert len(jobs.inspect_mapping_job(str(child))['attempts']) == 4
+
+
+def _local_preview(root, box=None):
+    _inspect_unused(root)
+    return _advance(root, {'type':'inspect_local_points','candidate_id':2,'gap_ids':[1],
+                          'bounds_xy':box or [2.,-1.6,8.,1.6]})['local_point_observation']
+
+
+def _local_action(preview):
+    return {'type':'retry_local_frames','candidate_id':2,'frame_ids':[5],'preview_file':preview['file']}
+
+
+def test_local_point_update_keeps_outside_records_attributes_motion_and_hd(unused_frame_run):
+    from ca import mapping_local_points as local
+    root=unused_frame_run;original=jobs.inspect_mapping_job(str(root))
+    base_file=original['pointcloud']['files']['map'];base_bytes=Path(base_file['path']).read_bytes()
+    preview=_local_preview(root)
+    assert 5 in preview['eligible_frame_ids'] and preview['inside_points']>0 and preview['outside_points']>0
+    result=_advance(root,_local_action(preview))
+    assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';cj=jobs.inspect_mapping_job(str(child))
+    _,base=local.records(Path(base_file['path']));_,updated=local.records(Path(cj['pointcloud']['files']['map']['path']))
+    box=preview['effective_bounds_xy']
+    assert updated[~local.mask(updated,box)].tobytes()==base[~local.mask(base,box)].tobytes()
+    assert updated.dtype.names==('x','y','z','intensity','correction')
+    assert any(base['x']==box[2]) and all(p['x']<box[2] for p in updated[local.mask(updated,box)])
+    assert Path(base_file['path']).read_bytes()==base_bytes
+    assert all(cj['pointcloud']['files'][k]['sha256']==original['pointcloud']['files'][k]['sha256'] for k in ('graph','trajectory'))
+    _advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Only observed local source'}]})
+    with pytest.raises(ValueError,match='combined HD patch'):_advance(root,{'type':'compare_retry','candidate_id':2})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft',patched
+    compared=_advance(root,{'type':'compare_retry','candidate_id':3})['retry_comparison']
+    assert compared['local_point_update']['outside_records_bit_identical'] and compared['lost_source_length_m']==0
+    _advance(child,{'type':'finish','candidate_id':3})
+    final=_advance(root,{'type':'finish_retry','candidate_id':3})
+    assert final['output']['artifacts']['local_update_checks']==cj['pointcloud']['files']['local_update_checks']
+    assert final['output']['artifacts']['map']==cj['pointcloud']['files']['map']
+
+
+@pytest.mark.parametrize('box',[[True,0,1,1],[0,0,float('nan'),1],[0,0,50,1],[3,0,2,1],[40,40,42,42]])
+def test_local_point_preview_rejects_invalid_unobserved_boxes_without_allocation(unused_frame_run,box):
+    root=unused_frame_run;_inspect_unused(root)
+    with pytest.raises(ValueError):_advance(root,{'type':'inspect_local_points','candidate_id':2,'gap_ids':[1],'bounds_xy':box})
+    assert 'pointcloud_retry' not in jobs._load(root)
+
+
+@pytest.mark.parametrize('fault',['unseen_preview','tampered_preview','unseen_frame'])
+def test_local_point_adoption_requires_seen_frozen_region_and_frames(unused_frame_run,fault):
+    root=unused_frame_run;preview=_local_preview(root);action=_local_action(preview)
+    if fault=='unseen_preview':
+        run=json.loads((root/'run.json').read_text());run['history'][-1].pop('local_point_observation');jobs._save(root/'run.json',run)
+    elif fault=='tampered_preview':Path(preview['file']['path']).write_text('changed local box')
+    else:
+        run=json.loads((root/'run.json').read_text())
+        for h in run['history']:
+            if 'unused_frame_observation' in h:h['unused_frame_observation']['frames']=[]
+        jobs._save(root/'run.json',run)
+    with pytest.raises(ValueError):_advance(root,action)
+    assert 'pointcloud_retry' not in jobs._load(root)
+
+
+def test_local_point_hd_patch_rejects_changes_outside_the_preview_box(unused_frame_run):
+    root=unused_frame_run;preview=_local_preview(root,[4.,-.8,6.,.8])
+    result=_advance(root,_local_action(preview));assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';_advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Inspected local station range'}]})
+    with pytest.raises(ValueError,match='inside the local point update box'):
+        _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    assert 'gap_patch' not in jobs._load(child)
+
+
+def test_local_point_failed_source_gate_retains_checks_and_original_pair(unused_frame_run,monkeypatch):
+    root=unused_frame_run;preview=_local_preview(root);original=jobs.core().audit_vector_map_quality_details
+    def unsupported(*args):
+        audit=json.loads(original(*args));audit['quality']['lanes'][0]['left']['start_supported']=False
+        return json.dumps(audit)
+    monkeypatch.setattr(jobs.core(),'audit_vector_map_quality_details',unsupported)
+    result=_advance(root,_local_action(preview));stage=result['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and not stage['local_update']['passes']
+    assert Path(stage['local_update']['checks']['path']).is_file() and Path(stage['local_update']['audits']['path']).is_file()
+    final=_advance(root,{'type':'finish','candidate_id':2})
+    assert not final['output']['pointcloud_retry_decision']['adopted']
+    assert final['output']['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+    for key in ('report','checks','audits'):
+        assert final['output']['artifacts'][f'pointcloud_trial_local_{key}']==stage['local_update'][key]
+
+
+def test_local_point_completed_retry_resumes_without_second_allocation(unused_frame_run,monkeypatch):
+    from ca import mapping_retry as retry
+    root=unused_frame_run;preview=_local_preview(root);original=retry.retry
+    def interrupted(*args,**kwargs):original(*args,**kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(retry,'retry',interrupted)
+    with pytest.raises(KeyboardInterrupt):_advance(root,_local_action(preview))
+    monkeypatch.setattr(retry,'retry',original)
+    result=_advance(root,{'type':'resume'})
+    assert result['pointcloud_retry_result']['status']=='ready' and result['remaining_attempts']==0
+    assert jobs._load(root)['pointcloud_retry']['strategy']=='local_unused_frames'
+
+
+def test_local_point_inverted_subvoxel_box_can_be_corrected_without_interrupt(unused_frame_run):
+    root=unused_frame_run;_inspect_unused(root)
+    with pytest.raises(ValueError,match='positive requested sides'):
+        _advance(root,{'type':'inspect_local_points','candidate_id':2,'gap_ids':[1],'bounds_xy':[4.09,-1.,4.01,1.]})
+    assert json.loads((root/'run.json').read_text())['status']=='needs_agent'
+    assert _local_preview(root)['outside_points']>0
+
+
+def test_local_point_export_attribute_corruption_is_not_adopted(unused_frame_run,monkeypatch):
+    from ca import mapping_local_points as local
+    root=unused_frame_run;preview=_local_preview(root);original=local.records
+    def corrupt(path):
+        header,rows=original(path)
+        if path.name=='local_map.ply':rows[0]['intensity']+=1.
+        return header,rows
+    monkeypatch.setattr(local,'records',corrupt)
+    result=_advance(root,_local_action(preview))
+    assert result['pointcloud_retry_result']['status']=='failed'
+    assert 'outside coordinates, attributes or record order' in result['pointcloud_retry_result']['stage']['error']
+    final=_advance(root,{'type':'finish','candidate_id':2})
+    assert final['output']['pointcloud_retry_decision']['adopted'] is False
+
+
+def test_local_point_connection_preview_holds_connectors_leaving_the_update_box(unused_frame_run):
+    root=unused_frame_run;preview=_local_preview(root,[2.,-1.6,6.,1.6])
+    jobs.core().connect_vector_map_junctions=_attach_lane_native().connect_vector_map_junctions
+    result=_advance(root,_local_action(preview));assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';_advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Local repair within the selected box'}]})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft',patched
+    observed=_advance(child,{'type':'inspect_connections','candidate_id':3,'offset':0})['connection_observation']
+    assert observed['candidates_total']==0
+    assert any(r['from']==9 and r['to']==6 and 'outside_local_point_update_bounds' in r['holds'] for r in observed['rejected'])
+
+
+def _local_density_preview(root):
+    return _advance(root, {'type':'inspect_local_density','candidate_id':2,'gap_ids':[1],
+                          'bounds_xy':[2.,-1.6,8.,1.6]})['local_point_observation']
+
+
+def _local_density_action(preview, options=None):
+    return {'type':'retry_local_density','candidate_id':2,'preview_file':preview['file'],
+            'options':options or {'scan_voxel_m':.2,'map_voxel_m':.1}}
+
+
+def test_local_density_updates_inside_records_without_unused_frames_and_keeps_hd(unused_frame_run):
+    from ca import mapping_local_points as local
+    root=unused_frame_run;before=jobs._load(root)
+    base_file=before['pointcloud']['files']['map'];base_bytes=Path(base_file['path']).read_bytes()
+    preview=_local_density_preview(root)
+    assert preview['eligible_frame_ids']==[] and preview['holds']==[]
+    assert not list(root.glob('unused-frames-*.json'))
+    result=_advance(root,_local_density_action(preview));stage=result['pointcloud_retry_result']['stage']
+    assert stage['status']=='ready' and stage['strategy']=='local_density',result
+    child=root/'pointcloud-retry';cj=jobs.inspect_mapping_job(str(child))
+    _,base=local.records(Path(base_file['path']));_,updated=local.records(Path(cj['pointcloud']['files']['map']['path']))
+    box=preview['effective_bounds_xy']
+    assert updated[~local.mask(updated,box)].tobytes()==base[~local.mask(base,box)].tobytes()
+    assert Path(base_file['path']).read_bytes()==base_bytes
+    report=json.loads(Path(cj['pointcloud']['reports']['correction']).read_text())
+    original_report=json.loads(Path(before['pointcloud']['reports']['correction']).read_text())
+    assert report['nodes']==original_report['nodes'] and report['unmatched_scans']==6
+    assert 'additional_frame_ids' not in cj['pointcloud'] and not list(child.glob('fusion-scans*'))
+    assert cj['pointcloud_options']['scan_voxel_m']==.2 and cj['pointcloud_options']['map_voxel_m']==.1
+    for key in ('graph','trajectory'):
+        assert cj['pointcloud']['files'][key]['sha256']==before['pointcloud']['files'][key]['sha256']
+    _advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Only source-supported local addition'}]})
+    with pytest.raises(ValueError,match='combined HD patch'):_advance(root,{'type':'compare_retry','candidate_id':2})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft',patched
+    comparison=_advance(root,{'type':'compare_retry','candidate_id':3})['retry_comparison']
+    assert comparison['local_point_update']['outside_records_bit_identical'] and comparison['lost_source_length_m']==0
+    _advance(child,{'type':'finish','candidate_id':3})
+    final=_advance(root,{'type':'finish_retry','candidate_id':3})
+    assert final['output']['artifacts']['map']==cj['pointcloud']['files']['map']
+
+
+@pytest.mark.parametrize('options',[{'scan_voxel_m':.4,'map_voxel_m':.2},
+    {'scan_voxel_m':.05,'map_voxel_m':.1},{'scan_voxel_m':True,'map_voxel_m':.1},
+    {'scan_voxel_m':.2,'map_voxel_m':.1,'remove_dynamic':False}])
+def test_local_density_invalid_options_do_not_consume_a_retry(unused_frame_run,options):
+    root=unused_frame_run;preview=_local_density_preview(root)
+    before=(root/'run.json').read_bytes()
+    with pytest.raises(ValueError):_advance(root,_local_density_action(preview,options))
+    assert before==(root/'run.json').read_bytes() and 'pointcloud_retry' not in jobs._load(root)
+    assert not (root/'pointcloud-retry').exists()
+
+
+@pytest.mark.parametrize('fault',['unseen','tampered','frame_strategy'])
+def test_local_density_requires_seen_preview_for_the_density_strategy(unused_frame_run,fault):
+    root=unused_frame_run;preview=_local_density_preview(root)
+    if fault=='unseen':
+        run=json.loads((root/'run.json').read_text());run['history'][-1].pop('local_point_observation');jobs._save(root/'run.json',run)
+    elif fault=='tampered':
+        Path(preview['file']['path']).write_text('{}')
+    else:
+        preview=_local_preview(root)
+    with pytest.raises(ValueError):_advance(root,_local_density_action(preview))
+    assert 'pointcloud_retry' not in jobs._load(root) and not (root/'pointcloud-retry').exists()
+
+
+def test_frame_retry_cannot_use_a_density_preview(unused_frame_run):
+    root=unused_frame_run;preview=_local_density_preview(root);_inspect_unused(root)
+    with pytest.raises(ValueError,match='another decision or protocol'):_advance(root,_local_action(preview))
+    assert 'pointcloud_retry' not in jobs._load(root)
+
+
+def test_local_density_completed_retry_resumes_without_recomputing(unused_frame_run,monkeypatch):
+    from ca import mapping_retry as retry
+    root=unused_frame_run;preview=_local_density_preview(root);original=retry.retry
+    def interrupted(*args,**kwargs):original(*args,**kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(retry,'retry',interrupted)
+    with pytest.raises(KeyboardInterrupt):_advance(root,_local_density_action(preview))
+    monkeypatch.setattr(retry,'retry',original)
+    monkeypatch.setattr(retry,'fix_session',lambda *args,**kwargs:pytest.fail('completed fusion must not repeat'))
+    resumed=_advance(root,{'type':'resume'})
+    assert resumed['pointcloud_retry_result']['status']=='ready' and resumed['remaining_attempts']==0
+    assert jobs._load(root)['pointcloud_retry']['allocated_attempts']==4
+    with pytest.raises(ValueError,match='one point-cloud retry'):_advance(root,_local_density_action(preview))
+
+
+def test_local_density_retained_support_failure_returns_original_pair(unused_frame_run,monkeypatch):
+    root=unused_frame_run;preview=_local_density_preview(root);original=jobs.core().audit_vector_map_quality_details
+    def regressed(*args):
+        report=json.loads(original(*args));report['quality']['lanes'][0]['left']['start_supported']=False
+        return json.dumps(report)
+    monkeypatch.setattr(jobs.core(),'audit_vector_map_quality_details',regressed)
+    stage=_advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and not stage['local_update']['passes']
+    child=jobs._load(root/'pointcloud-retry');assert child['pointcloud'] is None and child['attempts']==[]
+    final=_advance(root,{'type':'finish','candidate_id':2})['output']
+    assert not final['pointcloud_retry_decision']['adopted']
+    assert final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+    assert final['artifacts']['hd_map']==jobs._load(root)['attempts'][1]['files']['map']
+    assert final['artifacts']['pointcloud_trial_local_checks']==stage['local_update']['checks']
+
+
+def test_local_density_rejects_changed_fusion_frame_ids_before_map_publication(unused_frame_run,monkeypatch):
+    from ca import mapping_retry as retry
+    root=unused_frame_run;preview=_local_density_preview(root);original=retry.fix_session
+    def altered(*args,**kwargs):
+        result=original(*args,**kwargs)
+        path=Path(result['outputs']['g2o']);graph=jobs.core().PoseGraph.from_g2o(path.read_text())
+        path.write_text(jobs.core().PoseGraph.from_poses(graph.poses(),ids=[i+100 for i in graph.node_ids]).to_g2o())
+        return result
+    monkeypatch.setattr(retry,'fix_session',altered)
+    stage=_advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and 'retained frames or frozen poses' in stage['error']
+    assert 'local_update' not in stage and jobs._load(root/'pointcloud-retry')['pointcloud'] is None
+    final=_advance(root,{'type':'finish','candidate_id':2})['output']
+    assert final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+
+
+def _height_child(root,monkeypatch,with_failure=True):
+    module=jobs.core();original=module.propose_road_corridors
+    def propose(*args):
+        p=json.loads(original(*args))
+        if with_failure:
+            for c in p['candidates']:
+                for section in c['sections']:
+                    if section['station_m']==6.:section['right'][2]-=.35
+        return json.dumps(p)
+    monkeypatch.setattr(module,'propose_road_corridors',propose)
+    preview=_advance(root,{'type':'inspect_local_density','candidate_id':2,'gap_ids':[1],'bounds_xy':[2.,-1.6,8.4,1.6]})['local_point_observation']
+    result=_advance(root,_local_density_action(preview));assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';_advance(child,{'type':'inspect','candidate_ids':[1]})
+    drafted=_advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':8.,'reason':'Only the local missing interval'}]})
+    assert drafted['draft_result']['status']=='audited_draft',drafted
+    return child
+
+
+def _height_preview(child,offset=0):
+    return _advance(child,{'type':'inspect_heights','candidate_id':2,'offset':offset})['height_observation']
+
+
+def _height_action(preview,dz=.075):
+    return {'type':'edit_heights','candidate_id':2,'preview_file':preview['file'],
+            'edits':[{'boundary_id':2,'vertex_index':1,'delta_z_m':dz,'reason':'Bounded Z hypothesis at the observed height mismatch; verify both estimators'}]}
+
+
+def test_height_edit_keeps_xy_endpoints_metadata_and_supports_combined_patch(unused_frame_run,monkeypatch):
+    from ca import mapping_heights as height
+    root=unused_frame_run;child=_height_child(root,monkeypatch);before=jobs._load(child)['attempts'][1]
+    original=json.loads(Path(before['files']['editable_map']['path']).read_text());before_bytes=Path(before['files']['editable_map']['path']).read_bytes()
+    preview=_height_preview(child)
+    assert [(r['boundary_id'],r['vertex_index']) for r in preview['vertices']]==[(2,1)]
+    result=_advance(child,_height_action(preview));assert result['height_result']['status']=='audited_draft',result
+    after=jobs.inspect_mapping_job(str(child))['attempts'][2]
+    height._preserved(original,json.loads(Path(after['files']['editable_map']['path']).read_text()),_height_action(preview)['edits'])
+    assert Path(before['files']['editable_map']['path']).read_bytes()==before_bytes
+    assert result['remaining_attempts']==1 and json.loads(Path(after['height_checks']['path']).read_text())['passes']
+    _advance(child,{'type':'inspect_patch','candidate_id':3,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':3,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft' and patched['remaining_attempts']==0,patched
+    comparison=_advance(root,{'type':'compare_retry','candidate_id':4})['retry_comparison']
+    assert comparison['gained_source_length_m']==4 and comparison['lost_source_length_m']==0
+    _advance(child,{'type':'finish','candidate_id':4})
+    final=_advance(root,{'type':'finish_retry','candidate_id':4})['output']
+    assert final['artifacts']['hd_height_checks']==after['height_checks']
+    assert any('addition_height' in k for k in jobs._load(child)['attempts'][3]['patch_inputs'])
+
+
+@pytest.mark.parametrize('fault',['large_delta','zero','nan','boolean','endpoint','xy','duplicate'])
+def test_height_invalid_edits_do_not_spend_attempts(unused_frame_run,monkeypatch,fault):
+    root=unused_frame_run;child=_height_child(root,monkeypatch);preview=_height_preview(child);action=_height_action(preview)
+    row=action['edits'][0]
+    if fault in ('large_delta','zero','nan','boolean'):row['delta_z_m']={'large_delta':.101,'zero':0.,'nan':float('nan'),'boolean':True}[fault]
+    elif fault=='endpoint':row['vertex_index']=0
+    elif fault=='xy':row['delta_x_m']=.01
+    else:action['edits'].append(dict(row))
+    before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError):_advance(child,action)
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==2
+
+
+@pytest.mark.parametrize('fault',['unseen_page','tamper','unseen_preview'])
+def test_height_requires_frozen_seen_preview_and_every_vertex(unused_frame_run,monkeypatch,fault):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child,99 if fault=='unseen_page' else 0)
+    if fault=='tamper':Path(preview['file']['path']).write_text('{}')
+    elif fault=='unseen_preview':
+        run=json.loads((child/'run.json').read_text());run['history'][-1].pop('height_observation');jobs._save(child/'run.json',run)
+    with pytest.raises(ValueError):_advance(child,_height_action(preview))
+    assert len(jobs._load(child)['attempts'])==2
+
+
+def test_height_failed_hypothesis_keeps_audits_and_root_baseline(unused_frame_run,monkeypatch):
+    root=unused_frame_run;child=_height_child(root,monkeypatch);preview=_height_preview(child)
+    result=_advance(child,_height_action(preview,-.075));assert result['height_result']['status']=='failed'
+    attempt=jobs._load(child)['attempts'][2]
+    assert not json.loads(Path(attempt['height_checks']['path']).read_text())['passes']
+    assert Path(attempt['height_audits']['path']).is_file() and Path(attempt['height_trial']['path']).is_file()
+    assert 'files' not in attempt and result['remaining_attempts']==1
+    with pytest.raises(ValueError,match='one height trial'):_advance(child,_height_action(preview))
+    final=_advance(root,{'type':'finish','candidate_id':2})['output']
+    assert not final['pointcloud_retry_decision']['adopted'] and final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+
+
+def test_height_completed_trial_resumes_without_reexport(unused_frame_run,monkeypatch):
+    from ca import mapping_run as runs
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child);original=runs._diagnosis
+    monkeypatch.setattr(runs,'_diagnosis',lambda *args:(_ for _ in ()).throw(KeyboardInterrupt()))
+    with pytest.raises(KeyboardInterrupt):_advance(child,_height_action(preview))
+    monkeypatch.setattr(runs,'_diagnosis',original)
+    monkeypatch.setattr(runs.heights,'edit',lambda *args:pytest.fail('completed height export must not repeat'))
+    resumed=_advance(child,{'type':'resume'})
+    assert resumed['height_result']['status']=='audited_draft' and resumed['remaining_attempts']==1
+    assert len(jobs._load(child)['attempts'])==3
+
+
+def test_height_preview_has_no_edits_for_fully_supported_addition(unused_frame_run,monkeypatch):
+    child=_height_child(unused_frame_run,monkeypatch,with_failure=False);preview=_height_preview(child)
+    assert preview['vertices_total']==0 and preview['vertices']==[]
+    with pytest.raises(ValueError):_advance(child,_height_action(preview))
+    assert len(jobs._load(child)['attempts'])==2
+
+
+def test_height_export_rejects_native_xy_mutation_and_keeps_point_map(unused_frame_run,monkeypatch):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child)
+    point=jobs._load(child)['pointcloud']['files']['map'];point_bytes=Path(point['path']).read_bytes()
+    native=jobs.core();original=native.edit_vector_map_relations
+    def changed(*args):
+        payload=json.loads(original(*args));ir=json.loads(payload['map_json'])
+        ir['boundaries'][0]['geometry'][1][0]+=.01
+        payload['map_json']=json.dumps(ir);return json.dumps(payload)
+    monkeypatch.setattr(native,'edit_vector_map_relations',changed)
+    result=_advance(child,_height_action(preview))['height_result']
+    assert result['status']=='failed' and 'boundary XY/endpoints' in result['error']
+    attempt=jobs._load(child)['attempts'][2]
+    assert 'files' not in attempt and Path(attempt['height_trial']['path']).is_file()
+    assert Path(point['path']).read_bytes()==point_bytes
+    assert not (child/'candidate-03').exists()
+
+
+@pytest.mark.parametrize('fault',['changed_samples','incomplete','consensus_failure'])
+def test_height_gate_rejects_changed_or_incomplete_audits(unused_frame_run,monkeypatch,fault):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child)
+    native=jobs.core();method='audit_vector_map_ground_consensus_details' if fault=='consensus_failure' else 'audit_vector_map_quality_details'
+    original=getattr(native,method)
+    def changed(*args):
+        report=json.loads(original(*args));quality=report['quality']
+        if fault=='changed_samples':quality['lanes'][0]['left']['samples']+=1
+        elif fault=='incomplete':quality['problems_limited']=True
+        else:quality['lanes'][0]['left']['end_supported']=False
+        return json.dumps(report)
+    monkeypatch.setattr(native,method,changed)
+    result=_advance(child,_height_action(preview))
+    assert result['height_result']['status']=='failed' and result['remaining_attempts']==1
+    attempt=jobs._load(child)['attempts'][2];checks=json.loads(Path(attempt['height_checks']['path']).read_text())
+    assert not checks['passes'] and checks['holds'] and 'files' not in attempt
+
+
+def test_height_lineage_tamper_blocks_combined_patch_without_spending(unused_frame_run,monkeypatch):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child)
+    _advance(child,_height_action(preview))
+    _advance(child,{'type':'inspect_patch','candidate_id':3,'gap_ids':[1],'offset':0})
+    attempt=jobs._load(child)['attempts'][2]
+    Path(attempt['height_checks']['path']).write_text('{}')
+    before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError,match='changed'):
+        _advance(child,{'type':'patch_gaps','candidate_id':3,'gap_ids':[1],'pairs':[]})
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==3
+
+
+def test_height_budget_reserves_the_combined_patch(unused_frame_run,monkeypatch):
+    child=_height_child(unused_frame_run,monkeypatch);preview=_height_preview(child)
+    job=jobs._load(child);job['max_attempts']=3;jobs._save(child/'job.json',job)
+    before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError,match='two remaining'):_advance(child,_height_action(preview))
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==2
+
+
+def _region_child(root):
+    preview=_advance(root,{'type':'inspect_local_density','candidate_id':2,'gap_ids':[1],'bounds_xy':[2.,-1.6,6.,1.6]})['local_point_observation']
+    jobs.core().connect_vector_map_junctions=_attach_lane_native().connect_vector_map_junctions
+    result=_advance(root,_local_density_action(preview));assert result['pointcloud_retry_result']['status']=='ready',result
+    child=root/'pointcloud-retry';_advance(child,{'type':'inspect','candidate_ids':[1]})
+    _advance(child,{'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Only the inspected local interval'}]})
+    _advance(child,{'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched=_advance(child,{'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status']=='audited_draft',patched
+    return child
+
+
+def _region_action(box=None,offset=0):
+    return {'type':'inspect_connection_region','candidate_id':3,'bounds_xy':box if box is not None else [2.,-1.6,8.4,1.6],'offset':offset}
+
+
+def test_explicit_hd_region_connects_repair_without_expanding_point_update(unused_frame_run):
+    from ca.mapping_connections import edges
+    from ca.mapping_patch import _preserved
+    root=unused_frame_run;child=_region_child(root);job=jobs._load(child);parent=job['attempts'][2]
+    before=json.loads(Path(parent['files']['editable_map']['path']).read_text())
+    point=job['pointcloud']['files']['map'];point_bytes=Path(point['path']).read_bytes()
+    normal=_advance(child,{'type':'inspect_connections','candidate_id':3,'offset':0})['connection_observation']
+    assert normal['candidates_total']==0
+    held=next(r for r in normal['rejected'] if r['from']==9 and r['to']==6)
+    assert held['holds']==['outside_local_point_update_bounds'] and held['geometry_bounds_xy'][2]>6.
+    observed=_advance(child,_region_action())['connection_observation']
+    assert observed['region']['point_bounds_xy']==[2.,-1.6,6.,1.6] and observed['region']['bounds_xy']==[2.,-1.6,8.4,1.6]
+    pairs=[{'from':c['from'],'to':c['to'],'reason':'Inspected HD-only envelope and exact source-supported geometry'} for c in observed['candidates']]
+    assert [(p['from'],p['to']) for p in pairs]==[(9,6)]
+    connected=_advance(child,{'type':'connect','candidate_id':3,'pairs':pairs})
+    assert connected['connect_result']['status']=='audited_draft' and connected['remaining_attempts']==0,connected
+    after=jobs._load(child)['attempts'][3];ir=json.loads(Path(after['files']['editable_map']['path']).read_text())
+    _preserved(before,ir,edges(ir)-edges(before))
+    checks=json.loads(Path(after['connection_checks']['path']).read_text());assert checks['passes']
+    assert Path(point['path']).read_bytes()==point_bytes and jobs._load(child)['pointcloud']['files']['map']==point
+    comparison=_advance(root,{'type':'compare_retry','candidate_id':4})['retry_comparison']
+    assert comparison['gained_source_length_m']==2 and comparison['lost_source_length_m']==0
+    assert comparison['after']['routes']['longest_route_station_span_m']==10.
+    _advance(child,{'type':'finish','candidate_id':4})
+    final=_advance(root,{'type':'finish_retry','candidate_id':4})['output']
+    assert final['artifacts']['hd_connection_proposal']==observed['proposal_file'] and final['artifacts']['map']==point
+
+
+@pytest.mark.parametrize('box',[[2.,-1.6,6.,1.6],[2.,-1.6,7.,1.6]])
+def test_explicit_hd_region_keeps_connectors_outside_its_own_bounds_held(unused_frame_run,box):
+    child=_region_child(unused_frame_run)
+    observed=_advance(child,_region_action(box))['connection_observation']
+    assert observed['candidates_total']==0 and any('outside_explicit_hd_connection_bounds' in r['holds'] for r in observed['rejected'])
+    assert len(jobs._load(child)['attempts'])==3
+
+
+@pytest.mark.parametrize('box',[[3.,-1.6,8.4,1.6],[2.,-1.6,23.,1.6],[2.,0.,8.,0.],[2.,-1.6,float('nan'),1.6],[True,-1.6,8.,1.6]])
+def test_explicit_hd_region_invalid_bounds_do_not_spend_or_journal(unused_frame_run,box):
+    child=_region_child(unused_frame_run);before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError):_advance(child,_region_action(box))
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==3
+
+
+def test_explicit_hd_region_requires_combined_patch(unused_frame_run):
+    root=unused_frame_run;before=(root/'run.json').read_bytes()
+    action=_region_action();action['candidate_id']=2
+    with pytest.raises(ValueError,match='combined local-retry patch'):_advance(root,action)
+    assert (root/'run.json').read_bytes()==before
+
+
+@pytest.mark.parametrize('fault',['unseen_page','tamper','default_preview'])
+def test_explicit_hd_region_requires_seen_pairs_and_frozen_receipt(unused_frame_run,fault):
+    child=_region_child(unused_frame_run)
+    observed=_advance(child,_region_action(offset=99 if fault=='unseen_page' else 0))['connection_observation']
+    if fault=='tamper':Path(observed['proposal_file']['path']).write_text('{}')
+    elif fault=='default_preview':_advance(child,{'type':'inspect_connections','candidate_id':3,'offset':0})
+    before=(child/'run.json').read_bytes()
+    with pytest.raises(ValueError):_advance(child,{'type':'connect','candidate_id':3,'pairs':[{'from':9,'to':6,'reason':'Only a seen pair in the latest exact HD region can be adopted'}]})
+    assert (child/'run.json').read_bytes()==before and len(jobs._load(child)['attempts'])==3
+
+
+def test_explicit_hd_region_consensus_failure_keeps_original_pair(unused_frame_run,monkeypatch):
+    root=unused_frame_run;child=_region_child(root)
+    _advance(child,_region_action());native=jobs.core();original=native.audit_vector_map_ground_consensus_details
+    def changed(*args):
+        report=json.loads(original(*args));report['quality']['lanes'][-1]['left']['end_supported']=False
+        return json.dumps(report)
+    monkeypatch.setattr(native,'audit_vector_map_ground_consensus_details',changed)
+    result=_advance(child,{'type':'connect','candidate_id':3,'pairs':[{'from':9,'to':6,'reason':'Test both estimators in the explicit HD region'}]})
+    assert result['connect_result']['status']=='failed' and result['remaining_attempts']==0
+    attempt=jobs._load(child)['attempts'][3]
+    assert 'files' not in attempt and not json.loads(Path(attempt['connection_checks']['path']).read_text())['passes']
+    assert Path(attempt['connection_audits']['path']).is_file()
+    final=_advance(root,{'type':'finish','candidate_id':2})['output']
+    assert not final['pointcloud_retry_decision']['adopted'] and final['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+
+
+def test_explicit_hd_region_completed_preview_resumes_without_native_replay(unused_frame_run,monkeypatch):
+    from ca import mapping_run as runs
+    child=_region_child(unused_frame_run);original=runs.connections.inspect_connections
+    def interrupted(*args,**kwargs):
+        original(*args,**kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(runs.connections,'inspect_connections',interrupted)
+    with pytest.raises(KeyboardInterrupt):_advance(child,_region_action())
+    monkeypatch.setattr(runs.connections,'inspect_connections',original)
+    monkeypatch.setattr(jobs.core(),'connect_vector_map_junctions',lambda *args:pytest.fail('completed region preview must not repeat native discovery'))
+    resumed=_advance(child,{'type':'resume'})
+    assert resumed['connection_observation']['candidates_total']==1 and resumed['remaining_attempts']==1
+    assert len(jobs._load(child)['attempts'])==3
+
+
+def _finished_repair(root):
+    child = _region_child(root)
+    _advance(root, {'type': 'compare_retry', 'candidate_id': 3})
+    _advance(child, {'type': 'finish', 'candidate_id': 3})
+    return _advance(root, {'type': 'finish_retry', 'candidate_id': 3})['output']
+
+
+def test_continuation_reuses_exact_pair_without_native_processing_and_retains_budget(unused_frame_run, monkeypatch):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run
+    old = _finished_repair(root)
+    original = {p: p.read_bytes() for p in (root/'run.json', root/'job.json', root/'pointcloud-retry/job.json')}
+    monkeypatch.setattr(jobs, 'odometry', lambda *a, **k: pytest.fail('no repeated odometry'))
+    monkeypatch.setattr(jobs, 'fix_session', lambda *a, **k: pytest.fail('no repeated fusion'))
+    monkeypatch.setattr(jobs.core(), 'propose_road_corridors', lambda *a, **k: pytest.fail('no repeated extraction'))
+    new = root.parent/'continued'
+    result = continue_mapping_run(str(root), str(new), 4, 'Repair another observed region while retaining the adopted pair')
+    assert result['remaining_attempts'] == 4 and result['reviewed_candidates'] == []
+    assert result['pointcloud']['files']['map'] == old['artifacts']['map']
+    assert 'local_update_report' not in result['pointcloud']['files']
+    seed = jobs._load(new)['attempts'][0]
+    assert seed['files']['editable_map'] == old['artifacts']['hd_editable_map']
+    assert result['continuation']['previous_spent_attempts'] == 5
+    for p, value in original.items(): assert p.read_bytes() == value
+    output = _advance(new, {'type': 'finish', 'candidate_id': 1})['output']
+    assert output['artifacts']['map'] == old['artifacts']['map']
+    assert output['artifacts']['hd_map'] == old['artifacts']['hd_map']
+    assert output['continuation']['session_spent_attempts'] == 0
+    assert output['continuation']['cumulative_spent_attempts'] == 5
+    again = continue_mapping_run(str(new), str(root.parent/'continued-again'), 3, 'Keep immutable cumulative provenance')
+    assert again['continuation']['previous_spent_attempts'] == 5
+
+
+@pytest.mark.parametrize('budget', [True, 0, 2, 9, 3.5])
+def test_continuation_requires_explicit_bounded_budget_before_creation(unused_frame_run, budget):
+    from ca.mapping_revision import continue_mapping_run
+    target = unused_frame_run.parent/'bad-continuation'
+    with pytest.raises(ValueError): continue_mapping_run(str(unused_frame_run), str(target), budget, 'Explicit budget')
+    assert not target.exists()
+
+
+def test_continuation_rejects_unfinished_and_tampered_lineage_before_creation(unused_frame_run):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; target = root.parent/'continued'
+    with pytest.raises(ValueError, match='finished'): continue_mapping_run(str(root), str(target), 4, 'Unfinished')
+    assert not target.exists()
+    _finished_repair(root)
+    source = Path(jobs._load(root)['source']['path']); source.write_bytes(source.read_bytes()+b'changed')
+    with pytest.raises(ValueError, match='changed'): continue_mapping_run(str(root), str(target), 4, 'Changed source')
+    assert not target.exists()
+
+
+@pytest.mark.parametrize('action', [{'type':'draft','decisions':[]}, {'type':'retry_pointcloud','candidate_id':1,'gap_ids':[1],'options':{}}, {'type':'finish','candidate_id':None}])
+def test_continuation_rejects_replacements_without_history_or_spending(unused_frame_run, action):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Preserve adopted pair')
+    before = (target/'run.json').read_bytes()
+    with pytest.raises(ValueError, match='continuation'): _advance(target, action)
+    assert (target/'run.json').read_bytes() == before
+    assert jobs.inspect_mapping_job(str(target))['remaining_attempts'] == 4
+
+
+def test_continuation_second_local_patch_preserves_previous_repair_and_all_motion(unused_frame_run):
+    from ca.mapping_revision import continue_mapping_run
+    from ca.mapping_connections import edges
+    from ca.mapping_patch import _preserved
+    from ca.mapping_local_points import records, mask
+    root = unused_frame_run; first = _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Explicit budget for the next disjoint repair')
+    before_ir = json.loads(Path(first['artifacts']['hd_editable_map']['path']).read_text())
+    _advance(target, {'type':'inspect_gaps','candidate_id':1,'offset':0})
+    preview = _advance(target, {'type':'inspect_local_density','candidate_id':1,'gap_ids':[1],'bounds_xy':[6.,-1.6,8.4,1.6]})['local_point_observation']
+    result = _advance(target, {'type':'retry_local_density','candidate_id':1,'options':{'scan_voxel_m':.1,'map_voxel_m':.05},'preview_file':preview['file']})
+    assert result['pointcloud_retry_result']['status'] == 'ready', result
+    child = target/'pointcloud-retry'
+    _advance(child, {'type':'inspect','candidate_ids':[1]})
+    _advance(child, {'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':6.,'to_m':8.,'reason':'Second missing interval only'}]})
+    _advance(child, {'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched = _advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status'] == 'audited_draft', patched
+    after = jobs._load(child)['attempts'][2]
+    after_ir = json.loads(Path(after['files']['editable_map']['path']).read_text())
+    _preserved(before_ir, after_ir, edges(after_ir)-edges(before_ir))
+    comparison = _advance(target, {'type':'compare_retry','candidate_id':3})['retry_comparison']
+    assert comparison['gained_source_length_m'] == 2 and comparison['lost_source_length_m'] == 0
+    _, baseline = records(Path(first['artifacts']['map']['path']))
+    _, updated = records(Path(jobs._load(child)['pointcloud']['files']['map']['path']))
+    box = preview['effective_bounds_xy']
+    assert baseline[~mask(baseline, box)].tobytes() == updated[~mask(updated, box)].tobytes()
+    _advance(child, {'type':'finish','candidate_id':3})
+    final = _advance(target, {'type':'finish_retry','candidate_id':3})['output']
+    assert final['continuation']['cumulative_spent_attempts'] == 8
+    for key in ('graph','trajectory'):
+        assert final['artifacts'][key]['sha256'] == first['artifacts'][key]['sha256']
+        assert Path(final['artifacts'][key]['path']).read_bytes() == Path(first['artifacts'][key]['path']).read_bytes()
+
+
+def test_continuation_failed_local_trial_can_finish_exact_seed(unused_frame_run, monkeypatch):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; first = _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Retain the earlier pair if the next trial fails')
+    _advance(target, {'type':'inspect_gaps','candidate_id':1,'offset':0})
+    preview = _advance(target, {'type':'inspect_local_density','candidate_id':1,'gap_ids':[1],'bounds_xy':[6.,-1.6,8.4,1.6]})['local_point_observation']
+    original = jobs.core().audit_vector_map_quality_details
+    def regressed(*args):
+        audit = json.loads(original(*args)); audit['quality']['lanes'][0]['left']['start_supported'] = False
+        return json.dumps(audit)
+    monkeypatch.setattr(jobs.core(), 'audit_vector_map_quality_details', regressed)
+    result = _advance(target, {'type':'retry_local_density','candidate_id':1,'options':{'scan_voxel_m':.1,'map_voxel_m':.05},'preview_file':preview['file']})
+    assert result['pointcloud_retry_result']['stage']['status'] == 'failed'
+    assert jobs.inspect_mapping_job(str(target))['remaining_attempts'] == 0
+    final = _advance(target, {'type':'finish','candidate_id':1})['output']
+    for key in ('map','hd_map'): assert final['artifacts'][key] == first['artifacts'][key]
+    assert final['continuation']['cumulative_spent_attempts'] == 5
+    assert final['artifacts']['pointcloud_trial_local_checks']
+
+
+@pytest.mark.parametrize('which', ['previous_run', 'manifest', 'old_patch_checks'])
+def test_continuation_pins_prior_decisions_before_new_allocation(unused_frame_run, which):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Retain frozen decisions')
+    saved = jobs._load(target)
+    artifact = {'previous_run': root/'run.json', 'manifest': target/'continuation.json',
+                'old_patch_checks': Path(saved['attempts'][0]['patch_checks']['path'])}[which]
+    artifact.write_bytes(artifact.read_bytes()+b' ')
+    before = (target/'run.json').read_bytes()
+    with pytest.raises(ValueError, match='changed'):
+        _advance(target, {'type':'inspect_gaps','candidate_id':1,'offset':0})
+    assert (target/'run.json').read_bytes() == before and 'pointcloud_retry' not in jobs._load(target)
+
+
+def test_continuation_low_level_generation_cannot_replace_seed(unused_frame_run):
+    from ca.mapping_revision import continue_mapping_run
+    root = unused_frame_run; _finished_repair(root); target = root.parent/'continued'
+    continue_mapping_run(str(root), str(target), 4, 'Retain the accepted seed')
+    before = (target/'job.json').read_bytes()
+    with pytest.raises(ValueError, match='continuation'):
+        jobs.generate_mapping_geometry(str(target), [], 'No complete replacement')
+    with pytest.raises(ValueError, match='continuation'):
+        jobs.generate_mapping_candidate(str(target), {'forward_lanes':1,'backward_lanes':0,'left_hand_traffic':False,'lane_width':3.5,'speed_limit':20}, 'No complete replacement')
+    assert (target/'job.json').read_bytes() == before
+
+
+def _protected_preview(root):
+    return _advance(root, {'type':'inspect_protected_density','candidate_id':2,'gap_ids':[1],'bounds_xy':[2.,-1.6,8.,1.6]})['local_point_observation']
+
+
+def test_protected_density_keeps_all_retained_neighborhood_records_and_missing_patch(unused_frame_run):
+    from ca import mapping_local_points as local, mapping_point_protection as protection
+    root = unused_frame_run; before = jobs._load(root); preview = _protected_preview(root)
+    assert preview['protected_inside_points'] > 0 and preview['editable_inside_points'] > 0
+    normal = _local_density_preview(root)
+    assert normal['file'] != preview['file'] and 'protection' not in normal
+    result = _advance(root, _local_density_action(preview))
+    assert result['pointcloud_retry_result']['status'] == 'ready', result
+    child = root/'pointcloud-retry'; job = jobs._load(child)
+    report = json.loads(Path(job['pointcloud']['files']['local_update_report']['path']).read_text())
+    assert report['passes'] and report['protected_records_bit_identical']
+    _, base = local.records(Path(before['pointcloud']['files']['map']['path']))
+    _, updated = local.records(Path(job['pointcloud']['files']['map']['path']))
+    def retained(rows):
+        inside = local.mask(rows,preview['effective_bounds_xy']); keep = ~inside
+        keep[inside] = protection.mask(rows[inside], report['protection']); return keep
+    assert base[retained(base)].tobytes() == updated[retained(updated)].tobytes()
+    _advance(child, {'type':'inspect','candidate_ids':[1]})
+    _advance(child, {'type':'draft','decisions':[{'candidate_id':1,'action':'include','from_m':4.,'to_m':6.,'reason':'Observed missing piece across protected and updated neighborhoods'}]})
+    _advance(child, {'type':'inspect_patch','candidate_id':2,'gap_ids':[1],'offset':0})
+    patched = _advance(child, {'type':'patch_gaps','candidate_id':2,'gap_ids':[1],'pairs':_patch_pairs(child)})
+    assert patched['patch_result']['status'] == 'audited_draft', patched
+    comparison = _advance(root, {'type':'compare_retry','candidate_id':3})['retry_comparison']
+    assert comparison['gained_source_length_m'] == 2 and comparison['lost_source_length_m'] == 0
+    _advance(child, {'type':'finish','candidate_id':3})
+    final = _advance(root, {'type':'finish_retry','candidate_id':3})['output']
+    assert final['artifacts']['local_update_report'] == job['pointcloud']['files']['local_update_report']
+
+
+def test_protected_density_excludes_adverse_candidate_returns_near_existing_lanes(unused_frame_run,monkeypatch):
+    from ca import mapping_retry as retry, mapping_local_points as local, mapping_point_protection as protection
+    root = unused_frame_run; preview = _protected_preview(root); original = retry.fix_session
+    report = json.loads(Path(preview['file']['path']).read_text())
+    def adverse(*args,**kwargs):
+        result = original(*args,**kwargs)
+        path = Path(result['outputs']['map']); header,rows = local.records(path)
+        inside = local.mask(rows,preview['effective_bounds_xy'])
+        protected = np.zeros(len(rows),dtype=bool); protected[inside] = protection.mask(rows[inside],report['protection'])
+        rows['z'][protected] += 20
+        path.write_bytes(header+rows.tobytes())
+        return result
+    import numpy as np
+    monkeypatch.setattr(retry,'fix_session',adverse)
+    stage = _advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status'] == 'ready' and stage['local_update']['passes']
+    update = json.loads(Path(stage['local_update']['report']['path']).read_text())
+    assert update['candidate_protected_points_excluded'] > 0
+
+
+def test_protected_density_retains_four_audit_gate_if_native_support_regresses(unused_frame_run,monkeypatch):
+    root=unused_frame_run;preview=_protected_preview(root);original=jobs.core().audit_vector_map_quality_details
+    def regressed(*args):
+        audit=json.loads(original(*args));audit['quality']['lanes'][0]['left']['start_supported']=False
+        return json.dumps(audit)
+    monkeypatch.setattr(jobs.core(),'audit_vector_map_quality_details',regressed)
+    stage=_advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and not stage['local_update']['passes']
+    assert _advance(root,{'type':'finish','candidate_id':2})['output']['artifacts']['map']==jobs._load(root)['pointcloud']['files']['map']
+
+
+def test_protected_density_preview_resume_reuses_frozen_plan_without_spending(unused_frame_run,monkeypatch):
+    from ca import mapping_run as runs
+    root=unused_frame_run;original=runs.local_points.preview
+    def interrupted(*args,**kwargs): original(*args,**kwargs);raise KeyboardInterrupt()
+    monkeypatch.setattr(runs.local_points,'preview',interrupted)
+    with pytest.raises(KeyboardInterrupt):_protected_preview(root)
+    monkeypatch.setattr(runs.local_points,'preview',original)
+    result=_advance(root,{'type':'resume'})
+    assert result['local_point_observation']['protected_inside_points']>0
+    assert jobs.inspect_mapping_job(str(root))['remaining_attempts']==4
+
+
+def test_protected_density_rejects_whole_box_protection_without_accepting_points(unused_frame_run):
+    root=unused_frame_run
+    preview=_advance(root,{'type':'inspect_protected_density','candidate_id':2,'gap_ids':[1],'bounds_xy':[3.,-.8,4.2,.8]})['local_point_observation']
+    assert preview['editable_inside_points']==0
+    stage=_advance(root,_local_density_action(preview))['pointcloud_retry_result']['stage']
+    assert stage['status']=='failed' and 'no unprotected' in stage['error']
+    assert jobs._load(root/'pointcloud-retry')['pointcloud'] is None
+
+
+def test_protected_density_tampered_preview_blocks_allocation(unused_frame_run):
+    root=unused_frame_run;preview=_protected_preview(root);file=Path(preview['file']['path'])
+    saved=json.loads(file.read_text());saved['protection']['effective_halo_m']=0.
+    file.write_text(json.dumps(saved));before=(root/'run.json').read_bytes()
+    with pytest.raises(ValueError,match='changed'):_advance(root,_local_density_action(preview))
+    assert (root/'run.json').read_bytes()==before and 'pointcloud_retry' not in jobs._load(root)
+
+
+@pytest.mark.parametrize('fault',['missing_consensus','limited','zero_radius','degenerate_geometry'])
+def test_protected_density_rejects_incomplete_or_invalid_retained_neighborhoods(unused_frame_run,fault):
+    from copy import deepcopy
+    from ca import mapping_point_protection as protection
+    root=unused_frame_run;parent=deepcopy(jobs._load(root)['attempts'][1]);audits=json.loads(Path(parent['quality_report']['path']).read_text())
+    if fault=='missing_consensus':audits.pop('ground_consensus')
+    elif fault=='limited':audits['editable']['quality']['limited']=True
+    elif fault=='zero_radius':audits['editable']['quality']['ground_radius_m']=0
+    else:
+        ir=json.loads(Path(parent['files']['editable_map']['path']).read_text())
+        for b in ir['boundaries']:b['geometry']=[[0,0,1],[1,0,1]]
+        file=root/'degenerate.json';jobs._save(file,ir);parent['files']['editable_map']=jobs._artifact(file)
+    file=root/'protected-fault-audits.json';jobs._save(file,audits);parent['quality_report']=jobs._artifact(file)
+    with pytest.raises(ValueError):protection.plan(parent)

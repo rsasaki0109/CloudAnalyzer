@@ -37,6 +37,7 @@ import init, {
 import { type ByteSource, readRange } from "./bytes";
 import type { LasChunksResult, Slice } from "./c2c-worker";
 import { CANCELLED, isBag } from "./protocol";
+import { parseFilterRecipe, recipeParameters } from "./filter-recipe";
 import { poolMemory, releasePool, eachSlice, MIN_PARALLEL_QUERIES, poolSize, runAny, runOn, runSlices, warmUpPool } from "./pool";
 import type {
   C2cOutput,
@@ -50,6 +51,7 @@ import type {
   PoseGraphFloor,
   PoseGraphMerged,
   PoseGraphOpened,
+  PoseGraphProject,
   PoseGraphState,
   PoseGraphSource,
   ProfileOutput,
@@ -1003,10 +1005,64 @@ async function readDetail(
 const MAX_SLICES = 16;
 
 /** The open pose graph, if any (one at a time). */
-let poseGraph: { session: PoseGraphSession; name: string; sources: PoseGraphSource[] } | null = null;
+type NativeGraph = { session: PoseGraphSession; name: string; sources: PoseGraphSource[] };
+let poseGraph: NativeGraph | null = null;
 
 /** The vector map, made on first use. */
 let vectorMap: VectorMapSession | null = null;
+
+async function prepareGraphProject(saved: PoseGraphProject, name: string, progress: (note:string,fraction?:number)=>void, check:()=>void) {
+  const session = PoseGraphSession.fromSnapshot(saved.snapshot);
+  try {
+    const covered = new Set<number>();
+    for (const source of saved.sources) {
+      check();
+      const loaded = await loadGraph(source.files, progress, check);
+      try {
+        const ids = Array.from(loaded.session.nodeIds());
+        if (ids.length !== source.nodeIds.length || ids.some((id, i) => id !== source.nodeIds[i])) throw new Error("Source keyframes do not match the saved project");
+        if (!Number.isSafeInteger(source.first) || source.first < 0 || source.first + ids.length > session.nodeCount) throw new Error("Invalid project scan range");
+        for (let i = 0; i < ids.length; i++) {
+          const node = source.first + i;
+          if (covered.has(node)) throw new Error("Overlapping project scan ranges");
+          covered.add(node);
+        }
+        session.attachSourceScans(loaded.session, source.first);
+      } finally { loaded.session.free(); }
+    }
+    if (covered.size !== session.nodeCount) throw new Error("Project is missing original scan sources");
+    check();
+    const scans = Array.from({ length: session.nodeCount }, (_, i) => {
+      const source = saved.sources.find(s => i >= s.first && i < s.first + s.nodeIds.length);
+      return source ? session.scanPositions(i, source.files.displayPoints) : null;
+    });
+    const value: PoseGraphOpened = { ...graphState(session), name: name, scans, scanPoints: session.scanPointCount(), unmatched: [], odometry: null };
+    const native = { session, name, sources: saved.sources };
+    return { native, value, transfer: [...stateTransfer(value), ...scans.filter((s): s is Float32Array => s !== null).map(s => s.buffer)] };
+  } catch (error) { session.free(); throw error; }
+}
+
+let workspacePreparing = false;
+/** The current native voxel key packs 21 bits per relative axis. */
+function requireVoxelRange(cloud:Cloud,size:number):void {
+  const bounds=cloud.bounds(),extent=Math.max(bounds[3]-bounds[0],bounds[4]-bounds[1],bounds[5]-bounds[2]);
+  const minimum=extent/((1<<21)-2);
+  if(size<minimum)throw new Error("Voxel size is too small for this cloud's extent. Use at least "+(minimum*1.00001).toPrecision(6)+" in the cloud's units");
+}
+let workspaceSequence = 0;
+let preparedWorkspace: {token:number; map:VectorMapSession; graph:NativeGraph | null; ids:number[]} | null = null;
+function releasePreparedWorkspace(): void {
+  if (!preparedWorkspace) return;
+  for (const id of preparedWorkspace.ids) {
+    const item = items.get(id);
+    if (item?.kind === "cloud") item.cloud.free();
+    if (item?.kind === "mesh") item.mesh.free();
+    items.delete(id);
+  }
+  preparedWorkspace.map.free();
+  preparedWorkspace.graph?.session.free();
+  preparedWorkspace = null;
+}
 
 /** A "vm" request's answer: JSON text, or for edits `{result, view}` with the view after the edit. */
 function vectorMapRequest(req: Extract<Request, { kind: "vm" }>): string {
@@ -1497,6 +1553,43 @@ async function handle(
 ): Promise<{ value: unknown; transfer: Transferable[] }> {
   await ready;
   switch (req.kind) {
+    case "workspace-prepare": {
+      if (workspacePreparing || preparedWorkspace) throw new Error("A workspace import is already staged");
+      if (req.clouds.length > 127) throw new Error("Workspace import exceeds cloud limit");
+      workspacePreparing = true;
+      try {
+        const staged = {token:++workspaceSequence, map:new VectorMapSession(), graph:null as NativeGraph | null, ids:[] as number[]};
+        preparedWorkspace = staged;
+        const result = staged.map.open("project-map.json",req.mapText);
+        const map = `{"result":${result},"view":${staged.map.view()},"undo":0}`;
+        const graph = req.graph ? await prepareGraphProject(req.graph,req.graphName,progress,check) : null;
+        staged.graph = graph?.native ?? null;
+        const clouds:LoadedCloud[] = [], transfer:Transferable[] = [...(graph?.transfer ?? [])];
+        for (const source of req.clouds) {
+          check();
+          progress(`Staging ${source.name}`);
+          const loaded = await handle({kind:"load",file:source.file,displayName:source.name,maxPoints:Infinity},(note,fraction)=>progress(`${source.name}: ${note}`,fraction),check,signal);
+          const cloud = loaded.value as LoadedCloud;
+          staged.ids.push(cloud.id); clouds.push(cloud);transfer.push(...loaded.transfer);
+        }
+        check();
+        return {value:{token:staged.token,clouds,graph:graph?.value ?? null,map},transfer};
+      } catch(error) { releasePreparedWorkspace(); throw error; }
+      finally {workspacePreparing = false;}
+    }
+    case "workspace-commit": {
+      if (workspacePreparing || preparedWorkspace?.token !== req.token) throw new Error("Workspace stage is unavailable");
+      const staged = preparedWorkspace;
+      vectorMap?.free(); poseGraph?.session.free();
+      vectorMap = staged.map; poseGraph = staged.graph;
+      preparedWorkspace = null;
+      return {value:null,transfer:[]};
+    }
+    case "workspace-discard": {
+      if (workspacePreparing) throw new Error("Workspace preparation is still running");
+      if (preparedWorkspace?.token === req.token) releasePreparedWorkspace();
+      return {value:null,transfer:[]};
+    }
     case "memory-stats":
       return {value: {main: (await ready).memory.buffer.byteLength, pool: poolMemory(), mapHistory: vectorMap?.historyBytes() ?? 0, mapSteps: vectorMap?.undoDepth ?? 0}, transfer: []};
     case "release-pool":
@@ -1509,36 +1602,10 @@ async function handle(
     case "pg-project-save":
       return { value: { snapshot: openGraph().toSnapshot(), sources: poseGraph!.sources }, transfer: [] };
     case "pg-project-open": {
-      const saved = req.project;
-      const session = PoseGraphSession.fromSnapshot(saved.snapshot);
-      try {
-        const covered = new Set<number>();
-        for (const source of saved.sources) {
-          check();
-          const loaded = await loadGraph(source.files, progress, check);
-          try {
-            const ids = Array.from(loaded.session.nodeIds());
-            if (ids.length !== source.nodeIds.length || ids.some((id, i) => id !== source.nodeIds[i])) throw new Error("Source keyframes do not match the saved project");
-            if (!Number.isSafeInteger(source.first) || source.first < 0 || source.first + ids.length > session.nodeCount) throw new Error("Invalid project scan range");
-            for (let i = 0; i < ids.length; i++) {
-              const node = source.first + i;
-              if (covered.has(node)) throw new Error("Overlapping project scan ranges");
-              covered.add(node);
-            }
-            session.attachSourceScans(loaded.session, source.first);
-          } finally { loaded.session.free(); }
-        }
-        if (covered.size !== session.nodeCount) throw new Error("Project is missing original scan sources");
-        check();
-        const scans = Array.from({ length: session.nodeCount }, (_, i) => {
-          const source = saved.sources.find(s => i >= s.first && i < s.first + s.nodeIds.length);
-          return source ? session.scanPositions(i, source.files.displayPoints) : null;
-        });
-        const value: PoseGraphOpened = { ...graphState(session), name: req.name, scans, scanPoints: session.scanPointCount(), unmatched: [], odometry: null };
-        poseGraph?.session.free();
-        poseGraph = { session, name: req.name, sources: saved.sources };
-        return { value, transfer: [...stateTransfer(value), ...scans.filter((s): s is Float32Array => s !== null).map(s => s.buffer)] };
-      } catch (error) { session.free(); throw error; }
+      const result = await prepareGraphProject(req.project, req.name, progress, check);
+      poseGraph?.session.free();
+      poseGraph = result.native;
+      return {value:result.value,transfer:result.transfer};
     }
     case "pg-merge":
       return mergePoseGraph(req, progress, check);
@@ -1836,6 +1903,7 @@ async function handle(
     case "load-url": {
       const { maxPoints } = req;
       const name = req.kind === "load" ? req.file.name : req.name;
+      const displayName = req.kind === "load" ? req.displayName ?? name : name;
       let t = performance.now();
       const loaded =
         req.kind === "load"
@@ -1850,25 +1918,22 @@ async function handle(
       }
       if (loaded.kind === "mesh") {
         const id = nextId++;
-        items.set(id, { kind: "mesh", mesh: loaded.mesh, name });
-        return describe(id, { parse, index: 0 });
+        items.set(id, { kind: "mesh", mesh: loaded.mesh, name: displayName });
+        try { return describe(id, { parse, index: 0 }); }
+        catch(error) {loaded.mesh.free();items.delete(id);throw error;}
       }
       const { cloud } = loaded;
       progress(`indexing ${cloud.length.toLocaleString()} points`);
       t = performance.now();
-      const workers = await buildIndex(cloud);
+      let workers: number;
+      try { workers = await buildIndex(cloud); check(); }
+      catch(error) { cloud.free(); throw error; }
       const index = performance.now() - t;
-      try {
-        check();
-      } catch (err) {
-        cloud.free();
-        throw err;
-      }
       const id = nextId++;
       items.set(id, {
         kind: "cloud",
         cloud,
-        name,
+        name: displayName,
         keepEvery: loaded.keepEvery,
         filePoints: loaded.filePoints,
         copcLevels: loaded.copcLevels,
@@ -1877,7 +1942,8 @@ async function handle(
         copcSource: loaded.copcSource,
       });
       progress("preparing for display");
-      return describe(id, { parse, index, workers });
+      try { return describe(id, { parse, index, workers }); }
+      catch(error) {cloud.free();items.delete(id);throw error;}
     }
     case "c2c": {
       const compared = getCloud(req.compared);
@@ -2020,6 +2086,7 @@ async function handle(
       const source = items.get(req.id);
       const t = performance.now();
       const cloud = getCloud(req.id);
+      if(req.op==="voxel")requireVoxelRange(cloud,req.a);
       const k = Math.max(1, Math.floor(req.a));
       const means = req.op === "sor" ? await parallelSorMeans(cloud, k) : null;
       const filtered = means ? cloud.filterSor(means, req.b) : cloud.filter(req.op, req.a, req.b);
@@ -2036,6 +2103,46 @@ async function handle(
       }[req.op];
       items.set(id, { kind: "cloud", cloud: filtered, name: `${base}_${suffix}` });
       return describe(id, { parse: 0, index: performance.now() - t });
+    }
+    case "filter-batch": {
+      const recipe=parseFilterRecipe(req.recipe);
+      if(req.sources.length<1||req.sources.length>16||new Set(req.sources.map(s=>s.id)).size!==req.sources.length)
+        throw new Error("Choose 1–16 different point clouds");
+      if(req.sources.some(s=>!s.name||s.name.length>1024)||new Set(req.sources.map(s=>s.name)).size!==req.sources.length)
+        throw new Error("Batch output names must be unique");
+      if(req.sources.reduce((sum,source)=>sum+getCloud(source.id).length,0)>4000000)
+        throw new Error("Recipe batches support at most 4 million loaded points");
+      const owned=new Set<Cloud>(),registered:number[]=[],finals:{cloud:Cloud;name:string;millis:number;sources:string[]|null}[]=[];
+      try {
+        for(const [sourceIndex,source] of req.sources.entries()){
+          let current:Cloud|null=null;const start=performance.now(),sourceItem=items.get(source.id);
+          const sourceNames=sourceItem?.kind==="cloud"?sourceItem.sources?.slice()??null:null;
+          for(const [stepIndex,step] of recipe.steps.entries()){
+            progress(`Cloud ${sourceIndex+1}/${req.sources.length}, step ${stepIndex+1}/${recipe.steps.length}: ${step.op}`,(sourceIndex*recipe.steps.length+stepIndex)/(req.sources.length*recipe.steps.length));
+            await new Promise(resolve=>setTimeout(resolve,0));check();
+            const input:Cloud=current??getCloud(source.id),{op,a,b}=recipeParameters(step);
+            if(op==="voxel")requireVoxelRange(input,a);
+            const means:Float64Array|null=op==="sor"?await parallelSorMeans(input,a):null;check();
+            const filtered:Cloud=means?input.filterSor(means,b):input.filter(op,a,b);
+            owned.add(filtered);
+            await buildIndex(filtered);check();
+            if(current){owned.delete(current);current.free();}
+            current=filtered;
+          }
+          finals.push({cloud:current!,name:source.name,millis:performance.now()-start,sources:sourceNames});
+        }
+        check();const value:LoadedCloud[]=[],transfer:Transferable[]=[];
+        for(const final of finals){
+          const id=nextId++;registered.push(id);items.set(id,{kind:"cloud",cloud:final.cloud,name:final.name,sources:final.sources??undefined});
+          const output=describe(id,{parse:0,index:final.millis});value.push(output.value);transfer.push(...output.transfer);
+        }
+        owned.clear();
+        return {value,transfer};
+      } catch(error){
+        for(const id of registered)items.delete(id);
+        for(const cloud of owned)cloud.free();
+        throw error;
+      }
     }
     case "normals": {
       const cloud = getCloud(req.id);
@@ -2206,6 +2313,7 @@ async function handle(
           : getCloud(req.id).export(req.format, req.scalar?.name, req.scalar?.values);
       return { value: bytes, transfer: [bytes.buffer] };
     }
+    case "discard-cloud":
     case "remove": {
       const item = items.get(req.id);
       if (item?.kind === "cloud") item.cloud.free();

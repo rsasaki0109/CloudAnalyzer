@@ -1,0 +1,73 @@
+{
+  "schema": "cloudanalyzer.hd_only_repair.v1",
+  "pointcloud": {
+    "files": {
+      "map": {
+        "path": "env/nclt-hd-region-june/pointcloud-retry/local_map.ply",
+        "sha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad",
+        "bytes": 20682062
+      },
+      "graph": {
+        "path": "env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+        "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+        "bytes": 92299
+      },
+      "trajectory": {
+        "path": "env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+        "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+        "bytes": 46143
+      }
+    },
+    "frames": 238,
+    "map_points": 646309,
+    "path_length_m": 253.8,
+    "reports": {
+      "correction": "env/nclt-hd-region-june/pointcloud-retry/pointcloud-report.json"
+    },
+    "quality_status": "generated_unverified",
+    "coordinate_frame": "local_slam_metres"
+  },
+  "pointcloud_options": {
+    "keyframe_spacing": 1.0,
+    "remove_dynamic": true,
+    "pointcloud_topic": null,
+    "imu_topic": null,
+    "scan_voxel_m": 0.2,
+    "map_voxel_m": 0.1
+  },
+  "source": {
+    "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+    "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+    "bytes": 9387931
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "native": {
+      "version": "0.1.0",
+      "extension": {
+        "path": "native/cloudanalyzer_core/_core.abi3.so",
+        "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+        "bytes": 7451080
+      }
+    }
+  },
+  "scope": "Generated point-cloud map and HD road drafts; source checks are not independent survey truth. Lane identity, traffic rules, equipment and georeferencing are unresolved unless supplied separately.",
+  "minimum_retained_fraction": 0.9,
+  "retry_parent": {
+    "job_dir": "env/nclt-hd-only-june",
+    "candidate_id": 1,
+    "gap_ids": [
+      9,
+      21
+    ],
+    "reason": "Try only observed source intervals 118\u2013120 m and 184\u2013188 m at the fixed 2 m minimum width, retaining all point records, motion, source protocol and existing HD geometry."
+  },
+  "proposal": {
+    "path": "env/nclt-hd-region-june/pointcloud-retry/corridor-proposals-trajectory.json",
+    "sha256": "2c57c290bc1e629cc7b82471082e9a1c37c3d8a4ee26ca9ed2ad1ffacf88e0fe",
+    "bytes": 393753
+  },
+  "pointcloud_regenerated": false,
+  "shared_attempts": 6,
+  "combined_gap_patch_required": true
+}

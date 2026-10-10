@@ -88,19 +88,32 @@ def _inputs(job: dict[str, Any]) -> None:
     if job["pointcloud"] is None:
         raise ValueError("generate the point-cloud map before an HD candidate")
     _verify(job["source"])
-    for artifact in job.get("retry_inputs", {}).values():
+    for artifact in {**job.get("retry_inputs", {}), **job.get("continuation_inputs", {})}.values():
         _verify(artifact)
     for artifact in job["pointcloud"].get("source_motion", {}).values():
         _verify(artifact)
+    if "hd_repair_manifest" in job.get("retry_inputs", {}):
+        from ca.mapping_hd_repair import verify
+
+        verify(job)
     if _native() != job["runtime"]["native"]:
         raise ValueError("native core changed; use a new mapping job")
     for artifact in job["pointcloud"]["files"].values():
         _verify(artifact)
+    if 'local_update_report' in job['pointcloud']['files']:
+        from ca import mapping_local_points as local
+        local.bounds(job)
 
 
 def _remaining(job: dict[str, Any]) -> int:
     """HD attempts transferred to a retry child cannot be spent by its parent."""
-    return int(job["max_attempts"] - len(job["attempts"]) - job.get("pointcloud_retry", {}).get("allocated_attempts", 0))
+    seed_credit = 0
+    if "continuation" in job:
+        seed = job["attempts"][0]
+        if seed["id"] != 1 or seed.get("seeded_from") != job["continuation"]["seeded_from"]:
+            raise ValueError("invalid continuation seed budget credit")
+        seed_credit = 1
+    return int(job["max_attempts"] - len(job["attempts"]) + seed_credit - job.get("pointcloud_retry", {}).get("allocated_attempts", 0))
 
 
 def inspect_mapping_job(job_dir: str) -> dict[str, Any]:
@@ -289,6 +302,8 @@ def _refine_mapping_corridors(job_dir: str, reason: str) -> dict[str, Any]:
     with _locked(root):
         job = _load(root)
         _inputs(job)
+        if "hd_repair_manifest" in job.get("retry_inputs", {}):
+            raise ValueError("HD-only repair retains the frozen source proposal")
         prior = job.get("corridor_proposal")
         if not prior or prior["status"] != "ready":
             raise ValueError("refinement requires a ready original corridor proposal")
@@ -400,6 +415,8 @@ def generate_mapping_geometry(job_dir: str, decisions: list[dict[str, Any]], rea
     root = Path(job_dir).resolve()
     with _locked(root):
         job = _load(root)
+        if "continuation" in job:
+            raise ValueError("continuation retains the adopted pair; draft only in its local-density child")
         _inputs(job)
         stage = job.get("corridor_proposal", {})
         if stage.get("status") != "ready":
@@ -524,6 +541,8 @@ def generate_mapping_corridor_lanes(
     root = Path(job_dir).resolve()
     with _locked(root):
         job = _load(root)
+        if "continuation" in job:
+            raise ValueError("continuation retains the adopted pair; draft only in its local-density child")
         _inputs(job)
         parent = next((a for a in job["attempts"] if a["id"] == geometry_candidate_id and a["status"] == "geometry_draft"), None)
         if parent is None:
@@ -680,11 +699,13 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
                      *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else []),
                      *attempt.get("connection_inputs", {}).values(),
                      *attempt.get("patch_inputs", {}).values(),
+                     *attempt.get("height_inputs", {}).values(),
+                     *[attempt[k] for k in ("height_checks", "height_audits", "height_trial") if k in attempt],
                      *([attempt["patch_checks"], attempt["patch_audits"]] if "patch_checks" in attempt else []),
                      *([attempt["patch_preview"]] if "patch_preview" in attempt else []),
                      *([attempt["connection_proposal"]] if "connection_proposal" in attempt else []),
                      *([attempt["connection_checks"], attempt["connection_audits"]] if "connection_checks" in attempt else []),
-                     *job.get("retry_inputs", {}).values(),
+                     *job.get("retry_inputs", {}).values(), *job.get("continuation_inputs", {}).values(),
                      *attempt["files"].values(), attempt["quality_report"]]:
         _verify(artifact)
     saved = json.loads(Path(attempt["quality_report"]["path"]).read_text(encoding="utf-8"))
@@ -704,8 +725,16 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         investigations.append("Inspect assumed-width boundaries and their anchors. Point-coverage edges may be scan gaps rather than physical road edges; compare fitting choices at unchanged lane count, width and extent.")
     if attempt.get("kind") in {"corridor_lanes", "connected_corridor_lanes", "patched_corridor_lanes"}:
         investigations.append("The observed support span was explicitly adopted as an unverified layout hypothesis. Inspect the parent edge evidence and assigned lane fractions/directions/minimum widths; source support does not confirm complete road width or legal traffic rules.")
-    if attempt.get("kind") == "patched_corridor_lanes":
-        investigations.append("The patch retains original lanes and directed connections and adds only selected missing station intervals. All original source holds remain visible; new traces passed both estimators and no new retained failure locations were accepted. The point cloud is the complete fusion trial, not a local point replacement.")
+    if "continuation" in job:
+        investigations.append("This exact map pair is inherited from a finished run. Earlier point-update scopes are archived in the continuation manifest; the adopted hybrid point map retains earlier repairs and source holds.")
+    elif attempt.get("kind") == "patched_corridor_lanes":
+        if "hd_repair_manifest" in job.get("retry_inputs", {}):
+            point_note = "The point cloud is the exact retained baseline; only the HD map was repaired."
+        elif 'local_update_report' in job['pointcloud']['files']:
+            point_note = "The point cloud replaces only the explicit XY column and preserves outside point records exactly."
+        else:
+            point_note = "The point cloud is the complete fusion trial, not a local point replacement."
+        investigations.append("The patch retains original lanes and directed connections and adds only selected missing station intervals. All original source holds remain visible; new traces passed both estimators and no new retained failure locations were accepted. " + point_note)
     if attempt.get("kind") == "connected_corridor_lanes":
         investigations.append("Connector turn_direction tags classify geometric headings, not permitted manoeuvres. Review legal routing, full-width interior and clearance; graph station spans do not increase original source-corridor extent.")
     if not editable["complete"] or not reopened["complete"] or (consensus is not None and any(not a["complete"] for a in consensus.values())):
@@ -753,6 +782,8 @@ def generate_mapping_candidate(job_dir: str, road_options: dict[str, Any], reaso
     root = Path(job_dir).resolve()
     with _locked(root):
         job = _load(root)
+        if "continuation" in job:
+            raise ValueError("continuation retains the adopted pair; draft only in its local-density child")
         if job["pointcloud"] is None:
             raise ValueError("generate the point-cloud map before an HD candidate")
         if _remaining(job) <= 0:
@@ -815,6 +846,8 @@ def select_mapping_candidate(job_dir: str, candidate_id: int, reason: str) -> di
             raise ValueError("select an audited draft candidate")
         for artifact in [*attempt["files"].values(), attempt["quality_report"], *attempt.get("geometry_inputs", {}).values(),
                          *attempt.get("connection_inputs", {}).values(),
+                         *attempt.get("height_inputs", {}).values(),
+                         *[attempt[k] for k in ("height_checks", "height_audits", "height_trial") if k in attempt],
                          *([attempt["connection_proposal"]] if "connection_proposal" in attempt else []),
                          *([attempt["corridor_proposal"]] if "corridor_proposal" in attempt else [])]:
             _verify(artifact)

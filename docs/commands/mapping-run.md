@@ -46,7 +46,7 @@ can still preserve source curves for review.
    surface evidence and observed stations. Previews contain up to 128 sections
    per candidate with explicit total/truncation flags. The inspection receipt
    persists. Draft ranges must have inspected endpoints; unreviewed tails stay
-   unresolved. There is no automatic adoption or candidate ranking.
+   unresolved. Source-proposal inspection preserves original candidate IDs and does not adopt a draft automatically.
 4. A draft action supplies **complete** include/defer decisions and reasons.
    It automatically saves source geometry, binds the fixed layout to each
    included piece, generates Lanelet2/IR/projector and reads all four source
@@ -75,6 +75,101 @@ that action budget is exhausted. The shared HD budget is 2–8 attempts, default
 6, sufficient for up to three geometry/lane pairs when every stage succeeds.
 Do not shrink required lane width, lane count or retained extent to improve a
 source-support score. Semantic assumptions remain fixed hypotheses throughout.
+
+## Deliver a portable review package
+
+After `finish` or `finish_retry`, call
+`export_mapping_run(finished_job_dir, bundle_path, attribution)` over MCP, or:
+
+```sh
+ca mapping-run-export runs/drive --out drive-review.zip \
+  --attribution "Source dataset, license terms and required credit"
+ca mapping-bundle-inspect drive-review.zip
+```
+
+Supply the actual source-data license and attribution. The exporter copies the
+**exact delivered pair**, including an adopted child's maps when applicable.
+The ZIP contains the complete point map, graph, trajectory, editable IR,
+Lanelet2, projector, fixed layout, retained proposal, final four source audits,
+final checks/comparisons and root/owner decision records. Duplicate files are
+stored once. `manifest.json` identifies each role with a relative member path,
+SHA-256 and byte count; `review` keeps the output diagnosis and adoption decision.
+Read the full audits for problem locations omitted from the compact diagnosis.
+
+Use `inspect_mapping_bundle(bundle_path)` on the receiving machine to check every
+member before opening the map. It needs neither the original directories/logs
+nor a native core. Its module uses only Python's standard library; an existing
+CloudAnalyzer installation exposes the CLI above. After verification, extract
+the ZIP and use the manifest's `map` member with CloudCompare or CloudAnalyzer;
+load `hd_editable_map` for editing, or `hd_map` plus `hd_projector` for Lanelet2.
+All geometric coordinates and source-audit thresholds are retained.
+
+In CloudAnalyzer Web, choose **Generated maps → Open generated maps…** and
+select the ZIP. The browser verifies every member before loading the point map
+and editable HD map together, using their original coordinates. Opening replaces
+the current HD map and adds the point cloud. The initial solid display makes
+low-intensity points visible; the original fields remain available for coloring.
+The source-extent goal and dataset credit remain visible in the generated-map panel.
+
+Choose any of the four **Saved source audit** protocols to inspect frozen
+editable-IR/reopened-OSM results from each estimator. Existing source-review
+buttons and problem intervals focus the original failed samples over the point
+cloud. These are saved checks of the full exported pair; your loading limit and
+view budget can show fewer points. Editing/replacing the map or changing/removing
+the imported point source disables saved-audit display and clears its overlays.
+Use a fresh source check for edited geometry, or reopen the unchanged exported pair.
+
+Browser review accepts at most **64 MiB uncompressed**, 128 artifact members and
+a 10 MiB manifest. It supports stored/deflated ZIP members, including the
+exporter's ZIP64 local headers, with bounded decompression and full SHA-256
+verification. Larger packages use CLI verification and individual-file loading.
+No mapping generation or attempt spending occurs when opening the package.
+
+For a large delivered point map, call
+`export_mapping_preview(finished_job_dir, bundle_path, attribution,
+max_preview_points=200000)` over MCP, or:
+
+```sh
+ca mapping-run-preview runs/drive --out drive-display.zip \
+  --max-preview-points 200000 \
+  --attribution "Source dataset, license terms and required credit"
+ca mapping-bundle-inspect drive-display.zip
+```
+
+This streams the canonical binary PLY (double XYZ, optional float attributes) and
+retains every kth complete record, starting at record zero. The stride is
+`ceil(source_count / max_preview_points)`. Kept coordinates and attributes retain
+their original bytes, with no quantization or frame change. The full original
+point map stays outside the ZIP. The v2 manifest names the subset `preview_map`,
+records the original map's path/hash/size, point counts and stride, and retains
+the exact HD files and all four saved audits of the **original full source**.
+Sampling is for display; it makes no claim about feature coverage. A source
+already within the cap uses the exact full-map v1 format instead.
+
+Open this ZIP through the same browser control. The panel distinguishes loaded
+preview records from original source points and lets you inspect all four saved
+audits. New source-coverage checks are disabled for the imported display preview;
+load and select the original full point map for a fresh check. Projects/sessions
+retain this preview flag. Standalone extracted or re-exported PLY files do not
+carry that application flag; preserve the ZIP/manifest to retain provenance.
+Preview export defaults to a 64 MiB **uncompressed** package limit; large HD/audit
+evidence can still exceed it. Use a smaller point cap, or the full-map CLI path
+when evidence alone does not fit. It spends no mapping attempts and changes no
+original map or saved source check.
+
+Export spends no attempts, changes no run revision and refuses existing output
+files. Total **uncompressed** content is bounded by `max_bundle_bytes` / CLI
+`--max-bundle-bytes` (default 1 GiB; allowed 1024 bytes–4 GiB), with at most 128
+artifact members and a 10 MiB manifest. The inspector rejects unlisted,
+duplicate, unsafe, encrypted or symlink members and changed hashes without
+extracting files. A matching manifest establishes byte integrity, not a trusted
+signature or independent map accuracy.
+
+This package supports portable review. Original histories and archived manifests
+retain historical paths for provenance; referenced raw logs, native binaries and
+prior-run dependencies are excluded. It is **not a resumable mapping job**.
+Existing source failures, incomplete extent and unverified traffic semantics
+remain visible; export does not promote the draft to deployment readiness.
 
 ## Inputs and actions
 
@@ -182,6 +277,56 @@ fixed. The [NCLT patch connections](../../benchmarks/vector-map/nclt-patch-conne
 join June's repaired 22–28 m interval to the retained 14–18 m piece across a
 4 m gap, yielding one 14 m local chain and components 13 → 12. April offers
 no connection and keeps the patch. Global longest spans remain 34/66 m.
+
+### Extend only the HD connection region after a local patch
+
+Default connection inspection keeps new connectors inside the local point-update
+box. When a supported link from a repair lane to the existing map crosses that
+box, its rejection includes `geometry_bounds_xy`. The agent can explicitly inspect
+a separate **HD-only** envelope on the combined patched candidate:
+
+```json
+{"type": "inspect_connection_region", "candidate_id": 4, "bounds_xy": [9, -7, 22, 5], "offset": 0}
+```
+
+Use observed IDs and coordinates. The envelope must contain the frozen point box,
+have positive sides of at most 20 m, and finite coordinates. It is a closed XY
+envelope at all heights, without voxel alignment. This is available only for a
+combined local-retry patch, including its later connected descendants. It does
+not regenerate or expand point replacement, change density or poses, move
+existing HD geometry, alter the layout, or infer permitted turns.
+
+Only station-consecutive links touching a repair lane/connector are offered.
+Every offered center and boundary curve stays inside the HD envelope; unrelated
+original-lane links remain held. Heading, path containment, minimum width,
+ambiguity and original directed-edge checks remain in effect. Preview pages
+contain eight candidates and a hash-pinned region artifact. Different envelopes
+produce different cached previews, and pairs must be seen in the latest exact
+preview before adoption:
+
+```json
+{"type": "connect", "candidate_id": 4, "pairs": [{"from": 51, "to": 9, "reason": "Inspected the HD-only envelope and exact geometry; test both estimators and OSM topology"}]}
+```
+
+Inspection spends no attempt; `connect` still spends one transferred HD attempt.
+Plan for it when starting the run: geometry/lane draft, optional height edit,
+combined patch and connection all share the child allocation. The native export
+must preserve every original entity/edge, exactly match inspected boundaries,
+and retain support/failure locations on old traces. New connectors need full
+support under both estimators in IR and reopened OSM, against the actual complete
+local point map, including unchanged outside points. Failed links retain their
+checks/audits and the prior draft; completed previews support `resume`.
+
+Finish explicitly after comparison. Outputs include `hd_connection_proposal`
+with both region boundaries, alongside source checks, so the HD-only scope is
+reviewable. Connector station spans improve graph reachability; they do not
+increase source-corridor extent or establish road identity or legal routing.
+
+The [NCLT HD-region trial](../../benchmarks/vector-map/nclt-hd-connection-region/README.md)
+explicitly connects June's new lane to an existing lane across the point-box
+boundary: 51 → 54 → 9 spans 22–36 m. Point files and retained HD entities remain
+fixed, components fall 13 → 12, and all four audits pass. Source extent stays
+118 m and the global longest route stays 66 m; full-drive continuity is unmet.
 
 ### Investigate missing intervals and retry point generation
 
@@ -329,13 +474,168 @@ retain both actual point/HD comparisons: April's partial improvement was explici
 adopted, while June's baseline was kept because its trial shortened the longest
 route and increased fragmentation despite gaining net source extent.
 
+### Update points only inside an inspected region
+
+After inspecting the root's gap pages and unused-frame pages, preview an explicit
+spatial update instead of replacing the whole point map:
+
+```json
+{"type": "inspect_local_points", "candidate_id": 3, "gap_ids": [1], "bounds_xy": [14, -3, 23, 6]}
+```
+
+Use observed IDs and coordinates from your run. Each chosen gap must have an
+inspected trajectory profile inside the box. Bounds expand outwards to the
+original map voxel grid; each effective side must be positive and at most 20 m.
+This is an XY column **at all heights**, with lower edges included and upper
+edges excluded. It can include another pass through the same physical location.
+The preview returns effective bounds, inside/outside counts, an outside-record
+hash and eligible frames with at least three raw returns inside the box.
+
+Choose only eligible frame IDs already inspected through this run, and pass the
+exact `local_point_observation.file` artifact as `preview_file`:
+
+```json
+{"type": "retry_local_frames", "candidate_id": 3, "frame_ids": [199, 217], "preview_file": {"path": "/absolute/run/local-points-03-REQUEST_HASH.json", "sha256": "RETURNED_SHA256", "bytes": 1234}}
+```
+
+The runner still generates a **full fusion candidate** from the original frames
+plus these explicit unused frames. Only candidate records inside the frozen box
+replace baseline records. Every outside vertex record keeps its exact XYZ,
+scalar attributes and relative order. The PLY vertex count/header and global
+record indices can change. This version accepts canonical binary little-endian
+PLY with double XYZ and up to 16 float attributes, at most two million points
+and 128 MB per map. It does not establish a local processing speedup.
+
+Before generating child HD proposals, four full audits require the unchanged
+baseline lanes to retain their supported samples, endpoints and failure locations
+against the local point map. A regression stops the trial and retains its map,
+full fusion candidate, report, checks and audits for inspection. The root can
+still `finish` with its original point/HD pair.
+
+This strategy shares the **one root retry** with density and full-map unused-frame
+trials. It transfers all remaining HD attempts and requires at least three:
+geometry, lane draft and combined gap patch. Inspect fresh child proposals, draft
+only chosen missing intervals and use `inspect_patch` / `patch_gaps` below. Added
+HD boundaries must stay inside the closed effective XY box; patch gaps must be
+among those chosen in the local preview. Existing lanes and directed edges remain
+fixed. Default connection previews withhold new connectors leaving the box;
+`inspect_connection_region` explicitly inspects a separate HD-only envelope.
+The root
+accepts `compare_retry` and `finish_retry` only for a combined patch (or its
+subsequent connection candidate), preserving the original HD map.
+
+Finish requires an explicit choice; successful audits never adopt a trial.
+Returned artifacts include `pointcloud_trial_local_report`,
+`pointcloud_trial_local_checks` and `pointcloud_trial_local_audits` after a completed
+local source gate, including a rejected gate. Completed interrupted stages resume
+without another allocation. Failed stages retain their shared allocation.
+
+The [NCLT local point trials](../../benchmarks/vector-map/nclt-local-points/README.md)
+verify exact outside records in both scenes. April adds a 4 m HD interval while
+retaining existing geometry/routes; June rejects a new failure on a retained lane
+and returns the unchanged original pair. Point counts and source support do not
+establish independent accuracy or road semantics.
+
+### Increase density only inside an inspected region
+
+When an inspected gap suggests testing less thinning, use the original retained
+frames for a local density trial. No unused-frame inspection or added frame is
+needed. First inspect the root's relevant gap pages, then preview the box:
+
+```json
+{"type": "inspect_local_density", "candidate_id": 3, "gap_ids": [3], "bounds_xy": [14, -3, 23, 6]}
+```
+
+Pass the exact returned `local_point_observation.file` to the density retry:
+
+```json
+{"type": "retry_local_density", "candidate_id": 3, "preview_file": {"path": "/absolute/run/local-points-03-REQUEST_HASH.json", "sha256": "RETURNED_SHA256", "bytes": 1234}, "options": {"scan_voxel_m": 0.2, "map_voxel_m": 0.1}}
+```
+
+Use actual coordinates, IDs and artifact fields from your observations. Options
+follow the existing density bounds: scan voxels at least 0.1 m, map voxels at
+least 0.05 m, neither larger than the baseline, and at least one strictly smaller.
+Invalid options or a preview from the unused-frame strategy spend no allocation.
+The box stays aligned to the **original** voxel grid and remains frozen while
+candidate density changes. Preview hashes include the strategy, so identical
+boxes for density and unused-frame trials are distinct inspected decisions.
+
+The full density candidate still uses exactly the original retained frame IDs
+and corrected poses. It adds no non-keyframes, changes no motion and retains the
+original graph/trajectory bytes. Only inside candidate records replace baseline
+points; outside attributes/relative record order are exact. Finer returns can
+change dynamic-filter outcomes even though the filter policy is fixed.
+
+The same four retained-HD audits, one-root-retry allocation, minimum three
+remaining HD attempts, combined local HD patch requirement, explicit comparison
+and adoption, and failed-trial baseline delivery apply. Density, unused-frame and
+both local strategies share the same single retry; they cannot be chained or
+automatically reallocated within one run. Source observations do not establish
+that thinning caused the gap or that more points improve accuracy.
+
+The [NCLT local density trials](../../benchmarks/vector-map/nclt-local-density/README.md)
+keep all original frames and outside records. April explicitly delivers a 4 m
+HD addition with no lost interval. June's existing-HD audits pass, but its new
+boundary has a height mismatch; the agent stops before a known-held patch and
+returns the original pair. The full-drive extent goals remain unmet.
+
+### Adjust an interior height on a local HD addition
+
+An isolated gap-only draft in a **local** retry child can have enough returns
+but a boundary height mismatch. Inspect it before the combined patch:
+
+```json
+{"type": "inspect_heights", "candidate_id": 2, "offset": 0}
+```
+
+The returned `height_observation` pages contain at most eight affected interior
+vertices, their XYZ and observations from both estimators in IR/reopened OSM.
+Only vertices next to observed boundary height mismatches, inside the frozen
+point-update box and on unshared boundaries are offered. Fully supported drafts
+have no offered edits. Original failures and source curves remain saved.
+
+An agent can propose an explicit bounded Z hypothesis using the exact returned
+`height_observation.file`. Use actual observed IDs and **zero-based** indices:
+
+```json
+{"type": "edit_heights", "candidate_id": 2, "preview_file": {"path": "/absolute/child/heights-02.json", "sha256": "RETURNED_SHA256", "bytes": 1234}, "edits": [{"boundary_id": 2, "vertex_index": 1, "delta_z_m": 0.075, "reason": "Test a bounded height hypothesis at the inspected mismatch; require both estimators"}]}
+```
+
+Choose 1–16 distinct seen vertices, each with a finite, nonzero delta of at most
+0.1 m in magnitude and an individual reason. Boundary XY, endpoints, unchosen Z,
+IDs, metadata, lane semantics, directed relations, projector and point-map files
+stay fixed. The original map and addition draft are untouched. Derived centerlines
+and sample locations may move because native resampling uses 3D arc length.
+Acceptance conservatively requires unchanged trace sample counts, **full support
+at every addition sample and endpoint in all four audits**, complete reports at
+unchanged protocols, and matching IR/reopened OSM geometry and routes.
+
+One height trial is allowed per child. It spends one transferred HD attempt and
+requires at least two remaining attempts so the combined patch still fits.
+Invalid or unseen edits spend none. A failed hypothesis keeps its trial geometry,
+checks and audits without publishing an edited draft; finish the root baseline
+when it cannot be adopted. Interrupted completed exports resume without another
+export or attempt. A successful edit produces a new candidate ID: inspect and
+patch **that** candidate, then compare and explicitly adopt the resulting pair.
+The combined patch still independently checks every retained and new lane.
+
+There is no automatic fitting, estimator preference, endpoint/XY adjustment,
+retained-root geometry edit, recursive height search or independent accuracy claim.
+
+The [NCLT height trials](../../benchmarks/vector-map/nclt-hd-height/README.md)
+repair June's one new-boundary mismatch with a +0.075 m interior Z hypothesis,
+then deliver a 6 m combined HD addition without lost intervals. April has no
+affected vertices and delivers its unchanged 4 m addition. Both preserve outside
+point records and original HD entities; full-drive extent goals remain unmet.
+
 ### Repair HD gaps while retaining the existing map
 
-After either point-fusion retry, the child can add source-supported missing HD
+After a point-fusion retry, the child can add source-supported missing HD
 intervals without replacing the root's retained geometry. This first patch is
 limited to one forward one-way lane per piece, 1–32 new lanes and 256 total lanes.
-The point map remains the **complete fusion trial**; this action does not crop or
-replace point returns only inside a spatial region.
+The point map remains the **complete fusion trial** for ordinary density and
+unused-frame retries. `retry_local_frames` and `retry_local_density` use the spatial
+replacement above.
 
 Inspect the root's actual baseline gap pages, then the child's fresh source
 sections. Draft **only** additions inside the gaps you choose. Each added lane
@@ -445,6 +745,111 @@ All tool calls use the `job_dir` and current revision returned by the runner.
 The draft decisions use proposal IDs; finish uses the shared job attempt ID.
 Geometry curve IDs and per-piece lane specifications are supplied automatically.
 
+## Preserve retained HD neighborhoods during density repair
+
+An ordinary box replacement can alter the ground estimate around an existing lane,
+even when it inserts more points. `inspect_protected_density` uses the same seen gap
+IDs and explicit box as `inspect_local_density`, with a separate frozen preview:
+
+```json
+{"type":"inspect_protected_density","candidate_id":1,"gap_ids":[1],"bounds_xy":[7,5,15,10]}
+```
+
+Inspect the returned protected/editable counts, then use the exact preview artifact
+with `retry_local_density`. This is an explicit alternative; ordinary replacement
+and unused-frame previews retain their existing behavior. The new preview consumes
+no attempts and has a distinct request hash; density retry retains the single child,
+transferred HD budget, bounded strictly reduced thinning and frozen original poses.
+
+The protection region is the union of each retained lane's **convex hull** of its
+left/right boundaries and any explicit centerline, expanded by the maximum ground
+query radius in the four complete saved audits (**0.75 m** in the current native
+protocol, plus a **1 µm** numerical margin). Derived centerlines lie in these hulls.
+The region covers every continuous retained trace's source-query disk, including
+existing holds and exported geometry; it is deliberately more conservative than
+protecting individual sampled disks. All heights are included.
+
+Inside protected regions, existing PLY records stay byte-identical and all fusion
+candidate points are excluded. Only the unprotected part of the explicit box is
+replaced. Every retained record, attribute and relative order is checked after
+writing/reloading the map; four native audits still require complete evidence and
+no newly failing retained source locations. A fully protected box or no unprotected
+candidate points cannot become a ready repair. No support threshold or HD geometry
+is modified to obtain a pass.
+
+Protection can exclude useful new evidence near held lanes or bend interiors. Point
+count increases do not prove improved ground/accuracy or an eligible HD addition.
+Continue the child, inspect fresh corridor evidence, and adopt only a compared,
+audited combined patch. Otherwise finish the prior baseline. The full fusion
+candidate is still generated, so this is not a local processing speedup.
+
+[The NCLT protected-density packet](../../benchmarks/vector-map/nclt-protected-density/README.md)
+uses the same June box/resolutions as the rejected preceding trial. It retains old
+nearby query evidence and passes all four retained-HD checks. The inspected missing
+8–14 m source interval still has no fresh candidate to add, so the final pair stays
+unchanged: **118 m** source extent and **66 m** longest route. Native-fixture tests
+separately verify a protected point update followed by a successfully adopted gap patch.
+
+## Continue from a delivered map
+
+`inspect_mapping_run` resumes an unfinished decision loop. To repair another region
+**after finishing**, call the new MCP entry with a distinct output directory, an
+explicit **3..8** HD attempt budget and a reason:
+
+```python
+continue_mapping_run(
+    finished_job_dir="/absolute/accepted-run",
+    out_dir="/absolute/next-region",
+    max_attempts=6,
+    reason="Repair the next inspected gap while retaining the accepted map pair",
+)
+```
+
+Startup reuses the exact delivered point cloud and audited HD map as candidate **1**,
+without odometry, fusion, proposal extraction or HD generation. The seed spends
+zero new attempts. Source, original retained frames/poses, native version, fixed
+layout, audit protocols and full-input extent goal remain unchanged. A finished
+run with no HD output, added frames, incomplete audits, structural errors or
+changed artifact hashes cannot seed this first version. Existing source holds
+are allowed and remain explicit; continuation is not evidence of accuracy.
+
+Inspect candidate 1's gaps afresh, preview an explicit new box with
+`inspect_local_density`, and call `retry_local_density` with that preview and
+reduced thinning. Continue the returned child, inspect its fresh proposals,
+draft **only missing ranges**, inspect/execute a combined gap patch, compare
+against candidate 1, and explicitly finish/adopt. Existing lane IDs, geometry,
+metadata and directed edges remain the baseline; outside point records retain
+bytes, attributes and order. Explicit source-checked connections can also extend
+the seed. The old point-update box is archived in `continuation.json`, so it does
+not constrain the next repair's box.
+
+Full-replacement drafts and frame-adoption trials are unavailable in the new
+root. If a trial fails or is worse, `finish` candidate **1** returns the exact prior
+map pair and the rejected trial evidence. The new family uses one transferred
+budget; continuation neither reopens a finished run nor restores a spent budget.
+`session_spent_attempts` and `cumulative_spent_attempts` count actual HD attempts,
+including failures, across roots/children, excluding inherited seeds and unused
+allocations. Point-fusion trials remain separately recorded in their stages.
+
+Thinning settings describe the **last full fusion**, rather than uniform resolution
+of a hybrid map. A new density trial must strictly reduce them within the existing
+scan **0.1 m** / map **0.05 m** floors. The runner does not reset these settings to
+allow repeated same-resolution updates; this limits repeated density repairs.
+
+Inputs are immutable **references**, not copies: preserve earlier directories.
+`continuation.json` hashes the previous finished run/job, exact map pair, point
+composition evidence, native/layout/source, and all saved decision/audit artifacts.
+These hashes are verified before subsequent actions and propagated into retry
+children. A change to a prior decision invalidates continuation rather than silently
+changing its baseline.
+
+[The NCLT continuation packet](../../benchmarks/vector-map/nclt-repair-continuation/README.md)
+records a live MCP session from the previously accepted June map. The second,
+disjoint point-density trial is **rejected** because retained source support regresses;
+the final output preserves the earlier local lane/connector and map pair exactly.
+The native fixture separately verifies two successive accepted gap patches.
+The real-log session adds no new HD extent or route connectivity.
+
 ## Resume and inspect results
 
 An agent can stop between actions and resume with `inspect_mapping_run`. Each
@@ -482,3 +887,147 @@ agent continues the loop through MCP. Starting alone does not finish HD mapping.
 A failed draft exits nonzero while preserving its run state and prior artifacts.
 See the [two NCLT calling-agent runs](../../benchmarks/vector-map/nclt-agent-run/README.md)
 for full live decision traces, unchanged layout priors and original-input extent.
+
+## Add missing HD intervals without rebuilding the point map
+
+Use `repair_hd` when the retained point map already contains an observed corridor
+that was omitted from the accepted HD draft. Inspect the root candidate's gaps
+first. Each returned gap now includes `retained_hd_occupancy`: a source-extent gap
+can already contain a retained connector. `unoccupied_intervals` identifies the
+parts available for an addition; it does not establish source support.
+
+```json
+{"type":"repair_hd","candidate_id":1,"gap_ids":[9]}
+```
+
+This creates an `hd-repair` child using the **exact retained point-cloud files and
+source proposal**. It performs no odometry, fusion or corridor re-extraction and
+spends no HD attempt during preparation. At least three remaining shared attempts
+are required for geometry, lane generation and a combined gap patch. HD-only,
+density and frame trials share one root repair allocation. Transferred attempts
+cannot also be spent by the root; failed attempts count and unused allocations
+are not restored. A continuation can start this child with its explicit new budget.
+
+Inspect the frozen proposal in the child, then `draft` only observed missing
+station ranges using the unchanged layout. Proposal refinement is unavailable in
+this child. `inspect_patch` and `patch_gaps` preserve the root's geometry, IDs,
+metadata and directed edges. Added lanes must lie entirely within the selected
+root gaps and must not overlap any retained lane or connector. All new traces
+require full support in the four complete audits, with no newly failing retained
+sample locations. An isolated draft cannot be adopted as a replacement map.
+
+Use `compare_retry`, finish the child with the combined candidate, then explicitly
+`finish_retry` in the root. The comparison records exact point-artifact identity,
+gained and lost source extent and route spans. Final `hd_repair_decision` records
+whether the HD patch was adopted and that `pointcloud_regenerated` is false.
+Finishing the root baseline retains the preceding pair after a rejected trial.
+
+[The NCLT HD-only packet](../../benchmarks/vector-map/nclt-hd-only-repair/README.md)
+records a live MCP session that adds 118–120 m without changing the 646,309-point
+map. Source extent increases from 118 to 120 m with no lost intervals. An earlier
+184–188 m addition passes its isolated source audits but is rejected before the
+combined patch because retained connector 45 already occupies it. The runner
+then uses only the nonoverlapping interval. No supported connector is offered
+for the new fragment; the longest route remains 66 m. This is a recorded agent
+session with prior diagnostic probes, rather than an independent autonomy or
+accuracy benchmark. Existing source disagreements and unmet full-drive extent
+remain visible.
+
+## Inspect source-supported HD repair intervals before drafting
+
+After inspecting the root's gap pages, request a bounded preflight:
+
+```json
+{"type":"inspect_hd_plan","candidate_id":1,"gap_ids":[14,19,29],"offset":0}
+```
+
+The response pages up to eight adjacent observed-station intervals. It excludes
+intervals that cannot satisfy the fixed minimum lane width or overlap retained
+lanes/connectors. Ordering uses the number of coincident retained endpoint links,
+then original station and source candidate ID; it is a geometric ordering, not a
+quality score. Source ambiguity and exact endpoint-link distances remain visible.
+Currently this inspection supports one forward, one-way lane occupying the entire
+observed source span.
+
+For each interval, the native quantile and lowest-supported-layer estimators check
+its two observed side curves and the derived centre trace on the exact retained
+point map. `reference_traces_fully_supported` requires complete inspections and
+every sample, including endpoints, supported by **both** estimators. Failure totals,
+protocols and full bounded source-problem locations are saved as hashed reports.
+
+These checks use a transient reference-trace carrier. They call neither the lane
+builder nor the OSM exporter, change no point/HD artifacts, and spend no shared HD
+generation attempt. There are at most 256 intervals in an index and a conservative
+100,000-sample limit per page per estimator. A completed page is immutable and
+reused; an interrupted page resumes completed interval inspections. This separates
+source inspection from generation while keeping its work bounded and visible.
+
+Use the results to choose root gaps for `repair_hd`. Inspect the frozen proposal in
+the returned child and explicitly draft the chosen ranges. Separate adjacent ranges
+can be drafted together; inspect and adopt all their coincident patch endpoint links.
+The actual lane export, OSM reload, four complete audits and retained-map checks
+remain required. Preflight support cannot establish a final patch pass, full road
+width, independent accuracy or legal routing. No automatic adoption is introduced.
+
+[The NCLT preflight packet](../../benchmarks/vector-map/nclt-hd-repair-preflight/README.md)
+records paging all 31 source gaps, selecting nine with observed candidates and free
+HD extent, and inspecting 11 intervals after width/occupancy filtering. Nine intervals
+have source holds; two pass both estimators. One actual geometry/lane draft and one
+combined patch adopt 222–226 m, increasing source extent from 120 to 124 m and the
+local route from 220–222 to 220–226 m. All point files and prior geometry/edges are
+retained; the global longest route remains 66 m. The calling agent selects ranges
+from MCP evidence without separate offline lane-generation probes in this session.
+This is a recorded workflow, not an independent model evaluation or accuracy test.
+
+## Apply an explicit supported plan
+
+After reading `inspect_hd_plan` pages, a calling MCP agent can execute its chosen
+intervals with one tool call:
+
+```json
+{
+  "job_dir": "/maps/new-repair-session",
+  "plan_files": ["/maps/new-repair-session/inspected-plan-page.json"],
+  "interval_ids": [3, 7],
+  "connect_endpoints": true,
+  "reason": "Add only the inspected intervals supported by both estimators",
+  "expected_revision": 5
+}
+```
+
+Pass this object to `apply_supported_hd_plan`. The paths must be the exact saved
+artifacts returned by inspections on this root, not copies. Supply one to eight
+distinct pages from the same frozen index and one to eight distinct global
+interval IDs. Every selected interval must have complete reference support from
+both estimators, unambiguous source geometry and endpoints visible in the bounded
+candidate preview. Unsupported, unseen or overlapping choices are rejected before
+a child or generation attempt is created.
+
+The tool prepares an unchanged-point-map HD child, inspects its source proposal,
+drafts only the chosen ranges, inspects all offered exact geometric endpoint
+pairs, creates a combined patch, finishes the audited child and compares it with
+the retained baseline. This uses at most three shared HD generation attempts.
+`connect_endpoints: true` explicitly permits all inspected coincident pairs;
+`false` requires an isolated addition and returns a hold if a join would be needed.
+It establishes neither traffic permission nor lane semantics.
+
+`ready_for_agent_decision` returns the comparison, retention checks, child output
+and hashed application policy. The root remains unfinished. Read the results and
+use `advance_mapping_run` with `finish_retry` to adopt explicitly, or finish the
+root baseline to retain the prior map. Holds and failed attempts remain recorded.
+The helper neither ranks candidates nor calls a model or adopts the parent.
+
+After interruption, inspect the root revision and repeat the same choices and
+reason. Completed stages are verified and reused; interrupted ordinary actions
+use their existing resume path. Failed native attempts are never silently rerun.
+Changed policies, stale revisions, source/artifact changes or unrelated manual
+child decisions require inspection and manual continuation. When the root is
+finished, its output retains the application policy for portable review and later
+continuation. Keep the original source and prior run directories accessible.
+
+[The two-drive NCLT application packet](../../benchmarks/vector-map/nclt-hd-plan-application/README.md)
+records live MCP application with explicit choices and a separate root adoption.
+June replays a known 4 m extension; April adds a freshly inspected contiguous
+14 m gap. Each uses three actual HD attempts with unchanged point/proposal files,
+zero lost extent and four final audits. A repeated June call spends no additional
+attempt; an unsupported April choice is rejected before child allocation.

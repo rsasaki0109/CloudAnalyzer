@@ -1,0 +1,63 @@
+{
+  "schema": "cloudanalyzer.nclt_protected_density.v1",
+  "date": "2026-10-09",
+  "source": {
+    "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+    "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+    "bytes": 9387931
+  },
+  "native": {
+    "version": "0.1.0",
+    "extension": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "method": "Live MCP session explicitly continues the last retained pair, inspects root gap1 and protected box [7,5,15,10], retries original retained-frame fusion at .1/.05m, inspects child candidates1/2, finishes the child without HD and retains root seed1. Earlier rejected trial informs the choice; this is not an independent agent benchmark.",
+  "point_box": [
+    7.0,
+    5.0,
+    15.0,
+    10.0
+  ],
+  "previous_point_box": [
+    12,
+    -3,
+    22,
+    5
+  ],
+  "adopted": false,
+  "retained_checks_pass": true,
+  "four_audits_unchanged_except_cloud_count": true,
+  "same_full_fusion_candidate_as_rejected_trial": true,
+  "before_inside_points": 4399,
+  "after_inside_points": 6193,
+  "protected_inside_points": 2460,
+  "editable_before_points": 1939,
+  "editable_candidate_points": 3733,
+  "outside_points": 641910,
+  "retained_records_sha256": "780718cd850a49e5abf16e8f974576623dd79bd34b6f95e82517ab77b3745b46",
+  "retained_records_bit_identical": true,
+  "previous_point_box_records_bit_identical": true,
+  "baseline_points": 646309,
+  "trial_points": 648103,
+  "new_session_budget": 6,
+  "session_hd_attempts": 0,
+  "cumulative_hd_attempts": 8,
+  "missing_interval": [
+    8,
+    14
+  ],
+  "eligible_child_candidate_in_selected_gap": false,
+  "source_extent_delivered_m": 118,
+  "longest_route_delivered_m": 66,
+  "delivered_pair_identical_to_parent": true,
+  "independent_agent_benchmark": false,
+  "independent_accuracy_established": false,
+  "full_extent_goal_met": false,
+  "legal_routing_verified": false,
+  "deployment_ready": false,
+  "source_license": "ODbL-1.0 and DBCL-1.0 for derived maps, point subsets, observations and figure.",
+  "path_conventions": "run/parent/original/repo/native/env replace machine paths. Descriptor hashes identify generated files; files-sha256.json hashes portable copies. Full retained record claims require the generated files."
+}

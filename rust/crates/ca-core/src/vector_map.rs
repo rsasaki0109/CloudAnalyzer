@@ -9,32 +9,67 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use vectormap_core::{LaneDirection, Map, NewRoad, Point3, Polyline3, RoadLane, SpeedLimit};
+use vectormap_core::{LaneDirection, Map, RoadLane};
+#[cfg(test)]
+use vectormap_core::{NewRoad, Point3, Polyline3, SpeedLimit};
 
 use crate::{AttributeValues, INTENSITY, PointCloud};
 
+pub mod corridors;
 pub mod crosswalks;
 pub mod discovery;
 #[cfg(test)]
 mod discovery_tests;
+mod evidence;
 pub mod feature_editing;
 mod fitting;
+pub use evidence::{BoundaryEvidenceProfile, BuildEvidence};
+mod paint_corridor;
+pub use paint_corridor::{
+    PaintBudgetStage, PaintCandidateDiagnostics, PaintChannel, PaintCorridorReport,
+    PaintQueryLimit, PaintTrackReport,
+};
+mod paint_divider;
+pub use paint_divider::PaintDividerReport;
+mod lane_edge_inference;
+pub use lane_edge_inference::{LaneEdgeInferenceReport, LaneEdgeSideReport, RetainedRoadEdge};
 mod integration;
 pub mod junctions;
 pub mod quality;
 pub mod relation_proposals;
 pub mod relations;
+mod segmentation;
 pub mod signals;
 mod surface;
 pub use surface::SurfaceFitReport;
+mod trace_alignment;
+pub use trace_alignment::TraceAlignmentReport;
 
 /// Parameters in metres, except speed in km/h and lane counts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BuildOptions {
+    /// Infer configured-width lane edges inside distant verified curb candidates
+    /// after a guarded paint-divider fit; outer markings are not observed.
+    pub infer_lane_edges: bool,
+    /// Correct only the interior boundary of an explicitly configured two-lane
+    /// road, using a unique strong RGB track guarded by paired physical curbs.
+    pub fit_paint_divider: bool,
+    /// Fit parallel boundaries to locally contrasted RGB paint on straight traces.
+    /// Counts/directions remain explicit; unobserved paint remains inferred.
+    pub fit_paint_corridor: bool,
+    /// Explicit source channel for corridor/divider fitting; RGB remains default.
+    #[serde(skip_serializing_if = "PaintChannel::is_rgb")]
+    pub paint_channel: PaintChannel,
+    /// Translate a straight trace only when a stable pair of source curbs can
+    /// contain the entire configured lane width. Lane counts remain explicit.
+    pub align_trace_to_curbs: bool,
     /// Fit a source-supported road footprint and defer unobserved intervals.
     /// Lane counts stay explicit; coverage edges are not certified road edges.
     pub fit_source_surface: bool,
+    /// Estimate seed-road height from the lowest spatially supported local layer.
+    /// Missing coherent returns defer the section; physical level is unverified.
+    pub local_ground_height: bool,
     pub forward_lanes: usize,
     pub backward_lanes: usize,
     /// The trajectory occupies the outside forward lane: leftmost for left-hand
@@ -48,6 +83,9 @@ pub struct BuildOptions {
     pub smoothing_window: usize,
     /// Place inferred lane lines relative to nearby detected outer boundaries.
     pub anchor_width_prior: bool,
+    /// Use only selected curb/intensity observations for inferred width anchors.
+    /// Coverage limits can be scan gaps and must not move other inferred lines.
+    pub physical_anchors_only: bool,
     /// Select boundary candidates as a continuous path across supported slices.
     pub track_boundaries: bool,
     /// Regularize trajectory-relative lateral deviations with bounded XY movement.
@@ -71,7 +109,13 @@ pub struct BuildOptions {
 impl Default for BuildOptions {
     fn default() -> Self {
         Self {
+            infer_lane_edges: false,
+            fit_paint_divider: false,
+            fit_paint_corridor: false,
+            paint_channel: PaintChannel::Rgb,
+            align_trace_to_curbs: false,
             fit_source_surface: false,
+            local_ground_height: false,
             forward_lanes: 1,
             backward_lanes: 1,
             left_hand_traffic: true,
@@ -81,6 +125,7 @@ impl Default for BuildOptions {
             sample_spacing: 2.0,
             smoothing_window: 2,
             anchor_width_prior: true,
+            physical_anchors_only: false,
             track_boundaries: true,
             fit_boundaries: true,
             merge_repeated_passes: true,
@@ -99,6 +144,7 @@ impl Default for BuildOptions {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Evidence {
+    RgbPaint,
     Intensity,
     Curb,
     SupportEdge,
@@ -121,6 +167,12 @@ pub struct ExtractedRoad {
 /// What was measured, what was inferred, and where data were missing.
 #[derive(Debug, Clone, Serialize)]
 pub struct BuildReport {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub lane_edge_inference: Option<LaneEdgeInferenceReport>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub paint_divider: Option<PaintDividerReport>,
+    pub paint_corridor: Option<PaintCorridorReport>,
+    pub trace_alignment: Option<TraceAlignmentReport>,
     pub surface_fit: Option<SurfaceFitReport>,
     pub roads: usize,
     pub lanes: usize,
@@ -128,13 +180,21 @@ pub struct BuildReport {
     pub generated_length: f64,
     pub sampled_sections: usize,
     pub unsupported_sections: usize,
+    /// Seed sections using the opt-in local low-return height estimator.
+    pub local_ground_sections: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub local_ground_estimator: Option<quality::GroundEstimator>,
     pub intensity_used: bool,
     pub intensity_vertices: usize,
+    pub rgb_paint_vertices: usize,
     pub curb_vertices: usize,
     pub rejected_curb_candidates: usize,
     pub support_edge_vertices: usize,
     pub width_prior_vertices: usize,
     pub anchored_prior_vertices: usize,
+    /// Outside coverage-edge vertices excluded before tracking/surface deferral.
+    /// This counts anchor candidates, not removed geometry or false detections.
+    pub coverage_edge_anchor_candidates_ignored: usize,
     pub tracked_vertices: usize,
     pub fitted_vertices: usize,
     pub maximum_fit_displacement: f64,
@@ -149,6 +209,27 @@ pub struct BuildReport {
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 #[error("{0}")]
 pub struct BuildError(pub String);
+
+/// Bounded preview of the rejected section, in the original survey frame.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+pub struct BuildDiagnostic {
+    pub code: &'static str,
+    pub location: [f64; 3],
+    pub reference: Vec<[f64; 3]>,
+    pub boundaries: Vec<Vec<[f64; 3]>>,
+    pub context_length: f64,
+    pub forward_lanes: usize,
+    pub backward_lanes: usize,
+    pub lane_width: f64,
+    pub segment_length: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, thiserror::Error)]
+#[error("{message}")]
+pub struct BuildFailure {
+    pub message: String,
+    pub diagnostic: Option<Box<BuildDiagnostic>>,
+}
 
 fn fail<T>(s: &str) -> Result<T, BuildError> {
     Err(BuildError(s.into()))
@@ -347,6 +428,7 @@ fn track_candidates(road: &mut ExtractedRoad, sections: &[Section], nominal: &[f
     for (j, &prior) in nominal.iter().enumerate() {
         let unary = |c: Candidate| {
             let evidence = match c.evidence {
+                Evidence::RgbPaint => 0.0,
                 Evidence::Intensity => 0.0,
                 Evidence::Curb => 0.1,
                 Evidence::SupportEdge => 0.3,
@@ -420,6 +502,14 @@ pub fn extract(
     if cloud.is_empty() {
         return fail("the point cloud is empty");
     }
+    if (o.fit_paint_corridor || o.fit_paint_divider)
+        && cloud
+            .colors
+            .as_ref()
+            .is_some_and(|c| c.len() != cloud.len())
+    {
+        return fail("cloud colors do not match its points");
+    }
     if cloud
         .attributes
         .iter()
@@ -428,6 +518,9 @@ pub fn extract(
         return fail("cloud attributes do not match its points");
     }
     let mut line = resample(poses, o.sample_spacing)?;
+    let trace_alignment = o
+        .align_trace_to_curbs
+        .then(|| trace_alignment::align(cloud, &mut line, o));
     let trajectory_length = length(&line);
     if o.smoothing_window > 0 {
         let original = line.clone();
@@ -459,7 +552,15 @@ pub fn extract(
     let low = nominal[nlanes] - o.search_margin - o.bin_width * 3.0;
     let high = nominal[0] + o.search_margin + o.bin_width * 3.0;
     let index = SurfaceIndex::new(cloud, &line, low.abs().max(high.abs()) + o.half_window);
+    let local_ground = o
+        .local_ground_height
+        .then(|| junctions::Ground::new_consensus(cloud))
+        .transpose()?;
     let mut report = BuildReport {
+        lane_edge_inference: None,
+        paint_divider: None,
+        paint_corridor: None,
+        trace_alignment,
         surface_fit: None,
         roads: 0,
         lanes: 0,
@@ -467,13 +568,17 @@ pub fn extract(
         generated_length: 0.0,
         sampled_sections: line.len(),
         unsupported_sections: 0,
+        local_ground_sections: 0,
+        local_ground_estimator: None,
         intensity_used: false,
         intensity_vertices: 0,
+        rgb_paint_vertices: 0,
         curb_vertices: 0,
         rejected_curb_candidates: 0,
         support_edge_vertices: 0,
         width_prior_vertices: 0,
         anchored_prior_vertices: 0,
+        coverage_edge_anchor_candidates_ignored: 0,
         tracked_vertices: 0,
         fitted_vertices: 0,
         maximum_fit_displacement: 0.0,
@@ -484,6 +589,13 @@ pub fn extract(
         observed_fraction: vec![0.0; nlanes + 1],
         warnings: Vec::new(),
     };
+    if o.fit_paint_corridor {
+        let (paint_roads, paint_report) = paint_corridor::fit(cloud, &line, o);
+        report.paint_corridor = Some(paint_report);
+        if let Some(roads) = paint_roads {
+            return finish_extraction(cloud, &line, &index, [low, high], o, report, roads);
+        }
+    }
     let mut roads = Vec::new();
     let mut observations = Vec::new();
     let mut sections = Vec::new();
@@ -521,15 +633,19 @@ pub fn extract(
                 )
             })
             .collect();
-        let ground = quantile(
-            &mut surface
-                .iter()
-                .enumerate()
-                .filter(|(i, _)| lateral(*i).abs() < 0.8)
-                .filter_map(|(_, v)| *v)
-                .collect::<Vec<_>>(),
-            0.5,
-        );
+        let ground = if let Some(ground) = &local_ground {
+            ground.height(vectormap_core::Point3::new(p[0], p[1], p[2]))
+        } else {
+            quantile(
+                &mut surface
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, _)| lateral(*i).abs() < 0.8)
+                    .filter_map(|(_, v)| *v)
+                    .collect::<Vec<_>>(),
+                0.5,
+            )
+        };
         let Some(ground) = ground else {
             report.unsupported_sections += 1;
             if road.reference.len() >= 2 {
@@ -541,6 +657,7 @@ pub fn extract(
             prior = nominal.clone();
             continue;
         };
+        report.local_ground_sections += usize::from(local_ground.is_some());
         let strength: Vec<Option<f64>> = bins
             .iter()
             .zip(&surface)
@@ -677,7 +794,18 @@ pub fn extract(
             // Retain the original robust outer-edge offset when an unstable
             // detection is replaced by an inferred point. Dropping the
             // observation must not silently reset the lane to the pose centre.
-            let (_, offsets) = prior_offsets(road, &nominal);
+            if o.anchor_width_prior && o.physical_anchors_only {
+                report.coverage_edge_anchor_candidates_ignored += [0, nlanes]
+                    .iter()
+                    .map(|&j| {
+                        road.evidence[j]
+                            .iter()
+                            .filter(|&&e| e == Evidence::SupportEdge)
+                            .count()
+                    })
+                    .sum::<usize>();
+            }
+            let (_, offsets) = prior_offsets(road, &nominal, o.physical_anchors_only);
             if o.anchor_width_prior {
                 for (k, section) in sections.iter_mut().enumerate() {
                     for (j, choices) in section.choices.iter_mut().enumerate() {
@@ -700,15 +828,52 @@ pub fn extract(
         }
     } else if o.anchor_width_prior {
         for road in &mut roads {
-            report.anchored_prior_vertices += anchor_priors(road, &nominal);
+            if o.physical_anchors_only {
+                report.coverage_edge_anchor_candidates_ignored += [0, nlanes]
+                    .iter()
+                    .map(|&j| {
+                        road.evidence[j]
+                            .iter()
+                            .filter(|&&e| e == Evidence::SupportEdge)
+                            .count()
+                    })
+                    .sum::<usize>();
+            }
+            report.anchored_prior_vertices +=
+                anchor_priors(road, &nominal, o.physical_anchors_only);
         }
     }
-    if o.fit_boundaries {
+    finish_extraction(cloud, &line, &index, [low, high], o, report, roads)
+}
+
+fn finish_extraction(
+    cloud: &PointCloud,
+    line: &[[f64; 3]],
+    index: &SurfaceIndex,
+    bounds: [f64; 2],
+    o: &BuildOptions,
+    mut report: BuildReport,
+    mut roads: Vec<ExtractedRoad>,
+) -> Result<(Vec<ExtractedRoad>, BuildReport), BuildError> {
+    let nlanes = o.forward_lanes + o.backward_lanes;
+    if report.local_ground_sections > 0 {
+        report.local_ground_estimator = Some(quality::GroundEstimator::consensus());
+        report.warnings.push("Seed-road heights use the lowest 0.15 m layer within 0.75 m under the trajectory, with at least three occupied 0.2 m XY cells spanning a triangle of at least 0.01 m². Each cell contributes its lowest return; their median is used. Missing coherent support defers sections. Another level or wrong XY can still pass; compare both source estimators, actual boundaries and retained extent before selecting.".into());
+    }
+    if o.fit_boundaries && !report.paint_corridor.as_ref().is_some_and(|r| r.applied) {
         for road in &mut roads {
             let (count, maximum) = fitting::fit(road);
             report.fitted_vertices += count;
             report.maximum_fit_displacement = report.maximum_fit_displacement.max(maximum);
         }
+    }
+    if o.fit_paint_divider {
+        report.paint_divider = Some(paint_divider::apply(cloud, line, o, &mut roads, &report));
+    }
+    if o.infer_lane_edges {
+        report.lane_edge_inference = Some(lane_edge_inference::apply(
+            cloud, line, o, &mut roads, &report,
+        ));
     }
     let mut totals = vec![0usize; nlanes + 1];
     for road in &roads {
@@ -717,6 +882,7 @@ pub fn extract(
             for &e in labels {
                 totals[j] += 1;
                 match e {
+                    Evidence::RgbPaint => report.rgb_paint_vertices += 1,
                     Evidence::Intensity => report.intensity_vertices += 1,
                     Evidence::Curb => report.curb_vertices += 1,
                     Evidence::SupportEdge => report.support_edge_vertices += 1,
@@ -735,17 +901,22 @@ pub fn extract(
     }
     report.intensity_used = report.intensity_vertices > 0;
     report.roads = roads.len();
-    if !report.intensity_used {
+    let paint_applied = report.paint_corridor.as_ref().is_some_and(|r| r.applied);
+    if !report.intensity_used
+        && !paint_applied
+        && !report.paint_divider.as_ref().is_some_and(|p| p.applied)
+    {
         report.warnings.push(
             "No usable intensity contrast: internal lane lines use the configured width prior."
                 .into(),
         );
     }
     if report.width_prior_vertices > 0 {
-        report.warnings.push(format!(
-            "{} boundary vertices use the configured lane width rather than a detected feature.",
-            report.width_prior_vertices
-        ));
+        report.warnings.push(if paint_applied {
+            format!("{} boundary vertices are inferred from measured paint spacing rather than directly observed paint.", report.width_prior_vertices)
+        } else {
+            format!("{} boundary vertices use the configured lane width rather than a detected feature.", report.width_prior_vertices)
+        });
     }
     if report.rejected_curb_candidates > 0 {
         report.warnings.push(format!("{} curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.", report.rejected_curb_candidates));
@@ -766,9 +937,15 @@ pub fn extract(
         report.warnings.push(format!("{} sections lack ground support and were omitted; disconnected stretches require review.",report.unsupported_sections));
     }
     report.warnings.push("Draft map: verify lane counts, travel directions, junctions and boundary geometry before use.".into());
-    if o.fit_source_surface {
-        return surface::refine(cloud, &line, &index, [low, high], o, report, roads);
+    if o.physical_anchors_only && o.anchor_width_prior {
+        report.warnings.push(format!("{} pre-tracking coverage-edge anchor candidates were excluded from inferred lane offsets. Paint/curb observations remain anchors; inferred vertices remain width assumptions. Coverage-edge candidate geometry can still be selected and requires review.", report.coverage_edge_anchor_candidates_ignored));
     }
+    if o.fit_source_surface {
+        return surface::refine(cloud, line, index, bounds, o, report, roads);
+    }
+    paint_corridor::warnings(&mut report);
+    paint_divider::warnings(&mut report);
+    lane_edge_inference::warnings(&mut report);
     Ok((roads, report))
 }
 
@@ -778,7 +955,11 @@ pub fn extract(
 /// inferred vertices keep their evidence label. No reference map is consulted.
 /// Missing slices are excluded from the median; up to two neighbouring slices
 /// receive an attenuated anchor rather than treating missing evidence as zero.
-fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<Option<f64>>) {
+fn prior_offsets(
+    road: &ExtractedRoad,
+    nominal: &[f64],
+    physical_only: bool,
+) -> (Vec<[f64; 2]>, Vec<Option<f64>>) {
     let n = road.reference.len();
     let last = nominal.len() - 1;
     let normals: Vec<_> = (0..n)
@@ -795,7 +976,9 @@ fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<O
             let mut sum = 0.0;
             let mut count = 0;
             for j in [0, last] {
-                if road.evidence[j][k] != Evidence::WidthPrior {
+                if road.evidence[j][k] != Evidence::WidthPrior
+                    && !(physical_only && road.evidence[j][k] == Evidence::SupportEdge)
+                {
                     let q = road.boundaries[j][k];
                     sum +=
                         (q[0] - p[0]) * normals[k][0] + (q[1] - p[1]) * normals[k][1] - nominal[j];
@@ -830,8 +1013,8 @@ fn prior_offsets(road: &ExtractedRoad, nominal: &[f64]) -> (Vec<[f64; 2]>, Vec<O
     (normals, offsets)
 }
 
-fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64]) -> usize {
-    let (normals, offsets) = prior_offsets(road, nominal);
+fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64], physical_only: bool) -> usize {
+    let (normals, offsets) = prior_offsets(road, nominal, physical_only);
     let mut moved = 0;
     for (k, offset) in offsets.into_iter().enumerate() {
         let Some(offset) = offset else { continue };
@@ -853,6 +1036,55 @@ pub fn build(
     cloud: &PointCloud,
     poses: &[[f64; 3]],
     o: &BuildOptions,
+) -> Result<BuildReport, BuildError> {
+    build_inner(map, cloud, poses, o, None, None)
+}
+
+/// Generate the same map/report and a bounded, read-only source-evidence snapshot.
+/// Reused geometry has no new annotation. Exports and ordinary builds are unchanged.
+pub fn build_with_evidence(
+    map: &mut Map,
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    o: &BuildOptions,
+) -> Result<(BuildReport, BuildEvidence), BuildError> {
+    let mut evidence = BuildEvidence::default();
+    let report = build_inner(map, cloud, poses, o, Some(&mut evidence), None)?;
+    Ok((report, evidence))
+}
+
+/// The same atomic build with a bounded failed-section preview for recovery.
+pub fn build_with_diagnostics(
+    map: &mut Map,
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    o: &BuildOptions,
+) -> Result<(BuildReport, BuildEvidence), BuildFailure> {
+    let mut evidence = BuildEvidence::default();
+    let mut diagnostic = None;
+    match build_inner(
+        map,
+        cloud,
+        poses,
+        o,
+        Some(&mut evidence),
+        Some(&mut diagnostic),
+    ) {
+        Ok(report) => Ok((report, evidence)),
+        Err(error) => Err(BuildFailure {
+            message: error.0,
+            diagnostic: diagnostic.map(Box::new),
+        }),
+    }
+}
+
+fn build_inner(
+    map: &mut Map,
+    cloud: &PointCloud,
+    poses: &[[f64; 3]],
+    o: &BuildOptions,
+    mut evidence: Option<&mut BuildEvidence>,
+    mut diagnostic: Option<&mut Option<BuildDiagnostic>>,
 ) -> Result<BuildReport, BuildError> {
     let (roads, mut report) = extract(cloud, poses, o)?;
     let had_existing = map.lanes().next().is_some();
@@ -879,22 +1111,23 @@ pub fn build(
             vec![road]
         };
         for road in parts {
+            let snapshot = evidence
+                .as_deref_mut()
+                .and_then(|e| e.can_accept(&road).then(|| road.clone()));
             let added_length = length(&road.reference);
-            let polyline = |points: Vec<[f64; 3]>| {
-                Polyline3::new(
-                    points
-                        .into_iter()
-                        .map(|p| Point3::new(p[0], p[1], p[2]))
-                        .collect(),
-                )
-            };
-            let mut spec = NewRoad::new(polyline(road.reference), lanes.clone());
-            spec.boundaries = Some(road.boundaries.into_iter().map(polyline).collect());
-            spec.speed_limit = Some(SpeedLimit::from_kmh(o.speed_limit));
-            spec.segment_length = (o.segment_length > 0.0).then_some(o.segment_length);
-            let (built, _) = draft
-                .build_road(spec)
-                .map_err(|e| BuildError(e.to_string()))?;
+            let (built, extra_cuts) = segmentation::build_diagnostic(
+                &mut draft,
+                road,
+                &lanes,
+                o,
+                diagnostic.as_deref_mut(),
+            )?;
+            if extra_cuts > 0 {
+                report.warnings.push(format!("Added {extra_cuts} matched cuts on returning road sections so Lanelet2 can infer both boundary directions consistently; these pieces are shorter than the requested length. Geometry and heights are retained."));
+            }
+            if let (Some(evidence), Some(snapshot)) = (evidence.as_deref_mut(), snapshot) {
+                evidence.capture(&draft, &built, &lanes, snapshot);
+            }
             report.lanes += built.lanes.iter().map(Vec::len).sum::<usize>();
             report.roads += 1;
             report.added_length += added_length;
@@ -1083,7 +1316,7 @@ mod tests {
         // used to count as zero offsets and overwhelm it in the median.
         road.boundaries[0][5][1] += 0.8;
         road.evidence[0][5] = Evidence::Curb;
-        anchor_priors(&mut road, &[1.75, -1.75, -5.25]);
+        anchor_priors(&mut road, &[1.75, -1.75, -5.25], true);
         for k in 0usize..11 {
             let expected = -1.75 + 0.8 * (1.0 - k.abs_diff(5) as f64 / 3.0).max(0.0);
             assert!((road.boundaries[1][k][1] - expected).abs() < 1e-12);
@@ -1092,6 +1325,126 @@ mod tests {
         }
         assert_eq!(road.boundaries[0][5][1], 2.55);
         assert_eq!(road.evidence[0][5], Evidence::Curb);
+    }
+
+    #[test]
+    fn coverage_limits_do_not_anchor_physical_only_width_priors() {
+        let reference: Vec<_> = (0..11).map(|k| [k as f64 * 2.0, 0.0, 2.0]).collect();
+        let nominal = [1.75, -1.75, -5.25];
+        let mut measured = ExtractedRoad {
+            reference: reference.clone(),
+            boundaries: nominal
+                .iter()
+                .enumerate()
+                .map(|(j, &y)| {
+                    reference
+                        .iter()
+                        .map(|p| [p[0], y + if j == 1 { 0.0 } else { 1.0 }, 2.0])
+                        .collect()
+                })
+                .collect(),
+            evidence: vec![
+                vec![Evidence::SupportEdge; 11],
+                vec![Evidence::WidthPrior; 11],
+                vec![Evidence::SupportEdge; 11],
+            ],
+            source_boundaries: None,
+        };
+        let original = measured.clone();
+        let mut legacy = measured.clone();
+        assert_eq!(anchor_priors(&mut measured, &nominal, true), 0);
+        assert_eq!(measured.boundaries, original.boundaries);
+        assert!(anchor_priors(&mut legacy, &nominal, false) > 0);
+        assert!((legacy.boundaries[1][5][1] + 0.75).abs() < 1e-12);
+        assert_eq!(legacy.evidence, original.evidence);
+
+        // The opposite coverage edge must not dilute a real curb/paint anchor.
+        for physical in [Evidence::Curb, Evidence::Intensity] {
+            let mut road = original.clone();
+            road.evidence[0].fill(physical);
+            for p in &mut road.boundaries[0] {
+                p[1] = nominal[0] + 0.6;
+            }
+            let observed = road.boundaries[0].clone();
+            anchor_priors(&mut road, &nominal, true);
+            assert!((road.boundaries[1][5][1] - (-1.75 + 0.6)).abs() < 1e-12);
+            assert_eq!(road.boundaries[0], observed);
+            assert_eq!(road.evidence[1][5], Evidence::WidthPrior);
+            assert!(road.boundaries.iter().flatten().all(|p| p[2] == 2.0));
+        }
+    }
+
+    #[test]
+    fn local_ground_height_rejects_narrow_elevated_returns_and_keeps_extent() {
+        let mut cloud = marked_road();
+        // A narrow elevated strip dominates the median of bins under the
+        // trace, while adjacent low returns remain inside the local radius.
+        for p in &mut cloud.positions {
+            if p[1].abs() < 0.55 {
+                p[2] += 5.0;
+            }
+        }
+        let poses = [[2.0, 0.0, 99.0], [28.0, 0.0, 99.0]];
+        let legacy = BuildOptions::default();
+        let local = BuildOptions {
+            local_ground_height: true,
+            ..legacy.clone()
+        };
+        let (old_roads, old_report) = extract(&cloud, &poses, &legacy).unwrap();
+        let (new_roads, new_report) = extract(&cloud, &poses, &local).unwrap();
+        assert_eq!(old_report.local_ground_sections, 0);
+        assert!(old_roads[0].reference.iter().all(|p| p[2] > 6.0));
+        assert!(new_report.local_ground_sections > 0);
+        assert!(
+            new_roads[0]
+                .reference
+                .iter()
+                .all(|p| (p[2] - (2.0 + 0.01 * p[0])).abs() < 0.03)
+        );
+        assert!((new_report.generated_length - old_report.generated_length).abs() < 0.05);
+        let mut old_map = Map::new();
+        let mut new_map = Map::new();
+        assert_eq!(
+            build(&mut old_map, &cloud, &poses, &legacy).unwrap().lanes,
+            2
+        );
+        assert_eq!(
+            build(&mut new_map, &cloud, &poses, &local).unwrap().lanes,
+            2
+        );
+        assert!(
+            !quality::audit(&old_map, &cloud)
+                .unwrap()
+                .low_support_lanes
+                .is_empty()
+        );
+        assert!(
+            quality::audit(&new_map, &cloud)
+                .unwrap()
+                .low_support_lanes
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn local_ground_height_defers_missing_trace_returns_instead_of_falling_back() {
+        let mut cloud = marked_road();
+        cloud.attributes.clear();
+        cloud.positions.retain(|p| !(12.0..=18.0).contains(&p[0]));
+        let options = BuildOptions {
+            local_ground_height: true,
+            ..BuildOptions::default()
+        };
+        let (roads, report) = extract(&cloud, &[[2., 0., 99.], [28., 0., 99.]], &options).unwrap();
+        assert_eq!(roads.len(), 2);
+        assert!(report.unsupported_sections > 0);
+        assert!(report.local_ground_sections < report.sampled_sections);
+        assert!(
+            roads
+                .iter()
+                .flat_map(|r| &r.reference)
+                .all(|p| !(13. ..=17.).contains(&p[0]))
+        );
     }
 
     #[test]

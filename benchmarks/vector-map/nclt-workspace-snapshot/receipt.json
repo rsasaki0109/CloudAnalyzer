@@ -1,0 +1,54 @@
+{
+  "schema": "cloudanalyzer.point_workspace_evidence.v1",
+  "snapshot": {
+    "path": "/workspace/.cloudanalyzer-env/exports/nclt-point-workspace-snapshot.zip",
+    "bytes": 20917783,
+    "sha256": "f2e7ba710ad55c0d28d3c9978cf8e9de0913adf2c48386bd76fe3706b2fca139"
+  },
+  "point_counts": [
+    646309,
+    6463
+  ],
+  "point_record_bytes": 32,
+  "original_source": {
+    "path": "/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local_map.ply",
+    "sha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad"
+  },
+  "original_full_record_multiset_exact": true,
+  "filtered_records_are_exact_source_subset": true,
+  "coordinate_frame_changed": false,
+  "native_supported_attributes": [
+    "intensity",
+    "correction"
+  ],
+  "transforms_applied_twice": false,
+  "snapshot_source_transforms": [
+    [],
+    []
+  ],
+  "saved_visibility": [
+    false,
+    true
+  ],
+  "hd_lanes": 21,
+  "reexport_after_reopen_exact": true,
+  "standard_zip_crc_verified": true,
+  "root_child_state_before": {
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/run.json": "b0d8c8f0b429c2d28552a07ec78037b252ef3cc365c74e8d7ca067c72e47a404",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/job.json": "6ac5429312507bc555ab6af6fe4082b52bfee4397e3f12a3172b3dc656b1ae0e",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/run.json": "6d2e7860a5f070be9bc0c18cb3c49bc0a856733916fd5ede3158953330f82d29",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/job.json": "b3e41f27b00cfccee6960357003aab5e3d959d66cd22ca845b918d4a1712da7f"
+  },
+  "root_child_state_after": {
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/run.json": "b0d8c8f0b429c2d28552a07ec78037b252ef3cc365c74e8d7ca067c72e47a404",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/job.json": "6ac5429312507bc555ab6af6fe4082b52bfee4397e3f12a3172b3dc656b1ae0e",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/run.json": "6d2e7860a5f070be9bc0c18cb3c49bc0a856733916fd5ede3158953330f82d29",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/job.json": "b3e41f27b00cfccee6960357003aab5e3d959d66cd22ca845b918d4a1712da7f"
+  },
+  "mapping_attempts_spent": 0,
+  "hd_geometry_regenerated": false,
+  "new_source_audits_run": false,
+  "independent_accuracy_established": false,
+  "deployment_ready": false,
+  "attribution": "Derived from the University of Michigan North Campus Long-Term (NCLT)\ndataset, session 2012-06-15. N. Carlevaris-Bianco, A. K. Ushani and R. M.\nEustice, \"University of Michigan North Campus long-term vision and lidar dataset\",\nIJRR 2016. Dataset: http://robots.engin.umich.edu/nclt/\nOpen Database License https://opendatacommons.org/licenses/odbl/1-0/\nContents under Database Contents License https://opendatacommons.org/licenses/dbcl/1-0/\nThis derived database is offered under the same terms. Input is the bounded,\nthinned MCAP subset described in CloudAnalyzer web/public/samples/ATTRIBUTION.md."
+}

@@ -86,7 +86,7 @@ fn corrections(
         .map(|((p, r), n)| (p[0] - r[0]) * n[0] + (p[1] - r[1]) * n[1])
         .collect();
     let weights = labels.iter().map(|label| match label {
-        Evidence::Intensity => 2.0,
+        Evidence::Intensity | Evidence::RgbPaint => 2.0,
         Evidence::Curb => 1.0,
         Evidence::SupportEdge => 0.5,
         Evidence::WidthPrior => 0.25,

@@ -52,7 +52,7 @@ jobs:
           npm ci
           npm run wasm
           npm run build
-          npm run test:map-geometry
+          npm run test:unit
       - name: End-to-end tests
         working-directory: web
         run: |

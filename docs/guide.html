@@ -661,6 +661,25 @@
       <li>Clouds opened from a URL, and the demos, are downloaded again by whoever opens the link. Local files are
         not uploaded, so the link asks for them by name.</li>
       <li><b>Save session</b> writes the same state to a JSON file. Open it together with its files, or first.</li>
+      <li><b>Save workspace snapshot</b> saves the current loaded clouds and meshes, including processed results,
+        with the edited map, lane notes and display settings in <code>project.cloudanalyzer.zip</code>.
+        Open that ZIP to resume without rerunning filters. Double coordinates and supported float/byte vertex
+        attributes are retained; current transforms are applied once. The limit is 64 MiB uncompressed and 127
+        clouds/meshes. Original pose-graph inputs and the verified generated-map review ZIP are included.
+        <b>Download original map package</b> retrieves that archive; its saved audits describe the original
+        pair, not later edits. Unloaded cloud detail stays external; Undo starts fresh.</li>
+      <li>Opening a workspace snapshot verifies and prepares every saved cloud, graph and map before
+        committing. Failed or cancelled preparation leaves current work and Undo available. Editing
+        current work during staging prevents replacement. Preparation temporarily needs memory for
+        both workspaces; cancellation is handled between parsing and indexing steps.</li>
+      <li>Under Filters, <b>Reusable filter recipe</b> saves an ordered sequence of voxel, minimum-distance,
+        octree, SOR or splat-cleanup steps. Select point clouds and run the recipe; all results are
+        prepared before sources are hidden. One Undo restores the batch. Result <b>Recipe</b> buttons
+        download processing records with parameters and input/output/build hashes. Keep results and
+        records together with a workspace snapshot. Recipes are bounded to 8 steps, 16 clouds and
+        4 million loaded points; preparation needs extra memory. Preview inputs remain previews.</li>
+      <li>Browser autosave and <b>Save project</b> keep metadata and source references. Use a workspace snapshot
+        or a separate result export to keep processed point records.</li>
       <li>A link like <code>…/app/?url=https://example.com/scan.laz</code> opens a remote file directly (the
         server must allow CORS). <code>?demo=volume</code> starts a demo.</li>
     </ul>

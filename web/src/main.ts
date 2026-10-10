@@ -1,5 +1,6 @@
 // Entry point: each module under app/ wires up its own panel when imported.
 import "./app/tasks";
+import "./app/memory";
 import "./app/layout";
 import "./app/display";
 import "./app/picking";
@@ -11,6 +12,7 @@ import "./app/volume";
 import "./app/raster";
 import "./app/mesh";
 import "./app/processing";
+import "./app/filter-recipe";
 import "./app/segment";
 import "./app/clip";
 import "./app/copc-box";
@@ -22,6 +24,7 @@ import "./app/shapes";
 import "./app/posegraph";
 import "./app/trajectory";
 import "./app/vectormap";
+import "./app/mapping-review";
 import { runDemo } from "./app/demos";
 import { errorText, setStatus } from "./app/dom";
 import { renderList } from "./app/entries";

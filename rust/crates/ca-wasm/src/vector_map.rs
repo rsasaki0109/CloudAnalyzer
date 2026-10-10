@@ -3,7 +3,11 @@
 //! Autoware. Everything crosses the boundary as JSON: edits are vectormap
 //! commands, the view is plain polylines in the map's local frame.
 
+use ca_core::vector_map::{BuildEvidence, RetainedRoadEdge};
 use serde_json::{Value, json};
+use std::collections::HashMap;
+use std::sync::Arc;
+use vectormap_core::BoundaryId;
 use vectormap_core::{Command, Map, Point2, Polyline3, Side};
 use vectormap_io::lanelet2::{self, LoadOptions, SaveOptions};
 use vectormap_io::{autoware, json as irjson};
@@ -16,7 +20,34 @@ const UNDO_DEPTH: usize = 100;
 #[wasm_bindgen]
 pub struct VectorMapSession {
     map: Map,
-    undo: Vec<Map>,
+    undo: Vec<UndoState>,
+    evidence: Vec<Arc<EvidenceBatch>>,
+    history_limit: usize,
+    history_budget: usize,
+}
+
+struct UndoState {
+    map: Map,
+    evidence: Vec<Arc<EvidenceBatch>>,
+    bytes: usize,
+}
+
+// Snapshot geometry associates evidence with actual generated IDs, including split/reversed lanes.
+struct EvidenceBatch {
+    build: BuildEvidence,
+    road_edges: Vec<RetainedRoadEdge>,
+    captured: HashMap<BoundaryId, Polyline3>,
+}
+impl EvidenceBatch {
+    fn current(&self, map: &Map, ids: &[u64]) -> bool {
+        !ids.is_empty()
+            && ids.iter().all(|id| {
+                self.captured.get(&BoundaryId(*id)).is_some_and(|geometry| {
+                    map.boundary(BoundaryId(*id))
+                        .is_some_and(|b| b.geometry == *geometry)
+                })
+            })
+    }
 }
 
 fn error(e: impl std::fmt::Display) -> JsError {
@@ -35,6 +66,9 @@ impl VectorMapSession {
         VectorMapSession {
             map: Map::new(),
             undo: Vec::new(),
+            evidence: Vec::new(),
+            history_limit: UNDO_DEPTH,
+            history_budget: 128 * 1024 * 1024,
         }
     }
 
@@ -48,6 +82,7 @@ impl VectorMapSession {
         };
         self.map = loaded.map;
         self.undo.clear();
+        self.evidence.clear();
         serde_json::to_string(&loaded.issues).map_err(error)
     }
 
@@ -55,6 +90,7 @@ impl VectorMapSession {
     pub fn clear(&mut self) {
         self.push_undo();
         self.map = Map::new();
+        self.evidence.clear();
     }
 
     /// Apply a JSON list of vectormap commands, all or nothing. Returns the
@@ -63,10 +99,8 @@ impl VectorMapSession {
         let commands: Vec<Command> = serde_json::from_str(commands).map_err(error)?;
         let before = self.map.clone();
         let changes = self.map.apply_all(&commands).map_err(error)?;
-        self.undo.push(before);
-        if self.undo.len() > UNDO_DEPTH {
-            self.undo.remove(0);
-        }
+        self.remember(before);
+        self.trim_history();
         serde_json::to_string(&changes).map_err(error)
     }
 
@@ -92,12 +126,83 @@ impl VectorMapSession {
             .map(|p| [p[0], p[1], p[2]])
             .collect();
         let before = self.map.clone();
-        let report =
-            ca_core::vector_map::build(&mut self.map, &cloud.inner, &poses, &o).map_err(error)?;
+        let (report, diagnostics) =
+            ca_core::vector_map::build_with_diagnostics(&mut self.map, &cloud.inner, &poses, &o)
+                .map_err(|failure| {
+                    if failure.diagnostic.is_some() {
+                        JsError::new(
+                            &serde_json::to_string(&failure)
+                                .unwrap_or_else(|_| failure.message.clone()),
+                        )
+                    } else {
+                        error(failure)
+                    }
+                })?;
         if self.map != before {
-            self.undo.push(before);
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
+            self.remember(before);
+            self.trim_history();
+        }
+        if !diagnostics.profiles.is_empty() || diagnostics.limited {
+            let old_vertices: usize = self
+                .evidence
+                .iter()
+                .map(|b| {
+                    b.build
+                        .profiles
+                        .iter()
+                        .map(|p| p.geometry.len())
+                        .sum::<usize>()
+                        + b.road_edges.iter().map(|e| e.geometry.len()).sum::<usize>()
+                        + b.captured.values().map(|p| p.points.len()).sum::<usize>()
+                })
+                .sum();
+            let edges = report
+                .lane_edge_inference
+                .as_ref()
+                .map(|r| r.retained_road_edges.as_slice())
+                .unwrap_or(&[]);
+            let ids: std::collections::BTreeSet<_> = diagnostics
+                .profiles
+                .iter()
+                .flat_map(|p| p.boundary_ids.iter().copied())
+                .collect();
+            let needed = diagnostics
+                .profiles
+                .iter()
+                .map(|p| p.geometry.len())
+                .sum::<usize>()
+                + edges.iter().map(|e| e.geometry.len()).sum::<usize>()
+                + ids
+                    .iter()
+                    .filter_map(|id| self.map.boundary(BoundaryId(*id)))
+                    .map(|b| b.geometry.points.len())
+                    .sum::<usize>();
+            if old_vertices + needed <= 100_000 {
+                let captured = ids
+                    .into_iter()
+                    .filter_map(|id| {
+                        self.map
+                            .boundary(BoundaryId(id))
+                            .map(|b| (b.id, b.geometry.clone()))
+                    })
+                    .collect();
+                self.evidence.push(Arc::new(EvidenceBatch {
+                    build: diagnostics,
+                    road_edges: edges.to_vec(),
+                    captured,
+                }));
+            } else if !self
+                .evidence
+                .iter()
+                .any(|b| b.build.limited && b.build.profiles.is_empty())
+            {
+                let mut limited = BuildEvidence::default();
+                limited.limited = true;
+                self.evidence.push(Arc::new(EvidenceBatch {
+                    build: limited,
+                    road_edges: vec![],
+                    captured: HashMap::new(),
+                }));
             }
         }
         serde_json::to_string(&report).map_err(error)
@@ -106,7 +211,8 @@ impl VectorMapSession {
     /// Read-only coverage check of lane centres and both boundaries against source points.
     #[wasm_bindgen(js_name = auditQuality)]
     pub fn audit_quality(&self, cloud: &crate::Cloud) -> Result<String, JsError> {
-        let report = ca_core::vector_map::quality::audit(&self.map, &cloud.inner).map_err(error)?;
+        let report = ca_core::vector_map::quality::audit_with_locations(&self.map, &cloud.inner)
+            .map_err(error)?;
         serde_json::to_string(&report).map_err(error)
     }
 
@@ -142,10 +248,8 @@ impl VectorMapSession {
         )
         .map_err(error)?;
         if self.map != before {
-            self.undo.push(before);
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -167,10 +271,8 @@ impl VectorMapSession {
         }
         .map_err(error)?;
         if self.map != before {
-            self.undo.push(before);
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -192,10 +294,8 @@ impl VectorMapSession {
         }
         .map_err(error)?;
         if self.map != before {
-            self.undo.push(before);
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -216,10 +316,8 @@ impl VectorMapSession {
         let report = ca_core::vector_map::relation_proposals::adopt(&mut self.map, &options)
             .map_err(error)?;
         if report.changed {
-            self.undo.push(before);
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -232,10 +330,8 @@ impl VectorMapSession {
         let before = self.map.clone();
         let report = ca_core::vector_map::relations::edit(&mut self.map, &o).map_err(error)?;
         if report.changed {
-            self.undo.push(before);
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -247,10 +343,8 @@ impl VectorMapSession {
         let report =
             ca_core::vector_map::feature_editing::edit(&mut self.map, &o).map_err(error)?;
         if report.changed {
-            self.undo.push(before);
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
@@ -284,19 +378,33 @@ impl VectorMapSession {
             ca_core::vector_map::discovery::add(&mut self.map, &cloud.inner, &o, &confirmations)
                 .map_err(error)?;
         if self.map != before {
-            self.undo.push(before);
-            if self.undo.len() > UNDO_DEPTH {
-                self.undo.remove(0);
-            }
+            self.remember(before);
+            self.trim_history();
         }
         serde_json::to_string(&report).map_err(error)
     }
 
+    /// Set count and estimated retained-size limits; dropping old steps keeps the map.
+    #[wasm_bindgen(js_name = setHistoryBudget)]
+    pub fn set_history_budget(&mut self, steps: usize, bytes: usize) {
+        self.history_limit = steps.min(UNDO_DEPTH);
+        self.history_budget = bytes;
+        self.trim_history();
+    }
+    #[wasm_bindgen(js_name = clearHistory)]
+    pub fn clear_history(&mut self) {
+        self.undo.clear();
+    }
+    #[wasm_bindgen(js_name = historyBytes)]
+    pub fn history_bytes(&self) -> usize {
+        self.undo.iter().map(|state| state.bytes).sum()
+    }
     /// Undo the last edit; false if there is none.
     pub fn undo(&mut self) -> bool {
         match self.undo.pop() {
-            Some(map) => {
-                self.map = map;
+            Some(state) => {
+                self.map = state.map;
+                self.evidence = state.evidence;
                 true
             }
             None => false,
@@ -385,7 +493,30 @@ impl VectorMapSession {
             .map(|s| json!({"id": s.id, "kind":s.kind, "points": points(&s.geometry), "height": s.height,
                 "geometrySource": s.attributes.get("cloudanalyzer_geometry_source").or_else(|| s.attributes.get_prefixed("lanelet2", "cloudanalyzer_geometry_source")).unwrap_or("imported_or_manual")}))
             .collect();
+        let profiles: Vec<_> = self
+            .evidence
+            .iter()
+            .flat_map(|b| {
+                b.build
+                    .profiles
+                    .iter()
+                    .filter(|p| b.current(map, &p.boundary_ids))
+            })
+            .collect();
+        let road_edges: Vec<_> = self
+            .evidence
+            .iter()
+            .filter(|b| {
+                !b.build.profiles.is_empty()
+                    && b.build
+                        .profiles
+                        .iter()
+                        .all(|p| b.current(map, &p.boundary_ids))
+            })
+            .flat_map(|b| &b.road_edges)
+            .collect();
         json!({
+            "boundaryEvidence": {"profiles": profiles, "roadEdges": road_edges, "limited": self.evidence.iter().any(|b| b.build.limited)},
             "lanes": lanes,
             "boundaries": boundaries,
             "stopLines": stop_lines,
@@ -450,11 +581,37 @@ impl VectorMapSession {
 }
 
 impl VectorMapSession {
-    fn push_undo(&mut self) {
-        self.undo.push(self.map.clone());
-        if self.undo.len() > UNDO_DEPTH {
+    fn trim_history(&mut self) {
+        while !self.undo.is_empty()
+            && (self.undo.len() > self.history_limit || self.history_bytes() > self.history_budget)
+        {
             self.undo.remove(0);
         }
+    }
+    fn remember(&mut self, map: Map) {
+        let evidence_bytes: usize = self
+            .evidence
+            .iter()
+            .map(|batch| {
+                serde_json::to_vec(&batch.build).map_or(0, |v| v.len())
+                    + serde_json::to_vec(&batch.road_edges).map_or(0, |v| v.len())
+                    + batch
+                        .captured
+                        .values()
+                        .map(|line| line.points.len() * 24)
+                        .sum::<usize>()
+            })
+            .sum();
+        let bytes = 2 * (irjson::to_string(&map).len() + evidence_bytes);
+        self.undo.push(UndoState {
+            map,
+            evidence: self.evidence.clone(),
+            bytes,
+        });
+    }
+    fn push_undo(&mut self) {
+        self.remember(self.map.clone());
+        self.trim_history();
     }
 }
 
@@ -467,6 +624,98 @@ impl Default for VectorMapSession {
 #[cfg(test)]
 mod tests {
     #[test]
+    fn evidence_is_read_only_reversed_split_mapped_and_undo_restores_hidden_sources() {
+        let mut points = ca_core::PointCloud::default();
+        for x in -10..=170 {
+            for y in -50..=50 {
+                points.positions.push([x as f64 * 0.2, y as f64 * 0.2, 2.]);
+            }
+        }
+        let cloud = crate::Cloud::unindexed(points.clone());
+        for left_hand in [true, false] {
+            let mut session = super::VectorMapSession::new();
+            let options=serde_json::json!({"segment_length":7.,"physical_anchors_only":true,"left_hand_traffic":left_hand}).to_string();
+            let report = session
+                .build_from_trajectory(&cloud, &[0., 0., 80., 30., 0., 80.], &options)
+                .unwrap();
+            let mut expected = vectormap_core::Map::new();
+            let o = serde_json::from_str(&options).unwrap();
+            let old = ca_core::vector_map::build(
+                &mut expected,
+                &points,
+                &[[0., 0., 80.], [30., 0., 80.]],
+                &o,
+            )
+            .unwrap();
+            assert_eq!(report, serde_json::to_string(&old).unwrap());
+            assert_eq!(session.to_json(), vectormap_io::json::to_string(&expected));
+            let original = session.to_json();
+            let exported = session.export_lanelet2(true);
+            let read = |s: &super::VectorMapSession| {
+                serde_json::from_str::<serde_json::Value>(&s.view()).unwrap()["boundaryEvidence"]
+                    .clone()
+            };
+            let annotations = read(&session);
+            assert_eq!(annotations["profiles"].as_array().unwrap().len(), 3);
+            for p in annotations["profiles"].as_array().unwrap() {
+                assert_eq!(
+                    p["geometry"].as_array().unwrap().len(),
+                    p["evidence"].as_array().unwrap().len()
+                );
+                assert!(p["boundary_ids"].as_array().unwrap().len() > 1);
+                for id in p["boundary_ids"].as_array().unwrap() {
+                    let boundary = session
+                        .map
+                        .boundary(vectormap_core::BoundaryId(id.as_u64().unwrap()))
+                        .unwrap();
+                    let expected_y = p["geometry"][0][1].as_f64().unwrap();
+                    assert!(
+                        boundary
+                            .geometry
+                            .points
+                            .iter()
+                            .all(|q| (q.y - expected_y).abs() < 1e-9)
+                    );
+                }
+            }
+            assert_eq!(session.undo.len(), 1);
+            assert_eq!(session.to_json(), original);
+            assert_eq!(session.export_lanelet2(true), exported);
+            let id = annotations["profiles"][0]["boundary_ids"][0]
+                .as_u64()
+                .unwrap();
+            let edge = session
+                .map
+                .boundary(vectormap_core::BoundaryId(id))
+                .unwrap();
+            let geometry: Vec<_> = edge
+                .geometry
+                .points
+                .iter()
+                .map(|p| [p.x, p.y + 0.1, p.z])
+                .collect();
+            session.apply(&serde_json::json!([{"op":"set_boundary_geometry","boundary":id,"geometry":geometry}]).to_string()).unwrap();
+            assert_eq!(read(&session)["profiles"].as_array().unwrap().len(), 2);
+            assert!(session.undo());
+            assert_eq!(read(&session), annotations);
+            assert_eq!(session.to_json(), original);
+            session
+                .build_from_trajectory(&cloud, &[0., 0., 80., 30., 0., 80.], &options)
+                .unwrap();
+            assert_eq!(session.undo.len(), 1);
+            assert_eq!(read(&session), annotations);
+            session.clear();
+            assert!(read(&session)["profiles"].as_array().unwrap().is_empty());
+            assert!(session.undo());
+            assert_eq!(read(&session), annotations);
+            session.open("draft.json", &original).unwrap();
+            assert!(read(&session)["profiles"].as_array().unwrap().is_empty());
+            assert_eq!(session.to_json(), original);
+            assert_eq!(session.undo.len(), 0);
+        }
+    }
+
+    #[test]
     fn pedestrian_associations_undo_noop_and_json_osm_roundtrip() {
         use vectormap_core::{Rule, SignalKind};
         let (mut map, _) = vectormap_core::samples::intersection();
@@ -478,7 +727,13 @@ mod tests {
             .find(|r| r.rule.signals().contains(&signal))
             .unwrap()
             .id;
-        let mut session = super::VectorMapSession { map, undo: vec![] };
+        let mut session = super::VectorMapSession {
+            map,
+            undo: vec![],
+            evidence: vec![],
+            history_limit: UNDO_DEPTH,
+            history_budget: 128 * 1024 * 1024,
+        };
         let before = session.to_json();
         let options =
             serde_json::json!({"rule_id":rule,"controlled_crosswalks":[crossing]}).to_string();
@@ -535,6 +790,9 @@ mod tests {
         assert_eq!(r["low_support_lanes"].as_array().unwrap().len(), 1);
         assert_eq!(r["lanes"][0]["center"]["fraction"], 1.0);
         assert_eq!(r["lanes"][0]["left"]["fraction"], 0.0);
+        assert_eq!(r["problems"].as_array().unwrap().len(), 2);
+        assert_eq!(r["problems_limited"], false);
+        assert_eq!(r["problems"][0]["reason"], "insufficient_returns");
         assert_eq!(s.to_json(), before);
         assert_eq!(s.undo.len(), undo);
         assert_eq!(
@@ -1047,6 +1305,26 @@ mod tests {
         let p: Value = serde_json::from_str(&s.preview_relations(21).unwrap()).unwrap();
         assert_eq!(p["eligible_count"], 1);
         assert_eq!(p["candidates"][0]["already_linked"], true);
+    }
+
+    #[test]
+    fn history_count_and_size_limits_keep_current_map() {
+        let mut s = super::VectorMapSession::new();
+        s.set_history_budget(2, usize::MAX);
+        for _ in 0..5 {
+            s.clear();
+        }
+        assert_eq!(s.undo_depth(), 2);
+        assert!(s.history_bytes() > 0);
+        let current = s.to_json();
+        s.set_history_budget(2, 1);
+        assert_eq!(s.undo_depth(), 0);
+        assert_eq!(s.to_json(), current);
+        s.set_history_budget(2, usize::MAX);
+        s.clear();
+        s.clear_history();
+        assert_eq!(s.history_bytes(), 0);
+        assert_eq!(s.to_json(), current);
     }
 
     #[test]

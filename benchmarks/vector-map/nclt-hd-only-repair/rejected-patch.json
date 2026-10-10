@@ -1,0 +1,24 @@
+{
+  "request": {
+    "child": true,
+    "action": {
+      "type": "inspect_patch",
+      "candidate_id": 2,
+      "gap_ids": [
+        9,
+        21
+      ],
+      "offset": 0
+    },
+    "reason": "Inspect exact endpoint pairs while preserving every baseline lane, boundary and directed edge; additions must stay within the allocated root gaps."
+  },
+  "candidate_id": 2,
+  "validation_error": "gap patch would overlap a retained lane or connector station interval",
+  "retained_lane_id": 45,
+  "occupied_interval_m": [
+    184,
+    188
+  ],
+  "shared_hd_attempt_spent": false,
+  "baseline_preserved": true
+}

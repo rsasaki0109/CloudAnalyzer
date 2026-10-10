@@ -15,9 +15,208 @@ from typing import Any
 
 import numpy as np
 from ca.vector_map import build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations
+from ca.mapping_job import start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate
+from ca.mapping_run import start_mapping_run, inspect_mapping_run, advance_mapping_run
+from ca.mapping_revision import continue_mapping_run
+from ca.mapping_plan_apply import apply_supported_hd_plan
+from ca.mapping_bundle import export_mapping_run, export_mapping_preview, inspect_mapping_bundle
+from ca.mapping_trajectory import evaluate_mapping_trajectory
+from ca.mapping_trajectory_review import inspect_mapping_trajectory_comparison, compare_mapping_motion_trials
+from ca.mapping_motion_trial import trial_mapping_motion
+from ca.mapping_motion_run import start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair
 
 INSTRUCTIONS = """\
 CloudAnalyzer fixes and measures LiDAR point clouds and SLAM maps on this machine.
+
+Use evaluate_mapping_trajectory on the point-map owner's job_dir to compare saved
+original motion and corrected graph poses against a supplied timestamped reference.
+Declare reference source/license/frame/time basis and whether it was used for
+generation. Results use identical supported timestamps and separate scale-free
+rigid fits. Default alignment fits evaluated positions. Set alignment_prefix_fraction
+below 1 to fit only the chronological prefix and evaluate the disjoint suffix.
+Read fitted/evaluated frame IDs and both results. Save a new external
+report; neither attempts nor map quality/adoption change. Read coverage and both
+results, including regressions. Caller declarations do not establish independence.
+Then use inspect_mapping_trajectory_comparison with the returned report artifact
+to rank bounded windows of evaluated poses by regression or corrected ATE. Read
+exact original frame IDs and corrected-map sensor-origin bounds alongside coverage.
+Bounds locate review regions only; inspect source evidence before any partial repair.
+Density/HD-only repairs freeze motion and cannot fix a trajectory regression.
+For an explicit alternative correction hypothesis, trial_mapping_motion decodes
+the original recording into a NEW job, rebuilds its original odometry chain with
+the exact reference-graph IDs, and applies chosen find_loops/use_gravity booleans.
+Use a reason and a new HD attempt budget. It inherits thinning/dynamic policy,
+not expanded fusion frames or old HD geometry/audits. It never reads references
+for generation, adopts a map or silently repeats failed/partial outputs. Compare
+the child against the same reference/protocol and inspect local changes. Reusing
+the same reference to select policies is exploratory, not unseen-data validation.
+Draft/audit fresh HD geometry explicitly if continuing; moved poses invalidate
+old HD geometry and source audits. This is not a local motion patch.
+Use start_mapping_motion_run to prepare NEW source proposals from the immutable
+trial, with the exact finished baseline owner, its fixed layout/extraction policy
+and an explicit new 2..8 HD budget. Inspect/draft/finish the fresh run. Then
+compare_mapping_motion_maps with the saved baseline/trial trajectory reports;
+changed motion requires original-frame station correspondence, not direct metre
+interval comparison. Read four audits, lost/gained intervals and local regressions.
+The comparison initializes a separate selection at baseline. Use
+choose_mapping_motion_pair with the inspected revision to choose BOTH maps or
+restore baseline together. Old jobs and trial evaluations remain immutable.
+These selections are review drafts with all source, extent and semantic holds.
+Use compare_mapping_motion_trials with exact baseline/candidate evaluation report
+artifacts to compare their corrected trajectories globally and in matching windows.
+It refuses mismatched inputs, evaluation coverage or protocols, and ranks local
+candidate-minus-baseline regressions even when the overall average improves.
+
+After finishing a mapping run, export_mapping_run copies the exact delivered pair
+and final audits to a new portable review ZIP. Supply source-data attribution and
+a byte limit. inspect_mapping_bundle verifies every member without the original
+logs, run directories or native core. Read review.diagnosis and the full audits;
+integrity checks do not prove accuracy. The ZIP cannot resume a mapping job.
+For a large point map, export_mapping_preview retains a bounded display-only
+subset of exact source records and the complete HD map. Saved audits still refer
+to the original full point map, which stays outside that ZIP. Do not use the
+preview as the source of new audits or generation. A map fitting the point cap
+uses the exact full-map package instead; inspect the returned schema/provenance.
+
+To repair another region of a finished map, use continue_mapping_run with a new
+output directory, explicit budget and reason. Candidate 1 retains the exact delivered
+pair without spending an attempt. inspect_hd_plan checks observed missing reference
+intervals against both ground estimators, width requirements and retained HD occupancy
+before lane generation. It performs no lane export or automatic adoption.
+After choosing 1..8 fully supported nonambiguous intervals on retained plan pages,
+apply_supported_hd_plan executes their HD-only draft, combined retention-checked
+patch and baseline comparison with an explicit endpoint-link policy. Completed
+stages are reused on retry; failed attempts are not silently repeated. Read its
+comparison and holds, then finish_retry explicitly or retain the baseline. It
+never adopts the parent automatically or establishes independent accuracy.
+repair_hd starts a gap-only HD child with the
+exact retained point map and source proposal, sharing the repair budget and requiring
+a combined patch before adoption. Local-density child patches preserve earlier
+lanes/connections and outside point records. inspect_protected_density previews a box while retaining every old lane hull plus its saved source-audit radius at all
+heights; retry_local_density uses that exact preview. It can exclude useful new
+evidence and keeps all four audit gates. Keep referenced prior runs accessible.
+
+For the complete agent-driven mapping loop, prefer start_mapping_run(source,
+out_dir, layout_hypothesis). Supply the user's explicit unverified lane layout
+once, without predefined corridor IDs. It generates the point map and proposals,
+then returns decision guidance. Continue autonomously using inspect_mapping_run
+and advance_mapping_run: inspect candidate evidence, draft complete include/defer
+choices, read automatic lane export and both diagnoses, retry within the fixed
+layout/budget, and finish with both artifact sets and unresolved holds. Use the
+refine action with association=trajectory_containing when off-path overlapping
+bands fragment the route. It re-extracts once at unchanged source thresholds;
+original observations/drafts remain saved, and new proposal IDs need fresh inspection.
+After a lane draft, use inspect_connections then explicit connect pairs to test short
+source-supported gaps between consecutive drive pieces. The fixed single-forward-lane
+layout, recorded path, both ground estimators and reopened OSM topology are checked.
+Read local route spans and global longest route separately; connections do not increase
+original corridor extent or prove permitted turns. Failed links retain the prior draft.
+For a combined local HD patch, inspect_connection_region explicitly supplies an
+HD-only bounds_xy envelope containing the unchanged point-update box, with sides
+at most 20 m. Only links touching new repair lanes are offered; all geometry must
+stay inside that HD envelope. Inspect exact geometry and connect seen pairs.
+Point records, retained geometry/edges, width and all four source-audit protocols
+stay fixed. No scope expansion occurs implicitly; failures preserve the prior pair.
+Connections can extend audited connected or gap-patched drafts: inherit all existing
+lanes and directed edges, select only new inspected pairs, and reject any new failures
+on retained source samples in either estimator or saved format.
+Use inspect_gaps to read missing source intervals and aligned raw-return neighborhoods.
+For a thinning hypothesis, retry_pointcloud explicitly reduces scan/map voxel sizes
+once while freezing corrected motion, retained frames, filter policy and thresholds.
+Remaining HD attempts transfer to a child run; inspect its fresh proposal IDs and
+draft there. compare_retry reports actual gained AND lost source intervals, all four
+audits and global route spans. Finish the child, then explicitly finish_retry after
+comparison, or finish the root baseline if the trial is worse. No automatic adoption.
+Alternatively use inspect_unused_frames after gap inspection to find unused raw
+frames observing missing intervals, with interpolated corrected-pose hypotheses
+and consistency checks against both neighboring retained scans. retry_frames
+explicitly fuses inspected eligible IDs, keeping thinning and existing corrected
+poses fixed. ICP's alternative correction is not applied and does not certify
+accuracy. Reference and expanded fusion graphs/trajectories are both retained.
+For a local point update, inspect_local_points with seen gap IDs and explicit
+bounds_xy, then retry_local_frames with the returned preview_file and eligible
+frame IDs. Alternatively inspect_local_density with seen gap IDs and bounds_xy,
+then retry_local_density with that exact preview_file and bounded thinning options;
+this keeps the original retained frames and needs no unused-frame inspection.
+Both generate the full fusion candidate but apply only that XY column
+at all heights, preserving outside PLY records and attributes exactly. Existing HD
+source support must not regress. Use a combined HD patch inside the same box before
+compare_retry and finish_retry; finish the original root map to reject the trial.
+This shares the single root point-map retry and transferred HD budget; compare
+actual audited maps before explicitly delivering a trial or baseline pair.
+For a local HD repair, draft only inspected missing ranges in the retry child.
+When an isolated addition has a boundary height mismatch, inspect_heights pages
+offer adjacent interior vertices inside the frozen local point-update box.
+Use edit_heights with that exact preview_file and seen vertices, each with an
+explicit nonzero delta_z_m at most 0.1 m and reason. Boundary XY/endpoints, all
+unchosen Z, IDs, semantics, routes and point-map files remain fixed. This spends
+one shared attempt and reserves one for the combined patch; one height trial is
+allowed per child. All addition traces need full support in four unchanged
+audits, unchanged sample counts and an exact OSM roundtrip. Original source
+curves remain observations; height edits are hypotheses, not accuracy claims.
+Failures retain the trial and audits without publishing a replacement draft.
+Use inspect_patch with gap IDs inspected through the root, examine exact geometric
+endpoint pairs, then patch_gaps with explicit pair decisions ([] when isolated).
+This keeps original lane geometry, IDs, metadata and connections, adds only inside
+selected gaps, and audits all retained/new traces against the actual child point map.
+New lanes need full support from both estimators in IR and reopened OSM; no new
+failure locations are allowed on retained lanes. A patch spends one transferred
+HD attempt. Point replacement is local only for explicit local retry strategies;
+HD source support does not establish legal connectivity.
+Compare and finish explicitly; held patches retain their full checks and baseline.
+Use the returned revision for every action. Interrupted processing actions can resume without
+replaying completed stages. Do not stop after startup or a single failed trial;
+finish with a useful retained draft or explain why no HD draft can be generated.
+No LLM is embedded: you are the reasoning agent. Only initial assumptions need
+operator input; per-piece lane JSON is bound automatically from the fixed layout.
+
+For an agent-controlled raw-recording-to-both-maps job, use start_mapping_job with
+a NEW output directory. It makes the point-cloud map and corrected trajectory and
+records hashes and reports. Read inspect_mapping_job, then propose_mapping_corridors
+to find low-surface bands and geometric corridor candidates before assigning lanes.
+Read inspect_mapping_corridors (paged index or candidate geometry) for widths and
+edge evidence. Paired curb profiles can suggest a width; coverage gaps and search
+limits cannot. Branches, absent ground anchors and different levels remain unresolved.
+The proposal stage is cached and does not spend HD attempts. It does not infer
+road use, lane count/direction, speed or automatically adopt geometry. After reading
+the proposals, use generate_mapping_geometry with explicit include/defer decisions
+and reasons to retain selected source curves in editable IR without lane assumptions.
+Optional ranges use observed stations; included bands cannot overlap input stations.
+Read inspect_mapping_geometry for curves, decisions and full-extent holds. Geometry
+drafts use the shared HD attempt budget, preserve existing selections, infer no lanes
+and are not selectable as audited lane maps. They publish IR and an evidence report;
+no OSM is published because standalone unknown ways are dropped on Lanelet2 reload.
+To test a lane layout inside those saved curves, use generate_mapping_corridor_lanes
+with explicit source_span_hypothesis boundary policy and per-centre-curve lane specs.
+Specify lane fractions, direction, kind=driving, one_way, speed and minimum width;
+fractions partition the observed span as an unverified layout hypothesis. Outer
+curves stay fixed; insufficient widths retain failed attempts without silently
+widening or changing lane count. This uses one shared HD attempt and saves Lanelet2,
+IR, projector and four source audits after verifying OSM lane/geometry reload.
+Read diagnose_mapping_candidate; full-drive extent and semantic/source holds remain.
+For an explicitly assumed lane-map hypothesis, call generate_mapping_candidate
+with explicit road_options and a reason for each hypothesis. Road options require
+forward_lanes, backward_lanes, left_hand_traffic, lane_width and speed_limit; other
+build_vector_map fitting options are available. Read native failures, source audits,
+export warnings and retained extent between trials. Use diagnose_mapping_candidate
+to separate saved per-lane/trace height mismatches, insufficient returns and endpoint
+holds without rerunning generation or spending attempts. These failures are evidence,
+not proven root causes; inspect XY and level alignment before changing only Z.
+New jobs also retain bounded problem locations and local low-return heights in
+the original frame. Check problems_available/problems_limited before treating the
+preview as complete; summary counts have an independent budget. Local heights may
+belong to another level. New jobs retain both the legacy low-quantile audit and
+ground_consensus evidence from the lowest spatially supported source layer. Read
+both protocols: source_quality_passed requires both, and disagreement needs review.
+local_ground_height experimentally uses that layer for seed heights; test it with
+unchanged priors and extent, and do not interpret source support as accuracy.
+Lane counts, permitted traffic,
+width and speed are assumptions, not established by point-cloud support. Do not
+reduce lane count or retained extent merely to raise a coverage score. Attempts
+are bounded; failed trials preserve earlier artifacts. Select an audited candidate
+with select_mapping_candidate and an explanation; low source support and unresolved
+semantics remain explicit. Selection never certifies deployment readiness. No LLM
+is embedded in these tools: the calling agent makes and records the decisions.
 
 A SLAM session folder holds a poses file (g2o, or a KITTI / TUM trajectory) and one scan
 per pose (PCD, PLY, LAS/LAZ, XYZ, KITTI .bin) named by frame number. Look at a folder with
@@ -282,7 +481,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
+TOOLS = [start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair, compare_mapping_motion_trials, trial_mapping_motion, inspect_mapping_trajectory_comparison, evaluate_mapping_trajectory, apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

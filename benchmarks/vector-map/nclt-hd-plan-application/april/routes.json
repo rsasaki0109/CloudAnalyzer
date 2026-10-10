@@ -1,0 +1,214 @@
+{
+  "before": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 12,
+    "longest_route_station_span_m": 34,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 10,
+        "to_m": 18,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          42
+        ],
+        "from_m": 26,
+        "to_m": 30,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 42,
+        "to_m": 44,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          9
+        ],
+        "from_m": 56,
+        "to_m": 58,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 62,
+        "to_m": 70,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 76,
+        "to_m": 104,
+        "station_span_m": 28
+      },
+      {
+        "lane_ids": [
+          18,
+          39,
+          21
+        ],
+        "from_m": 110,
+        "to_m": 124,
+        "station_span_m": 14
+      },
+      {
+        "lane_ids": [
+          24
+        ],
+        "from_m": 128,
+        "to_m": 162,
+        "station_span_m": 34
+      },
+      {
+        "lane_ids": [
+          27
+        ],
+        "from_m": 166,
+        "to_m": 172,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          30
+        ],
+        "from_m": 178,
+        "to_m": 184,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          33
+        ],
+        "from_m": 198,
+        "to_m": 200,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          36
+        ],
+        "from_m": 240,
+        "to_m": 242,
+        "station_span_m": 2
+      }
+    ],
+    "legal_routing_verified": false
+  },
+  "after": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 11,
+    "longest_route_station_span_m": 34,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 10,
+        "to_m": 18,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          42
+        ],
+        "from_m": 26,
+        "to_m": 30,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 42,
+        "to_m": 44,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          9
+        ],
+        "from_m": 56,
+        "to_m": 58,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 62,
+        "to_m": 70,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 76,
+        "to_m": 104,
+        "station_span_m": 28
+      },
+      {
+        "lane_ids": [
+          18,
+          39,
+          21
+        ],
+        "from_m": 110,
+        "to_m": 124,
+        "station_span_m": 14
+      },
+      {
+        "lane_ids": [
+          24
+        ],
+        "from_m": 128,
+        "to_m": 162,
+        "station_span_m": 34
+      },
+      {
+        "lane_ids": [
+          27
+        ],
+        "from_m": 166,
+        "to_m": 172,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          30,
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          33
+        ],
+        "from_m": 178,
+        "to_m": 200,
+        "station_span_m": 22
+      },
+      {
+        "lane_ids": [
+          36
+        ],
+        "from_m": 240,
+        "to_m": 242,
+        "station_span_m": 2
+      }
+    ],
+    "legal_routing_verified": false
+  }
+}

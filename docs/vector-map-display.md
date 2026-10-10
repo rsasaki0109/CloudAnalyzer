@@ -27,6 +27,12 @@ that would hide kinks in the saved map. Use **Edit vertices** to correct a share
 boundary, **Undo** to revert it, and **Save for Autoware** to download
 `lanelet2_map.osm` and `map_projector_info.yaml`.
 
+Dragging keeps Z. Select a yellow handle to open **Edit boundary vertex height**,
+or choose a boundary and vertex in that panel. It shows original coordinates and
+affected lanes. **Apply height** changes only the selected vertex's Z; shared lanes
+update together. **Focus vertex** frames the yellow cross. Inspect source points
+and [recheck source coverage](vector-map-quality.md) after editing.
+
 ## Real intersection check
 
 The display was checked on the official Autoware `sample-map-planning` point
@@ -54,3 +60,10 @@ review requirements and limitations of each workflow.
 [Feature geometry editing](vector-map-feature-editing.md) supports XY dragging,
 numeric XYZ changes and signal housing height adjustments. Observed paint and
 stored lamps retain their source coordinates; edits are marked for review.
+
+## Build evidence inspection
+
+After generating roads in this session, enable the optional [build evidence display](vector-map-evidence.md)
+to inspect selected paint/curb-source dots, inferred connectors and saved pre-trim
+road-edge drafts. Imported maps have no build history. These switches do not change
+map geometry or exports; source history is not persisted in the map.

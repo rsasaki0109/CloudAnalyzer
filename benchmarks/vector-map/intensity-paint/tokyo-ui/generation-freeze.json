@@ -1,0 +1,19 @@
+{
+  "reference_inputs": [],
+  "source_commit": "38d24a0ef2c4681e1278dca1fbc5cd0c48198525",
+  "source_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+  "inputs_sha256": "1b85b223600f12b50abbce7b72543e2d4e7f027016e7524008d946ca0190aa1b",
+  "executable_sha256": "dfe03d288b8a11ee00b28582e28bc07959b78e086db593f7c476aae2ff749be6",
+  "artifact_sha256": {
+    "after-0-audit.json": "3bccd3cda685230ab92eb420973cdb8e20e61ceb3b560c31aa516364fb6dadec",
+    "after-0-profiles.json": "3a685a5063fcddc8e82bc948a5c082c8560c21b50bddb3918c140e3cbd3e7cf6",
+    "after-0.json": "1aec95ad76dda986c195b5ba64c3864d366d4f28409f3eae312117289cbb2211",
+    "after-0.osm": "264c749e735b0a7ac1a71360f3e19ebb5a0816503928b1cb98d84032b1f3b725",
+    "before-0-audit.json": "ccb81f42076a87a5d1de426770c1ac2f2e785c8a67c64f6e57768f6a9c572030",
+    "before-0-profiles.json": "346694d43c464025c7f0f7a1bc70edc47c19dfb78f579e7ae060b1a9dd671b8e",
+    "before-0.json": "1aec95ad76dda986c195b5ba64c3864d366d4f28409f3eae312117289cbb2211",
+    "before-0.osm": "264c749e735b0a7ac1a71360f3e19ebb5a0816503928b1cb98d84032b1f3b725",
+    "comparison.json": "6f13ad45bac833ccb765f9e749110d8c532433a1a54b5588259c1102c41b67d3",
+    "trajectory-0.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b"
+  }
+}

@@ -1,0 +1,1045 @@
+{
+  "extraction": {
+    "added_length": 27.52554784442824,
+    "anchored_prior_vertices": 61,
+    "coverage_edge_anchor_candidates_ignored": 0,
+    "curb_vertices": 10,
+    "fitted_vertices": 112,
+    "generated_length": 27.52554784442824,
+    "intensity_used": true,
+    "intensity_vertices": 36,
+    "joined_connections": 0,
+    "lanes": 12,
+    "maximum_fit_displacement": 0.4999999999997052,
+    "observed_fraction": [
+      0.0625,
+      0.0,
+      0.75,
+      0.25,
+      0.8125,
+      0.0,
+      1.0
+    ],
+    "paint_corridor": {
+      "applied": false,
+      "contrasted_points": 0,
+      "eligible_bundles": 0,
+      "heading_correction_degrees": null,
+      "limited": true,
+      "longitudinal_components": 0,
+      "measured_lane_widths_m": [],
+      "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+      "residual_p90_m": null,
+      "roi_points": 250001,
+      "tracks": [],
+      "white_candidates": 0
+    },
+    "paint_divider": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "contrasted_points": 0,
+      "curb_pair_sections": 0,
+      "eligible_tracks": 0,
+      "heading_correction_degrees": null,
+      "limited": false,
+      "longest_supported_run": 0,
+      "maximum_divider_movement_m": 0.0,
+      "reason": "requires an explicitly configured two-lane road with generated geometry",
+      "residual_p90_m": null,
+      "roi_points": 0,
+      "sampled_sections": 0,
+      "track": null
+    },
+    "rejected_curb_candidates": 23,
+    "reused_intervals": 0,
+    "reused_length": 0.0,
+    "rgb_paint_vertices": 0,
+    "roads": 2,
+    "sampled_sections": 17,
+    "support_edge_vertices": 0,
+    "surface_fit": {
+      "candidate_sections": 17,
+      "deferred_length_m": 3.999911602239319,
+      "discarded_short_stretches": 0,
+      "evaluated_path_length_m": 31.525459446667558,
+      "maximum_lane_width_m": 5.023495392344188,
+      "minimum_lane_width_m": 2.418869099353294,
+      "preserved_candidate_geometry": true,
+      "rejected_intervals": 2
+    },
+    "trace_alignment": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "curb_pair_sections": 0,
+      "interquartile_range_m": null,
+      "longest_supported_run": 0,
+      "median_lateral_shift_m": null,
+      "reason": "paired curbs need a majority of sections and three consecutive observations",
+      "sampled_sections": 17,
+      "shift_xy": [
+        0.0,
+        0.0
+      ]
+    },
+    "tracked_vertices": 72,
+    "trajectory_length": 31.526528124121423,
+    "unsupported_sections": 0,
+    "warnings": [
+      "Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.",
+      "4.00 m of the traced/recorded path was deferred; 2 intervals failed centre/boundary source checks; 0 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",
+      "RGB paint corridor was held: paint fit budget exceeded; no corridor selected from a partial scan. Existing extraction rules were used; this is not a negative road-marking diagnosis.",
+      "Interior RGB paint correction held: requires an explicitly configured two-lane road with generated geometry. Existing geometry retained.",
+      "Matching requires centre, both boundaries, travel direction and ground height to agree. Unmatched or ambiguous overlaps may remain and need review; this does not align drifting survey frames."
+    ],
+    "width_prior_vertices": 66
+  },
+  "name": "arterial-north",
+  "quality": {
+    "cloud_points": 1883866,
+    "ground_height_tolerance_m": 0.3,
+    "ground_radius_m": 0.75,
+    "lanes": [
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 8,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 9,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 10,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 11,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 12,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "lane": 13,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 14,
+          "start_supported": true,
+          "supported": 14
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 59,
+          "start_supported": true,
+          "supported": 59
+        },
+        "lane": 21,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 58,
+          "start_supported": true,
+          "supported": 58
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 22,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 60,
+          "start_supported": true,
+          "supported": 60
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "lane": 23,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 61,
+          "start_supported": true,
+          "supported": 61
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        },
+        "lane": 24,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 62,
+          "start_supported": true,
+          "supported": 62
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 64,
+          "start_supported": true,
+          "supported": 64
+        },
+        "lane": 25,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 63,
+          "start_supported": true,
+          "supported": 63
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        },
+        "lane": 26,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 66,
+          "start_supported": true,
+          "supported": 66
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 65,
+          "start_supported": true,
+          "supported": 65
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "lane": 34,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "lane": 35,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "lane": 36,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 23,
+          "start_supported": true,
+          "supported": 23
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        },
+        "lane": 37,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        },
+        "lane": 38,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 25,
+          "start_supported": true,
+          "supported": 25
+        },
+        "lane": 39,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 25,
+          "start_supported": true,
+          "supported": 25
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 24,
+          "start_supported": true,
+          "supported": 24
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        },
+        "lane": 47,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 41,
+          "start_supported": true,
+          "supported": 41
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        },
+        "lane": 48,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        },
+        "lane": 49,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 42,
+          "start_supported": true,
+          "supported": 42
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        },
+        "lane": 50,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 43,
+          "start_supported": true,
+          "supported": 43
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        },
+        "lane": 51,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        },
+        "lane": 52,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 45,
+          "start_supported": true,
+          "supported": 45
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 44,
+          "start_supported": true,
+          "supported": 44
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 60,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 61,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 62,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 63,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 64,
+        "left": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      },
+      {
+        "center": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        },
+        "lane": 65,
+        "left": {
+          "end_supported": true,
+          "fraction": 0.9411764705882353,
+          "height_mismatches": 1,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 16
+        },
+        "needs_review": false,
+        "right": {
+          "end_supported": true,
+          "fraction": 1.0,
+          "height_mismatches": 0,
+          "insufficient_returns": 0,
+          "samples": 17,
+          "start_supported": true,
+          "supported": 17
+        }
+      }
+    ],
+    "limited": false,
+    "low_support_lanes": [],
+    "malformed_lanes": [],
+    "minimum_support_fraction": 0.9,
+    "omitted_lanes": [],
+    "sample_budget": 100000,
+    "sampled_points": 2877,
+    "sampling_step_m": 0.5,
+    "warnings": [
+      "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+    ]
+  }
+}

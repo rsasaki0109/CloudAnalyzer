@@ -59,6 +59,7 @@ version = "0.1.0"
 dependencies = [
  "ca-core",
  "js-sys",
+ "serde",
  "serde_json",
  "vectormap-core",
  "vectormap-io",

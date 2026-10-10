@@ -3,6 +3,7 @@
 import json
 import asyncio
 import sys
+import os
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from threading import Thread
@@ -63,6 +64,89 @@ def test_native_source_quality_distinguishes_edges_and_preserves_files(tmp_path)
     assert q["lanes"][0]["left"]["fraction"] == 0
     assert q["lanes"][0]["left"]["insufficient_returns"] > 0
     assert [p.read_bytes() for p in (cloud, vector_map)] == original
+
+    if hasattr(native, "audit_vector_map_quality_details"):
+        ir = json.loads(vector_map.read_text())
+        for boundary in ir["boundaries"]:
+            for point in boundary["geometry"]:
+                point[2] += 1
+        vector_map.write_text(json.dumps(ir))
+        original = [p.read_bytes() for p in (cloud, vector_map)]
+        details = json.loads(native.audit_vector_map_quality_details(str(cloud), str(vector_map)))
+        summary = json.loads(native.audit_vector_map_quality(str(cloud), str(vector_map)))
+        quality = details["quality"]
+        assert {k:v for k,v in quality.items() if k not in {"problems", "problems_limited", "ground_estimator"}} == summary["quality"]
+        assert quality["problems_limited"] is False
+        assert {p["reason"] for p in quality["problems"]} == {"height_mismatch", "insufficient_returns"}
+        for problem in quality["problems"]:
+            assert len(problem["points"]) == len(problem["source_heights_m"])
+            if problem["reason"] == "height_mismatch":
+                assert problem["curve"] == "center"
+                assert all(z == 2 for z in problem["source_heights_m"])
+                assert all(p[2] == 3 for p in problem["points"])
+            else:
+                assert all(z is None for z in problem["source_heights_m"])
+        assert [p.read_bytes() for p in (cloud, vector_map)] == original
+
+
+def test_ground_consensus_audit_keeps_density_disagreement_and_inputs(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "audit_vector_map_ground_consensus_details"):
+        pytest.skip("installed core predates ground-consensus evidence")
+    x, y = np.meshgrid(np.arange(-1, 11.01, .2), np.arange(-3, 3.01, .2))
+    header = laspy.LasHeader(point_format=3, version="1.2")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x = np.tile(x.ravel(), 13)
+    data.y = np.tile(y.ravel(), 13)
+    data.z = np.repeat([2., *[5. + .05 * i for i in range(1, 13)]], x.size)
+    cloud = tmp_path / "layered.las"
+    data.write(cloud)
+    vector_map = tmp_path / "map.json"
+    vector_map.write_text(json.dumps({"format": "vectormap-ir", "version": 1,
+        "lanes": [{"id": 3, "kind": "driving", "left": 1, "right": 2}],
+        "boundaries": [{"id": i+1, "kind": {"type": "lane_marking", "pattern": "solid"},
+                        "geometry": [[0, offset, 2], [10, offset, 2]]} for i, offset in enumerate([2, -2])]}))
+    original = [p.read_bytes() for p in (cloud, vector_map)]
+    legacy = json.loads(native.audit_vector_map_quality_details(str(cloud), str(vector_map)))["quality"]
+    alternate = json.loads(native.audit_vector_map_ground_consensus_details(str(cloud), str(vector_map)))["quality"]
+    assert legacy["low_support_lanes"] == [3]
+    assert alternate["low_support_lanes"] == []
+    assert legacy["ground_estimator"]["model"] == "low_quantile"
+    assert alternate["ground_estimator"] == {"model": "lowest_supported_layer", "layer_height_m": .15,
+        "xy_cell_m": .2, "minimum_cells": 3, "minimum_triangle_area_m2": .01}
+    assert legacy["sampled_points"] == alternate["sampled_points"]
+    assert [p.read_bytes() for p in (cloud, vector_map)] == original
+
+
+def test_local_ground_height_cli_retains_lanes_and_exposes_estimator_evidence(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    if not hasattr(native, "audit_vector_map_ground_consensus_details"):
+        pytest.skip("installed core predates local-height generation")
+    x, y = np.meshgrid(np.arange(-1, 21.01, .1), np.arange(-6, 3.01, .1))
+    header = laspy.LasHeader(point_format=3, version="1.2")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y = x.ravel(), y.ravel()
+    data.z = np.where(np.abs(y.ravel()) < .55, 7., 2.)
+    cloud, poses = tmp_path / "source.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    poses.write_text("timestamp,x,y,z\n0,1,0,99\n1,19,0,99\n")
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(poses), "--out",
+                                    str(tmp_path / "local"), "--local-ground-height"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report["options"]["local_ground_height"] is True
+    assert report["extraction"]["local_ground_sections"] > 0
+    assert report["extraction"]["local_ground_estimator"]["model"] == "lowest_supported_layer"
+    assert report["extraction"]["lanes"] == 2
+    assert report["extraction"]["generated_length"] > 17
+    audit = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))
+    assert audit["quality"]["low_support_lanes"] == []
 
 
 def test_source_only_equipment_preview_confirm_cli_replay_and_failed_publication(tmp_path):
@@ -307,7 +391,8 @@ def test_signal_mcp_spatial_copc_publishes_preview(junction_survey, tmp_path):
     _, source = junction_survey
     fixture = Path(__file__).parent / "data" / "signal.copc.laz"
     server = StdioServerParameters(command=sys.executable,
-        args=["-c", "from ca.mcp_server import main; main()"], cwd=str(Path(__file__).resolve().parents[1]))
+        args=["-c", "from ca.mcp_server import main; main()"], cwd=str(Path(__file__).resolve().parents[1]),
+        env={"PYTHONPATH": os.environ["PYTHONPATH"]} if "PYTHONPATH" in os.environ else None)
     async def run():
         async with stdio_client(server) as (read, write):
             async with ClientSession(read, write) as session:
@@ -842,3 +927,238 @@ def test_signal_target_preview_adoption_rejection_staleness_and_roundtrip(tmp_pa
     with pytest.raises(FileExistsError):
         propose_vector_map_relations(str(source), 21, candidate_key="crosswalk:10", map_snapshot=preview["map_snapshot"], out_dir=str(output))
     assert source.read_bytes() == original
+
+
+def test_scan_limits_do_not_shift_inferred_lanes_with_physical_anchors(tmp_path):
+    import numpy as np
+    native = pytest.importorskip("cloudanalyzer_core")
+    cloud = tmp_path / "clipped.xyz"
+    cloud.write_text("".join(f"{x/5} {y/5} 2\n" for x in range(201) for y in range(-21, 15)))
+    trajectory = tmp_path / "drive.csv"
+    trajectory.write_text("timestamp,x,y,z\n0,3,0,50\n1,37,0,50\n")
+    original = cloud.read_bytes()
+    def internal(report):
+        doc = json.loads(Path(report["files"]["editable_map"]).read_text())
+        def bid(value):
+            return value if isinstance(value, int) else value["boundary"]
+        common = {bid(doc["lanes"][0][s]) for s in ("left", "right")} & {bid(doc["lanes"][1][s]) for s in ("left", "right")}
+        line = next(b["geometry"] for b in doc["boundaries"] if b["id"] in common)
+        assert np.allclose(np.asarray(line)[:, 2], 2.)
+        return float(np.median(np.asarray(line)[:, 1]))
+    for tracked in (True, False):
+        legacy = build_vector_map(str(cloud), str(trajectory), str(tmp_path / f"legacy-{tracked}"), track_boundaries=tracked)
+        guarded = build_vector_map(str(cloud), str(trajectory), str(tmp_path / f"guarded-{tracked}"), track_boundaries=tracked, physical_anchors_only=True)
+        assert guarded["extraction"]["coverage_edge_anchor_candidates_ignored"] > 0
+        assert legacy["extraction"]["coverage_edge_anchor_candidates_ignored"] == 0
+        assert internal(guarded) == pytest.approx(-1.75, abs=.02)
+        assert internal(legacy) - internal(guarded) > .5
+        assert guarded["extraction"]["support_edge_vertices"] > 0  # Geometry remains available.
+        assert not json.loads(native.audit_vector_map_quality(str(cloud), guarded["files"]["editable_map"]))["quality"]["low_support_lanes"]
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trajectory), "--out", str(tmp_path/"cli"), "--physical-anchors-only"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    assert report["options"]["physical_anchors_only"] is True
+    assert internal(report) == pytest.approx(-1.75, abs=.02)
+    assert cloud.read_bytes() == original
+
+
+def test_paired_source_curbs_translate_a_straight_trace_only_when_requested(tmp_path):
+    native = pytest.importorskip("cloudanalyzer_core")
+    cloud, trace = tmp_path / "curbs.xyz", tmp_path / "drive.csv"
+    cloud.write_text("".join(f"{x/10} {y/10+.03} {2.2 if not -1.8 <= y/10+.03 <= 5.4 else 2}\n"
+                           for x in range(321) for y in range(-140,141)))
+    trace.write_text("timestamp,x,y,z\n0,2,0,80\n1,30,0,80\n")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "default"))
+    assert "align_trace_to_curbs" not in default["options"]
+    assert default["extraction"]["trace_alignment"] is None
+    result = CliRunner().invoke(app,["vectormap-build",str(cloud),str(trace),"--out",str(tmp_path / "aligned"),
+                                    "--align-trace-to-curbs","--fit-source-surface","--physical-anchors-only"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    alignment = report["extraction"]["trace_alignment"]
+    assert alignment["applied"] and alignment["shift_xy"][1] == pytest.approx(3.55, abs=.21)
+    assert report["extraction"]["lanes"] == 2 and report["options"]["align_trace_to_curbs"] is True
+    quality = json.loads(native.audit_vector_map_quality(str(cloud),report["files"]["editable_map"]))
+    assert not quality["quality"]["low_support_lanes"] and not quality["quality"]["limited"]
+    document = json.loads(Path(report["files"]["editable_map"]).read_text(encoding="utf-8"))
+    assert all(p[2] < 2.3 for b in document["boundaries"] for p in b["geometry"])
+    assert (cloud.read_bytes(), trace.read_bytes()) == original
+
+
+def test_rgb_corridor_cli_measures_spacing_but_reports_sparse_extensions(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(-2, 32.001, .1), np.arange(-9, 10.001, .1))
+    x, y = x.ravel(), y.ravel()
+    white = np.zeros(len(x), dtype=bool)
+    for i, offset in enumerate([-.25, 2.75, 5.75]):
+        span = (x >= 4) & (x <= 6) if i == 2 else (np.rint(x * 10).astype(int) % 80 < 40)
+        white |= (abs(y - (offset - .04 * x)) < .055) & span
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x, y, 12 + .02 * x
+    data.red = data.green = data.blue = np.where(white, 230, 70).astype(np.uint16) * 256
+    cloud, trace = tmp_path / "paint.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    trace.write_text("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "default"))
+    assert "fit_paint_corridor" not in default["options"]
+    assert default["extraction"]["paint_corridor"] is None
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trace), "--out", str(tmp_path / "paint"),
+                                    "--fit-paint-corridor", "--fit-source-surface"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    extraction = report["extraction"]
+    paint = extraction["paint_corridor"]
+    assert report["options"]["fit_paint_corridor"] is True
+    assert paint["applied"] and not paint["limited"]
+    assert paint["measured_lane_widths_m"] == pytest.approx([3, 3], abs=.04)
+    assert paint["tracks"][0]["extrapolated_length_m"] > 25
+    assert extraction["rgb_paint_vertices"] > 0 and extraction["width_prior_vertices"] > 0
+    assert extraction["lanes"] == 2
+    quality = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))["quality"]
+    assert not quality["low_support_lanes"] and not quality["limited"]
+    assert (cloud.read_bytes(), trace.read_bytes()) == original
+
+
+def test_rgb_divider_cli_corrects_one_line_guarded_by_source_curbs(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(-2, 32.001, .1), np.arange(-8, 8.001, .1) + .03)
+    x, y = x.ravel(), y.ravel()
+    t = y + .02 * x
+    white = (abs(t) < .055) & (np.rint(x * 10).astype(int) % 80 < 40)
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x, y, 12 + .01 * x + np.where((t < -3.9) | (t > 3.8), .2, 0.)
+    data.red = data.green = data.blue = np.where(white, 230, 70).astype(np.uint16) * 256
+    cloud, trace = tmp_path / "divider.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    trace.write_text("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "default"))
+    assert "fit_paint_divider" not in default["options"]
+    assert "paint_divider" not in default["extraction"]
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trace), "--out", str(tmp_path / "corrected"),
+                                    "--fit-paint-divider", "--fit-source-surface", "--physical-anchors-only"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    fit = report["extraction"]["paint_divider"]
+    assert fit["applied"] and not fit["limited"]
+    assert fit["curb_pair_sections"] * 2 > fit["sampled_sections"]
+    assert fit["track"]["interpolated_length_m"] > 8
+    assert report["options"]["fit_paint_divider"] is True
+    document = json.loads(Path(report["files"]["editable_map"]).read_text(encoding="utf-8"))
+    def bid(value):
+        return value if isinstance(value, int) else value["boundary"]
+    shared = {bid(document["lanes"][0][s]) for s in ("left", "right")} & {bid(document["lanes"][1][s]) for s in ("left", "right")}
+    middle = next(b["geometry"] for b in document["boundaries"] if b["id"] in shared)
+    assert all(abs(p[1] + .02 * p[0]) < .06 and p[2] < 12.4 for p in middle)
+    quality = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))["quality"]
+    assert not quality["low_support_lanes"] and not quality["limited"]
+    assert (cloud.read_bytes(), trace.read_bytes()) == original
+
+
+def test_lane_edge_width_prior_retains_road_edge_candidates_separately(tmp_path):
+    import numpy as np
+    import laspy
+    native = pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(-2, 32.001, .1), np.arange(-8, 8.001, .1) + .03)
+    x, y = x.ravel(), y.ravel()
+    t = y + .02 * x
+    white = (abs(t) < .055) & (np.rint(x * 10).astype(int) % 80 < 40)
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x, y, 12 + .01 * x + np.where((t < -4.8) | (t > 3.2), .2, 0.)
+    data.red = data.green = data.blue = np.where(white, 230, 70).astype(np.uint16) * 256
+    cloud, trace = tmp_path / "divider.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    trace.write_text("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "default"))
+    assert "infer_lane_edges" not in default["options"]
+    assert "lane_edge_inference" not in default["extraction"]
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trace), "--out", str(tmp_path / "corrected"),
+                                    "--infer-lane-edges", "--fit-paint-divider", "--fit-source-surface", "--physical-anchors-only"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    fit = report["extraction"]["paint_divider"]
+    assert fit["applied"] and not fit["limited"]
+    assert fit["curb_pair_sections"] * 2 > fit["sampled_sections"]
+    assert fit["track"]["interpolated_length_m"] > 8
+    assert report["options"]["fit_paint_divider"] is True
+    document = json.loads(Path(report["files"]["editable_map"]).read_text(encoding="utf-8"))
+    def bid(value):
+        return value if isinstance(value, int) else value["boundary"]
+    shared = {bid(document["lanes"][0][s]) for s in ("left", "right")} & {bid(document["lanes"][1][s]) for s in ("left", "right")}
+    middle = next(b["geometry"] for b in document["boundaries"] if b["id"] in shared)
+    assert all(abs(p[1] + .02 * p[0]) < .06 and p[2] < 12.4 for p in middle)
+    inferred = report["extraction"]["lane_edge_inference"]
+    assert inferred["applied"] and not inferred["limited"]
+    assert not inferred["sides"][0]["applied"] and inferred["sides"][1]["applied"]
+    assert inferred["sides"][1]["maximum_movement_m"] > .7
+    assert len(inferred["retained_road_edges"]) == 1
+    assert "curb" in inferred["retained_road_edges"][0]["evidence"]
+    assert report["options"]["infer_lane_edges"] is True
+    assert "not detected outer paint" in " ".join(report["extraction"]["warnings"])
+    outer_id = next(bid(document["lanes"][1][side]) for side in ("left", "right") if bid(document["lanes"][1][side]) not in shared)
+    outer = next(b["geometry"] for b in document["boundaries"] if b["id"] == outer_id)
+    # Lane direction may reverse its boundary reference; compare unordered vertices.
+    distances = [min(np.linalg.norm(np.asarray(p)[:2] - np.asarray(q)[:2]) for q in middle) for p in outer]
+    assert distances == pytest.approx([3.5] * len(distances), abs=.01)
+    quality = json.loads(native.audit_vector_map_quality(str(cloud), report["files"]["editable_map"]))["quality"]
+    assert not quality["low_support_lanes"] and not quality["limited"]
+    assert (cloud.read_bytes(), trace.read_bytes()) == original
+
+
+def test_intensity_paint_cli_is_explicit_and_keeps_raw_channels(tmp_path):
+    import numpy as np
+    import laspy
+    pytest.importorskip("cloudanalyzer_core")
+    x, y = np.meshgrid(np.arange(-2, 32.001, .1), np.arange(-9, 10.001, .1))
+    x, y = x.ravel(), y.ravel()
+    white = np.zeros(len(x), dtype=bool)
+    for i, offset in enumerate([-.25, 2.75, 5.75]):
+        span = (x >= 4) & (x <= 6) if i == 2 else (np.rint(x * 10).astype(int) % 80 < 40)
+        white |= (abs(y - (offset - .04 * x)) < .055) & span
+    header = laspy.LasHeader(point_format=7, version="1.4")
+    header.scales = [.001] * 3
+    data = laspy.LasData(header)
+    data.x, data.y, data.z = x, y, 12 + .02 * x
+    data.red = data.green = data.blue = np.full(len(x), 65535, dtype=np.uint16)
+    data.intensity = np.where(white, 60000, 18000).astype(np.uint16)
+    cloud, trace = tmp_path / "intensity.las", tmp_path / "drive.csv"
+    data.write(cloud)
+    trace.write_text("timestamp,x,y,z\n0,0,0,100\n1,30,0,100\n", encoding="utf-8")
+    original = cloud.read_bytes(), trace.read_bytes()
+    default = build_vector_map(str(cloud), str(trace), str(tmp_path / "rgb"), fit_paint_corridor=True)
+    assert "paint_channel" not in default["options"]
+    assert not default["extraction"]["paint_corridor"]["applied"]
+    result = CliRunner().invoke(app, ["vectormap-build", str(cloud), str(trace), "--out", str(tmp_path / "intensity"),
+        "--fit-paint-corridor", "--fit-source-surface", "--paint-channel", "intensity"])
+    assert result.exit_code == 0, result.output
+    report = json.loads(result.stdout)
+    fit = report["extraction"]["paint_corridor"]
+    assert fit["applied"] and fit["source_channel"] == "intensity"
+    assert fit["intensity_range"] == [18000, 60000]
+    diagnostics = fit["candidate_diagnostics"]
+    assert diagnostics["complete"] and diagnostics["accepted"] == fit["contrasted_points"]
+    outcomes = ["local_ground_missing", "local_height_mismatch", "trace_ground_missing",
+                "trace_height_mismatch", "flank_support_missing", "flank_contrast_insufficient", "accepted"]
+    assert sum(diagnostics[key] for key in outcomes) == diagnostics["bright_candidates"]
+    assert diagnostics["bright_candidates"] == fit["white_candidates"]
+    assert fit["measured_lane_widths_m"] == pytest.approx([3, 3], abs=.04)
+    assert report["extraction"]["rgb_paint_vertices"] == 0
+    assert report["extraction"]["intensity_vertices"] > 0
+    assert report["extraction"]["width_prior_vertices"] > 0
+    assert (cloud.read_bytes(), trace.read_bytes()) == original
+    with pytest.raises(ValueError, match="paint_channel"):
+        build_vector_map(str(cloud), str(trace), str(tmp_path / "invalid"), paint_channel="automatic")
+    assert not (tmp_path / "invalid").exists()

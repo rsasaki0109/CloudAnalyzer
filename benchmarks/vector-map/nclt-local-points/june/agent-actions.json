@@ -1,0 +1,3608 @@
+{
+  "root": {
+    "original_run_sha256": "f075e0dc714305429c1b3077aad19a659663ae9e5c05fefa4a22e68f7c66281d",
+    "observations_omitted": true,
+    "actions": [
+      {
+        "sequence": 1,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 2,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 3,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 4,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 5,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 6,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 7,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 8,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 9,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 10,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            73,
+            74,
+            75,
+            76,
+            77
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 11,
+        "action": {
+          "type": "refine",
+          "association": "trajectory_containing"
+        },
+        "reason": "Replay the previously inspected path association at unchanged thresholds for a same-native baseline",
+        "status": "ready",
+        "proposal_sha256": "1b7990de2ec08c017f1e8ac32dab4941339907801cb55035c1e36352a3040e00"
+      },
+      {
+        "sequence": 12,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac"
+      },
+      {
+        "sequence": 13,
+        "action": {
+          "type": "inspect",
+          "candidate_ids": [
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        },
+        "reason": "Read all current source sections before explicit interval adoption",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac"
+      },
+      {
+        "sequence": 14,
+        "action": {
+          "type": "draft",
+          "decisions": [
+            {
+              "candidate_id": 1,
+              "action": "include",
+              "from_m": 0,
+              "to_m": 8,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 2,
+              "action": "include",
+              "from_m": 14,
+              "to_m": 18,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 4,
+              "action": "include",
+              "from_m": 34,
+              "to_m": 36,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 6,
+              "action": "include",
+              "from_m": 48,
+              "to_m": 114,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 8,
+              "action": "include",
+              "from_m": 146,
+              "to_m": 148,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 9,
+              "action": "include",
+              "from_m": 152,
+              "to_m": 156,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 11,
+              "action": "include",
+              "from_m": 168,
+              "to_m": 172,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 12,
+              "action": "include",
+              "from_m": 180,
+              "to_m": 184,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 12,
+              "action": "include",
+              "from_m": 188,
+              "to_m": 190,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 13,
+              "action": "include",
+              "from_m": 200,
+              "to_m": 202,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 15,
+              "action": "include",
+              "from_m": 210,
+              "to_m": 212,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 16,
+              "action": "include",
+              "from_m": 220,
+              "to_m": 222,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 16,
+              "action": "include",
+              "from_m": 232,
+              "to_m": 238,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 16,
+              "action": "include",
+              "from_m": 242,
+              "to_m": 246,
+              "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+            },
+            {
+              "candidate_id": 3,
+              "action": "defer",
+              "from_m": 22.0,
+              "to_m": 28.0,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+            },
+            {
+              "candidate_id": 4,
+              "action": "defer",
+              "from_m": 32.0,
+              "to_m": 34,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+            },
+            {
+              "candidate_id": 5,
+              "action": "defer",
+              "from_m": 40.0,
+              "to_m": 44.0,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+            },
+            {
+              "candidate_id": 7,
+              "action": "defer",
+              "from_m": 118.0,
+              "to_m": 122.0,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+            },
+            {
+              "candidate_id": 8,
+              "action": "defer",
+              "from_m": 134.0,
+              "to_m": 146,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+            },
+            {
+              "candidate_id": 10,
+              "action": "defer",
+              "from_m": 158.0,
+              "to_m": 160.0,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+            },
+            {
+              "candidate_id": 11,
+              "action": "defer",
+              "from_m": 172,
+              "to_m": 176.0,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+            },
+            {
+              "candidate_id": 12,
+              "action": "defer",
+              "from_m": 184,
+              "to_m": 188,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+            },
+            {
+              "candidate_id": 12,
+              "action": "defer",
+              "from_m": 190,
+              "to_m": 196.0,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+            },
+            {
+              "candidate_id": 14,
+              "action": "defer",
+              "from_m": 206.0,
+              "to_m": 208.0,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+            },
+            {
+              "candidate_id": 15,
+              "action": "defer",
+              "from_m": 212,
+              "to_m": 214.0,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+            },
+            {
+              "candidate_id": 16,
+              "action": "defer",
+              "from_m": 222,
+              "to_m": 232,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+            },
+            {
+              "candidate_id": 16,
+              "action": "defer",
+              "from_m": 238,
+              "to_m": 242,
+              "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+            }
+          ]
+        },
+        "reason": "Replay prior examined source ranges to reproduce the retained baseline; this is not an independent agent benchmark",
+        "status": "audited_draft",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "geometry_candidate_id": 1,
+        "lane_candidate_id": 2
+      },
+      {
+        "sequence": 15,
+        "action": {
+          "type": "inspect_connections",
+          "candidate_id": 2,
+          "offset": 0
+        },
+        "reason": "Inspect the actual original connection geometry before baseline replay",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac"
+      },
+      {
+        "sequence": 16,
+        "action": {
+          "type": "connect",
+          "candidate_id": 2,
+          "pairs": [
+            {
+              "from": 24,
+              "to": 27,
+              "reason": "Replay the previously examined geometric connection after reading this fresh source/path/width proposal"
+            },
+            {
+              "from": 27,
+              "to": 30,
+              "reason": "Replay the previously examined geometric connection after reading this fresh source/path/width proposal"
+            }
+          ]
+        },
+        "reason": "Replay previously examined short connections as a fixed comparison baseline",
+        "status": "audited_draft",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "lane_candidate_id": 3,
+        "connection_proposal": {
+          "path": "run/connections-02.json",
+          "sha256": "e8513bad35ac762892b9ecfb53258fa1afb3aa5437594d3754bfda84b6094eda",
+          "bytes": 16939
+        }
+      },
+      {
+        "sequence": 17,
+        "action": {
+          "type": "inspect_gaps",
+          "candidate_id": 3,
+          "offset": 0
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac"
+      },
+      {
+        "sequence": 18,
+        "action": {
+          "type": "inspect_gaps",
+          "candidate_id": 3,
+          "offset": 8
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac"
+      },
+      {
+        "sequence": 19,
+        "action": {
+          "type": "inspect_gaps",
+          "candidate_id": 3,
+          "offset": 16
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac"
+      },
+      {
+        "sequence": 20,
+        "action": {
+          "type": "inspect_gaps",
+          "candidate_id": 3,
+          "offset": 24
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac"
+      },
+      {
+        "sequence": 21,
+        "action": {
+          "type": "inspect_unused_frames",
+          "candidate_id": 3,
+          "offset": 0
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "gap_evidence": {
+          "path": "run/gaps-03.json",
+          "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+          "bytes": 634116
+        }
+      },
+      {
+        "sequence": 22,
+        "action": {
+          "type": "inspect_unused_frames",
+          "candidate_id": 3,
+          "offset": 8
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "gap_evidence": {
+          "path": "run/gaps-03.json",
+          "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+          "bytes": 634116
+        }
+      },
+      {
+        "sequence": 23,
+        "action": {
+          "type": "inspect_unused_frames",
+          "candidate_id": 3,
+          "offset": 16
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "gap_evidence": {
+          "path": "run/gaps-03.json",
+          "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+          "bytes": 634116
+        }
+      },
+      {
+        "sequence": 24,
+        "action": {
+          "type": "inspect_unused_frames",
+          "candidate_id": 3,
+          "offset": 24
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "gap_evidence": {
+          "path": "run/gaps-03.json",
+          "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+          "bytes": 634116
+        }
+      },
+      {
+        "sequence": 25,
+        "action": {
+          "type": "inspect_unused_frames",
+          "candidate_id": 3,
+          "offset": 32
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "gap_evidence": {
+          "path": "run/gaps-03.json",
+          "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+          "bytes": 634116
+        }
+      },
+      {
+        "sequence": 26,
+        "action": {
+          "type": "inspect_unused_frames",
+          "candidate_id": 3,
+          "offset": 40
+        },
+        "reason": "Read every missing source interval and unused-frame pose check before a bounded repair trial",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "gap_evidence": {
+          "path": "run/gaps-03.json",
+          "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+          "bytes": 634116
+        }
+      },
+      {
+        "sequence": 27,
+        "action": {
+          "type": "inspect_local_points",
+          "candidate_id": 3,
+          "gap_ids": [
+            3
+          ],
+          "bounds_xy": [
+            12.0,
+            -3.0,
+            22.0,
+            11.0
+          ]
+        },
+        "reason": "Inspect an explicit bounded XY column covering the previously observed missing HD interval; retain every baseline point record outside it",
+        "status": "inspected",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "frame_evidence": {
+          "path": "run/unused-frames-03.json",
+          "sha256": "bd92eab8d9ce9b8693db455dfd7c3353e00dce8f1d5e368643bc6578577eb86f",
+          "bytes": 145835
+        },
+        "gap_evidence": {
+          "path": "run/gaps-03.json",
+          "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+          "bytes": 634116
+        }
+      },
+      {
+        "sequence": 28,
+        "action": {
+          "type": "retry_local_frames",
+          "candidate_id": 3,
+          "frame_ids": [
+            195,
+            198,
+            210,
+            216
+          ],
+          "preview_file": {
+            "path": "run/local-points-03-02b9f27e6199c0af.json",
+            "sha256": "3a88545e1b5a56779efd13b34817a101a8dc591fbb26246367b3b1dc431952b3",
+            "bytes": 6476
+          }
+        },
+        "reason": "Explicitly adopt only these inspected pose-consistent frames observing the selected XY column; retain all outside point records and reject new retained HD source failures",
+        "status": "failed",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+        "frame_evidence": {
+          "path": "run/unused-frames-03.json",
+          "sha256": "bd92eab8d9ce9b8693db455dfd7c3353e00dce8f1d5e368643bc6578577eb86f",
+          "bytes": 145835
+        }
+      },
+      {
+        "sequence": 29,
+        "action": {
+          "type": "finish",
+          "candidate_id": 3
+        },
+        "reason": "Reject the local point candidate because four-audit retained sample checks found a new low-quantile failure on lane 39 left; deliver the unchanged original point map and HD baseline while retaining failed evidence",
+        "status": "finished",
+        "proposal_sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac"
+      }
+    ],
+    "output": {
+      "status": "draft_needs_review",
+      "candidate_id": 3,
+      "artifacts": {
+        "map": {
+          "path": "run/pointcloud/trajectory_map.ply",
+          "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+          "bytes": 20653998
+        },
+        "trajectory": {
+          "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+          "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+          "bytes": 46143
+        },
+        "graph": {
+          "path": "run/pointcloud/trajectory_fixed.g2o",
+          "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+          "bytes": 92299
+        },
+        "hd_map": {
+          "path": "run/candidate-03/lanelet2_map.osm",
+          "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+          "bytes": 53372
+        },
+        "hd_projector": {
+          "path": "run/candidate-03/map_projector_info.yaml",
+          "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+          "bytes": 22
+        },
+        "hd_editable_map": {
+          "path": "run/candidate-03/vector_map.json",
+          "sha256": "2c9a4b667fb5441bf6a225e6f60777a7f25646c34751d1380a1a6ae46c229322",
+          "bytes": 22406
+        },
+        "hd_report": {
+          "path": "run/candidate-03/report.json",
+          "sha256": "2b2449bbcdfe057b445a523ad88b06791e27aefabbf437d6911e45cc1bd88724",
+          "bytes": 48866
+        },
+        "hd_source_audits": {
+          "path": "run/candidate-03/source-quality.json",
+          "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+          "bytes": 216939
+        },
+        "hd_connection_checks": {
+          "path": "run/candidate-03-connection-checks.json",
+          "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+          "bytes": 213
+        }
+      },
+      "diagnosis": {
+        "schema": "cloudanalyzer.mapping_diagnosis.v1",
+        "candidate_id": 3,
+        "quality_report": {
+          "path": "run/candidate-03/source-quality.json",
+          "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+          "bytes": 216939
+        },
+        "extent": {
+          "trajectory_length_m": 252.5863381996826,
+          "generated_length_m": 112,
+          "retained_fraction": 0.4434127387818505,
+          "minimum_retained_fraction": 0.9,
+          "passes_requested_extent": false
+        },
+        "editable": {
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "minimum_returns": 3,
+              "model": "low_quantile",
+              "quantile": 0.15
+            }
+          },
+          "complete": true,
+          "sample_totals": {
+            "samples": 884,
+            "supported": 521,
+            "height_mismatches": 363,
+            "insufficient_returns": 0
+          },
+          "needs_review": [
+            6,
+            12,
+            18,
+            21,
+            24,
+            33,
+            36,
+            39,
+            42
+          ],
+          "lanes": [
+            {
+              "lane": 3,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 20,
+                  "start_supported": true,
+                  "supported": 20,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 22,
+                  "start_supported": true,
+                  "supported": 22,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 22,
+                  "start_supported": true,
+                  "supported": 22,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 6,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 0.8333333333333334,
+                  "height_mismatches": 2,
+                  "insufficient_returns": 0,
+                  "samples": 12,
+                  "start_supported": false,
+                  "supported": 10,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start"
+                  ]
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.8571428571428571,
+                  "height_mismatches": 1,
+                  "insufficient_returns": 0,
+                  "samples": 7,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 9,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 12,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 0.05925925925925926,
+                  "height_mismatches": 127,
+                  "insufficient_returns": 0,
+                  "samples": 135,
+                  "start_supported": false,
+                  "supported": 8,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start"
+                  ]
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 0.6296296296296297,
+                  "height_mismatches": 50,
+                  "insufficient_returns": 0,
+                  "samples": 135,
+                  "start_supported": true,
+                  "supported": 85,
+                  "holds": [
+                    "below_support_threshold"
+                  ]
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 0.020134228187919462,
+                  "height_mismatches": 146,
+                  "insufficient_returns": 0,
+                  "samples": 149,
+                  "start_supported": false,
+                  "supported": 3,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 15,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 18,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 9,
+                  "start_supported": true,
+                  "supported": 9,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.4444444444444444,
+                  "height_mismatches": 5,
+                  "insufficient_returns": 0,
+                  "samples": 9,
+                  "start_supported": true,
+                  "supported": 4,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 21,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.0,
+                  "height_mismatches": 10,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": false,
+                  "supported": 0,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 24,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 0.3,
+                  "height_mismatches": 7,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": false,
+                  "supported": 3,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 27,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 30,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 33,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.7142857142857143,
+                  "height_mismatches": 2,
+                  "insufficient_returns": 0,
+                  "samples": 7,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 36,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 0.5714285714285714,
+                  "height_mismatches": 3,
+                  "insufficient_returns": 0,
+                  "samples": 7,
+                  "start_supported": true,
+                  "supported": 4,
+                  "holds": [
+                    "below_support_threshold"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 39,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 16,
+                  "start_supported": true,
+                  "supported": 16,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 13,
+                  "start_supported": true,
+                  "supported": 13,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.5714285714285714,
+                  "height_mismatches": 9,
+                  "insufficient_returns": 0,
+                  "samples": 21,
+                  "start_supported": true,
+                  "supported": 12,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 42,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 0.9090909090909091,
+                  "height_mismatches": 1,
+                  "insufficient_returns": 0,
+                  "samples": 11,
+                  "start_supported": false,
+                  "supported": 10,
+                  "holds": [
+                    "unsupported_start"
+                  ]
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 45,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 48,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 22,
+                  "start_supported": true,
+                  "supported": 22,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 22,
+                  "start_supported": true,
+                  "supported": 22,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 24,
+                  "start_supported": true,
+                  "supported": 24,
+                  "holds": []
+                }
+              }
+            }
+          ],
+          "omitted": [],
+          "malformed": [],
+          "limited": false,
+          "errors": [],
+          "warnings": [
+            "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+          ],
+          "problems_available": true,
+          "problems_limited": false,
+          "problem_locations_in_response": false,
+          "lanes_total": 16,
+          "lanes_limited_in_response": false
+        },
+        "reopened_osm": {
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "minimum_returns": 3,
+              "model": "low_quantile",
+              "quantile": 0.15
+            }
+          },
+          "complete": true,
+          "sample_totals": {
+            "samples": 884,
+            "supported": 521,
+            "height_mismatches": 363,
+            "insufficient_returns": 0
+          },
+          "needs_review": [
+            6,
+            12,
+            18,
+            21,
+            24,
+            33,
+            36,
+            39,
+            42
+          ],
+          "lanes": [
+            {
+              "lane": 3,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 20,
+                  "start_supported": true,
+                  "supported": 20,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 22,
+                  "start_supported": true,
+                  "supported": 22,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 22,
+                  "start_supported": true,
+                  "supported": 22,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 6,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 0.8333333333333334,
+                  "height_mismatches": 2,
+                  "insufficient_returns": 0,
+                  "samples": 12,
+                  "start_supported": false,
+                  "supported": 10,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start"
+                  ]
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.8571428571428571,
+                  "height_mismatches": 1,
+                  "insufficient_returns": 0,
+                  "samples": 7,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 9,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 12,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 0.05925925925925926,
+                  "height_mismatches": 127,
+                  "insufficient_returns": 0,
+                  "samples": 135,
+                  "start_supported": false,
+                  "supported": 8,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start"
+                  ]
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 0.6296296296296297,
+                  "height_mismatches": 50,
+                  "insufficient_returns": 0,
+                  "samples": 135,
+                  "start_supported": true,
+                  "supported": 85,
+                  "holds": [
+                    "below_support_threshold"
+                  ]
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 0.020134228187919462,
+                  "height_mismatches": 146,
+                  "insufficient_returns": 0,
+                  "samples": 149,
+                  "start_supported": false,
+                  "supported": 3,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 15,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 18,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 9,
+                  "start_supported": true,
+                  "supported": 9,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.4444444444444444,
+                  "height_mismatches": 5,
+                  "insufficient_returns": 0,
+                  "samples": 9,
+                  "start_supported": true,
+                  "supported": 4,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 21,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.0,
+                  "height_mismatches": 10,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": false,
+                  "supported": 0,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 24,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 0.3,
+                  "height_mismatches": 7,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": false,
+                  "supported": 3,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_start"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 27,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 30,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 33,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 5,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.7142857142857143,
+                  "height_mismatches": 2,
+                  "insufficient_returns": 0,
+                  "samples": 7,
+                  "start_supported": true,
+                  "supported": 5,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 36,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 6,
+                  "start_supported": true,
+                  "supported": 6,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 0.5714285714285714,
+                  "height_mismatches": 3,
+                  "insufficient_returns": 0,
+                  "samples": 7,
+                  "start_supported": true,
+                  "supported": 4,
+                  "holds": [
+                    "below_support_threshold"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 39,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 16,
+                  "start_supported": true,
+                  "supported": 16,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 13,
+                  "start_supported": true,
+                  "supported": 13,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": false,
+                  "fraction": 0.5714285714285714,
+                  "height_mismatches": 9,
+                  "insufficient_returns": 0,
+                  "samples": 21,
+                  "start_supported": true,
+                  "supported": 12,
+                  "holds": [
+                    "below_support_threshold",
+                    "unsupported_end"
+                  ]
+                }
+              }
+            },
+            {
+              "lane": 42,
+              "needs_review": true,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 0.9090909090909091,
+                  "height_mismatches": 1,
+                  "insufficient_returns": 0,
+                  "samples": 11,
+                  "start_supported": false,
+                  "supported": 10,
+                  "holds": [
+                    "unsupported_start"
+                  ]
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 45,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 10,
+                  "start_supported": true,
+                  "supported": 10,
+                  "holds": []
+                }
+              }
+            },
+            {
+              "lane": 48,
+              "needs_review": false,
+              "traces": {
+                "center": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 22,
+                  "start_supported": true,
+                  "supported": 22,
+                  "holds": []
+                },
+                "left": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 22,
+                  "start_supported": true,
+                  "supported": 22,
+                  "holds": []
+                },
+                "right": {
+                  "end_supported": true,
+                  "fraction": 1.0,
+                  "height_mismatches": 0,
+                  "insufficient_returns": 0,
+                  "samples": 24,
+                  "start_supported": true,
+                  "supported": 24,
+                  "holds": []
+                }
+              }
+            }
+          ],
+          "omitted": [],
+          "malformed": [],
+          "limited": false,
+          "errors": [],
+          "warnings": [
+            "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+          ],
+          "problems_available": true,
+          "problems_limited": false,
+          "problem_locations_in_response": false,
+          "lanes_total": 16,
+          "lanes_limited_in_response": false
+        },
+        "editable_and_reopened_match": true,
+        "ground_consensus": {
+          "editable": {
+            "protocol": {
+              "sampling_step_m": 0.5,
+              "ground_radius_m": 0.75,
+              "ground_height_tolerance_m": 0.3,
+              "minimum_support_fraction": 0.9,
+              "sample_budget": 100000,
+              "ground_estimator": {
+                "layer_height_m": 0.15,
+                "minimum_cells": 3,
+                "minimum_triangle_area_m2": 0.01,
+                "model": "lowest_supported_layer",
+                "xy_cell_m": 0.2
+              }
+            },
+            "complete": true,
+            "sample_totals": {
+              "samples": 884,
+              "supported": 884,
+              "height_mismatches": 0,
+              "insufficient_returns": 0
+            },
+            "needs_review": [],
+            "lanes": [
+              {
+                "lane": 3,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 20,
+                    "start_supported": true,
+                    "supported": 20,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 22,
+                    "start_supported": true,
+                    "supported": 22,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 22,
+                    "start_supported": true,
+                    "supported": 22,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 6,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 12,
+                    "start_supported": true,
+                    "supported": 12,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 7,
+                    "start_supported": true,
+                    "supported": 7,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 9,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 12,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 135,
+                    "start_supported": true,
+                    "supported": 135,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 135,
+                    "start_supported": true,
+                    "supported": 135,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 149,
+                    "start_supported": true,
+                    "supported": 149,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 15,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 18,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 9,
+                    "start_supported": true,
+                    "supported": 9,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 9,
+                    "start_supported": true,
+                    "supported": 9,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 21,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 24,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 27,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 30,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 33,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 7,
+                    "start_supported": true,
+                    "supported": 7,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 36,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 7,
+                    "start_supported": true,
+                    "supported": 7,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 39,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 16,
+                    "start_supported": true,
+                    "supported": 16,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 13,
+                    "start_supported": true,
+                    "supported": 13,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 21,
+                    "start_supported": true,
+                    "supported": 21,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 42,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 11,
+                    "start_supported": true,
+                    "supported": 11,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 45,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 48,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 22,
+                    "start_supported": true,
+                    "supported": 22,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 22,
+                    "start_supported": true,
+                    "supported": 22,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 24,
+                    "start_supported": true,
+                    "supported": 24,
+                    "holds": []
+                  }
+                }
+              }
+            ],
+            "omitted": [],
+            "malformed": [],
+            "limited": false,
+            "errors": [],
+            "warnings": [
+              "Alternative source evidence uses the lowest 0.15 m vertical layer within 0.75 m XY with three occupied 0.2 m cells and a triangle area of at least 0.01 m\u00b2. It uses the median of cell-low returns. A lower physical level can still win; compare the legacy quantile audit and investigate disagreement. This does not establish road semantics, accuracy, obstacles or traffic rules."
+            ],
+            "problems_available": true,
+            "problems_limited": false,
+            "problem_locations_in_response": false,
+            "lanes_total": 16,
+            "lanes_limited_in_response": false
+          },
+          "reopened_osm": {
+            "protocol": {
+              "sampling_step_m": 0.5,
+              "ground_radius_m": 0.75,
+              "ground_height_tolerance_m": 0.3,
+              "minimum_support_fraction": 0.9,
+              "sample_budget": 100000,
+              "ground_estimator": {
+                "layer_height_m": 0.15,
+                "minimum_cells": 3,
+                "minimum_triangle_area_m2": 0.01,
+                "model": "lowest_supported_layer",
+                "xy_cell_m": 0.2
+              }
+            },
+            "complete": true,
+            "sample_totals": {
+              "samples": 884,
+              "supported": 884,
+              "height_mismatches": 0,
+              "insufficient_returns": 0
+            },
+            "needs_review": [],
+            "lanes": [
+              {
+                "lane": 3,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 20,
+                    "start_supported": true,
+                    "supported": 20,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 22,
+                    "start_supported": true,
+                    "supported": 22,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 22,
+                    "start_supported": true,
+                    "supported": 22,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 6,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 12,
+                    "start_supported": true,
+                    "supported": 12,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 7,
+                    "start_supported": true,
+                    "supported": 7,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 9,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 12,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 135,
+                    "start_supported": true,
+                    "supported": 135,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 135,
+                    "start_supported": true,
+                    "supported": 135,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 149,
+                    "start_supported": true,
+                    "supported": 149,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 15,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 18,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 9,
+                    "start_supported": true,
+                    "supported": 9,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 9,
+                    "start_supported": true,
+                    "supported": 9,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 21,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 24,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 27,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 30,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 33,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 5,
+                    "start_supported": true,
+                    "supported": 5,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 7,
+                    "start_supported": true,
+                    "supported": 7,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 36,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 6,
+                    "start_supported": true,
+                    "supported": 6,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 7,
+                    "start_supported": true,
+                    "supported": 7,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 39,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 16,
+                    "start_supported": true,
+                    "supported": 16,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 13,
+                    "start_supported": true,
+                    "supported": 13,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 21,
+                    "start_supported": true,
+                    "supported": 21,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 42,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 11,
+                    "start_supported": true,
+                    "supported": 11,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 45,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 10,
+                    "start_supported": true,
+                    "supported": 10,
+                    "holds": []
+                  }
+                }
+              },
+              {
+                "lane": 48,
+                "needs_review": false,
+                "traces": {
+                  "center": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 22,
+                    "start_supported": true,
+                    "supported": 22,
+                    "holds": []
+                  },
+                  "left": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 22,
+                    "start_supported": true,
+                    "supported": 22,
+                    "holds": []
+                  },
+                  "right": {
+                    "end_supported": true,
+                    "fraction": 1.0,
+                    "height_mismatches": 0,
+                    "insufficient_returns": 0,
+                    "samples": 24,
+                    "start_supported": true,
+                    "supported": 24,
+                    "holds": []
+                  }
+                }
+              }
+            ],
+            "omitted": [],
+            "malformed": [],
+            "limited": false,
+            "errors": [],
+            "warnings": [
+              "Alternative source evidence uses the lowest 0.15 m vertical layer within 0.75 m XY with three occupied 0.2 m cells and a triangle area of at least 0.01 m\u00b2. It uses the median of cell-low returns. A lower physical level can still win; compare the legacy quantile audit and investigate disagreement. This does not establish road semantics, accuracy, obstacles or traffic rules."
+            ],
+            "problems_available": true,
+            "problems_limited": false,
+            "problem_locations_in_response": false,
+            "lanes_total": 16,
+            "lanes_limited_in_response": false
+          }
+        },
+        "extraction": {
+          "roads": 14,
+          "lanes": 14,
+          "trajectory_length": 252.5863381996826,
+          "generated_length": 112,
+          "length_measurement": "original_input_xy_station_union",
+          "width_prior_vertices": 0,
+          "layout_prior_vertices": 0
+        },
+        "export_issues": [
+          {
+            "code": "autoware.local_projector",
+            "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+            "severity": "info"
+          },
+          {
+            "code": "lanelet2.no_georeference",
+            "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+            "severity": "warning"
+          }
+        ],
+        "pointcloud_quality_status": "generated_unverified",
+        "remaining_attempts": 0,
+        "routes": {
+          "before": {
+            "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+            "connected_components": 14,
+            "longest_route_station_span_m": 66,
+            "routes": [
+              {
+                "lane_ids": [
+                  3
+                ],
+                "from_m": 0,
+                "to_m": 8,
+                "station_span_m": 8
+              },
+              {
+                "lane_ids": [
+                  6
+                ],
+                "from_m": 14,
+                "to_m": 18,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  9
+                ],
+                "from_m": 34,
+                "to_m": 36,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  12
+                ],
+                "from_m": 48,
+                "to_m": 114,
+                "station_span_m": 66
+              },
+              {
+                "lane_ids": [
+                  15
+                ],
+                "from_m": 146,
+                "to_m": 148,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  18
+                ],
+                "from_m": 152,
+                "to_m": 156,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  21
+                ],
+                "from_m": 168,
+                "to_m": 172,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  24
+                ],
+                "from_m": 180,
+                "to_m": 184,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  27
+                ],
+                "from_m": 188,
+                "to_m": 190,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  30
+                ],
+                "from_m": 200,
+                "to_m": 202,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  33
+                ],
+                "from_m": 210,
+                "to_m": 212,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  36
+                ],
+                "from_m": 220,
+                "to_m": 222,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  39
+                ],
+                "from_m": 232,
+                "to_m": 238,
+                "station_span_m": 6
+              },
+              {
+                "lane_ids": [
+                  42
+                ],
+                "from_m": 242,
+                "to_m": 246,
+                "station_span_m": 4
+              }
+            ],
+            "legal_routing_verified": false,
+            "routes_total": 14,
+            "routes_limited_in_response": false
+          },
+          "after": {
+            "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+            "connected_components": 12,
+            "longest_route_station_span_m": 66,
+            "routes": [
+              {
+                "lane_ids": [
+                  3
+                ],
+                "from_m": 0,
+                "to_m": 8,
+                "station_span_m": 8
+              },
+              {
+                "lane_ids": [
+                  6
+                ],
+                "from_m": 14,
+                "to_m": 18,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  9
+                ],
+                "from_m": 34,
+                "to_m": 36,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  12
+                ],
+                "from_m": 48,
+                "to_m": 114,
+                "station_span_m": 66
+              },
+              {
+                "lane_ids": [
+                  15
+                ],
+                "from_m": 146,
+                "to_m": 148,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  18
+                ],
+                "from_m": 152,
+                "to_m": 156,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  21
+                ],
+                "from_m": 168,
+                "to_m": 172,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  24,
+                  45,
+                  27,
+                  48,
+                  30
+                ],
+                "from_m": 180,
+                "to_m": 202,
+                "station_span_m": 22
+              },
+              {
+                "lane_ids": [
+                  33
+                ],
+                "from_m": 210,
+                "to_m": 212,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  36
+                ],
+                "from_m": 220,
+                "to_m": 222,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  39
+                ],
+                "from_m": 232,
+                "to_m": 238,
+                "station_span_m": 6
+              },
+              {
+                "lane_ids": [
+                  42
+                ],
+                "from_m": 242,
+                "to_m": 246,
+                "station_span_m": 4
+              }
+            ],
+            "legal_routing_verified": false,
+            "routes_total": 12,
+            "routes_limited_in_response": false
+          },
+          "added": [
+            {
+              "from": 24,
+              "to": 27,
+              "lane": 45
+            },
+            {
+              "from": 27,
+              "to": 30,
+              "lane": 48
+            }
+          ],
+          "connection_pairs": [
+            {
+              "from": 24,
+              "to": 27,
+              "reason": "Replay the previously examined geometric connection after reading this fresh source/path/width proposal"
+            },
+            {
+              "from": 27,
+              "to": 30,
+              "reason": "Replay the previously examined geometric connection after reading this fresh source/path/width proposal"
+            }
+          ],
+          "source_extent_unchanged": true,
+          "retained_edges": [],
+          "legal_routing_verified": false
+        },
+        "investigations": [
+          "Compare trace Z with nearby low returns and inspect XY/ground-level alignment; a height mismatch does not establish that a Z-only correction is appropriate.",
+          "The observed support span was explicitly adopted as an unverified layout hypothesis. Inspect the parent edge evidence and assigned lane fractions/directions/minimum widths; source support does not confirm complete road width or legal traffic rules.",
+          "Connector turn_direction tags classify geometric headings, not permitted manoeuvres. Review legal routing, full-width interior and clearance; graph station spans do not increase original source-corridor extent.",
+          "Inspect deferred road length; a supported fragment does not meet the requested extent.",
+          "Ground estimators disagree. Inspect layered/density-dominated source columns and actual surface levels; do not select the estimator with the better score as proof of road accuracy."
+        ],
+        "deployment_ready": false,
+        "counting_note": "Totals count oriented samples per lane/trace; a shared boundary can be checked for both lanes. They are not unique points or percentages of road length.",
+        "lane_specifications_total": 14
+      },
+      "decision_history": "run/run.json",
+      "layout_hypothesis": {
+        "path": "run/layout-hypothesis.json",
+        "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+        "bytes": 381
+      },
+      "road_semantics_inferred": false,
+      "deployment_ready": false,
+      "pointcloud_retry_decision": {
+        "adopted": false,
+        "status": "failed",
+        "child_job_dir": "run/pointcloud-retry",
+        "baseline_candidate_id": 3,
+        "reason": "Reject the local point candidate because four-audit retained sample checks found a new low-quantile failure on lane 39 left; deliver the unchanged original point map and HD baseline while retaining failed evidence"
+      }
+    }
+  }
+}

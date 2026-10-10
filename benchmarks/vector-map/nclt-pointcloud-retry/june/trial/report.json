@@ -1,0 +1,1813 @@
+{
+  "autoware_issues": [
+    {
+      "code": "autoware.local_projector",
+      "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+      "severity": "info"
+    },
+    {
+      "code": "lanelet2.no_georeference",
+      "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+      "severity": "warning"
+    }
+  ],
+  "georeference": null,
+  "import_issues": [],
+  "junctions": {
+    "added": [
+      42,
+      45
+    ],
+    "candidates": [
+      {
+        "ambiguous": false,
+        "boundary_support": [
+          1.0,
+          1.0
+        ],
+        "center": [
+          [
+            18.446678708735462,
+            -32.24919136032051,
+            -2.6760232825810215
+          ],
+          [
+            18.67516466330305,
+            -31.463865490077733,
+            -2.6872203231368372
+          ],
+          [
+            18.94509086862553,
+            -30.69368538246077,
+            -2.69816141977826
+          ],
+          [
+            19.29051729359861,
+            -29.95568725572644,
+            -2.7092301402723273
+          ],
+          [
+            19.748935284025286,
+            -29.28171846312692,
+            -2.7206475226402427
+          ],
+          [
+            20.354377610409202,
+            -28.733243484886998,
+            -2.7322851676200015
+          ]
+        ],
+        "from": 27,
+        "gap": 4.000150567442757,
+        "ground_support": 1.0,
+        "left": [
+          [
+            17.369889551556316,
+            -31.614348772759293,
+            -2.6247445246896506
+          ],
+          [
+            17.621951787288758,
+            -30.838261687536463,
+            -2.6347716710259967
+          ],
+          [
+            17.953154384002104,
+            -30.07655720489014,
+            -2.644798817362343
+          ],
+          [
+            18.371007072535615,
+            -29.363366678878464,
+            -2.6548259636986895
+          ],
+          [
+            18.883019583728547,
+            -28.732821463559553,
+            -2.6648531100350357
+          ],
+          [
+            19.49670164842016,
+            -28.219052912991543,
+            -2.674880256371382
+          ]
+        ],
+        "right": [
+          [
+            19.523467865914608,
+            -32.884033947881726,
+            -2.7273020404723924
+          ],
+          [
+            19.729978414584153,
+            -32.0825243908504,
+            -2.739779648151638
+          ],
+          [
+            19.952349217878552,
+            -31.261038582128634,
+            -2.752257255830884
+          ],
+          [
+            20.240323317486542,
+            -30.476647562812612,
+            -2.76473486351013
+          ],
+          [
+            20.64364375509686,
+            -29.78642237399849,
+            -2.777212471189376
+          ],
+          [
+            21.21205357239824,
+            -29.247434056782453,
+            -2.7896900788686216
+          ]
+        ],
+        "samples": 10,
+        "to": 30,
+        "turn_degrees": -40.78625614987863
+      },
+      {
+        "ambiguous": false,
+        "boundary_support": [
+          1.0,
+          1.0
+        ],
+        "center": [
+          [
+            23.100246026710835,
+            -25.745430481009386,
+            -2.922406933274975
+          ],
+          [
+            23.54070934733418,
+            -24.94178962359012,
+            -2.9424556454715356
+          ],
+          [
+            23.99147293092677,
+            -24.157941069827103,
+            -2.9621512163249326
+          ],
+          [
+            24.436247499838213,
+            -23.387553647067836,
+            -2.9815373145051955
+          ],
+          [
+            24.864388659659912,
+            -22.620452254517375,
+            -3.000806146495274
+          ],
+          [
+            25.268234169046067,
+            -21.84561173185857,
+            -3.0201897611247643
+          ],
+          [
+            25.63847681050508,
+            -21.051003883979213,
+            -3.0399165856477843
+          ],
+          [
+            25.96011161381676,
+            -20.224288242029292,
+            -3.060145981722421
+          ],
+          [
+            26.20940826001526,
+            -19.35679738931662,
+            -3.0808102834107185
+          ],
+          [
+            26.35764962522613,
+            -18.452895314962817,
+            -3.10137242860294
+          ]
+        ],
+        "from": 30,
+        "gap": 7.986973604040911,
+        "ground_support": 1.0,
+        "left": [
+          [
+            21.624812341521416,
+            -24.804369674999293,
+            -2.866624005519598
+          ],
+          [
+            22.005720494217524,
+            -23.963782116971643,
+            -2.875772181840746
+          ],
+          [
+            22.29196210450052,
+            -23.08760493130977,
+            -2.8849203581618945
+          ],
+          [
+            22.500797992710105,
+            -22.18339838798559,
+            -2.8940685344830426
+          ],
+          [
+            22.64948897918598,
+            -21.258722756970997,
+            -2.903216710804191
+          ],
+          [
+            22.75529588426784,
+            -20.32113830823791,
+            -2.912364887125339
+          ],
+          [
+            22.83547952829539,
+            -19.37820531175822,
+            -2.921513063446487
+          ],
+          [
+            22.907300731608327,
+            -18.43748403750384,
+            -2.9306612397676357
+          ],
+          [
+            22.98802031454635,
+            -17.506534755446673,
+            -2.9398094160887838
+          ]
+        ],
+        "right": [
+          [
+            24.575679711900257,
+            -26.686491287019482,
+            -2.9781898610303523
+          ],
+          [
+            25.109153829488097,
+            -25.841529696254856,
+            -3.0098282588177683
+          ],
+          [
+            25.75328381795053,
+            -25.047540946709645,
+            -3.0414666566051842
+          ],
+          [
+            26.464816353647436,
+            -24.286458331484333,
+            -3.0731050543926
+          ],
+          [
+            27.200498112938693,
+            -23.540215143679443,
+            -3.104743452180016
+          ],
+          [
+            27.91707577218418,
+            -22.790744676395477,
+            -3.136381849967432
+          ],
+          [
+            28.57129600774377,
+            -22.019980222732936,
+            -3.168020247754848
+          ],
+          [
+            29.119905495977335,
+            -21.209855075792333,
+            -3.199658645542264
+          ],
+          [
+            29.519650913244757,
+            -20.34230252867417,
+            -3.23129704332968
+          ],
+          [
+            29.72727893590591,
+            -19.39925587447896,
+            -3.262935441117096
+          ]
+        ],
+        "samples": 18,
+        "to": 33,
+        "turn_degrees": 22.26008103849147
+      }
+    ],
+    "cloud_points": 955898,
+    "malformed_lanes": 0,
+    "open_entries": 13,
+    "open_exits": 13,
+    "rejected_geometry": 0,
+    "rejected_heading": 15,
+    "rejected_height": 1,
+    "traffic_rules_inferred": false,
+    "unsupported_candidates": 3,
+    "warnings": [
+      "Connection drafts follow geometry and nearby ground, not permitted turns. Review every branch, traffic rule and ground level before using the map. Existing rules are retained; no new right-of-way or signal rules are created."
+    ]
+  },
+  "status": "draft",
+  "validation": {
+    "counts": {
+      "errors": 0,
+      "infos": 0,
+      "warnings": 20
+    },
+    "issues": [
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 3,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 6,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 9,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 12,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 15,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 18,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 21,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 24,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 36,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 39,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 11 unconnected parts; this part has 1 lane(s) and is not connected to the main part",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 3,
+          "kind": "lane"
+        },
+        "message": "lane:3 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 6,
+          "kind": "lane"
+        },
+        "message": "lane:6 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 9,
+          "kind": "lane"
+        },
+        "message": "lane:9 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 12,
+          "kind": "lane"
+        },
+        "message": "lane:12 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 15,
+          "kind": "lane"
+        },
+        "message": "lane:15 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 18,
+          "kind": "lane"
+        },
+        "message": "lane:18 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 21,
+          "kind": "lane"
+        },
+        "message": "lane:21 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 24,
+          "kind": "lane"
+        },
+        "message": "lane:24 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 36,
+          "kind": "lane"
+        },
+        "message": "lane:36 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 39,
+          "kind": "lane"
+        },
+        "message": "lane:39 has neither predecessors nor successors",
+        "severity": "warning"
+      }
+    ]
+  },
+  "options": {
+    "geometry_candidate_id": 1,
+    "boundary_policy": "source_span_hypothesis",
+    "lane_specs": [
+      {
+        "center_curve_id": 1,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 4,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 7,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 10,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 13,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 16,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 19,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 22,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 25,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 28,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 31,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 34,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      },
+      {
+        "center_curve_id": 37,
+        "lanes": [
+          {
+            "direction": "forward",
+            "kind": "driving",
+            "one_way": true,
+            "fraction": 1.0,
+            "minimum_width_m": 2.0
+          }
+        ],
+        "speed_limit_kmh": 40.0,
+        "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved"
+      }
+    ]
+  },
+  "reason": "Give the trial the same explicit connection opportunity as the baseline before comparing global routes; retain all trial source pieces and no inflated corridor extent",
+  "routes": {
+    "before": {
+      "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+      "connected_components": 13,
+      "longest_route_station_span_m": 48,
+      "routes": [
+        {
+          "lane_ids": [
+            3
+          ],
+          "from_m": 4,
+          "to_m": 8,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            6
+          ],
+          "from_m": 14,
+          "to_m": 18,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            9
+          ],
+          "from_m": 26,
+          "to_m": 28,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            12
+          ],
+          "from_m": 48,
+          "to_m": 96,
+          "station_span_m": 48
+        },
+        {
+          "lane_ids": [
+            15
+          ],
+          "from_m": 100,
+          "to_m": 104,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            18
+          ],
+          "from_m": 112,
+          "to_m": 116,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            21
+          ],
+          "from_m": 146,
+          "to_m": 156,
+          "station_span_m": 10
+        },
+        {
+          "lane_ids": [
+            24
+          ],
+          "from_m": 168,
+          "to_m": 172,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            27
+          ],
+          "from_m": 182,
+          "to_m": 184,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            30
+          ],
+          "from_m": 188,
+          "to_m": 192,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            33
+          ],
+          "from_m": 200,
+          "to_m": 202,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            36
+          ],
+          "from_m": 236,
+          "to_m": 238,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            39
+          ],
+          "from_m": 242,
+          "to_m": 246,
+          "station_span_m": 4
+        }
+      ],
+      "legal_routing_verified": false
+    },
+    "after": {
+      "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+      "connected_components": 11,
+      "longest_route_station_span_m": 48,
+      "routes": [
+        {
+          "lane_ids": [
+            3
+          ],
+          "from_m": 4,
+          "to_m": 8,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            6
+          ],
+          "from_m": 14,
+          "to_m": 18,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            9
+          ],
+          "from_m": 26,
+          "to_m": 28,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            12
+          ],
+          "from_m": 48,
+          "to_m": 96,
+          "station_span_m": 48
+        },
+        {
+          "lane_ids": [
+            15
+          ],
+          "from_m": 100,
+          "to_m": 104,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            18
+          ],
+          "from_m": 112,
+          "to_m": 116,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            21
+          ],
+          "from_m": 146,
+          "to_m": 156,
+          "station_span_m": 10
+        },
+        {
+          "lane_ids": [
+            24
+          ],
+          "from_m": 168,
+          "to_m": 172,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            27,
+            42,
+            30,
+            45,
+            33
+          ],
+          "from_m": 182,
+          "to_m": 202,
+          "station_span_m": 20
+        },
+        {
+          "lane_ids": [
+            36
+          ],
+          "from_m": 236,
+          "to_m": 238,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            39
+          ],
+          "from_m": 242,
+          "to_m": 246,
+          "station_span_m": 4
+        }
+      ],
+      "legal_routing_verified": false
+    },
+    "added": [
+      {
+        "from": 27,
+        "to": 30,
+        "lane": 42
+      },
+      {
+        "from": 30,
+        "to": 33,
+        "lane": 45
+      }
+    ],
+    "connection_pairs": [
+      {
+        "from": 27,
+        "to": 30,
+        "reason": "Inspected 4m consecutive source/path-supported trial gap; same strict original width and four-audit checks"
+      },
+      {
+        "from": 30,
+        "to": 33,
+        "reason": "Inspected 8m consecutive source/path-supported trial gap, below unchanged 10m cap; test both source estimators and reload topology"
+      }
+    ],
+    "source_extent_unchanged": true,
+    "legal_routing_verified": false
+  },
+  "connection_proposal": {
+    "path": "run/pointcloud-retry/connections-02.json",
+    "sha256": "8d177c8fab67b45eab03357569aad1bd2432dbe629438ed5726de05e2c883d5b",
+    "bytes": 15952
+  },
+  "connection_inputs": {
+    "parent_map": {
+      "path": "run/pointcloud-retry/candidate-02/lanelet2_map.osm",
+      "sha256": "cfb4d5bb5f2fc2487174c5de86d845bffd4588a40e86b8c00133090c45e91e88",
+      "bytes": 39329
+    },
+    "parent_projector": {
+      "path": "run/pointcloud-retry/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "run/pointcloud-retry/candidate-02/vector_map.json",
+      "sha256": "ecd4956bc888f261dc2b77baf6af73cf62f59c4e2bf288c8e4f6ebb75b9ac05e",
+      "bytes": 16481
+    },
+    "parent_report": {
+      "path": "run/pointcloud-retry/candidate-02/report.json",
+      "sha256": "477ad60925b71c858f0ab835cea5442b3d023c38258acd7d254ca14d0dd7fa57",
+      "bytes": 38023
+    },
+    "parent_audits": {
+      "path": "run/pointcloud-retry/candidate-02/source-quality.json",
+      "sha256": "a4f60afab287efd041d5a7fd4842a272133b8f6b340b7f14146a477cd168dbbd",
+      "bytes": 200731
+    },
+    "geometry_editable_map": {
+      "path": "run/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "d32b64d20ec664c37118e43e161f3c1761896dc4d8d7d56062a4e08884e8821f",
+      "bytes": 33189
+    },
+    "geometry_report": {
+      "path": "run/pointcloud-retry/geometry-01/report.json",
+      "sha256": "e101229b29c4f566568955334e1f54f5e9d99680332fe48f80615d74057b5134",
+      "bytes": 91777
+    },
+    "proposal": {
+      "path": "run/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "2b3df9626a09f5a41d1a75f3c52baccd3101d2d59cf7306ada486ea982c99dea",
+      "bytes": 396286
+    },
+    "pointcloud_map": {
+      "path": "run/pointcloud-retry/pointcloud/trajectory_fixed_map.ply",
+      "sha256": "0aa80ff0a150fc8a7b31c8bdd411932c0990facc5df71512484463ef91d31e92",
+      "bytes": 30588910
+    },
+    "pointcloud_trajectory": {
+      "path": "run/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "pointcloud_graph": {
+      "path": "run/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "station_disposition": [
+    {
+      "from_m": 0.0,
+      "to_m": 4,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        1
+      ],
+      "deferred_candidate_ids": [
+        1
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 4,
+      "to_m": 8.0,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 1,
+      "available_candidate_ids": [
+        1
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 8.0,
+      "to_m": 14.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 14.0,
+      "to_m": 18.0,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 2,
+      "available_candidate_ids": [
+        2
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 18.0,
+      "to_m": 22.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 22.0,
+      "to_m": 26.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 26.0,
+      "to_m": 28.0,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 3,
+      "available_candidate_ids": [
+        3
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 28.0,
+      "to_m": 32.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 32.0,
+      "to_m": 36.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        4
+      ],
+      "deferred_candidate_ids": [
+        4
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 36.0,
+      "to_m": 40.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 40.0,
+      "to_m": 44.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        5
+      ],
+      "deferred_candidate_ids": [
+        5
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 44.0,
+      "to_m": 48.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 48.0,
+      "to_m": 96,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 6,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 96,
+      "to_m": 100,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [
+        6
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 100,
+      "to_m": 104.0,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 6,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 104.0,
+      "to_m": 108.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 108.0,
+      "to_m": 112,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        7
+      ],
+      "deferred_candidate_ids": [
+        7
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 112,
+      "to_m": 116,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 7,
+      "available_candidate_ids": [
+        7
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 116,
+      "to_m": 124.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        7
+      ],
+      "deferred_candidate_ids": [
+        7
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 124.0,
+      "to_m": 128.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 128.0,
+      "to_m": 130.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 130.0,
+      "to_m": 134.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_ground_anchor"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 134.0,
+      "to_m": 146,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        8
+      ],
+      "deferred_candidate_ids": [
+        8
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 146,
+      "to_m": 156.0,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 8,
+      "available_candidate_ids": [
+        8
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 156.0,
+      "to_m": 158.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 158.0,
+      "to_m": 160.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        9
+      ],
+      "deferred_candidate_ids": [
+        9
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 160.0,
+      "to_m": 168.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 168.0,
+      "to_m": 172,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 10,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 172,
+      "to_m": 182,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [
+        10
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 182,
+      "to_m": 184,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 10,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 184,
+      "to_m": 188,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [
+        10
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 188,
+      "to_m": 192,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 10,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 192,
+      "to_m": 194.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [
+        10
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 194.0,
+      "to_m": 196.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "unmatched_bands"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 196.0,
+      "to_m": 200.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 200.0,
+      "to_m": 202.0,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 11,
+      "available_candidate_ids": [
+        11
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 202.0,
+      "to_m": 206.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 206.0,
+      "to_m": 208.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        12
+      ],
+      "deferred_candidate_ids": [
+        12
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 208.0,
+      "to_m": 222.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 222.0,
+      "to_m": 236,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        13
+      ],
+      "deferred_candidate_ids": [
+        13
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 236,
+      "to_m": 238,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 13,
+      "available_candidate_ids": [
+        13
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 238,
+      "to_m": 242,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        13
+      ],
+      "deferred_candidate_ids": [
+        13
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 242,
+      "to_m": 246.0,
+      "status": "included_lane_hypothesis",
+      "included_candidate_id": 13,
+      "available_candidate_ids": [
+        13
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 246.0,
+      "to_m": 252.5863381996826,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    }
+  ],
+  "extraction": {
+    "roads": 13,
+    "lanes": 13,
+    "trajectory_length": 252.5863381996826,
+    "generated_length": 94,
+    "length_measurement": "original_input_xy_station_union",
+    "width_prior_vertices": 0,
+    "layout_prior_vertices": 0
+  },
+  "extent": {
+    "trajectory_length_m": 252.5863381996826,
+    "generated_length_m": 94,
+    "retained_fraction": 0.37214997719191023,
+    "minimum_retained_fraction": 0.9,
+    "passes_requested_extent": false
+  },
+  "built_segments": [
+    {
+      "center_curve_id": 1,
+      "lane_ids": [
+        3
+      ],
+      "lane_width_ranges_m": [
+        [
+          1.9999999999999996,
+          4.5
+        ]
+      ],
+      "outer_boundary_ids": [
+        1,
+        2
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 4,
+      "lane_ids": [
+        6
+      ],
+      "lane_width_ranges_m": [
+        [
+          2.9999999999999996,
+          5.0
+        ]
+      ],
+      "outer_boundary_ids": [
+        4,
+        5
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 7,
+      "lane_ids": [
+        9
+      ],
+      "lane_width_ranges_m": [
+        [
+          2.5,
+          3.499999999999999
+        ]
+      ],
+      "outer_boundary_ids": [
+        7,
+        8
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 10,
+      "lane_ids": [
+        12
+      ],
+      "lane_width_ranges_m": [
+        [
+          2.4999999999999973,
+          5.0
+        ]
+      ],
+      "outer_boundary_ids": [
+        10,
+        11
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 13,
+      "lane_ids": [
+        15
+      ],
+      "lane_width_ranges_m": [
+        [
+          2.9999999999999982,
+          3.500000000000002
+        ]
+      ],
+      "outer_boundary_ids": [
+        13,
+        14
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 16,
+      "lane_ids": [
+        18
+      ],
+      "lane_width_ranges_m": [
+        [
+          2.5000000000000036,
+          5.500000000000009
+        ]
+      ],
+      "outer_boundary_ids": [
+        16,
+        17
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 19,
+      "lane_ids": [
+        21
+      ],
+      "lane_width_ranges_m": [
+        [
+          2.5,
+          4.000000000000001
+        ]
+      ],
+      "outer_boundary_ids": [
+        19,
+        20
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 22,
+      "lane_ids": [
+        24
+      ],
+      "lane_width_ranges_m": [
+        [
+          1.9999999999999984,
+          4.000000000000001
+        ]
+      ],
+      "outer_boundary_ids": [
+        22,
+        23
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 25,
+      "lane_ids": [
+        27
+      ],
+      "lane_width_ranges_m": [
+        [
+          2.499999999999997,
+          2.500000000000002
+        ]
+      ],
+      "outer_boundary_ids": [
+        25,
+        26
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 28,
+      "lane_ids": [
+        30
+      ],
+      "lane_width_ranges_m": [
+        [
+          1.9999999999999998,
+          3.5000000000000013
+        ]
+      ],
+      "outer_boundary_ids": [
+        28,
+        29
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 31,
+      "lane_ids": [
+        33
+      ],
+      "lane_width_ranges_m": [
+        [
+          6.0,
+          7.0
+        ]
+      ],
+      "outer_boundary_ids": [
+        31,
+        32
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 34,
+      "lane_ids": [
+        36
+      ],
+      "lane_width_ranges_m": [
+        [
+          3.0000000000000004,
+          4.5
+        ]
+      ],
+      "outer_boundary_ids": [
+        34,
+        35
+      ],
+      "source_outer_curves_preserved": true
+    },
+    {
+      "center_curve_id": 37,
+      "lane_ids": [
+        39
+      ],
+      "lane_width_ranges_m": [
+        [
+          2.0,
+          3.5000000000000004
+        ]
+      ],
+      "outer_boundary_ids": [
+        37,
+        38
+      ],
+      "source_outer_curves_preserved": true
+    }
+  ],
+  "files": {
+    "map": "run/pointcloud-retry/candidate-03/lanelet2_map.osm",
+    "projector": "run/pointcloud-retry/candidate-03/map_projector_info.yaml",
+    "editable_map": "run/pointcloud-retry/candidate-03/vector_map.json",
+    "report": "run/pointcloud-retry/candidate-03/report.json"
+  },
+  "editing": {
+    "command": "vectormap",
+    "args": [
+      "mcp",
+      "run/pointcloud-retry/candidate-03/lanelet2_map.osm"
+    ]
+  },
+  "lane_roundtrip_verified": true,
+  "topology_roundtrip_verified": true,
+  "both_connector_estimators_verified": true
+}

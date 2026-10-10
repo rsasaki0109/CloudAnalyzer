@@ -111,6 +111,15 @@ label.inline { display: inline-flex; align-items: center; gap: 6px; color: var(-
 .trajectory-list input[type="color"] { width: 16px; height: 14px; padding: 0; border: none; background: none; }
 .sidebar h3 { margin-top: 12px; }
 .loop-list { list-style: none; margin: 0 0 8px; padding: 0; max-height: 220px; overflow-y: auto; }
+.review-table-wrap { max-height: 260px; overflow: auto; }
+.review-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11px; }
+.review-table th, .review-table td { padding: 5px 3px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); overflow-wrap: anywhere; }
+.review-table th:first-child { width: 48px; }
+.review-table th:nth-child(2) { width: 76px; }
+.review-table th { position: sticky; top: 0; background: var(--panel); }
+.review-table button { padding: 2px 5px; max-width: 100%; overflow-wrap: anywhere; }
+.review-table .selected { background: var(--panel-2); }
+.review-table .stale { display: block; margin-top: 3px; color: var(--muted); }
 .loop-list li { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 6px; padding: 2px 0; }
 .loop-list .link { border: none; background: none; padding: 0; color: var(--accent); text-align: left; cursor: pointer; }
 .loop-list .meta { color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
@@ -390,3 +399,12 @@ label.inline input[type="color"] { width: 28px; height: 22px; padding: 0 2px; }
   input[type="range"] { min-height: 28px; }
   .cloud-list .remove, .cloud-list .icon, .measure-list .remove { min-width: 36px; }
 }
+
+.vm-legend .source-paint { background: #31e4df; border-radius: 50%; }
+.vm-legend .source-curb { background: #ffad58; border-radius: 50%; }
+.vm-legend .inferred-line { background: repeating-linear-gradient(90deg,#b69cff 0 3px,transparent 3px 5px); }
+.vm-legend .saved-edge { background: repeating-linear-gradient(90deg,#ffad58 0 1px,transparent 1px 3px); }
+
+.vm-legend .source-intensity { background: #ffe066; border-radius: 50%; }
+.vm-legend .source-coverage { background: #8b98a5; border-radius: 50%; }
+.vm-legend .no-evidence { background: repeating-linear-gradient(90deg,#5d899c 0 3px,transparent 3px 5px); }

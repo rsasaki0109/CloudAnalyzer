@@ -5,13 +5,15 @@ use vectormap_core::{LaneId, LaneKind, Map, Point3, Polyline3, Side};
 
 use super::{
     BuildError,
-    junctions::{Ground, HEIGHT, RADIUS},
+    junctions::{Ground, HEIGHT, LAYER_CELL, LAYER_HEIGHT, LAYER_MIN_AREA, RADIUS},
 };
 use crate::PointCloud;
 
 const SPACING: f64 = 0.5;
 const MIN_SUPPORT: f64 = 0.9;
 const MAX_SAMPLES: usize = 100_000;
+const MAX_PROBLEM_POINTS: usize = 4_096;
+const MAX_PROBLEM_INTERVALS: usize = 256;
 
 #[derive(Debug, Serialize)]
 pub struct CurveSupport {
@@ -50,6 +52,128 @@ pub struct QualityReport {
     pub warnings: Vec<String>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SourceCurve {
+    Center,
+    Left,
+    Right,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SupportProblem {
+    InsufficientReturns,
+    HeightMismatch,
+}
+
+/// Consecutive failed samples on one oriented lane curve, in the survey frame.
+/// A single failed sample has equal from/to stations and is shown as a point.
+#[derive(Debug, Serialize)]
+pub struct ProblemInterval {
+    pub lane: LaneId,
+    pub curve: SourceCurve,
+    pub reason: SupportProblem,
+    pub from_m: f64,
+    pub to_m: f64,
+    pub points: Vec<[f64; 3]>,
+    /// One local source height per point using the report's ground estimator.
+    /// None means insufficient support; these are not a verified road level.
+    pub source_heights_m: Vec<Option<f64>>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct QualityDetails {
+    #[serde(flatten)]
+    pub report: QualityReport,
+    pub problems: Vec<ProblemInterval>,
+    /// Location preview limits are independent of the audit sampling budget.
+    pub problems_limited: bool,
+    pub ground_estimator: GroundEstimator,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(tag = "model", rename_all = "snake_case")]
+pub enum GroundEstimator {
+    LowQuantile {
+        quantile: f64,
+        minimum_returns: usize,
+    },
+    LowestSupportedLayer {
+        layer_height_m: f64,
+        xy_cell_m: f64,
+        minimum_cells: usize,
+        minimum_triangle_area_m2: f64,
+    },
+}
+
+impl GroundEstimator {
+    pub(super) fn consensus() -> Self {
+        Self::LowestSupportedLayer {
+            layer_height_m: LAYER_HEIGHT,
+            xy_cell_m: LAYER_CELL,
+            minimum_cells: 3,
+            minimum_triangle_area_m2: LAYER_MIN_AREA,
+        }
+    }
+}
+
+#[derive(Default)]
+struct ProblemLocations {
+    problems: Vec<ProblemInterval>,
+    vertices: usize,
+    last_sample: Option<usize>,
+    limited: bool,
+}
+
+impl ProblemLocations {
+    fn sample(
+        &mut self,
+        lane: LaneId,
+        curve: SourceCurve,
+        index: usize,
+        station: f64,
+        point: Point3,
+        observation: (Option<SupportProblem>, Option<f64>),
+    ) {
+        let (reason, source_height) = observation;
+        let Some(reason) = reason else {
+            self.last_sample = None;
+            return;
+        };
+        let continuing = self
+            .problems
+            .last()
+            .is_some_and(|p| p.lane == lane && p.curve == curve && p.reason == reason)
+            && self.last_sample.is_some_and(|last| last + 1 == index);
+        if self.vertices == MAX_PROBLEM_POINTS
+            || (!continuing && self.problems.len() == MAX_PROBLEM_INTERVALS)
+        {
+            self.limited = true;
+            self.last_sample = None;
+            return;
+        }
+        if continuing {
+            let p = self.problems.last_mut().unwrap();
+            p.to_m = station;
+            p.points.push([point.x, point.y, point.z]);
+            p.source_heights_m.push(source_height);
+        } else {
+            self.problems.push(ProblemInterval {
+                lane,
+                curve,
+                reason,
+                from_m: station,
+                to_m: station,
+                points: vec![[point.x, point.y, point.z]],
+                source_heights_m: vec![source_height],
+            });
+        }
+        self.vertices += 1;
+        self.last_sample = Some(index);
+    }
+}
+
 fn sample_count(line: &Polyline3) -> Option<usize> {
     if line.points.len() < 2
         || line.points.iter().any(|p| {
@@ -69,17 +193,33 @@ fn sample_count(line: &Polyline3) -> Option<usize> {
     Some(count.min((MAX_SAMPLES + 1) as f64) as usize)
 }
 
-fn curve_support(ground: &Ground<'_>, line: &Polyline3, count: usize) -> CurveSupport {
+fn curve_support(
+    ground: &Ground<'_>,
+    line: &Polyline3,
+    count: usize,
+    mut on_sample: impl FnMut(usize, Point3, Option<SupportProblem>, Option<f64>),
+) -> CurveSupport {
     let points = line.resample_count(count);
     let mut supported = 0;
     let mut insufficient_returns = 0;
     let mut height_mismatches = 0;
-    for &p in &points.points {
-        match ground.height(p) {
-            None => insufficient_returns += 1,
-            Some(z) if (z - p.z).abs() > HEIGHT => height_mismatches += 1,
-            Some(_) => supported += 1,
-        }
+    for (i, &p) in points.points.iter().enumerate() {
+        let source_height = ground.height(p);
+        let reason = match source_height {
+            None => {
+                insufficient_returns += 1;
+                Some(SupportProblem::InsufficientReturns)
+            }
+            Some(z) if (z - p.z).abs() > HEIGHT => {
+                height_mismatches += 1;
+                Some(SupportProblem::HeightMismatch)
+            }
+            Some(_) => {
+                supported += 1;
+                None
+            }
+        };
+        on_sample(i, p, reason, source_height);
     }
     CurveSupport {
         samples: points.points.len(),
@@ -96,14 +236,65 @@ fn curve_support(ground: &Ground<'_>, line: &Polyline3, count: usize) -> CurveSu
 /// Reject over-budget curves rather than allocating unbounded samples.
 pub(super) fn checked_curve_support(ground: &Ground<'_>, line: &Polyline3) -> Option<CurveSupport> {
     let count = sample_count(line)?;
-    (count <= MAX_SAMPLES).then(|| curve_support(ground, line, count))
+    (count <= MAX_SAMPLES).then(|| curve_support(ground, line, count, |_, _, _, _| {}))
 }
 
 /// Check every driving lane's centre and both boundaries in the chosen source
 /// frame. Sparse/occluded support is an uncertainty, not proof of a wrong road.
 /// No geometry, topology, attributes or Undo state are changed.
 pub fn audit(map: &Map, cloud: &PointCloud) -> Result<QualityReport, BuildError> {
-    let ground = Ground::new(cloud)?;
+    audit_inner(map, cloud, None, false)
+}
+
+/// Read-only audit plus a bounded preview; summary decisions are identical to audit().
+pub fn audit_with_locations(map: &Map, cloud: &PointCloud) -> Result<QualityDetails, BuildError> {
+    detailed_audit(map, cloud, false)
+}
+
+/// Alternative evidence for density-dominated columns. Keep the legacy audit
+/// alongside it: disagreement is a hold, not permission to choose a better score.
+pub fn audit_with_ground_consensus(
+    map: &Map,
+    cloud: &PointCloud,
+) -> Result<QualityDetails, BuildError> {
+    detailed_audit(map, cloud, true)
+}
+
+fn detailed_audit(
+    map: &Map,
+    cloud: &PointCloud,
+    consensus: bool,
+) -> Result<QualityDetails, BuildError> {
+    let mut locations = ProblemLocations::default();
+    let mut report = audit_inner(map, cloud, Some(&mut locations), consensus)?;
+    let ground_estimator = if consensus {
+        report.warnings[0] = "Alternative source evidence uses the lowest 0.15 m vertical layer within 0.75 m XY with three occupied 0.2 m cells and a triangle area of at least 0.01 m². It uses the median of cell-low returns. A lower physical level can still win; compare the legacy quantile audit and investigate disagreement. This does not establish road semantics, accuracy, obstacles or traffic rules.".into();
+        GroundEstimator::consensus()
+    } else {
+        GroundEstimator::LowQuantile {
+            quantile: 0.15,
+            minimum_returns: 3,
+        }
+    };
+    Ok(QualityDetails {
+        report,
+        problems: locations.problems,
+        problems_limited: locations.limited,
+        ground_estimator,
+    })
+}
+
+fn audit_inner(
+    map: &Map,
+    cloud: &PointCloud,
+    mut locations: Option<&mut ProblemLocations>,
+    consensus: bool,
+) -> Result<QualityReport, BuildError> {
+    let ground = if consensus {
+        Ground::new_consensus(cloud)?
+    } else {
+        Ground::new(cloud)?
+    };
     let mut report = QualityReport {
         lanes: vec![], low_support_lanes: vec![], omitted_lanes: vec![], malformed_lanes: vec![],
         sampled_points: 0, cloud_points: cloud.len(), sampling_step_m: SPACING,
@@ -131,9 +322,24 @@ pub fn audit(map: &Map, cloud: &PointCloud) -> Result<QualityReport, BuildError>
             report.limited = true;
             continue;
         }
-        let center = curve_support(&ground, &center, c);
-        let left = curve_support(&ground, &left, l);
-        let right = curve_support(&ground, &right, r);
+        let mut check = |line: &Polyline3, count, curve| {
+            let step = line.length() / (count - 1) as f64;
+            curve_support(&ground, line, count, |i, p, reason, source_height| {
+                if let Some(locations) = locations.as_deref_mut() {
+                    locations.sample(
+                        lane.id,
+                        curve,
+                        i,
+                        i as f64 * step,
+                        p,
+                        (reason, source_height),
+                    );
+                }
+            })
+        };
+        let center = check(&center, c, SourceCurve::Center);
+        let left = check(&left, l, SourceCurve::Left);
+        let right = check(&right, r, SourceCurve::Right);
         report.sampled_points += c + l + r;
         let needs_review = [&center, &left, &right]
             .iter()
@@ -235,6 +441,209 @@ mod tests {
         assert_eq!(r.lanes[0].center.insufficient_returns, 0);
         assert!(r.lanes[0].center.height_mismatches > 0);
         assert!(audit(&map, &PointCloud::default()).is_err());
+    }
+
+    #[test]
+    fn density_dominated_source_has_two_explicit_read_only_protocols() {
+        let (map, mut cloud) = scene();
+        let floor = cloud.positions.clone();
+        for z in 1..=12 {
+            cloud.positions.extend(
+                floor
+                    .iter()
+                    .map(|p| [p[0], p[1], p[2] + 3. + z as f64 * 0.05]),
+            );
+        }
+        let before = map.clone();
+        let legacy = audit_with_locations(&map, &cloud).unwrap();
+        let alternative = audit_with_ground_consensus(&map, &cloud).unwrap();
+        assert!(!legacy.report.low_support_lanes.is_empty());
+        assert!(alternative.report.low_support_lanes.is_empty());
+        assert_eq!(
+            legacy.report.sampled_points,
+            alternative.report.sampled_points
+        );
+        assert_eq!(
+            legacy.report.minimum_support_fraction,
+            alternative.report.minimum_support_fraction
+        );
+        assert!(matches!(
+            alternative.ground_estimator,
+            GroundEstimator::LowestSupportedLayer { .. }
+        ));
+        assert_eq!(map, before);
+    }
+    #[test]
+    fn locations_keep_survey_coordinates_reasons_and_unchanged_summary() {
+        let (mut map, mut cloud) = scene();
+        let shift = [500_000., 4_000_000., 10.];
+        let boundaries: Vec<_> = map
+            .boundaries()
+            .map(|b| (b.id, b.geometry.clone()))
+            .collect();
+        for (id, mut line) in boundaries {
+            for p in &mut line.points {
+                p.x += shift[0];
+                p.y += shift[1];
+                p.z += shift[2];
+            }
+            map.set_boundary_geometry(id, line).unwrap();
+        }
+        cloud.positions.retain(|p| !(4. ..=6.).contains(&p[0]));
+        for p in &mut cloud.positions {
+            if p[0] >= 8. {
+                p[2] += 2.;
+            }
+            for axis in 0..3 {
+                p[axis] += shift[axis];
+            }
+        }
+        let before = map.clone();
+        let details = audit_with_locations(&map, &cloud).unwrap();
+        assert_eq!(
+            serde_json::to_value(&details.report).unwrap(),
+            serde_json::to_value(audit(&map, &cloud).unwrap()).unwrap()
+        );
+        assert!(!details.problems_limited);
+        let ground = Ground::new(&cloud).unwrap();
+        for p in &details.problems {
+            assert_eq!(p.points.len(), p.source_heights_m.len());
+            for (xyz, observed) in p.points.iter().zip(&p.source_heights_m) {
+                assert_eq!(
+                    *observed,
+                    ground.height(Point3::new(xyz[0], xyz[1], xyz[2]))
+                );
+                assert_eq!(
+                    observed.is_none(),
+                    p.reason == SupportProblem::InsufficientReturns
+                );
+            }
+            assert_eq!(p.points[0][0] - shift[0], p.from_m);
+            assert_eq!(p.points.last().unwrap()[0] - shift[0], p.to_m);
+            for xyz in &p.points {
+                let point = Point3::new(xyz[0], xyz[1], xyz[2]);
+                match p.reason {
+                    SupportProblem::InsufficientReturns => assert!(ground.height(point).is_none()),
+                    SupportProblem::HeightMismatch => {
+                        assert!((ground.height(point).unwrap() - point.z).abs() > HEIGHT)
+                    }
+                }
+            }
+            assert!(
+                p.points
+                    .windows(2)
+                    .all(|v| v[1][0] - v[0][0] <= SPACING + 1e-8)
+            );
+        }
+        let lane = &details.report.lanes[0];
+        for (curve, support) in [
+            (SourceCurve::Center, &lane.center),
+            (SourceCurve::Left, &lane.left),
+            (SourceCurve::Right, &lane.right),
+        ] {
+            for (reason, expected) in [
+                (
+                    SupportProblem::InsufficientReturns,
+                    support.insufficient_returns,
+                ),
+                (SupportProblem::HeightMismatch, support.height_mismatches),
+            ] {
+                let shown: usize = details
+                    .problems
+                    .iter()
+                    .filter(|p| p.curve == curve && p.reason == reason)
+                    .map(|p| p.points.len())
+                    .sum();
+                assert!(expected > 0);
+                assert_eq!(shown, expected);
+            }
+        }
+        assert_eq!(map, before);
+    }
+
+    #[test]
+    fn problem_stations_follow_backward_lane_travel() {
+        let (mut map, cloud) = scene();
+        let built = map
+            .build_road(NewRoad::new(
+                Polyline3::new(vec![Point3::new(0., 20., 2.), Point3::new(10., 20., 2.)]),
+                vec![
+                    RoadLane::new(3.5, LaneDirection::Forward),
+                    RoadLane::new(3.5, LaneDirection::Backward),
+                ],
+            ))
+            .unwrap()
+            .0;
+        let backward = built.lanes[1][0];
+        let details = audit_with_locations(&map, &cloud).unwrap();
+        let problems: Vec<_> = details
+            .problems
+            .iter()
+            .filter(|p| p.lane == backward)
+            .collect();
+        assert_eq!(problems.len(), 3);
+        for p in problems {
+            assert_eq!((p.from_m, p.to_m), (0., 10.));
+            assert_eq!(p.points.first().unwrap()[0], 10.);
+            assert_eq!(p.points.last().unwrap()[0], 0.);
+            assert!(p.points.windows(2).all(|v| v[1][0] < v[0][0]));
+        }
+    }
+
+    #[test]
+    fn location_limits_do_not_truncate_audit_figures_or_bridge_supported_gaps() {
+        let (mut map, cloud) = scene();
+        map.build_road(NewRoad::new(
+            Polyline3::new(vec![Point3::new(0., 20., 2.), Point3::new(2_500., 20., 2.)]),
+            vec![RoadLane::new(3.5, LaneDirection::Forward)],
+        ))
+        .unwrap();
+        let details = audit_with_locations(&map, &cloud).unwrap();
+        assert!(details.problems_limited);
+        assert!(!details.report.limited);
+        assert_eq!(details.report.lanes.len(), 2);
+        assert_eq!(
+            details
+                .problems
+                .iter()
+                .map(|p| p.points.len())
+                .sum::<usize>(),
+            MAX_PROBLEM_POINTS
+        );
+        assert_eq!(
+            details
+                .problems
+                .iter()
+                .map(|p| p.source_heights_m.len())
+                .sum::<usize>(),
+            MAX_PROBLEM_POINTS
+        );
+        assert_eq!(
+            serde_json::to_value(&details.report).unwrap(),
+            serde_json::to_value(audit(&map, &cloud).unwrap()).unwrap()
+        );
+
+        let lane = details.report.lanes[0].lane;
+        let mut locations = ProblemLocations::default();
+        for i in 0..1_000 {
+            let reason = (i % 2 == 0).then_some(SupportProblem::HeightMismatch);
+            locations.sample(
+                lane,
+                SourceCurve::Left,
+                i,
+                i as f64,
+                Point3::new(i as f64, 0., 2.),
+                (reason, Some(0.0)),
+            );
+        }
+        assert!(locations.limited);
+        assert_eq!(locations.problems.len(), MAX_PROBLEM_INTERVALS);
+        assert!(
+            locations
+                .problems
+                .iter()
+                .all(|p| p.points.len() == 1 && p.from_m == p.to_m)
+        );
     }
     #[test]
     fn huge_lanes_are_omitted_before_allocating_and_report_is_not_all_clear() {

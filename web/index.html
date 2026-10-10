@@ -12,7 +12,7 @@
       <button id="panels" class="mobile-only" aria-pressed="false" aria-controls="sidebar" title="Show or hide the panels">Panels</button>
       <button id="open" class="primary" title="Open point cloud files">Open…</button>
       <input id="file-input" type="file" multiple hidden
-        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.tum,.kitti,.osm" />
+        accept=".ply,.splat,.pcd,.las,.laz,.e57,.xyz,.txt,.csv,.pts,.asc,.obj,.stl,.json,.zip,.tum,.kitti,.osm,.g2o,.bag,.mcap,.bin" />
       <span class="sep"></span>
       <button id="fit" title="Fit all (F)">Fit</button>
       <button data-view="top" title="Top view">Top</button>
@@ -59,6 +59,17 @@
     </header>
 
     <aside id="sidebar" class="sidebar">
+      <details class="panel" id="memory-panel">
+        <summary>Memory and Undo</summary>
+        <p id="memory-report" class="small" role="status"></p>
+        <label>Undo steps per history <input id="memory-steps" type="number" min="0" max="100" value="20" /></label>
+        <label>Undo budget per history (MiB, estimated) <input id="memory-undo-budget" type="number" min="0" max="2048" value="128" /></label>
+        <label>Memory warning threshold (MiB) <input id="memory-warning" type="number" min="64" value="1024" /></label>
+        <button id="memory-apply">Apply limits</button>
+        <button id="memory-release">Clear Undo and release idle workers</button>
+        <p id="memory-warning-report" class="small"></p>
+        <p class="hint small">Clearing Undo keeps the current clouds and map. Main WASM memory stays allocated until reload. Estimates exclude browser overhead and render targets. Save your project before reloading.</p>
+      </details>
       <section>
         <h2>Clouds</h2>
         <label class="inline max-points" title="Larger files keep every n-th point so they fit in memory">Max points per file
@@ -79,6 +90,38 @@
         <div class="button-row">
           <button id="session-save" title="Save the view and how each cloud is shown (not the data)">Save session</button>
           <button id="session-open" title="Open a saved session, together with its files">Open session…</button>
+          <button id="project-save" title="Save the edited map, pose graph and settings with verified source references">Save project</button>
+          <button id="project-snapshot" title="Save current loaded point and mesh records, including processed results, with project metadata">Save workspace snapshot</button>
+          <button id="project-open" title="Open a project and reselect its original source files">Open project…</button>
+        </div>
+        <p class="hint small">Projects reference original source files. Workspace snapshots include current clouds and meshes, pose-graph inputs and the original generated-map review package (256 MiB content limit). Unloaded cloud detail stays external. Reopening starts a fresh Undo history.</p>
+        <details id="mapping-review-panel" class="options" open>
+          <summary>Generated maps</summary>
+          <button id="mapping-review-open">Open generated maps…</button>
+          <input id="mapping-review-file" type="file" accept=".zip" hidden />
+          <p class="hint small">Open a review ZIP from your mapping agent. The point map and HD map share their original coordinates. Opening replaces the current HD map.</p>
+          <div id="mapping-review-result" hidden>
+            <p id="mapping-review-summary" class="small" role="status"></p>
+            <button id="mapping-review-download" disabled>Download original map package</button>
+            <label>Saved source audit <select id="mapping-review-audit"></select></label>
+            <p id="mapping-review-state" class="hint small" role="status"></p>
+            <details><summary>Dataset credit</summary><p id="mapping-review-credit" class="small"></p></details>
+          </div>
+        </details>
+        <div id="project-recovery-controls">
+          <label class="inline"><input id="project-autosave" type="checkbox" checked /> Auto save editing state in this browser</label>
+          <label class="inline"><input id="project-autosave-records" type="checkbox" /> Include current records and original inputs (64 MiB)</label>
+          <p id="project-save-status" class="small" role="status">Checking browser recovery…</p>
+          <div id="project-recovery" hidden>
+            <p id="project-recovery-summary" class="hint small"></p>
+            <div class="button-row">
+              <button id="project-resume" disabled>Resume saved work</button>
+              <button id="project-download-recovery" disabled>Download browser copy</button>
+              <button id="project-forget" disabled>Discard browser copy</button>
+            </div>
+          </div>
+          <button id="project-autosave-retry" hidden>Retry browser save</button>
+          <p class="hint small">Keep original files and exported results. Browser copies can be cleared by the browser; download a project for a portable backup.</p>
         </div>
         <div id="empty-hint" class="hint">
           <p>Drop PLY, PCD, LAS/LAZ, E57 or XYZ point clouds, OBJ/STL/PLY meshes, or TUM/KITTI/CSV trajectories, anywhere, or use Open…
@@ -311,6 +354,23 @@
           </label>
         </div>
         <button id="filter-run" class="primary" disabled>Apply to a new cloud</button>
+        <details id="recipe-panel">
+          <summary>Reusable filter recipe</summary>
+          <label>Name <input id="recipe-name" value="Point cleanup" maxlength="80" /></label>
+          <button id="recipe-add">Add current filter step</button>
+          <ol id="recipe-steps"></ol>
+          <button id="recipe-export">Save recipe</button>
+          <button id="recipe-import">Open recipe…</button>
+          <input id="recipe-file" type="file" accept=".json" hidden />
+          <p class="hint">Up to 8 steps: voxel, minimum distance, octree, SOR or splat cleanup.
+            Applies to current loaded records in their current coordinates.</p>
+          <button id="recipe-visible">Select visible clouds</button>
+          <div id="recipe-clouds" aria-label="Recipe source clouds"></div>
+          <button id="recipe-run" class="primary" disabled>Run recipe on selected clouds</button>
+          <p id="recipe-status" role="status"></p>
+          <p class="hint">All results are prepared before hiding sources. One Undo restores the batch.
+            Preparation needs extra memory. Save a workspace snapshot to keep results and processing records.</p>
+        </details>
       </section>
 
       <section id="merge-panel">
@@ -749,10 +809,14 @@
         <p id="vm-hint" class="hint small"></p>
         <div class="button-row">
           <button id="vm-open" title="A Lanelet2 map (.osm) or vectormap IR (.json), drawn over the clouds">Open…</button>
-          <button id="vm-export" class="primary" disabled title="lanelet2_map.osm and map_projector_info.yaml for Autoware">Save for Autoware</button>
+          <button id="vm-export" class="primary" disabled title="Save lanelet2_map.osm and map_projector_info.yaml; review validation and export warnings before use">Save Lanelet2</button>
           <button id="vm-undo" disabled>Undo</button>
           <button id="vm-clear" title="Start a new map">Clear</button>
         </div>
+        <details id="vm-export-report" class="options" open hidden>
+          <summary id="vm-export-summary"></summary>
+          <ol id="vm-export-issues" class="issue-list small"></ol>
+        </details>
         <input id="vm-file" type="file" accept=".osm,.xml,.json" hidden />
         <details class="options">
           <summary>Map display</summary>
@@ -766,16 +830,24 @@
             <label><input id="vm-show-markings" type="checkbox" checked /> Boundaries</label>
             <label><input id="vm-show-virtual" type="checkbox" /> Virtual boundaries</label>
             <label><input id="vm-show-regulations" type="checkbox" checked /> Stops, crossings &amp; signals</label>
+            <label><input id="vm-show-evidence" type="checkbox" /> Build evidence: source dots &amp; inferred connectors</label>
+            <label><input id="vm-show-roadEdges" type="checkbox" /> Saved road-edge drafts (before trimming)</label>
             <label><input id="vm-show-labels" type="checkbox" checked /> Object labels</label>
           </div>
           <label class="small">Point cloud brightness <input id="vm-context" type="range" min="10" max="100" value="100" aria-label="Point cloud brightness" /></label>
           <p class="hint small">Select a lane to highlight its incoming and outgoing connections. Signal faces show geometry, not lamp states. Crosswalk stripes are a display convention.</p>
+          <p class="small" id="vm-evidence-summary"></p>
+          <button id="vm-evidence-inspect" disabled>Inspect source</button>
+          <select id="vm-evidence-profile" aria-label="Build evidence profile" disabled></select>
+          <select id="vm-evidence-vertex" aria-label="Build evidence vertex" disabled></select>
+          <p class="small" id="vm-evidence-detail">No build snapshot yet.</p>
+          <p class="small" id="vm-evidence-render-limit" hidden>Partial display: dash rendering budget or numeric range reached. Map geometry is unchanged.</p>
         </details>
         <div class="button-row">
           <button id="vm-road" aria-pressed="false" title="Click points along a road; its lanes are built around them">Draw road</button>
           <button id="vm-connect" aria-pressed="false" title="Join the end of one lane to the start of another with a turning lane">Connect</button>
           <button id="vm-select" aria-pressed="false" title="Look at a lane, set its speed limit or remove it">Select</button>
-          <button id="vm-vertices" aria-pressed="false" title="Drag a boundary vertex in XY, keeping its height">Edit vertices</button>
+          <button id="vm-vertices" aria-pressed="false" title="Select a boundary vertex to edit its height, or drag in XY">Edit vertices</button>
           <button id="vm-fit" title="Frame the map's boundaries in the view" disabled>Frame map</button>
         </div>
         <div class="button-row">
@@ -783,7 +855,21 @@
           <button id="vm-light" aria-pressed="false" title="A traffic light for the clicked lane and those beside it">Traffic light</button>
           <button id="vm-crosswalk" aria-pressed="false" title="A crosswalk across the road at the click, with stop lines before it">Crosswalk</button>
         </div>
-        <details class="options">
+        <details class="options" id="vm-boundary-editor">
+          <summary>Edit boundary vertex height</summary>
+          <label>Boundary <select id="vm-boundary"><option value="">Choose a boundary or click a yellow vertex</option></select></label>
+          <label>Vertex <select id="vm-boundary-vertex" disabled></select></label>
+          <p id="vm-boundary-context" class="hint small">Use Edit vertices to select a yellow handle, or choose a boundary here.</p>
+          <p id="vm-boundary-position" class="small"></p>
+          <label>New height Z (m) <input id="vm-boundary-z" type="number" step="any" disabled /></label>
+          <p id="vm-boundary-edit-status" class="hint small" role="status"></p>
+          <div class="button-row">
+            <button id="vm-boundary-focus" disabled>Focus vertex</button>
+            <button id="vm-boundary-apply" disabled>Apply height</button>
+          </div>
+          <p class="hint small">Height uses the original map frame. Applying changes only this vertex's Z; X and Y stay fixed. Shared boundaries update every lane that uses them. Inspect the source points, then recheck source coverage. Undo restores the previous map.</p>
+        </details>
+        <details class="options" id="vm-road-options">
           <summary>Road options</summary>
           <label><input id="vm-refine-sketch" type="checkbox" /> Fit drawn paths to the point cloud</label>
           <p class="hint small">When fitting, trace the outside forward lane and choose its cloud under Build from a trajectory. The path, lane counts and nominal width are your inputs; points supply ground height and supported boundaries. Equipment can be searched after the roads are fitted.</p>
@@ -795,6 +881,8 @@
             <label>Lane width (m) <input id="vm-width" type="number" min="0.5" step="0.05" value="3.5" /></label>
             <label title="Empty: no limit (Autoware needs one)">Speed limit (km/h) <input id="vm-speed" type="number" min="0" step="5" value="40" /></label>
           </div>
+          <label title="Used when fitting paths to source points. Must be no more than 45% of lane width.">Boundary search margin (m) <input id="vm-search-margin" type="number" min="0" max="2.7" step="0.05" value="1.5" /></label>
+          <p class="hint small">For fitted roads, keep the search margin within 45% of lane width. Reduce it when narrowing lanes.</p>
           <div class="range">
             <label title="The road is cut into connected lanes of about this length; 0 keeps one lane per road">Piece length (m) <input id="vm-segment" type="number" min="0" step="5" value="50" /></label>
             <label>Traffic keeps
@@ -815,11 +903,31 @@
             <button id="vm-build" disabled>Build draft roads</button>
             <label title="Fit inferred widths and heights to a coherent low surface. Defer missing or occluded intervals; lane counts remain your input."><input id="vm-source-surface" type="checkbox" /> Fit road footprint to source points</label>
             <label><input id="vm-anchor-prior" type="checkbox" checked /> Anchor inferred lines to detected outer edges</label>
+            <label title="Translate a straight trace only when both source curbs consistently enclose the configured road width. Curved traces and unconfirmed corridors are held; lane directions and counts still need review."><input id="vm-align-curbs" type="checkbox" /> Align straight traces using paired curbs</label>
+            <label title="Requires an applied interior paint correction. Infer a configured-width outer lane edge inside distant verified curbs. Original road-edge candidates remain in the report; this does not detect outer paint or classify a shoulder."><input id="vm-lane-edges" type="checkbox" /> Infer lane edges inside distant curbs (width assumption)</label>
+            <label title="Correct only the interior boundary of a two-lane road using a strong white paint track enclosed by paired physical curbs. Outer boundaries remain candidates; missing paint is inferred."><input id="vm-paint-divider" type="checkbox" /> Correct the interior line using paint and paired curbs</label>
+            <label title="Use thin white paint with dark ground on both sides to fit straight parallel boundaries. Gaps and sparse extensions stay inferred; counts and directions require review."><input id="vm-paint-corridor" type="checkbox" /> Fit straight lanes using paint candidates</label>
+            <label>Paint-fit source <select id="vm-paint-channel"><option value="rgb">RGB (default)</option><option value="intensity">Retained intensity (explicit)</option></select></label>
+            <p class="hint small">Applies to paint corridor/divider fits. Intensity uses local contrast; missing, ambiguous or unsupported paint keeps existing geometry. Counts and lane roles remain your inputs.</p>
+            <label title="Point coverage can end at a scan limit or occlusion. Use paint or curb observations to position inferred lines; coverage-edge candidates still require review."><input id="vm-physical-anchors" type="checkbox" /> Anchor inferred lane widths to paint and curbs only</label>
             <label title="Choose a continuous path through candidate edges; rejected observations can become width priors"><input id="vm-track-boundaries" type="checkbox" checked /> Track continuous boundaries</label>
             <label title="Fit trajectory-relative curves with at most 0.5 m horizontal movement; preserve supported corners and ground heights"><input id="vm-fit-boundaries" type="checkbox" checked /> Reduce boundary jitter</label>
             <label title="Reject tall raised surfaces and steps without nearby road support; rejected candidates become width assumptions"><input id="vm-verify-curbs" type="checkbox" checked /> Check curb profiles</label>
             <label title="Reuse lanes whose centre, boundaries, direction and height agree; retain existing geometry and rules"><input id="vm-merge-passes" type="checkbox" checked /> Merge matching existing lanes</label>
           <p id="vm-build-report" class="small"></p>
+          <aside id="vm-build-failure" class="options" aria-label="Road build problem" hidden>
+            <h3>Road generation stopped</h3>
+            <p id="vm-failure-reason" class="small"></p>
+            <p id="vm-failure-settings" class="small"></p>
+            <p class="hint small">Red lines show the rejected boundary preview; the yellow cross marks the problem location. Inspect the source points and review lane counts and width. Your existing map is retained.</p>
+            <p id="vm-failure-stale" class="small" hidden>Settings changed. Rebuild to check the new settings.</p>
+            <div class="button-row">
+              <button id="vm-failure-focus">Focus problem</button>
+              <button id="vm-failure-options">Edit lane counts and width</button>
+              <button id="vm-failure-retry">Rebuild with current settings</button>
+              <button id="vm-failure-dismiss">Dismiss preview</button>
+            </div>
+          </aside>
           <label><input id="vm-discover-after-build" type="checkbox" checked /> Search road equipment after building</label>
         </details>
         <details class="options" id="vm-discovery">
@@ -852,6 +960,19 @@
           <button id="vm-quality-check" disabled>Check source coverage</button>
           <p id="vm-quality-report" class="small">Source coverage has not been checked.</p>
           <div id="vm-quality-lanes" class="small"></div>
+          <div id="vm-quality-locations" hidden>
+            <p id="vm-quality-location-summary" class="small" role="status"></p>
+            <label><input id="vm-quality-show" type="checkbox" checked /> Show source problem locations</label>
+            <p class="hint small"><span style="color:#ff8a3d">Orange: insufficient returns.</span> <span style="color:#d98fff">Purple: height disagreement.</span> Marks show failed samples; lines join consecutive failures of the same kind. Missing points can mean occlusion or sparse coverage.</p>
+            <label>Problem interval <select id="vm-quality-problem"><option value="">Choose a problem interval</option></select></label>
+            <p id="vm-quality-problem-detail" class="small" role="status"></p>
+            <div class="button-row">
+              <button id="vm-quality-next" disabled>Next problem</button>
+              <button id="vm-quality-focus" disabled>Focus interval</button>
+              <button id="vm-quality-edit" disabled>Edit lane boundary vertices</button>
+            </div>
+            <p class="hint small">Inspect the source before editing. Dragging keeps height; use Edit boundary vertex height to change Z. Shared boundaries update every lane that uses them. After an edit, run Check source coverage again.</p>
+          </div>
         </details>
         <details class="options">
           <summary>Draft junction connections</summary>
@@ -957,8 +1078,32 @@
             <button id="vm-feature-apply" disabled>Apply geometry edit</button>
             <p class="hint small">Coordinates use the original map frame. Drag keeps Z; numeric edits can change it. Observed paint, stored lamps and lane assignments stay at their original values. Review them after editing. Undo restores the complete previous map.</p>
           </details>
+        <details id="vm-review-panel" class="options" open>
+          <summary>Lane review</summary>
+          <p id="vm-review-summary" class="small"></p>
+          <label>Review queue <select id="vm-review-filter"><option value="unreviewed">Unreviewed</option><option value="reviewed">Reviewed</option><option value="needs-fix">Needs fixes</option><option value="deferred">Deferred</option><option value="low-support">Low source coverage (check first)</option><option value="all">All lanes</option></select></label>
+          <button id="vm-review-next">Next lane</button>
+          <p id="vm-review-page" class="small" role="status"></p>
+          <div class="review-table-wrap">
+            <table class="review-table" aria-label="Lane reviews">
+              <thead><tr><th scope="col">Lane</th><th scope="col">State</th><th scope="col">Notes</th></tr></thead>
+              <tbody id="vm-review-rows"></tbody>
+            </table>
+          </div>
+          <p id="vm-review-empty" class="small"></p>
+          <div class="button-row">
+            <button id="vm-review-page-prev" disabled>Previous page</button>
+            <button id="vm-review-page-next" disabled>Next page</button>
+          </div>
+          <button id="vm-review-export" disabled>Export all reviews CSV</button>
+          <p class="hint small">Click a lane to view it. CSV includes every lane and its saved decision and notes; save any changes in the editor first.</p>
+        </details>
         <div id="vm-lane" hidden>
           <h3 id="vm-lane-title"></h3>
+          <label>Review state <select id="vm-review-state"><option value="unreviewed">Unreviewed</option><option value="reviewed">Reviewed</option><option value="needs-fix">Needs fixes</option><option value="deferred">Deferred</option></select></label>
+          <label>Review notes <textarea id="vm-review-notes" maxlength="10000" rows="3"></textarea></label>
+          <p id="vm-review-stale" class="small" role="status"></p>
+          <button id="vm-review-save">Save lane review</button>
           <p id="vm-lane-info" class="small"></p>
           <div class="button-row">
             <label>Speed limit (km/h) <input id="vm-lane-speed" type="number" min="0" step="5" /></label>
@@ -1029,6 +1174,7 @@
       <div id="vm-legend" class="vm-legend" hidden aria-label="Vector map legend">
         <span><i class="road"></i>Road</span><span><i class="turn"></i>Turn</span>
         <span><i class="stop"></i>Stop</span><span><i class="walk"></i>Crosswalk</span><span><i class="signal"></i>Signal geometry</span>
+        <span id="vm-evidence-legend" hidden><i class="source-paint"></i>Paint source <i class="source-intensity"></i>Intensity source <i class="source-curb"></i>Curb source <i class="source-coverage"></i>Coverage limit <i class="inferred-line"></i>Inferred connectors <i class="no-evidence"></i>No build snapshot <i class="saved-edge"></i>Road-edge draft (pre-trim)</span>
         <span id="vm-route-legend" hidden><i class="incoming"></i>Incoming <i class="selected"></i>Selected <i class="outgoing"></i>Outgoing</span>
       </div>
       <svg id="lasso" class="lasso" hidden><polygon points="" /></svg>
@@ -1067,7 +1213,7 @@
       </span>
       <span class="status-right">
         <span id="drawn"></span><span id="shift"></span>
-        <span id="memory" title="Memory used by the main WebAssembly worker (it grows but is not returned until the page is reloaded)"></span>
+        <span id="memory" title="Allocated WASM memory in the main worker and parallel workers"></span>
       </span>
     </footer>
 

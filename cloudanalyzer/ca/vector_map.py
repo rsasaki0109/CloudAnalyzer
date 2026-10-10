@@ -7,7 +7,7 @@ import math
 import os
 import tempfile
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlsplit, urlunsplit
 
 from ca._rust import core
@@ -25,9 +25,16 @@ def build_vector_map(
     speed_limit: float = 40.0,
     segment_length: float = 50.0,
     anchor_width_prior: bool = True,
+    physical_anchors_only: bool = False,
+    align_trace_to_curbs: bool = False,
+    infer_lane_edges: bool = False,
+    fit_paint_divider: bool = False,
+    fit_paint_corridor: bool = False,
+    paint_channel: Literal["rgb", "intensity"] = "rgb",
     track_boundaries: bool = True,
     fit_boundaries: bool = True,
     fit_source_surface: bool = False,
+    local_ground_height: bool = False,
     verify_curb_profiles: bool = True,
     merge_repeated_passes: bool = True,
     existing_map: str | None = None,
@@ -46,7 +53,29 @@ def build_vector_map(
     defines the local origin of the other projections. Omitted metadata uses Autoware Local.
     Candidate tracking rejects isolated peaks; trajectory-relative curve fitting moves XY by at most
     0.5 m and preserves ground heights. Evidence counts describe selected sources before
-    fitting, including explicit width priors. Curb profile checks reject tall raised
+    fitting, including explicit width priors. physical_anchors_only excludes point
+    coverage limits from offsets for inferred lines; curb/intensity observations
+    remain anchors. Coverage-edge geometry can still be selected and needs review.
+    The ignored-candidate counter is before tracking and surface deferral.
+    align_trace_to_curbs optionally translates straight traces into a stable pair
+    of source curbs enclosing the configured total width. It preserves lane counts,
+    requires a majority of sections and holds curved or unconfirmed traces.
+    The report records the translation; this does not certify lane identity.
+    infer_lane_edges optionally places a configured-width outer lane prior
+    inside distant verified curbs after an applied paint-divider correction.
+    Original curb candidates stay in the report; outer paint is not observed.
+    fit_paint_divider optionally corrects only a two-lane interior boundary
+    from one strong source-paint track guarded by paired physical curbs. Outside geometry
+    remains unchanged; missing paint is inferred and lane roles remain manual.
+    paint_channel explicitly selects retained RGB (default) or intensity for paint fits.
+    Intensity is normalized to ROI P10/P99.9; no automatic fallback or channel mutation.
+    fit_paint_corridor optionally fits straight parallel boundaries from thin source
+    paint with dark source returns on both sides. It measures heading and spacing
+    but keeps lane counts/directions manual. Sparse outer paint and dash gaps can
+    be extended; those vertices remain inferred. The report separates observed
+    component intervals, interpolation and extrapolation before footprint trimming.
+    Ambiguous bundles, missing contrast and exhausted scan budgets hold the fit.
+    Curb profile checks reject tall raised
     surfaces and isolated low returns; this can leave more width assumptions and does
     not guarantee better lane geometry. Stages can be disabled independently.
     fit_source_surface instead fits inferred widths/heights to a coherent low-surface
@@ -56,7 +85,14 @@ def build_vector_map(
     Source-backed candidates are retained and clipped first. If less than 60% of their
     length is supported, low-surface footprint fitting replaces those candidates.
     Review boundaries, repeated passes, travel directions and junctions before using the map.
+    local_ground_height optionally estimates seed-road Z from the lowest 0.15 m
+    layer within 0.75 m under the trajectory. At least three occupied 0.2 m XY cells
+    must span a triangle of 0.01 m²; the median of their lowest returns is used.
+    Missing coherent support defers sections rather than falling back to bins.
+    Another level can win; compare both source estimators and retained extent.
     """
+    if paint_channel not in ("rgb", "intensity"):
+        raise ValueError("paint_channel must be rgb or intensity")
     module = core()
     if module is None or not hasattr(module, "build_vector_map"):
         raise RuntimeError(
@@ -116,9 +152,16 @@ def build_vector_map(
             "speed_limit": speed_limit,
             "segment_length": segment_length,
             "anchor_width_prior": anchor_width_prior,
+            **({"physical_anchors_only": True} if physical_anchors_only else {}),
+            **({"align_trace_to_curbs": True} if align_trace_to_curbs else {}),
+            **({"infer_lane_edges": True} if infer_lane_edges else {}),
+            **({"fit_paint_divider": True} if fit_paint_divider else {}),
+            **({"fit_paint_corridor": True} if fit_paint_corridor else {}),
+            **({"paint_channel": "intensity"} if paint_channel == "intensity" else {}),
             "track_boundaries": track_boundaries,
             "fit_boundaries": fit_boundaries,
             **({"fit_source_surface": True} if fit_source_surface else {}),
+            **({"local_ground_height": True} if local_ground_height else {}),
             "verify_curb_profiles": verify_curb_profiles,
             "merge_repeated_passes": merge_repeated_passes,
         },

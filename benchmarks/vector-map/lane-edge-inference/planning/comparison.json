@@ -1,0 +1,65 @@
+[
+  {
+    "modes": [
+      {
+        "deferred_m": 3.9999999999964544,
+        "flags": [],
+        "generated_m": 46.606323715523516,
+        "ignored": 0,
+        "lane_fragments": 4,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 3.9999999999964544,
+        "flags": [],
+        "generated_m": 46.606323715523516,
+        "ignored": 0,
+        "lane_fragments": 4,
+        "mode": "after"
+      }
+    ],
+    "name": "planning-0"
+  },
+  {
+    "modes": [
+      {
+        "deferred_m": 8.000000000006409,
+        "flags": [],
+        "generated_m": 38.14108798023091,
+        "ignored": 0,
+        "lane_fragments": 8,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 8.000000000006409,
+        "flags": [],
+        "generated_m": 38.14108798023091,
+        "ignored": 0,
+        "lane_fragments": 8,
+        "mode": "after"
+      }
+    ],
+    "name": "planning-1"
+  },
+  {
+    "modes": [
+      {
+        "deferred_m": 0.0,
+        "flags": [],
+        "generated_m": 31.76476034853718,
+        "ignored": 0,
+        "lane_fragments": 10,
+        "mode": "before"
+      },
+      {
+        "deferred_m": 0.0,
+        "flags": [],
+        "generated_m": 31.76476034853718,
+        "ignored": 0,
+        "lane_fragments": 10,
+        "mode": "after"
+      }
+    ],
+    "name": "planning-2"
+  }
+]

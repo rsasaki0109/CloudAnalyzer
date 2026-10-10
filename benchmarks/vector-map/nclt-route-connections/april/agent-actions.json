@@ -1,0 +1,276 @@
+{
+  "observations_omitted": true,
+  "full_history": {
+    "path": "run.json",
+    "sha256": "75624f96e50684a69bfb5b29dbd6016ccbe47c62096315c32b4a599fcd7f1b9e"
+  },
+  "actions": [
+    {
+      "sequence": 1,
+      "action": {
+        "type": "refine",
+        "association": "trajectory_containing"
+      },
+      "reason": "Off-path overlapping bands fragmented the path; try explicit path association with unchanged point map and source thresholds",
+      "status": "ready",
+      "proposal_sha256": "f425101bb5f02ef086ad5d8087a85b8d946e736a42c95a2a0d6a1e4e63bba8c1"
+    },
+    {
+      "sequence": 2,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "a259518684993584645ad8febc0523dc47d04ba110cfa145b78916337bf74fd5"
+    },
+    {
+      "sequence": 3,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          9,
+          10
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "a259518684993584645ad8febc0523dc47d04ba110cfa145b78916337bf74fd5"
+    },
+    {
+      "sequence": 4,
+      "action": {
+        "type": "draft",
+        "decisions": [
+          {
+            "candidate_id": 1,
+            "action": "include",
+            "from_m": 10,
+            "to_m": 18,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 4,
+            "action": "include",
+            "from_m": 42,
+            "to_m": 44,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 5,
+            "action": "include",
+            "from_m": 56,
+            "to_m": 58,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 5,
+            "action": "include",
+            "from_m": 62,
+            "to_m": 70,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 6,
+            "action": "include",
+            "from_m": 76,
+            "to_m": 104,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 7,
+            "action": "include",
+            "from_m": 110,
+            "to_m": 116,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 7,
+            "action": "include",
+            "from_m": 122,
+            "to_m": 124,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 8,
+            "action": "include",
+            "from_m": 128,
+            "to_m": 162,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 8,
+            "action": "include",
+            "from_m": 166,
+            "to_m": 172,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 8,
+            "action": "include",
+            "from_m": 178,
+            "to_m": 184,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 8,
+            "action": "include",
+            "from_m": 198,
+            "to_m": 200,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 10,
+            "action": "include",
+            "from_m": 240,
+            "to_m": 242,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 2,
+            "action": "defer",
+            "from_m": 22.0,
+            "to_m": 30.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 3,
+            "action": "defer",
+            "from_m": 34.0,
+            "to_m": 38.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 4,
+            "action": "defer",
+            "from_m": 44,
+            "to_m": 48.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 5,
+            "action": "defer",
+            "from_m": 52.0,
+            "to_m": 56,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 5,
+            "action": "defer",
+            "from_m": 58,
+            "to_m": 62,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 6,
+            "action": "defer",
+            "from_m": 74.0,
+            "to_m": 76,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 7,
+            "action": "defer",
+            "from_m": 116,
+            "to_m": 122,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 8,
+            "action": "defer",
+            "from_m": 162,
+            "to_m": 166,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 8,
+            "action": "defer",
+            "from_m": 172,
+            "to_m": 178,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 8,
+            "action": "defer",
+            "from_m": 184,
+            "to_m": 198,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 9,
+            "action": "defer",
+            "from_m": 218.0,
+            "to_m": 232.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 10,
+            "action": "defer",
+            "from_m": 242,
+            "to_m": 244.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          }
+        ]
+      },
+      "reason": "Calling agent adopts reviewed path-containing intervals after refinement; retain minimum widths, unsupported gaps and broad/search-limited holds",
+      "status": "audited_draft",
+      "proposal_sha256": "a259518684993584645ad8febc0523dc47d04ba110cfa145b78916337bf74fd5",
+      "geometry_candidate_id": 1,
+      "lane_candidate_id": 2
+    },
+    {
+      "sequence": 5,
+      "action": {
+        "type": "inspect_connections",
+        "candidate_id": 2,
+        "offset": 0
+      },
+      "reason": "Calling agent inspects original drive ordering, exact geometry, fixed width and source evidence before considering short connections",
+      "status": "inspected",
+      "proposal_sha256": "a259518684993584645ad8febc0523dc47d04ba110cfa145b78916337bf74fd5"
+    },
+    {
+      "sequence": 6,
+      "action": {
+        "type": "connect",
+        "candidate_id": 2,
+        "pairs": [
+          {
+            "from": 18,
+            "to": 21,
+            "reason": "Observed 116\u2013122 m consecutive gap: recorded path stays within both inspected boundaries, all legacy source samples/endpoints pass, 2.5 m minimum retained; test both estimators and reopened graph before delivery."
+          }
+        ]
+      },
+      "reason": "Calling agent explicitly tests inspected short source-supported consecutive connections while preserving all original lanes, source extent, fixed assumptions and unresolved legal routing",
+      "status": "audited_draft",
+      "proposal_sha256": "a259518684993584645ad8febc0523dc47d04ba110cfa145b78916337bf74fd5",
+      "lane_candidate_id": 3,
+      "connection_proposal": {
+        "path": "connections-02.json",
+        "sha256": "d1450a8b8562ec25746822a1534382f1bdbff793dc5d5c505dde2b056e86c89c",
+        "bytes": 11195
+      }
+    },
+    {
+      "sequence": 7,
+      "action": {
+        "type": "finish",
+        "candidate_id": 3
+      },
+      "reason": "Deliver both map drafts with extent, connectivity, estimator disagreement and legal-semantic holds",
+      "status": "finished",
+      "proposal_sha256": "a259518684993584645ad8febc0523dc47d04ba110cfa145b78916337bf74fd5"
+    }
+  ]
+}

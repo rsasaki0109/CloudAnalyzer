@@ -111,6 +111,7 @@ struct VertexLayout {
     classification: Option<usize>,
     normals: Option<[usize; 3]>,
     splat: Option<Splat>,
+    extras: Vec<(String, usize, Scalar)>,
 }
 
 /// Coefficient of the degree-0 spherical harmonic, which turns a 3DGS
@@ -151,6 +152,14 @@ impl Splat {
 }
 
 fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
+    let mut names = std::collections::BTreeSet::new();
+    for property in &element.properties {
+        if let Property::Scalar { name, .. } = property
+            && !names.insert(name)
+        {
+            return Err(IoError::header(FORMAT, "duplicate vertex property name"));
+        }
+    }
     let find = |names: &[&str]| {
         element.properties.iter().position(
             |p| matches!(p, Property::Scalar { name, .. } if names.contains(&name.as_str())),
@@ -185,7 +194,7 @@ fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
         _ => None,
     };
     let raw = matches!(splat, Some(Splat::Raw { .. }));
-    Ok(VertexLayout {
+    let mut layout = VertexLayout {
         xyz,
         // A raw splat's color comes from its SH DC term.
         rgb: rgb.filter(|_| !raw),
@@ -199,7 +208,61 @@ fn vertex_layout(element: &Element) -> Result<VertexLayout, IoError> {
         // 3DGS exports carry nx/ny/nz, but as zeros.
         normals: all(["nx", "ny", "nz"]).filter(|_| !raw),
         splat,
-    })
+        extras: Vec::new(),
+    };
+    let mut used = vec![false; element.properties.len()];
+    for i in xyz {
+        used[i] = true;
+    }
+    if let Some((indices, _)) = rgb {
+        for i in indices {
+            used[i] = true;
+        }
+    }
+    for i in [layout.intensity, layout.classification]
+        .into_iter()
+        .flatten()
+    {
+        used[i] = true;
+    }
+    if let Some(indices) = layout.normals {
+        for i in indices {
+            used[i] = true;
+        }
+    }
+    if let Some(splat) = splat {
+        match splat {
+            Splat::Raw { dc, opacity, scale } => {
+                for i in dc.into_iter().chain(scale).chain([opacity]) {
+                    used[i] = true;
+                }
+            }
+            Splat::Converted { opacity, size } => {
+                used[opacity] = true;
+                used[size] = true;
+            }
+        }
+    }
+    for (i, property) in element.properties.iter().enumerate() {
+        if let Property::Scalar { name, kind } = property {
+            // Raw Gaussian parameters are intentionally converted/omitted, rather
+            // than mixed with the saved sigmoid opacity and radius schema.
+            let raw_parameter = raw
+                && (matches!(name.as_str(), "nx" | "ny" | "nz")
+                    || name.starts_with("rot_")
+                    || name.starts_with("f_rest_"));
+            if !used[i] && !raw_parameter && matches!(kind, Scalar::F32 | Scalar::U8) {
+                if layout.extras.iter().any(|(other, _, _)| other == name) {
+                    return Err(IoError::header(
+                        FORMAT,
+                        "duplicate additional vertex property",
+                    ));
+                }
+                layout.extras.push((name.clone(), i, *kind));
+            }
+        }
+    }
+    Ok(layout)
 }
 
 impl VertexLayout {
@@ -233,6 +296,13 @@ impl VertexLayout {
         }
         if let Some(splat) = self.splat {
             push_splat(cloud, slot, splat.decode(|i| values[i]));
+            slot += 2;
+        }
+        for (extra, (_, index, _)) in self.extras.iter().enumerate() {
+            match &mut cloud.attributes[slot + extra].values {
+                AttributeValues::F32(v) => v.push(values[*index] as f32),
+                AttributeValues::U8(v) => v.push(values[*index].clamp(0.0, 255.0) as u8),
+            }
         }
     }
 
@@ -265,6 +335,16 @@ impl VertexLayout {
                     values: AttributeValues::F32(Vec::with_capacity(count)),
                 });
             }
+        }
+        for (name, _, kind) in &self.extras {
+            attributes.push(Attribute {
+                name: name.clone(),
+                values: if *kind == Scalar::U8 {
+                    AttributeValues::U8(Vec::with_capacity(count))
+                } else {
+                    AttributeValues::F32(Vec::with_capacity(count))
+                },
+            });
         }
         let raw_splat = matches!(self.splat, Some(Splat::Raw { .. }));
         PointCloud {
@@ -487,7 +567,8 @@ fn append_fixed_vertices(
     let plain = layout.intensity.is_none()
         && layout.classification.is_none()
         && layout.normals.is_none()
-        && layout.splat.is_none();
+        && layout.splat.is_none()
+        && layout.extras.is_empty();
     if le && plain && read_common_layout(records, stride, xyz, rgb, cloud) {
         return Ok(());
     }
@@ -529,6 +610,15 @@ fn append_fixed_vertices(
                 kind.decode(&record[at..], le)
             };
             push_splat(cloud, slot, splat.decode(get));
+            slot += 2;
+        }
+        for (extra, (_, index, _)) in layout.extras.iter().enumerate() {
+            let (at, kind) = field(*index);
+            let value = kind.decode(&record[at..], le);
+            match &mut cloud.attributes[slot + extra].values {
+                AttributeValues::F32(v) => v.push(value as f32),
+                AttributeValues::U8(v) => v.push(value as u8),
+            }
         }
     }
     Ok(())
@@ -1052,6 +1142,84 @@ end_header
         let cloud = read(&binary_splats()).unwrap();
         let back = read(&super::super::write_ply(&cloud, &[]).unwrap()).unwrap();
         assert_eq!(back, cloud);
+    }
+
+    #[test]
+    fn additional_float_and_byte_attributes_survive_encodings_streaming_and_export() {
+        let properties = "element vertex 2\nproperty double x\nproperty double y\nproperty double z\nproperty float correction\nproperty uchar source\n";
+        let rows = [
+            (
+                [500000.000123, 4000000.000456, 2.123456789],
+                0.1234567f32,
+                7u8,
+            ),
+            (
+                [500000.000321, 4000000.000654, 2.987654321],
+                -0.7654321f32,
+                255u8,
+            ),
+        ];
+        for encoding in ["ascii", "binary_little_endian", "binary_big_endian"] {
+            let header = format!("ply\nformat {encoding} 1.0\n{properties}end_header\n");
+            let mut bytes = header.as_bytes().to_vec();
+            for (xyz, correction, source) in rows {
+                if encoding == "ascii" {
+                    bytes.extend_from_slice(
+                        format!("{} {} {} {correction} {source}\n", xyz[0], xyz[1], xyz[2])
+                            .as_bytes(),
+                    );
+                } else {
+                    for value in xyz {
+                        bytes.extend_from_slice(&if encoding == "binary_little_endian" {
+                            f64::to_le_bytes(value)
+                        } else {
+                            f64::to_be_bytes(value)
+                        });
+                    }
+                    bytes.extend_from_slice(&if encoding == "binary_little_endian" {
+                        correction.to_le_bytes()
+                    } else {
+                        correction.to_be_bytes()
+                    });
+                    bytes.push(source);
+                }
+            }
+            let cloud = read(&bytes).unwrap();
+            assert_eq!(cloud.positions, rows.map(|r| r.0));
+            assert_eq!(
+                cloud.attribute("correction").unwrap().values,
+                AttributeValues::F32(rows.map(|r| r.1).to_vec())
+            );
+            assert_eq!(
+                cloud.attribute("source").unwrap().values,
+                AttributeValues::U8(rows.map(|r| r.2).to_vec())
+            );
+            assert_eq!(
+                read(&super::super::write_ply(&cloud, &[]).unwrap()).unwrap(),
+                cloud
+            );
+            if encoding != "ascii" {
+                let mut stream = super::super::PointStream::open("a.ply", header.as_bytes())
+                    .unwrap()
+                    .unwrap();
+                let body = &bytes[header.len()..];
+                stream.push(&body[..7]);
+                stream.push(&body[7..31]);
+                stream.push(&body[31..]);
+                assert_eq!(stream.finish().unwrap(), cloud);
+            }
+        }
+    }
+
+    #[test]
+    fn duplicate_vertex_properties_are_rejected_before_attribute_allocation() {
+        let source = b"ply\nformat ascii 1.0\nelement vertex 1\nproperty float x\nproperty float y\nproperty float z\nproperty float correction\nproperty float correction\nend_header\n1 2 3 4 5\n";
+        assert!(
+            read(source)
+                .unwrap_err()
+                .to_string()
+                .contains("duplicate vertex property")
+        );
     }
 
     #[test]

@@ -21,7 +21,7 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         // Headless Chromium renders WebGL with SwiftShader.
-        launchOptions: { args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] },
+        launchOptions: { executablePath: process.env.PW_CHROMIUM_EXECUTABLE_PATH, args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"] },
       },
     },
   ],

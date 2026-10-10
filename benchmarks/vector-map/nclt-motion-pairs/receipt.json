@@ -1,0 +1,1933 @@
+{
+  "schema": "cloudanalyzer.nclt_motion_pairs_receipt.v1",
+  "sessions": {
+    "april": {
+      "comparison": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/selection/comparison.json",
+        "sha256": "ea486d5a7e52e7c6320448bc5defc6e8ebd3fa1e6385b89b259b7c0a2f957ea0",
+        "bytes": 305346
+      },
+      "final_revision": 2,
+      "final_choice": "baseline",
+      "summary": {
+        "baseline": {
+          "raw_extent": {
+            "trajectory_length_m": 250.4805260889724,
+            "generated_length_m": 118,
+            "retained_fraction": 0.4710945071956835,
+            "minimum_retained_fraction": 0.9,
+            "passes_requested_extent": false
+          },
+          "audits": {
+            "editable": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 839,
+                "supported": 508,
+                "height_mismatches": 331,
+                "insufficient_returns": 0
+              },
+              "needs_review": [
+                3,
+                12,
+                15,
+                18,
+                21,
+                24,
+                27,
+                30,
+                36
+              ],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "minimum_returns": 3,
+                  "model": "low_quantile",
+                  "quantile": 0.15
+                }
+              },
+              "needs_review_total": 9
+            },
+            "reopened_osm": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 839,
+                "supported": 508,
+                "height_mismatches": 331,
+                "insufficient_returns": 0
+              },
+              "needs_review": [
+                3,
+                12,
+                15,
+                18,
+                21,
+                24,
+                27,
+                30,
+                36
+              ],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "minimum_returns": 3,
+                  "model": "low_quantile",
+                  "quantile": 0.15
+                }
+              },
+              "needs_review_total": 9
+            },
+            "consensus_editable": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 839,
+                "supported": 839,
+                "height_mismatches": 0,
+                "insufficient_returns": 0
+              },
+              "needs_review": [],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "layer_height_m": 0.15,
+                  "minimum_cells": 3,
+                  "minimum_triangle_area_m2": 0.01,
+                  "model": "lowest_supported_layer",
+                  "xy_cell_m": 0.2
+                }
+              },
+              "needs_review_total": 0
+            },
+            "consensus_reopened_osm": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 839,
+                "supported": 839,
+                "height_mismatches": 0,
+                "insufficient_returns": 0
+              },
+              "needs_review": [],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "layer_height_m": 0.15,
+                  "minimum_cells": 3,
+                  "minimum_triangle_area_m2": 0.01,
+                  "model": "lowest_supported_layer",
+                  "xy_cell_m": 0.2
+                }
+              },
+              "needs_review_total": 0
+            }
+          },
+          "routes": {
+            "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+            "connected_components": 11,
+            "longest_route_station_span_m": 42,
+            "routes": [
+              {
+                "lane_ids": [
+                  3
+                ],
+                "from_m": 10,
+                "to_m": 12,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  6
+                ],
+                "from_m": 16,
+                "to_m": 18,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  9
+                ],
+                "from_m": 26,
+                "to_m": 36,
+                "station_span_m": 10
+              },
+              {
+                "lane_ids": [
+                  12
+                ],
+                "from_m": 40,
+                "to_m": 44,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  15
+                ],
+                "from_m": 56,
+                "to_m": 58,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  18
+                ],
+                "from_m": 62,
+                "to_m": 104,
+                "station_span_m": 42
+              },
+              {
+                "lane_ids": [
+                  21,
+                  39,
+                  24
+                ],
+                "from_m": 110,
+                "to_m": 124,
+                "station_span_m": 14
+              },
+              {
+                "lane_ids": [
+                  27
+                ],
+                "from_m": 128,
+                "to_m": 162,
+                "station_span_m": 34
+              },
+              {
+                "lane_ids": [
+                  30
+                ],
+                "from_m": 166,
+                "to_m": 172,
+                "station_span_m": 6
+              },
+              {
+                "lane_ids": [
+                  33
+                ],
+                "from_m": 178,
+                "to_m": 184,
+                "station_span_m": 6
+              },
+              {
+                "lane_ids": [
+                  36
+                ],
+                "from_m": 240,
+                "to_m": 242,
+                "station_span_m": 2
+              }
+            ],
+            "legal_routing_verified": false
+          },
+          "map_points": 712558,
+          "common_extent": {
+            "trajectory_length_m": 250.48857464824565,
+            "generated_length_m": 117.97449963029021,
+            "retained_fraction": 0.47097756772323296,
+            "minimum_retained_fraction": 0.9,
+            "passes_requested_extent": false
+          },
+          "included_intervals": [
+            {
+              "from_m": 10.034785195682979,
+              "to_m": 12.04266658882518,
+              "map_from_m": 10.0,
+              "map_to_m": 12,
+              "from_timestamp_s": 1335706512.1276011,
+              "to_timestamp_s": 1335706513.4893258,
+              "from_original_frame_coordinate": 8.866995338468056,
+              "to_original_frame_coordinate": 10.569192291765143
+            },
+            {
+              "from_m": 16.051392814153107,
+              "to_m": 18.055093375583876,
+              "map_from_m": 16,
+              "map_to_m": 18.0,
+              "from_timestamp_s": 1335706516.8021042,
+              "to_timestamp_s": 1335706518.7142968,
+              "from_original_frame_coordinate": 14.709963405385336,
+              "to_original_frame_coordinate": 17.100087893938746
+            },
+            {
+              "from_m": 26.060114295743425,
+              "to_m": 36.052891799084684,
+              "map_from_m": 26,
+              "map_to_m": 36.0,
+              "from_timestamp_s": 1335706526.2964106,
+              "to_timestamp_s": 1335706533.4623358,
+              "from_original_frame_coordinate": 26.327238994606546,
+              "to_original_frame_coordinate": 35.28419574554143
+            },
+            {
+              "from_m": 40.05176754308568,
+              "to_m": 44.04957415153851,
+              "map_from_m": 40.0,
+              "map_to_m": 44,
+              "from_timestamp_s": 1335706536.3190424,
+              "to_timestamp_s": 1335706539.1812274,
+              "from_original_frame_coordinate": 38.85489659162326,
+              "to_original_frame_coordinate": 42.43244556254415
+            },
+            {
+              "from_m": 56.0420492612498,
+              "to_m": 58.04139837882695,
+              "map_from_m": 56,
+              "map_to_m": 58,
+              "from_timestamp_s": 1335706548.0280008,
+              "to_timestamp_s": 1335706549.470419,
+              "from_original_frame_coordinate": 53.4903533529028,
+              "to_original_frame_coordinate": 55.293250923490056
+            },
+            {
+              "from_m": 62.040228226817476,
+              "to_m": 104.01925371922636,
+              "map_from_m": 62,
+              "map_to_m": 104.0,
+              "from_timestamp_s": 1335706552.2258346,
+              "to_timestamp_s": 1335706582.601536,
+              "from_original_frame_coordinate": 58.73737746100997,
+              "to_original_frame_coordinate": 96.70507263179297
+            },
+            {
+              "from_m": 110.01532650079334,
+              "to_m": 116.01606888337689,
+              "map_from_m": 110.0,
+              "map_to_m": 116,
+              "from_timestamp_s": 1335706587.0179772,
+              "to_timestamp_s": 1335706591.7201655,
+              "from_original_frame_coordinate": 102.22534938463556,
+              "to_original_frame_coordinate": 108.10279609535029
+            },
+            {
+              "from_m": 122.01687947085601,
+              "to_m": 124.0184377503678,
+              "map_from_m": 122,
+              "map_to_m": 124.0,
+              "from_timestamp_s": 1335706596.1390917,
+              "to_timestamp_s": 1335706597.5880659,
+              "from_original_frame_coordinate": 113.62616617591563,
+              "to_original_frame_coordinate": 115.43729421064684
+            },
+            {
+              "from_m": 128.0184703833283,
+              "to_m": 162.01205382388517,
+              "map_from_m": 128.0,
+              "map_to_m": 162,
+              "from_timestamp_s": 1335706600.8260443,
+              "to_timestamp_s": 1335706625.6707187,
+              "from_original_frame_coordinate": 119.4845350079654,
+              "to_original_frame_coordinate": 150.28882471742375
+            },
+            {
+              "from_m": 166.01246925830011,
+              "to_m": 172.0112970916367,
+              "map_from_m": 166,
+              "map_to_m": 172,
+              "from_timestamp_s": 1335706628.5697534,
+              "to_timestamp_s": 1335706632.798199,
+              "from_original_frame_coordinate": 153.9124390550785,
+              "to_original_frame_coordinate": 159.1976932031952
+            },
+            {
+              "from_m": 178.01002085800843,
+              "to_m": 184.01191908935778,
+              "map_from_m": 178,
+              "map_to_m": 184,
+              "from_timestamp_s": 1335706637.0652943,
+              "to_timestamp_s": 1335706641.441529,
+              "from_original_frame_coordinate": 164.53133106262933,
+              "to_original_frame_coordinate": 170.00133971345338
+            },
+            {
+              "from_m": 240.00987355647197,
+              "to_m": 242.00722234307096,
+              "map_from_m": 240.0,
+              "map_to_m": 242,
+              "from_timestamp_s": 1335706685.5144103,
+              "to_timestamp_s": 1335706686.9145267,
+              "from_original_frame_coordinate": 225.08965225179398,
+              "to_original_frame_coordinate": 226.83972194665893
+            }
+          ],
+          "included_intervals_total": 12
+        },
+        "candidate": {
+          "raw_extent": {
+            "trajectory_length_m": 250.50052617601867,
+            "generated_length_m": 176.0,
+            "retained_fraction": 0.7025933345797863,
+            "minimum_retained_fraction": 0.9,
+            "passes_requested_extent": false
+          },
+          "audits": {
+            "editable": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 1253,
+                "supported": 856,
+                "height_mismatches": 397,
+                "insufficient_returns": 0
+              },
+              "needs_review": [
+                3,
+                12,
+                15,
+                18,
+                21,
+                24,
+                27,
+                36
+              ],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "minimum_returns": 3,
+                  "model": "low_quantile",
+                  "quantile": 0.15
+                }
+              },
+              "needs_review_total": 8
+            },
+            "reopened_osm": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 1253,
+                "supported": 856,
+                "height_mismatches": 397,
+                "insufficient_returns": 0
+              },
+              "needs_review": [
+                3,
+                12,
+                15,
+                18,
+                21,
+                24,
+                27,
+                36
+              ],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "minimum_returns": 3,
+                  "model": "low_quantile",
+                  "quantile": 0.15
+                }
+              },
+              "needs_review_total": 8
+            },
+            "consensus_editable": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 1253,
+                "supported": 1253,
+                "height_mismatches": 0,
+                "insufficient_returns": 0
+              },
+              "needs_review": [],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "layer_height_m": 0.15,
+                  "minimum_cells": 3,
+                  "minimum_triangle_area_m2": 0.01,
+                  "model": "lowest_supported_layer",
+                  "xy_cell_m": 0.2
+                }
+              },
+              "needs_review_total": 0
+            },
+            "consensus_reopened_osm": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 1253,
+                "supported": 1253,
+                "height_mismatches": 0,
+                "insufficient_returns": 0
+              },
+              "needs_review": [],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "layer_height_m": 0.15,
+                  "minimum_cells": 3,
+                  "minimum_triangle_area_m2": 0.01,
+                  "model": "lowest_supported_layer",
+                  "xy_cell_m": 0.2
+                }
+              },
+              "needs_review_total": 0
+            }
+          },
+          "routes": {
+            "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+            "connected_components": 12,
+            "longest_route_station_span_m": 70.0,
+            "routes": [
+              {
+                "lane_ids": [
+                  3
+                ],
+                "from_m": 8.0,
+                "to_m": 16.0,
+                "station_span_m": 8.0
+              },
+              {
+                "lane_ids": [
+                  6
+                ],
+                "from_m": 20.0,
+                "to_m": 22.0,
+                "station_span_m": 2.0
+              },
+              {
+                "lane_ids": [
+                  9
+                ],
+                "from_m": 26.0,
+                "to_m": 34.0,
+                "station_span_m": 8.0
+              },
+              {
+                "lane_ids": [
+                  12
+                ],
+                "from_m": 38.0,
+                "to_m": 108.0,
+                "station_span_m": 70.0
+              },
+              {
+                "lane_ids": [
+                  15
+                ],
+                "from_m": 112.0,
+                "to_m": 124.0,
+                "station_span_m": 12.0
+              },
+              {
+                "lane_ids": [
+                  18
+                ],
+                "from_m": 128.0,
+                "to_m": 134.0,
+                "station_span_m": 6.0
+              },
+              {
+                "lane_ids": [
+                  21
+                ],
+                "from_m": 136.0,
+                "to_m": 158.0,
+                "station_span_m": 22.0
+              },
+              {
+                "lane_ids": [
+                  24
+                ],
+                "from_m": 162.0,
+                "to_m": 170.0,
+                "station_span_m": 8.0
+              },
+              {
+                "lane_ids": [
+                  27
+                ],
+                "from_m": 178.0,
+                "to_m": 198.0,
+                "station_span_m": 20.0
+              },
+              {
+                "lane_ids": [
+                  30
+                ],
+                "from_m": 208.0,
+                "to_m": 212.0,
+                "station_span_m": 4.0
+              },
+              {
+                "lane_ids": [
+                  33
+                ],
+                "from_m": 220.0,
+                "to_m": 232.0,
+                "station_span_m": 12.0
+              },
+              {
+                "lane_ids": [
+                  36
+                ],
+                "from_m": 240.0,
+                "to_m": 244.0,
+                "station_span_m": 4.0
+              }
+            ],
+            "legal_routing_verified": false
+          },
+          "map_points": 631744,
+          "common_extent": {
+            "trajectory_length_m": 250.48857464824565,
+            "generated_length_m": 175.98733864439245,
+            "retained_fraction": 0.7025763106821408,
+            "minimum_retained_fraction": 0.9,
+            "passes_requested_extent": false
+          },
+          "included_intervals": [
+            {
+              "from_m": 8.020342342408151,
+              "to_m": 16.025057400053964,
+              "map_from_m": 8.0,
+              "map_to_m": 16.0,
+              "from_timestamp_s": 1335706510.7648633,
+              "to_timestamp_s": 1335706516.7803874,
+              "from_original_frame_coordinate": 7.163790244587992,
+              "to_original_frame_coordinate": 14.682819039154554
+            },
+            {
+              "from_m": 20.03176886445455,
+              "to_m": 22.03729608291559,
+              "map_from_m": 20.0,
+              "map_to_m": 22.0,
+              "from_timestamp_s": 1335706520.082016,
+              "to_timestamp_s": 1335706522.5405972,
+              "from_original_frame_coordinate": 18.647718120097096,
+              "to_original_frame_coordinate": 21.63271232779369
+            },
+            {
+              "from_m": 26.032686140360116,
+              "to_m": 34.02646883972741,
+              "map_from_m": 26.0,
+              "map_to_m": 34.0,
+              "from_timestamp_s": 1335706526.277677,
+              "to_timestamp_s": 1335706532.0027142,
+              "from_original_frame_coordinate": 26.303823353002457,
+              "to_original_frame_coordinate": 33.45976257634142
+            },
+            {
+              "from_m": 38.02575609927987,
+              "to_m": 108.01249273186839,
+              "map_from_m": 38.0,
+              "map_to_m": 108.0,
+              "from_timestamp_s": 1335706534.886158,
+              "to_timestamp_s": 1335706585.5533457,
+              "from_original_frame_coordinate": 37.06388205405712,
+              "to_original_frame_coordinate": 100.39463052680354
+            },
+            {
+              "from_m": 112.01140104243859,
+              "to_m": 124.01064234552517,
+              "map_from_m": 112.0,
+              "map_to_m": 124.0,
+              "from_timestamp_s": 1335706588.4290147,
+              "to_timestamp_s": 1335706597.5826383,
+              "from_original_frame_coordinate": 103.98905795459633,
+              "to_original_frame_coordinate": 115.43051011029797
+            },
+            {
+              "from_m": 128.01060554827222,
+              "to_m": 134.0108016636683,
+              "map_from_m": 128.0,
+              "map_to_m": 134.0,
+              "from_timestamp_s": 1335706600.819108,
+              "to_timestamp_s": 1335706605.6700816,
+              "from_original_frame_coordinate": 119.47586523045567,
+              "to_original_frame_coordinate": 125.53929231845143
+            },
+            {
+              "from_m": 136.01084433455594,
+              "to_m": 158.01142937891447,
+              "map_from_m": 136.0,
+              "map_to_m": 158.0,
+              "from_timestamp_s": 1335706607.0474257,
+              "to_timestamp_s": 1335706622.8275354,
+              "from_original_frame_coordinate": 127.26089499488049,
+              "to_original_frame_coordinate": 146.7350295559566
+            },
+            {
+              "from_m": 162.01144028545232,
+              "to_m": 170.0117379833747,
+              "map_from_m": 162.0,
+              "map_to_m": 170.0,
+              "from_timestamp_s": 1335706625.670295,
+              "to_timestamp_s": 1335706631.4905703,
+              "from_original_frame_coordinate": 150.28829535561323,
+              "to_original_frame_coordinate": 157.56328088508485
+            },
+            {
+              "from_m": 178.01188687911232,
+              "to_m": 198.0124841984128,
+              "map_from_m": 178.0,
+              "map_to_m": 198.0,
+              "from_timestamp_s": 1335706637.066686,
+              "to_timestamp_s": 1335706651.3738751,
+              "from_original_frame_coordinate": 164.53307043596183,
+              "to_original_frame_coordinate": 182.41614846513852
+            },
+            {
+              "from_m": 208.01209852056263,
+              "to_m": 212.0121584206172,
+              "map_from_m": 208.0,
+              "map_to_m": 212.0,
+              "from_timestamp_s": 1335706660.5809393,
+              "to_timestamp_s": 1335706663.237109,
+              "from_original_frame_coordinate": 193.92436805809382,
+              "to_original_frame_coordinate": 197.2444123089151
+            },
+            {
+              "from_m": 220.01201688990415,
+              "to_m": 232.0138225038172,
+              "map_from_m": 220.0,
+              "map_to_m": 232.0,
+              "from_timestamp_s": 1335706669.6656237,
+              "to_timestamp_s": 1335706678.8331196,
+              "from_original_frame_coordinate": 205.2796763100792,
+              "to_original_frame_coordinate": 216.7384653105078
+            },
+            {
+              "from_m": 240.0096766965791,
+              "to_m": 244.0034707388772,
+              "map_from_m": 240.0,
+              "map_to_m": 244.0,
+              "from_timestamp_s": 1335706685.514276,
+              "to_timestamp_s": 1335706688.3472164,
+              "from_original_frame_coordinate": 225.0894844740278,
+              "to_original_frame_coordinate": 228.63047922422047
+            }
+          ],
+          "included_intervals_total": 12
+        },
+        "source_changes": {
+          "gained": [
+            {
+              "from_m": 8.020342342408151,
+              "to_m": 10.034785195682979
+            },
+            {
+              "from_m": 12.04266658882518,
+              "to_m": 16.025057400053964
+            },
+            {
+              "from_m": 20.03176886445455,
+              "to_m": 22.03729608291559
+            },
+            {
+              "from_m": 26.032686140360116,
+              "to_m": 26.060114295743425
+            },
+            {
+              "from_m": 38.02575609927987,
+              "to_m": 40.05176754308568
+            },
+            {
+              "from_m": 44.04957415153851,
+              "to_m": 56.0420492612498
+            },
+            {
+              "from_m": 58.04139837882695,
+              "to_m": 62.040228226817476
+            },
+            {
+              "from_m": 104.01925371922636,
+              "to_m": 108.01249273186839
+            },
+            {
+              "from_m": 116.01606888337689,
+              "to_m": 122.01687947085601
+            },
+            {
+              "from_m": 128.01060554827222,
+              "to_m": 128.0184703833283
+            },
+            {
+              "from_m": 162.01205382388517,
+              "to_m": 166.01246925830011
+            },
+            {
+              "from_m": 184.01191908935778,
+              "to_m": 198.0124841984128
+            },
+            {
+              "from_m": 208.01209852056263,
+              "to_m": 212.0121584206172
+            },
+            {
+              "from_m": 220.01201688990415,
+              "to_m": 232.0138225038172
+            },
+            {
+              "from_m": 240.0096766965791,
+              "to_m": 240.00987355647197
+            },
+            {
+              "from_m": 242.00722234307096,
+              "to_m": 244.0034707388772
+            }
+          ],
+          "lost": [
+            {
+              "from_m": 16.051392814153107,
+              "to_m": 18.055093375583876
+            },
+            {
+              "from_m": 34.02646883972741,
+              "to_m": 36.052891799084684
+            },
+            {
+              "from_m": 110.01532650079334,
+              "to_m": 112.01140104243859
+            },
+            {
+              "from_m": 124.01064234552517,
+              "to_m": 124.0184377503678
+            },
+            {
+              "from_m": 134.0108016636683,
+              "to_m": 136.01084433455594
+            },
+            {
+              "from_m": 158.01142937891447,
+              "to_m": 162.01144028545232
+            },
+            {
+              "from_m": 170.0117379833747,
+              "to_m": 172.0112970916367
+            },
+            {
+              "from_m": 178.01002085800843,
+              "to_m": 178.01188687911232
+            }
+          ],
+          "gained_total": 16,
+          "gained_length_m": 72.04831118816955,
+          "lost_total": 8,
+          "lost_length_m": 14.035472174067301
+        },
+        "holds": [
+          "Reference-informed candidate exploration is not unseen-drive validation.",
+          "Source support and temporal interval correspondence do not establish physical road identity or HD accuracy.",
+          "New HD geometry has new lane IDs; baseline routes and explicit connections are not inherited.",
+          "Inspect gains AND losses, all four audits, local motion regressions and unknown traffic semantics before choosing."
+        ]
+      },
+      "motion": {
+        "global_results": {
+          "baseline": {
+            "ate_rmse_m": 0.2791993727009607,
+            "rpe_translation_rmse_m": 0.1764452953033592
+          },
+          "candidate": {
+            "ate_rmse_m": 0.2729739786381924,
+            "rpe_translation_rmse_m": 0.17642640665473996
+          }
+        },
+        "worsened_windows": 4,
+        "reference_provenance": {
+          "source": "https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-04-29.csv; original NCLT body ground truth transformed to synchronized Velodyne sensor origin; see preparation.json",
+          "license": "NCLT Open Database License (ODbL 1.0), contents DBCL 1.0",
+          "frame": "NCLT z-up world, synchronized Velodyne sensor origin, xyz metres; FLIP @ body_pose @ BODY_VEL @ FLIP",
+          "time_basis": "NCLT original microsecond timestamps / 1e6, same clock as bundled scan headers",
+          "used_for_generation": false
+        },
+        "coverage": {
+          "original_poses": 236,
+          "retained_poses": 199,
+          "matched_poses": 199,
+          "evaluated_poses": 140,
+          "alignment_fitted_poses": 59,
+          "retained_pose_fraction": 1.0
+        }
+      },
+      "artifact_paths": {
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/job.json": "april/job.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/corridor-proposals-trajectory.json": "april/corridor-proposals-trajectory.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/motion-run.json": "april/motion-run.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/run.json": "april/run.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/layout-hypothesis.json": "april/layout-hypothesis.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/corridor-proposals.json": "april/corridor-proposals.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/geometry-01/vector_map.json": "april/attempt-1-editable_map.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/geometry-01/report.json": "april/attempt-1-report.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/candidate-02/lanelet2_map.osm": "april/attempt-2-map.osm",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/candidate-02/map_projector_info.yaml": "april/attempt-2-projector.yaml",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/candidate-02/vector_map.json": "april/attempt-2-editable_map.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/candidate-02/report.json": "april/attempt-2-report.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/fresh-hd/candidate-02/source-quality.json": "april/attempt-2-audits.json",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/candidate-03/lanelet2_map.osm": "april/baseline-map.osm",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/candidate-03/map_projector_info.yaml": "april/baseline-projector.yaml",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/candidate-03/vector_map.json": "april/baseline-editable_map.json",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/candidate-03/report.json": "april/baseline-report.json",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/candidate-03/source-quality.json": "april/baseline-audits.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-comparison.json": "april/mcp-comparison.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-sections-8.json": "april/mcp-sections-8.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-finish.json": "april/mcp-finish.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-start.json": "april/mcp-start.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-choose.json": "april/mcp-choose.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/decisions.json": "april/mcp-decisions.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-index-0.json": "april/mcp-index-0.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-draft.json": "april/mcp-draft.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-restore.json": "april/mcp-restore.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/mcp-sections-0.json": "april/mcp-sections-0.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/selection/selection.json": "april/selection.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/april/selection/comparison.json": "april/comparison.json"
+      },
+      "preservation": {
+        "baseline_manifest": {
+          "files": 240,
+          "manifest_sha256": "ca912b35c114f8b630e6afdf188f45a9879da24728cd9ba2a410e061de651312",
+          "all_files_unchanged_during_comparison_and_selection": true
+        },
+        "trial_manifest": {
+          "files": 245,
+          "manifest_sha256": "9d215cd245afe4e38c1a42398fcbfc43cf878da8612e4392c4768d569bfc3095",
+          "all_files_unchanged_during_comparison_and_selection": true
+        },
+        "finished_candidate_manifest": {
+          "files": 13,
+          "manifest_sha256": "d951ee6a0b420dfdf81ad92a199e838b6530d75bd6cc36beb1c79fe04bfdc359",
+          "all_files_unchanged_during_comparison_and_selection": true
+        }
+      }
+    },
+    "june": {
+      "comparison": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/selection/comparison.json",
+        "sha256": "2a1f36b0ad0c8d20932929526a9b219326e1b3ea3e185c89e2ba10028891bd46",
+        "bytes": 347736
+      },
+      "final_revision": 2,
+      "final_choice": "baseline",
+      "summary": {
+        "baseline": {
+          "raw_extent": {
+            "trajectory_length_m": 252.5863381996826,
+            "generated_length_m": 112,
+            "retained_fraction": 0.4434127387818505,
+            "minimum_retained_fraction": 0.9,
+            "passes_requested_extent": false
+          },
+          "audits": {
+            "editable": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 884,
+                "supported": 521,
+                "height_mismatches": 363,
+                "insufficient_returns": 0
+              },
+              "needs_review": [
+                6,
+                12,
+                18,
+                21,
+                24,
+                33,
+                36,
+                39,
+                42
+              ],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "minimum_returns": 3,
+                  "model": "low_quantile",
+                  "quantile": 0.15
+                }
+              },
+              "needs_review_total": 9
+            },
+            "reopened_osm": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 884,
+                "supported": 521,
+                "height_mismatches": 363,
+                "insufficient_returns": 0
+              },
+              "needs_review": [
+                6,
+                12,
+                18,
+                21,
+                24,
+                33,
+                36,
+                39,
+                42
+              ],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "minimum_returns": 3,
+                  "model": "low_quantile",
+                  "quantile": 0.15
+                }
+              },
+              "needs_review_total": 9
+            },
+            "consensus_editable": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 884,
+                "supported": 884,
+                "height_mismatches": 0,
+                "insufficient_returns": 0
+              },
+              "needs_review": [],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "layer_height_m": 0.15,
+                  "minimum_cells": 3,
+                  "minimum_triangle_area_m2": 0.01,
+                  "model": "lowest_supported_layer",
+                  "xy_cell_m": 0.2
+                }
+              },
+              "needs_review_total": 0
+            },
+            "consensus_reopened_osm": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 884,
+                "supported": 884,
+                "height_mismatches": 0,
+                "insufficient_returns": 0
+              },
+              "needs_review": [],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "layer_height_m": 0.15,
+                  "minimum_cells": 3,
+                  "minimum_triangle_area_m2": 0.01,
+                  "model": "lowest_supported_layer",
+                  "xy_cell_m": 0.2
+                }
+              },
+              "needs_review_total": 0
+            }
+          },
+          "routes": {
+            "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+            "connected_components": 12,
+            "longest_route_station_span_m": 66,
+            "routes": [
+              {
+                "lane_ids": [
+                  3
+                ],
+                "from_m": 0,
+                "to_m": 8,
+                "station_span_m": 8
+              },
+              {
+                "lane_ids": [
+                  6
+                ],
+                "from_m": 14,
+                "to_m": 18,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  9
+                ],
+                "from_m": 34,
+                "to_m": 36,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  12
+                ],
+                "from_m": 48,
+                "to_m": 114,
+                "station_span_m": 66
+              },
+              {
+                "lane_ids": [
+                  15
+                ],
+                "from_m": 146,
+                "to_m": 148,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  18
+                ],
+                "from_m": 152,
+                "to_m": 156,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  21
+                ],
+                "from_m": 168,
+                "to_m": 172,
+                "station_span_m": 4
+              },
+              {
+                "lane_ids": [
+                  24,
+                  45,
+                  27,
+                  48,
+                  30
+                ],
+                "from_m": 180,
+                "to_m": 202,
+                "station_span_m": 22
+              },
+              {
+                "lane_ids": [
+                  33
+                ],
+                "from_m": 210,
+                "to_m": 212,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  36
+                ],
+                "from_m": 220,
+                "to_m": 222,
+                "station_span_m": 2
+              },
+              {
+                "lane_ids": [
+                  39
+                ],
+                "from_m": 232,
+                "to_m": 238,
+                "station_span_m": 6
+              },
+              {
+                "lane_ids": [
+                  42
+                ],
+                "from_m": 242,
+                "to_m": 246,
+                "station_span_m": 4
+              }
+            ],
+            "legal_routing_verified": false
+          },
+          "map_points": 645432,
+          "common_extent": {
+            "trajectory_length_m": 252.7243847382302,
+            "generated_length_m": 112.05510176746512,
+            "retained_fraction": 0.4433885629340075,
+            "minimum_retained_fraction": 0.9,
+            "passes_requested_extent": false
+          },
+          "included_intervals": [
+            {
+              "from_m": 0.0,
+              "to_m": 8.011445439867213,
+              "map_from_m": 0.0,
+              "map_to_m": 8.0,
+              "from_timestamp_s": 1339761399.41732,
+              "to_timestamp_s": 1339761405.3953397,
+              "from_original_frame_coordinate": 0.0,
+              "to_original_frame_coordinate": 7.472660423672589
+            },
+            {
+              "from_m": 14.03456704972769,
+              "to_m": 18.043181668613222,
+              "map_from_m": 14.0,
+              "map_to_m": 18.0,
+              "from_timestamp_s": 1339761409.907708,
+              "to_timestamp_s": 1339761413.5224805,
+              "from_original_frame_coordinate": 13.113223894442642,
+              "to_original_frame_coordinate": 17.631781381194195
+            },
+            {
+              "from_m": 34.04335460838929,
+              "to_m": 36.041336980262884,
+              "map_from_m": 34,
+              "map_to_m": 36.0,
+              "from_timestamp_s": 1339761426.8767302,
+              "to_timestamp_s": 1339761428.3378801,
+              "from_original_frame_coordinate": 34.324904343742126,
+              "to_original_frame_coordinate": 36.15137902152111
+            },
+            {
+              "from_m": 48.047851652016135,
+              "to_m": 114.05626071415867,
+              "map_from_m": 48.0,
+              "map_to_m": 114.0,
+              "from_timestamp_s": 1339761437.0815177,
+              "to_timestamp_s": 1339761485.5684903,
+              "from_original_frame_coordinate": 47.08109756406995,
+              "to_original_frame_coordinate": 107.69099013312633
+            },
+            {
+              "from_m": 146.06611095711241,
+              "to_m": 148.06615274514655,
+              "map_from_m": 146,
+              "map_to_m": 148.0,
+              "from_timestamp_s": 1339761508.8117533,
+              "to_timestamp_s": 1339761510.2170193,
+              "from_original_frame_coordinate": 136.74560121241564,
+              "to_original_frame_coordinate": 138.50222307501426
+            },
+            {
+              "from_m": 152.06825740772192,
+              "to_m": 156.0692841278076,
+              "map_from_m": 152.0,
+              "map_to_m": 156.0,
+              "from_timestamp_s": 1339761512.9671447,
+              "to_timestamp_s": 1339761515.8731794,
+              "from_original_frame_coordinate": 141.9399409794711,
+              "to_original_frame_coordinate": 145.57255237510512
+            },
+            {
+              "from_m": 168.07521242839522,
+              "to_m": 172.07938920792418,
+              "map_from_m": 168.0,
+              "map_to_m": 172,
+              "from_timestamp_s": 1339761524.668769,
+              "to_timestamp_s": 1339761527.7621183,
+              "from_original_frame_coordinate": 156.5672388609385,
+              "to_original_frame_coordinate": 160.43398859518905
+            },
+            {
+              "from_m": 180.0826372325025,
+              "to_m": 184.08527848206487,
+              "map_from_m": 180.0,
+              "map_to_m": 184,
+              "from_timestamp_s": 1339761533.4915326,
+              "to_timestamp_s": 1339761536.2914305,
+              "from_original_frame_coordinate": 167.59590644712878,
+              "to_original_frame_coordinate": 171.09582359556975
+            },
+            {
+              "from_m": 188.08393635856083,
+              "to_m": 190.08321952352136,
+              "map_from_m": 188,
+              "map_to_m": 190,
+              "from_timestamp_s": 1339761539.2951288,
+              "to_timestamp_s": 1339761540.642971,
+              "from_original_frame_coordinate": 174.85053803995942,
+              "to_original_frame_coordinate": 176.5353710091736
+            },
+            {
+              "from_m": 200.09004497354724,
+              "to_m": 202.0913536036265,
+              "map_from_m": 200.0,
+              "map_to_m": 202.0,
+              "from_timestamp_s": 1339761548.037501,
+              "to_timestamp_s": 1339761549.8802333,
+              "from_original_frame_coordinate": 185.77871009409563,
+              "to_original_frame_coordinate": 188.08215621257918
+            },
+            {
+              "from_m": 210.08997742688257,
+              "to_m": 212.08901558742,
+              "map_from_m": 210.0,
+              "map_to_m": 212,
+              "from_timestamp_s": 1339761556.0441728,
+              "to_timestamp_s": 1339761557.9338386,
+              "from_original_frame_coordinate": 195.7872360759223,
+              "to_original_frame_coordinate": 198.14935727186446
+            },
+            {
+              "from_m": 220.08263217449166,
+              "to_m": 222.08667887288243,
+              "map_from_m": 220.0,
+              "map_to_m": 222,
+              "from_timestamp_s": 1339761564.197727,
+              "to_timestamp_s": 1339761565.5258572,
+              "from_original_frame_coordinate": 205.97936840799298,
+              "to_original_frame_coordinate": 207.6395560556224
+            },
+            {
+              "from_m": 232.08958167104174,
+              "to_m": 238.0934668457173,
+              "map_from_m": 232,
+              "map_to_m": 238,
+              "from_timestamp_s": 1339761573.0425997,
+              "to_timestamp_s": 1339761577.935513,
+              "from_original_frame_coordinate": 217.0356648001794,
+              "to_original_frame_coordinate": 223.15192299207288
+            },
+            {
+              "from_m": 242.10956417871196,
+              "to_m": 246.12276608755352,
+              "map_from_m": 242,
+              "map_to_m": 246.0,
+              "from_timestamp_s": 1339761581.0128446,
+              "to_timestamp_s": 1339761584.0854502,
+              "from_original_frame_coordinate": 226.9982574122267,
+              "to_original_frame_coordinate": 230.8393597385128
+            }
+          ],
+          "included_intervals_total": 14
+        },
+        "candidate": {
+          "raw_extent": {
+            "trajectory_length_m": 252.69930892254752,
+            "generated_length_m": 178.0,
+            "retained_fraction": 0.7043944867081418,
+            "minimum_retained_fraction": 0.9,
+            "passes_requested_extent": false
+          },
+          "audits": {
+            "editable": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 1334,
+                "supported": 845,
+                "height_mismatches": 489,
+                "insufficient_returns": 0
+              },
+              "needs_review": [
+                3,
+                6,
+                9,
+                12,
+                18,
+                21,
+                24,
+                30,
+                33,
+                36,
+                42,
+                45
+              ],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "minimum_returns": 3,
+                  "model": "low_quantile",
+                  "quantile": 0.15
+                }
+              },
+              "needs_review_total": 12
+            },
+            "reopened_osm": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 1334,
+                "supported": 845,
+                "height_mismatches": 489,
+                "insufficient_returns": 0
+              },
+              "needs_review": [
+                3,
+                6,
+                9,
+                12,
+                18,
+                21,
+                24,
+                30,
+                33,
+                36,
+                42,
+                45
+              ],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "minimum_returns": 3,
+                  "model": "low_quantile",
+                  "quantile": 0.15
+                }
+              },
+              "needs_review_total": 12
+            },
+            "consensus_editable": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 1334,
+                "supported": 1333,
+                "height_mismatches": 1,
+                "insufficient_returns": 0
+              },
+              "needs_review": [],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "layer_height_m": 0.15,
+                  "minimum_cells": 3,
+                  "minimum_triangle_area_m2": 0.01,
+                  "model": "lowest_supported_layer",
+                  "xy_cell_m": 0.2
+                }
+              },
+              "needs_review_total": 0
+            },
+            "consensus_reopened_osm": {
+              "complete": true,
+              "sample_totals": {
+                "samples": 1334,
+                "supported": 1333,
+                "height_mismatches": 1,
+                "insufficient_returns": 0
+              },
+              "needs_review": [],
+              "protocol": {
+                "sampling_step_m": 0.5,
+                "ground_radius_m": 0.75,
+                "ground_height_tolerance_m": 0.3,
+                "minimum_support_fraction": 0.9,
+                "sample_budget": 100000,
+                "ground_estimator": {
+                  "layer_height_m": 0.15,
+                  "minimum_cells": 3,
+                  "minimum_triangle_area_m2": 0.01,
+                  "model": "lowest_supported_layer",
+                  "xy_cell_m": 0.2
+                }
+              },
+              "needs_review_total": 0
+            }
+          },
+          "routes": {
+            "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+            "connected_components": 15,
+            "longest_route_station_span_m": 72.0,
+            "routes": [
+              {
+                "lane_ids": [
+                  3
+                ],
+                "from_m": 0.0,
+                "to_m": 2.0,
+                "station_span_m": 2.0
+              },
+              {
+                "lane_ids": [
+                  6
+                ],
+                "from_m": 12.0,
+                "to_m": 14.0,
+                "station_span_m": 2.0
+              },
+              {
+                "lane_ids": [
+                  9
+                ],
+                "from_m": 24.0,
+                "to_m": 38.0,
+                "station_span_m": 14.0
+              },
+              {
+                "lane_ids": [
+                  12
+                ],
+                "from_m": 42.0,
+                "to_m": 114.0,
+                "station_span_m": 72.0
+              },
+              {
+                "lane_ids": [
+                  15
+                ],
+                "from_m": 118.0,
+                "to_m": 120.0,
+                "station_span_m": 2.0
+              },
+              {
+                "lane_ids": [
+                  18
+                ],
+                "from_m": 128.0,
+                "to_m": 130.0,
+                "station_span_m": 2.0
+              },
+              {
+                "lane_ids": [
+                  21
+                ],
+                "from_m": 134.0,
+                "to_m": 156.0,
+                "station_span_m": 22.0
+              },
+              {
+                "lane_ids": [
+                  24
+                ],
+                "from_m": 160.0,
+                "to_m": 184.0,
+                "station_span_m": 24.0
+              },
+              {
+                "lane_ids": [
+                  27
+                ],
+                "from_m": 186.0,
+                "to_m": 200.0,
+                "station_span_m": 14.0
+              },
+              {
+                "lane_ids": [
+                  30
+                ],
+                "from_m": 204.0,
+                "to_m": 208.0,
+                "station_span_m": 4.0
+              },
+              {
+                "lane_ids": [
+                  33
+                ],
+                "from_m": 210.0,
+                "to_m": 212.0,
+                "station_span_m": 2.0
+              },
+              {
+                "lane_ids": [
+                  36
+                ],
+                "from_m": 218.0,
+                "to_m": 220.0,
+                "station_span_m": 2.0
+              },
+              {
+                "lane_ids": [
+                  39
+                ],
+                "from_m": 224.0,
+                "to_m": 228.0,
+                "station_span_m": 4.0
+              },
+              {
+                "lane_ids": [
+                  42
+                ],
+                "from_m": 232.0,
+                "to_m": 238.0,
+                "station_span_m": 6.0
+              },
+              {
+                "lane_ids": [
+                  45
+                ],
+                "from_m": 242.0,
+                "to_m": 248.0,
+                "station_span_m": 6.0
+              }
+            ],
+            "legal_routing_verified": false
+          },
+          "map_points": 588267,
+          "common_extent": {
+            "trajectory_length_m": 252.7243847382302,
+            "generated_length_m": 178.00488200860042,
+            "retained_fraction": 0.7043439128083203,
+            "minimum_retained_fraction": 0.9,
+            "passes_requested_extent": false
+          },
+          "included_intervals": [
+            {
+              "from_m": 0.0,
+              "to_m": 1.9991527345579492,
+              "map_from_m": 0.0,
+              "map_to_m": 2.0,
+              "from_timestamp_s": 1339761399.41732,
+              "to_timestamp_s": 1339761400.8531003,
+              "from_original_frame_coordinate": 0.0,
+              "to_original_frame_coordinate": 1.794756098797161
+            },
+            {
+              "from_m": 12.000834703943639,
+              "to_m": 14.003872553113688,
+              "map_from_m": 12.0,
+              "map_to_m": 14.0,
+              "from_timestamp_s": 1339761408.4687011,
+              "to_timestamp_s": 1339761409.884997,
+              "from_original_frame_coordinate": 11.314419290926892,
+              "to_original_frame_coordinate": 13.084834319147705
+            },
+            {
+              "from_m": 24.00335535168932,
+              "to_m": 38.00235100397303,
+              "map_from_m": 24.0,
+              "map_to_m": 38.0,
+              "from_timestamp_s": 1339761419.587359,
+              "to_timestamp_s": 1339761429.8367994,
+              "from_original_frame_coordinate": 25.2129975515567,
+              "to_original_frame_coordinate": 38.025069355973315
+            },
+            {
+              "from_m": 42.00214825156388,
+              "to_m": 113.99672322342711,
+              "map_from_m": 42.0,
+              "map_to_m": 114.0,
+              "from_timestamp_s": 1339761432.676422,
+              "to_timestamp_s": 1339761485.5262303,
+              "from_original_frame_coordinate": 41.5746546241175,
+              "to_original_frame_coordinate": 107.63816384125151
+            },
+            {
+              "from_m": 117.9972641861135,
+              "to_m": 119.99742014210698,
+              "map_from_m": 118.0,
+              "map_to_m": 120.0,
+              "from_timestamp_s": 1339761488.1774662,
+              "to_timestamp_s": 1339761489.6592615,
+              "from_original_frame_coordinate": 110.9522618412787,
+              "to_original_frame_coordinate": 112.80454389558209
+            },
+            {
+              "from_m": 127.99837638186918,
+              "to_m": 129.99857562331724,
+              "map_from_m": 128.0,
+              "map_to_m": 130.0,
+              "from_timestamp_s": 1339761495.6383448,
+              "to_timestamp_s": 1339761497.0731444,
+              "from_original_frame_coordinate": 120.27845487452653,
+              "to_original_frame_coordinate": 122.07207037569599
+            },
+            {
+              "from_m": 133.99890667844267,
+              "to_m": 155.99952456427346,
+              "map_from_m": 134.0,
+              "map_to_m": 156.0,
+              "from_timestamp_s": 1339761500.0120134,
+              "to_timestamp_s": 1339761515.8239558,
+              "from_original_frame_coordinate": 125.74572668417956,
+              "to_original_frame_coordinate": 145.51102182735036
+            },
+            {
+              "from_m": 159.9996318389388,
+              "to_m": 184.00048336603146,
+              "map_from_m": 160.0,
+              "map_to_m": 184.0,
+              "from_timestamp_s": 1339761518.645696,
+              "to_timestamp_s": 1339761536.2291248,
+              "from_original_frame_coordinate": 149.03826358178543,
+              "to_original_frame_coordinate": 171.01793795265735
+            },
+            {
+              "from_m": 186.00053195670705,
+              "to_m": 200.0005574085306,
+              "map_from_m": 186.0,
+              "map_to_m": 200.0,
+              "from_timestamp_s": 1339761537.707542,
+              "to_timestamp_s": 1339761547.9770155,
+              "from_original_frame_coordinate": 172.86601656676808,
+              "to_original_frame_coordinate": 185.7031015948598
+            },
+            {
+              "from_m": 204.0002414042895,
+              "to_m": 208.0001427747864,
+              "map_from_m": 204.0,
+              "map_to_m": 208.0,
+              "from_timestamp_s": 1339761551.2632585,
+              "to_timestamp_s": 1339761554.3710282,
+              "from_original_frame_coordinate": 189.81095324610922,
+              "to_original_frame_coordinate": 193.69576185551986
+            },
+            {
+              "from_m": 210.00016303097357,
+              "to_m": 212.0000214409094,
+              "map_from_m": 210.0,
+              "map_to_m": 212.0,
+              "from_timestamp_s": 1339761555.9710455,
+              "to_timestamp_s": 1339761557.7947357,
+              "from_original_frame_coordinate": 195.6958251239098,
+              "to_original_frame_coordinate": 197.9754739106739
+            },
+            {
+              "from_m": 218.00009729558118,
+              "to_m": 220.00023952019163,
+              "map_from_m": 218.0,
+              "map_to_m": 220.0,
+              "from_timestamp_s": 1339761562.6178184,
+              "to_timestamp_s": 1339761564.13522,
+              "from_original_frame_coordinate": 204.0044443441747,
+              "to_original_frame_coordinate": 205.9012332289346
+            },
+            {
+              "from_m": 224.0089259600349,
+              "to_m": 228.0154447665317,
+              "map_from_m": 224.0,
+              "map_to_m": 228.0,
+              "from_timestamp_s": 1339761566.9544737,
+              "to_timestamp_s": 1339761570.0631585,
+              "from_original_frame_coordinate": 209.42536600193444,
+              "to_original_frame_coordinate": 213.3112938008187
+            },
+            {
+              "from_m": 232.02028538575925,
+              "to_m": 238.01676359943954,
+              "map_from_m": 232.0,
+              "map_to_m": 238.0,
+              "from_timestamp_s": 1339761572.9865053,
+              "to_timestamp_s": 1339761577.8519773,
+              "from_original_frame_coordinate": 216.96554598538856,
+              "to_original_frame_coordinate": 223.04750127967384
+            },
+            {
+              "from_m": 242.0172159872459,
+              "to_m": 248.02158770056258,
+              "map_from_m": 242.0,
+              "map_to_m": 248.0,
+              "from_timestamp_s": 1339761580.9512095,
+              "to_timestamp_s": 1339761585.375965,
+              "from_original_frame_coordinate": 226.9212433130137,
+              "to_original_frame_coordinate": 232.45266134922295
+            }
+          ],
+          "included_intervals_total": 15
+        },
+        "source_changes": {
+          "gained": [
+            {
+              "from_m": 12.000834703943639,
+              "to_m": 14.003872553113688
+            },
+            {
+              "from_m": 24.00335535168932,
+              "to_m": 34.04335460838929
+            },
+            {
+              "from_m": 36.041336980262884,
+              "to_m": 38.00235100397303
+            },
+            {
+              "from_m": 42.00214825156388,
+              "to_m": 48.047851652016135
+            },
+            {
+              "from_m": 117.9972641861135,
+              "to_m": 119.99742014210698
+            },
+            {
+              "from_m": 127.99837638186918,
+              "to_m": 129.99857562331724
+            },
+            {
+              "from_m": 133.99890667844267,
+              "to_m": 146.06611095711241
+            },
+            {
+              "from_m": 148.06615274514655,
+              "to_m": 152.06825740772192
+            },
+            {
+              "from_m": 159.9996318389388,
+              "to_m": 168.07521242839522
+            },
+            {
+              "from_m": 172.07938920792418,
+              "to_m": 180.0826372325025
+            },
+            {
+              "from_m": 186.00053195670705,
+              "to_m": 188.08393635856083
+            },
+            {
+              "from_m": 190.08321952352136,
+              "to_m": 200.0005574085306
+            },
+            {
+              "from_m": 204.0002414042895,
+              "to_m": 208.0001427747864
+            },
+            {
+              "from_m": 210.00016303097357,
+              "to_m": 210.08997742688257
+            },
+            {
+              "from_m": 218.00009729558118,
+              "to_m": 220.00023952019163
+            },
+            {
+              "from_m": 224.0089259600349,
+              "to_m": 228.0154447665317
+            }
+          ],
+          "lost": [
+            {
+              "from_m": 1.9991527345579492,
+              "to_m": 8.011445439867213
+            },
+            {
+              "from_m": 14.03456704972769,
+              "to_m": 18.043181668613222
+            },
+            {
+              "from_m": 113.99672322342711,
+              "to_m": 114.05626071415867
+            },
+            {
+              "from_m": 155.99952456427346,
+              "to_m": 156.0692841278076
+            },
+            {
+              "from_m": 184.00048336603146,
+              "to_m": 184.08527848206487
+            },
+            {
+              "from_m": 200.09004497354724,
+              "to_m": 202.0913536036265
+            },
+            {
+              "from_m": 212.0000214409094,
+              "to_m": 212.08901558742
+            },
+            {
+              "from_m": 220.08263217449166,
+              "to_m": 222.08667887288243
+            },
+            {
+              "from_m": 238.01676359943954,
+              "to_m": 238.0934668457173
+            }
+          ],
+          "gained_total": 19,
+          "gained_length_m": 80.35583245688758,
+          "lost_total": 9,
+          "lost_length_m": 14.406052215752284
+        },
+        "holds": [
+          "Reference-informed candidate exploration is not unseen-drive validation.",
+          "Source support and temporal interval correspondence do not establish physical road identity or HD accuracy.",
+          "New HD geometry has new lane IDs; baseline routes and explicit connections are not inherited.",
+          "Inspect gains AND losses, all four audits, local motion regressions and unknown traffic semantics before choosing."
+        ]
+      },
+      "motion": {
+        "global_results": {
+          "baseline": {
+            "ate_rmse_m": 0.2521914996949861,
+            "rpe_translation_rmse_m": 0.1370022709508869
+          },
+          "candidate": {
+            "ate_rmse_m": 0.23164112223979894,
+            "rpe_translation_rmse_m": 0.13650548150017525
+          }
+        },
+        "worsened_windows": 4,
+        "reference_provenance": {
+          "source": "https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-06-15.csv; original NCLT body ground truth transformed to synchronized Velodyne sensor origin; see preparation.json",
+          "license": "NCLT Open Database License (ODbL 1.0), contents DBCL 1.0",
+          "frame": "NCLT z-up world, synchronized Velodyne sensor origin, xyz metres; FLIP @ body_pose @ BODY_VEL @ FLIP",
+          "time_basis": "NCLT original microsecond timestamps / 1e6, same clock as bundled scan headers",
+          "used_for_generation": false
+        },
+        "coverage": {
+          "original_poses": 238,
+          "retained_poses": 195,
+          "matched_poses": 195,
+          "evaluated_poses": 137,
+          "alignment_fitted_poses": 58,
+          "retained_pose_fraction": 1.0
+        }
+      },
+      "artifact_paths": {
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/job.json": "june/job.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/corridor-proposals-trajectory.json": "june/corridor-proposals-trajectory.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/motion-run.json": "june/motion-run.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/run.json": "june/run.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/layout-hypothesis.json": "june/layout-hypothesis.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/corridor-proposals.json": "june/corridor-proposals.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/geometry-01/vector_map.json": "june/attempt-1-editable_map.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/geometry-01/report.json": "june/attempt-1-report.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/candidate-02/lanelet2_map.osm": "june/attempt-2-map.osm",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/candidate-02/map_projector_info.yaml": "june/attempt-2-projector.yaml",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/candidate-02/vector_map.json": "june/attempt-2-editable_map.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/candidate-02/report.json": "june/attempt-2-report.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/candidate-02/source-quality.json": "june/attempt-2-audits.json",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/candidate-03/lanelet2_map.osm": "june/baseline-map.osm",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/candidate-03/map_projector_info.yaml": "june/baseline-projector.yaml",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/candidate-03/vector_map.json": "june/baseline-editable_map.json",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/candidate-03/report.json": "june/baseline-report.json",
+        "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/candidate-03/source-quality.json": "june/baseline-audits.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-comparison.json": "june/mcp-comparison.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-sections-8.json": "june/mcp-sections-8.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-finish.json": "june/mcp-finish.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-start.json": "june/mcp-start.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-choose.json": "june/mcp-choose.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/decisions.json": "june/mcp-decisions.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-index-0.json": "june/mcp-index-0.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-draft.json": "june/mcp-draft.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-restore.json": "june/mcp-restore.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/mcp-sections-0.json": "june/mcp-sections-0.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/selection/selection.json": "june/selection.json",
+        "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/selection/comparison.json": "june/comparison.json"
+      },
+      "preservation": {
+        "baseline_manifest": {
+          "files": 760,
+          "manifest_sha256": "7d5004a9869941844ac7fa44e6a7d6ee3732ec2a8bc7f36233652caa328a995e",
+          "all_files_unchanged_during_comparison_and_selection": true
+        },
+        "trial_manifest": {
+          "files": 247,
+          "manifest_sha256": "b27ceb85f6b4e334a6b1a2f912dc15ac942f689fa72f4bbd4ee7c3b8e3901ecc",
+          "all_files_unchanged_during_comparison_and_selection": true
+        },
+        "finished_candidate_manifest": {
+          "files": 13,
+          "manifest_sha256": "a707cb301b88bf9bc8a01528fd92066b1df47127dbdfedd3b783ad1fc3edc211",
+          "all_files_unchanged_during_comparison_and_selection": true
+        }
+      }
+    }
+  }
+}

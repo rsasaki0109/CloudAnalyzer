@@ -73,7 +73,9 @@ fn footprint(surface: &[Option<f64>], low: f64, o: &BuildOptions) -> Option<Foot
     } else {
         (lanes as f64 - 0.5) * o.lane_width
     };
-    let fitted_left = nominal_left.clamp(right + width, left);
+    // width <= left-right mathematically, but adding it back can round above
+    // left by an ULP. Keep the clamp interval ordered without expanding the band.
+    let fitted_left = nominal_left.clamp((right + width).min(left), left);
     Some(Footprint {
         left: fitted_left,
         right: fitted_left - width,
@@ -343,7 +345,12 @@ pub(super) fn refine(
         }
         flags.push(good);
     }
-    if supported_length < candidate_length * 0.6 {
+    // A paint fit must retain its measured spacing/labels. Trim unsupported
+    // intervals even below 60%; never silently replace it with width priors.
+    if supported_length < candidate_length * 0.6
+        && !report.paint_corridor.as_ref().is_some_and(|p| p.applied)
+        && !report.paint_divider.as_ref().is_some_and(|p| p.applied)
+    {
         drop(ground);
         return extract(cloud, line, index, range[0], range[1], o, report);
     }
@@ -394,6 +401,7 @@ fn finish(
     mut report: BuildReport,
 ) -> Result<(Vec<ExtractedRoad>, BuildReport), BuildError> {
     report.intensity_vertices = 0;
+    report.rgb_paint_vertices = 0;
     report.curb_vertices = 0;
     report.support_edge_vertices = 0;
     report.width_prior_vertices = 0;
@@ -405,6 +413,9 @@ fn finish(
         report.tracked_vertices = 0;
     }
     report.warnings.clear();
+    if report.coverage_edge_anchor_candidates_ignored > 0 {
+        report.warnings.push(format!("{} pre-tracking coverage-edge anchor candidates were excluded from inferred offsets before source-footprint trimming. Coverage limits are not physical road-boundary observations.", report.coverage_edge_anchor_candidates_ignored));
+    }
     let before = roads.len();
     roads.retain(|r| length(&r.reference) >= 2.0 - 1e-9);
     fit.discarded_short_stretches = before - roads.len();
@@ -421,6 +432,7 @@ fn finish(
                 .count() as f64;
             for &e in labels {
                 match e {
+                    Evidence::RgbPaint => report.rgb_paint_vertices += 1,
                     Evidence::SupportEdge => report.support_edge_vertices += 1,
                     Evidence::WidthPrior => report.width_prior_vertices += 1,
                     Evidence::Curb => report.curb_vertices += 1,
@@ -460,9 +472,12 @@ fn finish(
             .for_each(|v| *v /= total as f64);
     }
     report.intensity_used = report.intensity_vertices > 0;
-    report.warnings.push(if fit.preserved_candidate_geometry {"Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.".into()} else {"Source-footprint mode keeps explicit lane counts but fits inferred widths to a coherent low-surface band. Coverage limits can be occlusion or scan gaps, not road edges. Internal lane lines remain width assumptions; this does not identify road semantics or permitted turns.".into()});
+    report.warnings.push(if report.lane_edge_inference.as_ref().is_some_and(|p| p.applied) { "Source-footprint mode checked the corrected interior and inferred outer lane edge, then trimmed/split unsupported intervals. Original curb candidates are retained separately in the lane-edge report; the inferred outer line is a configured-width assumption, not observed paint.".into() } else if report.paint_divider.as_ref().is_some_and(|p| p.applied) { "Source-footprint mode retained outside candidate geometry and the corrected interior paint line, then trimmed/split unsupported intervals. Divider correction can change individual lane widths. Counts and directions remain manual.".into() } else if fit.preserved_candidate_geometry {"Source-footprint mode preserved incoming source-supported geometry and trimmed/split unsupported intervals. No lane width was automatically narrowed. This does not certify survey accuracy, road semantics or permitted turns.".into()} else {"Source-footprint mode keeps explicit lane counts but fits inferred widths to a coherent low-surface band. Coverage limits can be occlusion or scan gaps, not road edges. Internal lane lines remain width assumptions; this does not identify road semantics or permitted turns.".into()});
     report.warnings.push(format!("{:.2} m of the traced/recorded path was deferred; {} intervals failed centre/boundary source checks; {} fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used.",fit.deferred_length_m,fit.rejected_intervals,fit.discarded_short_stretches));
     report.surface_fit = Some(fit);
+    super::paint_corridor::warnings(&mut report);
+    super::paint_divider::warnings(&mut report);
+    super::lane_edge_inference::warnings(&mut report);
     if roads.is_empty() {
         return Err(BuildError("No source-supported road intervals remain; inspect path placement, lane counts, width assumptions and occlusion. The existing map is unchanged.".into()));
     }
@@ -502,6 +517,27 @@ mod tests {
             }
         }
         cloud
+    }
+    #[test]
+    fn band_width_roundoff_does_not_invert_the_fitting_interval() {
+        for left_hand_traffic in [true, false] {
+            let options = BuildOptions {
+                bin_width: 0.2,
+                left_hand_traffic,
+                ..BuildOptions::default()
+            };
+            let low = -3.45;
+            let surface = vec![Some(2.0); 23];
+            let right = low + 0.5 * options.bin_width;
+            let left = low + 22.5 * options.bin_width;
+            // Reconstructing this mathematically identical endpoint rounds up.
+            assert!(right + (left - right) > left);
+            let fitted = footprint(&surface, low, &options).unwrap();
+            assert!(fitted.left <= left);
+            assert!(fitted.right >= right - 1e-12);
+            assert!((fitted.left - fitted.right - (left - right)).abs() < 1e-12);
+            assert!(fitted.observed_left && fitted.observed_right);
+        }
     }
     #[test]
     fn narrow_low_band_fits_widths_without_following_raised_trace_returns() {

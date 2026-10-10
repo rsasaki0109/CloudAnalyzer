@@ -5,6 +5,43 @@ use serde_json::{Value, json};
 use vectormap_core::{GeoReference, Map};
 use vectormap_io::{autoware, lanelet2};
 
+mod corridor_lanes;
+
+/// Export explicitly specified lane hypotheses inside frozen source geometry.
+#[pyfunction]
+pub fn build_corridor_lanes(
+    py: Python<'_>,
+    geometry: &str,
+    specifications: &str,
+) -> PyResult<String> {
+    py.detach(|| corridor_lanes::generate(geometry, specifications))
+        .map_err(PyValueError::new_err)
+}
+
+/// Lane-free low-surface corridor proposals in the shared input metre frame.
+#[pyfunction]
+#[pyo3(signature = (cloud, trajectory, options="{}"))]
+pub fn propose_road_corridors(
+    py: Python<'_>,
+    cloud: &str,
+    trajectory: &str,
+    options: &str,
+) -> PyResult<String> {
+    py.detach(|| -> Result<String, String> {
+        let options = serde_json::from_str(options).map_err(|e| e.to_string())?;
+        let cloud = ca_core::read(cloud, &std::fs::read(cloud).map_err(|e| e.to_string())?)
+            .map_err(|e| e.to_string())?;
+        let text = std::fs::read_to_string(trajectory).map_err(|e| e.to_string())?;
+        let format = ca_core::trajectory::detect(trajectory, &text)
+            .ok_or("trajectory must be TUM, KITTI or timestamped XYZ CSV")?;
+        let poses = ca_core::trajectory::parse(&text, format).map_err(|e| e.to_string())?;
+        let report = ca_core::vector_map::corridors::propose(&cloud, &poses.positions, &options)
+            .map_err(|e| e.to_string())?;
+        serde_json::to_string(&report).map_err(|e| e.to_string())
+    })
+    .map_err(PyValueError::new_err)
+}
+
 /// Build draft roads and return JSON containing the map, projector and report.
 /// Input positions must already use the same metre frame; metadata does not
 /// transform the cloud or the trajectory. Reference geometry is never copied.
@@ -312,6 +349,36 @@ pub fn discover_vector_map_features(
 /// Check source coverage without modifying or exporting the input map.
 #[pyfunction]
 pub fn audit_vector_map_quality(py: Python<'_>, cloud: &str, vector_map: &str) -> PyResult<String> {
+    audit_quality(py, cloud, vector_map, false, false)
+}
+
+/// Source coverage plus bounded failed-sample locations and observed low heights.
+#[pyfunction]
+pub fn audit_vector_map_quality_details(
+    py: Python<'_>,
+    cloud: &str,
+    vector_map: &str,
+) -> PyResult<String> {
+    audit_quality(py, cloud, vector_map, true, false)
+}
+
+/// Alternative lowest-layer evidence; compare with the retained quantile audit.
+#[pyfunction]
+pub fn audit_vector_map_ground_consensus_details(
+    py: Python<'_>,
+    cloud: &str,
+    vector_map: &str,
+) -> PyResult<String> {
+    audit_quality(py, cloud, vector_map, true, true)
+}
+
+fn audit_quality(
+    py: Python<'_>,
+    cloud: &str,
+    vector_map: &str,
+    details: bool,
+    consensus: bool,
+) -> PyResult<String> {
     py.detach(|| {
         let text = std::fs::read_to_string(vector_map).map_err(|e| e.to_string())?;
         let loaded = if vector_map.to_ascii_lowercase().ends_with(".json") {
@@ -329,8 +396,23 @@ pub fn audit_vector_map_quality(py: Python<'_>, cloud: &str, vector_map: &str) -
         }
         let cloud = ca_core::read(cloud, &std::fs::read(cloud).map_err(|e| e.to_string())?)
             .map_err(|e| e.to_string())?;
-        let quality =
-            ca_core::vector_map::quality::audit(&loaded.map, &cloud).map_err(|e| e.to_string())?;
+        let quality = if consensus {
+            serde_json::to_value(
+                ca_core::vector_map::quality::audit_with_ground_consensus(&loaded.map, &cloud)
+                    .map_err(|e| e.to_string())?,
+            )
+        } else if details {
+            serde_json::to_value(
+                ca_core::vector_map::quality::audit_with_locations(&loaded.map, &cloud)
+                    .map_err(|e| e.to_string())?,
+            )
+        } else {
+            serde_json::to_value(
+                ca_core::vector_map::quality::audit(&loaded.map, &cloud)
+                    .map_err(|e| e.to_string())?,
+            )
+        }
+        .map_err(|e| e.to_string())?;
         serde_json::to_string(&json!({"quality":quality,"import_issues":loaded.issues,
             "validation":vectormap_validation::validate(&loaded.map,&Default::default())}))
         .map_err(|e| e.to_string())

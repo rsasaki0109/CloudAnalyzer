@@ -1,0 +1,120 @@
+{
+  "before": {
+    "session": "run/odometry/scans",
+    "poses_file": "trajectory.tum",
+    "nodes": 199,
+    "scans": 199,
+    "unmatched_scans": 37,
+    "scan_points": 1077680,
+    "scans_moved_by_calib_tr": false,
+    "timings_s": {
+      "open": 0.07,
+      "loops": 0.48,
+      "gravity": 0.07,
+      "dynamic": 0.56,
+      "write": 0.55
+    },
+    "loops": {
+      "candidates": 11,
+      "added": 6,
+      "implausible": 0,
+      "same_place_retries": 0,
+      "pairs": [
+        [
+          29,
+          209,
+          0.59
+        ],
+        [
+          23,
+          214,
+          0.535
+        ],
+        [
+          17,
+          220,
+          0.526
+        ],
+        [
+          11,
+          225,
+          0.591
+        ],
+        [
+          7,
+          230,
+          0.607
+        ],
+        [
+          1,
+          235,
+          0.631
+        ]
+      ],
+      "optimized": {
+        "initial_cost": 17.112555116013546,
+        "final_cost": 1.1618484074165376,
+        "iterations": 8,
+        "converged": true
+      }
+    },
+    "gravity": {
+      "tied": 199,
+      "sigma_deg": 1.12,
+      "imus": [
+        {
+          "keyframes": 199,
+          "spread_deg": 1.04,
+          "noise_deg": 1.12
+        }
+      ],
+      "optimized": {
+        "initial_cost": 686.7024536114939,
+        "final_cost": 176.1375993998033,
+        "iterations": 7,
+        "converged": true
+      }
+    },
+    "dynamic": {
+      "points": 36,
+      "of": 1077680,
+      "share": 3.3405092420755696e-05
+    },
+    "map_points": 683690,
+    "outputs": {
+      "g2o": "run/pointcloud/trajectory_fixed.g2o",
+      "kitti": "run/pointcloud/trajectory_fixed_kitti.txt",
+      "tum": "run/pointcloud/trajectory_fixed.tum",
+      "map": "run/pointcloud/trajectory_map.ply",
+      "dynamic": "run/pointcloud/trajectory_dynamic.ply"
+    }
+  },
+  "trial": {
+    "session": "run/gap-source/scans",
+    "poses_file": "trajectory_fixed.g2o",
+    "nodes": 199,
+    "scans": 199,
+    "unmatched_scans": 37,
+    "scan_points": 1139588,
+    "scans_moved_by_calib_tr": false,
+    "timings_s": {
+      "open": 0.1,
+      "dynamic": 0.47,
+      "write": 0.27
+    },
+    "dynamic": {
+      "points": 194,
+      "of": 1139588,
+      "share": 0.00017023696283218146
+    },
+    "map_points": 1033824,
+    "outputs": {
+      "g2o": "run/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "kitti": "run/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "map": "run/pointcloud-retry/pointcloud/trajectory_fixed_map.ply",
+      "dynamic": "run/pointcloud-retry/pointcloud/trajectory_fixed_dynamic.ply"
+    },
+    "motion_reoptimized": false,
+    "maximum_pose_roundtrip_difference": 1.2212453270876722e-15
+  }
+}

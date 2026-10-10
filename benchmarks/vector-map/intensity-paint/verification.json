@@ -1,0 +1,987 @@
+{
+  "role": "Explicit retained-intensity capability and source-only guard/regression checks; not a new accuracy or held-out evaluation",
+  "source_commit": "38d24a0ef2c4681e1278dca1fbc5cd0c48198525",
+  "browser_harness_commit": "a64b9f0070dbb22859d67b2e1f9e703331502366",
+  "generation_reference_inputs": [],
+  "runtime_git_sha256": {
+    "cloudanalyzer/ca/vector_map.py": "7419956ed7871622f5354c5cf60d5111165920c6ed456ac41b65f0e16c3c7691",
+    "cloudanalyzer/cloudanalyzer_cli/main.py": "3ce4ec2a50eb7fd3811ad59a686297e12eedc94ee1ee5479da70e22fbc33af30",
+    "cloudanalyzer/tests/test_mcp_server.py": "f8dd4824152cd1bdb9d6c2a3897a43817a05c251d913a78915693d92d1239d22",
+    "cloudanalyzer/tests/test_vector_map.py": "07418940ab387e8a11ddae345c482dc933570ee576d6894e86cbeaca885d1c67",
+    "rust/crates/ca-core/src/vector_map.rs": "af40194cc28d0c26ab539b166a8c6faf478d42d4a764b1ef39b449ec419ac786",
+    "rust/crates/ca-core/src/vector_map/paint_corridor.rs": "69bb2ad8281e6972c2e8092f6ccebe31394d3fd3cff2790a3768cdf97acdc57c",
+    "rust/crates/ca-core/src/vector_map/paint_divider.rs": "26bf86b447df2c59c2b8bd56e541570d78907429b7099a5d5fa1a5c946166cb8",
+    "rust/crates/ca-wasm/examples/vector_map_anchor_compare.rs": "4dd32f7f3ca291e6574ad387fc5a97baecb29e759e52494142ac7177488014a6",
+    "web/e2e/app.spec.ts": "88b2404abdd9565721c9626c7789c4c493077dfc1a4466b045a282a406eb3783",
+    "web/index.html": "fcf79750ea4f1063fb3dd4e7fcdc6a2a48b1abd5c6192e6b05583309740451b0",
+    "web/media/vector-map-physical-anchors.spec.ts": "205fbf7b9d12f227df15e7d725d520beb1301c60544e36834e23f37f175e32f3",
+    "web/src/app/vectormap.ts": "3a527ce0f750c54dd5d72802042497e2e839f381daf2338a001a58d4692b1a28"
+  },
+  "browser_harness_git_sha256": "25e355a0c22da48c4554d7e78a4a6fd4d18d6e974580b174fe7450fad44bc92d",
+  "debug_comparison_executable_sha256": "dfe03d288b8a11ee00b28582e28bc07959b78e086db593f7c476aae2ff749be6",
+  "native_sha256": "4ffa653b74a6d7cdae17057906e67666806c1a3344ae7cca2abec589c6e32e90",
+  "wasm_sha256": "6f3ae79aaf51e7f162cad125527be0607cc7c19ae262d867de1194abea5733cc",
+  "production_wasm_sha256": "6f3ae79aaf51e7f162cad125527be0607cc7c19ae262d867de1194abea5733cc",
+  "source_attempts": {
+    "tokyo_generated_maps": 12,
+    "tokyo_courses": 6,
+    "xyz_only_rejected_builds": 2,
+    "total_build_attempts": 14,
+    "additional_isolated_browser_baseline_builds": 2
+  },
+  "tokyo_held_cases": [
+    {
+      "case": "arterial-south",
+      "paint_corridor": {
+        "applied": false,
+        "contrasted_points": 0,
+        "eligible_bundles": 0,
+        "heading_correction_degrees": null,
+        "limited": false,
+        "longitudinal_components": 0,
+        "measured_lane_widths_m": [],
+        "reason": "trace is not straight within five degrees",
+        "residual_p90_m": null,
+        "roi_points": 0,
+        "source_channel": "intensity",
+        "tracks": [],
+        "white_candidates": 0
+      },
+      "paint_divider": {
+        "ambiguous_sections": 0,
+        "applied": false,
+        "contrasted_points": 0,
+        "curb_pair_sections": 0,
+        "eligible_tracks": 0,
+        "heading_correction_degrees": null,
+        "limited": false,
+        "longest_supported_run": 0,
+        "maximum_divider_movement_m": 0.0,
+        "reason": "requires an explicitly configured two-lane road with generated geometry",
+        "residual_p90_m": null,
+        "roi_points": 0,
+        "sampled_sections": 0,
+        "source_channel": "intensity",
+        "track": null
+      },
+      "geometry_byte_exact_between_channels": true
+    },
+    {
+      "case": "arterial-middle",
+      "paint_corridor": {
+        "applied": false,
+        "contrasted_points": 0,
+        "eligible_bundles": 0,
+        "heading_correction_degrees": null,
+        "intensity_range": [
+          20993.0,
+          63350.0
+        ],
+        "limited": true,
+        "longitudinal_components": 0,
+        "measured_lane_widths_m": [],
+        "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+        "residual_p90_m": null,
+        "roi_points": 160313,
+        "source_channel": "intensity",
+        "tracks": [],
+        "white_candidates": 91
+      },
+      "paint_divider": {
+        "ambiguous_sections": 0,
+        "applied": false,
+        "contrasted_points": 0,
+        "curb_pair_sections": 0,
+        "eligible_tracks": 0,
+        "heading_correction_degrees": null,
+        "limited": false,
+        "longest_supported_run": 0,
+        "maximum_divider_movement_m": 0.0,
+        "reason": "requires an explicitly configured two-lane road with generated geometry",
+        "residual_p90_m": null,
+        "roi_points": 0,
+        "sampled_sections": 0,
+        "source_channel": "intensity",
+        "track": null
+      },
+      "geometry_byte_exact_between_channels": true
+    },
+    {
+      "case": "arterial-north",
+      "paint_corridor": {
+        "applied": false,
+        "contrasted_points": 0,
+        "eligible_bundles": 0,
+        "heading_correction_degrees": null,
+        "limited": true,
+        "longitudinal_components": 0,
+        "measured_lane_widths_m": [],
+        "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+        "residual_p90_m": null,
+        "roi_points": 250001,
+        "source_channel": "intensity",
+        "tracks": [],
+        "white_candidates": 0
+      },
+      "paint_divider": {
+        "ambiguous_sections": 0,
+        "applied": false,
+        "contrasted_points": 0,
+        "curb_pair_sections": 0,
+        "eligible_tracks": 0,
+        "heading_correction_degrees": null,
+        "limited": false,
+        "longest_supported_run": 0,
+        "maximum_divider_movement_m": 0.0,
+        "reason": "requires an explicitly configured two-lane road with generated geometry",
+        "residual_p90_m": null,
+        "roi_points": 0,
+        "sampled_sections": 0,
+        "source_channel": "intensity",
+        "track": null
+      },
+      "geometry_byte_exact_between_channels": true
+    },
+    {
+      "case": "west-south",
+      "paint_corridor": {
+        "applied": false,
+        "contrasted_points": 0,
+        "eligible_bundles": 0,
+        "heading_correction_degrees": null,
+        "intensity_range": [
+          25536.0,
+          65535.0
+        ],
+        "limited": true,
+        "longitudinal_components": 0,
+        "measured_lane_widths_m": [],
+        "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+        "residual_p90_m": null,
+        "roi_points": 97072,
+        "source_channel": "intensity",
+        "tracks": [],
+        "white_candidates": 31
+      },
+      "paint_divider": {
+        "ambiguous_sections": 0,
+        "applied": false,
+        "contrasted_points": 0,
+        "curb_pair_sections": 0,
+        "eligible_tracks": 0,
+        "heading_correction_degrees": null,
+        "limited": true,
+        "longest_supported_run": 0,
+        "maximum_divider_movement_m": 0.0,
+        "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+        "residual_p90_m": null,
+        "roi_points": 97072,
+        "sampled_sections": 0,
+        "source_channel": "intensity",
+        "track": null
+      },
+      "geometry_byte_exact_between_channels": true
+    },
+    {
+      "case": "east-south",
+      "paint_corridor": {
+        "applied": false,
+        "contrasted_points": 0,
+        "eligible_bundles": 0,
+        "heading_correction_degrees": null,
+        "intensity_range": [
+          25449.0,
+          65535.0
+        ],
+        "limited": true,
+        "longitudinal_components": 0,
+        "measured_lane_widths_m": [],
+        "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+        "residual_p90_m": null,
+        "roi_points": 96593,
+        "source_channel": "intensity",
+        "tracks": [],
+        "white_candidates": 418
+      },
+      "paint_divider": {
+        "ambiguous_sections": 0,
+        "applied": false,
+        "contrasted_points": 0,
+        "curb_pair_sections": 0,
+        "eligible_tracks": 0,
+        "heading_correction_degrees": null,
+        "limited": false,
+        "longest_supported_run": 0,
+        "maximum_divider_movement_m": 0.0,
+        "reason": "requires an explicitly configured two-lane road with generated geometry",
+        "residual_p90_m": null,
+        "roi_points": 0,
+        "sampled_sections": 0,
+        "source_channel": "intensity",
+        "track": null
+      },
+      "geometry_byte_exact_between_channels": true
+    },
+    {
+      "case": "west-north",
+      "paint_corridor": {
+        "applied": false,
+        "contrasted_points": 0,
+        "eligible_bundles": 0,
+        "heading_correction_degrees": null,
+        "limited": false,
+        "longitudinal_components": 0,
+        "measured_lane_widths_m": [],
+        "reason": "trace is not straight within five degrees",
+        "residual_p90_m": null,
+        "roi_points": 0,
+        "source_channel": "intensity",
+        "tracks": [],
+        "white_candidates": 0
+      },
+      "paint_divider": {
+        "ambiguous_sections": 0,
+        "applied": false,
+        "contrasted_points": 0,
+        "curb_pair_sections": 0,
+        "eligible_tracks": 0,
+        "heading_correction_degrees": null,
+        "limited": false,
+        "longest_supported_run": 0,
+        "maximum_divider_movement_m": 0.0,
+        "reason": "trace is not straight within five degrees",
+        "residual_p90_m": null,
+        "roi_points": 0,
+        "sampled_sections": 0,
+        "source_channel": "intensity",
+        "track": null
+      },
+      "geometry_byte_exact_between_channels": true
+    }
+  ],
+  "browser_intensity": {
+    "sourcePoints": 1883866,
+    "paintChannel": "intensity",
+    "generationReferenceInputs": [],
+    "physicalAnchorsOnly": true,
+    "evidenceOverlay": true,
+    "evidenceSummary": "7 build profiles: 0 RGB paint, 6 intensity, 0 curb, 0 coverage-limit and 43 inferred vertices. 0 saved road-edge drafts before trimming. Selected sources precede fitting; connecting lines are inferred. This is a build snapshot, not a live source audit.",
+    "evidenceToggleOsmByteExact": true,
+    "canvasEvidenceInspection": null,
+    "laneEdgeInference": null,
+    "traceAlignment": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "curb_pair_sections": 0,
+      "interquartile_range_m": null,
+      "longest_supported_run": 0,
+      "median_lateral_shift_m": null,
+      "reason": "paired curbs need a majority of sections and three consecutive observations",
+      "sampled_sections": 7,
+      "shift_xy": [
+        0,
+        0
+      ]
+    },
+    "paintDivider": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "contrasted_points": 0,
+      "curb_pair_sections": 0,
+      "eligible_tracks": 0,
+      "heading_correction_degrees": null,
+      "limited": false,
+      "longest_supported_run": 0,
+      "maximum_divider_movement_m": 0,
+      "reason": "requires an explicitly configured two-lane road with generated geometry",
+      "residual_p90_m": null,
+      "roi_points": 0,
+      "sampled_sections": 0,
+      "source_channel": "intensity",
+      "track": null
+    },
+    "paintCorridor": {
+      "applied": false,
+      "contrasted_points": 0,
+      "eligible_bundles": 0,
+      "heading_correction_degrees": null,
+      "intensity_range": [
+        20993,
+        63350
+      ],
+      "limited": true,
+      "longitudinal_components": 0,
+      "measured_lane_widths_m": [],
+      "reason": "paint fit budget exceeded; no corridor selected from a partial scan",
+      "residual_p90_m": null,
+      "roi_points": 160313,
+      "source_channel": "intensity",
+      "tracks": [],
+      "white_candidates": 91
+    },
+    "defaultOff": true,
+    "lanes": 6,
+    "fullSourceAudit": true,
+    "nativeBoundaryVertices": 49,
+    "maximumNativeVertexToExportedNodeDistanceM": 0,
+    "comparisonRole": "Boundary vertices to exported nodes, not complete topology or byte equality",
+    "nativeMapSha256": "1aec95ad76dda986c195b5ba64c3864d366d4f28409f3eae312117289cbb2211",
+    "exportedOsmSha256": "264c749e735b0a7ac1a71360f3e19ebb5a0816503928b1cb98d84032b1f3b725",
+    "oneStepUndo": true,
+    "pageErrors": []
+  },
+  "browser_rgb_regression": {
+    "sourcePoints": 1757841,
+    "paintChannel": "rgb",
+    "generationReferenceInputs": [],
+    "physicalAnchorsOnly": true,
+    "evidenceOverlay": true,
+    "evidenceSummary": "6 build profiles: 9 RGB paint, 0 intensity, 12 curb, 0 coverage-limit and 45 inferred vertices. 1 saved road-edge drafts before trimming. Selected sources precede fitting; connecting lines are inferred. This is a build snapshot, not a live source audit.",
+    "evidenceToggleOsmByteExact": true,
+    "canvasEvidenceInspection": true,
+    "laneEdgeInference": {
+      "applied": true,
+      "configured_lane_width_m": 3.5,
+      "limited": false,
+      "minimum_curb_gap_m": 0.5,
+      "reason": "explicit lane-width prior used inside distant curbs; road-edge candidates retained separately for review",
+      "retained_road_edges": [
+        {
+          "boundary_slot": 2,
+          "candidate_road": 0,
+          "evidence": [
+            "width_prior",
+            "width_prior",
+            "width_prior",
+            "width_prior",
+            "width_prior",
+            "width_prior",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb",
+            "curb"
+          ],
+          "geometry": [
+            [
+              3822.245045801056,
+              73819.09557251989,
+              19.171430587768555
+            ],
+            [
+              3824.2930397679147,
+              73820.54917953191,
+              19.170499801635742
+            ],
+            [
+              3825.5544864003673,
+              73821.36456069158,
+              19.170583724975586
+            ],
+            [
+              3827.2934706222827,
+              73822.35250882561,
+              19.172922134399414
+            ],
+            [
+              3829.106356170058,
+              73823.21193291471,
+              19.17128562927246
+            ],
+            [
+              3830.9492933147285,
+              73824.01909335711,
+              19.169286727905273
+            ],
+            [
+              3832.7735893124577,
+              73824.85867318544,
+              19.233999252319336
+            ],
+            [
+              3834.5565822345393,
+              73825.77008444963,
+              19.233665466308594
+            ],
+            [
+              3836.3224814291693,
+              73826.71122393549,
+              19.204248428344727
+            ],
+            [
+              3838.0931872054543,
+              73827.64400414893,
+              19.256420135498047
+            ],
+            [
+              3839.8562042448752,
+              73828.59015607875,
+              19.22561264038086
+            ],
+            [
+              3841.6274426559226,
+              73829.52200997084,
+              19.1929988861084
+            ],
+            [
+              3843.422013541004,
+              73830.41328564717,
+              19.228614807128906
+            ],
+            [
+              3845.2168031913993,
+              73831.30418086216,
+              19.262264251708984
+            ],
+            [
+              3846.989409033023,
+              73832.2336566142,
+              19.244062423706055
+            ],
+            [
+              3848.7568568070988,
+              73833.17210291844,
+              19.19049835205078
+            ],
+            [
+              3850.5368073346726,
+              73834.08880530349,
+              19.246044158935547
+            ],
+            [
+              3852.3139213487066,
+              73835.01044075559,
+              19.228221893310547
+            ],
+            [
+              3854.0934157973193,
+              73835.92793632159,
+              19.265501022338867
+            ],
+            [
+              3855.8577624358536,
+              73836.87177590503,
+              19.232263565063477
+            ],
+            [
+              3857.6207002093906,
+              73837.8180656884,
+              19.189664840698242
+            ],
+            [
+              3859.3967012203407,
+              73838.74163679808,
+              19.243423461914062
+            ],
+            [
+              3860.9885985605624,
+              73839.57102963928,
+              19.195499420166016
+            ],
+            [
+              3862.0954198573177,
+              73840.1373762193,
+              19.187286376953125
+            ],
+            [
+              3863.084303262661,
+              73840.63599432584,
+              19.243730545043945
+            ]
+          ],
+          "reference": [
+            [
+              3820,
+              73823,
+              19.171430587768555
+            ],
+            [
+              3822.1672657576437,
+              73824.24617781064,
+              19.170499801635742
+            ],
+            [
+              3823.46762521223,
+              73824.99388449703,
+              19.170583724975586
+            ],
+            [
+              3825.201437818345,
+              73825.99082674555,
+              19.172922134399414
+            ],
+            [
+              3826.9352504244607,
+              73826.98776899405,
+              19.17128562927246
+            ],
+            [
+              3828.6690630305757,
+              73827.98471124256,
+              19.169286727905273
+            ],
+            [
+              3830.4028756366906,
+              73828.9816534911,
+              19.16612434387207
+            ],
+            [
+              3832.1366882428056,
+              73829.97859573961,
+              19.163787841796875
+            ],
+            [
+              3833.8705008489205,
+              73830.97553798812,
+              19.16217613220215
+            ],
+            [
+              3835.6043134550364,
+              73831.97248023663,
+              19.16217613220215
+            ],
+            [
+              3837.3381260611513,
+              73832.96942248516,
+              19.164562225341797
+            ],
+            [
+              3839.0719386672663,
+              73833.96636473369,
+              19.157833099365234
+            ],
+            [
+              3840.8057512733812,
+              73834.9633069822,
+              19.155000686645508
+            ],
+            [
+              3842.539563879496,
+              73835.9602492307,
+              19.152523040771484
+            ],
+            [
+              3844.273376485611,
+              73836.95719147923,
+              19.148954391479492
+            ],
+            [
+              3846.007189091726,
+              73837.95413372775,
+              19.147544860839844
+            ],
+            [
+              3847.741001697841,
+              73838.95107597628,
+              19.146696090698242
+            ],
+            [
+              3849.474814303956,
+              73839.94801822476,
+              19.14569664001465
+            ],
+            [
+              3851.2086269100714,
+              73840.9449604733,
+              19.13691520690918
+            ],
+            [
+              3852.9424395161864,
+              73841.94190272181,
+              19.128000259399414
+            ],
+            [
+              3854.6762521223013,
+              73842.93884497034,
+              19.12350082397461
+            ],
+            [
+              3856.4100647284163,
+              73843.93578721883,
+              19.108936309814453
+            ],
+            [
+              3857.9648214960025,
+              73844.82977236022,
+              19.091705322265625
+            ],
+            [
+              3859.0413611524273,
+              73845.44878266264,
+              19.088193893432617
+            ],
+            [
+              3860,
+              73846,
+              19.088144302368164
+            ]
+          ],
+          "source_before_fitting": [
+            [
+              3822.384353544357,
+              73818.8532981837,
+              19.171430587768555
+            ],
+            [
+              3824.318999444023,
+              73820.5040322691,
+              19.170499801635742
+            ],
+            [
+              3825.386739040628,
+              73821.65629523026,
+              19.170583724975586
+            ],
+            [
+              3827.120551646726,
+              73822.65323747876,
+              19.172922134399414
+            ],
+            [
+              3829.08698411083,
+              73823.2456234525,
+              19.17128562927246
+            ],
+            [
+              3831.053416574956,
+              73823.83800942628,
+              19.169286727905273
+            ],
+            [
+              3832.8204605893548,
+              73824.77715792127,
+              19.233999252319336
+            ],
+            [
+              3834.554273195456,
+              73825.77410016977,
+              19.233665466308594
+            ],
+            [
+              3836.2880858015574,
+              73826.77104241829,
+              19.204248428344727
+            ],
+            [
+              3838.121592632538,
+              73827.59460340618,
+              19.256420135498047
+            ],
+            [
+              3839.855405238681,
+              73828.59154565474,
+              19.22561264038086
+            ],
+            [
+              3841.5892178447825,
+              73829.58848790325,
+              19.1929988861084
+            ],
+            [
+              3843.422724675721,
+              73830.41204889114,
+              19.228614807128906
+            ],
+            [
+              3845.2562315067016,
+              73831.23560987903,
+              19.262264251708984
+            ],
+            [
+              3846.9900441128316,
+              73832.23255212758,
+              19.244062423706055
+            ],
+            [
+              3848.7238567189465,
+              73833.2294943761,
+              19.19049835205078
+            ],
+            [
+              3850.5573635498827,
+              73834.053055364,
+              19.246044158935547
+            ],
+            [
+              3852.291176155997,
+              73835.04999761248,
+              19.228221893310547
+            ],
+            [
+              3854.1246829869956,
+              73835.87355860042,
+              19.265501022338867
+            ],
+            [
+              3855.858495593111,
+              73836.87050084893,
+              19.232263565063477
+            ],
+            [
+              3857.592308199194,
+              73837.86744309745,
+              19.189664840698242
+            ],
+            [
+              3859.4258150301744,
+              73838.69100408533,
+              19.243423461914062
+            ],
+            [
+              3860.980571797779,
+              73839.58498922673,
+              19.195499420166016
+            ],
+            [
+              3862.0571114541617,
+              73840.20399952913,
+              19.187286376953125
+            ],
+            [
+              3863.115444526625,
+              73840.5818356059,
+              19.243730545043945
+            ]
+          ]
+        }
+      ],
+      "sides": [
+        {
+          "applied": false,
+          "boundary_slot": 0,
+          "candidate_vertices": 25,
+          "distant_curb_vertices": 0,
+          "inferred_vertices_before_trimming": 0,
+          "longest_distant_curb_run": 0,
+          "maximum_movement_m": 0,
+          "median_observed_curb_distance_m": null,
+          "reason": "distant verified curbs need a majority of candidate vertices and three consecutive observations"
+        },
+        {
+          "applied": true,
+          "boundary_slot": 2,
+          "candidate_vertices": 25,
+          "distant_curb_vertices": 19,
+          "inferred_vertices_before_trimming": 25,
+          "longest_distant_curb_run": 19,
+          "maximum_movement_m": 0.9267301474231806,
+          "median_observed_curb_distance_m": 4.188441822398815,
+          "reason": "configured-width lane edge inferred inside distant curb candidates; no outer marking observed"
+        }
+      ]
+    },
+    "traceAlignment": {
+      "ambiguous_sections": 0,
+      "applied": false,
+      "curb_pair_sections": 13,
+      "interquartile_range_m": 0,
+      "longest_supported_run": 8,
+      "median_lateral_shift_m": 0,
+      "reason": "configured lane width already fits inside the paired curbs",
+      "sampled_sections": 25,
+      "shift_xy": [
+        0,
+        0
+      ]
+    },
+    "paintDivider": {
+      "ambiguous_sections": 0,
+      "applied": true,
+      "contrasted_points": 277,
+      "curb_pair_sections": 13,
+      "eligible_tracks": 1,
+      "heading_correction_degrees": -2.3201261635542254,
+      "limited": false,
+      "longest_supported_run": 8,
+      "maximum_divider_movement_m": 0.9231560343062172,
+      "reason": "unique strong paint track inside paired physical curbs; only the interior boundary was corrected",
+      "residual_p90_m": 0.06092214011391578,
+      "roi_points": 92677,
+      "sampled_sections": 25,
+      "track": {
+        "extrapolated_length_m": 0.5229798522595601,
+        "interpolated_length_m": 27.503914676189513,
+        "lateral_intercept_m": -0.0908979908986387,
+        "observed_intervals_m": [
+          [
+            0,
+            1.385314579109568
+          ],
+          [
+            7.728630543513377,
+            11.305973584724237
+          ],
+          [
+            17.632315455987126,
+            21.491360716282355
+          ],
+          [
+            26.67887215895833,
+            28.01728575253139
+          ],
+          [
+            28.90205506632575,
+            31.41625266282992
+          ],
+          [
+            37.93396579366913,
+            41.31773644601856
+          ],
+          [
+            43.56199939923182,
+            45.61810812797775
+          ]
+        ],
+        "observed_length_m": 18.114193451788235,
+        "source_points": 99,
+        "strong": true
+      }
+    },
+    "paintCorridor": {
+      "applied": false,
+      "contrasted_points": 277,
+      "eligible_bundles": 0,
+      "heading_correction_degrees": null,
+      "limited": false,
+      "longitudinal_components": 8,
+      "measured_lane_widths_m": [],
+      "reason": "need one unambiguous bundle with at least one strong track per configured lane",
+      "residual_p90_m": null,
+      "roi_points": 92677,
+      "tracks": [],
+      "white_candidates": 9416
+    },
+    "defaultOff": true,
+    "lanes": 4,
+    "fullSourceAudit": true,
+    "nativeBoundaryVertices": 66,
+    "maximumNativeVertexToExportedNodeDistanceM": 0,
+    "comparisonRole": "Boundary vertices to exported nodes, not complete topology or byte equality",
+    "nativeMapSha256": "2bd63cf29828992dcd2a96062f2cd8184f80fe885af5fdf7f446239d01c5a830",
+    "exportedOsmSha256": "ff43d88b126e2efac6b102c1859e6e48346ced1b6e49239a687d405dcbf410f3",
+    "oneStepUndo": true,
+    "pageErrors": []
+  },
+  "screenshot": "docs/images/web/vector-map-intensity-source.png",
+  "screenshot_sha256": "6a518fab6e242d1357274522f97295fd418c491f73e22fca5382992e719f9613",
+  "rgb_default_regression": {
+    "builds": 18,
+    "byte_exact_artifacts": 83
+  },
+  "preserved_historical_proof_files": 455,
+  "preserved_previous_evidence_files": {
+    "benchmarks/vector-map/evidence-overlay/README.md": "fb5263806e58e02b6aa690bd4e24820fad040f7e3376464cab14dffca203b777",
+    "benchmarks/vector-map/evidence-overlay/verification.json": "c51f3401430f9aaf004061f5e2f8151dfdf7ca907154607407d2dc4f9d001d1d",
+    "docs/images/web/vector-map-evidence-source.png": "7ca39dc912bc22531b4c00c0994b86d5d91c2e2fb5700d084575dee094ba36fe"
+  },
+  "local_checks": {
+    "core_vector_map_tests": 87,
+    "wasm_tests": 13,
+    "workspace_clippy": "passed",
+    "native_api_cli_metric_mcp_tests": 38,
+    "geometry_tests": 7,
+    "production_vector_map_browser_tests": 22,
+    "actual_source_browser_tests": 2,
+    "focused_python_api_mypy": "passed"
+  },
+  "limitations": [
+    "Known synthetic fixtures demonstrate measured 3 m width and heading; no real-source accuracy gain established",
+    "All six known Tokyo courses hold both new paint fits and retain identical geometry across channels",
+    "The independent XYZ-only source produced no supported road in either channel; two failures are retained, not maps",
+    "Tokyo preparation and operator traces are reused development inputs, not held-out data",
+    "Six screenshot intensity vertices are existing cross-section selections, not evidence that the new paint fit applied",
+    "Lane counts, directions, initial widths and marking roles remain operator inputs",
+    "Native vertex agreement and export invariance are implementation checks, not map accuracy measurements"
+  ],
+  "artifact_sha256": {
+    "native-verification.json": "0102d823176d1f2b36339bf974fa550488549dc2f77e066d3500c63bbae4e614",
+    "rgb-regression.json": "08efbe7795aeaa360620540595bb49d24453b1be3a40f01b13acfc06ae6458bd",
+    "rosbag-rejected/inputs.json": "d128a6d9ae816fce8b000c2d6b47df1f836590f0629a54951450767678f26eb0",
+    "rosbag-rejected/trajectory-0.csv": "f8ec8b0d519c0dbd250136a0d4b8c1a7e27e6bffda1199efd1e7bf11de47f2e0",
+    "rosbag-rejected/verification.json": "fafb83cc1097995e86c75b3e8fcee11a559253311c1a441d3aa8925d13a5577d",
+    "tokyo/after-0-audit.json": "97e4e33b96962e4bc353e46b9b96516d551058d579aeff6d8ca4198eb2e9bdf7",
+    "tokyo/after-0-profiles.json": "88b400c75173e219cae84a052eee93ccb891a99985fbd4086d17ed16e50dd352",
+    "tokyo/after-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+    "tokyo/after-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+    "tokyo/after-1-audit.json": "38069dd7aaa1b8ff6db007f21c951cf2b7aa4f9b9a8051712ed4c0d63b06dfc4",
+    "tokyo/after-1-profiles.json": "3a685a5063fcddc8e82bc948a5c082c8560c21b50bddb3918c140e3cbd3e7cf6",
+    "tokyo/after-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+    "tokyo/after-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+    "tokyo/after-2-audit.json": "2fe2ad70ccaa61410de5a526d32daff9de7da804d0499c12c964a4686d9b126b",
+    "tokyo/after-2-profiles.json": "df1358f558e543a7cccc040d82eade40dc19c0b7d10f981d25bee3f4115d35e4",
+    "tokyo/after-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+    "tokyo/after-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+    "tokyo/after-3-audit.json": "9c7af9c5234b5a225ba70d8c5d2bd7117a452e7162155edc7579c3118c6cacf1",
+    "tokyo/after-3-profiles.json": "0fa38b11ecaabadcd8df657e249c435ff3dc3ac7649787cb8d2cb03d76ded05d",
+    "tokyo/after-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+    "tokyo/after-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+    "tokyo/after-4-audit.json": "6f110e822d89e7152088ecaf964a1e73ac34e23ad9c7924cb6adb04442c79e99",
+    "tokyo/after-4-profiles.json": "689f5308ca80ca3ff1a7e0c090eb72b3d88c7834b95bfd069c0bc8b862cca83e",
+    "tokyo/after-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+    "tokyo/after-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+    "tokyo/after-5-audit.json": "195e6b6b637ea65203daa5a1aa94b53fdd5ef25635f0f998b56df239f71374ab",
+    "tokyo/after-5-profiles.json": "01b0e10d21298302bf96bef6025e900e4b90970ea30a3ac0a795343bc5665eee",
+    "tokyo/after-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+    "tokyo/after-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+    "tokyo/before-0-audit.json": "558c081329d5224a2687c58f5529de819425739d11e70b2ede39ee5aa8111771",
+    "tokyo/before-0-profiles.json": "571771919e0b03a54d879e6b6c9758fb6666240e3c7f253de905ab5603f0e517",
+    "tokyo/before-0.json": "35895064030dc0f79f52c6f15cb6c031a21c1e0e285cea90081c4ad489f553e5",
+    "tokyo/before-0.osm": "b3702fcd6d70d07f640c231efe7e25cc186b3df0848bf414d3fb090963b99ef8",
+    "tokyo/before-1-audit.json": "2e4ebeaef43154c4735bf62a43d2bb6a7ab15cfdffde57dc5d64c34e07270fd0",
+    "tokyo/before-1-profiles.json": "346694d43c464025c7f0f7a1bc70edc47c19dfb78f579e7ae060b1a9dd671b8e",
+    "tokyo/before-1.json": "72710a8fb9876b0cc958c4e739dff2a9284f0bd39782f508b589457e12556007",
+    "tokyo/before-1.osm": "dab9c2787c4e07a58bcb80660c84e6d5c2347baf752c22afda5279a37ff40e6c",
+    "tokyo/before-2-audit.json": "6be1a83a535b4859119e61ceb2517c99520d9e03aa2e0b6bc0874cd617e8a5c8",
+    "tokyo/before-2-profiles.json": "87723a4590a2a8483a6d0c3df8ab415920c10581da46991326c850503825e675",
+    "tokyo/before-2.json": "3a5393ff9cf0cb4a9d8c2a53cf3b70ae61fffe850149e9abf35fec022eb11a91",
+    "tokyo/before-2.osm": "5a2cace886b0f19cd6dab61cd87231e501e0accef2a5e6c3b12ea20a3929ea69",
+    "tokyo/before-3-audit.json": "4d8e2fd77ceab25bf6190ee090c89143b57eb95c453e1f38a872883c276c797e",
+    "tokyo/before-3-profiles.json": "37f37d5720ce82922c2d84851937047005640226cb53e40061fea6031cdab07d",
+    "tokyo/before-3.json": "51003cb46e60326e503fdc9f32bbf5c4fb126581dcd4b1ea22b9b13d8488ba29",
+    "tokyo/before-3.osm": "da90d317baabcfb816a9b2bdb9c688d56925b5a129d391dd3bcd0b5997090c47",
+    "tokyo/before-4-audit.json": "a1e0bc03406449be24a865e57b05a8b6f07bc75e3bb5dc78217ac3f3e8b0b462",
+    "tokyo/before-4-profiles.json": "63a47e8534e7e90c1e86d14c93665dec0b2bfe699ec3706c190cb1ec28c08e35",
+    "tokyo/before-4.json": "0cf391dacb3580949b9e7598ee39fd8d2b94df3ce2ed8f1d5f8ad4ca8cc517a2",
+    "tokyo/before-4.osm": "fec531db6c4e54b03cd53974d5845d1647ab4be263c3953e2d2080274e169e69",
+    "tokyo/before-5-audit.json": "e8dbe6bbaa6153da325254f0d437127e74c80dd0b6c026f968cd11ed5c733649",
+    "tokyo/before-5-profiles.json": "7ad948728ee5ab7f89a7115eee6a331d6ca981114cc8862f979c55a006ea6d49",
+    "tokyo/before-5.json": "7e86a025d024580fde014e56fbe1e0d140f3ae41fccf3799522b2bddcf75e529",
+    "tokyo/before-5.osm": "83ed75512d1326434add131eacc0038acbd6549358024ae44198f402a252b0f9",
+    "tokyo/comparison.json": "9e0239616c0760843e52d1d710e3050722ce82f4bbfec7c99192ab96263f388c",
+    "tokyo/generation-freeze.json": "e5acdb0c33d7beb5c341cc3f074fab997dce5d7e9631f7db6b1e017d5079e451",
+    "tokyo/inputs.json": "9fb93efae89579ad46f7fa125b58eda96cd75acf1a6294c29d3cdc950bcdb878",
+    "tokyo/trajectory-0.csv": "fcdfd2c453fd7fa5b4d458d100806533cee59f225aea56e986286cc896ae1ca9",
+    "tokyo/trajectory-1.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b",
+    "tokyo/trajectory-2.csv": "db591b8a2ab77281b967583f704bf3224454120b9a00b5d8c3a59a0694bb989b",
+    "tokyo/trajectory-3.csv": "6cffc6ff3d8f545f998f45b6893408c28c0e39e95f7ca484beef309e23583ca4",
+    "tokyo/trajectory-4.csv": "34a86c58a094080d9693ef5cb7073794fe51a3581592da2d2be9c962f5005b38",
+    "tokyo/trajectory-5.csv": "7cae83e443960483cd1b22e21293b02ef75da381bdaa3b86a097a6315359b8c1",
+    "tokyo-ui/after-0-audit.json": "3bccd3cda685230ab92eb420973cdb8e20e61ceb3b560c31aa516364fb6dadec",
+    "tokyo-ui/after-0-profiles.json": "3a685a5063fcddc8e82bc948a5c082c8560c21b50bddb3918c140e3cbd3e7cf6",
+    "tokyo-ui/after-0.json": "1aec95ad76dda986c195b5ba64c3864d366d4f28409f3eae312117289cbb2211",
+    "tokyo-ui/after-0.osm": "264c749e735b0a7ac1a71360f3e19ebb5a0816503928b1cb98d84032b1f3b725",
+    "tokyo-ui/before-0-audit.json": "ccb81f42076a87a5d1de426770c1ac2f2e785c8a67c64f6e57768f6a9c572030",
+    "tokyo-ui/before-0-profiles.json": "346694d43c464025c7f0f7a1bc70edc47c19dfb78f579e7ae060b1a9dd671b8e",
+    "tokyo-ui/before-0.json": "1aec95ad76dda986c195b5ba64c3864d366d4f28409f3eae312117289cbb2211",
+    "tokyo-ui/before-0.osm": "264c749e735b0a7ac1a71360f3e19ebb5a0816503928b1cb98d84032b1f3b725",
+    "tokyo-ui/comparison.json": "6f13ad45bac833ccb765f9e749110d8c532433a1a54b5588259c1102c41b67d3",
+    "tokyo-ui/generation-freeze.json": "b49bf52bcd3558a67472a7d8b7463c7b4429e201af19e4ef2aa44c9d3c9e2097",
+    "tokyo-ui/inputs.json": "1b85b223600f12b50abbce7b72543e2d4e7f027016e7524008d946ca0190aa1b",
+    "tokyo-ui/trajectory-0.csv": "e6b0643edd22bb78b2a63744b94f2753686d7b962a39ad7638e9467b67b7925b",
+    "README.md": "1acd654fe3aeda0f20601d9d9d30392d08dfd94f38e12203e84e1f2e947978f6"
+  }
+}

@@ -1,7 +1,8 @@
-FROM python:3.10-slim
+ARG PYTHON_BASE_IMAGE=python:3.10-slim
+FROM ${PYTHON_BASE_IMAGE}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl ca-certificates \
+    curl ca-certificates git \
     libgl1-mesa-dri libglu1-mesa libegl1 libxrandr2 libxss1 \
     libxcursor1 libxcomposite1 libxi6 libxtst6 libgomp1 xauth xvfb \
     && rm -rf /var/lib/apt/lists/*

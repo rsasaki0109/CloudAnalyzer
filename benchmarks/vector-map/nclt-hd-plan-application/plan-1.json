@@ -1,0 +1,36 @@
+{
+  "file": {
+    "path": "run/hd-plan-01-08b294e5d2c555b5/page-0000.json",
+    "sha256": "93dd5c4e491ab3bb8762c9f3eaddfdb1dae26563109fdc87b0a5ef270c99a63f",
+    "bytes": 49941
+  },
+  "index_file": {
+    "path": "run/hd-plan-01-08b294e5d2c555b5/index.json",
+    "sha256": "a294c3a51c6c2bfc6f727776e925ccd79bc426d5640556c20b14fbe71df58691",
+    "bytes": 49169
+  },
+  "schema": "cloudanalyzer.hd_gap_plan.v1",
+  "candidate_id": 1,
+  "gap_ids": [
+    4,
+    21,
+    22,
+    30
+  ],
+  "protocol": {
+    "maximum_intervals": 256,
+    "intervals_per_page": 8,
+    "maximum_source_samples_per_page_per_estimator": 100000,
+    "endpoint_tolerance_m": 0.01,
+    "observed_station_endpoints_only": true,
+    "both_ground_estimators_required": true,
+    "all_reference_trace_samples_required": true,
+    "hd_generation_attempts_spent": 0,
+    "lane_export_performed": false,
+    "final_four_audit_patch_required": true
+  },
+  "intervals": [],
+  "intervals_total": 0,
+  "next_offset": null,
+  "note": "Read-only reference-curve source checks; no lane builder, OSM exporter, point processing or HD attempt. Support does not prove road identity, full width or a final patch pass. Inspect the frozen child proposal, explicitly draft chosen observed ranges, then require all four exported/reopened audits and retention checks before adoption. Endpoint links are geometry hints requiring patch inspection."
+}

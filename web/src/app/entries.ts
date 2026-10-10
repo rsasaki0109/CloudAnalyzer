@@ -1,3 +1,4 @@
+import { forgetCloudHistory } from "./history";
 /** The cloud list: adding, replacing, removing and saving clouds and meshes. */
 
 import { exportCloud, exportMesh, removeCloud } from "../api";
@@ -75,6 +76,7 @@ function clearDistance(entry: Entry): void {
 
 export async function removeEntry(id: number): Promise<void> {
   entries.delete(id);
+  forgetCloudHistory(id);
   viewer.remove(id);
   pointsInvalidated.emit(id);
   await removeCloud(id);
@@ -233,6 +235,12 @@ export function renderList(): void {
       formats.append(button);
     }
     actions.append(save, remove);
+    if(entry.processing){
+      const provenance=document.createElement("button");provenance.textContent="Recipe";
+      provenance.title="Download processing record";
+      provenance.onclick=()=>download(new Blob([JSON.stringify(entry.processing,null,2)],{type:"application/json"}),"processing-record.json");
+      actions.prepend(provenance);
+    }
 
     const mode = document.createElement("select");
     mode.title = "Color by";

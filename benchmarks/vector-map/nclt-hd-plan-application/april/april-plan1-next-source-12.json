@@ -1,0 +1,646 @@
+{
+  "inputs": {
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "layout": {
+      "path": "april-run/layout-hypothesis.json",
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "correction_report": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud-report.json",
+      "sha256": "2627d17c8b9db995e10866cf4a1b56eeb9bda34926ec7ca0c60e0fc83706ea7e",
+      "bytes": 4395
+    },
+    "proposal": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "b7be2528b3da8addb5c135a2192d77a0f33c66ea0f720f19ba4588d22fe0cb92",
+      "bytes": 325159
+    },
+    "audits": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/source-quality.json",
+      "sha256": "90db550552c03e492abddd60d0ae60a4869d98a3aa35c62850b95b151b64a806",
+      "bytes": 198705
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/layout-hypothesis.json": {
+      "path": "env/nclt-hd-height-april/layout-hypothesis.json",
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/corridor-proposals.json": {
+      "path": "env/nclt-hd-height-april/corridor-proposals.json",
+      "sha256": "0d92f6ab28071ab0fae8cac5cee8c627d899eb3d29b74976fbae7c367c8af3b4",
+      "bytes": 409992
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/corridor-proposals-trajectory.json": {
+      "path": "env/nclt-hd-height-april/corridor-proposals-trajectory.json",
+      "sha256": "56ff929767e7d08c7cb4a224264a53c8337580e7e779328d33b8faa67a695078",
+      "bytes": 323961
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-02/source-quality.json": {
+      "path": "env/nclt-hd-height-april/candidate-02/source-quality.json",
+      "sha256": "6f1b1347915c447d9cc981ccc37db37eb3c026c0e07cd26b212b5179c8c65888",
+      "bytes": 192513
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/connections-02.json": {
+      "path": "env/nclt-hd-height-april/connections-02.json",
+      "sha256": "3276bdf78be11edfad436ff956650881b1d4d2bda05fa4bb0f2528a7176d7854",
+      "bytes": 11107
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-03/source-quality.json": {
+      "path": "env/nclt-hd-height-april/candidate-03/source-quality.json",
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-03-connection-checks.json": {
+      "path": "env/nclt-hd-height-april/candidate-03-connection-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/gaps-03.json": {
+      "path": "env/nclt-hd-height-april/gaps-03.json",
+      "sha256": "edf4775586a4e25b4de1b22e69755a4750fc4df91b7d8bfaf555b02afbbaa248",
+      "bytes": 437160
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/local-points-03-d1d40188040330d0.json": {
+      "path": "env/nclt-hd-height-april/local-points-03-d1d40188040330d0.json",
+      "sha256": "ca23af0574fc75f52e447f17ba1c87f1f3e265b337594d2efab8270ce5c37fd7",
+      "bytes": 5482
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/local-point-update.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/local-point-update.json",
+      "sha256": "70f2a01c46f1da9aadc746026f579c77262b8b80bad5b021948124b9eed07a29",
+      "bytes": 3679
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/local-point-checks.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/local-point-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/local-point-audits.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/local-point-audits.json",
+      "sha256": "19ff3ea80e31b9b275644bb2c73188b75114a5fd40e1c7d788307b474a3641dc",
+      "bytes": 192825
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/local_map.ply": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/local_map.ply",
+      "sha256": "378b85320a631871c24b12aba5a2561ac3f4c2c27d8c35e3fbdd9b7e81c1d23c",
+      "bytes": 21910254
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_map.ply": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_map.ply",
+      "sha256": "5fdec477d3895653e45995fdcb6811493ca1e27bae6655ce5be478a98d84a4ee",
+      "bytes": 33082543
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/retry-comparison-03.json": {
+      "path": "env/nclt-hd-height-april/retry-comparison-03.json",
+      "sha256": "d667d36df6a9bba0300c07d47ef5f496bc953b7c86564b76b6209ef61b480a35",
+      "bytes": 20416
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-03/lanelet2_map.osm": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/lanelet2_map.osm",
+      "sha256": "4d94c18cd969f9cb2f9e836a8f9e944d532e54475d2a5f0e40dbe8bf541d196a",
+      "bytes": 46789
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-03/map_projector_info.yaml": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-03/vector_map.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/vector_map.json",
+      "sha256": "15f37d4f14d84f03c92006d78b629411406288c23f93bbfc598203f7888df32a",
+      "bytes": 19366
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-03/report.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/report.json",
+      "sha256": "0fd20631d2930ac00cad43caa84abd31faca6bbac3e64bf30e25e29ecfde088d",
+      "bytes": 36617
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-03/source-quality.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/source-quality.json",
+      "sha256": "90db550552c03e492abddd60d0ae60a4869d98a3aa35c62850b95b151b64a806",
+      "bytes": 198705
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-03-patch-checks.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03-patch-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "continuation_/workspace/CloudAnalyzer/web/public/samples/nclt-2012-04-29.mcap": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "continuation_/workspace/.cloudanalyzer-env/path-refinement-final-native/cloudanalyzer_core/_core.abi3.so": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud/trajectory_map.ply": {
+      "path": "env/nclt-hd-height-april/pointcloud/trajectory_map.ply",
+      "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+      "bytes": 21878254
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud/trajectory_fixed_kitti.txt": {
+      "path": "env/nclt-hd-height-april/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud/trajectory_fixed.g2o": {
+      "path": "env/nclt-hd-height-april/pointcloud/trajectory_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/odometry-report.json": {
+      "path": "env/nclt-hd-height-april/odometry-report.json",
+      "sha256": "5eeebcca384594a4b5e01505222f0d2a101b513c877e7f482549a0e1ce65b54b",
+      "bytes": 466
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/odometry/trajectory.tum": {
+      "path": "env/nclt-hd-height-april/odometry/trajectory.tum",
+      "sha256": "7638be71dfdba5ecab32a9b59a3903d16403aa082640d2b4be910a8fdc378f96",
+      "bytes": 20224
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/geometry-01/vector_map.json": {
+      "path": "env/nclt-hd-height-april/geometry-01/vector_map.json",
+      "sha256": "43c0145d5106eeaf60f8961c905c1469783bf94063398c6dde0c9d0c98f0b270",
+      "bytes": 33766
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/geometry-01/report.json": {
+      "path": "env/nclt-hd-height-april/geometry-01/report.json",
+      "sha256": "14b7150ae32eaa7ae93f91336b147fcea958229158b827482a5f059b144bd03e",
+      "bytes": 89177
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-02/lanelet2_map.osm": {
+      "path": "env/nclt-hd-height-april/candidate-02/lanelet2_map.osm",
+      "sha256": "cf9393064ba4753aeb9bf7be3573d1812c21e355a5db87911788a0af34878eed",
+      "bytes": 41037
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-02/map_projector_info.yaml": {
+      "path": "env/nclt-hd-height-april/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-02/vector_map.json": {
+      "path": "env/nclt-hd-height-april/candidate-02/vector_map.json",
+      "sha256": "3782e5cb82db874e2c7928633e5c4fa32a2098bc159e7344a9ad255571416d79",
+      "bytes": 16563
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-02/report.json": {
+      "path": "env/nclt-hd-height-april/candidate-02/report.json",
+      "sha256": "a15b55268efe1d068a69ce2ac3310b11ada167db65dd284b8ab3866dfa0a0884",
+      "bytes": 33805
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-03-connection-audits.json": {
+      "path": "env/nclt-hd-height-april/candidate-03-connection-audits.json",
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-03/lanelet2_map.osm": {
+      "path": "env/nclt-hd-height-april/candidate-03/lanelet2_map.osm",
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-03/map_projector_info.yaml": {
+      "path": "env/nclt-hd-height-april/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-03/vector_map.json": {
+      "path": "env/nclt-hd-height-april/candidate-03/vector_map.json",
+      "sha256": "931eef5b000f84a4d6ee53e4e0553e27247f19ef918ae303545d77a29fa1508b",
+      "bytes": 18383
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/candidate-03/report.json": {
+      "path": "env/nclt-hd-height-april/candidate-03/report.json",
+      "sha256": "8e56524f6ac77f8588ee584807e6dd066ff6a6c812f58ae52d5b5e6aad2b7dcd",
+      "bytes": 38968
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/corridor-proposals-trajectory.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "b7be2528b3da8addb5c135a2192d77a0f33c66ea0f720f19ba4588d22fe0cb92",
+      "bytes": 325159
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/geometry-01/vector_map.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "3206b98495b42b0aa4435139febc0204b6dabaf29a8dbde400c62983593f0e7b",
+      "bytes": 2548
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/geometry-01/report.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/geometry-01/report.json",
+      "sha256": "eca57983d4f61b914b3b580613e106315c83a78f4d2b2216442f533797f0baf2",
+      "bytes": 18249
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-02/lanelet2_map.osm": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-02/lanelet2_map.osm",
+      "sha256": "09fcd8490bdb8dbed156f16ca671ed466cf756ce559397a6bae649e0a798e570",
+      "bytes": 2298
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-02/map_projector_info.yaml": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-02/vector_map.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-02/vector_map.json",
+      "sha256": "f3b9ec9a99c35dcdb1c8c2c4b9f65ceddb0ff4e6b617e7e1880b87e16d0dd9f6",
+      "bytes": 1656
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-02/report.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-02/report.json",
+      "sha256": "1a304dde627dfd306143ce5ef3393e2c5ea5a21ca567e7554b8537cacabbc595",
+      "bytes": 13703
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-02/source-quality.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-02/source-quality.json",
+      "sha256": "059cdb51fc8f7425fda74b8e5bf5f0c613cd2b11d38402813957343d928528cb",
+      "bytes": 8923
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/layout-hypothesis.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/layout-hypothesis.json",
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/patch-preview-02.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/patch-preview-02.json",
+      "sha256": "d3fcb547875bb17bf7d3b11a24173fe8e08004244ed547d647dd203ae0f0af5b",
+      "bytes": 14619
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/candidate-03-patch-audits.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03-patch-audits.json",
+      "sha256": "90db550552c03e492abddd60d0ae60a4869d98a3aa35c62850b95b151b64a806",
+      "bytes": 198705
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-report.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-report.json",
+      "sha256": "ce08eec71c52af5d629b162b625172672b5d6eb5630c4a5e7262460cd0d803e9",
+      "bytes": 1934
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/gap-source/manifest.json": {
+      "path": "env/nclt-hd-height-april/gap-source/manifest.json",
+      "sha256": "558a0d67c4fdde817f5ed4cabd1f3998e1aa9c754ed6fc0bf76ffe74a48c8312",
+      "bytes": 57658
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/corridor-proposals.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/corridor-proposals.json",
+      "sha256": "4f49716b093cbc8ad407573cf490ee1798e3d2b22d8c56ed6dc7ff65e5dee777",
+      "bytes": 413335
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/heights-02.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/heights-02.json",
+      "sha256": "24e97a9c4dbf05c62cefe858ec6dd93c1f142f26256db0b0164303c41dbf51a7",
+      "bytes": 9341
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/run.json": {
+      "path": "env/nclt-hd-height-april/run.json",
+      "sha256": "c091c47e100e453c30ef2e37182c71397e38e76e1c0aa9e2d570e0ae7d4886f7",
+      "bytes": 1093568
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/job.json": {
+      "path": "env/nclt-hd-height-april/job.json",
+      "sha256": "f7cc12d9a3dccb1ccc97ada9c5947ac2cb79e33b0bb09e38a64de482904bcab4",
+      "bytes": 62968
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/job.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/job.json",
+      "sha256": "3232dce0ba4e9980e0163f3aa15e6d49b041d592dcb93741425c51cc1d5a6f4b",
+      "bytes": 50599
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/run.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/run.json",
+      "sha256": "25ef504b80df1c9e42f336d864b4fb43219f549068da40af320a1f9954ba5bb0",
+      "bytes": 289584
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-height-april/pointcloud-retry/pointcloud-report.json": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud-report.json",
+      "sha256": "2627d17c8b9db995e10866cf4a1b56eeb9bda34926ec7ca0c60e0fc83706ea7e",
+      "bytes": 4395
+    },
+    "continuation_continuation_manifest": {
+      "path": "april-run/continuation.json",
+      "sha256": "ed55886e4e9d9159e348a8b2e7508a514c1b64ef5229cbc7246e3e159a952af0",
+      "bytes": 22499
+    },
+    "pointcloud_map": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/local_map.ply",
+      "sha256": "378b85320a631871c24b12aba5a2561ac3f4c2c27d8c35e3fbdd9b7e81c1d23c",
+      "bytes": 21910254
+    },
+    "pointcloud_graph": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "pointcloud_trajectory": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "parent_map": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/lanelet2_map.osm",
+      "sha256": "4d94c18cd969f9cb2f9e836a8f9e944d532e54475d2a5f0e40dbe8bf541d196a",
+      "bytes": 46789
+    },
+    "parent_projector": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/vector_map.json",
+      "sha256": "15f37d4f14d84f03c92006d78b629411406288c23f93bbfc598203f7888df32a",
+      "bytes": 19366
+    },
+    "parent_report": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/candidate-03/report.json",
+      "sha256": "0fd20631d2930ac00cad43caa84abd31faca6bbac3e64bf30e25e29ecfde088d",
+      "bytes": 36617
+    },
+    "geometry_editable_map": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "3206b98495b42b0aa4435139febc0204b6dabaf29a8dbde400c62983593f0e7b",
+      "bytes": 2548
+    },
+    "geometry_report": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/geometry-01/report.json",
+      "sha256": "eca57983d4f61b914b3b580613e106315c83a78f4d2b2216442f533797f0baf2",
+      "bytes": 18249
+    },
+    "gap_evidence": {
+      "path": "april-run/gaps-01.json",
+      "sha256": "94c8782d2160237751db56a0a4119b4b147727dbc3b0de72a23eb31eb0c7e94d",
+      "bytes": 450314
+    },
+    "raw_manifest": {
+      "path": "april-run/gap-source/manifest.json",
+      "sha256": "54af32ee7cf5c72ba0cb6d0b2bdfaa2de514015769d9b5cf41d04e48f34d8fff",
+      "bytes": 60018
+    }
+  },
+  "interval": {
+    "plan_interval_id": 12,
+    "candidate_id": 9,
+    "from_m": 228.0,
+    "to_m": 230.0,
+    "gap_id": 21,
+    "observed_sections": [
+      {
+        "station_m": 228.0,
+        "center": [
+          20.532867852525168,
+          5.055197908291883,
+          -2.257633417436121
+        ],
+        "left": [
+          15.109039373165178,
+          4.143011180432122,
+          -1.9850207138533784
+        ],
+        "right": [
+          25.95669633188516,
+          5.967384636151644,
+          -2.4586878723871783
+        ],
+        "support_span_m": 11.0,
+        "left_evidence": "height_discontinuity",
+        "right_evidence": "search_limit",
+        "intersects_trajectory": true,
+        "path_level_supported": true
+      },
+      {
+        "station_m": 230.0,
+        "center": [
+          18.22391527784239,
+          6.822652429068946,
+          -2.1275741433059436
+        ],
+        "left": [
+          11.681180982068984,
+          3.699332411057592,
+          -1.781799174478626
+        ],
+        "right": [
+          24.7666495736158,
+          9.945972447080301,
+          -2.36180769106585
+        ],
+        "support_span_m": 14.5,
+        "left_evidence": "curb_profile",
+        "right_evidence": "search_limit",
+        "intersects_trajectory": true,
+        "path_level_supported": true
+      }
+    ],
+    "minimum_observed_span_m": 11.0,
+    "retained_endpoint_links": [],
+    "source_sample_upper_bound": 35,
+    "source_ambiguous": false
+  },
+  "audits": {
+    "quantile": {
+      "import_issues": [],
+      "quality": {
+        "cloud_points": 684690,
+        "ground_estimator": {
+          "minimum_returns": 3,
+          "model": "low_quantile",
+          "quantile": 0.15
+        },
+        "ground_height_tolerance_m": 0.3,
+        "ground_radius_m": 0.75,
+        "lanes": [
+          {
+            "center": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 7,
+              "start_supported": true,
+              "supported": 7
+            },
+            "lane": 3,
+            "left": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 8,
+              "start_supported": true,
+              "supported": 8
+            },
+            "needs_review": true,
+            "right": {
+              "end_supported": true,
+              "fraction": 0.4,
+              "height_mismatches": 6,
+              "insufficient_returns": 0,
+              "samples": 10,
+              "start_supported": true,
+              "supported": 4
+            }
+          }
+        ],
+        "limited": false,
+        "low_support_lanes": [
+          3
+        ],
+        "malformed_lanes": [],
+        "minimum_support_fraction": 0.9,
+        "omitted_lanes": [],
+        "problems": [
+          {
+            "curve": "right",
+            "from_m": 0.9230854868767496,
+            "lane": 3,
+            "points": [
+              [
+                25.69224149671419,
+                6.851515260802457,
+                -2.4371589432046608
+              ],
+              [
+                25.560014079128706,
+                7.293580573127863,
+                -2.4263944786134024
+              ],
+              [
+                25.427786661543223,
+                7.73564588545327,
+                -2.4156300140221436
+              ],
+              [
+                25.295559243957737,
+                8.177711197778676,
+                -2.404865549430885
+              ],
+              [
+                25.163331826372254,
+                8.619776510104082,
+                -2.394101084839626
+              ],
+              [
+                25.03110440878677,
+                9.061841822429487,
+                -2.3833366202483677
+              ]
+            ],
+            "reason": "height_mismatch",
+            "source_heights_m": [
+              -1.6699959720648783,
+              -1.6060876432685873,
+              -1.3949999809265137,
+              -0.9711305376918636,
+              -1.0937130724322823,
+              -1.5671815426406435
+            ],
+            "to_m": 3.2307992040686235
+          }
+        ],
+        "problems_limited": false,
+        "sample_budget": 100000,
+        "sampled_points": 25,
+        "sampling_step_m": 0.5,
+        "warnings": [
+          "Source coverage is separate from structural validation. A sample needs at least three returns within 0.75 m and a 15th-percentile height within 0.3 m. Missing/occluded returns and another ground level can reduce support. Even full support does not certify road semantics, survey accuracy, obstacles or traffic rules."
+        ]
+      },
+      "validation": {
+        "counts": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 0
+        },
+        "issues": []
+      }
+    },
+    "consensus": {
+      "import_issues": [],
+      "quality": {
+        "cloud_points": 684690,
+        "ground_estimator": {
+          "layer_height_m": 0.15,
+          "minimum_cells": 3,
+          "minimum_triangle_area_m2": 0.01,
+          "model": "lowest_supported_layer",
+          "xy_cell_m": 0.2
+        },
+        "ground_height_tolerance_m": 0.3,
+        "ground_radius_m": 0.75,
+        "lanes": [
+          {
+            "center": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 7,
+              "start_supported": true,
+              "supported": 7
+            },
+            "lane": 3,
+            "left": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 8,
+              "start_supported": true,
+              "supported": 8
+            },
+            "needs_review": false,
+            "right": {
+              "end_supported": true,
+              "fraction": 1.0,
+              "height_mismatches": 0,
+              "insufficient_returns": 0,
+              "samples": 10,
+              "start_supported": true,
+              "supported": 10
+            }
+          }
+        ],
+        "limited": false,
+        "low_support_lanes": [],
+        "malformed_lanes": [],
+        "minimum_support_fraction": 0.9,
+        "omitted_lanes": [],
+        "problems": [],
+        "problems_limited": false,
+        "sample_budget": 100000,
+        "sampled_points": 25,
+        "sampling_step_m": 0.5,
+        "warnings": [
+          "Alternative source evidence uses the lowest 0.15 m vertical layer within 0.75 m XY with three occupied 0.2 m cells and a triangle area of at least 0.01 m\u00b2. It uses the median of cell-low returns. A lower physical level can still win; compare the legacy quantile audit and investigate disagreement. This does not establish road semantics, accuracy, obstacles or traffic rules."
+        ]
+      },
+      "validation": {
+        "counts": {
+          "errors": 0,
+          "infos": 0,
+          "warnings": 0
+        },
+        "issues": []
+      }
+    }
+  }
+}

@@ -68,6 +68,18 @@ Files never leave the browser.
 - Display: fixed (pixels) or adaptive point size (as wide as the local point
   spacing, per drawn octree node, so near surfaces close up), background
   colour, and named camera views; all kept in share links and sessions.
+- **Save workspace snapshot** writes a single `project.cloudanalyzer.zip` with
+  all current loaded point clouds and mesh geometry, including filtered/cropped
+  results, plus the edited HD map, lane notes and display settings. Open that ZIP
+  to continue from the saved records without rerunning processing. PLY snapshots
+  keep double coordinates and supported float/byte vertex attributes; transforms
+  are baked once. The package is bounded to 64 MiB uncompressed, 127 clouds/meshes
+  and 10 MiB project metadata. Original pose-graph/scan inputs and the verified
+  generated-map review ZIP are included, with at most 2,048 ZIP members. The
+  original review archive stays downloadable; its frozen audits do not validate
+  later edits. Unloaded cloud detail stays external. Undo starts fresh.
+  Browser autosave includes these records/inputs when its optional checkbox is
+  enabled; otherwise it and **Save project** retain metadata/source references.
 - Works on phones and tablets: the view fills the screen and the panels
   open as a bottom sheet (**Panels**); drag to orbit, pinch to zoom, two
   fingers to pan, tap to pick, double-tap (or double-click) to orbit around
@@ -83,6 +95,13 @@ Files never leave the browser.
 - Long loads and downloads show a progress bar with **Cancel** (a load stops
   between 16 MB slices); the status bar also shows the main worker's
   WebAssembly memory.
+- Workspace ZIPs prepare every point/mesh, map and original graph input before
+  committing. Failed or cancelled preparation retains current work and Undo;
+  success starts a fresh history. Preparation temporarily holds both workspaces.
+- Reusable filter recipes apply up to eight ordered steps to sixteen selected
+  point clouds, with one Undo for the whole batch. Results retain input/output
+  point-record and WASM-build hashes in portable workspace snapshots. Failed,
+  cancelled or stale preparation leaves sources and existing history available.
 - Large files: LAS and binary PLY/PCD are streamed in 16 MB slices, so the
   file is never held in memory whole; files above the "Max points per file"
   setting (50M by default) keep every n-th point. LAZ is thinned while it is
@@ -147,3 +166,10 @@ cd rust
 cargo test --workspace
 cargo run --release -p ca-core --example c2c -- compared.ply reference.pcd
 ```
+
+Enable **Include current point and mesh records (64 MiB)** under browser autosave
+for automatic recovery of processed geometry and computed attributes without
+reselecting point sources. The default remains metadata-only recovery. Atomic
+storage failures preserve the previous copy; **Download browser copy** exports
+a saved record snapshot as a workspace ZIP. See [browser recovery](../docs/browser-projects.md#keep-processed-records-in-browser-recovery)
+for capacity, external graph/audit inputs and backup limitations.

@@ -1,0 +1,332 @@
+{
+  "before": {
+    "protocol": {
+      "options": {
+        "search_radius_m": 8.0,
+        "association": "all_supported_bands"
+      },
+      "sample_spacing_m": 2.0,
+      "bin_width_m": 0.5,
+      "half_window_m": 2.0,
+      "minimum_support_span_m": 1.0,
+      "maximum_adjacent_height_step_m": 0.08,
+      "maximum_reference_level_grade": 0.12,
+      "ground_estimator": {
+        "model": "lowest_supported_layer",
+        "layer_height_m": 0.15,
+        "xy_cell_m": 0.2,
+        "minimum_cells": 3,
+        "minimum_triangle_area_m2": 0.01
+      },
+      "interval_support_spacing_m": 0.5,
+      "interval_ground_radius_m": 0.75,
+      "interval_height_tolerance_m": 0.3,
+      "maximum_sections": 2048,
+      "profile_query_point_budget": 2000000,
+      "interval_support_sample_budget": 100000
+    },
+    "trajectory_length_m": 250.4805260889724,
+    "with_candidate_station_length_m": 204.0,
+    "trajectory_covered_station_length_m": 142.0,
+    "without_candidate_station_length_m": 46.4805260889724,
+    "ambiguous_station_length_m": 68.0,
+    "off_trajectory_bands": 214,
+    "limited": false,
+    "candidates": 52,
+    "longest_candidate_station_length_m": 48.0,
+    "deferred_intervals": [
+      {
+        "from_m": 2.0,
+        "to_m": 4.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 18.0,
+        "to_m": 20.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 40.0,
+        "to_m": 42.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 44.0,
+        "to_m": 46.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 54.0,
+        "to_m": 56.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 104.0,
+        "to_m": 110.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 110.0,
+        "to_m": 114.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 118.0,
+        "to_m": 120.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 124.0,
+        "to_m": 126.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 126.0,
+        "to_m": 128.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 172.0,
+        "to_m": 174.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 184.0,
+        "to_m": 190.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 196.0,
+        "to_m": 198.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 200.0,
+        "to_m": 202.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 220.0,
+        "to_m": 224.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 234.0,
+        "to_m": 236.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 248.0,
+        "to_m": 250.4805260889724,
+        "reason": "unmatched_bands"
+      }
+    ],
+    "ambiguous_intervals": [
+      {
+        "from_m": 2.0,
+        "to_m": 4.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 18.0,
+        "to_m": 20.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 40.0,
+        "to_m": 42.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 44.0,
+        "to_m": 46.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 54.0,
+        "to_m": 56.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 110.0,
+        "to_m": 114.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 116.0,
+        "to_m": 120.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 124.0,
+        "to_m": 126.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 132.0,
+        "to_m": 136.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 152.0,
+        "to_m": 158.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 162.0,
+        "to_m": 166.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 172.0,
+        "to_m": 176.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 184.0,
+        "to_m": 190.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 196.0,
+        "to_m": 198.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 200.0,
+        "to_m": 202.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 204.0,
+        "to_m": 206.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 208.0,
+        "to_m": 210.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 212.0,
+        "to_m": 214.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 218.0,
+        "to_m": 226.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 232.0,
+        "to_m": 236.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 242.0,
+        "to_m": 244.0,
+        "reason": "branching_bands"
+      }
+    ]
+  },
+  "after": {
+    "protocol": {
+      "options": {
+        "search_radius_m": 8.0,
+        "association": "trajectory_containing"
+      },
+      "sample_spacing_m": 2.0,
+      "bin_width_m": 0.5,
+      "half_window_m": 2.0,
+      "minimum_support_span_m": 1.0,
+      "maximum_adjacent_height_step_m": 0.08,
+      "maximum_reference_level_grade": 0.12,
+      "ground_estimator": {
+        "model": "lowest_supported_layer",
+        "layer_height_m": 0.15,
+        "xy_cell_m": 0.2,
+        "minimum_cells": 3,
+        "minimum_triangle_area_m2": 0.01
+      },
+      "interval_support_spacing_m": 0.5,
+      "interval_ground_radius_m": 0.75,
+      "interval_height_tolerance_m": 0.3,
+      "maximum_sections": 2048,
+      "profile_query_point_budget": 2000000,
+      "interval_support_sample_budget": 100000
+    },
+    "trajectory_length_m": 250.4805260889724,
+    "with_candidate_station_length_m": 178.0,
+    "trajectory_covered_station_length_m": 178.0,
+    "without_candidate_station_length_m": 72.4805260889724,
+    "ambiguous_station_length_m": 0.0,
+    "off_trajectory_bands": 214,
+    "limited": false,
+    "candidates": 10,
+    "longest_candidate_station_length_m": 72.0,
+    "deferred_intervals": [
+      {
+        "from_m": 0.0,
+        "to_m": 10.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 18.0,
+        "to_m": 22.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 30.0,
+        "to_m": 34.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 38.0,
+        "to_m": 42.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 48.0,
+        "to_m": 52.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 70.0,
+        "to_m": 74.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 104.0,
+        "to_m": 110.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 124.0,
+        "to_m": 128.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 200.0,
+        "to_m": 216.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 216.0,
+        "to_m": 218.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 232.0,
+        "to_m": 240.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 244.0,
+        "to_m": 250.4805260889724,
+        "reason": "missing_trajectory_band"
+      }
+    ],
+    "ambiguous_intervals": []
+  },
+  "identical_profiles": true
+}

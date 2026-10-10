@@ -1,5 +1,6 @@
 /** Clipping box, sections and cropping. */
 
+import { projectChanged } from "../project-change";
 import * as THREE from "three";
 import { cropCloud } from "../api";
 import type { Vec3 } from "../protocol";
@@ -73,7 +74,7 @@ clipEnabled.onchange = () => {
 for (const input of document.querySelectorAll<HTMLInputElement>(".clip-axis input")) {
   input.oninput = applyClip;
 }
-$<HTMLButtonElement>("clip-reset").onclick = resetClip;
+$<HTMLButtonElement>("clip-reset").onclick = () => { resetClip(); projectChanged(); };
 
 /** A thin slab across `axis` through the middle of the current box. */
 for (const button of document.querySelectorAll<HTMLButtonElement>("[data-slice]")) {
@@ -92,6 +93,7 @@ for (const button of document.querySelectorAll<HTMLButtonElement>("[data-slice]"
     direction[axis] = 1;
     viewer.view({ x: direction[0], y: direction[1] - (axis === 2 ? 1e-3 : 0), z: direction[2] });
     viewer.fit();
+    projectChanged();
   };
 }
 

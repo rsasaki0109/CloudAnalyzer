@@ -1,0 +1,5088 @@
+{
+  "file": {
+    "path": "run/gaps-01.json",
+    "sha256": "4c74a7ac40691fb83d63267d93fa158fd94aff1ba64168a47268829be68726a8",
+    "bytes": 645865
+  },
+  "candidate_id": 1,
+  "gaps_total": 31,
+  "gaps": [
+    {
+      "id": 17,
+      "from_m": 158.0,
+      "to_m": 160.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [
+        10
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false,
+      "origin": "baseline",
+      "profiles": [
+        {
+          "station_m": 156.0,
+          "trajectory": [
+            3.130308538076659,
+            -55.56205725771287,
+            -1.671118542415373
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -1.7177837834609604,
+          "bands": [
+            {
+              "station_m": 156.0,
+              "center": [
+                8.978695373988634,
+                -59.4086624385875,
+                -1.7277996827246298
+              ],
+              "left": [
+                8.35208249871235,
+                -58.996526169208074,
+                -1.7909993596547535
+              ],
+              "right": [
+                9.605308249264915,
+                -59.82079870796692,
+                -1.792567204901348
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 156.0,
+              "center": [
+                6.472243872883501,
+                -57.7601173610698,
+                -1.7648711392987777
+              ],
+              "left": [
+                5.010147163905508,
+                -56.798466065851144,
+                -1.5939476272950581
+              ],
+              "right": [
+                7.934340581861496,
+                -58.72176865628846,
+                -1.9114931283268957
+              ],
+              "support_span_m": 3.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 156.0,
+              "center": [
+                3.130308538076659,
+                -55.56205725771287,
+                -1.7177837834609604
+              ],
+              "left": [
+                1.6682118290986654,
+                -54.600405962494214,
+                -1.6879795735925127
+              ],
+              "right": [
+                4.592405247054653,
+                -56.52370855293153,
+                -1.7559632779807912
+              ],
+              "support_span_m": 3.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 156.0,
+              "center": [
+                -1.0471106304318942,
+                -52.81448212851671,
+                -1.701404661671275
+              ],
+              "left": [
+                -3.344691173111598,
+                -51.30331580745882,
+                -1.6760215174344126
+              ],
+              "right": [
+                1.2504699122478102,
+                -54.3256484495746,
+                -1.8010029030225159
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 19,
+            "occupied_xy_cells_0_2m": 16,
+            "height_quantiles_m": {
+              "minimum": -1.7568845617462323,
+              "p15": -1.7221774279666733,
+              "median": -1.694933943630975
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 15,
+            "occupied_xy_cells_0_2m": 15,
+            "height_quantiles_m": {
+              "minimum": -1.7568845617462312,
+              "p15": -1.7239299541525173,
+              "median": -1.7101217935676187
+            }
+          }
+        },
+        {
+          "station_m": 158.0,
+          "trajectory": [
+            4.24784615378877,
+            -53.91089719316048,
+            -1.725785833535208
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -1.7744769265845797,
+          "bands": [
+            {
+              "station_m": 158.0,
+              "center": [
+                7.915156413197684,
+                -56.05876484765741,
+                -1.80090889251982
+              ],
+              "left": [
+                6.18936334994643,
+                -55.04800359848238,
+                -1.6452665433027271
+              ],
+              "right": [
+                9.640949476448936,
+                -57.06952609683243,
+                -1.8877737256340372
+              ],
+              "support_span_m": 4.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 158.0,
+              "center": [
+                5.326466818320803,
+                -54.54262297389487,
+                -1.8516618202434456
+              ],
+              "left": [
+                4.89501855250799,
+                -54.289932661601114,
+                -1.8907816854276507
+              ],
+              "right": [
+                5.757915084133617,
+                -54.79531328618862,
+                -1.8492418325336137
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 158.0,
+              "center": [
+                3.816397887975957,
+                -53.65820688086672,
+                -1.7798085355234914
+              ],
+              "left": [
+                3.169225489256737,
+                -53.27917141242609,
+                -1.6860861633095379
+              ],
+              "right": [
+                4.463570286695177,
+                -54.037242349307355,
+                -1.7744769265845797
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 158.0,
+              "center": [
+                0.1490876285670435,
+                -51.510339226369794,
+                -1.7870126773390362
+              ],
+              "left": [
+                -2.4396019663098363,
+                -49.99419735260726,
+                -1.6997196109090305
+              ],
+              "right": [
+                2.7377772234439233,
+                -53.02648110013234,
+                -1.9453509914869318
+              ],
+              "support_span_m": 6.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 14,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -1.833366959533532,
+              "p15": -1.807123994088939,
+              "median": -1.7675230499995231
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 11,
+            "occupied_xy_cells_0_2m": 9,
+            "height_quantiles_m": {
+              "minimum": -1.8333669595335325,
+              "p15": -1.802096840823866,
+              "median": -1.7744769265845797
+            }
+          }
+        },
+        {
+          "station_m": 160.0,
+          "trajectory": [
+            5.144014603878279,
+            -52.12381705744414,
+            -1.802825740100631
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -1.813629686410769,
+          "bands": [
+            {
+              "station_m": 160.0,
+              "center": [
+                11.392703517723277,
+                -55.27879516481519,
+                -1.9048757691038058
+              ],
+              "left": [
+                10.723201134097028,
+                -54.940761796168296,
+                -1.8899551035148516
+              ],
+              "right": [
+                12.062205901349529,
+                -55.61682853346209,
+                -1.876682012601166
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 160.0,
+              "center": [
+                9.161028905635778,
+                -54.15201726932553,
+                -1.817831360755816
+              ],
+              "left": [
+                8.045191599592028,
+                -53.5886283215807,
+                -1.7587323987101318
+              ],
+              "right": [
+                10.276866211679529,
+                -54.71540621707036,
+                -1.8044522655952488
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 160.0,
+              "center": [
+                5.144014603878279,
+                -52.12381705744414,
+                -1.8287562032529228
+              ],
+              "left": [
+                4.02817729783453,
+                -51.56042810969931,
+                -1.7647210039948984
+              ],
+              "right": [
+                6.259851909922029,
+                -52.687206005188976,
+                -1.9119212955902207
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 160.0,
+              "center": [
+                2.24283760816453,
+                -50.659005793307585,
+                -1.8499591605695591
+              ],
+              "left": [
+                0.9038328409120302,
+                -49.982939056013784,
+                -1.861910765488946
+              ],
+              "right": [
+                3.58184237541703,
+                -51.33507253060138,
+                -1.9394807058931578
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 160.0,
+              "center": [
+                -0.6583393875492192,
+                -49.19419452917102,
+                -1.7880052407753373
+              ],
+              "left": [
+                -1.7741766935929695,
+                -48.630805581426195,
+                -1.7301975476775806
+              ],
+              "right": [
+                0.45749791849453025,
+                -49.757583476915855,
+                -1.7817380493765835
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 5,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 14,
+            "height_quantiles_m": {
+              "minimum": -1.8827179223413975,
+              "p15": -1.8635679185040444,
+              "median": -1.8136296864107693
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 14,
+            "occupied_xy_cells_0_2m": 14,
+            "height_quantiles_m": {
+              "minimum": -1.882717922341397,
+              "p15": -1.8639184548709713,
+              "median": -1.8012582619025226
+            }
+          }
+        },
+        {
+          "station_m": 162.0,
+          "trajectory": [
+            6.050169022814865,
+            -50.34125120907564,
+            -1.8408156669328446
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -1.9003064682825208,
+          "bands": [
+            {
+              "station_m": 162.0,
+              "center": [
+                10.931625745830516,
+                -53.37998124995214,
+                -1.8654734188623552
+              ],
+              "left": [
+                9.658202252869913,
+                -52.58726906537566,
+                -1.8568251868558652
+              ],
+              "right": [
+                12.205049238791121,
+                -54.17269343452862,
+                -1.8473232631948426
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 162.0,
+              "center": [
+                6.899118018121935,
+                -50.86972599879329,
+                -1.9963967423455062
+              ],
+              "left": [
+                6.262406271641632,
+                -50.47336990650505,
+                -1.9523068203829284
+              ],
+              "right": [
+                7.535829764602237,
+                -51.26608209108153,
+                -2.049468084140328
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 162.0,
+              "center": [
+                1.3809495486259813,
+                -47.43463986562855,
+                -1.8894514345384748
+              ],
+              "left": [
+                -0.5291856908149262,
+                -46.24557158876383,
+                -1.7936423156030514
+              ],
+              "right": [
+                3.2910847880668883,
+                -48.623708142493264,
+                -1.9550489815275323
+              ],
+              "support_span_m": 4.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "support_gap",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 21,
+            "occupied_xy_cells_0_2m": 19,
+            "height_quantiles_m": {
+              "minimum": -2.0791798665155574,
+              "p15": -1.9244582627731002,
+              "median": -1.8601719696329235
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 16,
+            "height_quantiles_m": {
+              "minimum": -2.074884464280158,
+              "p15": -1.923359957194839,
+              "median": -1.8601719696329229
+            }
+          }
+        }
+      ],
+      "profiles_total": 4,
+      "profiles_limited": false,
+      "retained_hd_occupancy": {
+        "available": true,
+        "overlaps": [],
+        "overlaps_total": 0,
+        "unoccupied_intervals": [
+          {
+            "from_m": 158.0,
+            "to_m": 160.0
+          }
+        ],
+        "unoccupied_intervals_total": 1,
+        "limited_in_response": false
+      }
+    },
+    {
+      "id": 18,
+      "from_m": 160.0,
+      "to_m": 168.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false,
+      "origin": "baseline",
+      "profiles": [
+        {
+          "station_m": 158.0,
+          "trajectory": [
+            4.24784615378877,
+            -53.91089719316048,
+            -1.725785833535208
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -1.7744769265845797,
+          "bands": [
+            {
+              "station_m": 158.0,
+              "center": [
+                7.915156413197684,
+                -56.05876484765741,
+                -1.80090889251982
+              ],
+              "left": [
+                6.18936334994643,
+                -55.04800359848238,
+                -1.6452665433027271
+              ],
+              "right": [
+                9.640949476448936,
+                -57.06952609683243,
+                -1.8877737256340372
+              ],
+              "support_span_m": 4.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 158.0,
+              "center": [
+                5.326466818320803,
+                -54.54262297389487,
+                -1.8516618202434456
+              ],
+              "left": [
+                4.89501855250799,
+                -54.289932661601114,
+                -1.8907816854276507
+              ],
+              "right": [
+                5.757915084133617,
+                -54.79531328618862,
+                -1.8492418325336137
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 158.0,
+              "center": [
+                3.816397887975957,
+                -53.65820688086672,
+                -1.7798085355234914
+              ],
+              "left": [
+                3.169225489256737,
+                -53.27917141242609,
+                -1.6860861633095379
+              ],
+              "right": [
+                4.463570286695177,
+                -54.037242349307355,
+                -1.7744769265845797
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 158.0,
+              "center": [
+                0.1490876285670435,
+                -51.510339226369794,
+                -1.7870126773390362
+              ],
+              "left": [
+                -2.4396019663098363,
+                -49.99419735260726,
+                -1.6997196109090305
+              ],
+              "right": [
+                2.7377772234439233,
+                -53.02648110013234,
+                -1.9453509914869318
+              ],
+              "support_span_m": 6.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 14,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -1.833366959533532,
+              "p15": -1.807123994088939,
+              "median": -1.7675230499995231
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 11,
+            "occupied_xy_cells_0_2m": 9,
+            "height_quantiles_m": {
+              "minimum": -1.8333669595335325,
+              "p15": -1.802096840823866,
+              "median": -1.7744769265845797
+            }
+          }
+        },
+        {
+          "station_m": 160.0,
+          "trajectory": [
+            5.144014603878279,
+            -52.12381705744414,
+            -1.802825740100631
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -1.813629686410769,
+          "bands": [
+            {
+              "station_m": 160.0,
+              "center": [
+                11.392703517723277,
+                -55.27879516481519,
+                -1.9048757691038058
+              ],
+              "left": [
+                10.723201134097028,
+                -54.940761796168296,
+                -1.8899551035148516
+              ],
+              "right": [
+                12.062205901349529,
+                -55.61682853346209,
+                -1.876682012601166
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 160.0,
+              "center": [
+                9.161028905635778,
+                -54.15201726932553,
+                -1.817831360755816
+              ],
+              "left": [
+                8.045191599592028,
+                -53.5886283215807,
+                -1.7587323987101318
+              ],
+              "right": [
+                10.276866211679529,
+                -54.71540621707036,
+                -1.8044522655952488
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 160.0,
+              "center": [
+                5.144014603878279,
+                -52.12381705744414,
+                -1.8287562032529228
+              ],
+              "left": [
+                4.02817729783453,
+                -51.56042810969931,
+                -1.7647210039948984
+              ],
+              "right": [
+                6.259851909922029,
+                -52.687206005188976,
+                -1.9119212955902207
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 160.0,
+              "center": [
+                2.24283760816453,
+                -50.659005793307585,
+                -1.8499591605695591
+              ],
+              "left": [
+                0.9038328409120302,
+                -49.982939056013784,
+                -1.861910765488946
+              ],
+              "right": [
+                3.58184237541703,
+                -51.33507253060138,
+                -1.9394807058931578
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 160.0,
+              "center": [
+                -0.6583393875492192,
+                -49.19419452917102,
+                -1.7880052407753373
+              ],
+              "left": [
+                -1.7741766935929695,
+                -48.630805581426195,
+                -1.7301975476775806
+              ],
+              "right": [
+                0.45749791849453025,
+                -49.757583476915855,
+                -1.7817380493765835
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 5,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 14,
+            "height_quantiles_m": {
+              "minimum": -1.8827179223413975,
+              "p15": -1.8635679185040444,
+              "median": -1.8136296864107693
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 14,
+            "occupied_xy_cells_0_2m": 14,
+            "height_quantiles_m": {
+              "minimum": -1.882717922341397,
+              "p15": -1.8639184548709713,
+              "median": -1.8012582619025226
+            }
+          }
+        },
+        {
+          "station_m": 162.0,
+          "trajectory": [
+            6.050169022814865,
+            -50.34125120907564,
+            -1.8408156669328446
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -1.9003064682825208,
+          "bands": [
+            {
+              "station_m": 162.0,
+              "center": [
+                10.931625745830516,
+                -53.37998124995214,
+                -1.8654734188623552
+              ],
+              "left": [
+                9.658202252869913,
+                -52.58726906537566,
+                -1.8568251868558652
+              ],
+              "right": [
+                12.205049238791121,
+                -54.17269343452862,
+                -1.8473232631948426
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 162.0,
+              "center": [
+                6.899118018121935,
+                -50.86972599879329,
+                -1.9963967423455062
+              ],
+              "left": [
+                6.262406271641632,
+                -50.47336990650505,
+                -1.9523068203829284
+              ],
+              "right": [
+                7.535829764602237,
+                -51.26608209108153,
+                -2.049468084140328
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 162.0,
+              "center": [
+                1.3809495486259813,
+                -47.43463986562855,
+                -1.8894514345384748
+              ],
+              "left": [
+                -0.5291856908149262,
+                -46.24557158876383,
+                -1.7936423156030514
+              ],
+              "right": [
+                3.2910847880668883,
+                -48.623708142493264,
+                -1.9550489815275323
+              ],
+              "support_span_m": 4.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "support_gap",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 21,
+            "occupied_xy_cells_0_2m": 19,
+            "height_quantiles_m": {
+              "minimum": -2.0791798665155574,
+              "p15": -1.9244582627731002,
+              "median": -1.8601719696329235
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 16,
+            "height_quantiles_m": {
+              "minimum": -2.074884464280158,
+              "p15": -1.923359957194839,
+              "median": -1.8601719696329229
+            }
+          }
+        },
+        {
+          "station_m": 164.0,
+          "trajectory": [
+            7.2498078568801905,
+            -48.74104251219952,
+            -1.9111554400220647
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -1.9523068203829284,
+          "bands": [
+            {
+              "station_m": 164.0,
+              "center": [
+                12.49092238578698,
+                -52.585612513497736,
+                -1.9309360749659858
+              ],
+              "left": [
+                11.483015745612597,
+                -51.84627212863269,
+                -1.9689684597857744
+              ],
+              "right": [
+                13.498829025961363,
+                -53.324952898362774,
+                -1.9601064419877754
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 164.0,
+              "center": [
+                9.66878379329871,
+                -50.51545943587562,
+                -1.9341233984867179
+              ],
+              "left": [
+                9.06403980919408,
+                -50.07185520495659,
+                -1.974649564578381
+              ],
+              "right": [
+                10.27352777740334,
+                -50.95906366679464,
+                -2.0101953087243576
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 164.0,
+              "center": [
+                3.8229252802872886,
+                -46.22728520365838,
+                -1.9635920301805723
+              ],
+              "left": [
+                3.0165999681477826,
+                -45.63581289576635,
+                -1.998195717815125
+              ],
+              "right": [
+                4.629250592426795,
+                -46.818757511550416,
+                -2.0276544049687284
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "support_gap",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 164.0,
+              "center": [
+                1.807111999938523,
+                -44.7486044339283,
+                -1.8602472974584574
+              ],
+              "left": [
+                1.0007866877990166,
+                -44.15713212603627,
+                -1.8380346969769843
+              ],
+              "right": [
+                2.6134373120780294,
+                -45.34007674182033,
+                -1.902872976502462
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -2.026707822312542,
+              "p15": -1.9823171667770214,
+              "median": -1.944388517540208
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -2.0267078223125425,
+              "p15": -1.982317166777021,
+              "median": -1.944388517540208
+            }
+          }
+        },
+        {
+          "station_m": 166.0,
+          "trajectory": [
+            8.415059503293266,
+            -47.11731150910312,
+            -1.979835743776876
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.078499467176068,
+          "bands": [
+            {
+              "station_m": 166.0,
+              "center": [
+                14.094934125684507,
+                -51.20864677694856,
+                -2.0550441978765166
+              ],
+              "left": [
+                13.486376130428303,
+                -50.770289426822266,
+                -2.037693013005498
+              ],
+              "right": [
+                14.70349212094071,
+                -51.647004127074865,
+                -2.0359276725174653
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 166.0,
+              "center": [
+                11.863554809745091,
+                -49.60133649315214,
+                -1.9377239659911452
+              ],
+              "left": [
+                10.646438819232682,
+                -48.72462179289954,
+                -1.9415557532617675
+              ],
+              "right": [
+                13.080670800257499,
+                -50.47805119340473,
+                -1.9565459293265821
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 166.0,
+              "center": [
+                9.226470163634872,
+                -47.70178797593818,
+                -2.2035012060279238
+              ],
+              "left": [
+                8.617912168378668,
+                -47.263430625811885,
+                -2.1170779436064775
+              ],
+              "right": [
+                9.835028158891076,
+                -48.14014532606448,
+                -2.236478089353676
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 166.0,
+              "center": [
+                7.806501508037062,
+                -46.67895415897682,
+                -1.9966009045864253
+              ],
+              "left": [
+                7.400796177866258,
+                -46.38671592555929,
+                -2.0703544605027515
+              ],
+              "right": [
+                8.212206838207864,
+                -46.97119239239435,
+                -2.036867779747729
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 166.0,
+              "center": [
+                3.952300871414434,
+                -43.902690941510265,
+                -2.059793040844783
+              ],
+              "left": [
+                2.1266268856458215,
+                -42.58761889113137,
+                -1.969893082801841
+              ],
+              "right": [
+                5.777974857183047,
+                -45.21776299188916,
+                -2.1372024553989397
+              ],
+              "support_span_m": 4.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "support_gap",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 5,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 24,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.211800944191832,
+              "p15": -2.087496201510623,
+              "median": -2.039304378375851
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.193996325341423,
+              "p15": -2.087156863627214,
+              "median": -2.0454350709781925
+            }
+          }
+        },
+        {
+          "station_m": 168.0,
+          "trajectory": [
+            9.579022978048172,
+            -45.50746496582091,
+            -2.050988312842339
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.13648144145939,
+          "bands": [
+            {
+              "station_m": 168.0,
+              "center": [
+                14.389589689794064,
+                -48.657218592986425,
+                -2.087292845108994
+              ],
+              "left": [
+                12.716349094404189,
+                -47.56165211397233,
+                -2.0103089249986272
+              ],
+              "right": [
+                16.06283028518394,
+                -49.75278507200051,
+                -2.083071698266908
+              ],
+              "support_span_m": 4.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 168.0,
+              "center": [
+                11.461418647861782,
+                -46.73997725471176,
+                -2.3336443362885757
+              ],
+              "left": [
+                10.624798350166845,
+                -46.19219401520471,
+                -2.3111645204041382
+              ],
+              "right": [
+                12.29803894555672,
+                -47.28776049421881,
+                -2.4147706694063378
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 168.0,
+              "center": [
+                9.369867903624439,
+                -45.370519155944145,
+                -2.096940186309498
+              ],
+              "left": [
+                8.5332476059295,
+                -44.822735916437104,
+                -2.0703544605027515
+              ],
+              "right": [
+                10.206488201319376,
+                -45.91830239545119,
+                -2.2279261627109297
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 168.0,
+              "center": [
+                6.2325417872684215,
+                -43.316332007792724,
+                -2.1937828295676725
+              ],
+              "left": [
+                5.18676641514975,
+                -42.63160295840892,
+                -2.1876685898614636
+              ],
+              "right": [
+                7.278317159387093,
+                -44.00106105717653,
+                -2.147703701809746
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 168.0,
+              "center": [
+                3.9318359686073423,
+                -41.80992809914835,
+                -2.0596831182618827
+              ],
+              "left": [
+                3.0952156709124052,
+                -41.2621448596413,
+                -2.0435726959400853
+              ],
+              "right": [
+                4.76845626630228,
+                -42.35771133865539,
+                -2.078020215223554
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 5,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 84,
+            "occupied_xy_cells_0_2m": 25,
+            "height_quantiles_m": {
+              "minimum": -2.2582959439207677,
+              "p15": -2.088490769086891,
+              "median": 1.6146902537458576
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 54,
+            "occupied_xy_cells_0_2m": 23,
+            "height_quantiles_m": {
+              "minimum": -2.2582959439207677,
+              "p15": -2.115326871064294,
+              "median": 1.4400967038864554
+            }
+          }
+        },
+        {
+          "station_m": 170.0,
+          "trajectory": [
+            10.595868352414483,
+            -43.786598159404,
+            -2.1023760989519147
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.1464902569880464,
+          "bands": [
+            {
+              "station_m": 170.0,
+              "center": [
+                14.897428200537957,
+                -46.33543767436212,
+                -2.116631794230694
+              ],
+              "left": [
+                13.822038238507089,
+                -45.69822779562259,
+                -2.088901352860848
+              ],
+              "right": [
+                15.972818162568828,
+                -46.97264755310165,
+                -2.2213747129415835
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 170.0,
+              "center": [
+                11.026024337226831,
+                -44.041482110899814,
+                -2.245832271763131
+              ],
+              "left": [
+                9.520478390383614,
+                -43.14938828066447,
+                -2.085713338566495
+              ],
+              "right": [
+                12.531570284070046,
+                -44.93357594113515,
+                -2.3336443362885757
+              ],
+              "support_span_m": 3.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 170.0,
+              "center": [
+                6.509386496697181,
+                -41.36520062019379,
+                -2.2045766556834048
+              ],
+              "left": [
+                3.9284505878230966,
+                -39.83589691121892,
+                -2.0942011722208167
+              ],
+              "right": [
+                9.090322405571266,
+                -42.89450432916866,
+                -2.252028250120281
+              ],
+              "support_span_m": 6.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 22,
+            "occupied_xy_cells_0_2m": 19,
+            "height_quantiles_m": {
+              "minimum": -2.2372881230104524,
+              "p15": -2.167513762078199,
+              "median": -2.1076555049552588
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 20,
+            "occupied_xy_cells_0_2m": 18,
+            "height_quantiles_m": {
+              "minimum": -2.237288123010453,
+              "p15": -2.1712809476136545,
+              "median": -2.1076555049552583
+            }
+          }
+        }
+      ],
+      "profiles_total": 7,
+      "profiles_limited": false,
+      "retained_hd_occupancy": {
+        "available": true,
+        "overlaps": [],
+        "overlaps_total": 0,
+        "unoccupied_intervals": [
+          {
+            "from_m": 160.0,
+            "to_m": 168.0
+          }
+        ],
+        "unoccupied_intervals_total": 1,
+        "limited_in_response": false
+      }
+    },
+    {
+      "id": 19,
+      "from_m": 172,
+      "to_m": 176.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        11
+      ],
+      "deferred_candidate_ids": [
+        11
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false,
+      "origin": "baseline",
+      "profiles": [
+        {
+          "station_m": 170.0,
+          "trajectory": [
+            10.595868352414483,
+            -43.786598159404,
+            -2.1023760989519147
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.1464902569880464,
+          "bands": [
+            {
+              "station_m": 170.0,
+              "center": [
+                14.897428200537957,
+                -46.33543767436212,
+                -2.116631794230694
+              ],
+              "left": [
+                13.822038238507089,
+                -45.69822779562259,
+                -2.088901352860848
+              ],
+              "right": [
+                15.972818162568828,
+                -46.97264755310165,
+                -2.2213747129415835
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 170.0,
+              "center": [
+                11.026024337226831,
+                -44.041482110899814,
+                -2.245832271763131
+              ],
+              "left": [
+                9.520478390383614,
+                -43.14938828066447,
+                -2.085713338566495
+              ],
+              "right": [
+                12.531570284070046,
+                -44.93357594113515,
+                -2.3336443362885757
+              ],
+              "support_span_m": 3.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 170.0,
+              "center": [
+                6.509386496697181,
+                -41.36520062019379,
+                -2.2045766556834048
+              ],
+              "left": [
+                3.9284505878230966,
+                -39.83589691121892,
+                -2.0942011722208167
+              ],
+              "right": [
+                9.090322405571266,
+                -42.89450432916866,
+                -2.252028250120281
+              ],
+              "support_span_m": 6.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 22,
+            "occupied_xy_cells_0_2m": 19,
+            "height_quantiles_m": {
+              "minimum": -2.2372881230104524,
+              "p15": -2.167513762078199,
+              "median": -2.1076555049552588
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 20,
+            "occupied_xy_cells_0_2m": 18,
+            "height_quantiles_m": {
+              "minimum": -2.237288123010453,
+              "p15": -2.1712809476136545,
+              "median": -2.1076555049552583
+            }
+          }
+        },
+        {
+          "station_m": 172.0,
+          "trajectory": [
+            11.616987594768847,
+            -42.068085312557,
+            -2.2314703881286495
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.240233917819065,
+          "bands": [
+            {
+              "station_m": 172.0,
+              "center": [
+                15.999025724613197,
+                -44.95949359029818,
+                -2.109467609127549
+              ],
+              "left": [
+                13.912340900877794,
+                -43.582632505659525,
+                -2.1213137367107806
+              ],
+              "right": [
+                18.085710548348604,
+                -46.33635467493684,
+                -2.1526776853689435
+              ],
+              "support_span_m": 5.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 172.0,
+              "center": [
+                11.825656077142387,
+                -42.20577142102087,
+                -2.2452818500390213
+              ],
+              "left": [
+                10.156308218154063,
+                -41.10428255330994,
+                -2.2776937858508095
+              ],
+              "right": [
+                13.495003936130711,
+                -43.3072602887318,
+                -2.3871577886553976
+              ],
+              "support_span_m": 4.0,
+              "left_evidence": "support_gap",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 172.0,
+              "center": [
+                7.2349494649244965,
+                -39.176677034815825,
+                -2.221713582675796
+              ],
+              "left": [
+                5.148264641189091,
+                -37.79981595017716,
+                -2.1591003931998456
+              ],
+              "right": [
+                9.3216342886599,
+                -40.55353811945448,
+                -2.2261675016504157
+              ],
+              "support_span_m": 5.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "support_gap",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 22,
+            "occupied_xy_cells_0_2m": 18,
+            "height_quantiles_m": {
+              "minimum": -2.326314750647619,
+              "p15": -2.2681457680480612,
+              "median": -2.22568421200474
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 15,
+            "height_quantiles_m": {
+              "minimum": -2.306638412908331,
+              "p15": -2.250937992684374,
+              "median": -2.2221451381636266
+            }
+          }
+        },
+        {
+          "station_m": 174.0,
+          "trajectory": [
+            12.7895785118412,
+            -40.46194780184724,
+            -2.282342812142059
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.3349810940730165,
+          "bands": [
+            {
+              "station_m": 174.0,
+              "center": [
+                18.68601651404443,
+                -44.68030279949426,
+                -2.2807433405672497
+              ],
+              "left": [
+                18.27936561734076,
+                -44.38938176517377,
+                -2.2361279034599493
+              ],
+              "right": [
+                19.0926674107481,
+                -44.97122383381474,
+                -2.3181258665545066
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 174.0,
+              "center": [
+                16.246111133822403,
+                -42.93477659357136,
+                -2.1338597990296977
+              ],
+              "left": [
+                15.02615844371139,
+                -42.0620134906099,
+                -2.203361067641211
+              ],
+              "right": [
+                17.466063823933414,
+                -43.80753969653281,
+                -2.147006393700172
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 174.0,
+              "center": [
+                14.212856650304047,
+                -41.48017142196893,
+                -2.437166530969572
+              ],
+              "left": [
+                13.806205753600377,
+                -41.18925038764845,
+                -2.4030511360105105
+              ],
+              "right": [
+                14.619507547007718,
+                -41.771092456289416,
+                -2.386781050625766
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 174.0,
+              "center": [
+                9.943022234915503,
+                -38.42550056160385,
+                -2.4057689762849455
+              ],
+              "left": [
+                6.4864896129342995,
+                -35.952671769879736,
+                -2.26486123782447
+              ],
+              "right": [
+                13.399554856896707,
+                -40.898329353327966,
+                -2.304368287074831
+              ],
+              "support_span_m": 8.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 19,
+            "occupied_xy_cells_0_2m": 11,
+            "height_quantiles_m": {
+              "minimum": -2.404993855830648,
+              "p15": -2.3638142247140674,
+              "median": -2.3050690765841018
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 10,
+            "height_quantiles_m": {
+              "minimum": -2.404993855830648,
+              "p15": -2.3562748186834757,
+              "median": -2.305069076584102
+            }
+          }
+        },
+        {
+          "station_m": 176.0,
+          "trajectory": [
+            13.937584015192394,
+            -38.82434387097737,
+            -2.4092808738717086
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.4303204364037687,
+          "bands": [
+            {
+              "station_m": 176.0,
+              "center": [
+                19.718047840048627,
+                -43.200270969265055,
+                -2.286920464700136
+              ],
+              "left": [
+                19.319395162472333,
+                -42.89848289352108,
+                -2.270751802702385
+              ],
+              "right": [
+                20.116700517624917,
+                -43.502059045009034,
+                -2.3256699426426337
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 176.0,
+              "center": [
+                17.326131774590873,
+                -41.389542514801185,
+                -2.223612648060338
+              ],
+              "left": [
+                16.130173741862,
+                -40.48417828756925,
+                -2.2621794594412177
+              ],
+              "right": [
+                18.522089807319748,
+                -42.29490674203312,
+                -2.227690504871094
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 176.0,
+              "center": [
+                13.339604998827957,
+                -38.37166175736141,
+                -2.376476001895308
+              ],
+              "left": [
+                11.74499428852279,
+                -37.164509454385495,
+                -2.3792915274735176
+              ],
+              "right": [
+                14.934215709133124,
+                -39.578814060337315,
+                -2.448518139971087
+              ],
+              "support_span_m": 4.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 176.0,
+              "center": [
+                9.552404561853185,
+                -35.50467503779361,
+                -2.407410681304307
+              ],
+              "left": [
+                7.758467512759872,
+                -34.14662869694571,
+                -2.2861404766398348
+              ],
+              "right": [
+                11.346341610946498,
+                -36.86272137864152,
+                -2.4629691781066274
+              ],
+              "support_span_m": 4.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 20,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.4828767921610466,
+              "p15": -2.4451675751378703,
+              "median": -2.3834097795268585
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 14,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.4828767921610466,
+              "p15": -2.4581956181037032,
+              "median": -2.413508843469317
+            }
+          }
+        },
+        {
+          "station_m": 178.0,
+          "trajectory": [
+            15.201943669150689,
+            -37.275288332673796,
+            -2.3973600044984567
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.4456304885493965,
+          "bands": [
+            {
+              "station_m": 178.0,
+              "center": [
+                19.130510924649343,
+                -40.368241503839464,
+                -2.2848072322155693
+              ],
+              "left": [
+                16.969798934125084,
+                -38.667117259698344,
+                -2.2759604227825205
+              ],
+              "right": [
+                21.291222915173602,
+                -42.069365747980584,
+                -2.374011770460262
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 178.0,
+              "center": [
+                15.791228757475487,
+                -37.73923130834865,
+                -2.5249149653747613
+              ],
+              "left": [
+                15.398372031925621,
+                -37.42993599123208,
+                -2.5219425514990474
+              ],
+              "right": [
+                16.184085483025353,
+                -38.048526625465215,
+                -2.576028493666634
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 178.0,
+              "center": [
+                14.61265858082589,
+                -36.81134535699894,
+                -2.4693196508462347
+              ],
+              "left": [
+                14.219801855276025,
+                -36.50205003988238,
+                -2.4295482130039163
+              ],
+              "right": [
+                15.005515306375756,
+                -37.12064067411551,
+                -2.4303204364037687
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 178.0,
+              "center": [
+                11.273376413652034,
+                -34.18233516150813,
+                -2.469760651478566
+              ],
+              "left": [
+                9.112664423127775,
+                -32.48121091736701,
+                -2.33192599262626
+              ],
+              "right": [
+                13.434088404176295,
+                -35.88345940564925,
+                -2.44707626216709
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 20,
+            "occupied_xy_cells_0_2m": 18,
+            "height_quantiles_m": {
+              "minimum": -2.53560148105076,
+              "p15": -2.5090342323377715,
+              "median": -2.450281119728869
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 17,
+            "height_quantiles_m": {
+              "minimum": -2.5356014810507594,
+              "p15": -2.4954217974753194,
+              "median": -2.4456304885493965
+            }
+          }
+        }
+      ],
+      "profiles_total": 5,
+      "profiles_limited": false,
+      "retained_hd_occupancy": {
+        "available": true,
+        "overlaps": [],
+        "overlaps_total": 0,
+        "unoccupied_intervals": [
+          {
+            "from_m": 172,
+            "to_m": 176.0
+          }
+        ],
+        "unoccupied_intervals_total": 1,
+        "limited_in_response": false
+      }
+    },
+    {
+      "id": 20,
+      "from_m": 176.0,
+      "to_m": 180.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false,
+      "origin": "baseline",
+      "profiles": [
+        {
+          "station_m": 174.0,
+          "trajectory": [
+            12.7895785118412,
+            -40.46194780184724,
+            -2.282342812142059
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.3349810940730165,
+          "bands": [
+            {
+              "station_m": 174.0,
+              "center": [
+                18.68601651404443,
+                -44.68030279949426,
+                -2.2807433405672497
+              ],
+              "left": [
+                18.27936561734076,
+                -44.38938176517377,
+                -2.2361279034599493
+              ],
+              "right": [
+                19.0926674107481,
+                -44.97122383381474,
+                -2.3181258665545066
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 174.0,
+              "center": [
+                16.246111133822403,
+                -42.93477659357136,
+                -2.1338597990296977
+              ],
+              "left": [
+                15.02615844371139,
+                -42.0620134906099,
+                -2.203361067641211
+              ],
+              "right": [
+                17.466063823933414,
+                -43.80753969653281,
+                -2.147006393700172
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 174.0,
+              "center": [
+                14.212856650304047,
+                -41.48017142196893,
+                -2.437166530969572
+              ],
+              "left": [
+                13.806205753600377,
+                -41.18925038764845,
+                -2.4030511360105105
+              ],
+              "right": [
+                14.619507547007718,
+                -41.771092456289416,
+                -2.386781050625766
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 174.0,
+              "center": [
+                9.943022234915503,
+                -38.42550056160385,
+                -2.4057689762849455
+              ],
+              "left": [
+                6.4864896129342995,
+                -35.952671769879736,
+                -2.26486123782447
+              ],
+              "right": [
+                13.399554856896707,
+                -40.898329353327966,
+                -2.304368287074831
+              ],
+              "support_span_m": 8.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 19,
+            "occupied_xy_cells_0_2m": 11,
+            "height_quantiles_m": {
+              "minimum": -2.404993855830648,
+              "p15": -2.3638142247140674,
+              "median": -2.3050690765841018
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 10,
+            "height_quantiles_m": {
+              "minimum": -2.404993855830648,
+              "p15": -2.3562748186834757,
+              "median": -2.305069076584102
+            }
+          }
+        },
+        {
+          "station_m": 176.0,
+          "trajectory": [
+            13.937584015192394,
+            -38.82434387097737,
+            -2.4092808738717086
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.4303204364037687,
+          "bands": [
+            {
+              "station_m": 176.0,
+              "center": [
+                19.718047840048627,
+                -43.200270969265055,
+                -2.286920464700136
+              ],
+              "left": [
+                19.319395162472333,
+                -42.89848289352108,
+                -2.270751802702385
+              ],
+              "right": [
+                20.116700517624917,
+                -43.502059045009034,
+                -2.3256699426426337
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 176.0,
+              "center": [
+                17.326131774590873,
+                -41.389542514801185,
+                -2.223612648060338
+              ],
+              "left": [
+                16.130173741862,
+                -40.48417828756925,
+                -2.2621794594412177
+              ],
+              "right": [
+                18.522089807319748,
+                -42.29490674203312,
+                -2.227690504871094
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 176.0,
+              "center": [
+                13.339604998827957,
+                -38.37166175736141,
+                -2.376476001895308
+              ],
+              "left": [
+                11.74499428852279,
+                -37.164509454385495,
+                -2.3792915274735176
+              ],
+              "right": [
+                14.934215709133124,
+                -39.578814060337315,
+                -2.448518139971087
+              ],
+              "support_span_m": 4.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 176.0,
+              "center": [
+                9.552404561853185,
+                -35.50467503779361,
+                -2.407410681304307
+              ],
+              "left": [
+                7.758467512759872,
+                -34.14662869694571,
+                -2.2861404766398348
+              ],
+              "right": [
+                11.346341610946498,
+                -36.86272137864152,
+                -2.4629691781066274
+              ],
+              "support_span_m": 4.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 20,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.4828767921610466,
+              "p15": -2.4451675751378703,
+              "median": -2.3834097795268585
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 14,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.4828767921610466,
+              "p15": -2.4581956181037032,
+              "median": -2.413508843469317
+            }
+          }
+        },
+        {
+          "station_m": 178.0,
+          "trajectory": [
+            15.201943669150689,
+            -37.275288332673796,
+            -2.3973600044984567
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.4456304885493965,
+          "bands": [
+            {
+              "station_m": 178.0,
+              "center": [
+                19.130510924649343,
+                -40.368241503839464,
+                -2.2848072322155693
+              ],
+              "left": [
+                16.969798934125084,
+                -38.667117259698344,
+                -2.2759604227825205
+              ],
+              "right": [
+                21.291222915173602,
+                -42.069365747980584,
+                -2.374011770460262
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 178.0,
+              "center": [
+                15.791228757475487,
+                -37.73923130834865,
+                -2.5249149653747613
+              ],
+              "left": [
+                15.398372031925621,
+                -37.42993599123208,
+                -2.5219425514990474
+              ],
+              "right": [
+                16.184085483025353,
+                -38.048526625465215,
+                -2.576028493666634
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 178.0,
+              "center": [
+                14.61265858082589,
+                -36.81134535699894,
+                -2.4693196508462347
+              ],
+              "left": [
+                14.219801855276025,
+                -36.50205003988238,
+                -2.4295482130039163
+              ],
+              "right": [
+                15.005515306375756,
+                -37.12064067411551,
+                -2.4303204364037687
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 178.0,
+              "center": [
+                11.273376413652034,
+                -34.18233516150813,
+                -2.469760651478566
+              ],
+              "left": [
+                9.112664423127775,
+                -32.48121091736701,
+                -2.33192599262626
+              ],
+              "right": [
+                13.434088404176295,
+                -35.88345940564925,
+                -2.44707626216709
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 20,
+            "occupied_xy_cells_0_2m": 18,
+            "height_quantiles_m": {
+              "minimum": -2.53560148105076,
+              "p15": -2.5090342323377715,
+              "median": -2.450281119728869
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 17,
+            "height_quantiles_m": {
+              "minimum": -2.5356014810507594,
+              "p15": -2.4954217974753194,
+              "median": -2.4456304885493965
+            }
+          }
+        },
+        {
+          "station_m": 180.0,
+          "trajectory": [
+            16.407268068133174,
+            -35.6874325228648,
+            -2.462792510991894
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.5594701966021565,
+          "bands": [
+            {
+              "station_m": 180.0,
+              "center": [
+                18.673617621624114,
+                -37.245045986273304,
+                -2.4851094266907032
+              ],
+              "left": [
+                18.261554066443942,
+                -36.96184353838085,
+                -2.455627683424883
+              ],
+              "right": [
+                19.085681176804282,
+                -37.52824843416576,
+                -2.439990740960253
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 180.0,
+              "center": [
+                16.613299845723258,
+                -35.82903374681103,
+                -2.581955284999778
+              ],
+              "left": [
+                15.377109180182748,
+                -34.979426403133665,
+                -2.53964424322099
+              ],
+              "right": [
+                17.84949051126377,
+                -36.67864109048839,
+                -2.656078807479907
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 180.0,
+              "center": [
+                12.492664293921553,
+                -32.99700926788648,
+                -2.5167868346452478
+              ],
+              "left": [
+                10.020282962840529,
+                -31.297794580531757,
+                -2.33192599262626
+              ],
+              "right": [
+                14.965045625002576,
+                -34.696223955241216,
+                -2.4582451914811423
+              ],
+              "support_span_m": 6.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 14,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -2.6220415968302335,
+              "p15": -2.608704693811831,
+              "median": -2.568463230126817
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 9,
+            "occupied_xy_cells_0_2m": 9,
+            "height_quantiles_m": {
+              "minimum": -2.6220415968302326,
+              "p15": -2.5903155759306737,
+              "median": -2.558342121165455
+            }
+          }
+        },
+        {
+          "station_m": 182.0,
+          "trajectory": [
+            17.46132878810343,
+            -33.98785112453784,
+            -2.5059793899620635
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.5882344262476433,
+          "bands": [
+            {
+              "station_m": 182.0,
+              "center": [
+                23.696903240527362,
+                -37.68651456533345,
+                -3.0452546643631013
+              ],
+              "left": [
+                23.266863623118816,
+                -37.4314343280372,
+                -3.0563756227139547
+              ],
+              "right": [
+                24.12694285793591,
+                -37.941594802629695,
+                -3.094451217969053
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 182.0,
+              "center": [
+                21.11666553607608,
+                -36.15603314155595,
+                -2.8411910899195787
+              ],
+              "left": [
+                20.686625918667534,
+                -35.900952904259704,
+                -2.8196825050488754
+              ],
+              "right": [
+                21.546705153484627,
+                -36.4111133788522,
+                -2.894522877953466
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 182.0,
+              "center": [
+                19.826546683850438,
+                -35.39079242966721,
+                -2.5180062085017756
+              ],
+              "left": [
+                19.39650706644189,
+                -35.13571219237096,
+                -2.4423708660931496
+              ],
+              "right": [
+                20.256586301258984,
+                -35.645872666963456,
+                -2.5380736929065417
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 182.0,
+              "center": [
+                17.676348596807703,
+                -34.11539124318597,
+                -2.6120185116631496
+              ],
+              "left": [
+                16.81626936199061,
+                -33.605230768593465,
+                -2.626675450354251
+              ],
+              "right": [
+                18.5364278316248,
+                -34.625551717778464,
+                -2.722454197776468
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 182.0,
+              "center": [
+                13.590972231426505,
+                -31.692128988871605,
+                -2.561896652497712
+              ],
+              "left": [
+                10.795714718270949,
+                -30.03410744644599,
+                -2.3994150338048312
+              ],
+              "right": [
+                16.38622974458206,
+                -33.35015053129722,
+                -2.53964424322099
+              ],
+              "support_span_m": 6.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 5,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 14,
+            "height_quantiles_m": {
+              "minimum": -2.6563784195533207,
+              "p15": -2.6228986122204563,
+              "median": -2.5910033276564803
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 16,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.6563784195533207,
+              "p15": -2.6238774991393843,
+              "median": -2.59100332765648
+            }
+          }
+        }
+      ],
+      "profiles_total": 5,
+      "profiles_limited": false,
+      "retained_hd_occupancy": {
+        "available": true,
+        "overlaps": [],
+        "overlaps_total": 0,
+        "unoccupied_intervals": [
+          {
+            "from_m": 176.0,
+            "to_m": 180.0
+          }
+        ],
+        "unoccupied_intervals_total": 1,
+        "limited_in_response": false
+      }
+    },
+    {
+      "id": 21,
+      "from_m": 184,
+      "to_m": 188,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        12
+      ],
+      "deferred_candidate_ids": [
+        12
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false,
+      "origin": "baseline",
+      "profiles": [
+        {
+          "station_m": 182.0,
+          "trajectory": [
+            17.46132878810343,
+            -33.98785112453784,
+            -2.5059793899620635
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.5882344262476433,
+          "bands": [
+            {
+              "station_m": 182.0,
+              "center": [
+                23.696903240527362,
+                -37.68651456533345,
+                -3.0452546643631013
+              ],
+              "left": [
+                23.266863623118816,
+                -37.4314343280372,
+                -3.0563756227139547
+              ],
+              "right": [
+                24.12694285793591,
+                -37.941594802629695,
+                -3.094451217969053
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 182.0,
+              "center": [
+                21.11666553607608,
+                -36.15603314155595,
+                -2.8411910899195787
+              ],
+              "left": [
+                20.686625918667534,
+                -35.900952904259704,
+                -2.8196825050488754
+              ],
+              "right": [
+                21.546705153484627,
+                -36.4111133788522,
+                -2.894522877953466
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 182.0,
+              "center": [
+                19.826546683850438,
+                -35.39079242966721,
+                -2.5180062085017756
+              ],
+              "left": [
+                19.39650706644189,
+                -35.13571219237096,
+                -2.4423708660931496
+              ],
+              "right": [
+                20.256586301258984,
+                -35.645872666963456,
+                -2.5380736929065417
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 182.0,
+              "center": [
+                17.676348596807703,
+                -34.11539124318597,
+                -2.6120185116631496
+              ],
+              "left": [
+                16.81626936199061,
+                -33.605230768593465,
+                -2.626675450354251
+              ],
+              "right": [
+                18.5364278316248,
+                -34.625551717778464,
+                -2.722454197776468
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 182.0,
+              "center": [
+                13.590972231426505,
+                -31.692128988871605,
+                -2.561896652497712
+              ],
+              "left": [
+                10.795714718270949,
+                -30.03410744644599,
+                -2.3994150338048312
+              ],
+              "right": [
+                16.38622974458206,
+                -33.35015053129722,
+                -2.53964424322099
+              ],
+              "support_span_m": 6.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 5,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 14,
+            "height_quantiles_m": {
+              "minimum": -2.6563784195533207,
+              "p15": -2.6228986122204563,
+              "median": -2.5910033276564803
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 16,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.6563784195533207,
+              "p15": -2.6238774991393843,
+              "median": -2.59100332765648
+            }
+          }
+        },
+        {
+          "station_m": 184.0,
+          "trajectory": [
+            18.446678708735462,
+            -32.24919136032051,
+            -2.6051568476811524
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.6624054463215314,
+          "bands": [
+            {
+              "station_m": 184.0,
+              "center": [
+                22.969193168887877,
+                -34.91553022807763,
+                -2.9740249964278904
+              ],
+              "left": [
+                20.815614854529585,
+                -33.64584505295519,
+                -2.877385377727759
+              ],
+              "right": [
+                25.122771483246172,
+                -36.18521540320006,
+                -3.080204326901741
+              ],
+              "support_span_m": 5.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 184.0,
+              "center": [
+                18.87739437160712,
+                -32.503128395344994,
+                -2.706540961663615
+              ],
+              "left": [
+                17.369889551556316,
+                -31.614348772759293,
+                -2.6247445246896515
+              ],
+              "right": [
+                20.384899191657926,
+                -33.3919080179307,
+                -2.7701004350172145
+              ],
+              "support_span_m": 3.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 184.0,
+              "center": [
+                13.708806417147215,
+                -29.45588397505115,
+                -2.5668863300641767
+              ],
+              "left": [
+                11.770585934224751,
+                -28.313167317440957,
+                -2.483622557901289
+              ],
+              "right": [
+                15.64702690006968,
+                -30.59860063266134,
+                -2.6766215541484266
+              ],
+              "support_span_m": 4.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 22,
+            "occupied_xy_cells_0_2m": 17,
+            "height_quantiles_m": {
+              "minimum": -2.779529769017851,
+              "p15": -2.66566531432081,
+              "median": -2.6512275663779743
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 16,
+            "height_quantiles_m": {
+              "minimum": -2.77952976901785,
+              "p15": -2.6651301197635595,
+              "median": -2.6472438572987795
+            }
+          }
+        },
+        {
+          "station_m": 186.0,
+          "trajectory": [
+            19.49045248919319,
+            -30.54615007498754,
+            -2.6624578575200757
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.6942719897030645,
+          "bands": [
+            {
+              "station_m": 186.0,
+              "center": [
+                22.24462097469537,
+                -32.271564794255525,
+                -2.922473639675235
+              ],
+              "left": [
+                18.431156917846195,
+                -29.882529029115236,
+                -2.6610827374917405
+              ],
+              "right": [
+                26.058085031544543,
+                -34.66060055939582,
+                -3.12541627549483
+              ],
+              "support_span_m": 9.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 186.0,
+              "center": [
+                15.04141108953582,
+                -27.75894168232387,
+                -2.645704692999073
+              ],
+              "left": [
+                12.922819946841836,
+                -26.431699590579264,
+                -2.545560045026467
+              ],
+              "right": [
+                17.160002232229804,
+                -29.086183774068473,
+                -2.8147930229554206
+              ],
+              "support_span_m": 5.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 2,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 21,
+            "occupied_xy_cells_0_2m": 17,
+            "height_quantiles_m": {
+              "minimum": -2.7630185847569644,
+              "p15": -2.736587935661505,
+              "median": -2.694271989703064
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 16,
+            "height_quantiles_m": {
+              "minimum": -2.7630185847569644,
+              "p15": -2.7322798247566924,
+              "median": -2.6942719897030645
+            }
+          }
+        },
+        {
+          "station_m": 188.0,
+          "trajectory": [
+            20.56879660090646,
+            -28.86179112786086,
+            -2.6483198175138742
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.7394194527757962,
+          "bands": [
+            {
+              "station_m": 188.0,
+              "center": [
+                24.85717641085166,
+                -31.43274398733813,
+                -3.0840707519645862
+              ],
+              "left": [
+                22.4985675153818,
+                -30.01871991462563,
+                -2.8668172716755276
+              ],
+              "right": [
+                27.21578530632152,
+                -32.84676806005063,
+                -3.2356758998894524
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 188.0,
+              "center": [
+                20.3543776104092,
+                -28.733243484886998,
+                -2.7279930770174903
+              ],
+              "left": [
+                19.49670164842016,
+                -28.219052912991543,
+                -2.6748802563713814
+              ],
+              "right": [
+                21.21205357239824,
+                -29.247434056782453,
+                -2.784772377147788
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 188.0,
+              "center": [
+                16.280416790961258,
+                -26.29083826838359,
+                -2.746000838956007
+              ],
+              "left": [
+                13.921807895491396,
+                -24.876814195671095,
+                -2.646586722276417
+              ],
+              "right": [
+                18.63902568643112,
+                -27.704862341096092,
+                -2.800524469208142
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 15,
+            "occupied_xy_cells_0_2m": 14,
+            "height_quantiles_m": {
+              "minimum": -2.8220894973792827,
+              "p15": -2.802066528609646,
+              "median": -2.7400544198800723
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.805851777765703,
+              "p15": -2.7640650864117338,
+              "median": -2.7394194527757962
+            }
+          }
+        },
+        {
+          "station_m": 190.0,
+          "trajectory": [
+            21.543722106860034,
+            -27.121272041803106,
+            -2.6684746126787817
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.843415462608437,
+          "bands": [
+            {
+              "station_m": 190.0,
+              "center": [
+                26.21134986408388,
+                -30.030438781609114,
+                -3.1247497506382973
+              ],
+              "left": [
+                24.301865781583214,
+                -28.840325115324838,
+                -2.9989047780505014
+              ],
+              "right": [
+                28.12083394658454,
+                -31.22055244789339,
+                -3.244500041825805
+              ],
+              "support_span_m": 4.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 190.0,
+              "center": [
+                22.180216801026923,
+                -27.517976597231197,
+                -2.909811179806111
+              ],
+              "left": [
+                21.331557208804405,
+                -26.98903718999374,
+                -2.8750686458705808
+              ],
+              "right": [
+                23.02887639324944,
+                -28.046916004468656,
+                -2.886378529832405
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 190.0,
+              "center": [
+                20.270732718526258,
+                -26.32786293094692,
+                -2.8556111666969786
+              ],
+              "left": [
+                19.634238024359373,
+                -25.93115837551883,
+                -2.816941226471095
+              ],
+              "right": [
+                20.907227412693146,
+                -26.724567486375015,
+                -2.785412479656738
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 190.0,
+              "center": [
+                17.51258904380308,
+                -24.60880985742519,
+                -2.8122329732470566
+              ],
+              "left": [
+                15.815269859358047,
+                -23.55093104295028,
+                -2.837614504939334
+              ],
+              "right": [
+                19.209908228248114,
+                -25.6666886719001,
+                -2.899213664642379
+              ],
+              "support_span_m": 4.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -3.0112794211825555,
+              "p15": -2.8398512816798367,
+              "median": -2.798540611404358
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 15,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -3.0112794211825546,
+              "p15": -2.842524417376287,
+              "median": -2.7985406114043583
+            }
+          }
+        }
+      ],
+      "profiles_total": 5,
+      "profiles_limited": false,
+      "retained_hd_occupancy": {
+        "available": true,
+        "overlaps": [
+          {
+            "lane_id": 45,
+            "from_m": 184,
+            "to_m": 188
+          }
+        ],
+        "overlaps_total": 1,
+        "unoccupied_intervals": [],
+        "unoccupied_intervals_total": 0,
+        "limited_in_response": false
+      }
+    },
+    {
+      "id": 22,
+      "from_m": 190,
+      "to_m": 196.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        12
+      ],
+      "deferred_candidate_ids": [
+        12
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false,
+      "origin": "baseline",
+      "profiles": [
+        {
+          "station_m": 188.0,
+          "trajectory": [
+            20.56879660090646,
+            -28.86179112786086,
+            -2.6483198175138742
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.7394194527757962,
+          "bands": [
+            {
+              "station_m": 188.0,
+              "center": [
+                24.85717641085166,
+                -31.43274398733813,
+                -3.0840707519645862
+              ],
+              "left": [
+                22.4985675153818,
+                -30.01871991462563,
+                -2.8668172716755276
+              ],
+              "right": [
+                27.21578530632152,
+                -32.84676806005063,
+                -3.2356758998894524
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 188.0,
+              "center": [
+                20.3543776104092,
+                -28.733243484886998,
+                -2.7279930770174903
+              ],
+              "left": [
+                19.49670164842016,
+                -28.219052912991543,
+                -2.6748802563713814
+              ],
+              "right": [
+                21.21205357239824,
+                -29.247434056782453,
+                -2.784772377147788
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 188.0,
+              "center": [
+                16.280416790961258,
+                -26.29083826838359,
+                -2.746000838956007
+              ],
+              "left": [
+                13.921807895491396,
+                -24.876814195671095,
+                -2.646586722276417
+              ],
+              "right": [
+                18.63902568643112,
+                -27.704862341096092,
+                -2.800524469208142
+              ],
+              "support_span_m": 5.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 15,
+            "occupied_xy_cells_0_2m": 14,
+            "height_quantiles_m": {
+              "minimum": -2.8220894973792827,
+              "p15": -2.802066528609646,
+              "median": -2.7400544198800723
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -2.805851777765703,
+              "p15": -2.7640650864117338,
+              "median": -2.7394194527757962
+            }
+          }
+        },
+        {
+          "station_m": 190.0,
+          "trajectory": [
+            21.543722106860034,
+            -27.121272041803106,
+            -2.6684746126787817
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.843415462608437,
+          "bands": [
+            {
+              "station_m": 190.0,
+              "center": [
+                26.21134986408388,
+                -30.030438781609114,
+                -3.1247497506382973
+              ],
+              "left": [
+                24.301865781583214,
+                -28.840325115324838,
+                -2.9989047780505014
+              ],
+              "right": [
+                28.12083394658454,
+                -31.22055244789339,
+                -3.244500041825805
+              ],
+              "support_span_m": 4.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 190.0,
+              "center": [
+                22.180216801026923,
+                -27.517976597231197,
+                -2.909811179806111
+              ],
+              "left": [
+                21.331557208804405,
+                -26.98903718999374,
+                -2.8750686458705808
+              ],
+              "right": [
+                23.02887639324944,
+                -28.046916004468656,
+                -2.886378529832405
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 190.0,
+              "center": [
+                20.270732718526258,
+                -26.32786293094692,
+                -2.8556111666969786
+              ],
+              "left": [
+                19.634238024359373,
+                -25.93115837551883,
+                -2.816941226471095
+              ],
+              "right": [
+                20.907227412693146,
+                -26.724567486375015,
+                -2.785412479656738
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 190.0,
+              "center": [
+                17.51258904380308,
+                -24.60880985742519,
+                -2.8122329732470566
+              ],
+              "left": [
+                15.815269859358047,
+                -23.55093104295028,
+                -2.837614504939334
+              ],
+              "right": [
+                19.209908228248114,
+                -25.6666886719001,
+                -2.899213664642379
+              ],
+              "support_span_m": 4.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -3.0112794211825555,
+              "p15": -2.8398512816798367,
+              "median": -2.798540611404358
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 15,
+            "occupied_xy_cells_0_2m": 13,
+            "height_quantiles_m": {
+              "minimum": -3.0112794211825546,
+              "p15": -2.842524417376287,
+              "median": -2.7985406114043583
+            }
+          }
+        },
+        {
+          "station_m": 192.0,
+          "trajectory": [
+            22.678693545228146,
+            -25.476555965006504,
+            -2.7787407723843804
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.8984458515295692,
+          "bands": [
+            {
+              "station_m": 192.0,
+              "center": [
+                25.41878467486564,
+                -27.22424031902525,
+                -3.046553936977112
+              ],
+              "left": [
+                21.624812341521416,
+                -24.804369674999293,
+                -2.8662509988974465
+              ],
+              "right": [
+                29.212757008209863,
+                -29.644110963051205,
+                -3.3054893811475683
+              ],
+              "support_span_m": 9.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 192.0,
+              "center": [
+                18.252392489659886,
+                -22.653373546976223,
+                -2.845524758532189
+              ],
+              "left": [
+                16.14463008224643,
+                -21.309000966961804,
+                -2.7867517206556798
+              ],
+              "right": [
+                20.360154897073343,
+                -23.99774612699064,
+                -2.927798016674651
+              ],
+              "support_span_m": 5.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 2,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -2.9475036542701614,
+              "p15": -2.9266807405193003,
+              "median": -2.8984458515295692
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 11,
+            "occupied_xy_cells_0_2m": 11,
+            "height_quantiles_m": {
+              "minimum": -2.9424097183015703,
+              "p15": -2.921256454523654,
+              "median": -2.8984458515295692
+            }
+          }
+        },
+        {
+          "station_m": 194.0,
+          "trajectory": [
+            23.692325731919702,
+            -23.752603254104034,
+            -2.9289827700051068
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.9148769009570685,
+          "bands": [
+            {
+              "station_m": 194.0,
+              "center": [
+                23.692325731919702,
+                -23.752603254104034,
+                -2.9055723650157463
+              ],
+              "left": [
+                17.14142921906999,
+                -19.611558110914515,
+                -2.7829093201331423
+              ],
+              "right": [
+                30.243222244769413,
+                -27.893648397293553,
+                -3.398070304973284
+              ],
+              "support_span_m": 15.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 1,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 22,
+            "occupied_xy_cells_0_2m": 20,
+            "height_quantiles_m": {
+              "minimum": -2.9950356929433983,
+              "p15": -2.9559108043496645,
+              "median": -2.9145151670653737
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 17,
+            "height_quantiles_m": {
+              "minimum": -2.9950356929433983,
+              "p15": -2.9639888855444663,
+              "median": -2.9115933741777713
+            }
+          }
+        },
+        {
+          "station_m": 196.0,
+          "trajectory": [
+            24.814637934701313,
+            -22.097614135393055,
+            -2.9597040815184874
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.9515132349491413,
+          "bands": [
+            {
+              "station_m": 196.0,
+              "center": [
+                24.814637934701313,
+                -22.097614135393055,
+                -2.9836673876669106
+              ],
+              "left": [
+                18.15531833650723,
+                -18.133277811478525,
+                -2.8602727225511404
+              ],
+              "right": [
+                31.473957532895398,
+                -26.061950459307585,
+                -3.411886471130419
+              ],
+              "support_span_m": 15.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 1,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -3.014202701466267,
+              "p15": -2.977816899808049,
+              "median": -2.9353082682453944
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 12,
+            "occupied_xy_cells_0_2m": 11,
+            "height_quantiles_m": {
+              "minimum": -3.0142027014662673,
+              "p15": -2.981384090004387,
+              "median": -2.9498802961398374
+            }
+          }
+        },
+        {
+          "station_m": 198.0,
+          "trajectory": [
+            25.734240536806027,
+            -20.32258063064629,
+            -2.9484409013069337
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.006401394492138,
+          "bands": [
+            {
+              "station_m": 198.0,
+              "center": [
+                32.22236078588316,
+                -23.557823377877988,
+                -3.5394043835843947
+              ],
+              "left": [
+                31.774904216981287,
+                -23.334703188413734,
+                -3.5269723644004687
+              ],
+              "right": [
+                32.66981735478503,
+                -23.78094356734224,
+                -3.5471493945267722
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 198.0,
+              "center": [
+                30.656262794726608,
+                -22.776902714753096,
+                -3.4049441952111485
+              ],
+              "left": [
+                29.985077941373802,
+                -22.44222243055671,
+                -3.412124896823468
+              ],
+              "right": [
+                31.327447648079417,
+                -23.111582998949476,
+                -3.4201099554011885
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 198.0,
+              "center": [
+                27.524066812413512,
+                -21.215061388503308,
+                -3.130769934950708
+              ],
+              "left": [
+                25.957968821256962,
+                -20.434140725378416,
+                -3.10326073422414
+              ],
+              "right": [
+                29.09016480357006,
+                -21.995982051628204,
+                -3.226250678342473
+              ],
+              "support_span_m": 3.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 198.0,
+              "center": [
+                22.154587985591057,
+                -18.537619114932248,
+                -2.9434212697890407
+              ],
+              "left": [
+                18.798663718827022,
+                -16.864217693950337,
+                -2.8518339160512642
+              ],
+              "right": [
+                25.510512252355092,
+                -20.211020535914162,
+                -3.006401394492138
+              ],
+              "support_span_m": 7.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 16,
+            "height_quantiles_m": {
+              "minimum": -3.066443378849534,
+              "p15": -3.0355763624456,
+              "median": -3.0059277595639182
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -3.066443378849534,
+              "p15": -3.0340729812069203,
+              "median": -3.006401394492138
+            }
+          }
+        }
+      ],
+      "profiles_total": 6,
+      "profiles_limited": false,
+      "retained_hd_occupancy": {
+        "available": true,
+        "overlaps": [
+          {
+            "lane_id": 48,
+            "from_m": 190,
+            "to_m": 196.0
+          }
+        ],
+        "overlaps_total": 1,
+        "unoccupied_intervals": [],
+        "unoccupied_intervals_total": 0,
+        "limited_in_response": false
+      }
+    },
+    {
+      "id": 23,
+      "from_m": 196.0,
+      "to_m": 200.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false,
+      "origin": "baseline",
+      "profiles": [
+        {
+          "station_m": 194.0,
+          "trajectory": [
+            23.692325731919702,
+            -23.752603254104034,
+            -2.9289827700051068
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.9148769009570685,
+          "bands": [
+            {
+              "station_m": 194.0,
+              "center": [
+                23.692325731919702,
+                -23.752603254104034,
+                -2.9055723650157463
+              ],
+              "left": [
+                17.14142921906999,
+                -19.611558110914515,
+                -2.7829093201331423
+              ],
+              "right": [
+                30.243222244769413,
+                -27.893648397293553,
+                -3.398070304973284
+              ],
+              "support_span_m": 15.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 1,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 22,
+            "occupied_xy_cells_0_2m": 20,
+            "height_quantiles_m": {
+              "minimum": -2.9950356929433983,
+              "p15": -2.9559108043496645,
+              "median": -2.9145151670653737
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 17,
+            "height_quantiles_m": {
+              "minimum": -2.9950356929433983,
+              "p15": -2.9639888855444663,
+              "median": -2.9115933741777713
+            }
+          }
+        },
+        {
+          "station_m": 196.0,
+          "trajectory": [
+            24.814637934701313,
+            -22.097614135393055,
+            -2.9597040815184874
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -2.9515132349491413,
+          "bands": [
+            {
+              "station_m": 196.0,
+              "center": [
+                24.814637934701313,
+                -22.097614135393055,
+                -2.9836673876669106
+              ],
+              "left": [
+                18.15531833650723,
+                -18.133277811478525,
+                -2.8602727225511404
+              ],
+              "right": [
+                31.473957532895398,
+                -26.061950459307585,
+                -3.411886471130419
+              ],
+              "support_span_m": 15.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 1,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 17,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -3.014202701466267,
+              "p15": -2.977816899808049,
+              "median": -2.9353082682453944
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 12,
+            "occupied_xy_cells_0_2m": 11,
+            "height_quantiles_m": {
+              "minimum": -3.0142027014662673,
+              "p15": -2.981384090004387,
+              "median": -2.9498802961398374
+            }
+          }
+        },
+        {
+          "station_m": 198.0,
+          "trajectory": [
+            25.734240536806027,
+            -20.32258063064629,
+            -2.9484409013069337
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.006401394492138,
+          "bands": [
+            {
+              "station_m": 198.0,
+              "center": [
+                32.22236078588316,
+                -23.557823377877988,
+                -3.5394043835843947
+              ],
+              "left": [
+                31.774904216981287,
+                -23.334703188413734,
+                -3.5269723644004687
+              ],
+              "right": [
+                32.66981735478503,
+                -23.78094356734224,
+                -3.5471493945267722
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 198.0,
+              "center": [
+                30.656262794726608,
+                -22.776902714753096,
+                -3.4049441952111485
+              ],
+              "left": [
+                29.985077941373802,
+                -22.44222243055671,
+                -3.412124896823468
+              ],
+              "right": [
+                31.327447648079417,
+                -23.111582998949476,
+                -3.4201099554011885
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 198.0,
+              "center": [
+                27.524066812413512,
+                -21.215061388503308,
+                -3.130769934950708
+              ],
+              "left": [
+                25.957968821256962,
+                -20.434140725378416,
+                -3.10326073422414
+              ],
+              "right": [
+                29.09016480357006,
+                -21.995982051628204,
+                -3.226250678342473
+              ],
+              "support_span_m": 3.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 198.0,
+              "center": [
+                22.154587985591057,
+                -18.537619114932248,
+                -2.9434212697890407
+              ],
+              "left": [
+                18.798663718827022,
+                -16.864217693950337,
+                -2.8518339160512642
+              ],
+              "right": [
+                25.510512252355092,
+                -20.211020535914162,
+                -3.006401394492138
+              ],
+              "support_span_m": 7.5,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 16,
+            "height_quantiles_m": {
+              "minimum": -3.066443378849534,
+              "p15": -3.0355763624456,
+              "median": -3.0059277595639182
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 13,
+            "occupied_xy_cells_0_2m": 12,
+            "height_quantiles_m": {
+              "minimum": -3.066443378849534,
+              "p15": -3.0340729812069203,
+              "median": -3.006401394492138
+            }
+          }
+        },
+        {
+          "station_m": 200.0,
+          "trajectory": [
+            26.598337433131828,
+            -18.520492497785398,
+            -3.040586408479772
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.0662240537356475,
+          "bands": [
+            {
+              "station_m": 200.0,
+              "center": [
+                33.337596054491385,
+                -20.413213616817686,
+                -3.556695154045568
+              ],
+              "left": [
+                32.6155326307743,
+                -20.21042206834994,
+                -3.5832553107613063
+              ],
+              "right": [
+                34.05965947820849,
+                -20.61600516528543,
+                -3.575274406007417
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 200.0,
+              "center": [
+                26.35764962522613,
+                -18.452895314962817,
+                -3.063022046685664
+              ],
+              "left": [
+                22.98802031454635,
+                -17.506534755446673,
+                -2.9398094160887833
+              ],
+              "right": [
+                29.72727893590591,
+                -19.39925587447896,
+                -3.2699488028071757
+              ],
+              "support_span_m": 7.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 200.0,
+              "center": [
+                20.581142235489363,
+                -16.830562927220857,
+                -2.849693373966503
+              ],
+              "left": [
+                19.137015388055172,
+                -16.424979830285366,
+                -2.9822870265358272
+              ],
+              "right": [
+                22.025269082923554,
+                -17.236146024156344,
+                -2.9085794615130114
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 36,
+            "occupied_xy_cells_0_2m": 20,
+            "height_quantiles_m": {
+              "minimum": -3.6017787432893615,
+              "p15": -3.1109529293666887,
+              "median": -3.0446575787816874
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 26,
+            "occupied_xy_cells_0_2m": 19,
+            "height_quantiles_m": {
+              "minimum": -3.601778743289361,
+              "p15": -3.092871216205339,
+              "median": -3.0446575787816874
+            }
+          }
+        },
+        {
+          "station_m": 202.0,
+          "trajectory": [
+            26.79294785356003,
+            -16.552927330862325,
+            -3.1173103243870477
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.080412000906528,
+          "bands": [
+            {
+              "station_m": 202.0,
+              "center": [
+                33.33003791929222,
+                -18.23487663821543,
+                -3.528225655325116
+              ],
+              "left": [
+                32.84580902553427,
+                -18.110287800633717,
+                -3.48677116144289
+              ],
+              "right": [
+                33.81426681305015,
+                -18.35946547579714,
+                -3.585668921964161
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 202.0,
+              "center": [
+                30.908893450502518,
+                -17.61193245030687,
+                -3.3999535195921133
+              ],
+              "left": [
+                29.940435662986637,
+                -17.362754775143447,
+                -3.3330851468113676
+              ],
+              "right": [
+                31.877351238018395,
+                -17.861110125470294,
+                -3.49104417811475
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 202.0,
+              "center": [
+                26.55083340668106,
+                -16.49063291207147,
+                -3.05518711014853
+              ],
+              "left": [
+                23.645460044133422,
+                -15.7430998865812,
+                -2.894890766380177
+              ],
+              "right": [
+                29.456206769228697,
+                -17.23816593756174,
+                -3.216004806347341
+              ],
+              "support_span_m": 6.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 202.0,
+              "center": [
+                20.740086681585787,
+                -14.995566861090932,
+                -2.835357482669642
+              ],
+              "left": [
+                19.771628894069906,
+                -14.746389185927509,
+                -2.8733412586810134
+              ],
+              "right": [
+                21.708544469101664,
+                -15.244744536254355,
+                -2.846792117639495
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 23,
+            "occupied_xy_cells_0_2m": 18,
+            "height_quantiles_m": {
+              "minimum": -3.156490210077023,
+              "p15": -3.1071515229481212,
+              "median": -3.0562344645977735
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 15,
+            "height_quantiles_m": {
+              "minimum": -3.1539089615325544,
+              "p15": -3.1063399728239594,
+              "median": -3.0545288506891604
+            }
+          }
+        }
+      ],
+      "profiles_total": 5,
+      "profiles_limited": false,
+      "retained_hd_occupancy": {
+        "available": true,
+        "overlaps": [
+          {
+            "lane_id": 48,
+            "from_m": 196.0,
+            "to_m": 200.0
+          }
+        ],
+        "overlaps_total": 1,
+        "unoccupied_intervals": [],
+        "unoccupied_intervals_total": 0,
+        "limited_in_response": false
+      }
+    },
+    {
+      "id": 24,
+      "from_m": 202.0,
+      "to_m": 206.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false,
+      "origin": "baseline",
+      "profiles": [
+        {
+          "station_m": 200.0,
+          "trajectory": [
+            26.598337433131828,
+            -18.520492497785398,
+            -3.040586408479772
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.0662240537356475,
+          "bands": [
+            {
+              "station_m": 200.0,
+              "center": [
+                33.337596054491385,
+                -20.413213616817686,
+                -3.556695154045568
+              ],
+              "left": [
+                32.6155326307743,
+                -20.21042206834994,
+                -3.5832553107613063
+              ],
+              "right": [
+                34.05965947820849,
+                -20.61600516528543,
+                -3.575274406007417
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 200.0,
+              "center": [
+                26.35764962522613,
+                -18.452895314962817,
+                -3.063022046685664
+              ],
+              "left": [
+                22.98802031454635,
+                -17.506534755446673,
+                -2.9398094160887833
+              ],
+              "right": [
+                29.72727893590591,
+                -19.39925587447896,
+                -3.2699488028071757
+              ],
+              "support_span_m": 7.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 200.0,
+              "center": [
+                20.581142235489363,
+                -16.830562927220857,
+                -2.849693373966503
+              ],
+              "left": [
+                19.137015388055172,
+                -16.424979830285366,
+                -2.9822870265358272
+              ],
+              "right": [
+                22.025269082923554,
+                -17.236146024156344,
+                -2.9085794615130114
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "search_limit",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 3,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 36,
+            "occupied_xy_cells_0_2m": 20,
+            "height_quantiles_m": {
+              "minimum": -3.6017787432893615,
+              "p15": -3.1109529293666887,
+              "median": -3.0446575787816874
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 26,
+            "occupied_xy_cells_0_2m": 19,
+            "height_quantiles_m": {
+              "minimum": -3.601778743289361,
+              "p15": -3.092871216205339,
+              "median": -3.0446575787816874
+            }
+          }
+        },
+        {
+          "station_m": 202.0,
+          "trajectory": [
+            26.79294785356003,
+            -16.552927330862325,
+            -3.1173103243870477
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.080412000906528,
+          "bands": [
+            {
+              "station_m": 202.0,
+              "center": [
+                33.33003791929222,
+                -18.23487663821543,
+                -3.528225655325116
+              ],
+              "left": [
+                32.84580902553427,
+                -18.110287800633717,
+                -3.48677116144289
+              ],
+              "right": [
+                33.81426681305015,
+                -18.35946547579714,
+                -3.585668921964161
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 202.0,
+              "center": [
+                30.908893450502518,
+                -17.61193245030687,
+                -3.3999535195921133
+              ],
+              "left": [
+                29.940435662986637,
+                -17.362754775143447,
+                -3.3330851468113676
+              ],
+              "right": [
+                31.877351238018395,
+                -17.861110125470294,
+                -3.49104417811475
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 202.0,
+              "center": [
+                26.55083340668106,
+                -16.49063291207147,
+                -3.05518711014853
+              ],
+              "left": [
+                23.645460044133422,
+                -15.7430998865812,
+                -2.894890766380177
+              ],
+              "right": [
+                29.456206769228697,
+                -17.23816593756174,
+                -3.216004806347341
+              ],
+              "support_span_m": 6.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 202.0,
+              "center": [
+                20.740086681585787,
+                -14.995566861090932,
+                -2.835357482669642
+              ],
+              "left": [
+                19.771628894069906,
+                -14.746389185927509,
+                -2.8733412586810134
+              ],
+              "right": [
+                21.708544469101664,
+                -15.244744536254355,
+                -2.846792117639495
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 23,
+            "occupied_xy_cells_0_2m": 18,
+            "height_quantiles_m": {
+              "minimum": -3.156490210077023,
+              "p15": -3.1071515229481212,
+              "median": -3.0562344645977735
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 18,
+            "occupied_xy_cells_0_2m": 15,
+            "height_quantiles_m": {
+              "minimum": -3.1539089615325544,
+              "p15": -3.1063399728239594,
+              "median": -3.0545288506891604
+            }
+          }
+        },
+        {
+          "station_m": 204.0,
+          "trajectory": [
+            27.57709680263336,
+            -14.71643126767632,
+            -3.086650115980206
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.1225384626073343,
+          "bands": [
+            {
+              "station_m": 204.0,
+              "center": [
+                33.73180884598031,
+                -17.48807692747485,
+                -3.6054991443646087
+              ],
+              "left": [
+                32.819999654373355,
+                -17.077462755652846,
+                -3.5555939609769727
+              ],
+              "right": [
+                34.64361803758726,
+                -17.898691099296855,
+                -3.6677081089631485
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 204.0,
+              "center": [
+                31.680238164864658,
+                -16.56419504087534,
+                -3.6078637381033105
+              ],
+              "left": [
+                30.996381271159443,
+                -16.256234412008837,
+                -3.54407362098351
+              ],
+              "right": [
+                32.36409505856987,
+                -16.872155669741844,
+                -3.6456846282371904
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 204.0,
+              "center": [
+                29.85661978165075,
+                -15.742966697231331,
+                -3.3471634418498377
+              ],
+              "left": [
+                29.17276288794553,
+                -15.435006068364828,
+                -3.2619248875992235
+              ],
+              "right": [
+                30.540476675355965,
+                -16.050927326097835,
+                -3.37921458663129
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 204.0,
+              "center": [
+                26.209383015222926,
+                -14.100510009943314,
+                -3.0586877062084303
+              ],
+              "left": [
+                24.613716929910755,
+                -13.381935209254806,
+                -2.91504378005941
+              ],
+              "right": [
+                27.805049100535097,
+                -14.819084810631821,
+                -3.1658268013804713
+              ],
+              "support_span_m": 3.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 42,
+            "occupied_xy_cells_0_2m": 21,
+            "height_quantiles_m": {
+              "minimum": -3.2036697537892724,
+              "p15": -3.1444785202734713,
+              "median": -3.0198463622812026
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 27,
+            "occupied_xy_cells_0_2m": 19,
+            "height_quantiles_m": {
+              "minimum": -3.203669753789271,
+              "p15": -3.1666959629310205,
+              "median": -3.0851435796224904
+            }
+          }
+        },
+        {
+          "station_m": 206.0,
+          "trajectory": [
+            28.429388983702864,
+            -12.919048701279308,
+            -3.197475241424037
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.171053354566324,
+          "bands": [
+            {
+              "station_m": 206.0,
+              "center": [
+                35.18324187355211,
+                -15.554949143685086,
+                -3.669805876810776
+              ],
+              "left": [
+                34.717458915631475,
+                -15.373162906277791,
+                -3.7083936882059643
+              ],
+              "right": [
+                35.64902483147275,
+                -15.73673538109238,
+                -3.6427135206900347
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "search_limit",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 206.0,
+              "center": [
+                30.991195252266373,
+                -13.918873007019432,
+                -3.3471634418498377
+              ],
+              "left": [
+                29.59384637850446,
+                -13.373514294797546,
+                -3.3710066076283005
+              ],
+              "right": [
+                32.388544126028286,
+                -14.464231719241315,
+                -3.459022128493589
+              ],
+              "support_span_m": 3.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 206.0,
+              "center": [
+                27.963606025782227,
+                -12.737262463872014,
+                -3.1822658796127814
+              ],
+              "left": [
+                27.26493158890127,
+                -12.46458310776107,
+                -3.1919682414875448
+              ],
+              "right": [
+                28.662280462663183,
+                -13.009941819982956,
+                -3.2463649490312463
+              ],
+              "support_span_m": 1.5,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 206.0,
+              "center": [
+                23.771559404496486,
+                -11.101186327206358,
+                -3.2170325102793766
+              ],
+              "left": [
+                22.60710200969489,
+                -10.64672073368812,
+                -3.1761301868059704
+              ],
+              "right": [
+                24.93601679929808,
+                -11.555651920724596,
+                -3.192820012551672
+              ],
+              "support_span_m": 2.5,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "curb_profile",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 48,
+            "occupied_xy_cells_0_2m": 29,
+            "height_quantiles_m": {
+              "minimum": -3.546941994365539,
+              "p15": -3.2248323108799917,
+              "median": -3.149909170222312
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 32,
+            "occupied_xy_cells_0_2m": 25,
+            "height_quantiles_m": {
+              "minimum": -3.5469419943655414,
+              "p15": -3.221990980118944,
+              "median": -3.1394631290045183
+            }
+          }
+        },
+        {
+          "station_m": 208.0,
+          "trajectory": [
+            29.020042291725716,
+            -11.0192348923433,
+            -3.1939297417662327
+          ],
+          "heading_usable": true,
+          "reference_ground_height_m": -3.2713798746089777,
+          "bands": [
+            {
+              "station_m": 208.0,
+              "center": [
+                34.8293386957351,
+                -13.324571156397552,
+                -3.491972541967415
+              ],
+              "left": [
+                34.36459498341435,
+                -13.140144255273212,
+                -3.486022465228313
+              ],
+              "right": [
+                35.29408240805585,
+                -13.508998057521893,
+                -3.5325431567503713
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 208.0,
+              "center": [
+                32.50562013413135,
+                -12.40243665077585,
+                -3.4005674312012797
+              ],
+              "left": [
+                32.040876421810594,
+                -12.218009749651511,
+                -3.4523016608281987
+              ],
+              "right": [
+                32.9703638464521,
+                -12.586863551900192,
+                -3.459044486682573
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "curb_profile",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 208.0,
+              "center": [
+                28.78767043556534,
+                -10.92702144178113,
+                -3.234090543354087
+              ],
+              "left": [
+                28.32292672324459,
+                -10.74259454065679,
+                -3.2694315790269286
+              ],
+              "right": [
+                29.252414147886093,
+                -11.11144834290547,
+                -3.2809730325735753
+              ],
+              "support_span_m": 1.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": true,
+              "path_level_supported": true
+            },
+            {
+              "station_m": 208.0,
+              "center": [
+                23.675489600037082,
+                -8.89832552941339,
+                -3.0384132052124864
+              ],
+              "left": [
+                22.746002175395578,
+                -8.529471727164708,
+                -2.9633170550578956
+              ],
+              "right": [
+                24.604977024678583,
+                -9.267179331662069,
+                -3.0108577505069913
+              ],
+              "support_span_m": 2.0,
+              "left_evidence": "height_discontinuity",
+              "right_evidence": "height_discontinuity",
+              "intersects_trajectory": false,
+              "path_level_supported": true
+            }
+          ],
+          "bands_total": 4,
+          "raw": {
+            "radius_m": 0.75,
+            "returns": 28,
+            "occupied_xy_cells_0_2m": 22,
+            "height_quantiles_m": {
+              "minimum": -3.3518780657852756,
+              "p15": -3.309091057332962,
+              "median": -3.2224930502287705
+            }
+          },
+          "point_map": {
+            "radius_m": 0.75,
+            "returns": 24,
+            "occupied_xy_cells_0_2m": 20,
+            "height_quantiles_m": {
+              "minimum": -3.3518780657852756,
+              "p15": -3.303371634353764,
+              "median": -3.2224930502287705
+            }
+          }
+        }
+      ],
+      "profiles_total": 5,
+      "profiles_limited": false,
+      "retained_hd_occupancy": {
+        "available": true,
+        "overlaps": [],
+        "overlaps_total": 0,
+        "unoccupied_intervals": [
+          {
+            "from_m": 202.0,
+            "to_m": 206.0
+          }
+        ],
+        "unoccupied_intervals_total": 1,
+        "limited_in_response": false
+      }
+    }
+  ],
+  "next_offset": 24,
+  "processing": {
+    "nodes": 195,
+    "scans": 195,
+    "unmatched_scans": 43,
+    "scan_points": 1046476,
+    "map_points": 646309,
+    "dynamic": {
+      "points": 222,
+      "of": 1046476,
+      "share": 0.00021214055554069085
+    }
+  },
+  "pointcloud_options": {
+    "scan_voxel_m": 0.2,
+    "map_voxel_m": 0.1
+  },
+  "raw_matched_returns": 1077329,
+  "protocol": {
+    "options": {
+      "search_radius_m": 8.0,
+      "association": "trajectory_containing"
+    },
+    "sample_spacing_m": 2.0,
+    "bin_width_m": 0.5,
+    "half_window_m": 2.0,
+    "minimum_support_span_m": 1.0,
+    "maximum_adjacent_height_step_m": 0.08,
+    "maximum_reference_level_grade": 0.12,
+    "ground_estimator": {
+      "model": "lowest_supported_layer",
+      "layer_height_m": 0.15,
+      "xy_cell_m": 0.2,
+      "minimum_cells": 3,
+      "minimum_triangle_area_m2": 0.01
+    },
+    "interval_support_spacing_m": 0.5,
+    "interval_ground_radius_m": 0.75,
+    "interval_height_tolerance_m": 0.3,
+    "maximum_sections": 2048,
+    "profile_query_point_budget": 2000000,
+    "interval_support_sample_budget": 100000
+  },
+  "source_extent": {
+    "trajectory_length_m": 252.5863381996826,
+    "generated_length_m": 118.0,
+    "retained_fraction": 0.4671669926451639,
+    "minimum_retained_fraction": 0.9,
+    "passes_requested_extent": false
+  },
+  "note": "Raw neighborhoods contain repeated aligned returns before thinning/dynamic filtering. Return counts and height quantiles are descriptive, not coherent-ground tests or independent accuracy. Profiles include nearby context; gap reasons are observations, not proven causes. Unmatched non-keyframe scans remain excluded."
+}

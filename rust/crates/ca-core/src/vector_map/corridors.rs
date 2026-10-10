@@ -233,14 +233,27 @@ fn bands(
     let (station, p) = sample;
     let lateral = |i: usize| -reach + i as f64 * BIN;
     let xyz = |offset: f64, z: f64| [p[0] - dir[1] * offset, p[1] + dir[0] * offset, z];
+    let level = |i: usize, j: usize| {
+        surface[i]
+            .zip(surface[j])
+            .is_some_and(|(a, b)| (a - b).abs() <= STEP)
+    };
+    // A height step separates bands only when it persists past one bin. A single
+    // bin off both neighbours, which themselves agree, by no more than the
+    // support height tolerance is noise between fused scans; a curb or level
+    // change keeps the new height in the next bin, and taller obstacles split.
+    let joined = |i: usize| {
+        surface[i]
+            .zip(surface[i - 1])
+            .is_some_and(|(a, b)| (a - b).abs() <= junctions::HEIGHT)
+            && (level(i, i - 1)
+                || (i + 1 < surface.len() && level(i + 1, i - 1))
+                || (i >= 2 && level(i, i - 2)))
+    };
     let mut result = Vec::new();
     let mut start = 0;
     for end in 1..=surface.len() {
-        if end < surface.len()
-            && surface[end]
-                .zip(surface[end - 1])
-                .is_some_and(|(a, b)| (a - b).abs() <= STEP)
-        {
+        if end < surface.len() && joined(end) {
             continue;
         }
         if surface[start].is_some() && (end - start - 1) as f64 * BIN >= MIN_WIDTH {

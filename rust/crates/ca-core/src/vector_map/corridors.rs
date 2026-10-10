@@ -231,7 +231,7 @@ fn bands(
     reference_ground: Option<f64>,
 ) -> Vec<CrossSection> {
     let (station, p) = sample;
-    let lateral = |i: usize| -reach + (i as f64 + 0.5) * BIN;
+    let lateral = |i: usize| -reach + i as f64 * BIN;
     let xyz = |offset: f64, z: f64| [p[0] - dir[1] * offset, p[1] + dir[0] * offset, z];
     let mut result = Vec::new();
     let mut start = 0;
@@ -360,7 +360,7 @@ fn propose_limited(
     };
     let ground = junctions::Ground::new_consensus(cloud)?;
     let line: Vec<_> = samples.iter().map(|(_, p)| *p).collect();
-    let index = SurfaceIndex::new(cloud, &line, reach + HALF_WINDOW);
+    let index = SurfaceIndex::new(cloud, &line, reach + BIN * 0.5 + HALF_WINDOW);
     let mut report = CorridorReport {
         schema: "cloudanalyzer.corridor_proposals.v1", coordinate_frame: "input_metres",
         protocol: CorridorProtocol { options: CorridorOptions { search_radius_m: reach, association: options.association }, sample_spacing_m: SPACING, bin_width_m: BIN, half_window_m: HALF_WINDOW,
@@ -389,7 +389,9 @@ fn propose_limited(
         let reference_ground = ground.height(Point3::new(p[0], p[1], p[2]));
         if norm > 1e-6 {
             let dir = [(b[0] - a[0]) / norm, (b[1] - a[1]) / norm];
-            let bins = index.slice(p, dir, -reach, reach, &o);
+            // Centre a bin on the path. With bin edges at the path, a surface split
+            // exactly there left neither adjacent band containing the trajectory.
+            let bins = index.slice(p, dir, -reach - BIN * 0.5, reach + BIN * 0.5, &o);
             let count: usize = bins.iter().map(Vec::len).sum();
             if report.profile_queried_points + count > query_budget {
                 report.limited = true;
@@ -652,6 +654,44 @@ mod tests {
         );
         assert_eq!(cloud.positions, original);
         assert!(!on_path.road_semantics_inferred && !on_path.deployment_ready);
+    }
+
+    #[test]
+    fn a_height_step_along_the_path_keeps_the_path_containing_band() {
+        // The path runs exactly along a 0.2 m step. With bin edges at the path,
+        // each side formed a band ending beside it and neither contained it.
+        let mut cloud = PointCloud::default();
+        for x in -15..=115 {
+            for y in -80..80 {
+                let y = (y as f64 + 0.5) * 0.05;
+                let z = if y < 0. { 2.0 } else { 2.2 };
+                cloud.positions.push([x as f64 * 0.2, y, z]);
+            }
+        }
+        let report = propose(
+            &cloud,
+            &poses(),
+            &CorridorOptions {
+                association: CorridorAssociation::TrajectoryContaining,
+                ..CorridorOptions::default()
+            },
+        )
+        .unwrap();
+        assert!(
+            report.profiles.iter().all(|p| p
+                .bands
+                .iter()
+                .filter(|b| b.intersects_trajectory)
+                .count()
+                == 1)
+        );
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        assert!(
+            !report
+                .deferred_intervals
+                .iter()
+                .any(|i| i.reason == IntervalReason::MissingTrajectoryBand)
+        );
     }
 
     #[test]

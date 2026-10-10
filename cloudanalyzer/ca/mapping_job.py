@@ -246,8 +246,8 @@ def propose_mapping_corridors(job_dir: str, search_radius_m: float = 8.0) -> dic
     """Generate lane-free road/path surface proposals from frozen map and trajectory.
 
     Searches low, spatially supported cross-section bands symmetrically around
-    the path. The effective reach rounds outward to 0.5 m bins. No lane count,
-    width, direction or speed is required or inferred. Edges distinguish curb-like
+    the path. The effective reach rounds outward to 0.5 m and one bin is centred
+    on the path. No lane count, width, direction or speed is required or inferred. Edges distinguish curb-like
     profiles, source gaps, height steps and search limits; support spans are not
     complete road widths without physical evidence. Branches and missing intervals
     stay unresolved. These proposals do not change an HD draft or select traffic

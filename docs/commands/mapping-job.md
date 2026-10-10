@@ -100,8 +100,10 @@ height stage, applied to 0.5 m lateral bins in longitudinal windows of ±2 m.
 Profiles are spaced at 2 m **on the original corrected input trajectory's XY arc
 length**, including its exact endpoint. This station length can differ from the
 HD builder's resampled/smoothed trajectory length; do not mix their denominators.
-The symmetric search reach defaults to 8 m and rounds outward to complete 0.5 m
-bins. At least 1 m of adjacent supported bin-centre span is required, with no
+The symmetric search reach defaults to 8 m and rounds outward to a multiple of
+0.5 m. One bin is centred on the path and the outermost bin centres lie at the
+reach, so a band contains the path exactly when it contains that bin; a height step
+at the path cannot leave both neighbouring bands just beside it. At least 1 m of adjacent supported bin-centre span is required, with no
 adjacent height step exceeding 0.08 m. Narrower/sparse features can be missed.
 
 A band must match the source low layer under the path within 0.3 m plus 0.12 times

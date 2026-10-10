@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- Corridor proposals centre a 0.5 m lateral bin on the trajectory. Bin edges
+  previously lay on the path, so a surface split there left neither adjacent band
+  containing it and the station was deferred as `missing_trajectory_band`. On the
+  bundled NCLT maps, `trajectory_containing` coverage rises from 71.1% to 81.6%
+  (April) and 68.9% to 81.8% (June); the 0.25 m grid shift also loses 18 / 20 m
+  of previously covered intervals. Saved proposal packets are not regenerated.
+
 ### Added
 
 - Optional Rust acceleration: `pip install "cloudanalyzer[fast]"` installs

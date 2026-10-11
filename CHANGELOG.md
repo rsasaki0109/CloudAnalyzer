@@ -48,6 +48,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   point-map variants of each bundled NCLT drive, mean `trajectory_containing`
   coverage rises from 79.2% to 91.7% (April) and 79.1% to 85.8% (June), and the
   stations covered by every variant rise from 144 to 198 m and 138 to 182 m.
+- Corridor bands that both contain the path connect when their centres stay
+  close along the road; a band widening on one side moved its centre sideways
+  past the old centre-distance bound and was deferred as `unmatched_bands`. An
+  unsupported edge trace may now move inward by up to 2 m (was 1 m). On the
+  bundled NCLT drives, the scripted audited HD draft rises from 86.4% to 88.0%
+  (April) and 77.6% to 82.6% (June); mean `trajectory_containing` coverage over
+  four map variants rises from 91.7% to 94.7% and 85.8% to 91.1%.
 
 ## [0.5.0] - 2026-09-27
 

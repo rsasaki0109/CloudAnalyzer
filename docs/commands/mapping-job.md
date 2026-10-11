@@ -117,10 +117,13 @@ bands, their `path_level_supported` flags and the per-profile source anchor rema
 in the file. Missing anchors defer candidates rather than borrowing sensor height.
 
 Adjacent profiles connect only when bands overlap uniquely with bounded motion
-and vertical change. Branching bands are not silently chosen by width/proximity.
+and vertical change. For two bands that both contain the path, motion is the
+along-road separation of their centres, so a band widening on one side still
+connects; other bands keep the centre-distance bound. Branching bands are not
+silently chosen by width/proximity.
 Every connected interval checks its centre and both edges against the low-layer
 source at ≤0.5 m spacing with both endpoints included. When an edge trace lacks
-support, that edge may move inward by up to two bins (1 m) at the new section; the
+support, that edge may move inward by up to four bins (2 m) at the new section; the
 band must stay at least 1 m wide and keep containing the path. Moved edges are
 reported as `support_inset`, so the saved width is the checked, conservative one.
 A continuing track starts from its saved section, so every saved trace was checked.

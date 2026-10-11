@@ -16,7 +16,7 @@ const MAX_SECTIONS: usize = 2_048;
 const QUERY_BUDGET: usize = 2_000_000;
 const SUPPORT_BUDGET: usize = 100_000;
 /// Bins an edge may move inward when its trace between sections lacks support.
-const MAX_INSET_BINS: usize = 2;
+const MAX_INSET_BINS: usize = 4;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
@@ -293,10 +293,17 @@ fn matching(a: &CrossSection, b: &CrossSection, station_distance: f64) -> bool {
     let offset =
         ((a.center[0] - b.center[0]) * edge[0] + (a.center[1] - b.center[1]) * edge[1]) / norm;
     let overlap = (a.support_span_m + b.support_span_m) * 0.5 - offset.abs();
+    // Two bands containing the path are tied by it: a band widening on one side
+    // moves its centre sideways, so only the along-road separation bounds a jump.
+    let separation = if a.intersects_trajectory && b.intersects_trajectory {
+        (((a.center[0] - b.center[0]) * edge[1] - (a.center[1] - b.center[1]) * edge[0]) / norm)
+            .abs()
+    } else {
+        (a.center[0] - b.center[0]).hypot(a.center[1] - b.center[1])
+    };
     overlap >= MIN_WIDTH * 0.5
         && (a.center[2] - b.center[2]).abs() <= station_distance * 0.12 + junctions::LAYER_HEIGHT
-        && (a.center[0] - b.center[0]).hypot(a.center[1] - b.center[1])
-            <= station_distance * 2.0 + BIN
+        && separation <= station_distance * 2.0 + BIN
 }
 
 fn support_sample_count(a: &CrossSection, b: &CrossSection) -> usize {
@@ -849,6 +856,63 @@ mod tests {
                 .iter()
                 .all(|c| c.curb_width_range_m.is_none())
         );
+    }
+
+    #[test]
+    fn a_wider_unsupported_strip_narrows_the_edge_by_up_to_two_metres() {
+        // Ground is missing up to 1.9 m inside the left edge, so the edge trace
+        // needs a three-bin inset before nearby ground supports it.
+        let mut cloud = flat_road();
+        cloud
+            .positions
+            .retain(|p| !((9.0..11.0).contains(&p[0]) && (1.1..3.7).contains(&p[1])));
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        let sections: Vec<_> = report.candidates.iter().flat_map(|c| &c.sections).collect();
+        let narrowest = sections
+            .iter()
+            .filter(|s| s.left_evidence == EdgeEvidence::SupportInset)
+            .map(|s| s.support_span_m)
+            .fold(f64::INFINITY, f64::min);
+        assert!((4.0..=4.5).contains(&narrowest), "{narrowest}");
+        assert!(
+            sections
+                .iter()
+                .all(|s| s.support_span_m >= MIN_WIDTH && s.intersects_trajectory)
+        );
+    }
+
+    #[test]
+    fn a_band_widening_on_one_side_matches_but_an_along_road_jump_does_not() {
+        let a = CrossSection {
+            station_m: 0.,
+            center: [0., 0., 2.],
+            left: [0., 3., 2.],
+            right: [0., -3., 2.],
+            support_span_m: 6.,
+            left_evidence: EdgeEvidence::CurbProfile,
+            right_evidence: EdgeEvidence::CurbProfile,
+            intersects_trajectory: true,
+            path_level_supported: true,
+        };
+        // The left edge opens 10 m: the centre moves 5 m sideways, 2 m along.
+        let mut wide = a.clone();
+        wide.center = [2., 5., 2.];
+        wide.left = [2., 13., 2.];
+        wide.right = [2., -3., 2.];
+        wide.support_span_m = 16.;
+        assert!(matching(&a, &wide, 2.));
+        // Off the path nothing ties the two bands, so their centres must stay close.
+        let (mut off_a, mut off_wide) = (a.clone(), wide.clone());
+        off_a.intersects_trajectory = false;
+        off_wide.intersects_trajectory = false;
+        assert!(!matching(&off_a, &off_wide, 2.));
+        // The same band 7 m further along the path is a jump, not a widening.
+        let mut ahead = a.clone();
+        for p in [&mut ahead.center, &mut ahead.left, &mut ahead.right] {
+            p[0] = 7.;
+        }
+        assert!(!matching(&a, &ahead, 2.));
     }
 
     #[test]

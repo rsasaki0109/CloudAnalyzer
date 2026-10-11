@@ -15,6 +15,8 @@ const STEP: f64 = 0.08;
 const MAX_SECTIONS: usize = 2_048;
 const QUERY_BUDGET: usize = 2_000_000;
 const SUPPORT_BUDGET: usize = 100_000;
+/// Bins an edge may move inward when its trace between sections lacks support.
+const MAX_INSET_BINS: usize = 2;
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
@@ -48,6 +50,9 @@ pub enum EdgeEvidence {
     SupportGap,
     HeightDiscontinuity,
     SearchLimit,
+    /// Moved inward by whole bins so the edge trace between sections stays on
+    /// supported ground. A conservative width, not a physical observation.
+    SupportInset,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -324,6 +329,47 @@ fn supported(
         })
 }
 
+/// Narrow a section by whole bins at each edge. The band must stay at least
+/// `MIN_WIDTH` wide and keep containing the path when it did before.
+fn inset(s: &CrossSection, left: usize, right: usize, path: [f64; 3]) -> Option<CrossSection> {
+    if left == 0 && right == 0 {
+        return Some(s.clone());
+    }
+    let span = s.support_span_m - (left + right) as f64 * BIN;
+    if span < MIN_WIDTH - 1e-9 {
+        return None;
+    }
+    let along =
+        |f: f64| -> [f64; 3] { std::array::from_fn(|i| s.right[i] + (s.left[i] - s.right[i]) * f) };
+    let r = right as f64 * BIN / s.support_span_m;
+    let l = 1.0 - left as f64 * BIN / s.support_span_m;
+    let edge = [s.left[0] - s.right[0], s.left[1] - s.right[1]];
+    let t = ((path[0] - s.right[0]) * edge[0] + (path[1] - s.right[1]) * edge[1])
+        / (edge[0] * edge[0] + edge[1] * edge[1]);
+    let contains = (r - 1e-9..=l + 1e-9).contains(&t);
+    if s.intersects_trajectory && !contains {
+        return None;
+    }
+    let (right_point, left_point) = (along(r), along(l));
+    let mut out = s.clone();
+    out.right = right_point;
+    out.left = left_point;
+    out.center = [
+        (right_point[0] + left_point[0]) * 0.5,
+        (right_point[1] + left_point[1]) * 0.5,
+        s.center[2],
+    ];
+    out.support_span_m = span;
+    if left > 0 {
+        out.left_evidence = EdgeEvidence::SupportInset;
+    }
+    if right > 0 {
+        out.right_evidence = EdgeEvidence::SupportInset;
+    }
+    out.intersects_trajectory = s.intersects_trajectory && contains;
+    Some(out)
+}
+
 fn interval(out: &mut Vec<StationInterval>, from: f64, to: f64, reason: IntervalReason) {
     if let Some(last) = out
         .last_mut()
@@ -518,10 +564,41 @@ fn propose_limited(
                     if !pairs[i][j] || row_counts[i] != 1 || column_counts[j] != 1 {
                         continue;
                     }
-                    if !supported(a, b, &ground, &mut report.interval_support_samples) {
+                    // A continuing track starts from its stored section, so the
+                    // saved traces are exactly the ones checked against the source.
+                    let stored =
+                        tracks[i].map(|id| report.candidates[id].sections.last().unwrap().clone());
+                    let mut accepted = None;
+                    let mut trials: Vec<_> = (0..=MAX_INSET_BINS)
+                        .flat_map(|l| (0..=MAX_INSET_BINS).map(move |r| (l, r)))
+                        .collect();
+                    trials.sort_by_key(|&(l, r)| (l + r, l.max(r)));
+                    for (l, r) in trials {
+                        let Some(end) = inset(b, l, r, p) else {
+                            continue;
+                        };
+                        let Some(start) =
+                            stored.clone().or_else(|| inset(a, l, r, samples[k - 1].1))
+                        else {
+                            continue;
+                        };
+                        if (l, r) != (0, 0)
+                            && report.interval_support_samples + support_sample_count(&start, &end)
+                                > support_budget
+                        {
+                            report.limited = true;
+                            break;
+                        }
+                        if supported(&start, &end, &ground, &mut report.interval_support_samples) {
+                            accepted = Some((start, end));
+                            break;
+                        }
+                    }
+                    let Some((a, b)) = accepted else {
                         source_gap = true;
                         continue;
-                    }
+                    };
+                    let (a, b) = (&a, &b);
                     let track = if let Some(id) = tracks[i] {
                         id
                     } else {
@@ -705,6 +782,98 @@ mod tests {
                 .iter()
                 .any(|i| i.reason == IntervalReason::MissingTrajectoryBand)
         );
+    }
+
+    fn flat_road() -> PointCloud {
+        // Low road for |y| <= 3 m between raised shoulders.
+        let mut cloud = PointCloud::default();
+        for x in -15..=115 {
+            for y in -40..=40 {
+                let y = y as f64 * 0.2;
+                let z = if y.abs() <= 3.0 + 1e-9 { 2.0 } else { 2.15 };
+                cloud.positions.push([x as f64 * 0.2, y, z]);
+            }
+        }
+        cloud
+    }
+
+    fn on_path() -> CorridorOptions {
+        CorridorOptions {
+            association: CorridorAssociation::TrajectoryContaining,
+            ..CorridorOptions::default()
+        }
+    }
+
+    #[test]
+    fn a_one_bin_height_deviation_does_not_split_the_surface() {
+        // One 0.4 m strip sits 0.12 m high, above the adjacent-step limit but
+        // back at road level in the next bin. A curb would persist.
+        let mut cloud = flat_road();
+        for p in &mut cloud.positions {
+            if (0.9..1.3).contains(&p[1]) {
+                p[2] += 0.12;
+            }
+        }
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        assert!(report.profiles.iter().all(|p| {
+            p.bands
+                .iter()
+                .any(|b| b.intersects_trajectory && b.support_span_m >= 5.5)
+        }));
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+    }
+
+    #[test]
+    fn an_unsupported_edge_trace_narrows_the_edge_instead_of_breaking_the_track() {
+        // A hole beside the left edge between two sections leaves that edge trace
+        // without nearby ground, while each section still observes the edge.
+        let mut cloud = flat_road();
+        cloud
+            .positions
+            .retain(|p| !((8.5..11.5).contains(&p[0]) && (2.1..3.7).contains(&p[1])));
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        let sections: Vec<_> = report.candidates.iter().flat_map(|c| &c.sections).collect();
+        assert!(
+            sections
+                .iter()
+                .any(|s| s.left_evidence == EdgeEvidence::SupportInset)
+        );
+        assert!(sections.iter().all(|s| {
+            s.support_span_m >= MIN_WIDTH && s.intersects_trajectory && s.path_level_supported
+        }));
+        // Inset edges are not physical curbs, so no curb-bounded width is claimed.
+        assert!(
+            report
+                .candidates
+                .iter()
+                .all(|c| c.curb_width_range_m.is_none())
+        );
+    }
+
+    #[test]
+    fn insets_never_drop_below_the_minimum_width_or_leave_the_path() {
+        let s = CrossSection {
+            station_m: 0.,
+            center: [0., 0., 2.],
+            left: [0., 1., 2.],
+            right: [0., -1., 2.],
+            support_span_m: 2.,
+            left_evidence: EdgeEvidence::CurbProfile,
+            right_evidence: EdgeEvidence::CurbProfile,
+            intersects_trajectory: true,
+            path_level_supported: true,
+        };
+        let path = [0., 0., 3.];
+        let narrowed = inset(&s, 1, 0, path).unwrap();
+        assert_eq!(narrowed.support_span_m, 1.5);
+        assert!((narrowed.left[1] - 0.5).abs() < 1e-9);
+        assert_eq!(narrowed.left_evidence, EdgeEvidence::SupportInset);
+        assert_eq!(narrowed.right_evidence, EdgeEvidence::CurbProfile);
+        assert!(narrowed.intersects_trajectory);
+        assert!(inset(&s, 2, 0, path).is_some());
+        assert!(inset(&s, 2, 1, path).is_none());
+        assert!(inset(&s, 0, 2, [0., -0.9, 3.]).is_none());
     }
 
     #[test]

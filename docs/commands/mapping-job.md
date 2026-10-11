@@ -103,8 +103,12 @@ HD builder's resampled/smoothed trajectory length; do not mix their denominators
 The symmetric search reach defaults to 8 m and rounds outward to a multiple of
 0.5 m. One bin is centred on the path and the outermost bin centres lie at the
 reach, so a band contains the path exactly when it contains that bin; a height step
-at the path cannot leave both neighbouring bands just beside it. At least 1 m of adjacent supported bin-centre span is required, with no
-adjacent height step exceeding 0.08 m. Narrower/sparse features can be missed.
+at the path cannot leave both neighbouring bands just beside it. At least 1 m of adjacent supported bin-centre span is required.
+A height step above 0.08 m between adjacent bins splits a band only when it persists:
+a single bin off both neighbours, which agree with each other, by at most 0.3 m is
+treated as noise between fused scans. Curbs and level changes keep the new height in
+the next bin; taller obstacles always split. A raised feature one bin (0.5 m) wide and
+at most 0.3 m high is therefore not separated. Narrower/sparse features can be missed.
 
 A band must match the source low layer under the path within 0.3 m plus 0.12 times
 its lateral distance. This rejects distinctly elevated/lower bands; it is a
@@ -115,8 +119,12 @@ in the file. Missing anchors defer candidates rather than borrowing sensor heigh
 Adjacent profiles connect only when bands overlap uniquely with bounded motion
 and vertical change. Branching bands are not silently chosen by width/proximity.
 Every connected interval checks its centre and both edges against the low-layer
-source at ≤0.5 m spacing with both endpoints included. No width prior fills absent
-profiles or unsupported curves. These three curves do not certify the full-width
+source at ≤0.5 m spacing with both endpoints included. When an edge trace lacks
+support, that edge may move inward by up to two bins (1 m) at the new section; the
+band must stay at least 1 m wide and keep containing the path. Moved edges are
+reported as `support_inset`, so the saved width is the checked, conservative one.
+A continuing track starts from its saved section, so every saved trace was checked.
+No width prior fills absent profiles or unsupported curves. These three curves do not certify the full-width
 interior or obstacle clearance. Returning passes remain separate proposals.
 
 The [mapping-run refinement action](mapping-run.md#inputs-and-actions) can
@@ -128,7 +136,8 @@ counts retained supported observations outside the path. Missing path associatio
 is reported separately as `missing_trajectory_band` when outside surface bands
 exist. Full-width and intermediate recorded-path containment remain unverified.
 
-Each edge is `curb_profile`, `support_gap`, `height_discontinuity` or `search_limit`.
+Each edge is `curb_profile`, `support_gap`, `height_discontinuity`, `search_limit` or
+`support_inset` (moved inward for support, not a physical observation).
 The curb check requires bounded raised returns in two outside bins and nearby
 inside support. Only candidates with two curb-like edges in **every** cross section
 receive `curb_width_range_m`; even that estimate has 0.5 m bin-centre quantization

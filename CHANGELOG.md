@@ -14,6 +14,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   bundled NCLT maps, `trajectory_containing` coverage rises from 71.1% to 81.6%
   (April) and 68.9% to 81.8% (June); the 0.25 m grid shift also loses 18 / 20 m
   of previously covered intervals. Saved proposal packets are not regenerated.
+- Corridor bands split only at persistent height steps: a single bin off both
+  agreeing neighbours by at most 0.3 m no longer breaks a band. When an edge trace
+  between sections lacks support, the edge moves inward by up to 1 m (reported as
+  `support_inset`) instead of deferring the interval as `source_gap`. Across four
+  point-map variants of each bundled NCLT drive, mean `trajectory_containing`
+  coverage rises from 79.2% to 91.7% (April) and 79.1% to 85.8% (June), and the
+  stations covered by every variant rise from 144 to 198 m and 138 to 182 m.
 
 ### Added
 

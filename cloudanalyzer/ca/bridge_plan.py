@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import csv
 import json
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -358,8 +359,13 @@ def _write(result: dict[str, Any], out: Path) -> dict[str, str]:
     return {k: str(v) for k, v in paths.items()}
 
 
-def plan_svg(result: dict[str, Any]) -> str:
-    """The plan looking down through the deck: start on the left, the left side facing the end on top."""
+def plan_svg(result: dict[str, Any], underlay: tuple[str, float, float, float, float] | None = None,
+             overlay: Callable[..., list[str]] | None = None, footer: str | None = None) -> str:
+    """The plan looking down through the deck: start on the left, the left side facing the end on top.
+
+    `underlay` is a base64 PNG and the along/lateral range it covers (a0, a1, u0, u1), its first
+    row at u1; `overlay(X, Y, at)` returns SVG elements drawn over the plan with its mapping;
+    `footer` is an extra line of SVG text content under the notes."""
     d = result["deck"]
     slope, mid = d["skew_slope"], 0.5 * (d["left_edge_m"] + d["right_edge_m"])
     at = lambda s, u: s + slope * (u - mid)  # along-axis position of skewed station s at lateral u
@@ -367,7 +373,7 @@ def plan_svg(result: dict[str, Any]) -> str:
     a_hi = max(at(d["end_m"], d["left_edge_m"]), at(d["end_m"], d["right_edge_m"])) + 1.6
     u_hi, u_lo = d["left_edge_m"] + 1.6, d["right_edge_m"] - (2.0 if len(result["spans"]) > 1 else 1.4)
     scale = 1100.0 / (a_hi - a_lo)
-    W, H = 1100.0, (u_hi - u_lo) * scale + (120 if len(result["spans"]) > 1 else 80)
+    W, H = 1100.0, (u_hi - u_lo) * scale + (120 if len(result["spans"]) > 1 else 80) + (22 if footer else 0)
     X = lambda a: (a - a_lo) * scale
     Y = lambda u: (u_hi - u) * scale
     P = lambda s, u: f"{X(at(s, u)):.1f},{Y(u):.1f}"
@@ -377,8 +383,13 @@ def plan_svg(result: dict[str, Any]) -> str:
              'orient="auto"><path d="M1 0V10" stroke="#1a73e8"/></marker></defs>',
              '<rect width="100%" height="100%" fill="white"/>']
     L, R, S, E = d["left_edge_m"], d["right_edge_m"], d["start_m"], d["end_m"]
-    parts.append(f'<polygon points="{P(S, L)} {P(E, L)} {P(E, R)} {P(S, R)}" fill="#fdf6ec" '
-                 f'stroke="#e8710a" stroke-width="2.5"/>')
+    parts.append(f'<polygon points="{P(S, L)} {P(E, L)} {P(E, R)} {P(S, R)}" '
+                 f'fill="{"none" if underlay else "#fdf6ec"}" stroke="#e8710a" stroke-width="2.5"/>')
+    if underlay:
+        png, a0, a1, u0, u1 = underlay
+        parts.insert(-1, f'<image x="{X(a0):.1f}" y="{Y(u1):.1f}" width="{X(a1) - X(a0):.1f}" '
+                         f'height="{Y(u0) - Y(u1):.1f}" preserveAspectRatio="none" '
+                         f'href="data:image/png;base64,{png}"/>')
     hidden = 'stroke="#5f6368" stroke-width="1.6" stroke-dasharray="8 5"'
     for g in result["girders"]:
         u = g["lateral_m"]
@@ -451,7 +462,9 @@ def plan_svg(result: dict[str, Any]) -> str:
                  f'font-weight="bold">起点</text>')
     parts.append(f'<text x="{X(at(E, R)):.1f}" y="{Y(R) + 22:.1f}" text-anchor="middle" '
                  f'font-weight="bold">終点</text>')
-    y = H - 46
+    if overlay:
+        parts.extend(overlay(X, Y, at))
+    y = H - 46 - (22 if footer else 0)
     below = {"unobserved": "下面は未観測：主桁・横桁は描いていません（仮定なし）",
              "no_girders_observed": "下面を観測：床版下に突出する部材なし（床版橋または計測範囲外）",
              "girders_observed": "主桁・横桁は点群で観測された位置（破線＝床版下の部材）"}[result["underside"]]
@@ -461,5 +474,7 @@ def plan_svg(result: dict[str, Any]) -> str:
     if result["warnings"]:
         parts.append(f'<text x="12" y="{y + 42:.0f}" fill="#d93025">一部の断面でのみ見える部材線があります。'
                      f'番号を使う前に点群を確認してください。</text>')
+    if footer:
+        parts.append(f'<text x="12" y="{y + (64 if result["warnings"] else 42):.0f}" font-size="12">{footer}</text>')
     parts.append("</svg>")
     return "\n".join(parts)

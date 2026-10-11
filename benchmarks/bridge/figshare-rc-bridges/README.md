@@ -83,6 +83,38 @@ the deck ends leave them out (16.53 m instead of 20.83 m).
 |---|---|---|
 | ![Bridge_4 plan](bridge_4/plan.svg) | ![Bridge_7 plan](bridge_7/plan.svg) | ![Bridge_8 plan](bridge_8/plan.svg) |
 
+## Damage candidates on the soffit
+
+`ca bridge-damage` searched the soffit of the eight bridges whose underside was
+scanned (not Bridge_5) and placed the candidates on the plans above:
+
+```bash
+ca bridge-damage Bridge_3.las -o bridge_3 --classes 0,1,2,3 --axis-classes 2 --member-classes 1,2 --surface-classes 1,2
+```
+
+| Bridge | Soffit searched (m²) | Light | Dark | Rust | Recess | Straight seams left out (m) |
+|---|---:|---:|---:|---:|---:|---:|
+| Bridge_1 | 9.0 | 8 | 13 | 2 | 6 | 71 |
+| Bridge_2 | 32.0 | 1 | 1 | 0 | 0 | 208 |
+| Bridge_3 | 82.4 | 13 | 1 | 0 | 0 | 67 |
+| Bridge_4 | 45.9 | 0 | 0 | 0 | 2 | 8 |
+| Bridge_6 | 113.2 | 0 | 4 | 0 | 0 | 200 |
+| Bridge_7 | 11.6 | 0 | 0 | 0 | 13 | 3 |
+| Bridge_8 | 52.6 | 0 | 0 | 0 | 2 | 8 |
+| Bridge_9 | 30.9 | 4 | 1 | 3 | 6 | 55 |
+
+No inspection records come with the dataset, so how many candidates are real is
+unknown. By eye on the orthophotos, Bridge_3's light candidates sit on white
+deposits between its formwork lines, and Bridge_7's recess candidates on a rough,
+darker patch in one girder bay. Bridges 2 and 6 had 200 m or more of straight joints
+and seams that would otherwise have been candidates. Bridge_1 has 29 candidates on
+9 m² searched and was not checked by eye. `damage.json` and `damage.csv` are
+committed for all eight, the drawings for two:
+
+| Bridge_3 | Bridge_7 |
+|---|---|
+| ![Bridge_3 damage candidates](bridge_3/damage_plan.svg) | ![Bridge_7 damage candidates](bridge_7/damage_plan.svg) |
+
 ## Limits
 
 - No reference dimensions were available, so these are measurements, not an

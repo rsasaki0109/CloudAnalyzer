@@ -1,0 +1,84 @@
+{
+  "schema": "cloudanalyzer.bridge_damage.v1",
+  "source": {
+    "file": "Bridge_2.las",
+    "sha256": "27a97dbbb1592d70cd966e46d0a81003e95dbe5580343f667967aca276276087",
+    "bytes": 254269913,
+    "dataset": "https://doi.org/10.6084/m9.figshare.28091453.v2"
+  },
+  "underside": "no_girders_observed",
+  "candidates": [
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.011600000000000001,
+      "centre_m": [
+        -3.737343603566837,
+        0.655044919860192
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -3.788722913911664,
+        -3.6887229139116644
+      ],
+      "lateral_m": [
+        0.5678035405498469,
+        0.7478035405498471
+      ],
+      "contrast": 20.637701401956782,
+      "contrast_unit": "L*",
+      "id": "D001"
+    },
+    {
+      "kind": "dark",
+      "label_ja": "漏水・暗色変色の候補",
+      "area_m2": 0.0132,
+      "centre_m": [
+        3.3424892073004573,
+        0.99053081327712
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        3.271277086088336,
+        3.4112770860883357
+      ],
+      "lateral_m": [
+        0.9078035405498472,
+        1.067803540549847
+      ],
+      "contrast": -18.857279388533886,
+      "contrast_unit": "L*",
+      "id": "D002"
+    }
+  ],
+  "thresholds": {
+    "cell_m": 0.02,
+    "background_m": 0.5,
+    "light_dL": 15.0,
+    "dark_dL": -15.0,
+    "rust_db_da": [
+      12.0,
+      4.0
+    ],
+    "recess_m": 0.012,
+    "min_area_m2": 0.005,
+    "member_margin_m": 0.15,
+    "edge_margin_m": 0.3,
+    "seam_elongation": 6.0,
+    "seam_angle_deg": 10.0
+  },
+  "straight_seams_left_out": {
+    "regions": {},
+    "cells_along_m": {
+      "dark": 84.54,
+      "recess": 123.28
+    }
+  },
+  "soffit": {
+    "points": 1418933,
+    "cells_with_returns": 91262,
+    "cells_searched": 80093,
+    "area_searched_m2": 32.0372
+  },
+  "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
+}

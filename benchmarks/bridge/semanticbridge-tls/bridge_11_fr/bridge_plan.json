@@ -1,0 +1,151 @@
+{
+  "schema": "cloudanalyzer.bridge_plan.v1",
+  "source": {
+    "file": "bridge_11_fr_rtc.ply",
+    "sha256": "dbb189cca540a1e1b93adaab2f4048a2c8450d8b362b29bc6fc798082cd7ee1e",
+    "bytes": 93136422,
+    "dataset": "https://doi.org/10.5281/zenodo.18738225",
+    "converted": "PLY to LAS with colour and labels as classification"
+  },
+  "points": 5821011,
+  "classes": [
+    3,
+    4,
+    5,
+    8
+  ],
+  "member_classes": [
+    4
+  ],
+  "axis": {
+    "origin_xy": [
+      -3.5732243399047396,
+      -26.394925910154313
+    ],
+    "direction_xy": [
+      -0.16766018015512824,
+      0.9858448478286784
+    ],
+    "source": "deck_side_edges"
+  },
+  "options": {
+    "spacing_m": 0.25,
+    "thickness_m": 0.1,
+    "margin_m": 0.3
+  },
+  "deck": {
+    "start_m": -10.155485984294717,
+    "end_m": 6.5726757735574015,
+    "length_m": 16.72816175785212,
+    "skew_deg": -19.13976322119992,
+    "skew_slope": -0.3470584512418039,
+    "left_edge_m": 3.1634196851678427,
+    "right_edge_m": -3.3827772084116217,
+    "width_m": 6.546196893579465,
+    "slab_thickness_m": 0.7017981925497643,
+    "sections_measured": 58,
+    "sections_with_soffit": 58
+  },
+  "underside": "girders_observed",
+  "girders": [
+    {
+      "lateral_m": -1.1327772084116305,
+      "visible_width_m": 0.04999999999999982,
+      "depth_below_deck_top_m": 1.0914544547161267,
+      "sections_observed": 35,
+      "sections_total": 58,
+      "number": 1
+    }
+  ],
+  "partially_observed_members": [
+    {
+      "lateral_m": -0.6077772084116324,
+      "visible_width_m": 0.14999999999999947,
+      "depth_below_deck_top_m": 1.0941386211534636,
+      "sections_observed": 25,
+      "sections_total": 58
+    },
+    {
+      "lateral_m": -0.08277720841163427,
+      "visible_width_m": 0.14999999999999947,
+      "depth_below_deck_top_m": 1.0941947108189187,
+      "sections_observed": 16,
+      "sections_total": 58
+    },
+    {
+      "lateral_m": 0.5047227915883636,
+      "visible_width_m": 0.3999999999999986,
+      "depth_below_deck_top_m": 1.0950708459653362,
+      "sections_observed": 26,
+      "sections_total": 58
+    }
+  ],
+  "cross_beams": [],
+  "supports": [],
+  "spans": [
+    {
+      "number": 1,
+      "from_m": -10.155485984294717,
+      "to_m": 6.5726757735574015,
+      "length_m": 16.72816175785212
+    }
+  ],
+  "elements": [
+    {
+      "id": "Ds0101",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -10.155485984294717,
+        6.5726757735574015
+      ],
+      "lateral_m": [
+        -1.1327772084116305,
+        3.1634196851678427
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0102",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -10.155485984294717,
+        6.5726757735574015
+      ],
+      "lateral_m": [
+        -3.3827772084116217,
+        -1.1327772084116305
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0101",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -10.155485984294717,
+        6.5726757735574015
+      ],
+      "lateral_m": [
+        -1.1327772084116305,
+        -1.1327772084116305
+      ],
+      "status": "observed"
+    }
+  ],
+  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
+  "note": "Girders and cross beams are drawn where the scan shows them; a member hidden from every scan position is missing and would shift the numbers after it.",
+  "warnings": [
+    "3 member line(s) appear in only part of the sections and are not numbered; check the scan before relying on the girder numbers."
+  ]
+}

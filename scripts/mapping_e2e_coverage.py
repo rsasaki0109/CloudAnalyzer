@@ -9,8 +9,8 @@ meet the fixed minimum lane width and defer the rest, then draft once.
     python scripts/mapping_e2e_coverage.py web/public/samples/nclt-2012-06-15.mcap runs/june 2.0
 
 Optional trailing `FROM:TO` station ranges are deferred as well. When the lane
-builder names an interval with ambiguous Lanelet2 boundary directions, that
-interval is deferred and the draft repeated. The summary is printed and saved as
+builder names intervals with ambiguous Lanelet2 boundary directions, those
+intervals are deferred and the draft repeated. The summary is printed and saved as
 `e2e-result.json` in the new run directory.
 """
 
@@ -23,7 +23,7 @@ from pathlib import Path
 from ca.mapping_run import advance_mapping_run, inspect_mapping_run, start_mapping_run
 
 MAX_REDRAFTS = 5
-AMBIGUOUS = re.compile(r"centre curve (\d+) has ambiguous Lanelet2 boundary directions between sections (\d+) and (\d+)")
+AMBIGUOUS = re.compile(r"centre curve (\d+) between sections (\d+) and (\d+)")
 
 
 def main() -> None:
@@ -76,15 +76,16 @@ def main() -> None:
         decisions = decide()
         draft = act({"type": "draft", "decisions": decisions},
                     "Draft every inspected interval meeting the fixed width").get("draft_result", {})
-        hit = AMBIGUOUS.search(str(draft.get("error") or ""))
-        if draft.get("status") != "failed" or not hit:
+        error = str(draft.get("error") or "")
+        hits = [tuple(map(int, m.groups())) for m in AMBIGUOUS.finditer(error)] if "ambiguous" in error else []
+        if draft.get("status") != "failed" or not hits:
             break
-        curve, i, j = map(int, hit.groups())
-        geometry = max(Path(out).glob("geometry-*/report.json"))
-        segment = next(s for s in json.loads(geometry.read_text())["segments"] if s["curve_ids"]["center"] == curve)
-        interval = (segment["sections"][i]["station_m"], segment["sections"][j]["station_m"])
-        deferred.append(interval)
-        retried.append(list(interval))
+        geometry = json.loads(max(Path(out).glob("geometry-*/report.json")).read_text())
+        for curve, i, j in hits:
+            segment = next(s for s in geometry["segments"] if s["curve_ids"]["center"] == curve)
+            interval = (segment["sections"][i]["station_m"], segment["sections"][j]["station_m"])
+            deferred.append(interval)
+            retried.append(list(interval))
     summary = {
         "source": source, "minimum_width_m": width, "deferred_ranges": deferred,
         "ambiguous_direction_deferrals": retried,

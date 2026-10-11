@@ -101,6 +101,33 @@ def test_a_folded_inner_edge_is_cut_instead_of_drafted_as_a_reversed_lane(job_ba
     assert len(built["pieces"]) > 1
 
 
+def test_every_unresolvable_interval_is_named_in_one_reply(job_backend, tmp_path):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    _attach_lane_native()
+    report = _corridor_report()
+    base = report["candidates"][0]
+    report["candidates"] = []
+    # Two separate 2 m intervals whose inner edge ends behind where it starts: no cut helps.
+    for k, x in enumerate((0., 20.)):
+        sections = [{"station_m": x, "center": [x, 0., 1.], "left": [x, 2., 1.], "right": [x, -2., 1.]},
+                    {"station_m": x + 2., "center": [x + .75, 0., 1.], "left": [x - .5, 2., 1.], "right": [x + 2., -2., 1.]}]
+        for s in sections:
+            s.update(left_evidence="support_gap", right_evidence="support_gap")
+        report["candidates"].append({**base, "id": k + 1, "from_m": x, "to_m": x + 2., "minimum_support_span_m": 4.,
+                                     "maximum_support_span_m": 4.7, "sections": sections})
+    report["trajectory_length_m"] = report["with_candidate_station_length_m"] = report["trajectory_covered_station_length_m"] = 22.
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    root = tmp_path / "run"
+    run = runs.start_mapping_run(str(source), str(root), _run_layout(width=2.5))
+    run = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1, 2]}, "Read both", run["revision"])
+    choices = [{"candidate_id": k, "action": "include", "reason": "Both end sections meet the fixed width"} for k in (1, 2)]
+    run = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Draft both", run["revision"])
+    error = run["draft_result"]["error"]
+    assert run["draft_result"]["status"] == "failed"
+    assert error.count("between sections 0 and 1") == 2 and "defer those intervals" in error, error
+
+
 @pytest.mark.parametrize("proposal_id", [1, 37])
 def test_agent_run_binds_one_layout_rejects_stale_replay_and_returns_both_maps(job_backend, tmp_path, proposal_id):
     from ca import mapping_run as runs

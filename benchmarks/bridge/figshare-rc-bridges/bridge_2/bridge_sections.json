@@ -1,0 +1,643 @@
+{
+  "schema": "cloudanalyzer.bridge_sections.v1",
+  "source": {
+    "file": "Bridge_2.las",
+    "sha256": "27a97dbbb1592d70cd966e46d0a81003e95dbe5580343f667967aca276276087",
+    "bytes": 254269913,
+    "dataset": "https://doi.org/10.6084/m9.figshare.28091453.v2"
+  },
+  "points": 9779603,
+  "measured_points": 4928201,
+  "classes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "axis": {
+    "origin_xy": [
+      0.7951406477460148,
+      -2.5737937250683425
+    ],
+    "direction_xy": [
+      0.9989823455936065,
+      0.04510291778029515
+    ],
+    "source": "deck_side_edges"
+  },
+  "options": {
+    "spacing_m": 1.0,
+    "thickness_m": 0.1,
+    "margin_m": 0.3
+  },
+  "along_extent_m": [
+    -5.145494251310024,
+    4.265749393457479
+  ],
+  "deck_ends": {
+    "lateral_range_m": [
+      -1.8469012504670994,
+      1.794894229848231
+    ],
+    "start_line": [
+      0.004646482136347952,
+      -5.153834195285647
+    ],
+    "end_line": [
+      0.004646482136347952,
+      4.2743309871253725
+    ],
+    "full_width_from_m": -5.145494251310024,
+    "full_width_to_m": 4.265749393457479,
+    "length_m": 9.42816518241102,
+    "skew_deg": 0.2662219001145052
+  },
+  "sections": [
+    {
+      "status": "measured",
+      "points": 10610,
+      "dims": {
+        "effective_width_m": 4.030285347912568,
+        "cross_slope_percent": -0.2935633026211032,
+        "crown_height_m": 0.016692307692307562,
+        "left_cross_slope_percent": -1.4717407426571292,
+        "right_cross_slope_percent": 2.0755131964809435,
+        "left_curb_width_m": 0.383938377441261,
+        "left_curb_height_m": 0.20699999999999985,
+        "right_curb_width_m": 0.5750079048018946,
+        "right_curb_height_m": 0.24499999999999988,
+        "total_width_m": 4.989231630155723
+      },
+      "deck": {
+        "lo": -1.9866671482054454,
+        "hi": 2.0436181997071228,
+        "slope": -0.002935633026211032,
+        "intercept": 1.1912609940255712,
+        "rms": 0.010957207211340757,
+        "crown_m": 0.016692307692307562,
+        "right_slope": 0.020755131964809433,
+        "left_slope": -0.014717407426571292
+      },
+      "left": {
+        "inner_u": 2.0436181997071228,
+        "deck_z": 1.215,
+        "curb_top_z": 1.422,
+        "outer_u": 2.427556577148384,
+        "curb_width_m": 0.383938377441261,
+        "curb_height_m": 0.20699999999999985
+      },
+      "right": {
+        "inner_u": -1.9866671482054454,
+        "deck_z": 1.179,
+        "curb_top_z": 1.424,
+        "outer_u": -2.56167505300734,
+        "curb_width_m": 0.5750079048018946,
+        "curb_height_m": 0.24499999999999988
+      },
+      "soffit_share": 0.0,
+      "station_m": -4.845494251310024
+    },
+    {
+      "status": "measured",
+      "points": 22999,
+      "dims": {
+        "effective_width_m": 3.973401893440367,
+        "cross_slope_percent": -0.31598295240374613,
+        "crown_height_m": 0.020263157894736983,
+        "left_cross_slope_percent": -1.5332240422007437,
+        "right_cross_slope_percent": 1.7513368983957647,
+        "left_curb_width_m": 0.407300743186656,
+        "left_curb_height_m": 0.22799999999999998,
+        "right_curb_width_m": 0.625342793878316,
+        "right_curb_height_m": 0.25,
+        "total_width_m": 5.006045430505338,
+        "slab_thickness_m": 0.5274597513491788
+      },
+      "deck": {
+        "lo": -1.9431965121156531,
+        "hi": 2.0302053813247136,
+        "slope": -0.0031598295240374613,
+        "intercept": 1.2009779611310316,
+        "rms": 0.009497651607298742,
+        "crown_m": 0.020263157894736983,
+        "right_slope": 0.017513368983957646,
+        "left_slope": -0.015332240422007436
+      },
+      "left": {
+        "inner_u": 2.0302053813247136,
+        "deck_z": 1.206,
+        "curb_top_z": 1.434,
+        "outer_u": 2.4375061245113696,
+        "curb_width_m": 0.407300743186656,
+        "curb_height_m": 0.22799999999999998
+      },
+      "right": {
+        "inner_u": -1.9431965121156531,
+        "deck_z": 1.19,
+        "curb_top_z": 1.44,
+        "outer_u": -2.568539305993969,
+        "curb_width_m": 0.625342793878316,
+        "curb_height_m": 0.25
+      },
+      "soffit_share": 1.0,
+      "station_m": -3.845494251310024
+    },
+    {
+      "status": "measured",
+      "points": 38931,
+      "dims": {
+        "effective_width_m": 3.96178836494434,
+        "cross_slope_percent": -0.11793004049634988,
+        "crown_height_m": 0.035355263157894834,
+        "left_cross_slope_percent": -2.2944928385962013,
+        "right_cross_slope_percent": 2.878991596638688,
+        "left_curb_width_m": 0.4599176507698002,
+        "left_curb_height_m": 0.22550000000000003,
+        "right_curb_width_m": 0.6208958353181395,
+        "right_curb_height_m": 0.2430000000000001,
+        "total_width_m": 5.04260185103228,
+        "slab_thickness_m": 0.5279638560650228
+      },
+      "deck": {
+        "lo": -1.9484754448255446,
+        "hi": 2.0133129201187954,
+        "slope": -0.0011793004049634988,
+        "intercept": 1.225042304005278,
+        "rms": 0.014843242948965862,
+        "crown_m": 0.035355263157894834,
+        "right_slope": 0.02878991596638688,
+        "left_slope": -0.022944928385962012
+      },
+      "left": {
+        "inner_u": 2.0133129201187954,
+        "deck_z": 1.2325,
+        "curb_top_z": 1.458,
+        "outer_u": 2.4732305708885955,
+        "curb_width_m": 0.4599176507698002,
+        "curb_height_m": 0.22550000000000003
+      },
+      "right": {
+        "inner_u": -1.9484754448255446,
+        "deck_z": 1.202,
+        "curb_top_z": 1.445,
+        "outer_u": -2.569371280143684,
+        "curb_width_m": 0.6208958353181395,
+        "curb_height_m": 0.2430000000000001
+      },
+      "soffit_share": 1.0,
+      "station_m": -2.845494251310024
+    },
+    {
+      "status": "measured",
+      "points": 117126,
+      "dims": {
+        "effective_width_m": 3.8843888225381207,
+        "cross_slope_percent": 0.8073968705547724,
+        "crown_height_m": 0.04494594594594603,
+        "left_cross_slope_percent": -2.223264540337715,
+        "right_cross_slope_percent": 5.2344916344916,
+        "left_curb_width_m": 0.5682472611260683,
+        "left_curb_height_m": 0.2550000000000001,
+        "left_outer_face_depth_m": 0.479,
+        "right_curb_width_m": 0.5128320484773357,
+        "right_curb_height_m": 0.21500000000000008,
+        "total_width_m": 4.965468132141524,
+        "slab_thickness_m": 0.5022472425047371
+      },
+      "deck": {
+        "lo": -1.9832661005710144,
+        "hi": 1.901122721967106,
+        "slope": 0.008073968705547723,
+        "intercept": 1.2267493815971826,
+        "rms": 0.02113898111811887,
+        "crown_m": 0.04494594594594603,
+        "right_slope": 0.052344916344916,
+        "left_slope": -0.02223264540337715
+      },
+      "left": {
+        "inner_u": 1.901122721967106,
+        "deck_z": 1.21,
+        "curb_top_z": 1.465,
+        "outer_u": 2.4693699830931743,
+        "curb_width_m": 0.5682472611260683,
+        "curb_height_m": 0.2550000000000001,
+        "outer_face_depth_m": 0.479
+      },
+      "right": {
+        "inner_u": -1.9832661005710144,
+        "deck_z": 1.212,
+        "curb_top_z": 1.427,
+        "outer_u": -2.49609814904835,
+        "curb_width_m": 0.5128320484773357,
+        "curb_height_m": 0.21500000000000008
+      },
+      "soffit_share": 1.0,
+      "station_m": -1.8454942513100239
+    },
+    {
+      "status": "measured",
+      "points": 40805,
+      "dims": {
+        "effective_width_m": 3.8697082956330346,
+        "cross_slope_percent": 0.7444096728307051,
+        "crown_height_m": 0.07150000000000012,
+        "left_cross_slope_percent": -4.444249917934145,
+        "right_cross_slope_percent": 3.4336360652149596,
+        "left_curb_width_m": 0.5704889707062284,
+        "left_curb_height_m": 0.26,
+        "left_outer_face_depth_m": 0.44200000000000006,
+        "right_curb_width_m": 0.5321217153136482,
+        "right_curb_height_m": 0.2530000000000001,
+        "right_outer_face_depth_m": 0.45099999999999996,
+        "total_width_m": 4.972318981652911,
+        "slab_thickness_m": 0.49376106761368377
+      },
+      "deck": {
+        "lo": -1.969023133701265,
+        "hi": 1.90068516193177,
+        "slope": 0.007444096728307052,
+        "intercept": 1.240324835674763,
+        "rms": 0.02463507638177128,
+        "crown_m": 0.07150000000000012,
+        "right_slope": 0.034336360652149595,
+        "left_slope": -0.04444249917934145
+      },
+      "left": {
+        "inner_u": 1.90068516193177,
+        "deck_z": 1.215,
+        "curb_top_z": 1.475,
+        "outer_u": 2.4711741326379983,
+        "curb_width_m": 0.5704889707062284,
+        "curb_height_m": 0.26,
+        "outer_face_depth_m": 0.44200000000000006
+      },
+      "right": {
+        "inner_u": -1.969023133701265,
+        "deck_z": 1.21,
+        "curb_top_z": 1.463,
+        "outer_u": -2.501144849014913,
+        "curb_width_m": 0.5321217153136482,
+        "curb_height_m": 0.2530000000000001,
+        "outer_face_depth_m": 0.45099999999999996
+      },
+      "soffit_share": 1.0,
+      "station_m": -0.8454942513100239
+    },
+    {
+      "status": "measured",
+      "points": 42944,
+      "dims": {
+        "effective_width_m": 1.9268114300611658,
+        "cross_slope_percent": 4.371922529817276,
+        "crown_height_m": 0.0025135135135136988,
+        "right_curb_width_m": 0.5621362885992374,
+        "right_curb_height_m": 0.2530000000000001,
+        "right_outer_face_depth_m": 0.43799999999999994,
+        "slab_thickness_m": 0.48095223512263136
+      },
+      "deck": {
+        "lo": -1.9711765287754612,
+        "hi": -0.04436509871429543,
+        "slope": 0.04371922529817276,
+        "intercept": 1.2951942088284665,
+        "rms": 0.011131002466579014,
+        "crown_m": 0.0025135135135136988
+      },
+      "left": {
+        "inner_u": -0.04436509871429543,
+        "deck_z": 1.312
+      },
+      "right": {
+        "inner_u": -1.9711765287754612,
+        "deck_z": 1.22,
+        "curb_top_z": 1.473,
+        "outer_u": -2.5333128173746986,
+        "curb_width_m": 0.5621362885992374,
+        "curb_height_m": 0.2530000000000001,
+        "outer_face_depth_m": 0.43799999999999994
+      },
+      "soffit_share": 1.0,
+      "station_m": 0.15450574868997613
+    },
+    {
+      "status": "measured",
+      "points": 97574,
+      "dims": {
+        "effective_width_m": 3.8460350034543955,
+        "cross_slope_percent": -0.1160755275823572,
+        "crown_height_m": 0.024931506849315,
+        "left_curb_width_m": 0.6001360024951472,
+        "left_curb_height_m": 0.2610000000000001,
+        "left_outer_face_depth_m": 0.45899999999999996,
+        "right_curb_width_m": 0.5992540986028239,
+        "right_curb_height_m": 0.25,
+        "right_outer_face_depth_m": 0.42699999999999994,
+        "total_width_m": 5.045425104552367,
+        "slab_thickness_m": 0.4880000000000001
+      },
+      "deck": {
+        "lo": -1.940974792830712,
+        "hi": 1.9050602106236836,
+        "slope": -0.001160755275823572,
+        "intercept": 1.2519943477785869,
+        "rms": 0.007752298254116608,
+        "crown_m": 0.024931506849315
+      },
+      "left": {
+        "inner_u": 1.9050602106236836,
+        "deck_z": 1.25,
+        "curb_top_z": 1.5110000000000001,
+        "outer_u": 2.505196213118831,
+        "curb_width_m": 0.6001360024951472,
+        "curb_height_m": 0.2610000000000001,
+        "outer_face_depth_m": 0.45899999999999996
+      },
+      "right": {
+        "inner_u": -1.940974792830712,
+        "deck_z": 1.236,
+        "curb_top_z": 1.486,
+        "outer_u": -2.540228891433536,
+        "curb_width_m": 0.5992540986028239,
+        "curb_height_m": 0.25,
+        "outer_face_depth_m": 0.42699999999999994
+      },
+      "soffit_share": 1.0,
+      "station_m": 1.1545057486899761
+    },
+    {
+      "status": "measured",
+      "points": 68078,
+      "dims": {
+        "effective_width_m": 3.8613805619805426,
+        "cross_slope_percent": -0.10876244665717102,
+        "crown_height_m": 0.033500000000000085,
+        "left_cross_slope_percent": -2.503227924280542,
+        "right_cross_slope_percent": 2.1159864317759034,
+        "left_curb_width_m": 0.5996331522451372,
+        "left_curb_height_m": 0.28,
+        "left_outer_face_depth_m": 0.42800000000000005,
+        "right_curb_width_m": 0.5775336681975909,
+        "right_curb_height_m": 0.242,
+        "right_outer_face_depth_m": 0.42599999999999993,
+        "total_width_m": 5.038547382423271,
+        "slab_thickness_m": 0.4719205305811698
+      },
+      "deck": {
+        "lo": -1.9615541811489705,
+        "hi": 1.899826380831572,
+        "slope": -0.0010876244665717102,
+        "intercept": 1.2522119130955494,
+        "rms": 0.013075539653162766,
+        "crown_m": 0.033500000000000085,
+        "right_slope": 0.021159864317759035,
+        "left_slope": -0.025032279242805423
+      },
+      "left": {
+        "inner_u": 1.899826380831572,
+        "deck_z": 1.241,
+        "curb_top_z": 1.5210000000000001,
+        "outer_u": 2.4994595330767093,
+        "curb_width_m": 0.5996331522451372,
+        "curb_height_m": 0.28,
+        "outer_face_depth_m": 0.42800000000000005
+      },
+      "right": {
+        "inner_u": -1.9615541811489705,
+        "deck_z": 1.246,
+        "curb_top_z": 1.488,
+        "outer_u": -2.5390878493465614,
+        "curb_width_m": 0.5775336681975909,
+        "curb_height_m": 0.242,
+        "outer_face_depth_m": 0.42599999999999993
+      },
+      "soffit_share": 1.0,
+      "station_m": 2.154505748689976
+    },
+    {
+      "status": "measured",
+      "points": 69211,
+      "dims": {
+        "effective_width_m": 3.8658025720862206,
+        "cross_slope_percent": 0.3465718349928943,
+        "crown_height_m": 0.04070270270270271,
+        "left_cross_slope_percent": -2.336694677871156,
+        "right_cross_slope_percent": 2.304529616724729,
+        "left_curb_width_m": 0.568227106662786,
+        "left_curb_height_m": 0.248,
+        "left_outer_face_depth_m": 0.41700000000000004,
+        "right_curb_width_m": 0.5905070023814547,
+        "right_curb_height_m": 0.2649999999999999,
+        "right_outer_face_depth_m": 0.643,
+        "total_width_m": 5.024536681130462,
+        "slab_thickness_m": 0.6012878705117293
+      },
+      "deck": {
+        "lo": -1.9661700064010117,
+        "hi": 1.8996325656852089,
+        "slope": 0.003465718349928943,
+        "intercept": 1.2522768940112312,
+        "rms": 0.01342208899614324,
+        "crown_m": 0.04070270270270271,
+        "right_slope": 0.023045296167247292,
+        "left_slope": -0.023366946778711564
+      },
+      "left": {
+        "inner_u": 1.8996325656852089,
+        "deck_z": 1.245,
+        "curb_top_z": 1.493,
+        "outer_u": 2.467859672347995,
+        "curb_width_m": 0.568227106662786,
+        "curb_height_m": 0.248,
+        "outer_face_depth_m": 0.41700000000000004
+      },
+      "right": {
+        "inner_u": -1.9661700064010117,
+        "deck_z": 1.213,
+        "curb_top_z": 1.478,
+        "outer_u": -2.5566770087824664,
+        "curb_width_m": 0.5905070023814547,
+        "curb_height_m": 0.2649999999999999,
+        "outer_face_depth_m": 0.643
+      },
+      "soffit_share": 1.0,
+      "station_m": 3.154505748689976
+    }
+  ],
+  "table": [
+    {
+      "item": "deck_length_m",
+      "label_ja": "床版の橋軸方向長さ（中心線、点群範囲）",
+      "status": "observed",
+      "value": 9.42816518241102,
+      "p10": null,
+      "p90": null,
+      "sections_observed": null,
+      "sections_total": null
+    },
+    {
+      "item": "skew_deg",
+      "label_ja": "斜角（床版端線と橋軸直角方向のなす角、度）",
+      "status": "observed",
+      "value": 0.2662219001145052,
+      "p10": null,
+      "p90": null,
+      "sections_observed": null,
+      "sections_total": null
+    },
+    {
+      "item": "total_width_m",
+      "label_ja": "全幅",
+      "sections_observed": 8,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 5.0152910558179,
+      "p10": 4.970263726799495,
+      "p90": 5.043448827088306
+    },
+    {
+      "item": "effective_width_m",
+      "label_ja": "有効幅員（地覆内側間）",
+      "sections_observed": 9,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 3.8697082956330346,
+      "p10": 3.4621902887757496,
+      "p90": 3.984778584334807
+    },
+    {
+      "item": "cross_slope_percent",
+      "label_ja": "横断勾配（全体の直線当てはめ、%）",
+      "sections_observed": 9,
+      "sections_total": 9,
+      "status": "observed",
+      "value": -0.10876244665717102,
+      "p10": -0.29804723257763177,
+      "p90": 1.5203020024072738
+    },
+    {
+      "item": "crown_height_m",
+      "label_ja": "路面の拝み高さ（弦からの盛り上がり）",
+      "sections_observed": 9,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 0.033500000000000085,
+      "p10": 0.01385654885654879,
+      "p90": 0.05025675675675685
+    },
+    {
+      "item": "left_cross_slope_percent",
+      "label_ja": "横断勾配（左側、%）",
+      "sections_observed": 7,
+      "sections_total": 9,
+      "status": "observed",
+      "value": -2.2944928385962013,
+      "p10": -3.279636721741983,
+      "p90": -1.5086307223832978
+    },
+    {
+      "item": "right_cross_slope_percent",
+      "label_ja": "横断勾配（右側、%）",
+      "sections_observed": 7,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 2.304529616724729,
+      "p10": 1.945842677246872,
+      "p90": 4.153978292925617
+    },
+    {
+      "item": "left_curb_width_m",
+      "label_ja": "地覆幅（左）",
+      "sections_observed": 8,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 0.5682371838944271,
+      "p10": 0.4002920334630375,
+      "p90": 0.5997840073201403
+    },
+    {
+      "item": "right_curb_width_m",
+      "label_ja": "地覆幅（右）",
+      "sections_observed": 9,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 0.5775336681975909,
+      "p10": 0.5282637819463857,
+      "p90": 0.6217852270301748
+    },
+    {
+      "item": "left_curb_height_m",
+      "label_ja": "地覆高（左）",
+      "sections_observed": 8,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 0.25150000000000006,
+      "p10": 0.21994999999999998,
+      "p90": 0.2667000000000001
+    },
+    {
+      "item": "right_curb_height_m",
+      "label_ja": "地覆高（右）",
+      "sections_observed": 9,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 0.25,
+      "p10": 0.2366,
+      "p90": 0.25540000000000007
+    },
+    {
+      "item": "left_parapet_height_m",
+      "label_ja": "高欄高（左、地覆天端から）",
+      "sections_observed": 0,
+      "sections_total": 9,
+      "status": "unobserved",
+      "value": null,
+      "p10": null,
+      "p90": null
+    },
+    {
+      "item": "right_parapet_height_m",
+      "label_ja": "高欄高（右、地覆天端から）",
+      "sections_observed": 0,
+      "sections_total": 9,
+      "status": "unobserved",
+      "value": null,
+      "p10": null,
+      "p90": null
+    },
+    {
+      "item": "left_outer_face_depth_m",
+      "label_ja": "外面の可視深さ（左、床版上面から）",
+      "sections_observed": 5,
+      "sections_total": 9,
+      "status": "lower_bound",
+      "value": 0.44200000000000006,
+      "p10": 0.42140000000000005,
+      "p90": 0.471
+    },
+    {
+      "item": "right_outer_face_depth_m",
+      "label_ja": "外面の可視深さ（右、床版上面から）",
+      "sections_observed": 5,
+      "sections_total": 9,
+      "status": "lower_bound",
+      "value": 0.43799999999999994,
+      "p10": 0.42639999999999995,
+      "p90": 0.5662
+    },
+    {
+      "item": "slab_thickness_m",
+      "label_ja": "床版厚",
+      "sections_observed": 8,
+      "sections_total": 9,
+      "status": "observed",
+      "value": 0.4980041550592104,
+      "p10": 0.4782427237601929,
+      "p90": 0.5499610603990347
+    }
+  ],
+  "unobserved": [
+    "left_parapet_height_m",
+    "right_parapet_height_m"
+  ],
+  "note": "Values are measured from the point cloud only. lower_bound items are visible extents, not member sizes; unobserved items had no supporting returns and are not assumed."
+}

@@ -6,6 +6,24 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `ca bridge-sections` and the `measure_bridge_sections` MCP tool cut cross
+  sections along a bridge point cloud and write a member dimension table
+  (CSV/JSON) and a section drawing (SVG): deck length and skew, total and
+  effective width, cross slope and crown, curb width and height, parapet
+  height, visible outer-face depth and, only with returns beneath the deck,
+  slab thickness. Items are `observed`, `lower_bound`, `unobserved` or
+  `not_applicable`; nothing is assumed. Results on three public CC BY 4.0
+  bridges are in `benchmarks/bridge/figshare-rc-bridges`.
+
+- Optional Rust acceleration: `pip install "cloudanalyzer[fast]"` installs
+  `cloudanalyzer-core` (the web viewer's Rust core as a Python extension).
+  When present, nearest-neighbour distances (`ca.metrics.compute_nn_distance`,
+  used by `ca compare` and friends) run multi-threaded with results identical
+  to Open3D, and LAS/LAZ loading no longer needs laspy. Set
+  `CA_DISABLE_RUST_CORE=1` to force the previous implementations.
+
 ### Fixed
 
 - Corridor proposals centre a 0.5 m lateral bin on the trajectory. Bin edges
@@ -21,15 +39,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   point-map variants of each bundled NCLT drive, mean `trajectory_containing`
   coverage rises from 79.2% to 91.7% (April) and 79.1% to 85.8% (June), and the
   stations covered by every variant rise from 144 to 198 m and 138 to 182 m.
-
-### Added
-
-- Optional Rust acceleration: `pip install "cloudanalyzer[fast]"` installs
-  `cloudanalyzer-core` (the web viewer's Rust core as a Python extension).
-  When present, nearest-neighbour distances (`ca.metrics.compute_nn_distance`,
-  used by `ca compare` and friends) run multi-threaded with results identical
-  to Open3D, and LAS/LAZ loading no longer needs laspy. Set
-  `CA_DISABLE_RUST_CORE=1` to force the previous implementations.
 
 ## [0.5.0] - 2026-09-27
 

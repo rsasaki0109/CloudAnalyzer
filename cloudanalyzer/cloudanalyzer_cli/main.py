@@ -2492,6 +2492,48 @@ def crop_cmd(
         _dump_json(result, output_json)
 
 
+def _int_list(value: Optional[str]) -> Optional[list[int]]:
+    return [int(v) for v in value.split(",")] if value else None
+
+
+@app.command("bridge-sections")
+def bridge_sections_cmd(
+    input_path: str = typer.Argument(..., help="Bridge point cloud (LAS/LAZ, or any format ca reads)"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Directory for JSON, CSV table and SVG section"),
+    spacing: float = typer.Option(1.0, "--spacing", help="Distance between sections along the axis (m)"),
+    thickness: float = typer.Option(0.1, "--thickness", help="Section slab thickness (m)"),
+    classes: Optional[str] = typer.Option(None, "--classes", help="Measure only these classification codes, e.g. 0,1,2,3"),
+    axis_classes: Optional[str] = typer.Option(None, "--axis-classes", help="Codes whose points define the axis and deck ends, e.g. the deck"),
+    axis: Optional[str] = typer.Option(None, "--axis", help="Explicit axis as x1,y1,x2,y2"),
+) -> None:
+    """Cut sections along a bridge and write a member dimension table.
+
+    Values are measured from the point cloud only: visible depths are lower
+    bounds and items without supporting returns are reported as unobserved.
+    """
+    from ca.bridge import bridge_sections
+
+    try:
+        ends = [float(v) for v in axis.split(",")] if axis else None
+        if ends is not None and len(ends) != 4:
+            raise ValueError("--axis needs x1,y1,x2,y2")
+        result = bridge_sections(
+            input_path, output_dir, spacing=spacing, thickness=thickness,
+            classes=_int_list(classes), axis_classes=_int_list(axis_classes),
+            axis=(ends[:2], ends[2:]) if ends else None,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    measured = sum(s["status"] == "measured" for s in result["sections"])
+    typer.echo(f"Sections:  {measured}/{len(result['sections'])} measured")
+    for row in result["table"]:
+        value = "-" if row["value"] is None else f"{row['value']:.3f}"
+        typer.echo(f"  {row['label_ja']}: {value} ({row['status']})")
+    for name, path in result["outputs"].items():
+        typer.echo(f"Saved {name}: {path}")
+
+
 @app.command("normals")
 def normals_cmd(
     input_path: str = typer.Argument(..., help="Input point cloud file"),

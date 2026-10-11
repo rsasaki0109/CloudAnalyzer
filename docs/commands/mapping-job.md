@@ -18,7 +18,12 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    (default 15 m of path): each keyframe is tied to the up directions averaged with a
    Gaussian of that length, at the noise left after averaging. `0` ties every
    keyframe to its own up direction, as before. The correction report records the
-   length and the effective number of averaged keyframes.
+   length and the effective number of averaged keyframes. On the bundled 250 m
+   drives the 15 m length raised the scripted HD draft from about 86% to 92%. On
+   a 1.1 km winter NCLT drive (2013-01-10, IMU noise 1.9°) coverage was unchanged
+   within run-to-run scatter, and the vertical trajectory error against ground
+   truth rose from 0.75 to 0.81 m in every keyframe spacing tried: on long drives,
+   compare both settings before relying on the map's heights.
 2. `inspect_mapping_job(job_dir)` reads the small persisted job without loading
    point clouds. Inspect processing reports, artifact hashes and remaining attempts.
 3. `propose_mapping_corridors(job_dir)` searches the frozen source for surface

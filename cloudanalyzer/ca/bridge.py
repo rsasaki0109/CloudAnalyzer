@@ -369,7 +369,7 @@ def deck_ends(xyz: np.ndarray, axis: Axis, bin_m: float = 0.5) -> dict[str, Any]
     def line(y: np.ndarray) -> np.ndarray:
         fit = np.polyfit(c, y, 1)
         ok = np.abs(y - np.polyval(fit, c)) <= max(0.1, 2.5 * np.std(y - np.polyval(fit, c)))
-        return np.polyfit(c[ok], y[ok], 1)
+        return np.asarray(np.polyfit(c[ok], y[ok], 1))
 
     slope = 0.5 * (line(start)[0] + line(end)[0])
     # Percentiles within a bin cut into the extent, so the end positions come
@@ -419,11 +419,11 @@ def bridge_sections(
     cls = data.get("classification")
     if (classes or axis_classes) and cls is None:
         raise ValueError("classes were given but the file has no classification")
-    keep = np.isin(cls, classes) if classes else np.ones(len(xyz), bool)
+    keep = np.isin(cls, classes) if classes and cls is not None else np.ones(len(xyz), bool)
     pts = xyz[keep]
     if len(pts) < 100:
         raise ValueError("fewer than 100 points to measure")
-    ref = xyz[np.isin(cls, axis_classes)] if axis_classes else pts
+    ref = xyz[np.isin(cls, axis_classes)] if axis_classes and cls is not None else pts
     ax = axis_from_points(axis[0], axis[1]) if axis is not None else refine_axis(ref, estimate_axis(ref))
     ends = deck_ends(ref, ax)
     if ends is None:

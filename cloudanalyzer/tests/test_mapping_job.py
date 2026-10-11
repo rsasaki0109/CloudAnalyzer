@@ -72,6 +72,35 @@ def test_wide_turn_lanes_are_cut_at_source_sections_so_reload_keeps_directions(j
     assert built["lane_chains"][0] == [p["lane_ids"][0] for p in built["pieces"]]
 
 
+# A wide band turning sharply in a variant map of the same recording (stations 216-250.5 m).
+# Cut only where Lanelet2's direction inference needs it, one piece's inner edge stays in
+# place and ends behind where it starts, so its bounds run opposite ways end to end.
+NCLT_FOLD = [[216.0, [17.021, -8.017, -1.967], [15.228, -10.422, -2.013], [18.814, -5.612, -2.251]], [218.0, [13.349, -6.269, -1.92], [9.335, -7.665, -1.845], [17.364, -4.873, -1.952]], [220.0, [18.308, -3.247, -2.06], [11.602, -2.485, -1.786], [25.015, -4.01, -2.069]], [222.0, [18.803, -1.446, -1.938], [12.439, -0.121, -1.733], [25.166, -2.771, -2.01]], [224.0, [17.397, 0.925, -1.9], [14.039, 1.911, -1.843], [20.755, -0.062, -1.96]], [226.0, [20.442, 2.437, -1.981], [14.488, 3.174, -1.896], [26.397, 1.701, -2.025]], [228.0, [19.341, 4.816, -1.912], [12.435, 3.675, -1.667], [26.248, 5.958, -1.969]], [230.0, [18.492, 6.899, -1.769], [11.935, 3.806, -1.648], [25.049, 9.991, -1.895]], [232.0, [18.867, 10.915, -1.727], [16.075, 7.386, -1.713], [21.659, 14.444, -1.592]], [234.0, [14.889, 8.893, -1.648], [13.721, 0.979, -1.869], [16.057, 16.807, -1.306]], [236.0, [12.863, 8.965, -1.428], [13.96, 5.379, -1.611], [11.766, 12.55, -1.166]], [238.0, [10.77, 8.384, -1.314], [11.741, 6.928, -1.38], [9.799, 9.84, -1.247]], [240.0, [9.162, 7.108, -1.118], [10.243, 5.732, -1.162], [8.082, 8.485, -1.172]], [242.0, [7.537, 5.846, -0.971], [9.06, 4.189, -0.97], [6.014, 7.502, -0.916]], [244.0, [5.559, 4.803, -0.872], [8.21, 2.518, -0.994], [2.908, 7.088, -0.558]], [246.0, [4.897, 2.789, -0.667], [5.799, 1.924, -0.731], [3.995, 3.655, -0.677]], [248.0, [3.382, 1.785, -0.596], [4.5, 0.127, -0.6], [2.263, 3.443, -0.524]], [250.0, [1.131, 2.337, -0.321], [3.399, -2.674, -0.487], [-1.137, 7.348, 0.056]], [250.535, [1.246, 1.362, -0.329], [1.913, -1.047, -0.407], [0.579, 3.772, -0.323]]]
+
+
+def test_a_folded_inner_edge_is_cut_instead_of_drafted_as_a_reversed_lane(job_backend, tmp_path):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    _attach_lane_native()
+    report = _corridor_report()
+    report["trajectory_length_m"] = report["with_candidate_station_length_m"] = report["trajectory_covered_station_length_m"] = 34.535
+    report["candidates"][0].update(from_m=216., to_m=250.535, minimum_support_span_m=2.5, maximum_support_span_m=16.,
+        sections=[{"station_m": st, "center": c, "left": l, "right": r, "left_evidence": "support_gap",
+                    "right_evidence": "support_gap"} for st, c, l, r in NCLT_FOLD])
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    root = tmp_path / "run"
+    run = runs.start_mapping_run(str(source), str(root), _run_layout(width=2.5))
+    run = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1]}, "Read the turn", run["revision"])
+    choices = [{"candidate_id": 1, "action": "include", "reason": "Every section meets the fixed width"}]
+    run = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Draft the turn", run["revision"])
+    assert run["draft_result"]["status"] == "audited_draft", run["draft_result"]
+    attempt = jobs.inspect_mapping_job(str(root))["attempts"][-1]
+    lanes = json.loads(Path(attempt["files"]["report"]["path"]).read_text())
+    assert lanes["validation"]["counts"]["errors"] == 0, lanes["validation"]["issues"]
+    (built,) = lanes["built_segments"]
+    assert len(built["pieces"]) > 1
+
+
 @pytest.mark.parametrize("proposal_id", [1, 37])
 def test_agent_run_binds_one_layout_rejects_stale_replay_and_returns_both_maps(job_backend, tmp_path, proposal_id):
     from ca import mapping_run as runs

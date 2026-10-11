@@ -26,6 +26,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Mapping jobs tie keyframes to IMU gravity averaged along 15 m of path
+  (`gravity_smoothing_m`) instead of each keyframe's own up direction. A bag's
+  IMU up jitters about a degree from keyframe to keyframe while the odometry's
+  relative rotations do not, so the per-keyframe tie tilted scans against each
+  other and thickened the fused ground. Over five keyframe spacings of each
+  bundled NCLT drive, the scripted audited HD draft rises from 85.4% to 90.9%
+  (April) and 86.0% to 92.2% (June) on average, with 8 of 10 runs reaching the
+  90% extent (1 before). `posegraph_fix` keeps per-keyframe ties by default.
+- Agent-drafted corridor lanes are also cut where a piece's left and right
+  bounds would run opposite ways end to end, as on a tight turn where a wide
+  band's inner edge folds back. Such a piece was drafted with a
+  `boundary_direction_mismatch` validation error (4 of 83 sweep runs).
+
 - Agent-drafted corridor lanes are cut at source sections where Lanelet2's
   geometric direction inference would reverse a bound on reload, as ordinary
   road building already does. Wide or curved pieces previously failed the

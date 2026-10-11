@@ -8,15 +8,22 @@ meet the fixed minimum lane width and defer the rest, then draft once.
     python scripts/mapping_e2e_coverage.py web/public/samples/nclt-2012-04-29.mcap runs/april 2.5
     python scripts/mapping_e2e_coverage.py web/public/samples/nclt-2012-06-15.mcap runs/june 2.0
 
-Optional trailing `FROM:TO` station ranges are deferred as well. The summary is
-printed and saved as `e2e-result.json` in the new run directory.
+Optional trailing `FROM:TO` station ranges are deferred as well. When the lane
+builder names an interval with ambiguous Lanelet2 boundary directions, that
+interval is deferred and the draft repeated. The summary is printed and saved as
+`e2e-result.json` in the new run directory.
 """
 
 import json
+import re
 import sys
 import time
+from pathlib import Path
 
 from ca.mapping_run import advance_mapping_run, inspect_mapping_run, start_mapping_run
+
+MAX_REDRAFTS = 5
+AMBIGUOUS = re.compile(r"centre curve (\d+) has ambiguous Lanelet2 boundary directions between sections (\d+) and (\d+)")
 
 
 def main() -> None:
@@ -44,25 +51,43 @@ def main() -> None:
     for k in range(0, len(ids), 8):
         act({"type": "inspect", "candidate_ids": ids[k:k + 8]}, "Inspect every candidate before deciding ranges")
 
-    decisions = []
-    for candidate in proposal["candidates"]:
-        runs: list[list] = []
-        for a, b in zip(candidate["sections"], candidate["sections"][1:]):
-            keep = (a["support_span_m"] >= width and b["support_span_m"] >= width
-                    and not any(lo <= a["station_m"] < hi for lo, hi in deferred))
-            if runs and runs[-1][0] == keep and runs[-1][2] == a["station_m"]:
-                runs[-1][2] = b["station_m"]
-            else:
-                runs.append([keep, a["station_m"], b["station_m"]])
-        for keep, lo, hi in runs:
-            decisions.append({"candidate_id": candidate["id"], "action": "include" if keep else "defer",
-                              "from_m": lo, "to_m": hi,
-                              "reason": "Observed end sections meet the fixed minimum lane width; unverified lane hypothesis"
-                              if keep else "An end section is narrower than the fixed width or deferred; no extrapolation"})
-    draft = act({"type": "draft", "decisions": decisions},
-                "Draft every inspected interval meeting the fixed width").get("draft_result", {})
+    def decide() -> list[dict]:
+        decisions = []
+        for candidate in proposal["candidates"]:
+            runs: list[list] = []
+            for a, b in zip(candidate["sections"], candidate["sections"][1:]):
+                keep = (a["support_span_m"] >= width and b["support_span_m"] >= width
+                        and not any(lo <= a["station_m"] < hi for lo, hi in deferred))
+                if runs and runs[-1][0] == keep and runs[-1][2] == a["station_m"]:
+                    runs[-1][2] = b["station_m"]
+                else:
+                    runs.append([keep, a["station_m"], b["station_m"]])
+            for keep, lo, hi in runs:
+                decisions.append({"candidate_id": candidate["id"], "action": "include" if keep else "defer",
+                                  "from_m": lo, "to_m": hi,
+                                  "reason": "Observed end sections meet the fixed minimum lane width; unverified lane hypothesis"
+                                  if keep else "An end section is narrower than the fixed width or deferred; no extrapolation"})
+        return decisions
+
+    # Follow the lane builder's instruction to defer an interval whose Lanelet2
+    # boundary directions stay ambiguous, as an agent would, then draft again.
+    retried = []
+    for _ in range(MAX_REDRAFTS + 1):
+        decisions = decide()
+        draft = act({"type": "draft", "decisions": decisions},
+                    "Draft every inspected interval meeting the fixed width").get("draft_result", {})
+        hit = AMBIGUOUS.search(str(draft.get("error") or ""))
+        if draft.get("status") != "failed" or not hit:
+            break
+        curve, i, j = map(int, hit.groups())
+        geometry = max(Path(out).glob("geometry-*/report.json"))
+        segment = next(s for s in json.loads(geometry.read_text())["segments"] if s["curve_ids"]["center"] == curve)
+        interval = (segment["sections"][i]["station_m"], segment["sections"][j]["station_m"])
+        deferred.append(interval)
+        retried.append(list(interval))
     summary = {
         "source": source, "minimum_width_m": width, "deferred_ranges": deferred,
+        "ambiguous_direction_deferrals": retried,
         "corridor": {k: proposal[k] for k in ("trajectory_length_m", "trajectory_covered_station_length_m",
                                                "without_candidate_station_length_m")},
         "candidates": len(ids),

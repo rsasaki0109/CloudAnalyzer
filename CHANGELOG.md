@@ -23,6 +23,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   where the scan shows them; a deck scanned only from above has its underside
   reported as `unobserved`. On the public Bridge_4 it finds three girders and
   four cross beams (43 elements).
+- `ca bridge-plan` divides the deck into spans at piers given with `--supports`
+  (distances from the start) or detected as isolated vertical supports with open
+  space beneath the deck on both sides; elements record their span and the drawing
+  labels A1/A2 and P1, P2, …. No pier is reported on the dataset's nine single-span
+  bridges, all of which now have plans in the benchmark. Large scans run in under a
+  minute (Bridges 8 and 9 previously ran out of time).
+- `ca bridge-damage` and the `find_bridge_damage_candidates` MCP tool search a
+  bridge deck soffit for damage candidates (lighter, darker, rust-coloured or
+  receded regions against their 0.5 m surroundings) and place them on the
+  numbered plan elements, with a 2 cm soffit orthophoto under the plan. Bands
+  along members, edges and scan holes and straight joints or formwork seams are
+  left out; cracks are not searched. Candidates are for an inspector to confirm.
 
 - Optional Rust acceleration: `pip install "cloudanalyzer[fast]"` installs
   `cloudanalyzer-core` (the web viewer's Rust core as a Python extension).
@@ -33,6 +45,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Bridge deck ends leave out deck-labelled points beyond an empty stretch of more
+  than 0.3 m along the axis. On the public Bridge_6 a few such points over the
+  approach had lengthened the deck from 16.53 m to 20.83 m; Bridge_5's committed
+  length moves from 15.880 to 15.876 m.
 - Mapping jobs tie keyframes to IMU gravity averaged along 15 m of path
   (`gravity_smoothing_m`) instead of each keyframe's own up direction. A bag's
   IMU up jitters about a degree from keyframe to keyframe while the odometry's

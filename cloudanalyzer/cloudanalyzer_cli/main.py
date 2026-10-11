@@ -2543,6 +2543,7 @@ def bridge_plan_cmd(
     axis_classes: Optional[str] = typer.Option(None, "--axis-classes", help="Codes whose points define the axis and deck ends, e.g. the deck"),
     member_classes: Optional[str] = typer.Option(None, "--member-classes", help="Codes searched for girders and cross beams, e.g. 1,2 without abutments"),
     axis: Optional[str] = typer.Option(None, "--axis", help="Explicit axis as x1,y1,x2,y2"),
+    supports: Optional[str] = typer.Option(None, "--supports", help="Piers as distances from the start along the centreline (m), e.g. 18.5,37.0; detected when omitted"),
 ) -> None:
     """Draw a bridge plan with numbered deck, girder and cross-beam elements.
 
@@ -2559,6 +2560,7 @@ def bridge_plan_cmd(
             input_path, output_dir, spacing=spacing, classes=_int_list(classes),
             axis_classes=_int_list(axis_classes), member_classes=_int_list(member_classes),
             axis=(ends[:2], ends[2:]) if ends else None,
+            supports=[float(v) for v in supports.split(",")] if supports else None,
         )
     except (FileNotFoundError, ValueError) as e:
         _handle_error(e)
@@ -2568,8 +2570,50 @@ def bridge_plan_cmd(
     typer.echo(f"Underside: {result['underside']}")
     typer.echo(f"Girders:   {len(result['girders'])}, cross beams: {len(result['cross_beams'])}, "
                f"elements: {len(result['elements'])}")
+    lengths = ", ".join(f"{sp['length_m']:.2f} m" for sp in result["spans"])
+    typer.echo(f"Spans:     {len(result['spans'])} ({lengths})")
     for warning in result["warnings"]:
         typer.echo(f"Warning:   {warning}")
+    for name, path in result["outputs"].items():
+        typer.echo(f"Saved {name}: {path}")
+
+
+@app.command("bridge-damage")
+def bridge_damage_cmd(
+    input_path: str = typer.Argument(..., help="Bridge point cloud with colour (LAS/LAZ, or any format ca reads)"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Directory for JSON, CSV, soffit orthophoto and SVG"),
+    classes: Optional[str] = typer.Option(None, "--classes", help="Codes measured for the plan, e.g. 0,1,2,3"),
+    axis_classes: Optional[str] = typer.Option(None, "--axis-classes", help="Codes whose points define the axis and deck ends"),
+    member_classes: Optional[str] = typer.Option(None, "--member-classes", help="Codes searched for girders and cross beams"),
+    surface_classes: Optional[str] = typer.Option(None, "--surface-classes", help="Codes the soffit is taken from, e.g. 1,2"),
+    supports: Optional[str] = typer.Option(None, "--supports", help="Piers as distances from the start (m)"),
+) -> None:
+    """Find damage candidates on a deck soffit and place them on the numbered plan.
+
+    Candidates are colour or height departures from the surrounding soffit for an
+    inspector to confirm; nothing is diagnosed.
+    """
+    from ca.bridge_damage import bridge_damage
+
+    try:
+        result = bridge_damage(
+            input_path, output_dir, classes=_int_list(classes), axis_classes=_int_list(axis_classes),
+            member_classes=_int_list(member_classes), surface_classes=_int_list(surface_classes),
+            supports=[float(v) for v in supports.split(",")] if supports else None,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    typer.echo(f"Underside:  {result['underside']}")
+    if "soffit" in result:
+        typer.echo(f"Searched:   {result['soffit']['area_searched_m2']:.1f} m2 of soffit")
+    kinds: dict[str, int] = {}
+    for c in result["candidates"]:
+        kinds[c["label_ja"]] = kinds.get(c["label_ja"], 0) + 1
+    typer.echo(f"Candidates: {len(result['candidates'])}")
+    for label, n in kinds.items():
+        typer.echo(f"  {label}: {n}")
+    typer.echo(f"Note:       {result['note']}")
     for name, path in result["outputs"].items():
         typer.echo(f"Saved {name}: {path}")
 

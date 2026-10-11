@@ -462,7 +462,7 @@ def measure_bridge_sections(path: str, out_dir: str, spacing: float = 1.0, thick
 
 def draw_bridge_plan(path: str, out_dir: str, spacing: float = 0.25, classes: list[int] | None = None,
                      axis_classes: list[int] | None = None, member_classes: list[int] | None = None,
-                     axis: list[list[float]] | None = None) -> dict[str, Any]:
+                     axis: list[list[float]] | None = None, supports: list[float] | None = None) -> dict[str, Any]:
     """Draw a bridge plan (SVG) with numbered elements for damage-map bases, plus a member CSV.
 
     The deck outline and skew come from the deck points; girders and cross beams are found
@@ -470,11 +470,32 @@ def draw_bridge_plan(path: str, out_dir: str, spacing: float = 0.25, classes: li
     girder), Cr (cross beam) and Ds (deck slab) with a row along the axis from the start and a
     column across from the left facing the end. Without returns beneath the deck, underside is
     'unobserved' and nothing below the deck is drawn. member_classes can leave out abutments.
+    supports gives piers as distances from the start (from a bridge register); otherwise only
+    isolated vertical supports with open space on both sides are taken as piers.
     """
     from ca.bridge_plan import bridge_plan
 
     return bridge_plan(path, out_dir, spacing=spacing, classes=classes, axis_classes=axis_classes,
-                       member_classes=member_classes, axis=(axis[0], axis[1]) if axis else None)
+                       member_classes=member_classes, axis=(axis[0], axis[1]) if axis else None,
+                       supports=supports)
+
+
+def find_bridge_damage_candidates(path: str, out_dir: str, classes: list[int] | None = None,
+                                  axis_classes: list[int] | None = None, member_classes: list[int] | None = None,
+                                  surface_classes: list[int] | None = None,
+                                  supports: list[float] | None = None) -> dict[str, Any]:
+    """Find damage candidates on a bridge deck soffit and place them on the numbered plan elements.
+
+    The soffit is rasterised at 2 cm into colour and height; regions much lighter (efflorescence),
+    darker (water staining), rust-coloured or receded into the slab (spalling) than their 0.5 m
+    surroundings become candidates with the Ds element they lie in. Bands along members, edges and
+    scan holes and straight joints or formwork seams are left out; cracks are not searched.
+    Writes a soffit orthophoto and the plan with candidates. Candidates need an inspector's check.
+    """
+    from ca.bridge_damage import bridge_damage
+
+    return bridge_damage(path, out_dir, classes=classes, axis_classes=axis_classes, member_classes=member_classes,
+                         surface_classes=surface_classes, supports=supports)
 
 
 def evaluate_map(candidate: str, reference: str, thresholds: list[float] | None = None) -> dict[str, Any]:
@@ -518,7 +539,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair, compare_mapping_motion_trials, trial_mapping_motion, inspect_mapping_trajectory_comparison, evaluate_mapping_trajectory, apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, measure_bridge_sections, draw_bridge_plan, evaluate_map, evaluate_trajectory]
+TOOLS = [start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair, compare_mapping_motion_trials, trial_mapping_motion, inspect_mapping_trajectory_comparison, evaluate_mapping_trajectory, apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, measure_bridge_sections, draw_bridge_plan, find_bridge_damage_candidates, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

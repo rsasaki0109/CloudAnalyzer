@@ -23,7 +23,8 @@ ca bridge-sections bridge.laz -o out --axis 12.0,40.5,15.2,10.1 --spacing 0.5
 The axis starts as the principal XY direction and is then turned parallel to
 the deck's side edges: a skewed deck is a parallelogram whose principal
 direction leans toward its diagonal. The deck end lines give the skew and the
-centreline deck length. Sections are cut only where the full width lies between
+centreline deck length; axis-class points beyond an empty stretch of more than
+0.3 m along the axis (stray labels over an approach) are left out of the ends. Sections are cut only where the full width lies between
 the ends, so a skewed end never cuts a section partway across an abutment.
 
 In each section the points are binned laterally into height layers, and layers

@@ -377,6 +377,23 @@ def deck_ends(xyz: np.ndarray, axis: Axis, bin_m: float = 0.5) -> dict[str, Any]
     mid = float(np.median(lat))
     inside = (lat >= lo) & (lat <= hi)
     shifted = along[inside] - slope * (lat[inside] - mid)
+    # A few points labelled as deck beyond a gap (an approach slab, stray labels) are not
+    # the deck: keep the longest stretch whose 0.1 m bins hold points, gaps up to 0.3 m.
+    h, e = np.histogram(shifted, bins=np.arange(shifted.min(), shifted.max() + 0.2, 0.1))
+    occupied = h >= 2
+    runs, i = [], 0
+    while i < len(occupied):
+        if not occupied[i]:
+            i += 1
+            continue
+        j = i
+        while j < len(occupied) and occupied[j:j + 4].any():
+            j += 1
+        runs.append((int(h[i:j].sum()), e[i], e[j]))
+        i = j
+    if runs:
+        _, a, b = max(runs)
+        shifted = shifted[(shifted >= a) & (shifted <= b)]
     k = min(max(3, len(shifted) // 20000), len(shifted) - 1)
     first = float(np.partition(shifted, k)[k])
     last = float(-np.partition(-shifted, k)[k])

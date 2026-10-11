@@ -54,6 +54,8 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
     let mut seen = std::collections::HashSet::new();
     let mut created = Vec::new();
     let mut vertices = 0;
+    // Every interval no cut can resolve, across all segments, so one reply names them all.
+    let mut ambiguous = Vec::new();
     for spec in &specs {
         if !seen.insert(spec.center_curve_id) || spec.lanes.is_empty() || spec.lanes.len() > 16 {
             return Err(
@@ -161,6 +163,7 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
             })
         };
         let mut ranges = Vec::new();
+        let unresolved = ambiguous.len();
         let mut pending = vec![(0, center.len() - 1)];
         while let Some((i, j)) = pending.pop() {
             let reference = slice(&center, i, j);
@@ -170,8 +173,8 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
             {
                 ranges.push((i, j));
             } else if j - i <= 1 {
-                return Err(format!(
-                    "source geometry on centre curve {} has ambiguous Lanelet2 boundary directions between sections {i} and {j}; defer that interval",
+                ambiguous.push(format!(
+                    "centre curve {} between sections {i} and {j}",
                     spec.center_curve_id
                 ));
             } else {
@@ -179,6 +182,9 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
                 pending.push((middle, j));
                 pending.push((i, middle));
             }
+        }
+        if ambiguous.len() > unresolved {
+            continue;
         }
         let mut chains = vec![Vec::new(); lanes.len()];
         let mut pieces = Vec::new();
@@ -243,6 +249,12 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
         created.push(json!({"center_curve_id":spec.center_curve_id, "lane_ids":lane_ids,
             "lane_chains":chains, "pieces":pieces, "source_outer_curves_preserved":true,
             "lane_width_ranges_m":spec.lanes.iter().map(|l| [minimum_span*l.fraction, maximum_span*l.fraction]).collect::<Vec<_>>()}));
+    }
+    if !ambiguous.is_empty() {
+        return Err(format!(
+            "source geometry has ambiguous Lanelet2 boundary directions on {}; defer those intervals",
+            ambiguous.join("; ")
+        ));
     }
     super::artifacts(
         &out,

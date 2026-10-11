@@ -38,6 +38,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   bounds would run opposite ways end to end, as on a tight turn where a wide
   band's inner edge folds back. Such a piece was drafted with a
   `boundary_direction_mismatch` validation error (4 of 83 sweep runs).
+- When no cut at source sections resolves an interval's Lanelet2 boundary
+  directions, the corridor lane builder now names every such interval across
+  all segments in one error (`centre curve N between sections i and j; ...`)
+  instead of stopping at the first. On a 1.1 km NCLT drive (2013-01-10) up to
+  17 such intervals appeared, one per draft, and exhausted the run's attempts.
 
 - Agent-drafted corridor lanes are cut at source sections where Lanelet2's
   geometric direction inference would reverse a bound on reload, as ordinary

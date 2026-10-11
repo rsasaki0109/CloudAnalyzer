@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 625" font-family="sans-serif" font-size="13">
+<defs><marker id="t" viewBox="0 0 2 10" refX="1" refY="5" markerWidth="2" markerHeight="10" orient="auto"><path d="M1 0V10" stroke="#1a73e8"/></marker></defs>
+<rect width="100%" height="100%" fill="white"/>
+<polygon points="112.7,90.1 938.6,90.1 1009.9,466.4 183.9,466.4" fill="#fdf6ec" stroke="#e8710a" stroke-width="2.5"/>
+<line x1="125.2" y1="156.5" x2="951.2" y2="156.5" stroke="#5f6368" stroke-width="1.6" stroke-dasharray="8 5"/>
+<text x="117.2" y="160.5" text-anchor="end" fill="#5f6368">G1</text>
+<line x1="154.0" y1="308.6" x2="980.0" y2="308.6" stroke="#5f6368" stroke-width="1.6" stroke-dasharray="8 5"/>
+<text x="146.0" y="312.6" text-anchor="end" fill="#5f6368">G2</text>
+<line x1="171.1" y1="398.8" x2="997.1" y2="398.8" stroke="#5f6368" stroke-width="1.6" stroke-dasharray="8 5"/>
+<text x="163.1" y="402.8" text-anchor="end" fill="#5f6368">G3</text>
+<line x1="166.8" y1="156.5" x2="212.7" y2="398.8" stroke="#5f6368" stroke-width="1.6" stroke-dasharray="8 5"/>
+<line x1="414.0" y1="156.5" x2="459.9" y2="398.8" stroke="#5f6368" stroke-width="1.6" stroke-dasharray="8 5"/>
+<line x1="659.1" y1="156.5" x2="704.9" y2="398.8" stroke="#5f6368" stroke-width="1.6" stroke-dasharray="8 5"/>
+<line x1="907.7" y1="156.5" x2="953.5" y2="398.8" stroke="#5f6368" stroke-width="1.6" stroke-dasharray="8 5"/>
+<text x="139.7" y="128.3" text-anchor="middle" font-size="15" fill="#202124">Ds0101</text>
+<text x="160.4" y="237.5" text-anchor="middle" font-size="15" fill="#202124">Ds0102</text>
+<text x="183.3" y="358.7" text-anchor="middle" font-size="15" fill="#202124">Ds0103</text>
+<text x="198.3" y="437.6" text-anchor="middle" font-size="15" fill="#202124">Ds0104</text>
+<text x="146.0" y="151.5" text-anchor="middle" font-size="11" fill="#5f6368">Mg0101</text>
+<text x="174.8" y="303.6" text-anchor="middle" font-size="11" fill="#5f6368">Mg0102</text>
+<text x="191.9" y="393.8" text-anchor="middle" font-size="11" fill="#5f6368">Mg0103</text>
+<text x="284.1" y="128.3" text-anchor="middle" font-size="15" fill="#202124">Ds0201</text>
+<text x="304.8" y="237.5" text-anchor="middle" font-size="15" fill="#202124">Ds0202</text>
+<text x="327.7" y="358.7" text-anchor="middle" font-size="15" fill="#202124">Ds0203</text>
+<text x="342.7" y="437.6" text-anchor="middle" font-size="15" fill="#202124">Ds0204</text>
+<text x="290.4" y="151.5" text-anchor="middle" font-size="11" fill="#5f6368">Mg0201</text>
+<text x="319.2" y="303.6" text-anchor="middle" font-size="11" fill="#5f6368">Mg0202</text>
+<text x="336.3" y="393.8" text-anchor="middle" font-size="11" fill="#5f6368">Mg0203</text>
+<text x="530.3" y="128.3" text-anchor="middle" font-size="15" fill="#202124">Ds0301</text>
+<text x="550.9" y="237.5" text-anchor="middle" font-size="15" fill="#202124">Ds0302</text>
+<text x="573.9" y="358.7" text-anchor="middle" font-size="15" fill="#202124">Ds0303</text>
+<text x="588.8" y="437.6" text-anchor="middle" font-size="15" fill="#202124">Ds0304</text>
+<text x="536.5" y="151.5" text-anchor="middle" font-size="11" fill="#5f6368">Mg0301</text>
+<text x="565.3" y="303.6" text-anchor="middle" font-size="11" fill="#5f6368">Mg0302</text>
+<text x="582.4" y="393.8" text-anchor="middle" font-size="11" fill="#5f6368">Mg0303</text>
+<text x="777.1" y="128.3" text-anchor="middle" font-size="15" fill="#202124">Ds0401</text>
+<text x="797.8" y="237.5" text-anchor="middle" font-size="15" fill="#202124">Ds0402</text>
+<text x="820.7" y="358.7" text-anchor="middle" font-size="15" fill="#202124">Ds0403</text>
+<text x="835.6" y="437.6" text-anchor="middle" font-size="15" fill="#202124">Ds0404</text>
+<text x="783.4" y="151.5" text-anchor="middle" font-size="11" fill="#5f6368">Mg0401</text>
+<text x="812.2" y="303.6" text-anchor="middle" font-size="11" fill="#5f6368">Mg0402</text>
+<text x="829.2" y="393.8" text-anchor="middle" font-size="11" fill="#5f6368">Mg0403</text>
+<text x="923.2" y="128.3" text-anchor="middle" font-size="15" fill="#202124">Ds0501</text>
+<text x="943.8" y="237.5" text-anchor="middle" font-size="15" fill="#202124">Ds0502</text>
+<text x="966.8" y="358.7" text-anchor="middle" font-size="15" fill="#202124">Ds0503</text>
+<text x="981.7" y="437.6" text-anchor="middle" font-size="15" fill="#202124">Ds0504</text>
+<text x="929.4" y="151.5" text-anchor="middle" font-size="11" fill="#5f6368">Mg0501</text>
+<text x="958.2" y="303.6" text-anchor="middle" font-size="11" fill="#5f6368">Mg0502</text>
+<text x="975.3" y="393.8" text-anchor="middle" font-size="11" fill="#5f6368">Mg0503</text>
+<text x="185.2" y="228.5" font-size="11" fill="#5f6368" transform="rotate(-90 185.2 228.5)">Cr0101</text>
+<text x="208.1" y="349.7" font-size="11" fill="#5f6368" transform="rotate(-90 208.1 349.7)">Cr0102</text>
+<text x="432.4" y="228.5" font-size="11" fill="#5f6368" transform="rotate(-90 432.4 228.5)">Cr0201</text>
+<text x="455.3" y="349.7" font-size="11" fill="#5f6368" transform="rotate(-90 455.3 349.7)">Cr0202</text>
+<text x="677.5" y="228.5" font-size="11" fill="#5f6368" transform="rotate(-90 677.5 228.5)">Cr0301</text>
+<text x="700.4" y="349.7" font-size="11" fill="#5f6368" transform="rotate(-90 700.4 349.7)">Cr0302</text>
+<text x="926.1" y="228.5" font-size="11" fill="#5f6368" transform="rotate(-90 926.1 228.5)">Cr0401</text>
+<text x="949.0" y="349.7" font-size="11" fill="#5f6368" transform="rotate(-90 949.0 349.7)">Cr0402</text>
+<line x1="148.3" y1="50.1" x2="974.2" y2="50.1" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="561.3" y="44.1" text-anchor="middle" fill="#1a73e8">橋長方向 床版長（中心線） 14660</text>
+<line x1="1070.0" y1="90.1" x2="1070.0" y2="466.4" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="1086.0" y="272.3" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 1086.0 272.3)">全幅 6677</text>
+<line x1="40.0" y1="90.1" x2="40.0" y2="156.5" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="30.0" y="117.3" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 30.0 117.3)">1177</text>
+<line x1="40.0" y1="156.5" x2="40.0" y2="308.6" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="30.0" y="226.5" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 30.0 226.5)">2700</text>
+<line x1="40.0" y1="308.6" x2="40.0" y2="398.8" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="30.0" y="347.7" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 30.0 347.7)">1600</text>
+<line x1="40.0" y1="398.8" x2="40.0" y2="466.4" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="30.0" y="426.6" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 30.0 426.6)">1200</text>
+<line x1="148.3" y1="516.4" x2="189.8" y2="516.4" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="169.1" y="532.4" text-anchor="middle" fill="#1a73e8">737</text>
+<line x1="189.8" y1="516.4" x2="437.0" y2="516.4" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="313.4" y="532.4" text-anchor="middle" fill="#1a73e8">4387</text>
+<line x1="437.0" y1="516.4" x2="682.1" y2="516.4" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="559.6" y="532.4" text-anchor="middle" fill="#1a73e8">4350</text>
+<line x1="682.1" y1="516.4" x2="930.7" y2="516.4" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="806.4" y="532.4" text-anchor="middle" fill="#1a73e8">4412</text>
+<line x1="930.7" y1="516.4" x2="974.2" y2="516.4" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="952.5" y="532.4" text-anchor="middle" fill="#1a73e8">772</text>
+<text x="183.9" y="488.4" text-anchor="middle" font-weight="bold">起点</text>
+<text x="1009.9" y="488.4" text-anchor="middle" font-weight="bold">終点</text>
+<text x="12" y="579">平面図（上から透視）· 起点を左、終点を向いて左側を上 · 単位 mm · 斜角 -10.7° · 要素番号＝橋軸方向（起点から）2桁＋直角方向（上から）2桁</text>
+<text x="12" y="601" fill="#5f6368">主桁・横桁は点群で観測された位置（破線＝床版下の部材）</text>
+</svg>

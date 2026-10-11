@@ -16,6 +16,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   slab thickness. Items are `observed`, `lower_bound`, `unobserved` or
   `not_applicable`; nothing is assumed. Results on three public CC BY 4.0
   bridges are in `benchmarks/bridge/figshare-rc-bridges`.
+- `ca bridge-plan` and the `draw_bridge_plan` MCP tool draw a bridge plan for
+  damage-map bases (SVG), with a member CSV: the deck outline and skew, the
+  girders and cross beams found beneath the slab, and elements numbered `Mg`,
+  `Cr` and `Ds` by row along the axis and column across. Members are drawn only
+  where the scan shows them; a deck scanned only from above has its underside
+  reported as `unobserved`. On the public Bridge_4 it finds three girders and
+  four cross beams (43 elements).
 
 - Optional Rust acceleration: `pip install "cloudanalyzer[fast]"` installs
   `cloudanalyzer-core` (the web viewer's Rust core as a Python extension).

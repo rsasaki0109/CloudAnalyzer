@@ -460,6 +460,23 @@ def measure_bridge_sections(path: str, out_dir: str, spacing: float = 1.0, thick
     return result
 
 
+def draw_bridge_plan(path: str, out_dir: str, spacing: float = 0.25, classes: list[int] | None = None,
+                     axis_classes: list[int] | None = None, member_classes: list[int] | None = None,
+                     axis: list[list[float]] | None = None) -> dict[str, Any]:
+    """Draw a bridge plan (SVG) with numbered elements for damage-map bases, plus a member CSV.
+
+    The deck outline and skew come from the deck points; girders and cross beams are found
+    beneath the slab and drawn only where the scan shows them. Elements are numbered Mg (main
+    girder), Cr (cross beam) and Ds (deck slab) with a row along the axis from the start and a
+    column across from the left facing the end. Without returns beneath the deck, underside is
+    'unobserved' and nothing below the deck is drawn. member_classes can leave out abutments.
+    """
+    from ca.bridge_plan import bridge_plan
+
+    return bridge_plan(path, out_dir, spacing=spacing, classes=classes, axis_classes=axis_classes,
+                       member_classes=member_classes, axis=(axis[0], axis[1]) if axis else None)
+
+
 def evaluate_map(candidate: str, reference: str, thresholds: list[float] | None = None) -> dict[str, Any]:
     """A map against a reference map: Chamfer and Hausdorff distances, F1 at thresholds, AUC."""
     from ca.evaluate import evaluate
@@ -501,7 +518,7 @@ def export_copc_tile(out_dir: str, i: int, j: int, output: str, include_halo: bo
     return run(out_dir, i, j, output, include_halo=include_halo)
 
 
-TOOLS = [start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair, compare_mapping_motion_trials, trial_mapping_motion, inspect_mapping_trajectory_comparison, evaluate_mapping_trajectory, apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, measure_bridge_sections, evaluate_map, evaluate_trajectory]
+TOOLS = [start_mapping_motion_run, compare_mapping_motion_maps, inspect_mapping_motion_selection, choose_mapping_motion_pair, compare_mapping_motion_trials, trial_mapping_motion, inspect_mapping_trajectory_comparison, evaluate_mapping_trajectory, apply_supported_hd_plan, export_mapping_preview, export_mapping_run, inspect_mapping_bundle, continue_mapping_run, start_mapping_run, inspect_mapping_run, advance_mapping_run, start_mapping_job, inspect_mapping_job, propose_mapping_corridors, inspect_mapping_corridors, generate_mapping_geometry, inspect_mapping_geometry, generate_mapping_corridor_lanes, diagnose_mapping_candidate, generate_mapping_candidate, select_mapping_candidate, session_layout, slam_odometry, posegraph_fix, posegraph_compare, build_vector_map, connect_vector_map_junctions, measure_vector_map_signal, measure_vector_map_crosswalk, discover_vector_map_features, edit_vector_map_relations, propose_vector_map_relations, tile_copc, export_copc_tile, view_link, cloud_info, measure_bridge_sections, draw_bridge_plan, evaluate_map, evaluate_trajectory]
 
 
 def build_server():

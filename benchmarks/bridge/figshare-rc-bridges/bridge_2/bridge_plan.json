@@ -50,6 +50,15 @@
   "girders": [],
   "partially_observed_members": [],
   "cross_beams": [],
+  "supports": [],
+  "spans": [
+    {
+      "number": 1,
+      "from_m": -5.154023941451278,
+      "to_m": 4.274141240959741,
+      "length_m": 9.42816518241102
+    }
+  ],
   "elements": [
     {
       "id": "Ds0101",
@@ -57,6 +66,7 @@
       "label_ja": "床版",
       "row": 1,
       "column": 1,
+      "span": 1,
       "along_m": [
         -5.154023941451278,
         4.274141240959741
@@ -68,7 +78,7 @@
       "status": "single_panel"
     }
   ],
-  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab.",
+  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
   "note": "The soffit was scanned and shows no member protruding 0.2 m or more below it (a slab deck, or members outside the scan); the deck is divided only lengthwise.",
   "warnings": []
 }

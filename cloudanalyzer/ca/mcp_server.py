@@ -462,7 +462,7 @@ def measure_bridge_sections(path: str, out_dir: str, spacing: float = 1.0, thick
 
 def draw_bridge_plan(path: str, out_dir: str, spacing: float = 0.25, classes: list[int] | None = None,
                      axis_classes: list[int] | None = None, member_classes: list[int] | None = None,
-                     axis: list[list[float]] | None = None) -> dict[str, Any]:
+                     axis: list[list[float]] | None = None, supports: list[float] | None = None) -> dict[str, Any]:
     """Draw a bridge plan (SVG) with numbered elements for damage-map bases, plus a member CSV.
 
     The deck outline and skew come from the deck points; girders and cross beams are found
@@ -470,11 +470,14 @@ def draw_bridge_plan(path: str, out_dir: str, spacing: float = 0.25, classes: li
     girder), Cr (cross beam) and Ds (deck slab) with a row along the axis from the start and a
     column across from the left facing the end. Without returns beneath the deck, underside is
     'unobserved' and nothing below the deck is drawn. member_classes can leave out abutments.
+    supports gives piers as distances from the start (from a bridge register); otherwise only
+    isolated vertical supports with open space on both sides are taken as piers.
     """
     from ca.bridge_plan import bridge_plan
 
     return bridge_plan(path, out_dir, spacing=spacing, classes=classes, axis_classes=axis_classes,
-                       member_classes=member_classes, axis=(axis[0], axis[1]) if axis else None)
+                       member_classes=member_classes, axis=(axis[0], axis[1]) if axis else None,
+                       supports=supports)
 
 
 def evaluate_map(candidate: str, reference: str, thresholds: list[float] | None = None) -> dict[str, Any]:

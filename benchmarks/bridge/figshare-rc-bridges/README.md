@@ -20,7 +20,7 @@ committed: each `bridge_sections.json` records the source file's SHA-256.
 | Median (p10–p90) | Bridge_2 | Bridge_4 | Bridge_5 |
 |---|---:|---:|---:|
 | Sections measured | 9 / 9 | 14 / 14 | 14 / 14 |
-| Deck length on the centreline (m) | 9.428 | 14.660 | 15.880 |
+| Deck length on the centreline (m) | 9.428 | 14.660 | 15.876 |
 | Skew (°) | 0.3 | −10.7 | −17.0 |
 | Total width (m) | 5.015 (4.970–5.043) | 6.683 (6.646–6.712) | 8.218 (8.098–8.235) |
 | Effective width between curbs (m) | 3.870 (3.462–3.985) | 5.585 (5.540–5.624) | 7.030 (6.895–7.037) |
@@ -46,31 +46,42 @@ depths.
 
 ## Plans with numbered elements
 
-`ca bridge-plan` drew each bridge's plan for damage-map bases:
+`ca bridge-plan` drew the plan of all nine bridges in the dataset for damage-map bases:
 
 ```bash
 ca bridge-plan Bridge_4.las -o bridge_4 --classes 0,1,2,3 --axis-classes 2 --member-classes 1,2
 ```
 
 `--member-classes 1,2` searches the girder and deck labels for members and leaves
-out the abutment walls under the deck ends.
+out the abutment walls under the deck ends. Bridges 1, 3 and 6–9 have only plan
+outputs here.
 
-| | Bridge_2 | Bridge_4 | Bridge_5 |
-|---|---|---|---|
-| Underside | scanned, nothing protrudes below the slab | girders observed | not scanned |
-| Girders (lateral offset, sections observed) | none | G1 +2.17 m (52/53), G2 −0.53 m (53/53), G3 −2.13 m (51/53) | unobserved |
-| Lowest girder returns below the deck top | – | 1.01 / 1.02 / 1.05 m | – |
-| Cross beams (along the centreline from the start) | none | 0.74, 5.12, 9.47, 13.89 m | unobserved |
-| Elements | Ds0101 | 20 Ds, 15 Mg, 8 Cr | Ds0101 |
+| Bridge | Deck (m) | Skew (°) | Underside | Girders (lateral offset, m) | Cross beams (from the start, m) | Spans | Elements |
+|---|---|---:|---|---|---|---:|---|
+| Bridge_1 | 5.37 × 4.50 | -0.3 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
+| Bridge_2 | 9.43 × 5.02 | 0.3 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
+| Bridge_3 | 11.70 × 9.41 | 12.5 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
+| Bridge_4 | 14.66 × 6.68 | -10.7 | girders observed | +2.17, -0.53, -2.13 | 0.74, 5.12, 9.47, 13.89 | 1 | 20 Ds · 15 Mg · 8 Cr |
+| Bridge_5 | 15.88 × 8.19 | -17.0 | not scanned | – | – | 1 | 1 Ds |
+| Bridge_6 | 16.53 × 8.26 | 8.3 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
+| Bridge_7 | 19.57 × 3.88 | 2.2 | girders observed | +1.42, +0.50, -0.43, -1.38 | 1.03, 9.85, 18.68 | 1 | 20 Ds · 16 Mg · 9 Cr |
+| Bridge_8 | 19.28 × 5.50 | -11.9 | girders observed | +1.49, -1.51 | 0.38, 5.03, 9.70, 14.30, 18.95 | 1 | 18 Ds · 12 Mg · 5 Cr |
+| Bridge_9 | 25.42 × 6.49 | 22.5 | girders observed | +2.01, +1.39, -0.19, -2.34 | 6.25, 11.88, 17.53, 23.23 | 1 | 25 Ds · 20 Mg · 12 Cr |
 
-The plan's deck length, width and skew agree with the cross-section table above
-(Bridge_4: 14.660 m, 6.677 m against a 6.683 m total width, −10.7°). Bridge_4's
-two cross beams nearest the ends lie 0.7 m inside the deck ends; with the abutment
-labels left out they are returns labelled as girder, most likely end cross beams.
+All nine are single-span: their elevations show abutments at both ends and no pier,
+and no pier is reported on any of them. The plan's deck length, width and skew agree
+with the cross-section table above (Bridge_4: 14.660 m, 6.677 m against a 6.683 m
+total width, −10.7°). Bridge_4's and Bridge_7's cross beams nearest the ends lie
+0.7–1.0 m inside the deck ends; with the abutment labels left out they are returns
+labelled as girder, most likely end cross beams. Bridge_9's first two girders are only
+0.62 m apart, unlike its other spacings; the second is seen in 75 of 91 sections and
+was not confirmed by eye, so check it before relying on that bridge's numbers.
+Bridge_6's deck labels include a few points over the approach beyond a 2.5 m gap;
+the deck ends leave them out (16.53 m instead of 20.83 m).
 
-| Bridge_2 | Bridge_4 | Bridge_5 |
+| Bridge_4 | Bridge_7 | Bridge_8 |
 |---|---|---|
-| ![Bridge_2 plan](bridge_2/plan.svg) | ![Bridge_4 plan](bridge_4/plan.svg) | ![Bridge_5 plan](bridge_5/plan.svg) |
+| ![Bridge_4 plan](bridge_4/plan.svg) | ![Bridge_7 plan](bridge_7/plan.svg) | ![Bridge_8 plan](bridge_8/plan.svg) |
 
 ## Limits
 
@@ -79,8 +90,8 @@ labels left out they are returns labelled as girder, most likely end cross beams
   bridge, scanner noise and section placement.
 - Slab thickness is the first surface beneath the deck top: on a girder bridge
   it is measured between girders only when the underside was scanned.
-- Bearings, piers and abutment dimensions are not measured yet; plans treat the
-  deck as one span.
+- Bearings and abutment dimensions are not measured yet. No bridge here has a
+  pier, so pier detection is tested only on synthetic bridges.
 - A deck that the labels do not separate from overhanging vegetation needs
   `--classes` or cropping; without labels the deck is still the highest long
   smooth surface, but trees above it are not guaranteed to be excluded.

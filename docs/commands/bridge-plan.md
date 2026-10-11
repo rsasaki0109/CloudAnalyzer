@@ -14,6 +14,8 @@ ca bridge-plan bridge.las -o out --classes 0,1,2,3 --axis-classes 2 --member-cla
   Leaving out the abutments keeps their walls under the deck ends from reading as
   end cross beams.
 - `--spacing` (default 0.25 m) sets the cross sections searched for girders.
+- `--supports 18.5,37.0` gives the piers as distances from the start along the
+  centreline, for example from the bridge register. Without it, piers are detected.
 
 ## How it finds members
 
@@ -35,10 +37,26 @@ What is drawn depends on the underside:
 | `no_girders_observed` | The soffit was scanned and nothing protrudes 0.2 m below it (a slab deck, or members outside the scan). | Deck slab divided lengthwise only. |
 | `unobserved` | No returns beneath most of the deck. | One deck element; nothing below the deck is drawn or assumed. |
 
+## Spans
+
+Without `--supports`, a pier is structure found 0.5–3.5 m below the lowest girder
+(or the slab) across at least 30% of the deck width, at most 3 m long along the
+axis (two scanned faces with an unscanned interior up to 2 m count as one), whose
+upper and lower halves stand within 0.5 m of each other, with open space beneath
+the deck for 1.5 m on both sides, and at least 2 m from both deck ends. An
+abutment's sloped face leans and has its body on the side of its deck end, so it is
+not taken as a pier. On the nine single-span bridges of the public dataset no pier
+is reported; detection of real piers is tested only on synthetic bridges, so give
+`--supports` when the span layout is known.
+
+Piers are labelled P1, P2, … from the start and the abutments A1 (start) and A2
+(end). Each span boundary also divides the deck rows; a cross beam over a pier is
+the same line. Every element records its span, and the drawing adds the span lengths.
+
 ## Numbering
 
 Element numbers have four digits: the row along the axis from the start, then the
-column across from the left facing the end, each from 01. `Mg` is a main girder,
+column across from the left facing the end, each from 01. Rows continue across spans. `Mg` is a main girder,
 `Cr` a cross beam and `Ds` a deck slab element. Rows run between the deck ends and
 the cross beams; deck columns run between the deck edges and the girders, so the
 overhangs are their own columns. Girders are numbered G1, G2, … from the left;
@@ -54,11 +72,11 @@ the cross-beam spacings along the centreline.
 ## Outputs
 
 - `plan.svg`: the drawing.
-- `members.csv`: one row per element with its along-axis and lateral bounds (metres
-  in the axis frame) and status.
+- `members.csv`: one row per element with its span, along-axis and lateral bounds
+  (metres in the axis frame) and status.
 - `bridge_plan.json`: the deck, girders (lateral offset, visible width, depth of the
-  lowest returns below the deck top, sections observed), cross beams, elements,
-  underside status and warnings.
+  lowest returns below the deck top, sections observed), cross beams, supports and
+  spans, elements, underside status and warnings.
 
 Results on three public bridges are in
 [`benchmarks/bridge/figshare-rc-bridges`](../../benchmarks/bridge/figshare-rc-bridges/README.md).
@@ -67,5 +85,5 @@ Results on three public bridges are in
 
 These are drawings of what the point cloud shows, not a certified survey. A girder's
 visible width is the extent of its returns, which is narrower than the web when only
-one face was scanned. Bearings, piers, multi-span layouts and lateral bracing are not
-detected yet. The deck is treated as one span between its ends.
+one face was scanned. Bearings and lateral bracing are not detected. Pier detection
+has no real multi-span scan behind it yet (see Spans).

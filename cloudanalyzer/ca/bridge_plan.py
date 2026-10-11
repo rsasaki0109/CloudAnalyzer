@@ -20,7 +20,7 @@ from typing import Any
 
 import numpy as np
 
-from ca.bridge import Axis, cut, measure_section, structure
+from ca.bridge import Axis, measure_section, structure
 
 SCHEMA = "cloudanalyzer.bridge_plan.v1"
 
@@ -34,23 +34,35 @@ GIRDER_MIN_SHARE = 0.5     # sections in which a girder must appear
 GIRDER_WEAK_SHARE = 0.1    # below this a cluster is noise; between, a partial observation
 CROSS_MIN_SHARE = 0.5      # girder bays in which a cross beam must appear
 WEB_CLEARANCE = 0.15       # beyond a girder face before cross-beam returns count
+SUPPORT_BELOW = 0.5        # a support reaches at least this far below the lowest girder (or slab)
+SUPPORT_SPAN = 3.0         # depth range below that searched for supports (m)
+SUPPORT_MAX_WIDTH = 3.0    # along the axis; wider runs are ground or embankment
+SUPPORT_MAX_HOLLOW = 2.0   # a pier's unscanned interior between its two faces
+SUPPORT_MAX_LEAN = 0.5     # a pier's upper and lower halves stand within this along the axis
+SUPPORT_MIN_COVER = 0.3    # share of the deck width the support occupies
+SUPPORT_END_CLEARANCE = 2.0  # from the deck ends: closer is an abutment, not a pier
+SUPPORT_OPEN = 1.5         # open space beneath the deck on both sides of a pier (m)
 
 
-def _peaks(values: np.ndarray, lo: float, hi: float, min_count: int = 3) -> list[tuple[float, float]]:
+def _peaks(values: np.ndarray, lo: float, hi: float, min_count: int = 3,
+           gap: float = MEMBER_BIN) -> list[tuple[float, float]]:
     """Centre and width of runs of occupied bins over [lo, hi]: a member's faces and
-    bottom together, with at most one empty bin inside."""
+    bottom together, with empty stretches of at most `gap` inside."""
     if len(values) == 0 or hi <= lo:
         return []
     h, e = np.histogram(values, bins=np.arange(lo, hi + MEMBER_BIN, MEMBER_BIN))
     on = h >= max(min_count, 0.1 * h.max(initial=0))
+    reach = max(1, int(round(gap / MEMBER_BIN)))
     out, i = [], 0
     while i < len(on):
         if not on[i]:
             i += 1
             continue
         j = i
-        while j < len(on) and (on[j] or (j + 1 < len(on) and on[j + 1])):
+        while j < len(on) and on[j:j + reach + 1].any():
             j += 1
+        while not on[j - 1]:
+            j -= 1
         out.append((float(0.5 * (e[i] + e[j])), float(e[j] - e[i])))
         i = j
     return out
@@ -74,12 +86,49 @@ def _below_deck(points: np.ndarray, ax: Axis, sections: list[dict[str, Any]]) ->
     rel = points[:, :2] - ax.origin
     along, lat = rel @ ax.direction, rel @ ax.lateral
     stations = np.array([s["station_m"] for s in sections])
-    nearest = np.abs(along[:, None] - stations[None, :]).argmin(axis=1) if len(stations) else np.zeros(0, int)
+    # Sections are sorted along the axis: the nearest is one of the two around each point.
+    k = np.clip(np.searchsorted(stations, along), 1, len(stations) - 1)
+    nearest = np.where(np.abs(along - stations[k - 1]) <= np.abs(along - stations[k]), k - 1, k)
     depth = np.full(len(points), np.nan)
-    for k, s in enumerate(sections):
-        m = nearest == k
+    for i, s in enumerate(sections):
+        m = nearest == i
         depth[m] = np.interp(lat[m], s["profile"]["u"], s["profile"]["z"]) - points[m, 2]
     return along, lat, depth
+
+
+def _supports(along: np.ndarray, lat: np.ndarray, depth: np.ndarray, top: float, deck: dict[str, float],
+              slope: float) -> list[dict[str, Any]]:
+    """Piers: vertical structure well below the superstructure, isolated from the deck ends.
+
+    Returns between `top` and `top + SUPPORT_SPAN` below the deck top, across the deck
+    width, are binned along the (skewed) axis. A support is a run at most
+    SUPPORT_MAX_WIDTH long whose upper and lower halves stand at the same place (an
+    abutment's sloped face leans), across a fair share of the width, with open space
+    beneath the deck on both sides and at least SUPPORT_END_CLEARANCE from both deck ends.
+    """
+    mid = 0.5 * (deck["left"] + deck["right"])
+    sel = (depth > top) & (depth < top + SUPPORT_SPAN) & (lat > deck["right"]) & (lat < deck["left"])
+    skewed = along[sel] - slope * (lat[sel] - mid)
+    out = []
+    for centre, width in _peaks(skewed, deck["start"], deck["end"], min_count=20, gap=SUPPORT_MAX_HOLLOW):
+        if width > SUPPORT_MAX_WIDTH or min(centre - deck["start"], deck["end"] - centre) < SUPPORT_END_CLEARANCE:
+            continue
+        on = np.abs(skewed - centre) <= width / 2
+        d, u, sk = depth[sel][on], lat[sel][on], skewed[on]
+        upper, lower = d < top + SUPPORT_SPAN / 2, d >= top + SUPPORT_SPAN / 2
+        if upper.sum() < 10 or lower.sum() < 10:
+            continue
+        lean = abs(float(np.median(sk[upper]) - np.median(sk[lower])))
+        bins = np.histogram(u, bins=np.arange(deck["right"], deck["left"] + 0.25, 0.25))[0]
+        cover = float((bins > 0).mean())
+        # Open on both sides: an abutment has its body on the side of its deck end.
+        before = (skewed >= centre - width / 2 - SUPPORT_OPEN) & (skewed < centre - width / 2)
+        after = (skewed > centre + width / 2) & (skewed <= centre + width / 2 + SUPPORT_OPEN)
+        open_sides = max(before.sum(), after.sum()) <= 0.05 * on.sum()
+        if lean <= SUPPORT_MAX_LEAN and cover >= SUPPORT_MIN_COVER and open_sides:
+            out.append({"along_m": centre, "width_m": width, "lean_m": lean, "width_share": cover,
+                        "source": "detected"})
+    return out
 
 
 def bridge_plan(
@@ -93,13 +142,16 @@ def bridge_plan(
     member_classes: list[int] | None = None,
     axis: tuple[list[float], list[float]] | None = None,
     margin: float = 0.3,
+    supports: list[float] | None = None,
 ) -> dict[str, Any]:
     """Plan of a bridge with numbered elements for damage-map bases.
 
     `classes` and `axis_classes` work as in :func:`ca.bridge.bridge_sections`.
     `member_classes` selects the points searched for girders and cross beams,
     for example girder and deck labels without the abutments, whose walls under
-    the deck ends would otherwise read as end cross beams.
+    the deck ends would otherwise read as end cross beams. `supports` gives the
+    piers as distances from the start along the centreline (from a bridge register);
+    without it, isolated vertical supports found beneath the deck are used.
     """
     if not (0 < spacing <= 5) or not (0 < thickness <= 1):
         raise ValueError("spacing must be in (0, 5] m and thickness in (0, 1] m")
@@ -110,9 +162,15 @@ def bridge_plan(
         raise ValueError("member classes were given but the file has no classification")
     members_pts = xyz[np.isin(cls, member_classes)] if member_classes and cls is not None else pts
 
+    rel = pts[:, :2] - ax.origin
+    order = np.argsort(rel @ ax.direction)
+    pts_sorted = pts[order]
+    along_sorted = (rel @ ax.direction)[order]
+    lat_sorted = (rel @ ax.lateral)[order]
     sections = []
     for station in np.arange(lo + margin, hi - margin + 1e-9, spacing):
-        _, u, z = cut(pts, ax, float(station), thickness)
+        a, b = np.searchsorted(along_sorted, [station - thickness / 2, station + thickness / 2], side="right")
+        u, z = lat_sorted[a:b], pts_sorted[a:b, 2]
         m = measure_section(u, z)
         if m["status"] != "measured":
             continue
@@ -138,16 +196,21 @@ def bridge_plan(
         along, lat, depth = _below_deck(members_pts, ax, sections)
         stem = (depth > slab + MEMBER_MIN_STEM) & (depth < slab + MEMBER_MAX_DEPTH)
         inside = (lat > right_u - 0.1) & (lat < left_u + 0.1)
+        keep = np.nonzero(stem & inside)[0]
+        keep = keep[np.argsort(along[keep])]
+        keep_along = along[keep]
         # Girders: narrow members across each cross section that persist along the deck.
         peaks: list[tuple[float, ...]] = []
-        for s in sections:
-            if s["slab_m"] is None:
+        for sec in sections:
+            if sec["slab_m"] is None:
                 continue
-            sel = stem & inside & (np.abs(along - s["station_m"]) <= thickness / 2)
-            for centre, width in _peaks(lat[sel], right_u - 0.2, left_u + 0.2):
+            a, b = np.searchsorted(keep_along, [sec["station_m"] - thickness / 2, sec["station_m"] + thickness / 2],
+                                   side="right")
+            idx = keep[a:b]
+            for centre, width in _peaks(lat[idx], right_u - 0.2, left_u + 0.2):
                 if width <= MEMBER_MAX_WIDTH:
-                    on = sel & (np.abs(lat - centre) <= width / 2 + MEMBER_BIN)
-                    peaks.append((s["station_m"], centre, width, float(np.percentile(depth[on], 95))))
+                    on = idx[np.abs(lat[idx] - centre) <= width / 2 + MEMBER_BIN]
+                    peaks.append((sec["station_m"], centre, width, float(np.percentile(depth[on], 95))))
         observed = len(slabs)
         for group in _clusters(peaks, 1):
             share = len({g[0] for g in group}) / observed
@@ -187,25 +250,51 @@ def bridge_plan(
         for k, c in enumerate(cross):
             c["number"] = k + 1
 
-    # Rows between the deck ends and cross beams (skewed along-axis positions at mid width),
-    # columns between the deck edges and girders from the left.
     start, end = start_b + slope * mid, end_b + slope * mid
-    row_edges = [start] + [c["along_m"] for c in cross] + [end]
+    if supports is not None:
+        if any(not (0 < v < end - start) for v in supports):
+            raise ValueError("supports must lie between the deck ends, as distances from the start")
+        piers = [{"along_m": start + float(v), "source": "explicit"} for v in sorted(supports)]
+    else:
+        p_along, p_lat, p_depth = _below_deck(pts, ax, sections)
+        lowest = max([g["depth_below_deck_top_m"] for g in girders] + [slab or 0.0])
+        piers = _supports(p_along, p_lat, p_depth, lowest + SUPPORT_BELOW,
+                          {"start": start, "end": end, "left": left_u, "right": right_u}, slope)
+    for k, p in enumerate(piers):
+        p["label"] = f"P{k + 1}"
+        p["from_start_m"] = p["along_m"] - start
+    span_edges = [start] + [p["along_m"] for p in piers] + [end]
+    spans = [{"number": k + 1, "from_m": a, "to_m": b, "length_m": b - a}
+             for k, (a, b) in enumerate(zip(span_edges, span_edges[1:]))]
+    # Rows between the deck ends, cross beams and supports (skewed along-axis positions at mid
+    # width; a cross beam over a support is the same line), columns between the deck edges and
+    # girders from the left.
+    lines = sorted([c["along_m"] for c in cross]
+                   + [p["along_m"] for p in piers
+                      if all(abs(p["along_m"] - c["along_m"]) > MEMBER_JOIN for c in cross)])
+    row_edges = [start] + lines + [end]
+
+    def span_of(a: float, b: float) -> int:
+        centre = 0.5 * (a + b)
+        return int(next(sp["number"] for sp in spans if sp["from_m"] - 1e-9 <= centre <= sp["to_m"] + 1e-9))
+
     col_edges = [left_u] + [g["lateral_m"] for g in girders] + [right_u]
     elements: list[dict[str, Any]] = []
     for i, (a, b) in enumerate(zip(row_edges, row_edges[1:])):
         for j, (l, r) in enumerate(zip(col_edges, col_edges[1:])):
             elements.append({"id": f"Ds{i + 1:02d}{j + 1:02d}", "kind": "deck_slab", "label_ja": "床版",
-                             "row": i + 1, "column": j + 1, "along_m": [a, b], "lateral_m": [r, l],
+                             "row": i + 1, "column": j + 1, "span": span_of(a, b), "along_m": [a, b],
+                             "lateral_m": [r, l],
                              "status": "observed_bounds" if girders or not underside else "single_panel"})
         for g in girders:
             elements.append({"id": f"Mg{i + 1:02d}{g['number']:02d}", "kind": "main_girder", "label_ja": "主桁",
-                             "row": i + 1, "column": g["number"], "along_m": [a, b],
+                             "row": i + 1, "column": g["number"], "span": span_of(a, b), "along_m": [a, b],
                              "lateral_m": [g["lateral_m"], g["lateral_m"]], "status": "observed"})
     for c in cross:
         for j, (gl, gr) in enumerate(zip(girders, girders[1:])):
             elements.append({"id": f"Cr{c['number']:02d}{j + 1:02d}", "kind": "cross_beam", "label_ja": "横桁",
-                             "row": c["number"], "column": j + 1, "along_m": [c["along_m"], c["along_m"]],
+                             "row": c["number"], "column": j + 1, "span": span_of(c["along_m"], c["along_m"]),
+                             "along_m": [c["along_m"], c["along_m"]],
                              "lateral_m": [gr["lateral_m"], gl["lateral_m"]], "status": "observed"})
 
     if not underside:
@@ -237,9 +326,13 @@ def bridge_plan(
         "girders": girders,
         "partially_observed_members": partial,
         "cross_beams": cross,
+        "supports": piers,
+        "spans": spans,
         "elements": elements,
         "numbering": "Four digits: row along the axis from the start, then column across from the left facing the "
-                     "end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab.",
+                     "end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue "
+                     "across spans; each element records its span. A1 and A2 are the start and end abutments, "
+                     "P1, P2, ... the piers from the start.",
         "note": notes[below],
         "warnings": ([f"{len(partial)} member line(s) appear in only part of the sections and are not numbered; "
                       "check the scan before relying on the girder numbers."] if partial else []),
@@ -254,10 +347,10 @@ def _write(result: dict[str, Any], out: Path) -> dict[str, str]:
     paths = {"json": out / "bridge_plan.json", "csv": out / "members.csv", "svg": out / "plan.svg"}
     with open(paths["csv"], "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["id", "kind", "label_ja", "row", "column", "along_from_m", "along_to_m",
+        w.writerow(["id", "kind", "label_ja", "span", "row", "column", "along_from_m", "along_to_m",
                     "lateral_from_m", "lateral_to_m", "status"])
         for e in result["elements"]:
-            w.writerow([e["id"], e["kind"], e["label_ja"], e["row"], e["column"],
+            w.writerow([e["id"], e["kind"], e["label_ja"], e["span"], e["row"], e["column"],
                         f"{e['along_m'][0]:.3f}", f"{e['along_m'][1]:.3f}",
                         f"{e['lateral_m'][0]:.3f}", f"{e['lateral_m'][1]:.3f}", e["status"]])
     paths["svg"].write_text(plan_svg(result), encoding="utf-8")
@@ -272,9 +365,9 @@ def plan_svg(result: dict[str, Any]) -> str:
     at = lambda s, u: s + slope * (u - mid)  # along-axis position of skewed station s at lateral u
     a_lo = min(at(d["start_m"], d["left_edge_m"]), at(d["start_m"], d["right_edge_m"])) - 2.0
     a_hi = max(at(d["end_m"], d["left_edge_m"]), at(d["end_m"], d["right_edge_m"])) + 1.6
-    u_hi, u_lo = d["left_edge_m"] + 1.6, d["right_edge_m"] - 1.4
+    u_hi, u_lo = d["left_edge_m"] + 1.6, d["right_edge_m"] - (2.0 if len(result["spans"]) > 1 else 1.4)
     scale = 1100.0 / (a_hi - a_lo)
-    W, H = 1100.0, (u_hi - u_lo) * scale + 80
+    W, H = 1100.0, (u_hi - u_lo) * scale + (120 if len(result["spans"]) > 1 else 80)
     X = lambda a: (a - a_lo) * scale
     Y = lambda u: (u_hi - u) * scale
     P = lambda s, u: f"{X(at(s, u)):.1f},{Y(u):.1f}"
@@ -303,6 +396,15 @@ def plan_svg(result: dict[str, Any]) -> str:
             s = c["along_m"]
             parts.append(f'<line x1="{X(at(s, top)):.1f}" y1="{Y(top):.1f}" x2="{X(at(s, bottom)):.1f}" '
                          f'y2="{Y(bottom):.1f}" {hidden}/>')
+    for p in result["supports"]:
+        s_ = p["along_m"]
+        parts.append(f'<line x1="{X(at(s_, L)):.1f}" y1="{Y(L):.1f}" x2="{X(at(s_, R)):.1f}" y2="{Y(R):.1f}" '
+                     f'stroke="#3c4043" stroke-width="2.2" stroke-dasharray="14 4 3 4"/>')
+        parts.append(f'<text x="{X(at(s_, L)):.1f}" y="{Y(L) - 8:.1f}" text-anchor="middle" font-weight="bold" '
+                     f'fill="#3c4043">{p["label"]}</text>')
+    for label, s_ in (("A1", S), ("A2", E)):
+        parts.append(f'<text x="{X(at(s_, L)):.1f}" y="{Y(L) - 8:.1f}" text-anchor="middle" font-weight="bold" '
+                     f'fill="#3c4043">{label}</text>')
     for e in result["elements"]:
         (a, b), (r, l) = e["along_m"], e["lateral_m"]
         if e["kind"] == "deck_slab":
@@ -340,6 +442,11 @@ def plan_svg(result: dict[str, Any]) -> str:
         y_c = Y(R) + 50
         for s1, s2 in zip(stations, stations[1:]):
             dim(X(at(s1, mid)), y_c, X(at(s2, mid)), y_c, f"{(s2 - s1) * 1000:.0f}", dy=16)
+    if len(result["spans"]) > 1:
+        y_s = Y(R) + 75
+        for sp in result["spans"]:
+            dim(X(at(sp["from_m"], mid)), y_s, X(at(sp["to_m"], mid)), y_s,
+                f"第{sp['number']}径間 {sp['length_m'] * 1000:.0f}", dy=16)
     parts.append(f'<text x="{X(at(S, R)):.1f}" y="{Y(R) + 22:.1f}" text-anchor="middle" '
                  f'font-weight="bold">起点</text>')
     parts.append(f'<text x="{X(at(E, R)):.1f}" y="{Y(R) + 22:.1f}" text-anchor="middle" '

@@ -19,7 +19,7 @@ HALF_LENGTH = 8.0
 STEP = 0.05
 
 
-def _bridge(path, *, girders=True, soffit=True):
+def _bridge(path, *, girders=True, soffit=True, pier=False, abutments=False):
     """A skewed deck (class 2) scanned from above and, optionally, from below: the soffit
     and 0.3 m wide girders reaching 1.2 m below the deck top, with cross beams between
     them parallel to the deck ends (class 1)."""
@@ -53,6 +53,18 @@ def _bridge(path, *, girders=True, soffit=True):
                 for z in np.arange(-1.0, -SLAB, STEP):
                     for face in (s0 - 0.1, s0 + 0.1):
                         pts.append((face, u, z)); cls.append(1)
+    if pier:
+        # A 0.6 m pier wall under mid deck, parallel to the skewed ends, down to the ground.
+        for u in us:
+            for z in np.arange(-1.3, -4.5, -STEP):
+                for face in (-0.3, 0.3):
+                    pts.append((face + u * tan, u, z)); cls.append(0)
+    if abutments:
+        # Sloped abutment faces from beneath each deck end down toward the span.
+        for sign in (-1, 1):
+            for u in us:
+                for t in np.arange(0, 1, 0.01):
+                    pts.append((sign * (HALF_LENGTH - 0.5 - 2.5 * t) + u * tan, u, -1.3 - 3.2 * t)); cls.append(0)
     pts = np.array(pts) + rng.normal(0, 0.003, (len(pts), 3))
     h = math.radians(25.0)
     rot = np.array([[math.cos(h), -math.sin(h)], [math.sin(h), math.cos(h)]])
@@ -123,3 +135,28 @@ def test_the_command_writes_the_plan(tmp_path):
     assert result.exit_code == 0, result.output
     assert "Underside: unobserved" in result.output
     assert (tmp_path / "out" / "plan.svg").exists() and (tmp_path / "out" / "members.csv").exists()
+
+
+def test_a_pier_splits_spans_and_sloped_abutments_do_not(tmp_path):
+    path = _bridge(tmp_path / "two.las", pier=True, abutments=True)
+    r = bridge_plan(str(path), axis_classes=[2], member_classes=[1, 2])
+    (pier,) = r["supports"]
+    assert pier["label"] == "P1" and pier["source"] == "detected"
+    assert pier["from_start_m"] == pytest.approx(HALF_LENGTH, abs=0.2)
+    assert [round(sp["length_m"]) for sp in r["spans"]] == [8, 8]
+    deck = {e["id"]: e["span"] for e in r["elements"] if e["kind"] == "deck_slab"}
+    # Cross beams at +/-4 m and the pier at mid length make four rows of four columns.
+    assert len(deck) == 16 and {deck[f"Ds{i:02d}01"] for i in (1, 2)} == {1} and {deck[f"Ds{i:02d}01"] for i in (3, 4)} == {2}
+    with open(Path(bridge_plan(str(path), str(tmp_path / "o"), axis_classes=[2], member_classes=[1, 2])
+                   ["outputs"]["svg"])) as f:
+        svg = f.read()
+    assert "P1" in svg and "A1" in svg and "第2径間" in svg
+
+
+def test_explicit_supports_from_a_register(tmp_path):
+    path = _bridge(tmp_path / "reg.las", girders=False, soffit=False)
+    r = bridge_plan(str(path), axis_classes=[2], supports=[5.0, 11.0])
+    assert [p["source"] for p in r["supports"]] == ["explicit", "explicit"]
+    assert [(e["id"], e["span"]) for e in r["elements"]] == [("Ds0101", 1), ("Ds0201", 2), ("Ds0301", 3)]
+    with pytest.raises(ValueError):
+        bridge_plan(str(path), axis_classes=[2], supports=[-1.0])

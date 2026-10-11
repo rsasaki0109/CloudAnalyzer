@@ -35,8 +35,8 @@
   },
   "deck": {
     "start_m": -7.95263186115156,
-    "end_m": 7.927351311006335,
-    "length_m": 15.879983172157896,
+    "end_m": 7.922933445329819,
+    "length_m": 15.875565306481379,
     "skew_deg": -16.979180500478204,
     "skew_slope": -0.30533339222472927,
     "left_edge_m": 4.054292191073876,
@@ -50,6 +50,15 @@
   "girders": [],
   "partially_observed_members": [],
   "cross_beams": [],
+  "supports": [],
+  "spans": [
+    {
+      "number": 1,
+      "from_m": -7.95263186115156,
+      "to_m": 7.922933445329819,
+      "length_m": 15.875565306481379
+    }
+  ],
   "elements": [
     {
       "id": "Ds0101",
@@ -57,9 +66,10 @@
       "label_ja": "床版",
       "row": 1,
       "column": 1,
+      "span": 1,
       "along_m": [
         -7.95263186115156,
-        7.927351311006335
+        7.922933445329819
       ],
       "lateral_m": [
         -4.132141739507122,
@@ -68,7 +78,7 @@
       "status": "observed_bounds"
     }
   ],
-  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab.",
+  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
   "note": "No returns beneath most of the deck: girders and cross beams are neither drawn nor assumed; the deck is one element.",
   "warnings": []
 }

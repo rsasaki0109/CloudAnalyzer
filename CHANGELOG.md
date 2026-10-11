@@ -45,6 +45,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- `ca bridge-plan` finds piers on real multi-span bridges. Tested on the 20 labelled
+  TLS bridges of the public SemanticBridge dataset (CC BY 4.0), it now finds 32 of
+  their 33 piers (mean position error 0.15 m), where it had found 18. It reports one
+  abutment wall as a pier and nothing on the 6 single-span bridges or the 9 earlier
+  ones. Four changes:
+  - A row of columns counts by how much of the deck width it spans end to end.
+  - The search reaches 1 m beyond the deck edges.
+  - A pier may be 3.5 m long along the axis.
+  - Dense abutment faces no longer hide a pier's sparser returns.
+  Results are in `benchmarks/bridge/semanticbridge-tls`.
 - Bridge deck ends leave out deck-labelled points beyond an empty stretch of more
   than 0.3 m along the axis. On the public Bridge_6 a few such points over the
   approach had lengthened the deck from 16.53 m to 20.83 m; Bridge_5's committed

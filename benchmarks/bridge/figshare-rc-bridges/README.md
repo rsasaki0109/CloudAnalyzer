@@ -44,6 +44,34 @@ depths.
 |---|---|---|
 | ![Bridge_2 section](bridge_2/section.svg) | ![Bridge_4 section](bridge_4/section.svg) | ![Bridge_5 section](bridge_5/section.svg) |
 
+## Plans with numbered elements
+
+`ca bridge-plan` drew each bridge's plan for damage-map bases:
+
+```bash
+ca bridge-plan Bridge_4.las -o bridge_4 --classes 0,1,2,3 --axis-classes 2 --member-classes 1,2
+```
+
+`--member-classes 1,2` searches the girder and deck labels for members and leaves
+out the abutment walls under the deck ends.
+
+| | Bridge_2 | Bridge_4 | Bridge_5 |
+|---|---|---|---|
+| Underside | scanned, nothing protrudes below the slab | girders observed | not scanned |
+| Girders (lateral offset, sections observed) | none | G1 +2.17 m (52/53), G2 −0.53 m (53/53), G3 −2.13 m (51/53) | unobserved |
+| Lowest girder returns below the deck top | – | 1.01 / 1.02 / 1.05 m | – |
+| Cross beams (along the centreline from the start) | none | 0.74, 5.12, 9.47, 13.89 m | unobserved |
+| Elements | Ds0101 | 20 Ds, 15 Mg, 8 Cr | Ds0101 |
+
+The plan's deck length, width and skew agree with the cross-section table above
+(Bridge_4: 14.660 m, 6.677 m against a 6.683 m total width, −10.7°). Bridge_4's
+two cross beams nearest the ends lie 0.7 m inside the deck ends; with the abutment
+labels left out they are returns labelled as girder, most likely end cross beams.
+
+| Bridge_2 | Bridge_4 | Bridge_5 |
+|---|---|---|
+| ![Bridge_2 plan](bridge_2/plan.svg) | ![Bridge_4 plan](bridge_4/plan.svg) | ![Bridge_5 plan](bridge_5/plan.svg) |
+
 ## Limits
 
 - No reference dimensions were available, so these are measurements, not an
@@ -51,7 +79,8 @@ depths.
   bridge, scanner noise and section placement.
 - Slab thickness is the first surface beneath the deck top: on a girder bridge
   it is measured between girders only when the underside was scanned.
-- Interior girders, bearings and abutment dimensions are not measured yet.
+- Bearings, piers and abutment dimensions are not measured yet; plans treat the
+  deck as one span.
 - A deck that the labels do not separate from overhanging vegetation needs
   `--classes` or cropping; without labels the deck is still the highest long
   smooth surface, but trees above it are not guaranteed to be excluded.

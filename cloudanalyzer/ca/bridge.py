@@ -392,6 +392,34 @@ def deck_ends(xyz: np.ndarray, axis: Axis, bin_m: float = 0.5) -> dict[str, Any]
     }
 
 
+def structure(
+    path: str,
+    classes: list[int] | None,
+    axis_classes: list[int] | None,
+    axis: tuple[list[float], list[float]] | None,
+) -> tuple[np.ndarray, np.ndarray | None, np.ndarray, Axis, dict[str, Any] | None, float, float]:
+    """All points, their classes, the measured points, the axis, the deck ends and
+    the along-axis range where the full width lies on the deck."""
+    data = load_points(path)
+    xyz = data["xyz"]
+    cls = data.get("classification")
+    if (classes or axis_classes) and cls is None:
+        raise ValueError("classes were given but the file has no classification")
+    keep = np.isin(cls, classes) if classes and cls is not None else np.ones(len(xyz), bool)
+    pts = xyz[keep]
+    if len(pts) < 100:
+        raise ValueError("fewer than 100 points to measure")
+    ref = xyz[np.isin(cls, axis_classes)] if axis_classes and cls is not None else pts
+    ax = axis_from_points(axis[0], axis[1]) if axis is not None else refine_axis(ref, estimate_axis(ref))
+    ends = deck_ends(ref, ax)
+    if ends is None:
+        along = (pts[:, :2] - ax.origin) @ ax.direction
+        lo, hi = (float(v) for v in np.percentile(along, [0.5, 99.5]))
+    else:
+        lo, hi = ends["full_width_from_m"], ends["full_width_to_m"]
+    return xyz, cls, pts, ax, ends, lo, hi
+
+
 def bridge_sections(
     path: str,
     out_dir: str | None = None,
@@ -414,23 +442,7 @@ def bridge_sections(
     """
     if not (0 < spacing <= 50) or not (0 < thickness <= 1):
         raise ValueError("spacing must be in (0, 50] m and thickness in (0, 1] m")
-    data = load_points(path)
-    xyz = data["xyz"]
-    cls = data.get("classification")
-    if (classes or axis_classes) and cls is None:
-        raise ValueError("classes were given but the file has no classification")
-    keep = np.isin(cls, classes) if classes and cls is not None else np.ones(len(xyz), bool)
-    pts = xyz[keep]
-    if len(pts) < 100:
-        raise ValueError("fewer than 100 points to measure")
-    ref = xyz[np.isin(cls, axis_classes)] if axis_classes and cls is not None else pts
-    ax = axis_from_points(axis[0], axis[1]) if axis is not None else refine_axis(ref, estimate_axis(ref))
-    ends = deck_ends(ref, ax)
-    if ends is None:
-        along = (pts[:, :2] - ax.origin) @ ax.direction
-        lo, hi = (float(v) for v in np.percentile(along, [0.5, 99.5]))
-    else:
-        lo, hi = ends["full_width_from_m"], ends["full_width_to_m"]
+    xyz, cls, pts, ax, ends, lo, hi = structure(path, classes, axis_classes, axis)
     stations = np.arange(lo + margin, hi - margin + 1e-9, spacing)
     if len(stations) == 0:
         raise ValueError("no station lies inside the deck ends; check the axis or classes")

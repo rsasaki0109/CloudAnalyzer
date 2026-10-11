@@ -57,8 +57,8 @@ Results on three public bridges are in
 
 ## Limits
 
-These are measurements from the point cloud, not a certified survey. Interior
-girders, bearings and abutment dimensions are not measured yet, and no drawing
-beyond the cross section is produced. A one-bin (5 cm) feature or a curb lower
+These are measurements from the point cloud, not a certified survey. Bearings
+and abutment dimensions are not measured yet. [`bridge-plan`](bridge-plan.md)
+draws the plan with the girders and cross beams found beneath the deck. A one-bin (5 cm) feature or a curb lower
 than 5 cm is not separated from the deck. Without labels, vegetation over the
 deck is not guaranteed to be excluded; use `--classes` or crop first.

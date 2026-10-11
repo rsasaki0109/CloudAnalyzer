@@ -2534,6 +2534,46 @@ def bridge_sections_cmd(
         typer.echo(f"Saved {name}: {path}")
 
 
+@app.command("bridge-plan")
+def bridge_plan_cmd(
+    input_path: str = typer.Argument(..., help="Bridge point cloud (LAS/LAZ, or any format ca reads)"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Directory for JSON, member CSV and SVG plan"),
+    spacing: float = typer.Option(0.25, "--spacing", help="Distance between sections searched for girders (m)"),
+    classes: Optional[str] = typer.Option(None, "--classes", help="Measure only these classification codes, e.g. 0,1,2,3"),
+    axis_classes: Optional[str] = typer.Option(None, "--axis-classes", help="Codes whose points define the axis and deck ends, e.g. the deck"),
+    member_classes: Optional[str] = typer.Option(None, "--member-classes", help="Codes searched for girders and cross beams, e.g. 1,2 without abutments"),
+    axis: Optional[str] = typer.Option(None, "--axis", help="Explicit axis as x1,y1,x2,y2"),
+) -> None:
+    """Draw a bridge plan with numbered deck, girder and cross-beam elements.
+
+    Girders and cross beams are drawn only where returns beneath the deck show
+    them; without such returns nothing below the deck is drawn or assumed.
+    """
+    from ca.bridge_plan import bridge_plan
+
+    try:
+        ends = [float(v) for v in axis.split(",")] if axis else None
+        if ends is not None and len(ends) != 4:
+            raise ValueError("--axis needs x1,y1,x2,y2")
+        result = bridge_plan(
+            input_path, output_dir, spacing=spacing, classes=_int_list(classes),
+            axis_classes=_int_list(axis_classes), member_classes=_int_list(member_classes),
+            axis=(ends[:2], ends[2:]) if ends else None,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    deck = result["deck"]
+    typer.echo(f"Deck:      {deck['length_m']:.3f} m x {deck['width_m']:.3f} m, skew {deck['skew_deg']:.1f} deg")
+    typer.echo(f"Underside: {result['underside']}")
+    typer.echo(f"Girders:   {len(result['girders'])}, cross beams: {len(result['cross_beams'])}, "
+               f"elements: {len(result['elements'])}")
+    for warning in result["warnings"]:
+        typer.echo(f"Warning:   {warning}")
+    for name, path in result["outputs"].items():
+        typer.echo(f"Saved {name}: {path}")
+
+
 @app.command("normals")
 def normals_cmd(
     input_path: str = typer.Argument(..., help="Input point cloud file"),

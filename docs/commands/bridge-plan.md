@@ -56,8 +56,8 @@ the same line. Every element records its span, and the drawing adds the span len
 ## Numbering
 
 Element numbers have four digits: the row along the axis from the start, then the
-column across from the left facing the end, each from 01. Rows continue across spans. `Mg` is a main girder,
-`Cr` a cross beam and `Ds` a deck slab element. Rows run between the deck ends and
+column across from the left facing the end, each from 01; rows continue across
+spans. `Mg` is a main girder, `Cr` a cross beam and `Ds` a deck slab element. Rows run between the deck ends and
 the cross beams; deck columns run between the deck edges and the girders, so the
 overhangs are their own columns. Girders are numbered G1, G2, … from the left;
 a girder element's column is its girder number, and a cross-beam element's column
@@ -78,7 +78,7 @@ the cross-beam spacings along the centreline.
   lowest returns below the deck top, sections observed), cross beams, supports and
   spans, elements, underside status and warnings.
 
-Results on three public bridges are in
+Results on the nine bridges of a public dataset are in
 [`benchmarks/bridge/figshare-rc-bridges`](../../benchmarks/bridge/figshare-rc-bridges/README.md).
 
 ## Limits

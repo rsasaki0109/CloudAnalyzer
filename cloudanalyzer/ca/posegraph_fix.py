@@ -361,16 +361,37 @@ def calibrate_ups(rotations: np.ndarray, ups: np.ndarray) -> np.ndarray:
     return np.asarray(_core().calibrate_ups(np.ascontiguousarray(rotations), np.ascontiguousarray(ups)))
 
 
-def tie_gravity(graph, groups: list[tuple[list[int], np.ndarray]], sigma_deg: float, calibrate: bool = True) -> dict:
+def smooth_ups(rotations: np.ndarray, positions: np.ndarray, ups: np.ndarray, metres: float) -> tuple[np.ndarray, np.ndarray]:
+    """The up directions, seen in the world through the keyframes' ``rotations``, averaged
+    with a Gaussian of ``metres`` along the path through ``positions`` and turned back into
+    each keyframe's frame; with each keyframe's effective number of averaged keyframes.
+    Tying to them removes drift slower than ``metres`` and leaves the IMU's keyframe-to-
+    keyframe noise out of the poses, whose relative rotations the odometry measures better."""
+    seen = np.einsum("nij,nj->ni", rotations, ups)
+    seen /= np.linalg.norm(seen, axis=1, keepdims=True)
+    along = np.concatenate([[0.0], np.cumsum(np.linalg.norm(np.diff(positions, axis=0), axis=1))])
+    weights = np.exp(-0.5 * ((along[:, None] - along[None, :]) / metres) ** 2)
+    mean = weights @ seen
+    mean /= np.linalg.norm(mean, axis=1, keepdims=True)
+    effective = weights.sum(1) ** 2 / (weights**2).sum(1)
+    return np.einsum("nji,nj->ni", rotations, mean), effective
+
+
+def tie_gravity(
+    graph, groups: list[tuple[list[int], np.ndarray]], sigma_deg: float, calibrate: bool = True, smoothing_m: float = 0.0
+) -> dict:
     """Tie keyframes to the up directions of one or more IMUs (``groups`` of node indices and
     ups in the scans' frame), then optimise. With ``calibrate`` each IMU's rotation into the
     scans' frame is estimated from the drive (see :func:`calibrate_ups`) and used when it makes
     the up directions agree better; the standard deviation is at least their noise (see
-    :func:`up_noise`), so a noisy IMU levels the map without bending it while drift is removed."""
+    :func:`up_noise`), so a noisy IMU levels the map without bending it while drift is removed.
+    With ``smoothing_m`` the keyframes are tied to the ups averaged along that much of the path
+    instead (see :func:`smooth_ups`), at the noise left after averaging."""
     poses = graph.poses()
     all_nodes: list[int] = []
     all_ups = []
     imus = []
+    floors = []
     for nodes, ups in groups:
         rotations = poses[nodes, :3, :3]
         before = up_spread(rotations, ups)
@@ -384,11 +405,18 @@ def tie_gravity(graph, groups: list[tuple[list[int], np.ndarray]], sigma_deg: fl
                 ups = ups @ rotation.T
                 info["calibration"] = [[round(float(v), 6) for v in row] for row in rotation]
                 info["spread_deg_calibrated"] = round(float(np.median(after)), 3)
-        info["noise_deg"] = round(up_noise(rotations, ups), 3)
+        noise = up_noise(rotations, ups)
+        info["noise_deg"] = round(noise, 3)
+        if smoothing_m > 0:
+            ups, effective = smooth_ups(rotations, poses[nodes, :3, 3], ups, smoothing_m)
+            info["smoothing_m"] = smoothing_m
+            info["effective_keyframes"] = round(float(np.median(effective)), 1)
+            noise /= float(np.sqrt(np.median(effective)))
+        floors.append(noise)
         all_nodes += nodes
         all_ups.append(ups)
         imus.append(info)
-    sigma = max(sigma_deg, max(i["noise_deg"] for i in imus))
+    sigma = max(sigma_deg, max(floors))
     report = {
         "tied": graph.set_gravity(all_nodes, np.vstack(all_ups), sigma),
         "sigma_deg": round(float(sigma), 3),
@@ -496,6 +524,7 @@ def fix_session(
     gravity: str | None = None,
     gravity_sigma_deg: float = 0.1,
     calibrate_gravity: bool = True,
+    gravity_smoothing_m: float = 0.0,
     remove_dynamic: bool = False,
     map_voxel: float = 0.2,
     truth: str | None = None,
@@ -526,7 +555,9 @@ def fix_session(
     if gravity:
         clock = time.perf_counter()
         say("tying to gravity")
-        report["gravity"] = tie_gravity(graph, [session.ups(gravity)], gravity_sigma_deg, calibrate_gravity)
+        report["gravity"] = tie_gravity(
+            graph, [session.ups(gravity)], gravity_sigma_deg, calibrate_gravity, gravity_smoothing_m
+        )
         report["timings_s"]["gravity"] = round(time.perf_counter() - clock, 2)
 
     if remove_dynamic:

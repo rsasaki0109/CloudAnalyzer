@@ -75,6 +75,9 @@ def trial_mapping_motion(
             raise ValueError("baseline needs positive finite thinning settings")
     if type(options["remove_dynamic"]) is not bool:
         raise ValueError("baseline needs an explicit dynamic-removal policy")
+    smoothing = options.get("gravity_smoothing_m", 0.0)
+    if type(smoothing) not in (int, float) or not math.isfinite(smoothing) or smoothing < 0:
+        raise ValueError("baseline needs a finite nonnegative gravity smoothing length")
     policy = {"find_loops": find_loops, "use_gravity": use_gravity}
     trial: dict[str, Any] = {"schema": SCHEMA, "status": "running", "inputs": inputs,
         "policy": policy, "reason": reason.strip(), "outputs": {},
@@ -82,6 +85,7 @@ def trial_mapping_motion(
                      "expanded_fusion_frames_inherited": False, "reference_used_for_generation": False,
                      "odometry_sigma_t_m": .05, "odometry_sigma_r_deg": .25,
                      "gravity_sigma_floor_deg": .1, "gravity_mount": "identity_then_existing_drive_calibration_policy",
+                     "gravity_smoothing_m": smoothing,
                      "maximum_raw_frames": MAX_POSES, "maximum_raw_returns": MAX_RETURNS,
                      "motion_trial_executions": 1, "old_hd_geometry_or_audits_inherited": False,
                      "baseline_adopted": False},
@@ -142,6 +146,7 @@ def trial_mapping_motion(
             correction = fix_session(str(root / "scans"), str(root / "pointcloud"), poses=str(initial),
                 voxel=options.get("scan_voxel_m", .4), map_voxel=options.get("map_voxel_m", .2),
                 loops=find_loops, gravity=None if gravity is None else str(gravity),
+                gravity_smoothing_m=smoothing,
                 remove_dynamic=options["remove_dynamic"])
             jobs._save(root / "pointcloud-report.json", correction)
             outputs = {"map": jobs._artifact(correction["outputs"]["map"]),

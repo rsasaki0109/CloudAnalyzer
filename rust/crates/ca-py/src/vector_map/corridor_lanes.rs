@@ -150,12 +150,24 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
         let slice = |line: &Polyline3, i: usize, j: usize| -> Vec<[f64; 3]> {
             line.points[i..=j].iter().map(|p| [p.x, p.y, p.z]).collect()
         };
+        // A lane's bounds must also run the same way end to end, as the validator
+        // checks: on a tight turn a wide band's inner edge can fold back on itself.
+        let aligned = |bounds: &[Vec<[f64; 3]>]| {
+            let d = |a: &[f64; 3], b: &[f64; 3]| (a[0] - b[0]).hypot(a[1] - b[1]);
+            bounds.windows(2).all(|pair| {
+                let (l, r) = (&pair[0], &pair[1]);
+                let (ls, le, rs, re) = (&l[0], &l[l.len() - 1], &r[0], &r[r.len() - 1]);
+                d(ls, re) + d(le, rs) >= d(ls, rs) + d(le, re) + 1e-9
+            })
+        };
         let mut ranges = Vec::new();
         let mut pending = vec![(0, center.len() - 1)];
         while let Some((i, j)) = pending.pop() {
             let reference = slice(&center, i, j);
             let bounds: Vec<_> = boundaries.iter().map(|b| slice(b, i, j)).collect();
-            if ca_core::vector_map::lanelet_directions_unambiguous(&reference, &bounds, &lanes) {
+            if ca_core::vector_map::lanelet_directions_unambiguous(&reference, &bounds, &lanes)
+                && aligned(&bounds)
+            {
                 ranges.push((i, j));
             } else if j - i <= 1 {
                 return Err(format!(

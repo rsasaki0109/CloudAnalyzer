@@ -23,6 +23,10 @@ from ca.posegraph_fix import fix_session, odometry
 from ca.vector_map import build_vector_map, _publish
 
 SCHEMA = "cloudanalyzer.mapping_job.v1"
+# A bag's IMU up directions are noisy keyframe to keyframe (about 1 degree on the
+# bundled NCLT drives) while the odometry's relative rotations are not, so gravity
+# only levels drift slower than this along the path (see posegraph_fix.smooth_ups).
+GRAVITY_SMOOTHING_M = 15.0
 
 
 def _artifact(path: str | Path) -> dict[str, Any]:
@@ -149,12 +153,14 @@ def start_mapping_job(
     pointcloud_topic: str | None = None,
     imu_topic: str | None = None,
     minimum_retained_fraction: float = 0.9,
+    gravity_smoothing_m: float = GRAVITY_SMOOTHING_M,
 ) -> dict[str, Any]:
     """Generate a point-cloud map and corrected trajectory from a raw recording.
 
     Accepts MCAP, ROS1 bag or rosbag2 SQLite recordings. Uses LiDAR odometry,
     loop closure, the recording's IMU gravity and optional dynamic removal.
-    A NEW output directory holds the job and stage reports, including failures.
+    Gravity levels drift slower than ``gravity_smoothing_m`` metres of path;
+    0 ties every keyframe to its own IMU up direction. A NEW output directory holds the job and stage reports, including failures.
     Call propose_mapping_corridors to inspect source bands without lane assumptions,
     then generate_mapping_candidate with explicit road assumptions and a reason.
     """
@@ -162,6 +168,8 @@ def start_mapping_job(
         raise ValueError("max_attempts must be an integer between 1 and 8")
     if not 0 <= keyframe_spacing < float("inf"):
         raise ValueError("keyframe_spacing must be finite and nonnegative")
+    if not 0 <= gravity_smoothing_m < float("inf"):
+        raise ValueError("gravity_smoothing_m must be finite and nonnegative")
     if not 0 <= minimum_retained_fraction <= 1:
         raise ValueError("minimum_retained_fraction must be between 0 and 1")
     source_path = Path(source).resolve()
@@ -173,6 +181,7 @@ def start_mapping_job(
         "schema": SCHEMA, "job_dir": str(root), "status": "pointcloud_running",
         "source": _artifact(source_path), "runtime": {"python": platform.python_version(), "native": native},
         "pointcloud_options": {"keyframe_spacing": keyframe_spacing, "remove_dynamic": remove_dynamic,
+                               "gravity_smoothing_m": gravity_smoothing_m,
                                "pointcloud_topic": pointcloud_topic, "imu_topic": imu_topic, "scan_voxel_m": .4, "map_voxel_m": .2},
         "max_attempts": max_attempts, "minimum_retained_fraction": minimum_retained_fraction,
         "pointcloud": None, "attempts": [], "selected": None,
@@ -189,7 +198,8 @@ def start_mapping_job(
                              "trajectory": _artifact(initial["trajectory"])}
             corrected = fix_session(initial["scans"], str(root / "pointcloud"),
                                     poses=initial["trajectory"], gravity=initial["gravity"],
-                                    keyframe_spacing=keyframe_spacing, remove_dynamic=remove_dynamic)
+                                    keyframe_spacing=keyframe_spacing, remove_dynamic=remove_dynamic,
+                                    gravity_smoothing_m=gravity_smoothing_m)
             _save(root / "pointcloud-report.json", corrected)
             _verify(job["source"])
             for artifact in source_motion.values():

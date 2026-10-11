@@ -12,6 +12,13 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    file. LiDAR odometry, loop closure, IMU gravity when present, and optional dynamic
    removal produce a point-cloud map, corrected KITTI trajectory and pose graph.
    The new directory contains `job.json` and separate odometry/correction reports.
+   A bag's IMU up directions jitter about a degree from keyframe to keyframe, while
+   the odometry's relative rotations do not; at 10 m range a 1° tilt moves the ground
+   17 cm. Gravity therefore levels only drift slower than `gravity_smoothing_m`
+   (default 15 m of path): each keyframe is tied to the up directions averaged with a
+   Gaussian of that length, at the noise left after averaging. `0` ties every
+   keyframe to its own up direction, as before. The correction report records the
+   length and the effective number of averaged keyframes.
 2. `inspect_mapping_job(job_dir)` reads the small persisted job without loading
    point clouds. Inspect processing reports, artifact hashes and remaining attempts.
 3. `propose_mapping_corridors(job_dir)` searches the frozen source for surface

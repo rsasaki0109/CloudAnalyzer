@@ -1,0 +1,171 @@
+[
+  {
+    "ambiguous": false,
+    "candidates": [],
+    "eligible_count": 0,
+    "kind": "vehicle",
+    "limited": false,
+    "map_snapshot": "cf5dd0b488aa1596",
+    "rule_id": 167,
+    "warnings": [
+      "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+      "No supported association candidate; keep this signal unresolved and review its source context."
+    ]
+  },
+  {
+    "ambiguous": false,
+    "candidates": [
+      {
+        "already_linked": false,
+        "axis_degrees": 88.64476926243987,
+        "controlled_crosswalks": [
+          152
+        ],
+        "distance_m": 4.038987300031988,
+        "eligible": false,
+        "key": "crosswalk:152",
+        "lanes": [],
+        "reasons": [
+          "Housing normal and walking direction disagree (>35 degrees).",
+          "Crossing has no shared or connected road context; review its lane associations.",
+          "Road context is a location hint, not pedestrian control of vehicle lanes."
+        ],
+        "road_context": "unavailable",
+        "stop_lines": [],
+        "target_id": 152,
+        "target_kind": "crosswalk"
+      },
+      {
+        "already_linked": false,
+        "axis_degrees": 87.22978605998297,
+        "controlled_crosswalks": [
+          148
+        ],
+        "distance_m": 11.043519816151152,
+        "eligible": false,
+        "key": "crosswalk:148",
+        "lanes": [],
+        "reasons": [
+          "Housing normal and walking direction disagree (>35 degrees).",
+          "Crossing endpoints are outside the 8 m review radius.",
+          "Road context is a location hint, not pedestrian control of vehicle lanes."
+        ],
+        "road_context": "same_lane",
+        "stop_lines": [],
+        "target_id": 148,
+        "target_kind": "crosswalk"
+      },
+      {
+        "already_linked": false,
+        "axis_degrees": 15.632361433281527,
+        "controlled_crosswalks": [
+          156
+        ],
+        "distance_m": 15.485804753881538,
+        "eligible": false,
+        "key": "crosswalk:156",
+        "lanes": [],
+        "reasons": [
+          "Crossing endpoints are outside the 8 m review radius.",
+          "Crossing has no shared or connected road context; review its lane associations.",
+          "Road context is a location hint, not pedestrian control of vehicle lanes."
+        ],
+        "road_context": "unavailable",
+        "stop_lines": [],
+        "target_id": 156,
+        "target_kind": "crosswalk"
+      }
+    ],
+    "eligible_count": 0,
+    "kind": "pedestrian",
+    "limited": false,
+    "map_snapshot": "cf5dd0b488aa1596",
+    "rule_id": 171,
+    "warnings": [
+      "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases.",
+      "No supported association candidate; keep this signal unresolved and review its source context."
+    ]
+  },
+  {
+    "ambiguous": false,
+    "candidates": [
+      {
+        "already_linked": false,
+        "axis_degrees": 18.548207600957657,
+        "controlled_crosswalks": [],
+        "distance_m": 3.585980174403127,
+        "eligible": true,
+        "key": "stop_line:164",
+        "lanes": [
+          76,
+          77
+        ],
+        "reasons": [],
+        "road_context": "same_lane",
+        "stop_lines": [
+          164
+        ],
+        "target_id": 164,
+        "target_kind": "stop_line"
+      }
+    ],
+    "eligible_count": 1,
+    "kind": "vehicle",
+    "limited": false,
+    "map_snapshot": "cf5dd0b488aa1596",
+    "rule_id": 169,
+    "warnings": [
+      "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases."
+    ]
+  },
+  {
+    "ambiguous": false,
+    "candidates": [
+      {
+        "already_linked": false,
+        "axis_degrees": 12.950657681565843,
+        "controlled_crosswalks": [
+          156
+        ],
+        "distance_m": 3.491631095824416,
+        "eligible": true,
+        "key": "crosswalk:156",
+        "lanes": [],
+        "reasons": [
+          "Road context is a location hint, not pedestrian control of vehicle lanes."
+        ],
+        "road_context": "connected_lanes",
+        "stop_lines": [],
+        "target_id": 156,
+        "target_kind": "crosswalk"
+      },
+      {
+        "already_linked": false,
+        "axis_degrees": 88.67352698584445,
+        "controlled_crosswalks": [
+          152
+        ],
+        "distance_m": 3.3898958724744577,
+        "eligible": false,
+        "key": "crosswalk:152",
+        "lanes": [],
+        "reasons": [
+          "Housing normal and walking direction disagree (>35 degrees).",
+          "Road context is a location hint, not pedestrian control of vehicle lanes."
+        ],
+        "road_context": "connected_lanes",
+        "stop_lines": [],
+        "target_id": 152,
+        "target_kind": "crosswalk"
+      }
+    ],
+    "eligible_count": 1,
+    "kind": "pedestrian",
+    "limited": false,
+    "map_snapshot": "27d8d6fb1e3f38bf",
+    "rule_id": 173,
+    "warnings": [
+      "Geometry suggests draft targets only; housing normals are unsigned and do not prove legal control, front face or phases."
+    ]
+  }
+]

@@ -1031,6 +1031,18 @@ fn anchor_priors(road: &mut ExtractedRoad, nominal: &[f64], physical_only: bool)
 
 /// Add extracted roads atomically to a map. Existing geometry and georeference
 /// remain available for manual editing; any construction failure rolls back.
+/// Whether saving the lanes as Lanelet2 and reopening them keeps every lane's
+/// boundary directions. Lanelet2 infers them from geometry (each bound's middle
+/// vertex projected onto the other), so wide, curved or uneven sections can flip
+/// on reload; builders cut such roads into shorter pieces until this holds.
+pub fn lanelet_directions_unambiguous(
+    reference: &[[f64; 3]],
+    boundaries: &[Vec<[f64; 3]>],
+    lanes: &[RoadLane],
+) -> bool {
+    segmentation::unambiguous(reference, boundaries, lanes)
+}
+
 pub fn build(
     map: &mut Map,
     cloud: &PointCloud,

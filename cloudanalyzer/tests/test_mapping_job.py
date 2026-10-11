@@ -35,6 +35,43 @@ def _run_layout(width=1.5):
     return {"boundary_policy": "source_span_hypothesis", **{k: spec[k] for k in ("reason", "lanes", "speed_limit_kmh")}}
 
 
+# A tight, widening turn from the bundled 2012-04-29 NCLT recording (stations 4-40 m).
+# As one lanelet, Lanelet2's geometric direction inference flips its right bound on reload.
+NCLT_TURN = [[4.0, [3.529, 1.539, -0.571], [2.719, 3.09, -0.629], [4.339, -0.013, -0.558]], [6.0, [4.949, 2.634, -0.798], [4.107, 3.559, -0.698], [5.79, 1.71, -0.655]], [8.0, [6.433, 3.87, -0.937], [4.909, 5.166, -0.839], [7.956, 2.574, -0.964]], [10.0, [7.036, 5.864, -1.048], [5.628, 6.903, -0.997], [8.443, 4.824, -1.071]], [12.0, [9.187, 6.76, -1.288], [8.048, 7.736, -1.31], [10.326, 5.784, -1.314]], [14.0, [10.053, 8.956, -1.524], [8.622, 11.006, -1.283], [11.484, 6.906, -1.403]], [16.0, [12.694, 8.05, -1.686], [11.843, 10.927, -1.629], [13.544, 5.173, -1.824]], [18.0, [14.383, 9.747, -1.771], [14.397, 13.247, -1.77], [14.368, 6.247, -1.89]], [20.0, [16.364, 8.993, -2.049], [19.61, 16.305, -1.992], [13.118, 1.681, -2.015]], [22.0, [20.813, 8.73, -2.208], [25.351, 10.134, -2.377], [16.275, 7.327, -2.046]], [24.0, [20.223, 5.149, -2.264], [25.061, 3.889, -2.452], [15.384, 6.408, -1.927]], [26.0, [19.672, 2.641, -2.241], [23.966, 0.61, -2.422], [15.378, 4.671, -1.987]], [28.0, [18.64, 0.552, -2.252], [22.495, -1.77, -2.288], [14.785, 2.873, -2.06]], [30.0, [18.229, -1.225, -2.217], [21.785, -3.056, -2.269], [14.673, 0.607, -2.132]], [32.0, [16.511, -2.505, -2.238], [20.56, -4.467, -2.165], [12.461, -0.543, -1.987]], [34.0, [15.828, -4.46, -2.231], [20.066, -6.607, -2.291], [11.591, -2.314, -1.988]], [36.0, [15.154, -6.289, -2.253], [19.204, -8.25, -2.209], [11.103, -4.329, -1.983]], [38.0, [13.032, -7.364, -2.135], [14.876, -8.139, -2.258], [11.188, -6.589, -2.009]], [40.0, [12.539, -9.298, -2.05], [15.548, -10.525, -2.15], [9.529, -8.071, -1.97]]]
+
+
+def test_wide_turn_lanes_are_cut_at_source_sections_so_reload_keeps_directions(job_backend, tmp_path):
+    from ca import mapping_run as runs
+    source, _ = job_backend
+    _attach_lane_native()
+    report = _corridor_report()
+    report["trajectory_length_m"] = report["with_candidate_station_length_m"] = report["trajectory_covered_station_length_m"] = 40.
+    report["candidates"][0].update(from_m=4., to_m=40., minimum_support_span_m=2.5, maximum_support_span_m=16.,
+        sections=[{"station_m": st, "center": c, "left": l, "right": r, "left_evidence": "support_gap",
+                    "right_evidence": "support_gap"} for st, c, l, r in NCLT_TURN])
+    jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
+    root = tmp_path / "run"
+    run = runs.start_mapping_run(str(source), str(root), _run_layout(width=2.5))
+    run = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [1]}, "Read the turn", run["revision"])
+    choices = [{"candidate_id": 1, "action": "include", "reason": "Every section meets the fixed width"}]
+    run = runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Draft the turn", run["revision"])
+    assert run["draft_result"]["status"] == "audited_draft", run["draft_result"]
+    attempt = jobs.inspect_mapping_job(str(root))["attempts"][-1]
+    lanes = json.loads(Path(attempt["files"]["report"]["path"]).read_text())
+    (built,) = lanes["built_segments"]
+    assert lanes["lane_roundtrip_verified"] is True and len(built["pieces"]) > 1
+    ranges = [p["section_range"] for p in built["pieces"]]
+    assert ranges[0][0] == 0 and ranges[-1][1] == len(NCLT_TURN) - 1
+    assert all(a[1] == b[0] for a, b in zip(ranges, ranges[1:]))
+    # Every lanelet carries its own original stations; together they tile the segment.
+    intervals = sorted(lanes["lane_intervals"].values())
+    assert intervals[0][0] == 4. and intervals[-1][1] == 40.
+    assert all(a[1] == b[0] for a, b in zip(intervals, intervals[1:]))
+    ir = json.loads(Path(attempt["files"]["editable_map"]["path"]).read_text())
+    assert {str(lane["id"]) for lane in ir["lanes"]} == lanes["lane_intervals"].keys() == lanes["lane_minimum_width_m"].keys()
+    assert built["lane_chains"][0] == [p["lane_ids"][0] for p in built["pieces"]]
+
+
 @pytest.mark.parametrize("proposal_id", [1, 37])
 def test_agent_run_binds_one_layout_rejects_stale_replay_and_returns_both_maps(job_backend, tmp_path, proposal_id):
     from ca import mapping_run as runs

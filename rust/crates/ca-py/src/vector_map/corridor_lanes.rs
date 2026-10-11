@@ -74,7 +74,11 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
         let left = curve(spec.left_curve_id, "source_left")?;
         let right = curve(spec.right_curve_id, "source_right")?;
         vertices += center.len() * (spec.lanes.len() + 1);
-        if vertices > 100_000 || center.len() != left.len() || center.len() != right.len() {
+        if vertices > 100_000
+            || center.len() < 2
+            || center.len() != left.len()
+            || center.len() != right.len()
+        {
             return Err("source sections disagree or exceed the 100000-vertex build budget".into());
         }
         if spec.lanes.iter().any(|l| {
@@ -131,54 +135,101 @@ pub(super) fn generate(geometry: &str, specifications: &str) -> Result<String, S
             ));
         }
         boundaries.push(right.clone());
-        let mut road = NewRoad::new(
-            center,
-            spec.lanes
-                .iter()
-                .map(|l| RoadLane {
-                    width: None,
-                    direction: l.direction,
-                    kind: l.kind,
-                })
-                .collect(),
-        );
-        road.boundaries = Some(boundaries);
-        road.speed_limit = spec.speed_limit_kmh.map(SpeedLimit::from_kmh);
-        road.edge_kind = Some(BoundaryKind::Virtual);
-        road.lane_line_kind = Some(BoundaryKind::Virtual);
-        road.center_line_kind = Some(BoundaryKind::Virtual);
-        road.attributes
-            .insert("cloudanalyzer:assumption_status", "hypothesis");
-        road.attributes
-            .insert("cloudanalyzer:boundary_policy", "source_span_hypothesis");
-        road.attributes.insert(
-            "cloudanalyzer:source_center_curve",
-            spec.center_curve_id.to_string(),
-        );
-        let (built, _) = out.build_road(road).map_err(|e| e.to_string())?;
-        let lane_ids: Vec<_> = built.lanes.iter().map(|chain| chain[0]).collect();
-        for (id, lane) in lane_ids.iter().zip(&spec.lanes) {
-            out.lane_mut(*id).unwrap().one_way = lane.one_way;
+        let lanes: Vec<RoadLane> = spec
+            .lanes
+            .iter()
+            .map(|l| RoadLane {
+                width: None,
+                direction: l.direction,
+                kind: l.kind,
+            })
+            .collect();
+        // Lanelet2 infers boundary directions from geometry on reload. Cut the
+        // segment at source sections until every piece keeps them, as ordinary
+        // road building does; cuts at sections keep every source vertex exact.
+        let slice = |line: &Polyline3, i: usize, j: usize| -> Vec<[f64; 3]> {
+            line.points[i..=j].iter().map(|p| [p.x, p.y, p.z]).collect()
+        };
+        let mut ranges = Vec::new();
+        let mut pending = vec![(0, center.len() - 1)];
+        while let Some((i, j)) = pending.pop() {
+            let reference = slice(&center, i, j);
+            let bounds: Vec<_> = boundaries.iter().map(|b| slice(b, i, j)).collect();
+            if ca_core::vector_map::lanelet_directions_unambiguous(&reference, &bounds, &lanes) {
+                ranges.push((i, j));
+            } else if j - i <= 1 {
+                return Err(format!(
+                    "source geometry on centre curve {} has ambiguous Lanelet2 boundary directions between sections {i} and {j}; defer that interval",
+                    spec.center_curve_id
+                ));
+            } else {
+                let middle = (i + j) / 2;
+                pending.push((middle, j));
+                pending.push((i, middle));
+            }
         }
-        let first = out.lane(lane_ids[0]).unwrap();
-        let last = out.lane(*lane_ids.last().unwrap()).unwrap();
-        let outer_left = match spec.lanes[0].direction {
-            LaneDirection::Forward => first.left.boundary,
-            LaneDirection::Backward => first.right.boundary,
-        };
-        let outer_right = match spec.lanes.last().unwrap().direction {
-            LaneDirection::Forward => last.right.boundary,
-            LaneDirection::Backward => last.left.boundary,
-        };
-        let retained = |id, original: &Polyline3| {
-            let b = &out.boundary(id).unwrap().geometry;
-            b == original || b == &original.reversed()
-        };
-        if !retained(outer_left, &left) || !retained(outer_right, &right) {
-            return Err("road building changed the outer source curves".into());
+        let mut chains = vec![Vec::new(); lanes.len()];
+        let mut pieces = Vec::new();
+        for &(i, j) in &ranges {
+            let mut road = NewRoad::new(Polyline3::from_xyz(&slice(&center, i, j)), lanes.clone());
+            road.boundaries = Some(
+                boundaries
+                    .iter()
+                    .map(|b| Polyline3::from_xyz(&slice(b, i, j)))
+                    .collect(),
+            );
+            road.speed_limit = spec.speed_limit_kmh.map(SpeedLimit::from_kmh);
+            road.edge_kind = Some(BoundaryKind::Virtual);
+            road.lane_line_kind = Some(BoundaryKind::Virtual);
+            road.center_line_kind = Some(BoundaryKind::Virtual);
+            road.attributes
+                .insert("cloudanalyzer:assumption_status", "hypothesis");
+            road.attributes
+                .insert("cloudanalyzer:boundary_policy", "source_span_hypothesis");
+            road.attributes.insert(
+                "cloudanalyzer:source_center_curve",
+                spec.center_curve_id.to_string(),
+            );
+            let (built, _) = out.build_road(road).map_err(|e| e.to_string())?;
+            let lane_ids: Vec<_> = built.lanes.iter().map(|chain| chain[0]).collect();
+            for (id, lane) in lane_ids.iter().zip(&spec.lanes) {
+                out.lane_mut(*id).unwrap().one_way = lane.one_way;
+            }
+            let first = out.lane(lane_ids[0]).unwrap();
+            let last = out.lane(*lane_ids.last().unwrap()).unwrap();
+            let outer_left = match spec.lanes[0].direction {
+                LaneDirection::Forward => first.left.boundary,
+                LaneDirection::Backward => first.right.boundary,
+            };
+            let outer_right = match spec.lanes.last().unwrap().direction {
+                LaneDirection::Forward => last.right.boundary,
+                LaneDirection::Backward => last.left.boundary,
+            };
+            let retained = |id, original: &Polyline3| {
+                let original = Polyline3::from_xyz(&slice(original, i, j));
+                let b = &out.boundary(id).unwrap().geometry;
+                b == &original || b == &original.reversed()
+            };
+            if !retained(outer_left, &left) || !retained(outer_right, &right) {
+                return Err("road building changed the outer source curves".into());
+            }
+            for (chain, id) in chains.iter_mut().zip(&lane_ids) {
+                chain.push(*id);
+            }
+            pieces.push(json!({"section_range":[i, j], "lane_ids":lane_ids,
+                "outer_boundary_ids":[outer_left, outer_right]}));
         }
+        for (chain, lane) in chains.iter_mut().zip(&spec.lanes) {
+            if lane.direction == LaneDirection::Backward {
+                chain.reverse();
+            }
+            for pair in chain.windows(2) {
+                out.connect(pair[0], pair[1]).map_err(|e| e.to_string())?;
+            }
+        }
+        let lane_ids: Vec<_> = chains.iter().map(|chain| chain[0]).collect();
         created.push(json!({"center_curve_id":spec.center_curve_id, "lane_ids":lane_ids,
-            "outer_boundary_ids":[outer_left,outer_right], "source_outer_curves_preserved":true,
+            "lane_chains":chains, "pieces":pieces, "source_outer_curves_preserved":true,
             "lane_width_ranges_m":spec.lanes.iter().map(|l| [minimum_span*l.fraction, maximum_span*l.fraction]).collect::<Vec<_>>()}));
     }
     super::artifacts(

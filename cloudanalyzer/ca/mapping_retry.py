@@ -344,6 +344,9 @@ def _routes(attempt: dict[str, Any]) -> dict[str, Any]:
         return cast(dict[str, Any], attempt["routes"]["after"])
     geometry = json.loads(Path(attempt["geometry_inputs"]["report"]["path"]).read_text())
     report = json.loads(Path(attempt["files"]["report"]["path"]).read_text())
+    if "lane_intervals" in report:
+        intervals = {int(k): tuple(v) for k, v in report["lane_intervals"].items()}
+        return route_metrics(json.loads(Path(attempt["files"]["editable_map"]["path"]).read_text()), intervals)
     segments = {s["curve_ids"]["center"]: s for s in geometry["segments"]}
     intervals = {}
     for piece in report["built_segments"]:

@@ -26,6 +26,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Agent-drafted corridor lanes are cut at source sections where Lanelet2's
+  geometric direction inference would reverse a bound on reload, as ordinary
+  road building already does. Wide or curved pieces previously failed the
+  OSM round trip ("OSM reload changed lane orientation or shared boundaries").
+  With a fixed scripted policy on the bundled NCLT drives, the audited HD draft
+  now covers 86.4% (2012-04-29) and 77.6% (2012-06-15) of the drive; before,
+  April failed and June reached 57.8% (`scripts/mapping_e2e_coverage.py`).
+  Reports add `lane_intervals` and `lane_minimum_width_m` per lanelet.
+
 - Corridor proposals centre a 0.5 m lateral bin on the trajectory. Bin edges
   previously lay on the path, so a surface split there left neither adjacent band
   containing it and the station was deferred as `missing_trajectory_band`. On the

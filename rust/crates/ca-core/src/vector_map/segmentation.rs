@@ -195,7 +195,11 @@ fn locate(stations: &[f64], station: f64) -> (usize, f64) {
 // onto the other bound. Check that inference, as well as build_road's endpoint
 // orientation, before storing a piece. A tight returning section may need an
 // extra matched cut so that saving/reopening preserves travel direction.
-fn unambiguous(reference: &[[f64; 3]], boundaries: &[Vec<[f64; 3]>], lanes: &[RoadLane]) -> bool {
+pub(super) fn unambiguous(
+    reference: &[[f64; 3]],
+    boundaries: &[Vec<[f64; 3]>],
+    lanes: &[RoadLane],
+) -> bool {
     let reference = polyline(reference.to_vec());
     let boundaries: Vec<_> = boundaries.iter().cloned().map(polyline).collect();
     if !reference.is_valid() || boundaries.iter().any(|line| !line.is_valid()) {

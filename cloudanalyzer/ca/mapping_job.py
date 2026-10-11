@@ -576,6 +576,20 @@ def generate_mapping_corridor_lanes(
                 s["from_m"] <= i["from_m"] and i["to_m"] <= s["to_m"] for s in chosen)
                 else "geometry_only" if i["status"] == "included_geometry" else i["status"]} for i in geometry["station_disposition"]]
             evidence["unassigned_geometry"] = [s for s in geometry["segments"] if s["curve_ids"]["center"] not in assigned]
+            # A segment can be cut into several lanelets at source sections so that
+            # Lanelet2 keeps boundary directions; record each lanelet's own stations.
+            pieces_of = {s["curve_ids"]["center"]: s for s in chosen}
+            layouts = {r["center_curve_id"]: r["lanes"] for r in requests}
+            evidence["lane_intervals"], evidence["lane_minimum_width_m"] = {}, {}
+            for built in evidence["built_segments"]:
+                stations = [x["station_m"] for x in pieces_of[built["center_curve_id"]]["sections"]]
+                for piece in built["pieces"]:
+                    first, last = piece["section_range"]
+                    if not 0 <= first < last < len(stations):
+                        raise ValueError("lane pieces do not match the source sections")
+                    for lane_id, lane in zip(piece["lane_ids"], layouts[built["center_curve_id"]]):
+                        evidence["lane_intervals"][str(lane_id)] = [stations[first], stations[last]]
+                        evidence["lane_minimum_width_m"][str(lane_id)] = lane["minimum_width_m"]
             extraction = {"roads": len(chosen), "lanes": sum(len(r["lanes"]) for r in requests),
                 "trajectory_length": geometry["summary"]["trajectory_length_m"], "generated_length": sum(s["to_m"] - s["from_m"] for s in chosen),
                 "length_measurement": "original_input_xy_station_union", "width_prior_vertices": 0,

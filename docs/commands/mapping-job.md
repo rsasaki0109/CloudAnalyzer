@@ -310,6 +310,14 @@ connection between separate pieces. At every saved profile, the source span
 times each lane fraction must meet that lane's minimum width. An inadequate
 span produces a **failed attempt**, without widening the source or changing
 lane count. That minimum is a profile-span constraint, not a clearance guarantee.
+Lanelet2 infers each lanelet's boundary directions from its geometry on reload,
+so a wide, curved or uneven piece can come back reversed. As in ordinary road
+building, a piece is cut at saved source sections until every part keeps its
+directions; the parts are connected in travel order. Cuts never add vertices,
+so the outer curves are unchanged, and the report lists each part's
+`section_range` with `lane_intervals` (original stations) and
+`lane_minimum_width_m` per lanelet. A piece still ambiguous between two
+adjacent sections fails, naming the interval to defer.
 All boundaries are virtual; no observed paint is claimed. Lane count, direction,
 one-way use, speed and interpretation of the span remain recorded hypotheses.
 

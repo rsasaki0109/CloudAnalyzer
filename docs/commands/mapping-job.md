@@ -138,7 +138,16 @@ source at ≤0.5 m spacing with both endpoints included. When an edge trace lack
 support, that edge may move inward by up to four bins (2 m) at the new section; the
 band must stay at least 1 m wide and keep containing the path. Moved edges are
 reported as `support_inset`, so the saved width is the checked, conservative one.
+
+When no such inset is supported between two sections that both contain the path, both
+sections are tried narrowed to 3, 2 and 1.5 m either side of the path. A band whose
+edges reach the search limit can be far wider than the road, and its far edge or centre
+then runs over a lower gutter, a parked vehicle or a rising verge. These edges are also
+`support_inset`, and their traces are checked the same way.
+
 A continuing track starts from its saved section, so every saved trace was checked.
+When that saved start is too wide to be supported, the trimmed previous section starts a
+new candidate instead.
 No width prior fills absent profiles or unsupported curves. These three curves do not certify the full-width
 interior or obstacle clearance. Returning passes remain separate proposals.
 

@@ -45,6 +45,16 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Corridor proposals no longer defer an interval as a source gap only because a
+  path-containing band is far wider than the road. When no edge inset of up to 2 m is
+  supported, the two sections are also tried narrowed to 3, 2 and 1.5 m either side of
+  the path, and every trace is still checked against the source.
+  - On the bundled NCLT drives, mean end-to-end coverage over keyframe spacings 0.8–1.2
+    rises from 91.6% to 93.4%. All 10 runs improve, and the lowest rises from 89.4%
+    to 90.9%.
+  - At the default spacing, April goes from 92.8% to 94.4% and June from 89.7% to 91.3%.
+  - Also fixes two `manual_range_contains` lints reported by the current stable clippy.
+
 - Bridge total widths include footways. The raised edge beyond each deck end was
   searched only 1.2 m out, so a footway was cut there.
   - A raised edge still running past 1.2 m is now followed up to 4 m, with its level

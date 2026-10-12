@@ -194,8 +194,10 @@ def bridge_damage(
 
     # Sparse returns (far from the scanner, between scan lines) leave single-return cells whose
     # colour and height noise reads as damage.
+    # Seams are found over the whole searched soffit first, so a sparse stretch does not
+    # break one apart.
     share = ndimage.uniform_filter(valid.astype(float), size=size)
-    usable &= share >= MIN_RETURNS_SHARE
+    dense = share >= MIN_RETURNS_SHARE
 
     masks = {"light": dL > LIGHT_DL, "dark": dL < DARK_DL, "rust": (dB > RUST_DB) & (dA > RUST_DA),
              "recess": dH < -RECESS_M}
@@ -219,7 +221,7 @@ def bridge_damage(
             any_seam |= straight
     beside = ndimage.binary_dilation(any_seam, iterations=max(2, int(round(SEAM_MARGIN / CELL))))
     for kind, mask in masks.items():
-        mask = ndimage.binary_opening(mask & ~beside)
+        mask = ndimage.binary_opening(mask & ~beside & dense)
         labels, n = ndimage.label(mask)
         for k, region in enumerate(ndimage.find_objects(labels)):
             if region is None:
@@ -255,7 +257,9 @@ def bridge_damage(
     result["candidates"] = candidates
     result["straight_seams_left_out"] = {"regions": seams, "cells_along_m": seam_length}
     result["soffit"] = {"points": int(soffit.sum()), "cells_with_returns": int(valid.sum()),
-                        "cells_searched": int(usable.sum()), "area_searched_m2": float(usable.sum() * CELL**2)}
+                        "cells_searched": int((usable & dense).sum()),
+                        "area_searched_m2": float((usable & dense).sum() * CELL**2),
+                        "area_too_sparse_m2": float((usable & ~dense).sum() * CELL**2)}
     result["note"] = ("Candidates are colour or height departures from the surrounding soffit, for an inspector "
                       "to confirm; formwork marks, shadows, wet patches and repairs can look the same.")
     if out_dir:

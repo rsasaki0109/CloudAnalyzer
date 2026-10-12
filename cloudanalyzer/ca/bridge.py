@@ -253,10 +253,10 @@ def _deck_z(deck: dict[str, Any], u: Any) -> Any:
 def _side(u: np.ndarray, z: np.ndarray, deck: dict[str, Any], sign: int) -> dict[str, Any]:
     """Curb or footway, parapet and outer face beyond one deck end (sign -1 right/low u, +1 left/high u).
 
-    The raised edge's top level is found within CURB_SEARCH and followed outward bin by
-    bin, its level drifting with the edge's cross slope, across gaps up to DECK_GAP. An
-    edge ending within CURB_SEARCH is a curb; one continuing beyond is a footway, followed
-    up to FOOTWAY_SEARCH.
+    The raised edge's top is the most populated level within CURB_SEARCH. Followed outward
+    bin by bin, its level drifting along its cross slope, across gaps up to DECK_GAP, an
+    edge still running past CURB_SEARCH is a footway, taken up to FOOTWAY_SEARCH. Otherwise
+    it is a curb, whose outer end is that of its returns within the level band.
     """
     edge = deck["hi"] if sign > 0 else deck["lo"]
     deck_z = float(_deck_z(deck, edge))
@@ -271,24 +271,31 @@ def _side(u: np.ndarray, z: np.ndarray, deck: dict[str, Any], sign: int) -> dict
     hist, edges = np.histogram(rise[cand], bins=np.arange(CURB_MIN_RISE, CURB_MAX_RISE + 0.01, 0.01))
     peak = int(np.argmax(hist))
     level = 0.5 * (edges[peak] + edges[peak + 1])
+    top = cand & (np.abs(rise - level) <= CURB_LEVEL)
+    top_z = float(np.median(z[top]))
+    top_beyond = np.sort(beyond[top])
+    runs = _runs(top_beyond, DECK_GAP)
+    a, b = runs[0]
+    outer_beyond = float(top_beyond[b - 1])
+    if outer_beyond - float(top_beyond[a]) < 0.05:
+        return out
+    # Follow the top outward bin by bin, its level drifting along its cross slope, until
+    # it ends or drops to the deck. Past CURB_SEARCH it is a footway; within, a curb,
+    # measured from the level band above.
     far = (beyond > 0.0) & (beyond <= FOOTWAY_SEARCH)
     order = np.argsort(beyond[far])
     fb, fr = beyond[far][order], rise[far][order]
-    current, first, last, tops = level, None, None, []
+    current, reach = level, None
     for k0 in np.arange(0.0, FOOTWAY_SEARCH, SURFACE_BIN):
         i, j = np.searchsorted(fb, [k0, k0 + SURFACE_BIN])
-        hit = np.abs(fr[i:j] - current) <= CURB_LEVEL
+        hit = (np.abs(fr[i:j] - current) <= CURB_LEVEL) & (fr[i:j] >= CURB_MIN_RISE)
         if hit.any():
             current = float(np.median(fr[i:j][hit]))
-            tops.append(fr[i:j][hit])
-            first = float(fb[i:j][hit].min()) if first is None else first
-            last = float(fb[i:j][hit].max())
-        elif last is not None and k0 + SURFACE_BIN - last > DECK_GAP:
+            reach = float(fb[i:j][hit].max())
+        elif reach is not None and k0 + SURFACE_BIN - reach > DECK_GAP:
             break
-    if first is None or last is None or last - first < 0.05:
-        return out
-    outer_beyond = last
-    top_z = deck_z + float(np.median(np.concatenate(tops)))
+    if reach is not None and reach > CURB_SEARCH:
+        outer_beyond = reach
     outer_u = float(edge + sign * outer_beyond)
     kind = "curb" if outer_beyond <= CURB_SEARCH else "footway"
     out.update({"curb_top_z": top_z, "outer_u": outer_u, "edge_kind": kind,

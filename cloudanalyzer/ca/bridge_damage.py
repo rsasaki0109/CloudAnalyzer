@@ -209,7 +209,7 @@ def bridge_damage(
     stepped = iqr > STEP_IQR * RECESS_M
 
     masks = {"light": dL > LIGHT_DL, "dark": dL < DARK_DL, "rust": (dB > RUST_DB) & (dA > RUST_DA),
-             "recess": (dH < -RECESS_M) & ~stepped}
+             "recess": dH < -RECESS_M}
     min_cells = int(np.ceil(MIN_AREA / CELL**2))
     candidates: list[dict[str, Any]] = []
     seams: dict[str, int] = {}
@@ -230,6 +230,8 @@ def bridge_damage(
             any_seam |= straight
     beside = ndimage.binary_dilation(any_seam, iterations=max(2, int(round(SEAM_MARGIN / CELL))))
     for kind, mask in masks.items():
+        if kind == "recess":
+            mask = mask & ~stepped   # after the seams are found: a joint's groove is a step too
         mask = ndimage.binary_opening(mask & ~beside & dense)
         labels, n = ndimage.label(mask)
         for k, region in enumerate(ndimage.find_objects(labels)):

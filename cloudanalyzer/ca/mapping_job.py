@@ -665,6 +665,31 @@ def _extent(extraction: dict[str, Any], minimum: float) -> dict[str, Any]:
             "passes_requested_extent": fraction >= minimum}
 
 
+def mismatch_direction(audit: dict[str, Any]) -> dict[str, int] | None:
+    """Split a diagnosed audit's height mismatches by where the source ground lies.
+
+    Above the trace, returns above the road lifted the estimate; below it, the trace
+    may float above the observed surface. Audits saved before the split give None.
+    """
+    traces = [t for lane in audit["lanes"] for t in lane["traces"].values()]
+    if not traces or any("height_mismatches_above" not in t for t in traces):
+        return None
+    total = sum(t["height_mismatches"] for t in traces)
+    above = sum(t["height_mismatches_above"] for t in traces)
+    return {"height_mismatches": total, "above_trace": above, "below_trace": total - above}
+
+
+def _disagreement_note(quantile: dict[str, Any], consensus: dict[str, Any]) -> str:
+    direction = mismatch_direction(quantile)
+    if direction and direction["height_mismatches"] and not direction["below_trace"] and not consensus["needs_review"]:
+        return ("Ground estimators disagree only where the low-quantile ground lies above the traces: returns above "
+                "the road (tree canopy, walls, vehicles) lift it, while the lowest supported layer meets the traces. "
+                "No low-quantile ground lies below a trace, which would mean a trace floating above the observed "
+                "surface. This explains the disagreement; it does not verify road accuracy.")
+    return ("Ground estimators disagree. Inspect layered/density-dominated source columns and actual surface levels; "
+            "do not select the estimator with the better score as proof of road accuracy.")
+
+
 def _diagnose_audit(audit: dict[str, Any]) -> dict[str, Any]:
     quality = audit["quality"]
     lanes = []
@@ -771,7 +796,7 @@ def diagnose_mapping_candidate(job_dir: str, candidate_id: int) -> dict[str, Any
         investigations.append("Inspect deferred road length; a supported fragment does not meet the requested extent.")
     if consensus is not None:
         if consensus["editable"]["lanes"] != editable["lanes"]:
-            investigations.append("Ground estimators disagree. Inspect layered/density-dominated source columns and actual surface levels; do not select the estimator with the better score as proof of road accuracy.")
+            investigations.append(_disagreement_note(editable, consensus["editable"]))
         if consensus["editable"] != consensus["reopened_osm"]:
             investigations.append("Inspect differences between editable and reopened OSM ground-consensus evidence.")
     return {

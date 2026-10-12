@@ -21,6 +21,10 @@ pub struct CurveSupport {
     pub supported: usize,
     pub insufficient_returns: usize,
     pub height_mismatches: usize,
+    /// Mismatches whose source ground lies above the trace: returns above the road
+    /// (canopy, walls, vehicles) lifted the estimate. The rest lie below it, where
+    /// the trace may float above the observed surface.
+    pub height_mismatches_above: usize,
     pub fraction: f64,
     pub start_supported: bool,
     pub end_supported: bool,
@@ -203,6 +207,7 @@ fn curve_support(
     let mut supported = 0;
     let mut insufficient_returns = 0;
     let mut height_mismatches = 0;
+    let mut height_mismatches_above = 0;
     for (i, &p) in points.points.iter().enumerate() {
         let source_height = ground.height(p);
         let reason = match source_height {
@@ -212,6 +217,7 @@ fn curve_support(
             }
             Some(z) if (z - p.z).abs() > HEIGHT => {
                 height_mismatches += 1;
+                height_mismatches_above += usize::from(z > p.z);
                 Some(SupportProblem::HeightMismatch)
             }
             Some(_) => {
@@ -226,6 +232,7 @@ fn curve_support(
         supported,
         insufficient_returns,
         height_mismatches,
+        height_mismatches_above,
         fraction: supported as f64 / points.points.len() as f64,
         start_supported: ground.supports(points.points[0]),
         end_supported: ground.supports(*points.points.last().unwrap()),
@@ -440,6 +447,16 @@ mod tests {
         assert_eq!(r.lanes[0].center.fraction, 0.);
         assert_eq!(r.lanes[0].center.insufficient_returns, 0);
         assert!(r.lanes[0].center.height_mismatches > 0);
+        // The source surface lies above the lane: every mismatch is above it.
+        let center = &r.lanes[0].center;
+        assert_eq!(center.height_mismatches_above, center.height_mismatches);
+        for p in &mut cloud.positions {
+            p[2] -= 6.;
+        }
+        // A lane floating above the only surface is the opposite direction.
+        let r = audit(&map, &cloud).unwrap();
+        assert!(r.lanes[0].center.height_mismatches > 0);
+        assert_eq!(r.lanes[0].center.height_mismatches_above, 0);
         assert!(audit(&map, &PointCloud::default()).is_err());
     }
 
@@ -459,6 +476,10 @@ mod tests {
         let alternative = audit_with_ground_consensus(&map, &cloud).unwrap();
         assert!(!legacy.report.low_support_lanes.is_empty());
         assert!(alternative.report.low_support_lanes.is_empty());
+        // Dense returns above the floor lift the quantile above the lane.
+        let center = &legacy.report.lanes[0].center;
+        assert!(center.height_mismatches > 0);
+        assert_eq!(center.height_mismatches_above, center.height_mismatches);
         assert_eq!(
             legacy.report.sampled_points,
             alternative.report.sampled_points

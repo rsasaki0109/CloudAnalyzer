@@ -50,6 +50,9 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    New jobs save both the original quantile evidence and a separate
    `ground_consensus` report for each artifact. Read their `ground_estimator`
    metadata and compare outcomes; diagnosis keeps both and flags disagreement.
+   Each trace also counts `height_mismatches_above`, the mismatches whose source
+   ground lies above the trace (returns above the road lifted it) rather than below
+   (the trace may float above the surface).
 5. `select_mapping_candidate(job_dir, candidate_id, reason)` records the chosen
    draft and justification. It requires nonempty lanes, complete source checks,
    zero structural errors, unchanged inputs/output hashes and the job's minimum

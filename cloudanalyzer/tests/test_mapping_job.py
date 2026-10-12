@@ -920,6 +920,23 @@ def test_diagnosis_distinguishes_trace_failures_without_processing_or_mutating(j
     assert (root / "job.json").read_bytes() == original
 
 
+def test_estimator_disagreement_is_explained_only_when_every_mismatch_lies_above():
+    def audit(above, mismatches=4, review=(1,)):
+        trace = {"samples": 10, "supported": 10 - mismatches, "height_mismatches": mismatches,
+                 "insufficient_returns": 0, "fraction": 1 - mismatches / 10, "start_supported": True,
+                 "end_supported": True, "holds": []}
+        if above is not None:
+            trace["height_mismatches_above"] = above
+        return {"needs_review": list(review), "lanes": [{"lane": 1, "traces": {"center": trace}}]}
+    lifted = jobs._disagreement_note(audit(4), audit(None, 0, ()))
+    assert "lies above the traces" in lifted and "does not verify" in lifted
+    assert jobs.mismatch_direction(audit(4)) == {"height_mismatches": 4, "above_trace": 4, "below_trace": 0}
+    # A trace floating above the surface, a consensus hold or an older audit keep the generic note.
+    for quantile, consensus in [(audit(3), audit(None, 0, ())), (audit(4), audit(None)), (audit(None), audit(None, 0, ()))]:
+        assert jobs._disagreement_note(quantile, consensus).startswith("Ground estimators disagree. Inspect")
+    assert jobs.mismatch_direction(audit(None)) is None
+
+
 @pytest.mark.parametrize("changed", ["pointcloud", "quality", "map", "report"])
 def test_diagnosis_rejects_changed_evidence(job_backend, tmp_path, changed):
     source, _ = job_backend

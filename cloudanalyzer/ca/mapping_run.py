@@ -191,6 +191,8 @@ def _review_holds(diagnosis: dict[str, Any]) -> dict[str, Any]:
             for trace, support in lane["traces"].items():
                 entry = traces.setdefault((lane["lane"], trace), {"lane": lane["lane"], "trace": trace})
                 entry[name] = {"fraction": support["fraction"], "holds": support.get("holds", [])}
+                if "height_mismatches_above" in support:
+                    entry[name].update({k: support[k] for k in ("height_mismatches", "height_mismatches_above")})
     held = [t for t in traces.values() if any(t.get(name, {}).get("holds") for name in audits)]
     reopened = [diagnosis["editable_and_reopened_match"]]
     if diagnosis["ground_consensus"]:
@@ -202,6 +204,7 @@ def _review_holds(diagnosis: dict[str, Any]) -> dict[str, Any]:
         "ground_estimators_disagree": len(audits) == 2
         and audits["low_quantile"].get("needs_review") != audits["ground_consensus"].get("needs_review"),
         "editable_and_reopened_osm_agree": all(reopened),
+        "mismatch_direction": {name: jobs.mismatch_direction(audit) for name, audit in audits.items()},
         "passes_requested_extent": diagnosis["extent"]["passes_requested_extent"],
         "export_warnings": [i["code"] for i in diagnosis["export_issues"] if i.get("severity") != "info"],
         "unverified": ["layout_hypothesis", "legal_routing", "full_road_width"],

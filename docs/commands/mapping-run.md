@@ -231,7 +231,6 @@ linked are listed in `rejected`, each with its holds, so the agent can see why t
 stay apart. Pieces joined by a connector, or one source piece split into lanelets,
 are linked and not listed.
 
-
 - `touching_pieces`: the pieces meet at the same station, and no connector can be
   drawn across a zero gap;
 - `native_heading`, `native_height`, `native_unsupported`, `native_geometry` or

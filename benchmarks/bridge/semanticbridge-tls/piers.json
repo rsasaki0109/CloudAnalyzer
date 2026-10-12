@@ -3,7 +3,7 @@
   "label_piers": 33,
   "found": 32,
   "false": 1,
-  "mean_abs_error_m": 0.15,
+  "mean_abs_error_m": 0.152,
   "max_abs_error_m": 0.79,
   "span_count_correct": 18
  },
@@ -11,7 +11,7 @@
   {
    "bridge": "bridge_1_cb",
    "deck_length_m": 62.86,
-   "deck_width_m": 8.113,
+   "deck_width_m": 8.414,
    "skew_deg": 38.54,
    "underside": "no_girders_observed",
    "label_piers_from_start_m": [
@@ -47,7 +47,7 @@
   {
    "bridge": "bridge_2_cb",
    "deck_length_m": 54.379,
-   "deck_width_m": 9.916,
+   "deck_width_m": 11.607,
    "skew_deg": -6.08,
    "underside": "no_girders_observed",
    "label_piers_from_start_m": [
@@ -83,7 +83,7 @@
   {
    "bridge": "bridge_3_cb",
    "deck_length_m": 53.1,
-   "deck_width_m": 9.669,
+   "deck_width_m": 11.987,
    "skew_deg": -0.08,
    "underside": "no_girders_observed",
    "label_piers_from_start_m": [
@@ -150,7 +150,7 @@
   {
    "bridge": "bridge_5_cb",
    "deck_length_m": 62.493,
-   "deck_width_m": 12.888,
+   "deck_width_m": 12.893,
    "skew_deg": 15.44,
    "underside": "unobserved",
    "label_piers_from_start_m": [
@@ -181,7 +181,7 @@
   {
    "bridge": "bridge_6_cb",
    "deck_length_m": 55.101,
-   "deck_width_m": 12.711,
+   "deck_width_m": 14.508,
    "skew_deg": -0.49,
    "underside": "unobserved",
    "label_piers_from_start_m": [
@@ -217,7 +217,7 @@
   {
    "bridge": "bridge_7_cb",
    "deck_length_m": 40.419,
-   "deck_width_m": 9.716,
+   "deck_width_m": 11.709,
    "skew_deg": -3.22,
    "underside": "girders_observed",
    "label_piers_from_start_m": [
@@ -243,7 +243,7 @@
   {
    "bridge": "bridge_8_cb",
    "deck_length_m": 53.015,
-   "deck_width_m": 8.118,
+   "deck_width_m": 9.444,
    "skew_deg": 10.74,
    "underside": "no_girders_observed",
    "label_piers_from_start_m": [
@@ -279,7 +279,7 @@
   {
    "bridge": "bridge_9_cb",
    "deck_length_m": 52.932,
-   "deck_width_m": 9.947,
+   "deck_width_m": 12.279,
    "skew_deg": -1.12,
    "underside": "no_girders_observed",
    "label_piers_from_start_m": [
@@ -315,7 +315,7 @@
   {
    "bridge": "bridge_10_cb",
    "deck_length_m": 72.141,
-   "deck_width_m": 7.47,
+   "deck_width_m": 8.131,
    "skew_deg": 25.86,
    "underside": "girders_observed",
    "label_piers_from_start_m": [
@@ -399,7 +399,7 @@
   {
    "bridge": "bridge_14_fr",
    "deck_length_m": 14.88,
-   "deck_width_m": 9.661,
+   "deck_width_m": 11.199,
    "skew_deg": 1.37,
    "underside": "no_girders_observed",
    "label_piers_from_start_m": [],
@@ -431,7 +431,7 @@
   {
    "bridge": "bridge_16_fr",
    "deck_length_m": 45.55,
-   "deck_width_m": 8.231,
+   "deck_width_m": 9.275,
    "skew_deg": -19.32,
    "underside": "no_girders_observed",
    "label_piers_from_start_m": [],
@@ -447,7 +447,7 @@
   {
    "bridge": "bridge_17_fr",
    "deck_length_m": 41.805,
-   "deck_width_m": 8.812,
+   "deck_width_m": 11.988,
    "skew_deg": 12.51,
    "underside": "no_girders_observed",
    "label_piers_from_start_m": [
@@ -473,7 +473,7 @@
   {
    "bridge": "bridge_18_fr",
    "deck_length_m": 37.102,
-   "deck_width_m": 10.464,
+   "deck_width_m": 12.422,
    "skew_deg": 18.22,
    "underside": "unobserved",
    "label_piers_from_start_m": [
@@ -534,31 +534,31 @@
   {
    "bridge": "bridge_20_fr",
    "deck_length_m": 40.751,
-   "deck_width_m": 7.38,
+   "deck_width_m": 11.883,
    "skew_deg": 12.18,
-   "underside": "no_girders_observed",
+   "underside": "girders_observed",
    "label_piers_from_start_m": [
     14.17,
     27.59
    ],
    "detected_piers_from_start_m": [
-    4.75,
+    5.25,
     14.43,
-    27.65
+    27.73
    ],
    "matched_errors_m": [
     0.25,
-    0.06
+    0.14
    ],
    "false_piers_m": [
-    4.75
+    5.25
    ],
    "missed_piers_m": [],
    "detected_spans_m": [
-    4.75,
-    9.68,
-    13.23,
-    13.1
+    5.25,
+    9.18,
+    13.3,
+    13.03
    ],
    "paper_spans_m": [
     12.71,

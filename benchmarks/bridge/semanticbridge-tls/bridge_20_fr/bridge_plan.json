@@ -34,118 +34,141 @@
     "margin_m": 0.3
   },
   "deck": {
-    "start_m": -19.812216488838562,
-    "end_m": 20.938921934781295,
+    "start_m": -19.93755488509089,
+    "end_m": 20.813583538528967,
     "length_m": 40.75113842361986,
     "skew_deg": 12.184827769277758,
     "skew_slope": 0.21593048490097919,
-    "left_edge_m": 9.97776413722853,
-    "right_edge_m": 2.5980878197804005,
-    "width_m": 7.379676317448129,
+    "left_edge_m": 11.64881693087332,
+    "right_edge_m": -0.23387929598805912,
+    "width_m": 11.882696226861379,
     "slab_thickness_m": 0.8650365905356552,
     "sections_measured": 142,
     "sections_with_soffit": 108
   },
-  "underside": "no_girders_observed",
-  "girders": [],
+  "underside": "girders_observed",
+  "girders": [
+    {
+      "lateral_m": -0.25887929598805914,
+      "visible_width_m": 0.14999999999999997,
+      "depth_below_deck_top_m": 1.2856036004092413,
+      "sections_observed": 55,
+      "sections_total": 108,
+      "number": 1
+    }
+  ],
   "partially_observed_members": [
     {
-      "lateral_m": 3.9980878197803946,
+      "lateral_m": 1.2911207040119406,
+      "visible_width_m": 0.050000000000000044,
+      "depth_below_deck_top_m": 1.1298000000000001,
+      "sections_observed": 29,
+      "sections_total": 108
+    },
+    {
+      "lateral_m": 2.44112070401194,
+      "visible_width_m": 0.050000000000000266,
+      "depth_below_deck_top_m": 1.104,
+      "sections_observed": 17,
+      "sections_total": 108
+    },
+    {
+      "lateral_m": 3.99112070401194,
+      "visible_width_m": 0.10000000000000053,
+      "depth_below_deck_top_m": 1.1036307158205139,
+      "sections_observed": 38,
+      "sections_total": 108
+    },
+    {
+      "lateral_m": 4.641120704011939,
       "visible_width_m": 0.09999999999999964,
-      "depth_below_deck_top_m": 1.1015499085093847,
-      "sections_observed": 42,
+      "depth_below_deck_top_m": 1.0854287093882968,
+      "sections_observed": 23,
       "sections_total": 108
     },
     {
-      "lateral_m": 4.4730878197803925,
-      "visible_width_m": 0.274999999999999,
-      "depth_below_deck_top_m": 1.0959499956675511,
-      "sections_observed": 12,
-      "sections_total": 108
-    },
-    {
-      "lateral_m": 4.873087819780391,
+      "lateral_m": 6.69112070401194,
       "visible_width_m": 0.04999999999999982,
-      "depth_below_deck_top_m": 1.0797885062169654,
-      "sections_observed": 21,
-      "sections_total": 108
-    },
-    {
-      "lateral_m": 6.698087819780385,
-      "visible_width_m": 0.09999999999999964,
-      "depth_below_deck_top_m": 1.3005499999999999,
+      "depth_below_deck_top_m": 1.3041000000000005,
       "sections_observed": 14,
       "sections_total": 108
     },
     {
-      "lateral_m": 8.698087819780378,
-      "visible_width_m": 0.1999999999999993,
-      "depth_below_deck_top_m": 1.2690000000000001,
-      "sections_observed": 19,
+      "lateral_m": 8.716120704011939,
+      "visible_width_m": 0.20000000000000107,
+      "depth_below_deck_top_m": 1.2705000000000002,
+      "sections_observed": 20,
       "sections_total": 108
     },
     {
-      "lateral_m": 9.673087819780374,
-      "visible_width_m": 0.7999999999999972,
-      "depth_below_deck_top_m": 1.3229999999999995,
-      "sections_observed": 38,
+      "lateral_m": 9.391120704011938,
+      "visible_width_m": 0.05000000000000071,
+      "depth_below_deck_top_m": 1.312,
+      "sections_observed": 11,
+      "sections_total": 108
+    },
+    {
+      "lateral_m": 10.591120704011939,
+      "visible_width_m": 0.049999999999998934,
+      "depth_below_deck_top_m": 1.3272000000000004,
+      "sections_observed": 19,
       "sections_total": 108
     }
   ],
   "cross_beams": [],
   "supports": [
     {
-      "along_m": -15.062216488838494,
-      "width_m": 1.200000000000017,
-      "lean_m": 0.25910947068748413,
-      "width_share": 1.2409071564677465,
+      "along_m": -14.687554885090815,
+      "width_m": 0.20000000000000284,
+      "lean_m": 0.017772832054674836,
+      "width_share": 1.0187337548429911,
       "source": "detected",
       "label": "P1",
-      "from_start_m": 4.7500000000000675
+      "from_start_m": 5.250000000000075
     },
     {
-      "along_m": -5.387216488838357,
-      "width_m": 1.1500000000000163,
-      "lean_m": 0.02196284952514649,
-      "width_share": 1.2196313552180824,
+      "along_m": -5.512554885090685,
+      "width_m": 1.050000000000015,
+      "lean_m": 0.10700952462856161,
+      "width_share": 0.9708284952045896,
       "source": "detected",
       "label": "P2",
       "from_start_m": 14.425000000000205
     },
     {
-      "along_m": 7.837783511161831,
-      "width_m": 1.200000000000017,
-      "lean_m": 0.00700273059828227,
-      "width_share": 1.1828873008392153,
+      "along_m": 7.787445114909504,
+      "width_m": 1.1500000000000163,
+      "lean_m": 0.008555618049982172,
+      "width_share": 0.9746148464895642,
       "source": "detected",
       "label": "P3",
-      "from_start_m": 27.650000000000393
+      "from_start_m": 27.725000000000392
     }
   ],
   "spans": [
     {
       "number": 1,
-      "from_m": -19.812216488838562,
-      "to_m": -15.062216488838494,
-      "length_m": 4.7500000000000675
+      "from_m": -19.93755488509089,
+      "to_m": -14.687554885090815,
+      "length_m": 5.250000000000075
     },
     {
       "number": 2,
-      "from_m": -15.062216488838494,
-      "to_m": -5.387216488838357,
-      "length_m": 9.675000000000137
+      "from_m": -14.687554885090815,
+      "to_m": -5.512554885090685,
+      "length_m": 9.17500000000013
     },
     {
       "number": 3,
-      "from_m": -5.387216488838357,
-      "to_m": 7.837783511161831,
-      "length_m": 13.225000000000188
+      "from_m": -5.512554885090685,
+      "to_m": 7.787445114909504,
+      "length_m": 13.300000000000189
     },
     {
       "number": 4,
-      "from_m": 7.837783511161831,
-      "to_m": 20.938921934781295,
-      "length_m": 13.101138423619464
+      "from_m": 7.787445114909504,
+      "to_m": 20.813583538528967,
+      "length_m": 13.026138423619463
     }
   ],
   "elements": [
@@ -157,14 +180,48 @@
       "column": 1,
       "span": 1,
       "along_m": [
-        -19.812216488838562,
-        -15.062216488838494
+        -19.93755488509089,
+        -14.687554885090815
       ],
       "lateral_m": [
-        2.5980878197804005,
-        9.97776413722853
+        -0.25887929598805914,
+        11.64881693087332
       ],
-      "status": "single_panel"
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0102",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -19.93755488509089,
+        -14.687554885090815
+      ],
+      "lateral_m": [
+        -0.23387929598805912,
+        -0.25887929598805914
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0101",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -19.93755488509089,
+        -14.687554885090815
+      ],
+      "lateral_m": [
+        -0.25887929598805914,
+        -0.25887929598805914
+      ],
+      "status": "observed"
     },
     {
       "id": "Ds0201",
@@ -174,14 +231,48 @@
       "column": 1,
       "span": 2,
       "along_m": [
-        -15.062216488838494,
-        -5.387216488838357
+        -14.687554885090815,
+        -5.512554885090685
       ],
       "lateral_m": [
-        2.5980878197804005,
-        9.97776413722853
+        -0.25887929598805914,
+        11.64881693087332
       ],
-      "status": "single_panel"
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0202",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        -14.687554885090815,
+        -5.512554885090685
+      ],
+      "lateral_m": [
+        -0.23387929598805912,
+        -0.25887929598805914
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0201",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 2,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        -14.687554885090815,
+        -5.512554885090685
+      ],
+      "lateral_m": [
+        -0.25887929598805914,
+        -0.25887929598805914
+      ],
+      "status": "observed"
     },
     {
       "id": "Ds0301",
@@ -191,14 +282,48 @@
       "column": 1,
       "span": 3,
       "along_m": [
-        -5.387216488838357,
-        7.837783511161831
+        -5.512554885090685,
+        7.787445114909504
       ],
       "lateral_m": [
-        2.5980878197804005,
-        9.97776413722853
+        -0.25887929598805914,
+        11.64881693087332
       ],
-      "status": "single_panel"
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0302",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 2,
+      "span": 3,
+      "along_m": [
+        -5.512554885090685,
+        7.787445114909504
+      ],
+      "lateral_m": [
+        -0.23387929598805912,
+        -0.25887929598805914
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0301",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 3,
+      "column": 1,
+      "span": 3,
+      "along_m": [
+        -5.512554885090685,
+        7.787445114909504
+      ],
+      "lateral_m": [
+        -0.25887929598805914,
+        -0.25887929598805914
+      ],
+      "status": "observed"
     },
     {
       "id": "Ds0401",
@@ -208,19 +333,53 @@
       "column": 1,
       "span": 4,
       "along_m": [
-        7.837783511161831,
-        20.938921934781295
+        7.787445114909504,
+        20.813583538528967
       ],
       "lateral_m": [
-        2.5980878197804005,
-        9.97776413722853
+        -0.25887929598805914,
+        11.64881693087332
       ],
-      "status": "single_panel"
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0402",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 2,
+      "span": 4,
+      "along_m": [
+        7.787445114909504,
+        20.813583538528967
+      ],
+      "lateral_m": [
+        -0.23387929598805912,
+        -0.25887929598805914
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0401",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 4,
+      "column": 1,
+      "span": 4,
+      "along_m": [
+        7.787445114909504,
+        20.813583538528967
+      ],
+      "lateral_m": [
+        -0.25887929598805914,
+        -0.25887929598805914
+      ],
+      "status": "observed"
     }
   ],
   "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
-  "note": "The soffit was scanned and shows no member protruding 0.2 m or more below it (a slab deck, or members outside the scan); the deck is divided only lengthwise.",
+  "note": "Girders and cross beams are drawn where the scan shows them; a member hidden from every scan position is missing and would shift the numbers after it.",
   "warnings": [
-    "6 member line(s) appear in only part of the sections and are not numbered; check the scan before relying on the girder numbers."
+    "8 member line(s) appear in only part of the sections and are not numbered; check the scan before relying on the girder numbers."
   ]
 }

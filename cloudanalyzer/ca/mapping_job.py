@@ -387,8 +387,10 @@ def inspect_mapping_corridors(job_dir: str, candidate_id: int | None = None, off
         "remaining_attempts": _remaining(job)}
     if candidate_id is None:
         hints = _curb_width_hints(report)
-        answer.update({"candidate_index": [{k: c[k] for k in ("id", "from_m", "to_m", "minimum_support_span_m",
-            "maximum_support_span_m", "paired_curb_sections", "curb_width_range_m", "review_required")}
+        answer.update({"candidate_index": [{**{k: c[k] for k in ("id", "from_m", "to_m", "minimum_support_span_m",
+            "maximum_support_span_m", "paired_curb_sections", "curb_width_range_m", "review_required")},
+            "sections": len(c["sections"]),
+            "sections_containing_path": sum(s["intersects_trajectory"] for s in c["sections"])}
             for c in candidates[offset:offset + 16]],
             "next_offset": offset + 16 if offset + 16 < len(candidates) else None,
             "curb_width_profile_hints": hints[:16], "curb_width_profile_hints_limited": len(hints) > 16,

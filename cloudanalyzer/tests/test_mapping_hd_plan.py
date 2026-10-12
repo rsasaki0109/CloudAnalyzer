@@ -49,6 +49,9 @@ def test_native_reference_checks_match_generated_traces_without_generation(
     ]
     assert all(r["reference_traces_fully_supported"] for r in observed["intervals"])
     assert all(r["retained_endpoint_links"] for r in observed["intervals"])
+    (summary,) = observed["gap_exclusions"]
+    assert summary["gap_id"] == 1 and summary["offered"] == 2
+    assert not any(summary["excluded"].values())
     assert (
         observed["protocol"]["hd_generation_attempts_spent"] == 0
         and not observed["protocol"]["lane_export_performed"]
@@ -220,7 +223,17 @@ def test_width_and_occupied_connector_ranges_are_not_offered(hd_only_run):
     narrow = deepcopy(proposal)
     for side in ("left", "right"):
         narrow["candidates"][0]["sections"][3][side][1] *= 0.5
-    assert _index(parent, narrow, [gap], _run_layout()) == []
+    exclusions = []
+    assert _index(parent, narrow, [gap], _run_layout(), exclusions) == []
+    # Empty plans say why: both source pairs in the gap are narrower than the lane.
+    (summary,) = exclusions
+    assert summary["source_section_pairs"] == 2 and summary["offered"] == 0
+    assert summary["excluded"] == {
+        "occupied": 0,
+        "extends_beyond_unoccupied_interval": 0,
+        "below_minimum_width": 2,
+    }
+    assert summary["widest_excluded_span_m"] == pytest.approx(1.0)
     jobs.core().connect_vector_map_junctions = (
         _attach_lane_native().connect_vector_map_junctions
     )
@@ -235,7 +248,13 @@ def test_width_and_occupied_connector_ranges_are_not_offered(hd_only_run):
     )
     connected = jobs._load(root)["attempts"][2]
     assert any(a == 4.0 and b == 8.0 for a, b in _intervals(connected).values())
-    assert _index(connected, proposal, [gap], _run_layout()) == []
+    exclusions = []
+    assert _index(connected, proposal, [gap], _run_layout(), exclusions) == []
+    assert exclusions[0]["excluded"]["occupied"] == 2
+    straddling = {"id": 1, "from_m": 5.0, "to_m": 7.0}
+    exclusions = []
+    assert _index(parent, proposal, [straddling], _run_layout(), exclusions) == []
+    assert exclusions[0]["excluded"]["extends_beyond_unoccupied_interval"] == 2
 
 
 def test_invalid_choices_and_large_source_query_are_rejected_before_processing(

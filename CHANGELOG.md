@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Mapping-run evidence says more about why something is missing:
+  - a `native_unsupported` connection hold names the road ends or connector traces
+    (`center`, `left`, `right`) that lacked ground support, with their fractions;
+  - `inspect_hd_plan` returns `gap_exclusions`, counting per gap the source section
+    pairs left out as occupied, extending beyond the free extent or below the lane
+    width, so an empty plan explains itself;
+  - corridor candidate index entries give `sections` and `sections_containing_path`.
+
 - Corridor cross sections record what ended each band edge, so an agent can tell a
   narrow section's cause before deferring or including it:
   - `left_step_m` / `right_step_m`: the surface step into the next bin (a curb, rut or

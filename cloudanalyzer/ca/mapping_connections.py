@@ -194,7 +194,7 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
             if region is not None:
                 baseline = json.loads(Path(parent['patch_inputs']['baseline_editable_map']['path']).read_text())
                 repair_ids = {l['id'] for l in ir['lanes']} - {l['id'] for l in baseline['lanes']}
-            native_reasons = {(r["from"], r["to"]): r["reason"] for r in payload["report"]["junctions"].get("rejections", [])}
+            native_rejections = {(r["from"], r["to"]): r for r in payload["report"]["junctions"].get("rejections", [])}
             linked = edges(ir)
             for first, second in zip(pieces, pieces[1:]):
                 pair = (first["lane"], second["lane"])
@@ -204,9 +204,14 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                 if gap <= 0 or pair not in offered:
                     # Consecutive pieces that stay apart are listed with why: touching
                     # ends no connector can span, or the native check that refused them.
-                    reason = "touching_pieces" if gap <= 0 else native_reasons.get(pair, "not_offered")
+                    native = native_rejections.get(pair, {})
+                    reason = "touching_pieces" if gap <= 0 else native.get("reason", "not_offered")
                     hold = reason if reason == "touching_pieces" else f"native_{reason}"
-                    rejected.append({"from": pair[0], "to": pair[1], "station_gap_m": gap, "holds": [hold]})
+                    entry = {"from": pair[0], "to": pair[1], "station_gap_m": gap, "holds": [hold]}
+                    if gap > 0 and "unsupported" in native:
+                        # Which road ends or connector traces lacked ground support.
+                        entry["unsupported"] = native["unsupported"]
+                    rejected.append(entry)
                     continue
                 c = offered[pair]
                 ts = np.linspace(first["to_m"], second["from_m"], math.ceil(gap / .5) + 1)

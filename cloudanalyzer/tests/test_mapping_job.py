@@ -48,7 +48,7 @@ def test_wide_turn_lanes_are_cut_at_source_sections_so_reload_keeps_directions(j
     report["trajectory_length_m"] = report["with_candidate_station_length_m"] = report["trajectory_covered_station_length_m"] = 40.
     report["candidates"][0].update(from_m=4., to_m=40., minimum_support_span_m=2.5, maximum_support_span_m=16.,
         sections=[{"station_m": st, "center": c, "left": l, "right": r, "left_evidence": "support_gap",
-                    "right_evidence": "support_gap"} for st, c, l, r in NCLT_TURN])
+                    "right_evidence": "support_gap", "intersects_trajectory": True} for st, c, l, r in NCLT_TURN])
     jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
     root = tmp_path / "run"
     run = runs.start_mapping_run(str(source), str(root), _run_layout(width=2.5))
@@ -86,7 +86,7 @@ def test_a_folded_inner_edge_is_cut_instead_of_drafted_as_a_reversed_lane(job_ba
     report["trajectory_length_m"] = report["with_candidate_station_length_m"] = report["trajectory_covered_station_length_m"] = 34.535
     report["candidates"][0].update(from_m=216., to_m=250.535, minimum_support_span_m=2.5, maximum_support_span_m=16.,
         sections=[{"station_m": st, "center": c, "left": l, "right": r, "left_evidence": "support_gap",
-                    "right_evidence": "support_gap"} for st, c, l, r in NCLT_FOLD])
+                    "right_evidence": "support_gap", "intersects_trajectory": True} for st, c, l, r in NCLT_FOLD])
     jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
     root = tmp_path / "run"
     run = runs.start_mapping_run(str(source), str(root), _run_layout(width=2.5))
@@ -113,7 +113,7 @@ def test_every_unresolvable_interval_is_named_in_one_reply(job_backend, tmp_path
         sections = [{"station_m": x, "center": [x, 0., 1.], "left": [x, 2., 1.], "right": [x, -2., 1.]},
                     {"station_m": x + 2., "center": [x + .75, 0., 1.], "left": [x - .5, 2., 1.], "right": [x + 2., -2., 1.]}]
         for s in sections:
-            s.update(left_evidence="support_gap", right_evidence="support_gap")
+            s.update(left_evidence="support_gap", right_evidence="support_gap", intersects_trajectory=True)
         report["candidates"].append({**base, "id": k + 1, "from_m": x, "to_m": x + 2., "minimum_support_span_m": 4.,
                                      "maximum_support_span_m": 4.7, "sections": sections})
     report["trajectory_length_m"] = report["with_candidate_station_length_m"] = report["trajectory_covered_station_length_m"] = 22.
@@ -341,7 +341,8 @@ def _corridor_report():
         "candidates": [{"id": 1, "from_m": 0., "to_m": 10., "minimum_support_span_m": 2., "maximum_support_span_m": 2.,
             "paired_curb_sections": 0, "curb_width_range_m": None, "review_required": True,
             "sections": [{"station_m": k * 2., "center": [k * 2., 0., 1.], "left": [k * 2., 1., 1.],
-                "right": [k * 2., -1., 1.], "left_evidence": "support_gap", "right_evidence": "support_gap"} for k in range(6)]}]}
+                "right": [k * 2., -1., 1.], "left_evidence": "support_gap", "right_evidence": "support_gap",
+                "intersects_trajectory": True} for k in range(6)]}]}
 
 
 @pytest.fixture
@@ -517,12 +518,18 @@ def test_corridor_inspection_pages_and_bounds_geometry_without_a_native_core(job
     report = _corridor_report()
     sample = report["candidates"][0]
     report["candidates"] = [{**sample, "id": i + 1, "sections": sample["sections"] * 30} for i in range(20)]
+    # One section in each copy lies beside, not across, the recorded path.
+    report["candidates"][0]["sections"] = [{**s, "intersects_trajectory": k % 6 != 0}
+                                           for k, s in enumerate(report["candidates"][0]["sections"])]
     jobs.core().propose_road_corridors = lambda *args: json.dumps(report)
     jobs.propose_mapping_corridors(str(root))
     original = (root / "job.json").read_bytes()
     monkeypatch.setattr(jobs, "core", lambda: None)
     index = jobs.inspect_mapping_corridors(str(root))
     assert len(index["candidate_index"]) == 16 and index["next_offset"] == 16
+    first, second = index["candidate_index"][:2]
+    assert (first["sections"], first["sections_containing_path"]) == (180, 150)
+    assert (second["sections"], second["sections_containing_path"]) == (180, 180)
     page = jobs.inspect_mapping_corridors(str(root), offset=16)
     assert len(page["candidate_index"]) == 4 and page["next_offset"] is None
     geometry = jobs.inspect_mapping_corridors(str(root), candidate_id=17)["candidate"]
@@ -1719,6 +1726,23 @@ def test_connection_preview_withholds_geometric_shortcuts_narrowing_and_ambiguit
     module.connect_vector_map_junctions = lambda *args: pytest.fail("cached preview must not rerun")
     result = runs.advance_mapping_run(str(root), {"type": "inspect_connections", "candidate_id": 2, "offset": 0}, "Read retained holds", 3)
     assert result["connection_observation"] == observation
+
+
+def test_connection_preview_names_the_unsupported_trace(connection_run):
+    root, native = connection_run
+    detail = {"traces": [{"trace": "left", "fraction": 0.6, "start_supported": True, "end_supported": True}]}
+    def refused(*args):
+        result = json.loads(native.connect_vector_map_junctions(*args))
+        junctions = result["report"]["junctions"]
+        c = junctions["candidates"].pop(0)
+        junctions["rejections"] = [{"from": c["from"], "to": c["to"], "gap": c["gap"],
+                                    "reason": "unsupported", "unsupported": detail}]
+        return json.dumps(result)
+    jobs.core().connect_vector_map_junctions = refused
+    observation = _inspect_connection(root)["connection_observation"]
+    assert observation["candidates"] == []
+    (entry,) = observation["rejected"]
+    assert entry["holds"] == ["native_unsupported"] and entry["unsupported"] == detail
 
 
 def test_completed_connection_inspection_resumes_from_its_saved_proposal(connection_run, monkeypatch):

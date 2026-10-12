@@ -17,6 +17,10 @@ const QUERY_BUDGET: usize = 2_000_000;
 const SUPPORT_BUDGET: usize = 100_000;
 /// Bins an edge may move inward when its trace between sections lacks support.
 const MAX_INSET_BINS: usize = 4;
+/// Half-widths around the path tried when no edge inset is supported: a band far
+/// wider than the road (edges at the search limit) can run its far edge or centre
+/// over a lower gutter, a parked vehicle or a rising verge.
+const PATH_WINDOWS: [f64; 3] = [3.0, 2.0, 1.5];
 
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(default, deny_unknown_fields)]
@@ -336,6 +340,23 @@ fn supported(
         })
 }
 
+/// Narrow a path-containing section by whole bins to within `half` of the path on
+/// each side; `None` when that changes nothing or leaves it narrower than `MIN_WIDTH`.
+fn around_path(s: &CrossSection, half: f64, path: [f64; 3]) -> Option<CrossSection> {
+    let edge = [s.left[0] - s.right[0], s.left[1] - s.right[1]];
+    let t = ((path[0] - s.right[0]) * edge[0] + (path[1] - s.right[1]) * edge[1])
+        / (edge[0] * edge[0] + edge[1] * edge[1]);
+    let bins = |d: f64| ((d - half).max(0.0) / BIN - 1e-9).ceil() as usize;
+    let (right, left) = (
+        bins(t * s.support_span_m),
+        bins((1.0 - t) * s.support_span_m),
+    );
+    if right == 0 && left == 0 {
+        return None;
+    }
+    inset(s, left, right, path)
+}
+
 /// Narrow a section by whole bins at each edge. The band must stay at least
 /// `MIN_WIDTH` wide and keep containing the path when it did before.
 fn inset(s: &CrossSection, left: usize, right: usize, path: [f64; 3]) -> Option<CrossSection> {
@@ -601,12 +622,47 @@ fn propose_limited(
                             break;
                         }
                     }
+                    // A track that continues starts from its stored section; when that
+                    // start is too wide to be supported, a trimmed previous section
+                    // starts a new candidate instead.
+                    let mut fresh = false;
+                    if accepted.is_none() && a.intersects_trajectory && b.intersects_trajectory {
+                        'windows: for half in PATH_WINDOWS {
+                            let Some(end) = around_path(b, half, p) else {
+                                continue;
+                            };
+                            let trimmed = around_path(a, half, samples[k - 1].1);
+                            let starts = [
+                                stored.clone().map(|s| (s, false)),
+                                trimmed.map(|s| (s, true)),
+                            ];
+                            for (start, new_track) in starts.into_iter().flatten() {
+                                if report.interval_support_samples
+                                    + support_sample_count(&start, &end)
+                                    > support_budget
+                                {
+                                    report.limited = true;
+                                    break 'windows;
+                                }
+                                if supported(
+                                    &start,
+                                    &end,
+                                    &ground,
+                                    &mut report.interval_support_samples,
+                                ) {
+                                    fresh = new_track && stored.is_some();
+                                    accepted = Some((start, end));
+                                    break 'windows;
+                                }
+                            }
+                        }
+                    }
                     let Some((a, b)) = accepted else {
                         source_gap = true;
                         continue;
                     };
                     let (a, b) = (&a, &b);
-                    let track = if let Some(id) = tracks[i] {
+                    let track = if let (Some(id), false) = (tracks[i], fresh) {
                         id
                     } else {
                         let id = report.candidates.len();
@@ -880,6 +936,37 @@ mod tests {
                 .iter()
                 .all(|s| s.support_span_m >= MIN_WIDTH && s.intersects_trajectory)
         );
+    }
+
+    #[test]
+    fn a_wide_band_is_narrowed_around_the_path_past_unsupported_ground() {
+        // A 12 m road with the path 1 m inside its right edge: everything from
+        // 2.5 m left of the path is a hole that no edge inset of up to 2 m clears.
+        let mut cloud = PointCloud::default();
+        for x in -15..=115 {
+            for y in -40..=40 {
+                let (x, y) = (x as f64 * 0.2, y as f64 * 0.2);
+                if (9.0..11.0).contains(&x) && (-1.5..7.5).contains(&y) {
+                    continue;
+                }
+                let z = if (-5.0 - 1e-9..=7.0 + 1e-9).contains(&y) {
+                    2.0
+                } else {
+                    2.15
+                };
+                cloud.positions.push([x, y, z]);
+            }
+        }
+        let path = [[0., -4., 99.], [20., -4., 99.]];
+        let report = propose(&cloud, &path, &on_path()).unwrap();
+        assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        let sections: Vec<_> = report.candidates.iter().flat_map(|c| &c.sections).collect();
+        let narrowest = sections
+            .iter()
+            .map(|s| s.support_span_m)
+            .fold(f64::INFINITY, f64::min);
+        assert!((MIN_WIDTH..=4.5).contains(&narrowest), "{narrowest}");
+        assert!(sections.iter().all(|s| s.intersects_trajectory));
     }
 
     #[test]

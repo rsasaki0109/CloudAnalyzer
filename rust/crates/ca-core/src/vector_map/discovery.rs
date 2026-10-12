@@ -732,7 +732,7 @@ pub fn propose(
         if subset.positions.iter().any(|p| {
             let hit = tree.nearest(&[p[0], p[1], 0.0], None);
             let h = p[2] - route[hit.index].p[2];
-            h < 1.65 || h > 7.85 || hit.distance_sq > (o.corridor_radius - 0.15).powi(2)
+            !(1.65..=7.85).contains(&h) || hit.distance_sq > (o.corridor_radius - 0.15).powi(2)
         }) {
             continue;
         }

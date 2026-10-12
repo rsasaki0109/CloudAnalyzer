@@ -226,8 +226,11 @@ connector polygon, including endpoints. Minimum distance between equal normalize
 XY-arc positions on the piecewise-linear boundaries must meet the fixed width
 hypothesis. This is a geometric width check, not observed physical road width.
 
-Consecutive pieces within the gap limit that are not offered are listed in
-`rejected`, each with its holds, so the agent can see why they stay apart:
+Consecutive pieces within the gap limit that are neither offered nor already
+linked are listed in `rejected`, each with its holds, so the agent can see why they
+stay apart. Pieces joined by a connector, or one source piece split into lanelets,
+are linked and not listed.
+
 
 - `touching_pieces`: the pieces meet at the same station, and no connector can be
   drawn across a zero gap;

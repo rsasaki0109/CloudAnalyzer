@@ -195,10 +195,11 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                 baseline = json.loads(Path(parent['patch_inputs']['baseline_editable_map']['path']).read_text())
                 repair_ids = {l['id'] for l in ir['lanes']} - {l['id'] for l in baseline['lanes']}
             native_reasons = {(r["from"], r["to"]): r["reason"] for r in payload["report"]["junctions"].get("rejections", [])}
+            linked = edges(ir)
             for first, second in zip(pieces, pieces[1:]):
                 pair = (first["lane"], second["lane"])
                 gap = second["from_m"] - first["to_m"]
-                if gap > OPTIONS["max_gap"]:
+                if gap > OPTIONS["max_gap"] or pair in linked:
                     continue
                 if gap <= 0 or pair not in offered:
                     # Consecutive pieces that stay apart are listed with why: touching

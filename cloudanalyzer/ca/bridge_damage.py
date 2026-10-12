@@ -42,6 +42,8 @@ SEAM_ELONGATION = 6.0      # length over width of a straight seam
 SEAM_ANGLE = 10.0          # degrees from the axis or its normal for a joint or formwork seam
 EDGE_MARGIN = 0.3          # left out inside the deck edges and ends (m)
 HOLE_MARGIN = 0.1          # left out around cells without returns (m)
+SEAM_MARGIN = 0.2          # left out beside a straight seam of any kind: a joint's groove and chamfers (m)
+MIN_RETURNS_SHARE = 0.0    # share of cells with returns in the neighbourhood needed to search a cell
 
 KINDS = {
     "light": ("遊離石灰・白色変色の候補", "#00bcd4"),
@@ -190,6 +192,11 @@ def bridge_damage(
     for p in plan["supports"]:
         usable &= np.abs(GS - p["along_m"]) > p.get("width_m", 0.0) / 2 + MEMBER_MARGIN
 
+    # Sparse returns (far from the scanner, between scan lines) leave single-return cells whose
+    # colour and height noise reads as damage.
+    share = ndimage.uniform_filter(valid.astype(float), size=size)
+    usable &= share >= MIN_RETURNS_SHARE
+
     masks = {"light": dL > LIGHT_DL, "dark": dL < DARK_DL, "rust": (dB > RUST_DB) & (dA > RUST_DA),
              "recess": dH < -RECESS_M}
     min_cells = int(np.ceil(MIN_AREA / CELL**2))
@@ -197,18 +204,22 @@ def bridge_damage(
     seams: dict[str, int] = {}
     run = max(3, int(round(SEAM_RUN / CELL)))
     seam_length: dict[str, float] = {}
-    for kind, mask in masks.items():
-        mask = np.nan_to_num(mask, nan=0).astype(bool) & usable
-        # Straight runs along or across the deck, even when broken into pieces, are joints
-        # between slab units or formwork seams: take them out before forming regions.
-        straight = np.zeros_like(mask)
+    # Straight runs along or across the deck, even when broken into pieces, are joints
+    # between slab units or formwork seams: take them out before forming regions, with a
+    # band beside them for every kind (a dark joint has a receded groove and chamfers).
+    any_seam = np.zeros_like(usable)
+    for kind in masks:
+        masks[kind] = np.nan_to_num(masks[kind], nan=0).astype(bool) & usable
+        straight = np.zeros_like(usable)
         for line in (np.ones((1, run)), np.ones((run, 1))):
-            bridged = ndimage.binary_closing(mask, structure=line[:, :3] if line.shape[0] == 1 else line[:3])
-            straight |= ndimage.binary_opening(bridged, structure=line) & mask
+            bridged = ndimage.binary_closing(masks[kind], structure=line[:, :3] if line.shape[0] == 1 else line[:3])
+            straight |= ndimage.binary_opening(bridged, structure=line) & masks[kind]
         if straight.any():
             seam_length[kind] = float(straight.sum() * CELL)
-            mask &= ~ndimage.binary_dilation(straight, iterations=2)
-        mask = ndimage.binary_opening(mask)
+            any_seam |= straight
+    beside = ndimage.binary_dilation(any_seam, iterations=max(2, int(round(SEAM_MARGIN / CELL))))
+    for kind, mask in masks.items():
+        mask = ndimage.binary_opening(mask & ~beside)
         labels, n = ndimage.label(mask)
         for k, region in enumerate(ndimage.find_objects(labels)):
             if region is None:
@@ -235,6 +246,7 @@ def bridge_damage(
                 "along_m": [float(ga[xs].min() - CELL / 2), float(ga[xs].max() + CELL / 2)],
                 "lateral_m": [float(gu[ys].min() - CELL / 2), float(gu[ys].max() + CELL / 2)],
                 "contrast": float(np.median(metric)),
+                "returns_share": float(np.median(share[ys, xs])),
                 "contrast_unit": "m" if kind == "recess" else ("b*" if kind == "rust" else "L*"),
             })
     candidates.sort(key=lambda c: (c["element"] or "~", c["centre_m"][0]))

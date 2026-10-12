@@ -387,6 +387,23 @@ fn supported(
         })
 }
 
+/// Replace a candidate's last section with a narrower one at the same station and
+/// recount its span range and curb-bounded sections.
+fn narrow_last(c: &mut CorridorCandidate, section: CrossSection) {
+    *c.sections.last_mut().unwrap() = section;
+    c.minimum_support_span_m = c
+        .sections
+        .iter()
+        .map(|s| s.support_span_m)
+        .fold(f64::INFINITY, f64::min);
+    c.maximum_support_span_m = c
+        .sections
+        .iter()
+        .map(|s| s.support_span_m)
+        .fold(0.0, f64::max);
+    c.paired_curb_sections = c.sections.iter().filter(|s| s.curbs()).count();
+}
+
 /// Narrow a path-containing section by whole bins to within `half` of the path on
 /// each side; `None` when that changes nothing or leaves it narrower than `MIN_WIDTH`.
 fn around_path(s: &CrossSection, half: f64, path: [f64; 3]) -> Option<CrossSection> {
@@ -714,7 +731,33 @@ fn propose_limited(
                                     &ground,
                                     &mut report.interval_support_samples,
                                 ) {
-                                    fresh = new_track && stored.is_some();
+                                    if let (true, Some(id)) = (new_track, tracks[i]) {
+                                        // Narrow the track's last section in place when the
+                                        // trace into it from the section before stays
+                                        // supported; only otherwise start a new candidate,
+                                        // whose seam at this station would split the lanes.
+                                        let sections = &report.candidates[id].sections;
+                                        let joined = match sections.len() {
+                                            0 | 1 => true,
+                                            n => {
+                                                let before = sections[n - 2].clone();
+                                                report.interval_support_samples
+                                                    + support_sample_count(&before, &start)
+                                                    <= support_budget
+                                                    && supported(
+                                                        &before,
+                                                        &start,
+                                                        &ground,
+                                                        &mut report.interval_support_samples,
+                                                    )
+                                            }
+                                        };
+                                        if joined {
+                                            narrow_last(&mut report.candidates[id], start.clone());
+                                        } else {
+                                            fresh = true;
+                                        }
+                                    }
                                     accepted = Some((start, end));
                                     break 'windows;
                                 }
@@ -1086,6 +1129,18 @@ mod tests {
         let path = [[0., -4., 99.], [20., -4., 99.]];
         let report = propose(&cloud, &path, &on_path()).unwrap();
         assert_eq!(report.trajectory_covered_station_length_m, 20.);
+        // The last wide section before the hole is narrowed in place: one candidate,
+        // no seam where a new one would start at the same station.
+        assert_eq!(
+            report.candidates.len(),
+            1,
+            "{:?}",
+            report
+                .candidates
+                .iter()
+                .map(|c| (c.from_m, c.to_m))
+                .collect::<Vec<_>>()
+        );
         let sections: Vec<_> = report.candidates.iter().flat_map(|c| &c.sections).collect();
         let narrowest = sections
             .iter()

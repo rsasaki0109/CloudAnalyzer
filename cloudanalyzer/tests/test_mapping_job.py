@@ -1587,6 +1587,11 @@ def test_connections_preserve_source_extent_and_verify_real_reopened_route(conne
     attempt = jobs.inspect_mapping_job(str(root))["attempts"][-1]
     ir = json.loads(Path(attempt["files"]["editable_map"]["path"]).read_text())
     assert edges(ir) == {(3, 9), (9, 6)}
+    # Inspecting the connected draft again lists nothing: the pieces the connector
+    # joined are linked, not touching pieces left apart.
+    again = runs.advance_mapping_run(str(root), {"type": "inspect_connections", "candidate_id": 3, "offset": 0},
+                                     "Re-read connections after joining", 4)["connection_observation"]
+    assert again["candidates"] == [] and again["rejected"] == [], again["rejected"]
     assert all(Path(original["files"][k]["path"]).read_bytes() == v for k, v in original_bytes.items())
     before = (root / "job.json").read_bytes()
     with pytest.raises(ValueError, match="stale"):
@@ -1594,7 +1599,7 @@ def test_connections_preserve_source_extent_and_verify_real_reopened_route(conne
     assert (root / "job.json").read_bytes() == before
     with pytest.raises(ValueError, match="retained-extent"):
         jobs.select_mapping_candidate(str(root), 3, "Connection must not inflate source-corridor extent")
-    final = runs.advance_mapping_run(str(root), {"type": "finish", "candidate_id": 3}, "Deliver graph with unresolved legal routing", 4)
+    final = runs.advance_mapping_run(str(root), {"type": "finish", "candidate_id": 3}, "Deliver graph with unresolved legal routing", 5)
     assert final["output"]["candidate_id"] == 3 and jobs.inspect_mapping_job(str(root))["selected"] is None
 
 

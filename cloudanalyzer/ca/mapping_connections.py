@@ -194,10 +194,19 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
             if region is not None:
                 baseline = json.loads(Path(parent['patch_inputs']['baseline_editable_map']['path']).read_text())
                 repair_ids = {l['id'] for l in ir['lanes']} - {l['id'] for l in baseline['lanes']}
+            native_reasons = {(r["from"], r["to"]): r["reason"] for r in payload["report"]["junctions"].get("rejections", [])}
+            linked = edges(ir)
             for first, second in zip(pieces, pieces[1:]):
                 pair = (first["lane"], second["lane"])
                 gap = second["from_m"] - first["to_m"]
-                if not 0 < gap <= OPTIONS["max_gap"] or pair not in offered:
+                if gap > OPTIONS["max_gap"] or pair in linked:
+                    continue
+                if gap <= 0 or pair not in offered:
+                    # Consecutive pieces that stay apart are listed with why: touching
+                    # ends no connector can span, or the native check that refused them.
+                    reason = "touching_pieces" if gap <= 0 else native_reasons.get(pair, "not_offered")
+                    hold = reason if reason == "touching_pieces" else f"native_{reason}"
+                    rejected.append({"from": pair[0], "to": pair[1], "station_gap_m": gap, "holds": [hold]})
                     continue
                 c = offered[pair]
                 ts = np.linspace(first["to_m"], second["from_m"], math.ceil(gap / .5) + 1)
@@ -231,7 +240,7 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
             proposal = {"candidate_id": cid, "inputs": inputs, "options": OPTIONS, "pieces": pieces, "region": region,
                         "baseline_routes": route_metrics(ir, {p["lane"]: (p["from_m"], p["to_m"]) for p in pieces}),
                         "candidates": candidates, "rejected": rejected,
-                        "native_summary": {k: v for k, v in payload["report"]["junctions"].items() if k not in {"candidates", "added"}},
+                        "native_summary": {k: v for k, v in payload["report"]["junctions"].items() if k not in {"candidates", "added", "rejections"}},
                         "traffic_rules_inferred": False}
             jobs._inputs(job)
             for artifact in inputs.values():

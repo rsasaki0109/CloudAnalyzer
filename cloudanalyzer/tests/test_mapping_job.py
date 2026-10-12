@@ -165,8 +165,17 @@ def test_agent_run_binds_one_layout_rejects_stale_replay_and_returns_both_maps(j
     assert final["status"] == "finished" and final["output"]["status"] == "draft_needs_review"
     assert {"map", "trajectory", "hd_map", "hd_editable_map", "hd_source_audits"} <= final["output"]["artifacts"].keys()
     assert final["output"]["road_semantics_inferred"] is False and jobs.inspect_mapping_job(str(root))["selected"] is None
+    # The finished draft lists its graph and every held trace in one place.
+    diagnosis = final["output"]["diagnosis"]
+    assert diagnosis["routes"]["after"]["connected_components"] >= 1
+    holds = diagnosis["review_holds"]
+    assert holds["traces_total"] == len(holds["traces"]) and holds["passes_requested_extent"] is not None
+    assert all(t["low_quantile"]["holds"] or t.get("ground_consensus", {}).get("holds") for t in holds["traces"])
+    assert "layout_hypothesis" in holds["unverified"]
     inspect = CliRunner().invoke(app, ["mapping-run-inspect", str(root)])
     assert inspect.exit_code == 0 and json.loads(inspect.stdout)["output"] == final["output"]
+    missing = CliRunner().invoke(app, ["mapping-run-inspect", str(tmp_path / "elsewhere")])
+    assert missing.exit_code == 1 and "not a mapping run directory" in missing.output
     (root / "layout-hypothesis.json").write_text(json.dumps(_run_layout(width=1.)))
     with pytest.raises(ValueError, match="changed"):
         runs.inspect_mapping_run(str(root))
@@ -1728,21 +1737,25 @@ def test_connection_preview_withholds_geometric_shortcuts_narrowing_and_ambiguit
     assert result["connection_observation"] == observation
 
 
-def test_connection_preview_names_the_unsupported_trace(connection_run):
+@pytest.mark.parametrize("reason,detail", [
+    ("unsupported", {"traces": [{"trace": "left", "fraction": 0.6, "start_supported": True, "end_supported": True}]}),
+    ("heading", {"exit_alignment": 0.9, "entry_alignment": -0.4, "turn_degrees": 150.0,
+                 "minimum_alignment": 0.25, "maximum_turn_degrees": 135.0}),
+])
+def test_connection_preview_carries_the_native_measurement(connection_run, reason, detail):
     root, native = connection_run
-    detail = {"traces": [{"trace": "left", "fraction": 0.6, "start_supported": True, "end_supported": True}]}
     def refused(*args):
         result = json.loads(native.connect_vector_map_junctions(*args))
         junctions = result["report"]["junctions"]
         c = junctions["candidates"].pop(0)
         junctions["rejections"] = [{"from": c["from"], "to": c["to"], "gap": c["gap"],
-                                    "reason": "unsupported", "unsupported": detail}]
+                                    "reason": reason, reason: detail}]
         return json.dumps(result)
     jobs.core().connect_vector_map_junctions = refused
     observation = _inspect_connection(root)["connection_observation"]
     assert observation["candidates"] == []
     (entry,) = observation["rejected"]
-    assert entry["holds"] == ["native_unsupported"] and entry["unsupported"] == detail
+    assert entry["holds"] == [f"native_{reason}"] and entry[reason] == detail
 
 
 def test_completed_connection_inspection_resumes_from_its_saved_proposal(connection_run, monkeypatch):

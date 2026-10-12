@@ -56,6 +56,9 @@ can still preserve source curves for review.
    audits. It uses up to two shared HD attempts. Each draft is a replacement
    hypothesis; it does not append roads to an earlier map. Separate pieces stay
    disconnected. Previous maps and any explicit selection remain intact.
+   The diagnosis gives `routes.after` from the first draft on: the number of
+   separate pieces (`connected_components`) and the longest route, so the agent can
+   see what connections could join.
 5. The agent reads width/structural failures, original input extent and both
    ground estimators, then decides another draft, inspects short connections,
    inspects raw-source gaps to test less point thinning, or finishes. Explicit
@@ -70,6 +73,13 @@ can still preserve source curves for review.
    complete decision-history path. It never calls `select_mapping_candidate`.
    A partial export remains `draft_needs_review`; no HD output is explicitly
    `hd_unavailable`. `deployment_ready=false` remains unconditional.
+   The diagnosis (also returned by every draft) ends with `review_holds`, the holds
+   gathered in one place:
+   - `traces`: every lane trace held by either estimator, with each estimator's
+     `fraction` and `holds` side by side (up to 64, with `traces_total`);
+   - `ground_estimators_disagree` and `editable_and_reopened_osm_agree`;
+   - `passes_requested_extent`, `export_warnings` (warning-level export codes) and
+     `unverified`, the assumptions no audit can confirm.
 
 Every action supplies the inspected `expected_revision` and a reason. Stale
 retries are rejected before execution. Inspection and finish actions spend no
@@ -237,15 +247,25 @@ are linked and not listed.
 - `touching_pieces`: the pieces meet at the same station, and no connector can be
   drawn across a zero gap;
 - `native_heading`, `native_height`, `native_unsupported`, `native_geometry` or
-  `native_touching_ends`: the native junction check refused the pair for that reason.
-  A `native_unsupported` entry carries `unsupported`: `ends` lists `from` (the exit)
-  and/or `to` (the entry) when a road end has no ground beneath it, and `traces` lists
-  each connector trace (`center`, `left`, `right`) whose supported `fraction` or
-  `start_supported` / `end_supported` fell short;
+  `native_touching_ends`: the native junction check refused the pair for that reason,
+  with what it measured:
+  - `native_unsupported` carries `unsupported`. `ends` lists `from` (the exit) and/or
+    `to` (the entry) when a road end has no ground beneath it; it is absent when both
+    ends have ground. `traces` lists each connector trace (`center`, `left`, `right`)
+    whose supported `fraction` or `start_supported` / `end_supported` fell short;
+  - `native_heading` carries `heading`: `exit_alignment` and `entry_alignment` (the
+    cosine between each end's heading and the gap, at least `minimum_alignment`) and
+    `turn_degrees` (at most `maximum_turn_degrees`);
+  - `native_height` carries `height`: `rise_m` and `grade` between the ends, refused
+    when both exceed `maximum_rise_m` and `maximum_grade`;
 - the connection checks above, for example `below_fixed_minimum_width`.
 
 The native summary counts every refused exit/entry pair, including non-consecutive
 ones, and `touching_ends` counts pairs closer than 0.5 m.
+
+Offered candidates carry `both_estimators_verified: false`. This is not a hold: the
+preview applies only the junction's own ground check, and `connect` runs both
+estimators' source audits on the added connector before it is adopted.
 
 The proposal is saved with parent, cloud, trajectory, source and native hashes.
 Pages show at most eight complete candidates; overlong geometry is withheld.
@@ -756,6 +776,18 @@ dataset-specific IDs:
 
 ```json
 {"type": "draft", "decisions": [{"candidate_id": 12, "action": "include", "reason": "Observed source band follows the input path; complete width remains unresolved"}]}
+```
+
+Decisions can take inspected `from_m` / `to_m` stations, and one candidate can be
+split between include and defer. Defer the range left out explicitly; a range no
+decision covers is reported as `not_reviewed` rather than deferred:
+
+```json
+{"type": "draft", "decisions": [
+  {"candidate_id": 1, "action": "include", "from_m": 2.0, "to_m": 180.0, "reason": "Supported band at the fixed width"},
+  {"candidate_id": 1, "action": "defer", "from_m": 180.0, "to_m": 184.0, "reason": "Profile at 182 m is narrower than the fixed minimum width"},
+  {"candidate_id": 1, "action": "include", "from_m": 184.0, "to_m": 202.0, "reason": "Supported band at the fixed width"}
+]}
 ```
 
 ```json

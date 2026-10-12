@@ -208,9 +208,10 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                     reason = "touching_pieces" if gap <= 0 else native.get("reason", "not_offered")
                     hold = reason if reason == "touching_pieces" else f"native_{reason}"
                     entry = {"from": pair[0], "to": pair[1], "station_gap_m": gap, "holds": [hold]}
-                    if gap > 0 and "unsupported" in native:
-                        # Which road ends or connector traces lacked ground support.
-                        entry["unsupported"] = native["unsupported"]
+                    if gap > 0:
+                        # What the native check measured: unsupported ends or traces,
+                        # heading alignment or the height step between the ends.
+                        entry.update({k: native[k] for k in ("unsupported", "heading", "height") if k in native})
                     rejected.append(entry)
                     continue
                 c = offered[pair]

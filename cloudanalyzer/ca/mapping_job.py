@@ -682,10 +682,15 @@ def mismatch_direction(audit: dict[str, Any]) -> dict[str, int] | None:
 def _disagreement_note(quantile: dict[str, Any], consensus: dict[str, Any]) -> str:
     direction = mismatch_direction(quantile)
     if direction and direction["height_mismatches"] and not direction["below_trace"] and not consensus["needs_review"]:
-        return ("Ground estimators disagree only where the low-quantile ground lies above the traces: returns above "
+        note = ("Ground estimators disagree only where the low-quantile ground lies above the traces: returns above "
                 "the road (tree canopy, walls, vehicles) lift it, while the lowest supported layer meets the traces. "
                 "No low-quantile ground lies below a trace, which would mean a trace floating above the observed "
                 "surface. This explains the disagreement; it does not verify road accuracy.")
+        below = (mismatch_direction(consensus) or {}).get("below_trace", 0)
+        if below:
+            note += (f" The lowest-supported-layer estimator still finds {below} sample(s) with ground below a trace, "
+                     "too few to hold any trace; inspect those locations, as for any trace that may float.")
+        return note
     return ("Ground estimators disagree. Inspect layered/density-dominated source columns and actual surface levels; "
             "do not select the estimator with the better score as proof of road accuracy.")
 

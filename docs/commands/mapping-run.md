@@ -48,8 +48,9 @@ can still preserve source curves for review.
 3. An inspect action returns up to eight candidates with original-frame curves,
    surface evidence and observed stations. Previews contain up to 128 sections
    per candidate with explicit total/truncation flags. The inspection receipt
-   persists. Draft ranges must have inspected endpoints; unreviewed tails stay
-   unresolved. Source-proposal inspection preserves original candidate IDs and does not adopt a draft automatically.
+   persists. Every candidate a draft decides on, deferred ones included, must
+   have been inspected, and draft ranges must have inspected endpoints;
+   unreviewed tails stay unresolved. Source-proposal inspection preserves original candidate IDs and does not adopt a draft automatically.
 4. A draft action supplies **complete** include/defer decisions and reasons.
    It automatically saves source geometry, binds the fixed layout to each
    included piece, generates Lanelet2/IR/projector and reads all four source
@@ -81,6 +82,12 @@ can still preserve source curves for review.
    - `mismatch_direction` per estimator: of its `height_mismatches`, how many have the
      source ground `above_trace` or `below_trace` (null for audits saved before this
      split; each trace entry also carries `height_mismatches_above`);
+   - `below_trace_samples`: every sample, from either estimator, whose source ground
+     lies below the trace, with `estimator`, `lane`, `trace`, `lane_station_m` (along
+     the lane in its travel direction, not the original drive station), `xyz`,
+     `source_height_m` and `below_trace_m` (up to 32, with a total and a `limited`
+     flag); `problem_locations_available` is false for audits saved without
+     locations;
    - `passes_requested_extent`, `export_warnings` (warning-level export codes) and
      `unverified`, the assumptions no audit can confirm.
 
@@ -93,8 +100,10 @@ can still preserve source curves for review.
    the trace's level and none below; about nine in ten samples sat under returns
    more than 2 m overhead. Mismatches only `above_trace`, with the
    consensus estimator holding nothing, explain the disagreement as returns above
-   the road, and the diagnosis says so. Any `below_trace` mismatch means a trace may
-   float above the observed surface; inspect it. Neither case verifies road accuracy,
+   the road, and the diagnosis says so. A `below_trace` mismatch from **either**
+   estimator means a trace may float above the observed surface: inspect each entry
+   of `below_trace_samples`, even when it holds no trace. On the NCLT drives the
+   consensus estimator found 3 and 2 such samples, 0.32–0.58 m under the trace. Neither case verifies road accuracy,
    and the runner never picks the estimator with the better score.
 
 Every action supplies the inspected `expected_revision` and a reason. Stale
@@ -450,7 +459,8 @@ then explicitly deliver that child's point map and HD draft:
 
 Alternatively use the root's normal `finish` with its retained baseline candidate
 when the trial worsens, fails or does not justify replacement. Earlier point and
-HD maps stay unchanged. Completed retry stages support `resume` without another
+HD maps stay unchanged. The child is left as it stands and needs no closing; its
+unspent attempts are not returned to the root. Completed retry stages support `resume` without another
 allocation; running native stages and interrupted raw extraction require retained
 state inspection before manual recovery. Failed retry directories are preserved.
 An interrupted inspection can also be abandoned with normal `finish` to deliver

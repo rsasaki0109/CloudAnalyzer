@@ -180,6 +180,13 @@ def start_mapping_run(source: str, out_dir: str, layout_hypothesis: dict[str, An
     return inspect_mapping_run(str(root))
 
 
+def _stations(problem: dict[str, Any]) -> list[float]:
+    """Spread a problem interval's samples evenly over its lane-local stations."""
+    n = len(problem["points"])
+    lo, hi = problem["from_m"], problem["to_m"]
+    return [lo + (hi - lo) * i / (n - 1) if n > 1 else lo for i in range(n)]
+
+
 def _review_holds(diagnosis: dict[str, Any]) -> dict[str, Any]:
     """Gather every held trace from the editable audits of both ground estimators."""
     audits = {"low_quantile": diagnosis["editable"]}
@@ -194,6 +201,13 @@ def _review_holds(diagnosis: dict[str, Any]) -> dict[str, Any]:
                 if "height_mismatches_above" in support:
                     entry[name].update({k: support[k] for k in ("height_mismatches", "height_mismatches_above")})
     held = [t for t in traces.values() if any(t.get(name, {}).get("holds") for name in audits)]
+    # Source ground below a trace is where a trace may float above the observed
+    # surface, whichever estimator saw it; list those locations even without a hold.
+    below = [{"estimator": name, "lane": p["lane"], "trace": p["curve"], "lane_station_m": station,
+              "xyz": point, "source_height_m": height, "below_trace_m": point[2] - height}
+             for name, audit in audits.items() for p in audit.get("problems", []) if p["reason"] == "height_mismatch"
+             for station, point, height in zip(_stations(p), p["points"], p["source_heights_m"])
+             if height is not None and height < point[2]]
     reopened = [diagnosis["editable_and_reopened_match"]]
     if diagnosis["ground_consensus"]:
         reopened.append(diagnosis["ground_consensus"]["editable"] == diagnosis["ground_consensus"]["reopened_osm"])
@@ -205,6 +219,10 @@ def _review_holds(diagnosis: dict[str, Any]) -> dict[str, Any]:
         and audits["low_quantile"].get("needs_review") != audits["ground_consensus"].get("needs_review"),
         "editable_and_reopened_osm_agree": all(reopened),
         "mismatch_direction": {name: jobs.mismatch_direction(audit) for name, audit in audits.items()},
+        "below_trace_samples": below[:32],
+        "below_trace_samples_total": len(below),
+        "below_trace_samples_limited": len(below) > 32 or any(a.get("problems_limited") for a in audits.values()),
+        "problem_locations_available": all(a.get("problems_available", False) for a in audits.values()),
         "passes_requested_extent": diagnosis["extent"]["passes_requested_extent"],
         "export_warnings": [i["code"] for i in diagnosis["export_issues"] if i.get("severity") != "info"],
         "unverified": ["layout_hypothesis", "legal_routing", "full_road_width"],
@@ -574,8 +592,9 @@ def advance_mapping_run(job_dir: str, action: dict[str, Any], reason: str, expec
                 original_sha = job.get("corridor_refinement", {}).get("previous", {}).get("file", proposal)["sha256"]
                 if run.get("reviewed_proposal_sha256", original_sha) != proposal["sha256"]:
                     raise ValueError("inspect candidates from the current proposal before drafting decisions")
-                if any(d["candidate_id"] not in run["reviewed_candidates"] for d in validated["decisions"]):
-                    raise ValueError("inspect candidates through this run before drafting decisions")
+                unseen = sorted({d["candidate_id"] for d in validated["decisions"]} - set(run["reviewed_candidates"]))
+                if unseen:
+                    raise ValueError(f"inspect candidates through this run before drafting decisions, including defers; not inspected: {unseen}")
                 for d in validated["decisions"]:
                     previews = [c for h in run["history"] if h.get("proposal_sha256", original_sha) == proposal["sha256"]
                                 for c in h.get("observation", []) if c["id"] == d["candidate_id"]]

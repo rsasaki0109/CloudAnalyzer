@@ -145,7 +145,7 @@ def test_agent_run_binds_one_layout_rejects_stale_replay_and_returns_both_maps(j
     assert run["status"] == "needs_agent" and run["reviewed_candidates"] == [] and run["revision"] == 0
     observed_id = run["candidate_index"]["candidate_index"][0]["id"]
     choices = [{"candidate_id": observed_id, "action": "include", "reason": "Retain observed source span"}]
-    with pytest.raises(ValueError, match="inspect candidates"):
+    with pytest.raises(ValueError, match=rf"not inspected: \[{observed_id}\]"):
         runs.advance_mapping_run(str(root), {"type": "draft", "decisions": choices}, "Read evidence first", 0)
     run = runs.advance_mapping_run(str(root), {"type": "inspect", "candidate_ids": [observed_id]}, "Read original cross-sections", 0)
     assert run["observation"][0]["sections"][0]["station_m"] == 0.
@@ -935,6 +935,31 @@ def test_estimator_disagreement_is_explained_only_when_every_mismatch_lies_above
     for quantile, consensus in [(audit(3), audit(None, 0, ())), (audit(4), audit(None)), (audit(None), audit(None, 0, ()))]:
         assert jobs._disagreement_note(quantile, consensus).startswith("Ground estimators disagree. Inspect")
     assert jobs.mismatch_direction(audit(None)) is None
+    # A consensus sample below a trace is named even when it holds nothing.
+    floating = audit(None, 0, ())
+    floating["lanes"][0]["traces"]["center"].update(height_mismatches=1, height_mismatches_above=0)
+    assert "finds 1 sample(s) with ground below a trace" in jobs._disagreement_note(audit(4), floating)
+
+
+def test_review_holds_list_every_sample_below_a_trace_from_either_estimator():
+    from ca.mapping_run import _review_holds
+    def audit(problems, review=()):
+        trace = {"fraction": 1.0, "holds": [], "height_mismatches": 0, "height_mismatches_above": 0}
+        return {"needs_review": list(review), "lanes": [{"lane": 3, "traces": {"left": trace}}],
+                "problems": problems, "problems_available": True, "problems_limited": False}
+    lifted = {"lane": 3, "curve": "left", "reason": "height_mismatch", "from_m": 4.0, "to_m": 5.0,
+              "points": [[0, 0, 1.0], [0, .5, 1.0], [0, 1, 1.0]], "source_heights_m": [2.5, 2.4, 2.6]}
+    sunk = {"lane": 3, "curve": "left", "reason": "height_mismatch", "from_m": 7.0, "to_m": 7.0,
+            "points": [[1, 0, 1.0]], "source_heights_m": [0.62]}
+    missing = {"lane": 3, "curve": "left", "reason": "insufficient_returns", "from_m": 9.0, "to_m": 9.0,
+               "points": [[2, 0, 1.0]], "source_heights_m": [None]}
+    diagnosis = {"editable": audit([lifted, missing]), "ground_consensus": {"editable": audit([sunk]), "reopened_osm": audit([sunk])},
+                 "editable_and_reopened_match": True, "extent": {"passes_requested_extent": True}, "export_issues": []}
+    holds = _review_holds(diagnosis)
+    (sample,) = holds["below_trace_samples"]
+    assert sample["estimator"] == "ground_consensus" and sample["lane_station_m"] == 7.0
+    assert sample["below_trace_m"] == pytest.approx(0.38) and holds["below_trace_samples_total"] == 1
+    assert holds["problem_locations_available"] is True and holds["below_trace_samples_limited"] is False
 
 
 @pytest.mark.parametrize("changed", ["pointcloud", "quality", "map", "report"])

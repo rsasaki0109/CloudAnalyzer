@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Mapping-run `review_holds` lists `below_trace_samples`: every sample, from either
+  ground estimator, whose source ground lies below a trace, with its location.
+  Those are where a trace may float, even when they hold no trace. The estimator
+  disagreement note now counts the consensus estimator's below-trace samples too.
+  A draft refused for uninspected candidates names them; the docs say defers also
+  need inspection, that problem stations run along each lane, and that a retry
+  child needs no closing when the root finishes its baseline.
+
 - Source audits split height mismatches by direction (`height_mismatches_above`).
   Mapping-run diagnoses report `mismatch_direction` per ground estimator in
   `review_holds`, and explain an estimator disagreement as returns above the road

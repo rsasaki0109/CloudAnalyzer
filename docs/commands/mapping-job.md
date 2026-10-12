@@ -42,7 +42,8 @@ They do not embed an LLM, require a model API key or choose legal road semantics
    per-lane/trace evidence: height mismatches, insufficient returns, endpoint
    holds, audit completeness and retained extent. It verifies source/artifact
    hashes, does not run native processing and does not spend an attempt.
-   New jobs retain bounded `problems` with lane/curve/reason, oriented stations,
+   New jobs retain bounded `problems` with lane/curve/reason, oriented stations
+   (measured along each lane in its travel direction, not original drive stations),
    original-frame XYZ and `source_heights_m` parallel to those points. A null
    source height means insufficient support for that report's estimator. Older jobs explicitly
    report `problems_available=false`; limited previews set `problems_limited=true`.

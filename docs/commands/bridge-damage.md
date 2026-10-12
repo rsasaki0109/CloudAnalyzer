@@ -34,7 +34,11 @@ lie in. Left out, because shading, haunches and edges mimic all four kinds:
 - bands 0.15 m beyond the visible faces of girders and cross beams and around supports;
 - 0.3 m inside the deck edges and ends, and 0.1 m around scan holes;
 - straight runs at least 0.4 m long along or across the deck, even broken into pieces:
-  joints between slab units and formwork seams. Their length is reported apart.
+  joints between slab units and formwork seams. Their length is reported apart, and a
+  0.2 m band beside them is left out for every kind (a dark joint has a receded groove);
+- cells whose 0.5 m neighbourhood has returns in fewer than half of its cells: far from
+  the scanner or between scan lines, single returns' colour and height noise reads as
+  damage. The area left out is reported as too sparse.
 
 Cracks are narrower than the raster and are not searched. Girder faces and the
 deck top are not searched either.

@@ -43,7 +43,7 @@ SEAM_ANGLE = 10.0          # degrees from the axis or its normal for a joint or 
 EDGE_MARGIN = 0.3          # left out inside the deck edges and ends (m)
 HOLE_MARGIN = 0.1          # left out around cells without returns (m)
 SEAM_MARGIN = 0.2          # left out beside a straight seam of any kind: a joint's groove and chamfers (m)
-MIN_RETURNS_SHARE = 0.0    # share of cells with returns in the neighbourhood needed to search a cell
+MIN_RETURNS_SHARE = 0.5    # share of cells with returns in the neighbourhood needed to search a cell
 
 KINDS = {
     "light": ("遊離石灰・白色変色の候補", "#00bcd4"),
@@ -101,7 +101,8 @@ def bridge_damage(
                                   "dark_dL": DARK_DL, "rust_db_da": [RUST_DB, RUST_DA], "recess_m": RECESS_M,
                                   "min_area_m2": MIN_AREA, "member_margin_m": MEMBER_MARGIN,
                                   "edge_margin_m": EDGE_MARGIN, "seam_elongation": SEAM_ELONGATION,
-                                  "seam_angle_deg": SEAM_ANGLE}}
+                                  "seam_angle_deg": SEAM_ANGLE, "seam_margin_m": SEAM_MARGIN,
+                                  "min_returns_share": MIN_RETURNS_SHARE}}
     d = plan["deck"]
     if plan["underside"] == "unobserved" or d["slab_thickness_m"] is None:
         result["note"] = "No returns beneath the deck: the soffit was not searched and no damage is implied."

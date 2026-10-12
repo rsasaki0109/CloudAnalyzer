@@ -1,0 +1,136 @@
+{
+  "schema": "cloudanalyzer.bridge_damage.v1",
+  "source": {
+    "file": "bridge_10_cb_faro.ply",
+    "sha256": "0ead8923296f9950721945811ab9636d2c7d770f9701267a9578ef31c83fce53",
+    "bytes": 159580262,
+    "dataset": "https://doi.org/10.5281/zenodo.18738225",
+    "converted": "PLY to LAS with colour and labels as classification"
+  },
+  "underside": "girders_observed",
+  "candidates": [
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.0064,
+      "centre_m": [
+        -35.29125,
+        -1.295
+      ],
+      "element": "Ds0202",
+      "along_m": [
+        -35.339999999999996,
+        -35.24
+      ],
+      "lateral_m": [
+        -1.3599999999999999,
+        -1.2399999999999998
+      ],
+      "contrast": 21.970617427255313,
+      "returns_share": 0.6728000000000001,
+      "contrast_unit": "L*",
+      "id": "D001"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.0268,
+      "centre_m": [
+        -35.13746268656717,
+        -1.111791044776119
+      ],
+      "element": "Ds0202",
+      "along_m": [
+        -35.26,
+        -35.02
+      ],
+      "lateral_m": [
+        -1.2599999999999998,
+        -0.96
+      ],
+      "contrast": 20.635602571261686,
+      "returns_share": 0.7599999999999999,
+      "contrast_unit": "L*",
+      "id": "D002"
+    },
+    {
+      "kind": "dark",
+      "label_ja": "漏水・暗色変色の候補",
+      "area_m2": 0.005200000000000001,
+      "centre_m": [
+        -33.419230769230765,
+        0.16538461538461563
+      ],
+      "element": "Ds0202",
+      "along_m": [
+        -33.46,
+        -33.38
+      ],
+      "lateral_m": [
+        0.12000000000000034,
+        0.21999999999999997
+      ],
+      "contrast": -16.419438749800342,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D003"
+    },
+    {
+      "kind": "recess",
+      "label_ja": "剥離・欠損の候補",
+      "area_m2": 0.02,
+      "centre_m": [
+        -33.383599999999994,
+        1.2084000000000004
+      ],
+      "element": "Ds0202",
+      "along_m": [
+        -33.5,
+        -33.300000000000004
+      ],
+      "lateral_m": [
+        1.0999999999999999,
+        1.3400000000000005
+      ],
+      "contrast": -0.018010496174212243,
+      "returns_share": 0.724,
+      "contrast_unit": "m",
+      "id": "D004"
+    }
+  ],
+  "thresholds": {
+    "cell_m": 0.02,
+    "background_m": 0.5,
+    "light_dL": 15.0,
+    "dark_dL": -15.0,
+    "rust_db_da": [
+      12.0,
+      4.0
+    ],
+    "recess_m": 0.012,
+    "min_area_m2": 0.005,
+    "member_margin_m": 0.15,
+    "edge_margin_m": 0.3,
+    "seam_elongation": 6.0,
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
+  },
+  "straight_seams_left_out": {
+    "regions": {},
+    "cells_along_m": {
+      "light": 129.68,
+      "dark": 41.78,
+      "recess": 182.34
+    }
+  },
+  "soffit": {
+    "points": 653054,
+    "cells_with_returns": 250467,
+    "cells_searched": 193863,
+    "area_searched_m2": 77.54520000000001,
+    "area_too_sparse_m2": 2.3112
+  },
+  "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
+}

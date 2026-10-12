@@ -97,3 +97,54 @@ false reports. These are the rules that changed, and the bridges each one had mi
 The 1 m threshold for a found pier is generous against the 0.15 m mean error. All
 errors are within 0.3 m except four: bridge_10_cb's three (0.65–0.79 m, on a 26° skew
 with two columns per pier) and bridge_17_fr's (0.51 m).
+
+## Damage candidates
+
+`ca bridge-damage` searched the soffit of the 15 bridges whose underside was scanned,
+on the plans above, with the superstructure and deck labels as the surface:
+
+```bash
+ca bridge-damage bridge_2_cb.las -o bridge_2_cb --classes 3,4,5,8 --axis-classes 5 --member-classes 4 --surface-classes 4,5
+```
+
+There are no inspection records, so the candidates were checked by eye on the coloured
+points and a height map around each. With the rules before this check they numbered 56.
+Almost all were explained by three things the search had not left out:
+
+| Cause | Where | What the search now does |
+|---|---|---|
+| A joint's receded groove beside its dark line | 6 of bridge_1_cb's 10 recess candidates, along its longitudinal joints | Leaves out a 0.2 m band beside a straight seam of any kind, for every kind |
+| Sparse returns far from the scanner or between scan lines | bridge_1_cb's other 4 and 7 of bridge_2_cb's 11 (neighbourhoods 44–51% filled) | Searches a cell only where at least half of its 0.5 m neighbourhood has returns |
+| Steps in the soffit (haunches, beam edges at a skew) | the remaining recess candidates on bridge_9_cb, bridge_12_fr, bridge_13_fr and bridge_16_fr | Searches recess only where the neighbourhood's height interquartile range is at most 2.4 cm |
+
+With these the 15 bridges have 9 candidates on 1 495 m² searched (87 m² left out as too
+sparse). By eye:
+
+- **Plausible:** a light patch on bridge_2_cb (D003) and a dark mottled stain on
+  bridge_10_cb (D003).
+- **Not damage:**
+  - bridge_10_cb's other three sit beside a beam edge at a skew.
+  - bridge_17_fr's two sit on a diamond mesh hanging below the soffit, perhaps netting.
+- **Not looked into:** bridge_2_cb's other two.
+
+bridge_7_cb and bridge_11_fr have girders so close that nothing between them is left to
+search. Girder faces are not searched.
+
+| Bridge | Searched (m²) | Too sparse (m²) | Candidates before | Candidates now |
+|---|---:|---:|---:|---:|
+| bridge_1_cb | 200.0 | 3.0 | 10 | 0 |
+| bridge_2_cb | 348.1 | 15.7 | 11 | 3 |
+| bridge_3_cb | 400.6 | 6.1 | 0 | 0 |
+| bridge_7_cb | 0.0 | 0.0 | 0 | 0 |
+| bridge_8_cb | 173.4 | 20.2 | 0 | 0 |
+| bridge_9_cb | 40.4 | 15.3 | 9 | 0 |
+| bridge_10_cb | 77.5 | 2.3 | 5 | 4 |
+| bridge_11_fr | 0.0 | 0.0 | 0 | 0 |
+| bridge_12_fr | 20.8 | 0.4 | 6 | 0 |
+| bridge_13_fr | 15.0 | 1.6 | 6 | 0 |
+| bridge_14_fr | 61.0 | 3.2 | 0 | 0 |
+| bridge_15_fr | 0.0 | 0.4 | 0 | 0 |
+| bridge_16_fr | 25.2 | 8.7 | 6 | 0 |
+| bridge_17_fr | 117.9 | 9.4 | 3 | 2 |
+| bridge_20_fr | 15.5 | 1.1 | 0 | 0 |
+| **Total** | **1495** | **87** | **56** | **9** |

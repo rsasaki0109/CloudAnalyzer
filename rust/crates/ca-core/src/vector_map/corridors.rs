@@ -68,6 +68,23 @@ pub struct CrossSection {
     pub support_span_m: f64,
     pub left_evidence: EdgeEvidence,
     pub right_evidence: EdgeEvidence,
+    /// Signed height of the surface in the first bin beyond each edge, relative to
+    /// the edge bin: what ended the band. A few centimetres to a few tenths is a curb,
+    /// rut or rough surface; more is an obstacle (a vehicle, post or wall) standing on
+    /// or beside the road. Absent at the search limit, at a gap without returns and
+    /// on an inset edge.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub left_step_m: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub right_step_m: Option<f64>,
+    /// Height above the surface of the tallest returns (95th percentile) between
+    /// 0.2 m and 3 m up in the first bin beyond each edge: a post, vehicle, wall or
+    /// fence standing there. Absent when that bin holds fewer than three such returns,
+    /// at the search limit and on an inset edge.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub left_obstacle_m: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub right_obstacle_m: Option<f64>,
     pub intersects_trajectory: bool,
     pub path_level_supported: bool,
 }
@@ -231,8 +248,27 @@ fn edges(surface: &[Option<f64>], index: usize, outward: isize, o: &BuildOptions
     }
 }
 
+/// Obstacle returns counted above a bin's surface (m).
+const OBSTACLE_HEIGHTS: (f64, f64) = (0.2, 3.0);
+
+/// 95th percentile height above `surface` of returns between OBSTACLE_HEIGHTS.
+fn obstacle(points: &[[f64; 3]], surface: Option<f64>) -> Option<f64> {
+    let z0 = surface?;
+    let mut up: Vec<f64> = points
+        .iter()
+        .map(|p| p[2] - z0)
+        .filter(|h| (OBSTACLE_HEIGHTS.0..=OBSTACLE_HEIGHTS.1).contains(h))
+        .collect();
+    if up.len() < 3 {
+        return None;
+    }
+    up.sort_unstable_by(f64::total_cmp);
+    Some(up[((up.len() - 1) as f64 * 0.95).round() as usize])
+}
+
 fn bands(
     surface: &[Option<f64>],
+    obstacles: &[Option<f64>],
     sample: (f64, [f64; 3]),
     dir: [f64; 2],
     reach: f64,
@@ -277,6 +313,17 @@ fn bands(
                 support_span_m: left - right,
                 left_evidence: edges(surface, end - 1, 1, o),
                 right_evidence: edges(surface, start, -1, o),
+                left_step_m: surface
+                    .get(end)
+                    .copied()
+                    .flatten()
+                    .map(|z| z - surface[end - 1].unwrap()),
+                right_step_m: start
+                    .checked_sub(1)
+                    .and_then(|i| surface[i])
+                    .map(|z| z - surface[start].unwrap()),
+                left_obstacle_m: obstacles.get(end).copied().flatten(),
+                right_obstacle_m: start.checked_sub(1).and_then(|i| obstacles[i]),
                 intersects_trajectory: right <= 0.0 && left >= 0.0,
                 path_level_supported: reference_ground.is_some_and(|z| {
                     (surface[middle].unwrap() - z).abs()
@@ -390,9 +437,13 @@ fn inset(s: &CrossSection, left: usize, right: usize, path: [f64; 3]) -> Option<
     out.support_span_m = span;
     if left > 0 {
         out.left_evidence = EdgeEvidence::SupportInset;
+        out.left_step_m = None;
+        out.left_obstacle_m = None;
     }
     if right > 0 {
         out.right_evidence = EdgeEvidence::SupportInset;
+        out.right_step_m = None;
+        out.right_obstacle_m = None;
     }
     out.intersects_trajectory = s.intersects_trajectory && contains;
     Some(out)
@@ -491,15 +542,28 @@ fn propose_limited(
                 break;
             }
             report.profile_queried_points += count;
-            let surface: Vec<_> = bins
+            let points: Vec<Vec<[f64; 3]>> = bins
                 .iter()
-                .map(|ids| {
-                    junctions::lowest_layer(
-                        &mut ids.iter().map(|&i| cloud.positions[i]).collect::<Vec<_>>(),
-                    )
-                })
+                .map(|ids| ids.iter().map(|&i| cloud.positions[i]).collect())
                 .collect();
-            observed = bands(&surface, (station, p), dir, reach, &o, reference_ground);
+            let surface: Vec<_> = points
+                .iter()
+                .map(|pts| junctions::lowest_layer(&mut pts.clone()))
+                .collect();
+            let obstacles: Vec<_> = points
+                .iter()
+                .zip(&surface)
+                .map(|(pts, &z)| obstacle(pts, z))
+                .collect();
+            observed = bands(
+                &surface,
+                &obstacles,
+                (station, p),
+                dir,
+                reach,
+                &o,
+                reference_ground,
+            );
             current = observed
                 .iter()
                 .filter(|b| {
@@ -939,6 +1003,68 @@ mod tests {
     }
 
     #[test]
+    fn edges_record_the_step_that_ended_the_band() {
+        // Raised shoulders 0.15 m above the road, and a 6 m long, 1.2 m high block
+        // (a parked vehicle) on the road's left half: sections beside it stop at it.
+        // Each profile takes the lowest layer within 2 m along, so a short object
+        // does not end a band.
+        let mut cloud = flat_road();
+        for p in &mut cloud.positions {
+            if (7.0..13.0).contains(&p[0]) && (1.0..3.0 + 1e-9).contains(&p[1]) {
+                p[2] += 1.2;
+            }
+        }
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        let on_path_band = |station: f64| {
+            report
+                .profiles
+                .iter()
+                .find(|p| (p.station_m - station).abs() < 1e-9)
+                .and_then(|p| p.bands.iter().find(|b| b.intersects_trajectory))
+                .unwrap()
+                .clone()
+        };
+        let open = on_path_band(4.0);
+        for step in [open.left_step_m, open.right_step_m] {
+            assert!((step.unwrap() - 0.15).abs() < 0.03, "{step:?}");
+        }
+        let blocked = on_path_band(10.0);
+        assert!(blocked.support_span_m < open.support_span_m);
+        assert!(
+            (blocked.left_step_m.unwrap() - 1.2).abs() < 0.1,
+            "{:?}",
+            blocked.left_step_m
+        );
+        assert!((blocked.right_step_m.unwrap() - 0.15).abs() < 0.03);
+        // Nothing stands on the open shoulders.
+        assert_eq!((open.left_obstacle_m, open.right_obstacle_m), (None, None));
+    }
+
+    #[test]
+    fn edges_record_an_obstacle_standing_beyond_them() {
+        // A 1.5 m post just outside the right shoulder edge: the band still ends at
+        // the 0.15 m step, and the post is reported standing in the bin beyond it.
+        let mut cloud = flat_road();
+        for k in 0..60 {
+            let z = 2.15 + k as f64 * 0.025;
+            for (x, y) in [(10.0, -3.4), (10.1, -3.4), (10.0, -3.3), (10.1, -3.3)] {
+                cloud.positions.push([x, y, z]);
+            }
+        }
+        let report = propose(&cloud, &poses(), &on_path()).unwrap();
+        let band = report
+            .profiles
+            .iter()
+            .find(|p| (p.station_m - 10.0).abs() < 1e-9)
+            .and_then(|p| p.bands.iter().find(|b| b.intersects_trajectory))
+            .unwrap();
+        assert!((band.right_step_m.unwrap() - 0.15).abs() < 0.03);
+        let post = band.right_obstacle_m.unwrap();
+        assert!((1.3..=1.5).contains(&post), "{post}");
+        assert_eq!(band.left_obstacle_m, None);
+    }
+
+    #[test]
     fn a_wide_band_is_narrowed_around_the_path_past_unsupported_ground() {
         // A 12 m road with the path 1 m inside its right edge: everything from
         // 2.5 m left of the path is a hole that no edge inset of up to 2 m clears.
@@ -979,6 +1105,10 @@ mod tests {
             support_span_m: 6.,
             left_evidence: EdgeEvidence::CurbProfile,
             right_evidence: EdgeEvidence::CurbProfile,
+            left_step_m: None,
+            right_step_m: None,
+            left_obstacle_m: None,
+            right_obstacle_m: None,
             intersects_trajectory: true,
             path_level_supported: true,
         };
@@ -1012,6 +1142,10 @@ mod tests {
             support_span_m: 2.,
             left_evidence: EdgeEvidence::CurbProfile,
             right_evidence: EdgeEvidence::CurbProfile,
+            left_step_m: None,
+            right_step_m: None,
+            left_obstacle_m: None,
+            right_obstacle_m: None,
             intersects_trajectory: true,
             path_level_supported: true,
         };
@@ -1180,6 +1314,10 @@ mod tests {
             support_span_m: 6.,
             left_evidence: EdgeEvidence::SupportGap,
             right_evidence: EdgeEvidence::SupportGap,
+            left_step_m: None,
+            right_step_m: None,
+            left_obstacle_m: None,
+            right_obstacle_m: None,
             intersects_trajectory: true,
             path_level_supported: true,
         };

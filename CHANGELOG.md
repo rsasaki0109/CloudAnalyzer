@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Corridor cross sections record what ended each band edge, so an agent can tell a
+  narrow section's cause before deferring or including it:
+  - `left_step_m` / `right_step_m`: the surface step into the next bin (a curb, rut or
+    rough surface when small, an obstacle lying across the surface when large);
+  - `left_obstacle_m` / `right_obstacle_m`: the height of returns 0.2–3 m above that
+    bin, such as a post, vehicle or wall standing there.
+
+  Proposals and coverage are unchanged.
+
 - `ca bridge-sections` and the `measure_bridge_sections` MCP tool cut cross
   sections along a bridge point cloud and write a member dimension table
   (CSV/JSON) and a section drawing (SVG): deck length and skew, total and

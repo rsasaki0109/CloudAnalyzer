@@ -162,6 +162,25 @@ exist. Full-width and intermediate recorded-path containment remain unverified.
 
 Each edge is `curb_profile`, `support_gap`, `height_discontinuity`, `search_limit` or
 `support_inset` (moved inward for support, not a physical observation).
+
+Two more fields say what ended the band on each side, so a narrow section can be told
+apart before it is deferred or included:
+
+- `left_step_m` / `right_step_m`: the signed height of the surface in the first bin
+  beyond the edge, relative to the edge bin. A few centimetres to a few tenths is a
+  curb, rut or rough surface. More is an obstacle lying across the surface for the
+  ±2 m the profile spans, such as a parked vehicle.
+- `left_obstacle_m` / `right_obstacle_m`: the height above that bin's surface of the
+  tallest returns (95th percentile) between 0.2 and 3 m up, such as a post, vehicle,
+  wall or fence standing there.
+
+Both are absent at the search limit and on an inset edge. The step is also absent at a
+gap without returns, and the obstacle when the bin holds fewer than three such returns.
+
+On the bundled June drive, for example, the band at 238 m narrows to 1.5 m between a
+0.12 m drop with a 1.1 m object beyond it and a 0.11 m curb with a 2.9 m object. That
+reads as a real narrow passage. At 26 m it ends at a 0.09 m drop with nothing standing
+beyond. Neither field names an object or certifies clearance.
 The curb check requires bounded raised returns in two outside bins and nearby
 inside support. Only candidates with two curb-like edges in **every** cross section
 receive `curb_width_range_m`; even that estimate has 0.5 m bin-centre quantization

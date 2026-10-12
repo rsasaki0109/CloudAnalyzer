@@ -200,6 +200,13 @@ def _review_holds(diagnosis: dict[str, Any]) -> dict[str, Any]:
                 entry[name] = {"fraction": support["fraction"], "holds": support.get("holds", [])}
                 if "height_mismatches_above" in support:
                     entry[name].update({k: support[k] for k in ("height_mismatches", "height_mismatches_above")})
+    if len(audits) == 2:
+        consensus_lanes = {l["lane"]: l["traces"] for l in audits["ground_consensus"]["lanes"]}
+        for lane in audits["low_quantile"]["lanes"]:
+            for trace, support in lane["traces"].items():
+                other = consensus_lanes.get(lane["lane"], {}).get(trace)
+                if other is not None:
+                    traces[(lane["lane"], trace)]["status"] = jobs.trace_support(support, other)
     held = [t for t in traces.values() if any(t.get(name, {}).get("holds") for name in audits)]
     # Source ground below a trace is where a trace may float above the observed
     # surface, whichever estimator saw it; list those locations even without a hold.
@@ -215,6 +222,7 @@ def _review_holds(diagnosis: dict[str, Any]) -> dict[str, Any]:
         "traces": held[:64],
         "traces_total": len(held),
         "traces_limited_in_response": len(held) > 64,
+        "unexplained_traces_total": sum(t.get("status", "held") == "held" for t in held),
         "ground_estimators_disagree": len(audits) == 2
         and audits["low_quantile"].get("needs_review") != audits["ground_consensus"].get("needs_review"),
         "editable_and_reopened_osm_agree": all(reopened),

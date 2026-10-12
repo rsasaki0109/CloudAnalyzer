@@ -32,6 +32,12 @@ pub struct JunctionOptions {
     pub min_ground_support: f64,
     /// Also require source support along both actual boundary curves and all ends.
     pub check_boundary_support: bool,
+    /// Check boundaries and ends against both ground estimators, as the source
+    /// audits do. The lowest supported layer must meet every trace and end; the
+    /// low quantile must too, unless every one of its shortfalls lies above the
+    /// trace with returns at every sample: returns above the road (canopy, walls,
+    /// vehicles) lifted it. Such traces are listed in `explained_traces`.
+    pub explain_returns_above: bool,
 }
 
 impl Default for JunctionOptions {
@@ -40,6 +46,7 @@ impl Default for JunctionOptions {
             max_gap: 30.0,
             min_ground_support: 0.9,
             check_boundary_support: false,
+            explain_returns_above: false,
         }
     }
 }
@@ -70,6 +77,10 @@ pub struct JunctionCandidate {
     /// Left/right fractions checked with the source-audit protocol when enabled.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub boundary_support: Option<[f64; 2]>,
+    /// Traces (`center`, `left`, `right`) accepted only as explained by returns
+    /// above the road; see `JunctionOptions::explain_returns_above`.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub explained_traces: Vec<&'static str>,
     pub samples: usize,
     /// Multiple supported choices share this incoming or outgoing road end.
     pub ambiguous: bool,
@@ -404,6 +415,19 @@ pub fn propose(
 ) -> Result<JunctionReport, BuildError> {
     o.validate()?;
     let ground = Ground::new(cloud)?;
+    let consensus = if o.explain_returns_above {
+        Some(Ground::new_consensus(cloud)?)
+    } else {
+        None
+    };
+    // With both estimators the lowest supported layer must meet an end; a low
+    // quantile above it is explained by returns above the road.
+    let end_supported = |p: Point3| match &consensus {
+        None => ground.supports(p),
+        Some(c) => {
+            c.supports(p) && (ground.supports(p) || ground.height(p).is_some_and(|z| z > p.z))
+        }
+    };
     let mut report = JunctionReport {
         candidates: Vec::new(), added: Vec::new(), open_exits: 0, open_entries: 0,
         malformed_lanes: 0, rejected_heading: 0, rejected_height: 0,
@@ -517,7 +541,7 @@ pub fn propose(
             // fractional support threshold. Never relax the endpoint ground test.
             let ends: Vec<_> = [("from", a.point), ("to", b.point)]
                 .into_iter()
-                .filter(|(_, p)| !ground.supports(*p))
+                .filter(|(_, p)| !end_supported(*p))
                 .map(|(end, _)| end)
                 .collect();
             if !ends.is_empty() {
@@ -546,20 +570,45 @@ pub fn propose(
                 reject(&mut report, "geometry");
                 continue;
             };
+            let mut explained_traces = Vec::new();
             let (support, samples, boundary_support) = if o.check_boundary_support {
                 let checked = [&center, &left, &right]
                     .map(|line| super::quality::checked_curve_support(&ground, line));
-                let short = |s: &Option<super::quality::CurveSupport>| {
+                let passes = |s: &super::quality::CurveSupport| {
+                    s.start_supported && s.end_supported && s.fraction >= o.min_ground_support
+                };
+                let explained = [&center, &left, &right].map(|line| {
+                    consensus.as_ref().is_some_and(|c| {
+                        super::quality::checked_curve_support(c, line).is_some_and(|c| passes(&c))
+                    })
+                });
+                let short = |(s, layer): (&Option<super::quality::CurveSupport>, &bool)| {
                     s.as_ref().is_none_or(|s| {
-                        !s.start_supported || !s.end_supported || s.fraction < o.min_ground_support
+                        let lifted = s.insufficient_returns == 0
+                            && s.height_mismatches == s.height_mismatches_above;
+                        match consensus {
+                            None => !passes(s),
+                            Some(_) => !*layer || !(passes(s) || lifted),
+                        }
                     })
                 };
-                if checked.iter().any(short) {
+                for ((trace, s), e) in ["center", "left", "right"]
+                    .into_iter()
+                    .zip(&checked)
+                    .zip(&explained)
+                {
+                    if s.as_ref().is_some_and(|s| !passes(s)) && !short((s, e)) {
+                        explained_traces.push(trace);
+                    }
+                }
+                if checked.iter().zip(&explained).any(short) {
                     report.unsupported_candidates += 1;
                     let traces = ["center", "left", "right"]
                         .into_iter()
                         .zip(&checked)
-                        .filter(|(_, s)| short(s))
+                        .zip(&explained)
+                        .filter(|((_, s), e)| short((s, e)))
+                        .map(|((trace, s), _)| (trace, s))
                         .map(|(trace, s)| TraceSupport {
                             trace,
                             fraction: s.as_ref().map(|s| s.fraction),
@@ -588,7 +637,9 @@ pub fn propose(
                     / samples.points.len().max(1) as f64;
                 (support, samples.points.len(), None)
             };
-            if support < o.min_ground_support {
+            // Boundary checking already held each trace to the threshold, or
+            // accepted it as explained by returns above the road.
+            if boundary_support.is_none() && support < o.min_ground_support {
                 report.unsupported_candidates += 1;
                 let trace = TraceSupport {
                     trace: "center",
@@ -610,6 +661,7 @@ pub fn propose(
                 turn_degrees: angle,
                 ground_support: support,
                 boundary_support,
+                explained_traces,
                 samples,
                 ambiguous: false,
                 center: coordinates(&center),
@@ -750,6 +802,54 @@ mod tests {
                 lane.right.fraction
             ],
             [1.0; 3]
+        );
+    }
+
+    #[test]
+    fn canopy_lifted_low_quantile_is_explained_only_where_the_lowest_layer_meets_the_trace() {
+        let mut map = Map::new();
+        road(&mut map, [-20.0, 0.0, 2.0], [-10.0, 0.0, 2.0]);
+        road(&mut map, [0.0, 0.0, 2.0], [10.0, 0.0, 2.0]);
+        let mut cloud = PointCloud::default();
+        for x in -105..=55 {
+            for y in -15..=15 {
+                let (x, y) = (x as f64 * 0.2, y as f64 * 0.2);
+                cloud.positions.push([x, y, 2.0]);
+                // Dense canopy over the left edge of the gap lifts the low quantile.
+                if (-9.0..=-1.0).contains(&x) && y > 0.9 {
+                    for z in 0..12 {
+                        cloud.positions.push([x, y, 8.0 + z as f64 * 0.1]);
+                    }
+                }
+            }
+        }
+        let strict = JunctionOptions {
+            check_boundary_support: true,
+            min_ground_support: 1.0,
+            ..Default::default()
+        };
+        assert!(
+            propose(&map, &cloud, &strict)
+                .unwrap()
+                .candidates
+                .is_empty()
+        );
+        let explaining = JunctionOptions {
+            explain_returns_above: true,
+            ..strict.clone()
+        };
+        let report = propose(&map, &cloud, &explaining).unwrap();
+        assert_eq!(report.candidates.len(), 1);
+        assert_eq!(report.candidates[0].explained_traces, ["left"]);
+        // Without a floor beneath the canopy nothing meets the trace: still refused.
+        cloud
+            .positions
+            .retain(|p| !((-9.0..=-1.0).contains(&p[0]) && p[1] > 0.9 && p[2] < 3.0));
+        assert!(
+            propose(&map, &cloud, &explaining)
+                .unwrap()
+                .candidates
+                .is_empty()
         );
     }
 

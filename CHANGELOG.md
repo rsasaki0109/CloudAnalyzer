@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Mapping runs accept a new connector or HD addition trace that is explained by
+  returns above the road: the lowest supported layer meets every sample and both
+  ends, and every low-quantile shortfall lies above the trace with returns at every
+  sample. Any sample below a trace or without returns, and any consensus shortfall,
+  still holds it. Explained traces stay listed. The junction preview now checks both
+  estimators with the same rule (`explain_returns_above`), so it no longer offers
+  pairs the consensus audit would refuse. On the NCLT drives April 6→9 and June
+  15→18 now pass the ground checks but stay apart because the recorded path leaves
+  the connector; June's canopy-covered 130–134 m addition becomes adoptable.
+  Selection still requires both estimators.
+
 ### Added
 
 - Mapping-run `review_holds` lists `below_trace_samples`: every sample, from either

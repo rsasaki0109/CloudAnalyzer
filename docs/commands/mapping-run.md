@@ -77,7 +77,8 @@ can still preserve source curves for review.
    The diagnosis (also returned by every draft) ends with `review_holds`, the holds
    gathered in one place:
    - `traces`: every lane trace held by either estimator, with each estimator's
-     `fraction` and `holds` side by side (up to 64, with `traces_total`);
+     `fraction` and `holds` side by side and its `status` (see below; up to 64, with
+     `traces_total` and `unexplained_traces_total`);
    - `ground_estimators_disagree` and `editable_and_reopened_osm_agree`;
    - `mismatch_direction` per estimator: of its `height_mismatches`, how many have the
      source ground `above_trace` or `below_trace` (null for audits saved before this
@@ -105,6 +106,22 @@ can still preserve source curves for review.
    of `below_trace_samples`, even when it holds no trace. On the NCLT drives the
    consensus estimator found 3 and 2 such samples, 0.32–0.58 m under the trace. Neither case verifies road accuracy,
    and the runner never picks the estimator with the better score.
+
+   **Explained support.** Each trace has a `status` across the two estimators:
+   - `supported`: both meet every sample and both ends;
+   - `explained_by_returns_above`: the lowest supported layer meets every sample and
+     both ends, and the low quantile has returns at every sample with every shortfall
+     above the trace;
+   - `held`: anything else, including any low-quantile sample below the trace or
+     without returns, any consensus shortfall, and audits saved before mismatches
+     were split by direction.
+
+   New connectors and HD additions are adopted when every new trace is `supported`
+   or `explained_by_returns_above`; retained traces must still not regress. Explained
+   traces stay listed (`explained_traces` on offered connections and HD plan
+   intervals, `explained_connector_traces` and `explained_new_traces` in the saved
+   checks), so the reliance on the lowest supported layer remains visible. Selection
+   through `select_mapping_candidate` still requires both estimators to pass.
 
 Every action supplies the inspected `expected_revision` and a reason. Stale
 retries are rejected before execution. Inspection and finish actions spend no
@@ -288,9 +305,13 @@ are linked and not listed.
 The native summary counts every refused exit/entry pair, including non-consecutive
 ones, and `touching_ends` counts pairs closer than 0.5 m.
 
-Offered candidates carry `both_estimators_verified: false`. This is not a hold: the
-preview applies only the junction's own ground check, and `connect` runs both
-estimators' source audits on the added connector before it is adopted.
+The preview checks every connector trace and end against both estimators, with
+the same explained-support rule as adoption, so an offered pair should not fail
+for ground support at `connect`. Traces accepted only as explained by returns above
+the road are named in `explained_traces`. Offered candidates still carry
+`both_estimators_verified: false`. This is not a hold: `connect` runs the four source
+audits (both estimators, IR and reopened OSM) on the added connector before it is
+adopted.
 
 The proposal is saved with parent, cloud, trajectory, source and native hashes.
 Pages show at most eight complete candidates; overlong geometry is withheld.
@@ -1038,7 +1059,9 @@ observed source span.
 For each interval, the native quantile and lowest-supported-layer estimators check
 its two observed side curves and the derived centre trace on the exact retained
 point map. `reference_traces_fully_supported` requires complete inspections and
-every sample, including endpoints, supported by **both** estimators. Failure totals,
+every sample, including endpoints, supported by **both** estimators.
+`reference_traces_supported` also accepts traces `explained_by_returns_above`, which
+are listed in `explained_traces`; it is what an explicit plan application requires. Failure totals,
 protocols and full bounded source-problem locations are saved as hashed reports.
 
 These checks use a transient reference-trace carrier. They call neither the lane

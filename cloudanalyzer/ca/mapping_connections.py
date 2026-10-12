@@ -15,7 +15,7 @@ from ca import mapping_job as jobs
 from ca.mapping_geometry import verify_lane_roundtrip
 from ca.vector_map import _publish
 
-OPTIONS = {"max_gap": 10., "min_ground_support": 1., "check_boundary_support": True}
+OPTIONS = {"max_gap": 10., "min_ground_support": 1., "check_boundary_support": True, "explain_returns_above": True}
 
 
 def edges(ir: dict[str, Any]) -> set[tuple[int, int]]:
@@ -404,19 +404,26 @@ def connect(root: Path, cid: int, pairs: list[dict[str, Any]], proposal_file: di
                 attempt["connection_checks"] = jobs._artifact(check_path)
                 if not checks["passes"]:
                     raise ValueError("connection source checks failed: " + ", ".join(checks["holds"]))
-                for audit in [audits["editable"], audits["reopened_osm"], *audits["ground_consensus"].values()]:
-                    diagnosis = jobs._diagnose_audit(audit)
-                    lanes = [l for l in audit["quality"]["lanes"] if l["lane"] in connector_ids]
-                    if not diagnosis["complete"] or {l["lane"] for l in lanes} != connector_ids or any(
-                        l[k]["fraction"] < 1. or not l[k]["start_supported"] or not l[k]["end_supported"]
-                        for l in lanes for k in ("center", "left", "right")):
-                        raise ValueError("every connector trace needs complete support from both estimators in IR and reopened OSM")
+                explained = []
+                for key in ("editable", "reopened_osm"):
+                    pair = (audits[key], audits["ground_consensus"][key])
+                    lanes = [{l["lane"]: l for l in a["quality"]["lanes"] if l["lane"] in connector_ids} for a in pair]
+                    if not all(jobs._diagnose_audit(a)["complete"] for a in pair) or any(l.keys() != connector_ids for l in lanes):
+                        raise ValueError("every connector needs complete audits from both estimators in IR and reopened OSM")
+                    for lid in sorted(connector_ids):
+                        for k in ("center", "left", "right"):
+                            status = jobs.trace_support(lanes[0][lid][k], lanes[1][lid][k])
+                            if status == "held":
+                                raise ValueError("every connector trace needs complete support from both estimators in IR and reopened OSM, or consensus support with every low-quantile shortfall above the trace")
+                            if status != "supported":
+                                explained.append({"audit": key, "lane": lid, "trace": k, "status": status})
                 if any(i["severity"] == "error" for i in evidence["autoware_issues"]):
                     raise ValueError("connection has export errors")
                 jobs._save(draft / "source-quality.json", audits)
                 evidence["lane_roundtrip_verified"] = True
                 evidence["topology_roundtrip_verified"] = True
                 evidence["both_connector_estimators_verified"] = True
+                evidence["explained_connector_traces"] = explained
                 evidence["files"] = {k: str(target / Path(v).name) for k, v in files.items()}
                 evidence["editing"] = {"command": "vectormap", "args": ["mcp", evidence["files"]["map"]]}
                 jobs._save(draft / "report.json", evidence)

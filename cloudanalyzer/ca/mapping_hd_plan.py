@@ -26,6 +26,7 @@ PROTOCOL = {
     "hd_generation_attempts_spent": 0,
     "lane_export_performed": False,
     "final_four_audit_patch_required": True,
+    "explained_by_returns_above_accepted": True,
 }
 
 
@@ -344,6 +345,18 @@ def inspect(
                     )
                     for a in audits.values()
                 )
+                statuses = (
+                    {
+                        side: jobs.trace_support(
+                            audits["quantile"]["quality"]["lanes"][0][side],
+                            audits["consensus"]["quality"]["lanes"][0][side],
+                        )
+                        for side in ("center", "left", "right")
+                    }
+                    if complete
+                    and all(len(a["quality"]["lanes"]) == 1 for a in audits.values())
+                    else {}
+                )
                 response = {
                     k: v
                     for k, v in row.items()
@@ -352,6 +365,12 @@ def inspect(
                 response.update(
                     source_audits_file=jobs._artifact(audit_path),
                     reference_traces_fully_supported=passed,
+                    reference_traces_supported=bool(statuses)
+                    and "held" not in statuses.values(),
+                    explained_traces=[
+                        side for side, status in statuses.items()
+                        if status == "explained_by_returns_above"
+                    ],
                     reference_audits={
                         k: {
                             "complete": d["complete"],

@@ -75,11 +75,12 @@ def _selection(
         raise ValueError("every chosen interval must appear on the inspected plan page")
     selected = [rows[i] for i in interval_ids]
     if any(
-        not row["reference_traces_fully_supported"] or row["source_ambiguous"]
+        not row.get("reference_traces_supported", row["reference_traces_fully_supported"])
+        or row["source_ambiguous"]
         for row in selected
     ):
         raise ValueError(
-            "every chosen interval needs complete support from both estimators and unambiguous source"
+            "every chosen interval needs supported reference traces (both estimators, or consensus with every low-quantile shortfall above the trace) and unambiguous source"
         )
     selected.sort(key=lambda r: (r["from_m"], r["candidate_id"]))
     if any(a["to_m"] > b["from_m"] for a, b in zip(selected, selected[1:])):

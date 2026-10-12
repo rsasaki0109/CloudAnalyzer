@@ -157,7 +157,7 @@ def test_real_unsupported_heights_are_rejected_before_preparing_a_child(hd_only_
     page = plan(root)
     assert not any(r["reference_traces_fully_supported"] for r in page["intervals"])
     before = (root / "job.json").read_bytes()
-    with pytest.raises(ValueError, match="complete support"):
+    with pytest.raises(ValueError, match="supported reference traces"):
         apply(root, page)
     assert (root / "job.json").read_bytes() == before
     assert not (root / "hd-repair").exists()

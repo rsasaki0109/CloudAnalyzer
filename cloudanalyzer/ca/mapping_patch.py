@@ -271,11 +271,22 @@ def _checks(before: dict[str, Any], after: dict[str, Any], old_ids: set[int], ne
             known = problems.get((p["lane"], p["curve"], p["reason"]), [])
             if not known or np.any(cKDTree(known).query(p["points"])[0] > 1e-8):
                 holds.append(f"{name}:new_retained_failure_location:{p['lane']}:{p['curve']}")
-        for lid in new_ids:
-            if any(t["supported"] != t["samples"] or not t["start_supported"] or not t["end_supported"] for t in (rows[1][lid][k] for k in ("center", "left", "right"))):
-                holds.append(f"{name}:new_lane_not_fully_supported:{lid}")
-    return {"protocol": "fixed_four_audits_no_new_retained_failure_locations_new_traces_fully_supported",
-            "holds": sorted(set(holds)), "passes": not holds,
+    # New traces need both estimators, or the lowest supported layer with every
+    # low-quantile shortfall above the trace (returns above the road lifted it).
+    explained = []
+    for name in ("editable", "reopened_osm"):
+        rows = [{l["lane"]: l for l in new[key]["quality"]["lanes"]} for key in (name, f"consensus_{name}")]
+        for lid in sorted(new_ids):
+            if lid not in rows[0] or lid not in rows[1]:
+                holds.append(f"{name}:lane_audit_membership_changed"); continue
+            for trace in ("center", "left", "right"):
+                status = jobs.trace_support(rows[0][lid][trace], rows[1][lid][trace])
+                if status == "held":
+                    holds.append(f"{name}:new_lane_not_fully_supported:{lid}")
+                elif status != "supported":
+                    explained.append({"audit": name, "lane": lid, "trace": trace, "status": status})
+    return {"protocol": "fixed_four_audits_no_new_retained_failure_locations_new_traces_supported_or_explained_by_returns_above",
+            "holds": sorted(set(holds)), "passes": not holds, "explained_new_traces": explained,
             "independent_accuracy_established": False, "road_semantics_verified": False}
 
 

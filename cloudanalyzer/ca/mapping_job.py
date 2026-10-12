@@ -665,6 +665,26 @@ def _extent(extraction: dict[str, Any], minimum: float) -> dict[str, Any]:
             "passes_requested_extent": fraction >= minimum}
 
 
+def trace_support(quantile: dict[str, Any], consensus: dict[str, Any]) -> str:
+    """Judge one trace audited by both ground estimators.
+
+    ``supported`` when both meet every sample and both ends. ``explained_by_returns_above``
+    when the lowest supported layer does, and the low quantile has returns at every
+    sample and every shortfall lies above the trace: returns above the road (canopy,
+    walls, vehicles) lifted it. Otherwise ``held``. Audits saved before mismatches
+    were split by direction cannot be explained.
+    """
+    def full(t: dict[str, Any]) -> bool:
+        return bool(t["samples"] > 0 and t["supported"] == t["samples"] and t["start_supported"] and t["end_supported"])
+    if full(quantile) and full(consensus):
+        return "supported"
+    shortfall_counted = quantile["height_mismatches"] > 0 or (quantile["start_supported"] and quantile["end_supported"])
+    if (full(consensus) and quantile["insufficient_returns"] == 0 and shortfall_counted
+            and quantile.get("height_mismatches_above") == quantile["height_mismatches"]):
+        return "explained_by_returns_above"
+    return "held"
+
+
 def mismatch_direction(audit: dict[str, Any]) -> dict[str, int] | None:
     """Split a diagnosed audit's height mismatches by where the source ground lies.
 

@@ -941,10 +941,27 @@ def test_estimator_disagreement_is_explained_only_when_every_mismatch_lies_above
     assert "finds 1 sample(s) with ground below a trace" in jobs._disagreement_note(audit(4), floating)
 
 
+def test_trace_support_explains_only_counted_shortfalls_above_the_trace_with_consensus_support():
+    def trace(supported=10, mismatches=0, above=0, missing=0, ends=(True, True)):
+        return {"samples": 10, "supported": supported, "height_mismatches": mismatches, "height_mismatches_above": above,
+                "insufficient_returns": missing, "start_supported": ends[0], "end_supported": ends[1]}
+    full = trace()
+    assert jobs.trace_support(full, full) == "supported"
+    canopy = trace(6, 4, 4, ends=(False, True))
+    assert jobs.trace_support(canopy, full) == "explained_by_returns_above"
+    # A sample below the trace, missing returns, a consensus shortfall, an end failure
+    # no mismatch accounts for, or an audit without the direction split stay held.
+    for quantile, consensus in [(trace(6, 4, 3), full), (trace(6, 3, 3, missing=1), full), (canopy, trace(9, 1, 1)),
+                                (trace(ends=(True, False)), full),
+                                ({k: v for k, v in canopy.items() if k != "height_mismatches_above"}, full)]:
+        assert jobs.trace_support(quantile, consensus) == "held"
+
+
 def test_review_holds_list_every_sample_below_a_trace_from_either_estimator():
     from ca.mapping_run import _review_holds
     def audit(problems, review=()):
-        trace = {"fraction": 1.0, "holds": [], "height_mismatches": 0, "height_mismatches_above": 0}
+        trace = {"samples": 3, "supported": 3, "insufficient_returns": 0, "start_supported": True, "end_supported": True,
+                 "fraction": 1.0, "holds": [], "height_mismatches": 0, "height_mismatches_above": 0}
         return {"needs_review": list(review), "lanes": [{"lane": 3, "traces": {"left": trace}}],
                 "problems": problems, "problems_available": True, "problems_limited": False}
     lifted = {"lane": 3, "curve": "left", "reason": "height_mismatch", "from_m": 4.0, "to_m": 5.0,

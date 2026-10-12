@@ -34,7 +34,16 @@ lie in. Left out, because shading, haunches and edges mimic all four kinds:
 - bands 0.15 m beyond the visible faces of girders and cross beams and around supports;
 - 0.3 m inside the deck edges and ends, and 0.1 m around scan holes;
 - straight runs at least 0.4 m long along or across the deck, even broken into pieces:
-  joints between slab units and formwork seams. Their length is reported apart.
+  joints between slab units and formwork seams. Their length is reported apart, and a
+  0.2 m band beside them is left out for every kind (a dark joint has a receded groove);
+- cells whose 0.5 m neighbourhood has returns in fewer than half of its cells: far from
+  the scanner or between scan lines, single returns' colour and height noise reads as
+  damage. The area left out is reported as too sparse;
+- for `recess` only, cells whose neighbourhood heights have an interquartile range over
+  2.4 cm: a step in the soffit (a haunch, a beam edge at a skew) puts both levels in the
+  neighbourhood and one side reads as receded. A spall covers much less than a quarter
+  of the neighbourhood and hardly moves that range, but a broadly rough surface does,
+  so wide rough areas are not searched for recess.
 
 Cracks are narrower than the raster and are not searched. Girder faces and the
 deck top are not searched either.
@@ -55,5 +64,7 @@ When the underside was not scanned, nothing is searched and no damage is implied
 Candidates are colour or height departures from the surrounding soffit, not
 diagnoses. Formwork marks, shadows, wet patches, repairs and paint can look the
 same, and no inspection records were available to measure how many candidates are
-real or how much damage is missed. Use the candidates as pointers for an inspector,
+real or how much damage is missed. Candidates on the SemanticBridge scans were checked
+by eye only, which led to leaving out joint grooves, sparse stretches and soffit steps
+(see [`benchmarks/bridge/semanticbridge-tls`](../../benchmarks/bridge/semanticbridge-tls/README.md)). Use the candidates as pointers for an inspector,
 and the orthophoto to draw the damage map.

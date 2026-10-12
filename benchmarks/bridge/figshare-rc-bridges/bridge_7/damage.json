@@ -26,6 +26,7 @@
         1.0000000000000002
       ],
       "contrast": -0.014495513176518482,
+      "returns_share": 0.9999999999999999,
       "contrast_unit": "m",
       "id": "D001"
     },
@@ -47,29 +48,9 @@
         0.9800000000000002
       ],
       "contrast": -0.014459457454320868,
+      "returns_share": 0.9999999999999999,
       "contrast_unit": "m",
       "id": "D002"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.012400000000000001,
-      "centre_m": [
-        -0.7590322580645161,
-        0.9596774193548391
-      ],
-      "element": "Ds0202",
-      "along_m": [
-        -0.8200000000000005,
-        -0.7200000000000004
-      ],
-      "lateral_m": [
-        0.8400000000000001,
-        1.0800000000000003
-      ],
-      "contrast": -0.014162964199006645,
-      "contrast_unit": "m",
-      "id": "D003"
     },
     {
       "kind": "recess",
@@ -89,8 +70,9 @@
         -0.7799999999999998
       ],
       "contrast": -0.014093899462885251,
+      "returns_share": 1.0,
       "contrast_unit": "m",
-      "id": "D004"
+      "id": "D003"
     },
     {
       "kind": "recess",
@@ -110,8 +92,9 @@
         -0.7799999999999998
       ],
       "contrast": -0.014262497196846274,
+      "returns_share": 1.0,
       "contrast_unit": "m",
-      "id": "D005"
+      "id": "D004"
     },
     {
       "kind": "recess",
@@ -131,8 +114,9 @@
         0.9800000000000002
       ],
       "contrast": -0.016041777792021164,
+      "returns_share": 0.9999999999999999,
       "contrast_unit": "m",
-      "id": "D006"
+      "id": "D005"
     },
     {
       "kind": "recess",
@@ -152,29 +136,9 @@
         0.9800000000000002
       ],
       "contrast": -0.0140085729858562,
+      "returns_share": 0.9999999999999999,
       "contrast_unit": "m",
-      "id": "D007"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.0056,
-      "centre_m": [
-        2.0028571428571427,
-        0.9057142857142857
-      ],
-      "element": "Ds0302",
-      "along_m": [
-        1.9599999999999989,
-        2.039999999999999
-      ],
-      "lateral_m": [
-        0.8600000000000001,
-        0.9600000000000002
-      ],
-      "contrast": -0.015830330951398186,
-      "contrast_unit": "m",
-      "id": "D008"
+      "id": "D006"
     },
     {
       "kind": "recess",
@@ -194,8 +158,9 @@
         0.9800000000000002
       ],
       "contrast": -0.013852996557922118,
+      "returns_share": 0.9432,
       "contrast_unit": "m",
-      "id": "D009"
+      "id": "D007"
     },
     {
       "kind": "recess",
@@ -215,8 +180,9 @@
         0.9600000000000002
       ],
       "contrast": -0.01413235142441327,
+      "returns_share": 0.9999999999999999,
       "contrast_unit": "m",
-      "id": "D010"
+      "id": "D008"
     },
     {
       "kind": "recess",
@@ -236,8 +202,9 @@
         0.9800000000000002
       ],
       "contrast": -0.015424094027752494,
+      "returns_share": 0.9999999999999997,
       "contrast_unit": "m",
-      "id": "D011"
+      "id": "D009"
     },
     {
       "kind": "recess",
@@ -257,8 +224,9 @@
         0.9600000000000002
       ],
       "contrast": -0.014738744509671386,
+      "returns_share": 0.9999999999999999,
       "contrast_unit": "m",
-      "id": "D012"
+      "id": "D010"
     },
     {
       "kind": "recess",
@@ -278,8 +246,9 @@
         -0.7799999999999998
       ],
       "contrast": -0.014322949671658147,
+      "returns_share": 1.0,
       "contrast_unit": "m",
-      "id": "D013"
+      "id": "D011"
     },
     {
       "kind": "recess",
@@ -299,8 +268,9 @@
         -0.7799999999999998
       ],
       "contrast": -0.014631270804696297,
+      "returns_share": 1.0,
       "contrast_unit": "m",
-      "id": "D014"
+      "id": "D012"
     }
   ],
   "thresholds": {
@@ -317,7 +287,10 @@
     "member_margin_m": 0.15,
     "edge_margin_m": 0.3,
     "seam_elongation": 6.0,
-    "seam_angle_deg": 10.0
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
   },
   "straight_seams_left_out": {
     "regions": {},
@@ -329,7 +302,8 @@
     "points": 1550581,
     "cells_with_returns": 125330,
     "cells_searched": 29010,
-    "area_searched_m2": 11.604000000000001
+    "area_searched_m2": 11.604000000000001,
+    "area_too_sparse_m2": 0.0
   },
   "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
 }

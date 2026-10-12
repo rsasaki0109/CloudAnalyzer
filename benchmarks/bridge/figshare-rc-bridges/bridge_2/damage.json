@@ -11,10 +11,10 @@
     {
       "kind": "light",
       "label_ja": "遊離石灰・白色変色の候補",
-      "area_m2": 0.0064,
+      "area_m2": 0.0056,
       "centre_m": [
-        -3.74,
-        0.6399999999999999
+        -3.7371428571428575,
+        0.6342857142857143
       ],
       "element": "Ds0101",
       "along_m": [
@@ -23,9 +23,10 @@
       ],
       "lateral_m": [
         0.5799999999999998,
-        0.7
+        0.6799999999999999
       ],
-      "contrast": 20.21267204941915,
+      "contrast": 20.71299737311184,
+      "returns_share": 0.8592,
       "contrast_unit": "L*",
       "id": "D001"
     },
@@ -47,6 +48,7 @@
         1.1199999999999999
       ],
       "contrast": -18.365595698330154,
+      "returns_share": 0.7759999999999999,
       "contrast_unit": "L*",
       "id": "D002"
     }
@@ -65,7 +67,10 @@
     "member_margin_m": 0.15,
     "edge_margin_m": 0.3,
     "seam_elongation": 6.0,
-    "seam_angle_deg": 10.0
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
   },
   "straight_seams_left_out": {
     "regions": {},
@@ -77,8 +82,9 @@
   "soffit": {
     "points": 1418933,
     "cells_with_returns": 91210,
-    "cells_searched": 80464,
-    "area_searched_m2": 32.1856
+    "cells_searched": 80452,
+    "area_searched_m2": 32.180800000000005,
+    "area_too_sparse_m2": 0.0048000000000000004
   },
   "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
 }

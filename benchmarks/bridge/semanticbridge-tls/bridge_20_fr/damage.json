@@ -1,0 +1,45 @@
+{
+  "schema": "cloudanalyzer.bridge_damage.v1",
+  "source": {
+    "file": "bridge_20_fr_rtc.ply",
+    "sha256": "a6fec8ae322c954888ba0bcd88650092d428df380fe67febb2c896698f8a883a",
+    "bytes": 311471385,
+    "dataset": "https://doi.org/10.5281/zenodo.18738225",
+    "converted": "PLY to LAS with colour and labels as classification"
+  },
+  "underside": "girders_observed",
+  "candidates": [],
+  "thresholds": {
+    "cell_m": 0.02,
+    "background_m": 0.5,
+    "light_dL": 15.0,
+    "dark_dL": -15.0,
+    "rust_db_da": [
+      12.0,
+      4.0
+    ],
+    "recess_m": 0.012,
+    "min_area_m2": 0.005,
+    "member_margin_m": 0.15,
+    "edge_margin_m": 0.3,
+    "seam_elongation": 6.0,
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
+  },
+  "straight_seams_left_out": {
+    "regions": {},
+    "cells_along_m": {
+      "recess": 66.58
+    }
+  },
+  "soffit": {
+    "points": 380382,
+    "cells_with_returns": 96987,
+    "cells_searched": 38840,
+    "area_searched_m2": 15.536000000000001,
+    "area_too_sparse_m2": 1.052
+  },
+  "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
+}

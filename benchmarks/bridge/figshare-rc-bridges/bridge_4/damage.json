@@ -26,50 +26,9 @@
         2.76
       ],
       "contrast": -43.86284202468009,
+      "returns_share": 0.8583999999999996,
       "contrast_unit": "L*",
       "id": "D001"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.0188,
-      "centre_m": [
-        -2.029574468085107,
-        1.797234042553192
-      ],
-      "element": "Ds0202",
-      "along_m": [
-        -2.12,
-        -1.9600000000000006
-      ],
-      "lateral_m": [
-        1.7,
-        1.8800000000000001
-      ],
-      "contrast": -0.018443523964868258,
-      "contrast_unit": "m",
-      "id": "D002"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.01,
-      "centre_m": [
-        3.1699999999999995,
-        1.8236
-      ],
-      "element": "Ds0402",
-      "along_m": [
-        3.12,
-        3.2399999999999993
-      ],
-      "lateral_m": [
-        1.7600000000000005,
-        1.8800000000000001
-      ],
-      "contrast": -0.016393584323347477,
-      "contrast_unit": "m",
-      "id": "D003"
     }
   ],
   "thresholds": {
@@ -86,7 +45,10 @@
     "member_margin_m": 0.15,
     "edge_margin_m": 0.3,
     "seam_elongation": 6.0,
-    "seam_angle_deg": 10.0
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
   },
   "straight_seams_left_out": {
     "regions": {},
@@ -98,8 +60,9 @@
   "soffit": {
     "points": 1693347,
     "cells_with_returns": 205532,
-    "cells_searched": 114268,
-    "area_searched_m2": 45.7072
+    "cells_searched": 114017,
+    "area_searched_m2": 45.6068,
+    "area_too_sparse_m2": 0.1004
   },
   "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
 }

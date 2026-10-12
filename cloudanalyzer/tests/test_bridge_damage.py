@@ -18,7 +18,7 @@ PATCHES = {  # centre (along, lateral), half size, colour or recess
 }
 
 
-def _deck(path, *, soffit=True, colour=True):
+def _deck(path, *, soffit=True, colour=True, groove=False, sparse=False):
     rng = np.random.default_rng(11)
     pts, rgb, cls = [], [], []
     for s in np.arange(-HALF_LENGTH, HALF_LENGTH, STEP):
@@ -26,6 +26,10 @@ def _deck(path, *, soffit=True, colour=True):
             pts.append((s, u, 0.0)); rgb.append(GREY); cls.append(2)
             if not soffit:
                 continue
+            # A sparse stretch (scanned from afar): one row in three, with noisy colour.
+            if sparse and -4.0 < s < -2.5 and -1.5 < u < 1.5:
+                if round(s / STEP) % 3:
+                    continue
             z, c = -SLAB, GREY
             for kind, ((ps, pu), h, col) in PATCHES.items():
                 if abs(s - ps) <= h and abs(u - pu) <= h:
@@ -36,9 +40,16 @@ def _deck(path, *, soffit=True, colour=True):
             # A dark straight seam along the deck: a joint between slab units, not damage.
             if abs(u - (-2.0)) < 0.02 and -4.0 < s < 4.0:
                 c = (0.2, 0.2, 0.2)
+            # Its groove: short receded pieces just beside the joint.
+            if groove and 0.06 < abs(u - (-2.0)) < 0.18 and (s % 1.0) < 0.15 and -4.0 < s < 4.0:
+                z = -SLAB + 0.03
             pts.append((s, u, z)); rgb.append(c); cls.append(2)
     pts = np.array(pts) + rng.normal(0, 0.002, (len(pts), 3))
-    rgb = np.clip(np.array(rgb) + rng.normal(0, 0.01, (len(rgb), 3)), 0, 1)
+    noise = np.full((len(rgb), 1), 0.01)
+    if sparse:
+        far = (np.abs(pts[:, 2] + SLAB) < 0.05) & (pts[:, 0] > -4.0) & (pts[:, 0] < -2.5) & (np.abs(pts[:, 1]) < 1.5)
+        noise[far] = 0.12
+    rgb = np.clip(np.array(rgb) + rng.normal(0, 1, (len(rgb), 3)) * noise, 0, 1)
     las = laspy.LasData(laspy.LasHeader(point_format=2 if colour else 0, version="1.2"))
     las.header.scales = [0.001] * 3
     las.x, las.y, las.z = pts[:, 0], pts[:, 1], pts[:, 2]
@@ -66,6 +77,18 @@ def test_patches_are_found_on_their_element_and_a_straight_seam_is_not(tmp_path)
         assert {row["kind"] for row in csv.DictReader(f)} == {"light", "rust", "recess"}
     svg = Path(r["outputs"]["svg"]).read_text(encoding="utf-8")
     assert "data:image/png;base64," in svg and "D001" in svg and Path(r["outputs"]["png"]).exists()
+
+
+def test_a_joint_groove_and_a_sparse_stretch_are_not_candidates(tmp_path):
+    r = bridge_damage(str(_deck(tmp_path / "g.las", groove=True, sparse=True)), axis_classes=[2])
+    for c in r["candidates"]:
+        a, lat = c["centre_m"]
+        # Neither beside the joint (at -2 m, or +2 m if the axis runs the other way) ...
+        assert min(abs(lat + 2.0), abs(lat - 2.0)) > 0.25, c
+        # ... nor in the sparse stretch.
+        assert not (2.5 < abs(a) < 4.0 and abs(lat) < 1.5), c
+    assert {c["kind"] for c in r["candidates"]} == {"light", "rust", "recess"}
+    assert r["soffit"]["area_too_sparse_m2"] > 1.0
 
 
 def test_a_deck_scanned_only_from_above_has_no_candidates(tmp_path):

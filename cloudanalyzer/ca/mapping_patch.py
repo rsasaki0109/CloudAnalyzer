@@ -285,8 +285,12 @@ def _checks(before: dict[str, Any], after: dict[str, Any], old_ids: set[int], ne
                     holds.append(f"{name}:new_lane_not_fully_supported:{lid}")
                 elif status != "supported":
                     explained.append({"audit": name, "lane": lid, "trace": trace, "status": status})
-    return {"protocol": "fixed_four_audits_no_new_retained_failure_locations_new_traces_supported_or_explained_by_returns_above",
-            "holds": sorted(set(holds)), "passes": not holds, "explained_new_traces": explained,
+    # Without explained traces the result is exactly the earlier fully-supported
+    # protocol, so saved checks stay reproducible.
+    extra = ({"protocol": "fixed_four_audits_no_new_retained_failure_locations_new_traces_supported_or_explained_by_returns_above",
+              "explained_new_traces": explained} if explained else {})
+    return {"protocol": "fixed_four_audits_no_new_retained_failure_locations_new_traces_fully_supported",
+            "holds": sorted(set(holds)), "passes": not holds, **extra,
             "independent_accuracy_established": False, "road_semantics_verified": False}
 
 

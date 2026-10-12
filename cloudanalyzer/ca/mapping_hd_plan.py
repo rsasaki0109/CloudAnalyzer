@@ -26,7 +26,6 @@ PROTOCOL = {
     "hd_generation_attempts_spent": 0,
     "lane_export_performed": False,
     "final_four_audit_patch_required": True,
-    "explained_by_returns_above_accepted": True,
 }
 
 
@@ -362,15 +361,19 @@ def inspect(
                     for k, v in row.items()
                     if k not in ("observed_sections", "source_sample_upper_bound")
                 }
+                explained = [
+                    side for side, status in statuses.items()
+                    if status == "explained_by_returns_above"
+                ]
+                if explained and "held" not in statuses.values():
+                    # Present only when the explained rule decides; otherwise the
+                    # page is exactly the earlier fully-supported one.
+                    response.update(
+                        reference_traces_supported=True, explained_traces=explained
+                    )
                 response.update(
                     source_audits_file=jobs._artifact(audit_path),
                     reference_traces_fully_supported=passed,
-                    reference_traces_supported=bool(statuses)
-                    and "held" not in statuses.values(),
-                    explained_traces=[
-                        side for side, status in statuses.items()
-                        if status == "explained_by_returns_above"
-                    ],
                     reference_audits={
                         k: {
                             "complete": d["complete"],

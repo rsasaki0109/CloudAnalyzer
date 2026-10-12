@@ -1761,6 +1761,12 @@ def test_recorded_path_containment_includes_edges_but_rejects_shortcuts():
     polygon = np.array([[0, 1], [4, 1], [4, -1], [0, -1]], dtype=float)
     assert _inside(np.array([[0, 0], [2, 0], [4, 0]], dtype=float), polygon)
     assert not _inside(np.array([[0, 0], [2, 2], [4, 0]], dtype=float), polygon)
+    # A path grazing the edge by less than the tolerance passes; a shortcut does not.
+    from ca.mapping_connections import PATH_TOLERANCE_M, _outside_by
+    grazing = np.array([[0, 0], [2, 1.2], [4, 0]], dtype=float)
+    assert _outside_by(grazing, polygon) == pytest.approx(0.2)
+    assert _inside(grazing, polygon, PATH_TOLERANCE_M) and not _inside(grazing, polygon)
+    assert not _inside(np.array([[2, 2]], dtype=float), polygon, PATH_TOLERANCE_M)
     with pytest.raises(ValueError, match="station-contiguous"):
         route_metrics({"lanes": [{"id": 1}, {"id": 2}], "topology": [{"lane": 1, "successors": [2]}]}, {1: (0., 4.), 2: (8., 10.)})
 

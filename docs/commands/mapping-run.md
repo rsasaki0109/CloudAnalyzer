@@ -119,8 +119,11 @@ can still preserve source curves for review.
    New connectors and HD additions are adopted when every new trace is `supported`
    or `explained_by_returns_above`; retained traces must still not regress. Explained
    traces stay listed (`explained_traces` on offered connections and HD plan
-   intervals, `explained_connector_traces` and `explained_new_traces` in the saved
-   checks), so the reliance on the lowest supported layer remains visible. Selection
+   intervals, `explained_connector_traces` in the connection report, and
+   `explained_new_traces` with a renamed `protocol` in the saved checks), so the
+   reliance on the lowest supported layer remains visible. Without explained traces
+   the saved checks and plan pages are exactly as before, so earlier evidence
+   packets still verify. Selection
    through `select_mapping_candidate` still requires both estimators to pass.
 
 Every action supplies the inspected `expected_revision` and a reason. Stale
@@ -275,9 +278,16 @@ forward, one-way driving lane per disconnected source piece, at most 256 lanes.
 It considers only consecutive pieces in original drive-station order. Both the
 endpoint distance and original drive gap must be at most 10 m. Native heading,
 grade and endpoint checks remain active. Ambiguous native branches are withheld.
-Centre and both actual boundaries must have 100% low-quantile source support;
-recorded XY path samples at no more than 0.5 m spacing must lie inside the exact
-connector polygon, including endpoints. Minimum distance between equal normalized
+Centre and both actual boundaries must have full support from both estimators,
+or be explained by returns above the road (see the run diagnosis above).
+Recorded XY path samples at no more than 0.5 m spacing must lie inside the exact
+connector polygon, including endpoints, or within 0.25 m of its edge. Lanes span
+the whole observed surface and the vehicle drives near one side, so a connector
+curving between lane-end centres can leave the path a few centimetres outside on a
+bend; on the NCLT drives two such connectors missed it by 0.16 and 0.20 m. Half the
+path sampling still refuses a shortcut away from the drive. Offered candidates give
+`recorded_path_outside_m` (0 when fully inside) and the tolerance; a refused pair
+gives how far the path left it. Minimum distance between equal normalized
 XY-arc positions on the piecewise-linear boundaries must meet the fixed width
 hypothesis. This is a geometric width check, not observed physical road width.
 
@@ -1060,8 +1070,9 @@ For each interval, the native quantile and lowest-supported-layer estimators che
 its two observed side curves and the derived centre trace on the exact retained
 point map. `reference_traces_fully_supported` requires complete inspections and
 every sample, including endpoints, supported by **both** estimators.
-`reference_traces_supported` also accepts traces `explained_by_returns_above`, which
-are listed in `explained_traces`; it is what an explicit plan application requires. Failure totals,
+When a trace passes only as `explained_by_returns_above`, the interval also gives
+`reference_traces_supported: true` and lists those traces in `explained_traces`; an
+explicit plan application accepts either field. Failure totals,
 protocols and full bounded source-problem locations are saved as hashed reports.
 
 These checks use a transient reference-trace carrier. They call neither the lane

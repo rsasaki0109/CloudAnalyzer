@@ -16,6 +16,11 @@ from ca.mapping_geometry import verify_lane_roundtrip
 from ca.vector_map import _publish
 
 OPTIONS = {"max_gap": 10., "min_ground_support": 1., "check_boundary_support": True, "explain_returns_above": True}
+# The recorded path may graze a connector edge by this much. Lanes span the whole
+# observed surface and the vehicle drives near one side, so a connector curving
+# between lane-end centres can leave the path a few centimetres outside on a bend;
+# half the 0.5 m path sampling still refuses a shortcut away from the drive.
+PATH_TOLERANCE_M = 0.25
 
 
 def edges(ir: dict[str, Any]) -> set[tuple[int, int]]:
@@ -100,21 +105,26 @@ def _parent(job: dict[str, Any], cid: int) -> tuple[dict[str, Any], dict[str, An
     return parent, ir, report, pieces
 
 
-def _inside(points: np.ndarray, polygon: np.ndarray) -> bool:
-    """Even-odd containment including boundary points within numerical tolerance."""
+def _outside_by(points: np.ndarray, polygon: np.ndarray) -> float:
+    """Largest distance of any point outside the polygon (even-odd), 0 when all are inside."""
     a, b = polygon, np.roll(polygon, -1, axis=0)
     delta = b - a
+    worst = 0.
     for point in points:
         length = np.sum(delta * delta, axis=1)
         fraction = np.clip(np.sum((point - a) * delta, axis=1) / np.maximum(length, 1e-30), 0, 1)
-        if np.min(np.linalg.norm(point - (a + fraction[:, None] * delta), axis=1)) <= 1e-7:
-            continue
+        distance = float(np.min(np.linalg.norm(point - (a + fraction[:, None] * delta), axis=1)))
         crosses = (a[:, 1] > point[1]) != (b[:, 1] > point[1])
         selected = np.flatnonzero(crosses)
         x = a[selected, 0] + (point[1] - a[selected, 1]) * delta[selected, 0] / delta[selected, 1]
         if np.count_nonzero(point[0] < x) % 2 != 1:
-            return False
-    return True
+            worst = max(worst, distance)
+    return worst
+
+
+def _inside(points: np.ndarray, polygon: np.ndarray, tolerance: float = 1e-7) -> bool:
+    """Even-odd containment, accepting points within ``tolerance`` of the boundary."""
+    return _outside_by(points, polygon) <= tolerance
 
 
 def _width(candidate: dict[str, Any]) -> float:
@@ -227,7 +237,8 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                     holds.append("existing_endpoint_already_connected")
                 if c["ambiguous"]:
                     holds.append("ambiguous_native_branch")
-                if not _inside(xy, np.asarray(c["left"] + c["right"][::-1])[:, :2]):
+                outside = _outside_by(xy, np.asarray(c["left"] + c["right"][::-1])[:, :2])
+                if outside > PATH_TOLERANCE_M:
                     holds.append("recorded_path_outside_connection")
                 if minimum + 1e-7 < max(first["minimum_width_m"], second["minimum_width_m"]):
                     holds.append("below_fixed_minimum_width")
@@ -235,11 +246,12 @@ def inspect_connections(root: Path, cid: int, offset: int, bounds_xy: Any = None
                     holds.append("geometry_exceeds_inspection_bound")
                 if holds:
                     points = np.concatenate([c[k] for k in ('left', 'right', 'center')])[:, :2]
-                    rejected.append({"from": pair[0], "to": pair[1], "holds": holds,
+                    rejected.append({"from": pair[0], "to": pair[1], "holds": holds, "recorded_path_outside_m": outside,
                                      "geometry_bounds_xy": [*points.min(axis=0).tolist(), *points.max(axis=0).tolist()]})
                 else:
                     candidates.append({**c, "from_m": first["to_m"], "to_m": second["from_m"], "station_gap_m": gap,
                                        "trajectory_xy": xy.tolist(), "trajectory_step_max_m": .5,
+                                       "recorded_path_outside_m": outside, "recorded_path_tolerance_m": PATH_TOLERANCE_M,
                                        "minimum_interpolated_xy_width_m": minimum,
                                        "width_measurement": "equal_normalized_xy_arc_positions_on_linear_boundaries",
                                        "both_estimators_verified": False})

@@ -8,6 +8,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- Mapping-run connections accept a recorded path within 0.25 m of the connector
+  edge. Lanes span the whole observed surface and the vehicle drives near one side,
+  so a connector curving between lane-end centres can leave the path just outside
+  on a bend (0.16 and 0.20 m on the NCLT drives). Candidates and refused pairs report
+  `recorded_path_outside_m`.
+- Saved patch checks and HD plan pages without explained traces are again exactly
+  as before explained support was added, so the frozen NCLT benchmark packets
+  verify (their verifiers had failed since then).
+
 - Mapping runs accept a new connector or HD addition trace that is explained by
   returns above the road: the lowest supported layer meets every sample and both
   ends, and every low-quantile shortfall lies above the trace with returns at every

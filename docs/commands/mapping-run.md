@@ -41,7 +41,10 @@ can still preserve source curves for review.
    readers must be installed. Initial point-map/proposal failures stay visible.
 2. `inspect_mapping_run(job_dir, offset=0)` resumes saved observations without
    processing. Candidate index pages contain 16 entries. Page through them and
-   issue `advance_mapping_run` inspect actions for relevant candidates.
+   issue `advance_mapping_run` inspect actions for relevant candidates. Each entry
+   gives `sections` and `sections_containing_path`, the cross sections whose band
+   contains the recorded path; a candidate with none lies beside the drive, such as
+   a parking area or a parallel surface.
 3. An inspect action returns up to eight candidates with original-frame curves,
    surface evidence and observed stations. Previews contain up to 128 sections
    per candidate with explicit total/truncation flags. The inspection receipt
@@ -234,7 +237,11 @@ are linked and not listed.
 - `touching_pieces`: the pieces meet at the same station, and no connector can be
   drawn across a zero gap;
 - `native_heading`, `native_height`, `native_unsupported`, `native_geometry` or
-  `native_touching_ends`: the native junction check refused the pair for that reason;
+  `native_touching_ends`: the native junction check refused the pair for that reason.
+  A `native_unsupported` entry carries `unsupported`: `ends` lists `from` (the exit)
+  and/or `to` (the entry) when a road end has no ground beneath it, and `traces` lists
+  each connector trace (`center`, `left`, `right`) whose supported `fraction` or
+  `start_supported` / `end_supported` fell short;
 - the connection checks above, for example `below_fixed_minimum_width`.
 
 The native summary counts every refused exit/entry pair, including non-consecutive
@@ -960,6 +967,13 @@ intervals that cannot satisfy the fixed minimum lane width or overlap retained
 lanes/connectors. Ordering uses the number of coincident retained endpoint links,
 then original station and source candidate ID; it is a geometric ordering, not a
 quality score. Source ambiguity and exact endpoint-link distances remain visible.
+`gap_exclusions` gives one summary per chosen gap, so an empty page says why:
+`source_section_pairs` touching the gap, how many were `offered`, and how many were
+`excluded` as `occupied` (overlapping a retained lane or connector),
+`extends_beyond_unoccupied_interval` (an observed station lies outside the free
+extent; intervals end only at observed stations) or `below_minimum_width`, with
+`widest_excluded_span_m` against `minimum_width_m`. Zero pairs means no proposal
+section was observed in the gap.
 Currently this inspection supports one forward, one-way lane occupying the entire
 observed source span.
 

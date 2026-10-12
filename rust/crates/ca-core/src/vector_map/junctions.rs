@@ -103,6 +103,31 @@ pub struct JunctionRejection {
     pub gap: f64,
     /// `touching_ends`, `height`, `heading`, `unsupported` or `geometry`.
     pub reason: &'static str,
+    /// For `unsupported`: which ends or traces lacked ground support.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unsupported: Option<UnsupportedDetail>,
+}
+
+/// What lacked ground support on a refused pair: road ends without ground, or
+/// connector traces whose sampled support fell short.
+#[derive(Debug, Clone, Default, Serialize)]
+pub struct UnsupportedDetail {
+    /// `from` (the exit) and/or `to` (the entry) when their end points lack ground.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub ends: Vec<&'static str>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub traces: Vec<TraceSupport>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TraceSupport {
+    /// `center`, `left` or `right`.
+    pub trace: &'static str,
+    /// Supported fraction of samples; absent when the trace exceeds the sampling budget.
+    pub fraction: Option<f64>,
+    /// Endpoint support; absent when only the centre fraction is checked.
+    pub start_supported: Option<bool>,
+    pub end_supported: Option<bool>,
 }
 
 const MAX_REJECTIONS: usize = 256;
@@ -383,16 +408,20 @@ pub fn propose(
         for b in &entries {
             let delta = [b.point.x - a.point.x, b.point.y - a.point.y];
             let gap = delta[0].hypot(delta[1]);
-            let reject = |report: &mut JunctionReport, reason: &'static str| {
+            let detailed = |report: &mut JunctionReport,
+                            reason: &'static str,
+                            unsupported: Option<UnsupportedDetail>| {
                 if report.rejections.len() < MAX_REJECTIONS {
                     report.rejections.push(JunctionRejection {
                         from: a.id,
                         to: b.id,
                         gap,
                         reason,
+                        unsupported,
                     });
                 }
             };
+            let reject = |report: &mut JunctionReport, reason| detailed(report, reason, None);
             if a.id == b.id || gap > o.max_gap {
                 continue;
             }
@@ -418,9 +447,18 @@ pub fn propose(
             }
             // A supported interior alone can mask a floating end at the preview's
             // fractional support threshold. Never relax the endpoint ground test.
-            if !ground.supports(a.point) || !ground.supports(b.point) {
+            let ends: Vec<_> = [("from", a.point), ("to", b.point)]
+                .into_iter()
+                .filter(|(_, p)| !ground.supports(*p))
+                .map(|(end, _)| end)
+                .collect();
+            if !ends.is_empty() {
                 report.unsupported_candidates += 1;
-                reject(&mut report, "unsupported");
+                let detail = UnsupportedDetail {
+                    ends,
+                    ..Default::default()
+                };
+                detailed(&mut report, "unsupported", Some(detail));
                 continue;
             }
             // Score the exact geometry produced by the shared connector builder,
@@ -441,20 +479,36 @@ pub fn propose(
                 continue;
             };
             let (support, samples, boundary_support) = if o.check_boundary_support {
-                let [Some(c), Some(l), Some(r)] = [&center, &left, &right]
-                    .map(|line| super::quality::checked_curve_support(&ground, line))
-                else {
-                    report.unsupported_candidates += 1;
-                    reject(&mut report, "unsupported");
-                    continue;
+                let checked = [&center, &left, &right]
+                    .map(|line| super::quality::checked_curve_support(&ground, line));
+                let short = |s: &Option<super::quality::CurveSupport>| {
+                    s.as_ref().is_none_or(|s| {
+                        !s.start_supported || !s.end_supported || s.fraction < o.min_ground_support
+                    })
                 };
-                if [&c, &l, &r].iter().any(|s| {
-                    !s.start_supported || !s.end_supported || s.fraction < o.min_ground_support
-                }) {
+                if checked.iter().any(short) {
                     report.unsupported_candidates += 1;
-                    reject(&mut report, "unsupported");
+                    let traces = ["center", "left", "right"]
+                        .into_iter()
+                        .zip(&checked)
+                        .filter(|(_, s)| short(s))
+                        .map(|(trace, s)| TraceSupport {
+                            trace,
+                            fraction: s.as_ref().map(|s| s.fraction),
+                            start_supported: s.as_ref().map(|s| s.start_supported),
+                            end_supported: s.as_ref().map(|s| s.end_supported),
+                        })
+                        .collect();
+                    let detail = UnsupportedDetail {
+                        traces,
+                        ..Default::default()
+                    };
+                    detailed(&mut report, "unsupported", Some(detail));
                     continue;
                 }
+                let [Some(c), Some(l), Some(r)] = checked else {
+                    unreachable!("every trace was checked above");
+                };
                 (c.fraction, c.samples, Some([l.fraction, r.fraction]))
             } else {
                 let samples = center.resample(0.5);
@@ -468,7 +522,17 @@ pub fn propose(
             };
             if support < o.min_ground_support {
                 report.unsupported_candidates += 1;
-                reject(&mut report, "unsupported");
+                let trace = TraceSupport {
+                    trace: "center",
+                    fraction: Some(support),
+                    start_supported: None,
+                    end_supported: None,
+                };
+                let detail = UnsupportedDetail {
+                    traces: vec![trace],
+                    ..Default::default()
+                };
+                detailed(&mut report, "unsupported", Some(detail));
                 continue;
             }
             report.candidates.push(JunctionCandidate {
@@ -652,11 +716,18 @@ mod tests {
             min_ground_support: 1.0,
             ..Default::default()
         };
-        assert!(
-            propose(&map, &cloud, &options)
-                .unwrap()
-                .candidates
-                .is_empty()
+        let checked = propose(&map, &cloud, &options).unwrap();
+        assert!(checked.candidates.is_empty());
+        // The refusal names the left boundary: its ends have ground, its interior not.
+        let detail = checked.rejections[0].unsupported.as_ref().unwrap();
+        assert!(detail.ends.is_empty());
+        let traces: Vec<_> = detail.traces.iter().map(|t| t.trace).collect();
+        assert_eq!(traces, ["left"]);
+        let left = &detail.traces[0];
+        assert!(left.fraction.unwrap() < 1.0);
+        assert_eq!(
+            (left.start_supported, left.end_supported),
+            (Some(true), Some(true))
         );
     }
 
@@ -753,6 +824,18 @@ mod tests {
                 .count()
         };
         assert_eq!(count("unsupported"), report.unsupported_candidates);
+        // Both road ends float above the lowered ground.
+        assert!(
+            report
+                .rejections
+                .iter()
+                .filter(|r| r.reason == "unsupported")
+                .all(|r| {
+                    r.unsupported
+                        .as_ref()
+                        .is_some_and(|d| d.ends == ["from", "to"] && d.traces.is_empty())
+                })
+        );
         assert_eq!(count("heading"), report.rejected_heading);
         assert_eq!(
             report.rejections.len(),

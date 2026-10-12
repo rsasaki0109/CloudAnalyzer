@@ -47,7 +47,13 @@ def _index(
     proposal: dict[str, Any],
     gaps: list[dict[str, Any]],
     layout: dict[str, Any],
+    exclusions: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
+    """Offer observed section pairs inside unoccupied gap intervals.
+
+    When ``exclusions`` is given, one summary per gap is appended to it saying why
+    source section pairs touching the gap were not offered.
+    """
     lanes = layout["lanes"]
     if (
         len(lanes) != 1
@@ -74,19 +80,49 @@ def _index(
         occupied = occupancy(parent, gap)
         if not occupied["available"] or occupied["limited_in_response"]:
             raise ValueError("gap planning requires complete retained HD occupancy")
+        summary: dict[str, Any] = {
+            "gap_id": gap["id"],
+            "from_m": gap["from_m"],
+            "to_m": gap["to_m"],
+            "source_section_pairs": 0,
+            "offered": 0,
+            "excluded": {
+                "occupied": 0,
+                "extends_beyond_unoccupied_interval": 0,
+                "below_minimum_width": 0,
+            },
+            "minimum_width_m": lanes[0]["minimum_width_m"],
+            "widest_excluded_span_m": None,
+        }
         for source in proposal["candidates"]:
             sections = source["sections"]
             for a, b in zip(sections, sections[1:]):
                 lo, hi = a["station_m"], b["station_m"]
+                if not max(lo, gap["from_m"]) < min(hi, gap["to_m"]):
+                    continue
+                summary["source_section_pairs"] += 1
+                if any(
+                    max(lo, o["from_m"]) < min(hi, o["to_m"])
+                    for o in occupied["overlaps"]
+                ):
+                    summary["excluded"]["occupied"] += 1
+                    continue
                 if not any(
                     i["from_m"] <= lo < hi <= i["to_m"]
                     for i in occupied["unoccupied_intervals"]
                 ):
+                    summary["excluded"]["extends_beyond_unoccupied_interval"] += 1
                     continue
                 left, right = _curves([a, b])
                 widths = np.linalg.norm(left[:, :2] - right[:, :2], axis=1)
                 if widths.min() + 1e-6 < lanes[0]["minimum_width_m"]:
+                    summary["excluded"]["below_minimum_width"] += 1
+                    widest = summary["widest_excluded_span_m"]
+                    summary["widest_excluded_span_m"] = max(
+                        float(widths.min()), widest if widest is not None else 0.0
+                    )
                     continue
+                summary["offered"] += 1
                 links = []
                 for old in ir["lanes"]:
                     start, end = intervals[old["id"]]
@@ -132,6 +168,8 @@ def _index(
                     raise ValueError(
                         "plan exceeds 256 intervals; choose fewer inspected gaps"
                     )
+        if exclusions is not None:
+            exclusions.append(summary)
     offered.sort(
         key=lambda r: (
             -len(r["retained_endpoint_links"]),
@@ -212,11 +250,13 @@ def inspect(
         directory.mkdir(exist_ok=True)
         index_path = directory / "index.json"
         if not index_path.exists():
+            exclusions: list[dict[str, Any]] = []
             rows = _index(
                 parent,
                 proposal,
                 [g for g in saved["gaps"] if g["id"] in gap_ids],
                 layout,
+                exclusions,
             )
             jobs._save(
                 index_path,
@@ -225,6 +265,7 @@ def inspect(
                     "protocol": PROTOCOL,
                     "gap_ids": gap_ids,
                     "intervals": rows,
+                    "gap_exclusions": exclusions,
                 },
             )
         index = _read(jobs._artifact(index_path))
@@ -331,6 +372,7 @@ def inspect(
                 "protocol": PROTOCOL,
                 "intervals": result,
                 "intervals_total": len(index["intervals"]),
+                "gap_exclusions": index.get("gap_exclusions"),
                 "next_offset": (
                     offset + 8 if offset + 8 < len(index["intervals"]) else None
                 ),

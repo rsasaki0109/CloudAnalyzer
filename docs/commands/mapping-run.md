@@ -226,6 +226,18 @@ connector polygon, including endpoints. Minimum distance between equal normalize
 XY-arc positions on the piecewise-linear boundaries must meet the fixed width
 hypothesis. This is a geometric width check, not observed physical road width.
 
+Consecutive pieces within the gap limit that are not offered are listed in
+`rejected`, each with its holds, so the agent can see why they stay apart:
+
+- `touching_pieces`: the pieces meet at the same station, and no connector can be
+  drawn across a zero gap;
+- `native_heading`, `native_height`, `native_unsupported`, `native_geometry` or
+  `native_touching_ends`: the native junction check refused the pair for that reason;
+- the connection checks above, for example `below_fixed_minimum_width`.
+
+The native summary counts every refused exit/entry pair, including non-consecutive
+ones, and `touching_ends` counts pairs closer than 0.5 m.
+
 The proposal is saved with parent, cloud, trajectory, source and native hashes.
 Pages show at most eight complete candidates; overlong geometry is withheld.
 Inspection costs no HD attempt and never changes an exported map. Each chosen

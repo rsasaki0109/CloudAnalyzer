@@ -86,10 +86,26 @@ pub struct JunctionReport {
     pub rejected_height: usize,
     pub unsupported_candidates: usize,
     pub rejected_geometry: usize,
+    /// Exit/entry pairs closer than 0.5 m: a seam no connector can be drawn across.
+    pub touching_ends: usize,
+    /// Why each pair within `max_gap` (or touching) was not offered, up to
+    /// MAX_REJECTIONS entries, so a caller can say why two lanes stay apart.
+    pub rejections: Vec<JunctionRejection>,
     pub cloud_points: usize,
     pub traffic_rules_inferred: bool,
     pub warnings: Vec<String>,
 }
+
+#[derive(Debug, Clone, Serialize)]
+pub struct JunctionRejection {
+    pub from: LaneId,
+    pub to: LaneId,
+    pub gap: f64,
+    /// `touching_ends`, `height`, `heading`, `unsupported` or `geometry`.
+    pub reason: &'static str,
+}
+
+const MAX_REJECTIONS: usize = 256;
 
 struct End {
     id: LaneId,
@@ -335,7 +351,8 @@ pub fn propose(
     let mut report = JunctionReport {
         candidates: Vec::new(), added: Vec::new(), open_exits: 0, open_entries: 0,
         malformed_lanes: 0, rejected_heading: 0, rejected_height: 0,
-        unsupported_candidates: 0, rejected_geometry: 0, cloud_points: cloud.len(),
+        unsupported_candidates: 0, rejected_geometry: 0, touching_ends: 0, rejections: Vec::new(),
+        cloud_points: cloud.len(),
         traffic_rules_inferred: false,
         warnings: vec!["Connection drafts follow geometry and nearby ground, not permitted turns. Review every branch, traffic rule and ground level before using the map. Existing rules are retained; no new right-of-way or signal rules are created.".into()],
     };
@@ -366,12 +383,28 @@ pub fn propose(
         for b in &entries {
             let delta = [b.point.x - a.point.x, b.point.y - a.point.y];
             let gap = delta[0].hypot(delta[1]);
-            if a.id == b.id || !(0.5..=o.max_gap).contains(&gap) {
+            let reject = |report: &mut JunctionReport, reason: &'static str| {
+                if report.rejections.len() < MAX_REJECTIONS {
+                    report.rejections.push(JunctionRejection {
+                        from: a.id,
+                        to: b.id,
+                        gap,
+                        reason,
+                    });
+                }
+            };
+            if a.id == b.id || gap > o.max_gap {
+                continue;
+            }
+            if gap < 0.5 {
+                report.touching_ends += 1;
+                reject(&mut report, "touching_ends");
                 continue;
             }
             let rise = (a.point.z - b.point.z).abs();
             if rise > HEIGHT && rise / gap > MAX_GRADE {
                 report.rejected_height += 1;
+                reject(&mut report, "height");
                 continue;
             }
             let toward = |h: [f64; 2]| (h[0] * delta[0] + h[1] * delta[1]) / gap;
@@ -380,12 +413,14 @@ pub fn propose(
             let angle = cross.atan2(dot).to_degrees();
             if toward(a.heading) < 0.25 || toward(b.heading) < 0.25 || angle.abs() > 135.0 {
                 report.rejected_heading += 1;
+                reject(&mut report, "heading");
                 continue;
             }
             // A supported interior alone can mask a floating end at the preview's
             // fractional support threshold. Never relax the endpoint ground test.
             if !ground.supports(a.point) || !ground.supports(b.point) {
                 report.unsupported_candidates += 1;
+                reject(&mut report, "unsupported");
                 continue;
             }
             // Score the exact geometry produced by the shared connector builder,
@@ -393,6 +428,7 @@ pub fn propose(
             let mut preview = map.clone();
             let Ok((id, _)) = preview.add_connector(NewConnector::new(a.id, b.id)) else {
                 report.rejected_geometry += 1;
+                reject(&mut report, "geometry");
                 continue;
             };
             let (Some(center), Some(left), Some(right)) = (
@@ -401,6 +437,7 @@ pub fn propose(
                 preview.oriented_boundary(id, Side::Right),
             ) else {
                 report.rejected_geometry += 1;
+                reject(&mut report, "geometry");
                 continue;
             };
             let (support, samples, boundary_support) = if o.check_boundary_support {
@@ -408,12 +445,14 @@ pub fn propose(
                     .map(|line| super::quality::checked_curve_support(&ground, line))
                 else {
                     report.unsupported_candidates += 1;
+                    reject(&mut report, "unsupported");
                     continue;
                 };
                 if [&c, &l, &r].iter().any(|s| {
                     !s.start_supported || !s.end_supported || s.fraction < o.min_ground_support
                 }) {
                     report.unsupported_candidates += 1;
+                    reject(&mut report, "unsupported");
                     continue;
                 }
                 (c.fraction, c.samples, Some([l.fraction, r.fraction]))
@@ -429,6 +468,7 @@ pub fn propose(
             };
             if support < o.min_ground_support {
                 report.unsupported_candidates += 1;
+                reject(&mut report, "unsupported");
                 continue;
             }
             report.candidates.push(JunctionCandidate {
@@ -704,12 +744,47 @@ mod tests {
         let report = propose(&map, &cloud, &Default::default()).unwrap();
         assert!(report.candidates.is_empty());
         assert_eq!(report.unsupported_candidates, 2);
+        // Each refused pair is listed with its reason, matching the counts.
+        let count = |reason| {
+            report
+                .rejections
+                .iter()
+                .filter(|r| r.reason == reason)
+                .count()
+        };
+        assert_eq!(count("unsupported"), report.unsupported_candidates);
+        assert_eq!(count("heading"), report.rejected_heading);
+        assert_eq!(
+            report.rejections.len(),
+            report.unsupported_candidates
+                + report.rejected_heading
+                + report.rejected_height
+                + report.rejected_geometry
+        );
         let invalid = JunctionOptions {
             max_gap: f64::NAN,
             ..Default::default()
         };
         assert!(propose(&map, &cloud, &invalid).is_err());
         assert!(propose(&map, &PointCloud::default(), &Default::default()).is_err());
+    }
+
+    #[test]
+    fn touching_ends_are_counted_and_listed_instead_of_silently_skipped() {
+        // Two pieces of one drive meeting at the same point: no connector can span
+        // a zero gap, and the caller is told so.
+        let (mut map, cloud, _) = fixture();
+        let a = road(&mut map, [-20.0, 5.0, 2.0], [-15.0, 5.0, 2.0]);
+        let b = road(&mut map, [-15.0, 5.0, 2.0], [-10.0, 5.0, 2.0]);
+        let report = propose(&map, &cloud, &Default::default()).unwrap();
+        assert_eq!(report.touching_ends, 1);
+        let touching: Vec<_> = report
+            .rejections
+            .iter()
+            .filter(|r| r.reason == "touching_ends")
+            .map(|r| (r.from, r.to))
+            .collect();
+        assert_eq!(touching, vec![(a, b)]);
     }
 
     #[test]

@@ -54,6 +54,20 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Corridor proposals no longer split one drive into pieces that meet at the same
+  station. When a stored start was too wide to be supported, the previous release
+  started a new candidate from a trimmed section at that station. The junction
+  check never offers a zero gap, so the lanes stayed in separate components (two
+  such junctions each on the bundled April and June drives). The track's last
+  section is now narrowed in place when the trace into it stays supported.
+  Coverage is unchanged, and the candidates drop from 4 to 2 (April) and 6 to 4
+  (June).
+- Connection proposals say why consecutive pieces stay apart. Each refused pair is
+  listed in `rejected` with a hold: `touching_pieces`, or the native reason
+  (`native_heading`, `native_height`, `native_unsupported`, `native_geometry`).
+  Previously only counts were reported. The native junction report adds
+  `rejections` and `touching_ends`.
+
 - Corridor proposals no longer defer an interval as a source gap only because a
   path-containing band is far wider than the road. When no edge inset of up to 2 m is
   supported, the two sections are also tried narrowed to 3, 2 and 1.5 m either side of

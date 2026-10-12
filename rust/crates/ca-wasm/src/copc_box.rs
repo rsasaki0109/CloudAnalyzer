@@ -10,7 +10,7 @@ const MAX_SAFE: f64 = 9_007_199_254_740_991.0;
 const MAX_SELECTED: usize = 1_000_000;
 
 fn integer(value: f64) -> Result<u64, JsError> {
-    if !value.is_finite() || value < 0.0 || value > MAX_SAFE || value.fract() != 0.0 {
+    if !value.is_finite() || !(0.0..=MAX_SAFE).contains(&value) || value.fract() != 0.0 {
         return Err(JsError::new(
             "byte offsets/sizes must be safe nonnegative integers",
         ));

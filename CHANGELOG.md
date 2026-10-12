@@ -45,6 +45,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Bridge total widths include footways. The raised edge beyond each deck end was
+  searched only 1.2 m out, so a footway was cut there.
+  - A raised edge still running past 1.2 m is now followed up to 4 m, with its level
+    drifting along its cross slope. It is reported as footway width and step height;
+    an edge ending within 1.2 m is a curb, measured as before.
+  - On the 20 SemanticBridge bridges, the plan's median width error against the
+    published widths drops from 1.83 m to 0.52 m; 10 bridges are within 0.5 m, up from 4.
+  - On the figshare bridges, curb and width values are unchanged except Bridge_1's
+    plan width (4.50 to 4.56 m).
+  - `ca bridge-damage` fixes its raster grid in the axis frame, so a deck edge moved
+    by millimetres no longer re-cuts every cell and changes the candidates.
 - `ca bridge-plan` finds piers on real multi-span bridges. Tested on the 20 labelled
   TLS bridges of the public SemanticBridge dataset (CC BY 4.0), it now finds 32 of
   their 33 piers (mean position error 0.15 m), where it had found 18. It reports one

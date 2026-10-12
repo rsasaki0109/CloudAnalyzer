@@ -58,13 +58,13 @@ outputs here.
 
 | Bridge | Deck (m) | Skew (°) | Underside | Girders (lateral offset, m) | Cross beams (from the start, m) | Spans | Elements |
 |---|---|---:|---|---|---|---:|---|
-| Bridge_1 | 5.37 × 4.50 | -0.3 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
+| Bridge_1 | 5.37 × 4.56 | -0.3 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
 | Bridge_2 | 9.43 × 5.02 | 0.3 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
 | Bridge_3 | 11.70 × 9.41 | 12.5 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
 | Bridge_4 | 14.66 × 6.68 | -10.7 | girders observed | +2.17, -0.53, -2.13 | 0.74, 5.12, 9.47, 13.89 | 1 | 20 Ds · 15 Mg · 8 Cr |
 | Bridge_5 | 15.88 × 8.19 | -17.0 | not scanned | – | – | 1 | 1 Ds |
-| Bridge_6 | 16.53 × 8.26 | 8.3 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
-| Bridge_7 | 19.57 × 3.88 | 2.2 | girders observed | +1.42, +0.50, -0.43, -1.38 | 1.03, 9.85, 18.68 | 1 | 20 Ds · 16 Mg · 9 Cr |
+| Bridge_6 | 16.53 × 8.27 | 8.3 | scanned, nothing below the slab | – | – | 1 | 1 Ds |
+| Bridge_7 | 19.57 × 3.89 | 2.2 | girders observed | +1.42, +0.50, -0.43, -1.38 | 1.03, 9.85, 18.68 | 1 | 20 Ds · 16 Mg · 9 Cr |
 | Bridge_8 | 19.28 × 5.50 | -11.9 | girders observed | +1.49, -1.51 | 0.38, 5.03, 9.70, 14.30, 18.95 | 1 | 18 Ds · 12 Mg · 5 Cr |
 | Bridge_9 | 25.42 × 6.49 | 22.5 | girders observed | +2.01, +1.39, -0.19, -2.34 | 6.25, 11.88, 17.53, 23.23 | 1 | 25 Ds · 20 Mg · 12 Cr |
 
@@ -94,21 +94,24 @@ ca bridge-damage Bridge_3.las -o bridge_3 --classes 0,1,2,3 --axis-classes 2 --m
 
 | Bridge | Soffit searched (m²) | Light | Dark | Rust | Recess | Straight seams left out (m) |
 |---|---:|---:|---:|---:|---:|---:|
-| Bridge_1 | 9.0 | 8 | 13 | 2 | 6 | 71 |
-| Bridge_2 | 32.0 | 1 | 1 | 0 | 0 | 208 |
-| Bridge_3 | 82.4 | 13 | 1 | 0 | 0 | 67 |
-| Bridge_4 | 45.9 | 0 | 0 | 0 | 2 | 8 |
-| Bridge_6 | 113.2 | 0 | 4 | 0 | 0 | 200 |
-| Bridge_7 | 11.6 | 0 | 0 | 0 | 13 | 3 |
-| Bridge_8 | 52.6 | 0 | 0 | 0 | 2 | 8 |
-| Bridge_9 | 30.9 | 4 | 1 | 3 | 6 | 55 |
+| Bridge_1 | 9.2 | 6 | 17 | 2 | 5 | 68 |
+| Bridge_2 | 32.2 | 1 | 1 | 0 | 0 | 210 |
+| Bridge_3 | 82.4 | 13 | 1 | 0 | 0 | 72 |
+| Bridge_4 | 45.7 | 0 | 1 | 0 | 2 | 8 |
+| Bridge_6 | 113.4 | 0 | 5 | 0 | 0 | 197 |
+| Bridge_7 | 11.6 | 0 | 0 | 0 | 14 | 4 |
+| Bridge_8 | 52.6 | 1 | 0 | 0 | 1 | 9 |
+| Bridge_9 | 30.8 | 3 | 1 | 2 | 7 | 52 |
 
 No inspection records come with the dataset, so how many candidates are real is
 unknown. By eye on the orthophotos, Bridge_3's light candidates sit on white
 deposits between its formwork lines, and Bridge_7's recess candidates on a rough,
-darker patch in one girder bay. Bridges 2 and 6 had 200 m or more of straight joints
-and seams that would otherwise have been candidates. Bridge_1 has 29 candidates on
-9 m² searched and was not checked by eye. `damage.json` and `damage.csv` are
+darker patch in one girder bay. Bridges 2 and 6 had about 200 m of straight joints
+and seams that would otherwise have been candidates. Bridge_1 has 30 candidates on
+9 m² searched and was not checked by eye. Small candidates near the 0.005 m² minimum
+come and go with the 2 cm grid: fixing the grid to the axis frame instead of the
+first soffit return changed five bridges' totals by one and Bridge_1's dark
+candidates from 13 to 17. `damage.json` and `damage.csv` are
 committed for all eight, the drawings for two:
 
 | Bridge_3 | Bridge_7 |

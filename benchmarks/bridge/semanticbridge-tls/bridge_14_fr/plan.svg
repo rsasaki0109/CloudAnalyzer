@@ -1,16 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 824" font-family="sans-serif" font-size="13">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 913" font-family="sans-serif" font-size="13">
 <defs><marker id="t" viewBox="0 0 2 10" refX="1" refY="5" markerWidth="2" markerHeight="10" orient="auto"><path d="M1 0V10" stroke="#1a73e8"/></marker></defs>
 <rect width="100%" height="100%" fill="white"/>
-<polygon points="131.2,94.1 1005.9,94.1 992.3,662.0 117.6,662.0" fill="#fdf6ec" stroke="#e8710a" stroke-width="2.5"/>
-<text x="131.2" y="86.1" text-anchor="middle" font-weight="bold" fill="#3c4043">A1</text>
-<text x="1005.9" y="86.1" text-anchor="middle" font-weight="bold" fill="#3c4043">A2</text>
-<text x="561.8" y="383.0" text-anchor="middle" font-size="15" fill="#202124">Ds0101</text>
-<line x1="124.4" y1="54.1" x2="999.1" y2="54.1" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
-<text x="561.8" y="48.1" text-anchor="middle" fill="#1a73e8">橋長方向 床版長（中心線） 14880</text>
-<line x1="1070.0" y1="94.1" x2="1070.0" y2="662.0" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
-<text x="1086.0" y="372.0" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 1086.0 372.0)">全幅 9661</text>
-<text x="117.6" y="684.0" text-anchor="middle" font-weight="bold">起点</text>
-<text x="992.3" y="684.0" text-anchor="middle" font-weight="bold">終点</text>
-<text x="12" y="778">平面図（上から透視）· 起点を左、終点を向いて左側を上 · 単位 mm · 斜角 1.4° · 要素番号＝橋軸方向（起点から）2桁＋直角方向（上から）2桁</text>
-<text x="12" y="800" fill="#5f6368">下面を観測：床版下に突出する部材なし（床版橋または計測範囲外）</text>
+<polygon points="133.1,93.9 1006.1,93.9 990.4,751.0 117.3,751.0" fill="#fdf6ec" stroke="#e8710a" stroke-width="2.5"/>
+<text x="133.1" y="85.9" text-anchor="middle" font-weight="bold" fill="#3c4043">A1</text>
+<text x="1006.1" y="85.9" text-anchor="middle" font-weight="bold" fill="#3c4043">A2</text>
+<text x="561.7" y="427.4" text-anchor="middle" font-size="15" fill="#202124">Ds0101</text>
+<line x1="125.2" y1="53.9" x2="998.3" y2="53.9" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="561.7" y="47.9" text-anchor="middle" fill="#1a73e8">橋長方向 床版長（中心線） 14880</text>
+<line x1="1070.0" y1="93.9" x2="1070.0" y2="751.0" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="1086.0" y="416.4" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 1086.0 416.4)">全幅 11199</text>
+<text x="117.3" y="773.0" text-anchor="middle" font-weight="bold">起点</text>
+<text x="990.4" y="773.0" text-anchor="middle" font-weight="bold">終点</text>
+<text x="12" y="867">平面図（上から透視）· 起点を左、終点を向いて左側を上 · 単位 mm · 斜角 1.4° · 要素番号＝橋軸方向（起点から）2桁＋直角方向（上から）2桁</text>
+<text x="12" y="889" fill="#5f6368">下面を観測：床版下に突出する部材なし（床版橋または計測範囲外）</text>
 </svg>

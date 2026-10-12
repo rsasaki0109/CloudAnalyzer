@@ -32,6 +32,7 @@ DECK_MAX_SLOPE = 0.12       # deck cross slope considered (12 %)
 DECK_GAP = 0.25             # largest lateral gap inside a curb top
 DECK_MIN_RUN = 1.5          # shortest deck run accepted
 CURB_SEARCH = 1.2           # lateral search beyond a deck end for a curb
+FOOTWAY_SEARCH = 4.0        # a raised edge continuing past CURB_SEARCH is a footway, followed this far
 CURB_MIN_RISE = 0.05        # a curb top sits at least this far above the deck
 CURB_MAX_RISE = 0.6
 CURB_LEVEL = 0.03           # height band of the curb top plateau
@@ -53,6 +54,10 @@ ITEMS = [
     ("right_curb_width_m", "地覆幅（右）", "observed"),
     ("left_curb_height_m", "地覆高（左）", "observed"),
     ("right_curb_height_m", "地覆高（右）", "observed"),
+    ("left_footway_width_m", "歩道幅（左、車道端から外縁まで）", "observed"),
+    ("right_footway_width_m", "歩道幅（右、車道端から外縁まで）", "observed"),
+    ("left_footway_height_m", "歩道の段差（左）", "observed"),
+    ("right_footway_height_m", "歩道の段差（右）", "observed"),
     ("left_parapet_height_m", "高欄高（左、地覆天端から）", "observed"),
     ("right_parapet_height_m", "高欄高（右、地覆天端から）", "observed"),
     ("left_outer_face_depth_m", "外面の可視深さ（左、床版上面から）", "lower_bound"),
@@ -62,6 +67,9 @@ ITEMS = [
 
 
 CROWN_ONLY = {"left_cross_slope_percent", "right_cross_slope_percent"}
+# A raised edge is a curb or a footway: on a side where one was measured, the other does not apply.
+RAISED_EDGE = {f"{s}_{k}_{d}": f"{s}_{o}_{d}" for s in ("left", "right") for k, o in (("curb", "footway"), ("footway", "curb"))
+               for d in ("width_m", "height_m")}
 
 
 @dataclass
@@ -243,7 +251,13 @@ def _deck_z(deck: dict[str, Any], u: Any) -> Any:
 
 
 def _side(u: np.ndarray, z: np.ndarray, deck: dict[str, Any], sign: int) -> dict[str, Any]:
-    """Curb, parapet and outer face beyond one deck end (sign -1 right/low u, +1 left/high u)."""
+    """Curb or footway, parapet and outer face beyond one deck end (sign -1 right/low u, +1 left/high u).
+
+    The raised edge's top is the most populated level within CURB_SEARCH. Followed outward
+    bin by bin, its level drifting along its cross slope, across gaps up to DECK_GAP, an
+    edge still running past CURB_SEARCH is a footway, taken up to FOOTWAY_SEARCH. Otherwise
+    it is a curb, whose outer end is that of its returns within the level band.
+    """
     edge = deck["hi"] if sign > 0 else deck["lo"]
     deck_z = float(_deck_z(deck, edge))
     beyond = (u - edge) * sign
@@ -265,9 +279,27 @@ def _side(u: np.ndarray, z: np.ndarray, deck: dict[str, Any], sign: int) -> dict
     outer_beyond = float(top_beyond[b - 1])
     if outer_beyond - float(top_beyond[a]) < 0.05:
         return out
+    # Follow the top outward bin by bin, its level drifting along its cross slope, until
+    # it ends or drops to the deck. Past CURB_SEARCH it is a footway; within, a curb,
+    # measured from the level band above.
+    far = (beyond > 0.0) & (beyond <= FOOTWAY_SEARCH)
+    order = np.argsort(beyond[far])
+    fb, fr = beyond[far][order], rise[far][order]
+    current, reach = level, None
+    for k0 in np.arange(0.0, FOOTWAY_SEARCH, SURFACE_BIN):
+        i, j = np.searchsorted(fb, [k0, k0 + SURFACE_BIN])
+        hit = (np.abs(fr[i:j] - current) <= CURB_LEVEL) & (fr[i:j] >= CURB_MIN_RISE)
+        if hit.any():
+            current = float(np.median(fr[i:j][hit]))
+            reach = float(fb[i:j][hit].max())
+        elif reach is not None and k0 + SURFACE_BIN - reach > DECK_GAP:
+            break
+    if reach is not None and reach > CURB_SEARCH:
+        outer_beyond = reach
     outer_u = float(edge + sign * outer_beyond)
-    out.update({"curb_top_z": top_z, "outer_u": outer_u,
-                "curb_width_m": outer_beyond, "curb_height_m": top_z - deck_z})
+    kind = "curb" if outer_beyond <= CURB_SEARCH else "footway"
+    out.update({"curb_top_z": top_z, "outer_u": outer_u, "edge_kind": kind,
+                f"{kind}_width_m": outer_beyond, f"{kind}_height_m": top_z - deck_z})
     # Parapet: returns above the curb top over the curb.
     over = (beyond > 0.0) & (beyond <= outer_beyond + 0.05) & (z > top_z + 0.1)
     if over.sum() >= 10:
@@ -326,7 +358,8 @@ def measure_section(u: np.ndarray, z: np.ndarray) -> dict[str, Any]:
         dims["left_cross_slope_percent"] = deck["left_slope"] * 100.0
         dims["right_cross_slope_percent"] = deck["right_slope"] * 100.0
     for name, side in (("left", left), ("right", right)):
-        for key in ("curb_width_m", "curb_height_m", "parapet_height_m", "outer_face_depth_m"):
+        for key in ("curb_width_m", "curb_height_m", "footway_width_m", "footway_height_m", "parapet_height_m",
+                    "outer_face_depth_m"):
             if key in side:
                 dims[f"{name}_{key}"] = side[key]
     if "outer_u" in left and "outer_u" in right:
@@ -509,8 +542,11 @@ def _aggregate(sections: list[dict[str, Any]]) -> list[dict[str, Any]]:
         row: dict[str, Any] = {"item": key, "label_ja": label, "sections_observed": int(len(vals)),
                                "sections_total": len(sections)}
         if len(vals) == 0:
-            # Side slopes exist only on a crowned deck; their absence is not a gap in the data.
-            missing = "not_applicable" if key in CROWN_ONLY and measured else "unobserved"
+            # Side slopes exist only on a crowned deck, and a side with a curb has no footway (or
+            # the reverse): their absence is not a gap in the data.
+            other = RAISED_EDGE.get(key)
+            raised = other is not None and any(other in s["dims"] for s in measured)
+            missing = "not_applicable" if (key in CROWN_ONLY and measured) or raised else "unobserved"
             row.update({"status": missing, "value": None, "p10": None, "p90": None})
         else:
             row.update({"status": status, "value": float(np.median(vals)),
@@ -593,13 +629,16 @@ def section_svg(u: np.ndarray, z: np.ndarray, section: dict[str, Any], table: li
     if "total_width_m" in d:
         dim(right["outer_u"], left["outer_u"], deck_z + 1.35, f"全幅 {d['total_width_m'] * 1000:.0f}")
     for side, name in ((left, "左"), (right, "右")):
-        if "curb_width_m" in side:
+        kind = side.get("edge_kind")
+        if kind:
             a, b = sorted([side["inner_u"], side["outer_u"]])
-            dim(a, b, side["curb_top_z"] + 0.12, f"{side['curb_width_m'] * 1000:.0f}")
+            label = "" if kind == "curb" else "歩道 "
+            dim(a, b, side["curb_top_z"] + 0.12, f"{label}{side[f'{kind}_width_m'] * 1000:.0f}")
     for side in (left, right):
-        if "curb_height_m" in side:
+        kind = side.get("edge_kind")
+        if kind:
             mid_u = 0.5 * (side["inner_u"] + side["outer_u"])
-            vdim(mid_u, side["deck_z"], side["curb_top_z"], f"{side['curb_height_m'] * 1000:.0f}")
+            vdim(mid_u, side["deck_z"], side["curb_top_z"], f"{side[f'{kind}_height_m'] * 1000:.0f}")
             if "parapet_height_m" in side:
                 vdim(side["outer_u"], side["curb_top_z"], side["curb_top_z"] + side["parapet_height_m"],
                      f"{side['parapet_height_m'] * 1000:.0f}")

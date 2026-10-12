@@ -11,43 +11,43 @@
     {
       "kind": "recess",
       "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.016,
+      "area_m2": 0.015600000000000001,
       "centre_m": [
-        -6.102871028117262,
-        1.1736100146470134
+        -6.102307692307692,
+        1.171025641025641
       ],
       "element": "Ds0202",
       "along_m": [
-        -6.199871028117261,
-        -6.019871028117262
+        -6.199999999999999,
+        -6.02
       ],
       "lateral_m": [
-        1.1036100146470134,
-        1.2236100146470135
+        1.0999999999999999,
+        1.22
       ],
-      "contrast": -0.0252193891750314,
+      "contrast": -0.02494912016960124,
       "contrast_unit": "m",
       "id": "D001"
     },
     {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.005200000000000001,
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.0064,
       "centre_m": [
-        6.994744356498123,
-        1.178225399262398
+        -5.8225,
+        -0.3037500000000001
       ],
-      "element": "Ds0502",
+      "element": "Ds0202",
       "along_m": [
-        6.960128971882741,
-        7.040128971882739
+        -5.859999999999999,
+        -5.779999999999999
       ],
       "lateral_m": [
-        1.1236100146470134,
-        1.2236100146470135
+        -0.3600000000000001,
+        -0.24
       ],
-      "contrast": -0.016569627663648168,
-      "contrast_unit": "m",
+      "contrast": 18.118115163082244,
+      "contrast_unit": "L*",
       "id": "D002"
     }
   ],
@@ -70,16 +70,15 @@
   "straight_seams_left_out": {
     "regions": {},
     "cells_along_m": {
-      "dark": 0.96,
-      "rust": 6.96,
-      "recess": 0.4
+      "rust": 8.0,
+      "recess": 0.68
     }
   },
   "soffit": {
     "points": 4653960,
-    "cells_with_returns": 215585,
-    "cells_searched": 131454,
-    "area_searched_m2": 52.5816
+    "cells_with_returns": 215944,
+    "cells_searched": 131376,
+    "area_searched_m2": 52.5504
   },
   "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
 }

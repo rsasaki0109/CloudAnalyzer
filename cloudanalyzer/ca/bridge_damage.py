@@ -144,7 +144,9 @@ def bridge_damage(
             result["outputs"] = _write(result, plan, None, Path(out_dir))
         return result
 
-    a0, u0 = float(along[soffit].min()), float(lat[soffit].min())
+    # A grid fixed in the axis frame: a deck edge moved by millimetres must not re-cut every cell.
+    a0 = float(np.floor(along[soffit].min() / CELL) * CELL)
+    u0 = float(np.floor(lat[soffit].min() / CELL) * CELL)
     ia = ((along[soffit] - a0) / CELL).astype(int)
     iu = ((lat[soffit] - u0) / CELL).astype(int)
     na, nu = int(ia.max()) + 1, int(iu.max()) + 1

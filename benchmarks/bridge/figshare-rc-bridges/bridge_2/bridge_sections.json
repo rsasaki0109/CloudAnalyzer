@@ -83,6 +83,7 @@
         "deck_z": 1.215,
         "curb_top_z": 1.422,
         "outer_u": 2.427556577148384,
+        "edge_kind": "curb",
         "curb_width_m": 0.383938377441261,
         "curb_height_m": 0.20699999999999985
       },
@@ -91,6 +92,7 @@
         "deck_z": 1.179,
         "curb_top_z": 1.424,
         "outer_u": -2.56167505300734,
+        "edge_kind": "curb",
         "curb_width_m": 0.5750079048018946,
         "curb_height_m": 0.24499999999999988
       },
@@ -128,6 +130,7 @@
         "deck_z": 1.206,
         "curb_top_z": 1.434,
         "outer_u": 2.4375061245113696,
+        "edge_kind": "curb",
         "curb_width_m": 0.407300743186656,
         "curb_height_m": 0.22799999999999998
       },
@@ -136,6 +139,7 @@
         "deck_z": 1.19,
         "curb_top_z": 1.44,
         "outer_u": -2.568539305993969,
+        "edge_kind": "curb",
         "curb_width_m": 0.625342793878316,
         "curb_height_m": 0.25
       },
@@ -173,6 +177,7 @@
         "deck_z": 1.2325,
         "curb_top_z": 1.458,
         "outer_u": 2.4732305708885955,
+        "edge_kind": "curb",
         "curb_width_m": 0.4599176507698002,
         "curb_height_m": 0.22550000000000003
       },
@@ -181,6 +186,7 @@
         "deck_z": 1.202,
         "curb_top_z": 1.445,
         "outer_u": -2.569371280143684,
+        "edge_kind": "curb",
         "curb_width_m": 0.6208958353181395,
         "curb_height_m": 0.2430000000000001
       },
@@ -219,6 +225,7 @@
         "deck_z": 1.21,
         "curb_top_z": 1.465,
         "outer_u": 2.4693699830931743,
+        "edge_kind": "curb",
         "curb_width_m": 0.5682472611260683,
         "curb_height_m": 0.2550000000000001,
         "outer_face_depth_m": 0.479
@@ -228,6 +235,7 @@
         "deck_z": 1.212,
         "curb_top_z": 1.427,
         "outer_u": -2.49609814904835,
+        "edge_kind": "curb",
         "curb_width_m": 0.5128320484773357,
         "curb_height_m": 0.21500000000000008
       },
@@ -267,6 +275,7 @@
         "deck_z": 1.215,
         "curb_top_z": 1.475,
         "outer_u": 2.4711741326379983,
+        "edge_kind": "curb",
         "curb_width_m": 0.5704889707062284,
         "curb_height_m": 0.26,
         "outer_face_depth_m": 0.44200000000000006
@@ -276,6 +285,7 @@
         "deck_z": 1.21,
         "curb_top_z": 1.463,
         "outer_u": -2.501144849014913,
+        "edge_kind": "curb",
         "curb_width_m": 0.5321217153136482,
         "curb_height_m": 0.2530000000000001,
         "outer_face_depth_m": 0.45099999999999996
@@ -312,6 +322,7 @@
         "deck_z": 1.22,
         "curb_top_z": 1.473,
         "outer_u": -2.5333128173746986,
+        "edge_kind": "curb",
         "curb_width_m": 0.5621362885992374,
         "curb_height_m": 0.2530000000000001,
         "outer_face_depth_m": 0.43799999999999994
@@ -348,6 +359,7 @@
         "deck_z": 1.25,
         "curb_top_z": 1.5110000000000001,
         "outer_u": 2.505196213118831,
+        "edge_kind": "curb",
         "curb_width_m": 0.6001360024951472,
         "curb_height_m": 0.2610000000000001,
         "outer_face_depth_m": 0.45899999999999996
@@ -357,6 +369,7 @@
         "deck_z": 1.236,
         "curb_top_z": 1.486,
         "outer_u": -2.540228891433536,
+        "edge_kind": "curb",
         "curb_width_m": 0.5992540986028239,
         "curb_height_m": 0.25,
         "outer_face_depth_m": 0.42699999999999994
@@ -397,6 +410,7 @@
         "deck_z": 1.241,
         "curb_top_z": 1.5210000000000001,
         "outer_u": 2.4994595330767093,
+        "edge_kind": "curb",
         "curb_width_m": 0.5996331522451372,
         "curb_height_m": 0.28,
         "outer_face_depth_m": 0.42800000000000005
@@ -406,6 +420,7 @@
         "deck_z": 1.246,
         "curb_top_z": 1.488,
         "outer_u": -2.5390878493465614,
+        "edge_kind": "curb",
         "curb_width_m": 0.5775336681975909,
         "curb_height_m": 0.242,
         "outer_face_depth_m": 0.42599999999999993
@@ -446,6 +461,7 @@
         "deck_z": 1.245,
         "curb_top_z": 1.493,
         "outer_u": 2.467859672347995,
+        "edge_kind": "curb",
         "curb_width_m": 0.568227106662786,
         "curb_height_m": 0.248,
         "outer_face_depth_m": 0.41700000000000004
@@ -455,6 +471,7 @@
         "deck_z": 1.213,
         "curb_top_z": 1.478,
         "outer_u": -2.5566770087824664,
+        "edge_kind": "curb",
         "curb_width_m": 0.5905070023814547,
         "curb_height_m": 0.2649999999999999,
         "outer_face_depth_m": 0.643
@@ -583,6 +600,46 @@
       "value": 0.25,
       "p10": 0.2366,
       "p90": 0.25540000000000007
+    },
+    {
+      "item": "left_footway_width_m",
+      "label_ja": "歩道幅（左、車道端から外縁まで）",
+      "sections_observed": 0,
+      "sections_total": 9,
+      "status": "not_applicable",
+      "value": null,
+      "p10": null,
+      "p90": null
+    },
+    {
+      "item": "right_footway_width_m",
+      "label_ja": "歩道幅（右、車道端から外縁まで）",
+      "sections_observed": 0,
+      "sections_total": 9,
+      "status": "not_applicable",
+      "value": null,
+      "p10": null,
+      "p90": null
+    },
+    {
+      "item": "left_footway_height_m",
+      "label_ja": "歩道の段差（左）",
+      "sections_observed": 0,
+      "sections_total": 9,
+      "status": "not_applicable",
+      "value": null,
+      "p10": null,
+      "p90": null
+    },
+    {
+      "item": "right_footway_height_m",
+      "label_ja": "歩道の段差（右）",
+      "sections_observed": 0,
+      "sections_total": 9,
+      "status": "not_applicable",
+      "value": null,
+      "p10": null,
+      "p90": null
     },
     {
       "item": "left_parapet_height_m",

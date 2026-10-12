@@ -11,42 +11,42 @@
     {
       "kind": "light",
       "label_ja": "遊離石灰・白色変色の候補",
-      "area_m2": 0.011600000000000001,
+      "area_m2": 0.0064,
       "centre_m": [
-        -3.737343603566837,
-        0.655044919860192
+        -3.74,
+        0.6399999999999999
       ],
       "element": "Ds0101",
       "along_m": [
-        -3.788722913911664,
-        -3.6887229139116644
+        -3.7800000000000002,
+        -3.7000000000000006
       ],
       "lateral_m": [
-        0.5678035405498469,
-        0.7478035405498471
+        0.5799999999999998,
+        0.7
       ],
-      "contrast": 20.637701401956782,
+      "contrast": 20.21267204941915,
       "contrast_unit": "L*",
       "id": "D001"
     },
     {
       "kind": "dark",
       "label_ja": "漏水・暗色変色の候補",
-      "area_m2": 0.0132,
+      "area_m2": 0.013600000000000001,
       "centre_m": [
-        3.3424892073004573,
-        0.99053081327712
+        3.3511764705882348,
+        1.0105882352941176
       ],
       "element": "Ds0101",
       "along_m": [
-        3.271277086088336,
-        3.4112770860883357
+        3.3,
+        3.42
       ],
       "lateral_m": [
-        0.9078035405498472,
-        1.067803540549847
+        0.9000000000000001,
+        1.1199999999999999
       ],
-      "contrast": -18.857279388533886,
+      "contrast": -18.365595698330154,
       "contrast_unit": "L*",
       "id": "D002"
     }
@@ -70,15 +70,15 @@
   "straight_seams_left_out": {
     "regions": {},
     "cells_along_m": {
-      "dark": 84.54,
-      "recess": 123.28
+      "dark": 84.44,
+      "recess": 125.88000000000001
     }
   },
   "soffit": {
     "points": 1418933,
-    "cells_with_returns": 91262,
-    "cells_searched": 80093,
-    "area_searched_m2": 32.0372
+    "cells_with_returns": 91210,
+    "cells_searched": 80464,
+    "area_searched_m2": 32.1856
   },
   "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
 }

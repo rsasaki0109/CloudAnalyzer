@@ -1,5 +1,13 @@
 id,kind,label_ja,span,row,column,along_from_m,along_to_m,lateral_from_m,lateral_to_m,status
-Ds0101,deck_slab,床版,1,1,1,-19.812,-15.062,2.598,9.978,single_panel
-Ds0201,deck_slab,床版,2,2,1,-15.062,-5.387,2.598,9.978,single_panel
-Ds0301,deck_slab,床版,3,3,1,-5.387,7.838,2.598,9.978,single_panel
-Ds0401,deck_slab,床版,4,4,1,7.838,20.939,2.598,9.978,single_panel
+Ds0101,deck_slab,床版,1,1,1,-19.938,-14.688,-0.259,11.649,observed_bounds
+Ds0102,deck_slab,床版,1,1,2,-19.938,-14.688,-0.234,-0.259,observed_bounds
+Mg0101,main_girder,主桁,1,1,1,-19.938,-14.688,-0.259,-0.259,observed
+Ds0201,deck_slab,床版,2,2,1,-14.688,-5.513,-0.259,11.649,observed_bounds
+Ds0202,deck_slab,床版,2,2,2,-14.688,-5.513,-0.234,-0.259,observed_bounds
+Mg0201,main_girder,主桁,2,2,1,-14.688,-5.513,-0.259,-0.259,observed
+Ds0301,deck_slab,床版,3,3,1,-5.513,7.787,-0.259,11.649,observed_bounds
+Ds0302,deck_slab,床版,3,3,2,-5.513,7.787,-0.234,-0.259,observed_bounds
+Mg0301,main_girder,主桁,3,3,1,-5.513,7.787,-0.259,-0.259,observed
+Ds0401,deck_slab,床版,4,4,1,7.787,20.814,-0.259,11.649,observed_bounds
+Ds0402,deck_slab,床版,4,4,2,7.787,20.814,-0.234,-0.259,observed_bounds
+Mg0401,main_girder,主桁,4,4,1,7.787,20.814,-0.259,-0.259,observed

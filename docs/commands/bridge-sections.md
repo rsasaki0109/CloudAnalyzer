@@ -31,9 +31,20 @@ In each section the points are binned laterally into height layers, and layers
 continuing smoothly between bins form surfaces. The deck top is the highest of
 the long surfaces; a scanned soffit or the ground can be as long as the deck.
 A crowned deck is reported with its crown height and separate left and right
-cross slopes. Beyond each deck end, the curb (地覆) top is the most populated
-level 5–60 cm above the deck; returns above it give the parapet height, and
-returns continuing down from it give the visible outer-face depth. The slab
+cross slopes.
+
+Beyond each deck end, the raised edge's top is the most populated level 5–60 cm above
+the deck within 1.2 m. It is followed outward bin by bin, letting its level drift with
+the edge's cross slope, across gaps of up to 25 cm. Where it ends sets the outer edge
+and the total width:
+
+- An edge that ends within 1.2 m is a curb (地覆). It is reported as curb width and height.
+- An edge that continues beyond 1.2 m is a footway (歩道), followed up to 4 m. It is
+  reported as footway width and step height.
+
+On a side where one of the two is measured, the other is `not_applicable`. Returns above
+the edge top give the parapet height, and returns continuing down from its outer end give
+the visible outer-face depth. The slab
 thickness is the first surface of at least three returns beneath the deck top,
 reported only when such returns exist in at least 30% of the deck's width.
 
@@ -47,7 +58,7 @@ median, p10, p90 and the number of sections that observed it. Each item has a st
 | `observed` | Measured from returns in the sections that list it. |
 | `lower_bound` | A visible extent, such as the outer-face depth; the member can be larger. |
 | `unobserved` | No supporting returns, for example no soffit when scanned from the deck. No value is assumed. |
-| `not_applicable` | The feature is absent, such as side slopes on a deck without a crown. |
+| `not_applicable` | The feature is absent, such as side slopes on a deck without a crown, or a footway on a side with a curb. |
 
 `section.svg` draws the median-width section viewed from the start of the axis
 toward its end, with the measured outline, dimension lines in millimetres and
@@ -61,5 +72,7 @@ Results on three public bridges are in
 These are measurements from the point cloud, not a certified survey. Bearings
 and abutment dimensions are not measured yet. [`bridge-plan`](bridge-plan.md)
 draws the plan with the girders and cross beams found beneath the deck. A one-bin (5 cm) feature or a curb lower
-than 5 cm is not separated from the deck. Without labels, vegetation over the
+than 5 cm is not separated from the deck. A deck edge with no raised edge, or
+whose top was not scanned, ends the total width at the edge of the deck surface,
+which can be well inside the structure's outer face. Without labels, vegetation over the
 deck is not guaranteed to be excluded; use `--classes` or crop first.

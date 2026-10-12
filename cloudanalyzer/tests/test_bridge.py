@@ -18,8 +18,9 @@ SLAB = 0.25
 SLOPE = 0.02
 
 
-def section_points(rng, soffit=False, noise=0.004):
-    """One cross section: u lateral (left positive), z height."""
+def section_points(rng, soffit=False, noise=0.004, curb_w=CURB_W, edge_slope=0.0):
+    """One cross section: u lateral (left positive), z height. The raised edge is `curb_w`
+    wide and its top rises outward by `edge_slope`."""
     u, z = [], []
     half = EFFECTIVE / 2
     deck = lambda x: SLOPE * x  # noqa: E731
@@ -30,13 +31,14 @@ def section_points(rng, soffit=False, noise=0.004):
         top = deck(edge) + CURB_H
         for h in np.arange(0, CURB_H, 0.01):             # curb inner face
             u.append(edge); z.append(deck(edge) + h)
-        for x in np.arange(0, CURB_W, 0.01):             # curb top
-            u.append(edge + sign * x); z.append(top)
-        outer = edge + sign * CURB_W
+        for x in np.arange(0, curb_w, 0.01):             # curb top
+            u.append(edge + sign * x); z.append(top + edge_slope * x)
+        outer = edge + sign * curb_w
+        outer_top = top + edge_slope * curb_w
         for h in np.arange(0, CURB_H + FACE, 0.01):      # outer face below the curb top
-            u.append(outer); z.append(top - h)
+            u.append(outer); z.append(outer_top - h)
         for h in np.arange(0.1, PARAPET, 0.01):          # parapet post over the curb
-            u.append(edge + sign * CURB_W * 0.5); z.append(top + h)
+            u.append(edge + sign * curb_w * 0.5); z.append(top + edge_slope * curb_w * 0.5 + h)
     if soffit:
         for x in np.arange(-half + 0.2, half - 0.2, 0.01):
             u.append(x); z.append(deck(x) - SLAB)
@@ -59,6 +61,17 @@ def test_section_dimensions_and_unobserved_soffit():
         assert d[f"{side}_outer_face_depth_m"] == pytest.approx(FACE, abs=0.02)
     # No returns beneath the deck: the slab thickness is not reported at all.
     assert "slab_thickness_m" not in d
+
+
+def test_a_footway_is_followed_to_the_outer_edge():
+    # A 2 m footway rising 2 % outward: wider than a curb and off a level band by 4 cm.
+    u, z = section_points(np.random.default_rng(3), curb_w=2.0, edge_slope=0.02)
+    d = measure_section(u, z)["dims"]
+    assert d["total_width_m"] == pytest.approx(EFFECTIVE + 4.0, abs=0.05)
+    for side in ("left", "right"):
+        assert d[f"{side}_footway_width_m"] == pytest.approx(2.0, abs=0.05)
+        assert d[f"{side}_footway_height_m"] == pytest.approx(CURB_H + 0.02, abs=0.03)
+        assert f"{side}_curb_width_m" not in d
 
 
 def test_slab_thickness_only_from_soffit_returns():
@@ -126,6 +139,8 @@ def test_bridge_table_on_a_skewed_rotated_bridge(bridge_las, tmp_path):
     assert rows["left_outer_face_depth_m"]["status"] == "lower_bound"
     assert rows["slab_thickness_m"]["status"] == "unobserved"
     assert r["unobserved"] == ["slab_thickness_m"]
+    # A bridge with curbs has no footway: not a gap in the data.
+    assert rows["left_footway_width_m"]["status"] == "not_applicable"
     # Every section lies where the full width is on the deck.
     assert all(s["status"] == "measured" for s in r["sections"])
     assert len(r["sections"]) >= 5

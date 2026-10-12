@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Source audits split height mismatches by direction (`height_mismatches_above`).
+  Mapping-run diagnoses report `mismatch_direction` per ground estimator in
+  `review_holds`, and explain an estimator disagreement as returns above the road
+  when every low-quantile mismatch lies above the trace and the consensus estimator
+  holds nothing. On both NCLT drives every low-quantile mismatch lay above the trace;
+  about nine in ten sat under returns more than 2 m overhead, such as tree canopy.
+
 - Mapping-run responses are easier for an agent to act on:
   - every draft diagnosis reports `routes.after` (separate pieces and longest route);
   - draft and finish diagnoses end with `review_holds`, gathering held traces from

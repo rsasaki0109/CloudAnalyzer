@@ -78,8 +78,24 @@ can still preserve source curves for review.
    - `traces`: every lane trace held by either estimator, with each estimator's
      `fraction` and `holds` side by side (up to 64, with `traces_total`);
    - `ground_estimators_disagree` and `editable_and_reopened_osm_agree`;
+   - `mismatch_direction` per estimator: of its `height_mismatches`, how many have the
+     source ground `above_trace` or `below_trace` (null for audits saved before this
+     split; each trace entry also carries `height_mismatches_above`);
    - `passes_requested_extent`, `export_warnings` (warning-level export codes) and
      `unverified`, the assumptions no audit can confirm.
+
+   When the estimators disagree, read the direction. The low-quantile estimator
+   takes the 15th percentile of every return within 0.75 m, so where most returns
+   stand above the road (tree canopy, walls, vehicles) its ground rises above the
+   trace. The lowest-supported-layer estimator is not lifted by them. On the April
+   and June NCLT drives every low-quantile mismatch (489 and 511 samples) lay above
+   the trace. At a typical sample 96% of nearby returns stood above the road, 4% at
+   the trace's level and none below; about nine in ten samples sat under returns
+   more than 2 m overhead. Mismatches only `above_trace`, with the
+   consensus estimator holding nothing, explain the disagreement as returns above
+   the road, and the diagnosis says so. Any `below_trace` mismatch means a trace may
+   float above the observed surface; inspect it. Neither case verifies road accuracy,
+   and the runner never picks the estimator with the better score.
 
 Every action supplies the inspected `expected_revision` and a reason. Stale
 retries are rejected before execution. Inspection and finish actions spend no

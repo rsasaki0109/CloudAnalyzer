@@ -40,14 +40,29 @@ What is drawn depends on the underside:
 ## Spans
 
 Without `--supports`, a pier is structure found 0.5–3.5 m below the lowest girder
-(or the slab) across at least 30% of the deck width, at most 3 m long along the
-axis (two scanned faces with an unscanned interior up to 2 m count as one), whose
-upper and lower halves stand within 0.5 m of each other, with open space beneath
-the deck for 1.5 m on both sides, and at least 2 m from both deck ends. An
-abutment's sloped face leans and has its body on the side of its deck end, so it is
-not taken as a pier. On the nine single-span bridges of the public dataset no pier
-is reported; detection of real piers is tested only on synthetic bridges, so give
-`--supports` when the span layout is known.
+(or the slab) that meets all of these:
+
+- From end to end it spans at least 30% of the deck width, searched to 1 m beyond the
+  deck edges. A row of columns counts.
+- It is at most 3.5 m long along the axis. Two scanned faces with an unscanned
+  interior up to 2 m count as one.
+- Its upper and lower halves stand within 0.5 m of each other.
+- There is open space beneath the deck for 1.5 m on both sides.
+- It is at least 2 m from both deck ends.
+
+An abutment's sloped face leans and has its body on the side of its deck end, so it
+is not taken as a pier.
+
+On the 20 labelled bridges of the public SemanticBridge dataset, 32 of 33 piers are
+found, with a mean position error of 0.15 m (at most 0.8 m). There are two errors:
+
+- A vertical abutment wall 5 m inside a deck end is reported as a pier, because the
+  ground behind it is not among the classes.
+- A pier merged with a deep diaphragm above it is missed.
+
+No pier is reported on the single-span bridges of either dataset (see
+[`benchmarks/bridge/semanticbridge-tls`](../../benchmarks/bridge/semanticbridge-tls/README.md)).
+Check the detected spans, and give `--supports` when the span layout is known.
 
 Piers are labelled P1, P2, … from the start and the abutments A1 (start) and A2
 (end). Each span boundary also divides the deck rows; a cross beam over a pier is
@@ -85,5 +100,6 @@ Results on the nine bridges of a public dataset are in
 
 These are drawings of what the point cloud shows, not a certified survey. A girder's
 visible width is the extent of its returns, which is narrower than the web when only
-one face was scanned. Bearings and lateral bracing are not detected. Pier detection
-has no real multi-span scan behind it yet (see Spans).
+one face was scanned. Bearings and lateral bracing are not detected. Detected piers
+can include a vertical abutment wall or miss a pier hidden in the superstructure
+(see Spans).

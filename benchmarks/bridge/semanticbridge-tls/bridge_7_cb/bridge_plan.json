@@ -1,0 +1,2493 @@
+{
+  "schema": "cloudanalyzer.bridge_plan.v1",
+  "source": {
+    "file": "bridge_7_cb_faro.ply",
+    "sha256": "79c344b2c3e3098abef288f6d47c531bdda19069a435ec1d53493490dd5ec5e4",
+    "bytes": 197366617,
+    "dataset": "https://doi.org/10.5281/zenodo.18738225",
+    "converted": "PLY to LAS with colour and labels as classification"
+  },
+  "points": 12335398,
+  "classes": [
+    3,
+    4,
+    5,
+    8
+  ],
+  "member_classes": [
+    4
+  ],
+  "axis": {
+    "origin_xy": [
+      -10.170762602865802,
+      -21.816510980886626
+    ],
+    "direction_xy": [
+      -0.2576166540937758,
+      -0.9662472041530201
+    ],
+    "source": "deck_side_edges"
+  },
+  "options": {
+    "spacing_m": 0.25,
+    "thickness_m": 0.1,
+    "margin_m": 0.3
+  },
+  "deck": {
+    "start_m": -20.673036850811613,
+    "end_m": 19.746038794515055,
+    "length_m": 40.41907564532667,
+    "skew_deg": -3.219429563985087,
+    "skew_slope": -0.056248856118524385,
+    "left_edge_m": 5.189449964526873,
+    "right_edge_m": -4.526798334326945,
+    "width_m": 9.716248298853818,
+    "slab_thickness_m": 1.0259527325281397,
+    "sections_measured": 157,
+    "sections_with_soffit": 157
+  },
+  "underside": "girders_observed",
+  "girders": [
+    {
+      "lateral_m": 5.223201665673019,
+      "visible_width_m": 0.09999999999999964,
+      "depth_below_deck_top_m": 1.5740000000000407,
+      "sections_observed": 130,
+      "sections_total": 157,
+      "number": 1
+    },
+    {
+      "lateral_m": 4.548201665673021,
+      "visible_width_m": 1.0499999999999972,
+      "depth_below_deck_top_m": 1.5500000000000114,
+      "sections_observed": 123,
+      "sections_total": 157,
+      "number": 2
+    },
+    {
+      "lateral_m": 3.2982016656730258,
+      "visible_width_m": 1.0499999999999954,
+      "depth_below_deck_top_m": 1.5171148176332465,
+      "sections_observed": 147,
+      "sections_total": 157,
+      "number": 3
+    },
+    {
+      "lateral_m": 1.7982016656730315,
+      "visible_width_m": 1.0499999999999963,
+      "depth_below_deck_top_m": 1.4902429474545413,
+      "sections_observed": 149,
+      "sections_total": 157,
+      "number": 4
+    },
+    {
+      "lateral_m": 0.29820166567303685,
+      "visible_width_m": 1.0499999999999963,
+      "depth_below_deck_top_m": 1.4722041547641909,
+      "sections_observed": 147,
+      "sections_total": 157,
+      "number": 5
+    },
+    {
+      "lateral_m": -1.176798334326958,
+      "visible_width_m": 0.9999999999999964,
+      "depth_below_deck_top_m": 1.4953217376367511,
+      "sections_observed": 148,
+      "sections_total": 157,
+      "number": 6
+    },
+    {
+      "lateral_m": -2.6767983343269526,
+      "visible_width_m": 0.9999999999999964,
+      "depth_below_deck_top_m": 1.499752751996762,
+      "sections_observed": 145,
+      "sections_total": 157,
+      "number": 7
+    }
+  ],
+  "partially_observed_members": [
+    {
+      "lateral_m": -4.576798334326946,
+      "visible_width_m": 0.09999999999999964,
+      "depth_below_deck_top_m": 1.5775499999999945,
+      "sections_observed": 77,
+      "sections_total": 157
+    },
+    {
+      "lateral_m": -3.9017983343269482,
+      "visible_width_m": 1.0499999999999963,
+      "depth_below_deck_top_m": 1.5529999999999973,
+      "sections_observed": 69,
+      "sections_total": 157
+    }
+  ],
+  "cross_beams": [
+    {
+      "along_m": -20.010536850811604,
+      "visible_width_m": 0.7500000000000107,
+      "depth_below_deck_top_m": 1.4926733671167156,
+      "bays_observed": 4,
+      "bays_total": 6,
+      "number": 1
+    },
+    {
+      "along_m": -2.8230368508113592,
+      "visible_width_m": 0.05000000000000071,
+      "depth_below_deck_top_m": 1.3050792377006721,
+      "bays_observed": 3,
+      "bays_total": 6,
+      "number": 2
+    },
+    {
+      "along_m": -1.4980368508113404,
+      "visible_width_m": 0.05000000000000071,
+      "depth_below_deck_top_m": 1.3336187113582683,
+      "bays_observed": 4,
+      "bays_total": 6,
+      "number": 3
+    },
+    {
+      "along_m": 18.914463149188947,
+      "visible_width_m": 0.37500000000000355,
+      "depth_below_deck_top_m": 1.34504122846851,
+      "bays_observed": 4,
+      "bays_total": 6,
+      "number": 4
+    },
+    {
+      "along_m": 19.47696314918896,
+      "visible_width_m": 0.05000000000000071,
+      "depth_below_deck_top_m": 1.425220560067779,
+      "bays_observed": 4,
+      "bays_total": 6,
+      "number": 5
+    }
+  ],
+  "supports": [
+    {
+      "along_m": -2.1980368508113504,
+      "width_m": 1.4500000000000206,
+      "lean_m": 0.0034339048916236514,
+      "width_share": 1.189437888294551,
+      "source": "detected",
+      "label": "P1",
+      "from_start_m": 18.475000000000264
+    }
+  ],
+  "spans": [
+    {
+      "number": 1,
+      "from_m": -20.673036850811613,
+      "to_m": -2.1980368508113504,
+      "length_m": 18.475000000000264
+    },
+    {
+      "number": 2,
+      "from_m": -2.1980368508113504,
+      "to_m": 19.746038794515055,
+      "length_m": 21.944075645326407
+    }
+  ],
+  "elements": [
+    {
+      "id": "Ds0101",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.189449964526873
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0102",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0103",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0104",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0105",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0106",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 6,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0107",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 7,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0108",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 8,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        -4.526798334326945,
+        -2.6767983343269526
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0101",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0102",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0103",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0104",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0105",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0106",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 6,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0107",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 1,
+      "column": 7,
+      "span": 1,
+      "along_m": [
+        -20.673036850811613,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -2.6767983343269526
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0201",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.189449964526873
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0202",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0203",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0204",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0205",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0206",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 6,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0207",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 7,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0208",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 8,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        -4.526798334326945,
+        -2.6767983343269526
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0201",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 2,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0202",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 2,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0203",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 2,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0204",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 2,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0205",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 2,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0206",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 2,
+      "column": 6,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0207",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 2,
+      "column": 7,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -2.6767983343269526
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0301",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.189449964526873
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0302",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0303",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0304",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0305",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0306",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 6,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0307",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 7,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0308",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 8,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        -4.526798334326945,
+        -2.6767983343269526
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0301",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 3,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0302",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 3,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0303",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 3,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0304",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 3,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0305",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 3,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0306",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 3,
+      "column": 6,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0307",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 3,
+      "column": 7,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.1980368508113504
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -2.6767983343269526
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0401",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.189449964526873
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0402",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0403",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0404",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0405",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0406",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0407",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 7,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0408",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 8,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        -4.526798334326945,
+        -2.6767983343269526
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0401",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 4,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0402",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 4,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0403",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 4,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0404",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 4,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0405",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 4,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0406",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 4,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0407",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 4,
+      "column": 7,
+      "span": 2,
+      "along_m": [
+        -2.1980368508113504,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -2.6767983343269526
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0501",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 5,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.189449964526873
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0502",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 5,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0503",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 5,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0504",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 5,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0505",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 5,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0506",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 5,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0507",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 5,
+      "column": 7,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0508",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 5,
+      "column": 8,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        -4.526798334326945,
+        -2.6767983343269526
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0501",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 5,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0502",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 5,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0503",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 5,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0504",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 5,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0505",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 5,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0506",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 5,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0507",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 5,
+      "column": 7,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -2.6767983343269526
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0601",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 6,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.189449964526873
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0602",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 6,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0603",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 6,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0604",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 6,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0605",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 6,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0606",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 6,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0607",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 6,
+      "column": 7,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0608",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 6,
+      "column": 8,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        -4.526798334326945,
+        -2.6767983343269526
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0601",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 6,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0602",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 6,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0603",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 6,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0604",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 6,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0605",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 6,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0606",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 6,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0607",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 6,
+      "column": 7,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -2.6767983343269526
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0701",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 7,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.189449964526873
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0702",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 7,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0703",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 7,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0704",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 7,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0705",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 7,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0706",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 7,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0707",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 7,
+      "column": 7,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0708",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 7,
+      "column": 8,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        -4.526798334326945,
+        -2.6767983343269526
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0701",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 7,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        5.223201665673019,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0702",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 7,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0703",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 7,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0704",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 7,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0705",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 7,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0706",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 7,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0707",
+      "kind": "main_girder",
+      "label_ja": "\u4e3b\u6841",
+      "row": 7,
+      "column": 7,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.746038794515055
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -2.6767983343269526
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0101",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0102",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 1,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0103",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 1,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0104",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 1,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0105",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 1,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0106",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 1,
+      "column": 6,
+      "span": 1,
+      "along_m": [
+        -20.010536850811604,
+        -20.010536850811604
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0201",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 2,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0202",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 2,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0203",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 2,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0204",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 2,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0205",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 2,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0206",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 2,
+      "column": 6,
+      "span": 1,
+      "along_m": [
+        -2.8230368508113592,
+        -2.8230368508113592
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0301",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 3,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0302",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 3,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0303",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 3,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0304",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 3,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0305",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 3,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0306",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 3,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        -1.4980368508113404,
+        -1.4980368508113404
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0401",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 4,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0402",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 4,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0403",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 4,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0404",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 4,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0405",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 4,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0406",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 4,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        18.914463149188947,
+        18.914463149188947
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0501",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 5,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        4.548201665673021,
+        5.223201665673019
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0502",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 5,
+      "column": 2,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        3.2982016656730258,
+        4.548201665673021
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0503",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 5,
+      "column": 3,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        1.7982016656730315,
+        3.2982016656730258
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0504",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 5,
+      "column": 4,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        0.29820166567303685,
+        1.7982016656730315
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0505",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 5,
+      "column": 5,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        -1.176798334326958,
+        0.29820166567303685
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0506",
+      "kind": "cross_beam",
+      "label_ja": "\u6a2a\u6841",
+      "row": 5,
+      "column": 6,
+      "span": 2,
+      "along_m": [
+        19.47696314918896,
+        19.47696314918896
+      ],
+      "lateral_m": [
+        -2.6767983343269526,
+        -1.176798334326958
+      ],
+      "status": "observed"
+    }
+  ],
+  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
+  "note": "Girders and cross beams are drawn where the scan shows them; a member hidden from every scan position is missing and would shift the numbers after it.",
+  "warnings": [
+    "2 member line(s) appear in only part of the sections and are not numbered; check the scan before relying on the girder numbers."
+  ]
+}

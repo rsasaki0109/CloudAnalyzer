@@ -1,0 +1,181 @@
+{
+  "schema": "cloudanalyzer.bridge_plan.v1",
+  "source": {
+    "file": "bridge_9_cb_faro.ply",
+    "sha256": "42ef4d4a327171042bfa75e5f54fbb32f80f809e008ee8866fd837af3d01b6ca",
+    "bytes": 151929942,
+    "dataset": "https://doi.org/10.5281/zenodo.18738225",
+    "converted": "PLY to LAS with colour and labels as classification"
+  },
+  "points": 9495606,
+  "classes": [
+    3,
+    4,
+    5,
+    8
+  ],
+  "member_classes": [
+    4
+  ],
+  "axis": {
+    "origin_xy": [
+      23.98819354149536,
+      39.56782591969305
+    ],
+    "direction_xy": [
+      0.1265016839941081,
+      0.9919663925489889
+    ],
+    "source": "deck_side_edges"
+  },
+  "options": {
+    "spacing_m": 0.25,
+    "thickness_m": 0.1,
+    "margin_m": 0.3
+  },
+  "deck": {
+    "start_m": -29.628899421300677,
+    "end_m": 23.303059049775182,
+    "length_m": 52.93195847107586,
+    "skew_deg": -1.124576119044576,
+    "skew_slope": -0.0196300768012031,
+    "left_edge_m": 5.803912694133933,
+    "right_edge_m": -4.143371193618551,
+    "width_m": 9.947283887752484,
+    "slab_thickness_m": 0.8288132510946724,
+    "sections_measured": 209,
+    "sections_with_soffit": 142
+  },
+  "underside": "no_girders_observed",
+  "girders": [],
+  "partially_observed_members": [],
+  "cross_beams": [],
+  "supports": [
+    {
+      "along_m": -16.728899421300493,
+      "width_m": 1.40000000000002,
+      "lean_m": 0.0017544265518090185,
+      "width_share": 1.0249413626980939,
+      "source": "detected",
+      "label": "P1",
+      "from_start_m": 12.900000000000183
+    },
+    {
+      "along_m": -2.0288994213002844,
+      "width_m": 1.40000000000002,
+      "lean_m": 0.002514116907129882,
+      "width_share": 0.999186272882092,
+      "source": "detected",
+      "label": "P2",
+      "from_start_m": 27.600000000000392
+    },
+    {
+      "along_m": 12.571100578699923,
+      "width_m": 1.40000000000002,
+      "lean_m": 0.002335045750410103,
+      "width_share": 1.0180833557901003,
+      "source": "detected",
+      "label": "P3",
+      "from_start_m": 42.2000000000006
+    }
+  ],
+  "spans": [
+    {
+      "number": 1,
+      "from_m": -29.628899421300677,
+      "to_m": -16.728899421300493,
+      "length_m": 12.900000000000183
+    },
+    {
+      "number": 2,
+      "from_m": -16.728899421300493,
+      "to_m": -2.0288994213002844,
+      "length_m": 14.700000000000209
+    },
+    {
+      "number": 3,
+      "from_m": -2.0288994213002844,
+      "to_m": 12.571100578699923,
+      "length_m": 14.600000000000207
+    },
+    {
+      "number": 4,
+      "from_m": 12.571100578699923,
+      "to_m": 23.303059049775182,
+      "length_m": 10.73195847107526
+    }
+  ],
+  "elements": [
+    {
+      "id": "Ds0101",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -29.628899421300677,
+        -16.728899421300493
+      ],
+      "lateral_m": [
+        -4.143371193618551,
+        5.803912694133933
+      ],
+      "status": "single_panel"
+    },
+    {
+      "id": "Ds0201",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        -16.728899421300493,
+        -2.0288994213002844
+      ],
+      "lateral_m": [
+        -4.143371193618551,
+        5.803912694133933
+      ],
+      "status": "single_panel"
+    },
+    {
+      "id": "Ds0301",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 1,
+      "span": 3,
+      "along_m": [
+        -2.0288994213002844,
+        12.571100578699923
+      ],
+      "lateral_m": [
+        -4.143371193618551,
+        5.803912694133933
+      ],
+      "status": "single_panel"
+    },
+    {
+      "id": "Ds0401",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 4,
+      "column": 1,
+      "span": 4,
+      "along_m": [
+        12.571100578699923,
+        23.303059049775182
+      ],
+      "lateral_m": [
+        -4.143371193618551,
+        5.803912694133933
+      ],
+      "status": "single_panel"
+    }
+  ],
+  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
+  "note": "The soffit was scanned and shows no member protruding 0.2 m or more below it (a slab deck, or members outside the scan); the deck is divided only lengthwise.",
+  "warnings": []
+}

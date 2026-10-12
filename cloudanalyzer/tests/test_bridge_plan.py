@@ -19,7 +19,7 @@ HALF_LENGTH = 8.0
 STEP = 0.05
 
 
-def _bridge(path, *, girders=True, soffit=True, pier=False, abutments=False):
+def _bridge(path, *, girders=True, soffit=True, pier=False, columns=False, abutments=False):
     """A skewed deck (class 2) scanned from above and, optionally, from below: the soffit
     and 0.3 m wide girders reaching 1.2 m below the deck top, with cross beams between
     them parallel to the deck ends (class 1)."""
@@ -59,6 +59,13 @@ def _bridge(path, *, girders=True, soffit=True, pier=False, abutments=False):
             for z in np.arange(-1.3, -4.5, -STEP):
                 for face in (-0.3, 0.3):
                     pts.append((face + u * tan, u, z)); cls.append(0)
+    if columns:
+        # Two 0.5 m square columns under mid deck, near the deck edges: a pier of columns.
+        for c in (-2.5, 2.5):
+            for z in np.arange(-1.3, -4.5, -STEP):
+                for v in np.arange(-0.25, 0.25 + 1e-9, STEP):
+                    for s0, u0 in ((-0.25, v), (0.25, v), (v, -0.25), (v, 0.25)):
+                        pts.append((s0 + (c + u0) * tan, c + u0, z)); cls.append(0)
     if abutments:
         # Sloped abutment faces from beneath each deck end down toward the span.
         for sign in (-1, 1):
@@ -151,6 +158,15 @@ def test_a_pier_splits_spans_and_sloped_abutments_do_not(tmp_path):
                    ["outputs"]["svg"])) as f:
         svg = f.read()
     assert "P1" in svg and "A1" in svg and "第2径間" in svg
+
+
+def test_a_row_of_columns_is_a_pier(tmp_path):
+    # The columns fill little of the width but span most of it end to end.
+    path = _bridge(tmp_path / "cols.las", columns=True, abutments=True)
+    r = bridge_plan(str(path), axis_classes=[2], member_classes=[1, 2])
+    (pier,) = r["supports"]
+    assert pier["from_start_m"] == pytest.approx(HALF_LENGTH, abs=0.2)
+    assert pier["width_share"] > 0.7
 
 
 def test_explicit_supports_from_a_register(tmp_path):

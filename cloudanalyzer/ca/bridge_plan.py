@@ -37,22 +37,24 @@ CROSS_MIN_SHARE = 0.5      # girder bays in which a cross beam must appear
 WEB_CLEARANCE = 0.15       # beyond a girder face before cross-beam returns count
 SUPPORT_BELOW = 0.5        # a support reaches at least this far below the lowest girder (or slab)
 SUPPORT_SPAN = 3.0         # depth range below that searched for supports (m)
-SUPPORT_MAX_WIDTH = 3.0    # along the axis; wider runs are ground or embankment
+SUPPORT_MAX_WIDTH = 3.5    # along the axis; wider runs are ground or embankment
 SUPPORT_MAX_HOLLOW = 2.0   # a pier's unscanned interior between its two faces
 SUPPORT_MAX_LEAN = 0.5     # a pier's upper and lower halves stand within this along the axis
-SUPPORT_MIN_COVER = 0.3    # share of the deck width the support occupies
+SUPPORT_MIN_COVER = 0.3    # share of the deck width the support spans (a row of columns counts end to end)
+SUPPORT_SIDE_MARGIN = 1.0  # searched beyond the deck edges: columns under edge girders, edges measured narrow
+SUPPORT_RELATIVE = 0.02    # of the densest bin; dense abutment faces must not hide a pier's sparser bins
 SUPPORT_END_CLEARANCE = 2.0  # from the deck ends: closer is an abutment, not a pier
 SUPPORT_OPEN = 1.5         # open space beneath the deck on both sides of a pier (m)
 
 
 def _peaks(values: np.ndarray, lo: float, hi: float, min_count: int = 3,
-           gap: float = MEMBER_BIN) -> list[tuple[float, float]]:
+           gap: float = MEMBER_BIN, relative: float = 0.1) -> list[tuple[float, float]]:
     """Centre and width of runs of occupied bins over [lo, hi]: a member's faces and
     bottom together, with empty stretches of at most `gap` inside."""
     if len(values) == 0 or hi <= lo:
         return []
     h, e = np.histogram(values, bins=np.arange(lo, hi + MEMBER_BIN, MEMBER_BIN))
-    on = h >= max(min_count, 0.1 * h.max(initial=0))
+    on = h >= max(min_count, relative * h.max(initial=0))
     reach = max(1, int(round(gap / MEMBER_BIN)))
     out, i = [], 0
     while i < len(on):
@@ -102,16 +104,18 @@ def _supports(along: np.ndarray, lat: np.ndarray, depth: np.ndarray, top: float,
     """Piers: vertical structure well below the superstructure, isolated from the deck ends.
 
     Returns between `top` and `top + SUPPORT_SPAN` below the deck top, across the deck
-    width, are binned along the (skewed) axis. A support is a run at most
-    SUPPORT_MAX_WIDTH long whose upper and lower halves stand at the same place (an
-    abutment's sloped face leans), across a fair share of the width, with open space
-    beneath the deck on both sides and at least SUPPORT_END_CLEARANCE from both deck ends.
+    width and SUPPORT_SIDE_MARGIN beyond it, are binned along the (skewed) axis. A support
+    is a run at most SUPPORT_MAX_WIDTH long whose upper and lower halves stand at the same
+    place (an abutment's sloped face leans), spanning a fair share of the width, with open
+    space beneath the deck on both sides and at least SUPPORT_END_CLEARANCE from both deck ends.
     """
     mid = 0.5 * (deck["left"] + deck["right"])
-    sel = (depth > top) & (depth < top + SUPPORT_SPAN) & (lat > deck["right"]) & (lat < deck["left"])
+    sel = ((depth > top) & (depth < top + SUPPORT_SPAN)
+           & (lat > deck["right"] - SUPPORT_SIDE_MARGIN) & (lat < deck["left"] + SUPPORT_SIDE_MARGIN))
     skewed = along[sel] - slope * (lat[sel] - mid)
     out = []
-    for centre, width in _peaks(skewed, deck["start"], deck["end"], min_count=20, gap=SUPPORT_MAX_HOLLOW):
+    for centre, width in _peaks(skewed, deck["start"], deck["end"], min_count=20, gap=SUPPORT_MAX_HOLLOW,
+                                relative=SUPPORT_RELATIVE):
         if width > SUPPORT_MAX_WIDTH or min(centre - deck["start"], deck["end"] - centre) < SUPPORT_END_CLEARANCE:
             continue
         on = np.abs(skewed - centre) <= width / 2
@@ -119,9 +123,9 @@ def _supports(along: np.ndarray, lat: np.ndarray, depth: np.ndarray, top: float,
         upper, lower = d < top + SUPPORT_SPAN / 2, d >= top + SUPPORT_SPAN / 2
         if upper.sum() < 10 or lower.sum() < 10:
             continue
-        lean = abs(float(np.median(sk[upper]) - np.median(sk[lower])))
-        bins = np.histogram(u, bins=np.arange(deck["right"], deck["left"] + 0.25, 0.25))[0]
-        cover = float((bins > 0).mean())
+        # Midpoints of the extents: a median of two faces' returns jumps between the faces.
+        lean = abs(float(np.mean(np.percentile(sk[upper], [5, 95])) - np.mean(np.percentile(sk[lower], [5, 95]))))
+        cover = float(np.percentile(u, 99) - np.percentile(u, 1)) / (deck["left"] - deck["right"])
         # Open on both sides: an abutment has its body on the side of its deck end.
         before = (skewed >= centre - width / 2 - SUPPORT_OPEN) & (skewed < centre - width / 2)
         after = (skewed > centre + width / 2) & (skewed <= centre + width / 2 + SUPPORT_OPEN)

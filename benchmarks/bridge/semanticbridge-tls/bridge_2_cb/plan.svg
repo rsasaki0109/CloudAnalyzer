@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 372" font-family="sans-serif" font-size="13">
+<defs><marker id="t" viewBox="0 0 2 10" refX="1" refY="5" markerWidth="2" markerHeight="10" orient="auto"><path d="M1 0V10" stroke="#1a73e8"/></marker></defs>
+<rect width="100%" height="100%" fill="white"/>
+<polygon points="37.3,29.8 1050.5,29.8 1070.2,214.6 57.0,214.6" fill="#fdf6ec" stroke="#e8710a" stroke-width="2.5"/>
+<line x1="264.6" y1="29.8" x2="284.3" y2="214.6" stroke="#3c4043" stroke-width="2.2" stroke-dasharray="14 4 3 4"/>
+<text x="264.6" y="21.8" text-anchor="middle" font-weight="bold" fill="#3c4043">P1</text>
+<line x1="544.1" y1="29.8" x2="563.8" y2="214.6" stroke="#3c4043" stroke-width="2.2" stroke-dasharray="14 4 3 4"/>
+<text x="544.1" y="21.8" text-anchor="middle" font-weight="bold" fill="#3c4043">P2</text>
+<line x1="823.1" y1="29.8" x2="842.8" y2="214.6" stroke="#3c4043" stroke-width="2.2" stroke-dasharray="14 4 3 4"/>
+<text x="823.1" y="21.8" text-anchor="middle" font-weight="bold" fill="#3c4043">P3</text>
+<text x="37.3" y="21.8" text-anchor="middle" font-weight="bold" fill="#3c4043">A1</text>
+<text x="1050.5" y="21.8" text-anchor="middle" font-weight="bold" fill="#3c4043">A2</text>
+<text x="160.8" y="127.2" text-anchor="middle" font-size="15" fill="#202124">Ds0101</text>
+<text x="414.2" y="127.2" text-anchor="middle" font-size="15" fill="#202124">Ds0201</text>
+<text x="693.4" y="127.2" text-anchor="middle" font-size="15" fill="#202124">Ds0301</text>
+<text x="946.6" y="127.2" text-anchor="middle" font-size="15" fill="#202124">Ds0401</text>
+<line x1="47.1" y1="-10.2" x2="1060.3" y2="-10.2" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="553.7" y="-16.2" text-anchor="middle" fill="#1a73e8">橋長方向 床版長（中心線） 54379</text>
+<line x1="1070.0" y1="29.8" x2="1070.0" y2="214.6" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="1086.0" y="116.2" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 1086.0 116.2)">全幅 9916</text>
+<line x1="47.1" y1="289.6" x2="274.4" y2="289.6" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="160.8" y="305.6" text-anchor="middle" fill="#1a73e8">第1径間 12200</text>
+<line x1="274.4" y1="289.6" x2="553.9" y2="289.6" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="414.2" y="305.6" text-anchor="middle" fill="#1a73e8">第2径間 15000</text>
+<line x1="553.9" y1="289.6" x2="832.9" y2="289.6" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="693.4" y="305.6" text-anchor="middle" fill="#1a73e8">第3径間 14975</text>
+<line x1="832.9" y1="289.6" x2="1060.3" y2="289.6" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="946.6" y="305.6" text-anchor="middle" fill="#1a73e8">第4径間 12204</text>
+<text x="57.0" y="236.6" text-anchor="middle" font-weight="bold">起点</text>
+<text x="1070.2" y="236.6" text-anchor="middle" font-weight="bold">終点</text>
+<text x="12" y="326">平面図（上から透視）· 起点を左、終点を向いて左側を上 · 単位 mm · 斜角 -6.1° · 要素番号＝橋軸方向（起点から）2桁＋直角方向（上から）2桁</text>
+<text x="12" y="348" fill="#5f6368">下面を観測：床版下に突出する部材なし（床版橋または計測範囲外）</text>
+</svg>

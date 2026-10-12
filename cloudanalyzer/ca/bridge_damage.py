@@ -44,6 +44,7 @@ EDGE_MARGIN = 0.3          # left out inside the deck edges and ends (m)
 HOLE_MARGIN = 0.1          # left out around cells without returns (m)
 SEAM_MARGIN = 0.2          # left out beside a straight seam of any kind: a joint's groove and chamfers (m)
 MIN_RETURNS_SHARE = 0.5    # share of cells with returns in the neighbourhood needed to search a cell
+STEP_IQR = 1.0             # recess is not searched where the neighbourhood's height IQR exceeds this x RECESS_M
 
 KINDS = {
     "light": ("遊離石灰・白色変色の候補", "#00bcd4"),
@@ -200,8 +201,15 @@ def bridge_damage(
     share = ndimage.uniform_filter(valid.astype(float), size=size)
     dense = share >= MIN_RETURNS_SHARE
 
+    # A step in the soffit (a haunch, a beam edge at a skew) puts both levels in the
+    # neighbourhood, and the median leaves one side looking receded. A spall covers far less
+    # than a quarter of the neighbourhood, so it hardly moves the interquartile range there.
+    filled = np.where(valid, height, np.nanmedian(height[valid]))
+    iqr = (ndimage.percentile_filter(filled, 75, size=size) - ndimage.percentile_filter(filled, 25, size=size))
+    stepped = iqr > STEP_IQR * RECESS_M
+
     masks = {"light": dL > LIGHT_DL, "dark": dL < DARK_DL, "rust": (dB > RUST_DB) & (dA > RUST_DA),
-             "recess": dH < -RECESS_M}
+             "recess": (dH < -RECESS_M) & ~stepped}
     min_cells = int(np.ceil(MIN_AREA / CELL**2))
     candidates: list[dict[str, Any]] = []
     seams: dict[str, int] = {}

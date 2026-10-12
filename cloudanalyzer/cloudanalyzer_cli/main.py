@@ -190,7 +190,14 @@ def _handle_error(e: Exception) -> None:
     typer.echo(f"Error: {msg}", err=True)
 
     # Provide helpful hints
-    if isinstance(e, FileNotFoundError):
+    missing = getattr(e, "filename", None)
+    if isinstance(e, FileNotFoundError) and isinstance(missing, str) and Path(missing).name in {"run.json", "job.json"}:
+        typer.echo(
+            f"Hint: {Path(missing).parent} is not a mapping run directory. Pass the --out directory "
+            "given to mapping-run; a relative path resolves from the current directory.",
+            err=True,
+        )
+    elif isinstance(e, FileNotFoundError):
         typer.echo(
             "Hint: Check the file path. Supported formats: .pcd, .ply, .las, .laz, .csv",
             err=True,

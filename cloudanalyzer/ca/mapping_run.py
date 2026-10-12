@@ -180,10 +180,39 @@ def start_mapping_run(source: str, out_dir: str, layout_hypothesis: dict[str, An
     return inspect_mapping_run(str(root))
 
 
+def _review_holds(diagnosis: dict[str, Any]) -> dict[str, Any]:
+    """Gather every held trace from the editable audits of both ground estimators."""
+    audits = {"low_quantile": diagnosis["editable"]}
+    if diagnosis["ground_consensus"]:
+        audits["ground_consensus"] = diagnosis["ground_consensus"]["editable"]
+    traces: dict[tuple[int, str], dict[str, Any]] = {}
+    for name, audit in audits.items():
+        for lane in audit["lanes"]:
+            for trace, support in lane["traces"].items():
+                entry = traces.setdefault((lane["lane"], trace), {"lane": lane["lane"], "trace": trace})
+                entry[name] = {"fraction": support["fraction"], "holds": support.get("holds", [])}
+    held = [t for t in traces.values() if any(t.get(name, {}).get("holds") for name in audits)]
+    reopened = [diagnosis["editable_and_reopened_match"]]
+    if diagnosis["ground_consensus"]:
+        reopened.append(diagnosis["ground_consensus"]["editable"] == diagnosis["ground_consensus"]["reopened_osm"])
+    return {
+        "traces": held[:64],
+        "traces_total": len(held),
+        "traces_limited_in_response": len(held) > 64,
+        "ground_estimators_disagree": len(audits) == 2
+        and audits["low_quantile"].get("needs_review") != audits["ground_consensus"].get("needs_review"),
+        "editable_and_reopened_osm_agree": all(reopened),
+        "passes_requested_extent": diagnosis["extent"]["passes_requested_extent"],
+        "export_warnings": [i["code"] for i in diagnosis["export_issues"] if i.get("severity") != "info"],
+        "unverified": ["layout_hypothesis", "legal_routing", "full_road_width"],
+    }
+
+
 def _diagnosis(root: Path, candidate_id: int) -> dict[str, Any]:
     diagnosis = jobs.diagnose_mapping_candidate(str(root), candidate_id)
     diagnosis["lane_specifications_total"] = len(diagnosis.pop("road_options")["lane_specs"])
     diagnosis.pop("effective_options")
+    diagnosis["review_holds"] = _review_holds(diagnosis)
     # Full bounded problem locations remain available through the existing diagnosis tool.
     for audit in [diagnosis["editable"], diagnosis["reopened_osm"], *(diagnosis["ground_consensus"] or {}).values()]:
         audit.pop("problems", None)
@@ -191,8 +220,19 @@ def _diagnosis(root: Path, candidate_id: int) -> dict[str, Any]:
         audit["lanes_total"] = len(audit["lanes"])
         audit["lanes_limited_in_response"] = len(audit["lanes"]) > 16
         audit["lanes"] = audit["lanes"][:16]
+    if not diagnosis.get("routes"):
+        # A first lane draft has no connection history; still report its graph so
+        # the caller sees how many separate pieces a connection could join.
+        attempt = next(a for a in jobs._load(root)["attempts"] if a["id"] == candidate_id)
+        if attempt.get("kind") == "corridor_lanes":
+            try:
+                diagnosis["routes"] = {"after": retries._routes(attempt)}
+            except (KeyError, ValueError) as error:
+                diagnosis["routes"] = {"after": {"available": False, "reason": str(error)}}
     if diagnosis.get("routes"):
-        for metrics in (diagnosis["routes"]["before"], diagnosis["routes"]["after"]):
+        for metrics in (diagnosis["routes"].get(k) for k in ("before", "after")):
+            if not metrics or "routes" not in metrics:
+                continue
             metrics["routes_total"] = len(metrics["routes"])
             metrics["routes_limited_in_response"] = len(metrics["routes"]) > 16
             metrics["routes"] = metrics["routes"][:16]

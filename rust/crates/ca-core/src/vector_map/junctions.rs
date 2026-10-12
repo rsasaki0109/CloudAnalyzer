@@ -19,6 +19,9 @@ pub(super) const LAYER_MIN_AREA: f64 = 0.01;
 // Retain the short-gap tolerance, then require a modest grade and observed ground
 // at both ends and along the actual connector. This is not a legal road-grade test.
 const MAX_GRADE: f64 = 0.12;
+/// Each end must point at least this far along the gap (cosine of the angle).
+const MIN_ALIGNMENT: f64 = 0.25;
+const MAX_TURN_DEGREES: f64 = 135.0;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
@@ -106,6 +109,34 @@ pub struct JunctionRejection {
     /// For `unsupported`: which ends or traces lacked ground support.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub unsupported: Option<UnsupportedDetail>,
+    /// For `heading`: how the two ends point relative to the gap between them.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub heading: Option<HeadingDetail>,
+    /// For `height`: the vertical step between the ends.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub height: Option<HeightDetail>,
+}
+
+/// A pair is refused when either end points less than `minimum_alignment` along
+/// the gap (the cosine of the angle between its heading and the gap), or when it
+/// would turn by more than `maximum_turn_degrees`.
+#[derive(Debug, Clone, Serialize)]
+pub struct HeadingDetail {
+    pub exit_alignment: f64,
+    pub entry_alignment: f64,
+    pub turn_degrees: f64,
+    pub minimum_alignment: f64,
+    pub maximum_turn_degrees: f64,
+}
+
+/// A pair is refused when the ends differ by more than `maximum_rise_m` and the
+/// grade over the gap exceeds `maximum_grade`.
+#[derive(Debug, Clone, Serialize)]
+pub struct HeightDetail {
+    pub rise_m: f64,
+    pub grade: f64,
+    pub maximum_rise_m: f64,
+    pub maximum_grade: f64,
 }
 
 /// What lacked ground support on a refused pair: road ends without ground, or
@@ -408,20 +439,29 @@ pub fn propose(
         for b in &entries {
             let delta = [b.point.x - a.point.x, b.point.y - a.point.y];
             let gap = delta[0].hypot(delta[1]);
-            let detailed = |report: &mut JunctionReport,
-                            reason: &'static str,
-                            unsupported: Option<UnsupportedDetail>| {
+            let record = |report: &mut JunctionReport, rejection: JunctionRejection| {
                 if report.rejections.len() < MAX_REJECTIONS {
-                    report.rejections.push(JunctionRejection {
-                        from: a.id,
-                        to: b.id,
-                        gap,
-                        reason,
-                        unsupported,
-                    });
+                    report.rejections.push(rejection);
                 }
             };
-            let reject = |report: &mut JunctionReport, reason| detailed(report, reason, None);
+            let refused = |reason| JunctionRejection {
+                from: a.id,
+                to: b.id,
+                gap,
+                reason,
+                unsupported: None,
+                heading: None,
+                height: None,
+            };
+            let detailed =
+                |report: &mut JunctionReport, reason, detail: Option<UnsupportedDetail>| {
+                    let rejection = JunctionRejection {
+                        unsupported: detail,
+                        ..refused(reason)
+                    };
+                    record(report, rejection);
+                };
+            let reject = |report: &mut JunctionReport, reason| record(report, refused(reason));
             if a.id == b.id || gap > o.max_gap {
                 continue;
             }
@@ -433,16 +473,44 @@ pub fn propose(
             let rise = (a.point.z - b.point.z).abs();
             if rise > HEIGHT && rise / gap > MAX_GRADE {
                 report.rejected_height += 1;
-                reject(&mut report, "height");
+                let height = HeightDetail {
+                    rise_m: rise,
+                    grade: rise / gap,
+                    maximum_rise_m: HEIGHT,
+                    maximum_grade: MAX_GRADE,
+                };
+                record(
+                    &mut report,
+                    JunctionRejection {
+                        height: Some(height),
+                        ..refused("height")
+                    },
+                );
                 continue;
             }
             let toward = |h: [f64; 2]| (h[0] * delta[0] + h[1] * delta[1]) / gap;
             let cross = a.heading[0] * b.heading[1] - a.heading[1] * b.heading[0];
             let dot = a.heading[0] * b.heading[0] + a.heading[1] * b.heading[1];
             let angle = cross.atan2(dot).to_degrees();
-            if toward(a.heading) < 0.25 || toward(b.heading) < 0.25 || angle.abs() > 135.0 {
+            if toward(a.heading) < MIN_ALIGNMENT
+                || toward(b.heading) < MIN_ALIGNMENT
+                || angle.abs() > MAX_TURN_DEGREES
+            {
                 report.rejected_heading += 1;
-                reject(&mut report, "heading");
+                let heading = HeadingDetail {
+                    exit_alignment: toward(a.heading),
+                    entry_alignment: toward(b.heading),
+                    turn_degrees: angle,
+                    minimum_alignment: MIN_ALIGNMENT,
+                    maximum_turn_degrees: MAX_TURN_DEGREES,
+                };
+                record(
+                    &mut report,
+                    JunctionRejection {
+                        heading: Some(heading),
+                        ..refused("heading")
+                    },
+                );
                 continue;
             }
             // A supported interior alone can mask a floating end at the preview's
@@ -918,6 +986,9 @@ mod tests {
         let report = propose(&map, &cloud, &Default::default()).unwrap();
         assert!(report.candidates.is_empty());
         assert_eq!(report.unsupported_candidates, 1);
+        // Only the raised entry floats above the ground.
+        let detail = report.rejections[0].unsupported.as_ref().unwrap();
+        assert_eq!(detail.ends, ["to"]);
         let mut steep = Map::new();
         road(&mut steep, [-20.0, 0.0, 0.0], [-10.0, 0.0, 2.0]);
         road(&mut steep, [0.0, 0.0, 4.0], [10.0, 0.0, 6.0]);
@@ -938,11 +1009,25 @@ mod tests {
         let report = propose(&elevated, &cloud, &Default::default()).unwrap();
         assert!(report.candidates.is_empty());
         assert!(report.rejected_height > 0);
+        let height = report
+            .rejections
+            .iter()
+            .find_map(|r| r.height.as_ref())
+            .unwrap();
+        assert!((height.rise_m - 3.0).abs() < 1e-9 && height.grade > height.maximum_grade);
         let mut reversed = Map::new();
         road(&mut reversed, [-20.0, 0.0, 2.0], [-10.0, 0.0, 2.0]);
         road(&mut reversed, [0.0, 20.0, 2.0], [0.0, 10.0, 2.0]);
         let report = propose(&reversed, &cloud, &Default::default()).unwrap();
         assert!(report.candidates.is_empty());
         assert!(report.rejected_heading > 0);
+        // The entry points back toward the exit, against the gap.
+        let heading = report
+            .rejections
+            .iter()
+            .find_map(|r| r.heading.as_ref())
+            .unwrap();
+        assert!(heading.exit_alignment >= heading.minimum_alignment);
+        assert!(heading.entry_alignment < 0.0);
     }
 }

@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- Mapping-run responses are easier for an agent to act on:
+  - every draft diagnosis reports `routes.after` (separate pieces and longest route);
+  - draft and finish diagnoses end with `review_holds`, gathering held traces from
+    both estimators, estimator and reopened-OSM agreement, extent, export warnings
+    and the unverified assumptions;
+  - `native_heading` and `native_height` connection holds carry the measured
+    alignment, turn, rise and grade with their limits;
+  - the docs show splitting a candidate between include and defer, and explain
+    `both_estimators_verified: false` on offered connections;
+  - a missing run directory gets a mapping hint instead of point-cloud formats.
+
 - Mapping-run evidence says more about why something is missing:
   - a `native_unsupported` connection hold names the road ends or connector traces
     (`center`, `left`, `right`) that lacked ground support, with their fractions;

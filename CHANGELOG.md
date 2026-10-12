@@ -56,7 +56,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - The 1.2 km winter drive goes from 83.5% to 86.6%, still below 90%; its stretches with
     no candidate shrink from 122 m to 90 m.
   - Also fixes two `manual_range_contains` lints reported by the current stable clippy.
+- `ca bridge-damage` leaves out three things that read as damage on the SemanticBridge
+  scans, where every candidate was checked by eye:
+  - a 0.2 m band beside straight seams of any kind (a joint's receded groove);
+  - cells whose 0.5 m neighbourhood has returns in fewer than half its cells (sparse
+    stretches), with the area reported as too sparse;
+  - for recess, neighbourhoods whose height interquartile range exceeds 2.4 cm (soffit
+    steps at haunches and skewed beam edges).
 
+  The 15 bridges go from 56 candidates to 9, two of which look plausible. The 8 figshare
+  bridges go from 83 to 44, keeping the light and recess candidates that looked
+  plausible there. Results are in `benchmarks/bridge/semanticbridge-tls`.
 - Bridge total widths include footways. The raised edge beyond each deck end was
   searched only 1.2 m out, so a footway was cut there.
   - A raised edge still running past 1.2 m is now followed up to 4 m, with its level

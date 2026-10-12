@@ -42,6 +42,9 @@ SEAM_ELONGATION = 6.0      # length over width of a straight seam
 SEAM_ANGLE = 10.0          # degrees from the axis or its normal for a joint or formwork seam
 EDGE_MARGIN = 0.3          # left out inside the deck edges and ends (m)
 HOLE_MARGIN = 0.1          # left out around cells without returns (m)
+SEAM_MARGIN = 0.2          # left out beside a straight seam of any kind: a joint's groove and chamfers (m)
+MIN_RETURNS_SHARE = 0.5    # share of cells with returns in the neighbourhood needed to search a cell
+STEP_IQR = 2.0             # recess is not searched where the neighbourhood's height IQR exceeds this x RECESS_M
 
 KINDS = {
     "light": ("遊離石灰・白色変色の候補", "#00bcd4"),
@@ -99,7 +102,8 @@ def bridge_damage(
                                   "dark_dL": DARK_DL, "rust_db_da": [RUST_DB, RUST_DA], "recess_m": RECESS_M,
                                   "min_area_m2": MIN_AREA, "member_margin_m": MEMBER_MARGIN,
                                   "edge_margin_m": EDGE_MARGIN, "seam_elongation": SEAM_ELONGATION,
-                                  "seam_angle_deg": SEAM_ANGLE}}
+                                  "seam_angle_deg": SEAM_ANGLE, "seam_margin_m": SEAM_MARGIN,
+                                  "min_returns_share": MIN_RETURNS_SHARE, "step_iqr_m": STEP_IQR * RECESS_M}}
     d = plan["deck"]
     if plan["underside"] == "unobserved" or d["slab_thickness_m"] is None:
         result["note"] = "No returns beneath the deck: the soffit was not searched and no damage is implied."
@@ -190,6 +194,20 @@ def bridge_damage(
     for p in plan["supports"]:
         usable &= np.abs(GS - p["along_m"]) > p.get("width_m", 0.0) / 2 + MEMBER_MARGIN
 
+    # Sparse returns (far from the scanner, between scan lines) leave single-return cells whose
+    # colour and height noise reads as damage.
+    # Seams are found over the whole searched soffit first, so a sparse stretch does not
+    # break one apart.
+    share = ndimage.uniform_filter(valid.astype(float), size=size)
+    dense = share >= MIN_RETURNS_SHARE
+
+    # A step in the soffit (a haunch, a beam edge at a skew) puts both levels in the
+    # neighbourhood, and the median leaves one side looking receded. A spall covers far less
+    # than a quarter of the neighbourhood, so it hardly moves the interquartile range there.
+    filled = np.where(valid, height, np.nanmedian(height[valid]))
+    iqr = (ndimage.percentile_filter(filled, 75, size=size) - ndimage.percentile_filter(filled, 25, size=size))
+    stepped = iqr > STEP_IQR * RECESS_M
+
     masks = {"light": dL > LIGHT_DL, "dark": dL < DARK_DL, "rust": (dB > RUST_DB) & (dA > RUST_DA),
              "recess": dH < -RECESS_M}
     min_cells = int(np.ceil(MIN_AREA / CELL**2))
@@ -197,18 +215,24 @@ def bridge_damage(
     seams: dict[str, int] = {}
     run = max(3, int(round(SEAM_RUN / CELL)))
     seam_length: dict[str, float] = {}
-    for kind, mask in masks.items():
-        mask = np.nan_to_num(mask, nan=0).astype(bool) & usable
-        # Straight runs along or across the deck, even when broken into pieces, are joints
-        # between slab units or formwork seams: take them out before forming regions.
-        straight = np.zeros_like(mask)
+    # Straight runs along or across the deck, even when broken into pieces, are joints
+    # between slab units or formwork seams: take them out before forming regions, with a
+    # band beside them for every kind (a dark joint has a receded groove and chamfers).
+    any_seam = np.zeros_like(usable)
+    for kind in masks:
+        masks[kind] = np.nan_to_num(masks[kind], nan=0).astype(bool) & usable
+        straight = np.zeros_like(usable)
         for line in (np.ones((1, run)), np.ones((run, 1))):
-            bridged = ndimage.binary_closing(mask, structure=line[:, :3] if line.shape[0] == 1 else line[:3])
-            straight |= ndimage.binary_opening(bridged, structure=line) & mask
+            bridged = ndimage.binary_closing(masks[kind], structure=line[:, :3] if line.shape[0] == 1 else line[:3])
+            straight |= ndimage.binary_opening(bridged, structure=line) & masks[kind]
         if straight.any():
             seam_length[kind] = float(straight.sum() * CELL)
-            mask &= ~ndimage.binary_dilation(straight, iterations=2)
-        mask = ndimage.binary_opening(mask)
+            any_seam |= straight
+    beside = ndimage.binary_dilation(any_seam, iterations=max(2, int(round(SEAM_MARGIN / CELL))))
+    for kind, mask in masks.items():
+        if kind == "recess":
+            mask = mask & ~stepped   # after the seams are found: a joint's groove is a step too
+        mask = ndimage.binary_opening(mask & ~beside & dense)
         labels, n = ndimage.label(mask)
         for k, region in enumerate(ndimage.find_objects(labels)):
             if region is None:
@@ -235,6 +259,7 @@ def bridge_damage(
                 "along_m": [float(ga[xs].min() - CELL / 2), float(ga[xs].max() + CELL / 2)],
                 "lateral_m": [float(gu[ys].min() - CELL / 2), float(gu[ys].max() + CELL / 2)],
                 "contrast": float(np.median(metric)),
+                "returns_share": float(np.median(share[ys, xs])),
                 "contrast_unit": "m" if kind == "recess" else ("b*" if kind == "rust" else "L*"),
             })
     candidates.sort(key=lambda c: (c["element"] or "~", c["centre_m"][0]))
@@ -243,7 +268,9 @@ def bridge_damage(
     result["candidates"] = candidates
     result["straight_seams_left_out"] = {"regions": seams, "cells_along_m": seam_length}
     result["soffit"] = {"points": int(soffit.sum()), "cells_with_returns": int(valid.sum()),
-                        "cells_searched": int(usable.sum()), "area_searched_m2": float(usable.sum() * CELL**2)}
+                        "cells_searched": int((usable & dense).sum()),
+                        "area_searched_m2": float((usable & dense).sum() * CELL**2),
+                        "area_too_sparse_m2": float((usable & ~dense).sum() * CELL**2)}
     result["note"] = ("Candidates are colour or height departures from the surrounding soffit, for an inspector "
                       "to confirm; formwork marks, shadows, wet patches and repairs can look the same.")
     if out_dir:

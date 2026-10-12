@@ -94,24 +94,28 @@ ca bridge-damage Bridge_3.las -o bridge_3 --classes 0,1,2,3 --axis-classes 2 --m
 
 | Bridge | Soffit searched (m²) | Light | Dark | Rust | Recess | Straight seams left out (m) |
 |---|---:|---:|---:|---:|---:|---:|
-| Bridge_1 | 9.2 | 6 | 17 | 2 | 5 | 68 |
+| Bridge_1 | 9.2 | 1 | 3 | 0 | 2 | 68 |
 | Bridge_2 | 32.2 | 1 | 1 | 0 | 0 | 210 |
-| Bridge_3 | 82.4 | 13 | 1 | 0 | 0 | 72 |
-| Bridge_4 | 45.7 | 0 | 1 | 0 | 2 | 8 |
-| Bridge_6 | 113.4 | 0 | 5 | 0 | 0 | 197 |
-| Bridge_7 | 11.6 | 0 | 0 | 0 | 14 | 4 |
-| Bridge_8 | 52.6 | 1 | 0 | 0 | 1 | 9 |
-| Bridge_9 | 30.8 | 3 | 1 | 2 | 7 | 52 |
+| Bridge_3 | 82.4 | 12 | 1 | 0 | 0 | 72 |
+| Bridge_4 | 45.6 | 0 | 1 | 0 | 0 | 8 |
+| Bridge_6 | 113.4 | 0 | 4 | 0 | 0 | 197 |
+| Bridge_7 | 11.6 | 0 | 0 | 0 | 12 | 4 |
+| Bridge_8 | 51.5 | 1 | 0 | 0 | 1 | 9 |
+| Bridge_9 | 30.5 | 0 | 1 | 2 | 1 | 52 |
 
 No inspection records come with the dataset, so how many candidates are real is
 unknown. By eye on the orthophotos, Bridge_3's light candidates sit on white
 deposits between its formwork lines, and Bridge_7's recess candidates on a rough,
 darker patch in one girder bay. Bridges 2 and 6 had about 200 m of straight joints
-and seams that would otherwise have been candidates. Bridge_1 has 30 candidates on
-9 m² searched and was not checked by eye. Small candidates near the 0.005 m² minimum
-come and go with the 2 cm grid: fixing the grid to the axis frame instead of the
-first soffit return changed five bridges' totals by one and Bridge_1's dark
-candidates from 13 to 17. `damage.json` and `damage.csv` are
+and seams that would otherwise have been candidates. Bridge_1 has 6 candidates on
+9 m² searched and was not checked by eye.
+
+Checking candidates on the SemanticBridge scans (see
+[`semanticbridge-tls`](../semanticbridge-tls/README.md#damage-candidates)) led to three
+more exclusions: a band beside joints, sparse stretches and, for recess, soffit steps.
+With them the eight bridges here went from 83 candidates to 44, mostly fewer recess
+and dark ones (Bridge_1 30 to 6, Bridge_9 13 to 4). Bridge_3's light candidates
+(13 to 12) and Bridge_7's recess candidates (14 to 12) stayed. `damage.json` and `damage.csv` are
 committed for all eight, the drawings for two:
 
 | Bridge_3 | Bridge_7 |

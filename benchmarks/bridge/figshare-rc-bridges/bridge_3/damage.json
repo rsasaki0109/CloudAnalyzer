@@ -11,21 +11,22 @@
     {
       "kind": "light",
       "label_ja": "遊離石灰・白色変色の候補",
-      "area_m2": 0.0172,
+      "area_m2": 0.012400000000000001,
       "centre_m": [
-        -4.434186046511628,
-        -0.7579069767441862
+        -4.466774193548387,
+        -0.77
       ],
       "element": "Ds0101",
       "along_m": [
         -4.58,
-        -4.300000000000001
+        -4.380000000000001
       ],
       "lateral_m": [
         -0.8200000000000001,
-        -0.6799999999999999
+        -0.72
       ],
-      "contrast": 17.41024083579581,
+      "contrast": 17.49878380495102,
+      "returns_share": 0.9999999999999999,
       "contrast_unit": "L*",
       "id": "D001"
     },
@@ -47,6 +48,7 @@
         -0.22000000000000042
       ],
       "contrast": 22.46101799257501,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
       "id": "D002"
     },
@@ -68,6 +70,7 @@
         0.7799999999999996
       ],
       "contrast": 28.55965425975045,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
       "id": "D003"
     },
@@ -89,6 +92,7 @@
         0.7799999999999996
       ],
       "contrast": 30.86991600477938,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
       "id": "D004"
     },
@@ -110,6 +114,7 @@
         0.3800000000000001
       ],
       "contrast": 17.298779649089717,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
       "id": "D005"
     },
@@ -131,6 +136,7 @@
         3.7799999999999994
       ],
       "contrast": 28.32143531486522,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
       "id": "D006"
     },
@@ -152,50 +158,31 @@
         -0.18000000000000038
       ],
       "contrast": 27.752285745807818,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
       "id": "D007"
     },
     {
       "kind": "light",
       "label_ja": "遊離石灰・白色変色の候補",
-      "area_m2": 0.015600000000000001,
+      "area_m2": 0.006,
       "centre_m": [
-        -3.1279487179487186,
-        -3.5469230769230773
+        -3.1740000000000004,
+        -3.534
       ],
       "element": "Ds0101",
       "along_m": [
         -3.22,
-        -3.0200000000000005
+        -3.1200000000000006
       ],
       "lateral_m": [
-        -3.5999999999999996,
+        -3.58,
         -3.4800000000000004
       ],
-      "contrast": 24.623090746036418,
+      "contrast": 27.238000562712557,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
       "id": "D008"
-    },
-    {
-      "kind": "light",
-      "label_ja": "遊離石灰・白色変色の候補",
-      "area_m2": 0.005200000000000001,
-      "centre_m": [
-        -2.4915384615384615,
-        3.714615384615385
-      ],
-      "element": "Ds0101",
-      "along_m": [
-        -2.54,
-        -2.4400000000000004
-      ],
-      "lateral_m": [
-        3.66,
-        3.76
-      ],
-      "contrast": 23.280736489092362,
-      "contrast_unit": "L*",
-      "id": "D009"
     },
     {
       "kind": "light",
@@ -215,8 +202,9 @@
         -3.8400000000000003
       ],
       "contrast": 24.071191578115798,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
-      "id": "D010"
+      "id": "D009"
     },
     {
       "kind": "light",
@@ -236,8 +224,9 @@
         3.7799999999999994
       ],
       "contrast": 23.78020918853091,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
-      "id": "D011"
+      "id": "D010"
     },
     {
       "kind": "light",
@@ -257,8 +246,9 @@
         -0.18000000000000038
       ],
       "contrast": 18.3127242734649,
+      "returns_share": 1.0000000000000002,
       "contrast_unit": "L*",
-      "id": "D012"
+      "id": "D011"
     },
     {
       "kind": "light",
@@ -278,8 +268,9 @@
         4.119999999999999
       ],
       "contrast": 19.595233839556446,
+      "returns_share": 1.0,
       "contrast_unit": "L*",
-      "id": "D013"
+      "id": "D012"
     },
     {
       "kind": "dark",
@@ -299,8 +290,9 @@
         -3.1000000000000005
       ],
       "contrast": -19.425620727472896,
+      "returns_share": 0.7632,
       "contrast_unit": "L*",
-      "id": "D014"
+      "id": "D013"
     }
   ],
   "thresholds": {
@@ -317,7 +309,10 @@
     "member_margin_m": 0.15,
     "edge_margin_m": 0.3,
     "seam_elongation": 6.0,
-    "seam_angle_deg": 10.0
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
   },
   "straight_seams_left_out": {
     "regions": {},
@@ -331,7 +326,8 @@
     "points": 3259538,
     "cells_with_returns": 223143,
     "cells_searched": 205936,
-    "area_searched_m2": 82.37440000000001
+    "area_searched_m2": 82.37440000000001,
+    "area_too_sparse_m2": 0.0
   },
   "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
 }

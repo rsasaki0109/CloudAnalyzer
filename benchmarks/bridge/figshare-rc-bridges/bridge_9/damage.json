@@ -9,75 +9,12 @@
   "underside": "girders_observed",
   "candidates": [
     {
-      "kind": "light",
-      "label_ja": "遊離石灰・白色変色の候補",
-      "area_m2": 0.0132,
-      "centre_m": [
-        -10.576666666666666,
-        2.4712121212121216
-      ],
-      "element": "Ds0101",
-      "along_m": [
-        -10.659999999999998,
-        -10.48
-      ],
-      "lateral_m": [
-        2.400000000000001,
-        2.5399999999999996
-      ],
-      "contrast": 32.74768258908266,
-      "contrast_unit": "L*",
-      "id": "D001"
-    },
-    {
-      "kind": "light",
-      "label_ja": "遊離石灰・白色変色の候補",
-      "area_m2": 0.0088,
-      "centre_m": [
-        -9.624545454545455,
-        2.4472727272727273
-      ],
-      "element": "Ds0101",
-      "along_m": [
-        -9.719999999999999,
-        -9.52
-      ],
-      "lateral_m": [
-        2.400000000000001,
-        2.4999999999999996
-      ],
-      "contrast": 25.445665463071165,
-      "contrast_unit": "L*",
-      "id": "D002"
-    },
-    {
-      "kind": "light",
-      "label_ja": "遊離石灰・白色変色の候補",
-      "area_m2": 0.005200000000000001,
-      "centre_m": [
-        -7.25,
-        1.1300000000000003
-      ],
-      "element": "Ds0103",
-      "along_m": [
-        -7.3,
-        -7.2
-      ],
-      "lateral_m": [
-        1.0800000000000003,
-        1.1800000000000004
-      ],
-      "contrast": 26.632086184989063,
-      "contrast_unit": "L*",
-      "id": "D003"
-    },
-    {
       "kind": "dark",
       "label_ja": "漏水・暗色変色の候補",
-      "area_m2": 0.01,
+      "area_m2": 0.0068000000000000005,
       "centre_m": [
-        -6.911599999999998,
-        0.6556000000000002
+        -6.917058823529411,
+        0.6252941176470589
       ],
       "element": "Ds0103",
       "along_m": [
@@ -86,11 +23,12 @@
       ],
       "lateral_m": [
         0.5599999999999998,
-        0.7600000000000005
+        0.6800000000000004
       ],
-      "contrast": -17.45638465644758,
+      "contrast": -17.747778289698424,
+      "returns_share": 0.7487999999999998,
       "contrast_unit": "L*",
-      "id": "D004"
+      "id": "D001"
     },
     {
       "kind": "recess",
@@ -110,71 +48,9 @@
         -1.0599999999999998
       ],
       "contrast": -0.013579530464028045,
+      "returns_share": 1.0,
       "contrast_unit": "m",
-      "id": "D005"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.010400000000000001,
-      "centre_m": [
-        -2.269999999999999,
-        0.1600000000000001
-      ],
-      "element": "Ds0203",
-      "along_m": [
-        -2.3199999999999985,
-        -2.219999999999999
-      ],
-      "lateral_m": [
-        0.08000000000000031,
-        0.24
-      ],
-      "contrast": -0.018892818446042153,
-      "contrast_unit": "m",
-      "id": "D006"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.0148,
-      "centre_m": [
-        -1.7554054054054047,
-        0.21378378378378385
-      ],
-      "element": "Ds0203",
-      "along_m": [
-        -1.8199999999999987,
-        -1.699999999999999
-      ],
-      "lateral_m": [
-        0.08000000000000031,
-        0.32000000000000006
-      ],
-      "contrast": -0.018934404393449622,
-      "contrast_unit": "m",
-      "id": "D007"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.019200000000000002,
-      "centre_m": [
-        -2.0349999999999997,
-        -2.0037499999999997
-      ],
-      "element": "Ds0204",
-      "along_m": [
-        -2.139999999999999,
-        -1.9399999999999993
-      ],
-      "lateral_m": [
-        -2.0799999999999996,
-        -1.9
-      ],
-      "contrast": -0.01828447945962486,
-      "contrast_unit": "m",
-      "id": "D008"
+      "id": "D002"
     },
     {
       "kind": "rust",
@@ -194,8 +70,9 @@
         -1.8199999999999998
       ],
       "contrast": 26.250462694052565,
+      "returns_share": 0.9999999999999932,
       "contrast_unit": "b*",
-      "id": "D009"
+      "id": "D003"
     },
     {
       "kind": "rust",
@@ -215,71 +92,9 @@
         -1.14
       ],
       "contrast": 21.944159554076858,
+      "returns_share": 0.7928000000000003,
       "contrast_unit": "b*",
-      "id": "D010"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.0412,
-      "centre_m": [
-        -1.3142718446601938,
-        -0.5616504854368932
-      ],
-      "element": "Ds0204",
-      "along_m": [
-        -1.4200000000000002,
-        -1.199999999999999
-      ],
-      "lateral_m": [
-        -0.76,
-        -0.4199999999999997
-      ],
-      "contrast": -0.024701195293450606,
-      "contrast_unit": "m",
-      "id": "D011"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.009600000000000001,
-      "centre_m": [
-        2.2500000000000004,
-        1.1158333333333335
-      ],
-      "element": "Ds0303",
-      "along_m": [
-        2.16,
-        2.34
-      ],
-      "lateral_m": [
-        1.0599999999999998,
-        1.1800000000000004
-      ],
-      "contrast": -0.013642769711535274,
-      "contrast_unit": "m",
-      "id": "D012"
-    },
-    {
-      "kind": "recess",
-      "label_ja": "剥離・欠損の候補",
-      "area_m2": 0.005200000000000001,
-      "centre_m": [
-        -0.13923076923076858,
-        -1.9284615384615384
-      ],
-      "element": "Ds0304",
-      "along_m": [
-        -0.1999999999999995,
-        -0.07999999999999986
-      ],
-      "lateral_m": [
-        -1.98,
-        -1.88
-      ],
-      "contrast": -0.015550874530642966,
-      "contrast_unit": "m",
-      "id": "D013"
+      "id": "D004"
     }
   ],
   "thresholds": {
@@ -296,7 +111,10 @@
     "member_margin_m": 0.15,
     "edge_margin_m": 0.3,
     "seam_elongation": 6.0,
-    "seam_angle_deg": 10.0
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
   },
   "straight_seams_left_out": {
     "regions": {},
@@ -310,8 +128,9 @@
   "soffit": {
     "points": 2117081,
     "cells_with_returns": 160758,
-    "cells_searched": 77098,
-    "area_searched_m2": 30.8392
+    "cells_searched": 76320,
+    "area_searched_m2": 30.528000000000002,
+    "area_too_sparse_m2": 0.31120000000000003
   },
   "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
 }

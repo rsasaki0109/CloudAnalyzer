@@ -99,6 +99,12 @@ now use bulk loading. Six real-source comparisons shorten loading by
 in both intervals. Actual ICP iterations are excluded; complex layouts retain
 Open3D loading. [Supported layout and measurements](../docs/cpu-ply-xyz-loading.md).
 
+The standard laspy LAS/LAZ reader packs XYZ rows before Open3D conversion.
+Four full real-source loads with the optional Rust core disabled are
+85.79–95.94% shorter by median paired duration, with 20/20 faster pairs and
+identical coordinate bits. Native and streaming readers retain their existing
+paths. [Scope and measurements](../docs/cpu-las-packed-coordinates.md).
+
 Comparisons without a snapshot skip unused heatmap coloring. Six real-source
 comparisons with registration disabled are 78.45–82.21% shorter, with 60/60
 faster pairs and identical numeric/file reports. Snapshot colors and pixels

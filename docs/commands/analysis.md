@@ -141,6 +141,12 @@ Controlled real-source diagnostic assembly is 23.08–31.70% shorter, excluding
 ICP iterations, with unchanged coordinates and reports.
 [Layout, fallback and measurements](../cpu-ply-xyz-loading.md).
 
+LAS/LAZ loading through laspy packs XYZ rows before Open3D conversion.
+Four complete real-source loads with the optional Rust core disabled are
+85.79–95.94% shorter by median paired duration, with 20/20 faster pairs and
+identical coordinates. Native and streaming paths retain their existing code.
+[Input provenance and measurements](../cpu-las-packed-coordinates.md).
+
 `ca compare` computes heatmap colors when `--snapshot` is requested. Numeric-only
 calls skip unused coloring; registered comparisons retain the same solver and
 reports. With `--register none` and no snapshot, six real-source function

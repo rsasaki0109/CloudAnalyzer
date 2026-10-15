@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "sources": {
+    "autoware-planning": {
+      "path": "demo_data/autoware/planning-signal-source.las",
+      "bytes": 63282651,
+      "sha256": "bf6bbf9333799188051cc7bc96ecd6b92129342a99563f2a6cbf047714611e0a",
+      "points": 1757841,
+      "pointFormat": 7,
+      "lasVersion": "1.4",
+      "scales": [
+        0.000244140625,
+        0.0078125,
+        9.5367431640625e-07
+      ],
+      "offsets": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "coordinateOracle": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\las-packed-inputs-v2-20261015\\autoware-planning-xyz-f64.bin",
+        "bytes": 42188184,
+        "sha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+        "dtype": "<f8",
+        "shape": [
+          1757841,
+          3
+        ]
+      },
+      "interpretation": "Full existing measured source file in decoded file order; no generated coordinates, new thinning or perturbation.",
+      "provenance": {
+        "originalPath": "demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+        "originalSha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+        "url": "https://docs.autoware.org/main/demos/planning-sim/",
+        "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE; existing full LAS export in original point order. Existing header quantization is retained unchanged.",
+        "coordinateDifferencesFromPcd": 3,
+        "maxAbsDifferenceFromPcd": 4.76837158203125e-07,
+        "quantizationVerification": "Every existing LAS coordinate equals round-to-nearest-even((original PCD coordinate - header offset) / header scale) * header scale + header offset.",
+        "license": "No separate dataset license asserted"
+      }
+    },
+    "autzen": {
+      "path": "demo_data/copc-scale/autzen-classified.copc.laz",
+      "bytes": 81123042,
+      "sha256": "db2d56cdfa058bffccdc5d6019dae2fc9c6a551df10a5523c06c76a3e25a27fa",
+      "points": 10653336,
+      "pointFormat": 7,
+      "lasVersion": "1.4",
+      "scales": [
+        0.01,
+        0.01,
+        0.01
+      ],
+      "offsets": [
+        637290.75,
+        851209.9,
+        510.7
+      ],
+      "coordinateOracle": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\las-packed-inputs-v2-20261015\\autzen-xyz-f64.bin",
+        "bytes": 255680064,
+        "sha256": "87177628a0eee71d3546bd95353db03a3e468c99f1081191a613b10391e2b27e",
+        "dtype": "<f8",
+        "shape": [
+          10653336,
+          3
+        ]
+      },
+      "interpretation": "Full existing measured source file in decoded file order; no generated coordinates, new thinning or perturbation.",
+      "provenance": {
+        "recordPath": "demo_data\\copc-scale\\autzen-download.json",
+        "recordSha256": "79820d0ee2e34db6563a63e3c71344c2567ab00c2af40da7629b45f3b17eccd8",
+        "url": "https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz",
+        "attribution": "Public Autzen classified COPC example hosted by Hobu, linked by the COPC specification.",
+        "license": "No additional dataset license asserted; existing source data is not redistributed by these results."
+      }
+    }
+  },
+  "oracleMethod": "laspy chunk_iterator(250000); independent raw signed-integer X/Y/Z converted to f64, multiplied by each header scale then added to its offset, stored as little-endian packed XYZ rows."
+}

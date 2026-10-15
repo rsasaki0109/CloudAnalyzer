@@ -1,0 +1,533 @@
+{
+  "schemaVersion": 1,
+  "comparison": "las-packed-coordinates",
+  "createdAt": "2026-10-15T04:54:42.191552+00:00",
+  "dataset": "autoware-planning",
+  "inputManifest": {
+    "schemaVersion": 1,
+    "sources": {
+      "autoware-planning": {
+        "path": "demo_data/autoware/planning-signal-source.las",
+        "bytes": 63282651,
+        "sha256": "bf6bbf9333799188051cc7bc96ecd6b92129342a99563f2a6cbf047714611e0a",
+        "points": 1757841,
+        "pointFormat": 7,
+        "lasVersion": "1.4",
+        "scales": [
+          0.000244140625,
+          0.0078125,
+          9.5367431640625e-07
+        ],
+        "offsets": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "coordinateOracle": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\las-packed-inputs-v2-20261015\\autoware-planning-xyz-f64.bin",
+          "bytes": 42188184,
+          "sha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+          "dtype": "<f8",
+          "shape": [
+            1757841,
+            3
+          ]
+        },
+        "interpretation": "Full existing measured source file in decoded file order; no generated coordinates, new thinning or perturbation.",
+        "provenance": {
+          "originalPath": "demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+          "originalSha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+          "url": "https://docs.autoware.org/main/demos/planning-sim/",
+          "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE; existing full LAS export in original point order. Existing header quantization is retained unchanged.",
+          "coordinateDifferencesFromPcd": 3,
+          "maxAbsDifferenceFromPcd": 4.76837158203125e-07,
+          "quantizationVerification": "Every existing LAS coordinate equals round-to-nearest-even((original PCD coordinate - header offset) / header scale) * header scale + header offset.",
+          "license": "No separate dataset license asserted"
+        }
+      },
+      "autzen": {
+        "path": "demo_data/copc-scale/autzen-classified.copc.laz",
+        "bytes": 81123042,
+        "sha256": "db2d56cdfa058bffccdc5d6019dae2fc9c6a551df10a5523c06c76a3e25a27fa",
+        "points": 10653336,
+        "pointFormat": 7,
+        "lasVersion": "1.4",
+        "scales": [
+          0.01,
+          0.01,
+          0.01
+        ],
+        "offsets": [
+          637290.75,
+          851209.9,
+          510.7
+        ],
+        "coordinateOracle": {
+          "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\las-packed-inputs-v2-20261015\\autzen-xyz-f64.bin",
+          "bytes": 255680064,
+          "sha256": "87177628a0eee71d3546bd95353db03a3e468c99f1081191a613b10391e2b27e",
+          "dtype": "<f8",
+          "shape": [
+            10653336,
+            3
+          ]
+        },
+        "interpretation": "Full existing measured source file in decoded file order; no generated coordinates, new thinning or perturbation.",
+        "provenance": {
+          "recordPath": "demo_data\\copc-scale\\autzen-download.json",
+          "recordSha256": "79820d0ee2e34db6563a63e3c71344c2567ab00c2af40da7629b45f3b17eccd8",
+          "url": "https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz",
+          "attribution": "Public Autzen classified COPC example hosted by Hobu, linked by the COPC specification.",
+          "license": "No additional dataset license asserted; existing source data is not redistributed by these results."
+        }
+      }
+    },
+    "oracleMethod": "laspy chunk_iterator(250000); independent raw signed-integer X/Y/Z converted to f64, multiplied by each header scale then added to its offset, stored as little-endian packed XYZ rows."
+  },
+  "inputs": {
+    "source": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\planning-signal-source.las",
+      "bytes": 63282651,
+      "sha256": "bf6bbf9333799188051cc7bc96ecd6b92129342a99563f2a6cbf047714611e0a"
+    },
+    "manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\las-packed-inputs.json",
+      "bytes": 3518,
+      "sha256": "c04641a633fe7aa51216632736ea212775cac3e3949a5cce5b09469f82b4ed59"
+    },
+    "oracle": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\las-packed-inputs-v2-20261015\\autoware-planning-xyz-f64.bin",
+      "bytes": 42188184,
+      "sha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\las-packed-coordinates-20261015\\io-baseline.py",
+      "bytes": 17502,
+      "sha256": "81466b64f9af7f784f7799c94870e755c256552e2f7c13f90add2a74c062601e"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6"
+    }
+  },
+  "sourceHashes": {
+    "cloudanalyzer/ca/io.py": "615049edf4da6dba73a11ac5149b025582438411b05d0dd8d5b78465e77d348d",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/ca/__init__.py": "27a73a136bffd3143dfc56c537b6d402e53df3c1f80154dfeebd4500c52af85b",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_io_las_packed_coordinates.py": "b65729429255040ad5c47bab0bb697f55b316cac258132cc35e61212d22fede0",
+    "cloudanalyzer/tests/test_io.py": "86889024ac37a90fb185d16a92ecf147f24c6f2490bb0f7457a87a952068db72",
+    "cloudanalyzer/tests/test_io_binary_xyz_ply.py": "4d70f38eb80b25f356a604c7599331832c3017f2b88fac5cc481cb13ccb0b9fb",
+    "cloudanalyzer/scripts/benchmark_las_coordinates.py": "9aa57657803e208ead90a37eb97a5d72ef062eb193ddc2c1cbfb7f721f3f9010"
+  },
+  "laspySourceRoot": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\laspy",
+  "laspySourceHashes": {
+    "__init__.py": "545f4d692450131ff5fe5db3bffa4e342321862218027efe8d075de63c17fe40",
+    "_compression\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "_compression\\backend.py": "3185a059ce921aff5af462652c82d8b55b2a11359087dcc8ccf260ebc84ec1bc",
+    "_compression\\format.py": "11fb13df19c259b1f66ac6015b9e5db704cf01006634db26864a63fef78412e7",
+    "_compression\\laszipbackend.py": "03acf78f031f01edf729ab6be92fb6a474d4314ba1ef69d7f2cf5dfb6f1e9b47",
+    "_compression\\lazbackend.py": "7eb5b9217f194961a2128243dc6512b130cc9049c82ff641153ab9651c5b086a",
+    "_compression\\lazrsbackend.py": "7099533600e16d5c759ad76c49effea27d87eb0f244cbe1797963bb07ca4b211",
+    "_compression\\selection.py": "1db67b4311e18e5d57b682cb2c1367539c47ffa786040421f21ea19874021652",
+    "_pointappender.py": "e40e93ae0db10df96bd193c96d171d2652cf01904474911e959dffb83fbf5bd0",
+    "_pointreader.py": "556c53078640a06a4c9fbfe2ca5826a3b8e8828c9579676721ded3cf2ac9021c",
+    "_pointwriter.py": "c25c74fe30d4c2a3bef10d7840b51289152402c7457d0771796ec1688ebe480f",
+    "cli\\__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cli\\copc.py": "b73ffe2207cc91a9827d4ea8cb7e47271958c9612ae1706a518634ca37416347",
+    "cli\\core.py": "630df1f8d24f22d304358e60bac734ab6d08f7891c63be3de29fe9e2d43d3da3",
+    "cli\\main.py": "e5c1fc6ae6e73f9864a7028d9a01e46d60168c8a7bde2614c075feb3c85cb1c3",
+    "compression.py": "ea688c93f6c9f5aa08e272c2c8924ba035b26e4e921ba753b78d198d4d640448",
+    "copc.py": "6dcb7c2edea19d4ed8f9994ea253671f608a1c1cab90da148a9dd50f6753765a",
+    "errors.py": "30902b720ff71c17fe66331464ba1f262d3059af1d8a2474a9873743680cea76",
+    "extradims.py": "88041e940d91902213b6963c2d4a9925107a2114742300df3f28c5efe204502c",
+    "file.py": "4cda0b6fea2c18951f685a121f159fb68a5d5fc501fe6ac83ec41ea06c8c06dd",
+    "header.py": "37eb66157dc4ad960b76f951d664aefd18f37e0a6da90e33e651401b5205d513",
+    "lasappender.py": "2b6cad69efa32e2d208f803e57b3a86969cb51f197ce535fd6f88de55c7818f9",
+    "lasdata.py": "736fb05618a1462b058eebd384b2d44235852177a99ddd9edcdd531db28359ad",
+    "lasmmap.py": "2d7c85d007f756453f2c8e2d84582b31a0e77f1bf973f2edc2d8a3cb6e316d2f",
+    "lasreader.py": "44e26c9506f66cc55a14f60f221bfc16be396031ea74120805fbb6ebd0a8e763",
+    "laswriter.py": "e418b0ba0085631377c0841116e222d65bfceef3dc1e5dc5d755c86778045864",
+    "lib.py": "a53ae9daca1df03843102089338f6f5daa76d8312581bd9a6eb66d21264fdbf0",
+    "point\\__init__.py": "6ec073044e36f81d59dad748017c8b8dbe24c4cdd5a16d16cf5f40949ef54e3b",
+    "point\\dims.py": "1b853dca6c3899eb5d720706fca1179c81f3eee72de42ba3492dc6ec0d979222",
+    "point\\format.py": "ab6c8de1922cfccfcebac0637194a6c5daec2b610f86f58b796507aa3d839651",
+    "point\\packing.py": "fdfa5f17e4181e0b451634eb7ef96eed4cfe08115d047587ad052837d4e17308",
+    "point\\record.py": "11773d193ede2abac36f491af2c3d57523f4ec5ee14fae14f37e8960e054f21a",
+    "typehints.py": "d93fede0e602d53cc42c1d54926de9e1160d3bb241d6280588a9482a925090aa",
+    "utils.py": "5b516ac6fa745dfa7ec777d92be453a68c2009a0ad675bb1354ee415a175a6cb",
+    "vlrs\\__init__.py": "086ac931d2d527c3e29dd9c77fdd6525819e239586627822ba29012a6bbb4b30",
+    "vlrs\\geotiff.py": "db90bd1cd6699d3f06d545cba64474abab9fb3956a8f4e55c57e4ea1665b23a1",
+    "vlrs\\known.py": "730abf7c0b7aa764ea1088e58184aa8830d0f84c263ec2effa77c41ab50a49b3",
+    "vlrs\\vlr.py": "243316225abe6cd36fb2d3275ad40ab0290ef6a1bfa5706ad5eebc5fcce88cad",
+    "vlrs\\vlrlist.py": "2b9c7cc93ebafd79f1801d5af66b9107e0950e745171f9a9d1a09639f9c569e6"
+  },
+  "libraries": {
+    "open3d": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\open3d\\cpu\\pybind.cp312-win_amd64.pyd",
+      "bytes": 151434752,
+      "sha256": "ab1b2f4a1126a11886a2a9f3eeab5ceaeac0bab1b53ee319eb363df7ef629d88"
+    },
+    "lazrs": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\lazrs\\lazrs.cp312-win_amd64.pyd",
+      "bytes": 1176576,
+      "sha256": "751ffa4393afc96dafcd61e64b1663d4b73b6627a178217fd2e53cb0e68fcfcb"
+    },
+    "lazrsWrapper": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\lazrs\\__init__.py",
+      "bytes": 103,
+      "sha256": "bcd7cc8b20109a4adf046d35b13c3a04872bd52e015e4df0e4fa4a40ca858186"
+    }
+  },
+  "environment": {
+    "platform": "Windows",
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "laspy": "2.7.0",
+    "lazrs": "0.8.2",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12,
+    "openblasNumThreads": 1,
+    "disableRustCore": true,
+    "availableLazBackends": [
+      "LazBackend.LazrsParallel",
+      "LazBackend.Lazrs"
+    ]
+  },
+  "startPolicy": "strided",
+  "repeats": 5,
+  "warmupRounds": 2,
+  "parity": {
+    "strided": {
+      "millis": 3731.3347,
+      "output": {
+        "shape": [
+          1757841,
+          3
+        ],
+        "dtype": "<f8",
+        "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+        "colors": 0,
+        "normals": 0,
+        "covariances": 0
+      }
+    },
+    "packed": {
+      "millis": 149.7806,
+      "output": {
+        "shape": [
+          1757841,
+          3
+        ],
+        "dtype": "<f8",
+        "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+        "colors": 0,
+        "normals": 0,
+        "covariances": 0
+      }
+    }
+  },
+  "firstUntraced": {
+    "order": [
+      "strided",
+      "packed"
+    ],
+    "observations": {
+      "strided": {
+        "millis": 4241.6898,
+        "output": {
+          "shape": [
+            1757841,
+            3
+          ],
+          "dtype": "<f8",
+          "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+          "colors": 0,
+          "normals": 0,
+          "covariances": 0
+        }
+      },
+      "packed": {
+        "millis": 178.2504,
+        "output": {
+          "shape": [
+            1757841,
+            3
+          ],
+          "dtype": "<f8",
+          "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+          "colors": 0,
+          "normals": 0,
+          "covariances": 0
+        }
+      }
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "packed",
+        "strided"
+      ],
+      "observations": {
+        "packed": {
+          "millis": 163.2881,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "strided": {
+          "millis": 3938.9958,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "strided",
+        "packed"
+      ],
+      "observations": {
+        "strided": {
+          "millis": 3605.1519,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "packed": {
+          "millis": 141.3988,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "strided",
+        "packed"
+      ],
+      "observations": {
+        "strided": {
+          "millis": 3537.8046,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "packed": {
+          "millis": 156.0555,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "packed",
+        "strided"
+      ],
+      "observations": {
+        "packed": {
+          "millis": 156.5743,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "strided": {
+          "millis": 3859.8967,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "strided",
+        "packed"
+      ],
+      "observations": {
+        "strided": {
+          "millis": 3466.8627,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "packed": {
+          "millis": 143.5833,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "packed",
+        "strided"
+      ],
+      "observations": {
+        "packed": {
+          "millis": 137.1831,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "strided": {
+          "millis": 3585.4462,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "strided",
+        "packed"
+      ],
+      "observations": {
+        "strided": {
+          "millis": 3857.9381,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        },
+        "packed": {
+          "millis": 151.9281,
+          "output": {
+            "shape": [
+              1757841,
+              3
+            ],
+            "dtype": "<f8",
+            "xyzSha256": "d9397a901c2136e16fbaf9a91ed58891deafc736663035d083f6ee4d7258907b",
+            "colors": 0,
+            "normals": 0,
+            "covariances": 0
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "stridedMedianMillis": 3585.4462,
+    "packedMedianMillis": 151.9281,
+    "pairedShorteningPercent": 95.94356242746082,
+    "pairedSavedMedianMillis": 3448.2630999999997,
+    "fasterTrials": 5
+  },
+  "note": "Complete load_point_cloud call with optional Rust core disabled: actual whole-file LAS/LAZ decoding, header coordinate scaling, XYZ assembly, owned Open3D conversion, empty check and internal cleanup. Returned cloud release, full-output hashing/validation, imports, fingerprinting and CLI serialization excluded from timing. Same full existing measured source in decoded order; no generated geometry, new thinning, perturbation or decoder replacement. Both policies check all output coordinates and empty attributes after every call. Excluded full byte-parity pair, separate first pair, two warm-up pairs, then five default alternating timed pairs. Fresh process per dataset/pass, balanced initial policy across passes, warmed file pages. No native-reader, streaming/spatial COPC, whole comparison, cold CLI, peak RSS or GPU speed claim."
+}

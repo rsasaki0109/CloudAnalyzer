@@ -272,6 +272,14 @@ faster pairs. Temporary Python row lists are bounded, but the full output cloud
 remains in memory. This is a CPU loading result; it does not establish whole
 comparison, registration, GPU or streaming-reader speedups.
 
+The subsequent [bounded CSV writer rows](cpu-csv-batched-writes.md) reduce peak
+traced allocations during complete real-source CSV saves by 72.54–77.95%.
+The writer retains a full numeric XYZ snapshot and converts 65,536 Python rows
+at a time, preserving every CSV byte. All 96 observed saves match; six timing
+comparisons range from -8.41% to +11.65% median paired shortening, with 19/30
+faster pairs. This establishes a traced-allocation reduction, without a
+consistent speed, process-RSS, streaming, parallel or GPU acceleration claim.
+
 The subsequent [scoped batch reference reuse](cpu-batch-reference.md) loads one
 reference snapshot per batch and shares its native tree across candidates.
 Complete three-candidate batch functions improve by 23.83–33.78% across six

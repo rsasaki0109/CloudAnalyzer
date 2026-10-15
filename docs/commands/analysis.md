@@ -153,6 +153,12 @@ loads are 46.61–60.15% shorter by median paired duration, with 30/30 faster pa
 This applies with or without the native core and retains the whole output cloud.
 [CSV scope and measurements](../cpu-csv-batch-filter.md).
 
+CSV export bounds temporary Python rows around a full numeric XYZ snapshot.
+Peak traced allocations decrease 72.54–77.95% across three measured clouds,
+with byte-identical CSV output. Wall-clock results are mixed; consistent speed
+and process-RSS improvements are unestablished.
+[Export allocation scope and measurements](../cpu-csv-batched-writes.md).
+
 `ca compare` computes heatmap colors when `--snapshot` is requested. Numeric-only
 calls skip unused coloring; registered comparisons retain the same solver and
 reports. With `--register none` and no snapshot, six real-source function

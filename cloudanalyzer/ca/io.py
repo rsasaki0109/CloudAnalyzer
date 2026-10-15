@@ -18,6 +18,7 @@ SUPPORTED_EXTENSIONS = {".pcd", ".ply", ".las", ".laz", ".csv"}
 
 _BINARY_XYZ_PLY_MAX_BYTES = 64 * 1024 * 1024
 _CSV_POINT_BATCH_SIZE = 65_536
+_CSV_WRITE_BATCH_SIZE = 65_536
 
 
 def _validate_chunk_size(chunk_size: int) -> int:
@@ -497,7 +498,10 @@ def save_point_cloud(path: str, pcd: o3d.geometry.PointCloud) -> None:
         with p.open("w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(["x", "y", "z"])
-            writer.writerows(xyz.tolist())
+            # Retain a numeric snapshot without materializing all Python rows.
+            xyz = xyz.copy()
+            for start in range(0, len(xyz), _CSV_WRITE_BATCH_SIZE):
+                writer.writerows(xyz[start : start + _CSV_WRITE_BATCH_SIZE].tolist())
     elif ext in {".las", ".laz"}:
         import laspy
         xyz = np.asarray(pcd.points)

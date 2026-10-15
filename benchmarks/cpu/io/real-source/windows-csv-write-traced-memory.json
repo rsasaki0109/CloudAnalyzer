@@ -1,0 +1,246 @@
+{
+  "schemaVersion": 1,
+  "comparison": "csv-write-traced-allocations",
+  "observations": [
+    {
+      "schemaVersion": 1,
+      "comparison": "csv-write-traced-allocations",
+      "dataset": "pandaset019",
+      "points": 531908,
+      "policy": "whole_rows",
+      "peakTracedBytes": 85272087,
+      "residualTracedBytes": 8322,
+      "timingRecord": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\windows-pandaset019-csv-write-initial.json",
+        "bytes": 11864,
+        "sha256": "db27c71e5b22695feb71f2f1a1ae9716855e52f773c4709694e6c83e4a5d320d"
+      },
+      "controller": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\cloudanalyzer\\scripts\\benchmark_csv_writer_memory.py",
+        "bytes": 5247,
+        "sha256": "2e4645dda212b3b1a97e6b20cb36e6b891ea1fa58624d0a2bd3435cea6e88c8d"
+      },
+      "output": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-memory-20261015\\pandaset019-whole_rows\\points.csv",
+        "bytes": 30915566,
+        "sha256": "b75ff6f79c9c9e4d74d2a2a3f7b2cac6e09debdc63f25baf2e513c5aa2d9ce51"
+      },
+      "environment": {
+        "platform": "Windows",
+        "python": "3.12.10",
+        "numpy": "2.3.4",
+        "open3d": "0.19.0",
+        "logicalCpus": 12,
+        "rayonNumThreads": 12,
+        "ompNumThreads": 12,
+        "openblasNumThreads": 1,
+        "disableRustCore": true,
+        "csvWriteBatchRows": 65536
+      },
+      "note": "One fresh process per dataset/policy; cloud load, imports, validation and GC collection precede tracing. Complete save_point_cloud runs under tracemalloc, including snapshot copy, row materialization, formatting, actual file writes and close. No wall-clock measurement is taken. Peak includes registered NumPy buffers and traced Python allocations, but excludes untraced native/OS buffers, source-cloud storage and tracer metadata. This is not process peak RSS, total application memory or a time result."
+    },
+    {
+      "schemaVersion": 1,
+      "comparison": "csv-write-traced-allocations",
+      "dataset": "pandaset019",
+      "points": 531908,
+      "policy": "batch_rows",
+      "peakTracedBytes": 23418063,
+      "residualTracedBytes": 8354,
+      "timingRecord": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\windows-pandaset019-csv-write-initial.json",
+        "bytes": 11864,
+        "sha256": "db27c71e5b22695feb71f2f1a1ae9716855e52f773c4709694e6c83e4a5d320d"
+      },
+      "controller": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\cloudanalyzer\\scripts\\benchmark_csv_writer_memory.py",
+        "bytes": 5247,
+        "sha256": "2e4645dda212b3b1a97e6b20cb36e6b891ea1fa58624d0a2bd3435cea6e88c8d"
+      },
+      "output": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-memory-20261015\\pandaset019-batch_rows\\points.csv",
+        "bytes": 30915566,
+        "sha256": "b75ff6f79c9c9e4d74d2a2a3f7b2cac6e09debdc63f25baf2e513c5aa2d9ce51"
+      },
+      "environment": {
+        "platform": "Windows",
+        "python": "3.12.10",
+        "numpy": "2.3.4",
+        "open3d": "0.19.0",
+        "logicalCpus": 12,
+        "rayonNumThreads": 12,
+        "ompNumThreads": 12,
+        "openblasNumThreads": 1,
+        "disableRustCore": true,
+        "csvWriteBatchRows": 65536
+      },
+      "note": "One fresh process per dataset/policy; cloud load, imports, validation and GC collection precede tracing. Complete save_point_cloud runs under tracemalloc, including snapshot copy, row materialization, formatting, actual file writes and close. No wall-clock measurement is taken. Peak includes registered NumPy buffers and traced Python allocations, but excludes untraced native/OS buffers, source-cloud storage and tracer metadata. This is not process peak RSS, total application memory or a time result."
+    },
+    {
+      "schemaVersion": 1,
+      "comparison": "csv-write-traced-allocations",
+      "dataset": "autoware-planning",
+      "points": 878920,
+      "policy": "batch_rows",
+      "peakTracedBytes": 31747525,
+      "residualTracedBytes": 8360,
+      "timingRecord": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\windows-autoware-planning-csv-write-initial.json",
+        "bytes": 11916,
+        "sha256": "f40a5b964d7803dd1a49ba11000a47247f9d2315b927ec2bc512dea51048e461"
+      },
+      "controller": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\cloudanalyzer\\scripts\\benchmark_csv_writer_memory.py",
+        "bytes": 5247,
+        "sha256": "2e4645dda212b3b1a97e6b20cb36e6b891ea1fa58624d0a2bd3435cea6e88c8d"
+      },
+      "output": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-memory-20261015\\autoware-planning-batch_rows\\points.csv",
+        "bytes": 43410912,
+        "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+      },
+      "environment": {
+        "platform": "Windows",
+        "python": "3.12.10",
+        "numpy": "2.3.4",
+        "open3d": "0.19.0",
+        "logicalCpus": 12,
+        "rayonNumThreads": 12,
+        "ompNumThreads": 12,
+        "openblasNumThreads": 1,
+        "disableRustCore": true,
+        "csvWriteBatchRows": 65536
+      },
+      "note": "One fresh process per dataset/policy; cloud load, imports, validation and GC collection precede tracing. Complete save_point_cloud runs under tracemalloc, including snapshot copy, row materialization, formatting, actual file writes and close. No wall-clock measurement is taken. Peak includes registered NumPy buffers and traced Python allocations, but excludes untraced native/OS buffers, source-cloud storage and tracer metadata. This is not process peak RSS, total application memory or a time result."
+    },
+    {
+      "schemaVersion": 1,
+      "comparison": "csv-write-traced-allocations",
+      "dataset": "autoware-planning",
+      "points": 878920,
+      "policy": "whole_rows",
+      "peakTracedBytes": 140795183,
+      "residualTracedBytes": 8328,
+      "timingRecord": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\windows-autoware-planning-csv-write-initial.json",
+        "bytes": 11916,
+        "sha256": "f40a5b964d7803dd1a49ba11000a47247f9d2315b927ec2bc512dea51048e461"
+      },
+      "controller": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\cloudanalyzer\\scripts\\benchmark_csv_writer_memory.py",
+        "bytes": 5247,
+        "sha256": "2e4645dda212b3b1a97e6b20cb36e6b891ea1fa58624d0a2bd3435cea6e88c8d"
+      },
+      "output": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-memory-20261015\\autoware-planning-whole_rows\\points.csv",
+        "bytes": 43410912,
+        "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+      },
+      "environment": {
+        "platform": "Windows",
+        "python": "3.12.10",
+        "numpy": "2.3.4",
+        "open3d": "0.19.0",
+        "logicalCpus": 12,
+        "rayonNumThreads": 12,
+        "ompNumThreads": 12,
+        "openblasNumThreads": 1,
+        "disableRustCore": true,
+        "csvWriteBatchRows": 65536
+      },
+      "note": "One fresh process per dataset/policy; cloud load, imports, validation and GC collection precede tracing. Complete save_point_cloud runs under tracemalloc, including snapshot copy, row materialization, formatting, actual file writes and close. No wall-clock measurement is taken. Peak includes registered NumPy buffers and traced Python allocations, but excludes untraced native/OS buffers, source-cloud storage and tracer metadata. This is not process peak RSS, total application memory or a time result."
+    },
+    {
+      "schemaVersion": 1,
+      "comparison": "csv-write-traced-allocations",
+      "dataset": "tokyo-takanawadai",
+      "points": 941933,
+      "policy": "whole_rows",
+      "peakTracedBytes": 150881279,
+      "residualTracedBytes": 8328,
+      "timingRecord": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\windows-tokyo-takanawadai-csv-write-initial.json",
+        "bytes": 21848,
+        "sha256": "c23daa40358141cf810bd4e38cf9dbaf8a8971d0ee9e09ab9d38bc9db257f78b"
+      },
+      "controller": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\cloudanalyzer\\scripts\\benchmark_csv_writer_memory.py",
+        "bytes": 5247,
+        "sha256": "2e4645dda212b3b1a97e6b20cb36e6b891ea1fa58624d0a2bd3435cea6e88c8d"
+      },
+      "output": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-memory-20261015\\tokyo-takanawadai-whole_rows\\points.csv",
+        "bytes": 34855671,
+        "sha256": "a916ea2fc7688fff17c66ee7cd13a6c9da61bd3dd823cfc8dae4855d0386e13f"
+      },
+      "environment": {
+        "platform": "Windows",
+        "python": "3.12.10",
+        "numpy": "2.3.4",
+        "open3d": "0.19.0",
+        "logicalCpus": 12,
+        "rayonNumThreads": 12,
+        "ompNumThreads": 12,
+        "openblasNumThreads": 1,
+        "disableRustCore": true,
+        "csvWriteBatchRows": 65536
+      },
+      "note": "One fresh process per dataset/policy; cloud load, imports, validation and GC collection precede tracing. Complete save_point_cloud runs under tracemalloc, including snapshot copy, row materialization, formatting, actual file writes and close. No wall-clock measurement is taken. Peak includes registered NumPy buffers and traced Python allocations, but excludes untraced native/OS buffers, source-cloud storage and tracer metadata. This is not process peak RSS, total application memory or a time result."
+    },
+    {
+      "schemaVersion": 1,
+      "comparison": "csv-write-traced-allocations",
+      "dataset": "tokyo-takanawadai",
+      "points": 941933,
+      "policy": "batch_rows",
+      "peakTracedBytes": 33263855,
+      "residualTracedBytes": 8360,
+      "timingRecord": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\windows-tokyo-takanawadai-csv-write-initial.json",
+        "bytes": 21848,
+        "sha256": "c23daa40358141cf810bd4e38cf9dbaf8a8971d0ee9e09ab9d38bc9db257f78b"
+      },
+      "controller": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\cloudanalyzer\\scripts\\benchmark_csv_writer_memory.py",
+        "bytes": 5247,
+        "sha256": "2e4645dda212b3b1a97e6b20cb36e6b891ea1fa58624d0a2bd3435cea6e88c8d"
+      },
+      "output": {
+        "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-memory-20261015\\tokyo-takanawadai-batch_rows\\points.csv",
+        "bytes": 34855671,
+        "sha256": "a916ea2fc7688fff17c66ee7cd13a6c9da61bd3dd823cfc8dae4855d0386e13f"
+      },
+      "environment": {
+        "platform": "Windows",
+        "python": "3.12.10",
+        "numpy": "2.3.4",
+        "open3d": "0.19.0",
+        "logicalCpus": 12,
+        "rayonNumThreads": 12,
+        "ompNumThreads": 12,
+        "openblasNumThreads": 1,
+        "disableRustCore": true,
+        "csvWriteBatchRows": 65536
+      },
+      "note": "One fresh process per dataset/policy; cloud load, imports, validation and GC collection precede tracing. Complete save_point_cloud runs under tracemalloc, including snapshot copy, row materialization, formatting, actual file writes and close. No wall-clock measurement is taken. Peak includes registered NumPy buffers and traced Python allocations, but excludes untraced native/OS buffers, source-cloud storage and tracer metadata. This is not process peak RSS, total application memory or a time result."
+    }
+  ],
+  "summary": {
+    "pandaset019": {
+      "wholeRowsPeakTracedBytes": 85272087,
+      "batchRowsPeakTracedBytes": 23418063,
+      "reductionPercent": 72.53724656698036
+    },
+    "autoware-planning": {
+      "wholeRowsPeakTracedBytes": 140795183,
+      "batchRowsPeakTracedBytes": 31747525,
+      "reductionPercent": 77.45127047421786
+    },
+    "tokyo-takanawadai": {
+      "wholeRowsPeakTracedBytes": 150881279,
+      "batchRowsPeakTracedBytes": 33263855,
+      "reductionPercent": 77.95362339154084
+    }
+  },
+  "note": "Six fresh, sequential processes after wall-clock trials; one save per source/policy. Tracemalloc peak only; not RSS, total memory or wall-clock timing."
+}

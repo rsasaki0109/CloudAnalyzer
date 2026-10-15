@@ -1,0 +1,309 @@
+{
+  "schemaVersion": 1,
+  "comparison": "csv-batched-write",
+  "createdAt": "2026-10-15T07:03:32.046281+00:00",
+  "dataset": "autoware-planning",
+  "provenance": {
+    "schemaVersion": 1,
+    "source": {
+      "path": "../demo_data/autoware/sample-map-planning/pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6",
+      "declaredPoints": 1757841,
+      "decodedPoints": 1757841,
+      "url": "https://docs.autoware.org/main/demos/planning-sim/",
+      "attribution": "Autoware official sample-map-planning survey, MGRS 54SVE",
+      "license": "No separate dataset license asserted"
+    },
+    "split": {
+      "method": "Alternating decoded source indices before LOD indexing: reference 0,2,4,...; compared 1,3,5,...",
+      "disjointSourceIndices": true,
+      "geometricDuplicatesPossible": true,
+      "coordinates": "Decoded f64 XYZ unchanged; no offset, noise, registration, averaging or generated points",
+      "attributes": "Only XYZ is exported; original source attributes are not modified",
+      "interpretation": "Two subsets of one measured cloud, not independent surveys or map-accuracy ground truth"
+    },
+    "decoderWasmSha256": "9afdff235e4d1161fc30c05b53fbdb2117440730b7a03673cb346b34c63ad40b",
+    "preparationScriptSha256": "1cb2870bb65f1f399cfc541023dc12191ab2da722c52c9b2eb83a2cbb6b0add5",
+    "inputs": {
+      "reference": {
+        "file": "reference.ply",
+        "points": 878921,
+        "bytes": 21094227,
+        "sha256": "aece79132b7ee5cf167c471b219b3cf2feda969b153f79a0f4fb28dd64bb7948"
+      },
+      "compared": {
+        "file": "compared.ply",
+        "points": 878920,
+        "bytes": 21094203,
+        "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+      }
+    }
+  },
+  "inputs": {
+    "manifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\benchmarks\\cpu\\io\\real-source\\csv-batch-inputs.json",
+      "bytes": 22835,
+      "sha256": "76de7c72552011a6015f49b2070fa054067a43965250a53e66a104968bebd064"
+    },
+    "baseline": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-batches-20261015\\io-baseline.py",
+      "bytes": 18240,
+      "sha256": "5ef37270a62c412e03a23cb1b214afe1ab761892f5f6b3945f1c0d1b4fc0bb29"
+    },
+    "geometry": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\compared.ply",
+      "bytes": 21094203,
+      "sha256": "642bb9ed7ab2ea79a443a527aac19692b8c6416c4d90895231adeed996f663cc"
+    },
+    "coordinateOracle": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-batch-inputs-20261015\\autoware-planning-xyz-f64.bin",
+      "bytes": 21094080,
+      "sha256": "4347defc1e19e82511532d990fc1eb12ad5e120aeda205639a0ccdfd2f989700"
+    },
+    "originalSource": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\demo_data\\autoware\\sample-map-planning\\pointcloud_map.pcd",
+      "bytes": 28125828,
+      "sha256": "2da791365627241513c56a88a78baaf17d86b5e90febcb8987ec92c9e99ad2c6"
+    },
+    "sourceManifest": {
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\c2c-real-autoware\\inputs.json",
+      "bytes": 1583,
+      "sha256": "61ca3dd02acf8e0ad165b8d21275746bd83202923ff1fc32450ec3b9ca0278df"
+    }
+  },
+  "sourceHashes": {
+    "cloudanalyzer/ca/io.py": "b63a3d9e208fd98570b7a8580f62ba96be479cb42630ed488841ffbc5186f90f",
+    "cloudanalyzer/ca/_rust.py": "17028d6d7e13cec75b1919face4a1fcb81cc34f72d33efbc01938c6eeac15200",
+    "cloudanalyzer/ca/__init__.py": "27a73a136bffd3143dfc56c537b6d402e53df3c1f80154dfeebd4500c52af85b",
+    "cloudanalyzer/ca/convert.py": "e509dfc50009da4ffa56f58d9244cc2ff6193da19552d051b06284a0c22597d3",
+    "cloudanalyzer/pyproject.toml": "8a6ef76b0819814b4d5d8df0b7d4455a06a85649f69dc69c337eee320c59490a",
+    "cloudanalyzer/tests/test_io_csv_write_batches.py": "44881ffb5049999f2937aaefd6856f00a206d6e29bc67311b29b12bd7f656c27",
+    "cloudanalyzer/tests/test_io.py": "86889024ac37a90fb185d16a92ecf147f24c6f2490bb0f7457a87a952068db72",
+    "cloudanalyzer/tests/test_cli.py": "31dcb5a5902c74ab76940974247f5d22eeccc1412027cc2a657783f512d82461",
+    "cloudanalyzer/scripts/benchmark_csv_writer.py": "a273809c027e4bf636e2b26e3358317456d16345450613822f09f0f80f04b79a"
+  },
+  "libraries": {
+    "open3d": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\open3d\\cpu\\pybind.cp312-win_amd64.pyd",
+      "bytes": 151434752,
+      "sha256": "ab1b2f4a1126a11886a2a9f3eeab5ceaeac0bab1b53ee319eb363df7ef629d88"
+    },
+    "csv": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\csv.py",
+      "bytes": 16837,
+      "sha256": "8486cb388fe0db87ec3f3330117ee3a9d70fc98baa82b24a1d369e71e571f018"
+    },
+    "csvParser": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\python312.dll",
+      "bytes": 6945272,
+      "sha256": "9a0e3435aaa680d868150f87ab3e388ad2eebc22f87e036155c7b4eda8cd2120",
+      "moduleOrigin": "built-in"
+    },
+    "numpyCore": {
+      "path": "C:\\Users\\rsasa\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\site-packages\\numpy\\_core\\_multiarray_umath.cp312-win_amd64.pyd",
+      "bytes": 4529152,
+      "sha256": "3f6e41b6062981b9196dbf6b1e78e66bdb4debdfec170bfd6f5a99cc1c9ad221"
+    }
+  },
+  "environment": {
+    "platform": "Windows",
+    "python": "3.12.10",
+    "numpy": "2.3.4",
+    "open3d": "0.19.0",
+    "logicalCpus": 12,
+    "rayonNumThreads": 12,
+    "ompNumThreads": 12,
+    "openblasNumThreads": 1,
+    "disableRustCore": true,
+    "csvWriteBatchRows": 65536
+  },
+  "startPolicy": "whole_rows",
+  "repeats": 5,
+  "warmupRounds": 1,
+  "points": 878920,
+  "parity": {
+    "whole_rows": {
+      "millis": 5682.5569,
+      "output": {
+        "bytes": 43410912,
+        "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+      },
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-batches-20261015\\autoware-planning-initial\\01-whole_rows.csv"
+    },
+    "batch_rows": {
+      "millis": 9388.2723,
+      "output": {
+        "bytes": 43410912,
+        "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+      },
+      "path": "C:\\Users\\rsasa\\Workspace\\CloudAnalyzer\\notes\\csv-write-batches-20261015\\autoware-planning-initial\\02-batch_rows.csv"
+    }
+  },
+  "firstUntraced": {
+    "order": [
+      "whole_rows",
+      "batch_rows"
+    ],
+    "observations": {
+      "whole_rows": {
+        "millis": 7065.5602,
+        "output": {
+          "bytes": 43410912,
+          "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+        }
+      },
+      "batch_rows": {
+        "millis": 7429.3835,
+        "output": {
+          "bytes": 43410912,
+          "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+        }
+      }
+    }
+  },
+  "warmups": [
+    {
+      "order": [
+        "batch_rows",
+        "whole_rows"
+      ],
+      "observations": {
+        "batch_rows": {
+          "millis": 6539.4854,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        },
+        "whole_rows": {
+          "millis": 5522.415,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        }
+      }
+    }
+  ],
+  "trials": [
+    {
+      "order": [
+        "whole_rows",
+        "batch_rows"
+      ],
+      "observations": {
+        "whole_rows": {
+          "millis": 5593.2325,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        },
+        "batch_rows": {
+          "millis": 10034.736,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "batch_rows",
+        "whole_rows"
+      ],
+      "observations": {
+        "batch_rows": {
+          "millis": 5403.9435,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        },
+        "whole_rows": {
+          "millis": 5234.8234,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "whole_rows",
+        "batch_rows"
+      ],
+      "observations": {
+        "whole_rows": {
+          "millis": 4904.653,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        },
+        "batch_rows": {
+          "millis": 4897.0552,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "batch_rows",
+        "whole_rows"
+      ],
+      "observations": {
+        "batch_rows": {
+          "millis": 4977.0344,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        },
+        "whole_rows": {
+          "millis": 4637.8307,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        }
+      }
+    },
+    {
+      "order": [
+        "whole_rows",
+        "batch_rows"
+      ],
+      "observations": {
+        "whole_rows": {
+          "millis": 4763.0516,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        },
+        "batch_rows": {
+          "millis": 5022.7324,
+          "output": {
+            "bytes": 43410912,
+            "sha256": "ddaeaa0de523452c381d3f537cfe790b72108c772c7e971c4950c6b5e507491a"
+          }
+        }
+      }
+    }
+  ],
+  "summary": {
+    "wholeRowsMedianMillis": 4904.653,
+    "batchRowsMedianMillis": 5022.7324,
+    "pairedShorteningPercent": -5.451983766037727,
+    "pairedSavedMedianMillis": -259.6808000000001,
+    "fasterTrials": 1
+  },
+  "note": "Complete save_point_cloud CSV function: path/parent handling, actual UTF-8 text-file open, canonical XYZ header, unchanged Python float formatting via csv.writer, all data writes, internal cleanup and close/flush. No fsync durability guarantee. Source loading, imports, fingerprints, output hashing/validation and removal are excluded. Candidate copies full XYZ into a stable numeric snapshot and materializes at most 65536 Python rows per batch; old writer materializes all Python rows. Entire existing measured compared subsets are used, without further thinning, generated coordinates or perturbation; not independent surveys. Excluded full-byte parity pair, first pair and one warm-up pair precede five default alternating timed pairs. Every save is hashed, both parity files are retained and checked byte-for-byte; all baseline parity CSV coordinates round-trip bitwise to the full oracle. Other outputs are removed outside timing. Fresh process per source/pass, warm pages. No peak RSS, cold CLI, complete conversion, other-format, parallel or GPU speed claim."
+}

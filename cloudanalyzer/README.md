@@ -111,6 +111,12 @@ are 46.61–60.15% shorter by median paired duration, with 30/30 faster pairs.
 Temporary Python row lists are bounded; the complete output remains in memory.
 [Parsing compatibility and measurements](../docs/cpu-csv-batch-filter.md).
 
+CSV export bounds temporary Python rows while retaining a numeric XYZ snapshot.
+Peak allocations traced during complete real-source saves decrease 72.54–77.95%,
+with identical CSV bytes. Save durations are mixed; no consistent speedup or
+process-RSS reduction is established.
+[Allocation scope and measurements](../docs/cpu-csv-batched-writes.md).
+
 Comparisons without a snapshot skip unused heatmap coloring. Six real-source
 comparisons with registration disabled are 78.45–82.21% shorter, with 60/60
 faster pairs and identical numeric/file reports. Snapshot colors and pixels

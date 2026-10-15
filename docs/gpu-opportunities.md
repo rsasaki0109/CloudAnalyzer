@@ -264,6 +264,14 @@ the optional Rust core; native loading and spatial/streaming COPC paths are
 unchanged. This establishes a CPU loading baseline, without adding whole
 comparison, registration or GPU speedup claims.
 
+The subsequent [batched CSV finite validation](cpu-csv-batch-filter.md) reduces
+per-point Python/NumPy calls while preserving the existing CSV parser and all
+coordinate bits. Six complete loads of CSV format exports from the measured
+source corpus are 46.61–60.15% shorter by median paired duration, with 30/30
+faster pairs. Temporary Python row lists are bounded, but the full output cloud
+remains in memory. This is a CPU loading result; it does not establish whole
+comparison, registration, GPU or streaming-reader speedups.
+
 The subsequent [scoped batch reference reuse](cpu-batch-reference.md) loads one
 reference snapshot per batch and shares its native tree across candidates.
 Complete three-candidate batch functions improve by 23.83–33.78% across six

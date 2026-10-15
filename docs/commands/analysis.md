@@ -147,6 +147,12 @@ Four complete real-source loads with the optional Rust core disabled are
 identical coordinates. Native and streaming paths retain their existing code.
 [Input provenance and measurements](../cpu-las-packed-coordinates.md).
 
+Whole-file CSV loading batches finite-point checks without changing parsing,
+coordinate bits or strict error handling. Six real-source CSV format-export
+loads are 46.61–60.15% shorter by median paired duration, with 30/30 faster pairs.
+This applies with or without the native core and retains the whole output cloud.
+[CSV scope and measurements](../cpu-csv-batch-filter.md).
+
 `ca compare` computes heatmap colors when `--snapshot` is requested. Numeric-only
 calls skip unused coloring; registered comparisons retain the same solver and
 reports. With `--register none` and no snapshot, six real-source function

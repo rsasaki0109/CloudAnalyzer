@@ -24,6 +24,7 @@ With baseline comparison and a custom project label:
 
 | Input | Required | Default | Description |
 |---|---|---|---|
+| `python_base_image` | no | `python:3.10-slim` | Python 3.10-compatible image used for the Docker build; override for registry availability |
 | `config` | yes | — | Path to `cloudanalyzer.yaml` relative to the repository root |
 | `baseline` | no | `""` | Baseline summary JSON for ↑/↓ deltas |
 | `comment` | no | `true` | Post or update a PR comment on pull requests |
@@ -54,6 +55,7 @@ permissions:
 - Comment posting is skipped with a warning on non-PR events.
 - QA artifacts (`summary.json`, rendered comment) upload as `cloudanalyzer-action-results`.
 - When the caller repository is CloudAnalyzer itself, the action editable-installs the checkout for dogfooding.
+- Internal self-QA selects a digest-pinned GHCR Python 3.10 / Debian bookworm image to avoid anonymous Docker Hub HTTP 429. Other callers retain the existing default unless they explicitly set `python_base_image`; custom images need Python/pip and Debian-compatible apt packages.
 
 ## Examples
 

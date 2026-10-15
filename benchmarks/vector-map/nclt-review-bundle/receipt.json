@@ -1,0 +1,407 @@
+{
+  "schema": "cloudanalyzer.review_bundle_evidence.v1",
+  "tool": "export_mapping_run",
+  "request": {
+    "finished_job_dir": "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june",
+    "bundle_path": "/workspace/.cloudanalyzer-env/exports/nclt-hd-preflight-portable-review.zip",
+    "attribution": "Derived from the University of Michigan North Campus Long-Term (NCLT)\ndataset, session 2012-06-15. N. Carlevaris-Bianco, A. K. Ushani and R. M.\nEustice, \"University of Michigan North Campus long-term vision and lidar dataset\",\nIJRR 2016. Dataset: http://robots.engin.umich.edu/nclt/\nOpen Database License https://opendatacommons.org/licenses/odbl/1-0/\nContents under Database Contents License https://opendatacommons.org/licenses/dbcl/1-0/\nThis derived database is offered under the same terms. Input is the bounded,\nthinned MCAP subset described in CloudAnalyzer web/public/samples/ATTRIBUTION.md.",
+    "max_bundle_bytes": 1073741824
+  },
+  "bundle": {
+    "path": "/workspace/.cloudanalyzer-env/exports/nclt-hd-preflight-portable-review.zip",
+    "sha256": "7181f3d3f22d9322024dc77852de8fa78afefb2bd04ac62058d9b05907bee3bc",
+    "bytes": 18131032
+  },
+  "verified_files": 15,
+  "uncompressed_bytes": 22976636,
+  "state_before": {
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/run.json": "b0d8c8f0b429c2d28552a07ec78037b252ef3cc365c74e8d7ca067c72e47a404",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/job.json": "6ac5429312507bc555ab6af6fe4082b52bfee4397e3f12a3172b3dc656b1ae0e",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/run.json": "6d2e7860a5f070be9bc0c18cb3c49bc0a856733916fd5ede3158953330f82d29",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/job.json": "b3e41f27b00cfccee6960357003aab5e3d959d66cd22ca845b918d4a1712da7f"
+  },
+  "state_after": {
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/run.json": "b0d8c8f0b429c2d28552a07ec78037b252ef3cc365c74e8d7ca067c72e47a404",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/job.json": "6ac5429312507bc555ab6af6fe4082b52bfee4397e3f12a3172b3dc656b1ae0e",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/run.json": "6d2e7860a5f070be9bc0c18cb3c49bc0a856733916fd5ede3158953330f82d29",
+    "/workspace/.cloudanalyzer-env/nclt-hd-preflight-june/hd-repair/job.json": "b3e41f27b00cfccee6960357003aab5e3d959d66cd22ca845b918d4a1712da7f"
+  },
+  "exact_delivered_artifacts": true,
+  "standalone_interpreter_flags": [
+    "-I",
+    "-S"
+  ],
+  "standalone_result": {
+    "integrity_verified": true,
+    "verified_files": 15,
+    "uncompressed_bytes": 22976636,
+    "resumable_mapping_job": false,
+    "pointcloud_summary": {
+      "frames": 238,
+      "map_points": 646309,
+      "path_length_m": 253.8,
+      "quality_status": "generated_unverified",
+      "coordinate_frame": "local_slam_metres"
+    }
+  },
+  "extent": {
+    "trajectory_length_m": 252.5863381996826,
+    "generated_length_m": 124.0,
+    "retained_fraction": 0.49092124650847735,
+    "minimum_retained_fraction": 0.9,
+    "passes_requested_extent": false
+  },
+  "routes": {
+    "before": {
+      "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+      "connected_components": 13,
+      "longest_route_station_span_m": 66,
+      "routes": [
+        {
+          "lane_ids": [
+            3
+          ],
+          "from_m": 0,
+          "to_m": 8,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            6
+          ],
+          "from_m": 14,
+          "to_m": 18,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            51,
+            54,
+            9
+          ],
+          "from_m": 22,
+          "to_m": 36,
+          "station_span_m": 14
+        },
+        {
+          "lane_ids": [
+            12
+          ],
+          "from_m": 48,
+          "to_m": 114,
+          "station_span_m": 66
+        },
+        {
+          "lane_ids": [
+            57
+          ],
+          "from_m": 118,
+          "to_m": 120,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            15
+          ],
+          "from_m": 146,
+          "to_m": 148,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            18
+          ],
+          "from_m": 152,
+          "to_m": 156,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            21
+          ],
+          "from_m": 168,
+          "to_m": 172,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            24,
+            45,
+            27,
+            48,
+            30
+          ],
+          "from_m": 180,
+          "to_m": 202,
+          "station_span_m": 22
+        },
+        {
+          "lane_ids": [
+            33
+          ],
+          "from_m": 210,
+          "to_m": 212,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            36
+          ],
+          "from_m": 220,
+          "to_m": 222,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            39
+          ],
+          "from_m": 232,
+          "to_m": 238,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            42
+          ],
+          "from_m": 242,
+          "to_m": 246,
+          "station_span_m": 4
+        }
+      ],
+      "legal_routing_verified": false,
+      "routes_total": 13,
+      "routes_limited_in_response": false
+    },
+    "after": {
+      "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+      "connected_components": 13,
+      "longest_route_station_span_m": 66,
+      "routes": [
+        {
+          "lane_ids": [
+            3
+          ],
+          "from_m": 0,
+          "to_m": 8,
+          "station_span_m": 8
+        },
+        {
+          "lane_ids": [
+            6
+          ],
+          "from_m": 14,
+          "to_m": 18,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            51,
+            54,
+            9
+          ],
+          "from_m": 22,
+          "to_m": 36,
+          "station_span_m": 14
+        },
+        {
+          "lane_ids": [
+            12
+          ],
+          "from_m": 48,
+          "to_m": 114,
+          "station_span_m": 66
+        },
+        {
+          "lane_ids": [
+            57
+          ],
+          "from_m": 118,
+          "to_m": 120,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            15
+          ],
+          "from_m": 146,
+          "to_m": 148,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            18
+          ],
+          "from_m": 152,
+          "to_m": 156,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            21
+          ],
+          "from_m": 168,
+          "to_m": 172,
+          "station_span_m": 4
+        },
+        {
+          "lane_ids": [
+            24,
+            45,
+            27,
+            48,
+            30
+          ],
+          "from_m": 180,
+          "to_m": 202,
+          "station_span_m": 22
+        },
+        {
+          "lane_ids": [
+            33
+          ],
+          "from_m": 210,
+          "to_m": 212,
+          "station_span_m": 2
+        },
+        {
+          "lane_ids": [
+            36,
+            62,
+            63
+          ],
+          "from_m": 220,
+          "to_m": 226.0,
+          "station_span_m": 6.0
+        },
+        {
+          "lane_ids": [
+            39
+          ],
+          "from_m": 232,
+          "to_m": 238,
+          "station_span_m": 6
+        },
+        {
+          "lane_ids": [
+            42
+          ],
+          "from_m": 242,
+          "to_m": 246,
+          "station_span_m": 4
+        }
+      ],
+      "legal_routing_verified": false,
+      "routes_total": 13,
+      "routes_limited_in_response": false
+    },
+    "added": [],
+    "retained_edges": [
+      [
+        24,
+        45
+      ],
+      [
+        27,
+        48
+      ],
+      [
+        45,
+        27
+      ],
+      [
+        48,
+        30
+      ],
+      [
+        51,
+        54
+      ],
+      [
+        54,
+        9
+      ]
+    ],
+    "new_endpoint_pairs": [
+      {
+        "from": "baseline:36",
+        "to": "addition:3",
+        "reason": "Explicitly adopt the inspected coincident observed endpoint link"
+      },
+      {
+        "from": "addition:3",
+        "to": "addition:6",
+        "reason": "Explicitly adopt the inspected coincident observed endpoint link"
+      }
+    ],
+    "legal_routing_verified": false
+  },
+  "audit_summaries": [
+    {
+      "name": "legacy.editable",
+      "source_support": {
+        "samples": 1041,
+        "supported": 678,
+        "height_mismatches": 363,
+        "insufficient_returns": 0
+      },
+      "needs_review_lane_ids": [
+        6,
+        12,
+        18,
+        21,
+        24,
+        33,
+        36,
+        39,
+        42
+      ]
+    },
+    {
+      "name": "legacy.reopened_osm",
+      "source_support": {
+        "samples": 1041,
+        "supported": 678,
+        "height_mismatches": 363,
+        "insufficient_returns": 0
+      },
+      "needs_review_lane_ids": [
+        6,
+        12,
+        18,
+        21,
+        24,
+        33,
+        36,
+        39,
+        42
+      ]
+    },
+    {
+      "name": "ground_consensus.editable",
+      "source_support": {
+        "samples": 1041,
+        "supported": 1041,
+        "height_mismatches": 0,
+        "insufficient_returns": 0
+      },
+      "needs_review_lane_ids": []
+    },
+    {
+      "name": "ground_consensus.reopened_osm",
+      "source_support": {
+        "samples": 1041,
+        "supported": 1041,
+        "height_mismatches": 0,
+        "insufficient_returns": 0
+      },
+      "needs_review_lane_ids": []
+    }
+  ],
+  "geometry_regenerated": false,
+  "native_processing_performed": false,
+  "mapping_attempts_spent": 0,
+  "raw_logs_included": false,
+  "resumable_mapping_job": false,
+  "independent_accuracy_established": false,
+  "deployment_ready": false
+}

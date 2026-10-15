@@ -6,7 +6,100 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Mapping-run connections accept a recorded path within 0.25 m of the connector
+  edge. Lanes span the whole observed surface and the vehicle drives near one side,
+  so a connector curving between lane-end centres can leave the path just outside
+  on a bend (0.16 and 0.20 m on the NCLT drives). Candidates and refused pairs report
+  `recorded_path_outside_m`.
+- Saved patch checks and HD plan pages without explained traces are again exactly
+  as before explained support was added, so the frozen NCLT benchmark packets
+  verify (their verifiers had failed since then).
+
+- Mapping runs accept a new connector or HD addition trace that is explained by
+  returns above the road: the lowest supported layer meets every sample and both
+  ends, and every low-quantile shortfall lies above the trace with returns at every
+  sample. Any sample below a trace or without returns, and any consensus shortfall,
+  still holds it. Explained traces stay listed. The junction preview now checks both
+  estimators with the same rule (`explain_returns_above`), so it no longer offers
+  pairs the consensus audit would refuse. On the NCLT drives April 6→9 and June
+  15→18 now pass the ground checks but stay apart because the recorded path leaves
+  the connector; June's canopy-covered 130–134 m addition becomes adoptable.
+  Selection still requires both estimators.
+
 ### Added
+
+- Mapping-run `review_holds` lists `below_trace_samples`: every sample, from either
+  ground estimator, whose source ground lies below a trace, with its location.
+  Those are where a trace may float, even when they hold no trace. The estimator
+  disagreement note now counts the consensus estimator's below-trace samples too.
+  A draft refused for uninspected candidates names them; the docs say defers also
+  need inspection, that problem stations run along each lane, and that a retry
+  child needs no closing when the root finishes its baseline.
+
+- Source audits split height mismatches by direction (`height_mismatches_above`).
+  Mapping-run diagnoses report `mismatch_direction` per ground estimator in
+  `review_holds`, and explain an estimator disagreement as returns above the road
+  when every low-quantile mismatch lies above the trace and the consensus estimator
+  holds nothing. On both NCLT drives every low-quantile mismatch lay above the trace;
+  about nine in ten sat under returns more than 2 m overhead, such as tree canopy.
+
+- Mapping-run responses are easier for an agent to act on:
+  - every draft diagnosis reports `routes.after` (separate pieces and longest route);
+  - draft and finish diagnoses end with `review_holds`, gathering held traces from
+    both estimators, estimator and reopened-OSM agreement, extent, export warnings
+    and the unverified assumptions;
+  - `native_heading` and `native_height` connection holds carry the measured
+    alignment, turn, rise and grade with their limits;
+  - the docs show splitting a candidate between include and defer, and explain
+    `both_estimators_verified: false` on offered connections;
+  - a missing run directory gets a mapping hint instead of point-cloud formats.
+
+- Mapping-run evidence says more about why something is missing:
+  - a `native_unsupported` connection hold names the road ends or connector traces
+    (`center`, `left`, `right`) that lacked ground support, with their fractions;
+  - `inspect_hd_plan` returns `gap_exclusions`, counting per gap the source section
+    pairs left out as occupied, extending beyond the free extent or below the lane
+    width, so an empty plan explains itself;
+  - corridor candidate index entries give `sections` and `sections_containing_path`.
+
+- Corridor cross sections record what ended each band edge, so an agent can tell a
+  narrow section's cause before deferring or including it:
+  - `left_step_m` / `right_step_m`: the surface step into the next bin (a curb, rut or
+    rough surface when small, an obstacle lying across the surface when large);
+  - `left_obstacle_m` / `right_obstacle_m`: the height of returns 0.2–3 m above that
+    bin, such as a post, vehicle or wall standing there.
+
+  Proposals and coverage are unchanged.
+
+- `ca bridge-sections` and the `measure_bridge_sections` MCP tool cut cross
+  sections along a bridge point cloud and write a member dimension table
+  (CSV/JSON) and a section drawing (SVG): deck length and skew, total and
+  effective width, cross slope and crown, curb width and height, parapet
+  height, visible outer-face depth and, only with returns beneath the deck,
+  slab thickness. Items are `observed`, `lower_bound`, `unobserved` or
+  `not_applicable`; nothing is assumed. Results on three public CC BY 4.0
+  bridges are in `benchmarks/bridge/figshare-rc-bridges`.
+- `ca bridge-plan` and the `draw_bridge_plan` MCP tool draw a bridge plan for
+  damage-map bases (SVG), with a member CSV: the deck outline and skew, the
+  girders and cross beams found beneath the slab, and elements numbered `Mg`,
+  `Cr` and `Ds` by row along the axis and column across. Members are drawn only
+  where the scan shows them; a deck scanned only from above has its underside
+  reported as `unobserved`. On the public Bridge_4 it finds three girders and
+  four cross beams (43 elements).
+- `ca bridge-plan` divides the deck into spans at piers given with `--supports`
+  (distances from the start) or detected as isolated vertical supports with open
+  space beneath the deck on both sides; elements record their span and the drawing
+  labels A1/A2 and P1, P2, …. No pier is reported on the dataset's nine single-span
+  bridges, all of which now have plans in the benchmark. Large scans run in under a
+  minute (Bridges 8 and 9 previously ran out of time).
+- `ca bridge-damage` and the `find_bridge_damage_candidates` MCP tool search a
+  bridge deck soffit for damage candidates (lighter, darker, rust-coloured or
+  receded regions against their 0.5 m surroundings) and place them on the
+  numbered plan elements, with a 2 cm soffit orthophoto under the plan. Bands
+  along members, edges and scan holes and straight joints or formwork seams are
+  left out; cracks are not searched. Candidates are for an inspector to confirm.
 
 - Optional Rust acceleration: `pip install "cloudanalyzer[fast]"` installs
   `cloudanalyzer-core` (the web viewer's Rust core as a Python extension).
@@ -14,6 +107,117 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   used by `ca compare` and friends) run multi-threaded with results identical
   to Open3D, and LAS/LAZ loading no longer needs laspy. Set
   `CA_DISABLE_RUST_CORE=1` to force the previous implementations.
+
+### Fixed
+
+- Corridor proposals no longer split one drive into pieces that meet at the same
+  station. When a stored start was too wide to be supported, the previous release
+  started a new candidate from a trimmed section at that station. The junction
+  check never offers a zero gap, so the lanes stayed in separate components (two
+  such junctions each on the bundled April and June drives). The track's last
+  section is now narrowed in place when the trace into it stays supported.
+  Coverage is unchanged, and the candidates drop from 4 to 2 (April) and 6 to 4
+  (June).
+- Connection proposals say why consecutive pieces stay apart. Each refused pair is
+  listed in `rejected` with a hold: `touching_pieces`, or the native reason
+  (`native_heading`, `native_height`, `native_unsupported`, `native_geometry`).
+  Previously only counts were reported. The native junction report adds
+  `rejections` and `touching_ends`.
+
+- Corridor proposals no longer defer an interval as a source gap only because a
+  path-containing band is far wider than the road. When no edge inset of up to 2 m is
+  supported, the two sections are also tried narrowed to 3, 2 and 1.5 m either side of
+  the path, and every trace is still checked against the source.
+  - On the bundled NCLT drives, mean end-to-end coverage over keyframe spacings 0.8–1.2
+    rises from 91.6% to 93.4%. All 10 runs improve, and the lowest rises from 89.4%
+    to 90.9%.
+  - At the default spacing, April goes from 92.8% to 94.4% and June from 89.7% to 91.3%.
+  - The 1.2 km winter drive goes from 83.5% to 86.6%, still below 90%; its stretches with
+    no candidate shrink from 122 m to 90 m.
+  - Also fixes two `manual_range_contains` lints reported by the current stable clippy.
+- `ca bridge-damage` leaves out three things that read as damage on the SemanticBridge
+  scans, where every candidate was checked by eye:
+  - a 0.2 m band beside straight seams of any kind (a joint's receded groove);
+  - cells whose 0.5 m neighbourhood has returns in fewer than half its cells (sparse
+    stretches), with the area reported as too sparse;
+  - for recess, neighbourhoods whose height interquartile range exceeds 2.4 cm (soffit
+    steps at haunches and skewed beam edges).
+
+  The 15 bridges go from 56 candidates to 9, two of which look plausible. The 8 figshare
+  bridges go from 83 to 44, keeping the light and recess candidates that looked
+  plausible there. Results are in `benchmarks/bridge/semanticbridge-tls`.
+- Bridge total widths include footways. The raised edge beyond each deck end was
+  searched only 1.2 m out, so a footway was cut there.
+  - A raised edge still running past 1.2 m is now followed up to 4 m, with its level
+    drifting along its cross slope. It is reported as footway width and step height;
+    an edge ending within 1.2 m is a curb, measured as before.
+  - On the 20 SemanticBridge bridges, the plan's median width error against the
+    published widths drops from 1.83 m to 0.52 m; 10 bridges are within 0.5 m, up from 4.
+  - On the figshare bridges, curb and width values are unchanged except Bridge_1's
+    plan width (4.50 to 4.56 m).
+  - `ca bridge-damage` fixes its raster grid in the axis frame, so a deck edge moved
+    by millimetres no longer re-cuts every cell and changes the candidates.
+- `ca bridge-plan` finds piers on real multi-span bridges. Tested on the 20 labelled
+  TLS bridges of the public SemanticBridge dataset (CC BY 4.0), it now finds 32 of
+  their 33 piers (mean position error 0.15 m), where it had found 18. It reports one
+  abutment wall as a pier and nothing on the 6 single-span bridges or the 9 earlier
+  ones. Four changes:
+  - A row of columns counts by how much of the deck width it spans end to end.
+  - The search reaches 1 m beyond the deck edges.
+  - A pier may be 3.5 m long along the axis.
+  - Dense abutment faces no longer hide a pier's sparser returns.
+  Results are in `benchmarks/bridge/semanticbridge-tls`.
+- Bridge deck ends leave out deck-labelled points beyond an empty stretch of more
+  than 0.3 m along the axis. On the public Bridge_6 a few such points over the
+  approach had lengthened the deck from 16.53 m to 20.83 m; Bridge_5's committed
+  length moves from 15.880 to 15.876 m.
+- Mapping jobs tie keyframes to IMU gravity averaged along 15 m of path
+  (`gravity_smoothing_m`) instead of each keyframe's own up direction. A bag's
+  IMU up jitters about a degree from keyframe to keyframe while the odometry's
+  relative rotations do not, so the per-keyframe tie tilted scans against each
+  other and thickened the fused ground. Over five keyframe spacings of each
+  bundled NCLT drive, the scripted audited HD draft rises from 85.4% to 90.9%
+  (April) and 86.0% to 92.2% (June) on average, with 8 of 10 runs reaching the
+  90% extent (1 before). `posegraph_fix` keeps per-keyframe ties by default.
+- Agent-drafted corridor lanes are also cut where a piece's left and right
+  bounds would run opposite ways end to end, as on a tight turn where a wide
+  band's inner edge folds back. Such a piece was drafted with a
+  `boundary_direction_mismatch` validation error (4 of 83 sweep runs).
+- When no cut at source sections resolves an interval's Lanelet2 boundary
+  directions, the corridor lane builder now names every such interval across
+  all segments in one error (`centre curve N between sections i and j; ...`)
+  instead of stopping at the first. On a 1.1 km NCLT drive (2013-01-10) up to
+  17 such intervals appeared, one per draft, and exhausted the run's attempts.
+
+- Agent-drafted corridor lanes are cut at source sections where Lanelet2's
+  geometric direction inference would reverse a bound on reload, as ordinary
+  road building already does. Wide or curved pieces previously failed the
+  OSM round trip ("OSM reload changed lane orientation or shared boundaries").
+  With a fixed scripted policy on the bundled NCLT drives, the audited HD draft
+  now covers 86.4% (2012-04-29) and 77.6% (2012-06-15) of the drive; before,
+  April failed and June reached 57.8% (`scripts/mapping_e2e_coverage.py`).
+  Reports add `lane_intervals` and `lane_minimum_width_m` per lanelet.
+
+- Corridor proposals centre a 0.5 m lateral bin on the trajectory. Bin edges
+  previously lay on the path, so a surface split there left neither adjacent band
+  containing it and the station was deferred as `missing_trajectory_band`. On the
+  bundled NCLT maps, `trajectory_containing` coverage rises from 71.1% to 81.6%
+  (April) and 68.9% to 81.8% (June); the 0.25 m grid shift also loses 18 / 20 m
+  of previously covered intervals. Saved proposal packets are not regenerated.
+- Corridor bands split only at persistent height steps: a single bin off both
+  agreeing neighbours by at most 0.3 m no longer breaks a band. When an edge trace
+  between sections lacks support, the edge moves inward by up to 1 m (reported as
+  `support_inset`) instead of deferring the interval as `source_gap`. Across four
+  point-map variants of each bundled NCLT drive, mean `trajectory_containing`
+  coverage rises from 79.2% to 91.7% (April) and 79.1% to 85.8% (June), and the
+  stations covered by every variant rise from 144 to 198 m and 138 to 182 m.
+- Corridor bands that both contain the path connect when their centres stay
+  close along the road; a band widening on one side moved its centre sideways
+  past the old centre-distance bound and was deferred as `unmatched_bands`. An
+  unsupported edge trace may now move inward by up to 2 m (was 1 m). On the
+  bundled NCLT drives, the scripted audited HD draft rises from 86.4% to 88.0%
+  (April) and 77.6% to 82.6% (June); mean `trajectory_containing` coverage over
+  four map variants rises from 91.7% to 94.7% and 85.8% to 91.1%.
 
 ## [0.5.0] - 2026-09-27
 

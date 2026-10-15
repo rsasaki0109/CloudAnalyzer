@@ -1,0 +1,3146 @@
+{
+  "schema": "cloudanalyzer.mapping_geometry.v1",
+  "reason": "Calling agent chooses fresh unused-frame-trial inspected source intervals with the original fixed layout; no copied parent IDs or unobserved endpoint choices. Audit actual exported replacement before deciding whether to adopt.",
+  "coordinate_frame": "local_slam_metres",
+  "protocol": {
+    "options": {
+      "search_radius_m": 8.0,
+      "association": "trajectory_containing"
+    },
+    "sample_spacing_m": 2.0,
+    "bin_width_m": 0.5,
+    "half_window_m": 2.0,
+    "minimum_support_span_m": 1.0,
+    "maximum_adjacent_height_step_m": 0.08,
+    "maximum_reference_level_grade": 0.12,
+    "ground_estimator": {
+      "model": "lowest_supported_layer",
+      "layer_height_m": 0.15,
+      "xy_cell_m": 0.2,
+      "minimum_cells": 3,
+      "minimum_triangle_area_m2": 0.01
+    },
+    "interval_support_spacing_m": 0.5,
+    "interval_ground_radius_m": 0.75,
+    "interval_height_tolerance_m": 0.3,
+    "maximum_sections": 2048,
+    "profile_query_point_budget": 2000000,
+    "interval_support_sample_budget": 100000
+  },
+  "source_proposal_limited": false,
+  "decisions": [
+    {
+      "candidate_id": 1,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 10,
+      "to_m": 12
+    },
+    {
+      "candidate_id": 1,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 16,
+      "to_m": 18
+    },
+    {
+      "candidate_id": 2,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 26,
+      "to_m": 36
+    },
+    {
+      "candidate_id": 3,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 40,
+      "to_m": 44
+    },
+    {
+      "candidate_id": 4,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 56,
+      "to_m": 58
+    },
+    {
+      "candidate_id": 4,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 62,
+      "to_m": 104
+    },
+    {
+      "candidate_id": 5,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 110,
+      "to_m": 116
+    },
+    {
+      "candidate_id": 5,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 122,
+      "to_m": 124
+    },
+    {
+      "candidate_id": 6,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 128,
+      "to_m": 162
+    },
+    {
+      "candidate_id": 6,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 166,
+      "to_m": 172
+    },
+    {
+      "candidate_id": 6,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 178,
+      "to_m": 184
+    },
+    {
+      "candidate_id": 8,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 240,
+      "to_m": 242
+    },
+    {
+      "candidate_id": 1,
+      "action": "defer",
+      "reason": "Retain narrow, isolated, broadly or rapidly varying and/or search-limited intervals as unresolved, using the baseline conservative source-reading approach; do not widen or bridge implicitly.",
+      "from_m": 12,
+      "to_m": 16
+    },
+    {
+      "candidate_id": 2,
+      "action": "defer",
+      "reason": "Retain narrow, isolated, broadly or rapidly varying and/or search-limited intervals as unresolved, using the baseline conservative source-reading approach; do not widen or bridge implicitly.",
+      "from_m": 22.0,
+      "to_m": 26
+    },
+    {
+      "candidate_id": 3,
+      "action": "defer",
+      "reason": "Retain remaining narrow, isolated, broad/varying and/or search-limited observations; absence of a physical road is not inferred.",
+      "from_m": 44,
+      "to_m": 48.0
+    },
+    {
+      "candidate_id": 4,
+      "action": "defer",
+      "reason": "Retain narrow, isolated, broadly or rapidly varying and/or search-limited intervals as unresolved, using the baseline conservative source-reading approach; do not widen or bridge implicitly.",
+      "from_m": 52.0,
+      "to_m": 56
+    },
+    {
+      "candidate_id": 4,
+      "action": "defer",
+      "reason": "Retain narrow, isolated, broadly or rapidly varying and/or search-limited intervals as unresolved, using the baseline conservative source-reading approach; do not widen or bridge implicitly.",
+      "from_m": 58,
+      "to_m": 62
+    },
+    {
+      "candidate_id": 5,
+      "action": "defer",
+      "reason": "Retain narrow, isolated, broadly or rapidly varying and/or search-limited intervals as unresolved, using the baseline conservative source-reading approach; do not widen or bridge implicitly.",
+      "from_m": 116,
+      "to_m": 122
+    },
+    {
+      "candidate_id": 6,
+      "action": "defer",
+      "reason": "Retain narrow, isolated, broadly or rapidly varying and/or search-limited intervals as unresolved, using the baseline conservative source-reading approach; do not widen or bridge implicitly.",
+      "from_m": 162,
+      "to_m": 166
+    },
+    {
+      "candidate_id": 6,
+      "action": "defer",
+      "reason": "Retain narrow, isolated, broadly or rapidly varying and/or search-limited intervals as unresolved, using the baseline conservative source-reading approach; do not widen or bridge implicitly.",
+      "from_m": 172,
+      "to_m": 178
+    },
+    {
+      "candidate_id": 6,
+      "action": "defer",
+      "reason": "Retain remaining narrow, isolated, broad/varying and/or search-limited observations; absence of a physical road is not inferred.",
+      "from_m": 184,
+      "to_m": 200.0
+    },
+    {
+      "candidate_id": 7,
+      "action": "defer",
+      "reason": "Retain remaining narrow, isolated, broad/varying and/or search-limited observations; absence of a physical road is not inferred.",
+      "from_m": 218.0,
+      "to_m": 236.0
+    },
+    {
+      "candidate_id": 8,
+      "action": "defer",
+      "reason": "Retain remaining narrow, isolated, broad/varying and/or search-limited observations; absence of a physical road is not inferred.",
+      "from_m": 242,
+      "to_m": 244.0
+    }
+  ],
+  "segments": [
+    {
+      "candidate_id": 1,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 10,
+      "to_m": 12,
+      "curve_ids": {
+        "center": 1,
+        "left": 2,
+        "right": 3
+      },
+      "sections": [
+        {
+          "station_m": 10.0,
+          "center": [
+            7.6388304974894226,
+            5.418193085985133,
+            -1.1043839738699734
+          ],
+          "left": [
+            5.828958205438085,
+            6.754928769082147,
+            -0.9835565919187114
+          ],
+          "right": [
+            9.44870278954076,
+            4.08145740288812,
+            -1.2085152516114
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 12.0,
+          "center": [
+            8.997458836323354,
+            6.922484921164958,
+            -1.2460755398698204
+          ],
+          "left": [
+            7.8585793243230055,
+            7.898678271452621,
+            -1.2456997341215974
+          ],
+          "right": [
+            10.1363383483237,
+            5.946291570877296,
+            -1.2537328459808847
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 1,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 16,
+      "to_m": 18,
+      "curve_ids": {
+        "center": 4,
+        "left": 5,
+        "right": 6
+      },
+      "sections": [
+        {
+          "station_m": 16.0,
+          "center": [
+            12.33913418929769,
+            9.248899294940339,
+            -1.656954636804575
+          ],
+          "left": [
+            11.771981573129914,
+            11.166798643178938,
+            -1.6162038395273226
+          ],
+          "right": [
+            12.906286805465466,
+            7.330999946701738,
+            -1.7181874295234525
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 18.0,
+          "center": [
+            14.386827776335162,
+            10.746756953984264,
+            -1.8094018908146157
+          ],
+          "left": [
+            14.39611537982164,
+            12.996737785107383,
+            -1.779381642556667
+          ],
+          "right": [
+            14.377540172848683,
+            8.496776122861146,
+            -1.8002548677295631
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 2,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 26,
+      "to_m": 36,
+      "curve_ids": {
+        "center": 7,
+        "left": 8,
+        "right": 9
+      },
+      "sections": [
+        {
+          "station_m": 26.0,
+          "center": [
+            18.542173995385888,
+            3.1749446953744727,
+            -2.1859969938415227
+          ],
+          "left": [
+            21.480169551990436,
+            1.7854548215819595,
+            -2.3190481512075882
+          ],
+          "right": [
+            15.604178438781338,
+            4.564434569166986,
+            -2.039437414851294
+          ],
+          "support_span_m": 6.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 28.0,
+          "center": [
+            17.783277351273654,
+            1.0673798408174506,
+            -2.1763466011846573
+          ],
+          "left": [
+            20.139120745460648,
+            -0.35124692548350245,
+            -2.3345540233693196
+          ],
+          "right": [
+            15.427433957086658,
+            2.4860066071184033,
+            -2.0634190656635556
+          ],
+          "support_span_m": 5.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 30.0,
+          "center": [
+            16.895482370895003,
+            -0.5376959686378155,
+            -2.2051815618718664
+          ],
+          "left": [
+            19.340155108683565,
+            -1.797090745946891,
+            -2.3469546898797655
+          ],
+          "right": [
+            14.450809633106442,
+            0.7216988086712599,
+            -2.091863326016272
+          ],
+          "support_span_m": 5.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 32.0,
+          "center": [
+            16.06057980380642,
+            -2.2869936792627374,
+            -2.242675259582658
+          ],
+          "left": [
+            18.535367840639196,
+            -3.4861284393082306,
+            -2.2541739810136012
+          ],
+          "right": [
+            13.58579176697364,
+            -1.0878589192172448,
+            -2.0937494263382135
+          ],
+          "support_span_m": 5.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 34.0,
+          "center": [
+            12.483155745838259,
+            -2.7658453070879387,
+            -2.0188894329594866
+          ],
+          "left": [
+            13.5982366657385,
+            -3.3307298457986647,
+            -2.0672355664955115
+          ],
+          "right": [
+            11.368074825938017,
+            -2.2009607683772128,
+            -1.959419160436445
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 36.0,
+          "center": [
+            12.003426807358897,
+            -4.764567852793675,
+            -2.0337498808697174
+          ],
+          "left": [
+            13.12859210969043,
+            -5.309088782078483,
+            -2.0670950083610657
+          ],
+          "right": [
+            10.878261505027364,
+            -4.220046923508868,
+            -1.9834412351129949
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 3,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 40,
+      "to_m": 44,
+      "curve_ids": {
+        "center": 10,
+        "left": 11,
+        "right": 12
+      },
+      "sections": [
+        {
+          "station_m": 40.0,
+          "center": [
+            11.14981206832525,
+            -8.731949646177702,
+            -1.984203416064025
+          ],
+          "left": [
+            13.001860740371981,
+            -9.486877269443628,
+            -2.116615048798014
+          ],
+          "right": [
+            9.297763396278519,
+            -7.9770220229117745,
+            -2.003940198283051
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 42.0,
+          "center": [
+            10.60167900864805,
+            -10.677340972424652,
+            -2.049071291573025
+          ],
+          "left": [
+            12.216302721892239,
+            -11.352241161067049,
+            -2.1084446832781896
+          ],
+          "right": [
+            8.987055295403861,
+            -10.002440783782253,
+            -2.0636751988900968
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 44.0,
+          "center": [
+            9.825239241274936,
+            -12.54785941667563,
+            -2.037370891464572
+          ],
+          "left": [
+            11.417650150121718,
+            -13.273619361413397,
+            -2.115945369095865
+          ],
+          "right": [
+            8.232828332428154,
+            -11.822099471937863,
+            -2.0636751988900968
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "support_gap",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 4,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 56,
+      "to_m": 58,
+      "curve_ids": {
+        "center": 13,
+        "left": 14,
+        "right": 15
+      },
+      "sections": [
+        {
+          "station_m": 56.0,
+          "center": [
+            5.195357723975788,
+            -23.559071165095233,
+            -2.0066310344862406
+          ],
+          "left": [
+            6.323254779269767,
+            -24.097910874711342,
+            -1.9703433318784105
+          ],
+          "right": [
+            4.067460668681809,
+            -23.020231455479127,
+            -2.0798447693917663
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 58.0,
+          "center": [
+            4.019029577319956,
+            -25.17659784185486,
+            -1.9925917684828842
+          ],
+          "left": [
+            5.37297795955382,
+            -25.8222167528591,
+            -2.0189755285968993
+          ],
+          "right": [
+            2.665081195086092,
+            -24.53097893085062,
+            -1.9406847420753945
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 4,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 62,
+      "to_m": 104,
+      "curve_ids": {
+        "center": 16,
+        "left": 17,
+        "right": 18
+      },
+      "sections": [
+        {
+          "station_m": 62.0,
+          "center": [
+            1.8682427728204707,
+            -28.54975278078497,
+            -1.9700692042134762
+          ],
+          "left": [
+            3.4594414438232297,
+            -29.278166666840868,
+            -2.045673829191088
+          ],
+          "right": [
+            0.2770441018177121,
+            -27.82133889472907,
+            -1.8783537380765225
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 64.0,
+          "center": [
+            1.1784382131117306,
+            -30.384871566384035,
+            -1.9754194306119095
+          ],
+          "left": [
+            2.5038169003591744,
+            -31.08727553518706,
+            -2.045996862003015
+          ],
+          "right": [
+            -0.1469404741357132,
+            -29.68246759758101,
+            -1.9473511848528322
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 66.0,
+          "center": [
+            0.46719298272968085,
+            -32.259383207445694,
+            -1.9722112596202104
+          ],
+          "left": [
+            2.0605908763499454,
+            -32.98297366661891,
+            -2.0171895791820544
+          ],
+          "right": [
+            -1.1262049108905836,
+            -31.535792748272478,
+            -1.9412125625175427
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 68.0,
+          "center": [
+            -0.706230308699074,
+            -33.92978535110845,
+            -1.940383648655194
+          ],
+          "left": [
+            0.4461550979361584,
+            -34.41404548220965,
+            -1.9350724534290866
+          ],
+          "right": [
+            -1.8586157153343064,
+            -33.445525220007255,
+            -1.919725861388133
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 70.0,
+          "center": [
+            -1.076037155607283,
+            -35.93178111155386,
+            -1.9777545286219331
+          ],
+          "left": [
+            0.5132798634582509,
+            -36.66429146158903,
+            -1.9059278162121376
+          ],
+          "right": [
+            -2.665354174672817,
+            -35.19927076151869,
+            -1.9361257573012527
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 72.0,
+          "center": [
+            -2.142950412370932,
+            -37.643647850150536,
+            -2.000266925554213
+          ],
+          "left": [
+            -0.7716706998746605,
+            -38.25158859569745,
+            -1.9793173035642844
+          ],
+          "right": [
+            -3.514230124867203,
+            -37.03570710460362,
+            -1.9361257573012527
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 74.0,
+          "center": [
+            -2.9242074321034592,
+            -39.48372287709672,
+            -2.0026183191292115
+          ],
+          "left": [
+            -1.5481642276357839,
+            -40.08080335696383,
+            -1.9546337911526492
+          ],
+          "right": [
+            -4.300250636571135,
+            -38.886642397229615,
+            -1.9558737873392071
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 76.0,
+          "center": [
+            -3.956135715869222,
+            -41.19511118571532,
+            -1.9372018061123206
+          ],
+          "left": [
+            -2.3772495126792474,
+            -41.949841837919365,
+            -1.9638494598817222
+          ],
+          "right": [
+            -5.535021919059196,
+            -40.440380533511274,
+            -1.8894033555584635
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 78.0,
+          "center": [
+            -4.642253693954858,
+            -43.07765149754734,
+            -1.9867021981304742
+          ],
+          "left": [
+            -3.272984455130198,
+            -43.6901070074487,
+            -2.0162382482997163
+          ],
+          "right": [
+            -6.011522932779519,
+            -42.465195987645984,
+            -1.913964316936506
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 80.0,
+          "center": [
+            -5.568740682494534,
+            -44.80036729179256,
+            -1.9486419058893891
+          ],
+          "left": [
+            -3.9548451380122556,
+            -45.477006908945036,
+            -2.027895569830263
+          ],
+          "right": [
+            -7.182636226976812,
+            -44.12372767464008,
+            -1.892109103364249
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 82.0,
+          "center": [
+            -6.377969550358712,
+            -46.57400501396525,
+            -1.9443001125166095
+          ],
+          "left": [
+            -4.815173928594412,
+            -47.36151364540642,
+            -2.018176404235418
+          ],
+          "right": [
+            -7.940765172123012,
+            -45.786496382524085,
+            -1.892109103364249
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 84.0,
+          "center": [
+            -6.898175386460701,
+            -48.547000150049286,
+            -1.8741963064304685
+          ],
+          "left": [
+            -5.386585752591216,
+            -49.42881463097955,
+            -1.9188095366496687
+          ],
+          "right": [
+            -8.409765020330186,
+            -47.66518566911902,
+            -1.9177368462338327
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 86.0,
+          "center": [
+            -7.935956390426235,
+            -50.23508309174438,
+            -1.9079571623379807
+          ],
+          "left": [
+            -6.397105537010292,
+            -51.06841258896683,
+            -1.9628772472940843
+          ],
+          "right": [
+            -9.474807243842179,
+            -49.40175359452193,
+            -1.8127387135737627
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 88.0,
+          "center": [
+            -8.77864857985323,
+            -52.01953746946861,
+            -1.9009173135385298
+          ],
+          "left": [
+            -7.205936694932256,
+            -52.78705120030886,
+            -1.9552814489252377
+          ],
+          "right": [
+            -10.351360464774206,
+            -51.25202373862836,
+            -1.8127387135737627
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 90.0,
+          "center": [
+            -9.67631252363029,
+            -53.80124570839056,
+            -1.867176300641563
+          ],
+          "left": [
+            -8.089347671312925,
+            -54.53883811447221,
+            -1.9504538310498372
+          ],
+          "right": [
+            -11.263277375947656,
+            -53.06365330230891,
+            -1.7695866718914846
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 92.0,
+          "center": [
+            -10.46110623139136,
+            -55.63942446462817,
+            -1.867176300641563
+          ],
+          "left": [
+            -8.849978305828197,
+            -56.32262780732384,
+            -1.91680581374425
+          ],
+          "right": [
+            -12.072234156954524,
+            -54.9562211219325,
+            -1.7645351009587134
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 94.0,
+          "center": [
+            -11.237299725360408,
+            -57.48236070737611,
+            -1.8054661482987413
+          ],
+          "left": [
+            -9.602850362237199,
+            -58.10772082713602,
+            -1.905614132749914
+          ],
+          "right": [
+            -12.871749088483618,
+            -56.8570005876162,
+            -1.7878172351647974
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 96.0,
+          "center": [
+            -12.117668786110885,
+            -59.27029817058097,
+            -1.860148115908778
+          ],
+          "left": [
+            -10.287382202275069,
+            -60.07655558668988,
+            -1.8786637611535968
+          ],
+          "right": [
+            -13.947955369946701,
+            -58.46404075447206,
+            -1.7780554707999379
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 98.0,
+          "center": [
+            -12.398204425694168,
+            -61.35281505429248,
+            -1.8641016245490443
+          ],
+          "left": [
+            -11.305253751155119,
+            -61.959411149750274,
+            -1.859785970310713
+          ],
+          "right": [
+            -13.491155100233215,
+            -60.74621895883469,
+            -1.8390954459941158
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 100.0,
+          "center": [
+            -13.60278335072358,
+            -62.97429187786518,
+            -1.8240676675785032
+          ],
+          "left": [
+            -11.863505810164204,
+            -63.96166902815058,
+            -1.749507901378239
+          ],
+          "right": [
+            -15.342060891282955,
+            -61.98691472757977,
+            -1.7522708677773626
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 102.0,
+          "center": [
+            -14.810114438660673,
+            -64.58868843901729,
+            -1.792824806521899
+          ],
+          "left": [
+            -13.229374293731864,
+            -65.33952836484066,
+            -1.8778504914691232
+          ],
+          "right": [
+            -16.39085458358948,
+            -63.83784851319392,
+            -1.6941682995356246
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 104.0,
+          "center": [
+            -15.297467061888678,
+            -66.542014682702,
+            -1.7858928336619913
+          ],
+          "left": [
+            -13.431744038187283,
+            -67.26248508378072,
+            -1.817956631454881
+          ],
+          "right": [
+            -17.163190085590074,
+            -65.82154428162329,
+            -1.6879160064444423
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "support_gap",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 5,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 110,
+      "to_m": 116,
+      "curve_ids": {
+        "center": 19,
+        "left": 20,
+        "right": 21
+      },
+      "sections": [
+        {
+          "station_m": 110.0,
+          "center": [
+            -17.199307987646556,
+            -72.4490582558463,
+            -1.7653904371716207
+          ],
+          "left": [
+            -13.54378258904141,
+            -71.61261694878841,
+            -1.968273770467884
+          ],
+          "right": [
+            -20.854833386251702,
+            -73.28549956290418,
+            -1.700407611494312
+          ],
+          "support_span_m": 7.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 112.0,
+          "center": [
+            -15.916692183071888,
+            -74.28153910620007,
+            -1.8643408632189062
+          ],
+          "left": [
+            -13.804446900622594,
+            -72.9442209440671,
+            -1.956177467531053
+          ],
+          "right": [
+            -18.028937465521178,
+            -75.61885726833304,
+            -1.8328545754768646
+          ],
+          "support_span_m": 5.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 114.0,
+          "center": [
+            -13.801225202919541,
+            -74.78942961696188,
+            -1.9121214523895005
+          ],
+          "left": [
+            -12.740613879479799,
+            -73.0938165654105,
+            -1.8479187938980008
+          ],
+          "right": [
+            -14.861836526359284,
+            -76.48504266851327,
+            -1.9161347836683107
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 116.0,
+          "center": [
+            -12.26357581815331,
+            -76.00795813954144,
+            -2.0191725103445597
+          ],
+          "left": [
+            -11.625870853555286,
+            -74.65026436768896,
+            -2.041545387808698
+          ],
+          "right": [
+            -12.901280782751334,
+            -77.36565191139393,
+            -1.9784741063651115
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 5,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 122,
+      "to_m": 124,
+      "curve_ids": {
+        "center": 22,
+        "left": 23,
+        "right": 24
+      },
+      "sections": [
+        {
+          "station_m": 122.0,
+          "center": [
+            -6.947681570078942,
+            -78.77910767998785,
+            -2.2191843305672485
+          ],
+          "left": [
+            -6.535498149816321,
+            -77.59902089162836,
+            -2.2559740891013087
+          ],
+          "right": [
+            -7.3598649903415625,
+            -79.95919446834733,
+            -2.208785030135214
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 124.0,
+          "center": [
+            -5.029613002346557,
+            -79.33841695073308,
+            -2.2998849021301027
+          ],
+          "left": [
+            -4.7556440775386895,
+            -77.60999540833099,
+            -2.190982900634798
+          ],
+          "right": [
+            -5.303581927154425,
+            -81.06683849313517,
+            -2.3181520695591264
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 6,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 128,
+      "to_m": 162,
+      "curve_ids": {
+        "center": 25,
+        "left": 26,
+        "right": 27
+      },
+      "sections": [
+        {
+          "station_m": 128.0,
+          "center": [
+            -0.5709266401505843,
+            -80.70183403878734,
+            -2.453396138395009
+          ],
+          "left": [
+            -1.4570022069931872,
+            -77.8356745718622,
+            -2.4273675011546203
+          ],
+          "right": [
+            0.31514892669201866,
+            -83.56799350571247,
+            -2.5312536353412605
+          ],
+          "support_span_m": 6.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 130.0,
+          "center": [
+            1.6735362863881176,
+            -79.70622166536234,
+            -2.4975513624523638
+          ],
+          "left": [
+            -0.4706751198592034,
+            -76.32948397265967,
+            -2.28433005473421
+          ],
+          "right": [
+            3.8177476926354386,
+            -83.082959358065,
+            -2.648321843845301
+          ],
+          "support_span_m": 8.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 132.0,
+          "center": [
+            2.597210695176522,
+            -77.25407111348709,
+            -2.4990327335776565
+          ],
+          "left": [
+            1.2536218954143479,
+            -76.13279098026717,
+            -2.4080606004269236
+          ],
+          "right": [
+            3.940799494938696,
+            -78.37535124670698,
+            -2.552234714078958
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 134.0,
+          "center": [
+            3.466425468438806,
+            -75.33603383442382,
+            -2.4918384584115634
+          ],
+          "left": [
+            2.123495714943857,
+            -74.66779759088564,
+            -2.4080606004269236
+          ],
+          "right": [
+            4.809355221933755,
+            -76.00427007796198,
+            -2.5370301091039797
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 136.0,
+          "center": [
+            4.215722451639937,
+            -73.46952962841694,
+            -2.476757523802126
+          ],
+          "left": [
+            2.8317273384981334,
+            -72.89112014820451,
+            -2.4069610096994274
+          ],
+          "right": [
+            5.599717564781741,
+            -74.04793910862936,
+            -2.5445688048257695
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 138.0,
+          "center": [
+            5.46681430044855,
+            -71.84703411976437,
+            -2.490299014626139
+          ],
+          "left": [
+            3.641444853510059,
+            -71.02970531066521,
+            -2.3993302052129586
+          ],
+          "right": [
+            7.292183747387041,
+            -72.66436292886355,
+            -2.610266297850437
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 140.0,
+          "center": [
+            5.843840509483594,
+            -69.83346516191338,
+            -2.4544758614169497
+          ],
+          "left": [
+            4.48741639909832,
+            -69.19306401203502,
+            -2.360603609924424
+          ],
+          "right": [
+            7.200264619868867,
+            -70.47386631179174,
+            -2.460041377018383
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 142.0,
+          "center": [
+            6.945474573114485,
+            -68.12950805697878,
+            -2.4684411950982637
+          ],
+          "left": [
+            4.8869525917330785,
+            -67.22121996822632,
+            -2.458395671092597
+          ],
+          "right": [
+            9.00399655449589,
+            -69.03779614573122,
+            -2.5086364943409265
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "support_gap",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 144.0,
+          "center": [
+            7.459829506038053,
+            -66.17104962076722,
+            -2.4381925262453295
+          ],
+          "left": [
+            5.611111700400824,
+            -65.40800147345286,
+            -2.3774681763411873
+          ],
+          "right": [
+            9.308547311675284,
+            -66.93409776808157,
+            -2.470339108346558
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "support_gap",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 146.0,
+          "center": [
+            8.460676281427187,
+            -64.45657314500997,
+            -2.4641083605081846
+          ],
+          "left": [
+            6.885181671426035,
+            -63.694787916840426,
+            -2.3861501119215722
+          ],
+          "right": [
+            10.036170891428338,
+            -65.21835837317951,
+            -2.470339108346558
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 148.0,
+          "center": [
+            9.190420405522344,
+            -62.59289463413648,
+            -2.4558948227003237
+          ],
+          "left": [
+            7.844095470553049,
+            -61.93152547135375,
+            -2.3861501119215722
+          ],
+          "right": [
+            10.53674534049164,
+            -63.254263796919204,
+            -2.5259661907751036
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 150.0,
+          "center": [
+            10.456377864956037,
+            -60.95986509586249,
+            -2.492180199290278
+          ],
+          "left": [
+            9.086558043717298,
+            -60.34864201274025,
+            -2.430200266488478
+          ],
+          "right": [
+            11.826197686194778,
+            -61.57108817898474,
+            -2.4549560175420315
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 152.0,
+          "center": [
+            11.05090148321789,
+            -59.03728671461135,
+            -2.4962175215885347
+          ],
+          "left": [
+            9.454124602560913,
+            -58.321183654012266,
+            -2.3909357634677755
+          ],
+          "right": [
+            12.647678363874867,
+            -59.75338977521043,
+            -2.4708971681539245
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 154.0,
+          "center": [
+            11.86287521988063,
+            -57.21268561086092,
+            -2.4898311950941725
+          ],
+          "left": [
+            10.268884915508512,
+            -56.490401103504105,
+            -2.4059281969129276
+          ],
+          "right": [
+            13.456865524252748,
+            -57.93497011821774,
+            -2.56804320518395
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 156.0,
+          "center": [
+            12.473685401498205,
+            -55.291586265423696,
+            -2.4411750989083
+          ],
+          "left": [
+            10.638108531523569,
+            -54.49744675978623,
+            -2.4602831424036573
+          ],
+          "right": [
+            14.309262271472843,
+            -56.085725771061156,
+            -2.495890479293928
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "support_gap",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 158.0,
+          "center": [
+            13.453831170655965,
+            -53.53550511185106,
+            -2.4493259100046547
+          ],
+          "left": [
+            11.843436989196165,
+            -52.85057403479263,
+            -2.4062525120092095
+          ],
+          "right": [
+            15.064225352115763,
+            -54.22043618890949,
+            -2.461830946478268
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 160.0,
+          "center": [
+            14.260371068680309,
+            -51.72845122780737,
+            -2.456545527611772
+          ],
+          "left": [
+            12.679545256051027,
+            -50.97779168438907,
+            -2.4037399938682755
+          ],
+          "right": [
+            15.841196881309589,
+            -52.47911077122567,
+            -2.469001965605157
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 162.0,
+          "center": [
+            15.149088558427179,
+            -49.965147975929696,
+            -2.4683232600531393
+          ],
+          "left": [
+            13.605112452146573,
+            -49.141353230113374,
+            -2.411986042636563
+          ],
+          "right": [
+            16.693064664707784,
+            -50.78894272174602,
+            -2.5520156353420047
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 6,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 166,
+      "to_m": 172,
+      "curve_ids": {
+        "center": 28,
+        "left": 29,
+        "right": 30
+      },
+      "sections": [
+        {
+          "station_m": 166.0,
+          "center": [
+            16.78837113595164,
+            -46.28921509056566,
+            -2.468724481505764
+          ],
+          "left": [
+            15.397353103683132,
+            -45.72790516378382,
+            -2.4189071022458726
+          ],
+          "right": [
+            18.179389168220148,
+            -46.850525017347515,
+            -2.528589275337956
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 168.0,
+          "center": [
+            17.870166565807025,
+            -44.58911834624088,
+            -2.497821937030659
+          ],
+          "left": [
+            16.489942794629172,
+            -44.00176637214393,
+            -2.456516497167426
+          ],
+          "right": [
+            19.25039033698488,
+            -45.17647032033783,
+            -2.542035513020865
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 170.0,
+          "center": [
+            18.573280701725697,
+            -42.7333329651183,
+            -2.521461209006911
+          ],
+          "left": [
+            16.970707641965085,
+            -42.03029698586155,
+            -2.4545722750071404
+          ],
+          "right": [
+            20.175853761486312,
+            -43.43636894437506,
+            -2.56190325525513
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 172.0,
+          "center": [
+            19.223284815950173,
+            -40.88204274895532,
+            -2.53875798899329
+          ],
+          "left": [
+            17.640220152429542,
+            -40.1361162974118,
+            -2.4728166290149307
+          ],
+          "right": [
+            20.806349479470807,
+            -41.62796920049884,
+            -2.583026840105636
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 6,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 178,
+      "to_m": 184,
+      "curve_ids": {
+        "center": 31,
+        "left": 32,
+        "right": 33
+      },
+      "sections": [
+        {
+          "station_m": 178.0,
+          "center": [
+            20.989958501260865,
+            -35.217551957518054,
+            -2.5524510227856494
+          ],
+          "left": [
+            19.82068626374938,
+            -34.77562160714044,
+            -2.5384110748114903
+          ],
+          "right": [
+            22.15923073877235,
+            -35.65948230789567,
+            -2.622042763680473
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 180.0,
+          "center": [
+            22.014333267774212,
+            -33.46477251512696,
+            -2.5246349467797256
+          ],
+          "left": [
+            20.652267079854205,
+            -32.83646072968516,
+            -2.5384110748114903
+          ],
+          "right": [
+            23.37639945569422,
+            -34.093084300568755,
+            -2.5901752208810396
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "support_gap",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 182.0,
+          "center": [
+            22.898065745385296,
+            -31.676396225652667,
+            -2.52743827021122
+          ],
+          "left": [
+            21.582772803670668,
+            -30.95528286599575,
+            -2.522252131723506
+          ],
+          "right": [
+            24.21335868709992,
+            -32.397509585309585,
+            -2.611713535659935
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 184.0,
+          "center": [
+            23.481227229294706,
+            -29.748793088312087,
+            -2.5480969740547925
+          ],
+          "left": [
+            22.14213423819429,
+            -29.07290111381783,
+            -2.52635763858257
+          ],
+          "right": [
+            24.82032022039512,
+            -30.424685062806343,
+            -2.597784729997441
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "support_gap",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    },
+    {
+      "candidate_id": 8,
+      "action": "include",
+      "reason": "Read fresh unused-frame-trial sections: observed minimum width satisfies the unchanged lane hypothesis, path/level association holds, and neither boundary is a search limit. Preserve native continuous-support geometry; physical road width and traffic semantics remain unverified. Compare actual exported intervals, including losses.",
+      "from_m": 240,
+      "to_m": 242,
+      "curve_ids": {
+        "center": 34,
+        "left": 35,
+        "right": 36
+      },
+      "sections": [
+        {
+          "station_m": 240.0,
+          "center": [
+            8.955360159020673,
+            7.2808028732375405,
+            -1.3024204194721516
+          ],
+          "left": [
+            10.038626995163522,
+            5.906381918175715,
+            -1.2537328459808847
+          ],
+          "right": [
+            7.872093322877823,
+            8.655223828299366,
+            -1.2456635319258156
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 242.0,
+          "center": [
+            7.485418062536287,
+            5.818255632772521,
+            -1.1234445777570414
+          ],
+          "left": [
+            9.185297486461124,
+            3.9851135367753328,
+            -1.2536370312199119
+          ],
+          "right": [
+            5.785538638611451,
+            7.651397728769711,
+            -0.9691947743538877
+          ],
+          "support_span_m": 5.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    }
+  ],
+  "station_disposition": [
+    {
+      "from_m": 0.0,
+      "to_m": 10.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 10.0,
+      "to_m": 12,
+      "status": "included_geometry",
+      "included_candidate_id": 1,
+      "available_candidate_ids": [
+        1
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 12,
+      "to_m": 16,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        1
+      ],
+      "deferred_candidate_ids": [
+        1
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 16,
+      "to_m": 18.0,
+      "status": "included_geometry",
+      "included_candidate_id": 1,
+      "available_candidate_ids": [
+        1
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 18.0,
+      "to_m": 22.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 22.0,
+      "to_m": 26,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        2
+      ],
+      "deferred_candidate_ids": [
+        2
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 26,
+      "to_m": 36.0,
+      "status": "included_geometry",
+      "included_candidate_id": 2,
+      "available_candidate_ids": [
+        2
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 36.0,
+      "to_m": 40.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 40.0,
+      "to_m": 44,
+      "status": "included_geometry",
+      "included_candidate_id": 3,
+      "available_candidate_ids": [
+        3
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 44,
+      "to_m": 48.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        3
+      ],
+      "deferred_candidate_ids": [
+        3
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 48.0,
+      "to_m": 52.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 52.0,
+      "to_m": 56,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        4
+      ],
+      "deferred_candidate_ids": [
+        4
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 56,
+      "to_m": 58,
+      "status": "included_geometry",
+      "included_candidate_id": 4,
+      "available_candidate_ids": [
+        4
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 58,
+      "to_m": 62,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        4
+      ],
+      "deferred_candidate_ids": [
+        4
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 62,
+      "to_m": 104.0,
+      "status": "included_geometry",
+      "included_candidate_id": 4,
+      "available_candidate_ids": [
+        4
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 104.0,
+      "to_m": 110.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 110.0,
+      "to_m": 116,
+      "status": "included_geometry",
+      "included_candidate_id": 5,
+      "available_candidate_ids": [
+        5
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 116,
+      "to_m": 122,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        5
+      ],
+      "deferred_candidate_ids": [
+        5
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 122,
+      "to_m": 124.0,
+      "status": "included_geometry",
+      "included_candidate_id": 5,
+      "available_candidate_ids": [
+        5
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 124.0,
+      "to_m": 128.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 128.0,
+      "to_m": 162,
+      "status": "included_geometry",
+      "included_candidate_id": 6,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 162,
+      "to_m": 166,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [
+        6
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 166,
+      "to_m": 172,
+      "status": "included_geometry",
+      "included_candidate_id": 6,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 172,
+      "to_m": 178,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [
+        6
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 178,
+      "to_m": 184,
+      "status": "included_geometry",
+      "included_candidate_id": 6,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 184,
+      "to_m": 200.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [
+        6
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 200.0,
+      "to_m": 216.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 216.0,
+      "to_m": 218.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "unmatched_bands"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 218.0,
+      "to_m": 236.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        7
+      ],
+      "deferred_candidate_ids": [
+        7
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 236.0,
+      "to_m": 240.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 240.0,
+      "to_m": 242,
+      "status": "included_geometry",
+      "included_candidate_id": 8,
+      "available_candidate_ids": [
+        8
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 242,
+      "to_m": 244.0,
+      "status": "agent_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        8
+      ],
+      "deferred_candidate_ids": [
+        8
+      ],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 244.0,
+      "to_m": 250.4805260889724,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    }
+  ],
+  "summary": {
+    "segments": 12,
+    "reference_curves": 36,
+    "trajectory_length_m": 250.4805260889724,
+    "included_station_length_m": 118,
+    "unresolved_station_length_m": 132.4805260889724,
+    "lane_count": null,
+    "complete_width_resolved": false,
+    "road_semantics_inferred": false,
+    "source_quality_passed": false,
+    "deployment_ready": false,
+    "included_station_fraction": 0.4710945071956835,
+    "minimum_retained_fraction": 0.9,
+    "meets_requested_station_extent": false
+  },
+  "warnings": [
+    "Included source curves remain review geometry. No complete width, lane, direction, speed, legal use, connectivity, georeference or full-width interior is established.",
+    "Other reference curves use the editable IR; standalone unknown ways are discarded by the Lanelet2 reader, so this stage does not publish OSM.",
+    "Station coverage is input-path extent, not unique road length or a source-quality pass. Separate candidates are not joined or smoothed."
+  ],
+  "source_warnings": [
+    "Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves.",
+    "Explicit trajectory-containing association excludes off-path bands from matching but retains them in every original profile. This resolves geometric association only, not physical road branches or lane identity; unsupported path intervals remain deferred."
+  ],
+  "input_artifacts": {
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "pointcloud": {
+      "map": {
+        "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+        "sha256": "bef9b3eea139e07110a4d0ade285f52c911fbf07e329af4388aabb1c06165474",
+        "bytes": 22802030
+      },
+      "trajectory": {
+        "path": "run/pointcloud-retry/reference.txt",
+        "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+        "bytes": 47336
+      },
+      "graph": {
+        "path": "run/pointcloud-retry/reference.g2o",
+        "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+        "bytes": 94035
+      },
+      "fusion_graph": {
+        "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+        "sha256": "8af60955c59e71ec7bd4a7a9186ec6629a4bd938e2d77e2df4509b4a9df91f6d",
+        "bytes": 98339
+      },
+      "fusion_trajectory": {
+        "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+        "sha256": "e0170603b9b86638d8273d372f910530e81f4d00aa87396e2fa50470c8a1dc5f",
+        "bytes": 50423
+      },
+      "fusion_scans": {
+        "path": "run/pointcloud-retry/fusion-scans.json",
+        "sha256": "e9cb6e978003e882ab9a04070742b7c64e4027ca482dfc667d01d0b1615e684e",
+        "bytes": 52377
+      }
+    },
+    "native": {
+      "version": "0.1.0",
+      "extension": {
+        "path": "native/cloudanalyzer_core/_core.abi3.so",
+        "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+        "bytes": 7451080
+      }
+    },
+    "corridor_proposal": {
+      "path": "run/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "c0045c30b683b7b06a26210aca8568714ad4884b7baeb67467aa259bf1de3eff",
+      "bytes": 324667
+    }
+  },
+  "native_validation": {
+    "validation": {
+      "counts": {
+        "errors": 0,
+        "infos": 36,
+        "warnings": 0
+      },
+      "issues": [
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 1,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 1,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:1 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 2,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 2,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:2 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 3,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 3,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:3 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 4,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 4,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:4 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 5,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 5,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:5 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 6,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 6,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:6 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 7,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 7,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:7 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 8,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 8,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:8 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 9,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 9,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:9 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 10,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 10,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:10 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 11,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 11,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:11 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 12,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 12,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:12 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 13,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 13,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:13 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 14,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 14,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:14 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 15,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 15,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:15 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 16,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 16,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:16 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 17,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 17,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:17 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 18,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 18,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:18 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 19,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 19,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:19 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 20,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 20,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:20 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 21,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 21,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:21 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 22,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 22,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:22 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 23,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 23,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:23 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 24,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 24,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:24 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 25,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 25,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:25 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 26,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 26,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:26 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 27,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 27,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:27 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 28,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 28,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:28 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 29,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 29,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:29 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 30,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 30,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:30 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 31,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 31,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:31 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 32,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 32,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:32 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 33,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 33,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:33 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 34,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 34,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:34 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 35,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 35,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:35 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 36,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 36,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:36 is not used by any lane",
+          "severity": "info"
+        }
+      ]
+    },
+    "import_issues": [],
+    "georeference": null
+  },
+  "editing": {
+    "file": "run/pointcloud-retry/geometry-01/vector_map.json",
+    "show_virtual_lines": true
+  }
+}

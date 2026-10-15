@@ -20,6 +20,31 @@ the end of ground coverage provide boundary candidates. Missing features use a w
 missing ground splits the road. Coverage edges can be scan gaps. Review the draft geometry,
 lane counts, directions, repeated passes and junctions before using it.
 
+The experimental `--local-ground-height` flag (Python/MCP `local_ground_height=True`)
+uses the lowest spatially supported 0.15 m height layer within 0.75 m under the trace
+for seed-road Z. At least three occupied 0.2 m XY cells must span a triangle of
+0.01 m². Each cell contributes its lowest return, and their median supplies Z.
+Dense overhead returns therefore cannot outvote a supported lower layer.
+It replaces the median of longitudinal cross-section bins; missing coherent
+support defers sections. `extraction.local_ground_sections` and
+`extraction.local_ground_estimator` record its use and protocol.
+It does not change lane/traffic assumptions or identify the correct surface level.
+Applied paint-corridor fitting has its own height estimation and bypasses this
+seed stage. The default remains false. Its earlier 15th-percentile implementation
+did not improve bundled NCLT; both old and current runs retain their protocol and
+binary hashes. Mapping jobs now save the unchanged quantile audit alongside an
+alternative ground-consensus audit. Estimator disagreement remains a review hold;
+neither establishes the physical road level or independent accuracy.
+See the [NCLT evidence](../../benchmarks/vector-map/nclt-agentic-mapping/README.md).
+
+In the Web panel, an inconsistent boundary direction stops generation and shows the
+rejected section in red over the source cloud, with a yellow cross at the problem.
+Use **Focus problem**, then **Edit lane counts and width** and **Rebuild with current
+settings**. Existing geometry and Undo history survive a failed attempt. For fitted
+roads, **Boundary search margin** must stay within 45% of lane width; narrowing lanes
+may require reducing this margin explicitly. Changing inputs marks the old preview
+as stale; switching sources, successful builds and map edits clear it.
+
 Inferred lines are anchored to detected outer edges when available, while keeping their
 inferred label. This reduces dependence on the trajectory being exactly at the lane centre.
 `--no-anchor-width-prior` disables that adjustment; the MCP option is `anchor_width_prior`.

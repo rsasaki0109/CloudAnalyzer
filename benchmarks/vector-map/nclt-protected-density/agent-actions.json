@@ -1,0 +1,103 @@
+{
+  "start": {
+    "request": {
+      "tool": "continue_mapping_run",
+      "finished_job_dir": "env/nclt-continuation-june",
+      "out_dir": "env/nclt-protected-density-june",
+      "max_attempts": 6,
+      "reason": "Explicit new session after the rejected density trial: preserve the accumulated pair and inspect retained source-query neighborhoods before another bounded point trial."
+    },
+    "status": "needs_agent",
+    "revision": 0
+  },
+  "gaps": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 0
+      },
+      "reason": "Inspect the unchanged 118m seed and its missing original source intervals before a new protected-density preview."
+    },
+    "status": "needs_agent",
+    "revision": 1
+  },
+  "preview": {
+    "request": {
+      "action": {
+        "type": "inspect_protected_density",
+        "candidate_id": 1,
+        "gap_ids": [
+          1
+        ],
+        "bounds_xy": [
+          7,
+          5,
+          15,
+          10
+        ]
+      },
+      "reason": "Keep the exact old lane hulls plus all saved .75m source-query neighborhoods at every height. Inspect protected/editable point counts for the same box that previously regressed lanes6/39; do not change existing HD or audit thresholds."
+    },
+    "status": "needs_agent",
+    "revision": 2
+  },
+  "retry": {
+    "request": {
+      "action": {
+        "type": "retry_local_density",
+        "candidate_id": 1,
+        "options": {
+          "scan_voxel_m": 0.1,
+          "map_voxel_m": 0.05
+        },
+        "preview_file": {
+          "path": "run/local-points-01-7fe747d0117c7bd5.json",
+          "sha256": "aa9ead696a530221349f91f56f3a1bb98390a8f88f3eafbfb88b54758d431561",
+          "bytes": 59838
+        }
+      },
+      "reason": "Use the exact inspected protection hulls/radius and old records. Replace only unprotected box points at original frames/poses and require the same complete four retained-HD audits; no forced adoption."
+    },
+    "status": "needs_agent",
+    "revision": 3
+  },
+  "candidates": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          1,
+          2
+        ]
+      },
+      "reason": "Inspect fresh candidates bracketing the chosen 8-14m original gap. A passing retained point check does not authorize unsupported new lane geometry."
+    },
+    "status": "needs_agent",
+    "revision": 1
+  },
+  "child-finish": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "finish",
+        "candidate_id": null
+      },
+      "reason": "Retained HD support passes, but fresh inspected candidates stop at8m and start at14m. Do not fabricate a lane in the selected gap or claim point count improves HD extent. Retain this trial point map as unadopted evidence; no child HD candidate is generated."
+    },
+    "status": "finished",
+    "revision": 2
+  },
+  "finish": {
+    "request": {
+      "action": {
+        "type": "finish",
+        "candidate_id": 1
+      },
+      "reason": "Keep the exact adopted prior pair because this protected density trial offers no eligible HD addition in the selected 8-14m gap. All old HD source neighborhoods pass unchanged and point records outside/protected regions are exact. Original source extent remains118m and global longest route66m. Point-trial evidence is preserved without adopting an unsupported pair."
+    },
+    "status": "finished",
+    "revision": 4
+  }
+}

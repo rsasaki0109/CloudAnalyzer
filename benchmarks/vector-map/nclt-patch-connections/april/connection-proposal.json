@@ -1,0 +1,519 @@
+{
+  "candidate_id": 3,
+  "inputs": {
+    "parent_map": {
+      "path": "run/pointcloud-retry/candidate-03/lanelet2_map.osm",
+      "sha256": "d04c1bebf3a6e9a56360ab83e53416dff3dd038583009f58f43a2106b317dd68",
+      "bytes": 46791
+    },
+    "parent_projector": {
+      "path": "run/pointcloud-retry/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "run/pointcloud-retry/candidate-03/vector_map.json",
+      "sha256": "d93679aa32c3dbe5b53a34798f945a8621c4cd96c75e6c1083fc9b0ca2484b53",
+      "bytes": 19368
+    },
+    "parent_report": {
+      "path": "run/pointcloud-retry/candidate-03/report.json",
+      "sha256": "a844ab8279c1a2d72713d36278708438ac1899114fdc676333f512adb2a6d48e",
+      "bytes": 37670
+    },
+    "parent_audits": {
+      "path": "run/pointcloud-retry/candidate-03/source-quality.json",
+      "sha256": "c36ebb027fb77a2c1437947783651624b372e6dbed992cf29167ca89345073ce",
+      "bytes": 197519
+    },
+    "geometry_editable_map": {
+      "path": "run/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "cb3974f46b4434e0f2dae0dd2d85906e971b8c5b4eb38f55fc6bd527ef0110b0",
+      "bytes": 2553
+    },
+    "geometry_report": {
+      "path": "run/pointcloud-retry/geometry-01/report.json",
+      "sha256": "4b7f777a97aa564a090a8b6054cff83347d3f5d6faaf83826a65137fe637c948",
+      "bytes": 15370
+    },
+    "proposal": {
+      "path": "run/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "3992235b755b66e996c49b8f64a6edd38c2584c39eecaf741c8757e9e6f8fcae",
+      "bytes": 324691
+    },
+    "pointcloud_map": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+      "sha256": "bef9b3eea139e07110a4d0ade285f52c911fbf07e329af4388aabb1c06165474",
+      "bytes": 22802030
+    },
+    "pointcloud_trajectory": {
+      "path": "run/pointcloud-retry/reference.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "pointcloud_graph": {
+      "path": "run/pointcloud-retry/reference.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "pointcloud_fusion_graph": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+      "sha256": "8af60955c59e71ec7bd4a7a9186ec6629a4bd938e2d77e2df4509b4a9df91f6d",
+      "bytes": 98339
+    },
+    "pointcloud_fusion_trajectory": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+      "sha256": "e0170603b9b86638d8273d372f910530e81f4d00aa87396e2fa50470c8a1dc5f",
+      "bytes": 50423
+    },
+    "pointcloud_fusion_scans": {
+      "path": "run/pointcloud-retry/fusion-scans.json",
+      "sha256": "8168234e74575ea8ec80c20c487ef3e49748e7cf4cccd125d3ff06ab6667cba6",
+      "bytes": 53229
+    },
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "inherited_patch_inputs_gap_evidence": {
+      "path": "run/gaps-03.json",
+      "sha256": "f214e52702e112458301064d65cf822635781df7938a6b51a1102e9aa298ef1d",
+      "bytes": 437272
+    },
+    "inherited_patch_inputs_root_layout": {
+      "path": "run/layout-hypothesis.json",
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "inherited_patch_inputs_child_layout": {
+      "path": "run/pointcloud-retry/layout-hypothesis.json",
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "inherited_patch_inputs_baseline_map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "inherited_patch_inputs_baseline_projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "inherited_patch_inputs_baseline_editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "49220caf6929f2d35fac0fb2138cde857b0059046c7615877f1846b4c4c367ad",
+      "bytes": 18383
+    },
+    "inherited_patch_inputs_baseline_report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "acc0030e0b5fb38b4e065d74fac498fa98be0a3a208837b34e4e60237437a690",
+      "bytes": 39104
+    },
+    "inherited_patch_inputs_baseline_audits": {
+      "path": "run/candidate-03/source-quality.json",
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "inherited_patch_inputs_baseline_geometry_editable_map": {
+      "path": "run/geometry-01/vector_map.json",
+      "sha256": "4adf519d4a8cfb9afdb9213cffa9267c4452f1dc35facbecfd51d322e6b74b16",
+      "bytes": 33766
+    },
+    "inherited_patch_inputs_baseline_geometry_report": {
+      "path": "run/geometry-01/report.json",
+      "sha256": "d4f0efe815fe972b8a4e33abdeecd6b3a19086c8d4f01d348d05ed0a89f069c6",
+      "bytes": 89217
+    },
+    "inherited_patch_inputs_baseline_connection_parent_map": {
+      "path": "run/candidate-02/lanelet2_map.osm",
+      "sha256": "cf9393064ba4753aeb9bf7be3573d1812c21e355a5db87911788a0af34878eed",
+      "bytes": 41037
+    },
+    "inherited_patch_inputs_baseline_connection_parent_projector": {
+      "path": "run/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "inherited_patch_inputs_baseline_connection_parent_editable_map": {
+      "path": "run/candidate-02/vector_map.json",
+      "sha256": "e7adf7d9d05ea77609bab1e40e3d91414965ac4b6d48976df32ca917304665c4",
+      "bytes": 16563
+    },
+    "inherited_patch_inputs_baseline_connection_parent_report": {
+      "path": "run/candidate-02/report.json",
+      "sha256": "f879dc7aa80236e083bd04851565c6a8b71bfa24b55daf2682f6cee421238648",
+      "bytes": 33893
+    },
+    "inherited_patch_inputs_baseline_connection_parent_audits": {
+      "path": "run/candidate-02/source-quality.json",
+      "sha256": "6f1b1347915c447d9cc981ccc37db37eb3c026c0e07cd26b212b5179c8c65888",
+      "bytes": 192513
+    },
+    "inherited_patch_inputs_baseline_connection_geometry_editable_map": {
+      "path": "run/geometry-01/vector_map.json",
+      "sha256": "4adf519d4a8cfb9afdb9213cffa9267c4452f1dc35facbecfd51d322e6b74b16",
+      "bytes": 33766
+    },
+    "inherited_patch_inputs_baseline_connection_geometry_report": {
+      "path": "run/geometry-01/report.json",
+      "sha256": "d4f0efe815fe972b8a4e33abdeecd6b3a19086c8d4f01d348d05ed0a89f069c6",
+      "bytes": 89217
+    },
+    "inherited_patch_inputs_baseline_connection_proposal": {
+      "path": "run/connections-02.json",
+      "sha256": "3658c06caa6e0e5f904d944c4875d372761e81bf14cb9590cd05e44a00f6b1ff",
+      "bytes": 11195
+    },
+    "inherited_patch_inputs_baseline_connection_pointcloud_map": {
+      "path": "run/pointcloud/trajectory_map.ply",
+      "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+      "bytes": 21878254
+    },
+    "inherited_patch_inputs_baseline_connection_pointcloud_trajectory": {
+      "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "inherited_patch_inputs_baseline_connection_pointcloud_graph": {
+      "path": "run/pointcloud/trajectory_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "inherited_patch_inputs_baseline_connection_source": {
+      "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "inherited_patch_inputs_baseline_connection_native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "inherited_patch_inputs_baseline_proposal": {
+      "path": "run/corridor-proposals-trajectory.json",
+      "sha256": "a4277c6f0c355ba8d653ea3b344616e908dcf3c8dbad424d2221edb316494605",
+      "bytes": 323985
+    },
+    "inherited_patch_inputs_addition_map": {
+      "path": "run/pointcloud-retry/candidate-02/lanelet2_map.osm",
+      "sha256": "e3a30d66333c7e127c4efa0f14cd7dff03027903b574476df9ee297cfec4426e",
+      "bytes": 2300
+    },
+    "inherited_patch_inputs_addition_projector": {
+      "path": "run/pointcloud-retry/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "inherited_patch_inputs_addition_editable_map": {
+      "path": "run/pointcloud-retry/candidate-02/vector_map.json",
+      "sha256": "fdae4bd61b32e5621eead15aa48957f76d22bc23520408737db890b9f6080161",
+      "bytes": 1658
+    },
+    "inherited_patch_inputs_addition_report": {
+      "path": "run/pointcloud-retry/candidate-02/report.json",
+      "sha256": "ab4259402c1570fdef76eee7d58e7ac491757b9ee220b35c727f36d75c825d2d",
+      "bytes": 12489
+    },
+    "inherited_patch_inputs_addition_audits": {
+      "path": "run/pointcloud-retry/candidate-02/source-quality.json",
+      "sha256": "203af2c92d66ad2a5435b789e09365c22296df95f21dfe0496429b25fb787e73",
+      "bytes": 8923
+    },
+    "inherited_patch_inputs_addition_geometry_editable_map": {
+      "path": "run/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "cb3974f46b4434e0f2dae0dd2d85906e971b8c5b4eb38f55fc6bd527ef0110b0",
+      "bytes": 2553
+    },
+    "inherited_patch_inputs_addition_geometry_report": {
+      "path": "run/pointcloud-retry/geometry-01/report.json",
+      "sha256": "4b7f777a97aa564a090a8b6054cff83347d3f5d6faaf83826a65137fe637c948",
+      "bytes": 15370
+    },
+    "inherited_patch_inputs_addition_proposal": {
+      "path": "run/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "3992235b755b66e996c49b8f64a6edd38c2584c39eecaf741c8757e9e6f8fcae",
+      "bytes": 324691
+    },
+    "inherited_patch_inputs_baseline_pointcloud_map": {
+      "path": "run/pointcloud/trajectory_map.ply",
+      "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+      "bytes": 21878254
+    },
+    "inherited_patch_inputs_baseline_pointcloud_trajectory": {
+      "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "inherited_patch_inputs_baseline_pointcloud_graph": {
+      "path": "run/pointcloud/trajectory_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "inherited_patch_inputs_trial_pointcloud_map": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+      "sha256": "bef9b3eea139e07110a4d0ade285f52c911fbf07e329af4388aabb1c06165474",
+      "bytes": 22802030
+    },
+    "inherited_patch_inputs_trial_pointcloud_trajectory": {
+      "path": "run/pointcloud-retry/reference.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "inherited_patch_inputs_trial_pointcloud_graph": {
+      "path": "run/pointcloud-retry/reference.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "inherited_patch_inputs_trial_pointcloud_fusion_graph": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+      "sha256": "8af60955c59e71ec7bd4a7a9186ec6629a4bd938e2d77e2df4509b4a9df91f6d",
+      "bytes": 98339
+    },
+    "inherited_patch_inputs_trial_pointcloud_fusion_trajectory": {
+      "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+      "sha256": "e0170603b9b86638d8273d372f910530e81f4d00aa87396e2fa50470c8a1dc5f",
+      "bytes": 50423
+    },
+    "inherited_patch_inputs_trial_pointcloud_fusion_scans": {
+      "path": "run/pointcloud-retry/fusion-scans.json",
+      "sha256": "8168234e74575ea8ec80c20c487ef3e49748e7cf4cccd125d3ff06ab6667cba6",
+      "bytes": 53229
+    },
+    "inherited_patch_preview": {
+      "path": "run/pointcloud-retry/patch-preview-02.json",
+      "sha256": "31f84e54bc2fd8698a553d23f73defb6997688c36edf367c4395b0824f3a0eee",
+      "bytes": 14627
+    },
+    "inherited_patch_checks": {
+      "path": "run/pointcloud-retry/candidate-03-patch-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "inherited_patch_audits": {
+      "path": "run/pointcloud-retry/candidate-03-patch-audits.json",
+      "sha256": "c36ebb027fb77a2c1437947783651624b372e6dbed992cf29167ca89345073ce",
+      "bytes": 197519
+    }
+  },
+  "options": {
+    "max_gap": 10.0,
+    "min_ground_support": 1.0,
+    "check_boundary_support": true
+  },
+  "pieces": [
+    {
+      "lane": 3,
+      "from_m": 10,
+      "to_m": 18,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 42,
+      "from_m": 26.0,
+      "to_m": 30.0,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 6,
+      "from_m": 42,
+      "to_m": 44,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 9,
+      "from_m": 56,
+      "to_m": 58,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 12,
+      "from_m": 62,
+      "to_m": 70,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 15,
+      "from_m": 76,
+      "to_m": 104,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 18,
+      "from_m": 110,
+      "to_m": 116,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 39,
+      "from_m": 116,
+      "to_m": 122,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 21,
+      "from_m": 122,
+      "to_m": 124,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 24,
+      "from_m": 128,
+      "to_m": 162,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 27,
+      "from_m": 166,
+      "to_m": 172,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 30,
+      "from_m": 178,
+      "to_m": 184,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 33,
+      "from_m": 198,
+      "to_m": 200,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 36,
+      "from_m": 240,
+      "to_m": 242,
+      "minimum_width_m": 2.5
+    }
+  ],
+  "baseline_routes": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 12,
+    "longest_route_station_span_m": 34,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 10,
+        "to_m": 18,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          42
+        ],
+        "from_m": 26.0,
+        "to_m": 30.0,
+        "station_span_m": 4.0
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 42,
+        "to_m": 44,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          9
+        ],
+        "from_m": 56,
+        "to_m": 58,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 62,
+        "to_m": 70,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 76,
+        "to_m": 104,
+        "station_span_m": 28
+      },
+      {
+        "lane_ids": [
+          18,
+          39,
+          21
+        ],
+        "from_m": 110,
+        "to_m": 124,
+        "station_span_m": 14
+      },
+      {
+        "lane_ids": [
+          24
+        ],
+        "from_m": 128,
+        "to_m": 162,
+        "station_span_m": 34
+      },
+      {
+        "lane_ids": [
+          27
+        ],
+        "from_m": 166,
+        "to_m": 172,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          30
+        ],
+        "from_m": 178,
+        "to_m": 184,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          33
+        ],
+        "from_m": 198,
+        "to_m": 200,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          36
+        ],
+        "from_m": 240,
+        "to_m": 242,
+        "station_span_m": 2
+      }
+    ],
+    "legal_routing_verified": false
+  },
+  "candidates": [],
+  "rejected": [],
+  "native_summary": {
+    "cloud_points": 712558,
+    "malformed_lanes": 0,
+    "open_entries": 12,
+    "open_exits": 12,
+    "rejected_geometry": 0,
+    "rejected_heading": 2,
+    "rejected_height": 0,
+    "traffic_rules_inferred": false,
+    "unsupported_candidates": 6,
+    "warnings": [
+      "Connection drafts follow geometry and nearby ground, not permitted turns. Review every branch, traffic rule and ground level before using the map. Existing rules are retained; no new right-of-way or signal rules are created."
+    ]
+  },
+  "traffic_rules_inferred": false
+}

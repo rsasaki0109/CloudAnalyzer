@@ -1,0 +1,165 @@
+{
+  "april-start": {
+    "request": {
+      "tool": "continue_mapping_run",
+      "finished_job_dir": "env/nclt-hd-height-april",
+      "out_dir": "env/nclt-hd-plan-application-april",
+      "max_attempts": 3,
+      "reason": "New bounded negative/held validation on the second bundled NCLT drive. Read supported-plan reports first; retain baseline if no eligible interval, do not spend HD attempts on held source geometry."
+    },
+    "status": "needs_agent",
+    "revision": 0
+  },
+  "april-gaps0": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 0
+      },
+      "reason": "Read second-session gaps and occupancy without generating or adopting HD intervals."
+    },
+    "status": "needs_agent",
+    "revision": 1
+  },
+  "april-gaps8": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 8
+      },
+      "reason": "Read second-session gaps and occupancy without generating or adopting HD intervals."
+    },
+    "status": "needs_agent",
+    "revision": 2
+  },
+  "april-gaps16": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 16
+      },
+      "reason": "Read second-session gaps and occupancy without generating or adopting HD intervals."
+    },
+    "status": "needs_agent",
+    "revision": 3
+  },
+  "april-gaps24": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 24
+      },
+      "reason": "Read second-session gaps and occupancy without generating or adopting HD intervals."
+    },
+    "status": "needs_agent",
+    "revision": 4
+  },
+  "april-plan0": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          3,
+          5,
+          7,
+          9,
+          10,
+          12,
+          16,
+          17
+        ],
+        "offset": 0
+      },
+      "reason": "Fresh second-drive source preflight over available unoccupied gap ranges. Reject unsupported choices before generation; make no independent accuracy claim."
+    },
+    "status": "needs_agent",
+    "revision": 5
+  },
+  "april-plan1": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          18,
+          21,
+          23
+        ],
+        "offset": 0
+      },
+      "reason": "Fresh second-drive source preflight over available unoccupied gap ranges. Reject unsupported choices before generation; make no independent accuracy claim."
+    },
+    "status": "needs_agent",
+    "revision": 6
+  },
+  "april-reject": {
+    "request": {
+      "tool": "apply_supported_hd_plan",
+      "expect_error": true,
+      "plan_files": [
+        "april-run/hd-plan-01-b8ca65c90e034851/page-0000.json"
+      ],
+      "interval_ids": [
+        2
+      ],
+      "connect_endpoints": true,
+      "reason": "Negative gate check: this freshly inspected interval has incomplete quantile support and must be rejected before any child or HD allocation."
+    },
+    "status": "rejected",
+    "revision": null
+  },
+  "april-plan1-next": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          18,
+          21,
+          23
+        ],
+        "offset": 8
+      },
+      "reason": "Fresh second-drive source preflight over available unoccupied gap ranges. Reject unsupported choices before generation; make no independent accuracy claim."
+    },
+    "status": "needs_agent",
+    "revision": 7
+  },
+  "april-apply": {
+    "request": {
+      "tool": "apply_supported_hd_plan",
+      "plan_files": [
+        "april-run/hd-plan-01-1f4f1d41e4cd99a3/page-0000.json"
+      ],
+      "interval_ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "connect_endpoints": true,
+      "reason": "Choose the contiguous observed 184\u2013198 m source gap supported by both estimators; permit inspected exact endpoint pairs, preserve all baseline lanes and keep root adoption as a separate reviewed decision."
+    },
+    "status": "ready_for_agent_decision",
+    "revision": null
+  },
+  "april-finish": {
+    "request": {
+      "action": {
+        "type": "finish_retry",
+        "candidate_id": 3
+      },
+      "reason": "Explicitly adopt the fresh April supported 14 m gap after four source audits, zero old-lane or extent loss and exact point/proposal retention checks. Independent accuracy and traffic semantics remain unverified; full-drive extent still unmet."
+    },
+    "status": "finished",
+    "revision": 10
+  }
+}

@@ -1,0 +1,84 @@
+{
+  "schema": "cloudanalyzer.bridge_plan.v1",
+  "source": {
+    "file": "Bridge_6.las",
+    "sha256": "cc1fd4915388946c8441577d145644df57845528d8473bdeb2c30f46a6d7ff1b",
+    "bytes": 330619381,
+    "dataset": "https://doi.org/10.6084/m9.figshare.28091453.v2"
+  },
+  "points": 12716121,
+  "classes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "member_classes": [
+    1,
+    2
+  ],
+  "axis": {
+    "origin_xy": [
+      0.2576305010719053,
+      -0.5193559883405973
+    ],
+    "direction_xy": [
+      -0.15182096435798448,
+      0.9884080102778466
+    ],
+    "source": "deck_side_edges"
+  },
+  "options": {
+    "spacing_m": 0.25,
+    "thickness_m": 0.1,
+    "margin_m": 0.3
+  },
+  "deck": {
+    "start_m": -9.915254001662607,
+    "end_m": 6.612506038473435,
+    "length_m": 16.52776004013604,
+    "skew_deg": 8.294362515080346,
+    "skew_slope": 0.14578373788095594,
+    "left_edge_m": 3.6786040343455992,
+    "right_edge_m": -4.592354178537589,
+    "width_m": 8.270958212883189,
+    "slab_thickness_m": 0.653685954883491,
+    "sections_measured": 60,
+    "sections_with_soffit": 53
+  },
+  "underside": "no_girders_observed",
+  "girders": [],
+  "partially_observed_members": [],
+  "cross_beams": [],
+  "supports": [],
+  "spans": [
+    {
+      "number": 1,
+      "from_m": -9.915254001662607,
+      "to_m": 6.612506038473435,
+      "length_m": 16.52776004013604
+    }
+  ],
+  "elements": [
+    {
+      "id": "Ds0101",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -9.915254001662607,
+        6.612506038473435
+      ],
+      "lateral_m": [
+        -4.592354178537589,
+        3.6786040343455992
+      ],
+      "status": "single_panel"
+    }
+  ],
+  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
+  "note": "The soffit was scanned and shows no member protruding 0.2 m or more below it (a slab deck, or members outside the scan); the deck is divided only lengthwise.",
+  "warnings": []
+}

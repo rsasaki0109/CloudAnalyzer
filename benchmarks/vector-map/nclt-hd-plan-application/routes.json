@@ -1,0 +1,240 @@
+{
+  "before": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 13,
+    "longest_route_station_span_m": 66,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 0,
+        "to_m": 8,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 14,
+        "to_m": 18,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          51,
+          54,
+          9
+        ],
+        "from_m": 22,
+        "to_m": 36,
+        "station_span_m": 14
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 48,
+        "to_m": 114,
+        "station_span_m": 66
+      },
+      {
+        "lane_ids": [
+          57
+        ],
+        "from_m": 118,
+        "to_m": 120,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 146,
+        "to_m": 148,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          18
+        ],
+        "from_m": 152,
+        "to_m": 156,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          21
+        ],
+        "from_m": 168,
+        "to_m": 172,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          24,
+          45,
+          27,
+          48,
+          30
+        ],
+        "from_m": 180,
+        "to_m": 202,
+        "station_span_m": 22
+      },
+      {
+        "lane_ids": [
+          33
+        ],
+        "from_m": 210,
+        "to_m": 212,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          36
+        ],
+        "from_m": 220,
+        "to_m": 222,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          39
+        ],
+        "from_m": 232,
+        "to_m": 238,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          42
+        ],
+        "from_m": 242,
+        "to_m": 246,
+        "station_span_m": 4
+      }
+    ],
+    "legal_routing_verified": false
+  },
+  "after": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 13,
+    "longest_route_station_span_m": 66,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 0,
+        "to_m": 8,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 14,
+        "to_m": 18,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          51,
+          54,
+          9
+        ],
+        "from_m": 22,
+        "to_m": 36,
+        "station_span_m": 14
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 48,
+        "to_m": 114,
+        "station_span_m": 66
+      },
+      {
+        "lane_ids": [
+          57
+        ],
+        "from_m": 118,
+        "to_m": 120,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 146,
+        "to_m": 148,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          18
+        ],
+        "from_m": 152,
+        "to_m": 156,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          21
+        ],
+        "from_m": 168,
+        "to_m": 172,
+        "station_span_m": 4
+      },
+      {
+        "lane_ids": [
+          24,
+          45,
+          27,
+          48,
+          30
+        ],
+        "from_m": 180,
+        "to_m": 202,
+        "station_span_m": 22
+      },
+      {
+        "lane_ids": [
+          33
+        ],
+        "from_m": 210,
+        "to_m": 212,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          36,
+          62,
+          63
+        ],
+        "from_m": 220,
+        "to_m": 226.0,
+        "station_span_m": 6.0
+      },
+      {
+        "lane_ids": [
+          39
+        ],
+        "from_m": 232,
+        "to_m": 238,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          42
+        ],
+        "from_m": 242,
+        "to_m": 246,
+        "station_span_m": 4
+      }
+    ],
+    "legal_routing_verified": false
+  }
+}

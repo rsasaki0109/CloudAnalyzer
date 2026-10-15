@@ -9,11 +9,13 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test:e2e": "playwright test",
+    "test:unit": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:map-geometry": "node --experimental-strip-types --test tests/vectormap-geometry.test.mjs",
     "media": "playwright test --config playwright.media.config.ts && node scripts/readme-gif.mjs",
     "media:vectormap": "playwright test --config playwright.media.config.ts vector-map.spec.ts && node scripts/vector-map-gif.mjs",
     "media:intersection": "playwright test --config playwright.media.config.ts vector-map-intersection.spec.ts && node scripts/vector-map-intersection-gif.mjs",
-    "media:hard-intersection": "playwright test --config playwright.media.config.ts vector-map-hard-intersection.spec.ts && node scripts/vector-map-hard-intersection-gif.mjs"
+    "media:hard-intersection": "playwright test --config playwright.media.config.ts vector-map-hard-intersection.spec.ts && node scripts/vector-map-hard-intersection-gif.mjs",
+    "media:supported-intersection": "playwright test --config playwright.media.config.ts vector-map-supported-intersection.spec.ts && node scripts/vector-map-supported-intersection-gif.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"

@@ -5,6 +5,7 @@
  * (schema cloudanalyzer.gate_summary.v0.1).
  */
 
+import { projectChanged } from "../project-change";
 import { $, download, fmt, removeButton, setStatus } from "./dom";
 import { viewImage } from "./image";
 import { distanceChanged, entries, isMesh, listChanged } from "./state";
@@ -72,6 +73,7 @@ export function savedGates(): Gate[] {
 export function setGates(saved: Gate[]): void {
   gates.splice(0, gates.length, ...saved);
   renderGates();
+  projectChanged();
 }
 
 type Status = "pass" | "fail" | "warn" | "info";
@@ -187,6 +189,7 @@ function renderGates(): void {
       li.append(select, op, threshold, severity, badge, removeButton(() => {
         gates.splice(i, 1);
         renderGates();
+        projectChanged();
       }));
       return li;
     }),
@@ -204,6 +207,7 @@ $<HTMLButtonElement>("gate-add").onclick = () => {
   const [metric, { metric: m }] = first;
   gates.push({ metric, op: "<=", threshold: Number(m.value.toPrecision(3)), severity: "fail" });
   renderGates();
+  projectChanged();
 };
 // New results change the metrics gates can use and their values.
 listChanged.add(renderGates);

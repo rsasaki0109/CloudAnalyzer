@@ -1,0 +1,149 @@
+{
+  "schema": "cloudanalyzer.bridge_plan.v1",
+  "source": {
+    "file": "bridge_5_cb_faro.ply",
+    "sha256": "fdffe9886e65d9b3bd157ae453081be84742d38d5c314ce9ae643dece46a857f",
+    "bytes": 123635510,
+    "dataset": "https://doi.org/10.5281/zenodo.18738225",
+    "converted": "PLY to LAS with colour and labels as classification"
+  },
+  "points": 7727204,
+  "classes": [
+    3,
+    4,
+    5,
+    8
+  ],
+  "member_classes": [
+    4
+  ],
+  "axis": {
+    "origin_xy": [
+      8.520703066787654,
+      -22.341511942555144
+    ],
+    "direction_xy": [
+      0.9995939853384377,
+      0.028493235604603918
+    ],
+    "source": "deck_side_edges"
+  },
+  "options": {
+    "spacing_m": 0.25,
+    "thickness_m": 0.1,
+    "margin_m": 0.3
+  },
+  "deck": {
+    "start_m": -34.90722284034512,
+    "end_m": 27.58564642903742,
+    "length_m": 62.49286926938254,
+    "skew_deg": 15.441981592405687,
+    "skew_slope": 0.27623435869999297,
+    "left_edge_m": 6.404286216321463,
+    "right_edge_m": -6.488886925580705,
+    "width_m": 12.893173141902167,
+    "slab_thickness_m": 1.343993523667668,
+    "sections_measured": 235,
+    "sections_with_soffit": 97
+  },
+  "underside": "unobserved",
+  "girders": [],
+  "partially_observed_members": [],
+  "cross_beams": [],
+  "supports": [
+    {
+      "along_m": -19.307222840346007,
+      "width_m": 1.4999999999999147,
+      "lean_m": 0.00553753558960679,
+      "width_share": 0.8226800112503753,
+      "source": "detected",
+      "label": "P1",
+      "from_start_m": 15.599999999999113
+    },
+    {
+      "along_m": 11.86777715965222,
+      "width_m": 1.549999999999912,
+      "lean_m": 0.0005713131628759527,
+      "width_share": 0.819979914748238,
+      "source": "detected",
+      "label": "P2",
+      "from_start_m": 46.77499999999734
+    }
+  ],
+  "spans": [
+    {
+      "number": 1,
+      "from_m": -34.90722284034512,
+      "to_m": -19.307222840346007,
+      "length_m": 15.599999999999113
+    },
+    {
+      "number": 2,
+      "from_m": -19.307222840346007,
+      "to_m": 11.86777715965222,
+      "length_m": 31.174999999998228
+    },
+    {
+      "number": 3,
+      "from_m": 11.86777715965222,
+      "to_m": 27.58564642903742,
+      "length_m": 15.7178692693852
+    }
+  ],
+  "elements": [
+    {
+      "id": "Ds0101",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -34.90722284034512,
+        -19.307222840346007
+      ],
+      "lateral_m": [
+        -6.488886925580705,
+        6.404286216321463
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0201",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 2,
+      "column": 1,
+      "span": 2,
+      "along_m": [
+        -19.307222840346007,
+        11.86777715965222
+      ],
+      "lateral_m": [
+        -6.488886925580705,
+        6.404286216321463
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0301",
+      "kind": "deck_slab",
+      "label_ja": "\u5e8a\u7248",
+      "row": 3,
+      "column": 1,
+      "span": 3,
+      "along_m": [
+        11.86777715965222,
+        27.58564642903742
+      ],
+      "lateral_m": [
+        -6.488886925580705,
+        6.404286216321463
+      ],
+      "status": "observed_bounds"
+    }
+  ],
+  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
+  "note": "No returns beneath most of the deck: girders and cross beams are neither drawn nor assumed; the deck is one element.",
+  "warnings": []
+}

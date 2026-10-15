@@ -1,0 +1,94 @@
+{
+  "recipe": {
+    "app": "CloudAnalyzer Filter Recipe",
+    "version": 1,
+    "name": "Road cleanup",
+    "steps": [
+      {
+        "op": "sor",
+        "neighbors": 8,
+        "stdRatio": 1
+      },
+      {
+        "op": "voxel",
+        "size": 0.2
+      }
+    ]
+  },
+  "wasmSha256": "83dd1c46396b4545ae247d570aa755c259e968cb7bee648b61d30231dc9faba9",
+  "originalInputSha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad",
+  "originalReviewSha256": "85e3b22b7fb53a781cf72e356946f178a6efd1e9eda4e7e03ef06edbd96cdf2a",
+  "sourcePoints": [
+    646309,
+    161578
+  ],
+  "records": [
+    {
+      "version": 1,
+      "wasmSha256": "83dd1c46396b4545ae247d570aa755c259e968cb7bee648b61d30231dc9faba9",
+      "recipe": {
+        "app": "CloudAnalyzer Filter Recipe",
+        "version": 1,
+        "name": "Road cleanup",
+        "steps": [
+          {
+            "op": "sor",
+            "neighbors": 8,
+            "stdRatio": 1
+          },
+          {
+            "op": "voxel",
+            "size": 0.2
+          }
+        ]
+      },
+      "input": {
+        "name": "local_map.ply",
+        "points": 646309,
+        "sha256": "07d9eff977aabf4e94b1a10d165a80c474f3bd27676c819b78e4cc289cba6c68"
+      },
+      "output": {
+        "points": 511570,
+        "sha256": "92ff90aa5f171f3de33821456f6654e84e73aaa46fce9c9ee9c39c006630cf2e"
+      }
+    },
+    {
+      "version": 1,
+      "wasmSha256": "83dd1c46396b4545ae247d570aa755c259e968cb7bee648b61d30231dc9faba9",
+      "recipe": {
+        "app": "CloudAnalyzer Filter Recipe",
+        "version": 1,
+        "name": "Road cleanup",
+        "steps": [
+          {
+            "op": "sor",
+            "neighbors": 8,
+            "stdRatio": 1
+          },
+          {
+            "op": "voxel",
+            "size": 0.2
+          }
+        ]
+      },
+      "input": {
+        "name": "014-preview_map.ply",
+        "points": 161578,
+        "sha256": "4fae11d323f344da703ade2d55967c8f1f15c7a435f053770f461a85096a380c"
+      },
+      "output": {
+        "points": 142476,
+        "sha256": "1d167df0eb3a6b8872116d663b350a40513351fd13d4f1bd44c39973bc19c7a7"
+      }
+    }
+  ],
+  "individualFiltersExact": true,
+  "allOutputRecordsFromSource": true,
+  "hdMapUnchanged": true,
+  "previewFlagRetained": true,
+  "oneUndoRedo": true,
+  "workspaceRoundtripExact": true,
+  "zipBytes": 51601723,
+  "zipSha256": "a9b24501c13950f5135872c73c185b6c01f4030e60d60060736d7bd73d802dec",
+  "runAndVerificationMs": 13028
+}

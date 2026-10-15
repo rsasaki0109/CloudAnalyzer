@@ -1,0 +1,786 @@
+{
+  "schema": "cloudanalyzer.nclt_ground_consensus.v1",
+  "date": "2026-10-09",
+  "timezone": "Asia/Tokyo",
+  "scope": "Controlled generation experiment at unchanged hypothetical lane semantics and path extent. Both source estimators are retained; neither is independent ground truth.",
+  "paths": "Source relative to repository; generated artifacts relative to the new mapping job; native binary relative to extracted package.",
+  "source": {
+    "path": "web/public/samples/nclt-2012-04-29.mcap",
+    "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+    "bytes": 10054898
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "native": {
+      "version": "0.1.0",
+      "extension": {
+        "path": "cloudanalyzer_core/_core.abi3.so",
+        "sha256": "3aaecc4552b2922af762830fd8c8787ec0ac5c32dc834143bf2ebace5981a910",
+        "bytes": 7348368
+      }
+    }
+  },
+  "pointcloud": {
+    "files": {
+      "map": {
+        "path": "pointcloud/trajectory_map.ply",
+        "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+        "bytes": 21878254
+      },
+      "trajectory": {
+        "path": "pointcloud/trajectory_fixed_kitti.txt",
+        "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+        "bytes": 47336
+      },
+      "graph": {
+        "path": "pointcloud/trajectory_fixed.g2o",
+        "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+        "bytes": 94035
+      }
+    },
+    "frames": 236,
+    "map_points": 683690,
+    "path_length_m": 252.2,
+    "reports": {
+      "odometry": "odometry-report.json",
+      "correction": "pointcloud-report.json"
+    },
+    "quality_status": "generated_unverified",
+    "coordinate_frame": "local_slam_metres"
+  },
+  "trials": [
+    {
+      "id": 1,
+      "status": "audited_draft",
+      "reason": "Reproduce tracked baseline at unchanged traffic priors and extent; compare legacy and spatial-layer evidence before modifying geometry.",
+      "road_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "track_boundaries": true,
+        "fit_boundaries": false
+      },
+      "files": {
+        "map": {
+          "path": "candidate-01/lanelet2_map.osm",
+          "sha256": "bda8be6af3eef5ccf1b3179272b9cb1570d758f71df29439a6049f6448d2aa3c",
+          "bytes": 103507
+        },
+        "projector": {
+          "path": "candidate-01/map_projector_info.yaml",
+          "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+          "bytes": 22
+        },
+        "editable_map": {
+          "path": "candidate-01/vector_map.json",
+          "sha256": "c01650b5f09d8a276ce528f5d65538b45cbb9e09d35620a545b2cb2780a27949",
+          "bytes": 34493
+        },
+        "report": {
+          "path": "candidate-01/report.json",
+          "sha256": "b250c31a876826a99a3ba0175e5222b76dc57455e08abdb6592db36f05bed258",
+          "bytes": 3724
+        }
+      },
+      "quality_report": {
+        "path": "candidate-01-quality.json",
+        "sha256": "552e8ce4ceef3c5d743243ff4440c175e9d7347ea2ae866f650e6c399bb4c6c5",
+        "bytes": 1068497
+      },
+      "quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          24
+        ],
+        "ground_estimator": {
+          "minimum_returns": 3,
+          "model": "low_quantile",
+          "quantile": 0.15
+        },
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 3169,
+        "supported_samples": 1748,
+        "validation_errors": []
+      },
+      "reopened_quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          24
+        ],
+        "ground_estimator": {
+          "minimum_returns": 3,
+          "model": "low_quantile",
+          "quantile": 0.15
+        },
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 3169,
+        "supported_samples": 1748,
+        "validation_errors": []
+      },
+      "ground_consensus_quality": {
+        "editable": {
+          "lanes_checked": 10,
+          "needs_review": [
+            4,
+            5,
+            9,
+            10,
+            14,
+            15,
+            19,
+            24
+          ],
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          },
+          "omitted": [],
+          "malformed": [],
+          "limited": false,
+          "sampled_points": 3169,
+          "supported_samples": 1716,
+          "validation_errors": []
+        },
+        "reopened_osm": {
+          "lanes_checked": 10,
+          "needs_review": [
+            4,
+            5,
+            9,
+            10,
+            14,
+            15,
+            19,
+            24
+          ],
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          },
+          "omitted": [],
+          "malformed": [],
+          "limited": false,
+          "sampled_points": 3169,
+          "supported_samples": 1716,
+          "validation_errors": []
+        }
+      },
+      "extraction": {
+        "added_length": 243.1390803680129,
+        "anchored_prior_vertices": 167,
+        "coverage_edge_anchor_candidates_ignored": 0,
+        "curb_vertices": 38,
+        "fitted_vertices": 0,
+        "generated_length": 243.1390803680129,
+        "intensity_used": true,
+        "intensity_vertices": 105,
+        "joined_connections": 0,
+        "lanes": 10,
+        "local_ground_sections": 0,
+        "maximum_fit_displacement": 0.0,
+        "observed_fraction": [
+          0.25196850393700787,
+          0.3858267716535433,
+          0.5354330708661418
+        ],
+        "paint_corridor": null,
+        "rejected_curb_candidates": 230,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "rgb_paint_vertices": 0,
+        "roads": 1,
+        "sampled_sections": 127,
+        "support_edge_vertices": 6,
+        "surface_fit": null,
+        "trace_alignment": null,
+        "tracked_vertices": 210,
+        "trajectory_length": 248.9206134062158,
+        "unsupported_sections": 0,
+        "warnings": [
+          "232 boundary vertices use the configured lane width rather than a detected feature.",
+          "230 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "167 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "210 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 232
+      },
+      "extent": {
+        "trajectory_length_m": 248.9206134062158,
+        "generated_length_m": 243.1390803680129,
+        "retained_fraction": 0.9767735867307704,
+        "minimum_retained_fraction": 0.9,
+        "passes_requested_extent": true
+      },
+      "export_issues": [
+        {
+          "code": "autoware.local_projector",
+          "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+          "severity": "info"
+        },
+        {
+          "code": "lanelet2.no_georeference",
+          "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+          "severity": "warning"
+        }
+      ],
+      "legacy_totals": {
+        "samples": 3169,
+        "supported": 1748,
+        "height_mismatches": 832,
+        "insufficient_returns": 589
+      },
+      "consensus_totals": {
+        "samples": 3169,
+        "supported": 1716,
+        "height_mismatches": 842,
+        "insufficient_returns": 611
+      },
+      "ir_and_reopened_source_audits_identical": true,
+      "location_previews_complete": true,
+      "legacy_problem_intervals": 102,
+      "consensus_problem_intervals": 66,
+      "boundary_7_z_range_m": [
+        -1.2419528209014734,
+        7.19015443873613
+      ]
+    },
+    {
+      "id": 2,
+      "status": "audited_draft",
+      "reason": "Dense overhead columns can dominate the quantile. Test spatially supported low-layer seed heights, keeping the original lane/traffic priors and no XY fitting.",
+      "road_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "track_boundaries": true,
+        "fit_boundaries": false,
+        "local_ground_height": true
+      },
+      "files": {
+        "map": {
+          "path": "candidate-02/lanelet2_map.osm",
+          "sha256": "9e1ebd14c4fb91c5e1484efb3137b1a524e95b39ee34bba77facdb386316e93f",
+          "bytes": 103642
+        },
+        "projector": {
+          "path": "candidate-02/map_projector_info.yaml",
+          "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+          "bytes": 22
+        },
+        "editable_map": {
+          "path": "candidate-02/vector_map.json",
+          "sha256": "db7ce05738ff48d64c54c7f2b045d3751dbcb77cdf4963f0c15d966e2fa0734a",
+          "bytes": 34636
+        },
+        "report": {
+          "path": "candidate-02/report.json",
+          "sha256": "358bf49690079b1d05821b45dec280b4142e6c34593648a2eb21d3c322558021",
+          "bytes": 4374
+        }
+      },
+      "quality_report": {
+        "path": "candidate-02-quality.json",
+        "sha256": "3bddc549402ea467c79e9d02427e334a33de0d68f2e668994f3609f97fa023c2",
+        "bytes": 633333
+      },
+      "quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          24
+        ],
+        "ground_estimator": {
+          "minimum_returns": 3,
+          "model": "low_quantile",
+          "quantile": 0.15
+        },
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 2957,
+        "supported_samples": 1944,
+        "validation_errors": []
+      },
+      "reopened_quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          24
+        ],
+        "ground_estimator": {
+          "minimum_returns": 3,
+          "model": "low_quantile",
+          "quantile": 0.15
+        },
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 2957,
+        "supported_samples": 1944,
+        "validation_errors": []
+      },
+      "ground_consensus_quality": {
+        "editable": {
+          "lanes_checked": 10,
+          "needs_review": [
+            4,
+            9,
+            14,
+            19,
+            24
+          ],
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          },
+          "omitted": [],
+          "malformed": [],
+          "limited": false,
+          "sampled_points": 2957,
+          "supported_samples": 2365,
+          "validation_errors": []
+        },
+        "reopened_osm": {
+          "lanes_checked": 10,
+          "needs_review": [
+            4,
+            9,
+            14,
+            19,
+            24
+          ],
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          },
+          "omitted": [],
+          "malformed": [],
+          "limited": false,
+          "sampled_points": 2957,
+          "supported_samples": 2365,
+          "validation_errors": []
+        }
+      },
+      "extraction": {
+        "added_length": 243.1390803680129,
+        "anchored_prior_vertices": 145,
+        "coverage_edge_anchor_candidates_ignored": 0,
+        "curb_vertices": 38,
+        "fitted_vertices": 0,
+        "generated_length": 243.1390803680129,
+        "intensity_used": true,
+        "intensity_vertices": 106,
+        "joined_connections": 0,
+        "lanes": 10,
+        "local_ground_estimator": {
+          "layer_height_m": 0.15,
+          "minimum_cells": 3,
+          "minimum_triangle_area_m2": 0.01,
+          "model": "lowest_supported_layer",
+          "xy_cell_m": 0.2
+        },
+        "local_ground_sections": 127,
+        "maximum_fit_displacement": 0.0,
+        "observed_fraction": [
+          0.2992125984251969,
+          0.4251968503937008,
+          0.4881889763779528
+        ],
+        "paint_corridor": null,
+        "rejected_curb_candidates": 196,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "rgb_paint_vertices": 0,
+        "roads": 1,
+        "sampled_sections": 127,
+        "support_edge_vertices": 10,
+        "surface_fit": null,
+        "trace_alignment": null,
+        "tracked_vertices": 183,
+        "trajectory_length": 248.9206134062158,
+        "unsupported_sections": 0,
+        "warnings": [
+          "Seed-road heights use the lowest 0.15 m layer within 0.75 m under the trajectory, with at least three occupied 0.2 m XY cells spanning a triangle of at least 0.01 m\u00b2. Each cell contributes its lowest return; their median is used. Missing coherent support defers sections. Another level or wrong XY can still pass; compare both source estimators, actual boundaries and retained extent before selecting.",
+          "227 boundary vertices use the configured lane width rather than a detected feature.",
+          "196 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "145 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "183 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 227
+      },
+      "extent": {
+        "trajectory_length_m": 248.9206134062158,
+        "generated_length_m": 243.1390803680129,
+        "retained_fraction": 0.9767735867307704,
+        "minimum_retained_fraction": 0.9,
+        "passes_requested_extent": true
+      },
+      "export_issues": [
+        {
+          "code": "autoware.local_projector",
+          "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+          "severity": "info"
+        },
+        {
+          "code": "lanelet2.no_georeference",
+          "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+          "severity": "warning"
+        }
+      ],
+      "legacy_totals": {
+        "samples": 2957,
+        "supported": 1944,
+        "height_mismatches": 542,
+        "insufficient_returns": 471
+      },
+      "consensus_totals": {
+        "samples": 2957,
+        "supported": 2365,
+        "height_mismatches": 96,
+        "insufficient_returns": 496
+      },
+      "ir_and_reopened_source_audits_identical": true,
+      "location_previews_complete": true,
+      "legacy_problem_intervals": 92,
+      "consensus_problem_intervals": 57,
+      "boundary_7_z_range_m": [
+        -2.0485220570261395,
+        -1.8174882568154231
+      ]
+    },
+    {
+      "id": 3,
+      "status": "audited_draft",
+      "reason": "The low-layer seed exported at full extent and improved both retained source checks. Test bounded XY regularization with the same height estimator, priors and extent before choosing a review draft.",
+      "road_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "track_boundaries": true,
+        "fit_boundaries": true,
+        "local_ground_height": true
+      },
+      "files": {
+        "map": {
+          "path": "candidate-03/lanelet2_map.osm",
+          "sha256": "96e6ecda11c187231f6503afcc3fa4c137f097c3af85e592abbb0c72b706e069",
+          "bytes": 103663
+        },
+        "projector": {
+          "path": "candidate-03/map_projector_info.yaml",
+          "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+          "bytes": 22
+        },
+        "editable_map": {
+          "path": "candidate-03/vector_map.json",
+          "sha256": "086f240c322356c0c9cab4f03e30ed8b6544e06ca13869e4d8ae0aa691ca8188",
+          "bytes": 34654
+        },
+        "report": {
+          "path": "candidate-03/report.json",
+          "sha256": "7d1940f1476864fd0a197ee41cda8bdd1fe3e3424f9e4252afc869f7c5535c2a",
+          "bytes": 4618
+        }
+      },
+      "quality_report": {
+        "path": "candidate-03-quality.json",
+        "sha256": "e6f4a67cb979dc1e5289865f151a77b32c2723aee87c1d52b1a1fac72b7c0dbf",
+        "bytes": 637015
+      },
+      "quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          20,
+          24
+        ],
+        "ground_estimator": {
+          "minimum_returns": 3,
+          "model": "low_quantile",
+          "quantile": 0.15
+        },
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 2942,
+        "supported_samples": 1922,
+        "validation_errors": []
+      },
+      "reopened_quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          20,
+          24
+        ],
+        "ground_estimator": {
+          "minimum_returns": 3,
+          "model": "low_quantile",
+          "quantile": 0.15
+        },
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 2942,
+        "supported_samples": 1922,
+        "validation_errors": []
+      },
+      "ground_consensus_quality": {
+        "editable": {
+          "lanes_checked": 10,
+          "needs_review": [
+            4,
+            9,
+            14,
+            19,
+            24
+          ],
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          },
+          "omitted": [],
+          "malformed": [],
+          "limited": false,
+          "sampled_points": 2942,
+          "supported_samples": 2350,
+          "validation_errors": []
+        },
+        "reopened_osm": {
+          "lanes_checked": 10,
+          "needs_review": [
+            4,
+            9,
+            14,
+            19,
+            24
+          ],
+          "ground_estimator": {
+            "layer_height_m": 0.15,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01,
+            "model": "lowest_supported_layer",
+            "xy_cell_m": 0.2
+          },
+          "omitted": [],
+          "malformed": [],
+          "limited": false,
+          "sampled_points": 2942,
+          "supported_samples": 2350,
+          "validation_errors": []
+        }
+      },
+      "extraction": {
+        "added_length": 243.1390803680129,
+        "anchored_prior_vertices": 145,
+        "coverage_edge_anchor_candidates_ignored": 0,
+        "curb_vertices": 38,
+        "fitted_vertices": 381,
+        "generated_length": 243.1390803680129,
+        "intensity_used": true,
+        "intensity_vertices": 106,
+        "joined_connections": 0,
+        "lanes": 10,
+        "local_ground_estimator": {
+          "layer_height_m": 0.15,
+          "minimum_cells": 3,
+          "minimum_triangle_area_m2": 0.01,
+          "model": "lowest_supported_layer",
+          "xy_cell_m": 0.2
+        },
+        "local_ground_sections": 127,
+        "maximum_fit_displacement": 0.5000000000000009,
+        "observed_fraction": [
+          0.2992125984251969,
+          0.4251968503937008,
+          0.4881889763779528
+        ],
+        "paint_corridor": null,
+        "rejected_curb_candidates": 196,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "rgb_paint_vertices": 0,
+        "roads": 1,
+        "sampled_sections": 127,
+        "support_edge_vertices": 10,
+        "surface_fit": null,
+        "trace_alignment": null,
+        "tracked_vertices": 183,
+        "trajectory_length": 248.9206134062158,
+        "unsupported_sections": 0,
+        "warnings": [
+          "Seed-road heights use the lowest 0.15 m layer within 0.75 m under the trajectory, with at least three occupied 0.2 m XY cells spanning a triangle of at least 0.01 m\u00b2. Each cell contributes its lowest return; their median is used. Missing coherent support defers sections. Another level or wrong XY can still pass; compare both source estimators, actual boundaries and retained extent before selecting.",
+          "227 boundary vertices use the configured lane width rather than a detected feature.",
+          "196 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "145 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "183 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "381 vertices were fitted to trajectory-relative boundary curves (maximum XY movement 0.500 m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 227
+      },
+      "extent": {
+        "trajectory_length_m": 248.9206134062158,
+        "generated_length_m": 243.1390803680129,
+        "retained_fraction": 0.9767735867307704,
+        "minimum_retained_fraction": 0.9,
+        "passes_requested_extent": true
+      },
+      "export_issues": [
+        {
+          "code": "autoware.local_projector",
+          "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+          "severity": "info"
+        },
+        {
+          "code": "lanelet2.no_georeference",
+          "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+          "severity": "warning"
+        }
+      ],
+      "legacy_totals": {
+        "samples": 2942,
+        "supported": 1922,
+        "height_mismatches": 550,
+        "insufficient_returns": 470
+      },
+      "consensus_totals": {
+        "samples": 2942,
+        "supported": 2350,
+        "height_mismatches": 99,
+        "insufficient_returns": 493
+      },
+      "ir_and_reopened_source_audits_identical": true,
+      "location_previews_complete": true,
+      "legacy_problem_intervals": 92,
+      "consensus_problem_intervals": 59,
+      "boundary_7_z_range_m": [
+        -2.0485220570261395,
+        -1.8174882568154231
+      ]
+    }
+  ],
+  "selected": {
+    "candidate_id": 2,
+    "reason": "Retain the unsmoothed low-layer draft: it preserves the same 243.14 m extent and unchanged hypothetical road semantics, exports without the previous direction ambiguity, and improves both source estimators over the reproduced baseline. Bounded XY fitting slightly reduces support and adds a legacy lane hold, so retain trial 2. Both estimators still have source-review holds and disagree; this is not independent accuracy or a deployment-ready HD map.",
+    "source_quality_passed": false,
+    "deployment_ready": false,
+    "files": {
+      "map": {
+        "path": "candidate-02/lanelet2_map.osm",
+        "sha256": "9e1ebd14c4fb91c5e1484efb3137b1a524e95b39ee34bba77facdb386316e93f",
+        "bytes": 103642
+      },
+      "projector": {
+        "path": "candidate-02/map_projector_info.yaml",
+        "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+        "bytes": 22
+      },
+      "editable_map": {
+        "path": "candidate-02/vector_map.json",
+        "sha256": "db7ce05738ff48d64c54c7f2b045d3751dbcb77cdf4963f0c15d966e2fa0734a",
+        "bytes": 34636
+      },
+      "report": {
+        "path": "candidate-02/report.json",
+        "sha256": "358bf49690079b1d05821b45dec280b4142e6c34593648a2eb21d3c322558021",
+        "bytes": 4374
+      }
+    },
+    "assumptions": {
+      "forward_lanes": 1,
+      "backward_lanes": 1,
+      "left_hand_traffic": false,
+      "lane_width": 3.5,
+      "speed_limit": 40.0,
+      "track_boundaries": true,
+      "fit_boundaries": false,
+      "local_ground_height": true
+    },
+    "extent": {
+      "trajectory_length_m": 248.9206134062158,
+      "generated_length_m": 243.1390803680129,
+      "retained_fraction": 0.9767735867307704,
+      "minimum_retained_fraction": 0.9,
+      "passes_requested_extent": true
+    }
+  },
+  "baseline_verification": {
+    "reference": "PR #213 candidate 1",
+    "geometry_hashes_identical": true,
+    "entire_legacy_ir_and_osm_audits_identical_excluding_additive_estimator_metadata": true
+  },
+  "unresolved": [
+    "Legacy and consensus source-review holds and disagreement",
+    "Unverified Segway trajectory lane identity and 1+1 driving-lane / 3.5 m / 40 km/h priors",
+    "Point-cloud survey accuracy, local georeferencing, legal traffic rules and road equipment"
+  ]
+}

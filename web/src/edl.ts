@@ -23,11 +23,8 @@ const fragmentShader = /* glsl */ `
   uniform float radius;
   varying vec2 vUv;
 
-  // log2 of the distance along the view axis, or 0 for the background.
-  float logDepth(vec2 uv) {
-    // Explicit LOD: sampled in a loop, where derivatives are undefined.
-    float d = textureLod(tDepth, uv, 0.0).x;
-    if (d >= 1.0) return 0.0;
+  // log2 of a measured distance along the view axis.
+  float logDepth(float d) {
     float viewZ = perspectiveDepthToViewZ(d, cameraNear, cameraFar);
     return log2(-viewZ);
   }
@@ -40,19 +37,20 @@ const fragmentShader = /* glsl */ `
 
   void main() {
     vec4 color = texture2D(tColor, vUv);
-    float depth = logDepth(vUv);
-    if (depth == 0.0) {
+    float sampleDepth = textureLod(tDepth, vUv, 0.0).x;
+    if (sampleDepth >= 1.0) {
       finish(color);
       return;
     }
+    float depth = logDepth(sampleDepth);
     float response = 0.0;
     for (int i = 0; i < 8; i++) {
       float angle = float(i) * 0.78539816;
       vec2 offset = vec2(cos(angle), sin(angle)) * radius * texel;
-      float neighbour = logDepth(vUv + offset);
-      // Background neighbours count as far away, outlining silhouettes.
-      float delta = neighbour == 0.0 ? 1.0 : max(0.0, depth - neighbour);
-      response += delta;
+      // Explicit LOD: sampled in a loop, where derivatives are undefined.
+      float neighbour = textureLod(tDepth, vUv + offset, 0.0).x;
+      // Empty pixels are not nearer surfaces. Keep isolated returns visible.
+      if (neighbour < 1.0) response += max(0.0, depth - logDepth(neighbour));
     }
     response /= 8.0;
     float shade = exp(-response * 300.0 * strength);

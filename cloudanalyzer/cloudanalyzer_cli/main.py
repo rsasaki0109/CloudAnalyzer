@@ -190,7 +190,14 @@ def _handle_error(e: Exception) -> None:
     typer.echo(f"Error: {msg}", err=True)
 
     # Provide helpful hints
-    if isinstance(e, FileNotFoundError):
+    missing = getattr(e, "filename", None)
+    if isinstance(e, FileNotFoundError) and isinstance(missing, str) and Path(missing).name in {"run.json", "job.json"}:
+        typer.echo(
+            f"Hint: {Path(missing).parent} is not a mapping run directory. Pass the --out directory "
+            "given to mapping-run; a relative path resolves from the current directory.",
+            err=True,
+        )
+    elif isinstance(e, FileNotFoundError):
         typer.echo(
             "Hint: Check the file path. Supported formats: .pcd, .ply, .las, .laz, .csv",
             err=True,
@@ -1847,6 +1854,336 @@ def view_cmd(
         _handle_error(e)
 
 
+@app.command("mapping-start")
+def mapping_start_cmd(
+    source: str = typer.Argument(..., help="Raw MCAP, ROS1 bag or rosbag2 SQLite recording"),
+    out: str = typer.Option(..., "--out", help="New mapping job directory"),
+    max_attempts: int = typer.Option(4, "--max-attempts", min=1, max=8),
+    keyframe_spacing: float = typer.Option(1.0, "--keyframe-spacing"),
+    keep_dynamic: bool = typer.Option(False, "--keep-dynamic"),
+    minimum_retained_fraction: float = typer.Option(0.9, "--minimum-retained-fraction", min=0, max=1),
+) -> None:
+    """Generate a point-cloud map and trajectory for an agent-controlled mapping job."""
+    from ca.mapping_job import start_mapping_job
+    try:
+        result = start_mapping_job(source, out, keyframe_spacing=keyframe_spacing,
+                                   remove_dynamic=not keep_dynamic, max_attempts=max_attempts,
+                                   minimum_retained_fraction=minimum_retained_fraction)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "pointcloud_failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-candidate")
+def mapping_candidate_cmd(
+    job: str = typer.Argument(...),
+    options: str = typer.Option(..., "--options", help="JSON file of explicit road assumptions and fitting options"),
+    reason: str = typer.Option(..., "--reason", help="Why the agent is testing this hypothesis"),
+) -> None:
+    """Generate and audit one HD-map candidate, recording failures without overwriting others."""
+    from ca.mapping_job import generate_mapping_candidate
+    try:
+        parameters = json.loads(Path(options).read_text(encoding="utf-8"))
+        if not isinstance(parameters, dict):
+            raise ValueError("options must be a JSON object")
+        result = generate_mapping_candidate(job, parameters, reason)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["attempts"][-1]["status"] == "failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-corridors")
+def mapping_corridors_cmd(
+    job: str = typer.Argument(...),
+    search_radius: float = typer.Option(8.0, "--search-radius", min=1, max=20),
+) -> None:
+    """Generate lane-free surface corridor proposals before assigning road assumptions."""
+    from ca.mapping_job import propose_mapping_corridors
+    try:
+        result = propose_mapping_corridors(job, search_radius_m=search_radius)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-corridors-inspect")
+def mapping_corridors_inspect_cmd(
+    job: str = typer.Argument(...),
+    candidate: Optional[int] = typer.Option(None, "--candidate", min=1),
+    offset: int = typer.Option(0, "--offset", min=0),
+) -> None:
+    """Read paged corridor evidence or candidate geometry without native processing."""
+    from ca.mapping_job import inspect_mapping_corridors
+    try:
+        result = inspect_mapping_corridors(job, candidate_id=candidate, offset=offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-geometry")
+def mapping_geometry_cmd(
+    job: str = typer.Argument(...),
+    decisions: str = typer.Option(..., "--decisions", help="JSON list of corridor include/defer decisions and reasons"),
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Adopt source curves as an editable geometry draft with unresolved lane semantics."""
+    from ca.mapping_job import generate_mapping_geometry
+    try:
+        choices = json.loads(Path(decisions).read_text(encoding="utf-8"))
+        result = generate_mapping_geometry(job, choices, reason)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["attempts"][-1]["status"] == "failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-geometry-inspect")
+def mapping_geometry_inspect_cmd(
+    job: str = typer.Argument(...),
+    candidate: int = typer.Option(..., "--candidate", min=1),
+    offset: int = typer.Option(0, "--offset", min=0),
+) -> None:
+    """Read geometry decisions, source curves and unresolved extent without processing."""
+    from ca.mapping_job import inspect_mapping_geometry
+    try:
+        result = inspect_mapping_geometry(job, candidate, offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-run")
+def mapping_run_cmd(
+    source: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out"),
+    layout: str = typer.Option(..., "--layout", help="JSON object with fixed, explicit unverified lane assumptions"),
+    max_attempts: int = typer.Option(6, "--max-attempts", min=2, max=8),
+    minimum_retained_fraction: float = typer.Option(.9, "--minimum-retained-fraction", min=0, max=1),
+) -> None:
+    """Start the MCP agent's mapping loop and return its next decision contract."""
+    from ca.mapping_run import start_mapping_run
+    try:
+        result = start_mapping_run(source, out, json.loads(Path(layout).read_text(encoding="utf-8")),
+                                   max_attempts=max_attempts, minimum_retained_fraction=minimum_retained_fraction)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "processing_failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-run-inspect")
+def mapping_run_inspect_cmd(job: str = typer.Argument(...), offset: int = typer.Option(0, "--offset", min=0)) -> None:
+    """Read saved agent-run state, paged observations and output paths."""
+    from ca.mapping_run import inspect_mapping_run
+    try:
+        result = inspect_mapping_run(job, offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-trajectory-evaluate")
+def mapping_trajectory_evaluate_cmd(
+    job: str = typer.Argument(...),
+    reference: str = typer.Option(..., "--reference", help="Timestamped metre-frame TUM/CSV reference"),
+    provenance: str = typer.Option(..., "--provenance", help="JSON source/license/frame/time basis and generation-use declaration"),
+    out: str = typer.Option(..., "--out", help="New report file outside the mapping job"),
+    max_time_delta: float = typer.Option(.05, "--max-time-delta"),
+    alignment_prefix_fraction: float = typer.Option(1., "--alignment-prefix-fraction", help="Fit only this prefix and evaluate the disjoint suffix; 1 fits/evaluates all samples"),
+) -> None:
+    """Compare saved original/corrected motion without changing maps or attempts."""
+    from ca.mapping_trajectory import evaluate_mapping_trajectory
+    try:
+        result = evaluate_mapping_trajectory(job, reference, json.loads(Path(provenance).read_text()), out, max_time_delta, alignment_prefix_fraction)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-trajectory-inspect")
+def mapping_trajectory_inspect_cmd(
+    report: str = typer.Argument(..., help="Saved comparison JSON"),
+    sha256: str = typer.Option(..., "--sha256", help="Expected SHA-256 from evaluation's report artifact"),
+    size: int = typer.Option(..., "--bytes", help="Expected byte count from evaluation's report artifact"),
+    window_poses: int = typer.Option(12, "--window-poses"),
+    ranking: str = typer.Option("regression", "--ranking"),
+    offset: int = typer.Option(0, "--offset"),
+) -> None:
+    """Locate evaluated trajectory error windows in the original point-map frame."""
+    from ca.mapping_trajectory_review import inspect_mapping_trajectory_comparison
+    try:
+        result = inspect_mapping_trajectory_comparison(
+            {"path": str(Path(report).resolve()), "sha256": sha256, "bytes": size}, window_poses, ranking, offset)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-motion-trial")
+def mapping_motion_trial_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out"),
+    policy: str = typer.Option(..., "--policy", help="JSON file with explicit find_loops/use_gravity booleans"),
+    reason: str = typer.Option(..., "--reason"),
+    max_attempts: int = typer.Option(4, "--max-attempts", min=1, max=8),
+) -> None:
+    """Generate one alternative motion/point-map candidate in a new job."""
+    from ca.mapping_motion_trial import trial_mapping_motion
+    try:
+        value = json.loads(Path(policy).read_text())
+        if not isinstance(value, dict) or set(value) != {"find_loops", "use_gravity"}:
+            raise ValueError("policy needs exactly find_loops and use_gravity")
+        result = trial_mapping_motion(job, out, value["find_loops"], value["use_gravity"], reason, max_attempts)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["status"] == "failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-run-advance")
+def mapping_run_advance_cmd(
+    job: str = typer.Argument(...),
+    action: str = typer.Option(..., "--action", help="JSON decision from inspect_mapping_run.action_contract, including point-cloud retry and comparison"),
+    revision: int = typer.Option(..., "--revision", min=0),
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Execute and record an agent decision using the inspected run revision."""
+    from ca.mapping_run import advance_mapping_run
+    try:
+        result = advance_mapping_run(job, json.loads(Path(action).read_text(encoding="utf-8")), reason, revision)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if any(result.get(key, {}).get("status") == "failed" for key in ("draft_result", "refine_result", "connect_result", "pointcloud_retry_result")):
+        raise typer.Exit(1)
+
+
+@app.command("mapping-run-export")
+def mapping_run_export_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out", help="New portable review ZIP; existing files are never overwritten"),
+    attribution: str = typer.Option(..., "--attribution", help="Source-data license and credit text"),
+    max_bundle_bytes: int = typer.Option(1024**3, "--max-bundle-bytes", min=1024, max=4 * 1024**3),
+) -> None:
+    """Package the exact finished point/HD pair and final evidence for portable review."""
+    from ca.mapping_bundle import export_mapping_run
+    try:
+        result = export_mapping_run(job, out, attribution, max_bundle_bytes)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-run-preview")
+def mapping_run_preview_cmd(
+    job: str = typer.Argument(...),
+    out: str = typer.Option(..., "--out", help="New display-preview review ZIP"),
+    attribution: str = typer.Option(
+        ..., "--attribution", help="Source-data license and credit text"
+    ),
+    max_preview_points: int = typer.Option(
+        200000, "--max-preview-points", min=1, max=1000000
+    ),
+    max_bundle_bytes: int = typer.Option(
+        64 * 1024**2, "--max-bundle-bytes", min=1024, max=4 * 1024**3
+    ),
+) -> None:
+    """Package bounded display-only point records and the exact HD map with original audits."""
+    from ca.mapping_bundle import export_mapping_preview
+
+    try:
+        result = export_mapping_preview(
+            job, out, attribution, max_preview_points, max_bundle_bytes
+        )
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-bundle-inspect")
+def mapping_bundle_inspect_cmd(
+    bundle: str = typer.Argument(...),
+    max_bundle_bytes: int = typer.Option(1024**3, "--max-bundle-bytes", min=1024, max=4 * 1024**3),
+) -> None:
+    """Verify a portable review ZIP and read its map paths and remaining holds."""
+    from ca.mapping_bundle import inspect_mapping_bundle
+    try:
+        result = inspect_mapping_bundle(bundle, max_bundle_bytes)
+    except (OSError, ValueError, RuntimeError, zipfile.BadZipFile) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-lanes")
+def mapping_lanes_cmd(
+    job: str = typer.Argument(...),
+    geometry: int = typer.Option(..., "--geometry", min=1, help="Retained geometry attempt ID"),
+    specs: str = typer.Option(..., "--specs", help="JSON list of explicit per-centre-curve lane hypotheses"),
+    boundary_policy: str = typer.Option(..., "--boundary-policy"),
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Export source-span lane hypotheses with preserved geometry and IR/OSM source audits."""
+    from ca.mapping_job import generate_mapping_corridor_lanes
+    try:
+        hypotheses = json.loads(Path(specs).read_text(encoding="utf-8"))
+        result = generate_mapping_corridor_lanes(job, geometry, hypotheses, boundary_policy, reason)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+    if result["attempts"][-1]["status"] == "failed":
+        raise typer.Exit(1)
+
+
+@app.command("mapping-status")
+def mapping_status_cmd(job: str = typer.Argument(...)) -> None:
+    """Inspect mapping evidence, artifact paths and remaining attempt budget as JSON."""
+    from ca.mapping_job import inspect_mapping_job
+    try:
+        result = inspect_mapping_job(job)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-select")
+def mapping_select_cmd(
+    job: str = typer.Argument(...),
+    candidate: int = typer.Option(..., "--candidate"),
+    reason: str = typer.Option(..., "--reason"),
+) -> None:
+    """Select a retained HD draft with a recorded reason and visible quality holds."""
+    from ca.mapping_job import select_mapping_candidate
+    try:
+        result = select_mapping_candidate(job, candidate, reason)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
+@app.command("mapping-diagnose")
+def mapping_diagnose_cmd(
+    job: str = typer.Argument(...),
+    candidate: int = typer.Option(..., "--candidate", min=1),
+) -> None:
+    """Explain saved source-review holds without rerunning generation or spending attempts."""
+    from ca.mapping_job import diagnose_mapping_candidate
+    try:
+        result = diagnose_mapping_candidate(job, candidate)
+    except (OSError, ValueError, RuntimeError) as error:
+        _handle_error(error)
+    typer.echo(json.dumps(result, indent=2))
+
+
 @app.command("vectormap-build")
 def vectormap_build_cmd(
     cloud: str = typer.Argument(..., help="Surveyed point cloud, in the trajectory's metre frame"),
@@ -1868,6 +2205,7 @@ def vectormap_build_cmd(
     no_track_boundaries: bool = typer.Option(False, "--no-track-boundaries", help="Choose each boundary slice independently without continuity tracking"),
     no_fit_boundaries: bool = typer.Option(False, "--no-fit-boundaries", help="Keep selected source positions without trajectory-relative curve fitting"),
     fit_source_surface: bool = typer.Option(False, "--fit-source-surface", help="Fit widths/heights to source ground; defer unsupported intervals; lane counts remain explicit"),
+    local_ground_height: bool = typer.Option(False, "--local-ground-height", help="Estimate seed-road height from the lowest spatially supported layer; defer missing support and review level ambiguity"),
     no_verify_curb_profiles: bool = typer.Option(False, "--no-verify-curb-profiles", help="Keep unchecked height-step candidates, including tall objects and isolated returns"),
     no_merge_repeated_passes: bool = typer.Option(False, "--no-merge-repeated-passes", help="Add roads without reusing matching existing intervals"),
     existing_map: Optional[str] = typer.Option(None, "--existing-map", help="Keep this IR JSON or Lanelet2 map and add uncovered intervals"),
@@ -1893,6 +2231,7 @@ def vectormap_build_cmd(
             paint_channel=cast(Literal["rgb", "intensity"], paint_channel),
             track_boundaries=not no_track_boundaries, fit_boundaries=not no_fit_boundaries,
             fit_source_surface=fit_source_surface,
+            local_ground_height=local_ground_height,
             verify_curb_profiles=not no_verify_curb_profiles,
             merge_repeated_passes=not no_merge_repeated_passes, existing_map=existing_map,
             origin_lat=origin_lat, origin_lon=origin_lon,
@@ -2158,6 +2497,132 @@ def crop_cmd(
     typer.echo(f"Saved:    {result['output']}")
     if output_json:
         _dump_json(result, output_json)
+
+
+def _int_list(value: Optional[str]) -> Optional[list[int]]:
+    return [int(v) for v in value.split(",")] if value else None
+
+
+@app.command("bridge-sections")
+def bridge_sections_cmd(
+    input_path: str = typer.Argument(..., help="Bridge point cloud (LAS/LAZ, or any format ca reads)"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Directory for JSON, CSV table and SVG section"),
+    spacing: float = typer.Option(1.0, "--spacing", help="Distance between sections along the axis (m)"),
+    thickness: float = typer.Option(0.1, "--thickness", help="Section slab thickness (m)"),
+    classes: Optional[str] = typer.Option(None, "--classes", help="Measure only these classification codes, e.g. 0,1,2,3"),
+    axis_classes: Optional[str] = typer.Option(None, "--axis-classes", help="Codes whose points define the axis and deck ends, e.g. the deck"),
+    axis: Optional[str] = typer.Option(None, "--axis", help="Explicit axis as x1,y1,x2,y2"),
+) -> None:
+    """Cut sections along a bridge and write a member dimension table.
+
+    Values are measured from the point cloud only: visible depths are lower
+    bounds and items without supporting returns are reported as unobserved.
+    """
+    from ca.bridge import bridge_sections
+
+    try:
+        ends = [float(v) for v in axis.split(",")] if axis else None
+        if ends is not None and len(ends) != 4:
+            raise ValueError("--axis needs x1,y1,x2,y2")
+        result = bridge_sections(
+            input_path, output_dir, spacing=spacing, thickness=thickness,
+            classes=_int_list(classes), axis_classes=_int_list(axis_classes),
+            axis=(ends[:2], ends[2:]) if ends else None,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    measured = sum(s["status"] == "measured" for s in result["sections"])
+    typer.echo(f"Sections:  {measured}/{len(result['sections'])} measured")
+    for row in result["table"]:
+        value = "-" if row["value"] is None else f"{row['value']:.3f}"
+        typer.echo(f"  {row['label_ja']}: {value} ({row['status']})")
+    for name, path in result["outputs"].items():
+        typer.echo(f"Saved {name}: {path}")
+
+
+@app.command("bridge-plan")
+def bridge_plan_cmd(
+    input_path: str = typer.Argument(..., help="Bridge point cloud (LAS/LAZ, or any format ca reads)"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Directory for JSON, member CSV and SVG plan"),
+    spacing: float = typer.Option(0.25, "--spacing", help="Distance between sections searched for girders (m)"),
+    classes: Optional[str] = typer.Option(None, "--classes", help="Measure only these classification codes, e.g. 0,1,2,3"),
+    axis_classes: Optional[str] = typer.Option(None, "--axis-classes", help="Codes whose points define the axis and deck ends, e.g. the deck"),
+    member_classes: Optional[str] = typer.Option(None, "--member-classes", help="Codes searched for girders and cross beams, e.g. 1,2 without abutments"),
+    axis: Optional[str] = typer.Option(None, "--axis", help="Explicit axis as x1,y1,x2,y2"),
+    supports: Optional[str] = typer.Option(None, "--supports", help="Piers as distances from the start along the centreline (m), e.g. 18.5,37.0; detected when omitted"),
+) -> None:
+    """Draw a bridge plan with numbered deck, girder and cross-beam elements.
+
+    Girders and cross beams are drawn only where returns beneath the deck show
+    them; without such returns nothing below the deck is drawn or assumed.
+    """
+    from ca.bridge_plan import bridge_plan
+
+    try:
+        ends = [float(v) for v in axis.split(",")] if axis else None
+        if ends is not None and len(ends) != 4:
+            raise ValueError("--axis needs x1,y1,x2,y2")
+        result = bridge_plan(
+            input_path, output_dir, spacing=spacing, classes=_int_list(classes),
+            axis_classes=_int_list(axis_classes), member_classes=_int_list(member_classes),
+            axis=(ends[:2], ends[2:]) if ends else None,
+            supports=[float(v) for v in supports.split(",")] if supports else None,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    deck = result["deck"]
+    typer.echo(f"Deck:      {deck['length_m']:.3f} m x {deck['width_m']:.3f} m, skew {deck['skew_deg']:.1f} deg")
+    typer.echo(f"Underside: {result['underside']}")
+    typer.echo(f"Girders:   {len(result['girders'])}, cross beams: {len(result['cross_beams'])}, "
+               f"elements: {len(result['elements'])}")
+    lengths = ", ".join(f"{sp['length_m']:.2f} m" for sp in result["spans"])
+    typer.echo(f"Spans:     {len(result['spans'])} ({lengths})")
+    for warning in result["warnings"]:
+        typer.echo(f"Warning:   {warning}")
+    for name, path in result["outputs"].items():
+        typer.echo(f"Saved {name}: {path}")
+
+
+@app.command("bridge-damage")
+def bridge_damage_cmd(
+    input_path: str = typer.Argument(..., help="Bridge point cloud with colour (LAS/LAZ, or any format ca reads)"),
+    output_dir: str = typer.Option(..., "--output-dir", "-o", help="Directory for JSON, CSV, soffit orthophoto and SVG"),
+    classes: Optional[str] = typer.Option(None, "--classes", help="Codes measured for the plan, e.g. 0,1,2,3"),
+    axis_classes: Optional[str] = typer.Option(None, "--axis-classes", help="Codes whose points define the axis and deck ends"),
+    member_classes: Optional[str] = typer.Option(None, "--member-classes", help="Codes searched for girders and cross beams"),
+    surface_classes: Optional[str] = typer.Option(None, "--surface-classes", help="Codes the soffit is taken from, e.g. 1,2"),
+    supports: Optional[str] = typer.Option(None, "--supports", help="Piers as distances from the start (m)"),
+) -> None:
+    """Find damage candidates on a deck soffit and place them on the numbered plan.
+
+    Candidates are colour or height departures from the surrounding soffit for an
+    inspector to confirm; nothing is diagnosed.
+    """
+    from ca.bridge_damage import bridge_damage
+
+    try:
+        result = bridge_damage(
+            input_path, output_dir, classes=_int_list(classes), axis_classes=_int_list(axis_classes),
+            member_classes=_int_list(member_classes), surface_classes=_int_list(surface_classes),
+            supports=[float(v) for v in supports.split(",")] if supports else None,
+        )
+    except (FileNotFoundError, ValueError) as e:
+        _handle_error(e)
+
+    typer.echo(f"Underside:  {result['underside']}")
+    if "soffit" in result:
+        typer.echo(f"Searched:   {result['soffit']['area_searched_m2']:.1f} m2 of soffit")
+    kinds: dict[str, int] = {}
+    for c in result["candidates"]:
+        kinds[c["label_ja"]] = kinds.get(c["label_ja"], 0) + 1
+    typer.echo(f"Candidates: {len(result['candidates'])}")
+    for label, n in kinds.items():
+        typer.echo(f"  {label}: {n}")
+    typer.echo(f"Note:       {result['note']}")
+    for name, path in result["outputs"].items():
+        typer.echo(f"Saved {name}: {path}")
 
 
 @app.command("normals")

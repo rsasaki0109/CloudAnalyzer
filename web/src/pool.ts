@@ -9,6 +9,16 @@ const MAX_WORKERS = 8;
 const workers: (Worker | undefined)[] = [];
 const generations: number[] = [];
 let seq = 0;
+const memory = new Map<Worker,number>();
+let pending = 0;
+const warming = new Set<() => void>();
+export function poolMemory(): number { return [...memory.values()].reduce((sum,v) => sum + v,0); }
+export function releasePool(): void {
+  if (pending) throw new Error("Finish the active operation before releasing pool workers");
+  for (const cancel of [...warming]) cancel();
+  for (const worker of workers) worker?.terminate();
+  workers.length = 0; memory.clear(); nextLane = 0;
+}
 
 export function poolSize(): number {
   return Math.max(1, Math.min(MAX_WORKERS, (navigator.hardwareConcurrency || 2) - 1));
@@ -20,7 +30,11 @@ function worker(i: number): Worker {
     workers[i] = created;
     generations[i] = (generations[i] ?? 0) + 1;
     // Cached WASM state can disappear while no slice is awaiting a reply.
-    const lost = () => { if (workers[i] === created) workers[i] = undefined; created.terminate(); };
+    const lost = () => {
+      if (workers[i] === created) workers[i] = undefined;
+      memory.delete(created);
+      created.terminate();
+    };
     created.addEventListener("error", lost);
     created.addEventListener("messageerror", lost);
   }
@@ -34,25 +48,37 @@ export function workerGeneration(lane: number): number | undefined {
 
 function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>> {
   const id = ++seq;
+  const background = slice.kind === "warm-up";
+  if (!background) pending++;
   return new Promise((resolve, reject) => {
-    const cleanup = () => {
-      w.removeEventListener("message", onMessage);
-      w.removeEventListener("error", onError);
-      w.removeEventListener("messageerror", onError);
-    };
-    const onError = (event: Event) => {
-      cleanup();
-      const lane = workers.indexOf(w);
-      if (lane >= 0) workers[lane] = undefined;
-      w.terminate();
-      reject(new Error(event instanceof ErrorEvent ? event.message : "Pool worker message failed"));
-    };
+    let finished = false;
     const onMessage = (event: MessageEvent<SliceResponse>) => {
       if (event.data.seq !== id) return;
-      cleanup();
+      if (!cleanup()) return;
+      memory.set(w,event.data.memory);
       if (event.data.ok) resolve(event.data.value as SliceResult<S>);
       else reject(new Error(event.data.error));
     };
+    const onError = (event: Event) => {
+      if (!cleanup()) return;
+      const lane = workers.indexOf(w);
+      if (lane >= 0) workers[lane] = undefined;
+      memory.delete(w);
+      w.terminate();
+      const message = "message" in event && typeof event.message === "string" ? event.message : "Pool worker message failed";
+      reject(new Error(message || "Pool worker failed"));
+    };
+    const cleanup = () => {
+      if (finished) return false;
+      finished = true;
+      if (!background) pending--;
+      warming.delete(cancelWarmup);
+      w.removeEventListener("message", onMessage); w.removeEventListener("error", onError);
+      w.removeEventListener("messageerror", onError);
+      return true;
+    };
+    const cancelWarmup = () => { if (cleanup()) resolve(new Float64Array(0) as SliceResult<S>); };
+    if (background) warming.add(cancelWarmup);
     w.addEventListener("message", onMessage);
     w.addEventListener("error", onError);
     w.addEventListener("messageerror", onError);
@@ -86,8 +112,7 @@ function runSlice<S extends Slice>(w: Worker, slice: S): Promise<SliceResult<S>>
       transfer.push(slice.positions.buffer);
       if (slice.colors) transfer.push(slice.colors.buffer);
     }
-    try { w.postMessage(request, { transfer }); }
-    catch (error) { cleanup(); reject(error); }
+    try { w.postMessage(request, { transfer }); } catch (error) { if (cleanup()) reject(error); }
   });
 }
 

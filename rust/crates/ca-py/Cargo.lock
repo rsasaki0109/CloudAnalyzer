@@ -55,6 +55,7 @@ dependencies = [
  "numpy",
  "pyo3",
  "rayon",
+ "serde",
  "serde_json",
  "vectormap-core",
  "vectormap-io",

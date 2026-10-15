@@ -1,0 +1,752 @@
+{
+  "schema": "cloudanalyzer.mapping_geometry.v1",
+  "reason": "Test a bounded local addition from fresh source sections, then preserve the original map geometry and connections rather than replace the full HD draft",
+  "coordinate_frame": "local_slam_metres",
+  "protocol": {
+    "options": {
+      "search_radius_m": 8.0,
+      "association": "trajectory_containing"
+    },
+    "sample_spacing_m": 2.0,
+    "bin_width_m": 0.5,
+    "half_window_m": 2.0,
+    "minimum_support_span_m": 1.0,
+    "maximum_adjacent_height_step_m": 0.08,
+    "maximum_reference_level_grade": 0.12,
+    "ground_estimator": {
+      "model": "lowest_supported_layer",
+      "layer_height_m": 0.15,
+      "xy_cell_m": 0.2,
+      "minimum_cells": 3,
+      "minimum_triangle_area_m2": 0.01
+    },
+    "interval_support_spacing_m": 0.5,
+    "interval_ground_radius_m": 0.75,
+    "interval_height_tolerance_m": 0.3,
+    "maximum_sections": 2048,
+    "profile_query_point_budget": 2000000,
+    "interval_support_sample_budget": 100000
+  },
+  "source_proposal_limited": false,
+  "decisions": [
+    {
+      "candidate_id": 3,
+      "action": "include",
+      "reason": "Adopt only inspected missing interval with path-level support and no search-limit edge; retain fixed minimum width and all other baseline lanes",
+      "from_m": 22.0,
+      "to_m": 28.0
+    }
+  ],
+  "segments": [
+    {
+      "candidate_id": 3,
+      "action": "include",
+      "reason": "Adopt only inspected missing interval with path-level support and no search-limit edge; retain fixed minimum width and all other baseline lanes",
+      "from_m": 22.0,
+      "to_m": 28.0,
+      "curve_ids": {
+        "center": 1,
+        "left": 2,
+        "right": 3
+      },
+      "sections": [
+        {
+          "station_m": 22.0,
+          "center": [
+            17.61698358634317,
+            4.403838501849976,
+            -2.4964943659333065
+          ],
+          "left": [
+            19.35443390082997,
+            4.194634284182834,
+            -2.6197851766065083
+          ],
+          "right": [
+            15.87953327185637,
+            4.613042719517118,
+            -2.396767992830977
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 24.0,
+          "center": [
+            17.069921064430734,
+            2.3768806656513903,
+            -2.454291923737377
+          ],
+          "left": [
+            18.529005959569798,
+            1.4106657471280672,
+            -2.572908160885117
+          ],
+          "right": [
+            15.610836169291671,
+            3.343095584174714,
+            -2.439459754158093
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 26.0,
+          "center": [
+            16.010300636769752,
+            0.6232749360957386,
+            -2.4301476509166777
+          ],
+          "left": [
+            17.58720323906255,
+            -0.6069194318324402,
+            -2.6187636189321015
+          ],
+          "right": [
+            14.433398034476959,
+            1.8534693040239174,
+            -2.286073362389615
+          ],
+          "support_span_m": 4.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 28.0,
+          "center": [
+            14.595310056061138,
+            -0.7974585581120905,
+            -2.345350236134446
+          ],
+          "left": [
+            15.595115614372423,
+            -1.5477177437072145,
+            -2.463707603757105
+          ],
+          "right": [
+            13.595504497749852,
+            -0.0471993725169666,
+            -2.27207272766561
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "complete_width_resolved": false,
+      "lane_count": null,
+      "traffic_direction": null,
+      "speed_limit": null
+    }
+  ],
+  "station_disposition": [
+    {
+      "from_m": 0.0,
+      "to_m": 8.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        1
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 8.0,
+      "to_m": 12.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 12.0,
+      "to_m": 18.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        2
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 18.0,
+      "to_m": 22.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 22.0,
+      "to_m": 28.0,
+      "status": "included_geometry",
+      "included_candidate_id": 3,
+      "available_candidate_ids": [
+        3
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 28.0,
+      "to_m": 30.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        3
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 30.0,
+      "to_m": 32.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "unmatched_bands"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 32.0,
+      "to_m": 36.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        4
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 36.0,
+      "to_m": 40.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 40.0,
+      "to_m": 44.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        5
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 44.0,
+      "to_m": 48.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 48.0,
+      "to_m": 64.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        6
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 64.0,
+      "to_m": 68.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 68.0,
+      "to_m": 114.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        7
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 114.0,
+      "to_m": 118.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 118.0,
+      "to_m": 122.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        8
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 122.0,
+      "to_m": 124.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "unmatched_bands"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 124.0,
+      "to_m": 128.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        9
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 128.0,
+      "to_m": 132.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 132.0,
+      "to_m": 148.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        10
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 148.0,
+      "to_m": 152.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 152.0,
+      "to_m": 156.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        11
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 156.0,
+      "to_m": 158.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 158.0,
+      "to_m": 162.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        12
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 162.0,
+      "to_m": 166.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 166.0,
+      "to_m": 176.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        13
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 176.0,
+      "to_m": 180.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 180.0,
+      "to_m": 196.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        14
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 196.0,
+      "to_m": 200.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 200.0,
+      "to_m": 202.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        15
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 202.0,
+      "to_m": 204.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "unmatched_bands"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 204.0,
+      "to_m": 208.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "source_gap"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 208.0,
+      "to_m": 216.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 216.0,
+      "to_m": 218.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        16
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 218.0,
+      "to_m": 226.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 226.0,
+      "to_m": 246.0,
+      "status": "not_reviewed",
+      "included_candidate_id": null,
+      "available_candidate_ids": [
+        17
+      ],
+      "deferred_candidate_ids": [],
+      "source_reasons": [],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 246.0,
+      "to_m": 252.0,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "missing_trajectory_band"
+      ],
+      "source_ambiguous": false
+    },
+    {
+      "from_m": 252.0,
+      "to_m": 252.5863381996826,
+      "status": "source_deferred",
+      "included_candidate_id": null,
+      "available_candidate_ids": [],
+      "deferred_candidate_ids": [],
+      "source_reasons": [
+        "unmatched_bands"
+      ],
+      "source_ambiguous": false
+    }
+  ],
+  "summary": {
+    "segments": 1,
+    "reference_curves": 3,
+    "trajectory_length_m": 252.5863381996826,
+    "included_station_length_m": 6.0,
+    "unresolved_station_length_m": 246.5863381996826,
+    "lane_count": null,
+    "complete_width_resolved": false,
+    "road_semantics_inferred": false,
+    "source_quality_passed": false,
+    "deployment_ready": false,
+    "included_station_fraction": 0.02375425386331342,
+    "minimum_retained_fraction": 0.9,
+    "meets_requested_station_extent": false
+  },
+  "warnings": [
+    "Included source curves remain review geometry. No complete width, lane, direction, speed, legal use, connectivity, georeference or full-width interior is established.",
+    "Other reference curves use the editable IR; standalone unknown ways are discarded by the Lanelet2 reader, so this stage does not publish OSM.",
+    "Station coverage is input-path extent, not unique road length or a source-quality pass. Separate candidates are not joined or smoothed."
+  ],
+  "source_warnings": [
+    "Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves.",
+    "Explicit trajectory-containing association excludes off-path bands from matching but retains them in every original profile. This resolves geometric association only, not physical road branches or lane identity; unsupported path intervals remain deferred."
+  ],
+  "input_artifacts": {
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "pointcloud": {
+      "map": {
+        "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+        "sha256": "8680b331b097d7dae3d44f99a259acc5cbe40a8b0e7b078ed57a208465158eef",
+        "bytes": 22572654
+      },
+      "trajectory": {
+        "path": "run/pointcloud-retry/reference.txt",
+        "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+        "bytes": 46143
+      },
+      "graph": {
+        "path": "run/pointcloud-retry/reference.g2o",
+        "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+        "bytes": 92299
+      },
+      "fusion_graph": {
+        "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+        "sha256": "3032a8e4e4de962c7835ce63c0ccd37f74aba9b07fc204bb7f6cce7e711726e8",
+        "bytes": 103572
+      },
+      "fusion_trajectory": {
+        "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+        "sha256": "f6cfb6b8d795ff10d0f844306372a3e54804a3ad7e6cc909b1f540c1e49c8eee",
+        "bytes": 52798
+      },
+      "fusion_scans": {
+        "path": "run/pointcloud-retry/fusion-scans.json",
+        "sha256": "145e065c2bdd0c49a7aaf0576ded9067b308505f4772f7bcd29006861cb7b339",
+        "bytes": 55055
+      }
+    },
+    "native": {
+      "version": "0.1.0",
+      "extension": {
+        "path": "native/cloudanalyzer_core/_core.abi3.so",
+        "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+        "bytes": 7451080
+      }
+    },
+    "corridor_proposal": {
+      "path": "run/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "1a79d79f5a5b9334ebf965ba8789db1e90935561c983b9a7f519a1fcc51a8b37",
+      "bytes": 394263
+    }
+  },
+  "native_validation": {
+    "validation": {
+      "counts": {
+        "errors": 0,
+        "infos": 3,
+        "warnings": 0
+      },
+      "issues": [
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 1,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 1,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:1 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 2,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 2,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:2 is not used by any lane",
+          "severity": "info"
+        },
+        {
+          "code": "unused_boundary",
+          "entity": {
+            "id": 3,
+            "kind": "boundary"
+          },
+          "fix": {
+            "entity": {
+              "id": 3,
+              "kind": "boundary"
+            },
+            "op": "remove_entity"
+          },
+          "message": "boundary:3 is not used by any lane",
+          "severity": "info"
+        }
+      ]
+    },
+    "import_issues": [],
+    "georeference": null
+  },
+  "editing": {
+    "file": "run/pointcloud-retry/geometry-01/vector_map.json",
+    "show_virtual_lines": true
+  }
+}

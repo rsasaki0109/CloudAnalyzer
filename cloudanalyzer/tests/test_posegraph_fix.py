@@ -260,3 +260,29 @@ def test_an_imu_mounted_turned_and_upside_down_is_calibrated_from_the_drive():
     assert np.median(up_spread(rotations, ups @ rotation.T)) < 0.01
     # Up to its sign, which tying to gravity does not depend on.
     assert np.allclose(np.abs(np.einsum("ni,ni->n", ups @ rotation.T, up_in_scans)), 1, atol=1e-6)
+
+
+def test_smoothed_ups_keep_slow_drift_and_leave_out_keyframe_noise():
+    from ca.posegraph_fix import smooth_ups, up_spread
+
+    rng = np.random.default_rng(5)
+    n = 200
+    # Keyframes 1 m apart that turn; the odometry's tilt drifts slowly (up to 2 degrees),
+    # and the IMU adds a degree of keyframe-to-keyframe noise on top.
+    drift = np.radians(2.0) * np.sin(np.linspace(0, np.pi, n))
+    level = np.array([_rot("z", yaw) for yaw in np.linspace(0, 3, n)])
+    rotations = np.array([_rot("x", d) @ r for d, r in zip(drift, level)])
+    positions = np.column_stack([np.arange(n, dtype=float), np.zeros(n), np.zeros(n)])
+    truth = np.einsum("nji,j->ni", level, np.array([0.0, 0.0, 1.0]))
+    noise = np.array([_rot("x", a) @ _rot("y", b) for a, b in rng.normal(0, np.radians(1.0), (n, 2))])
+    ups = np.einsum("nij,nj->ni", noise, truth)
+    smoothed, effective = smooth_ups(rotations, positions, ups, 15.0)
+
+    def error(u):
+        return np.degrees(np.arccos(np.clip(np.einsum("ni,ni->n", u, truth), -1, 1)))
+
+    assert np.median(error(ups)) > 0.8
+    assert np.median(error(smoothed)) < 0.3
+    # The slow drift is still there to be removed: the smoothed ups disagree, seen in the world.
+    assert np.max(up_spread(rotations, smoothed)) > 1.0
+    assert 2 * math.sqrt(math.pi) * 15 * 0.9 < np.median(effective) < 2 * math.sqrt(math.pi) * 15 * 1.1

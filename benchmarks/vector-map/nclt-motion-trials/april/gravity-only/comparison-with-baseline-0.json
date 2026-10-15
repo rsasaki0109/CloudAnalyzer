@@ -1,0 +1,437 @@
+{
+  "schema": "cloudanalyzer.mapping_motion_trial_comparison.v1",
+  "baseline_report": {
+    "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/april/comparison-prefix-30.json",
+    "sha256": "7809ccdb2fa237b24fd16cc261c5676dd8247169350ef78ccb1a54ec9dd58869",
+    "bytes": 244297
+  },
+  "candidate_report": {
+    "path": "/workspace/.cloudanalyzer-env/nclt-motion-trial-evaluations/april/gravity-only/comparison-prefix-30.json",
+    "sha256": "c3676549e392e8548a7dc126305585f49a68d76df21705713bb6180a77603dd6",
+    "bytes": 243544
+  },
+  "point_maps": {
+    "baseline": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/pointcloud/fusion-input_map.ply",
+      "sha256": "bef9b3eea139e07110a4d0ade285f52c911fbf07e329af4388aabb1c06165474",
+      "bytes": 22802030
+    },
+    "candidate": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only/pointcloud/original-keyframes_map.ply",
+      "sha256": "b7f11c3219e5b03c0ed8f9b7f67cd01b9a3850ae0ba81c8d03b2762c457f6f7b",
+      "bytes": 22233262
+    }
+  },
+  "reference_provenance": {
+    "source": "https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-04-29.csv; original NCLT body ground truth transformed to synchronized Velodyne sensor origin; see preparation.json",
+    "license": "NCLT Open Database License (ODbL 1.0), contents DBCL 1.0",
+    "frame": "NCLT z-up world, synchronized Velodyne sensor origin, xyz metres; FLIP @ body_pose @ BODY_VEL @ FLIP",
+    "time_basis": "NCLT original microsecond timestamps / 1e6, same clock as bundled scan headers",
+    "used_for_generation": false
+  },
+  "reference_independence": "caller_declared_not_used_for_generation",
+  "coverage": {
+    "original_poses": 236,
+    "retained_poses": 199,
+    "matched_poses": 199,
+    "evaluated_poses": 140,
+    "alignment_fitted_poses": 59,
+    "retained_pose_fraction": 1.0
+  },
+  "protocol": {
+    "window_poses": 12,
+    "ranking": "candidate_minus_baseline_ate_rmse_descending",
+    "held_out_alignment": true,
+    "alignment_prefix_fraction": 0.3,
+    "bounds_frame": "each_unaligned_corrected_point_map_sensor_origins_only"
+  },
+  "global_results": {
+    "baseline": {
+      "ate_rmse_m": 0.2791993727009607,
+      "rpe_translation_rmse_m": 0.1764452953033592
+    },
+    "candidate": {
+      "ate_rmse_m": 0.32439077799196564,
+      "rpe_translation_rmse_m": 0.17638737194598392
+    }
+  },
+  "ate_rmse_m_candidate_minus_baseline": 0.04519140529100496,
+  "total_windows": 12,
+  "offset": 0,
+  "next_offset": 8,
+  "windows": [
+    {
+      "window_id": 11,
+      "original_frame_ids": [
+        226,
+        227,
+        228,
+        230,
+        231,
+        232,
+        234,
+        235
+      ],
+      "timestamp_range_s": [
+        1335706686.242724,
+        1335706693.443099
+      ],
+      "evaluated_poses": 8,
+      "baseline": {
+        "metrics": {
+          "ate_rmse_m": 0.17660758833568133,
+          "rpe_translation_rmse_m": 0.20351418335900892
+        },
+        "sensor_origin_bounds_xy": [
+          1.6468923858460887,
+          -0.08357733795140715,
+          8.720539937784299,
+          5.851913940397893
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "ate_rmse_m": 0.6373611903401916,
+          "rpe_translation_rmse_m": 0.20519776765337222
+        },
+        "sensor_origin_bounds_xy": [
+          1.68463101480307,
+          -0.010962121408573607,
+          8.704589845786504,
+          5.934715884583863
+        ]
+      },
+      "ate_rmse_m_candidate_minus_baseline": 0.4607536020045102
+    },
+    {
+      "window_id": 10,
+      "original_frame_ids": [
+        210,
+        211,
+        212,
+        214,
+        215,
+        216,
+        218,
+        220,
+        221,
+        223,
+        224,
+        225
+      ],
+      "timestamp_range_s": [
+        1335706673.447895,
+        1335706685.442685
+      ],
+      "evaluated_poses": 12,
+      "baseline": {
+        "metrics": {
+          "ate_rmse_m": 0.16767938945371572,
+          "rpe_translation_rmse_m": 0.10676965548185825
+        },
+        "sensor_origin_bounds_xy": [
+          9.658456073208415,
+          1.7587993051177224,
+          18.49396004026829,
+          9.014348112533826
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "ate_rmse_m": 0.4140131044014165,
+          "rpe_translation_rmse_m": 0.10833422137267736
+        },
+        "sensor_origin_bounds_xy": [
+          9.634711163319023,
+          1.8701618498331622,
+          18.460614442274558,
+          9.116687471098377
+        ]
+      },
+      "ate_rmse_m_candidate_minus_baseline": 0.24633371494770076
+    },
+    {
+      "window_id": 9,
+      "original_frame_ids": [
+        193,
+        194,
+        195,
+        196,
+        198,
+        200,
+        202,
+        204,
+        205,
+        206,
+        207,
+        209
+      ],
+      "timestamp_range_s": [
+        1335706659.841384,
+        1335706672.642038
+      ],
+      "evaluated_poses": 12,
+      "baseline": {
+        "metrics": {
+          "ate_rmse_m": 0.23661746881163714,
+          "rpe_translation_rmse_m": 0.25593602413164773
+        },
+        "sensor_origin_bounds_xy": [
+          16.716794766668855,
+          -10.406137326894038,
+          26.1207033455906,
+          0.6419810170956889
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "ate_rmse_m": 0.3937191022677788,
+          "rpe_translation_rmse_m": 0.2539581842450959
+        },
+        "sensor_origin_bounds_xy": [
+          16.71457937165602,
+          -10.271981359362721,
+          26.136921263405004,
+          0.7488264284875733
+        ]
+      },
+      "ate_rmse_m_candidate_minus_baseline": 0.15710163345614164
+    },
+    {
+      "window_id": 8,
+      "original_frame_ids": [
+        176,
+        177,
+        178,
+        180,
+        181,
+        182,
+        183,
+        185,
+        187,
+        188,
+        190,
+        191
+      ],
+      "timestamp_range_s": [
+        1335706646.240748,
+        1335706658.2416
+      ],
+      "evaluated_poses": 12,
+      "baseline": {
+        "metrics": {
+          "ate_rmse_m": 0.3190897512476652,
+          "rpe_translation_rmse_m": 0.26182753855885615
+        },
+        "sensor_origin_bounds_xy": [
+          26.88704412136765,
+          -23.838608271265453,
+          30.390280629291944,
+          -11.136387390003616
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "ate_rmse_m": 0.37572563664627173,
+          "rpe_translation_rmse_m": 0.26226926872925727
+        },
+        "sensor_origin_bounds_xy": [
+          26.947995019043287,
+          -23.703328078999974,
+          30.42096842612158,
+          -10.997434446661554
+        ]
+      },
+      "ate_rmse_m_candidate_minus_baseline": 0.056635885398606534
+    },
+    {
+      "window_id": 1,
+      "original_frame_ids": [
+        81,
+        82,
+        83,
+        84,
+        86,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93
+      ],
+      "timestamp_range_s": [
+        1335706570.036831,
+        1335706579.637318
+      ],
+      "evaluated_poses": 12,
+      "baseline": {
+        "metrics": {
+          "ate_rmse_m": 0.20768403576761754,
+          "rpe_translation_rmse_m": 0.1724617650398184
+        },
+        "sensor_origin_bounds_xy": [
+          -13.682596925022068,
+          -62.60727344711116,
+          -8.312607263169069,
+          -51.40293699803078
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "ate_rmse_m": 0.21796724435758139,
+          "rpe_translation_rmse_m": 0.1723564622720944
+        },
+        "sensor_origin_bounds_xy": [
+          -13.486868000498333,
+          -62.6188750542605,
+          -8.147549590344585,
+          -51.40168039929603
+        ]
+      },
+      "ate_rmse_m_candidate_minus_baseline": 0.010283208589963844
+    },
+    {
+      "window_id": 0,
+      "original_frame_ids": [
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "timestamp_range_s": [
+        1335706560.43635,
+        1335706569.2368
+      ],
+      "evaluated_poses": 12,
+      "baseline": {
+        "metrics": {
+          "ate_rmse_m": 0.16423684107342376,
+          "rpe_translation_rmse_m": 0.17209841426131264
+        },
+        "sensor_origin_bounds_xy": [
+          -7.932354837151565,
+          -50.22391601802995,
+          -2.4994415310364086,
+          -39.18583496699478
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "ate_rmse_m": 0.17066344970233294,
+          "rpe_translation_rmse_m": 0.1720496085689358
+        },
+        "sensor_origin_bounds_xy": [
+          -7.770321897714865,
+          -50.22183131555051,
+          -2.364256663115633,
+          -39.172291653393366
+        ]
+      },
+      "ate_rmse_m_candidate_minus_baseline": 0.006426608628909175
+    },
+    {
+      "window_id": 2,
+      "original_frame_ids": [
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        106
+      ],
+      "timestamp_range_s": [
+        1335706580.437377,
+        1335706590.037847
+      ],
+      "evaluated_poses": 12,
+      "baseline": {
+        "metrics": {
+          "ate_rmse_m": 0.19749553127670078,
+          "rpe_translation_rmse_m": 0.1261446576977241
+        },
+        "sensor_origin_bounds_xy": [
+          -16.634744677383242,
+          -75.24114591914336,
+          -14.256819309267092,
+          -63.62386056056635
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "ate_rmse_m": 0.18861230039698146,
+          "rpe_translation_rmse_m": 0.12434781209560089
+        },
+        "sensor_origin_bounds_xy": [
+          -16.417307518080538,
+          -75.25352262264283,
+          -14.05813469791358,
+          -63.63696121651465
+        ]
+      },
+      "ate_rmse_m_candidate_minus_baseline": -0.008883230879719317
+    },
+    {
+      "window_id": 7,
+      "original_frame_ids": [
+        164,
+        165,
+        166,
+        167,
+        168,
+        169,
+        170,
+        171,
+        172,
+        173,
+        174,
+        175
+      ],
+      "timestamp_range_s": [
+        1335706636.640204,
+        1335706645.440653
+      ],
+      "evaluated_poses": 12,
+      "baseline": {
+        "metrics": {
+          "ate_rmse_m": 0.34210068123716464,
+          "rpe_translation_rmse_m": 0.19691349156149918
+        },
+        "sensor_origin_bounds_xy": [
+          21.191441253178706,
+          -35.897806180737426,
+          26.442365074279135,
+          -24.78486107580954
+        ]
+      },
+      "candidate": {
+        "metrics": {
+          "ate_rmse_m": 0.3293107161946168,
+          "rpe_translation_rmse_m": 0.19635159589785753
+        },
+        "sensor_origin_bounds_xy": [
+          21.29323896669357,
+          -35.783658405359205,
+          26.506525727304364,
+          -24.651131958379448
+        ]
+      },
+      "ate_rmse_m_candidate_minus_baseline": -0.012789965042547813
+    }
+  ],
+  "scope": "Same-reference exploratory motion comparison. Lower average error is not an adoption gate, independent accuracy, local-motion retention or validation of inherited HD geometry. Review worsened regions and reference uncertainty; no maps, attempts or adoption change."
+}

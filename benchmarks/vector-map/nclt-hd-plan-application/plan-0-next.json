@@ -1,0 +1,227 @@
+{
+  "file": {
+    "path": "run/hd-plan-01-ba668c90a289648b/page-0008.json",
+    "sha256": "a5f4042fbdeefd484464f5f2b6ad0e5c6f461cc55d7f17e65881575a4d674d89",
+    "bytes": 55821
+  },
+  "index_file": {
+    "path": "run/hd-plan-01-ba668c90a289648b/index.json",
+    "sha256": "d0628117edef1cca0997330754d0ac620738c2fa0eab54a7e2c770d6a9b9d57d",
+    "bytes": 67827
+  },
+  "schema": "cloudanalyzer.hd_gap_plan.v1",
+  "candidate_id": 1,
+  "gap_ids": [
+    6,
+    9,
+    14,
+    17,
+    19,
+    25,
+    27,
+    29
+  ],
+  "protocol": {
+    "maximum_intervals": 256,
+    "intervals_per_page": 8,
+    "maximum_source_samples_per_page_per_estimator": 100000,
+    "endpoint_tolerance_m": 0.01,
+    "observed_station_endpoints_only": true,
+    "both_ground_estimators_required": true,
+    "all_reference_trace_samples_required": true,
+    "hd_generation_attempts_spent": 0,
+    "lane_export_performed": false,
+    "final_four_audit_patch_required": true
+  },
+  "intervals": [
+    {
+      "plan_interval_id": 9,
+      "candidate_id": 8,
+      "from_m": 142.0,
+      "to_m": 144.0,
+      "gap_id": 14,
+      "minimum_observed_span_m": 2.9999999999999996,
+      "retained_endpoint_links": [],
+      "source_ambiguous": false,
+      "source_audits_file": {
+        "path": "run/hd-plan-01-ba668c90a289648b/source-0009.json",
+        "sha256": "420deafed905cbc8263676918286504b991d226d8637f3c10565113a73d91a0a",
+        "bytes": 55739
+      },
+      "reference_traces_fully_supported": false,
+      "reference_audits": {
+        "quantile": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 30,
+            "supported": 25,
+            "height_mismatches": 5,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "minimum_returns": 3,
+              "model": "low_quantile",
+              "quantile": 0.15
+            }
+          }
+        },
+        "consensus": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 30,
+            "supported": 30,
+            "height_mismatches": 0,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "layer_height_m": 0.15,
+              "minimum_cells": 3,
+              "minimum_triangle_area_m2": 0.01,
+              "model": "lowest_supported_layer",
+              "xy_cell_m": 0.2
+            }
+          }
+        }
+      }
+    },
+    {
+      "plan_interval_id": 10,
+      "candidate_id": 11,
+      "from_m": 174.0,
+      "to_m": 176.0,
+      "gap_id": 19,
+      "minimum_observed_span_m": 3.999999999999996,
+      "retained_endpoint_links": [],
+      "source_ambiguous": false,
+      "source_audits_file": {
+        "path": "run/hd-plan-01-ba668c90a289648b/source-0010.json",
+        "sha256": "733521252d61b125bbf1dac4cb6b8875ffceb93b2b81cbd12d548ef04aa4a993",
+        "bytes": 55409
+      },
+      "reference_traces_fully_supported": false,
+      "reference_audits": {
+        "quantile": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 26,
+            "supported": 23,
+            "height_mismatches": 3,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "minimum_returns": 3,
+              "model": "low_quantile",
+              "quantile": 0.15
+            }
+          }
+        },
+        "consensus": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 26,
+            "supported": 26,
+            "height_mismatches": 0,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "layer_height_m": 0.15,
+              "minimum_cells": 3,
+              "minimum_triangle_area_m2": 0.01,
+              "model": "lowest_supported_layer",
+              "xy_cell_m": 0.2
+            }
+          }
+        }
+      }
+    },
+    {
+      "plan_interval_id": 11,
+      "candidate_id": 16,
+      "from_m": 224.0,
+      "to_m": 226.0,
+      "gap_id": 29,
+      "minimum_observed_span_m": 8.5,
+      "retained_endpoint_links": [],
+      "source_ambiguous": false,
+      "source_audits_file": {
+        "path": "run/hd-plan-01-ba668c90a289648b/source-0011.json",
+        "sha256": "37789f11f878ca7eabc8e9eb5c34618bc301b0aa28be83ed453d3bd7cf51e575",
+        "bytes": 54552
+      },
+      "reference_traces_fully_supported": true,
+      "reference_audits": {
+        "quantile": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 17,
+            "supported": 17,
+            "height_mismatches": 0,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "minimum_returns": 3,
+              "model": "low_quantile",
+              "quantile": 0.15
+            }
+          }
+        },
+        "consensus": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 17,
+            "supported": 17,
+            "height_mismatches": 0,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "layer_height_m": 0.15,
+              "minimum_cells": 3,
+              "minimum_triangle_area_m2": 0.01,
+              "model": "lowest_supported_layer",
+              "xy_cell_m": 0.2
+            }
+          }
+        }
+      }
+    }
+  ],
+  "intervals_total": 11,
+  "next_offset": null,
+  "note": "Read-only reference-curve source checks; no lane builder, OSM exporter, point processing or HD attempt. Support does not prove road identity, full width or a final patch pass. Inspect the frozen child proposal, explicitly draft chosen observed ranges, then require all four exported/reopened audits and retention checks before adoption. Endpoint links are geometry hints requiring patch inspection."
+}

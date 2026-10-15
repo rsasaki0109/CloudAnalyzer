@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 453" font-family="sans-serif" font-size="13">
+<defs><marker id="t" viewBox="0 0 2 10" refX="1" refY="5" markerWidth="2" markerHeight="10" orient="auto"><path d="M1 0V10" stroke="#1a73e8"/></marker></defs>
+<rect width="100%" height="100%" fill="white"/>
+<polygon points="122.9,42.0 1058.0,42.0 987.6,280.5 52.5,280.5" fill="#fdf6ec" stroke="#e8710a" stroke-width="2.5"/>
+<line x1="416.5" y1="42.0" x2="346.1" y2="280.5" stroke="#3c4043" stroke-width="2.2" stroke-dasharray="14 4 3 4"/>
+<text x="416.5" y="34.0" text-anchor="middle" font-weight="bold" fill="#3c4043">P1</text>
+<text x="122.9" y="34.0" text-anchor="middle" font-weight="bold" fill="#3c4043">A1</text>
+<text x="1058.0" y="34.0" text-anchor="middle" font-weight="bold" fill="#3c4043">A2</text>
+<text x="234.5" y="166.3" text-anchor="middle" font-size="15" fill="#202124">Ds0101</text>
+<text x="702.0" y="166.3" text-anchor="middle" font-size="15" fill="#202124">Ds0201</text>
+<line x1="87.7" y1="2.0" x2="1022.8" y2="2.0" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="555.3" y="-4.0" text-anchor="middle" fill="#1a73e8">橋長方向 床版長（中心線） 35593</text>
+<line x1="1070.0" y1="42.0" x2="1070.0" y2="280.5" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="1086.0" y="155.3" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 1086.0 155.3)">全幅 9076</text>
+<line x1="87.7" y1="355.5" x2="381.3" y2="355.5" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="234.5" y="371.5" text-anchor="middle" fill="#1a73e8">第1径間 11175</text>
+<line x1="381.3" y1="355.5" x2="1022.8" y2="355.5" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="702.0" y="371.5" text-anchor="middle" fill="#1a73e8">第2径間 24418</text>
+<text x="52.5" y="302.5" text-anchor="middle" font-weight="bold">起点</text>
+<text x="987.6" y="302.5" text-anchor="middle" font-weight="bold">終点</text>
+<text x="12" y="407">平面図（上から透視）· 起点を左、終点を向いて左側を上 · 単位 mm · 斜角 16.4° · 要素番号＝橋軸方向（起点から）2桁＋直角方向（上から）2桁</text>
+<text x="12" y="429" fill="#5f6368">下面は未観測：主桁・横桁は描いていません（仮定なし）</text>
+</svg>

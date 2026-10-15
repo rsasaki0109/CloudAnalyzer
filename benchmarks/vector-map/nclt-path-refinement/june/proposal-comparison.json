@@ -1,0 +1,367 @@
+{
+  "before": {
+    "protocol": {
+      "options": {
+        "search_radius_m": 8.0,
+        "association": "all_supported_bands"
+      },
+      "sample_spacing_m": 2.0,
+      "bin_width_m": 0.5,
+      "half_window_m": 2.0,
+      "minimum_support_span_m": 1.0,
+      "maximum_adjacent_height_step_m": 0.08,
+      "maximum_reference_level_grade": 0.12,
+      "ground_estimator": {
+        "model": "lowest_supported_layer",
+        "layer_height_m": 0.15,
+        "xy_cell_m": 0.2,
+        "minimum_cells": 3,
+        "minimum_triangle_area_m2": 0.01
+      },
+      "interval_support_spacing_m": 0.5,
+      "interval_ground_radius_m": 0.75,
+      "interval_height_tolerance_m": 0.3,
+      "maximum_sections": 2048,
+      "profile_query_point_budget": 2000000,
+      "interval_support_sample_budget": 100000
+    },
+    "trajectory_length_m": 252.5863381996826,
+    "with_candidate_station_length_m": 212.0,
+    "trajectory_covered_station_length_m": 110.0,
+    "without_candidate_station_length_m": 40.58633819968259,
+    "ambiguous_station_length_m": 128.0,
+    "off_trajectory_bands": 311,
+    "limited": false,
+    "candidates": 77,
+    "longest_candidate_station_length_m": 60.0,
+    "deferred_intervals": [
+      {
+        "from_m": 0.0,
+        "to_m": 2.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 6.0,
+        "to_m": 8.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 16.0,
+        "to_m": 18.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 30.0,
+        "to_m": 32.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 46.0,
+        "to_m": 48.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 112.0,
+        "to_m": 118.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 130.0,
+        "to_m": 134.0,
+        "reason": "missing_ground_anchor"
+      },
+      {
+        "from_m": 134.0,
+        "to_m": 138.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 166.0,
+        "to_m": 170.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 172.0,
+        "to_m": 176.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 196.0,
+        "to_m": 198.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 208.0,
+        "to_m": 210.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 224.0,
+        "to_m": 226.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 250.0,
+        "to_m": 252.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 252.0,
+        "to_m": 252.5863381996826,
+        "reason": "unmatched_bands"
+      }
+    ],
+    "ambiguous_intervals": [
+      {
+        "from_m": 0.0,
+        "to_m": 2.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 4.0,
+        "to_m": 8.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 14.0,
+        "to_m": 18.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 22.0,
+        "to_m": 26.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 36.0,
+        "to_m": 38.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 42.0,
+        "to_m": 50.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 62.0,
+        "to_m": 66.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 104.0,
+        "to_m": 108.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 110.0,
+        "to_m": 120.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 126.0,
+        "to_m": 130.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 134.0,
+        "to_m": 146.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 148.0,
+        "to_m": 150.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 154.0,
+        "to_m": 170.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 172.0,
+        "to_m": 180.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 182.0,
+        "to_m": 188.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 190.0,
+        "to_m": 192.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 196.0,
+        "to_m": 200.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 202.0,
+        "to_m": 206.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 210.0,
+        "to_m": 214.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 216.0,
+        "to_m": 232.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 234.0,
+        "to_m": 236.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 244.0,
+        "to_m": 248.0,
+        "reason": "branching_bands"
+      },
+      {
+        "from_m": 250.0,
+        "to_m": 252.0,
+        "reason": "branching_bands"
+      }
+    ]
+  },
+  "after": {
+    "protocol": {
+      "options": {
+        "search_radius_m": 8.0,
+        "association": "trajectory_containing"
+      },
+      "sample_spacing_m": 2.0,
+      "bin_width_m": 0.5,
+      "half_window_m": 2.0,
+      "minimum_support_span_m": 1.0,
+      "maximum_adjacent_height_step_m": 0.08,
+      "maximum_reference_level_grade": 0.12,
+      "ground_estimator": {
+        "model": "lowest_supported_layer",
+        "layer_height_m": 0.15,
+        "xy_cell_m": 0.2,
+        "minimum_cells": 3,
+        "minimum_triangle_area_m2": 0.01
+      },
+      "interval_support_spacing_m": 0.5,
+      "interval_ground_radius_m": 0.75,
+      "interval_height_tolerance_m": 0.3,
+      "maximum_sections": 2048,
+      "profile_query_point_budget": 2000000,
+      "interval_support_sample_budget": 100000
+    },
+    "trajectory_length_m": 252.5863381996826,
+    "with_candidate_station_length_m": 174.0,
+    "trajectory_covered_station_length_m": 174.0,
+    "without_candidate_station_length_m": 78.58633819968259,
+    "ambiguous_station_length_m": 0.0,
+    "off_trajectory_bands": 311,
+    "limited": false,
+    "candidates": 16,
+    "longest_candidate_station_length_m": 66.0,
+    "deferred_intervals": [
+      {
+        "from_m": 8.0,
+        "to_m": 14.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 18.0,
+        "to_m": 22.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 28.0,
+        "to_m": 32.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 36.0,
+        "to_m": 40.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 44.0,
+        "to_m": 48.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 114.0,
+        "to_m": 118.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 122.0,
+        "to_m": 124.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 124.0,
+        "to_m": 128.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 128.0,
+        "to_m": 130.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 130.0,
+        "to_m": 134.0,
+        "reason": "missing_ground_anchor"
+      },
+      {
+        "from_m": 148.0,
+        "to_m": 152.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 156.0,
+        "to_m": 158.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 160.0,
+        "to_m": 168.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 176.0,
+        "to_m": 180.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 196.0,
+        "to_m": 200.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 202.0,
+        "to_m": 206.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 208.0,
+        "to_m": 210.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 214.0,
+        "to_m": 220.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 246.0,
+        "to_m": 252.5863381996826,
+        "reason": "missing_trajectory_band"
+      }
+    ],
+    "ambiguous_intervals": []
+  },
+  "identical_profiles": true
+}

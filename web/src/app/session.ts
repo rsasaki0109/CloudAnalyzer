@@ -3,6 +3,7 @@
 import { transformCloud } from "../api";
 import { RAMPS, type RampName } from "../colormap";
 import { encodeSession, type Session } from "../session";
+import { matchesFile, type SourceReference } from "../source-reference";
 import { setHiddenClasses } from "./classes";
 import { clipBox, setClipBox } from "./clip";
 import { availableModes, refreshColors } from "./colors";
@@ -11,6 +12,7 @@ import { applyRange, runNearest } from "./distance";
 import { $, download, setStatus } from "./dom";
 import { renderList, replaceCloud } from "./entries";
 import { loadUrls } from "./loading";
+import { invertRigid } from "./history";
 import { savedNotes, setNotes } from "./picking";
 import { savedGates, setGates } from "./report";
 import { colorByField, fieldNames } from "./scalars";
@@ -22,8 +24,9 @@ let pendingSession: Session | null = null;
 /** Clouds of the pending session already restored. */
 const restored = new Set<number>();
 let applyingSession = false;
+let restoreExactTransforms = false;
 
-export function captureSession(): Session {
+export function captureSession(includeDerived = false): Session {
   const { views, ...settings } = captureDisplay();
   return {
     app: "CloudAnalyzer Web",
@@ -39,9 +42,11 @@ export function captureSession(): Session {
     labels: savedNotes(),
     gates: savedGates(),
     clouds: [...entries.values()]
-      .filter((e) => e.origin.kind !== "derived")
+      .filter((e) => includeDerived || e.origin.kind !== "derived")
       .map((e) => ({
         name: e.cloud.name,
+        processing: e.processing,
+        displayPreview: e.origin.displayPreview || undefined,
         url: e.origin.kind === "url" ? e.origin.url : undefined,
         visible: e.visible,
         mode: e.mode,
@@ -57,7 +62,8 @@ export function captureSession(): Session {
 }
 
 /** Apply a session: settings now, URL clouds after downloading them, file clouds as they are opened. */
-export async function applySession(session: Session): Promise<void> {
+export async function applySession(session: Session, exactTransforms = false): Promise<void> {
+  restoreExactTransforms = exactTransforms;
   pendingSession = session;
   restored.clear();
   applyDisplay(session);
@@ -83,17 +89,34 @@ export async function restorePendingAfterLoad(): Promise<void> {
 async function restorePending(): Promise<void> {
   const session = pendingSession;
   if (!session) return;
-  const byName = (name: string, sources = true) =>
-    [...entries.values()].find((e) => e.cloud.name === name && (!sources || e.origin.kind !== "derived"));
+  const byName = async (name: string, sources = true, identity?: SourceReference, loadMaxPoints?: number) => {
+    for (const entry of entries.values()) {
+      if (entry.cloud.name !== name || (sources && entry.origin.kind === "derived")) continue;
+      if (restoreExactTransforms && loadMaxPoints !== undefined && entry.origin.loadMaxPoints !== loadMaxPoints) continue;
+      if (!identity) return entry;
+      const origin = entry.origin;
+      if (identity.kind === "file" && origin.kind !== "derived" && origin.file && await matchesFile(origin.file, identity)) return entry;
+      if (identity.kind === "http" && origin.kind === "url" && origin.url === identity.url && origin.size === identity.size && origin.etag === identity.etag) return entry;
+    }
+    return undefined;
+  };
   const missing: string[] = [];
   for (const saved of session.clouds) {
-    const entry = byName(saved.name);
+    const entry = await byName(saved.name, true, saved.source, saved.loadMaxPoints);
     if (!entry) {
       missing.push(saved.name);
       continue;
     }
     if (restored.has(entry.cloud.id)) continue;
-    restored.add(entry.cloud.id);
+    entry.processing = saved.processing;
+    entry.origin.displayPreview = entry.origin.displayPreview || saved.displayPreview;
+    if (restoreExactTransforms && JSON.stringify(entry.transforms) !== JSON.stringify(saved.transforms)) {
+      // Existing sources may already be moved; return them to their source frame.
+      while (entry.transforms.length) {
+        replaceCloud(entry, await transformCloud(entry.cloud.id, invertRigid(entry.transforms.at(-1)!)));
+        entry.transforms.pop();
+      }
+    }
     if (entry.transforms.length === 0) {
       for (const matrix of saved.transforms) {
         replaceCloud(entry, await transformCloud(entry.cloud.id, matrix));
@@ -106,11 +129,12 @@ async function restorePending(): Promise<void> {
     // Distances are recomputed below, which also colors by them; so are fields.
     if (saved.mode !== "c2c" && saved.mode !== "scalar" && availableModes(entry)[saved.mode]) entry.mode = saved.mode;
     refreshColors(entry);
+    restored.add(entry.cloud.id);
   }
   for (const saved of session.clouds) {
-    const entry = byName(saved.name);
-    const reference = saved.distance ? byName(saved.distance.reference, false) : undefined;
-    if (entry && reference && saved.distance && !entry.c2c) await runNearest(entry, reference, saved.distance.signed);
+    const entry = await byName(saved.name, true, saved.source, saved.loadMaxPoints);
+    const reference = saved.distance ? await byName(saved.distance.reference, false, session.clouds.find(c => c.name === saved.distance?.reference)?.source) : undefined;
+    if (entry && reference && saved.distance && (restoreExactTransforms || !entry.c2c)) await runNearest(entry, reference, saved.distance.signed);
     if (entry && saved.mode === "scalar" && saved.field && fieldNames(entry).includes(saved.field)) {
       await colorByField(entry, saved.field).catch(() => {});
     }

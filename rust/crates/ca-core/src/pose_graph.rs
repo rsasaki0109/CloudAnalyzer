@@ -38,7 +38,7 @@ fn fail<T>(message: impl Into<String>) -> Result<T, PoseGraphError> {
     Err(PoseGraphError(message.into()))
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub enum EdgeKind {
     /// Between poses that follow each other.
     Odometry,
@@ -46,7 +46,7 @@ pub enum EdgeKind {
     Loop,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Node {
     /// The id in the source file (the frame index for trajectories).
     pub id: i64,
@@ -55,7 +55,7 @@ pub struct Node {
     pub fixed: bool,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Edge {
     /// Node indices (into [`PoseGraph::nodes`], not ids).
     pub from: usize,
@@ -68,7 +68,7 @@ pub struct Edge {
 }
 
 /// A plane landmark `n · x + d = 0` in world coordinates, `n` a unit vector.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Plane {
     /// Its vertex id in g2o files (distinct from the node ids).
     pub id: i64,
@@ -78,7 +78,7 @@ pub struct Plane {
 
 /// A node's view of a plane: its coefficients in the node's frame, with a
 /// 3x3 information on (normal tilt about two axes, offset).
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PlaneEdge {
     pub node: usize,
     pub plane: usize,
@@ -88,14 +88,14 @@ pub struct PlaneEdge {
 
 /// A keyframe's measured up direction (a unit vector in its frame), e.g.
 /// from an IMU's roll and pitch, with a 2x2 information on its tilt.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GravityEdge {
     pub node: usize,
     pub up: [f64; 3],
     pub information: [[f64; 2]; 2],
 }
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PoseGraph {
     pub nodes: Vec<Node>,
     pub edges: Vec<Edge>,

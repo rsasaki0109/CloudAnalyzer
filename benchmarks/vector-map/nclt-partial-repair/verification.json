@@ -1,0 +1,509 @@
+{
+  "schema": "cloudanalyzer.nclt_partial_repair.v1",
+  "date": "2026-10-09",
+  "method": "Two fresh live MCP runs; replay inspected baseline source/connection choices; inspect every root gap and unused frame; explicitly fuse the same 13/28 eligible frames at fixed motion/thinning as the prior trial; inspect every fresh child source candidate; explicitly choose only April 26\u201330 m and June 22\u201328 m; inspect local patch endpoint previews; explicitly patch with no offered new joins; compare actual maps; finish children and explicitly adopt both partial pairs.",
+  "baseline_replay": true,
+  "independent_agent_benchmark": false,
+  "independent_ground_truth_used": false,
+  "independent_accuracy_improvement_established": false,
+  "road_semantics_inferred": false,
+  "deployment_ready": false,
+  "point_map_scope": "Complete fusion trial, not a local ROI point replacement",
+  "source_license": "ODbL-1.0 with DBCL-1.0 database contents; derived maps, observations and figure share these terms.",
+  "path_conventions": "Provenance hashes identify original files before portable path normalization; files-sha256.json identifies committed normalized copies. run/ refers to generated outputs, repo/ to repository inputs, native/ to the pinned extension. Full point clouds stay generated outputs; the figure uses the committed prior baseline visualization sample, never an audit input.",
+  "runs": [
+    {
+      "label": "april",
+      "source": {
+        "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+        "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+        "bytes": 10054898
+      },
+      "native": {
+        "version": "0.1.0",
+        "extension": {
+          "path": "native/cloudanalyzer_core/_core.abi3.so",
+          "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+          "bytes": 7451080
+        }
+      },
+      "baseline_lane_geometry_and_topology_match_last_merged_map": true,
+      "same_fused_point_maps_as_prior_full_redraft_trial": true,
+      "byte_identical_original_reference": true,
+      "baseline_and_patch_hd_files": {
+        "before": {
+          "map": {
+            "path": "run/candidate-03/lanelet2_map.osm",
+            "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+            "bytes": 44568
+          },
+          "projector": {
+            "path": "run/candidate-03/map_projector_info.yaml",
+            "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+            "bytes": 22
+          },
+          "editable_map": {
+            "path": "run/candidate-03/vector_map.json",
+            "sha256": "15207364b864bdb874a4a254031c3d7bae60d8097e72706f5e988f147055a558",
+            "bytes": 18383
+          },
+          "report": {
+            "path": "run/candidate-03/report.json",
+            "sha256": "f640edaad45e01a68d123987a2bbdc2bd344e83faec869c6e5262673de6c6fac",
+            "bytes": 38224
+          }
+        },
+        "addition": {
+          "map": {
+            "path": "run/pointcloud-retry/candidate-02/lanelet2_map.osm",
+            "sha256": "e3a30d66333c7e127c4efa0f14cd7dff03027903b574476df9ee297cfec4426e",
+            "bytes": 2300
+          },
+          "projector": {
+            "path": "run/pointcloud-retry/candidate-02/map_projector_info.yaml",
+            "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+            "bytes": 22
+          },
+          "editable_map": {
+            "path": "run/pointcloud-retry/candidate-02/vector_map.json",
+            "sha256": "2b714058fb8286bb1e06d7f237975f8127fab4ad05534de0801212633d83d06d",
+            "bytes": 1658
+          },
+          "report": {
+            "path": "run/pointcloud-retry/candidate-02/report.json",
+            "sha256": "23a686437d9e2d79f5e04471b1f7584a541ec48db91977e0a7f50a0d900590a4",
+            "bytes": 12447
+          }
+        },
+        "patch": {
+          "map": {
+            "path": "run/pointcloud-retry/candidate-03/lanelet2_map.osm",
+            "sha256": "d04c1bebf3a6e9a56360ab83e53416dff3dd038583009f58f43a2106b317dd68",
+            "bytes": 46791
+          },
+          "projector": {
+            "path": "run/pointcloud-retry/candidate-03/map_projector_info.yaml",
+            "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+            "bytes": 22
+          },
+          "editable_map": {
+            "path": "run/pointcloud-retry/candidate-03/vector_map.json",
+            "sha256": "fcb2e4baefa80d3c8588df8b3e1381d0282abc67b310d9f6d44d1f4ab2edd61a",
+            "bytes": 19368
+          },
+          "report": {
+            "path": "run/pointcloud-retry/candidate-03/report.json",
+            "sha256": "918f4e6ff8e52e24cb8a56ccda472f037410022ead1adcb2a08f14a66d33f6f0",
+            "bytes": 37538
+          }
+        }
+      },
+      "pointcloud_files": {
+        "before": {
+          "map": {
+            "path": "run/pointcloud/trajectory_map.ply",
+            "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+            "bytes": 21878254
+          },
+          "trajectory": {
+            "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+            "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+            "bytes": 47336
+          },
+          "graph": {
+            "path": "run/pointcloud/trajectory_fixed.g2o",
+            "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+            "bytes": 94035
+          }
+        },
+        "trial": {
+          "map": {
+            "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+            "sha256": "bef9b3eea139e07110a4d0ade285f52c911fbf07e329af4388aabb1c06165474",
+            "bytes": 22802030
+          },
+          "trajectory": {
+            "path": "run/pointcloud-retry/reference.txt",
+            "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+            "bytes": 47336
+          },
+          "graph": {
+            "path": "run/pointcloud-retry/reference.g2o",
+            "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+            "bytes": 94035
+          },
+          "fusion_graph": {
+            "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+            "sha256": "8af60955c59e71ec7bd4a7a9186ec6629a4bd938e2d77e2df4509b4a9df91f6d",
+            "bytes": 98339
+          },
+          "fusion_trajectory": {
+            "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+            "sha256": "e0170603b9b86638d8273d372f910530e81f4d00aa87396e2fa50470c8a1dc5f",
+            "bytes": 50423
+          },
+          "fusion_scans": {
+            "path": "run/pointcloud-retry/fusion-scans.json",
+            "sha256": "0910fa00830e6b1220bb8dd9089f0e10bc4221e2817889077cf89ef9c37313ff",
+            "bytes": 52590
+          }
+        }
+      },
+      "unchanged_original_lane_ids": [
+        3,
+        6,
+        9,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30,
+        33,
+        36,
+        39
+      ],
+      "new_lane_ids": [
+        42
+      ],
+      "unchanged_original_edges": [
+        [
+          18,
+          39
+        ],
+        [
+          39,
+          21
+        ]
+      ],
+      "new_endpoint_pairs": [],
+      "chosen_gap_ids": [
+        3
+      ],
+      "chosen_original_station_interval": [
+        26,
+        30
+      ],
+      "gained_m": 4.0,
+      "lost_m": 0,
+      "before_extent_m": 106,
+      "after_extent_m": 110.0,
+      "before_longest_route_m": 34,
+      "after_longest_route_m": 34,
+      "before_components": 11,
+      "after_components": 12,
+      "audits_before": [
+        {
+          "supported": 444,
+          "samples": 758,
+          "problems_limited": false
+        },
+        {
+          "supported": 444,
+          "samples": 758,
+          "problems_limited": false
+        },
+        {
+          "supported": 758,
+          "samples": 758,
+          "problems_limited": false
+        },
+        {
+          "supported": 758,
+          "samples": 758,
+          "problems_limited": false
+        }
+      ],
+      "audits_patch": [
+        {
+          "supported": 476,
+          "samples": 788,
+          "problems_limited": false
+        },
+        {
+          "supported": 476,
+          "samples": 788,
+          "problems_limited": false
+        },
+        {
+          "supported": 788,
+          "samples": 788,
+          "problems_limited": false
+        },
+        {
+          "supported": 788,
+          "samples": 788,
+          "problems_limited": false
+        }
+      ],
+      "checks": {
+        "protocol": "fixed_four_audits_no_new_retained_failure_locations_new_traces_fully_supported",
+        "holds": [],
+        "passes": true,
+        "independent_accuracy_established": false,
+        "road_semantics_verified": false
+      },
+      "both_maps_adopted": true,
+      "family_attempts": 6,
+      "family_budget": 6,
+      "full_input_extent_goal_met": false,
+      "point_map_visualization_sample": {
+        "path": "benchmarks/vector-map/nclt-unused-frames/april/before/footprint.npz",
+        "sha256": "8e460b6d97f494cdd5ccfbf41501b25876fa24751472c1f910c1b823fccb1fc4"
+      }
+    },
+    {
+      "label": "june",
+      "source": {
+        "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+        "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+        "bytes": 9387931
+      },
+      "native": {
+        "version": "0.1.0",
+        "extension": {
+          "path": "native/cloudanalyzer_core/_core.abi3.so",
+          "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+          "bytes": 7451080
+        }
+      },
+      "baseline_lane_geometry_and_topology_match_last_merged_map": true,
+      "same_fused_point_maps_as_prior_full_redraft_trial": true,
+      "byte_identical_original_reference": true,
+      "baseline_and_patch_hd_files": {
+        "before": {
+          "map": {
+            "path": "run/candidate-03/lanelet2_map.osm",
+            "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+            "bytes": 53372
+          },
+          "projector": {
+            "path": "run/candidate-03/map_projector_info.yaml",
+            "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+            "bytes": 22
+          },
+          "editable_map": {
+            "path": "run/candidate-03/vector_map.json",
+            "sha256": "603d708405f20d05a47b68f65e00362529d312a94376ca65082ba267de36eef7",
+            "bytes": 22406
+          },
+          "report": {
+            "path": "run/candidate-03/report.json",
+            "sha256": "01ed1dd3b0ba488ba91a26df45807782b6d658331c98b4c1000395d979f34a36",
+            "bytes": 47906
+          }
+        },
+        "addition": {
+          "map": {
+            "path": "run/pointcloud-retry/candidate-02/lanelet2_map.osm",
+            "sha256": "c7b76b70ae7cec3a00774c935be47a8ed21c25ff3463596a8b06f62a09251734",
+            "bytes": 2787
+          },
+          "projector": {
+            "path": "run/pointcloud-retry/candidate-02/map_projector_info.yaml",
+            "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+            "bytes": 22
+          },
+          "editable_map": {
+            "path": "run/pointcloud-retry/candidate-02/vector_map.json",
+            "sha256": "5e8f360579fdaf32a4852d7170ec6958ceef3cbbb2d821f7611933cafd9a7774",
+            "bytes": 1791
+          },
+          "report": {
+            "path": "run/pointcloud-retry/candidate-02/report.json",
+            "sha256": "9679b2d59e3d333c898cb3231085e2ae474434ffad2f7cc38495a1d095579f66",
+            "bytes": 17618
+          }
+        },
+        "patch": {
+          "map": {
+            "path": "run/pointcloud-retry/candidate-03/lanelet2_map.osm",
+            "sha256": "2be93a1bc12ff2cdf32cb7cf0948bcf71f5adbf10088fc781b8e3c93654f918d",
+            "bytes": 56086
+          },
+          "projector": {
+            "path": "run/pointcloud-retry/candidate-03/map_projector_info.yaml",
+            "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+            "bytes": 22
+          },
+          "editable_map": {
+            "path": "run/pointcloud-retry/candidate-03/vector_map.json",
+            "sha256": "cd043b533f9de8cd9bc7f7055416819ee755e21f8b3fc820a77ac45a9e0a8b58",
+            "bytes": 23524
+          },
+          "report": {
+            "path": "run/pointcloud-retry/candidate-03/report.json",
+            "sha256": "7644d92535aacf48747e8320c9fdd68fda20a3e1e58f318e6f71425137fd5db6",
+            "bytes": 44453
+          }
+        }
+      },
+      "pointcloud_files": {
+        "before": {
+          "map": {
+            "path": "run/pointcloud/trajectory_map.ply",
+            "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+            "bytes": 20653998
+          },
+          "trajectory": {
+            "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+            "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+            "bytes": 46143
+          },
+          "graph": {
+            "path": "run/pointcloud/trajectory_fixed.g2o",
+            "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+            "bytes": 92299
+          }
+        },
+        "trial": {
+          "map": {
+            "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+            "sha256": "8680b331b097d7dae3d44f99a259acc5cbe40a8b0e7b078ed57a208465158eef",
+            "bytes": 22572654
+          },
+          "trajectory": {
+            "path": "run/pointcloud-retry/reference.txt",
+            "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+            "bytes": 46143
+          },
+          "graph": {
+            "path": "run/pointcloud-retry/reference.g2o",
+            "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+            "bytes": 92299
+          },
+          "fusion_graph": {
+            "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+            "sha256": "3032a8e4e4de962c7835ce63c0ccd37f74aba9b07fc204bb7f6cce7e711726e8",
+            "bytes": 103572
+          },
+          "fusion_trajectory": {
+            "path": "run/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+            "sha256": "f6cfb6b8d795ff10d0f844306372a3e54804a3ad7e6cc909b1f540c1e49c8eee",
+            "bytes": 52798
+          },
+          "fusion_scans": {
+            "path": "run/pointcloud-retry/fusion-scans.json",
+            "sha256": "145e065c2bdd0c49a7aaf0576ded9067b308505f4772f7bcd29006861cb7b339",
+            "bytes": 55055
+          }
+        }
+      },
+      "unchanged_original_lane_ids": [
+        3,
+        6,
+        9,
+        12,
+        15,
+        18,
+        21,
+        24,
+        27,
+        30,
+        33,
+        36,
+        39,
+        42,
+        45,
+        48
+      ],
+      "new_lane_ids": [
+        51
+      ],
+      "unchanged_original_edges": [
+        [
+          24,
+          45
+        ],
+        [
+          27,
+          48
+        ],
+        [
+          45,
+          27
+        ],
+        [
+          48,
+          30
+        ]
+      ],
+      "new_endpoint_pairs": [],
+      "chosen_gap_ids": [
+        3
+      ],
+      "chosen_original_station_interval": [
+        22,
+        28
+      ],
+      "gained_m": 6.0,
+      "lost_m": 0,
+      "before_extent_m": 112,
+      "after_extent_m": 118.0,
+      "before_longest_route_m": 66,
+      "after_longest_route_m": 66,
+      "before_components": 12,
+      "after_components": 13,
+      "audits_before": [
+        {
+          "supported": 521,
+          "samples": 884,
+          "problems_limited": false
+        },
+        {
+          "supported": 521,
+          "samples": 884,
+          "problems_limited": false
+        },
+        {
+          "supported": 884,
+          "samples": 884,
+          "problems_limited": false
+        },
+        {
+          "supported": 884,
+          "samples": 884,
+          "problems_limited": false
+        }
+      ],
+      "audits_patch": [
+        {
+          "supported": 570,
+          "samples": 926,
+          "problems_limited": false
+        },
+        {
+          "supported": 570,
+          "samples": 926,
+          "problems_limited": false
+        },
+        {
+          "supported": 926,
+          "samples": 926,
+          "problems_limited": false
+        },
+        {
+          "supported": 926,
+          "samples": 926,
+          "problems_limited": false
+        }
+      ],
+      "checks": {
+        "protocol": "fixed_four_audits_no_new_retained_failure_locations_new_traces_fully_supported",
+        "holds": [],
+        "passes": true,
+        "independent_accuracy_established": false,
+        "road_semantics_verified": false
+      },
+      "both_maps_adopted": true,
+      "family_attempts": 6,
+      "family_budget": 6,
+      "full_input_extent_goal_met": false,
+      "point_map_visualization_sample": {
+        "path": "benchmarks/vector-map/nclt-unused-frames/june/before/footprint.npz",
+        "sha256": "c72c5a1d0a7875ecdc1d52c2bf4eb736982ad41ecdd4501c897d8736a06a5e82"
+      }
+    }
+  ]
+}

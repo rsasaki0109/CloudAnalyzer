@@ -1,5 +1,6 @@
 /** Picking points, measuring distances between them and labeling them. */
 
+import { projectChanged } from "../project-change";
 import type * as THREE from "three";
 import type { Vec3 } from "../protocol";
 import { distanceLabel } from "./colors";
@@ -179,6 +180,7 @@ function addNote(point: PickedPoint, text: string): Note {
   $("labels").append(label);
   const note = { point, text, label };
   notes.push(note);
+  projectChanged();
   return note;
 }
 
@@ -200,6 +202,7 @@ function renderNotes(labeling = labelTool.active): void {
         notes.splice(i, 1);
         note.label.remove();
         renderNotes();
+        projectChanged();
       });
       li.append(input, remove);
       return li;
@@ -241,6 +244,7 @@ export function setNotes(saved: { position: Vec3; text: string }[]): void {
     addNote({ cloudId: -1, index: -1, render, exact: l.position }, l.text);
   }
   renderNotes();
+  projectChanged();
 }
 
 export function savedNotes(): { position: Vec3; text: string }[] {

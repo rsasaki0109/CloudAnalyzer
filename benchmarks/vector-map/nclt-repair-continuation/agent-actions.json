@@ -1,0 +1,91 @@
+{
+  "start": {
+    "request": {
+      "tool": "continue_mapping_run",
+      "finished_job_dir": "env/nclt-hd-region-june",
+      "out_dir": "env/nclt-continuation-june",
+      "max_attempts": 6,
+      "reason": "Retain the accepted station22-28 lane, station28-30 connection and point box; inspect a second missing interval under a new explicit six-attempt session budget."
+    },
+    "response_status": "needs_agent",
+    "revision": 0,
+    "remaining_attempts": 6
+  },
+  "gaps": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 0
+      },
+      "reason": "Inspect missing original source intervals against the adopted 118 m baseline, keeping earlier lane 51 and connector 54."
+    },
+    "response_status": "needs_agent",
+    "revision": 1,
+    "remaining_attempts": 6
+  },
+  "preview": {
+    "request": {
+      "action": {
+        "type": "inspect_local_density",
+        "candidate_id": 1,
+        "gap_ids": [
+          1
+        ],
+        "bounds_xy": [
+          7,
+          5,
+          15,
+          10
+        ]
+      },
+      "reason": "Inspect a disjoint second XY column around missing original stations12-14; its y>=5 boundary preserves every record in the previously accepted y<5 point update."
+    },
+    "response_status": "needs_agent",
+    "revision": 2,
+    "remaining_attempts": 6
+  },
+  "retry": {
+    "request": {
+      "action": {
+        "type": "retry_local_density",
+        "candidate_id": 1,
+        "options": {
+          "scan_voxel_m": 0.1,
+          "map_voxel_m": 0.05
+        },
+        "preview_file": {
+          "path": "run/local-points-01-b561b0441ade4f84.json",
+          "sha256": "7ef0df946e00ac83b866bac053262b5faaeb5984ec067ba3dfa8e6430874d63d",
+          "bytes": 31751
+        }
+      },
+      "reason": "Explicit disjoint local density trial at original frozen poses/frames and fixed HD audit/layout; preserve old tile and compare against the accumulated map."
+    },
+    "response_status": "needs_agent",
+    "revision": 3,
+    "remaining_attempts": 0
+  },
+  "finish": {
+    "request": {
+      "action": {
+        "type": "finish",
+        "candidate_id": 1
+      },
+      "reason": "Reject the new [7,5,15,10] density trial because legacy IR/reopened OSM audits gained failures on retained lanes6/39. Preserve the exact prior accepted point and HD maps, including lane51, connector54, all earlier point records and the 118m original source extent. Full-drive continuity and independent accuracy remain unmet."
+    },
+    "response_status": "finished",
+    "revision": 4,
+    "remaining_attempts": 0,
+    "response_receipt": "Final state recovered through the live MCP inspect_mapping_run call; do not replay the finished action."
+  },
+  "inspect": {
+    "request": {
+      "tool": "inspect_mapping_run",
+      "job_dir": "env/nclt-continuation-june"
+    },
+    "response_status": "finished",
+    "revision": 4,
+    "remaining_attempts": 0
+  }
+}

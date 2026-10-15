@@ -1,0 +1,825 @@
+{
+  "reference_inputs": [],
+  "source_commit": "a4aa3d7c97e6bada6277289a2a096dabfe14d8c4",
+  "native_sha256": "298cc7e4ad03ece0af2a5a223b281cea4d262fa7c3ec03892d5a6d1f0392a118",
+  "input_cloud_sha256": "e84b7e8e81e133fa67372badf2e468b1e561b6393d5782e851cd8a1666790a15",
+  "operator_inputs": {
+    "description": "Explicit source-only development review. Path and lane priors reuse the original operator manifest. These types, lane associations and selected geometric manoeuvres are operator inputs, not recovered legal traffic rules.",
+    "road_operator_manifest": "vector-map-hard-intersection-inputs.json",
+    "build_overrides": {
+      "fit_source_surface": true
+    },
+    "junction_options": {
+      "max_gap": 50,
+      "min_ground_support": 1,
+      "check_boundary_support": true
+    },
+    "reviewed_pairs": [
+      [
+        21,
+        34
+      ],
+      [
+        22,
+        35
+      ],
+      [
+        23,
+        36
+      ],
+      [
+        34,
+        47
+      ],
+      [
+        35,
+        48
+      ],
+      [
+        36,
+        49
+      ],
+      [
+        50,
+        37
+      ],
+      [
+        51,
+        38
+      ],
+      [
+        52,
+        39
+      ],
+      [
+        38,
+        25
+      ],
+      [
+        39,
+        26
+      ],
+      [
+        69,
+        34
+      ],
+      [
+        21,
+        70
+      ],
+      [
+        37,
+        70
+      ],
+      [
+        77,
+        49
+      ],
+      [
+        23,
+        79
+      ],
+      [
+        52,
+        79
+      ],
+      [
+        83,
+        47
+      ],
+      [
+        50,
+        84
+      ],
+      [
+        76,
+        70
+      ],
+      [
+        69,
+        78
+      ]
+    ],
+    "deferred_requested_pairs": [
+      [
+        69,
+        26
+      ],
+      [
+        76,
+        24
+      ]
+    ],
+    "interval_policy": "No connections between fragments attributed to the same input path. Preserve the previously deferred 34.259 m, disconnected outer pieces and unsupported requested turns.",
+    "association_review": "Object types and crossing/approach lanes remain explicit operator inputs. After generation, geometric signal-target suggestions are inspected and explicitly adopted; unsigned normals do not prove front face, legal control or phases.",
+    "discarded_candidates": [
+      75,
+      44,
+      110
+    ],
+    "confirmations": [
+      {
+        "candidate": 45,
+        "classification": "crosswalk",
+        "lanes": [
+          69,
+          111,
+          135,
+          138,
+          141
+        ]
+      },
+      {
+        "candidate": 50,
+        "classification": "crosswalk",
+        "lanes": [
+          87,
+          90,
+          93,
+          96,
+          99
+        ]
+      },
+      {
+        "candidate": 67,
+        "classification": "crosswalk",
+        "lanes": [
+          123,
+          147
+        ]
+      },
+      {
+        "candidate": 90,
+        "classification": "crosswalk",
+        "lanes": [
+          114,
+          117
+        ]
+      },
+      {
+        "candidate": 92,
+        "classification": "crosswalk",
+        "lanes": [
+          102,
+          147
+        ]
+      },
+      {
+        "candidate": 115,
+        "classification": "crosswalk",
+        "lanes": [
+          108,
+          120,
+          123,
+          126,
+          129,
+          132,
+          144
+        ]
+      },
+      {
+        "candidate": 122,
+        "classification": "crosswalk",
+        "lanes": [
+          99,
+          132,
+          138,
+          141,
+          144
+        ]
+      },
+      {
+        "candidate": 62,
+        "classification": "stop_line",
+        "lanes": [
+          83
+        ]
+      },
+      {
+        "candidate": 141,
+        "classification": "stop_line",
+        "lanes": [
+          76,
+          77
+        ]
+      },
+      {
+        "candidate": 56,
+        "classification": "vehicle_signal",
+        "lanes": [
+          69
+        ]
+      },
+      {
+        "candidate": 129,
+        "classification": "vehicle_signal",
+        "lanes": [
+          76,
+          77
+        ]
+      },
+      {
+        "candidate": 73,
+        "classification": "pedestrian_signal",
+        "lanes": [
+          69
+        ]
+      },
+      {
+        "candidate": 85,
+        "classification": "pedestrian_signal",
+        "lanes": [
+          83
+        ]
+      }
+    ],
+    "relation_adoptions": [
+      {
+        "rule_id": 169,
+        "candidate_key": "stop_line:164"
+      },
+      {
+        "rule_id": 173,
+        "candidate_key": "crosswalk:156"
+      }
+    ],
+    "unresolved_signal_rules": [
+      167,
+      171
+    ],
+    "explicit_legacy_clear": {
+      "rule_id": 171,
+      "lanes": [],
+      "controlled_crosswalks": [],
+      "stop_lines": []
+    }
+  },
+  "operator_inputs_sha256": "72f9a6336c239a130bc170b0c5927baa835792da5f07e85149e29e306c65c55c",
+  "path_operator_inputs": [
+    {
+      "name": "arterial-south",
+      "source": "recorded",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 3,
+        "backward_lanes": 3,
+        "lane_width": 3.5
+      },
+      "drive_index": 1,
+      "relative_y_interval": [
+        0,
+        42
+      ]
+    },
+    {
+      "name": "arterial-middle",
+      "source": "recorded",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 3,
+        "backward_lanes": 3,
+        "lane_width": 3.5
+      },
+      "drive_index": 1,
+      "relative_y_interval": [
+        64,
+        74
+      ]
+    },
+    {
+      "name": "arterial-north",
+      "source": "recorded",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 3,
+        "backward_lanes": 3,
+        "lane_width": 3.5
+      },
+      "drive_index": 1,
+      "relative_y_interval": [
+        90,
+        122
+      ]
+    },
+    {
+      "name": "west-south",
+      "source": "operator_traced",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "lane_width": 3.5
+      },
+      "relative_xy": [
+        [
+          13,
+          72
+        ],
+        [
+          19,
+          68
+        ],
+        [
+          25,
+          64
+        ],
+        [
+          28,
+          62
+        ]
+      ]
+    },
+    {
+      "name": "east-south",
+      "source": "operator_traced",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 2,
+        "backward_lanes": 2,
+        "lane_width": 3.5
+      },
+      "relative_xy": [
+        [
+          79,
+          48
+        ],
+        [
+          75,
+          49
+        ],
+        [
+          72,
+          50
+        ]
+      ]
+    },
+    {
+      "name": "west-north",
+      "source": "operator_traced",
+      "options": {
+        "segment_length": 0,
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "lane_width": 3.5
+      },
+      "relative_xy": [
+        [
+          24,
+          77
+        ],
+        [
+          30,
+          77
+        ],
+        [
+          34,
+          78
+        ]
+      ]
+    }
+  ],
+  "source_roads_exact": true,
+  "retained_roads_and_connections_exact": true,
+  "road_length_m": 88.07807805965106,
+  "deferred_road_length_m": 34.25890841752784,
+  "legacy_centre_candidates": 141,
+  "full_curve_candidates": 115,
+  "selected_connections": 21,
+  "road_lanes": 59,
+  "crosswalks": 7,
+  "stop_lines": 2,
+  "signal_housings": 4,
+  "generated_sha256": "834f3f9c9a349f2a421b092cb15c7021b787c72e7c4bd0ed365da5cf589c58df",
+  "associated_sha256": "e60ea0fe9fcc5dbca5b6b2c7d57a78e7bbfcbc25f2be11b278fdbafff88beb77",
+  "generated_validation": {
+    "counts": {
+      "errors": 0,
+      "infos": 0,
+      "warnings": 15
+    },
+    "issues": [
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 8,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+        "related": [
+          {
+            "id": 9,
+            "kind": "lane"
+          },
+          {
+            "id": 10,
+            "kind": "lane"
+          },
+          {
+            "id": 11,
+            "kind": "lane"
+          },
+          {
+            "id": 12,
+            "kind": "lane"
+          },
+          {
+            "id": 13,
+            "kind": "lane"
+          }
+        ],
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 60,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+        "related": [
+          {
+            "id": 61,
+            "kind": "lane"
+          },
+          {
+            "id": 62,
+            "kind": "lane"
+          },
+          {
+            "id": 63,
+            "kind": "lane"
+          },
+          {
+            "id": 64,
+            "kind": "lane"
+          },
+          {
+            "id": 65,
+            "kind": "lane"
+          }
+        ],
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 8,
+          "kind": "lane"
+        },
+        "message": "lane:8 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 9,
+          "kind": "lane"
+        },
+        "message": "lane:9 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 10,
+          "kind": "lane"
+        },
+        "message": "lane:10 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 11,
+          "kind": "lane"
+        },
+        "message": "lane:11 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 12,
+          "kind": "lane"
+        },
+        "message": "lane:12 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 13,
+          "kind": "lane"
+        },
+        "message": "lane:13 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 24,
+          "kind": "lane"
+        },
+        "message": "lane:24 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 60,
+          "kind": "lane"
+        },
+        "message": "lane:60 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 61,
+          "kind": "lane"
+        },
+        "message": "lane:61 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 62,
+          "kind": "lane"
+        },
+        "message": "lane:62 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 63,
+          "kind": "lane"
+        },
+        "message": "lane:63 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 64,
+          "kind": "lane"
+        },
+        "message": "lane:64 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 65,
+          "kind": "lane"
+        },
+        "message": "lane:65 has neither predecessors nor successors",
+        "severity": "warning"
+      }
+    ]
+  },
+  "associated_validation": {
+    "counts": {
+      "errors": 0,
+      "infos": 0,
+      "warnings": 16
+    },
+    "issues": [
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 8,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+        "related": [
+          {
+            "id": 9,
+            "kind": "lane"
+          },
+          {
+            "id": 10,
+            "kind": "lane"
+          },
+          {
+            "id": 11,
+            "kind": "lane"
+          },
+          {
+            "id": 12,
+            "kind": "lane"
+          },
+          {
+            "id": 13,
+            "kind": "lane"
+          }
+        ],
+        "severity": "warning"
+      },
+      {
+        "code": "disconnected_topology",
+        "entity": {
+          "id": 60,
+          "kind": "lane"
+        },
+        "message": "the lane graph has 3 unconnected parts; this part has 6 lane(s) and is not connected to the main part",
+        "related": [
+          {
+            "id": 61,
+            "kind": "lane"
+          },
+          {
+            "id": 62,
+            "kind": "lane"
+          },
+          {
+            "id": 63,
+            "kind": "lane"
+          },
+          {
+            "id": 64,
+            "kind": "lane"
+          },
+          {
+            "id": 65,
+            "kind": "lane"
+          }
+        ],
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 8,
+          "kind": "lane"
+        },
+        "message": "lane:8 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 9,
+          "kind": "lane"
+        },
+        "message": "lane:9 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 10,
+          "kind": "lane"
+        },
+        "message": "lane:10 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 11,
+          "kind": "lane"
+        },
+        "message": "lane:11 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 12,
+          "kind": "lane"
+        },
+        "message": "lane:12 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 13,
+          "kind": "lane"
+        },
+        "message": "lane:13 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 24,
+          "kind": "lane"
+        },
+        "message": "lane:24 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 60,
+          "kind": "lane"
+        },
+        "message": "lane:60 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 61,
+          "kind": "lane"
+        },
+        "message": "lane:61 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 62,
+          "kind": "lane"
+        },
+        "message": "lane:62 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 63,
+          "kind": "lane"
+        },
+        "message": "lane:63 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 64,
+          "kind": "lane"
+        },
+        "message": "lane:64 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "isolated_lane",
+        "entity": {
+          "id": 65,
+          "kind": "lane"
+        },
+        "message": "lane:65 has neither predecessors nor successors",
+        "severity": "warning"
+      },
+      {
+        "code": "orphan_rule",
+        "entity": {
+          "id": 171,
+          "kind": "regulatory_element"
+        },
+        "fix": {
+          "entity": {
+            "id": 171,
+            "kind": "regulatory_element"
+          },
+          "op": "remove_entity"
+        },
+        "message": "regulatory_element:171 does not apply to any lane or crosswalk",
+        "severity": "warning"
+      }
+    ]
+  },
+  "association_physical_map_exact": true,
+  "association_source_quality_unchanged": true,
+  "relation_adoptions": [
+    {
+      "rule_id": 169,
+      "candidate_key": "stop_line:164"
+    },
+    {
+      "rule_id": 173,
+      "candidate_key": "crosswalk:156"
+    }
+  ],
+  "unresolved_signal_rules": [
+    167,
+    171
+  ],
+  "limitations": [
+    "Same development scene, not independent accuracy",
+    "Missing road extent and disconnected fragments are retained as uncertainty",
+    "Ground curves do not certify road interiors, clearance or lawful manoeuvres",
+    "Paint geometry is observed; object types, controlled lanes and permitted turns need semantic review",
+    "Proposal cap and unmatched/omitted equipment remain; signal lamps, states and legal control are not inferred",
+    "Two geometric target suggestions are explicitly reviewed and adopted; two signals remain unresolved"
+  ],
+  "roundtrip_reused_ids": [
+    148,
+    150,
+    152,
+    154,
+    156,
+    158,
+    160,
+    162,
+    164,
+    166,
+    168,
+    170,
+    172
+  ]
+}

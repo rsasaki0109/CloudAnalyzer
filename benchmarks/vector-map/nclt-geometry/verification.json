@@ -1,0 +1,4889 @@
+{
+  "schema": "cloudanalyzer.nclt_geometry_verification.v1",
+  "date": "2026-10-09",
+  "timezone": "Asia/Tokyo",
+  "purpose": "Raw recording to point-cloud map, lane-free proposals and explicitly adopted editable source curves.",
+  "source_license": "ODbL-1.0, contents DBCL-1.0; derived evidence, IR and figure offered under the same terms.",
+  "path_conventions": "Source paths repository-relative, generated paths job-relative, native extension package-relative.",
+  "independent_ground_truth_used": false,
+  "road_semantics_inferred": false,
+  "deployment_ready": false,
+  "figure": {
+    "path": "geometry-comparison.png",
+    "source_display_stride": 8,
+    "sha256": "e6b1c07c6028ebc96bf2265d8f7946dd08cd7c90d1acb773daeb6fa688a1f94a"
+  },
+  "runs": [
+    {
+      "dataset": "nclt-2012-04-29",
+      "source": {
+        "path": "web/public/samples/nclt-2012-04-29.mcap",
+        "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+        "bytes": 10054898
+      },
+      "runtime": {
+        "python": "3.12.14",
+        "native": {
+          "version": "0.1.0",
+          "extension": {
+            "path": "cloudanalyzer_core/_core.abi3.so",
+            "sha256": "0e877885d8b5763ff16cc1ee05680a1684feb3eea6a2b4221757230b31c672ea",
+            "bytes": 7393912
+          }
+        }
+      },
+      "pointcloud_options": {
+        "keyframe_spacing": 1.0,
+        "remove_dynamic": true,
+        "pointcloud_topic": null,
+        "imu_topic": null
+      },
+      "pointcloud": {
+        "files": {
+          "map": {
+            "path": "pointcloud/trajectory_map.ply",
+            "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+            "bytes": 21878254
+          },
+          "trajectory": {
+            "path": "pointcloud/trajectory_fixed_kitti.txt",
+            "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+            "bytes": 47336
+          },
+          "graph": {
+            "path": "pointcloud/trajectory_fixed.g2o",
+            "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+            "bytes": 94035
+          }
+        },
+        "frames": 236,
+        "map_points": 683690,
+        "path_length_m": 252.2,
+        "reports": {
+          "odometry": "odometry-report.json",
+          "correction": "pointcloud-report.json"
+        },
+        "quality_status": "generated_unverified",
+        "coordinate_frame": "local_slam_metres"
+      },
+      "processing_reports": {
+        "odometry": {
+          "driver": "cloudanalyzer",
+          "frames": 236,
+          "path_length_m": 252.2,
+          "runtime_s": 11.0,
+          "reading_s": 0.7,
+          "scans": "odometry/scans",
+          "trajectory": "odometry/trajectory.tum",
+          "gravity": "odometry/gravity/gravity.txt",
+          "map": "odometry/map.ply"
+        },
+        "correction": {
+          "session": "odometry/scans",
+          "poses_file": "trajectory.tum",
+          "nodes": 199,
+          "scans": 199,
+          "unmatched_scans": 37,
+          "scan_points": 1077680,
+          "scans_moved_by_calib_tr": false,
+          "timings_s": {
+            "open": 0.07,
+            "loops": 0.25,
+            "gravity": 0.01,
+            "dynamic": 0.35,
+            "write": 0.22
+          },
+          "loops": {
+            "candidates": 11,
+            "added": 6,
+            "implausible": 0,
+            "same_place_retries": 0,
+            "pairs": [
+              [
+                29,
+                209,
+                0.59
+              ],
+              [
+                23,
+                214,
+                0.535
+              ],
+              [
+                17,
+                220,
+                0.526
+              ],
+              [
+                11,
+                225,
+                0.591
+              ],
+              [
+                7,
+                230,
+                0.607
+              ],
+              [
+                1,
+                235,
+                0.631
+              ]
+            ],
+            "optimized": {
+              "initial_cost": 17.112555116013546,
+              "final_cost": 1.1618484074165376,
+              "iterations": 8,
+              "converged": true
+            }
+          },
+          "gravity": {
+            "tied": 199,
+            "sigma_deg": 1.12,
+            "imus": [
+              {
+                "keyframes": 199,
+                "spread_deg": 1.04,
+                "noise_deg": 1.12
+              }
+            ],
+            "optimized": {
+              "initial_cost": 686.7024536114939,
+              "final_cost": 176.1375993998033,
+              "iterations": 7,
+              "converged": true
+            }
+          },
+          "dynamic": {
+            "points": 36,
+            "of": 1077680,
+            "share": 3.3405092420755696e-05
+          },
+          "map_points": 683690,
+          "outputs": {
+            "g2o": "pointcloud/trajectory_fixed.g2o",
+            "kitti": "pointcloud/trajectory_fixed_kitti.txt",
+            "tum": "pointcloud/trajectory_fixed.tum",
+            "map": "pointcloud/trajectory_map.ply",
+            "dynamic": "pointcloud/trajectory_dynamic.ply"
+          }
+        }
+      },
+      "proposal": {
+        "path": "corridor-proposals.json",
+        "sha256": "c14c8360e1fbb9f85cdd036222607579a0fbc1360383f419c60623a66d4d27be",
+        "bytes": 409952
+      },
+      "proposal_counts": {
+        "candidates": 52,
+        "limited": false,
+        "with_candidate_station_length_m": 204.0
+      },
+      "geometry": {
+        "files": {
+          "editable_map": {
+            "path": "geometry-01/vector_map.json",
+            "sha256": "aaaf5cfb1013232189da8158c76f05d9afee3e0abc1cff527ecd6c5b78d8e1ce",
+            "bytes": 19770
+          },
+          "report": {
+            "path": "geometry-01/report.json",
+            "sha256": "f9876ca695ede2f5eeeb815b051068b8bdcf466b746a83c6cbaa8a5e314ce327",
+            "bytes": 64624
+          }
+        },
+        "committed_ir": "april/vector_map.json",
+        "committed_decisions": "april/decisions.json",
+        "evidence": {
+          "schema": "cloudanalyzer.mapping_geometry.v1",
+          "reason": "Build editable source geometry from inspected corridor proposals; retain every unresolved input interval and infer no traffic semantics.",
+          "coordinate_frame": "local_slam_metres",
+          "protocol": {
+            "options": {
+              "search_radius_m": 8.0
+            },
+            "sample_spacing_m": 2.0,
+            "bin_width_m": 0.5,
+            "half_window_m": 2.0,
+            "minimum_support_span_m": 1.0,
+            "maximum_adjacent_height_step_m": 0.08,
+            "maximum_reference_level_grade": 0.12,
+            "ground_estimator": {
+              "model": "lowest_supported_layer",
+              "layer_height_m": 0.15,
+              "xy_cell_m": 0.2,
+              "minimum_cells": 3,
+              "minimum_triangle_area_m2": 0.01
+            },
+            "interval_support_spacing_m": 0.5,
+            "interval_ground_radius_m": 0.75,
+            "interval_height_tolerance_m": 0.3,
+            "maximum_sections": 2048,
+            "profile_query_point_budget": 2000000,
+            "interval_support_sample_budget": 100000
+          },
+          "source_proposal_limited": false,
+          "decisions": [
+            {
+              "candidate_id": 17,
+              "action": "include",
+              "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+              "from_m": 56.0,
+              "to_m": 104.0
+            },
+            {
+              "candidate_id": 22,
+              "action": "include",
+              "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+              "from_m": 128.0,
+              "to_m": 162.0
+            },
+            {
+              "candidate_id": 30,
+              "action": "include",
+              "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+              "from_m": 174.0,
+              "to_m": 184.0
+            },
+            {
+              "candidate_id": 8,
+              "action": "defer",
+              "reason": "Do not adopt this competing or rapidly varying band as the current path geometry. This is an agent review hold, not proof that the surface is absent or invalid.",
+              "from_m": 22.0,
+              "to_m": 38.0
+            }
+          ],
+          "segments": [
+            {
+              "candidate_id": 17,
+              "action": "include",
+              "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+              "from_m": 56.0,
+              "to_m": 104.0,
+              "curve_ids": {
+                "center": 1,
+                "left": 2,
+                "right": 3
+              },
+              "sections": [
+                {
+                  "station_m": 56.0,
+                  "center": [
+                    5.195357723975788,
+                    -23.559071165095233,
+                    -2.0090951619911404
+                  ],
+                  "left": [
+                    6.323254779269767,
+                    -24.097910874711342,
+                    -1.970343331878411
+                  ],
+                  "right": [
+                    4.067460668681809,
+                    -23.020231455479127,
+                    -2.0798447693917663
+                  ],
+                  "support_span_m": 2.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 58.0,
+                  "center": [
+                    4.019029577319956,
+                    -25.17659784185486,
+                    -1.9925917684828844
+                  ],
+                  "left": [
+                    5.37297795955382,
+                    -25.8222167528591,
+                    -2.0189755285969
+                  ],
+                  "right": [
+                    2.665081195086092,
+                    -24.53097893085062,
+                    -1.9406847420753943
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 60.0,
+                  "center": [
+                    2.5811264185877834,
+                    -26.720609314215572,
+                    -1.9843575152482402
+                  ],
+                  "left": [
+                    3.2778123297416886,
+                    -26.99832993138263,
+                    -1.9386063453019984
+                  ],
+                  "right": [
+                    1.8844405074338784,
+                    -26.442888697048513,
+                    -1.9462919245008579
+                  ],
+                  "support_span_m": 1.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 62.0,
+                  "center": [
+                    1.8682427728204707,
+                    -28.54975278078497,
+                    -1.9754194306119097
+                  ],
+                  "left": [
+                    3.4594414438232297,
+                    -29.278166666840868,
+                    -2.045996862003014
+                  ],
+                  "right": [
+                    0.2770441018177121,
+                    -27.82133889472907,
+                    -1.878353738076523
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 64.0,
+                  "center": [
+                    1.1784382131117306,
+                    -30.384871566384035,
+                    -1.9754194306119097
+                  ],
+                  "left": [
+                    2.5038169003591744,
+                    -31.08727553518706,
+                    -2.057316151332865
+                  ],
+                  "right": [
+                    -0.1469404741357132,
+                    -29.68246759758101,
+                    -1.9473511848528322
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 66.0,
+                  "center": [
+                    0.46719298272968085,
+                    -32.259383207445694,
+                    -1.9722112596202104
+                  ],
+                  "left": [
+                    2.0605908763499454,
+                    -32.98297366661891,
+                    -2.017189579182053
+                  ],
+                  "right": [
+                    -1.1262049108905836,
+                    -31.535792748272478,
+                    -1.9412125625175427
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 68.0,
+                  "center": [
+                    -0.706230308699074,
+                    -33.92978535110845,
+                    -1.9403836486551915
+                  ],
+                  "left": [
+                    0.4461550979361584,
+                    -34.41404548220965,
+                    -1.9350724534290873
+                  ],
+                  "right": [
+                    -1.8586157153343064,
+                    -33.445525220007255,
+                    -1.9367516714061397
+                  ],
+                  "support_span_m": 2.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 70.0,
+                  "center": [
+                    -1.3030824440452164,
+                    -35.82713677583455,
+                    -1.9777545286219333
+                  ],
+                  "left": [
+                    0.059189286582384204,
+                    -36.45500279015041,
+                    -1.9878613561749643
+                  ],
+                  "right": [
+                    -2.665354174672817,
+                    -35.19927076151869,
+                    -1.9361257573012522
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "curb_profile",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 72.0,
+                  "center": [
+                    -2.8285902686190676,
+                    -37.33967747737707,
+                    -1.9132971710363877
+                  ],
+                  "left": [
+                    -2.142950412370932,
+                    -37.643647850150536,
+                    -2.000266925554214
+                  ],
+                  "right": [
+                    -3.514230124867203,
+                    -37.03570710460362,
+                    -1.9361257573012522
+                  ],
+                  "support_span_m": 1.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": false,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 74.0,
+                  "center": [
+                    -3.3828885002593507,
+                    -39.28469605047435,
+                    -1.9797585469832524
+                  ],
+                  "left": [
+                    -2.4655263639475673,
+                    -39.68274970371909,
+                    -1.9439518497242363
+                  ],
+                  "right": [
+                    -4.300250636571135,
+                    -38.886642397229615,
+                    -1.9561751230819873
+                  ],
+                  "support_span_m": 2.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 76.0,
+                  "center": [
+                    -3.956135715869222,
+                    -41.19511118571532,
+                    -1.9380162599484203
+                  ],
+                  "left": [
+                    -2.3772495126792474,
+                    -41.949841837919365,
+                    -1.9638494598817202
+                  ],
+                  "right": [
+                    -5.535021919059196,
+                    -40.440380533511274,
+                    -1.8894033555584642
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 78.0,
+                  "center": [
+                    -4.642253693954858,
+                    -43.07765149754734,
+                    -1.9867021981304736
+                  ],
+                  "left": [
+                    -3.272984455130198,
+                    -43.6901070074487,
+                    -2.0162382482997163
+                  ],
+                  "right": [
+                    -6.011522932779519,
+                    -42.465195987645984,
+                    -1.9139643169365068
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "curb_profile",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 80.0,
+                  "center": [
+                    -5.568740682494534,
+                    -44.80036729179256,
+                    -1.949030201101574
+                  ],
+                  "left": [
+                    -3.9548451380122556,
+                    -45.477006908945036,
+                    -2.008160166291478
+                  ],
+                  "right": [
+                    -7.182636226976812,
+                    -44.12372767464008,
+                    -1.8921091033642494
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 82.0,
+                  "center": [
+                    -6.377969550358712,
+                    -46.57400501396525,
+                    -1.9492119557874887
+                  ],
+                  "left": [
+                    -4.815173928594412,
+                    -47.36151364540642,
+                    -2.008160166291478
+                  ],
+                  "right": [
+                    -7.940765172123012,
+                    -45.786496382524085,
+                    -1.8921091033642494
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 84.0,
+                  "center": [
+                    -7.11411676272777,
+                    -48.421026652773534,
+                    -1.8741963064304699
+                  ],
+                  "left": [
+                    -5.818468505125354,
+                    -49.17686763642805,
+                    -1.977896804001341
+                  ],
+                  "right": [
+                    -8.409765020330186,
+                    -47.66518566911902,
+                    -1.9177368462338331
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "curb_profile",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 86.0,
+                  "center": [
+                    -7.935956390426235,
+                    -50.23508309174438,
+                    -1.9087865151974222
+                  ],
+                  "left": [
+                    -6.397105537010292,
+                    -51.06841258896683,
+                    -1.9628772472940863
+                  ],
+                  "right": [
+                    -9.474807243842179,
+                    -49.40175359452193,
+                    -1.8127387135737625
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 88.0,
+                  "center": [
+                    -8.77864857985323,
+                    -52.01953746946861,
+                    -1.9009173135385302
+                  ],
+                  "left": [
+                    -7.205936694932256,
+                    -52.78705120030886,
+                    -1.9628772472940863
+                  ],
+                  "right": [
+                    -10.351360464774206,
+                    -51.25202373862836,
+                    -1.8127387135737625
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 90.0,
+                  "center": [
+                    -9.67631252363029,
+                    -53.80124570839056,
+                    -1.8671763006415627
+                  ],
+                  "left": [
+                    -8.089347671312925,
+                    -54.53883811447221,
+                    -1.9504538310498385
+                  ],
+                  "right": [
+                    -11.263277375947656,
+                    -53.06365330230891,
+                    -1.7695866718914846
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 92.0,
+                  "center": [
+                    -10.46110623139136,
+                    -55.63942446462817,
+                    -1.8671763006415627
+                  ],
+                  "left": [
+                    -8.849978305828197,
+                    -56.32262780732384,
+                    -1.91680581374425
+                  ],
+                  "right": [
+                    -12.072234156954524,
+                    -54.9562211219325,
+                    -1.7645351009587127
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 94.0,
+                  "center": [
+                    -11.237299725360408,
+                    -57.48236070737611,
+                    -1.8054661482987402
+                  ],
+                  "left": [
+                    -9.602850362237199,
+                    -58.10772082713602,
+                    -1.9056141327499152
+                  ],
+                  "right": [
+                    -12.871749088483618,
+                    -56.8570005876162,
+                    -1.7878172351647987
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 96.0,
+                  "center": [
+                    -11.888882963131408,
+                    -59.371080347594585,
+                    -1.860148115908778
+                  ],
+                  "left": [
+                    -10.287382202275069,
+                    -60.07655558668988,
+                    -1.8786637611535975
+                  ],
+                  "right": [
+                    -13.490383723987748,
+                    -58.66560510849929,
+                    -1.8135315600317392
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 98.0,
+                  "center": [
+                    -12.835384695509786,
+                    -61.110176616109364,
+                    -1.808398313883302
+                  ],
+                  "left": [
+                    -11.305253751155119,
+                    -61.959411149750274,
+                    -1.8597859703107125
+                  ],
+                  "right": [
+                    -14.365515639864453,
+                    -60.26094208246845,
+                    -1.8070362952827435
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 100.0,
+                  "center": [
+                    -13.60278335072358,
+                    -62.97429187786518,
+                    -1.823639243953187
+                  ],
+                  "left": [
+                    -11.863505810164204,
+                    -63.96166902815058,
+                    -1.7495079013782382
+                  ],
+                  "right": [
+                    -15.342060891282955,
+                    -61.98691472757977,
+                    -1.7333006698963225
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 102.0,
+                  "center": [
+                    -14.358474397252442,
+                    -64.80321413210969,
+                    -1.8125897628936032
+                  ],
+                  "left": [
+                    -13.229374293731864,
+                    -65.33952836484066,
+                    -1.8789639215237808
+                  ],
+                  "right": [
+                    -15.48757450077302,
+                    -64.2668998993787,
+                    -1.7967557709995956
+                  ],
+                  "support_span_m": 2.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 104.0,
+                  "center": [
+                    -15.297467061888678,
+                    -66.542014682702,
+                    -1.795123119738062
+                  ],
+                  "left": [
+                    -13.431744038187283,
+                    -67.26248508378072,
+                    -1.8179566314548816
+                  ],
+                  "right": [
+                    -17.163190085590074,
+                    -65.82154428162329,
+                    -1.6600386656712787
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "support_gap",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                }
+              ],
+              "review_required": true,
+              "complete_width_resolved": false,
+              "lane_count": null,
+              "traffic_direction": null,
+              "speed_limit": null
+            },
+            {
+              "candidate_id": 22,
+              "action": "include",
+              "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+              "from_m": 128.0,
+              "to_m": 162.0,
+              "curve_ids": {
+                "center": 4,
+                "left": 5,
+                "right": 6
+              },
+              "sections": [
+                {
+                  "station_m": 128.0,
+                  "center": [
+                    -0.5709266401505843,
+                    -80.70183403878734,
+                    -2.45339613839501
+                  ],
+                  "left": [
+                    -1.4570022069931872,
+                    -77.8356745718622,
+                    -2.4273675011546203
+                  ],
+                  "right": [
+                    0.31514892669201866,
+                    -83.56799350571247,
+                    -2.5312536353412605
+                  ],
+                  "support_span_m": 6.0,
+                  "left_evidence": "curb_profile",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 130.0,
+                  "center": [
+                    1.6735362863881176,
+                    -79.70622166536234,
+                    -2.4975513624523646
+                  ],
+                  "left": [
+                    -0.4706751198592034,
+                    -76.32948397265967,
+                    -2.2843300547342107
+                  ],
+                  "right": [
+                    3.8177476926354386,
+                    -83.082959358065,
+                    -2.648321843845302
+                  ],
+                  "support_span_m": 8.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 132.0,
+                  "center": [
+                    2.597210695176522,
+                    -77.25407111348709,
+                    -2.499032733577656
+                  ],
+                  "left": [
+                    1.2536218954143479,
+                    -76.13279098026717,
+                    -2.408060600426923
+                  ],
+                  "right": [
+                    3.940799494938696,
+                    -78.37535124670698,
+                    -2.5522347140789585
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 134.0,
+                  "center": [
+                    3.466425468438806,
+                    -75.33603383442382,
+                    -2.491838458411563
+                  ],
+                  "left": [
+                    2.123495714943857,
+                    -74.66779759088564,
+                    -2.408060600426923
+                  ],
+                  "right": [
+                    4.809355221933755,
+                    -76.00427007796198,
+                    -2.5370301091039793
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 136.0,
+                  "center": [
+                    4.215722451639937,
+                    -73.46952962841694,
+                    -2.4597139426884382
+                  ],
+                  "left": [
+                    2.8317273384981334,
+                    -72.89112014820451,
+                    -2.4069610096994274
+                  ],
+                  "right": [
+                    5.599717564781741,
+                    -74.04793910862936,
+                    -2.5308446087282808
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 138.0,
+                  "center": [
+                    5.238643119581239,
+                    -71.74486801862699,
+                    -2.4902990146261397
+                  ],
+                  "left": [
+                    3.641444853510059,
+                    -71.02970531066521,
+                    -2.40136394961896
+                  ],
+                  "right": [
+                    6.835841385652419,
+                    -72.46003072658876,
+                    -2.5009188850601904
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 140.0,
+                  "center": [
+                    6.522052564676231,
+                    -70.15366573685256,
+                    -2.5022459512216155
+                  ],
+                  "left": [
+                    4.48741639909832,
+                    -69.19306401203502,
+                    -2.360603609924424
+                  ],
+                  "right": [
+                    8.556688730254141,
+                    -71.11426746167008,
+                    -2.5541591243519113
+                  ],
+                  "support_span_m": 4.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 142.0,
+                  "center": [
+                    7.174199237712418,
+                    -68.23042895572904,
+                    -2.468441195098264
+                  ],
+                  "left": [
+                    5.344401920928947,
+                    -67.42306176572687,
+                    -2.3611976002148602
+                  ],
+                  "right": [
+                    9.00399655449589,
+                    -69.03779614573122,
+                    -2.508636494340926
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 144.0,
+                  "center": [
+                    7.459829506038053,
+                    -66.17104962076722,
+                    -2.430915846424764
+                  ],
+                  "left": [
+                    5.611111700400824,
+                    -65.40800147345286,
+                    -2.4583956710925943
+                  ],
+                  "right": [
+                    9.308547311675284,
+                    -66.93409776808157,
+                    -2.4703391083465585
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "support_gap",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 146.0,
+                  "center": [
+                    8.460676281427187,
+                    -64.45657314500997,
+                    -2.4641083605081855
+                  ],
+                  "left": [
+                    6.885181671426035,
+                    -63.694787916840426,
+                    -2.3908712918240353
+                  ],
+                  "right": [
+                    10.036170891428338,
+                    -65.21835837317951,
+                    -2.4703391083465585
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 148.0,
+                  "center": [
+                    9.190420405522344,
+                    -62.59289463413648,
+                    -2.4558948227003237
+                  ],
+                  "left": [
+                    7.844095470553049,
+                    -61.93152547135375,
+                    -2.3908712918240353
+                  ],
+                  "right": [
+                    10.53674534049164,
+                    -63.254263796919204,
+                    -2.525966190775103
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 150.0,
+                  "center": [
+                    10.456377864956037,
+                    -60.95986509586249,
+                    -2.4921801992902775
+                  ],
+                  "left": [
+                    9.086558043717298,
+                    -60.34864201274025,
+                    -2.430200266488478
+                  ],
+                  "right": [
+                    11.826197686194778,
+                    -61.57108817898474,
+                    -2.454956017542033
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 152.0,
+                  "center": [
+                    11.05090148321789,
+                    -59.03728671461135,
+                    -2.4962175215885343
+                  ],
+                  "left": [
+                    9.454124602560913,
+                    -58.321183654012266,
+                    -2.3909357634677755
+                  ],
+                  "right": [
+                    12.647678363874867,
+                    -59.75338977521043,
+                    -2.470897168153924
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 154.0,
+                  "center": [
+                    11.86287521988063,
+                    -57.21268561086092,
+                    -2.4898311950941725
+                  ],
+                  "left": [
+                    10.268884915508512,
+                    -56.490401103504105,
+                    -2.4059281969129276
+                  ],
+                  "right": [
+                    13.456865524252748,
+                    -57.93497011821774,
+                    -2.5680432051839506
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 156.0,
+                  "center": [
+                    12.473685401498205,
+                    -55.291586265423696,
+                    -2.4411750989082996
+                  ],
+                  "left": [
+                    10.638108531523569,
+                    -54.49744675978623,
+                    -2.460283142403658
+                  ],
+                  "right": [
+                    14.309262271472843,
+                    -56.085725771061156,
+                    -2.495890479293928
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "support_gap",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 158.0,
+                  "center": [
+                    13.22377485901885,
+                    -53.437657815128425,
+                    -2.4266053955807543
+                  ],
+                  "left": [
+                    11.383324365921936,
+                    -52.65487944134736,
+                    -2.4845862284640283
+                  ],
+                  "right": [
+                    15.064225352115763,
+                    -54.22043618890949,
+                    -2.461830946478268
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "support_gap",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 160.0,
+                  "center": [
+                    14.260371068680309,
+                    -51.72845122780737,
+                    -2.456545527611772
+                  ],
+                  "left": [
+                    12.679545256051027,
+                    -50.97779168438907,
+                    -2.4037399938682746
+                  ],
+                  "right": [
+                    15.841196881309589,
+                    -52.47911077122567,
+                    -2.4690019656051563
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 162.0,
+                  "center": [
+                    15.149088558427179,
+                    -49.965147975929696,
+                    -2.4683232600531393
+                  ],
+                  "left": [
+                    13.605112452146573,
+                    -49.141353230113374,
+                    -2.411986042636563
+                  ],
+                  "right": [
+                    16.693064664707784,
+                    -50.78894272174602,
+                    -2.552015635342005
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "curb_profile",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                }
+              ],
+              "review_required": true,
+              "complete_width_resolved": false,
+              "lane_count": null,
+              "traffic_direction": null,
+              "speed_limit": null
+            },
+            {
+              "candidate_id": 30,
+              "action": "include",
+              "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+              "from_m": 174.0,
+              "to_m": 184.0,
+              "curve_ids": {
+                "center": 7,
+                "left": 8,
+                "right": 9
+              },
+              "sections": [
+                {
+                  "station_m": 174.0,
+                  "center": [
+                    19.151612776808612,
+                    -38.58387674220812,
+                    -2.461752831905435
+                  ],
+                  "left": [
+                    18.297789916811293,
+                    -38.063313082560235,
+                    -2.5464591620994206
+                  ],
+                  "right": [
+                    20.005435636805935,
+                    -39.104440401855996,
+                    -2.515802488840849
+                  ],
+                  "support_span_m": 2.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 176.0,
+                  "center": [
+                    20.161862044578218,
+                    -36.95589709852798,
+                    -2.506050636074722
+                  ],
+                  "left": [
+                    19.255197366591343,
+                    -36.5340450371475,
+                    -2.428725645812171
+                  ],
+                  "right": [
+                    21.06852672256509,
+                    -37.37774915990846,
+                    -2.512092079541147
+                  ],
+                  "support_span_m": 2.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 178.0,
+                  "center": [
+                    20.989958501260865,
+                    -35.217551957518054,
+                    -2.5524510227856485
+                  ],
+                  "left": [
+                    19.82068626374938,
+                    -34.77562160714044,
+                    -2.529495587336434
+                  ],
+                  "right": [
+                    22.15923073877235,
+                    -35.65948230789567,
+                    -2.622042763680473
+                  ],
+                  "support_span_m": 2.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 180.0,
+                  "center": [
+                    22.014333267774212,
+                    -33.46477251512696,
+                    -2.5246349467797256
+                  ],
+                  "left": [
+                    20.652267079854205,
+                    -32.83646072968516,
+                    -2.529495587336434
+                  ],
+                  "right": [
+                    23.37639945569422,
+                    -34.093084300568755,
+                    -2.590175220881039
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "support_gap",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 182.0,
+                  "center": [
+                    22.898065745385296,
+                    -31.676396225652667,
+                    -2.5274382702112193
+                  ],
+                  "left": [
+                    21.582772803670668,
+                    -30.95528286599575,
+                    -2.522252131723506
+                  ],
+                  "right": [
+                    24.21335868709992,
+                    -32.397509585309585,
+                    -2.6117135356599355
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 184.0,
+                  "center": [
+                    23.481227229294706,
+                    -29.748793088312087,
+                    -2.548096974054793
+                  ],
+                  "left": [
+                    22.14213423819429,
+                    -29.07290111381783,
+                    -2.52635763858257
+                  ],
+                  "right": [
+                    24.82032022039512,
+                    -30.424685062806343,
+                    -2.5977847299974415
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "support_gap",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                }
+              ],
+              "review_required": true,
+              "complete_width_resolved": false,
+              "lane_count": null,
+              "traffic_direction": null,
+              "speed_limit": null
+            }
+          ],
+          "station_disposition": [
+            {
+              "from_m": 0.0,
+              "to_m": 2.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                1
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 2.0,
+              "to_m": 4.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 4.0,
+              "to_m": 6.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                2
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 6.0,
+              "to_m": 8.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                3
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 8.0,
+              "to_m": 10.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                3,
+                4,
+                5
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 10.0,
+              "to_m": 12.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                3,
+                4,
+                5,
+                6
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 12.0,
+              "to_m": 14.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                3,
+                4,
+                5
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 14.0,
+              "to_m": 18.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                3,
+                4
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 18.0,
+              "to_m": 20.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 20.0,
+              "to_m": 22.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                7
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 22.0,
+              "to_m": 24.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                7,
+                8
+              ],
+              "deferred_candidate_ids": [
+                8
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 24.0,
+              "to_m": 28.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                7,
+                8,
+                9
+              ],
+              "deferred_candidate_ids": [
+                8
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 28.0,
+              "to_m": 30.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                7,
+                8,
+                9,
+                10
+              ],
+              "deferred_candidate_ids": [
+                8
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 30.0,
+              "to_m": 34.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                8,
+                10
+              ],
+              "deferred_candidate_ids": [
+                8
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 34.0,
+              "to_m": 36.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                8,
+                10,
+                11
+              ],
+              "deferred_candidate_ids": [
+                8
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 36.0,
+              "to_m": 38.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                8,
+                10
+              ],
+              "deferred_candidate_ids": [
+                8
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 38.0,
+              "to_m": 40.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                12
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 40.0,
+              "to_m": 42.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 42.0,
+              "to_m": 44.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                13
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 44.0,
+              "to_m": 46.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 46.0,
+              "to_m": 48.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                14,
+                15
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 48.0,
+              "to_m": 52.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                15
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 52.0,
+              "to_m": 54.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                16
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 54.0,
+              "to_m": 56.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 56.0,
+              "to_m": 104.0,
+              "status": "included_geometry",
+              "included_candidate_id": 17,
+              "available_candidate_ids": [
+                17
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 104.0,
+              "to_m": 110.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "source_gap"
+              ],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 110.0,
+              "to_m": 114.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 114.0,
+              "to_m": 116.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                18
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 116.0,
+              "to_m": 118.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                19
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 118.0,
+              "to_m": 120.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 120.0,
+              "to_m": 122.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                20,
+                21
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 122.0,
+              "to_m": 124.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                21
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 124.0,
+              "to_m": 126.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 126.0,
+              "to_m": 128.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "source_gap"
+              ],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 128.0,
+              "to_m": 130.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 130.0,
+              "to_m": 132.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22,
+                23
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 132.0,
+              "to_m": 136.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 136.0,
+              "to_m": 138.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22,
+                24
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 138.0,
+              "to_m": 142.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22,
+                25
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 142.0,
+              "to_m": 144.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22,
+                25,
+                26
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 144.0,
+              "to_m": 152.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22,
+                26
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 152.0,
+              "to_m": 158.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 158.0,
+              "to_m": 162.0,
+              "status": "included_geometry",
+              "included_candidate_id": 22,
+              "available_candidate_ids": [
+                22,
+                27
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 162.0,
+              "to_m": 166.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                27
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 166.0,
+              "to_m": 172.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                28,
+                29
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 172.0,
+              "to_m": 174.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 174.0,
+              "to_m": 176.0,
+              "status": "included_geometry",
+              "included_candidate_id": 30,
+              "available_candidate_ids": [
+                30
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 176.0,
+              "to_m": 182.0,
+              "status": "included_geometry",
+              "included_candidate_id": 30,
+              "available_candidate_ids": [
+                30,
+                31
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 182.0,
+              "to_m": 184.0,
+              "status": "included_geometry",
+              "included_candidate_id": 30,
+              "available_candidate_ids": [
+                30
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 184.0,
+              "to_m": 190.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 190.0,
+              "to_m": 196.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                32
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 196.0,
+              "to_m": 198.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 198.0,
+              "to_m": 200.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                33,
+                34
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 200.0,
+              "to_m": 202.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 202.0,
+              "to_m": 204.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                35,
+                36
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 204.0,
+              "to_m": 206.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                36
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 206.0,
+              "to_m": 208.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                36,
+                37
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 208.0,
+              "to_m": 210.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                36
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 210.0,
+              "to_m": 212.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                38,
+                39
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 212.0,
+              "to_m": 214.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                40
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 214.0,
+              "to_m": 218.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                41
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 218.0,
+              "to_m": 220.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                42
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 220.0,
+              "to_m": 224.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 224.0,
+              "to_m": 226.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                43
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 226.0,
+              "to_m": 228.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                43,
+                44,
+                45
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 228.0,
+              "to_m": 232.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                44,
+                45
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 232.0,
+              "to_m": 234.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                45
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 234.0,
+              "to_m": 236.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 236.0,
+              "to_m": 238.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                46,
+                47,
+                48,
+                49
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 238.0,
+              "to_m": 240.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                47,
+                48,
+                49
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 240.0,
+              "to_m": 242.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                47
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 242.0,
+              "to_m": 244.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                50,
+                51
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 244.0,
+              "to_m": 246.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                51,
+                52
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 246.0,
+              "to_m": 248.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                52
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 248.0,
+              "to_m": 250.4805260889724,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "unmatched_bands"
+              ],
+              "source_ambiguous": false
+            }
+          ],
+          "summary": {
+            "segments": 3,
+            "reference_curves": 9,
+            "trajectory_length_m": 250.4805260889724,
+            "included_station_length_m": 92.0,
+            "unresolved_station_length_m": 158.4805260889724,
+            "lane_count": null,
+            "complete_width_resolved": false,
+            "road_semantics_inferred": false,
+            "source_quality_passed": false,
+            "deployment_ready": false,
+            "included_station_fraction": 0.36729402255934646,
+            "minimum_retained_fraction": 0.9,
+            "meets_requested_station_extent": false
+          },
+          "warnings": [
+            "Included source curves remain review geometry. No complete width, lane, direction, speed, legal use, connectivity, georeference or full-width interior is established.",
+            "Other reference curves use the editable IR; standalone unknown ways are discarded by the Lanelet2 reader, so this stage does not publish OSM.",
+            "Station coverage is input-path extent, not unique road length or a source-quality pass. Separate candidates are not joined or smoothed."
+          ],
+          "source_warnings": [
+            "Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves."
+          ],
+          "input_artifacts": {
+            "source": {
+              "path": "web/public/samples/nclt-2012-04-29.mcap",
+              "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+              "bytes": 10054898
+            },
+            "pointcloud": {
+              "map": {
+                "path": "pointcloud/trajectory_map.ply",
+                "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+                "bytes": 21878254
+              },
+              "trajectory": {
+                "path": "pointcloud/trajectory_fixed_kitti.txt",
+                "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+                "bytes": 47336
+              },
+              "graph": {
+                "path": "pointcloud/trajectory_fixed.g2o",
+                "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+                "bytes": 94035
+              }
+            },
+            "native": {
+              "version": "0.1.0",
+              "extension": {
+                "path": "cloudanalyzer_core/_core.abi3.so",
+                "sha256": "0e877885d8b5763ff16cc1ee05680a1684feb3eea6a2b4221757230b31c672ea",
+                "bytes": 7393912
+              }
+            },
+            "corridor_proposal": {
+              "path": "corridor-proposals.json",
+              "sha256": "c14c8360e1fbb9f85cdd036222607579a0fbc1360383f419c60623a66d4d27be",
+              "bytes": 409952
+            }
+          },
+          "native_validation": {
+            "validation": {
+              "counts": {
+                "errors": 0,
+                "infos": 9,
+                "warnings": 0
+              },
+              "issues": [
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 1,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 1,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:1 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 2,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 2,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:2 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 3,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 3,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:3 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 4,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 4,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:4 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 5,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 5,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:5 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 6,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 6,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:6 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 7,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 7,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:7 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 8,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 8,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:8 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 9,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 9,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:9 is not used by any lane",
+                  "severity": "info"
+                }
+              ]
+            },
+            "import_issues": [],
+            "georeference": null
+          },
+          "editing": {
+            "file": "geometry-01/vector_map.json",
+            "show_virtual_lines": true
+          }
+        }
+      },
+      "checks": {
+        "source_curve_values_identical": true,
+        "native_ir_reload_identical": true,
+        "native_structural_errors": 0,
+        "full_input_station_partition": true,
+        "inspection_did_not_modify_manifest": true,
+        "lanes_created": 0,
+        "osm_published": false,
+        "geometry_attempts_spent": 1,
+        "remaining_attempts": 1,
+        "selected_lane_map": null
+      }
+    },
+    {
+      "dataset": "nclt-2012-06-15",
+      "source": {
+        "path": "web/public/samples/nclt-2012-06-15.mcap",
+        "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+        "bytes": 9387931
+      },
+      "runtime": {
+        "python": "3.12.14",
+        "native": {
+          "version": "0.1.0",
+          "extension": {
+            "path": "cloudanalyzer_core/_core.abi3.so",
+            "sha256": "0e877885d8b5763ff16cc1ee05680a1684feb3eea6a2b4221757230b31c672ea",
+            "bytes": 7393912
+          }
+        }
+      },
+      "pointcloud_options": {
+        "keyframe_spacing": 1.0,
+        "remove_dynamic": true,
+        "pointcloud_topic": null,
+        "imu_topic": null
+      },
+      "pointcloud": {
+        "files": {
+          "map": {
+            "path": "pointcloud/trajectory_map.ply",
+            "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+            "bytes": 20653998
+          },
+          "trajectory": {
+            "path": "pointcloud/trajectory_fixed_kitti.txt",
+            "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+            "bytes": 46143
+          },
+          "graph": {
+            "path": "pointcloud/trajectory_fixed.g2o",
+            "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+            "bytes": 92299
+          }
+        },
+        "frames": 238,
+        "map_points": 645432,
+        "path_length_m": 253.8,
+        "reports": {
+          "odometry": "odometry-report.json",
+          "correction": "pointcloud-report.json"
+        },
+        "quality_status": "generated_unverified",
+        "coordinate_frame": "local_slam_metres"
+      },
+      "processing_reports": {
+        "odometry": {
+          "driver": "cloudanalyzer",
+          "frames": 238,
+          "path_length_m": 253.8,
+          "runtime_s": 12.5,
+          "reading_s": 0.4,
+          "scans": "odometry/scans",
+          "trajectory": "odometry/trajectory.tum",
+          "gravity": "odometry/gravity/gravity.txt",
+          "map": "odometry/map.ply"
+        },
+        "correction": {
+          "session": "odometry/scans",
+          "poses_file": "trajectory.tum",
+          "nodes": 195,
+          "scans": 195,
+          "unmatched_scans": 43,
+          "scan_points": 988285,
+          "scans_moved_by_calib_tr": false,
+          "timings_s": {
+            "open": 0.05,
+            "loops": 0.11,
+            "gravity": 0.01,
+            "dynamic": 0.3,
+            "write": 0.12
+          },
+          "loops": {
+            "candidates": 8,
+            "added": 6,
+            "implausible": 0,
+            "same_place_retries": 0,
+            "pairs": [
+              [
+                25,
+                206,
+                0.535
+              ],
+              [
+                23,
+                211,
+                0.504
+              ],
+              [
+                18,
+                217,
+                0.63
+              ],
+              [
+                13,
+                222,
+                0.59
+              ],
+              [
+                7,
+                228,
+                0.636
+              ],
+              [
+                1,
+                234,
+                0.631
+              ]
+            ],
+            "optimized": {
+              "initial_cost": 26.00619919191694,
+              "final_cost": 1.414206918774201,
+              "iterations": 8,
+              "converged": true
+            }
+          },
+          "gravity": {
+            "tied": 195,
+            "sigma_deg": 1.031,
+            "imus": [
+              {
+                "keyframes": 195,
+                "spread_deg": 0.952,
+                "noise_deg": 1.031
+              }
+            ],
+            "optimized": {
+              "initial_cost": 1213.6207728692234,
+              "final_cost": 159.42380098028823,
+              "iterations": 6,
+              "converged": true
+            }
+          },
+          "dynamic": {
+            "points": 117,
+            "of": 988285,
+            "share": 0.00011838690256353178
+          },
+          "map_points": 645432,
+          "outputs": {
+            "g2o": "pointcloud/trajectory_fixed.g2o",
+            "kitti": "pointcloud/trajectory_fixed_kitti.txt",
+            "tum": "pointcloud/trajectory_fixed.tum",
+            "map": "pointcloud/trajectory_map.ply",
+            "dynamic": "pointcloud/trajectory_dynamic.ply"
+          }
+        }
+      },
+      "proposal": {
+        "path": "corridor-proposals.json",
+        "sha256": "bf9ccf32d0cc790961c49bc8f6d8faa6a951fe6cb68d66f925e0d18e15f3a063",
+        "bytes": 517266
+      },
+      "proposal_counts": {
+        "candidates": 77,
+        "limited": false,
+        "with_candidate_station_length_m": 212.0
+      },
+      "geometry": {
+        "files": {
+          "editable_map": {
+            "path": "geometry-01/vector_map.json",
+            "sha256": "36ea9325dcd54b175722706fc4b83155b3f3c27bbd74a80fe9dcddadaa505359",
+            "bytes": 11965
+          },
+          "report": {
+            "path": "geometry-01/report.json",
+            "sha256": "87d713b676e25b8ed12b8c0650166f549700438f71db69f8dfb25b393f4ce618",
+            "bytes": 53376
+          }
+        },
+        "committed_ir": "june/vector_map.json",
+        "committed_decisions": "june/decisions.json",
+        "evidence": {
+          "schema": "cloudanalyzer.mapping_geometry.v1",
+          "reason": "Build editable source geometry from inspected corridor proposals; retain every unresolved input interval and infer no traffic semantics.",
+          "coordinate_frame": "local_slam_metres",
+          "protocol": {
+            "options": {
+              "search_radius_m": 8.0
+            },
+            "sample_spacing_m": 2.0,
+            "bin_width_m": 0.5,
+            "half_window_m": 2.0,
+            "minimum_support_span_m": 1.0,
+            "maximum_adjacent_height_step_m": 0.08,
+            "maximum_reference_level_grade": 0.12,
+            "ground_estimator": {
+              "model": "lowest_supported_layer",
+              "layer_height_m": 0.15,
+              "xy_cell_m": 0.2,
+              "minimum_cells": 3,
+              "minimum_triangle_area_m2": 0.01
+            },
+            "interval_support_spacing_m": 0.5,
+            "interval_ground_radius_m": 0.75,
+            "interval_height_tolerance_m": 0.3,
+            "maximum_sections": 2048,
+            "profile_query_point_budget": 2000000,
+            "interval_support_sample_budget": 100000
+          },
+          "source_proposal_limited": false,
+          "decisions": [
+            {
+              "candidate_id": 25,
+              "action": "include",
+              "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+              "from_m": 50.0,
+              "to_m": 110.0
+            },
+            {
+              "candidate_id": 27,
+              "action": "defer",
+              "reason": "Do not adopt this competing or rapidly varying band as the current path geometry. This is an agent review hold, not proof that the surface is absent or invalid.",
+              "from_m": 66.0,
+              "to_m": 88.0
+            },
+            {
+              "candidate_id": 28,
+              "action": "defer",
+              "reason": "Do not adopt this competing or rapidly varying band as the current path geometry. This is an agent review hold, not proof that the surface is absent or invalid.",
+              "from_m": 90.0,
+              "to_m": 104.0
+            },
+            {
+              "candidate_id": 49,
+              "action": "defer",
+              "reason": "Do not adopt this competing or rapidly varying band as the current path geometry. This is an agent review hold, not proof that the surface is absent or invalid.",
+              "from_m": 176.0,
+              "to_m": 192.0
+            }
+          ],
+          "segments": [
+            {
+              "candidate_id": 25,
+              "action": "include",
+              "reason": "Retain this longer path-associated low-source band as separate reference curves. Source span varies and complete width/road identity remain unresolved; do not create lanes or join gaps.",
+              "from_m": 50.0,
+              "to_m": 110.0,
+              "curve_ids": {
+                "center": 1,
+                "left": 2,
+                "right": 3
+              },
+              "sections": [
+                {
+                  "station_m": 50.0,
+                  "center": [
+                    3.3244803360597572,
+                    -19.486205612693887,
+                    -1.6355039247317213
+                  ],
+                  "left": [
+                    5.510951963269459,
+                    -20.698369720150858,
+                    -1.8930681726406204
+                  ],
+                  "right": [
+                    1.1380087088500546,
+                    -18.274041505236916,
+                    -1.5093358903479217
+                  ],
+                  "support_span_m": 5.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 52.0,
+                  "center": [
+                    1.2251567208258534,
+                    -20.585103039387487,
+                    -1.497394436569657
+                  ],
+                  "left": [
+                    2.797237535729927,
+                    -21.35390854886992,
+                    -1.6298062747793831
+                  ],
+                  "right": [
+                    -0.34692409407822056,
+                    -19.816297529905054,
+                    -1.4074721763245837
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 54.0,
+                  "center": [
+                    0.051147937059319526,
+                    -22.199936850971415,
+                    -1.4369658310062536
+                  ],
+                  "left": [
+                    1.1726868250337645,
+                    -22.75188840931784,
+                    -1.5260010965576127
+                  ],
+                  "right": [
+                    -1.0703909509151255,
+                    -21.64798529262499,
+                    -1.3876345430599044
+                  ],
+                  "support_span_m": 2.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 56.0,
+                  "center": [
+                    -0.9358240069362695,
+                    -23.854072374895335,
+                    -1.4180451795231033
+                  ],
+                  "left": [
+                    0.10120538023060577,
+                    -24.551976415686255,
+                    -1.4808508307552426
+                  ],
+                  "right": [
+                    -1.972853394103145,
+                    -23.156168334104414,
+                    -1.3628762186604535
+                  ],
+                  "support_span_m": 2.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 58.0,
+                  "center": [
+                    -1.523123944597488,
+                    -25.874074937819945,
+                    -1.451104843284823
+                  ],
+                  "left": [
+                    0.09709707951718727,
+                    -27.04662934296147,
+                    -1.521311609503595
+                  ],
+                  "right": [
+                    -3.1433449687121633,
+                    -24.701520532678423,
+                    -1.3302463056804634
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 60.0,
+                  "center": [
+                    -3.072711997186642,
+                    -27.233574315977208,
+                    -1.3197424372388127
+                  ],
+                  "left": [
+                    -1.8043819196942628,
+                    -28.03441063791083,
+                    -1.4269080173453277
+                  ],
+                  "right": [
+                    -4.341042074679021,
+                    -26.432737994043585,
+                    -1.298220859778879
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 62.0,
+                  "center": [
+                    -3.643281955192633,
+                    -29.232818693883864,
+                    -1.3247285365268882
+                  ],
+                  "left": [
+                    -1.946025774400735,
+                    -30.290798588193628,
+                    -1.3536384446647771
+                  ],
+                  "right": [
+                    -5.340538135984531,
+                    -28.1748387995741,
+                    -1.2369187885975808
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 64.0,
+                  "center": [
+                    -4.764252259748231,
+                    -30.8922004483699,
+                    -1.2636121927366637
+                  ],
+                  "left": [
+                    -3.0988171758293275,
+                    -31.999596484687544,
+                    -1.3118658651820687
+                  ],
+                  "right": [
+                    -6.429687343667133,
+                    -29.78480441205225,
+                    -1.2414760581230893
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 66.0,
+                  "center": [
+                    -5.851621359349302,
+                    -32.55343007850872,
+                    -1.1887153286544174
+                  ],
+                  "left": [
+                    -4.1251718066315535,
+                    -33.5630695893841,
+                    -1.287709867510428
+                  ],
+                  "right": [
+                    -7.57807091206705,
+                    -31.543790567633334,
+                    -1.1635257141896742
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 68.0,
+                  "center": [
+                    -7.418596662675125,
+                    -33.94619164955358,
+                    -1.075860411910552
+                  ],
+                  "left": [
+                    -5.90431698196426,
+                    -34.82337865845545,
+                    -1.1367767065786243
+                  ],
+                  "right": [
+                    -8.93287634338599,
+                    -33.06900464065172,
+                    -1.043220467936007
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 70.0,
+                  "center": [
+                    -8.492719915395298,
+                    -35.616853073934884,
+                    -1.0550316388591638
+                  ],
+                  "left": [
+                    -7.00307143352501,
+                    -36.53524699838209,
+                    -1.1134099159709414
+                  ],
+                  "right": [
+                    -9.982368397265587,
+                    -34.698459149487675,
+                    -0.9742732667917233
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 72.0,
+                  "center": [
+                    -9.707482651416077,
+                    -37.18283504870326,
+                    -1.0499943592765102
+                  ],
+                  "left": [
+                    -8.457169827293926,
+                    -38.011519452946324,
+                    -1.05426120327133
+                  ],
+                  "right": [
+                    -10.957795475538228,
+                    -36.35415064446019,
+                    -0.9742732667917233
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 74.0,
+                  "center": [
+                    -10.680915468211037,
+                    -38.91813318005106,
+                    -0.9666376447626426
+                  ],
+                  "left": [
+                    -9.654987460535592,
+                    -39.632256224817915,
+                    -1.0357914406379445
+                  ],
+                  "right": [
+                    -11.706843475886483,
+                    -38.2040101352842,
+                    -0.937523142744894
+                  ],
+                  "support_span_m": 2.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 76.0,
+                  "center": [
+                    -11.365243527461313,
+                    -40.87687645985867,
+                    -0.9203661562706321
+                  ],
+                  "left": [
+                    -9.525293998148957,
+                    -42.17189990736193,
+                    -0.935889460642679
+                  ],
+                  "right": [
+                    -13.20519305677367,
+                    -39.58185301235541,
+                    -0.8340824233107604
+                  ],
+                  "support_span_m": 4.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 78.0,
+                  "center": [
+                    -12.767867508545255,
+                    -42.31816121986245,
+                    -0.8110039716448396
+                  ],
+                  "left": [
+                    -11.193743624248897,
+                    -43.551909166927715,
+                    -0.9767920275313082
+                  ],
+                  "right": [
+                    -14.341991392841614,
+                    -41.08441327279719,
+                    -0.7963258116442918
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 80.0,
+                  "center": [
+                    -13.831576871249121,
+                    -44.023640944717854,
+                    -0.767266698536653
+                  ],
+                  "left": [
+                    -12.45761826892273,
+                    -45.10749414469159,
+                    -0.9574028705798235
+                  ],
+                  "right": [
+                    -15.205535473575512,
+                    -42.939787744744116,
+                    -0.7213735068583487
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 82.0,
+                  "center": [
+                    -15.441982577316358,
+                    -45.30439873606542,
+                    -0.6567838327103326
+                  ],
+                  "left": [
+                    -14.45513740385989,
+                    -46.071625302097694,
+                    -0.747885020326897
+                  ],
+                  "right": [
+                    -16.428827750772825,
+                    -44.537172170033145,
+                    -0.6409183230349766
+                  ],
+                  "support_span_m": 2.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 84.0,
+                  "center": [
+                    -16.48028718993322,
+                    -47.023311859236934,
+                    -0.6624341125453335
+                  ],
+                  "left": [
+                    -15.314374938624326,
+                    -47.96705367893543,
+                    -0.7514315020494051
+                  ],
+                  "right": [
+                    -17.64619944124212,
+                    -46.079570039538446,
+                    -0.6381558525369453
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 86.0,
+                  "center": [
+                    -16.961986301151,
+                    -49.16840054752482,
+                    -0.6348654526174946
+                  ],
+                  "left": [
+                    -15.373386889399782,
+                    -50.38345277232163,
+                    -0.6915345817006455
+                  ],
+                  "right": [
+                    -18.550585712902222,
+                    -47.95334832272801,
+                    -0.5485356275325582
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 88.0,
+                  "center": [
+                    -17.876473146370756,
+                    -50.90262189313456,
+                    -0.6004948145357418
+                  ],
+                  "left": [
+                    -16.004256811988824,
+                    -52.150542562597764,
+                    -0.6045881457560199
+                  ],
+                  "right": [
+                    -19.748689480752688,
+                    -49.65470122367136,
+                    -0.46698088467980703
+                  ],
+                  "support_span_m": 4.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 90.0,
+                  "center": [
+                    -18.932802644212845,
+                    -52.57849657160664,
+                    -0.533216535136195
+                  ],
+                  "left": [
+                    -17.03944827472358,
+                    -53.794107213027615,
+                    -0.5323959420912213
+                  ],
+                  "right": [
+                    -20.826157013702108,
+                    -51.36288593018567,
+                    -0.40857160710166834
+                  ],
+                  "support_span_m": 4.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 92.0,
+                  "center": [
+                    -20.055057146777237,
+                    -54.2936414181548,
+                    -0.4874418939769554
+                  ],
+                  "left": [
+                    -18.227018520069958,
+                    -55.60542447158481,
+                    -0.47973968792909916
+                  ],
+                  "right": [
+                    -21.883095773484513,
+                    -52.98185836472478,
+                    -0.3728767902841338
+                  ],
+                  "support_span_m": 4.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 94.0,
+                  "center": [
+                    -21.129813150904035,
+                    -56.06784138124725,
+                    -0.46047773668341896
+                  ],
+                  "left": [
+                    -19.183931748212697,
+                    -57.637409973778325,
+                    -0.5695729256680023
+                  ],
+                  "right": [
+                    -23.07569455359537,
+                    -54.498272788716164,
+                    -0.3140265642753398
+                  ],
+                  "support_span_m": 5.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 96.0,
+                  "center": [
+                    -22.415062009045087,
+                    -57.62000395806317,
+                    -0.404646483393155
+                  ],
+                  "left": [
+                    -20.87590223299073,
+                    -58.89710504402947,
+                    -0.44325554264587796
+                  ],
+                  "right": [
+                    -23.954221785099442,
+                    -56.34290287209687,
+                    -0.30441250537017506
+                  ],
+                  "support_span_m": 4.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 98.0,
+                  "center": [
+                    -23.87519854690505,
+                    -58.98506426957205,
+                    -0.2641333607603689
+                  ],
+                  "left": [
+                    -22.511348610340754,
+                    -60.081610370077435,
+                    -0.35333075288126864
+                  ],
+                  "right": [
+                    -25.239048483469347,
+                    -57.888518169066664,
+                    -0.16412144296588638
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 100.0,
+                  "center": [
+                    -24.85140295144733,
+                    -60.645261131369814,
+                    -0.24621161100539846
+                  ],
+                  "left": [
+                    -23.617465778850498,
+                    -61.4981380592344,
+                    -0.26688674451358296
+                  ],
+                  "right": [
+                    -26.085340124044162,
+                    -59.79238420350523,
+                    -0.16533815249389883
+                  ],
+                  "support_span_m": 3.0,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 102.0,
+                  "center": [
+                    -26.06261526260086,
+                    -62.150524261895335,
+                    -0.17005018315026205
+                  ],
+                  "left": [
+                    -24.560077454393294,
+                    -63.047675383450006,
+                    -0.24660986357391543
+                  ],
+                  "right": [
+                    -27.565153070808428,
+                    -61.25337314034066,
+                    -0.06107893643242951
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 104.0,
+                  "center": [
+                    -27.035101451507277,
+                    -63.816007573924786,
+                    -0.12458133367740164
+                  ],
+                  "left": [
+                    -25.47682657709575,
+                    -64.61242418335588,
+                    -0.19405828525941765
+                  ],
+                  "right": [
+                    -28.593376325918804,
+                    -63.01959096449368,
+                    0.009899845168112265
+                  ],
+                  "support_span_m": 3.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 106.0,
+                  "center": [
+                    -27.76895465341049,
+                    -65.44312856742572,
+                    -0.07272304598406665
+                  ],
+                  "left": [
+                    -25.592886057664355,
+                    -66.01516481331181,
+                    -0.17749997684090318
+                  ],
+                  "right": [
+                    -29.945023249156623,
+                    -64.87109232153963,
+                    0.036202549353720165
+                  ],
+                  "support_span_m": 4.5,
+                  "left_evidence": "curb_profile",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 108.0,
+                  "center": [
+                    -28.927922272216083,
+                    -67.17403326679313,
+                    -0.021464234450528752
+                  ],
+                  "left": [
+                    -25.685607433495292,
+                    -66.95066252875661,
+                    -0.0898459446090901
+                  ],
+                  "right": [
+                    -32.170237110936874,
+                    -67.39740400482965,
+                    0.14305486306481366
+                  ],
+                  "support_span_m": 6.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                },
+                {
+                  "station_m": 110.0,
+                  "center": [
+                    -29.840468236350688,
+                    -69.70899170818868,
+                    0.03354281935466741
+                  ],
+                  "left": [
+                    -25.946408007698253,
+                    -68.00640692744284,
+                    -0.13844089949689692
+                  ],
+                  "right": [
+                    -33.73452846500312,
+                    -71.41157648893451,
+                    0.24042420062156766
+                  ],
+                  "support_span_m": 8.5,
+                  "left_evidence": "height_discontinuity",
+                  "right_evidence": "height_discontinuity",
+                  "intersects_trajectory": true,
+                  "path_level_supported": true
+                }
+              ],
+              "review_required": true,
+              "complete_width_resolved": false,
+              "lane_count": null,
+              "traffic_direction": null,
+              "speed_limit": null
+            }
+          ],
+          "station_disposition": [
+            {
+              "from_m": 0.0,
+              "to_m": 2.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 2.0,
+              "to_m": 4.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                1,
+                2
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 4.0,
+              "to_m": 6.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                3
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 6.0,
+              "to_m": 8.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 8.0,
+              "to_m": 10.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                4,
+                5,
+                6
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 10.0,
+              "to_m": 12.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                6,
+                7,
+                8
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 12.0,
+              "to_m": 14.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                7,
+                8,
+                9
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 14.0,
+              "to_m": 16.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                9,
+                10
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 16.0,
+              "to_m": 18.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 18.0,
+              "to_m": 20.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                11,
+                12
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 20.0,
+              "to_m": 22.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                12
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 22.0,
+              "to_m": 24.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                13
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 24.0,
+              "to_m": 26.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                14
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 26.0,
+              "to_m": 28.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                14,
+                15,
+                16
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 28.0,
+              "to_m": 30.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                14,
+                17,
+                18
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 30.0,
+              "to_m": 32.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "unmatched_bands"
+              ],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 32.0,
+              "to_m": 34.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                19
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 34.0,
+              "to_m": 36.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                19,
+                20
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 36.0,
+              "to_m": 38.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                21
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 38.0,
+              "to_m": 40.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                21,
+                22
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 40.0,
+              "to_m": 42.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                21,
+                22,
+                23
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 42.0,
+              "to_m": 46.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                21
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 46.0,
+              "to_m": 48.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 48.0,
+              "to_m": 50.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                24
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 50.0,
+              "to_m": 52.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                24,
+                25
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 52.0,
+              "to_m": 62.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25,
+                26
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 62.0,
+              "to_m": 66.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 66.0,
+              "to_m": 88.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25,
+                27
+              ],
+              "deferred_candidate_ids": [
+                27
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 88.0,
+              "to_m": 90.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 90.0,
+              "to_m": 98.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25,
+                28
+              ],
+              "deferred_candidate_ids": [
+                28
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 98.0,
+              "to_m": 102.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25,
+                28,
+                29
+              ],
+              "deferred_candidate_ids": [
+                28
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 102.0,
+              "to_m": 104.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25,
+                28
+              ],
+              "deferred_candidate_ids": [
+                28
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 104.0,
+              "to_m": 108.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 108.0,
+              "to_m": 110.0,
+              "status": "included_geometry",
+              "included_candidate_id": 25,
+              "available_candidate_ids": [
+                25,
+                30
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 110.0,
+              "to_m": 112.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                30
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 112.0,
+              "to_m": 118.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 118.0,
+              "to_m": 120.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                31
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 120.0,
+              "to_m": 122.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                31,
+                32,
+                33
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 122.0,
+              "to_m": 126.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                31
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 126.0,
+              "to_m": 128.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                34
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 128.0,
+              "to_m": 130.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                34,
+                35
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 130.0,
+              "to_m": 134.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "missing_ground_anchor"
+              ],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 134.0,
+              "to_m": 138.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 138.0,
+              "to_m": 142.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                36
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 142.0,
+              "to_m": 146.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                36,
+                37
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 146.0,
+              "to_m": 148.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                36,
+                37,
+                38,
+                39,
+                40
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 148.0,
+              "to_m": 150.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                36,
+                39,
+                40
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 150.0,
+              "to_m": 154.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                39,
+                40,
+                41
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 154.0,
+              "to_m": 156.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                39,
+                40
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 156.0,
+              "to_m": 158.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                40,
+                42
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 158.0,
+              "to_m": 160.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                42,
+                43
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 160.0,
+              "to_m": 162.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                43
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 162.0,
+              "to_m": 164.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                44
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 164.0,
+              "to_m": 166.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                44,
+                45
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 166.0,
+              "to_m": 170.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 170.0,
+              "to_m": 172.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                46,
+                47,
+                48
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 172.0,
+              "to_m": 176.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 176.0,
+              "to_m": 180.0,
+              "status": "agent_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                49
+              ],
+              "deferred_candidate_ids": [
+                49
+              ],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 180.0,
+              "to_m": 182.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                49,
+                50,
+                51
+              ],
+              "deferred_candidate_ids": [
+                49
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 182.0,
+              "to_m": 184.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                49,
+                51
+              ],
+              "deferred_candidate_ids": [
+                49
+              ],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 184.0,
+              "to_m": 188.0,
+              "status": "agent_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                49
+              ],
+              "deferred_candidate_ids": [
+                49
+              ],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 188.0,
+              "to_m": 190.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                49,
+                52,
+                53
+              ],
+              "deferred_candidate_ids": [
+                49
+              ],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 190.0,
+              "to_m": 192.0,
+              "status": "agent_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                49
+              ],
+              "deferred_candidate_ids": [
+                49
+              ],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 192.0,
+              "to_m": 196.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                54
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 196.0,
+              "to_m": 198.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 198.0,
+              "to_m": 200.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                55
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 200.0,
+              "to_m": 202.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                55,
+                56,
+                57
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 202.0,
+              "to_m": 204.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                55,
+                58
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 204.0,
+              "to_m": 206.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                55
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 206.0,
+              "to_m": 208.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                59,
+                60
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 208.0,
+              "to_m": 210.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "source_gap"
+              ],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 210.0,
+              "to_m": 212.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                61
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 212.0,
+              "to_m": 214.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                62
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 214.0,
+              "to_m": 216.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                62,
+                63,
+                64,
+                65,
+                66
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 216.0,
+              "to_m": 222.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                62
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 222.0,
+              "to_m": 224.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                67,
+                68
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 224.0,
+              "to_m": 226.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 226.0,
+              "to_m": 228.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                69,
+                70
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 228.0,
+              "to_m": 230.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                69
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 230.0,
+              "to_m": 232.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                69,
+                71
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 232.0,
+              "to_m": 234.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                69,
+                71,
+                72
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 234.0,
+              "to_m": 236.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                71
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 236.0,
+              "to_m": 244.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                73
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 244.0,
+              "to_m": 246.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                74
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 246.0,
+              "to_m": 248.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                75
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 248.0,
+              "to_m": 250.0,
+              "status": "not_reviewed",
+              "included_candidate_id": null,
+              "available_candidate_ids": [
+                76,
+                77
+              ],
+              "deferred_candidate_ids": [],
+              "source_reasons": [],
+              "source_ambiguous": false
+            },
+            {
+              "from_m": 250.0,
+              "to_m": 252.0,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "branching_bands"
+              ],
+              "source_ambiguous": true
+            },
+            {
+              "from_m": 252.0,
+              "to_m": 252.5863381996826,
+              "status": "source_deferred",
+              "included_candidate_id": null,
+              "available_candidate_ids": [],
+              "deferred_candidate_ids": [],
+              "source_reasons": [
+                "unmatched_bands"
+              ],
+              "source_ambiguous": false
+            }
+          ],
+          "summary": {
+            "segments": 1,
+            "reference_curves": 3,
+            "trajectory_length_m": 252.5863381996826,
+            "included_station_length_m": 60.0,
+            "unresolved_station_length_m": 192.5863381996826,
+            "lane_count": null,
+            "complete_width_resolved": false,
+            "road_semantics_inferred": false,
+            "source_quality_passed": false,
+            "deployment_ready": false,
+            "included_station_fraction": 0.23754253863313418,
+            "minimum_retained_fraction": 0.9,
+            "meets_requested_station_extent": false
+          },
+          "warnings": [
+            "Included source curves remain review geometry. No complete width, lane, direction, speed, legal use, connectivity, georeference or full-width interior is established.",
+            "Other reference curves use the editable IR; standalone unknown ways are discarded by the Lanelet2 reader, so this stage does not publish OSM.",
+            "Station coverage is input-path extent, not unique road length or a source-quality pass. Separate candidates are not joined or smoothed."
+          ],
+          "source_warnings": [
+            "Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves."
+          ],
+          "input_artifacts": {
+            "source": {
+              "path": "web/public/samples/nclt-2012-06-15.mcap",
+              "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+              "bytes": 9387931
+            },
+            "pointcloud": {
+              "map": {
+                "path": "pointcloud/trajectory_map.ply",
+                "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+                "bytes": 20653998
+              },
+              "trajectory": {
+                "path": "pointcloud/trajectory_fixed_kitti.txt",
+                "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+                "bytes": 46143
+              },
+              "graph": {
+                "path": "pointcloud/trajectory_fixed.g2o",
+                "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+                "bytes": 92299
+              }
+            },
+            "native": {
+              "version": "0.1.0",
+              "extension": {
+                "path": "cloudanalyzer_core/_core.abi3.so",
+                "sha256": "0e877885d8b5763ff16cc1ee05680a1684feb3eea6a2b4221757230b31c672ea",
+                "bytes": 7393912
+              }
+            },
+            "corridor_proposal": {
+              "path": "corridor-proposals.json",
+              "sha256": "bf9ccf32d0cc790961c49bc8f6d8faa6a951fe6cb68d66f925e0d18e15f3a063",
+              "bytes": 517266
+            }
+          },
+          "native_validation": {
+            "validation": {
+              "counts": {
+                "errors": 0,
+                "infos": 3,
+                "warnings": 0
+              },
+              "issues": [
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 1,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 1,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:1 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 2,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 2,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:2 is not used by any lane",
+                  "severity": "info"
+                },
+                {
+                  "code": "unused_boundary",
+                  "entity": {
+                    "id": 3,
+                    "kind": "boundary"
+                  },
+                  "fix": {
+                    "entity": {
+                      "id": 3,
+                      "kind": "boundary"
+                    },
+                    "op": "remove_entity"
+                  },
+                  "message": "boundary:3 is not used by any lane",
+                  "severity": "info"
+                }
+              ]
+            },
+            "import_issues": [],
+            "georeference": null
+          },
+          "editing": {
+            "file": "geometry-01/vector_map.json",
+            "show_virtual_lines": true
+          }
+        }
+      },
+      "checks": {
+        "source_curve_values_identical": true,
+        "native_ir_reload_identical": true,
+        "native_structural_errors": 0,
+        "full_input_station_partition": true,
+        "inspection_did_not_modify_manifest": true,
+        "lanes_created": 0,
+        "osm_published": false,
+        "geometry_attempts_spent": 1,
+        "remaining_attempts": 1,
+        "selected_lane_map": null
+      }
+    }
+  ]
+}

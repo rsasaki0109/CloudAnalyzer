@@ -1,0 +1,56 @@
+{
+  "schema": "cloudanalyzer.nclt_hd_only_repair.v1",
+  "date": "2026-10-09",
+  "source": {
+    "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+    "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+    "bytes": 9387931
+  },
+  "native": {
+    "version": "0.1.0",
+    "extension": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "method": "Live MCP continuation and bounded HD-only trial, informed by prior read-only source-support probes. An initial isolated 6 m addition passed source audits but overlapped retained connector 45. Validation rejected the combined patch before spending an attempt. The agent then drafted only 118\u2013120 m, patched, compared, inspected connections and explicitly adopted it. This is not an independent agent benchmark.",
+  "baseline_points": 646309,
+  "delivered_points": 646309,
+  "pointcloud_artifacts_identical": true,
+  "source_proposal_identical": true,
+  "pointcloud_regenerated": false,
+  "retained_geometry_ids_metadata_and_edges_unchanged": true,
+  "new_lane_ids": [
+    57
+  ],
+  "new_source_intervals_m": [
+    [
+      118,
+      120
+    ]
+  ],
+  "before_source_extent_m": 118,
+  "after_source_extent_m": 120,
+  "gained_source_length_m": 2,
+  "lost_source_length_m": 0,
+  "before_longest_route_m": 66,
+  "after_longest_route_m": 66,
+  "before_components": 12,
+  "after_components": 13,
+  "new_trace_samples_per_audit": 26,
+  "new_trace_supported_samples_per_audit": 26,
+  "four_audits_repeated_exactly": true,
+  "retained_checks_pass": true,
+  "new_session_budget": 6,
+  "session_hd_attempts": 5,
+  "cumulative_hd_attempts": 13,
+  "original_station_denominator_m": 252.5863381996826,
+  "independent_accuracy_established": false,
+  "independent_agent_benchmark": false,
+  "full_extent_goal_met": false,
+  "legal_routing_verified": false,
+  "deployment_ready": false,
+  "source_license": "ODbL-1.0 and DBCL-1.0 apply to derived maps, observations and figure.",
+  "path_conventions": "run/repo/native/env replace machine paths. Descriptor hashes identify full generated files; files-sha256.json hashes portable packet copies. Full point-map identity verification requires --generated-root."
+}

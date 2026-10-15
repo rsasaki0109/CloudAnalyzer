@@ -1,0 +1,16 @@
+[
+  {
+    "center_curve_id": 4,
+    "reason": "Unverified layout hypothesis for export-interface validation; NCLT does not establish legal traffic semantics",
+    "speed_limit_kmh": 40.0,
+    "lanes": [
+      {
+        "direction": "forward",
+        "kind": "driving",
+        "one_way": true,
+        "fraction": 1.0,
+        "minimum_width_m": 2.5
+      }
+    ]
+  }
+]

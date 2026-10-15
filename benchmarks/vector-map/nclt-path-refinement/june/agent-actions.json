@@ -1,0 +1,1050 @@
+{
+  "observations_omitted": true,
+  "full_history": {
+    "path": "run.json",
+    "sha256": "a4b5128f6f81dc125de3a86efa6e10e1382eac1e95982c5216b3f00b6fa54d90"
+  },
+  "actions": [
+    {
+      "sequence": 1,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 2,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 3,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 4,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 5,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 6,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 7,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          49,
+          50,
+          51,
+          52,
+          53,
+          54,
+          55,
+          56
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 8,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          57,
+          58,
+          59,
+          60,
+          61,
+          62,
+          63,
+          64
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 9,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          65,
+          66,
+          67,
+          68,
+          69,
+          70,
+          71,
+          72
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 10,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          73,
+          74,
+          75,
+          76,
+          77
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 11,
+      "action": {
+        "type": "draft",
+        "decisions": [
+          {
+            "candidate_id": 1,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 2,
+            "to_m": 4
+          },
+          {
+            "candidate_id": 9,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 14,
+            "to_m": 16
+          },
+          {
+            "candidate_id": 19,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 34,
+            "to_m": 36
+          },
+          {
+            "candidate_id": 25,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 50,
+            "to_m": 110
+          },
+          {
+            "candidate_id": 39,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 146,
+            "to_m": 148
+          },
+          {
+            "candidate_id": 39,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 152,
+            "to_m": 156
+          },
+          {
+            "candidate_id": 47,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 170,
+            "to_m": 172
+          },
+          {
+            "candidate_id": 51,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 180,
+            "to_m": 184
+          },
+          {
+            "candidate_id": 53,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 188,
+            "to_m": 190
+          },
+          {
+            "candidate_id": 56,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 200,
+            "to_m": 202
+          },
+          {
+            "candidate_id": 72,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 232,
+            "to_m": 234
+          },
+          {
+            "candidate_id": 73,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 236,
+            "to_m": 238
+          },
+          {
+            "candidate_id": 73,
+            "action": "include",
+            "reason": "Calling agent inspected the live source curves: these profiles contain the recorded path at its supported surface level and satisfy the unchanged minimum profile width. Retain exact curves as an unverified lane hypothesis; complete physical width and legal traffic semantics remain unresolved.",
+            "from_m": 242,
+            "to_m": 244
+          },
+          {
+            "candidate_id": 2,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 2.0,
+            "to_m": 4.0
+          },
+          {
+            "candidate_id": 3,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 4.0,
+            "to_m": 6.0
+          },
+          {
+            "candidate_id": 4,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 8.0,
+            "to_m": 10.0
+          },
+          {
+            "candidate_id": 5,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 8.0,
+            "to_m": 10.0
+          },
+          {
+            "candidate_id": 6,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 8.0,
+            "to_m": 12.0
+          },
+          {
+            "candidate_id": 7,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 10.0,
+            "to_m": 14.0
+          },
+          {
+            "candidate_id": 8,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 10.0,
+            "to_m": 14.0
+          },
+          {
+            "candidate_id": 9,
+            "action": "defer",
+            "reason": "Retain the omitted original interval: one or more inspected profiles are narrower than the fixed minimum or do not contain the recorded path. Do not widen, join or change lane count to force export.",
+            "from_m": 12.0,
+            "to_m": 14
+          },
+          {
+            "candidate_id": 10,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 14.0,
+            "to_m": 16.0
+          },
+          {
+            "candidate_id": 11,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 18.0,
+            "to_m": 20.0
+          },
+          {
+            "candidate_id": 12,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 18.0,
+            "to_m": 22.0
+          },
+          {
+            "candidate_id": 13,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 22.0,
+            "to_m": 24.0
+          },
+          {
+            "candidate_id": 14,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 24.0,
+            "to_m": 30.0
+          },
+          {
+            "candidate_id": 15,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 26.0,
+            "to_m": 28.0
+          },
+          {
+            "candidate_id": 16,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 26.0,
+            "to_m": 28.0
+          },
+          {
+            "candidate_id": 17,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 28.0,
+            "to_m": 30.0
+          },
+          {
+            "candidate_id": 18,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 28.0,
+            "to_m": 30.0
+          },
+          {
+            "candidate_id": 19,
+            "action": "defer",
+            "reason": "Retain the omitted original interval: one or more inspected profiles are narrower than the fixed minimum or do not contain the recorded path. Do not widen, join or change lane count to force export.",
+            "from_m": 32.0,
+            "to_m": 34
+          },
+          {
+            "candidate_id": 20,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 34.0,
+            "to_m": 36.0
+          },
+          {
+            "candidate_id": 21,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 36.0,
+            "to_m": 46.0
+          },
+          {
+            "candidate_id": 22,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 38.0,
+            "to_m": 42.0
+          },
+          {
+            "candidate_id": 23,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 40.0,
+            "to_m": 42.0
+          },
+          {
+            "candidate_id": 24,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 48.0,
+            "to_m": 52.0
+          },
+          {
+            "candidate_id": 26,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 52.0,
+            "to_m": 62.0
+          },
+          {
+            "candidate_id": 27,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 66.0,
+            "to_m": 88.0
+          },
+          {
+            "candidate_id": 28,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 90.0,
+            "to_m": 104.0
+          },
+          {
+            "candidate_id": 29,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 98.0,
+            "to_m": 102.0
+          },
+          {
+            "candidate_id": 30,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 108.0,
+            "to_m": 112.0
+          },
+          {
+            "candidate_id": 31,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 118.0,
+            "to_m": 126.0
+          },
+          {
+            "candidate_id": 32,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 120.0,
+            "to_m": 122.0
+          },
+          {
+            "candidate_id": 33,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 120.0,
+            "to_m": 122.0
+          },
+          {
+            "candidate_id": 34,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 126.0,
+            "to_m": 130.0
+          },
+          {
+            "candidate_id": 35,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 128.0,
+            "to_m": 130.0
+          },
+          {
+            "candidate_id": 36,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 138.0,
+            "to_m": 150.0
+          },
+          {
+            "candidate_id": 37,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 142.0,
+            "to_m": 148.0
+          },
+          {
+            "candidate_id": 38,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 146.0,
+            "to_m": 148.0
+          },
+          {
+            "candidate_id": 39,
+            "action": "defer",
+            "reason": "Retain the omitted original interval: one or more inspected profiles are narrower than the fixed minimum or do not contain the recorded path. Do not widen, join or change lane count to force export.",
+            "from_m": 148,
+            "to_m": 152
+          },
+          {
+            "candidate_id": 40,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 146.0,
+            "to_m": 158.0
+          },
+          {
+            "candidate_id": 41,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 150.0,
+            "to_m": 154.0
+          },
+          {
+            "candidate_id": 42,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 156.0,
+            "to_m": 160.0
+          },
+          {
+            "candidate_id": 43,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 158.0,
+            "to_m": 162.0
+          },
+          {
+            "candidate_id": 44,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 162.0,
+            "to_m": 166.0
+          },
+          {
+            "candidate_id": 45,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 164.0,
+            "to_m": 166.0
+          },
+          {
+            "candidate_id": 46,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 170.0,
+            "to_m": 172.0
+          },
+          {
+            "candidate_id": 48,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 170.0,
+            "to_m": 172.0
+          },
+          {
+            "candidate_id": 49,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 176.0,
+            "to_m": 192.0
+          },
+          {
+            "candidate_id": 50,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 180.0,
+            "to_m": 182.0
+          },
+          {
+            "candidate_id": 52,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 188.0,
+            "to_m": 190.0
+          },
+          {
+            "candidate_id": 54,
+            "action": "defer",
+            "reason": "Defer broad, rapidly varying or search-limited source spans; their road-edge interpretation is unresolved and adopting them only to increase coverage is unjustified.",
+            "from_m": 192.0,
+            "to_m": 196.0
+          },
+          {
+            "candidate_id": 55,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 198.0,
+            "to_m": 206.0
+          },
+          {
+            "candidate_id": 57,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 200.0,
+            "to_m": 202.0
+          },
+          {
+            "candidate_id": 58,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 202.0,
+            "to_m": 204.0
+          },
+          {
+            "candidate_id": 59,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 206.0,
+            "to_m": 208.0
+          },
+          {
+            "candidate_id": 60,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 206.0,
+            "to_m": 208.0
+          },
+          {
+            "candidate_id": 61,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 210.0,
+            "to_m": 212.0
+          },
+          {
+            "candidate_id": 62,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 212.0,
+            "to_m": 222.0
+          },
+          {
+            "candidate_id": 63,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 214.0,
+            "to_m": 216.0
+          },
+          {
+            "candidate_id": 64,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 214.0,
+            "to_m": 216.0
+          },
+          {
+            "candidate_id": 65,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 214.0,
+            "to_m": 216.0
+          },
+          {
+            "candidate_id": 66,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 214.0,
+            "to_m": 216.0
+          },
+          {
+            "candidate_id": 67,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 222.0,
+            "to_m": 224.0
+          },
+          {
+            "candidate_id": 68,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 222.0,
+            "to_m": 224.0
+          },
+          {
+            "candidate_id": 69,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 226.0,
+            "to_m": 234.0
+          },
+          {
+            "candidate_id": 70,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 226.0,
+            "to_m": 228.0
+          },
+          {
+            "candidate_id": 71,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 230.0,
+            "to_m": 236.0
+          },
+          {
+            "candidate_id": 73,
+            "action": "defer",
+            "reason": "Retain the omitted original interval: one or more inspected profiles are narrower than the fixed minimum or do not contain the recorded path. Do not widen, join or change lane count to force export.",
+            "from_m": 238,
+            "to_m": 242
+          },
+          {
+            "candidate_id": 74,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 244.0,
+            "to_m": 246.0
+          },
+          {
+            "candidate_id": 75,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 246.0,
+            "to_m": 248.0
+          },
+          {
+            "candidate_id": 76,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 248.0,
+            "to_m": 250.0
+          },
+          {
+            "candidate_id": 77,
+            "action": "defer",
+            "reason": "No continuous inspected interval in this candidate was adopted for the fixed path-associated lane hypothesis: narrow profiles, outside-path alternatives or unresolved surface association remain review holds. This is not evidence that a road is absent.",
+            "from_m": 248.0,
+            "to_m": 250.0
+          }
+        ]
+      },
+      "reason": "Replay the recorded previous decisions as a same-native before comparison",
+      "status": "audited_draft",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902",
+      "geometry_candidate_id": 1,
+      "lane_candidate_id": 2
+    },
+    {
+      "sequence": 12,
+      "action": {
+        "type": "refine",
+        "association": "trajectory_containing"
+      },
+      "reason": "Off-path overlapping bands fragmented the path; try explicit path association with unchanged point map and source thresholds",
+      "status": "ready",
+      "proposal_sha256": "592fbd0a2ef4720cbf0f7ad4812e5804bd3849f53f041de9f6d405198a53f902"
+    },
+    {
+      "sequence": 13,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "479ec9db9c54831f57553f35f225e0ae72975d5d07dc5375a2613b668d2509a1"
+    },
+    {
+      "sequence": 14,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ]
+      },
+      "reason": "Read every current source candidate before the calling agent chooses intervals",
+      "status": "inspected",
+      "proposal_sha256": "479ec9db9c54831f57553f35f225e0ae72975d5d07dc5375a2613b668d2509a1"
+    },
+    {
+      "sequence": 15,
+      "action": {
+        "type": "draft",
+        "decisions": [
+          {
+            "candidate_id": 1,
+            "action": "include",
+            "from_m": 0,
+            "to_m": 8,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 2,
+            "action": "include",
+            "from_m": 14,
+            "to_m": 18,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 4,
+            "action": "include",
+            "from_m": 34,
+            "to_m": 36,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 6,
+            "action": "include",
+            "from_m": 48,
+            "to_m": 114,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 8,
+            "action": "include",
+            "from_m": 146,
+            "to_m": 148,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 9,
+            "action": "include",
+            "from_m": 152,
+            "to_m": 156,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 11,
+            "action": "include",
+            "from_m": 168,
+            "to_m": 172,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 12,
+            "action": "include",
+            "from_m": 180,
+            "to_m": 184,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 12,
+            "action": "include",
+            "from_m": 188,
+            "to_m": 190,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 13,
+            "action": "include",
+            "from_m": 200,
+            "to_m": 202,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 15,
+            "action": "include",
+            "from_m": 210,
+            "to_m": 212,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 16,
+            "action": "include",
+            "from_m": 220,
+            "to_m": 222,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 16,
+            "action": "include",
+            "from_m": 232,
+            "to_m": 238,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 16,
+            "action": "include",
+            "from_m": 242,
+            "to_m": 246,
+            "reason": "Calling agent read current proposal receipts: these path-containing source intervals meet the unchanged minimum width and have no search-limit edges. Native interval checks retain source-supported centre and both edges. Preserve exact curves as the fixed unverified lane hypothesis; complete physical width and legal use remain unresolved."
+          },
+          {
+            "candidate_id": 3,
+            "action": "defer",
+            "from_m": 22.0,
+            "to_m": 28.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 4,
+            "action": "defer",
+            "from_m": 32.0,
+            "to_m": 34,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 5,
+            "action": "defer",
+            "from_m": 40.0,
+            "to_m": 44.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 7,
+            "action": "defer",
+            "from_m": 118.0,
+            "to_m": 122.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 8,
+            "action": "defer",
+            "from_m": 134.0,
+            "to_m": 146,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 10,
+            "action": "defer",
+            "from_m": 158.0,
+            "to_m": 160.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 11,
+            "action": "defer",
+            "from_m": 172,
+            "to_m": 176.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 12,
+            "action": "defer",
+            "from_m": 184,
+            "to_m": 188,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 12,
+            "action": "defer",
+            "from_m": 190,
+            "to_m": 196.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 14,
+            "action": "defer",
+            "from_m": 206.0,
+            "to_m": 208.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 15,
+            "action": "defer",
+            "from_m": 212,
+            "to_m": 214.0,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; physical road absence is not inferred."
+          },
+          {
+            "candidate_id": 16,
+            "action": "defer",
+            "from_m": 222,
+            "to_m": 232,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          },
+          {
+            "candidate_id": 16,
+            "action": "defer",
+            "from_m": 238,
+            "to_m": 242,
+            "reason": "Retain omitted narrow, broad/rapidly varying or search-limited observations as unresolved; no widening, gap bridging or traffic interpretation."
+          }
+        ]
+      },
+      "reason": "Calling agent adopts reviewed path-containing intervals after refinement; retain minimum widths, unsupported gaps and broad/search-limited holds",
+      "status": "audited_draft",
+      "proposal_sha256": "479ec9db9c54831f57553f35f225e0ae72975d5d07dc5375a2613b668d2509a1",
+      "geometry_candidate_id": 3,
+      "lane_candidate_id": 4
+    },
+    {
+      "sequence": 16,
+      "action": {
+        "type": "finish",
+        "candidate_id": 4
+      },
+      "reason": "Deliver both map drafts with extent, connectivity, estimator disagreement and legal-semantic holds",
+      "status": "finished",
+      "proposal_sha256": "479ec9db9c54831f57553f35f225e0ae72975d5d07dc5375a2613b668d2509a1"
+    }
+  ]
+}

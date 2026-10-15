@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" font-family="sans-serif" font-size="13">
+<defs><marker id="t" viewBox="0 0 2 10" refX="1" refY="5" markerWidth="2" markerHeight="10" orient="auto"><path d="M1 0V10" stroke="#1a73e8"/></marker></defs>
+<rect width="100%" height="100%" fill="white"/>
+<polygon points="100.1,80.1 894.8,80.1 1019.9,489.9 225.2,489.9" fill="#fdf6ec" stroke="#e8710a" stroke-width="2.5"/>
+<text x="100.1" y="72.1" text-anchor="middle" font-weight="bold" fill="#3c4043">A1</text>
+<text x="894.8" y="72.1" text-anchor="middle" font-weight="bold" fill="#3c4043">A2</text>
+<text x="560.0" y="290.0" text-anchor="middle" font-size="15" fill="#202124">Ds0101</text>
+<line x1="162.7" y1="40.1" x2="957.3" y2="40.1" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="560.0" y="34.1" text-anchor="middle" fill="#1a73e8">橋長方向 床版長（中心線） 15876</text>
+<line x1="1070.0" y1="80.1" x2="1070.0" y2="489.9" stroke="#1a73e8" stroke-width="1.2" marker-start="url(#t)" marker-end="url(#t)"/>
+<text x="1086.0" y="279.0" text-anchor="middle" fill="#1a73e8" transform="rotate(-90 1086.0 279.0)">全幅 8186</text>
+<text x="225.2" y="511.9" text-anchor="middle" font-weight="bold">起点</text>
+<text x="1019.9" y="511.9" text-anchor="middle" font-weight="bold">終点</text>
+<text x="12" y="594">平面図（上から透視）· 起点を左、終点を向いて左側を上 · 単位 mm · 斜角 -17.0° · 要素番号＝橋軸方向（起点から）2桁＋直角方向（上から）2桁</text>
+<text x="12" y="616" fill="#5f6368">下面は未観測：主桁・横桁は描いていません（仮定なし）</text>
+</svg>

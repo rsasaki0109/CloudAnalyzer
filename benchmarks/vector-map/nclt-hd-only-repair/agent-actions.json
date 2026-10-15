@@ -1,0 +1,205 @@
+{
+  "start": {
+    "request": {
+      "tool": "continue_mapping_run",
+      "finished_job_dir": "env/nclt-protected-density-june",
+      "out_dir": "env/nclt-hd-only-june",
+      "max_attempts": 6,
+      "reason": "New explicit session: fill observed missing HD intervals over the exact retained point map, without rerunning fusion or altering extraction and layout."
+    },
+    "status": "needs_agent",
+    "revision": 0
+  },
+  "gaps8": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 8
+      },
+      "reason": "Inspect retained missing source intervals around 118\u2013148 m before choosing an HD-only repair."
+    },
+    "status": "needs_agent",
+    "revision": 1
+  },
+  "gaps16": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 16
+      },
+      "reason": "Inspect later missing intervals around 184\u2013188 m using the original frozen station denominator."
+    },
+    "status": "needs_agent",
+    "revision": 2
+  },
+  "repair": {
+    "request": {
+      "action": {
+        "type": "repair_hd",
+        "candidate_id": 1,
+        "gap_ids": [
+          9,
+          21
+        ]
+      },
+      "reason": "Try only observed source intervals 118\u2013120 m and 184\u2013188 m at the fixed 2 m minimum width, retaining all point records, motion, source protocol and existing HD geometry."
+    },
+    "status": "needs_agent",
+    "revision": 3
+  },
+  "inspect": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          7,
+          12
+        ]
+      },
+      "reason": "Inspect the frozen candidate sections for both selected HD-only gaps; no source re-extraction."
+    },
+    "status": "needs_agent",
+    "revision": 1
+  },
+  "draft": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "draft",
+        "decisions": [
+          {
+            "candidate_id": 7,
+            "action": "include",
+            "from_m": 118,
+            "to_m": 120,
+            "reason": "Observed sections retain the original 2 m minimum width; defer the 1.5 m section at 122 m."
+          },
+          {
+            "candidate_id": 12,
+            "action": "include",
+            "from_m": 184,
+            "to_m": 188,
+            "reason": "Observed missing interval between retained 180\u2013184 and 188\u2013190 m pieces; preserve fixed lane hypothesis and require all four source audits."
+          }
+        ]
+      },
+      "reason": "Draft only missing observed HD intervals on the exact accepted point map, with the unchanged layout and original station denominator."
+    },
+    "status": "needs_agent",
+    "revision": 2
+  },
+  "draft2": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "draft",
+        "decisions": [
+          {
+            "candidate_id": 7,
+            "action": "include",
+            "from_m": 118,
+            "to_m": 120,
+            "reason": "Only allocated interval without a retained HD lane or connector; observed width stays above the fixed 2 m minimum."
+          }
+        ]
+      },
+      "reason": "Retain the rejected overlapping draft as evidence, then try only 118\u2013120 m; existing connector 45 already occupies 184\u2013188 m."
+    },
+    "status": "needs_agent",
+    "revision": 3
+  },
+  "preview2": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "inspect_patch",
+        "candidate_id": 4,
+        "gap_ids": [
+          9
+        ],
+        "offset": 0
+      },
+      "reason": "Inspect the gap-only two-metre addition against retained geometry and connectors; no overlap and no point changes."
+    },
+    "status": "needs_agent",
+    "revision": 4
+  },
+  "patch": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "patch_gaps",
+        "candidate_id": 4,
+        "gap_ids": [
+          9
+        ],
+        "pairs": []
+      },
+      "reason": "Adopt the inspected isolated 118\u2013120 m addition into the complete retained map; preserve every original lane/connector/edge and require all four full audits."
+    },
+    "status": "needs_agent",
+    "revision": 5
+  },
+  "compare": {
+    "request": {
+      "action": {
+        "type": "compare_retry",
+        "candidate_id": 5
+      },
+      "reason": "Compare combined map on the unchanged point map, layout and original station denominator; account for retained source failures, gained and lost extent and route spans."
+    },
+    "status": "needs_agent",
+    "revision": 4
+  },
+  "links": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "inspect_connections",
+        "candidate_id": 5,
+        "offset": 0
+      },
+      "reason": "Inspect whether the isolated 118\u2013120 m addition can connect to the retained 48\u2013114 m route using the final shared attempt; keep every existing edge and all four source-support requirements."
+    },
+    "status": "needs_agent",
+    "revision": 6
+  },
+  "occupied": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 16
+      },
+      "reason": "Record the new retained-HD occupancy observation: source gap 21 is already occupied by connector 45, while source extent remains separate."
+    },
+    "status": "needs_agent",
+    "revision": 5
+  },
+  "child-finish": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "finish",
+        "candidate_id": 5
+      },
+      "reason": "Deliver the audited combined 118\u2013120 m addition with every existing lane and connector retained; no eligible inspected connector, existing quantile failures remain explicit."
+    },
+    "status": "finished",
+    "revision": 7
+  },
+  "finish": {
+    "request": {
+      "action": {
+        "type": "finish_retry",
+        "candidate_id": 5
+      },
+      "reason": "Explicitly adopt the compared combined HD patch: source extent gains 2 m with no lost intervals, unchanged point artifacts/proposal/layout and no new retained audit failures; full extent and independent accuracy remain unresolved."
+    },
+    "status": "finished",
+    "revision": 6
+  }
+}

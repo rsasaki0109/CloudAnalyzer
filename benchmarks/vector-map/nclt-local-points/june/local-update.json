@@ -1,0 +1,113 @@
+{
+  "schema": "cloudanalyzer.local_point_update.v1",
+  "protocol": {
+    "model": "full_fusion_candidate_spliced_into_explicit_xy_column",
+    "maximum_side_m": 20.0,
+    "maximum_points_per_map": 2000000,
+    "maximum_map_bytes": 128000000,
+    "boundary": "lower_inclusive_upper_exclusive",
+    "all_heights": true,
+    "outside_record_order_and_bytes_preserved": true,
+    "independent_accuracy_established": false
+  },
+  "preview": {
+    "path": "run/local-points-03-02b9f27e6199c0af.json",
+    "sha256": "3a88545e1b5a56779efd13b34817a101a8dc591fbb26246367b3b1dc431952b3",
+    "bytes": 6476
+  },
+  "baseline_map": {
+    "path": "run/pointcloud/trajectory_map.ply",
+    "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+    "bytes": 20653998
+  },
+  "full_fusion_candidate": {
+    "path": "run/pointcloud-retry/pointcloud/fusion-input_map.ply",
+    "sha256": "210b9f53ce45328bbdbaf709ed04c090669e5f1ac9f8c2a7ee9bc36eb5ab4053",
+    "bytes": 20918158
+  },
+  "updated_map": {
+    "path": "run/pointcloud-retry/local_map.ply",
+    "sha256": "607958e801434ce620b9e2bcfa9e31f8c5dec4b719612acdbce4f43ae15e3575",
+    "bytes": 20660174
+  },
+  "effective_bounds_xy": [
+    12.0,
+    -3.0,
+    22.0,
+    11.0
+  ],
+  "before_inside_points": 3371,
+  "after_inside_points": 3564,
+  "outside_points": 642061,
+  "outside_records_sha256": "ff73a094aa4b482986838f4ad0a79f298a07bd4bf679d0b28d48b4e2a4848867",
+  "outside_records_bit_identical": true,
+  "record_dtype": [
+    [
+      "x",
+      "<f8"
+    ],
+    [
+      "y",
+      "<f8"
+    ],
+    [
+      "z",
+      "<f8"
+    ],
+    [
+      "intensity",
+      "<f4"
+    ],
+    [
+      "correction",
+      "<f4"
+    ]
+  ],
+  "baseline_hd_files": {
+    "map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+      "bytes": 53372
+    },
+    "projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "2c9a4b667fb5441bf6a225e6f60777a7f25646c34751d1380a1a6ae46c229322",
+      "bytes": 22406
+    },
+    "report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "2b2449bbcdfe057b445a523ad88b06791e27aefabbf437d6911e45cc1bd88724",
+      "bytes": 48866
+    }
+  },
+  "baseline_hd_audits": {
+    "path": "run/candidate-03/source-quality.json",
+    "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+    "bytes": 216939
+  },
+  "retained_hd_source_audits": {
+    "path": "run/pointcloud-retry/local-point-audits.json",
+    "sha256": "7024c9f87fd55be66e2ce2056f7c2c3f0070594f70203cb43a2c7d1e8e2f705a",
+    "bytes": 217767
+  },
+  "retained_hd_source_checks": {
+    "path": "run/pointcloud-retry/local-point-checks.json",
+    "sha256": "688f7c630a3dc5ac8b6052b3193fd6661f441b219e43e8b52d0a780ba62a51cd",
+    "bytes": 430
+  },
+  "passes": false,
+  "holds": [
+    "editable:new_retained_failure_location:39:left",
+    "editable:retained_trace_regressed:39:left",
+    "reopened_osm:new_retained_failure_location:39:left",
+    "reopened_osm:retained_trace_regressed:39:left"
+  ],
+  "point_map_total": 645625,
+  "full_candidate_generation_still_required": true,
+  "automatic_adoption": false
+}

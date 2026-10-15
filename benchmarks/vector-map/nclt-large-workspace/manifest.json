@@ -1,0 +1,83 @@
+{
+  "schema": "cloudanalyzer.project_snapshot.v3",
+  "files": [
+    {
+      "path": "project.json",
+      "name": "project.cloudanalyzer.json",
+      "bytes": 315064,
+      "identity": {
+        "kind": "file",
+        "name": "project.cloudanalyzer.json",
+        "size": 315064,
+        "algorithm": "sha256-chunks-v1",
+        "digest": "980f4f602457f4e7be2cd08433978f61e66ec638c1488d968a92787d9d7aff78"
+      }
+    },
+    {
+      "path": "clouds/000.ply",
+      "name": "workspace-5bde8c47-b708-4b55-8727-50fff86e1cc7-0.ply",
+      "bytes": 34485961,
+      "identity": {
+        "kind": "file",
+        "name": "workspace-5bde8c47-b708-4b55-8727-50fff86e1cc7-0.ply",
+        "size": 34485961,
+        "algorithm": "sha256-chunks-v1",
+        "digest": "15e57371e0a270e8cc5044882a51d2f2ad56116955e0312a2bcfc48867f1fa42"
+      }
+    },
+    {
+      "path": "clouds/001.ply",
+      "name": "workspace-5bde8c47-b708-4b55-8727-50fff86e1cc7-1.ply",
+      "bytes": 5170696,
+      "identity": {
+        "kind": "file",
+        "name": "workspace-5bde8c47-b708-4b55-8727-50fff86e1cc7-1.ply",
+        "size": 5170696,
+        "algorithm": "sha256-chunks-v1",
+        "digest": "2b0bac02e39e6a6de92af6e9644d7cfabb32a6f894036a702e7b3a33c752e844"
+      }
+    },
+    {
+      "path": "clouds/002.ply",
+      "name": "workspace-5bde8c47-b708-4b55-8727-50fff86e1cc7-2.ply",
+      "bytes": 18824744,
+      "identity": {
+        "kind": "file",
+        "name": "workspace-5bde8c47-b708-4b55-8727-50fff86e1cc7-2.ply",
+        "size": 18824744,
+        "algorithm": "sha256-chunks-v1",
+        "digest": "1450cffb949e483d97a45e3800a562fb662a3a9b7c8042b3c16f3c9336f41eb9"
+      }
+    },
+    {
+      "path": "assets/0000",
+      "name": "nclt-2012-04-29.mcap",
+      "bytes": 10054898,
+      "identity": {
+        "kind": "file",
+        "name": "nclt-2012-04-29.mcap",
+        "size": 10054898,
+        "algorithm": "sha256-chunks-v1",
+        "digest": "210fd914c967212924ea77109feea9b7960d84907c6010cd1b445da81c80f982"
+      }
+    },
+    {
+      "path": "assets/0001",
+      "name": "nclt-hd-preflight-display-preview.zip",
+      "bytes": 4787591,
+      "identity": {
+        "kind": "file",
+        "name": "nclt-hd-preflight-display-preview.zip",
+        "size": 4787591,
+        "algorithm": "sha256-chunks-v1",
+        "digest": "ccf419cc8321f6cb3fdfd6e6d9c00a87a34cc8d0870159ae9fce27424ab9a5eb"
+      }
+    }
+  ],
+  "point_data": "current_loaded_records",
+  "coordinate_frame": "current_transformed_coordinates",
+  "unloaded_original_density_included": false,
+  "pose_graph_sources_included": true,
+  "cloud_count": 3,
+  "review_archive_included": true
+}

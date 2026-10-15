@@ -1,0 +1,44 @@
+{
+  "session": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/scans",
+  "poses_file": "original-keyframes.g2o",
+  "nodes": 195,
+  "scans": 195,
+  "unmatched_scans": 43,
+  "scan_points": 988285,
+  "scans_moved_by_calib_tr": false,
+  "timings_s": {
+    "open": 0.05,
+    "gravity": 0.01,
+    "dynamic": 0.53,
+    "write": 0.09
+  },
+  "gravity": {
+    "tied": 195,
+    "sigma_deg": 1.031,
+    "imus": [
+      {
+        "keyframes": 195,
+        "spread_deg": 0.965,
+        "noise_deg": 1.031
+      }
+    ],
+    "optimized": {
+      "initial_cost": 1330.7936670011563,
+      "final_cost": 148.32544715810832,
+      "iterations": 7,
+      "converged": true
+    }
+  },
+  "dynamic": {
+    "points": 112,
+    "of": 988285,
+    "share": 0.0001133276332232099
+  },
+  "map_points": 659447,
+  "outputs": {
+    "g2o": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/pointcloud/original-keyframes_fixed.g2o",
+    "kitti": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/pointcloud/original-keyframes_fixed_kitti.txt",
+    "map": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/pointcloud/original-keyframes_map.ply",
+    "dynamic": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/pointcloud/original-keyframes_dynamic.ply"
+  }
+}

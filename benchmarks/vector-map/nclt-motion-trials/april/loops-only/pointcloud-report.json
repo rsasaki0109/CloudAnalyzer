@@ -1,0 +1,71 @@
+{
+  "session": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/scans",
+  "poses_file": "original-keyframes.g2o",
+  "nodes": 199,
+  "scans": 199,
+  "unmatched_scans": 37,
+  "scan_points": 1077680,
+  "scans_moved_by_calib_tr": false,
+  "timings_s": {
+    "open": 0.06,
+    "loops": 0.42,
+    "dynamic": 0.51,
+    "write": 0.22
+  },
+  "loops": {
+    "candidates": 11,
+    "added": 6,
+    "implausible": 0,
+    "same_place_retries": 0,
+    "pairs": [
+      [
+        29,
+        209,
+        0.59
+      ],
+      [
+        23,
+        214,
+        0.535
+      ],
+      [
+        17,
+        220,
+        0.526
+      ],
+      [
+        11,
+        225,
+        0.591
+      ],
+      [
+        7,
+        230,
+        0.607
+      ],
+      [
+        1,
+        235,
+        0.631
+      ]
+    ],
+    "optimized": {
+      "initial_cost": 17.11255511601328,
+      "final_cost": 1.1618484074165338,
+      "iterations": 8,
+      "converged": true
+    }
+  },
+  "dynamic": {
+    "points": 57,
+    "of": 1077680,
+    "share": 5.289139633286319e-05
+  },
+  "map_points": 631744,
+  "outputs": {
+    "g2o": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/pointcloud/original-keyframes_fixed.g2o",
+    "kitti": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/pointcloud/original-keyframes_fixed_kitti.txt",
+    "map": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/pointcloud/original-keyframes_map.ply",
+    "dynamic": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/pointcloud/original-keyframes_dynamic.ply"
+  }
+}

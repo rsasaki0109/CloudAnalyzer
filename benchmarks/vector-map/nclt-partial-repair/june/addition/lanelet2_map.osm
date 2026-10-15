@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" upload="false" generator="vectormap-rs 0.1.0">
+  <node id="4" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.6197851766065083"/>
+    <tag k="local_x" v="19.35443390082997"/>
+    <tag k="local_y" v="4.194634284182834"/>
+  </node>
+  <node id="5" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.572908160885117"/>
+    <tag k="local_x" v="18.529005959569798"/>
+    <tag k="local_y" v="1.4106657471280672"/>
+  </node>
+  <node id="6" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.6187636189321015"/>
+    <tag k="local_x" v="17.58720323906255"/>
+    <tag k="local_y" v="-0.6069194318324402"/>
+  </node>
+  <node id="7" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.463707603757105"/>
+    <tag k="local_x" v="15.595115614372423"/>
+    <tag k="local_y" v="-1.5477177437072145"/>
+  </node>
+  <node id="8" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.396767992830977"/>
+    <tag k="local_x" v="15.87953327185637"/>
+    <tag k="local_y" v="4.613042719517118"/>
+  </node>
+  <node id="9" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.439459754158093"/>
+    <tag k="local_x" v="15.610836169291671"/>
+    <tag k="local_y" v="3.343095584174714"/>
+  </node>
+  <node id="10" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.286073362389615"/>
+    <tag k="local_x" v="14.433398034476959"/>
+    <tag k="local_y" v="1.8534693040239174"/>
+  </node>
+  <node id="11" visible="true" version="1" lat="0.00000000000" lon="0.00000000000">
+    <tag k="ele" v="-2.27207272766561"/>
+    <tag k="local_x" v="13.595504497749852"/>
+    <tag k="local_y" v="-0.0471993725169666"/>
+  </node>
+  <way id="1" visible="true" version="1">
+    <nd ref="4"/>
+    <nd ref="5"/>
+    <nd ref="6"/>
+    <nd ref="7"/>
+    <tag k="type" v="virtual"/>
+  </way>
+  <way id="2" visible="true" version="1">
+    <nd ref="8"/>
+    <nd ref="9"/>
+    <nd ref="10"/>
+    <nd ref="11"/>
+    <tag k="type" v="virtual"/>
+  </way>
+  <relation id="3" visible="true" version="1">
+    <member type="way" ref="1" role="left"/>
+    <member type="way" ref="2" role="right"/>
+    <tag k="cloudanalyzer:assumption_status" v="hypothesis"/>
+    <tag k="cloudanalyzer:boundary_policy" v="source_span_hypothesis"/>
+    <tag k="cloudanalyzer:source_center_curve" v="1"/>
+    <tag k="location" v="urban"/>
+    <tag k="one_way" v="yes"/>
+    <tag k="participant:vehicle" v="yes"/>
+    <tag k="speed_limit" v="40"/>
+    <tag k="subtype" v="road"/>
+    <tag k="type" v="lanelet"/>
+  </relation>
+</osm>

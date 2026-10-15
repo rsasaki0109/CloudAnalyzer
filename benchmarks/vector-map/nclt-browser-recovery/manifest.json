@@ -1,0 +1,27 @@
+{
+  "schema": "cloudanalyzer.project_snapshot.v1",
+  "files": [
+    {
+      "path": "project.json",
+      "name": "project.cloudanalyzer.json",
+      "bytes": 27514,
+      "sha256": "61daf1451d39c7a7b33bd16312f38c45ff1dadb5f04a3c7636406418e27248c5"
+    },
+    {
+      "path": "clouds/000.ply",
+      "name": "workspace-5a56ddfa-648d-4338-bc88-ab20d479748e-0.ply",
+      "bytes": 20682088,
+      "sha256": "07d9eff977aabf4e94b1a10d165a80c474f3bd27676c819b78e4cc289cba6c68"
+    },
+    {
+      "path": "clouds/001.ply",
+      "name": "workspace-5a56ddfa-648d-4338-bc88-ab20d479748e-1.ply",
+      "bytes": 207014,
+      "sha256": "b68df4a6d2fbed9aca11cc5572400232b95df3ba27261ded2436b4e9d18c8b6d"
+    }
+  ],
+  "point_data": "current_loaded_records",
+  "coordinate_frame": "current_transformed_coordinates",
+  "unloaded_original_density_included": false,
+  "pose_graph_sources_included": false
+}

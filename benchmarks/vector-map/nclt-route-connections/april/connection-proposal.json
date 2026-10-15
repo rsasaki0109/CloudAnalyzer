@@ -1,0 +1,466 @@
+{
+  "candidate_id": 2,
+  "inputs": {
+    "parent_map": {
+      "path": "candidate-02/lanelet2_map.osm",
+      "sha256": "cf9393064ba4753aeb9bf7be3573d1812c21e355a5db87911788a0af34878eed",
+      "bytes": 41037
+    },
+    "parent_projector": {
+      "path": "candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "candidate-02/vector_map.json",
+      "sha256": "d36e23ebd2666182ada99be52e693efd63e63663ec7fc68b9b99944e955d6ce3",
+      "bytes": 16563
+    },
+    "parent_report": {
+      "path": "candidate-02/report.json",
+      "sha256": "787fa54fae91e856b729e102c4edfb000ac1dc0f195d5f33c3bddba839242963",
+      "bytes": 33923
+    },
+    "parent_audits": {
+      "path": "candidate-02/source-quality.json",
+      "sha256": "6f1b1347915c447d9cc981ccc37db37eb3c026c0e07cd26b212b5179c8c65888",
+      "bytes": 192513
+    },
+    "geometry_editable_map": {
+      "path": "geometry-01/vector_map.json",
+      "sha256": "927fdc11df5c14fe242e429109706425aab8ac40985ea62e4414bd3d0f87afef",
+      "bytes": 33766
+    },
+    "geometry_report": {
+      "path": "geometry-01/report.json",
+      "sha256": "50f721ef61616bfd9c3e229541000aedb86e3ba849120bb12a5686e710ac026a",
+      "bytes": 89247
+    },
+    "proposal": {
+      "path": "corridor-proposals-trajectory.json",
+      "sha256": "a259518684993584645ad8febc0523dc47d04ba110cfa145b78916337bf74fd5",
+      "bytes": 323985
+    },
+    "pointcloud_map": {
+      "path": "pointcloud/trajectory_map.ply",
+      "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+      "bytes": 21878254
+    },
+    "pointcloud_trajectory": {
+      "path": "pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "pointcloud_graph": {
+      "path": "pointcloud/trajectory_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "source": {
+      "path": "web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "native": {
+      "path": "cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "options": {
+    "max_gap": 10.0,
+    "min_ground_support": 1.0,
+    "check_boundary_support": true
+  },
+  "pieces": [
+    {
+      "lane": 3,
+      "from_m": 10,
+      "to_m": 18,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 6,
+      "from_m": 42,
+      "to_m": 44,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 9,
+      "from_m": 56,
+      "to_m": 58,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 12,
+      "from_m": 62,
+      "to_m": 70,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 15,
+      "from_m": 76,
+      "to_m": 104,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 18,
+      "from_m": 110,
+      "to_m": 116,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 21,
+      "from_m": 122,
+      "to_m": 124,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 24,
+      "from_m": 128,
+      "to_m": 162,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 27,
+      "from_m": 166,
+      "to_m": 172,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 30,
+      "from_m": 178,
+      "to_m": 184,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 33,
+      "from_m": 198,
+      "to_m": 200,
+      "minimum_width_m": 2.5
+    },
+    {
+      "lane": 36,
+      "from_m": 240,
+      "to_m": 242,
+      "minimum_width_m": 2.5
+    }
+  ],
+  "baseline_routes": {
+    "measurement": "original_recorded_xy_station_span_along_explicit_lane_graph",
+    "connected_components": 12,
+    "longest_route_station_span_m": 34,
+    "routes": [
+      {
+        "lane_ids": [
+          3
+        ],
+        "from_m": 10,
+        "to_m": 18,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          6
+        ],
+        "from_m": 42,
+        "to_m": 44,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          9
+        ],
+        "from_m": 56,
+        "to_m": 58,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          12
+        ],
+        "from_m": 62,
+        "to_m": 70,
+        "station_span_m": 8
+      },
+      {
+        "lane_ids": [
+          15
+        ],
+        "from_m": 76,
+        "to_m": 104,
+        "station_span_m": 28
+      },
+      {
+        "lane_ids": [
+          18
+        ],
+        "from_m": 110,
+        "to_m": 116,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          21
+        ],
+        "from_m": 122,
+        "to_m": 124,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          24
+        ],
+        "from_m": 128,
+        "to_m": 162,
+        "station_span_m": 34
+      },
+      {
+        "lane_ids": [
+          27
+        ],
+        "from_m": 166,
+        "to_m": 172,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          30
+        ],
+        "from_m": 178,
+        "to_m": 184,
+        "station_span_m": 6
+      },
+      {
+        "lane_ids": [
+          33
+        ],
+        "from_m": 198,
+        "to_m": 200,
+        "station_span_m": 2
+      },
+      {
+        "lane_ids": [
+          36
+        ],
+        "from_m": 240,
+        "to_m": 242,
+        "station_span_m": 2
+      }
+    ],
+    "legal_routing_verified": false
+  },
+  "candidates": [
+    {
+      "ambiguous": false,
+      "boundary_support": [
+        1.0,
+        1.0
+      ],
+      "center": [
+        [
+          -12.26357581815331,
+          -76.00795813954144,
+          -2.0100097470869054
+        ],
+        [
+          -11.536476891165501,
+          -76.46741719120317,
+          -2.0417780078971663
+        ],
+        [
+          -10.807071656537826,
+          -76.92201465207754,
+          -2.073422053188274
+        ],
+        [
+          -10.06975374960988,
+          -77.36245261786553,
+          -2.105041835973736
+        ],
+        [
+          -9.31930880882576,
+          -77.77930986346063,
+          -2.136721318660006
+        ],
+        [
+          -8.551006721777057,
+          -78.16227012925702,
+          -2.168514760643039
+        ],
+        [
+          -7.7610787218613595,
+          -78.4997264680512,
+          -2.2004257798364573
+        ],
+        [
+          -6.947681570078942,
+          -78.77910767998785,
+          -2.2323795596182614
+        ]
+      ],
+      "from": 18,
+      "gap": 5.99483122633377,
+      "ground_support": 1.0,
+      "left": [
+        [
+          -11.625870853555286,
+          -74.65026436768896,
+          -2.0415453878086987
+        ],
+        [
+          -10.802522870146044,
+          -75.19202252438605,
+          -2.0772835046908003
+        ],
+        [
+          -9.985904868079004,
+          -75.75542891566391,
+          -2.113021621572902
+        ],
+        [
+          -9.163455121183345,
+          -76.30915774477488,
+          -2.148759738455004
+        ],
+        [
+          -8.322611903288232,
+          -76.82188321497108,
+          -2.1844978553371055
+        ],
+        [
+          -7.450813488222834,
+          -77.26227952950484,
+          -2.220235972219207
+        ],
+        [
+          -6.535498149816321,
+          -77.59902089162836,
+          -2.2559740891013087
+        ]
+      ],
+      "right": [
+        [
+          -12.901280782751334,
+          -77.36565191139393,
+          -1.9784741063651117
+        ],
+        [
+          -12.152869451706062,
+          -77.82025352240939,
+          -2.0113756669036977
+        ],
+        [
+          -11.389347885930707,
+          -78.25342173609931,
+          -2.044277227442284
+        ],
+        [
+          -10.611138326974958,
+          -78.66119748456887,
+          -2.07717878798087
+        ],
+        [
+          -9.818663016388486,
+          -79.03962169992327,
+          -2.110080348519456
+        ],
+        [
+          -9.012344195720976,
+          -79.3847353142677,
+          -2.142981909058042
+        ],
+        [
+          -8.19260410652211,
+          -79.69257925970732,
+          -2.175883469596628
+        ],
+        [
+          -7.3598649903415625,
+          -79.95919446834733,
+          -2.208785030135214
+        ]
+      ],
+      "samples": 14,
+      "to": 21,
+      "turn_degrees": 15.807134319193304,
+      "from_m": 116,
+      "to_m": 122,
+      "station_gap_m": 6,
+      "trajectory_xy": [
+        [
+          -12.369859978919635,
+          -76.23424043485021
+        ],
+        [
+          -11.911828781320782,
+          -76.43475831940457
+        ],
+        [
+          -11.45379758372193,
+          -76.63527620395894
+        ],
+        [
+          -11.015941193845128,
+          -76.87589237066176
+        ],
+        [
+          -10.58194617448954,
+          -77.12418317430647
+        ],
+        [
+          -10.138334003054641,
+          -77.35466673840637
+        ],
+        [
+          -9.692712685797515,
+          -77.5814301428746
+        ],
+        [
+          -9.24455216869684,
+          -77.80310811763191
+        ],
+        [
+          -8.795525076675206,
+          -78.02305054334963
+        ],
+        [
+          -8.342897705422995,
+          -78.23538727864515
+        ],
+        [
+          -7.888156511336128,
+          -78.44325850416818
+        ],
+        [
+          -7.423642387721217,
+          -78.6259368600864
+        ],
+        [
+          -6.9476815700789265,
+          -78.77910767998786
+        ]
+      ],
+      "trajectory_step_max_m": 0.5,
+      "minimum_interpolated_xy_width_m": 2.5000000000000044,
+      "width_measurement": "equal_normalized_xy_arc_positions_on_linear_boundaries",
+      "both_estimators_verified": false
+    }
+  ],
+  "rejected": [],
+  "native_summary": {
+    "cloud_points": 683690,
+    "malformed_lanes": 0,
+    "open_entries": 12,
+    "open_exits": 12,
+    "rejected_geometry": 0,
+    "rejected_heading": 1,
+    "rejected_height": 0,
+    "traffic_rules_inferred": false,
+    "unsupported_candidates": 6,
+    "warnings": [
+      "Connection drafts follow geometry and nearby ground, not permitted turns. Review every branch, traffic rule and ground level before using the map. Existing rules are retained; no new right-of-way or signal rules are created."
+    ]
+  },
+  "traffic_rules_inferred": false
+}

@@ -1,0 +1,143 @@
+{
+  "schema": "cloudanalyzer.mapping_job.v1",
+  "job_dir": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only",
+  "status": "pointcloud_ready",
+  "source": {
+    "path": "/workspace/CloudAnalyzer/web/public/samples/nclt-2012-04-29.mcap",
+    "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+    "bytes": 10054898
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "native": {
+      "version": "0.1.0",
+      "extension": {
+        "path": "/workspace/.cloudanalyzer-env/path-refinement-final-native/cloudanalyzer_core/_core.abi3.so",
+        "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+        "bytes": 7451080
+      }
+    }
+  },
+  "pointcloud_options": {
+    "keyframe_spacing": 1.0,
+    "remove_dynamic": true,
+    "pointcloud_topic": null,
+    "imu_topic": null,
+    "scan_voxel_m": 0.4,
+    "map_voxel_m": 0.2
+  },
+  "max_attempts": 4,
+  "minimum_retained_fraction": 0.9,
+  "pointcloud": {
+    "files": {
+      "map": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only/pointcloud/original-keyframes_map.ply",
+        "sha256": "b7f11c3219e5b03c0ed8f9b7f67cd01b9a3850ae0ba81c8d03b2762c457f6f7b",
+        "bytes": 22233262
+      },
+      "graph": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only/pointcloud/original-keyframes_fixed.g2o",
+        "sha256": "ef63240217039bb16f800cd4179f602ac5063a729a2a5782f2a5c8529e22004d",
+        "bytes": 92217
+      },
+      "trajectory": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only/pointcloud/original-keyframes_fixed_kitti.txt",
+        "sha256": "5add71ecd55b32435f5716a3dfa96d1d95ab6500cd8a32c481998eef214c8cb8",
+        "bytes": 47299
+      }
+    },
+    "frames": 236,
+    "map_points": 694784,
+    "path_length_m": 252.2,
+    "source_motion": {
+      "odometry_report": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/odometry-report.json",
+        "sha256": "03ed679b2942853d9984b0d6ecbc4bb8c932ce3b4aa00ff45deb2a3ebc47c6ec",
+        "bytes": 482
+      },
+      "trajectory": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/odometry/trajectory.tum",
+        "sha256": "7638be71dfdba5ecab32a9b59a3903d16403aa082640d2b4be910a8fdc378f96",
+        "bytes": 20224
+      }
+    },
+    "quality_status": "generated_unverified",
+    "coordinate_frame": "local_slam_metres",
+    "reports": {
+      "correction": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only/pointcloud-report.json"
+    }
+  },
+  "attempts": [],
+  "selected": null,
+  "scope": "Exploratory point-map/motion candidate. Evaluate on the same reference/protocol; uncertainty is uncalibrated. No existing HD map is validly transferred to moved poses, no local-motion retention or adoption is established.",
+  "retry_inputs": {
+    "baseline_job": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/job.json",
+      "sha256": "cdb8e52cdb4ecae0370e0be540a4570cec647fc8b5caa92a5dc719aeccb39064",
+      "bytes": 64126
+    },
+    "source": {
+      "path": "/workspace/CloudAnalyzer/web/public/samples/nclt-2012-04-29.mcap",
+      "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+      "bytes": 10054898
+    },
+    "baseline_map": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/pointcloud/fusion-input_map.ply",
+      "sha256": "bef9b3eea139e07110a4d0ade285f52c911fbf07e329af4388aabb1c06165474",
+      "bytes": 22802030
+    },
+    "baseline_trajectory": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/reference.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "baseline_graph": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/reference.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "baseline_fusion_graph": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/pointcloud/fusion-input_fixed.g2o",
+      "sha256": "8af60955c59e71ec7bd4a7a9186ec6629a4bd938e2d77e2df4509b4a9df91f6d",
+      "bytes": 98339
+    },
+    "baseline_fusion_trajectory": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/pointcloud/fusion-input_fixed_kitti.txt",
+      "sha256": "e0170603b9b86638d8273d372f910530e81f4d00aa87396e2fa50470c8a1dc5f",
+      "bytes": 50423
+    },
+    "baseline_fusion_scans": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry/fusion-scans.json",
+      "sha256": "e9cb6e978003e882ab9a04070742b7c64e4027ca482dfc667d01d0b1615e684e",
+      "bytes": 52377
+    },
+    "source_motion_odometry_report": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/odometry-report.json",
+      "sha256": "03ed679b2942853d9984b0d6ecbc4bb8c932ce3b4aa00ff45deb2a3ebc47c6ec",
+      "bytes": 482
+    },
+    "source_motion_trajectory": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/odometry/trajectory.tum",
+      "sha256": "7638be71dfdba5ecab32a9b59a3903d16403aa082640d2b4be910a8fdc378f96",
+      "bytes": 20224
+    },
+    "native": {
+      "path": "/workspace/.cloudanalyzer-env/path-refinement-final-native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "motion_trial": {
+    "baseline_job_dir": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry",
+    "policy": {
+      "find_loops": false,
+      "use_gravity": true
+    },
+    "reason": "Exploratory ablation of loop/gravity correction after trajectory localization; preserve baseline and compare both sessions without adopting",
+    "report": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/gravity-only/trial.json",
+      "sha256": "1f6673496016335ab2185058a1518d06db05cdca3dd83015a4bb82e1c1a00c36",
+      "bytes": 63944
+    }
+  }
+}

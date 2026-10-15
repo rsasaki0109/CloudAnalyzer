@@ -1,0 +1,333 @@
+{
+  "schema": "cloudanalyzer.bridge_damage.v1",
+  "source": {
+    "file": "Bridge_3.las",
+    "sha256": "d483d96d5c30ee487b4f22765d2357b7ef3b5565083d9d332cfe0d066b593af5",
+    "bytes": 422231993,
+    "dataset": "https://doi.org/10.6084/m9.figshare.28091453.v2"
+  },
+  "underside": "no_girders_observed",
+  "candidates": [
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.012400000000000001,
+      "centre_m": [
+        -4.466774193548387,
+        -0.77
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -4.58,
+        -4.380000000000001
+      ],
+      "lateral_m": [
+        -0.8200000000000001,
+        -0.72
+      ],
+      "contrast": 17.49878380495102,
+      "returns_share": 0.9999999999999999,
+      "contrast_unit": "L*",
+      "id": "D001"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.0056,
+      "centre_m": [
+        -4.387142857142857,
+        -0.2542857142857145
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -4.4399999999999995,
+        -4.32
+      ],
+      "lateral_m": [
+        -0.30000000000000004,
+        -0.22000000000000042
+      ],
+      "contrast": 22.46101799257501,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D002"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.009600000000000001,
+      "centre_m": [
+        -4.2575,
+        0.7266666666666666
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -4.32,
+        -4.180000000000001
+      ],
+      "lateral_m": [
+        0.6599999999999999,
+        0.7799999999999996
+      ],
+      "contrast": 28.55965425975045,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D003"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.018000000000000002,
+      "centre_m": [
+        -4.086,
+        0.6953333333333334
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -4.16,
+        -4.0
+      ],
+      "lateral_m": [
+        0.5600000000000003,
+        0.7799999999999996
+      ],
+      "contrast": 30.86991600477938,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D004"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.0128,
+      "centre_m": [
+        -3.7325,
+        0.33437499999999987
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -3.88,
+        -3.5800000000000005
+      ],
+      "lateral_m": [
+        0.25999999999999956,
+        0.3800000000000001
+      ],
+      "contrast": 17.298779649089717,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D005"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.008,
+      "centre_m": [
+        -3.5490000000000004,
+        3.722
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -3.62,
+        -3.4800000000000004
+      ],
+      "lateral_m": [
+        3.66,
+        3.7799999999999994
+      ],
+      "contrast": 28.32143531486522,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D006"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.007200000000000001,
+      "centre_m": [
+        -3.49,
+        -0.2400000000000002
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -3.54,
+        -3.4400000000000004
+      ],
+      "lateral_m": [
+        -0.30000000000000004,
+        -0.18000000000000038
+      ],
+      "contrast": 27.752285745807818,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D007"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.006,
+      "centre_m": [
+        -3.1740000000000004,
+        -3.534
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -3.22,
+        -3.1200000000000006
+      ],
+      "lateral_m": [
+        -3.58,
+        -3.4800000000000004
+      ],
+      "contrast": 27.238000562712557,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D008"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.009600000000000001,
+      "centre_m": [
+        -2.3266666666666667,
+        -3.8891666666666667
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -2.4,
+        -2.2600000000000002
+      ],
+      "lateral_m": [
+        -3.94,
+        -3.8400000000000003
+      ],
+      "contrast": 24.071191578115798,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D009"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.027200000000000002,
+      "centre_m": [
+        -1.6426470588235296,
+        3.7
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -1.8,
+        -1.4599999999999997
+      ],
+      "lateral_m": [
+        3.620000000000001,
+        3.7799999999999994
+      ],
+      "contrast": 23.78020918853091,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D010"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.0068000000000000005,
+      "centre_m": [
+        3.2641176470588236,
+        -0.21941176470588253
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        3.1999999999999993,
+        3.3200000000000003
+      ],
+      "lateral_m": [
+        -0.26,
+        -0.18000000000000038
+      ],
+      "contrast": 18.3127242734649,
+      "returns_share": 1.0000000000000002,
+      "contrast_unit": "L*",
+      "id": "D011"
+    },
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.0056,
+      "centre_m": [
+        3.4657142857142857,
+        4.074285714285715
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        3.42,
+        3.5199999999999996
+      ],
+      "lateral_m": [
+        4.02,
+        4.119999999999999
+      ],
+      "contrast": 19.595233839556446,
+      "returns_share": 1.0,
+      "contrast_unit": "L*",
+      "id": "D012"
+    },
+    {
+      "kind": "dark",
+      "label_ja": "漏水・暗色変色の候補",
+      "area_m2": 0.0056,
+      "centre_m": [
+        3.902857142857143,
+        -3.1542857142857144
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        3.8599999999999994,
+        3.9399999999999995
+      ],
+      "lateral_m": [
+        -3.2,
+        -3.1000000000000005
+      ],
+      "contrast": -19.425620727472896,
+      "returns_share": 0.7632,
+      "contrast_unit": "L*",
+      "id": "D013"
+    }
+  ],
+  "thresholds": {
+    "cell_m": 0.02,
+    "background_m": 0.5,
+    "light_dL": 15.0,
+    "dark_dL": -15.0,
+    "rust_db_da": [
+      12.0,
+      4.0
+    ],
+    "recess_m": 0.012,
+    "min_area_m2": 0.005,
+    "member_margin_m": 0.15,
+    "edge_margin_m": 0.3,
+    "seam_elongation": 6.0,
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
+  },
+  "straight_seams_left_out": {
+    "regions": {},
+    "cells_along_m": {
+      "light": 7.76,
+      "dark": 51.82,
+      "recess": 12.16
+    }
+  },
+  "soffit": {
+    "points": 3259538,
+    "cells_with_returns": 223143,
+    "cells_searched": 205936,
+    "area_searched_m2": 82.37440000000001,
+    "area_too_sparse_m2": 0.0
+  },
+  "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
+}

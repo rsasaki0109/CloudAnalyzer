@@ -1,5 +1,6 @@
 /** Cross-section profiles along a polyline. */
 
+import { projectChanged } from "../project-change";
 import * as THREE from "three";
 import { profileCloud } from "../api";
 import { $, download, errorText, fmt, setStatus } from "./dom";
@@ -70,12 +71,14 @@ const profileTool: Tool = {
     if (!p) return;
     const shift = globalShift();
     profileLine.push([p.x + shift[0], p.y + shift[1]]);
+    projectChanged();
     drawProfileLine();
     renderProfileHint();
   },
   doubleClick() {
     // The second click of the double click added a duplicate vertex.
     profileLine.pop();
+    projectChanged();
     void finishProfile();
   },
   key(e) {
@@ -90,6 +93,7 @@ const profileTool: Tool = {
 
 function clearProfile(): void {
   profileLine = [];
+  projectChanged();
   profileSeries = [];
   setTool(null);
   drawProfileLine();
@@ -105,6 +109,7 @@ profileDraw.onclick = () => {
   profileLine = [];
   profileSeries = [];
   renderProfilePlot();
+  projectChanged();
   profileZ = viewer.getCamera().target.z;
   if (!(Number(profileWidth.value) > 0)) {
     const size = viewer.contentBounds().getSize(new THREE.Vector3());

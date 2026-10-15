@@ -1,0 +1,128 @@
+{
+  "schema": "cloudanalyzer.mapping_job.v1",
+  "job_dir": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only",
+  "status": "pointcloud_ready",
+  "source": {
+    "path": "/workspace/CloudAnalyzer/web/public/samples/nclt-2012-06-15.mcap",
+    "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+    "bytes": 9387931
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "native": {
+      "version": "0.1.0",
+      "extension": {
+        "path": "/workspace/.cloudanalyzer-env/path-refinement-final-native/cloudanalyzer_core/_core.abi3.so",
+        "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+        "bytes": 7451080
+      }
+    }
+  },
+  "pointcloud_options": {
+    "keyframe_spacing": 1.0,
+    "remove_dynamic": true,
+    "pointcloud_topic": null,
+    "imu_topic": null,
+    "scan_voxel_m": 0.4,
+    "map_voxel_m": 0.2
+  },
+  "max_attempts": 4,
+  "minimum_retained_fraction": 0.9,
+  "pointcloud": {
+    "files": {
+      "map": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/pointcloud/original-keyframes_map.ply",
+        "sha256": "457ce30aa3f3390891bb4e36a925c6a4a9cc87a9267489d95a423ceabf47c592",
+        "bytes": 21102478
+      },
+      "graph": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/pointcloud/original-keyframes_fixed.g2o",
+        "sha256": "4a1d55dc3d5e4095af1bd1005b86ef8131c80cac382219980f9e06f6fbcb89a2",
+        "bytes": 90451
+      },
+      "trajectory": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/pointcloud/original-keyframes_fixed_kitti.txt",
+        "sha256": "f0c4298054231704874657f839dfc44ce37a18c7c0f93969ce1b4b64fe4b1c7a",
+        "bytes": 46124
+      }
+    },
+    "frames": 238,
+    "map_points": 659447,
+    "path_length_m": 253.8,
+    "source_motion": {
+      "odometry_report": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/odometry-report.json",
+        "sha256": "c1e18b3dee20acc638399d129f0e40a9e626b033aa89eb172127406cd0b4ee06",
+        "bytes": 478
+      },
+      "trajectory": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/odometry/trajectory.tum",
+        "sha256": "e3c467ee64877108ce71d6d4451cff5cbbb4f8ab7493a0778afea02d312f1409",
+        "bytes": 20406
+      }
+    },
+    "quality_status": "generated_unverified",
+    "coordinate_frame": "local_slam_metres",
+    "reports": {
+      "correction": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/pointcloud-report.json"
+    }
+  },
+  "attempts": [],
+  "selected": null,
+  "scope": "Exploratory point-map/motion candidate. Evaluate on the same reference/protocol; uncertainty is uncalibrated. No existing HD map is validly transferred to moved poses, no local-motion retention or adoption is established.",
+  "retry_inputs": {
+    "baseline_job": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/job.json",
+      "sha256": "615a57cacaa63086b91d7a42fbb1754ff1cafdd917b0c4c35c8275e4c99b671e",
+      "bytes": 67004
+    },
+    "source": {
+      "path": "/workspace/CloudAnalyzer/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "baseline_map": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/pointcloud/trajectory_map.ply",
+      "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+      "bytes": 20653998
+    },
+    "baseline_trajectory": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "baseline_graph": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/pointcloud/trajectory_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "source_motion_odometry_report": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/odometry-report.json",
+      "sha256": "c1e18b3dee20acc638399d129f0e40a9e626b033aa89eb172127406cd0b4ee06",
+      "bytes": 478
+    },
+    "source_motion_trajectory": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/odometry/trajectory.tum",
+      "sha256": "e3c467ee64877108ce71d6d4451cff5cbbb4f8ab7493a0778afea02d312f1409",
+      "bytes": 20406
+    },
+    "native": {
+      "path": "/workspace/.cloudanalyzer-env/path-refinement-final-native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "motion_trial": {
+    "baseline_job_dir": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june",
+    "policy": {
+      "find_loops": false,
+      "use_gravity": true
+    },
+    "reason": "Exploratory ablation of loop/gravity correction after trajectory localization; preserve baseline and compare both sessions without adopting",
+    "report": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/gravity-only/trial.json",
+      "sha256": "8b5e21e0e2404ff6d7794518d0ca5544c7d7506a6948be36e717a89d0abbe085",
+      "bytes": 63325
+    }
+  }
+}

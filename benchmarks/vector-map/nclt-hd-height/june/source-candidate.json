@@ -1,0 +1,106 @@
+{
+  "id": 3,
+  "from_m": 22.0,
+  "to_m": 28.0,
+  "minimum_support_span_m": 2.0,
+  "maximum_support_span_m": 5.0,
+  "paired_curb_sections": 0,
+  "curb_width_range_m": null,
+  "sections": [
+    {
+      "station_m": 22.0,
+      "center": [
+        18.361605149694658,
+        4.314179551421201,
+        -2.581365451598808
+      ],
+      "left": [
+        20.84367702753294,
+        4.015316383325284,
+        -2.786300515459742
+      ],
+      "right": [
+        15.87953327185637,
+        4.613042719517118,
+        -2.400853831153244
+      ],
+      "support_span_m": 5.0,
+      "left_evidence": "height_discontinuity",
+      "right_evidence": "curb_profile",
+      "intersects_trajectory": true,
+      "path_level_supported": true
+    },
+    {
+      "station_m": 24.0,
+      "center": [
+        16.027717567902833,
+        3.0670341788823356,
+        -2.394439269324753
+      ],
+      "left": [
+        16.861480365125153,
+        2.5149113682975797,
+        -2.45250591041678
+      ],
+      "right": [
+        15.193954770680511,
+        3.6191569894670916,
+        -2.346338580589156
+      ],
+      "support_span_m": 2.0,
+      "left_evidence": "height_discontinuity",
+      "right_evidence": "height_discontinuity",
+      "intersects_trajectory": true,
+      "path_level_supported": true
+    },
+    {
+      "station_m": 26.0,
+      "center": [
+        15.418962160909956,
+        1.0845978240688057,
+        -2.3589397774773095
+      ],
+      "left": [
+        16.79875193791615,
+        0.008177752131649285,
+        -2.4793685171207582
+      ],
+      "right": [
+        14.039172383903761,
+        2.161017896005962,
+        -2.242275755369503
+      ],
+      "support_span_m": 3.5,
+      "left_evidence": "height_discontinuity",
+      "right_evidence": "curb_profile",
+      "intersects_trajectory": true,
+      "path_level_supported": true
+    },
+    {
+      "station_m": 28.0,
+      "center": [
+        14.595310056061138,
+        -0.7974585581120905,
+        -2.3465192959623655
+      ],
+      "left": [
+        15.595115614372423,
+        -1.5477177437072145,
+        -2.4468522957003542
+      ],
+      "right": [
+        13.595504497749852,
+        -0.0471993725169666,
+        -2.2639451689889585
+      ],
+      "support_span_m": 2.5,
+      "left_evidence": "height_discontinuity",
+      "right_evidence": "height_discontinuity",
+      "intersects_trajectory": true,
+      "path_level_supported": true
+    }
+  ],
+  "review_required": true,
+  "total_sections": 4,
+  "section_preview_limited": false
+}

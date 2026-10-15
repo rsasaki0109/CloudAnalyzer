@@ -1,0 +1,12 @@
+id,kind,label_ja,span,row,column,along_from_m,along_to_m,lateral_from_m,lateral_to_m,status
+Ds0101,deck_slab,床版,1,1,1,-13.654,-13.429,0.281,1.202,observed_bounds
+Ds0102,deck_slab,床版,1,1,2,-13.654,-13.429,-0.169,0.281,observed_bounds
+Ds0103,deck_slab,床版,1,1,3,-13.654,-13.429,-1.094,-0.169,observed_bounds
+Mg0101,main_girder,主桁,1,1,1,-13.654,-13.429,0.281,0.281,observed
+Mg0102,main_girder,主桁,1,1,2,-13.654,-13.429,-0.169,-0.169,observed
+Ds0201,deck_slab,床版,1,2,1,-13.429,13.635,0.281,1.202,observed_bounds
+Ds0202,deck_slab,床版,1,2,2,-13.429,13.635,-0.169,0.281,observed_bounds
+Ds0203,deck_slab,床版,1,2,3,-13.429,13.635,-1.094,-0.169,observed_bounds
+Mg0201,main_girder,主桁,1,2,1,-13.429,13.635,0.281,0.281,observed
+Mg0202,main_girder,主桁,1,2,2,-13.429,13.635,-0.169,-0.169,observed
+Cr0101,cross_beam,横桁,1,1,1,-13.429,-13.429,-0.169,0.281,observed

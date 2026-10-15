@@ -1,0 +1,56 @@
+{
+  "format": "vectormap-ir",
+  "version": 1,
+  "metadata": {
+    "name": "Source corridor geometry draft",
+    "attributes": {
+      "cloudanalyzer:boundary_policy": "source_span_hypothesis",
+      "cloudanalyzer:coordinate_frame": "local_slam_metres",
+      "cloudanalyzer:deployment_ready": "false",
+      "cloudanalyzer:draft": "corridor_lane_hypothesis",
+      "cloudanalyzer:pointcloud_sha256": "378b85320a631871c24b12aba5a2561ac3f4c2c27d8c35e3fbdd9b7e81c1d23c",
+      "cloudanalyzer:proposal_sha256": "b7be2528b3da8addb5c135a2192d77a0f33c66ea0f720f19ba4588d22fe0cb92",
+      "cloudanalyzer:road_semantics": "unresolved"
+    }
+  },
+  "lanes": [
+    {
+      "id": 3,
+      "kind": "driving",
+      "left": 1,
+      "right": 2,
+      "speed_limit": {
+        "kmh": 40.0
+      },
+      "attributes": {
+        "cloudanalyzer:assumption_status": "hypothesis",
+        "cloudanalyzer:boundary_policy": "source_span_hypothesis",
+        "cloudanalyzer:source_center_curve": "1"
+      }
+    }
+  ],
+  "boundaries": [
+    {
+      "id": 1,
+      "kind": {
+        "type": "virtual"
+      },
+      "geometry": [
+        [21.480169551990436, 1.7854548215819595, -2.3176133488390356],
+        [20.139120745460648, -0.35124692548350245, -2.3345540233693196],
+        [19.340155108683565, -1.797090745946891, -2.3359371770787796]
+      ]
+    },
+    {
+      "id": 2,
+      "kind": {
+        "type": "virtual"
+      },
+      "geometry": [
+        [16.056177755182038, 4.35066689627583, -2.0597719819030873],
+        [14.999098794507205, 2.743938746445849, -2.031945247106141],
+        [14.450809633106442, 0.7216988086712599, -2.091863326016272]
+      ]
+    }
+  ]
+}

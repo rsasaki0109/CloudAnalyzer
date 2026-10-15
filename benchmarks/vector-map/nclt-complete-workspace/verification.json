@@ -1,0 +1,45 @@
+{
+  "schema": "cloudanalyzer.nclt_complete_workspace.v1",
+  "zip_external_path": "/workspace/.cloudanalyzer-env/exports/nclt-complete-workspace.zip",
+  "zip_bytes": 54815611,
+  "zip_sha256": "c918ad9dfd2a9972ee385d9e9cf2c2956a3a7cf2fc5d4ece348b7a65177b7db4",
+  "cloud_count": 2,
+  "points": [
+    {
+      "path": "clouds/000.ply",
+      "count": 1077680,
+      "properties": [
+        "property double x",
+        "property double y",
+        "property double z",
+        "property float intensity",
+        "property float correction"
+      ]
+    },
+    {
+      "path": "clouds/001.ply",
+      "count": 161578,
+      "properties": [
+        "property double x",
+        "property double y",
+        "property double z",
+        "property float intensity",
+        "property float correction"
+      ]
+    }
+  ],
+  "graph_nodes": 199,
+  "all_member_hashes_verified": true,
+  "original_graph_input_bytes_identical": true,
+  "original_review_zip_bytes_identical": true,
+  "restored_graph_and_hd_json_equal": true,
+  "new_native_generation_attempts": 0,
+  "native_binary_rebuilt": false,
+  "pose_graph_session": "2012-04-29",
+  "review_pair_session": "2012-06-15",
+  "cross_drive_alignment_established": false,
+  "frozen_audits_validate_current_edits": false,
+  "full_review_point_map_included": false,
+  "review_contains_display_preview_only": true,
+  "license": "NCLT derived map data, observations and screenshot: ODbL-1.0 and DBCL-1.0; web/public/samples/ATTRIBUTION.md."
+}

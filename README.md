@@ -47,9 +47,12 @@ pose graph with one scan per pose.
   and tied in with loops.
 - **Export** the graph as g2o, the poses as KITTI / TUM, and the map as a cloud.
 - **Build a vector map** over the point cloud: draft boundaries from a cloud and a trajectory with measured/inferred counts, draw roads with lanes in either direction, connect junctions,
-  drag shared boundary vertices, add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
+  drag shared boundary vertices, edit vertex heights, add stop lines, traffic lights and crosswalks, and edit speed limits. The Lanelet2 panel uses
   [vectormap-rs](https://github.com/rsasaki0109/vectormap-rs), checks the map for Autoware, and saves
   `lanelet2_map.osm` with `map_projector_info.yaml`. Existing `.osm` maps can be opened and edited.
+  If a sharp turn produces inconsistent boundary directions, the Web panel shows the rejected
+  section over the source cloud, marks its problem location, and lets you adjust lane counts or
+  width and rebuild. Failed generation retains the existing map and Undo history.
   [Map display](docs/vector-map-display.md) shows road surfaces, direction arrows, clipped crosswalk
   bands and signal faces; selecting a lane highlights its incoming and outgoing connections.
   [Automatic equipment search](docs/commands/vectormap-discover.md) finds paint and elevated
@@ -58,6 +61,8 @@ pose graph with one scan per pose.
   and signal housings with complete-map Undo while retaining observed paint and lamps.
   [Source quality checks](docs/vector-map-quality.md) expose lanes whose centres or boundaries
   lack nearby ground support; passing format validation does not establish map accuracy.
+  The Web check marks intervals with insufficient returns or height disagreement, frames
+  them over the source, and opens the boundary editor; recheck after applying an edit.
   [Source-footprint drafting](docs/vector-map-source-footprint.md) fits weak road candidates
   to supported low surfaces and reports missing extent explicitly, with actual before/after maps.
   [Physical boundary anchors](docs/vector-map-physical-anchors.md) optionally keep scan limits
@@ -84,13 +89,21 @@ and confirm its controlled lanes. For COPC surveys,
 [read a full-density working box](docs/large-point-clouds.md#web-full-density-working-box) first.
 
 <p align="center">
-  <a href="docs/vector-map-media.md"><img src="docs/images/web/vector-map-hard-intersection.gif" alt="Original Tokyo points and recorded arterial poses with operator-traced branches generate a complex road draft, measured crossing and stop-marking candidates and signal housings; review, edit, Undo and reopen Lanelet2" width="800"></a><br>
-  <b>Build a complex intersection from points. Review, edit, undo, export.</b><br>
-  49 road lanes including connection drafts · 7 paint crossings · 2 stop-marking drafts · 4 signal housings.<br>
-  No input map: recorded arterial segments and traced branches; lane widths, object types and lane links are operator inputs.<br>
-  <a href="docs/vector-map-hard-intersection.md">Fixed source-only evaluation and limitations</a> ·
-  <a href="docs/vector-map-media.md">Reproduce this GIF</a>
+  <a href="docs/vector-map-supported-intersection.md"><img src="docs/images/web/vector-map-supported-intersection.gif" alt="Actual Tokyo source points generate default and source-footprint road drafts; supported connections, paint crossings, stop markings and signal housings are reviewed; geometric signal targets are highlighted, inspected, explicitly adopted, undone and reopened as Lanelet2" width="800"></a><br>
+  <b>Build a complex intersection from points. Inspect targets, adopt, export.</b><br>
+  38 road fragments + 21 reviewed connections · 7 paint crossings · 2 stop-marking drafts · 4 signal housings.<br>
+  Source-review flags: 9 → 0; 34.3 m of road extent deferred. 2 geometric target drafts reviewed; 2 signals remain unresolved.<br>
+  No input map: recorded arterial segments and traced branches; lane counts, object types and legal control require review.<br>
+  <a href="docs/vector-map-supported-intersection.md">Generated map, quality limits and GIF reproduction</a>
 </p>
+
+<details>
+  <summary>Earlier intersection draft and its source-quality audit</summary>
+  <p align="center">
+    <a href="docs/vector-map-media.md#source-only-hard-intersection"><img src="docs/images/web/vector-map-hard-intersection.gif" alt="Earlier 49-lane Tokyo draft generation, equipment review, editing and Lanelet2 reload" width="800"></a><br>
+    The earlier draft has nine lanes requiring source review; see the <a href="docs/vector-map-quality.md">quality audit</a>.
+  </p>
+</details>
 
 <details>
   <summary>Road boundaries drafted directly from real LiDAR and recorded poses</summary>
@@ -223,6 +236,51 @@ Or drop your own files on the [app](https://rsasaki0109.github.io/CloudAnalyzer/
 
 ## `ca`: the command line, for CI and AI agents
 
+[Agent-driven mapping runs](docs/commands/mapping-run.md) connect raw-recording
+point-map generation with HD-road drafting. Give a calling MCP agent the log and
+one explicit lane-layout hypothesis; it inspects source candidates, records
+include/defer choices, generates/audits drafts and returns both artifact sets.
+A finished map can seed the next bounded repair session through
+`continue_mapping_run`: retain the delivered point/HD pair, inspect a new region,
+and adopt a local patch only after comparing against that accumulated baseline.
+[Continuation evidence](benchmarks/vector-map/nclt-repair-continuation/README.md)
+records a rejected NCLT trial that returns the prior map unchanged. Agents can also
+preview density repairs that [preserve existing HD neighborhoods](benchmarks/vector-map/nclt-protected-density/README.md), keeping old query points while updating only the unprotected part of a box.
+When off-path bands fragment the route, the agent can explicitly re-extract
+path-containing candidates once and review the new geometry. The
+[NCLT comparison](benchmarks/vector-map/nclt-path-refinement/README.md) records
+added map intervals and June's longer continuous piece at unchanged source thresholds.
+The agent can then inspect and explicitly connect short source-supported gaps;
+[NCLT connection evidence](benchmarks/vector-map/nclt-route-connections/README.md)
+records local graph routes of 14 m and 22 m while preserving original lane geometry.
+Both ground estimators and reopened Lanelet2 topology are checked; permitted
+turns and whole-drive connectivity remain unresolved.
+For missing intervals, the agent can inspect raw-return neighborhoods and test
+less point thinning with frozen motion. A child run shares the original attempt
+budget; actual HD maps are compared for gained and lost intervals and route spans
+before an explicit delivery choice. Earlier maps remain available if the trial worsens.
+The [NCLT density trials](benchmarks/vector-map/nclt-pointcloud-retry/README.md)
+record both recoveries and losses, with both replacements explicitly rejected.
+The agent can also inspect unused raw frames and explicitly fuse observations
+whose pose hypotheses pass checks against both neighboring corrected scans.
+Original poses and thinning remain fixed; expanded fusion and original reference
+graphs are retained separately, with actual HD comparisons before delivery.
+The [NCLT unused-frame trials](benchmarks/vector-map/nclt-unused-frames/README.md)
+record April's adopted partial improvement and June's retained baseline after
+the trial shortened its longest route despite generating more source intervals.
+For local HD repair, the agent can draft only missing ranges and explicitly patch
+them into the retained map. Original lane geometry, IDs and connections stay fixed;
+four audits reject new failures on retained samples and require fully supported
+additions. The point map remains the complete fusion trial.
+The [NCLT local patches](benchmarks/vector-map/nclt-partial-repair/README.md)
+add 4/6 m of source intervals with zero losses and retain the original 34/66 m
+longest routes; the added pieces remain isolated.
+The runner binds per-piece lane settings automatically and resumes completed
+stages after interruption. [Individual mapping tools](docs/commands/mapping-job.md)
+remain available for separate experiments and explicit draft selection.
+Recording/input/native hashes, bounded attempts and decision reasons persist across
+tool calls. Source holds and unresolved traffic rules stay visible in the result.
+
 `ca` runs the same Rust core natively, on all cores and without the browser's memory limit. It turns SLAM, LiDAR,
 perception and 3DGS outputs into metrics, HTML reports and pass / fail gates for CI, and it fixes SLAM maps. It
 reads ROS 1 bags, MCAP files, rosbag2 SQLite files and folders itself: no ROS install.
@@ -297,6 +355,8 @@ npm run dev    # http://localhost:5173
 
 Tests: `cargo test` in `rust/`, `npx playwright test` in `web/`. `npm run media` (after `npm run build`)
 re-takes the README screenshots and GIFs.
+
+Browser editing can be resumed with **Save project / Open project**, including maps, pose graph constraints and lane review notes. Keep the original inputs for verified restoration. **Memory and Undo** bounds each history and releases unused caches and workers; see [browser projects and reviews](docs/browser-projects.md).
 
 ## License
 

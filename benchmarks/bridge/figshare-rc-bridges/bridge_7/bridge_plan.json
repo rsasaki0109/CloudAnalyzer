@@ -1,0 +1,890 @@
+{
+  "schema": "cloudanalyzer.bridge_plan.v1",
+  "source": {
+    "file": "Bridge_7.las",
+    "sha256": "abcf0dbe1c48a6d4ee961113adee13b5320028119fcaf2bb14c13eba14ee6614",
+    "bytes": 390556011,
+    "dataset": "https://doi.org/10.6084/m9.figshare.28091453.v2"
+  },
+  "points": 15021376,
+  "classes": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "member_classes": [
+    1,
+    2
+  ],
+  "axis": {
+    "origin_xy": [
+      6.798550217825927,
+      10.426370456826577
+    ],
+    "direction_xy": [
+      0.050379024892473236,
+      0.9987301706922064
+    ],
+    "source": "deck_side_edges"
+  },
+  "options": {
+    "spacing_m": 0.25,
+    "thickness_m": 0.1,
+    "margin_m": 0.3
+  },
+  "deck": {
+    "start_m": -10.310703071138052,
+    "end_m": 9.255942796821195,
+    "length_m": 19.566645867959245,
+    "skew_deg": 2.177640966782906,
+    "skew_slope": 0.03802531616074827,
+    "left_edge_m": 1.9557616588353444,
+    "right_edge_m": -1.9294617562537266,
+    "width_m": 3.885223415089071,
+    "slab_thickness_m": 0.2713984702355843,
+    "sections_measured": 76,
+    "sections_with_soffit": 71
+  },
+  "underside": "girders_observed",
+  "girders": [
+    {
+      "lateral_m": 1.4205382437462606,
+      "visible_width_m": 0.3999999999999986,
+      "depth_below_deck_top_m": 1.0090499999999998,
+      "sections_observed": 69,
+      "sections_total": 71,
+      "number": 1
+    },
+    {
+      "lateral_m": 0.4955382437462639,
+      "visible_width_m": 0.3999999999999986,
+      "depth_below_deck_top_m": 1.0087166766077993,
+      "sections_observed": 68,
+      "sections_total": 71,
+      "number": 2
+    },
+    {
+      "lateral_m": -0.42946175625373284,
+      "visible_width_m": 0.3999999999999986,
+      "depth_below_deck_top_m": 1.0108847114879569,
+      "sections_observed": 70,
+      "sections_total": 71,
+      "number": 3
+    },
+    {
+      "lateral_m": -1.3794617562537295,
+      "visible_width_m": 0.3999999999999986,
+      "depth_below_deck_top_m": 1.023,
+      "sections_observed": 70,
+      "sections_total": 71,
+      "number": 4
+    }
+  ],
+  "partially_observed_members": [],
+  "cross_beams": [
+    {
+      "along_m": -9.285703071138038,
+      "visible_width_m": 0.10000000000000142,
+      "depth_below_deck_top_m": 0.9350832754225594,
+      "bays_observed": 3,
+      "bays_total": 3,
+      "number": 1
+    },
+    {
+      "along_m": -0.4607030711379121,
+      "visible_width_m": 0.25000000000000355,
+      "depth_below_deck_top_m": 0.8343969186899038,
+      "bays_observed": 3,
+      "bays_total": 3,
+      "number": 2
+    },
+    {
+      "along_m": 8.364296928862213,
+      "visible_width_m": 0.05000000000000071,
+      "depth_below_deck_top_m": 0.9630000000000001,
+      "bays_observed": 3,
+      "bays_total": 3,
+      "number": 3
+    }
+  ],
+  "supports": [],
+  "spans": [
+    {
+      "number": 1,
+      "from_m": -10.310703071138052,
+      "to_m": 9.255942796821195,
+      "length_m": 19.566645867959245
+    }
+  ],
+  "elements": [
+    {
+      "id": "Ds0101",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        1.4205382437462606,
+        1.9557616588353444
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0102",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 1,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        1.4205382437462606
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0103",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 1,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        0.4955382437462639
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0104",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 1,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -0.42946175625373284
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0105",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 1,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        -1.9294617562537266,
+        -1.3794617562537295
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0101",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        1.4205382437462606,
+        1.4205382437462606
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0102",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 1,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        0.4955382437462639
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0103",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 1,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        -0.42946175625373284
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0104",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 1,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -10.310703071138052,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -1.3794617562537295
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0201",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 2,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        1.4205382437462606,
+        1.9557616588353444
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0202",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 2,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        1.4205382437462606
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0203",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 2,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        0.4955382437462639
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0204",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 2,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -0.42946175625373284
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0205",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 2,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        -1.9294617562537266,
+        -1.3794617562537295
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0201",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 2,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        1.4205382437462606,
+        1.4205382437462606
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0202",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 2,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        0.4955382437462639
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0203",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 2,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        -0.42946175625373284
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0204",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 2,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -1.3794617562537295
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0301",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 3,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        1.4205382437462606,
+        1.9557616588353444
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0302",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 3,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        1.4205382437462606
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0303",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 3,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        0.4955382437462639
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0304",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 3,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -0.42946175625373284
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0305",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 3,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        -1.9294617562537266,
+        -1.3794617562537295
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0301",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 3,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        1.4205382437462606,
+        1.4205382437462606
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0302",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 3,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        0.4955382437462639
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0303",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 3,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        -0.42946175625373284
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0304",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 3,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -1.3794617562537295
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Ds0401",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 4,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        1.4205382437462606,
+        1.9557616588353444
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0402",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 4,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        1.4205382437462606
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0403",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 4,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        0.4955382437462639
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0404",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 4,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -0.42946175625373284
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Ds0405",
+      "kind": "deck_slab",
+      "label_ja": "床版",
+      "row": 4,
+      "column": 5,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        -1.9294617562537266,
+        -1.3794617562537295
+      ],
+      "status": "observed_bounds"
+    },
+    {
+      "id": "Mg0401",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 4,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        1.4205382437462606,
+        1.4205382437462606
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0402",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 4,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        0.4955382437462639
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0403",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 4,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        -0.42946175625373284
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Mg0404",
+      "kind": "main_girder",
+      "label_ja": "主桁",
+      "row": 4,
+      "column": 4,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        9.255942796821195
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -1.3794617562537295
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0101",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 1,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        1.4205382437462606
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0102",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 1,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        0.4955382437462639
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0103",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 1,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -9.285703071138038,
+        -9.285703071138038
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -0.42946175625373284
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0201",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 2,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        1.4205382437462606
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0202",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 2,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        0.4955382437462639
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0203",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 2,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        -0.4607030711379121,
+        -0.4607030711379121
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -0.42946175625373284
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0301",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 3,
+      "column": 1,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        0.4955382437462639,
+        1.4205382437462606
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0302",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 3,
+      "column": 2,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        -0.42946175625373284,
+        0.4955382437462639
+      ],
+      "status": "observed"
+    },
+    {
+      "id": "Cr0303",
+      "kind": "cross_beam",
+      "label_ja": "横桁",
+      "row": 3,
+      "column": 3,
+      "span": 1,
+      "along_m": [
+        8.364296928862213,
+        8.364296928862213
+      ],
+      "lateral_m": [
+        -1.3794617562537295,
+        -0.42946175625373284
+      ],
+      "status": "observed"
+    }
+  ],
+  "numbering": "Four digits: row along the axis from the start, then column across from the left facing the end (the top of the drawing). Mg main girder, Cr cross beam, Ds deck slab. Rows continue across spans; each element records its span. A1 and A2 are the start and end abutments, P1, P2, ... the piers from the start.",
+  "note": "Girders and cross beams are drawn where the scan shows them; a member hidden from every scan position is missing and would shift the numbers after it.",
+  "warnings": []
+}

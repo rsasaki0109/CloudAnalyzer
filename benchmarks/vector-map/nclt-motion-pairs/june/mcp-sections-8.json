@@ -1,0 +1,1603 @@
+{
+  "schema": "cloudanalyzer.mapping_run.v1",
+  "job_dir": "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd",
+  "revision": 2,
+  "status": "needs_agent",
+  "layout_hypothesis": {
+    "boundary_policy": "source_span_hypothesis",
+    "speed_limit_kmh": 40.0,
+    "reason": "Same explicit unverified one-lane export hypothesis as the previous NCLT run; traffic rules and complete width remain unresolved",
+    "lanes": [
+      {
+        "direction": "forward",
+        "kind": "driving",
+        "one_way": true,
+        "fraction": 1.0,
+        "minimum_width_m": 2.0
+      }
+    ]
+  },
+  "pointcloud": {
+    "files": {
+      "map": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/pointcloud/original-keyframes_map.ply",
+        "sha256": "ce475e7e6b70de9474fd34a6d3c117535ab784b405d57f0cdd9c1854e422a3c8",
+        "bytes": 18824718
+      },
+      "graph": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/pointcloud/original-keyframes_fixed.g2o",
+        "sha256": "e78ed9171150e79927e038145ad126a0dff0e1c62b1a390d5c320b39d1262810",
+        "bytes": 92196
+      },
+      "trajectory": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/pointcloud/original-keyframes_fixed_kitti.txt",
+        "sha256": "6f6358765efba188a4230bafadf0ca2ee9ecc1d82215243ec3d37c2a2ec512e5",
+        "bytes": 46203
+      }
+    },
+    "frames": 238,
+    "map_points": 588267,
+    "path_length_m": 253.8,
+    "source_motion": {
+      "odometry_report": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/odometry-report.json",
+        "sha256": "c1e18b3dee20acc638399d129f0e40a9e626b033aa89eb172127406cd0b4ee06",
+        "bytes": 478
+      },
+      "trajectory": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june/odometry/trajectory.tum",
+        "sha256": "e3c467ee64877108ce71d6d4451cff5cbbb4f8ab7493a0778afea02d312f1409",
+        "bytes": 20406
+      }
+    },
+    "quality_status": "generated_unverified",
+    "coordinate_frame": "local_slam_metres",
+    "reports": {
+      "correction": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/pointcloud-report.json"
+    }
+  },
+  "remaining_attempts": 4,
+  "candidate_index": {
+    "file": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/corridor-proposals-trajectory.json",
+      "sha256": "ce20500339b516b7bdace324d6fcbe2683f087c89aa6c5a9818113030d617cca",
+      "bytes": 379213
+    },
+    "summary": {
+      "coordinate_frame": "local_slam_metres",
+      "protocol": {
+        "options": {
+          "search_radius_m": 8.0,
+          "association": "trajectory_containing"
+        },
+        "sample_spacing_m": 2.0,
+        "bin_width_m": 0.5,
+        "half_window_m": 2.0,
+        "minimum_support_span_m": 1.0,
+        "maximum_adjacent_height_step_m": 0.08,
+        "maximum_reference_level_grade": 0.12,
+        "ground_estimator": {
+          "model": "lowest_supported_layer",
+          "layer_height_m": 0.15,
+          "xy_cell_m": 0.2,
+          "minimum_cells": 3,
+          "minimum_triangle_area_m2": 0.01
+        },
+        "interval_support_spacing_m": 0.5,
+        "interval_ground_radius_m": 0.75,
+        "interval_height_tolerance_m": 0.3,
+        "maximum_sections": 2048,
+        "profile_query_point_budget": 2000000,
+        "interval_support_sample_budget": 100000
+      },
+      "trajectory_length_m": 252.69930892254752,
+      "with_candidate_station_length_m": 192.0,
+      "without_candidate_station_length_m": 60.699308922547516,
+      "trajectory_covered_station_length_m": 192.0,
+      "curb_bounded_station_length_m": 0.0,
+      "ambiguous_station_length_m": 0.0,
+      "sampled_sections": 128,
+      "evaluated_sections": 128,
+      "sections_with_bands": 123,
+      "multiple_band_sections": 0,
+      "profile_queried_points": 725858,
+      "interval_support_samples": 1998,
+      "unstable_heading_sections": 0,
+      "unanchored_sections": 1,
+      "level_mismatch_bands": 20,
+      "limited": false,
+      "road_semantics_inferred": false,
+      "deployment_ready": false,
+      "warnings": [
+        "Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves.",
+        "Explicit trajectory-containing association excludes off-path bands from matching but retains them in every original profile. This resolves geometric association only, not physical road branches or lane identity; unsupported path intervals remain deferred."
+      ],
+      "candidate_count": 15,
+      "longest_candidate_station_length_m": 72.0,
+      "off_trajectory_bands": 259,
+      "curb_bounded_candidates": 0,
+      "paired_curb_profile_bands": 8
+    },
+    "remaining_attempts": 4,
+    "candidate_index": [
+      {
+        "id": 1,
+        "from_m": 0.0,
+        "to_m": 2.0,
+        "minimum_support_span_m": 3.5,
+        "maximum_support_span_m": 5.0,
+        "paired_curb_sections": 1,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 2,
+        "from_m": 6.0,
+        "to_m": 8.0,
+        "minimum_support_span_m": 1.0,
+        "maximum_support_span_m": 4.5,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 3,
+        "from_m": 12.0,
+        "to_m": 16.0,
+        "minimum_support_span_m": 1.0,
+        "maximum_support_span_m": 4.0,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 4,
+        "from_m": 24.0,
+        "to_m": 38.0,
+        "minimum_support_span_m": 2.0,
+        "maximum_support_span_m": 9.5,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 5,
+        "from_m": 42.0,
+        "to_m": 114.0,
+        "minimum_support_span_m": 2.0,
+        "maximum_support_span_m": 8.5,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 6,
+        "from_m": 118.0,
+        "to_m": 124.0,
+        "minimum_support_span_m": 1.5,
+        "maximum_support_span_m": 7.5,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 7,
+        "from_m": 128.0,
+        "to_m": 130.0,
+        "minimum_support_span_m": 4.0,
+        "maximum_support_span_m": 6.0,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 8,
+        "from_m": 134.0,
+        "to_m": 184.0,
+        "minimum_support_span_m": 1.5,
+        "maximum_support_span_m": 10.0,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 9,
+        "from_m": 186.0,
+        "to_m": 200.0,
+        "minimum_support_span_m": 5.5,
+        "maximum_support_span_m": 15.5,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 10,
+        "from_m": 204.0,
+        "to_m": 208.0,
+        "minimum_support_span_m": 9.0,
+        "maximum_support_span_m": 12.0,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 11,
+        "from_m": 210.0,
+        "to_m": 212.0,
+        "minimum_support_span_m": 7.0,
+        "maximum_support_span_m": 13.0,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 12,
+        "from_m": 218.0,
+        "to_m": 220.0,
+        "minimum_support_span_m": 3.5,
+        "maximum_support_span_m": 7.5,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 13,
+        "from_m": 224.0,
+        "to_m": 228.0,
+        "minimum_support_span_m": 3.5,
+        "maximum_support_span_m": 10.5,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 14,
+        "from_m": 232.0,
+        "to_m": 240.0,
+        "minimum_support_span_m": 1.0,
+        "maximum_support_span_m": 15.5,
+        "paired_curb_sections": 1,
+        "curb_width_range_m": null,
+        "review_required": true
+      },
+      {
+        "id": 15,
+        "from_m": 242.0,
+        "to_m": 248.0,
+        "minimum_support_span_m": 2.5,
+        "maximum_support_span_m": 4.5,
+        "paired_curb_sections": 0,
+        "curb_width_range_m": null,
+        "review_required": true
+      }
+    ],
+    "next_offset": null,
+    "curb_width_profile_hints": [
+      {
+        "station_m": 2.0,
+        "center": [
+          1.990590314988867,
+          0.17783438390194697,
+          -0.6181964544642944
+        ],
+        "left": [
+          1.5636057573553912,
+          1.8749449246571877,
+          -0.6501453012829272
+        ],
+        "right": [
+          2.417574872622343,
+          -1.5192761568532938,
+          -0.6896592627621888
+        ],
+        "support_span_m": 3.5,
+        "left_evidence": "curb_profile",
+        "right_evidence": "curb_profile",
+        "intersects_trajectory": true,
+        "path_level_supported": true,
+        "review_required": true
+      },
+      {
+        "station_m": 4.0,
+        "center": [
+          4.308406058338602,
+          0.08843572855323034,
+          -0.8648309172562632
+        ],
+        "left": [
+          3.9422007674186714,
+          0.7429536312130806,
+          -0.8689922612959868
+        ],
+        "right": [
+          4.674611349258533,
+          -0.5660821741066198,
+          -0.8804043511415036
+        ],
+        "support_span_m": 1.5,
+        "left_evidence": "curb_profile",
+        "right_evidence": "curb_profile",
+        "intersects_trajectory": false,
+        "path_level_supported": true,
+        "review_required": true
+      },
+      {
+        "station_m": 26.0,
+        "center": [
+          12.89940476999962,
+          3.154139268397084,
+          -2.000475232855117
+        ],
+        "left": [
+          13.292880158081333,
+          2.845631377130191,
+          -2.01905572325403
+        ],
+        "right": [
+          12.505929381917905,
+          3.462647159663976,
+          -1.9829523482583515
+        ],
+        "support_span_m": 1.0,
+        "left_evidence": "curb_profile",
+        "right_evidence": "curb_profile",
+        "intersects_trajectory": false,
+        "path_level_supported": true,
+        "review_required": true
+      },
+      {
+        "station_m": 158.0,
+        "center": [
+          5.174441730874133,
+          -54.521107298067676,
+          -4.0454582153367795
+        ],
+        "left": [
+          4.744162838605563,
+          -54.266430885991234,
+          -4.08323819887392
+        ],
+        "right": [
+          5.604720623142703,
+          -54.775783710144125,
+          -4.045999907284797
+        ],
+        "support_span_m": 1.0,
+        "left_evidence": "curb_profile",
+        "right_evidence": "curb_profile",
+        "intersects_trajectory": false,
+        "path_level_supported": true,
+        "review_required": true
+      },
+      {
+        "station_m": 160.0,
+        "center": [
+          2.98952083436182,
+          -51.079420928980404,
+          -4.104190727807357
+        ],
+        "left": [
+          2.5436694924115835,
+          -50.853110123049326,
+          -4.165096037523044
+        ],
+        "right": [
+          3.4353721763120566,
+          -51.30573173491148,
+          -4.060658898994357
+        ],
+        "support_span_m": 1.0,
+        "left_evidence": "curb_profile",
+        "right_evidence": "curb_profile",
+        "intersects_trajectory": false,
+        "path_level_supported": true,
+        "review_required": true
+      },
+      {
+        "station_m": 192.0,
+        "center": [
+          19.021102490524605,
+          -23.194469853565877,
+          -3.7660564522778897
+        ],
+        "left": [
+          16.918526573343215,
+          -21.842000071097953,
+          -3.7674192145768717
+        ],
+        "right": [
+          21.12367840770599,
+          -24.5469396360338,
+          -3.8321784848414175
+        ],
+        "support_span_m": 5.0,
+        "left_evidence": "curb_profile",
+        "right_evidence": "curb_profile",
+        "intersects_trajectory": false,
+        "path_level_supported": true,
+        "review_required": true
+      },
+      {
+        "station_m": 198.0,
+        "center": [
+          23.662246284376984,
+          -19.331042499261347,
+          -3.7599914495962357
+        ],
+        "left": [
+          23.216439693849644,
+          -19.10464355084862,
+          -3.8302877300401077
+        ],
+        "right": [
+          24.108052874904324,
+          -19.557441447674073,
+          -3.7399623388817247
+        ],
+        "support_span_m": 1.0,
+        "left_evidence": "curb_profile",
+        "right_evidence": "curb_profile",
+        "intersects_trajectory": false,
+        "path_level_supported": true,
+        "review_required": true
+      },
+      {
+        "station_m": 240.0,
+        "center": [
+          9.043967052845995,
+          5.530699508179129,
+          -1.413976844144837
+        ],
+        "left": [
+          9.369936810061374,
+          5.151564021339732,
+          -1.4504342959408614
+        ],
+        "right": [
+          8.717997295630616,
+          5.909834995018526,
+          -1.4090318186399022
+        ],
+        "support_span_m": 1.0,
+        "left_evidence": "curb_profile",
+        "right_evidence": "curb_profile",
+        "intersects_trajectory": true,
+        "path_level_supported": true,
+        "review_required": true
+      }
+    ],
+    "curb_width_profile_hints_limited": false,
+    "deferred_intervals": [
+      {
+        "from_m": 2.0,
+        "to_m": 6.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 8.0,
+        "to_m": 12.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 16.0,
+        "to_m": 22.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 22.0,
+        "to_m": 24.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 38.0,
+        "to_m": 42.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 114.0,
+        "to_m": 118.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 124.0,
+        "to_m": 128.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 130.0,
+        "to_m": 134.0,
+        "reason": "missing_ground_anchor"
+      },
+      {
+        "from_m": 184.0,
+        "to_m": 186.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 200.0,
+        "to_m": 204.0,
+        "reason": "missing_trajectory_band"
+      },
+      {
+        "from_m": 208.0,
+        "to_m": 210.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 212.0,
+        "to_m": 214.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 214.0,
+        "to_m": 218.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 220.0,
+        "to_m": 224.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 228.0,
+        "to_m": 230.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 230.0,
+        "to_m": 232.0,
+        "reason": "source_gap"
+      },
+      {
+        "from_m": 240.0,
+        "to_m": 242.0,
+        "reason": "unmatched_bands"
+      },
+      {
+        "from_m": 248.0,
+        "to_m": 252.69930892254752,
+        "reason": "missing_trajectory_band"
+      }
+    ],
+    "deferred_intervals_limited": false,
+    "ambiguous_intervals": [],
+    "ambiguous_intervals_limited": false
+  },
+  "reviewed_candidates": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "history_total": 2,
+  "corridor_refinement": {
+    "status": "ready",
+    "reason": "Regenerate HD explicitly for the exploratory loops-only point map using unchanged baseline source policy and fixed lane hypothesis",
+    "previous": {
+      "status": "ready",
+      "options": {
+        "search_radius_m": 8.0
+      },
+      "file": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/corridor-proposals.json",
+        "sha256": "3a2f2694dbeee43ddf06e96a4f9d2498ca81355fa17f6473b21d7024865cf28c",
+        "bytes": 491469
+      },
+      "summary": {
+        "coordinate_frame": "local_slam_metres",
+        "protocol": {
+          "options": {
+            "search_radius_m": 8.0,
+            "association": "all_supported_bands"
+          },
+          "sample_spacing_m": 2.0,
+          "bin_width_m": 0.5,
+          "half_window_m": 2.0,
+          "minimum_support_span_m": 1.0,
+          "maximum_adjacent_height_step_m": 0.08,
+          "maximum_reference_level_grade": 0.12,
+          "ground_estimator": {
+            "model": "lowest_supported_layer",
+            "layer_height_m": 0.15,
+            "xy_cell_m": 0.2,
+            "minimum_cells": 3,
+            "minimum_triangle_area_m2": 0.01
+          },
+          "interval_support_spacing_m": 0.5,
+          "interval_ground_radius_m": 0.75,
+          "interval_height_tolerance_m": 0.3,
+          "maximum_sections": 2048,
+          "profile_query_point_budget": 2000000,
+          "interval_support_sample_budget": 100000
+        },
+        "trajectory_length_m": 252.69930892254752,
+        "with_candidate_station_length_m": 202.69930892254752,
+        "without_candidate_station_length_m": 50.0,
+        "trajectory_covered_station_length_m": 152.0,
+        "curb_bounded_station_length_m": 0.0,
+        "ambiguous_station_length_m": 102.0,
+        "sampled_sections": 128,
+        "evaluated_sections": 128,
+        "sections_with_bands": 127,
+        "multiple_band_sections": 124,
+        "profile_queried_points": 725858,
+        "interval_support_samples": 3493,
+        "unstable_heading_sections": 0,
+        "unanchored_sections": 1,
+        "level_mismatch_bands": 20,
+        "limited": false,
+        "road_semantics_inferred": false,
+        "deployment_ready": false,
+        "warnings": [
+          "Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves."
+        ],
+        "candidate_count": 66,
+        "longest_candidate_station_length_m": 68.0,
+        "off_trajectory_bands": 259,
+        "curb_bounded_candidates": 0,
+        "paired_curb_profile_bands": 8
+      }
+    },
+    "options": {
+      "search_radius_m": 8.0,
+      "association": "trajectory_containing"
+    },
+    "file": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/corridor-proposals-trajectory.json",
+      "sha256": "ce20500339b516b7bdace324d6fcbe2683f087c89aa6c5a9818113030d617cca",
+      "bytes": 379213
+    },
+    "summary": {
+      "coordinate_frame": "local_slam_metres",
+      "protocol": {
+        "options": {
+          "search_radius_m": 8.0,
+          "association": "trajectory_containing"
+        },
+        "sample_spacing_m": 2.0,
+        "bin_width_m": 0.5,
+        "half_window_m": 2.0,
+        "minimum_support_span_m": 1.0,
+        "maximum_adjacent_height_step_m": 0.08,
+        "maximum_reference_level_grade": 0.12,
+        "ground_estimator": {
+          "model": "lowest_supported_layer",
+          "layer_height_m": 0.15,
+          "xy_cell_m": 0.2,
+          "minimum_cells": 3,
+          "minimum_triangle_area_m2": 0.01
+        },
+        "interval_support_spacing_m": 0.5,
+        "interval_ground_radius_m": 0.75,
+        "interval_height_tolerance_m": 0.3,
+        "maximum_sections": 2048,
+        "profile_query_point_budget": 2000000,
+        "interval_support_sample_budget": 100000
+      },
+      "trajectory_length_m": 252.69930892254752,
+      "with_candidate_station_length_m": 192.0,
+      "without_candidate_station_length_m": 60.699308922547516,
+      "trajectory_covered_station_length_m": 192.0,
+      "curb_bounded_station_length_m": 0.0,
+      "ambiguous_station_length_m": 0.0,
+      "sampled_sections": 128,
+      "evaluated_sections": 128,
+      "sections_with_bands": 123,
+      "multiple_band_sections": 0,
+      "profile_queried_points": 725858,
+      "interval_support_samples": 1998,
+      "unstable_heading_sections": 0,
+      "unanchored_sections": 1,
+      "level_mismatch_bands": 20,
+      "limited": false,
+      "road_semantics_inferred": false,
+      "deployment_ready": false,
+      "warnings": [
+        "Proposals follow spatially supported low surfaces, not semantic roads or lanes. A lower level can be wrong. Coverage gaps and search limits are not physical road edges; support spans are incomplete widths unless every section has two curb-like profiles. Check geometry, branches, obstacles, legal use and georeferencing. Repeated passes are separate proposals, not unique road length. Bin-centre edges have 0.5 m quantization; full-width interiors are not certified by three longitudinal support curves.",
+        "Explicit trajectory-containing association excludes off-path bands from matching but retains them in every original profile. This resolves geometric association only, not physical road branches or lane identity; unsupported path intervals remain deferred."
+      ],
+      "candidate_count": 15,
+      "longest_candidate_station_length_m": 72.0,
+      "off_trajectory_bands": 259,
+      "curb_bounded_candidates": 0,
+      "paired_curb_profile_bands": 8
+    }
+  },
+  "continuation": null,
+  "motion_run": {
+    "file": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-pairs-v1/june/fresh-hd/motion-run.json",
+      "sha256": "e2c44267c00736be49094981dbd283d47c8da55ad9f23b64c99222fc26e76ef4",
+      "bytes": 102275
+    },
+    "baseline_job_dir": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june",
+    "trial_job": {
+      "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/june/loops-only/job.json",
+      "sha256": "5d7d42957b93bbd8c4e795340fed0b52fc72b0929bd16d2dfbff674a4b1df499",
+      "bytes": 5314
+    }
+  },
+  "pointcloud_retry": null,
+  "retry_child": null,
+  "pointcloud_retry_allowed": true,
+  "history": [
+    {
+      "sequence": 1,
+      "reason": "Read fresh source spans before any lane geometry decision",
+      "status": "inspected",
+      "proposal_sha256": "ce20500339b516b7bdace324d6fcbe2683f087c89aa6c5a9818113030d617cca"
+    },
+    {
+      "sequence": 2,
+      "reason": "Read fresh source spans before any lane geometry decision",
+      "status": "inspected",
+      "proposal_sha256": "ce20500339b516b7bdace324d6fcbe2683f087c89aa6c5a9818113030d617cca"
+    }
+  ],
+  "history_limited": false,
+  "output": null,
+  "guidance": "Continue this run autonomously within its fixed layout and attempt budget.\nPage the candidate index; inspect relevant candidates before deciding include/defer\nranges. Compare path association, surface levels, spans, edge evidence and competing\nbands. Source support does not prove road identity or complete width.\nIf off-path overlapping bands fragment the route, explicitly refine with\nassociation=trajectory_containing once, then inspect the new proposal IDs afresh.\nAll original profiles and drafts remain available; unresolved source stays visible\nin corridor-extent accounting even when a short connector is added.\nAfter drafting, inspect_connections on an audited draft. For a single forward\none-way lane per piece, explicitly connect inspected consecutive drive pieces.\nShort gaps need recorded-path containment, unchanged minimum widths and complete\ncenter/boundary support from both ground estimators after export/reload. Inspect\nlocal and global route station spans separately; connector reachability does not\nincrease original source-corridor extent or prove permitted turns.\nConnections may extend an audited connected or gap-patched draft. Existing\nlanes and directed edges are inherited; supply only the new inspected pairs.\nOld source samples must not gain failures in either estimator or saved format.\nTo extend a combined local patch's HD envelope independently,\nuse inspect_connection_region with explicit bounds_xy containing the frozen\npoint-update box and sides at most 20 m. Point records remain fixed. Only links\ntouching repair lanes are offered; inspect exact geometry and connect seen pairs.\nEvery new trace needs full support from both estimators in IR/reopened OSM.\nBefore HD-only repair, inspect_hd_plan with seen root gap IDs and page offsets.\nIt checks width, retained occupancy and both ground estimators on adjacent observed\nreference traces without exporting lanes or spending HD attempts. Choose supported\nintervals; the final draft/combined patch must still pass all four format audits.\nFor HD-only additions on the exact retained point map, use repair_hd with seen\nroot gap IDs. It transfers the same shared repair budget (at least three attempts)\nwithout fusion, odometry or source extraction. Inspect the frozen proposal in the\nreturned child, draft observed missing ranges, then inspect_patch and patch_gaps.\nA combined patch is required before compare_retry and finish_retry. Keep all point\nfiles, source thresholds and layout fixed; do not refine the frozen proposal.\nFor missing intervals, inspect_gaps to compare profiles and aligned raw-log\nneighborhoods. Counts do not prove coherent ground or a thinning-related cause.\nExplicit retry_pointcloud can reduce scan/map thinning once, keeping motion,\nframe selection, dynamic-filter policy, thresholds and layout fixed. Continue the\nreturned child_run, inspect fresh candidates and draft using the transferred\nshared HD budget. compare_retry shows gained AND lost source intervals, both\naudits and route spans. More points do not establish improvement. Finish the\nparent draft if the trial is worse, or finish_retry explicitly after comparing\nand finishing the child. Earlier map artifacts are never replaced.\nAlternatively inspect_unused_frames after inspect_gaps: read original non-keyframe\nreturns, interpolated odometry-correction poses and consistency checks against both\ncorrected bracket scans. retry_frames explicitly adopts inspected eligible IDs,\nkeeping thinning and all existing corrected poses fixed. ICP corrections are never\napplied; these are consistency-tested pose hypotheses, not independent accuracy.\nDensity and unused-frame trials share one root retry and the same transferred budget.\nFor a local point update, inspect_local_points with seen root gap IDs and explicit\nbounds_xy, then retry_local_frames using inspected eligible frames and that preview.\nAlternatively inspect_local_density with seen gap IDs and bounds_xy, then\nretry_local_density with that exact preview and explicit bounded thinning options.\nUse inspect_protected_density to retain all existing lane convex hulls plus the saved\naudit query radius at every height. Only unprotected points inside the box change;\nprotected neighborhoods and outside records remain exact. The conservative hull can\nexclude useful gap evidence. Inspect counts and keep the same four audit gates.\nThis keeps the original retained frames and poses; it needs no unused-frame checks.\nThe full fusion candidate is still generated; only the previewed XY column at all\nheights replaces baseline points. Outside PLY record bytes/attributes/order remain\nfixed. Four audits must retain old HD support. Use a combined HD gap patch inside\nthat box before compare_retry and finish_retry, or finish the root baseline.\nIf an isolated local addition has height mismatches, inspect_heights returns affected\ninterior boundary vertices. Explicit edit_heights tries seen individual Z deltas\nup to 0.1 m, retaining boundary XY/endpoints and semantics. Every addition trace\nmust pass all four audits. One shared attempt is spent, with another reserved for\nthe combined patch. No recursive height trial or automatic estimator preference.\nUnused-frame children retain separate fusion graph/trajectory artifacts plus the unchanged\nreference graph/trajectory used for the original extent comparison.\nTo repair HD intervals locally, draft only observed missing ranges in the retry\nchild, inspect_patch with root gap IDs already inspected, then patch_gaps with\nexplicit inspected endpoint pairs ([] when isolated). One shared attempt\npreserves the root's lane geometry, IDs, metadata and directed connections and\nadds only lanes inside those gaps. All four audits must be complete; no previously\nsupported retained sample may fail, and new traces must be fully supported.\nThe point cloud remains the full fusion trial unless a local retry was chosen.\nExisting HD source failures remain\nexplicit. Compare and finish explicitly; failed patches preserve the baseline.\nDraft decisions describe a complete replacement hypothesis, not additions to the previous lane map.\nThe runner binds the fixed layout to every included piece and executes geometry,\nlane export and diagnosis. Read both ground estimators and full-input extent before\ntrying another hypothesis. Do not alter lane count, width requirements, speed or\nextent goal to improve a score. Finish with a retained audited draft and explicit\nholds, or no HD output if none can be generated. Never claim inferred traffic rules,\nindependent accuracy or deployment readiness. The calling agent makes decisions;\nthe runner has no candidate-ranking rules or embedded LLM.",
+  "action_contract": {
+    "inspect": {
+      "type": "inspect",
+      "candidate_ids": "1..8 IDs from the frozen proposal"
+    },
+    "refine": {
+      "type": "refine",
+      "association": "trajectory_containing (one source extraction experiment; inspect new IDs afterward)"
+    },
+    "draft": {
+      "type": "draft",
+      "decisions": "complete include/defer choices with reasons and optional observed ranges"
+    },
+    "inspect_connections": {
+      "type": "inspect_connections",
+      "candidate_id": "own audited lane, connected or gap-patched draft ID",
+      "offset": "nonnegative; pages of 8"
+    },
+    "inspect_connection_region": {
+      "type": "inspect_connection_region",
+      "candidate_id": "own combined local-retry patch",
+      "bounds_xy": "explicit HD-only [xmin,ymin,xmax,ymax]; contains frozen point box; sides <=20 m",
+      "offset": "nonnegative; pages of 8; only links touching repair lanes"
+    },
+    "connect": {
+      "type": "connect",
+      "candidate_id": "inspected parent lane draft ID",
+      "pairs": "1..32 inspected {from,to,reason} pairs; one shared HD attempt"
+    },
+    "inspect_gaps": {
+      "type": "inspect_gaps",
+      "candidate_id": "own audited lane draft",
+      "offset": "nonnegative; pages of 8"
+    },
+    "retry_pointcloud": {
+      "type": "retry_pointcloud",
+      "candidate_id": "inspected baseline",
+      "gap_ids": "1..8 inspected IDs",
+      "options": "explicit scan_voxel_m/map_voxel_m; bounded thinning reduction, one child with transferred HD budget"
+    },
+    "inspect_unused_frames": {
+      "type": "inspect_unused_frames",
+      "candidate_id": "own gap-inspected baseline",
+      "offset": "nonnegative; pages of 8 pose/registration observations"
+    },
+    "retry_frames": {
+      "type": "retry_frames",
+      "candidate_id": "inspected baseline",
+      "frame_ids": "1..64 inspected eligible frame IDs; same thinning, original poses fixed, shared child budget"
+    },
+    "inspect_local_points": {
+      "type": "inspect_local_points",
+      "candidate_id": "inspected baseline",
+      "gap_ids": "1..8 root-inspected gap IDs",
+      "bounds_xy": "explicit [xmin,ymin,xmax,ymax]; sides <=20 m after voxel alignment; all heights"
+    },
+    "retry_local_frames": {
+      "type": "retry_local_frames",
+      "candidate_id": "inspected baseline",
+      "frame_ids": "1..64 seen eligible frames observing the chosen box",
+      "preview_file": "file artifact from inspect_local_points; needs three shared HD attempts"
+    },
+    "inspect_local_density": {
+      "type": "inspect_local_density",
+      "candidate_id": "inspected baseline",
+      "gap_ids": "1..8 root-inspected gap IDs",
+      "bounds_xy": "explicit [xmin,ymin,xmax,ymax]; sides <=20 m after original voxel alignment; all heights"
+    },
+    "inspect_protected_density": {
+      "type": "inspect_protected_density",
+      "candidate_id": "inspected baseline",
+      "gap_ids": "1..8 seen root gap IDs",
+      "bounds_xy": "explicit box; retain all existing HD lane hulls plus saved audit radius, all heights"
+    },
+    "inspect_hd_plan": {
+      "type": "inspect_hd_plan",
+      "candidate_id": "retained root draft",
+      "gap_ids": "1..8 seen root gaps",
+      "offset": "nonnegative; pages of 8 observed interval source checks; no HD generation/export/adoption"
+    },
+    "repair_hd": {
+      "type": "repair_hd",
+      "candidate_id": "inspected retained baseline",
+      "gap_ids": "1..8 seen root gap IDs; unchanged point map/proposal; three shared attempts; combined gap patch required"
+    },
+    "retry_local_density": {
+      "type": "retry_local_density",
+      "candidate_id": "inspected baseline",
+      "options": "bounded scan_voxel_m/map_voxel_m reduction; original frames and poses fixed",
+      "preview_file": "exact file artifact from inspect_local_density or inspect_protected_density; needs three shared HD attempts"
+    },
+    "inspect_heights": {
+      "type": "inspect_heights",
+      "candidate_id": "own isolated local-retry addition draft",
+      "offset": "nonnegative; pages of 8 affected interior vertices with observed height mismatches"
+    },
+    "edit_heights": {
+      "type": "edit_heights",
+      "candidate_id": "same inspected addition draft",
+      "preview_file": "exact height observation artifact",
+      "edits": "1..16 seen {boundary_id, vertex_index, delta_z_m, reason}; nonzero absolute delta <=0.1 m, one trial and two remaining shared attempts"
+    },
+    "inspect_patch": {
+      "type": "inspect_patch",
+      "candidate_id": "own unconnected retry-child draft containing gap additions only",
+      "gap_ids": "1..32 root-inspected gap IDs",
+      "offset": "nonnegative; pages of 8 exact geometric endpoint pairs"
+    },
+    "patch_gaps": {
+      "type": "patch_gaps",
+      "candidate_id": "inspected gap-only draft ID",
+      "gap_ids": "same root-inspected IDs",
+      "pairs": "all seen endpoint pairs {from: baseline:ID or addition:ID, to: same form, reason}; [] if none, one shared HD attempt"
+    },
+    "compare_retry": {
+      "type": "compare_retry",
+      "candidate_id": "own audited candidate in retry child"
+    },
+    "finish_retry": {
+      "type": "finish_retry",
+      "candidate_id": "compared, finished retry-child candidate"
+    },
+    "resume": {
+      "type": "resume"
+    },
+    "finish": {
+      "type": "finish",
+      "candidate_id": "audited draft ID, or null if none"
+    }
+  },
+  "deployment_ready": false,
+  "observation": [
+    {
+      "id": 9,
+      "from_m": 186.0,
+      "to_m": 200.0,
+      "minimum_support_span_m": 5.5,
+      "maximum_support_span_m": 15.5,
+      "paired_curb_sections": 0,
+      "curb_width_range_m": null,
+      "sections": [
+        {
+          "station_m": 186.0,
+          "center": [
+            17.69511123923279,
+            -29.488379484007382,
+            -3.8291656940923504
+          ],
+          "left": [
+            12.825188835644251,
+            -26.43119846499225,
+            -3.6619602639730764
+          ],
+          "right": [
+            22.56503364282133,
+            -32.545560503022514,
+            -3.9555022762127865
+          ],
+          "support_span_m": 11.5,
+          "left_evidence": "search_limit",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 188.0,
+          "center": [
+            20.473504418175292,
+            -28.87139392458148,
+            -3.820002002778698
+          ],
+          "left": [
+            13.835100221070766,
+            -24.872132778336464,
+            -3.664512344637663
+          ],
+          "right": [
+            27.111908615279816,
+            -32.870655070826494,
+            -4.195333214824333
+          ],
+          "support_span_m": 15.5,
+          "left_evidence": "search_limit",
+          "right_evidence": "search_limit",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 190.0,
+          "center": [
+            21.449659577219276,
+            -27.131237691303568,
+            -3.8098231805062364
+          ],
+          "left": [
+            14.887207090784624,
+            -23.008530163078014,
+            -3.648318123807655
+          ],
+          "right": [
+            28.012112063653927,
+            -31.253945219529122,
+            -4.1574869549050195
+          ],
+          "support_span_m": 15.5,
+          "left_evidence": "search_limit",
+          "right_evidence": "search_limit",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 192.0,
+          "center": [
+            24.698057466914356,
+            -26.846138266229275,
+            -3.861394699650755
+          ],
+          "left": [
+            21.54419359114227,
+            -24.817433592527387,
+            -3.724158626885986
+          ],
+          "right": [
+            27.851921342686442,
+            -28.874842939931163,
+            -4.054445863515214
+          ],
+          "support_span_m": 7.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 194.0,
+          "center": [
+            25.9348506780958,
+            -25.24162861039008,
+            -3.8448211619529133
+          ],
+          "left": [
+            22.554970800667714,
+            -23.102373596569446,
+            -3.6632055558731142
+          ],
+          "right": [
+            29.314730555523884,
+            -27.380883624210714,
+            -4.0596500605824986
+          ],
+          "support_span_m": 8.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 196.0,
+          "center": [
+            27.518604685763876,
+            -23.790753320925717,
+            -3.8507931236911075
+          ],
+          "left": [
+            23.662156603487418,
+            -21.47174314658274,
+            -3.6820901284176903
+          ],
+          "right": [
+            31.375052768040334,
+            -26.109763495268695,
+            -4.111422137378222
+          ],
+          "support_span_m": 9.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "search_limit",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 198.0,
+          "center": [
+            27.00579571333204,
+            -21.02903461235679,
+            -3.730377867857577
+          ],
+          "left": [
+            24.553859465431664,
+            -19.7838403960868,
+            -3.6004493340186423
+          ],
+          "right": [
+            29.457731961232415,
+            -22.274228828626775,
+            -3.863187717215649
+          ],
+          "support_span_m": 5.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 200.0,
+          "center": [
+            27.985661557485155,
+            -18.96323037643847,
+            -3.7085671236625872
+          ],
+          "left": [
+            24.378824948799327,
+            -17.936960588203554,
+            -3.5226010673437576
+          ],
+          "right": [
+            31.59249816617098,
+            -19.989500164673387,
+            -3.8957117232804572
+          ],
+          "support_span_m": 7.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "total_sections": 8,
+      "section_preview_limited": false
+    },
+    {
+      "id": 10,
+      "from_m": 204.0,
+      "to_m": 208.0,
+      "minimum_support_span_m": 9.0,
+      "maximum_support_span_m": 12.0,
+      "paired_curb_sections": 0,
+      "curb_width_range_m": null,
+      "sections": [
+        {
+          "station_m": 204.0,
+          "center": [
+            25.942708556091787,
+            -14.033619667235513,
+            -3.4187549217380515
+          ],
+          "left": [
+            20.473549394084763,
+            -11.566171985797345,
+            -3.2321391749869592
+          ],
+          "right": [
+            31.411867718098815,
+            -16.50106734867368,
+            -3.7708507777871256
+          ],
+          "support_span_m": 12.0,
+          "left_evidence": "search_limit",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 206.0,
+          "center": [
+            25.358792039904397,
+            -11.750550642380373,
+            -3.2451945343358
+          ],
+          "left": [
+            21.176816208709493,
+            -10.088901417272478,
+            -3.060098102955222
+          ],
+          "right": [
+            29.540767871099302,
+            -13.41219986748827,
+            -3.5099745213926097
+          ],
+          "support_span_m": 9.0,
+          "left_evidence": "search_limit",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 208.0,
+          "center": [
+            25.988083145659267,
+            -9.852326188178958,
+            -3.170353087839377
+          ],
+          "left": [
+            21.81231816369675,
+            -8.17513007101926,
+            -3.0211946352389556
+          ],
+          "right": [
+            30.163848127621787,
+            -11.529522305338658,
+            -3.5392343751897903
+          ],
+          "support_span_m": 9.0,
+          "left_evidence": "search_limit",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "total_sections": 3,
+      "section_preview_limited": false
+    },
+    {
+      "id": 11,
+      "from_m": 210.0,
+      "to_m": 212.0,
+      "minimum_support_span_m": 7.0,
+      "maximum_support_span_m": 13.0,
+      "paired_curb_sections": 0,
+      "curb_width_range_m": null,
+      "sections": [
+        {
+          "station_m": 210.0,
+          "center": [
+            32.02775139174278,
+            -9.864084007557084,
+            -3.5431860911336015
+          ],
+          "left": [
+            28.65250932552391,
+            -8.937940933066661,
+            -3.332224103674297
+          ],
+          "right": [
+            35.40299345796165,
+            -10.790227082047506,
+            -3.6061078000531746
+          ],
+          "support_span_m": 7.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 212.0,
+          "center": [
+            31.240884003671983,
+            -7.050582155039482,
+            -3.5057355431237314
+          ],
+          "left": [
+            24.919451148802406,
+            -8.563687128719582,
+            -3.1413344302586594
+          ],
+          "right": [
+            37.562316858541564,
+            -5.537477181359382,
+            -3.512176128992539
+          ],
+          "support_span_m": 13.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "search_limit",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "total_sections": 2,
+      "section_preview_limited": false
+    },
+    {
+      "id": 12,
+      "from_m": 218.0,
+      "to_m": 220.0,
+      "minimum_support_span_m": 3.5,
+      "maximum_support_span_m": 7.5,
+      "paired_curb_sections": 0,
+      "curb_width_range_m": null,
+      "sections": [
+        {
+          "station_m": 218.0,
+          "center": [
+            28.245014262922812,
+            -0.7542226326430073,
+            -3.1147371063495757
+          ],
+          "left": [
+            25.603203158009634,
+            -3.415676011148334,
+            -3.0727497220090156
+          ],
+          "right": [
+            30.88682536783599,
+            1.9072307458623197,
+            -3.1037909661181535
+          ],
+          "support_span_m": 7.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 220.0,
+          "center": [
+            25.49688111352723,
+            -0.7467158335951658,
+            -2.9729577393097415
+          ],
+          "left": [
+            24.2116863084774,
+            -1.9344760421696636,
+            -2.9397804354778714
+          ],
+          "right": [
+            26.782075918577057,
+            0.441044374979332,
+            -2.940360584690511
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "curb_profile",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "total_sections": 2,
+      "section_preview_limited": false
+    },
+    {
+      "id": 13,
+      "from_m": 224.0,
+      "to_m": 228.0,
+      "minimum_support_span_m": 3.5,
+      "maximum_support_span_m": 10.5,
+      "paired_curb_sections": 0,
+      "curb_width_range_m": null,
+      "sections": [
+        {
+          "station_m": 224.0,
+          "center": [
+            22.656022815615387,
+            2.1631815958650202,
+            -2.786023662264639
+          ],
+          "left": [
+            21.46066519667742,
+            0.8850500835209425,
+            -2.712173994106366
+          ],
+          "right": [
+            23.851380434553352,
+            3.441313108209098,
+            -2.7143933995186282
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 226.0,
+          "center": [
+            19.528976284501375,
+            1.6387784981439613,
+            -2.5768109696267683
+          ],
+          "left": [
+            16.78161514322242,
+            -1.6038295200090804,
+            -2.580921691242141
+          ],
+          "right": [
+            22.27633742578033,
+            4.881386516297003,
+            -2.6655521798508928
+          ],
+          "support_span_m": 8.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 228.0,
+          "center": [
+            17.245062327513082,
+            2.163795482971862,
+            -2.4703125684303395
+          ],
+          "left": [
+            13.718381860128469,
+            -1.7252950123712116,
+            -2.4602166075400773
+          ],
+          "right": [
+            20.771742794897698,
+            6.052885978314935,
+            -2.528190847796933
+          ],
+          "support_span_m": 10.5,
+          "left_evidence": "search_limit",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "total_sections": 3,
+      "section_preview_limited": false
+    },
+    {
+      "id": 14,
+      "from_m": 232.0,
+      "to_m": 240.0,
+      "minimum_support_span_m": 1.0,
+      "maximum_support_span_m": 15.5,
+      "paired_curb_sections": 1,
+      "curb_width_range_m": null,
+      "sections": [
+        {
+          "station_m": 232.0,
+          "center": [
+            16.128315344505648,
+            6.856209577821642,
+            -2.1484242322722342
+          ],
+          "left": [
+            11.774680534195388,
+            0.44462912223545725,
+            -2.238052567562232
+          ],
+          "right": [
+            20.481950154815905,
+            13.267790033407827,
+            -1.900714544843208
+          ],
+          "support_span_m": 15.5,
+          "left_evidence": "search_limit",
+          "right_evidence": "search_limit",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 234.0,
+          "center": [
+            14.102766778904284,
+            6.67798280252986,
+            -1.9750250317466724
+          ],
+          "left": [
+            13.740250119703477,
+            4.965942595115944,
+            -2.0195177740878028
+          ],
+          "right": [
+            14.465283438105091,
+            8.390023009943777,
+            -1.9336368809612932
+          ],
+          "support_span_m": 3.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 236.0,
+          "center": [
+            12.262555908274507,
+            7.910202689081337,
+            -1.701110192108154
+          ],
+          "left": [
+            12.546842298428299,
+            6.437388631444281,
+            -1.7891336003463452
+          ],
+          "right": [
+            11.978269518120717,
+            9.383016746718392,
+            -1.5819314749562774
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 238.0,
+          "center": [
+            10.340822590984894,
+            7.131437384333798,
+            -1.5366988318489336
+          ],
+          "left": [
+            11.080742370407012,
+            5.826631375756307,
+            -1.593801203215238
+          ],
+          "right": [
+            9.600902811562776,
+            8.436243392911289,
+            -1.4565771637840532
+          ],
+          "support_span_m": 3.0,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 240.0,
+          "center": [
+            9.043967052845995,
+            5.530699508179129,
+            -1.413976844144837
+          ],
+          "left": [
+            9.369936810061374,
+            5.151564021339732,
+            -1.4504342959408614
+          ],
+          "right": [
+            8.717997295630616,
+            5.909834995018526,
+            -1.4090318186399022
+          ],
+          "support_span_m": 1.0,
+          "left_evidence": "curb_profile",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "total_sections": 5,
+      "section_preview_limited": false
+    },
+    {
+      "id": 15,
+      "from_m": 242.0,
+      "to_m": 248.0,
+      "minimum_support_span_m": 2.5,
+      "maximum_support_span_m": 4.5,
+      "paired_curb_sections": 0,
+      "curb_width_range_m": null,
+      "sections": [
+        {
+          "station_m": 242.0,
+          "center": [
+            6.732251108111468,
+            5.018646164738407,
+            -1.09663359119886
+          ],
+          "left": [
+            7.63054510759654,
+            4.149412082060379,
+            -1.1642036713844233
+          ],
+          "right": [
+            5.833957108626396,
+            5.887880247416435,
+            -1.0297205165941306
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 244.0,
+          "center": [
+            6.786505320338897,
+            2.1204467219005347,
+            -1.0380986944202566
+          ],
+          "left": [
+            8.304081588428302,
+            0.45928379475225656,
+            -1.2329210009334701
+          ],
+          "right": [
+            5.268929052249493,
+            3.781609649048813,
+            -0.9964256926470789
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 246.0,
+          "center": [
+            4.79635855951199,
+            1.2293725453692939,
+            -0.8689922612959868
+          ],
+          "left": [
+            5.4838304843089825,
+            0.18539823887707074,
+            -0.9218516828561022
+          ],
+          "right": [
+            4.108886634714998,
+            2.2733468518615174,
+            -0.823957792981328
+          ],
+          "support_span_m": 2.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "height_discontinuity",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        },
+        {
+          "station_m": 248.0,
+          "center": [
+            2.0977778931887205,
+            2.548960288760754,
+            -0.5707140822300952
+          ],
+          "left": [
+            2.8821268439228214,
+            0.4400988131103706,
+            -0.6454924769582
+          ],
+          "right": [
+            1.3134289424546195,
+            4.657821764411138,
+            -0.483471678638454
+          ],
+          "support_span_m": 4.5,
+          "left_evidence": "height_discontinuity",
+          "right_evidence": "curb_profile",
+          "intersects_trajectory": true,
+          "path_level_supported": true
+        }
+      ],
+      "review_required": true,
+      "total_sections": 4,
+      "section_preview_limited": false
+    }
+  ]
+}

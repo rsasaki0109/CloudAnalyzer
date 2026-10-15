@@ -1,0 +1,87 @@
+{
+  "schema": "cloudanalyzer.nclt_reference_accuracy_receipt.v1",
+  "sessions": {
+    "april": {
+      "job_dir": "/workspace/.cloudanalyzer-env/nclt-unused-frames-april/pointcloud-retry",
+      "results": {
+        "full": {
+          "original_ate_rmse_m": 0.16598976184220907,
+          "corrected_ate_rmse_m": 0.17094597426244013,
+          "delta_ate_rmse_m": 0.00495621242023106,
+          "original_rpe_rmse_m": 0.16968606237172099,
+          "corrected_rpe_rmse_m": 0.1698127654277353,
+          "retained_poses": 199,
+          "matched_poses": 199,
+          "fit_poses": 199,
+          "evaluated_poses": 199,
+          "reference_time_delta_s_max": 0.007075071334838867,
+          "report": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/april/comparison-full.json",
+            "sha256": "4ce9db881d0c1d57f52d655e979438b84227c5e34822b586c3d00b2c7a4f1828",
+            "bytes": 340453
+          }
+        },
+        "prefix-30": {
+          "original_ate_rmse_m": 0.28928320758241216,
+          "corrected_ate_rmse_m": 0.2791993727009607,
+          "delta_ate_rmse_m": -0.010083834881451481,
+          "original_rpe_rmse_m": 0.17646915422920564,
+          "corrected_rpe_rmse_m": 0.1764452953033592,
+          "retained_poses": 199,
+          "matched_poses": 199,
+          "fit_poses": 59,
+          "evaluated_poses": 140,
+          "reference_time_delta_s_max": 0.007075071334838867,
+          "report": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/april/comparison-prefix-30.json",
+            "sha256": "7809ccdb2fa237b24fd16cc261c5676dd8247169350ef78ccb1a54ec9dd58869",
+            "bytes": 244297
+          }
+        }
+      },
+      "unchanged_job_files": 240,
+      "unchanged_manifest_sha256": "ee52ab79529e4e3f084c20ed0fcf687169ab0b47e540d8ba8d9cba9aeaf9c8de"
+    },
+    "june": {
+      "job_dir": "/workspace/.cloudanalyzer-env/nclt-unused-frames-june",
+      "results": {
+        "full": {
+          "original_ate_rmse_m": 0.16084874386329426,
+          "corrected_ate_rmse_m": 0.1627088465115042,
+          "delta_ate_rmse_m": 0.0018601026482099325,
+          "original_rpe_rmse_m": 0.13839799893656168,
+          "corrected_rpe_rmse_m": 0.13832703189632548,
+          "retained_poses": 195,
+          "matched_poses": 195,
+          "fit_poses": 195,
+          "evaluated_poses": 195,
+          "reference_time_delta_s_max": 0.00557398796081543,
+          "report": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/june/comparison-full.json",
+            "sha256": "6de5259de9f93fa98c93f296bb82f586aadc47551d2f8ce0d3f2557cd839559a",
+            "bytes": 332842
+          }
+        },
+        "prefix-30": {
+          "original_ate_rmse_m": 0.2467344230223635,
+          "corrected_ate_rmse_m": 0.2521914996949861,
+          "delta_ate_rmse_m": 0.005457076672622602,
+          "original_rpe_rmse_m": 0.13659398552891247,
+          "corrected_rpe_rmse_m": 0.1370022709508869,
+          "retained_poses": 195,
+          "matched_poses": 195,
+          "fit_poses": 58,
+          "evaluated_poses": 137,
+          "reference_time_delta_s_max": 0.00557398796081543,
+          "report": {
+            "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/june/comparison-prefix-30.json",
+            "sha256": "90aa871b7c4f5da399d621a81479116bd7bb6a8f9c5024d6bc30747c33f08d5f",
+            "bytes": 238538
+          }
+        }
+      },
+      "unchanged_job_files": 760,
+      "unchanged_manifest_sha256": "abd879f13d852be8bdfd92a769a3bfdb12853237c9e07b60b771d971f5d1cbdb"
+    }
+  }
+}

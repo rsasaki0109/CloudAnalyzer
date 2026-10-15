@@ -1,0 +1,12 @@
+{
+  "protocol": "fixed_four_audits_no_new_retained_failure_locations_new_traces_fully_supported",
+  "holds": [
+    "editable:new_retained_failure_location:39:left",
+    "editable:retained_trace_regressed:39:left",
+    "reopened_osm:new_retained_failure_location:39:left",
+    "reopened_osm:retained_trace_regressed:39:left"
+  ],
+  "passes": false,
+  "independent_accuracy_established": false,
+  "road_semantics_verified": false
+}

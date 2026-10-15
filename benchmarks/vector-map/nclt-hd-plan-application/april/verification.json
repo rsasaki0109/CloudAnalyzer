@@ -1,0 +1,92 @@
+{
+  "source": {
+    "path": "repo/web/public/samples/nclt-2012-04-29.mcap",
+    "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+    "bytes": 10054898
+  },
+  "pointcloud": {
+    "map": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/local_map.ply",
+      "sha256": "378b85320a631871c24b12aba5a2561ac3f4c2c27d8c35e3fbdd9b7e81c1d23c",
+      "bytes": 21910254
+    },
+    "graph": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "trajectory": {
+      "path": "env/nclt-hd-height-april/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    }
+  },
+  "proposal": {
+    "path": "env/nclt-hd-height-april/pointcloud-retry/corridor-proposals-trajectory.json",
+    "sha256": "b7be2528b3da8addb5c135a2192d77a0f33c66ea0f720f19ba4588d22fe0cb92",
+    "bytes": 325159
+  },
+  "native": {
+    "version": "0.1.0",
+    "extension": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    }
+  },
+  "point_records": 684690,
+  "before_extent_m": 110.0,
+  "after_extent_m": 124.0,
+  "gained_m": 14,
+  "lost_m": 0,
+  "new_lane_ids": [
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63
+  ],
+  "added_edges": [
+    [
+      30,
+      57
+    ],
+    [
+      57,
+      58
+    ],
+    [
+      58,
+      59
+    ],
+    [
+      59,
+      60
+    ],
+    [
+      60,
+      61
+    ],
+    [
+      61,
+      62
+    ],
+    [
+      62,
+      63
+    ],
+    [
+      63,
+      33
+    ]
+  ],
+  "actual_new_attempts": 3,
+  "attempt_budget": 3,
+  "unsupported_interval_rejected_without_changes": true,
+  "four_audits_repeated_exactly": true,
+  "independent_accuracy_established": false,
+  "deployment_ready": false,
+  "license": "Derived NCLT maps and observations retain ODbL-1.0 and DBCL-1.0; see web/public/samples/ATTRIBUTION.md."
+}

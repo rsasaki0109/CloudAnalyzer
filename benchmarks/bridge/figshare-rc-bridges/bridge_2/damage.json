@@ -1,0 +1,90 @@
+{
+  "schema": "cloudanalyzer.bridge_damage.v1",
+  "source": {
+    "file": "Bridge_2.las",
+    "sha256": "27a97dbbb1592d70cd966e46d0a81003e95dbe5580343f667967aca276276087",
+    "bytes": 254269913,
+    "dataset": "https://doi.org/10.6084/m9.figshare.28091453.v2"
+  },
+  "underside": "no_girders_observed",
+  "candidates": [
+    {
+      "kind": "light",
+      "label_ja": "遊離石灰・白色変色の候補",
+      "area_m2": 0.0056,
+      "centre_m": [
+        -3.7371428571428575,
+        0.6342857142857143
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        -3.7800000000000002,
+        -3.7000000000000006
+      ],
+      "lateral_m": [
+        0.5799999999999998,
+        0.6799999999999999
+      ],
+      "contrast": 20.71299737311184,
+      "returns_share": 0.8592,
+      "contrast_unit": "L*",
+      "id": "D001"
+    },
+    {
+      "kind": "dark",
+      "label_ja": "漏水・暗色変色の候補",
+      "area_m2": 0.013600000000000001,
+      "centre_m": [
+        3.3511764705882348,
+        1.0105882352941176
+      ],
+      "element": "Ds0101",
+      "along_m": [
+        3.3,
+        3.42
+      ],
+      "lateral_m": [
+        0.9000000000000001,
+        1.1199999999999999
+      ],
+      "contrast": -18.365595698330154,
+      "returns_share": 0.7759999999999999,
+      "contrast_unit": "L*",
+      "id": "D002"
+    }
+  ],
+  "thresholds": {
+    "cell_m": 0.02,
+    "background_m": 0.5,
+    "light_dL": 15.0,
+    "dark_dL": -15.0,
+    "rust_db_da": [
+      12.0,
+      4.0
+    ],
+    "recess_m": 0.012,
+    "min_area_m2": 0.005,
+    "member_margin_m": 0.15,
+    "edge_margin_m": 0.3,
+    "seam_elongation": 6.0,
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
+  },
+  "straight_seams_left_out": {
+    "regions": {},
+    "cells_along_m": {
+      "dark": 84.44,
+      "recess": 125.88000000000001
+    }
+  },
+  "soffit": {
+    "points": 1418933,
+    "cells_with_returns": 91210,
+    "cells_searched": 80452,
+    "area_searched_m2": 32.180800000000005,
+    "area_too_sparse_m2": 0.0048000000000000004
+  },
+  "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
+}

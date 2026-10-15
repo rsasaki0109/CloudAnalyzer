@@ -978,7 +978,9 @@ test("labels: added by clicking, edited, saved in a PNG and restored from a shar
   // Try a few spots until one hits a point.
   for (const [fx, fy] of [[0.5, 0.5], [0.45, 0.5], [0.5, 0.45], [0.55, 0.52]]) {
     await canvas.click({ position: { x: box.width * fx, y: box.height * fy } });
-    if ((await page.locator("#note-list li").count()) > 0) break;
+    // Point picking awaits the worker; let it finish before trying another spot.
+    try { await expect(page.locator("#note-list li")).toHaveCount(1, { timeout: 5000 }); break; }
+    catch { /* A miss leaves the list empty; try the next spot. */ }
   }
   const input = page.locator("#note-list input").first();
   await expect(input).toHaveValue(/^Z -?\d/);
@@ -2312,17 +2314,24 @@ test("vector map: source quality exposes unsupported edges without editing and i
   await expect(status(page)).toContainText("Opened draft.json: 1 lanes");
   const exportMap=async()=>{const wait=page.waitForEvent("download",d=>d.suggestedFilename()==="lanelet2_map.osm");await page.locator("#vm-export").click();return (await bytesOf(await wait)).toString();};
   const before=await exportMap();await expect(page.locator("#vm-undo")).toBeDisabled();
+  await page.locator("#vm-review-filter").selectOption("low-support");
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(0);
   await page.locator("#vm-quality summary").click();await page.locator("#vm-quality-check").click();
   await expect(page.locator("#vm-quality-report")).toContainText("1 lanes checked; 1 need source review; 0 omitted; 0 malformed");
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(1);
+  await expect(page.getByRole("button",{name:"View lane 3",exact:true})).toBeVisible();
   const issue=page.locator("#vm-quality-lanes button");await expect(issue).toContainText("centre 100%, left 0%");
   await issue.click();await expect(page.locator("#vm-lane-title")).toHaveText("Lane 3");
   expect(await exportMap()).toBe(before);await expect(page.locator("#vm-undo")).toBeDisabled();
   await page.locator("#vm-lane-speed").fill("20");await page.locator("#vm-lane-apply").click();
   await expect(page.locator("#vm-quality-report")).toContainText("has not been checked");await expect(issue).toHaveCount(0);
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(0);
   await page.locator("#vm-undo").click();expect(await exportMap()).toBe(before);
   await page.locator("#vm-quality-check").click();await expect(page.locator("#vm-quality-report")).toContainText("1 need source review");
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(1);
   await open(page,[{name:"other.ply",buffer:ply([[100000,100000,2]])}]);
   await expect(page.locator("#vm-quality-report")).toContainText("has not been checked");
+  await expect(page.locator("#vm-review-rows tr")).toHaveCount(0);
 });
 
 test("vector map: a shared reversed boundary can be dragged, cancelled, exported and undone", async ({ page }) => {
@@ -2360,14 +2369,22 @@ test("vector map: a shared reversed boundary can be dragged, cancelled, exported
   await page.locator("#vm-vertices").click();
   // Pressing off the centre of a handle must not snap it or add undo history.
   await page.mouse.click(x + 3, y + 2);
+  await expect(page.locator("#vm-boundary-editor")).toHaveAttribute("open", "");
+  await expect(page.locator("#vm-boundary")).toHaveValue("2");
+  await expect(page.locator("#vm-boundary-vertex")).toHaveValue("1");
+  await expect(page.locator("#vm-boundary-z")).toHaveValue("2");
+  await expect(page.locator("#vm-boundary-context")).toContainText("Used by lanes 4, 5");
+  await expect(page.locator("#vm-boundary-apply")).toBeDisabled();
   expect(await exportXml()).toBe(before);
   await expect(page.locator("#vm-undo")).toBeDisabled();
   await page.mouse.move(x, y);
   await page.mouse.down();
   await expect(page.locator("#vm-hint")).toContainText("Boundary 2, vertex 2");
+  await expect(page.locator("#vm-boundary-z")).toBeDisabled();
   await page.mouse.move(x + 10, y + 30, { steps: 6 });
   await page.keyboard.press("Escape");
   await page.mouse.up();
+  await expect(page.locator("#vm-boundary-z")).toBeEnabled();
   expect(await exportXml()).toBe(before);
   await expect(page.locator("#vm-undo")).toBeDisabled();
 

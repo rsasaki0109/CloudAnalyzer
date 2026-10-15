@@ -1,0 +1,233 @@
+{
+  "schema": "cloudanalyzer.evidence_files.v1",
+  "files": {
+    "README.md": {
+      "sha256": "5e7c750de567b9bbafac69b3c89bb10bc50e98c84f64d7906b50927036dff524",
+      "bytes": 8750
+    },
+    "april/addition/geometry-report.json": {
+      "sha256": "fada1602a0c3ca4c6c9126eb11894710949b7e1e7cf5a2c19f3f63d2827379f2",
+      "bytes": 14858
+    },
+    "april/addition/lanelet2_map.osm": {
+      "sha256": "e3a30d66333c7e127c4efa0f14cd7dff03027903b574476df9ee297cfec4426e",
+      "bytes": 2300
+    },
+    "april/addition/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "april/addition/report.json": {
+      "sha256": "18195e257ebf06ed63de2ad11203ea06acd0ad7755c66841b04febf721f25c38",
+      "bytes": 11647
+    },
+    "april/addition/source-quality.json": {
+      "sha256": "203af2c92d66ad2a5435b789e09365c22296df95f21dfe0496429b25fb787e73",
+      "bytes": 8923
+    },
+    "april/addition/vector_map.json": {
+      "sha256": "2b714058fb8286bb1e06d7f237975f8127fab4ad05534de0801212633d83d06d",
+      "bytes": 1658
+    },
+    "april/agent-actions.json": {
+      "sha256": "8276237e2109e55810e4c6504cd43c641db69ca26c0067e1a633e387ac20048d",
+      "bytes": 216870
+    },
+    "april/before/geometry-report.json": {
+      "sha256": "580b3b26fe91e447dc7f2b9d3e179f8655ccd4aa27624baf4a5170957f78ffc3",
+      "bytes": 88870
+    },
+    "april/before/lanelet2_map.osm": {
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "april/before/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "april/before/report.json": {
+      "sha256": "8d589530316d04e7dbea1453caa2aa248674096102bcc71f655fc119763853ea",
+      "bytes": 37268
+    },
+    "april/before/source-quality.json": {
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "april/before/vector_map.json": {
+      "sha256": "15207364b864bdb874a4a254031c3d7bae60d8097e72706f5e988f147055a558",
+      "bytes": 18383
+    },
+    "april/comparison.json": {
+      "sha256": "fef08fe523d8a885d2c6291e2776b80d775518edf939dd8b7da1c3c3bf86f7e1",
+      "bytes": 18550
+    },
+    "april/gaps.json": {
+      "sha256": "23221923654ace511f534ae811d023de68e038b23922e1ad41e76e35aaa0e911",
+      "bytes": 436430
+    },
+    "april/layout.json": {
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "april/patch/geometry-report.json": {
+      "sha256": "fada1602a0c3ca4c6c9126eb11894710949b7e1e7cf5a2c19f3f63d2827379f2",
+      "bytes": 14858
+    },
+    "april/patch/lanelet2_map.osm": {
+      "sha256": "d04c1bebf3a6e9a56360ab83e53416dff3dd038583009f58f43a2106b317dd68",
+      "bytes": 46791
+    },
+    "april/patch/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "april/patch/report.json": {
+      "sha256": "e598e1a411a0fd3966454c689d71a6318dd3954514a3fa1b49952f7f7325c01b",
+      "bytes": 35178
+    },
+    "april/patch/source-quality.json": {
+      "sha256": "c36ebb027fb77a2c1437947783651624b372e6dbed992cf29167ca89345073ce",
+      "bytes": 197519
+    },
+    "april/patch/vector_map.json": {
+      "sha256": "fcb2e4baefa80d3c8588df8b3e1381d0282abc67b310d9f6d44d1f4ab2edd61a",
+      "bytes": 19368
+    },
+    "april/patch-checks.json": {
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "april/patch-preview.json": {
+      "sha256": "96839003d1731d4172f80697ae78a5742cacafa54966ef9e0dab30a35da1c630",
+      "bytes": 12410
+    },
+    "april/pointcloud-processing.json": {
+      "sha256": "6dfce904c0338197bb6c5bda01ffe1b8d93b24c888a2635522691390d0effff5",
+      "bytes": 8257
+    },
+    "april/source-candidate.json": {
+      "sha256": "7b26f8e836c726834de9472b2ed047d3d570f928f117ada0b41a84722bed7671",
+      "bytes": 4694
+    },
+    "april/unused-frames.json": {
+      "sha256": "17c587f12dcbf5a7e6f779ba88460bb15ca858e949b3436b7565ca0e712ef5e3",
+      "bytes": 162666
+    },
+    "comparison.png": {
+      "sha256": "4050fb29aa265f4ae5e4577eefde62e40c3bfdbf54a56f4ebb9b3aee4a958d00",
+      "bytes": 400316
+    },
+    "june/addition/geometry-report.json": {
+      "sha256": "941bca8df8501393b78d1b01042fde072ee7ef855a6cfb66586f2e348fba5bd2",
+      "bytes": 20716
+    },
+    "june/addition/lanelet2_map.osm": {
+      "sha256": "c7b76b70ae7cec3a00774c935be47a8ed21c25ff3463596a8b06f62a09251734",
+      "bytes": 2787
+    },
+    "june/addition/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "june/addition/report.json": {
+      "sha256": "fbb4b985b761540f5f6d3651e6b16df1f527d0229b990f993d331803ec8b6811",
+      "bytes": 16832
+    },
+    "june/addition/source-quality.json": {
+      "sha256": "9750631092b2db22411a0bec7728bb6b2951e7ac8b18a301efd081a9b88f710d",
+      "bytes": 8923
+    },
+    "june/addition/vector_map.json": {
+      "sha256": "5e8f360579fdaf32a4852d7170ec6958ceef3cbbb2d821f7611933cafd9a7774",
+      "bytes": 1791
+    },
+    "june/agent-actions.json": {
+      "sha256": "90776863c736a17a7903fffa076ecdbb582e040b586eb786ce4cec06737a8750",
+      "bytes": 238991
+    },
+    "june/before/geometry-report.json": {
+      "sha256": "8b201ccfc3f2370ffb31972874d284b8fdb584aaa01fc0e863e675560572e329",
+      "bytes": 100425
+    },
+    "june/before/lanelet2_map.osm": {
+      "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+      "bytes": 53372
+    },
+    "june/before/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "june/before/report.json": {
+      "sha256": "396ee4b41561269acaef5cccdcfc374402b8a60dda21a3ad72ba807457179664",
+      "bytes": 46967
+    },
+    "june/before/source-quality.json": {
+      "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+      "bytes": 216939
+    },
+    "june/before/vector_map.json": {
+      "sha256": "603d708405f20d05a47b68f65e00362529d312a94376ca65082ba267de36eef7",
+      "bytes": 22406
+    },
+    "june/comparison.json": {
+      "sha256": "3a02a88ebdf19d8dde5575b1f92960f9afefef33f6e5b3c23da3b0ea4ea4b014",
+      "bytes": 18993
+    },
+    "june/gaps.json": {
+      "sha256": "3b25ab892b9b495d517032787cce75970ddd8d34e27205b12704f95ad33bcbbe",
+      "bytes": 633358
+    },
+    "june/layout.json": {
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "june/patch/geometry-report.json": {
+      "sha256": "941bca8df8501393b78d1b01042fde072ee7ef855a6cfb66586f2e348fba5bd2",
+      "bytes": 20716
+    },
+    "june/patch/lanelet2_map.osm": {
+      "sha256": "2be93a1bc12ff2cdf32cb7cf0948bcf71f5adbf10088fc781b8e3c93654f918d",
+      "bytes": 56086
+    },
+    "june/patch/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "june/patch/report.json": {
+      "sha256": "75a16f341949daf37f6a96db304cea07e3d4fd2e20bd87fdb74d906a53d05d39",
+      "bytes": 42137
+    },
+    "june/patch/source-quality.json": {
+      "sha256": "0c3ff52804decdb45dfa4c4bbde9cb640ea67ec266f0e1376a5a7d510eed9874",
+      "bytes": 219469
+    },
+    "june/patch/vector_map.json": {
+      "sha256": "cd043b533f9de8cd9bc7f7055416819ee755e21f8b3fc820a77ac45a9e0a8b58",
+      "bytes": 23524
+    },
+    "june/patch-checks.json": {
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "june/patch-preview.json": {
+      "sha256": "c16d3749e04a4f8af360818424f2562d9cd30c315e96e29eb891daa1fe90f28f",
+      "bytes": 12736
+    },
+    "june/pointcloud-processing.json": {
+      "sha256": "a36e17c345c84a32fda41fb4c232c01759e04d1749a824f94bd2929793f87065",
+      "bytes": 8405
+    },
+    "june/source-candidate.json": {
+      "sha256": "ecdd30da9ab996a75bca67e1c9059cc0e7806271c235a5973922e5dc9b8a4a7e",
+      "bytes": 3063
+    },
+    "june/unused-frames.json": {
+      "sha256": "673145ab275ab25482ec31126d0cb36d854ceb87c934cd6d39fa5e4d5873d41c",
+      "bytes": 142774
+    },
+    "verification.json": {
+      "sha256": "dfc22c1dfcb409ccdb15f2382e623fcef1cd4d5d73ebed437c48f5e0c6b15ee8",
+      "bytes": 17372
+    }
+  }
+}

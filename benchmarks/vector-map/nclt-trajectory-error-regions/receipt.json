@@ -1,0 +1,223 @@
+{
+  "schema": "cloudanalyzer.nclt_trajectory_regions_receipt.v1",
+  "sessions": {
+    "april": {
+      "report": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/april/comparison-prefix-30.json",
+        "sha256": "7809ccdb2fa237b24fd16cc261c5676dd8247169350ef78ccb1a54ec9dd58869",
+        "bytes": 244297
+      },
+      "pages": {
+        "regression": [
+          "april-regression-0.json",
+          "april-regression-8.json"
+        ],
+        "corrected_ate": [
+          "april-corrected_ate-0.json",
+          "april-corrected_ate-8.json"
+        ]
+      },
+      "top_windows": {
+        "regression": {
+          "window_id": 3,
+          "original_frame_ids": [
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114,
+            115,
+            116,
+            118,
+            120,
+            121
+          ],
+          "timestamp_range_s": [
+            1335706591.637924,
+            1335706602.038456
+          ],
+          "evaluated_poses": 12,
+          "unevaluated_retained_poses_within_frame_span": 0,
+          "corrected_graph_distance_range_m": [
+            116.23794995898669,
+            130.10939963082498
+          ],
+          "evaluated_corrected_pose_bounds_xy": [
+            -12.483247327040342,
+            -79.47043276378811,
+            0.48876821751856814,
+            -76.18460147728665
+          ],
+          "results": {
+            "original": {
+              "ate_rmse_m": 0.14467189738799915,
+              "rpe_translation_rmse_m": 0.1182531502317089
+            },
+            "corrected": {
+              "ate_rmse_m": 0.20696172308927882,
+              "rpe_translation_rmse_m": 0.11839154502752233
+            }
+          },
+          "ate_rmse_m_corrected_minus_original": 0.062289825701279666
+        },
+        "corrected_ate": {
+          "window_id": 6,
+          "original_frame_ids": [
+            151,
+            152,
+            153,
+            154,
+            156,
+            157,
+            158,
+            159,
+            160,
+            161,
+            162,
+            163
+          ],
+          "timestamp_range_s": [
+            1335706626.239683,
+            1335706635.840201
+          ],
+          "evaluated_poses": 12,
+          "unevaluated_retained_poses_within_frame_span": 0,
+          "corrected_graph_distance_range_m": [
+            163.2557285946543,
+            176.64329576393973
+          ],
+          "evaluated_corrected_pose_bounds_xy": [
+            15.097947329182794,
+            -49.00362344445712,
+            20.953640994445514,
+            -37.09718692152663
+          ],
+          "results": {
+            "original": {
+              "ate_rmse_m": 0.4108369748759655,
+              "rpe_translation_rmse_m": 0.1486044822241822
+            },
+            "corrected": {
+              "ate_rmse_m": 0.4274946696120088,
+              "rpe_translation_rmse_m": 0.14895816457083072
+            }
+          },
+          "ate_rmse_m_corrected_minus_original": 0.016657694736043338
+        }
+      },
+      "unchanged_job_files": 240,
+      "unchanged_manifest_sha256": "ee52ab79529e4e3f084c20ed0fcf687169ab0b47e540d8ba8d9cba9aeaf9c8de"
+    },
+    "june": {
+      "report": {
+        "path": "/workspace/.cloudanalyzer-env/nclt-reference-accuracy/june/comparison-prefix-30.json",
+        "sha256": "90aa871b7c4f5da399d621a81479116bd7bb6a8f9c5024d6bc30747c33f08d5f",
+        "bytes": 238538
+      },
+      "pages": {
+        "regression": [
+          "june-regression-0.json",
+          "june-regression-8.json"
+        ],
+        "corrected_ate": [
+          "june-corrected_ate-0.json",
+          "june-corrected_ate-8.json"
+        ]
+      },
+      "top_windows": {
+        "regression": {
+          "window_id": 8,
+          "original_frame_ids": [
+            181,
+            182,
+            184,
+            185,
+            186,
+            188,
+            189,
+            191,
+            192,
+            193,
+            194,
+            196
+          ],
+          "timestamp_range_s": [
+            1339761544.214602,
+            1339761556.21438
+          ],
+          "evaluated_poses": 12,
+          "unevaluated_retained_poses_within_frame_span": 0,
+          "corrected_graph_distance_range_m": [
+            195.3666695575454,
+            210.5888800634727
+          ],
+          "evaluated_corrected_pose_bounds_xy": [
+            24.240928991766378,
+            -22.909974980400875,
+            29.99151492125457,
+            -9.046178663305707
+          ],
+          "results": {
+            "original": {
+              "ate_rmse_m": 0.263463501388684,
+              "rpe_translation_rmse_m": 0.21838071625181807
+            },
+            "corrected": {
+              "ate_rmse_m": 0.3583356636892815,
+              "rpe_translation_rmse_m": 0.21822286546625527
+            }
+          },
+          "ate_rmse_m_corrected_minus_original": 0.09487216230059747
+        },
+        "corrected_ate": {
+          "window_id": 8,
+          "original_frame_ids": [
+            181,
+            182,
+            184,
+            185,
+            186,
+            188,
+            189,
+            191,
+            192,
+            193,
+            194,
+            196
+          ],
+          "timestamp_range_s": [
+            1339761544.214602,
+            1339761556.21438
+          ],
+          "evaluated_poses": 12,
+          "unevaluated_retained_poses_within_frame_span": 0,
+          "corrected_graph_distance_range_m": [
+            195.3666695575454,
+            210.5888800634727
+          ],
+          "evaluated_corrected_pose_bounds_xy": [
+            24.240928991766378,
+            -22.909974980400875,
+            29.99151492125457,
+            -9.046178663305707
+          ],
+          "results": {
+            "original": {
+              "ate_rmse_m": 0.263463501388684,
+              "rpe_translation_rmse_m": 0.21838071625181807
+            },
+            "corrected": {
+              "ate_rmse_m": 0.3583356636892815,
+              "rpe_translation_rmse_m": 0.21822286546625527
+            }
+          },
+          "ate_rmse_m_corrected_minus_original": 0.09487216230059747
+        }
+      },
+      "unchanged_job_files": 760,
+      "unchanged_manifest_sha256": "abd879f13d852be8bdfd92a769a3bfdb12853237c9e07b60b771d971f5d1cbdb"
+    }
+  }
+}

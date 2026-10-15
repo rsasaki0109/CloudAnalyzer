@@ -1,0 +1,400 @@
+{
+  "schema": "cloudanalyzer.mapping_trajectory_regions.v1",
+  "report": {
+    "path": "/workspace/.cloudanalyzer-env/nclt-motion-trial-evaluations/april/loops-only/comparison-prefix-30.json",
+    "sha256": "1bd1199c1a52bc6331646a47053285738c1cd226aee03405cd3208a9e14ad597",
+    "bytes": 243523
+  },
+  "job": {
+    "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/job.json",
+    "sha256": "4cebb7fe4badb55323325080b8c08be0177e6527e23b75d1898622dddd875809",
+    "bytes": 6169
+  },
+  "point_map": {
+    "path": "/workspace/.cloudanalyzer-env/nclt-motion-trials/april/loops-only/pointcloud/original-keyframes_map.ply",
+    "sha256": "2ea4616094840d1d90d019a09fe93f1f7f39a4ce67a57d8022fccdabdedde528",
+    "bytes": 20215982
+  },
+  "reference_provenance": {
+    "source": "https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-04-29.csv; original NCLT body ground truth transformed to synchronized Velodyne sensor origin; see preparation.json",
+    "license": "NCLT Open Database License (ODbL 1.0), contents DBCL 1.0",
+    "frame": "NCLT z-up world, synchronized Velodyne sensor origin, xyz metres; FLIP @ body_pose @ BODY_VEL @ FLIP",
+    "time_basis": "NCLT original microsecond timestamps / 1e6, same clock as bundled scan headers",
+    "used_for_generation": false
+  },
+  "reference_independence": "caller_declared_not_used_for_generation",
+  "protocol": {
+    "partition": "chronological_nonoverlapping_evaluated_retained_pose_windows",
+    "window_poses": 12,
+    "ranking": "regression",
+    "held_out_alignment": true,
+    "alignment_prefix_fraction": 0.3,
+    "bounds_frame": "unaligned_corrected_point_map_sensor_origins_only",
+    "rpe_translation": "within_window_adjacent_evaluated_poses_variable_time_interval"
+  },
+  "coverage": {
+    "original_poses": 236,
+    "retained_poses": 199,
+    "matched_poses": 199,
+    "evaluated_poses": 140,
+    "alignment_fitted_poses": 59,
+    "retained_pose_fraction": 1.0
+  },
+  "global_change": {
+    "ate_rmse_m_corrected_minus_original": -0.016309228944219767
+  },
+  "total_windows": 12,
+  "offset": 0,
+  "next_offset": 8,
+  "windows": [
+    {
+      "window_id": 3,
+      "original_frame_ids": [
+        108,
+        109,
+        110,
+        111,
+        112,
+        113,
+        114,
+        115,
+        116,
+        118,
+        120,
+        121
+      ],
+      "timestamp_range_s": [
+        1335706591.637924,
+        1335706602.038456
+      ],
+      "evaluated_poses": 12,
+      "unevaluated_retained_poses_within_frame_span": 0,
+      "corrected_graph_distance_range_m": [
+        116.23662307476327,
+        130.10818375795404
+      ],
+      "evaluated_corrected_pose_bounds_xy": [
+        -12.50862050661044,
+        -79.40299931746745,
+        0.46769143472303654,
+        -76.11326261864946
+      ],
+      "results": {
+        "original": {
+          "ate_rmse_m": 0.14467189738799915,
+          "rpe_translation_rmse_m": 0.1182531502317089
+        },
+        "corrected": {
+          "ate_rmse_m": 0.18418249370191878,
+          "rpe_translation_rmse_m": 0.11803113125622518
+        }
+      },
+      "ate_rmse_m_corrected_minus_original": 0.03951059631391962
+    },
+    {
+      "window_id": 4,
+      "original_frame_ids": [
+        122,
+        124,
+        126,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        133,
+        134,
+        136
+      ],
+      "timestamp_range_s": [
+        1335706602.838496,
+        1335706614.039066
+      ],
+      "evaluated_poses": 12,
+      "unevaluated_retained_poses_within_frame_span": 0,
+      "corrected_graph_distance_range_m": [
+        131.2500722811311,
+        146.03836733381806
+      ],
+      "evaluated_corrected_pose_bounds_xy": [
+        1.4671538977514587,
+        -77.75034463304218,
+        7.802672452432664,
+        -64.51483860123949
+      ],
+      "results": {
+        "original": {
+          "ate_rmse_m": 0.26328966235194823,
+          "rpe_translation_rmse_m": 0.13535041153037858
+        },
+        "corrected": {
+          "ate_rmse_m": 0.2891618306904232,
+          "rpe_translation_rmse_m": 0.13550198125180904
+        }
+      },
+      "ate_rmse_m_corrected_minus_original": 0.025872168338475
+    },
+    {
+      "window_id": 10,
+      "original_frame_ids": [
+        210,
+        211,
+        212,
+        214,
+        215,
+        216,
+        218,
+        220,
+        221,
+        223,
+        224,
+        225
+      ],
+      "timestamp_range_s": [
+        1335706673.447895,
+        1335706685.442685
+      ],
+      "evaluated_poses": 12,
+      "unevaluated_retained_poses_within_frame_span": 0,
+      "corrected_graph_distance_range_m": [
+        225.73129429270458,
+        240.65231762293308
+      ],
+      "evaluated_corrected_pose_bounds_xy": [
+        9.676479103068143,
+        1.7815341096261863,
+        18.52564391713159,
+        9.026582017794665
+      ],
+      "results": {
+        "original": {
+          "ate_rmse_m": 0.140660458209319,
+          "rpe_translation_rmse_m": 0.1056869423892189
+        },
+        "corrected": {
+          "ate_rmse_m": 0.1659346972535473,
+          "rpe_translation_rmse_m": 0.10591985617549678
+        }
+      },
+      "ate_rmse_m_corrected_minus_original": 0.02527423904422829
+    },
+    {
+      "window_id": 2,
+      "original_frame_ids": [
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        104,
+        106
+      ],
+      "timestamp_range_s": [
+        1335706580.437377,
+        1335706590.037847
+      ],
+      "evaluated_poses": 12,
+      "unevaluated_retained_poses_within_frame_span": 0,
+      "corrected_graph_distance_range_m": [
+        101.2091976643704,
+        113.89231223979247
+      ],
+      "evaluated_corrected_pose_bounds_xy": [
+        -16.65887038582026,
+        -75.17137400243112,
+        -14.2738899265713,
+        -63.5558084440274
+      ],
+      "results": {
+        "original": {
+          "ate_rmse_m": 0.16463424886278877,
+          "rpe_translation_rmse_m": 0.12634456774401975
+        },
+        "corrected": {
+          "ate_rmse_m": 0.17573715393390424,
+          "rpe_translation_rmse_m": 0.12671050721655086
+        }
+      },
+      "ate_rmse_m_corrected_minus_original": 0.011102905071115471
+    },
+    {
+      "window_id": 5,
+      "original_frame_ids": [
+        137,
+        138,
+        139,
+        140,
+        141,
+        142,
+        143,
+        144,
+        145,
+        146,
+        148,
+        149
+      ],
+      "timestamp_range_s": [
+        1335706614.839107,
+        1335706624.639615
+      ],
+      "evaluated_poses": 12,
+      "unevaluated_retained_poses_within_frame_span": 0,
+      "corrected_graph_distance_range_m": [
+        147.24158540505744,
+        160.93658087160125
+      ],
+      "evaluated_corrected_pose_bounds_xy": [
+        8.410085192468035,
+        -63.47667013670925,
+        13.994100020839923,
+        -50.998676734712035
+      ],
+      "results": {
+        "original": {
+          "ate_rmse_m": 0.36908292737101506,
+          "rpe_translation_rmse_m": 0.10855645983335331
+        },
+        "corrected": {
+          "ate_rmse_m": 0.37553941560287896,
+          "rpe_translation_rmse_m": 0.1084260928850224
+        }
+      },
+      "ate_rmse_m_corrected_minus_original": 0.006456488231863899
+    },
+    {
+      "window_id": 11,
+      "original_frame_ids": [
+        226,
+        227,
+        228,
+        230,
+        231,
+        232,
+        234,
+        235
+      ],
+      "timestamp_range_s": [
+        1335706686.242724,
+        1335706693.443099
+      ],
+      "evaluated_poses": 8,
+      "unevaluated_retained_poses_within_frame_span": 0,
+      "corrected_graph_distance_range_m": [
+        241.8288241325458,
+        251.30866577580508
+      ],
+      "evaluated_corrected_pose_bounds_xy": [
+        1.6456399355378577,
+        -0.08577826538816953,
+        8.736842184090902,
+        5.858439857345434
+      ],
+      "results": {
+        "original": {
+          "ate_rmse_m": 0.17581336224800456,
+          "rpe_translation_rmse_m": 0.20207305786291274
+        },
+        "corrected": {
+          "ate_rmse_m": 0.17353187591291075,
+          "rpe_translation_rmse_m": 0.202762515630986
+        }
+      },
+      "ate_rmse_m_corrected_minus_original": -0.002281486335093813
+    },
+    {
+      "window_id": 0,
+      "original_frame_ids": [
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "timestamp_range_s": [
+        1335706560.43635,
+        1335706569.2368
+      ],
+      "evaluated_poses": 12,
+      "unevaluated_retained_poses_within_frame_span": 0,
+      "corrected_graph_distance_range_m": [
+        73.83426252845145,
+        86.29136260145866
+      ],
+      "evaluated_corrected_pose_bounds_xy": [
+        -7.937751848436302,
+        -50.16699264791821,
+        -2.497485732336097,
+        -39.14027799189221
+      ],
+      "results": {
+        "original": {
+          "ate_rmse_m": 0.1800283111756403,
+          "rpe_translation_rmse_m": 0.1722559882214185
+        },
+        "corrected": {
+          "ate_rmse_m": 0.17153958952882198,
+          "rpe_translation_rmse_m": 0.1722191388062049
+        }
+      },
+      "ate_rmse_m_corrected_minus_original": -0.008488721646818326
+    },
+    {
+      "window_id": 6,
+      "original_frame_ids": [
+        151,
+        152,
+        153,
+        154,
+        156,
+        157,
+        158,
+        159,
+        160,
+        161,
+        162,
+        163
+      ],
+      "timestamp_range_s": [
+        1335706626.239683,
+        1335706635.840201
+      ],
+      "evaluated_poses": 12,
+      "unevaluated_retained_poses_within_frame_span": 0,
+      "corrected_graph_distance_range_m": [
+        163.25479578897688,
+        176.64225955290897
+      ],
+      "evaluated_corrected_pose_bounds_xy": [
+        15.093044571151275,
+        -48.95771695202778,
+        20.958687335824905,
+        -37.058873207223385
+      ],
+      "results": {
+        "original": {
+          "ate_rmse_m": 0.4108369748759655,
+          "rpe_translation_rmse_m": 0.1486044822241822
+        },
+        "corrected": {
+          "ate_rmse_m": 0.40099399256885415,
+          "rpe_translation_rmse_m": 0.14892256563166675
+        }
+      },
+      "ate_rmse_m_corrected_minus_original": -0.009842982307111336
+    }
+  ],
+  "guidance": "Review exact frames and source-supported map observations. Bounds are sensor-origin envelopes, not repair permissions. Error ranking cannot establish cause; density/HD-only repairs freeze motion and cannot fix trajectory error. Reference uncertainty and sensor correlation remain uncalibrated. No quality/adoption or attempts change."
+}

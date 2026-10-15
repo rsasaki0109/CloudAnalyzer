@@ -1,0 +1,764 @@
+{
+  "protocol": {
+    "model": "interpolated_odometry_correction_with_two_sided_icp_check",
+    "maximum_raw_frames": 4096,
+    "maximum_unused_frames": 256,
+    "maximum_selected_frames": 64,
+    "maximum_bracket_seconds": 4.0,
+    "maximum_bracket_travel_m": 3.0,
+    "maximum_scan_points": 6000,
+    "maximum_total_raw_returns": 5000000,
+    "neighbor_distance_m": 0.75,
+    "minimum_overlap_fraction": 0.65,
+    "icp_overlap": 0.6,
+    "icp_max_iterations": 30,
+    "maximum_icp_rms_m": 0.5,
+    "maximum_pose_translation_m": 0.25,
+    "maximum_pose_rotation_deg": 1.5,
+    "minimum_gap_returns": 3,
+    "gap_radius_m": 0.75,
+    "pose_update_applied": false,
+    "independent_accuracy_established": false
+  },
+  "inputs": {
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "layout": {
+      "path": "run/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "correction_report": {
+      "path": "run/pointcloud-report.json",
+      "sha256": "1189226fb0403a8f938688a1b9a6be855b7d56c6220e112f0f7a33ffc716f6ad",
+      "bytes": 1946
+    },
+    "proposal": {
+      "path": "run/corridor-proposals-trajectory.json",
+      "sha256": "ae0f62c21d789fb551859e0768efef3acdb256b55d75244d0bc73a76d93cf1ac",
+      "bytes": 393257
+    },
+    "audits": {
+      "path": "run/candidate-03/source-quality.json",
+      "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+      "bytes": 216939
+    },
+    "pointcloud_map": {
+      "path": "run/pointcloud/trajectory_map.ply",
+      "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+      "bytes": 20653998
+    },
+    "pointcloud_trajectory": {
+      "path": "run/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "pointcloud_graph": {
+      "path": "run/pointcloud/trajectory_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "parent_map": {
+      "path": "run/candidate-03/lanelet2_map.osm",
+      "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+      "bytes": 53372
+    },
+    "parent_projector": {
+      "path": "run/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "run/candidate-03/vector_map.json",
+      "sha256": "2c9a4b667fb5441bf6a225e6f60777a7f25646c34751d1380a1a6ae46c229322",
+      "bytes": 22406
+    },
+    "parent_report": {
+      "path": "run/candidate-03/report.json",
+      "sha256": "2b2449bbcdfe057b445a523ad88b06791e27aefabbf437d6911e45cc1bd88724",
+      "bytes": 48866
+    },
+    "geometry_editable_map": {
+      "path": "run/geometry-01/vector_map.json",
+      "sha256": "8ebae5e0483bdfa43d6f0d9985f95cb316ea808bb0c89047ae9cf1e1e29457aa",
+      "bytes": 37479
+    },
+    "geometry_report": {
+      "path": "run/geometry-01/report.json",
+      "sha256": "855ec102ad523dc060cf12976a2db0200fb41730027f2b9bf70132db23822708",
+      "bytes": 100742
+    },
+    "gap_evidence": {
+      "path": "run/gaps-03.json",
+      "sha256": "ed888b902626153fe503e4d5b5b0b48a0c081b712e050f73fe601bc07b15c016",
+      "bytes": 634116
+    },
+    "raw_manifest": {
+      "path": "run/gap-source/manifest.json",
+      "sha256": "1ede7f93ce3a16cdd122181dd82c844651d1784a73ea8a9262c7587845fca3b6",
+      "bytes": 58586
+    },
+    "source_motion_odometry_report": {
+      "path": "run/odometry-report.json",
+      "sha256": "13221abe1bad4f8ffcc1c231f38f555746dad028f631ae95b3cd8558930f6916",
+      "bytes": 474
+    },
+    "source_motion_trajectory": {
+      "path": "run/odometry/trajectory.tum",
+      "sha256": "e3c467ee64877108ce71d6d4451cff5cbbb4f8ab7493a0778afea02d312f1409",
+      "bytes": 20406
+    }
+  },
+  "frames": [
+    {
+      "frame_id": 195,
+      "raw_frame": {
+        "path": "run/gap-source/scans/frame_000195.bin",
+        "sha256": "251c337c76195d2a889b54b07bd8e8dfc2c7bef959992e1ff3d82c2e642ef38e",
+        "bytes": 66352
+      },
+      "timestamp_s": 1339761555.414394,
+      "raw_returns": 4147,
+      "bracket": {
+        "before_frame_id": 194,
+        "after_frame_id": 196,
+        "seconds": 1.5999641418457031,
+        "travel_m": 1.9651685165739905
+      },
+      "holds": [],
+      "gap_observations": [
+        {
+          "gap_id": 2,
+          "from_m": 18.0,
+          "to_m": 22.0,
+          "profiles": [
+            {
+              "station_m": 22.0,
+              "returns": 4
+            }
+          ]
+        },
+        {
+          "gap_id": 3,
+          "from_m": 22.0,
+          "to_m": 28.0,
+          "profiles": [
+            {
+              "station_m": 22.0,
+              "returns": 4
+            }
+          ]
+        },
+        {
+          "gap_id": 7,
+          "from_m": 40.0,
+          "to_m": 44.0,
+          "profiles": [
+            {
+              "station_m": 44.0,
+              "returns": 12
+            }
+          ]
+        },
+        {
+          "gap_id": 8,
+          "from_m": 44.0,
+          "to_m": 48.0,
+          "profiles": [
+            {
+              "station_m": 44.0,
+              "returns": 12
+            },
+            {
+              "station_m": 46.0,
+              "returns": 27
+            },
+            {
+              "station_m": 48.0,
+              "returns": 23
+            }
+          ]
+        },
+        {
+          "gap_id": 25,
+          "from_m": 202.0,
+          "to_m": 206.0,
+          "profiles": [
+            {
+              "station_m": 204.0,
+              "returns": 7
+            }
+          ]
+        },
+        {
+          "gap_id": 29,
+          "from_m": 214.0,
+          "to_m": 220.0,
+          "profiles": [
+            {
+              "station_m": 216.0,
+              "returns": 3
+            }
+          ]
+        }
+      ],
+      "registration": {
+        "before": {
+          "converged": true,
+          "rms_initial_m": 0.29898812174584366,
+          "rms_final_m": 0.29817465177427466,
+          "pose_translation_at_sensor_m": 0.031088675310084593,
+          "pose_rotation_deg": 0.16302925844020905,
+          "initial_overlap_fraction": 0.7632023149264529,
+          "registered_overlap_fraction": 0.7644080057873162,
+          "moving_sample_points": 4147,
+          "reference_sample_points": 4213,
+          "holds": [],
+          "passes": true
+        },
+        "after": {
+          "converged": true,
+          "rms_initial_m": 0.35370407420425953,
+          "rms_final_m": 0.3535950742260228,
+          "pose_translation_at_sensor_m": 0.024131441886329874,
+          "pose_rotation_deg": 0.11421817111493172,
+          "initial_overlap_fraction": 0.7325777670605257,
+          "registered_overlap_fraction": 0.7325777670605257,
+          "moving_sample_points": 4147,
+          "reference_sample_points": 3833,
+          "holds": [],
+          "passes": true
+        }
+      },
+      "pose_hypothesis": [
+        [
+          0.47315621964712634,
+          -0.8774816862413202,
+          0.0784160833013865,
+          29.524816993878616
+        ],
+        [
+          0.8774942348557355,
+          0.47732281919898834,
+          0.04654883529023593,
+          -9.912678456359295
+        ],
+        [
+          -0.0782755364350062,
+          0.046784790082028974,
+          0.9958333815517496,
+          -3.3103845362163176
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "eligible": true
+    },
+    {
+      "frame_id": 198,
+      "raw_frame": {
+        "path": "run/gap-source/scans/frame_000198.bin",
+        "sha256": "f5b39687adfc46f86e4e731c344f89037551c3f463e7ce2a181f52e504982a9f",
+        "bytes": 60384
+      },
+      "timestamp_s": 1339761557.814354,
+      "raw_returns": 3774,
+      "bracket": {
+        "before_frame_id": 197,
+        "after_frame_id": 199,
+        "seconds": 1.5999560356140137,
+        "travel_m": 1.023989943982184
+      },
+      "holds": [],
+      "gap_observations": [
+        {
+          "gap_id": 3,
+          "from_m": 22.0,
+          "to_m": 28.0,
+          "profiles": [
+            {
+              "station_m": 24.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 5,
+          "from_m": 32.0,
+          "to_m": 34,
+          "profiles": [
+            {
+              "station_m": 34.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 7,
+          "from_m": 40.0,
+          "to_m": 44.0,
+          "profiles": [
+            {
+              "station_m": 44.0,
+              "returns": 7
+            }
+          ]
+        },
+        {
+          "gap_id": 8,
+          "from_m": 44.0,
+          "to_m": 48.0,
+          "profiles": [
+            {
+              "station_m": 44.0,
+              "returns": 7
+            },
+            {
+              "station_m": 46.0,
+              "returns": 35
+            },
+            {
+              "station_m": 48.0,
+              "returns": 24
+            }
+          ]
+        },
+        {
+          "gap_id": 23,
+          "from_m": 190,
+          "to_m": 196.0,
+          "profiles": [
+            {
+              "station_m": 196.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 24,
+          "from_m": 196.0,
+          "to_m": 200.0,
+          "profiles": [
+            {
+              "station_m": 196.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 25,
+          "from_m": 202.0,
+          "to_m": 206.0,
+          "profiles": [
+            {
+              "station_m": 204.0,
+              "returns": 4
+            }
+          ]
+        },
+        {
+          "gap_id": 29,
+          "from_m": 214.0,
+          "to_m": 220.0,
+          "profiles": [
+            {
+              "station_m": 216.0,
+              "returns": 3
+            },
+            {
+              "station_m": 218.0,
+              "returns": 3
+            },
+            {
+              "station_m": 220.0,
+              "returns": 3
+            }
+          ]
+        }
+      ],
+      "registration": {
+        "before": {
+          "converged": true,
+          "rms_initial_m": 0.36925886281971526,
+          "rms_final_m": 0.3638794075023356,
+          "pose_translation_at_sensor_m": 0.20911217678353933,
+          "pose_rotation_deg": 0.8077629469577323,
+          "initial_overlap_fraction": 0.7511923688394276,
+          "registered_overlap_fraction": 0.7435082140964494,
+          "moving_sample_points": 3774,
+          "reference_sample_points": 3709,
+          "holds": [],
+          "passes": true
+        },
+        "after": {
+          "converged": true,
+          "rms_initial_m": 0.35287639694041306,
+          "rms_final_m": 0.3473212327508686,
+          "pose_translation_at_sensor_m": 0.06454628736371766,
+          "pose_rotation_deg": 0.34226512162437495,
+          "initial_overlap_fraction": 0.771595124536301,
+          "registered_overlap_fraction": 0.7771595124536301,
+          "moving_sample_points": 3774,
+          "reference_sample_points": 3843,
+          "holds": [],
+          "passes": true
+        }
+      },
+      "pose_hypothesis": [
+        [
+          -0.28243554360486645,
+          -0.9576452888560524,
+          0.056086223267681055,
+          30.066406756278685
+        ],
+        [
+          0.9579382549977593,
+          -0.2784577366528475,
+          0.06939444149225121,
+          -7.5268892915562535
+        ],
+        [
+          -0.050837617179326576,
+          0.07332659565247716,
+          0.9960114191361195,
+          -3.3909097960379286
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "eligible": true
+    },
+    {
+      "frame_id": 210,
+      "raw_frame": {
+        "path": "run/gap-source/scans/frame_000210.bin",
+        "sha256": "82080654b630e33b0523d938206efe5c8e9be82d28769b6aa6d9fbd73755cb30",
+        "bytes": 93200
+      },
+      "timestamp_s": 1339761567.414171,
+      "raw_returns": 5825,
+      "bracket": {
+        "before_frame_id": 209,
+        "after_frame_id": 211,
+        "seconds": 1.5999670028686523,
+        "travel_m": 1.870070602854243
+      },
+      "holds": [],
+      "gap_observations": [
+        {
+          "gap_id": 2,
+          "from_m": 18.0,
+          "to_m": 22.0,
+          "profiles": [
+            {
+              "station_m": 20.0,
+              "returns": 3
+            },
+            {
+              "station_m": 22.0,
+              "returns": 4
+            }
+          ]
+        },
+        {
+          "gap_id": 3,
+          "from_m": 22.0,
+          "to_m": 28.0,
+          "profiles": [
+            {
+              "station_m": 22.0,
+              "returns": 4
+            },
+            {
+              "station_m": 24.0,
+              "returns": 4
+            },
+            {
+              "station_m": 26.0,
+              "returns": 3
+            },
+            {
+              "station_m": 28.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 4,
+          "from_m": 28.0,
+          "to_m": 32.0,
+          "profiles": [
+            {
+              "station_m": 28.0,
+              "returns": 3
+            },
+            {
+              "station_m": 30.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 7,
+          "from_m": 40.0,
+          "to_m": 44.0,
+          "profiles": [
+            {
+              "station_m": 44.0,
+              "returns": 8
+            }
+          ]
+        },
+        {
+          "gap_id": 8,
+          "from_m": 44.0,
+          "to_m": 48.0,
+          "profiles": [
+            {
+              "station_m": 44.0,
+              "returns": 8
+            },
+            {
+              "station_m": 46.0,
+              "returns": 19
+            },
+            {
+              "station_m": 48.0,
+              "returns": 27
+            }
+          ]
+        },
+        {
+          "gap_id": 25,
+          "from_m": 202.0,
+          "to_m": 206.0,
+          "profiles": [
+            {
+              "station_m": 202.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 30,
+          "from_m": 222,
+          "to_m": 232,
+          "profiles": [
+            {
+              "station_m": 230.0,
+              "returns": 3
+            }
+          ]
+        }
+      ],
+      "registration": {
+        "before": {
+          "converged": true,
+          "rms_initial_m": 0.3438134625392126,
+          "rms_final_m": 0.3410028677217409,
+          "pose_translation_at_sensor_m": 0.08962026336002138,
+          "pose_rotation_deg": 0.21516203606672732,
+          "initial_overlap_fraction": 0.7891845493562232,
+          "registered_overlap_fraction": 0.7910729613733906,
+          "moving_sample_points": 5825,
+          "reference_sample_points": 5745,
+          "holds": [],
+          "passes": true
+        },
+        "after": {
+          "converged": true,
+          "rms_initial_m": 0.4377295526539898,
+          "rms_final_m": 0.43309484188757896,
+          "pose_translation_at_sensor_m": 0.09493310951878327,
+          "pose_rotation_deg": 0.222755275047464,
+          "initial_overlap_fraction": 0.680343347639485,
+          "registered_overlap_fraction": 0.6851502145922747,
+          "moving_sample_points": 5825,
+          "reference_sample_points": 3037,
+          "holds": [],
+          "passes": true
+        }
+      },
+      "pose_hypothesis": [
+        [
+          -0.699421902743851,
+          -0.7132314672751084,
+          0.04593338710314366,
+          21.623678438393032
+        ],
+        [
+          0.71454989749755,
+          -0.6964643771542788,
+          0.06599860105595937,
+          1.7857629261449397
+        ],
+        [
+          -0.015081311229869098,
+          0.07898256417525802,
+          0.9967619116960124,
+          -2.782559738129223
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "eligible": true
+    },
+    {
+      "frame_id": 216,
+      "raw_frame": {
+        "path": "run/gap-source/scans/frame_000216.bin",
+        "sha256": "66c93b49f91b38b509f380103fccbdf7c89c0d7dfd396a50264731695f1ec100",
+        "bytes": 102464
+      },
+      "timestamp_s": 1339761572.214099,
+      "raw_returns": 6404,
+      "bracket": {
+        "before_frame_id": 215,
+        "after_frame_id": 217,
+        "seconds": 1.5999717712402344,
+        "travel_m": 2.1358076955152994
+      },
+      "holds": [],
+      "gap_observations": [
+        {
+          "gap_id": 1,
+          "from_m": 8.0,
+          "to_m": 14.0,
+          "profiles": [
+            {
+              "station_m": 14.0,
+              "returns": 4
+            }
+          ]
+        },
+        {
+          "gap_id": 3,
+          "from_m": 22.0,
+          "to_m": 28.0,
+          "profiles": [
+            {
+              "station_m": 28.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 4,
+          "from_m": 28.0,
+          "to_m": 32.0,
+          "profiles": [
+            {
+              "station_m": 28.0,
+              "returns": 3
+            }
+          ]
+        },
+        {
+          "gap_id": 7,
+          "from_m": 40.0,
+          "to_m": 44.0,
+          "profiles": [
+            {
+              "station_m": 44.0,
+              "returns": 7
+            }
+          ]
+        },
+        {
+          "gap_id": 8,
+          "from_m": 44.0,
+          "to_m": 48.0,
+          "profiles": [
+            {
+              "station_m": 44.0,
+              "returns": 7
+            },
+            {
+              "station_m": 46.0,
+              "returns": 18
+            },
+            {
+              "station_m": 48.0,
+              "returns": 15
+            }
+          ]
+        }
+      ],
+      "registration": {
+        "before": {
+          "converged": true,
+          "rms_initial_m": 0.4304378034847902,
+          "rms_final_m": 0.42144993723035185,
+          "pose_translation_at_sensor_m": 0.07830769307114112,
+          "pose_rotation_deg": 0.4202836348382189,
+          "initial_overlap_fraction": 0.6789506558401,
+          "registered_overlap_fraction": 0.6898813241723922,
+          "moving_sample_points": 3202,
+          "reference_sample_points": 3212,
+          "holds": [],
+          "passes": true
+        },
+        "after": {
+          "converged": true,
+          "rms_initial_m": 0.44727414943131677,
+          "rms_final_m": 0.4460300885757266,
+          "pose_translation_at_sensor_m": 0.059144943582455936,
+          "pose_rotation_deg": 0.30016474590518566,
+          "initial_overlap_fraction": 0.6533416614615865,
+          "registered_overlap_fraction": 0.6583385384134915,
+          "moving_sample_points": 3202,
+          "reference_sample_points": 3120,
+          "holds": [],
+          "passes": true
+        }
+      },
+      "pose_hypothesis": [
+        [
+          -0.7503135105757277,
+          -0.6606414306949386,
+          0.024135780428064774,
+          16.97736058939454
+        ],
+        [
+          0.661082046476317,
+          -0.7498354835402902,
+          0.02678199862936881,
+          6.0884319429136475
+        ],
+        [
+          0.00040456669652412215,
+          0.03605062653052413,
+          0.9993498830002157,
+          -2.38416902657473
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "eligible": true
+    }
+  ]
+}

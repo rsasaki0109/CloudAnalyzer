@@ -1,0 +1,1689 @@
+{
+  "schema": "cloudanalyzer.local_point_preview.v1",
+  "request": {
+    "candidate_id": 1,
+    "gap_ids": [
+      1
+    ],
+    "bounds_xy": [
+      7,
+      5,
+      15,
+      10
+    ],
+    "strategy": "density",
+    "protect_retained": true
+  },
+  "inputs": {
+    "source": {
+      "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "native": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "layout": {
+      "path": "run/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "correction_report": {
+      "path": "original/pointcloud-retry/pointcloud-report.json",
+      "sha256": "29660fecdd88886b4780b772cad9d8bd5d259ce2d9bceb47c21c07157ea82f81",
+      "bytes": 4354
+    },
+    "proposal": {
+      "path": "original/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "2c57c290bc1e629cc7b82471082e9a1c37c3d8a4ee26ca9ed2ad1ffacf88e0fe",
+      "bytes": 393753
+    },
+    "audits": {
+      "path": "original/pointcloud-retry/candidate-05/source-quality.json",
+      "sha256": "9b67a6e5f2a3a1bbdddd8bbbf6dd98874cdc2043bb62e2f668b16e37481211bd",
+      "bytes": 223979
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/layout-hypothesis.json": {
+      "path": "parent/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/gaps-01.json": {
+      "path": "parent/gaps-01.json",
+      "sha256": "1ee0229e514c2dcc91e4496ff449c9803abb352918314c7c9e0dd48fcdcaf1e1",
+      "bytes": 638022
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/local-points-01-b561b0441ade4f84.json": {
+      "path": "parent/local-points-01-b561b0441ade4f84.json",
+      "sha256": "7ef0df946e00ac83b866bac053262b5faaeb5984ec067ba3dfa8e6430874d63d",
+      "bytes": 31751
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/local-point-update.json": {
+      "path": "parent/pointcloud-retry/local-point-update.json",
+      "sha256": "f27f00c933a3016be7bd04a834959fcecf21a7380aa1289fe0cff77afa7e12f6",
+      "bytes": 4639
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/local-point-checks.json": {
+      "path": "parent/pointcloud-retry/local-point-checks.json",
+      "sha256": "b160f17c1017424f19e4f7cc7d493c2be37becaacf120a7fa628034c87ebc9b9",
+      "bytes": 1076
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/local-point-audits.json": {
+      "path": "parent/pointcloud-retry/local-point-audits.json",
+      "sha256": "100a49c804b49f0891c2f0d9679dec84e035b4865a7bfb3b4c4810c43a1db2c7",
+      "bytes": 229667
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/local_map.ply": {
+      "path": "parent/pointcloud-retry/local_map.ply",
+      "sha256": "269b93a701bb7a89a534cf7e272d074bae7eb394a18c69bd79c11bacb78430e7",
+      "bytes": 20823790
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed_map.ply": {
+      "path": "parent/pointcloud-retry/pointcloud/trajectory_fixed_fixed_map.ply",
+      "sha256": "d56675dd5bbc1c067644bba0c2c15de67db630967d14dc4a671f2254cc5b8842",
+      "bytes": 33742255
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local_map.ply": {
+      "path": "original/pointcloud-retry/local_map.ply",
+      "sha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad",
+      "bytes": 20682062
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/lanelet2_map.osm": {
+      "path": "original/pointcloud-retry/candidate-05/lanelet2_map.osm",
+      "sha256": "d2aa72a9a3b8847e8958aa6b69fa865d15f85a2169ac6906e374452fb130a275",
+      "bytes": 59622
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/map_projector_info.yaml": {
+      "path": "original/pointcloud-retry/candidate-05/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/vector_map.json": {
+      "path": "original/pointcloud-retry/candidate-05/vector_map.json",
+      "sha256": "2708c3e12ff877ff03dda686df2004af74f4774a58bbb119abf0fcdbd342fc81",
+      "bytes": 25328
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/report.json": {
+      "path": "original/pointcloud-retry/candidate-05/report.json",
+      "sha256": "64399b268ec4f9454025778027d110ba2b69bbb5b635d2e43c0fb4570e59c1ed",
+      "bytes": 75592
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05/source-quality.json": {
+      "path": "original/pointcloud-retry/candidate-05/source-quality.json",
+      "sha256": "9b67a6e5f2a3a1bbdddd8bbbf6dd98874cdc2043bb62e2f668b16e37481211bd",
+      "bytes": 223979
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04-patch-checks.json": {
+      "path": "original/pointcloud-retry/candidate-04-patch-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05-connection-checks.json": {
+      "path": "original/pointcloud-retry/candidate-05-connection-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/connections-04-region-cf1267e38c2728ce.json": {
+      "path": "original/pointcloud-retry/connections-04-region-cf1267e38c2728ce.json",
+      "sha256": "fe025806d62f79fbfc287084c690267bf2675cbaa2c00f9288778abc7d6ab248",
+      "bytes": 47048
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03-height-checks.json": {
+      "path": "original/pointcloud-retry/candidate-03-height-checks.json",
+      "sha256": "427df2928682d31e243236f60d17ad42d6877546f67b8c0288e36d94f55a3ece",
+      "bytes": 179
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03-height-audits.json": {
+      "path": "original/pointcloud-retry/candidate-03-height-audits.json",
+      "sha256": "f013b0e513351fd42c544b7ed64d0bc7e560e6c1424fc9f42bb4272dd8050217",
+      "bytes": 8923
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03-height-trial.json": {
+      "path": "original/pointcloud-retry/candidate-03-height-trial.json",
+      "sha256": "f6e436f57ba0a90b04d93a0f122b7ea308f295d9b55e5c21bfbf007912199070",
+      "bytes": 2113
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/continuation.json": {
+      "path": "parent/continuation.json",
+      "sha256": "e6c23fbe306b221783d555ecf617c613a8ed295e9bdf7f795f1eee13e822ef9d",
+      "bytes": 28311
+    },
+    "continuation_/workspace/CloudAnalyzer/web/public/samples/nclt-2012-06-15.mcap": {
+      "path": "repo/web/public/samples/nclt-2012-06-15.mcap",
+      "sha256": "3512558e00b456857ebe6125d9a979dc0d796183d98e09d224f8af80cc3115c4",
+      "bytes": 9387931
+    },
+    "continuation_/workspace/.cloudanalyzer-env/path-refinement-final-native/cloudanalyzer_core/_core.abi3.so": {
+      "path": "native/cloudanalyzer_core/_core.abi3.so",
+      "sha256": "2f6e6f587372d75ee4c31b5320a4f6f91b4dd7dccf1eba274dd14e0d7732d6c2",
+      "bytes": 7451080
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/corridor-proposals-trajectory.json": {
+      "path": "original/pointcloud-retry/corridor-proposals-trajectory.json",
+      "sha256": "2c57c290bc1e629cc7b82471082e9a1c37c3d8a4ee26ca9ed2ad1ffacf88e0fe",
+      "bytes": 393753
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/geometry-01/vector_map.json": {
+      "path": "original/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "3ed9b2bd4816b150d3b2619e3e6ee6035e02909bba39e49745ba26ac13006777",
+      "bytes": 2876
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/geometry-01/report.json": {
+      "path": "original/pointcloud-retry/geometry-01/report.json",
+      "sha256": "136a57592cf8a977fda47782130f8aef87aa35aec8c3d03a56039d75411a3eb2",
+      "bytes": 23902
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/lanelet2_map.osm": {
+      "path": "original/pointcloud-retry/candidate-04/lanelet2_map.osm",
+      "sha256": "7ca6abdd59d444d7f1ba30055fab9bf5c9e0951f2879150d759044215f5344eb",
+      "bytes": 56088
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/map_projector_info.yaml": {
+      "path": "original/pointcloud-retry/candidate-04/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/vector_map.json": {
+      "path": "original/pointcloud-retry/candidate-04/vector_map.json",
+      "sha256": "7e73313bf2801f1fd63783b0925ea6cf25205e48f38ae301cfb8208f4b5a6ca5",
+      "bytes": 23526
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/report.json": {
+      "path": "original/pointcloud-retry/candidate-04/report.json",
+      "sha256": "36b6fdcc5759ffeec34ef7fa64c046c011431f8821c0dc43c0db92a11a828c04",
+      "bytes": 50677
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04/source-quality.json": {
+      "path": "original/pointcloud-retry/candidate-04/source-quality.json",
+      "sha256": "8b593909f09f223d4556bd362d8829568f46cdc810b696fdc77d275479bc348f",
+      "bytes": 222819
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local-point-update.json": {
+      "path": "original/pointcloud-retry/local-point-update.json",
+      "sha256": "538b3775eee511fdf691a12d622f8b8654634bf260d7330d2b4e5bac31e28161",
+      "bytes": 3668
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local-point-checks.json": {
+      "path": "original/pointcloud-retry/local-point-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/local-point-audits.json": {
+      "path": "original/pointcloud-retry/local-point-audits.json",
+      "sha256": "6f4f59dfa864468d77ef6581c3ef0a68384c5941834b564680b0d4c3d89c1995",
+      "bytes": 216939
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/pointcloud/trajectory_fixed_map.ply": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_map.ply",
+      "sha256": "0aa80ff0a150fc8a7b31c8bdd411932c0990facc5df71512484463ef91d31e92",
+      "bytes": 30588910
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/gaps-03.json": {
+      "path": "original/gaps-03.json",
+      "sha256": "27cf3729f9223eae31e7fc4990b7cb1395feebce0eb8a7c67a804a7202c0142d",
+      "bytes": 634074
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/layout-hypothesis.json": {
+      "path": "original/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/layout-hypothesis.json": {
+      "path": "original/pointcloud-retry/layout-hypothesis.json",
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/lanelet2_map.osm": {
+      "path": "original/candidate-03/lanelet2_map.osm",
+      "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+      "bytes": 53372
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/map_projector_info.yaml": {
+      "path": "original/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/vector_map.json": {
+      "path": "original/candidate-03/vector_map.json",
+      "sha256": "be7aa8e0028b711c4742c1d362ef7aa4572b05eef0e19f0bfd79edb638072bf3",
+      "bytes": 22406
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/report.json": {
+      "path": "original/candidate-03/report.json",
+      "sha256": "c245791ecdc5ad1904e84a42c79e211e6f854f4596b64e914e37154dee38e45b",
+      "bytes": 48844
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03/source-quality.json": {
+      "path": "original/candidate-03/source-quality.json",
+      "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+      "bytes": 216939
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/geometry-01/vector_map.json": {
+      "path": "original/geometry-01/vector_map.json",
+      "sha256": "bcba276d0c5c404984fec0b4b9dd262dc1aadcf24c58a5654a0ebef89a9fc8b7",
+      "bytes": 37479
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/geometry-01/report.json": {
+      "path": "original/geometry-01/report.json",
+      "sha256": "4e5acbb7437cc54dc88a89d352a4b67c3456422fc86e1dc2e6dbdd05d178ebc6",
+      "bytes": 100727
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/lanelet2_map.osm": {
+      "path": "original/candidate-02/lanelet2_map.osm",
+      "sha256": "8435325e3a8f5215b9c0d7f5fe22439a3aa4844e6f176aecede80314ae829c4f",
+      "bytes": 45048
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/map_projector_info.yaml": {
+      "path": "original/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/vector_map.json": {
+      "path": "original/candidate-02/vector_map.json",
+      "sha256": "e474add91b9da49b295ef9777892676a2fe801aa2f6b59e5d11170966d5e752c",
+      "bytes": 18456
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/report.json": {
+      "path": "original/candidate-02/report.json",
+      "sha256": "8134c08ccea288a6a2def1f5b33e26a2d1d9e2363afee224937a242ea9697628",
+      "bytes": 39902
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-02/source-quality.json": {
+      "path": "original/candidate-02/source-quality.json",
+      "sha256": "dfcc77af9379a595488613e274627474c519e75eb3efd348506cbdc1cd94719a",
+      "bytes": 215299
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/connections-02.json": {
+      "path": "original/connections-02.json",
+      "sha256": "2ca8c7394c3592179aa0e1dd5a2cff6efef2fb04d3de2e447f3b39b83ee58cf4",
+      "bytes": 16924
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud/trajectory_map.ply": {
+      "path": "original/pointcloud/trajectory_map.ply",
+      "sha256": "a832862bbe092ba0280ce31e7f6c54a7172ddd41dc4d284914796b89df0889a4",
+      "bytes": 20653998
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud/trajectory_fixed_kitti.txt": {
+      "path": "original/pointcloud/trajectory_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud/trajectory_fixed.g2o": {
+      "path": "original/pointcloud/trajectory_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/corridor-proposals-trajectory.json": {
+      "path": "original/corridor-proposals-trajectory.json",
+      "sha256": "a4ca13d0c2281568464ea166fc79b5850d4683accfc9680017b4160645841a8c",
+      "bytes": 393248
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/lanelet2_map.osm": {
+      "path": "original/pointcloud-retry/candidate-03/lanelet2_map.osm",
+      "sha256": "800159200684c99fc3be17554597dce93d6f447bf0d222f5aa4deb0095336305",
+      "bytes": 2789
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/map_projector_info.yaml": {
+      "path": "original/pointcloud-retry/candidate-03/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/vector_map.json": {
+      "path": "original/pointcloud-retry/candidate-03/vector_map.json",
+      "sha256": "d1c73f14f731fa08292d2c99b81b293469a861c462fd2331bd570555b8baaffc",
+      "bytes": 1793
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/report.json": {
+      "path": "original/pointcloud-retry/candidate-03/report.json",
+      "sha256": "f0c5762cdfb92fbb7ed9b14f2c31bb3e3925cd802e0f001b268926bd19dd94cb",
+      "bytes": 26664
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-03/source-quality.json": {
+      "path": "original/pointcloud-retry/candidate-03/source-quality.json",
+      "sha256": "f013b0e513351fd42c544b7ed64d0bc7e560e6c1424fc9f42bb4272dd8050217",
+      "bytes": 8923
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/lanelet2_map.osm": {
+      "path": "original/pointcloud-retry/candidate-02/lanelet2_map.osm",
+      "sha256": "4dcaba7ffd8565ddbc6995f84edbaa2befd15cc402b085b34c436e726c9525a0",
+      "bytes": 2789
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/map_projector_info.yaml": {
+      "path": "original/pointcloud-retry/candidate-02/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/vector_map.json": {
+      "path": "original/pointcloud-retry/candidate-02/vector_map.json",
+      "sha256": "7de85b8a60105c95fc7a311f2305f3d4db240debdb08bf3decd89b0fd55c3dad",
+      "bytes": 1793
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/report.json": {
+      "path": "original/pointcloud-retry/candidate-02/report.json",
+      "sha256": "8be9b3271c4ec7fbf9581f1918a3eb1cbedbad5dbdd0a156e20206689fe5aaed",
+      "bytes": 17270
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-02/source-quality.json": {
+      "path": "original/pointcloud-retry/candidate-02/source-quality.json",
+      "sha256": "3c3fa004bc42072d42494fba776edaf201f78998b1d4324eb756fd8801c978f2",
+      "bytes": 9817
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-report.json": {
+      "path": "original/pointcloud-report.json",
+      "sha256": "88923d01a5c2d797545821b712958341960aab4bee2cb1711e61fcb835735cf6",
+      "bytes": 1928
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/gap-source/manifest.json": {
+      "path": "original/gap-source/manifest.json",
+      "sha256": "d2e6b6ed6edac42cc01fae999a8b56172601e97a7f392eb5c376c9d56982930a",
+      "bytes": 57872
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/local-points-03-7952149e3b736f89.json": {
+      "path": "original/local-points-03-7952149e3b736f89.json",
+      "sha256": "08c0965dcae760df920603e8ab0ef67dbe9e156a0cc58f685350362482eda3f3",
+      "bytes": 5467
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/heights-02.json": {
+      "path": "original/pointcloud-retry/heights-02.json",
+      "sha256": "96137345efa5f8e181c6c0f7ffb8278a467cce56e8ab3d534b724c3221c57c2e",
+      "bytes": 11764
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/patch-preview-03.json": {
+      "path": "original/pointcloud-retry/patch-preview-03.json",
+      "sha256": "e23d0eee1959fbd558f393db61424cd2f25ee83aea3095fdb5333c39e1996164",
+      "bytes": 25029
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-04-patch-audits.json": {
+      "path": "original/pointcloud-retry/candidate-04-patch-audits.json",
+      "sha256": "8b593909f09f223d4556bd362d8829568f46cdc810b696fdc77d275479bc348f",
+      "bytes": 222819
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/candidate-05-connection-audits.json": {
+      "path": "original/pointcloud-retry/candidate-05-connection-audits.json",
+      "sha256": "9b67a6e5f2a3a1bbdddd8bbbf6dd98874cdc2043bb62e2f668b16e37481211bd",
+      "bytes": 223979
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/corridor-proposals.json": {
+      "path": "original/corridor-proposals.json",
+      "sha256": "c5ec1e6e1466ef945b57946a5f2f528d9400900edd1e3e0188947a8c781ab009",
+      "bytes": 517306
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03-connection-checks.json": {
+      "path": "original/candidate-03-connection-checks.json",
+      "sha256": "295a682557a29a4e17e60e8eb1c2090cff1f56db8ff7e53e394570c6ff6f0522",
+      "bytes": 213
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/retry-comparison-04.json": {
+      "path": "original/retry-comparison-04.json",
+      "sha256": "c992a6db07114a490d1895e1c6df5f16d7b01c2fd1d41f8ead835eb4a03cb653",
+      "bytes": 20696
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/retry-comparison-05.json": {
+      "path": "original/retry-comparison-05.json",
+      "sha256": "d95de8bcdc3e02fa81e4cabf087feeee86c89a1a7de029be22dcbb7f54044715",
+      "bytes": 20580
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/odometry-report.json": {
+      "path": "original/odometry-report.json",
+      "sha256": "43545aa048453e0c158d3d75b4e679b541f765a6e4c9fe8044708bdab2182219",
+      "bytes": 462
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/odometry/trajectory.tum": {
+      "path": "original/odometry/trajectory.tum",
+      "sha256": "e3c467ee64877108ce71d6d4451cff5cbbb4f8ab7493a0778afea02d312f1409",
+      "bytes": 20406
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/candidate-03-connection-audits.json": {
+      "path": "original/candidate-03-connection-audits.json",
+      "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+      "bytes": 216939
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/corridor-proposals.json": {
+      "path": "original/pointcloud-retry/corridor-proposals.json",
+      "sha256": "01c739cd78b8a3fb0efb2bae3efad0eb9ef593cc90a4bf287361845ff2c4b044",
+      "bytes": 517706
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/connections-04.json": {
+      "path": "original/pointcloud-retry/connections-04.json",
+      "sha256": "d54cab8aded576e01492ad09ecc0aacfb53cbb9f8825d542fc41f67e311643e6",
+      "bytes": 42746
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/run.json": {
+      "path": "original/run.json",
+      "sha256": "b281ad5a818d06abf3a1260d175ed3058c06245dd01dfbc128ab7ac9f10e55b1",
+      "bytes": 1441189
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/job.json": {
+      "path": "original/job.json",
+      "sha256": "e3f9b64594bd186b1f26981d2c9f796d57061bc9925ea7a7b266b87d22626c58",
+      "bytes": 67187
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/job.json": {
+      "path": "original/pointcloud-retry/job.json",
+      "sha256": "6583dd14b05ee780db63e8d0f6369885e61277e0ac23c39bfc5faf94c50b6ab0",
+      "bytes": 178731
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/run.json": {
+      "path": "original/pointcloud-retry/run.json",
+      "sha256": "5c4ad57bdf7b9d882e9d133cadf63eb66b4d74787fa063efbfd115e9c891c3b6",
+      "bytes": 472761
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-hd-region-june/pointcloud-retry/pointcloud-report.json": {
+      "path": "original/pointcloud-retry/pointcloud-report.json",
+      "sha256": "29660fecdd88886b4780b772cad9d8bd5d259ce2d9bceb47c21c07157ea82f81",
+      "bytes": 4354
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/run.json": {
+      "path": "parent/run.json",
+      "sha256": "1d8dc59533c0b6e0b3eb020a5cbfb6415ddd494d2fd6d85b9e2efd8ff8716f3e",
+      "bytes": 295421
+    },
+    "continuation_/workspace/.cloudanalyzer-env/nclt-continuation-june/job.json": {
+      "path": "parent/job.json",
+      "sha256": "bf609cfb77587d47ca8792fd2e28a65ffac216378d2c4782a3f9d9d289b62fca",
+      "bytes": 129371
+    },
+    "continuation_continuation_manifest": {
+      "path": "run/continuation.json",
+      "sha256": "e2812f2dcdc6e6feb4fdbb3137a66394e8e5815e2f3cf2f4bf848e1f746b4ad7",
+      "bytes": 30634
+    },
+    "pointcloud_map": {
+      "path": "original/pointcloud-retry/local_map.ply",
+      "sha256": "944865739c31dd07e44c7c02f59f0f462dd5eef03d1eada6b0cce7d8cec8c7ad",
+      "bytes": 20682062
+    },
+    "pointcloud_graph": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_fixed.g2o",
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "pointcloud_trajectory": {
+      "path": "original/pointcloud-retry/pointcloud/trajectory_fixed_fixed_kitti.txt",
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "parent_map": {
+      "path": "original/pointcloud-retry/candidate-05/lanelet2_map.osm",
+      "sha256": "d2aa72a9a3b8847e8958aa6b69fa865d15f85a2169ac6906e374452fb130a275",
+      "bytes": 59622
+    },
+    "parent_projector": {
+      "path": "original/pointcloud-retry/candidate-05/map_projector_info.yaml",
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "parent_editable_map": {
+      "path": "original/pointcloud-retry/candidate-05/vector_map.json",
+      "sha256": "2708c3e12ff877ff03dda686df2004af74f4774a58bbb119abf0fcdbd342fc81",
+      "bytes": 25328
+    },
+    "parent_report": {
+      "path": "original/pointcloud-retry/candidate-05/report.json",
+      "sha256": "64399b268ec4f9454025778027d110ba2b69bbb5b635d2e43c0fb4570e59c1ed",
+      "bytes": 75592
+    },
+    "geometry_editable_map": {
+      "path": "original/pointcloud-retry/geometry-01/vector_map.json",
+      "sha256": "3ed9b2bd4816b150d3b2619e3e6ee6035e02909bba39e49745ba26ac13006777",
+      "bytes": 2876
+    },
+    "geometry_report": {
+      "path": "original/pointcloud-retry/geometry-01/report.json",
+      "sha256": "136a57592cf8a977fda47782130f8aef87aa35aec8c3d03a56039d75411a3eb2",
+      "bytes": 23902
+    },
+    "gap_evidence": {
+      "path": "run/gaps-01.json",
+      "sha256": "22653a54e0dddac14c4061663ec88acb08965eb886c0eddfd6c2c6cbc2173719",
+      "bytes": 641516
+    },
+    "raw_manifest": {
+      "path": "run/gap-source/manifest.json",
+      "sha256": "6420b27af9245051fe637d5149622fcfad1763a2deff7f58927e947719c17a20",
+      "bytes": 59776
+    }
+  },
+  "protocol": {
+    "model": "full_fusion_candidate_spliced_into_explicit_xy_column",
+    "maximum_side_m": 20.0,
+    "maximum_points_per_map": 2000000,
+    "maximum_map_bytes": 128000000,
+    "boundary": "lower_inclusive_upper_exclusive",
+    "all_heights": true,
+    "outside_record_order_and_bytes_preserved": true,
+    "independent_accuracy_established": false
+  },
+  "effective_bounds_xy": [
+    7.0,
+    5.0,
+    15.0,
+    10.0
+  ],
+  "pointcloud_options": {
+    "scan_voxel_m": 0.2,
+    "map_voxel_m": 0.1
+  },
+  "inside_points": 4399,
+  "outside_points": 641910,
+  "outside_records_sha256": "d68cd79b1dada2577637d92411802081fe4a2d4a8bdd42a8a149fc36ce629679",
+  "record_dtype": [
+    [
+      "x",
+      "<f8"
+    ],
+    [
+      "y",
+      "<f8"
+    ],
+    [
+      "z",
+      "<f8"
+    ],
+    [
+      "intensity",
+      "<f4"
+    ],
+    [
+      "correction",
+      "<f4"
+    ]
+  ],
+  "eligible_frames": [],
+  "holds": [],
+  "note": "Explicit box with retained lane convex hulls expanded by the maximum saved audit radius. Inside these hulls/halos all existing point records are kept and candidate returns are excluded, at every height. Only unprotected box records are replaced. Outside records and four complete retained HD audits remain fixed; the conservative hull can exclude useful new evidence and establish no accuracy or speedup.",
+  "protection": {
+    "protocol": {
+      "model": "retained_lane_convex_hulls_with_saved_audit_radius",
+      "margin_m": 1e-06,
+      "maximum_lanes": 256,
+      "maximum_vertices": 65536,
+      "maximum_hull_vertices": 4096,
+      "all_heights": true,
+      "protect_existing_holds_as_well_as_supported_traces": true,
+      "independent_accuracy_established": false
+    },
+    "ground_radius_m": 0.75,
+    "effective_halo_m": 0.750001,
+    "hulls": [
+      {
+        "lane": 3,
+        "vertices_xy": [
+          [
+            7.176842766827681,
+            3.1590911976077107
+          ],
+          [
+            5.279333946488938,
+            5.48276507247412
+          ],
+          [
+            1.3210590826531807,
+            2.8441163555761424
+          ],
+          [
+            -0.02212799721659472,
+            0.24901877788468557
+          ],
+          [
+            0.15489598051616305,
+            -1.743131445192799
+          ],
+          [
+            4.67513374862907,
+            -0.5679717249321093
+          ],
+          [
+            6.500756782554971,
+            0.7124492075196309
+          ]
+        ],
+        "equations": [
+          [
+            0.774557958288803,
+            0.6325029401129143,
+            -7.557015151005517
+          ],
+          [
+            -0.8880925927401616,
+            0.45966460242230694,
+            -0.1341168279522853
+          ],
+          [
+            -0.5546709163325358,
+            0.8320698135221737,
+            -1.633750313714946
+          ],
+          [
+            -0.9960751115387424,
+            -0.0885119888663789,
+            -0.0
+          ],
+          [
+            0.25161337540039697,
+            -0.9678278304118036,
+            -1.7260250252171643
+          ],
+          [
+            0.9638763579874234,
+            -0.26635008262228926,
+            -6.076164866444088
+          ],
+          [
+            0.5742099729050025,
+            -0.8187080719135705,
+            -3.1495114589481528
+          ]
+        ]
+      },
+      {
+        "lane": 6,
+        "vertices_xy": [
+          [
+            11.010390068738209,
+            8.591643672107839
+          ],
+          [
+            12.45314782886249,
+            5.402842949955202
+          ],
+          [
+            14.935369541826176,
+            5.797537860886735
+          ],
+          [
+            16.33769542496384,
+            9.54366681188164
+          ],
+          [
+            13.416136371552788,
+            9.338095772643197
+          ]
+        ],
+        "equations": [
+          [
+            -0.9110859206150389,
+            -0.4122165028926514,
+            13.573028680723104
+          ],
+          [
+            0.9365322377487257,
+            -0.35058147078441587,
+            -11.954945708412621
+          ],
+          [
+            0.1570358878212137,
+            -0.9875928968639877,
+            3.3802181947731897
+          ],
+          [
+            -0.2963417016156778,
+            0.9550819838545405,
+            -4.942886354505823
+          ],
+          [
+            -0.07018993092391146,
+            0.997533645345808,
+            -8.373387031487981
+          ]
+        ]
+      },
+      {
+        "lane": 9,
+        "vertices_xy": [
+          [
+            9.856694047643318,
+            -4.8208562262550485
+          ],
+          [
+            9.588806532765135,
+            -7.033386058173646
+          ],
+          [
+            11.308726514789202,
+            -8.054108966427563
+          ],
+          [
+            12.381455012747663,
+            -6.441221021319844
+          ]
+        ],
+        "equations": [
+          [
+            -0.9927497416752248,
+            0.12019962730297706,
+            10.364695591246724
+          ],
+          [
+            0.5401215983549318,
+            0.8415869883681151,
+            -1.2666434706989884
+          ],
+          [
+            -0.5103614541269588,
+            -0.8599599910120332,
+            -1.1546733659670725
+          ],
+          [
+            0.8326526550415937,
+            -0.5537955904954325,
+            -13.876571188655806
+          ]
+        ]
+      },
+      {
+        "lane": 12,
+        "vertices_xy": [
+          [
+            -33.73452846500312,
+            -71.41157648893451
+          ],
+          [
+            -29.522835578561327,
+            -72.45877020980535
+          ],
+          [
+            -26.529228839024647,
+            -72.77553151706758
+          ],
+          [
+            -24.822458123250136,
+            -70.94880391729399
+          ],
+          [
+            5.510951963269459,
+            -20.698369720150858
+          ],
+          [
+            5.082503051738977,
+            -18.26517448343039
+          ],
+          [
+            2.5089273507594214,
+            -16.72351689780134
+          ],
+          [
+            -0.34692409407822056,
+            -19.816297529905054
+          ],
+          [
+            -32.170237110936874,
+            -67.39740400482965
+          ]
+        ],
+        "equations": [
+          [
+            -0.24129290048390992,
+            -0.9704523358599647,
+            -77.44143343090666
+          ],
+          [
+            -0.10522517132463102,
+            -0.9944484216487561,
+            -75.16305510149387
+          ],
+          [
+            0.8561132503408889,
+            -0.5167882570170865,
+            -15.414673408519125
+          ],
+          [
+            0.7306910399094353,
+            -0.6827082863098032,
+            -30.299788598919978
+          ],
+          [
+            -0.9317516325290366,
+            0.3630962617261092,
+            -5.502925502763681
+          ],
+          [
+            -0.8312223159316638,
+            0.5559401599967403,
+            10.72830457038624
+          ],
+          [
+            -0.7346877600708012,
+            0.6784054062300425,
+            13.188602490157708
+          ],
+          [
+            0.9848484988251283,
+            0.17341693793251967,
+            -1.8380048710595744
+          ],
+          [
+            0.51388586187635,
+            0.8578585669931851,
+            13.05710994700402
+          ]
+        ]
+      },
+      {
+        "lane": 15,
+        "vertices_xy": [
+          [
+            -4.127732328569212,
+            -62.51520971702927
+          ],
+          [
+            -0.9889186778639747,
+            -64.99469532217935
+          ],
+          [
+            -0.6340076570839017,
+            -62.665255268046145
+          ],
+          [
+            -3.123465950308213,
+            -60.9911592713074
+          ]
+        ],
+        "equations": [
+          [
+            -0.6198714012875203,
+            -0.784703412676309,
+            -51.614561631778024
+          ],
+          [
+            0.9885916158909581,
+            -0.15062077210698543,
+            -8.811914478550632
+          ],
+          [
+            -0.8350139416497956,
+            0.5502287862793728,
+            30.950953924847603
+          ],
+          [
+            0.5580319989129146,
+            0.8298194310747711,
+            52.35464303489398
+          ]
+        ]
+      },
+      {
+        "lane": 18,
+        "vertices_xy": [
+          [
+            1.6682118290986654,
+            -54.600405962494214
+          ],
+          [
+            -0.5369046737007996,
+            -57.94181473748589
+          ],
+          [
+            2.3935052958080734,
+            -59.85563223416707
+          ],
+          [
+            3.5148697927931853,
+            -58.20993850872151
+          ],
+          [
+            4.592405247054653,
+            -56.52370855293153
+          ]
+        ],
+        "equations": [
+          [
+            -0.8346338988918336,
+            0.5508050969450232,
+            31.466528042507345
+          ],
+          [
+            0.5495150258392331,
+            0.8354838337017102,
+            44.701049028841915
+          ],
+          [
+            -0.5468049990517646,
+            -0.8372599912882496,
+            -48.80594546192666
+          ],
+          [
+            0.8426459527591028,
+            -0.5384680104692423,
+            -34.30598058370061
+          ],
+          [
+            0.8263907764769204,
+            -0.5630970471898007,
+            -35.68250046864259
+          ]
+        ]
+      },
+      {
+        "lane": 21,
+        "vertices_xy": [
+          [
+            10.156308218154063,
+            -41.10428255330994
+          ],
+          [
+            8.5332476059295,
+            -44.822735916437104
+          ],
+          [
+            10.206488201319376,
+            -45.91830239545119
+          ],
+          [
+            12.531570284070046,
+            -44.93357594113515
+          ],
+          [
+            13.495003936130711,
+            -43.3072602887318
+          ]
+        ],
+        "equations": [
+          [
+            -0.9164975618999708,
+            0.400040271761993,
+            25.751600083050697
+          ],
+          [
+            0.5507444338554633,
+            0.8346739294941619,
+            28.715142818140684
+          ],
+          [
+            -0.5477832395070448,
+            -0.8366202976949386,
+            -32.82524064881943
+          ],
+          [
+            0.8603632091281296,
+            -0.5096814185142975,
+            -33.68351074961488
+          ],
+          [
+            0.3899885988754634,
+            -0.9208196852517614,
+            -46.26289079214606
+          ]
+        ]
+      },
+      {
+        "lane": 24,
+        "vertices_xy": [
+          [
+            17.369889551556316,
+            -31.614348772759293
+          ],
+          [
+            15.377109180182748,
+            -34.979426403133665
+          ],
+          [
+            17.84949051126377,
+            -36.67864109048839
+          ],
+          [
+            20.384899191657926,
+            -33.3919080179307
+          ]
+        ],
+        "equations": [
+          [
+            -0.8604417355108989,
+            0.5095488394560352,
+            31.054832638691575
+          ],
+          [
+            0.5078740700489746,
+            0.8614313257433174,
+            18.41187387297959
+          ],
+          [
+            -0.5664048957849089,
+            -0.8241271103603415,
+            -20.117823681002207
+          ],
+          [
+            0.7917905413073144,
+            -0.6107927133621274,
+            -36.53610446806834
+          ]
+        ]
+      },
+      {
+        "lane": 27,
+        "vertices_xy": [
+          [
+            21.331557208804405,
+            -26.98903718999374
+          ],
+          [
+            19.49670164842016,
+            -28.219052912991543
+          ],
+          [
+            21.21205357239824,
+            -29.247434056782453
+          ],
+          [
+            23.02887639324944,
+            -28.046916004468656
+          ]
+        ],
+        "equations": [
+          [
+            -0.5568228593392497,
+            0.8306312679626636,
+            34.29583686138123
+          ],
+          [
+            0.5289394072374567,
+            0.8486595922225166,
+            11.621404070661526
+          ],
+          [
+            -0.5141905718954548,
+            -0.8576759619890401,
+            -14.177783182893426
+          ],
+          [
+            0.5512947489024421,
+            -0.8343105535905638,
+            -36.09553664691812
+          ]
+        ]
+      },
+      {
+        "lane": 30,
+        "vertices_xy": [
+          [
+            22.98802031454635,
+            -17.506534755446673
+          ],
+          [
+            29.72727893590591,
+            -19.39925587447896
+          ],
+          [
+            29.456206769228697,
+            -17.23816593756174
+          ],
+          [
+            23.645460044133422,
+            -15.7430998865812
+          ]
+        ],
+        "equations": [
+          [
+            -0.2703887312903268,
+            -0.9627512316227943,
+            -10.638736249527092
+          ],
+          [
+            -0.9369997295726235,
+            0.3493300828454808,
+            27.65532805459738
+          ],
+          [
+            0.9922248988004837,
+            0.12445782498649864,
+            -27.081757141298784
+          ],
+          [
+            0.24917767516342307,
+            0.9684577875158791,
+            9.35460692283314
+          ]
+        ]
+      },
+      {
+        "lane": 33,
+        "vertices_xy": [
+          [
+            27.715122434177104,
+            -8.665938282808172
+          ],
+          [
+            30.619162250832314,
+            -9.418635262529214
+          ],
+          [
+            31.192098378581527,
+            -6.972909324005366
+          ],
+          [
+            29.2604605252405,
+            -7.4913446657212575
+          ]
+        ],
+        "equations": [
+          [
+            -0.25089899324034737,
+            -0.968013272218403,
+            -1.4350469577158655
+          ],
+          [
+            0.9736411483086381,
+            -0.22808532245683108,
+            -31.960328755106136
+          ],
+          [
+            -0.6051278968097058,
+            0.7961282738997919,
+            23.670392235231283
+          ],
+          [
+            -0.2592176708579456,
+            0.9658189266705131,
+            14.820110889949481
+          ]
+        ]
+      },
+      {
+        "lane": 36,
+        "vertices_xy": [
+          [
+            22.805083615885906,
+            -0.44895974339048794
+          ],
+          [
+            24.504446239155477,
+            -1.5700684919364785
+          ],
+          [
+            26.707361097981828,
+            0.4663907207073874
+          ],
+          [
+            24.23190451587239,
+            0.9525330747722602
+          ]
+        ],
+        "equations": [
+          [
+            -0.5506811872427254,
+            -0.834715658183637,
+            12.183576793063528
+          ],
+          [
+            0.6788197375479555,
+            -0.7343049529421171,
+            -17.787010834908827
+          ],
+          [
+            -0.7007464090813738,
+            0.713410449993242,
+            16.300873025193578
+          ],
+          [
+            0.19270406616621275,
+            0.9812569199159862,
+            -5.604266202229154
+          ]
+        ]
+      },
+      {
+        "lane": 39,
+        "vertices_xy": [
+          [
+            9.491344145744502,
+            8.372457703622793
+          ],
+          [
+            11.000977861100221,
+            5.779967386290577
+          ],
+          [
+            15.351775015664078,
+            5.824970241502113
+          ],
+          [
+            17.835804361607586,
+            9.577249310080497
+          ],
+          [
+            14.752105520679423,
+            10.32671553163577
+          ],
+          [
+            11.572222091300118,
+            10.822847924988737
+          ]
+        ],
+        "equations": [
+          [
+            -0.8641634391107383,
+            -0.5032112384519062,
+            12.41518740869637
+          ],
+          [
+            -0.7622391406059381,
+            0.6472955217891754,
+            1.8152196269231746
+          ],
+          [
+            0.8338397930174187,
+            -0.5520065213207797,
+            -9.585499341702672
+          ],
+          [
+            0.01034303516856794,
+            -0.9999465093811277,
+            5.665874711352026
+          ],
+          [
+            0.23616631972555518,
+            0.9717126475595996,
+            -13.518550558862536
+          ],
+          [
+            0.15415715902128357,
+            0.9880463401695727,
+            -12.477416163655139
+          ]
+        ]
+      },
+      {
+        "lane": 42,
+        "vertices_xy": [
+          [
+            6.835399637934848,
+            4.770769985624423
+          ],
+          [
+            3.489826544363061,
+            3.055662028981827
+          ],
+          [
+            4.570702967189707,
+            1.3728946182629616
+          ],
+          [
+            7.205660176490582,
+            1.4942846720132859
+          ],
+          [
+            8.630901941988698,
+            3.031180529420081
+          ]
+        ],
+        "equations": [
+          [
+            -0.45619648390483697,
+            0.8898790749719109,
+            -1.1271231008009441
+          ],
+          [
+            0.6958357824817365,
+            0.71820092162154,
+            -8.182687056157615
+          ],
+          [
+            -0.8413837053594327,
+            -0.5404382114133228,
+            4.587679710584441
+          ],
+          [
+            0.7332395759049707,
+            -0.6799703848894438,
+            -4.2674058883620205
+          ],
+          [
+            0.046020269818108736,
+            -0.9989405061192926,
+            1.1610950610075554
+          ]
+        ]
+      },
+      {
+        "lane": 45,
+        "vertices_xy": [
+          [
+            17.369889551556316,
+            -31.614348772759293
+          ],
+          [
+            20.384899191657926,
+            -33.3919080179307
+          ],
+          [
+            20.681940116244185,
+            -32.60232266755288
+          ],
+          [
+            21.21205357239824,
+            -29.247434056782453
+          ],
+          [
+            19.49670164842016,
+            -28.219052912991543
+          ],
+          [
+            18.925301006171352,
+            -28.753571345546586
+          ],
+          [
+            18.497872815114963,
+            -29.42564858823947
+          ]
+        ],
+        "equations": [
+          [
+            -0.5078740700489746,
+            -0.8614313257433174,
+            -18.41187387297959
+          ],
+          [
+            0.5141905718954548,
+            0.8576759619890401,
+            14.177783182893426
+          ],
+          [
+            0.9877450792082183,
+            -0.15607581010505858,
+            -25.516918499944072
+          ],
+          [
+            0.9359598281425411,
+            -0.3521068021259812,
+            -30.836964693205665
+          ],
+          [
+            -0.8888966604843864,
+            0.4581077678665858,
+            29.922815564205543
+          ],
+          [
+            -0.6831450972884114,
+            0.7302826685953917,
+            33.92696141094714
+          ],
+          [
+            -0.8438077925131064,
+            0.536645515488724,
+            31.39979158153617
+          ]
+        ]
+      },
+      {
+        "lane": 48,
+        "vertices_xy": [
+          [
+            22.98802031454635,
+            -17.506534755446673
+          ],
+          [
+            21.331557208804405,
+            -26.98903718999374
+          ],
+          [
+            23.02887639324944,
+            -28.046916004468656
+          ],
+          [
+            23.860973861113006,
+            -27.471934350862234
+          ],
+          [
+            24.691976543399655,
+            -26.850003990216337
+          ],
+          [
+            25.507372583157196,
+            -26.182696540390666
+          ],
+          [
+            26.292650123433422,
+            -25.47158361924494
+          ],
+          [
+            27.033297307276143,
+            -24.71823684463887
+          ],
+          [
+            27.714802277733167,
+            -23.924227834432163
+          ],
+          [
+            28.32265317785229,
+            -23.091128206484527
+          ],
+          [
+            28.84233815068132,
+            -22.22050957865568
+          ],
+          [
+            29.259345339268066,
+            -21.313943568805332
+          ],
+          [
+            29.559162886660328,
+            -20.373001794793186
+          ],
+          [
+            29.72727893590591,
+            -19.39925587447896
+          ]
+        ],
+        "equations": [
+          [
+            -0.9850828959702667,
+            0.17208046974259683,
+            25.657638348359
+          ],
+          [
+            0.2703887312903268,
+            0.9627512316227943,
+            10.638736249527092
+          ],
+          [
+            -0.5289394072374567,
+            -0.8486595922225166,
+            -11.621404070661528
+          ],
+          [
+            0.6333317238661872,
+            -0.7738804349152933,
+            -36.41690483532074
+          ],
+          [
+            0.5684840347816009,
+            -0.8226942944973129,
+            -36.16558634364294
+          ],
+          [
+            0.5991847671754574,
+            -0.8006107760859161,
+            -36.291458748775824
+          ],
+          [
+            0.9854213176182421,
+            -0.1701317923949771,
+            -32.594324551279314
+          ],
+          [
+            0.9528007758514716,
+            -0.3035962475671161,
+            -34.34916022850732
+          ],
+          [
+            0.8586595241506577,
+            -0.5125464092015143,
+            -36.15479074702421
+          ],
+          [
+            0.908495465681875,
+            -0.41789471022671876,
+            -35.48896684101968
+          ],
+          [
+            0.6712369951704261,
+            -0.7412428052362987,
+            -36.52922755966085
+          ],
+          [
+            0.7130917301615751,
+            -0.7010707413486681,
+            -36.60645337832073
+          ],
+          [
+            0.8078309619743456,
+            -0.5894142319927501,
+            -36.49015576000138
+          ],
+          [
+            0.7588192419803306,
+            -0.6513012805149369,
+            -36.61240547992098
+          ]
+        ]
+      },
+      {
+        "lane": 51,
+        "vertices_xy": [
+          [
+            20.84367702753294,
+            4.015316383325284
+          ],
+          [
+            15.87953327185637,
+            4.613042719517118
+          ],
+          [
+            14.039172383903761,
+            2.161017896005962
+          ],
+          [
+            13.595504497749852,
+            -0.0471993725169666
+          ],
+          [
+            15.595115614372423,
+            -1.5477177437072145
+          ]
+        ],
+        "equations": [
+          [
+            0.11954526723836682,
+            0.992828751135314,
+            -6.47828449075664
+          ],
+          [
+            -0.6002073484760991,
+            -0.7998444466490284,
+            8.122369549796304
+          ],
+          [
+            0.7273665013793892,
+            -0.6862492059529884,
+            -12.40548475569158
+          ],
+          [
+            -0.9804074466848651,
+            0.1969802997379779,
+            13.338431197577368
+          ],
+          [
+            -0.7997897995606944,
+            0.6002801650218541,
+            9.931170687690788
+          ]
+        ]
+      },
+      {
+        "lane": 54,
+        "vertices_xy": [
+          [
+            9.856694047643318,
+            -4.8208562262550485
+          ],
+          [
+            12.381455012747663,
+            -6.441221021319844
+          ],
+          [
+            15.165835653470282,
+            -2.417454036933149
+          ],
+          [
+            15.595115614372423,
+            -1.5477177437072145
+          ],
+          [
+            13.595504497749852,
+            -0.0471993725169666
+          ],
+          [
+            10.76707770130031,
+            -3.3717295051626976
+          ],
+          [
+            10.237327323726161,
+            -4.055256449562357
+          ]
+        ],
+        "equations": [
+          [
+            -0.5401215983549318,
+            -0.8415869883681151,
+            1.2666434706989884
+          ],
+          [
+            0.6002073484760991,
+            0.7998444466490284,
+            -8.122369549796304
+          ],
+          [
+            0.8967199383789871,
+            -0.44259840952446455,
+            -14.669468524490824
+          ],
+          [
+            0.8223169087183685,
+            -0.5690297897613678,
+            -13.846726455086339
+          ],
+          [
+            -0.76164799432554,
+            0.6479909974219411,
+            10.385573501029992
+          ],
+          [
+            -0.8954385135780041,
+            0.44518520685352353,
+            10.972237343111344
+          ],
+          [
+            -0.7904055362955899,
+            0.6125839437932413,
+            10.575825182509158
+          ]
+        ]
+      }
+    ],
+    "source_hd": {
+      "path": "original/pointcloud-retry/candidate-05/vector_map.json",
+      "sha256": "2708c3e12ff877ff03dda686df2004af74f4774a58bbb119abf0fcdbd342fc81",
+      "bytes": 25328
+    },
+    "source_audits": {
+      "path": "original/pointcloud-retry/candidate-05/source-quality.json",
+      "sha256": "9b67a6e5f2a3a1bbdddd8bbbf6dd98874cdc2043bb62e2f668b16e37481211bd",
+      "bytes": 223979
+    }
+  },
+  "protected_inside_points": 2460,
+  "editable_inside_points": 1939,
+  "protected_inside_records_sha256": "509d66e86bc85339442ef05f6991a0b81431bed8dd9a82720764d80c8e763da0"
+}

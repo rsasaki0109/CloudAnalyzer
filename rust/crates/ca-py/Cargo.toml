@@ -17,6 +17,7 @@ numpy = "0.29.0"
 rayon = "1.12.0"
 pyo3 = { version = "0.29.2", features = ["abi3-py310", "extension-module"] }
 serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
 vectormap-core = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "70893d75ff579e51e10a93bab0f82fa81f2aca8b" }
 vectormap-io = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "70893d75ff579e51e10a93bab0f82fa81f2aca8b" }
 vectormap-validation = { git = "https://github.com/rsasaki0109/vectormap-rs", rev = "70893d75ff579e51e10a93bab0f82fa81f2aca8b" }

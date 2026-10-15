@@ -1,0 +1,68 @@
+{
+  "schema": "cloudanalyzer.bridge_damage.v1",
+  "source": {
+    "file": "Bridge_4.las",
+    "sha256": "ad60d7a6b605e5fbb165f31cdf4a5c77aed0d8058354a616b607b07adf4ef4ef",
+    "bytes": 315504697,
+    "dataset": "https://doi.org/10.6084/m9.figshare.28091453.v2"
+  },
+  "underside": "girders_observed",
+  "candidates": [
+    {
+      "kind": "dark",
+      "label_ja": "漏水・暗色変色の候補",
+      "area_m2": 0.0088,
+      "centre_m": [
+        -4.680000000000001,
+        2.705454545454546
+      ],
+      "element": "Ds0201",
+      "along_m": [
+        -4.74,
+        -4.620000000000001
+      ],
+      "lateral_m": [
+        2.6400000000000006,
+        2.76
+      ],
+      "contrast": -43.86284202468009,
+      "returns_share": 0.8583999999999996,
+      "contrast_unit": "L*",
+      "id": "D001"
+    }
+  ],
+  "thresholds": {
+    "cell_m": 0.02,
+    "background_m": 0.5,
+    "light_dL": 15.0,
+    "dark_dL": -15.0,
+    "rust_db_da": [
+      12.0,
+      4.0
+    ],
+    "recess_m": 0.012,
+    "min_area_m2": 0.005,
+    "member_margin_m": 0.15,
+    "edge_margin_m": 0.3,
+    "seam_elongation": 6.0,
+    "seam_angle_deg": 10.0,
+    "seam_margin_m": 0.2,
+    "min_returns_share": 0.5,
+    "step_iqr_m": 0.024
+  },
+  "straight_seams_left_out": {
+    "regions": {},
+    "cells_along_m": {
+      "dark": 5.5600000000000005,
+      "recess": 2.32
+    }
+  },
+  "soffit": {
+    "points": 1693347,
+    "cells_with_returns": 205532,
+    "cells_searched": 114017,
+    "area_searched_m2": 45.6068,
+    "area_too_sparse_m2": 0.1004
+  },
+  "note": "Candidates are colour or height departures from the surrounding soffit, for an inspector to confirm; formwork marks, shadows, wet patches and repairs can look the same."
+}

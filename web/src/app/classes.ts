@@ -1,5 +1,6 @@
 /** Classification panel: show or hide ASPRS classes in every cloud. */
 
+import { projectChanged } from "../project-change";
 import { classColor, className } from "../colormap";
 import { refreshColors } from "./colors";
 import { $ } from "./dom";
@@ -65,5 +66,6 @@ for (const [id, show] of [
     if (!show) for (let c = 0; c < 256; c++) hiddenClasses.add(c);
     refreshClassified();
     renderClasses();
+    projectChanged();
   };
 }

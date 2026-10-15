@@ -1,0 +1,311 @@
+{
+  "start": {
+    "request": {
+      "tool": "continue_mapping_run",
+      "finished_job_dir": "env/nclt-hd-only-june",
+      "out_dir": "env/nclt-hd-preflight-june",
+      "max_attempts": 4,
+      "reason": "New bounded session: use MCP reference-curve preflight over all observed agent-deferred gaps before selecting additions; no offline lane probes, point changes or source re-extraction."
+    },
+    "status": "needs_agent",
+    "revision": 0
+  },
+  "gaps0": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 0
+      },
+      "reason": "Page all retained root source gaps and HD occupancy before selecting preflight batches."
+    },
+    "status": "needs_agent",
+    "revision": 1
+  },
+  "gaps8": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 8
+      },
+      "reason": "Page all retained root source gaps and HD occupancy before selecting preflight batches."
+    },
+    "status": "needs_agent",
+    "revision": 2
+  },
+  "gaps16": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 16
+      },
+      "reason": "Page all retained root source gaps and HD occupancy before selecting preflight batches."
+    },
+    "status": "needs_agent",
+    "revision": 3
+  },
+  "gaps24": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 24
+      },
+      "reason": "Page all retained root source gaps and HD occupancy before selecting preflight batches."
+    },
+    "status": "needs_agent",
+    "revision": 4
+  },
+  "plan0": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          6,
+          9,
+          14,
+          17,
+          19,
+          25,
+          27,
+          29
+        ],
+        "offset": 0
+      },
+      "reason": "Inspect source-backed unoccupied gap intervals at unchanged minimum width; no offline native lane probes or exported drafts during selection."
+    },
+    "status": "needs_agent",
+    "revision": 5
+  },
+  "plan1": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          30
+        ],
+        "offset": 0
+      },
+      "reason": "Inspect source-backed unoccupied gap intervals at unchanged minimum width; no offline native lane probes or exported drafts during selection."
+    },
+    "status": "needs_agent",
+    "revision": 6
+  },
+  "plan0-next": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          6,
+          9,
+          14,
+          17,
+          19,
+          25,
+          27,
+          29
+        ],
+        "offset": 8
+      },
+      "reason": "Inspect source-backed unoccupied gap intervals at unchanged minimum width; no offline native lane probes or exported drafts during selection."
+    },
+    "status": "needs_agent",
+    "revision": 7
+  },
+  "repair": {
+    "request": {
+      "action": {
+        "type": "repair_hd",
+        "candidate_id": 1,
+        "gap_ids": [
+          29
+        ]
+      },
+      "reason": "Adopt only the root gaps whose observed intervals have complete support from both preflight ground estimators; preserve the point map and final four-audit requirements."
+    },
+    "status": "needs_agent",
+    "revision": 8
+  },
+  "inspect": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "inspect",
+        "candidate_ids": [
+          16
+        ]
+      },
+      "reason": "Inspect the unchanged frozen candidate sections in the child before drafting the preflight-supported ranges."
+    },
+    "status": "needs_agent",
+    "revision": 1
+  },
+  "draft": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "draft",
+        "decisions": [
+          {
+            "candidate_id": 16,
+            "from_m": 222.0,
+            "to_m": 224.0,
+            "action": "include",
+            "reason": "Observed interval fully supported by both preflight estimators; require all exported/reopened audits before patch adoption"
+          },
+          {
+            "candidate_id": 16,
+            "from_m": 224.0,
+            "to_m": 226.0,
+            "action": "include",
+            "reason": "Observed interval fully supported by both preflight estimators; require all exported/reopened audits before patch adoption"
+          }
+        ]
+      },
+      "reason": "One explicit draft of all nonambiguous preflight-supported intervals; no offline lane probes, extrapolation or layout changes."
+    },
+    "status": "needs_agent",
+    "revision": 2
+  },
+  "preview": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "inspect_patch",
+        "candidate_id": 2,
+        "gap_ids": [
+          29
+        ],
+        "offset": 0
+      },
+      "reason": "Inspect exact endpoint joins to retained lanes and between additions while keeping all prior geometry and directed edges."
+    },
+    "status": "needs_agent",
+    "revision": 3
+  },
+  "plan0-retained": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          6,
+          9,
+          14,
+          17,
+          19,
+          25,
+          27,
+          29
+        ],
+        "offset": 0
+      },
+      "reason": "Inspect source-backed unoccupied gap intervals at unchanged minimum width; no offline native lane probes or exported drafts during selection."
+    },
+    "status": "needs_agent",
+    "revision": 9
+  },
+  "plan0-next-retained": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          6,
+          9,
+          14,
+          17,
+          19,
+          25,
+          27,
+          29
+        ],
+        "offset": 8
+      },
+      "reason": "Inspect source-backed unoccupied gap intervals at unchanged minimum width; no offline native lane probes or exported drafts during selection."
+    },
+    "status": "needs_agent",
+    "revision": 10
+  },
+  "plan1-retained": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          30
+        ],
+        "offset": 0
+      },
+      "reason": "Inspect source-backed unoccupied gap intervals at unchanged minimum width; no offline native lane probes or exported drafts during selection."
+    },
+    "status": "needs_agent",
+    "revision": 11
+  },
+  "patch": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "patch_gaps",
+        "candidate_id": 2,
+        "gap_ids": [
+          29
+        ],
+        "pairs": [
+          {
+            "from": "baseline:36",
+            "to": "addition:3",
+            "reason": "Explicitly adopt the inspected coincident observed endpoint link"
+          },
+          {
+            "from": "addition:3",
+            "to": "addition:6",
+            "reason": "Explicitly adopt the inspected coincident observed endpoint link"
+          }
+        ]
+      },
+      "reason": "Adopt the preflight-supported missing ranges with every baseline lane, point file and old edge retained; require full four-audit support after export/reload."
+    },
+    "status": "needs_agent",
+    "revision": 4
+  },
+  "compare": {
+    "request": {
+      "action": {
+        "type": "compare_retry",
+        "candidate_id": 3
+      },
+      "reason": "Compare source extent, local/global connected station spans and the exact retained point artifacts before adopting the preflight-informed repair."
+    },
+    "status": "needs_agent",
+    "revision": 12
+  },
+  "child-finish": {
+    "request": {
+      "child": true,
+      "action": {
+        "type": "finish",
+        "candidate_id": 3
+      },
+      "reason": "Deliver the combined preflight-informed 222\u2013226 m addition and explicit endpoint links; preserve the exact point map, all baseline geometry, original source holds and unchanged global 66 m route limit."
+    },
+    "status": "finished",
+    "revision": 5
+  },
+  "finish": {
+    "request": {
+      "action": {
+        "type": "finish_retry",
+        "candidate_id": 3
+      },
+      "reason": "Explicitly adopt the compared HD-only patch: 4 m source gain, no lost intervals, same point artifacts and proposal, local route 220\u2013226 m, all new traces supported by four audits and no new retained failures. Full-drive continuity and independent accuracy remain unresolved."
+    },
+    "status": "finished",
+    "revision": 13
+  }
+}

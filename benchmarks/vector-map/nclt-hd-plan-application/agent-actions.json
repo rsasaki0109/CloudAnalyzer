@@ -1,0 +1,168 @@
+{
+  "start": {
+    "request": {
+      "tool": "continue_mapping_run",
+      "finished_job_dir": "env/nclt-hd-only-june",
+      "out_dir": "env/nclt-hd-plan-application-june",
+      "max_attempts": 4,
+      "reason": "New bounded MCP end-to-end validation of explicit supported-plan application from the unchanged 120 m seed. Controlled replay of a known session; fresh plan observations, no independent accuracy claim or implicit adoption."
+    },
+    "status": "needs_agent",
+    "revision": 0
+  },
+  "gaps0": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 0
+      },
+      "reason": "Read all retained root gaps and HD occupancy before selecting source preflight pages."
+    },
+    "status": "needs_agent",
+    "revision": 1
+  },
+  "gaps8": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 8
+      },
+      "reason": "Read all retained root gaps and HD occupancy before selecting source preflight pages."
+    },
+    "status": "needs_agent",
+    "revision": 2
+  },
+  "gaps16": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 16
+      },
+      "reason": "Read all retained root gaps and HD occupancy before selecting source preflight pages."
+    },
+    "status": "needs_agent",
+    "revision": 3
+  },
+  "gaps24": {
+    "request": {
+      "action": {
+        "type": "inspect_gaps",
+        "candidate_id": 1,
+        "offset": 24
+      },
+      "reason": "Read all retained root gaps and HD occupancy before selecting source preflight pages."
+    },
+    "status": "needs_agent",
+    "revision": 4
+  },
+  "plan0": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          6,
+          9,
+          14,
+          17,
+          19,
+          25,
+          27,
+          29
+        ],
+        "offset": 0
+      },
+      "reason": "Inspect width, retained occupancy, ambiguity and both source estimators on observed agent-deferred gap ranges; selection follows fresh saved reports."
+    },
+    "status": "needs_agent",
+    "revision": 5
+  },
+  "plan0-next": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          6,
+          9,
+          14,
+          17,
+          19,
+          25,
+          27,
+          29
+        ],
+        "offset": 8
+      },
+      "reason": "Inspect width, retained occupancy, ambiguity and both source estimators on observed agent-deferred gap ranges; selection follows fresh saved reports."
+    },
+    "status": "needs_agent",
+    "revision": 6
+  },
+  "plan1": {
+    "request": {
+      "action": {
+        "type": "inspect_hd_plan",
+        "candidate_id": 1,
+        "gap_ids": [
+          4,
+          21,
+          22,
+          30
+        ],
+        "offset": 0
+      },
+      "reason": "Inspect width, retained occupancy, ambiguity and both source estimators on observed agent-deferred gap ranges; selection follows fresh saved reports."
+    },
+    "status": "needs_agent",
+    "revision": 7
+  },
+  "apply": {
+    "request": {
+      "tool": "apply_supported_hd_plan",
+      "plan_files": [
+        "run/hd-plan-01-ba668c90a289648b/page-0000.json",
+        "run/hd-plan-01-ba668c90a289648b/page-0008.json"
+      ],
+      "interval_ids": [
+        3,
+        11
+      ],
+      "connect_endpoints": true,
+      "reason": "Apply only the two freshly inspected intervals supported by both estimators, with explicitly permitted exact coincident endpoint pairs; independently assess the combined patch before adopting the root."
+    },
+    "status": "ready_for_agent_decision",
+    "revision": null
+  },
+  "reapply": {
+    "request": {
+      "tool": "apply_supported_hd_plan",
+      "plan_files": [
+        "run/hd-plan-01-ba668c90a289648b/page-0000.json",
+        "run/hd-plan-01-ba668c90a289648b/page-0008.json"
+      ],
+      "interval_ids": [
+        3,
+        11
+      ],
+      "connect_endpoints": true,
+      "reason": "Apply only the two freshly inspected intervals supported by both estimators, with explicitly permitted exact coincident endpoint pairs; independently assess the combined patch before adopting the root."
+    },
+    "status": "ready_for_agent_decision",
+    "revision": null
+  },
+  "finish": {
+    "request": {
+      "action": {
+        "type": "finish_retry",
+        "candidate_id": 3
+      },
+      "reason": "Explicitly adopt after reviewing gain 4 m, loss 0 m, identical point/proposal artifacts, all four audits and no retained failures. Controlled replay, not independent map accuracy; legacy holds and unknown traffic semantics remain."
+    },
+    "status": "finished",
+    "revision": 10
+  }
+}

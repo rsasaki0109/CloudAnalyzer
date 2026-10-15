@@ -1,0 +1,7 @@
+{
+  "source": "https://s3.us-east-2.amazonaws.com/nclt.perl.engin.umich.edu/ground_truth/groundtruth_2012-04-29.csv; original NCLT body ground truth transformed to synchronized Velodyne sensor origin; see preparation.json",
+  "license": "NCLT Open Database License (ODbL 1.0), contents DBCL 1.0",
+  "frame": "NCLT z-up world, synchronized Velodyne sensor origin, xyz metres; FLIP @ body_pose @ BODY_VEL @ FLIP",
+  "time_basis": "NCLT original microsecond timestamps / 1e6, same clock as bundled scan headers",
+  "used_for_generation": false
+}

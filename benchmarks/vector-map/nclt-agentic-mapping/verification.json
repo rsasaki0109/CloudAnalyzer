@@ -1,0 +1,784 @@
+{
+  "schema": "cloudanalyzer.mapping_verification.v1",
+  "run_date_utc": "2026-10-08",
+  "implementation_base_commit": "96a23eba2de520f9484b0a61ad758224df464762",
+  "execution": "Calling agent read evidence between explicit CLI trials; no embedded LLM.",
+  "source": {
+    "path": "web/public/samples/nclt-2012-04-29.mcap",
+    "sha256": "c74ed00c774c8c19fcc2a0e71116f3479c6fa48ea7ade8a46045a9e6d4b6f5e6",
+    "bytes": 10054898
+  },
+  "runtime": {
+    "python": "3.12.14",
+    "native": {
+      "version": "0.1.0",
+      "extension": {
+        "path": "cloudanalyzer_core/_core.abi3.so",
+        "sha256": "2352a6b3de323248eaf419f3542fdbd6ce1cac9fe65bccb6a351797eecf3df0c",
+        "bytes": 7307800
+      }
+    }
+  },
+  "pointcloud_options": {
+    "keyframe_spacing": 1.0,
+    "remove_dynamic": true,
+    "pointcloud_topic": null,
+    "imu_topic": null
+  },
+  "max_attempts": 4,
+  "minimum_retained_fraction": 0.9,
+  "pointcloud": {
+    "files": {
+      "map": {
+        "path": "pointcloud/trajectory_map.ply",
+        "sha256": "0aabed47ef0fed2615a2a4d4bff6a2adc46f57d9c1ca7b61ac7e507ebb798358",
+        "bytes": 21878254
+      },
+      "trajectory": {
+        "path": "pointcloud/trajectory_fixed_kitti.txt",
+        "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+        "bytes": 47336
+      },
+      "graph": {
+        "path": "pointcloud/trajectory_fixed.g2o",
+        "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+        "bytes": 94035
+      }
+    },
+    "frames": 236,
+    "map_points": 683690,
+    "path_length_m": 252.2,
+    "reports": {
+      "odometry": "odometry-report.json",
+      "correction": "pointcloud-report.json"
+    },
+    "quality_status": "generated_unverified",
+    "coordinate_frame": "local_slam_metres"
+  },
+  "pointcloud_processing": {
+    "nodes": 199,
+    "scans": 199,
+    "unmatched_scans": 37,
+    "scan_points": 1077680,
+    "loops": {
+      "candidates": 11,
+      "added": 6,
+      "implausible": 0,
+      "same_place_retries": 0,
+      "pairs": [
+        [
+          29,
+          209,
+          0.59
+        ],
+        [
+          23,
+          214,
+          0.535
+        ],
+        [
+          17,
+          220,
+          0.526
+        ],
+        [
+          11,
+          225,
+          0.591
+        ],
+        [
+          7,
+          230,
+          0.607
+        ],
+        [
+          1,
+          235,
+          0.631
+        ]
+      ],
+      "optimized": {
+        "initial_cost": 17.112555116013546,
+        "final_cost": 1.1618484074165376,
+        "iterations": 8,
+        "converged": true
+      }
+    },
+    "gravity": {
+      "tied": 199,
+      "sigma_deg": 1.12,
+      "imus": [
+        {
+          "keyframes": 199,
+          "spread_deg": 1.04,
+          "noise_deg": 1.12
+        }
+      ],
+      "optimized": {
+        "initial_cost": 686.7024536114939,
+        "final_cost": 176.1375993998033,
+        "iterations": 7,
+        "converged": true
+      }
+    },
+    "dynamic": {
+      "points": 36,
+      "of": 1077680,
+      "share": 3.3405092420755696e-05
+    }
+  },
+  "attempts": [
+    {
+      "id": 1,
+      "status": "audited_draft",
+      "reason": "Baseline two-direction road hypothesis; right-hand traffic, width and speed are explicit priors. Inspect source support and retained extent before altering fitting.",
+      "road_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0
+      },
+      "files": {
+        "map": {
+          "path": "candidate-01/lanelet2_map.osm",
+          "sha256": "1539b1592e3ab42bb18d8c7d42543db0196f4aaf8e8b9ef29a2e981ec715305b",
+          "bytes": 103496
+        },
+        "projector": {
+          "path": "candidate-01/map_projector_info.yaml",
+          "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+          "bytes": 22
+        },
+        "editable_map": {
+          "path": "candidate-01/vector_map.json",
+          "sha256": "cfd5c8db7028e9bf356e09767161cfb55c84d6bd67a640b9429847f381a69696",
+          "bytes": 34480
+        },
+        "report": {
+          "path": "candidate-01/report.json",
+          "sha256": "ac52822e861b40551534828984643abf84867c3ed7a43699f78b0d991ffc86a5",
+          "bytes": 3880
+        }
+      },
+      "quality_report": {
+        "path": "candidate-01-quality.json",
+        "sha256": "c9e2b6aaa1097094c7ee9f4f852d7deed5e12d689251c76ee5711eb5e5c2cb2d",
+        "bytes": 20443
+      },
+      "quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          20,
+          24
+        ],
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 3147,
+        "supported_samples": 1728,
+        "validation_errors": []
+      },
+      "reopened_quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          20,
+          24
+        ],
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 3147,
+        "supported_samples": 1728,
+        "validation_errors": []
+      },
+      "extraction": {
+        "added_length": 243.1390803680129,
+        "anchored_prior_vertices": 167,
+        "coverage_edge_anchor_candidates_ignored": 0,
+        "curb_vertices": 38,
+        "fitted_vertices": 381,
+        "generated_length": 243.1390803680129,
+        "intensity_used": true,
+        "intensity_vertices": 105,
+        "joined_connections": 0,
+        "lanes": 10,
+        "maximum_fit_displacement": 0.5000000000000009,
+        "observed_fraction": [
+          0.25196850393700787,
+          0.3858267716535433,
+          0.5354330708661418
+        ],
+        "paint_corridor": null,
+        "rejected_curb_candidates": 230,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "rgb_paint_vertices": 0,
+        "roads": 1,
+        "sampled_sections": 127,
+        "support_edge_vertices": 6,
+        "surface_fit": null,
+        "trace_alignment": null,
+        "tracked_vertices": 210,
+        "trajectory_length": 248.9206134062158,
+        "unsupported_sections": 0,
+        "warnings": [
+          "232 boundary vertices use the configured lane width rather than a detected feature.",
+          "230 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "167 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "210 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "381 vertices were fitted to trajectory-relative boundary curves (maximum XY movement 0.500 m; heights unchanged). Evidence describes the selected sources before fitting, not direct measurements at the fitted positions.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 232
+      },
+      "export_issues": [
+        {
+          "code": "autoware.local_projector",
+          "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+          "severity": "info"
+        },
+        {
+          "code": "lanelet2.no_georeference",
+          "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+          "severity": "warning"
+        }
+      ],
+      "extent": {
+        "trajectory_length_m": 248.9206134062158,
+        "generated_length_m": 243.1390803680129,
+        "retained_fraction": 0.9767735867307704,
+        "minimum_retained_fraction": 0.9,
+        "passes_requested_extent": true
+      },
+      "effective_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "segment_length": 50.0,
+        "anchor_width_prior": true,
+        "track_boundaries": true,
+        "fit_boundaries": true,
+        "verify_curb_profiles": true,
+        "merge_repeated_passes": true
+      },
+      "editable_and_reopened_summaries_match": true
+    },
+    {
+      "id": 2,
+      "status": "audited_draft",
+      "reason": "Baseline needs source review on 9 of 10 lanes. Keep road and traffic priors fixed and test low-surface fitting; inspect deferred length and retained extent alongside support.",
+      "road_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "fit_source_surface": true
+      },
+      "files": {
+        "map": {
+          "path": "candidate-02/lanelet2_map.osm",
+          "sha256": "caeea474ec9f289dff97834587cba2d811dd8ae88791f4663624a45ba86de788",
+          "bytes": 11872
+        },
+        "projector": {
+          "path": "candidate-02/map_projector_info.yaml",
+          "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+          "bytes": 22
+        },
+        "editable_map": {
+          "path": "candidate-02/vector_map.json",
+          "sha256": "a5df52eeb00bb4946b36a54738bdbe0b78f2163971078ed05912e20aa204242c",
+          "bytes": 5033
+        },
+        "report": {
+          "path": "candidate-02/report.json",
+          "sha256": "d35a04b607c7539c2c15e1b76f39b4e0ce83e539096b6ff01ecd193f1dc29b1f",
+          "bytes": 4996
+        }
+      },
+      "quality_report": {
+        "path": "candidate-02-quality.json",
+        "sha256": "25d84dfa35b24b62a2c981cbda411e8d361e8c6eef06d343db1a9107b4b028dc",
+        "bytes": 11813
+      },
+      "quality": {
+        "lanes_checked": 4,
+        "needs_review": [],
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 336,
+        "supported_samples": 336,
+        "validation_errors": []
+      },
+      "reopened_quality": {
+        "lanes_checked": 4,
+        "needs_review": [],
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 336,
+        "supported_samples": 336,
+        "validation_errors": []
+      },
+      "extraction": {
+        "added_length": 20.277915833891342,
+        "anchored_prior_vertices": 0,
+        "coverage_edge_anchor_candidates_ignored": 0,
+        "curb_vertices": 0,
+        "fitted_vertices": 15,
+        "generated_length": 20.277915833891342,
+        "intensity_used": false,
+        "intensity_vertices": 0,
+        "joined_connections": 0,
+        "lanes": 4,
+        "maximum_fit_displacement": 0.4999999999999998,
+        "observed_fraction": [
+          0.5384615384615384,
+          0.0,
+          0.5384615384615384
+        ],
+        "paint_corridor": null,
+        "rejected_curb_candidates": 230,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "rgb_paint_vertices": 0,
+        "roads": 2,
+        "sampled_sections": 127,
+        "support_edge_vertices": 14,
+        "surface_fit": {
+          "candidate_sections": 16,
+          "deferred_length_m": 222.86116453412157,
+          "discarded_short_stretches": 1,
+          "evaluated_path_length_m": 243.1390803680129,
+          "maximum_lane_width_m": 2.3000000000000016,
+          "minimum_lane_width_m": 1.4999999999999996,
+          "preserved_candidate_geometry": false,
+          "rejected_intervals": 0
+        },
+        "trace_alignment": null,
+        "tracked_vertices": 0,
+        "trajectory_length": 248.9206134062158,
+        "unsupported_sections": 111,
+        "warnings": [
+          "Source-footprint mode keeps explicit lane counts but fits inferred widths to a coherent low-surface band. Coverage limits can be occlusion or scan gaps, not road edges. Internal lane lines remain width assumptions; this does not identify road semantics or permitted turns.",
+          "222.86 m of the traced/recorded path was deferred; 0 intervals failed centre/boundary source checks; 1 fragments shorter than 2 m were deferred. No missing surface was filled and no reference map was used."
+        ],
+        "width_prior_vertices": 25
+      },
+      "export_issues": [
+        {
+          "code": "autoware.local_projector",
+          "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+          "severity": "info"
+        },
+        {
+          "code": "lanelet2.no_georeference",
+          "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+          "severity": "warning"
+        }
+      ],
+      "extent": {
+        "trajectory_length_m": 248.9206134062158,
+        "generated_length_m": 20.277915833891342,
+        "retained_fraction": 0.08146338527938475,
+        "minimum_retained_fraction": 0.9,
+        "passes_requested_extent": false
+      },
+      "effective_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "segment_length": 50.0,
+        "anchor_width_prior": true,
+        "track_boundaries": true,
+        "fit_boundaries": true,
+        "fit_source_surface": true,
+        "verify_curb_profiles": true,
+        "merge_repeated_passes": true
+      },
+      "editable_and_reopened_summaries_match": true
+    },
+    {
+      "id": 3,
+      "status": "audited_draft",
+      "reason": "Source-surface fitting retained only 20.28 m versus the baseline 243.14 m, so it does not satisfy the mapping extent. Keep the same two-direction road priors and test unsmoothed source candidates, without reducing requested lanes or road extent.",
+      "road_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "track_boundaries": false,
+        "fit_boundaries": false
+      },
+      "files": {
+        "map": {
+          "path": "candidate-03/lanelet2_map.osm",
+          "sha256": "79952971785436cfac546a40b32d8bb09d12a935f2ee893e80452fd957fcc6d9",
+          "bytes": 103509
+        },
+        "projector": {
+          "path": "candidate-03/map_projector_info.yaml",
+          "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+          "bytes": 22
+        },
+        "editable_map": {
+          "path": "candidate-03/vector_map.json",
+          "sha256": "3a8e7b0a95f8b0dcad1bbf75b981de49799525830b0f19d8a26115bb240d5414",
+          "bytes": 34494
+        },
+        "report": {
+          "path": "candidate-03/report.json",
+          "sha256": "db767024d0c85ac2e2663ba5cfe8a9a57d0cdbcf36f49772bab9bc1eeed5e4a1",
+          "bytes": 3468
+        }
+      },
+      "quality_report": {
+        "path": "candidate-03-quality.json",
+        "sha256": "c174aa484ed757e67d97c2a72072b3a517914ead611ff084ff3ee4bf44fcb4b1",
+        "bytes": 20455
+      },
+      "quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          24
+        ],
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 3257,
+        "supported_samples": 1848,
+        "validation_errors": []
+      },
+      "reopened_quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          24
+        ],
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 3257,
+        "supported_samples": 1848,
+        "validation_errors": []
+      },
+      "extraction": {
+        "added_length": 243.1390803680129,
+        "anchored_prior_vertices": 117,
+        "coverage_edge_anchor_candidates_ignored": 0,
+        "curb_vertices": 45,
+        "fitted_vertices": 0,
+        "generated_length": 243.1390803680129,
+        "intensity_used": true,
+        "intensity_vertices": 150,
+        "joined_connections": 0,
+        "lanes": 10,
+        "maximum_fit_displacement": 0.0,
+        "observed_fraction": [
+          0.3779527559055118,
+          0.5826771653543307,
+          0.6535433070866141
+        ],
+        "paint_corridor": null,
+        "rejected_curb_candidates": 230,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "rgb_paint_vertices": 0,
+        "roads": 1,
+        "sampled_sections": 127,
+        "support_edge_vertices": 10,
+        "surface_fit": null,
+        "trace_alignment": null,
+        "tracked_vertices": 0,
+        "trajectory_length": 248.9206134062158,
+        "unsupported_sections": 0,
+        "warnings": [
+          "176 boundary vertices use the configured lane width rather than a detected feature.",
+          "230 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "117 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 176
+      },
+      "extent": {
+        "trajectory_length_m": 248.9206134062158,
+        "generated_length_m": 243.1390803680129,
+        "retained_fraction": 0.9767735867307704,
+        "minimum_retained_fraction": 0.9,
+        "passes_requested_extent": true
+      },
+      "export_issues": [
+        {
+          "code": "autoware.local_projector",
+          "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+          "severity": "info"
+        },
+        {
+          "code": "lanelet2.no_georeference",
+          "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+          "severity": "warning"
+        }
+      ],
+      "effective_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "segment_length": 50.0,
+        "anchor_width_prior": true,
+        "track_boundaries": false,
+        "fit_boundaries": false,
+        "verify_curb_profiles": true,
+        "merge_repeated_passes": true
+      },
+      "editable_and_reopened_summaries_match": true
+    },
+    {
+      "id": 4,
+      "status": "audited_draft",
+      "reason": "Untracked, unsmoothed candidates kept the same 243.14 m and reduced source-review lanes from 9 to 8. Isolate the fitting effect by retaining candidate tracking and disabling XY fitting only, with the same road priors and extent goal.",
+      "road_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "track_boundaries": true,
+        "fit_boundaries": false
+      },
+      "files": {
+        "map": {
+          "path": "candidate-04/lanelet2_map.osm",
+          "sha256": "bda8be6af3eef5ccf1b3179272b9cb1570d758f71df29439a6049f6448d2aa3c",
+          "bytes": 103507
+        },
+        "projector": {
+          "path": "candidate-04/map_projector_info.yaml",
+          "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+          "bytes": 22
+        },
+        "editable_map": {
+          "path": "candidate-04/vector_map.json",
+          "sha256": "c01650b5f09d8a276ce528f5d65538b45cbb9e09d35620a545b2cb2780a27949",
+          "bytes": 34493
+        },
+        "report": {
+          "path": "candidate-04/report.json",
+          "sha256": "1e099f039408b335ab0185bda4f08ba8cc5e430a9ce7ccf2aa82b0c3f40aeeb9",
+          "bytes": 3636
+        }
+      },
+      "quality_report": {
+        "path": "candidate-04-quality.json",
+        "sha256": "ecabe43f85c73e8e472707e2a5b59703a09113f1ff51d14b4d422756b20a3940",
+        "bytes": 20401
+      },
+      "quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          24
+        ],
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 3169,
+        "supported_samples": 1748,
+        "validation_errors": []
+      },
+      "reopened_quality": {
+        "lanes_checked": 10,
+        "needs_review": [
+          4,
+          5,
+          9,
+          10,
+          14,
+          15,
+          19,
+          24
+        ],
+        "omitted": [],
+        "malformed": [],
+        "limited": false,
+        "sampled_points": 3169,
+        "supported_samples": 1748,
+        "validation_errors": []
+      },
+      "extraction": {
+        "added_length": 243.1390803680129,
+        "anchored_prior_vertices": 167,
+        "coverage_edge_anchor_candidates_ignored": 0,
+        "curb_vertices": 38,
+        "fitted_vertices": 0,
+        "generated_length": 243.1390803680129,
+        "intensity_used": true,
+        "intensity_vertices": 105,
+        "joined_connections": 0,
+        "lanes": 10,
+        "maximum_fit_displacement": 0.0,
+        "observed_fraction": [
+          0.25196850393700787,
+          0.3858267716535433,
+          0.5354330708661418
+        ],
+        "paint_corridor": null,
+        "rejected_curb_candidates": 230,
+        "reused_intervals": 0,
+        "reused_length": 0.0,
+        "rgb_paint_vertices": 0,
+        "roads": 1,
+        "sampled_sections": 127,
+        "support_edge_vertices": 6,
+        "surface_fit": null,
+        "trace_alignment": null,
+        "tracked_vertices": 210,
+        "trajectory_length": 248.9206134062158,
+        "unsupported_sections": 0,
+        "warnings": [
+          "232 boundary vertices use the configured lane width rather than a detected feature.",
+          "230 curb-like height transitions lacked consistent road-side support or had excessive raised-surface height and were rejected; remaining candidates still require review.",
+          "167 inferred boundary vertices are positioned relative to detected outer boundaries; they remain width assumptions, not observed lane lines.",
+          "210 vertices selected a continuous candidate path. Rejected detections can become labelled width assumptions; source counts do not establish survey accuracy.",
+          "Some boundaries follow the end of point coverage; verify that they are road edges rather than scan gaps.",
+          "Draft map: verify lane counts, travel directions, junctions and boundary geometry before use."
+        ],
+        "width_prior_vertices": 232
+      },
+      "extent": {
+        "trajectory_length_m": 248.9206134062158,
+        "generated_length_m": 243.1390803680129,
+        "retained_fraction": 0.9767735867307704,
+        "minimum_retained_fraction": 0.9,
+        "passes_requested_extent": true
+      },
+      "export_issues": [
+        {
+          "code": "autoware.local_projector",
+          "message": "the map has no georeference; map_projector_info.yaml will use the Local projector (coordinates from local_x/local_y)",
+          "severity": "info"
+        },
+        {
+          "code": "lanelet2.no_georeference",
+          "message": "the map has no georeference; lat/lon were written as 0 and the coordinates are only available in the local_x/local_y tags (Autoware `Local` projector)",
+          "severity": "warning"
+        }
+      ],
+      "effective_options": {
+        "forward_lanes": 1,
+        "backward_lanes": 1,
+        "left_hand_traffic": false,
+        "lane_width": 3.5,
+        "speed_limit": 40.0,
+        "segment_length": 50.0,
+        "anchor_width_prior": true,
+        "track_boundaries": true,
+        "fit_boundaries": false,
+        "verify_curb_profiles": true,
+        "merge_repeated_passes": true
+      },
+      "editable_and_reopened_summaries_match": true
+    }
+  ],
+  "selected": {
+    "candidate_id": 4,
+    "reason": "Retain 243.1 m (97.7 percent of the corrected trajectory) with unchanged two-direction lane, width and speed hypotheses. Visual comparison shows less angular jitter than the untracked candidate; tracking remains while XY fitting is disabled. Eight of ten lane sections still need source review, so this is a review draft, not evidence of improved survey accuracy or a deployable HD map.",
+    "source_quality_passed": false,
+    "deployment_ready": false,
+    "files": {
+      "map": {
+        "path": "candidate-04/lanelet2_map.osm",
+        "sha256": "bda8be6af3eef5ccf1b3179272b9cb1570d758f71df29439a6049f6448d2aa3c",
+        "bytes": 103507
+      },
+      "projector": {
+        "path": "candidate-04/map_projector_info.yaml",
+        "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+        "bytes": 22
+      },
+      "editable_map": {
+        "path": "candidate-04/vector_map.json",
+        "sha256": "c01650b5f09d8a276ce528f5d65538b45cbb9e09d35620a545b2cb2780a27949",
+        "bytes": 34493
+      },
+      "report": {
+        "path": "candidate-04/report.json",
+        "sha256": "1e099f039408b335ab0185bda4f08ba8cc5e430a9ce7ccf2aa82b0c3f40aeeb9",
+        "bytes": 3636
+      }
+    },
+    "assumptions": {
+      "forward_lanes": 1,
+      "backward_lanes": 1,
+      "left_hand_traffic": false,
+      "lane_width": 3.5,
+      "speed_limit": 40.0,
+      "track_boundaries": true,
+      "fit_boundaries": false
+    },
+    "extent": {
+      "trajectory_length_m": 248.9206134062158,
+      "generated_length_m": 243.1390803680129,
+      "retained_fraction": 0.9767735867307704,
+      "minimum_retained_fraction": 0.9,
+      "passes_requested_extent": true
+    }
+  },
+  "rejected_selection": {
+    "candidate_id": 2,
+    "cli_exit_code": 1,
+    "selected_before": null,
+    "error": "candidate does not meet the job's retained-extent goal; inspect deferred road length"
+  },
+  "limitations": [
+    "No independent survey ground truth evaluated.",
+    "Road priors are unverified; equipment and legal semantics are unresolved.",
+    "Local SLAM coordinates only, no georeference.",
+    "Eight selected lane sections still need source review; deployment_ready is false."
+  ],
+  "data_license": "NCLT-derived evidence: ODbL 1.0 / Database Contents License 1.0; see README.md."
+}

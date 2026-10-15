@@ -1,0 +1,570 @@
+{
+ "totals": {
+  "label_piers": 33,
+  "found": 32,
+  "false": 1,
+  "mean_abs_error_m": 0.152,
+  "max_abs_error_m": 0.79,
+  "span_count_correct": 18
+ },
+ "bridges": [
+  {
+   "bridge": "bridge_1_cb",
+   "deck_length_m": 62.86,
+   "deck_width_m": 8.414,
+   "skew_deg": 38.54,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [
+    12.36,
+    31.41,
+    50.49
+   ],
+   "detected_piers_from_start_m": [
+    12.25,
+    31.4,
+    50.5
+   ],
+   "matched_errors_m": [
+    -0.11,
+    -0.01,
+    0.01
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    12.25,
+    19.15,
+    19.1,
+    12.36
+   ],
+   "paper_spans_m": [
+    12.17,
+    19.04,
+    18.86,
+    12.58
+   ]
+  },
+  {
+   "bridge": "bridge_2_cb",
+   "deck_length_m": 54.379,
+   "deck_width_m": 11.607,
+   "skew_deg": -6.08,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [
+    12.3,
+    27.3,
+    42.21
+   ],
+   "detected_piers_from_start_m": [
+    12.2,
+    27.2,
+    42.17
+   ],
+   "matched_errors_m": [
+    -0.1,
+    -0.1,
+    -0.03
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    12.2,
+    15.0,
+    14.97,
+    12.2
+   ],
+   "paper_spans_m": [
+    11.8,
+    14.79,
+    14.95,
+    12.28
+   ]
+  },
+  {
+   "bridge": "bridge_3_cb",
+   "deck_length_m": 53.1,
+   "deck_width_m": 11.987,
+   "skew_deg": -0.08,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [
+    11.53,
+    26.72,
+    41.59
+   ],
+   "detected_piers_from_start_m": [
+    11.55,
+    26.55,
+    41.58
+   ],
+   "matched_errors_m": [
+    0.02,
+    -0.17,
+    -0.01
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    11.55,
+    15.0,
+    15.03,
+    11.52
+   ],
+   "paper_spans_m": [
+    11.31,
+    14.91,
+    14.8,
+    11.35
+   ]
+  },
+  {
+   "bridge": "bridge_4_cb",
+   "deck_length_m": 35.012,
+   "deck_width_m": 27.631,
+   "skew_deg": 5.26,
+   "underside": "unobserved",
+   "label_piers_from_start_m": [
+    9.5,
+    24.08
+   ],
+   "detected_piers_from_start_m": [
+    9.5,
+    24.15
+   ],
+   "matched_errors_m": [
+    0.0,
+    0.07
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    9.5,
+    14.65,
+    10.86
+   ],
+   "paper_spans_m": [
+    8.27,
+    14.42,
+    9.78
+   ]
+  },
+  {
+   "bridge": "bridge_5_cb",
+   "deck_length_m": 62.493,
+   "deck_width_m": 12.893,
+   "skew_deg": 15.44,
+   "underside": "unobserved",
+   "label_piers_from_start_m": [
+    15.56,
+    46.74
+   ],
+   "detected_piers_from_start_m": [
+    15.6,
+    46.77
+   ],
+   "matched_errors_m": [
+    0.04,
+    0.03
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    15.6,
+    31.17,
+    15.72
+   ],
+   "paper_spans_m": [
+    15.04,
+    30.77,
+    15.61
+   ]
+  },
+  {
+   "bridge": "bridge_6_cb",
+   "deck_length_m": 55.101,
+   "deck_width_m": 14.508,
+   "skew_deg": -0.49,
+   "underside": "unobserved",
+   "label_piers_from_start_m": [
+    12.13,
+    27.54,
+    43.22
+   ],
+   "detected_piers_from_start_m": [
+    12.05,
+    27.6,
+    43.23
+   ],
+   "matched_errors_m": [
+    -0.08,
+    0.06,
+    0.01
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    12.05,
+    15.55,
+    15.63,
+    11.88
+   ],
+   "paper_spans_m": [
+    11.93,
+    15.38,
+    15.54,
+    11.54
+   ]
+  },
+  {
+   "bridge": "bridge_7_cb",
+   "deck_length_m": 40.419,
+   "deck_width_m": 11.709,
+   "skew_deg": -3.22,
+   "underside": "girders_observed",
+   "label_piers_from_start_m": [
+    18.19
+   ],
+   "detected_piers_from_start_m": [
+    18.48
+   ],
+   "matched_errors_m": [
+    0.29
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    18.48,
+    21.94
+   ],
+   "paper_spans_m": [
+    18.15,
+    21.76
+   ]
+  },
+  {
+   "bridge": "bridge_8_cb",
+   "deck_length_m": 53.015,
+   "deck_width_m": 9.444,
+   "skew_deg": 10.74,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [
+    10.76,
+    25.49,
+    40.17
+   ],
+   "detected_piers_from_start_m": [
+    10.65,
+    25.5,
+    40.33
+   ],
+   "matched_errors_m": [
+    -0.11,
+    0.01,
+    0.15
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    10.65,
+    14.85,
+    14.83,
+    12.69
+   ],
+   "paper_spans_m": [
+    10.46,
+    14.71,
+    14.8,
+    12.77
+   ]
+  },
+  {
+   "bridge": "bridge_9_cb",
+   "deck_length_m": 52.932,
+   "deck_width_m": 12.279,
+   "skew_deg": -1.12,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [
+    12.91,
+    27.57,
+    42.14
+   ],
+   "detected_piers_from_start_m": [
+    12.9,
+    27.6,
+    42.2
+   ],
+   "matched_errors_m": [
+    -0.01,
+    0.03,
+    0.06
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    12.9,
+    14.7,
+    14.6,
+    10.73
+   ],
+   "paper_spans_m": [
+    12.67,
+    14.54,
+    14.8,
+    10.17
+   ]
+  },
+  {
+   "bridge": "bridge_10_cb",
+   "deck_length_m": 72.141,
+   "deck_width_m": 8.131,
+   "skew_deg": 25.86,
+   "underside": "girders_observed",
+   "label_piers_from_start_m": [
+    16.21,
+    36.38,
+    53.71
+   ],
+   "detected_piers_from_start_m": [
+    17.0,
+    35.72,
+    54.37
+   ],
+   "matched_errors_m": [
+    0.79,
+    -0.65,
+    0.67
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    17.0,
+    18.72,
+    18.65,
+    17.77
+   ],
+   "paper_spans_m": [
+    16.2,
+    18.74,
+    18.58,
+    16.07
+   ]
+  },
+  {
+   "bridge": "bridge_11_fr",
+   "deck_length_m": 16.728,
+   "deck_width_m": 6.546,
+   "skew_deg": -19.14,
+   "underside": "girders_observed",
+   "label_piers_from_start_m": [],
+   "detected_piers_from_start_m": [],
+   "matched_errors_m": [],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    16.73
+   ],
+   "paper_spans_m": null
+  },
+  {
+   "bridge": "bridge_12_fr",
+   "deck_length_m": 41.022,
+   "deck_width_m": 7.553,
+   "skew_deg": -2.29,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [],
+   "detected_piers_from_start_m": [],
+   "matched_errors_m": [],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    41.02
+   ],
+   "paper_spans_m": null
+  },
+  {
+   "bridge": "bridge_13_fr",
+   "deck_length_m": 27.289,
+   "deck_width_m": 2.297,
+   "skew_deg": 2.32,
+   "underside": "girders_observed",
+   "label_piers_from_start_m": [],
+   "detected_piers_from_start_m": [],
+   "matched_errors_m": [],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    27.29
+   ],
+   "paper_spans_m": null
+  },
+  {
+   "bridge": "bridge_14_fr",
+   "deck_length_m": 14.88,
+   "deck_width_m": 11.199,
+   "skew_deg": 1.37,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [],
+   "detected_piers_from_start_m": [],
+   "matched_errors_m": [],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    14.88
+   ],
+   "paper_spans_m": null
+  },
+  {
+   "bridge": "bridge_15_fr",
+   "deck_length_m": 18.282,
+   "deck_width_m": 4.55,
+   "skew_deg": 16.29,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [],
+   "detected_piers_from_start_m": [],
+   "matched_errors_m": [],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    18.28
+   ],
+   "paper_spans_m": null
+  },
+  {
+   "bridge": "bridge_16_fr",
+   "deck_length_m": 45.55,
+   "deck_width_m": 9.275,
+   "skew_deg": -19.32,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [],
+   "detected_piers_from_start_m": [],
+   "matched_errors_m": [],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    45.55
+   ],
+   "paper_spans_m": null
+  },
+  {
+   "bridge": "bridge_17_fr",
+   "deck_length_m": 41.805,
+   "deck_width_m": 11.988,
+   "skew_deg": 12.51,
+   "underside": "no_girders_observed",
+   "label_piers_from_start_m": [
+    19.87
+   ],
+   "detected_piers_from_start_m": [
+    20.38
+   ],
+   "matched_errors_m": [
+    0.51
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    20.38,
+    21.43
+   ],
+   "paper_spans_m": [
+    20.41,
+    21.31
+   ]
+  },
+  {
+   "bridge": "bridge_18_fr",
+   "deck_length_m": 37.102,
+   "deck_width_m": 12.422,
+   "skew_deg": 18.22,
+   "underside": "unobserved",
+   "label_piers_from_start_m": [
+    11.65,
+    24.96
+   ],
+   "detected_piers_from_start_m": [
+    11.78,
+    24.83
+   ],
+   "matched_errors_m": [
+    0.12,
+    -0.14
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    11.78,
+    13.05,
+    12.28
+   ],
+   "paper_spans_m": [
+    11.73,
+    13.6,
+    12.61
+   ]
+  },
+  {
+   "bridge": "bridge_19_fr",
+   "deck_length_m": 35.593,
+   "deck_width_m": 9.076,
+   "skew_deg": 16.43,
+   "underside": "unobserved",
+   "label_piers_from_start_m": [
+    11.08,
+    24.57
+   ],
+   "detected_piers_from_start_m": [
+    11.18
+   ],
+   "matched_errors_m": [
+    0.09
+   ],
+   "false_piers_m": [],
+   "missed_piers_m": [
+    24.57
+   ],
+   "detected_spans_m": [
+    11.18,
+    24.42
+   ],
+   "paper_spans_m": [
+    11.23,
+    13.11,
+    10.89
+   ]
+  },
+  {
+   "bridge": "bridge_20_fr",
+   "deck_length_m": 40.751,
+   "deck_width_m": 11.883,
+   "skew_deg": 12.18,
+   "underside": "girders_observed",
+   "label_piers_from_start_m": [
+    14.17,
+    27.59
+   ],
+   "detected_piers_from_start_m": [
+    5.25,
+    14.43,
+    27.73
+   ],
+   "matched_errors_m": [
+    0.25,
+    0.14
+   ],
+   "false_piers_m": [
+    5.25
+   ],
+   "missed_piers_m": [],
+   "detected_spans_m": [
+    5.25,
+    9.18,
+    13.3,
+    13.03
+   ],
+   "paper_spans_m": [
+    12.71,
+    12.98,
+    14.46
+   ]
+  }
+ ]
+}

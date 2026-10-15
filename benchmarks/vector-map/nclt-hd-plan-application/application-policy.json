@@ -1,0 +1,157 @@
+{
+  "schema": "cloudanalyzer.hd_plan_application.v1",
+  "plan": [
+    {
+      "path": "run/hd-plan-01-ba668c90a289648b/page-0000.json",
+      "sha256": "a63cb3f474826c1e03e0624f91ddca7834358af8b5906af541c423d020c24f17",
+      "bytes": 66337
+    },
+    {
+      "path": "run/hd-plan-01-ba668c90a289648b/page-0008.json",
+      "sha256": "a5f4042fbdeefd484464f5f2b6ad0e5c6f461cc55d7f17e65881575a4d674d89",
+      "bytes": 55821
+    }
+  ],
+  "interval_ids": [
+    3,
+    11
+  ],
+  "connect_endpoints": true,
+  "reason": "Apply only the two freshly inspected intervals supported by both estimators, with explicitly permitted exact coincident endpoint pairs; independently assess the combined patch before adopting the root.",
+  "candidate_id": 1,
+  "selected_intervals": [
+    {
+      "plan_interval_id": 3,
+      "candidate_id": 16,
+      "from_m": 222.0,
+      "to_m": 224.0,
+      "gap_id": 29,
+      "minimum_observed_span_m": 2.000000000000001,
+      "retained_endpoint_links": [
+        {
+          "direction": "from_retained",
+          "retained_lane_id": 36,
+          "boundary_endpoint_distances_m": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
+      "source_ambiguous": false,
+      "source_audits_file": {
+        "path": "run/hd-plan-01-ba668c90a289648b/source-0003.json",
+        "sha256": "1b33e7fd47f2c1757d60942de6a1ee1977ab35424c0bba5f11e9cab748acdf8e",
+        "bytes": 54737
+      },
+      "reference_traces_fully_supported": true,
+      "reference_audits": {
+        "quantile": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 28,
+            "supported": 28,
+            "height_mismatches": 0,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "minimum_returns": 3,
+              "model": "low_quantile",
+              "quantile": 0.15
+            }
+          }
+        },
+        "consensus": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 28,
+            "supported": 28,
+            "height_mismatches": 0,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "layer_height_m": 0.15,
+              "minimum_cells": 3,
+              "minimum_triangle_area_m2": 0.01,
+              "model": "lowest_supported_layer",
+              "xy_cell_m": 0.2
+            }
+          }
+        }
+      }
+    },
+    {
+      "plan_interval_id": 11,
+      "candidate_id": 16,
+      "from_m": 224.0,
+      "to_m": 226.0,
+      "gap_id": 29,
+      "minimum_observed_span_m": 8.5,
+      "retained_endpoint_links": [],
+      "source_ambiguous": false,
+      "source_audits_file": {
+        "path": "run/hd-plan-01-ba668c90a289648b/source-0011.json",
+        "sha256": "37789f11f878ca7eabc8e9eb5c34618bc301b0aa28be83ed453d3bd7cf51e575",
+        "bytes": 54552
+      },
+      "reference_traces_fully_supported": true,
+      "reference_audits": {
+        "quantile": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 17,
+            "supported": 17,
+            "height_mismatches": 0,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "minimum_returns": 3,
+              "model": "low_quantile",
+              "quantile": 0.15
+            }
+          }
+        },
+        "consensus": {
+          "complete": true,
+          "sample_totals": {
+            "samples": 17,
+            "supported": 17,
+            "height_mismatches": 0,
+            "insufficient_returns": 0
+          },
+          "protocol": {
+            "sampling_step_m": 0.5,
+            "ground_radius_m": 0.75,
+            "ground_height_tolerance_m": 0.3,
+            "minimum_support_fraction": 0.9,
+            "sample_budget": 100000,
+            "ground_estimator": {
+              "layer_height_m": 0.15,
+              "minimum_cells": 3,
+              "minimum_triangle_area_m2": 0.01,
+              "model": "lowest_supported_layer",
+              "xy_cell_m": 0.2
+            }
+          }
+        }
+      }
+    }
+  ]
+}

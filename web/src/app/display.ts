@@ -1,5 +1,6 @@
 /** Display settings, camera shortcuts and saved views. */
 
+import { projectChanged } from "../project-change";
 import type { Vec3 } from "../protocol";
 import { detailShown } from "./colors";
 import { detailLoading } from "./detail";
@@ -166,6 +167,7 @@ function renderViews(): void {
       const remove = removeButton(() => {
         savedViews.splice(i, 1);
         renderViews();
+        projectChanged();
       });
       li.append(name, go, remove);
       return li;
@@ -176,4 +178,5 @@ function renderViews(): void {
 $<HTMLButtonElement>("view-save").onclick = () => {
   savedViews.push({ name: `View ${savedViews.length + 1}`, ...currentView() });
   renderViews();
+  projectChanged();
 };

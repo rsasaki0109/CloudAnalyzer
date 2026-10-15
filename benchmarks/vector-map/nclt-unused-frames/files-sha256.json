@@ -1,0 +1,289 @@
+{
+  "schema": "cloudanalyzer.evidence_files.v1",
+  "files": {
+    "README.md": {
+      "sha256": "4aed11ba10672622ba544c1b590a87857ab7983c2dddcc8b78ffd180e5c77b18",
+      "bytes": 8484
+    },
+    "april/agent-actions.json": {
+      "sha256": "623222d1aba41de2caa5689a5f53d21514b9c80c68bcf7237cb46b2318c912a7",
+      "bytes": 471994
+    },
+    "april/before/connection-proposal.json": {
+      "sha256": "3cd19808f4a8869ef17e4a3ce565a9cf61d49a6c1e8e7cb902432a2e5b3f37a5",
+      "bytes": 10518
+    },
+    "april/before/corridor-proposal.json": {
+      "sha256": "1a7a00706ca4979a576253ae3e2a28f67632a4315699e36e99c8ea65ca8e9aa5",
+      "bytes": 323748
+    },
+    "april/before/footprint-metadata.json": {
+      "sha256": "ba290e5d98caedd2acf8e867343ce2daa1e8941c9256ef463acf3f75c12665d8",
+      "bytes": 355
+    },
+    "april/before/footprint.npz": {
+      "sha256": "8e460b6d97f494cdd5ccfbf41501b25876fa24751472c1f910c1b823fccb1fc4",
+      "bytes": 342717
+    },
+    "april/before/geometry-report.json": {
+      "sha256": "1418bad7f6d6d6eae68acce15e5ca2e41ff8510f98c2ed8d79ccdfc5020e1505",
+      "bytes": 88900
+    },
+    "april/before/lanelet2_map.osm": {
+      "sha256": "23c010b997c9577553bd003ad62db2b1dec677abba01ec77d7117e5c5d9e183f",
+      "bytes": 44568
+    },
+    "april/before/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "april/before/report.json": {
+      "sha256": "63d1f451fa7518daab2e194d228a7b06124e75d83e7d34d5f9cafb51788d137d",
+      "bytes": 37272
+    },
+    "april/before/source-quality.json": {
+      "sha256": "e19986fb90a941322bf662cf5fb6a86781619ba9d45364a4321e34201865eeed",
+      "bytes": 192825
+    },
+    "april/before/vector_map.json": {
+      "sha256": "ccc4d6c3304c4ade3e21410580d704cc7cc6b10b90aafdc1370923624c6b49c0",
+      "bytes": 18383
+    },
+    "april/comparison.json": {
+      "sha256": "6bd6bb51f11c31f24130a5f5bea0d0dfa12e0bfd6e39eb0a2b31373107dd9015",
+      "bytes": 18770
+    },
+    "april/fusion-scans.json": {
+      "sha256": "b35af1167a97856435e12b16ee558979595b72a4005ec7cce653486b7101798d",
+      "bytes": 41514
+    },
+    "april/gaps.json": {
+      "sha256": "3fc0bdd49489e9e2397630efba18b687107bf0a49884fba93e893538f6bf1f30",
+      "bytes": 162666
+    },
+    "april/layout.json": {
+      "sha256": "b8274612225294019fe9aa1a439b1185b6a989c5bd18a5d40b5b03a59eac4d42",
+      "bytes": 381
+    },
+    "april/original-odometry-report.json": {
+      "sha256": "4c87ba4d53762490442c9471726183d23653bc416adf6e73cddd47ec713cf40b",
+      "bytes": 278
+    },
+    "april/original-odometry.tum": {
+      "sha256": "7638be71dfdba5ecab32a9b59a3903d16403aa082640d2b4be910a8fdc378f96",
+      "bytes": 20224
+    },
+    "april/pointcloud-processing.json": {
+      "sha256": "86c3b6302ecfe7832cfe1750f5655a8ccf9d18c1d0ff8c3776ccda832ee1f960",
+      "bytes": 8258
+    },
+    "april/raw-manifest.json": {
+      "sha256": "0a48e9d933a9dd2f86f33b04cb4b92d91100b3fa04ff5a04bf96150c43c5839e",
+      "bytes": 46546
+    },
+    "april/trial/connection-proposal.json": {
+      "sha256": "01bbd2b076d0f647dc78ad7e891cf738fa79e14013d59752bdbef1116b5533a9",
+      "bytes": 11305
+    },
+    "april/trial/corridor-proposal.json": {
+      "sha256": "1e05eb65cb598e552280dda0f89a738dbeed120b568da59d35b53f0e77e26f33",
+      "bytes": 324289
+    },
+    "april/trial/footprint-metadata.json": {
+      "sha256": "2e26820a0f671a57574b351e1d8790f2d82b625fac59d75abce4edc031c91d89",
+      "bytes": 374
+    },
+    "april/trial/footprint.npz": {
+      "sha256": "654d0dbc7b257fa81e3e3e37f112b04cb0ee9ed5f6b4076e2c6da9d70aa0f947",
+      "bytes": 342273
+    },
+    "april/trial/geometry-report.json": {
+      "sha256": "18466b7c2d3e0fd95464fd7cdffad4e38daf885af5a05a6046797b979e8bba57",
+      "bytes": 92547
+    },
+    "april/trial/lanelet2_map.osm": {
+      "sha256": "8dbdefb33689788a85b2d83d5aa58d84bd8ff038fceb7a4914ff81f6393cbf3f",
+      "bytes": 47563
+    },
+    "april/trial/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "april/trial/report.json": {
+      "sha256": "170298ff375e2aaaffa13233d9a50bcb36d1cd9a1abdc1d8ac9a99406ed7e4ed",
+      "bytes": 37355
+    },
+    "april/trial/source-quality.json": {
+      "sha256": "26cfba5476320d24bd5b77d24b8e5b2c5ed6dc058ae1be10fcf9e259c78204b2",
+      "bytes": 197845
+    },
+    "april/trial/vector_map.json": {
+      "sha256": "10591bfe6bf935546b4d4f056a382b65b56e191570594a16f45d58d1c88576d6",
+      "bytes": 19229
+    },
+    "april/trial-fusion_graph.g2o": {
+      "sha256": "8af60955c59e71ec7bd4a7a9186ec6629a4bd938e2d77e2df4509b4a9df91f6d",
+      "bytes": 98339
+    },
+    "april/trial-fusion_trajectory.txt": {
+      "sha256": "e0170603b9b86638d8273d372f910530e81f4d00aa87396e2fa50470c8a1dc5f",
+      "bytes": 50423
+    },
+    "april/trial-graph.g2o": {
+      "sha256": "7d61ea4c0bcb125095405a0668f0f1b57675d407badfa2e32d58d912284c68ec",
+      "bytes": 94035
+    },
+    "april/trial-trajectory.txt": {
+      "sha256": "224e9a307d91d76034fc0f61b8b5884044a6d15dbffe201b0678ae40c5c7c642",
+      "bytes": 47336
+    },
+    "april/unused-frames.json": {
+      "sha256": "3fc0bdd49489e9e2397630efba18b687107bf0a49884fba93e893538f6bf1f30",
+      "bytes": 162666
+    },
+    "comparison.png": {
+      "sha256": "6621d181b2876f29bfa6345b38b91c15e760be30f03479e20a579229eec7f957",
+      "bytes": 403472
+    },
+    "june/agent-actions.json": {
+      "sha256": "5533abad34c7f714a46927f4c122cbc164d86a817b3b8dc9debad973a97c2d09",
+      "bytes": 478897
+    },
+    "june/before/connection-proposal.json": {
+      "sha256": "fb971da36d648a65ff5279eba2cb91ec4529c79fd5827aec8fcc34038a97f332",
+      "bytes": 16328
+    },
+    "june/before/corridor-proposal.json": {
+      "sha256": "bcf4bae097018456c9926eeb3e29d419ce1d8226a2d1f4c919d79c6812e5baa2",
+      "bytes": 393038
+    },
+    "june/before/footprint-metadata.json": {
+      "sha256": "1d0a92b1c58a8d29499c3ef6c8df83b3550110346416f8c7edf36ae2d66ac72b",
+      "bytes": 355
+    },
+    "june/before/footprint.npz": {
+      "sha256": "c72c5a1d0a7875ecdc1d52c2bf4eb736982ad41ecdd4501c897d8736a06a5e82",
+      "bytes": 338121
+    },
+    "june/before/geometry-report.json": {
+      "sha256": "759939d4e1afbf41c295228fa97699eedddc89da18bf4767c10a7a8ffebd5fc1",
+      "bytes": 100455
+    },
+    "june/before/lanelet2_map.osm": {
+      "sha256": "8e33c554ad0fa2bc2e7ae6f0371928abe9cc3b09d6947df0632730aafb2544bd",
+      "bytes": 53372
+    },
+    "june/before/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "june/before/report.json": {
+      "sha256": "0270b5ad92a6e12573c6dcd970a64893ae3547acffb546339d393bf2cf91c9d9",
+      "bytes": 46971
+    },
+    "june/before/source-quality.json": {
+      "sha256": "44db65b5fb277ff3bff0fc6ba3848802ce2058882d726331939de934959b2079",
+      "bytes": 216939
+    },
+    "june/before/vector_map.json": {
+      "sha256": "9bbbf3097d0907dfbc486ccb11157bbf7851a5de04be218dabe1d0e9d12fbc01",
+      "bytes": 22406
+    },
+    "june/comparison.json": {
+      "sha256": "0872298a8acb1ca20f419b93abe71eec5c767e6e408b1bfa9bddd3bf49b92bbf",
+      "bytes": 20245
+    },
+    "june/fusion-scans.json": {
+      "sha256": "66782b70022f7e12d217223b95d4def84fe2f69ca6b9e29f4418547e36517b31",
+      "bytes": 43631
+    },
+    "june/gaps.json": {
+      "sha256": "8230a4ad80668672c39443082e8d99ac20cf49aa530a2170cc96a9cb0fb52b68",
+      "bytes": 142774
+    },
+    "june/layout.json": {
+      "sha256": "6963b91d21061142e447a37a9f70bad5f48e05e9306b659eabbf09f0d7a871c9",
+      "bytes": 381
+    },
+    "june/original-odometry-report.json": {
+      "sha256": "fdf14fa8ea8e0fdaeb3b23fc4fca2f488297ea60c3c3c927837158c8fe2b47da",
+      "bytes": 278
+    },
+    "june/original-odometry.tum": {
+      "sha256": "e3c467ee64877108ce71d6d4451cff5cbbb4f8ab7493a0778afea02d312f1409",
+      "bytes": 20406
+    },
+    "june/pointcloud-processing.json": {
+      "sha256": "dfa2797744da019959256bc2f73bf10bafb586d1aa6f69f92f9b2d725793b984",
+      "bytes": 8406
+    },
+    "june/raw-manifest.json": {
+      "sha256": "ba0734adccb82480730bb1c5ea0c21b67c6ad8571a4a6444b9ed9f20b3a7bb7d",
+      "bytes": 46904
+    },
+    "june/trial/connection-proposal.json": {
+      "sha256": "7847983ce095eb4d0352a5428a0ad6af4cf91219155095f870da708b6232f40c",
+      "bytes": 17845
+    },
+    "june/trial/corridor-proposal.json": {
+      "sha256": "b54ef84381f9bc073daf29ddf65217f5ff59bc46accfbeaa15350d28e4698155",
+      "bytes": 393885
+    },
+    "june/trial/footprint-metadata.json": {
+      "sha256": "a684ed8f9e1b24d6cccd0ab526a146539e5808d0ebaf52f1c32aeca2fa48ce38",
+      "bytes": 374
+    },
+    "june/trial/footprint.npz": {
+      "sha256": "c0e9c79d0cc2a5a3b95f6cb75ae0bf623925576e79fb7657bd229223f8cc10ce",
+      "bytes": 338909
+    },
+    "june/trial/geometry-report.json": {
+      "sha256": "8387d1bd07070c7364f839ecc0a40042cb65245c0e0e81a8407551ab2e6c2738",
+      "bytes": 112800
+    },
+    "june/trial/lanelet2_map.osm": {
+      "sha256": "b47a748cd2bc1eee1517b450f57f0109d16560de7c5a466abf53140120344705",
+      "bytes": 59495
+    },
+    "june/trial/map_projector_info.yaml": {
+      "sha256": "a6fb6af33e164e61a075f9a79eeffa5eca3ead4435dc3de49e811525175b8307",
+      "bytes": 22
+    },
+    "june/trial/report.json": {
+      "sha256": "5f1d5bbea2ae692f7f61e2eab46c3a4c24f3ea9a2c1b4d7273b9e0cfa0969d41",
+      "bytes": 52221
+    },
+    "june/trial/source-quality.json": {
+      "sha256": "ec11401fdb94251b6f10ec9a5b8acf9144fa912b346612ebe5551c5c52b61397",
+      "bytes": 233697
+    },
+    "june/trial/vector_map.json": {
+      "sha256": "e1d538d1bf0947ca5a6a07893dac0790fe394cda75d19c92713b23c14f96db86",
+      "bytes": 24824
+    },
+    "june/trial-fusion_graph.g2o": {
+      "sha256": "3032a8e4e4de962c7835ce63c0ccd37f74aba9b07fc204bb7f6cce7e711726e8",
+      "bytes": 103572
+    },
+    "june/trial-fusion_trajectory.txt": {
+      "sha256": "f6cfb6b8d795ff10d0f844306372a3e54804a3ad7e6cc909b1f540c1e49c8eee",
+      "bytes": 52798
+    },
+    "june/trial-graph.g2o": {
+      "sha256": "fde31a1e0da0a585eb82cca08d25ead9d7ed96f014157bcd959ac2707dfebf5c",
+      "bytes": 92299
+    },
+    "june/trial-trajectory.txt": {
+      "sha256": "198175f841e60e507fe589fc301c73d9b310e73fac39be97da5db6e98d70be4a",
+      "bytes": 46143
+    },
+    "june/unused-frames.json": {
+      "sha256": "8230a4ad80668672c39443082e8d99ac20cf49aa530a2170cc96a9cb0fb52b68",
+      "bytes": 142774
+    },
+    "verification.json": {
+      "sha256": "7b0efd59354b5fa68cfa4c69fbe18b21a5b95f921834ed250ee1f95344f940e8",
+      "bytes": 66830
+    }
+  }
+}

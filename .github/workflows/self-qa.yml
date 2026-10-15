@@ -41,6 +41,9 @@ jobs:
       - name: Run CloudAnalyzer self-QA
         uses: ./cloudanalyzer-action
         with:
+          # GHCR avoids the repeated anonymous Docker Hub HTTP 429. This image
+          # contains Python 3.10 / Debian bookworm plus uv (unused by this action).
+          python_base_image: ghcr.io/astral-sh/uv:python3.10-bookworm-slim@sha256:a041b350d5d9483b538d5af07e9553ee8cbc7fc7fa90c2f7d20d93f18ce9bbd1
           config: benchmarks/public/stanford-bunny-mini/configs/suite-pass.cloudanalyzer.yaml
           project: cloudanalyzer-self-qa
           marker: cloudanalyzer-self-qa
